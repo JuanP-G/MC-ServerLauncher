@@ -23,10 +23,56 @@ public partial class MainViewModel : ObservableObject
 
     public bool HasSelection => SelectedServer is not null;
 
+    [ObservableProperty]
+    private bool _updateAvailable;
+
+    [ObservableProperty]
+    private string _updateText = string.Empty;
+
+    private string? _releaseUrl;
+
     public MainViewModel()
     {
         Load();
+        _ = CheckForUpdatesAsync();
     }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        try
+        {
+            var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0);
+            var info = await new UpdateService().CheckAsync(current);
+            if (info is not null)
+            {
+                _releaseUrl = info.Url;
+                UpdateText = $"Hay una actualización disponible: versión {info.Version}.";
+                UpdateAvailable = true;
+            }
+        }
+        catch
+        {
+            // Sin conexión o GitHub no disponible: no pasa nada.
+        }
+    }
+
+    [RelayCommand]
+    private void OpenRelease()
+    {
+        if (string.IsNullOrEmpty(_releaseUrl)) return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = _releaseUrl,
+                UseShellExecute = true
+            });
+        }
+        catch { /* sin navegador */ }
+    }
+
+    [RelayCommand]
+    private void DismissUpdate() => UpdateAvailable = false;
 
     private void Load()
     {
