@@ -1,0 +1,23 @@
+# Build output
+bin/
+obj/
+out/
+publish/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+
+# .NET
+*.dll
+*.pdb
+project.lock.json
+artifacts/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store

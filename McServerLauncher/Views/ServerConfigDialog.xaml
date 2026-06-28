@@ -1,0 +1,303 @@
+<ui:FluentWindow x:Class="McServerLauncher.Views.ServerConfigDialog"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="Configuración del servidor"
+                 Width="760" Height="780"
+                 MinWidth="640"
+                 WindowStartupLocation="CenterOwner"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica">
+    <ui:FluentWindow.Resources>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style x:Key="Title" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+        <Style x:Key="Desc" TargetType="TextBlock">
+            <Setter Property="Opacity" Value="0.7" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,2,0,0" />
+        </Style>
+        <Style x:Key="Section" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="2,14,0,8" />
+        </Style>
+        <!-- Plantilla de fila: texto a la izquierda, control a la derecha -->
+        <Style x:Key="RowGrid" TargetType="Grid">
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="Configuración del servidor" />
+
+        <ScrollViewer Grid.Row="1" Margin="20,4,20,4" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock x:Name="HeaderText" FontSize="13" Opacity="0.8" TextWrapping="Wrap" Margin="2,0,0,4"
+                           Text="Cambia los ajustes y pulsa Guardar. Los cambios se aplican al (re)iniciar el servidor." />
+
+                <!-- ===================== GENERAL ===================== -->
+                <TextBlock Text="General" Style="{StaticResource Section}" />
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="MOTD (mensaje del servidor)" Style="{StaticResource Title}" />
+                        <TextBlock Style="{StaticResource Desc}"
+                                   Text="El texto que ven los jugadores bajo el nombre del servidor en la lista de Minecraft. Admite códigos de color con §  (p. ej. §a verde, §6 dorado, §l negrita)." />
+                        <ui:TextBox x:Name="MotdBox" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="180" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Modo de juego" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Modo por defecto para quien entra: Supervivencia (vida/hambre), Creativo (recursos infinitos y vuelo), Aventura (no romper bloques) o Espectador." />
+                        </StackPanel>
+                        <ComboBox x:Name="GamemodeBox" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="Supervivencia" Tag="survival" />
+                            <ComboBoxItem Content="Creativo" Tag="creative" />
+                            <ComboBoxItem Content="Aventura" Tag="adventure" />
+                            <ComboBoxItem Content="Espectador" Tag="spectator" />
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="180" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Dificultad" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Cuánto daño hacen los enemigos y el hambre. Pacífico no genera monstruos ni resta hambre; Difícil pega más fuerte e incluso te puedes morir de hambre." />
+                        </StackPanel>
+                        <ComboBox x:Name="DifficultyBox" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="Pacífico" Tag="peaceful" />
+                            <ComboBoxItem Content="Fácil" Tag="easy" />
+                            <ComboBoxItem Content="Normal" Tag="normal" />
+                            <ComboBoxItem Content="Difícil" Tag="hard" />
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="140" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Máximo de jugadores" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Número máximo de personas conectadas a la vez. Más jugadores requieren más RAM y CPU." />
+                        </StackPanel>
+                        <ui:NumberBox x:Name="MaxPlayersBox" Grid.Column="1" Minimum="1" Maximum="1000" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- ===================== JUGABILIDAD ===================== -->
+                <TextBlock Text="Jugabilidad" Style="{StaticResource Section}" />
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="PvP (combate entre jugadores)" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Si está activado, los jugadores pueden hacerse daño entre ellos. Desactívalo para un servidor pacífico/cooperativo." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="PvpToggle" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Hardcore" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Modo extremo: dificultad bloqueada en Difícil y, al morir, el jugador queda en modo espectador permanentemente. Úsalo solo para retos." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="HardcoreToggle" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Permitir vuelo" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="En Supervivencia, evita que el servidor expulse a jugadores que vuelen (útil si usas mods/plugins con vuelo). No da vuelo por sí solo." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="AllowFlightToggle" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Bloques de comandos" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Permite usar command blocks para crear mecánicas automáticas (mapas, minijuegos). Si no los usas, déjalo desactivado." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="CommandBlockToggle" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="140" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Protección del spawn" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Radio (en bloques) alrededor del punto de aparición donde los jugadores normales no pueden construir ni romper. 0 lo desactiva." />
+                        </StackPanel>
+                        <ui:NumberBox x:Name="SpawnProtectionBox" Grid.Column="1" Minimum="0" Maximum="10000" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- ===================== RENDIMIENTO / MUNDO ===================== -->
+                <TextBlock Text="Rendimiento y mundo" Style="{StaticResource Section}" />
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="140" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Distancia de visión (chunks)" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Hasta dónde se cargan y envían los chunks a los jugadores. Más alto = se ve más lejos, pero consume más CPU y red. Típico: 8–12." />
+                        </StackPanel>
+                        <ui:NumberBox x:Name="ViewDistanceBox" Grid.Column="1" Minimum="2" Maximum="32" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="140" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Distancia de simulación (chunks)" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Hasta dónde el servidor 'simula' el mundo (mobs, cultivos, redstone). Más alto = más cosas activas a la vez, más CPU. Típico: 8–10." />
+                        </StackPanel>
+                        <ui:NumberBox x:Name="SimulationDistanceBox" Grid.Column="1" Minimum="2" Maximum="32" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Generar estructuras" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Si se generan aldeas, mazmorras, templos, fortalezas, etc. en el mundo. Casi siempre se deja activado." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="GenerateStructuresToggle" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- ===================== RED Y ACCESO ===================== -->
+                <TextBlock Text="Red y acceso" Style="{StaticResource Section}" />
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="140" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Puerto" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Puerto local en el que escucha el servidor. Si lo cambias, recuerda que el túnel de Playit debe apuntar a este mismo puerto." />
+                        </StackPanel>
+                        <ui:NumberBox x:Name="PortBox" Grid.Column="1" Minimum="1" Maximum="65535" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Modo online (cuentas oficiales)" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Activado: solo entran cuentas legítimas de Minecraft (recomendado y seguro). Desactivado ('pirata/cracked'): entra cualquiera, sin verificar identidad ni skins." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="OnlineModeToggle" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid Style="{StaticResource RowGrid}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Lista blanca (whitelist)" Style="{StaticResource Title}" />
+                            <TextBlock Style="{StaticResource Desc}"
+                                       Text="Si está activada, solo pueden entrar los jugadores añadidos a la lista blanca. Ideal para servidores privados de amigos." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="WhitelistToggle" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,8,20,16">
+            <ui:Button Content="Cancelar" Margin="0,0,8,0" Click="Cancel_Click" />
+            <ui:Button Appearance="Primary" Content="Guardar" Click="Save_Click" />
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>

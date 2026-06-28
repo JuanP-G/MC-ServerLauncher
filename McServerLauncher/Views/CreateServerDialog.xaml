@@ -1,0 +1,113 @@
+<ui:FluentWindow x:Class="McServerLauncher.Views.CreateServerDialog"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="Crear servidor nuevo"
+                 Width="640" Height="720"
+                 MinWidth="560"
+                 WindowStartupLocation="CenterOwner"
+                 ResizeMode="NoResize"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="Crear servidor nuevo" />
+
+        <ScrollViewer Grid.Row="1" Margin="20,8,20,8" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="FormPanel">
+                <TextBlock Text="Nombre del servidor" Margin="0,4" />
+                <ui:TextBox x:Name="NameBox" PlaceholderText="p.ej. Survival, Creativo, Eventos..." />
+
+                <TextBlock Text="Crear dentro de la carpeta" Margin="0,12,0,4" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBox x:Name="ParentFolderBox" Grid.Column="0" />
+                    <ui:Button Grid.Column="1" Content="Examinar..." Margin="8,0,0,0" Click="BrowseParent_Click" />
+                </Grid>
+                <TextBlock x:Name="FinalPathText" Margin="2,4,0,0" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Versión de Minecraft" Margin="0,0,0,4" />
+                        <ComboBox x:Name="VersionCombo" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                    <CheckBox Grid.Column="1" x:Name="SnapshotsCheck" Content="Incluir snapshots"
+                              VerticalAlignment="Bottom" Margin="12,0,0,4" Checked="Snapshots_Changed" Unchecked="Snapshots_Changed" />
+                </Grid>
+                <TextBlock x:Name="VersionStatus" Margin="2,4,0,0" FontSize="12" Opacity="0.7" Text="Cargando versiones..." />
+
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="Puerto" Margin="0,0,0,4" />
+                        <ui:NumberBox x:Name="PortBox" Value="25565" Minimum="1" Maximum="65535" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8,0,8,0">
+                        <TextBlock Text="RAM mín (GB)" Margin="0,0,0,4" />
+                        <ui:NumberBox x:Name="MinRamBox" Value="2" Minimum="1" Maximum="64" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="8,0,0,0">
+                        <TextBlock Text="RAM máx (GB)" Margin="0,0,0,4" />
+                        <ui:NumberBox x:Name="MaxRamBox" Value="4" Minimum="1" Maximum="64" />
+                    </StackPanel>
+                </Grid>
+                <TextBlock x:Name="PortStatus" Margin="2,6,0,0" FontSize="12" Opacity="0.7"
+                           TextWrapping="Wrap" />
+                <TextBlock Margin="2,2,0,0" FontSize="12" Opacity="0.55" TextWrapping="Wrap"
+                           Text="Para tener varios servidores encendidos a la vez, cada uno debe usar un puerto distinto." />
+
+                <Separator Margin="0,18,0,12" />
+
+                <CheckBox x:Name="PlayitCheck" Content="Usar Playit.gg para este servidor (túnel a Internet)" IsChecked="True" />
+
+                <CheckBox x:Name="CreateTunnelCheck" Margin="0,16,0,0" IsChecked="True"
+                          IsEnabled="{Binding IsChecked, ElementName=PlayitCheck}"
+                          Content="Crear automáticamente el túnel de Playit.gg para este servidor" />
+
+                <CheckBox x:Name="AutoStartCheck" Margin="0,10,0,0" IsChecked="True"
+                          Content="Iniciar el servidor al terminar para generar el mundo y los archivos" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Progreso -->
+        <Border Grid.Row="2" x:Name="ProgressBox" Margin="20,0,20,8" Padding="12"
+                CornerRadius="8" Background="#1E1E1E" Visibility="Collapsed" Height="140">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                    <ui:ProgressRing x:Name="Spinner" IsIndeterminate="True" Width="18" Height="18" Margin="0,0,8,0" />
+                    <TextBlock Text="Creando servidor..." FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBox Grid.Row="1" x:Name="ProgressLog" IsReadOnly="True" TextWrapping="Wrap"
+                         Background="Transparent" BorderThickness="0" Foreground="#DDDDDD"
+                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12"
+                         VerticalScrollBarVisibility="Auto" />
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,4,20,16">
+            <ui:Button x:Name="CancelButton" Content="Cancelar" Margin="0,0,8,0" Click="Cancel_Click" />
+            <ui:Button x:Name="CreateButton" Appearance="Primary" Content="Crear servidor" Click="Create_Click" />
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>

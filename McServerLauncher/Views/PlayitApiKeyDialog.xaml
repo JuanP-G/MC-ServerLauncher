@@ -1,0 +1,39 @@
+<ui:FluentWindow x:Class="McServerLauncher.Views.PlayitApiKeyDialog"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="Clave de Playit (escritura)"
+                 Width="560" SizeToContent="Height"
+                 ResizeMode="NoResize"
+                 WindowStartupLocation="CenterOwner"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="Clave de Playit (escritura)" />
+
+        <StackPanel Grid.Row="1" Margin="20,8,20,8">
+            <TextBlock TextWrapping="Wrap" FontSize="14"
+                       Text="Para crear y eliminar túneles automáticamente, la app necesita una clave de Playit con permiso de escritura. La clave del agente que ya tienes es de solo lectura y no sirve para esto." />
+
+            <TextBlock TextWrapping="Wrap" FontSize="13" Opacity="0.8" Margin="0,12,0,0"
+                       Text="Genera una clave en tu cuenta de playit.gg (sección de claves / API, con permisos de escritura) y pégala aquí. Se guarda solo en tu equipo." />
+
+            <ui:Button Margin="0,12,0,0" Icon="{ui:SymbolIcon Open24}" Content="Abrir playit.gg"
+                       Click="OpenPlayit_Click" />
+
+            <TextBlock Text="Clave de escritura de Playit" Margin="0,16,0,4" />
+            <ui:TextBox x:Name="KeyBox" PlaceholderText="Pega aquí tu clave..." />
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,12,20,16">
+            <ui:Button Content="Cancelar" Margin="0,0,8,0" Click="Cancel_Click" />
+            <ui:Button Appearance="Primary" Content="Guardar" Click="Save_Click" />
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>
