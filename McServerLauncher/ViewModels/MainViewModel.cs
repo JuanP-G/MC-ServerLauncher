@@ -280,11 +280,13 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void Save() => _storage.Save(Servers.Select(s => s.Config));
 
-    /// <summary>Detiene todos los servidores y guarda al cerrar la app.</summary>
+    /// <summary>True si algún servidor está encendido (para avisar al cerrar).</summary>
+    public bool AnyServerRunning => Servers.Any(s => s.IsRunning);
+
+    /// <summary>Detiene todos los servidores EN PARALELO y guarda al cerrar la app.</summary>
     public async Task ShutdownAllAsync()
     {
-        foreach (var s in Servers)
-            await s.ShutdownAsync();
+        await Task.WhenAll(Servers.Select(s => s.ShutdownAsync()));
         Save();
     }
 

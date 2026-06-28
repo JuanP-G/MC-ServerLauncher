@@ -26,6 +26,8 @@ public partial class MainWindow : FluentWindow
         {
             e.Cancel = true;
             _shuttingDown = true;
+            if (_viewModel.AnyServerRunning)
+                Title = "MC Server Launcher — deteniendo servidores y guardando...";
             await _viewModel.ShutdownAllAsync();
             Close();
             return;
