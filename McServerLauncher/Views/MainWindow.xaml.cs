@@ -28,8 +28,12 @@ public partial class MainWindow : FluentWindow
             _shuttingDown = true;
             if (_viewModel.AnyServerRunning)
                 Title = "MC Server Launcher — deteniendo servidores y guardando...";
+
+            // Ya hemos guardado la config y detenido los servidores aquí dentro.
             await _viewModel.ShutdownAllAsync();
-            Close();
+
+            // Salida inmediata: evita el ~2 s que tarda WPF/WPF-UI en liberar sus recursos al cerrar.
+            Environment.Exit(0);
             return;
         }
 
