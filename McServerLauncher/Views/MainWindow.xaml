@@ -5,6 +5,7 @@
                  xmlns:vm="clr-namespace:McServerLauncher.ViewModels"
                  xmlns:b="clr-namespace:McServerLauncher.Behaviors"
                  Title="MC Server Launcher"
+                 Icon="/Resources/app.ico"
                  Width="1150" Height="720"
                  MinWidth="900" MinHeight="560"
                  WindowStartupLocation="CenterScreen"
