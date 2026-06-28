@@ -12,6 +12,18 @@ configuración… todo con botones.
 
 ---
 
+## ⬇️ Descargar e instalar
+
+1. Ve a la **[última versión (Releases)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)**.
+2. Descarga **`MC-ServerLauncher-Setup-x.y.z.exe`** y ejecútalo.
+3. El asistente crea el acceso directo en el **Escritorio** y el **menú Inicio**.
+4. Abre la app y crea o añade tu servidor. **No necesitas instalar .NET ni Java** — la app se encarga.
+
+> La primera vez, Windows puede mostrar un aviso de SmartScreen (app nueva sin firma): pulsa
+> *Más información → Ejecutar de todas formas*.
+
+---
+
 ## ✨ Funcionalidades
 
 ### Gestión de servidores
