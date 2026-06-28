@@ -7,6 +7,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 
@@ -85,7 +86,7 @@ public partial class ServerViewModel : ObservableObject
     };
 
     [ObservableProperty]
-    private string _statusText = "Apagado";
+    private string _statusText = Localizer.Get("Status_Stopped");
 
     [ObservableProperty]
     private string _cpuText = "—";
@@ -275,11 +276,11 @@ public partial class ServerViewModel : ObservableObject
         State = state;
         StatusText = state switch
         {
-            ServerState.Stopped => "Apagado",
-            ServerState.Starting => "Iniciando...",
-            ServerState.Running => "Encendido",
-            ServerState.Stopping => "Deteniéndose...",
-            _ => "Desconocido"
+            ServerState.Stopped => Localizer.Get("Status_Stopped"),
+            ServerState.Starting => Localizer.Get("Status_Starting"),
+            ServerState.Running => Localizer.Get("Status_Running"),
+            ServerState.Stopping => Localizer.Get("Status_Stopping"),
+            _ => "?"
         };
 
         StatusBrush = state switch

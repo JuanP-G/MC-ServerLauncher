@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Servers" xml:space="preserve"><value>Servidores</value></data>
+  <data name="CreateServer" xml:space="preserve"><value>Crear servidor nuevo</value></data>
+  <data name="Add" xml:space="preserve"><value>Añadir</value></data>
+  <data name="Tip_Add" xml:space="preserve"><value>Añadir un servidor que ya existe en una carpeta</value></data>
+  <data name="Tip_Edit" xml:space="preserve"><value>Editar servidor</value></data>
+  <data name="Tip_Delete" xml:space="preserve"><value>Eliminar servidor</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Selecciona o añade un servidor para empezar.</value></data>
+  <data name="Start" xml:space="preserve"><value>Iniciar</value></data>
+  <data name="Stop" xml:space="preserve"><value>Detener</value></data>
+  <data name="Restart" xml:space="preserve"><value>Reiniciar</value></data>
+  <data name="Configure" xml:space="preserve"><value>Configurar</value></data>
+  <data name="Tip_Configure" xml:space="preserve"><value>Editar server.properties de forma visual</value></data>
+  <data name="Uptime" xml:space="preserve"><value>Tiempo activo</value></data>
+  <data name="Port" xml:space="preserve"><value>Puerto</value></data>
+  <data name="Tip_ChangeIcon" xml:space="preserve"><value>Clic para cambiar el icono del servidor (lo que ven los jugadores)</value></data>
+  <data name="Tunnel_Placeholder" xml:space="preserve"><value>Se detecta sola, o pega aquí la dirección del túnel...</value></data>
+  <data name="Copy" xml:space="preserve"><value>Copiar</value></data>
+  <data name="CreateTunnel" xml:space="preserve"><value>Crear túnel</value></data>
+  <data name="Tip_CreateTunnel" xml:space="preserve"><value>Crear el túnel de Playit para este servidor (por su puerto)</value></data>
+  <data name="Tip_Web" xml:space="preserve"><value>Abrir el panel de Playit.gg para crear o ver túneles</value></data>
+  <data name="Service" xml:space="preserve"><value>Servicio</value></data>
+  <data name="Tip_Service" xml:space="preserve"><value>Iniciar/detener el servicio de Playit (puede requerir administrador)</value></data>
+  <data name="Console" xml:space="preserve"><value>Consola</value></data>
+  <data name="Players" xml:space="preserve"><value>Jugadores</value></data>
+  <data name="Clear" xml:space="preserve"><value>Limpiar</value></data>
+  <data name="Command_Placeholder" xml:space="preserve"><value>Escribe un comando (p.ej. say hola, op Alex, stop) y pulsa Enter...</value></data>
+  <data name="Commands" xml:space="preserve"><value>Comandos</value></data>
+  <data name="Tip_Commands" xml:space="preserve"><value>Ver comandos disponibles y qué hacen</value></data>
+  <data name="Send" xml:space="preserve"><value>Enviar</value></data>
+  <data name="Players_Manage" xml:space="preserve"><value>Gestión de jugadores</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Actualizar</value></data>
+  <data name="Players_Connected" xml:space="preserve"><value>Conectados ahora</value></data>
+  <data name="Players_ConnectedHint" xml:space="preserve"><value>Acciones disponibles con el servidor encendido.</value></data>
+  <data name="Kick" xml:space="preserve"><value>Expulsar</value></data>
+  <data name="Ban" xml:space="preserve"><value>Banear</value></data>
+  <data name="Players_Ops" xml:space="preserve"><value>Operadores</value></data>
+  <data name="RemoveOp" xml:space="preserve"><value>Quitar OP</value></data>
+  <data name="Players_Whitelist" xml:space="preserve"><value>Lista blanca</value></data>
+  <data name="Whitelist_Hint" xml:space="preserve"><value>Solo estos jugadores pueden entrar (si la lista blanca está activada en Configurar).</value></data>
+  <data name="Player_Placeholder" xml:space="preserve"><value>Nombre del jugador (p. ej. Steve)</value></data>
+  <data name="Remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="Players_Banned" xml:space="preserve"><value>Baneados</value></data>
+  <data name="Unban" xml:space="preserve"><value>Desbanear</value></data>
+  <data name="Players_Known" xml:space="preserve"><value>Han entrado alguna vez</value></data>
+  <data name="Update_Download" xml:space="preserve"><value>Descargar</value></data>
+  <data name="Tip_Hide" xml:space="preserve"><value>Ocultar</value></data>
+  <data name="Language" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Status_Stopped" xml:space="preserve"><value>Apagado</value></data>
+  <data name="Status_Starting" xml:space="preserve"><value>Iniciando...</value></data>
+  <data name="Status_Running" xml:space="preserve"><value>Encendido</value></data>
+  <data name="Status_Stopping" xml:space="preserve"><value>Deteniéndose...</value></data>
+  <data name="Copy_Selection" xml:space="preserve"><value>Copiar selección</value></data>
+  <data name="Copy_All" xml:space="preserve"><value>Copiar todo</value></data>
+  <data name="RestartNeeded" xml:space="preserve"><value>El idioma se aplicará al reiniciar la app. ¿Reiniciar ahora?</value></data>
+</root>

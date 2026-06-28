@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Servers" xml:space="preserve"><value>Servers</value></data>
+  <data name="CreateServer" xml:space="preserve"><value>Create new server</value></data>
+  <data name="Add" xml:space="preserve"><value>Add</value></data>
+  <data name="Tip_Add" xml:space="preserve"><value>Add a server that already exists in a folder</value></data>
+  <data name="Tip_Edit" xml:space="preserve"><value>Edit server</value></data>
+  <data name="Tip_Delete" xml:space="preserve"><value>Delete server</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Select or add a server to get started.</value></data>
+  <data name="Start" xml:space="preserve"><value>Start</value></data>
+  <data name="Stop" xml:space="preserve"><value>Stop</value></data>
+  <data name="Restart" xml:space="preserve"><value>Restart</value></data>
+  <data name="Configure" xml:space="preserve"><value>Configure</value></data>
+  <data name="Tip_Configure" xml:space="preserve"><value>Edit server.properties visually</value></data>
+  <data name="Uptime" xml:space="preserve"><value>Uptime</value></data>
+  <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="Tip_ChangeIcon" xml:space="preserve"><value>Click to change the server icon (what players see)</value></data>
+  <data name="Tunnel_Placeholder" xml:space="preserve"><value>Auto-detected, or paste the tunnel address here...</value></data>
+  <data name="Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="CreateTunnel" xml:space="preserve"><value>Create tunnel</value></data>
+  <data name="Tip_CreateTunnel" xml:space="preserve"><value>Create the Playit tunnel for this server (by its port)</value></data>
+  <data name="Tip_Web" xml:space="preserve"><value>Open the Playit.gg panel to create or view tunnels</value></data>
+  <data name="Service" xml:space="preserve"><value>Service</value></data>
+  <data name="Tip_Service" xml:space="preserve"><value>Start/stop the Playit service (may require admin)</value></data>
+  <data name="Console" xml:space="preserve"><value>Console</value></data>
+  <data name="Players" xml:space="preserve"><value>Players</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Command_Placeholder" xml:space="preserve"><value>Type a command (e.g. say hi, op Alex, stop) and press Enter...</value></data>
+  <data name="Commands" xml:space="preserve"><value>Commands</value></data>
+  <data name="Tip_Commands" xml:space="preserve"><value>See available commands and what they do</value></data>
+  <data name="Send" xml:space="preserve"><value>Send</value></data>
+  <data name="Players_Manage" xml:space="preserve"><value>Player management</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="Players_Connected" xml:space="preserve"><value>Connected now</value></data>
+  <data name="Players_ConnectedHint" xml:space="preserve"><value>Actions available when the server is running.</value></data>
+  <data name="Kick" xml:space="preserve"><value>Kick</value></data>
+  <data name="Ban" xml:space="preserve"><value>Ban</value></data>
+  <data name="Players_Ops" xml:space="preserve"><value>Operators</value></data>
+  <data name="RemoveOp" xml:space="preserve"><value>Remove OP</value></data>
+  <data name="Players_Whitelist" xml:space="preserve"><value>Whitelist</value></data>
+  <data name="Whitelist_Hint" xml:space="preserve"><value>Only these players can join (if the whitelist is enabled in Configure).</value></data>
+  <data name="Player_Placeholder" xml:space="preserve"><value>Player name (e.g. Steve)</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Players_Banned" xml:space="preserve"><value>Banned</value></data>
+  <data name="Unban" xml:space="preserve"><value>Unban</value></data>
+  <data name="Players_Known" xml:space="preserve"><value>Have joined before</value></data>
+  <data name="Update_Download" xml:space="preserve"><value>Download</value></data>
+  <data name="Tip_Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Status_Stopped" xml:space="preserve"><value>Off</value></data>
+  <data name="Status_Starting" xml:space="preserve"><value>Starting...</value></data>
+  <data name="Status_Running" xml:space="preserve"><value>On</value></data>
+  <data name="Status_Stopping" xml:space="preserve"><value>Stopping...</value></data>
+  <data name="Copy_Selection" xml:space="preserve"><value>Copy selection</value></data>
+  <data name="Copy_All" xml:space="preserve"><value>Copy all</value></data>
+  <data name="RestartNeeded" xml:space="preserve"><value>The language will apply after restarting the app. Restart now?</value></data>
+</root>

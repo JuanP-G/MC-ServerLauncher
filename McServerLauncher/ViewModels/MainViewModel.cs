@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 using McServerLauncher.Views;
@@ -31,10 +33,61 @@ public partial class MainViewModel : ObservableObject
 
     private string? _releaseUrl;
 
+    public record LanguageOption(string Code, string Name);
+
+    public IReadOnlyList<LanguageOption> Languages { get; } = new List<LanguageOption>
+    {
+        new("es", "Español"),
+        new("en", "English"),
+        new("pt", "Português"),
+        new("fr", "Français"),
+        new("de", "Deutsch"),
+    };
+
+    [ObservableProperty]
+    private LanguageOption? _selectedLanguage;
+
+    private bool _languageReady;
+
     public MainViewModel()
     {
         Load();
+
+        var saved = _settings.Load().Language;
+        var code = !string.IsNullOrWhiteSpace(saved) ? saved : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        SelectedLanguage = Languages.FirstOrDefault(l => l.Code == code) ?? Languages[0];
+        _languageReady = true;
+
         _ = CheckForUpdatesAsync();
+    }
+
+    partial void OnSelectedLanguageChanged(LanguageOption? value)
+    {
+        if (!_languageReady || value is null) return;
+
+        var settings = _settings.Load();
+        if (settings.Language == value.Code) return;
+
+        settings.Language = value.Code;
+        _settings.Save(settings);
+
+        var answer = System.Windows.MessageBox.Show(
+            Localizer.Get("RestartNeeded"), Localizer.Get("Language"),
+            System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
+        if (answer == System.Windows.MessageBoxResult.Yes)
+            _ = RestartAppAsync();
+    }
+
+    private async Task RestartAppAsync()
+    {
+        await ShutdownAllAsync();
+        var exe = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+        if (!string.IsNullOrEmpty(exe))
+        {
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = exe, UseShellExecute = true }); }
+            catch { /* si no se puede relanzar, al menos cerramos */ }
+        }
+        Environment.Exit(0);
     }
 
     private async Task CheckForUpdatesAsync()

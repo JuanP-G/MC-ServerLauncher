@@ -8,4 +8,7 @@ public class AppSettings
     /// (La clave del agente en playit.toml es de solo lectura y no sirve para esto.)
     /// </summary>
     public string? PlayitApiKey { get; set; }
+
+    /// <summary>Idioma de la interfaz (es, en, pt, fr, de). Vacío = idioma del sistema.</summary>
+    public string? Language { get; set; }
 }

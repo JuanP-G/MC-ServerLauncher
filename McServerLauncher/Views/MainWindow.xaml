@@ -4,6 +4,7 @@
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  xmlns:vm="clr-namespace:McServerLauncher.ViewModels"
                  xmlns:b="clr-namespace:McServerLauncher.Behaviors"
+                 xmlns:loc="clr-namespace:McServerLauncher.Localization"
                  Title="MC Server Launcher"
                  Icon="/Resources/app.ico"
                  Width="1150" Height="720"
@@ -39,11 +40,11 @@
                                VerticalAlignment="Center" Margin="0,0,10,0" />
                 <TextBlock Grid.Column="1" Text="{Binding UpdateText}" Foreground="White"
                            VerticalAlignment="Center" />
-                <ui:Button Grid.Column="2" Content="Descargar" Appearance="Light" Margin="0,0,8,0"
+                <ui:Button Grid.Column="2" Content="{loc:Loc Update_Download}" Appearance="Light" Margin="0,0,8,0"
                            Command="{Binding OpenReleaseCommand}" />
                 <ui:Button Grid.Column="3" Icon="{ui:SymbolIcon Dismiss24}" Appearance="Transparent"
                            Foreground="White" Command="{Binding DismissUpdateCommand}"
-                           ToolTip="Ocultar" />
+                           ToolTip="{loc:Loc Tip_Hide}" />
             </Grid>
         </Border>
 
@@ -60,9 +61,10 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="Servidores" FontSize="18" FontWeight="SemiBold" Margin="4,0,0,10" />
+                    <TextBlock Grid.Row="0" Text="{loc:Loc Servers}" FontSize="18" FontWeight="SemiBold" Margin="4,0,0,10" />
 
                     <ListBox Grid.Row="1"
                              ItemsSource="{Binding Servers}"
@@ -131,27 +133,34 @@
                     </ListBox>
 
                     <StackPanel Grid.Row="2" Margin="0,10,0,0">
-                        <ui:Button Icon="{ui:SymbolIcon Sparkle24}" Content="Crear servidor nuevo"
+                        <ui:Button Icon="{ui:SymbolIcon Sparkle24}" Content="{loc:Loc CreateServer}"
                                    Appearance="Primary" HorizontalAlignment="Stretch"
                                    Command="{Binding CreateServerCommand}" Margin="0,0,0,8" />
                         <StackPanel Orientation="Horizontal">
-                            <ui:Button Icon="{ui:SymbolIcon FolderAdd24}" Content="Añadir"
+                            <ui:Button Icon="{ui:SymbolIcon FolderAdd24}" Content="{loc:Loc Add}"
                                        Command="{Binding AddServerCommand}" Margin="0,0,6,0"
-                                       ToolTip="Añadir un servidor que ya existe en una carpeta" />
+                                       ToolTip="{loc:Loc Tip_Add}" />
                             <ui:Button Icon="{ui:SymbolIcon Edit24}"
                                        Command="{Binding EditServerCommand}" Margin="0,0,6,0"
-                                       ToolTip="Editar servidor" />
+                                       ToolTip="{loc:Loc Tip_Edit}" />
                             <ui:Button Icon="{ui:SymbolIcon Delete24}"
                                        Command="{Binding RemoveServerCommand}"
-                                       ToolTip="Eliminar servidor" />
+                                       ToolTip="{loc:Loc Tip_Delete}" />
                         </StackPanel>
+                    </StackPanel>
+
+                    <!-- Selector de idioma -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="2,12,0,0" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="LocalLanguage24" Opacity="0.7" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <ComboBox Width="150" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}"
+                                  DisplayMemberPath="Name" ToolTip="{loc:Loc Language}" />
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Panel principal: detalle del servidor seleccionado -->
             <Grid Grid.Column="1" Margin="16">
-                <TextBlock Text="Selecciona o añade un servidor para empezar."
+                <TextBlock Text="{loc:Loc EmptyState}"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            FontSize="16" Opacity="0.6"
                            Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVisibility}}" />
@@ -187,7 +196,7 @@
 
                                 <!-- Icono del servidor (server-icon.png) o marcador si no hay. Clic para cambiarlo -->
                                 <Button Grid.Column="0" Width="64" Height="64" Padding="0" Cursor="Hand"
-                                        ToolTip="Clic para cambiar el icono del servidor (lo que ven los jugadores)"
+                                        ToolTip="{loc:Loc Tip_ChangeIcon}"
                                         Command="{Binding DataContext.ChangeIconForSelectedCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
@@ -256,15 +265,15 @@
                                 </StackPanel>
                             </Border>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <ui:Button Appearance="Primary" Icon="{ui:SymbolIcon Play24}" Content="Iniciar"
+                                <ui:Button Appearance="Primary" Icon="{ui:SymbolIcon Play24}" Content="{loc:Loc Start}"
                                            Command="{Binding StartCommand}" Margin="0,0,8,0" />
-                                <ui:Button Icon="{ui:SymbolIcon Stop24}" Content="Detener"
+                                <ui:Button Icon="{ui:SymbolIcon Stop24}" Content="{loc:Loc Stop}"
                                            Command="{Binding StopCommand}" Margin="0,0,8,0" />
-                                <ui:Button Icon="{ui:SymbolIcon ArrowClockwise24}" Content="Reiniciar"
+                                <ui:Button Icon="{ui:SymbolIcon ArrowClockwise24}" Content="{loc:Loc Restart}"
                                            Command="{Binding RestartCommand}" Margin="0,0,8,0" />
-                                <ui:Button Icon="{ui:SymbolIcon Settings24}" Content="Configurar"
+                                <ui:Button Icon="{ui:SymbolIcon Settings24}" Content="{loc:Loc Configure}"
                                            Command="{Binding DataContext.ConfigureServerCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
-                                           ToolTip="Editar server.properties de forma visual" />
+                                           ToolTip="{loc:Loc Tip_Configure}" />
                             </StackPanel>
                         </StackPanel>
 
@@ -296,13 +305,13 @@
                         </Border>
                         <Border Style="{StaticResource StatCard}">
                             <StackPanel>
-                                <TextBlock Text="Tiempo activo" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{loc:Loc Uptime}" Style="{StaticResource StatLabel}" />
                                 <TextBlock Text="{Binding UptimeText}" Style="{StaticResource StatValue}" />
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource StatCard}">
                             <StackPanel>
-                                <TextBlock Text="Puerto" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{loc:Loc Port}" Style="{StaticResource StatLabel}" />
                                 <TextBlock Text="{Binding PortText}" Style="{StaticResource StatValue}" />
                             </StackPanel>
                         </Border>
@@ -325,26 +334,26 @@
                             </StackPanel>
                             <ui:TextBox Grid.Column="1" Margin="16,0"
                                         Text="{Binding TunnelAddress, UpdateSourceTrigger=LostFocus}"
-                                        PlaceholderText="Se detecta sola, o pega aquí la dirección del túnel..."
+                                        PlaceholderText="{loc:Loc Tunnel_Placeholder}"
                                         VerticalAlignment="Center" />
-                            <ui:Button Grid.Column="2" Icon="{ui:SymbolIcon Copy24}" Content="Copiar"
+                            <ui:Button Grid.Column="2" Icon="{ui:SymbolIcon Copy24}" Content="{loc:Loc Copy}"
                                        Command="{Binding CopyTunnelAddressCommand}" Margin="0,0,8,0" />
-                            <ui:Button Grid.Column="3" Icon="{ui:SymbolIcon AddCircle24}" Content="Crear túnel"
+                            <ui:Button Grid.Column="3" Icon="{ui:SymbolIcon AddCircle24}" Content="{loc:Loc CreateTunnel}"
                                        Command="{Binding DataContext.CreateTunnelForSelectedCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
                                        Margin="0,0,8,0"
-                                       ToolTip="Crear el túnel de Playit para este servidor (por su puerto)" />
+                                       ToolTip="{loc:Loc Tip_CreateTunnel}" />
                             <ui:Button Grid.Column="4" Icon="{ui:SymbolIcon Open24}" Content="Web"
                                        Command="{Binding OpenPlayitDashboardCommand}" Margin="0,0,8,0"
-                                       ToolTip="Abrir el panel de Playit.gg para crear o ver túneles" />
-                            <ui:Button Grid.Column="5" Icon="{ui:SymbolIcon Power24}" Content="Servicio"
+                                       ToolTip="{loc:Loc Tip_Web}" />
+                            <ui:Button Grid.Column="5" Icon="{ui:SymbolIcon Power24}" Content="{loc:Loc Service}"
                                        Command="{Binding TogglePlayitCommand}"
-                                       ToolTip="Iniciar/detener el servicio de Playit (puede requerir administrador)" />
+                                       ToolTip="{loc:Loc Tip_Service}" />
                         </Grid>
                     </Border>
 
                     <!-- Pestañas: Consola / Jugadores -->
                     <TabControl Grid.Row="3" Background="Transparent" BorderThickness="0">
-                        <TabItem Header="Consola">
+                        <TabItem Header="{loc:Loc Console}">
                             <Grid Margin="0,8,0,0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
@@ -358,9 +367,9 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid Grid.Row="0" Margin="12,8">
-                                <TextBlock Text="Consola" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <TextBlock Text="{loc:Loc Console}" FontWeight="SemiBold" VerticalAlignment="Center" />
                                 <ui:Button HorizontalAlignment="Right" Icon="{ui:SymbolIcon Eraser24}"
-                                           Content="Limpiar" Command="{Binding ClearConsoleCommand}"
+                                           Content="{loc:Loc Clear}" Command="{Binding ClearConsoleCommand}"
                                            Padding="8,2" />
                             </Grid>
                             <ListBox Grid.Row="1"
@@ -379,8 +388,8 @@
                                      VirtualizingPanel.ScrollUnit="Pixel">
                                 <ListBox.ContextMenu>
                                     <ContextMenu>
-                                        <MenuItem Header="Copiar selección" Click="ConsoleCopy_Click" />
-                                        <MenuItem Header="Copiar todo" Click="ConsoleCopyAll_Click" />
+                                        <MenuItem Header="{loc:Loc Copy_Selection}" Click="ConsoleCopy_Click" />
+                                        <MenuItem Header="{loc:Loc Copy_All}" Click="ConsoleCopyAll_Click" />
                                     </ContextMenu>
                                 </ListBox.ContextMenu>
                                 <ListBox.ItemContainerStyle>
@@ -410,7 +419,7 @@
                         </Grid.ColumnDefinitions>
                         <ui:TextBox Grid.Column="0"
                                     Text="{Binding CommandText, UpdateSourceTrigger=PropertyChanged}"
-                                    PlaceholderText="Escribe un comando (p.ej. say hola, op Alex, stop) y pulsa Enter..."
+                                    PlaceholderText="{loc:Loc Command_Placeholder}"
                                     Margin="0,0,8,0">
                             <ui:TextBox.InputBindings>
                                 <KeyBinding Key="Return" Command="{Binding SendCommandCommand}" />
@@ -420,12 +429,12 @@
                         <!-- Ayuda de comandos -->
                         <ToggleButton Grid.Column="1" x:Name="CommandHelpToggle" Margin="0,0,8,0"
                                       IsChecked="{Binding IsCommandHelpOpen, Mode=TwoWay}"
-                                      ToolTip="Ver comandos disponibles y qué hacen"
+                                      ToolTip="{loc:Loc Tip_Commands}"
                                       Background="Transparent" BorderThickness="1" Padding="10,0"
                                       BorderBrush="{DynamicResource ControlElevationBorderBrush}">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="QuestionCircle24" Margin="0,0,6,0" />
-                                <TextBlock Text="Comandos" VerticalAlignment="Center" />
+                                <TextBlock Text="{loc:Loc Commands}" VerticalAlignment="Center" />
                             </StackPanel>
                         </ToggleButton>
 
@@ -467,29 +476,31 @@
                         </Popup>
 
                         <ui:Button Grid.Column="2" Appearance="Primary" Icon="{ui:SymbolIcon Send24}"
-                                   Content="Enviar" Command="{Binding SendCommandCommand}" />
+                                   Content="{loc:Loc Send}" Command="{Binding SendCommandCommand}" />
                                 </Grid>
                             </Grid>
                         </TabItem>
 
-                        <TabItem Header="Jugadores">
+                        <TabItem Header="{loc:Loc Players}">
                             <ScrollViewer Margin="0,8,0,0" VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
                                     <Grid Margin="0,0,0,8">
-                                        <TextBlock Text="Gestión de jugadores" FontWeight="SemiBold" FontSize="15"
+                                        <TextBlock Text="{loc:Loc Players_Manage}" FontWeight="SemiBold" FontSize="15"
                                                    VerticalAlignment="Center" />
                                         <ui:Button HorizontalAlignment="Right" Icon="{ui:SymbolIcon ArrowClockwise24}"
-                                                   Content="Actualizar" Padding="8,2"
+                                                   Content="{loc:Loc Refresh}" Padding="8,2"
                                                    Command="{Binding RefreshPlayersCommand}" />
                                     </Grid>
 
                                     <!-- Conectados -->
                                     <Border Style="{StaticResource StatCard}" Margin="0,0,0,8">
                                         <StackPanel>
-                                            <TextBlock FontWeight="SemiBold"
-                                                       Text="{Binding ConnectedPlayers.Count, StringFormat=Conectados ahora ({0})}" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Connected}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding ConnectedPlayers.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
                                             <TextBlock Style="{StaticResource StatLabel}"
-                                                       Text="Acciones disponibles con el servidor encendido." />
+                                                       Text="{loc:Loc Players_ConnectedHint}" />
                                             <ItemsControl ItemsSource="{Binding ConnectedPlayers}" Margin="0,6,0,0">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
@@ -503,10 +514,10 @@
                                                                 <ui:Button Content="OP" Padding="8,2" Margin="0,0,6,0"
                                                                            Command="{Binding DataContext.OpPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                            CommandParameter="{Binding}" />
-                                                                <ui:Button Content="Expulsar" Padding="8,2" Margin="0,0,6,0"
+                                                                <ui:Button Content="{loc:Loc Kick}" Padding="8,2" Margin="0,0,6,0"
                                                                            Command="{Binding DataContext.KickPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                            CommandParameter="{Binding}" />
-                                                                <ui:Button Content="Banear" Appearance="Danger" Padding="8,2"
+                                                                <ui:Button Content="{loc:Loc Ban}" Appearance="Danger" Padding="8,2"
                                                                            Command="{Binding DataContext.BanPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                            CommandParameter="{Binding}" />
                                                             </StackPanel>
@@ -520,8 +531,10 @@
                                     <!-- Operadores -->
                                     <Border Style="{StaticResource StatCard}" Margin="0,0,0,8">
                                         <StackPanel>
-                                            <TextBlock FontWeight="SemiBold"
-                                                       Text="{Binding OpPlayers.Count, StringFormat=Operadores ({0})}" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Ops}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding OpPlayers.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
                                             <ItemsControl ItemsSource="{Binding OpPlayers}" Margin="0,6,0,0">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
@@ -531,7 +544,7 @@
                                                                 <ColumnDefinition Width="Auto" />
                                                             </Grid.ColumnDefinitions>
                                                             <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" />
-                                                            <ui:Button Grid.Column="1" Content="Quitar OP" Padding="8,2"
+                                                            <ui:Button Grid.Column="1" Content="{loc:Loc RemoveOp}" Padding="8,2"
                                                                        Command="{Binding DataContext.DeopPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                        CommandParameter="{Binding}" />
                                                         </Grid>
@@ -544,10 +557,12 @@
                                     <!-- Lista blanca -->
                                     <Border Style="{StaticResource StatCard}" Margin="0,0,0,8">
                                         <StackPanel>
-                                            <TextBlock FontWeight="SemiBold"
-                                                       Text="{Binding WhitelistPlayers.Count, StringFormat=Lista blanca ({0})}" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Whitelist}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding WhitelistPlayers.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
                                             <TextBlock Style="{StaticResource StatLabel}"
-                                                       Text="Solo estos jugadores pueden entrar (si la lista blanca está activada en Configurar)." />
+                                                       Text="{loc:Loc Whitelist_Hint}" />
                                             <Grid Margin="0,8,0,8">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
@@ -555,13 +570,13 @@
                                                 </Grid.ColumnDefinitions>
                                                 <ui:TextBox Grid.Column="0" Margin="0,0,8,0"
                                                             Text="{Binding NewWhitelistName, UpdateSourceTrigger=PropertyChanged}"
-                                                            PlaceholderText="Nombre del jugador (p. ej. Steve)">
+                                                            PlaceholderText="{loc:Loc Player_Placeholder}">
                                                     <ui:TextBox.InputBindings>
                                                         <KeyBinding Key="Return" Command="{Binding AddToWhitelistCommand}" />
                                                     </ui:TextBox.InputBindings>
                                                 </ui:TextBox>
                                                 <ui:Button Grid.Column="1" Appearance="Primary" Icon="{ui:SymbolIcon PersonAdd24}"
-                                                           Content="Añadir" Command="{Binding AddToWhitelistCommand}" />
+                                                           Content="{loc:Loc Add}" Command="{Binding AddToWhitelistCommand}" />
                                             </Grid>
                                             <ItemsControl ItemsSource="{Binding WhitelistPlayers}">
                                                 <ItemsControl.ItemTemplate>
@@ -572,7 +587,7 @@
                                                                 <ColumnDefinition Width="Auto" />
                                                             </Grid.ColumnDefinitions>
                                                             <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" />
-                                                            <ui:Button Grid.Column="1" Content="Quitar" Padding="8,2"
+                                                            <ui:Button Grid.Column="1" Content="{loc:Loc Remove}" Padding="8,2"
                                                                        Command="{Binding DataContext.RemoveFromWhitelistCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                        CommandParameter="{Binding}" />
                                                         </Grid>
@@ -585,8 +600,10 @@
                                     <!-- Baneados -->
                                     <Border Style="{StaticResource StatCard}" Margin="0,0,0,8">
                                         <StackPanel>
-                                            <TextBlock FontWeight="SemiBold"
-                                                       Text="{Binding BannedPlayers.Count, StringFormat=Baneados ({0})}" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Banned}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding BannedPlayers.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
                                             <ItemsControl ItemsSource="{Binding BannedPlayers}" Margin="0,6,0,0">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
@@ -596,7 +613,7 @@
                                                                 <ColumnDefinition Width="Auto" />
                                                             </Grid.ColumnDefinitions>
                                                             <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" />
-                                                            <ui:Button Grid.Column="1" Content="Desbanear" Padding="8,2"
+                                                            <ui:Button Grid.Column="1" Content="{loc:Loc Unban}" Padding="8,2"
                                                                        Command="{Binding DataContext.PardonPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                        CommandParameter="{Binding}" />
                                                         </Grid>
@@ -609,8 +626,10 @@
                                     <!-- Conocidos -->
                                     <Border Style="{StaticResource StatCard}" Margin="0,0,0,8">
                                         <StackPanel>
-                                            <TextBlock FontWeight="SemiBold"
-                                                       Text="{Binding KnownPlayers.Count, StringFormat=Han entrado alguna vez ({0})}" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Known}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding KnownPlayers.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
                                             <ItemsControl ItemsSource="{Binding KnownPlayers}" Margin="0,6,0,0">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>

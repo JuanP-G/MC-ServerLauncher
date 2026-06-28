@@ -11,9 +11,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>
     <Version>1.0.0</Version>
-    <!-- La app está en español: no incluimos los recursos traducidos de las librerías
-         (esas carpetas de/fr/ja/... que aparecían junto al .exe). -->
-    <SatelliteResourceLanguages>es</SatelliteResourceLanguages>
+    <!-- Idiomas que incluimos (los nuestros). Evita arrastrar todos los idiomas de las librerías. -->
+    <SatelliteResourceLanguages>en;pt;fr;de</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
