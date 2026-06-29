@@ -33,10 +33,13 @@ PrivilegesRequired=admin
 ; (la relanzamos nosotros en [Run] como usuario normal).
 CloseApplications=force
 RestartApplications=no
+; Inglés por defecto (no auto-detectar el idioma del sistema). El usuario puede cambiar a español
+; en el diálogo de idioma que aparece al inicio del asistente.
+LanguageDetectionMethod=none
 
 [Languages]
-Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
@@ -46,7 +49,7 @@ Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubd
 
 [Icons]
 Name: "{group}\MC Server Launcher"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\Desinstalar MC Server Launcher"; Filename: "{uninstallexe}"
+Name: "{group}\{cm:UninstallProgram,MC Server Launcher}"; Filename: "{uninstallexe}"
 ; Recrea el acceso directo del escritorio si el usuario lo marca O si ya tenía uno (así una
 ; actualización refresca su icono aunque no se vuelva a marcar la casilla).
 Name: "{autodesktop}\MC Server Launcher"; Filename: "{app}\{#MyAppExeName}"; Check: ShouldCreateDesktopIcon
