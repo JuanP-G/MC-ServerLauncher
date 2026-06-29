@@ -49,16 +49,33 @@ public static class MessageBox
 
         if (confirm)
         {
-            var no = new Button { Content = Localizer.Get("Cancel"), MinWidth = 90 };
+            var no = new Button
+            {
+                Content = Localizer.Get("Btn_No"),
+                MinWidth = 96,
+                HorizontalContentAlignment = HorizontalAlignment.Center
+            };
             no.Click += (_, _) => Close(false);
-            var yes = new Button { Content = Localizer.Get("Whatsnew_Ok"), MinWidth = 90, Classes = { "accent" } };
+            var yes = new Button
+            {
+                Content = Localizer.Get("Btn_Yes"),
+                MinWidth = 96,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                Classes = { "accent" }
+            };
             yes.Click += (_, _) => Close(true);
             buttons.Children.Add(no);
             buttons.Children.Add(yes);
         }
         else
         {
-            var ok = new Button { Content = Localizer.Get("Whatsnew_Ok"), MinWidth = 90, Classes = { "accent" } };
+            var ok = new Button
+            {
+                Content = Localizer.Get("Whatsnew_Ok"),
+                MinWidth = 96,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                Classes = { "accent" }
+            };
             ok.Click += (_, _) => Close(true);
             buttons.Children.Add(ok);
         }

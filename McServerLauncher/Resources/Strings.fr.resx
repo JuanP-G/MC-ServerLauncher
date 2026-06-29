@@ -229,6 +229,8 @@
   <data name="Whatsnew_Title" xml:space="preserve"><value>Nouveautés</value></data>
   <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>Nouveautés de la version {0}</value></data>
   <data name="Whatsnew_Ok" xml:space="preserve"><value>Compris</value></data>
-  <data name="Whatsnew_Body" xml:space="preserve"><value>• Mise à jour depuis l'app : quand une nouvelle version est disponible, clique sur « Mettre à jour » et elle se télécharge et s'installe toute seule, sans passer par GitHub.&#10;• Toute l'app est traduite en espagnol, anglais, portugais, français et allemand, y compris les messages de la console, les avertissements et les dialogues.&#10;• Cette fenêtre t'affichera les nouveautés à chaque mise à jour.</value></data>
+  <data name="Whatsnew_Body" xml:space="preserve"><value>• MC Server Launcher fonctionne désormais aussi sur Linux (et pas seulement Windows), grâce à une nouvelle interface multiplateforme.&#10;• Sur Linux, télécharge-le en AppImage depuis les releases ; sur Windows tout reste pareil (installateur et mise à jour automatique).&#10;• Les 5 langues, la console, les joueurs et la configuration visuelle sont conservés.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Clique sur une commande pour la mettre dans la case et compléter les détails. Ces commandes ne fonctionnent que lorsque le serveur est allumé.</value></data>
+  <data name="Btn_Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="Btn_No" xml:space="preserve"><value>Non</value></data>
 </root>
