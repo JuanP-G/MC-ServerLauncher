@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using McServerLauncher.Localization;
 
 namespace McServerLauncher.Services;
 
@@ -144,11 +145,11 @@ public partial class JavaService
         var match = DetectInstalled().FirstOrDefault(i => IsCompatible(i.Major, requiredMajor));
         if (match is not null)
         {
-            log?.Report($"Java {match.Major} compatible encontrado. No hace falta instalar nada.");
+            log?.Report(string.Format(Localizer.Get("Msg_JavaCompatibleFound"), match.Major));
             return match.Path;
         }
 
-        log?.Report($"No hay Java compatible. Descargando Java {requiredMajor} (Temurin)...");
+        log?.Report(string.Format(Localizer.Get("Msg_JavaNotCompatibleDownloading"), requiredMajor));
         return await DownloadAdoptiumAsync(requiredMajor, log, ct);
     }
 
@@ -190,7 +191,7 @@ public partial class JavaService
         Directory.CreateDirectory(ManagedRoot);
         var zipPath = Path.Combine(ManagedRoot, $"jre-{major}.zip");
 
-        log?.Report("Descargando Java (puede tardar un poco)...");
+        log?.Report(Localizer.Get("Msg_JavaDownloading"));
         using (var resp = await Http.GetAsync(link, HttpCompletionOption.ResponseHeadersRead, ct))
         {
             resp.EnsureSuccessStatusCode();
@@ -198,14 +199,14 @@ public partial class JavaService
             await resp.Content.CopyToAsync(fs, ct);
         }
 
-        log?.Report("Instalando Java...");
+        log?.Report(Localizer.Get("Msg_JavaInstalling"));
         if (Directory.Exists(target)) Directory.Delete(target, true);
         ZipFile.ExtractToDirectory(zipPath, target);
         try { File.Delete(zipPath); } catch { /* da igual */ }
 
         var javaExe = FindJavaExe(target)
-            ?? throw new InvalidOperationException("Java se descargó pero no se encontró java.exe.");
-        log?.Report($"Java {major} instalado correctamente.");
+            ?? throw new InvalidOperationException(Localizer.Get("Msg_JavaExeNotFound"));
+        log?.Report(string.Format(Localizer.Get("Msg_JavaInstalled"), major));
         return javaExe;
     }
 

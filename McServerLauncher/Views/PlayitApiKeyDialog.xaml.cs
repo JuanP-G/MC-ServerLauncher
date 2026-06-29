@@ -1,4 +1,5 @@
 using System.Windows;
+using McServerLauncher.Localization;
 using Wpf.Ui.Controls;
 
 namespace McServerLauncher.Views;
@@ -35,7 +36,7 @@ public partial class PlayitApiKeyDialog : FluentWindow
         var key = KeyBox.Text?.Trim() ?? string.Empty;
         if (key.Length == 0)
         {
-            System.Windows.MessageBox.Show("Pega tu clave de Playit.", "Clave de Playit",
+            System.Windows.MessageBox.Show(Localizer.Get("Msg_PasteKey"), Localizer.Get("Pk_Title"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             return;
         }

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 
 namespace McServerLauncher.Services;
@@ -59,7 +60,7 @@ public class MinecraftVersionService
             url.GetString() is not { Length: > 0 } serverUrl)
         {
             throw new InvalidOperationException(
-                $"La versión {version.Id} no tiene un servidor descargable disponible.");
+                string.Format(Localizer.Get("Msg_NoServerDownload"), version.Id));
         }
 
         // Java recomendado por Mojang (si falta, asumimos Java 8 para versiones muy antiguas).
@@ -82,12 +83,12 @@ public class MinecraftVersionService
 
         var totalMb = (resp.Content.Headers.ContentLength ?? 0) / (1024.0 * 1024.0);
         log?.Report(totalMb > 0
-            ? $"Descargando server.jar ({totalMb:0.#} MB)..."
-            : "Descargando server.jar...");
+            ? string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#"))
+            : Localizer.Get("Msg_DownloadingJar"));
 
         await using var fs = File.Create(destPath);
         await resp.Content.CopyToAsync(fs, ct);
 
-        log?.Report("Descarga completada.");
+        log?.Report(Localizer.Get("Msg_DownloadComplete"));
     }
 }

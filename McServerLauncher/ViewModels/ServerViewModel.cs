@@ -384,7 +384,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine($"[Error] {ex.Message}");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
         }
     }
 
@@ -401,8 +401,9 @@ public partial class ServerViewModel : ObservableObject
         if (current > 0 && JavaService.IsCompatible(current, required.Value))
             return;
 
-        OnConsoleLine($"[Launcher] Este servidor necesita Java {required}" +
-                      (current > 0 ? $" (el configurado es Java {current})." : ".") + " Preparando Java compatible...");
+        OnConsoleLine(current > 0
+            ? string.Format(Localizer.Get("Msg_NeedsJavaCurrentPreparing"), required, current)
+            : string.Format(Localizer.Get("Msg_NeedsJavaPreparing"), required));
         try
         {
             var path = await _java.EnsureJavaAsync(required.Value, new Progress<string>(OnConsoleLine));
@@ -410,12 +411,12 @@ public partial class ServerViewModel : ObservableObject
             {
                 Config.JavaPath = path;
                 ConfigChanged?.Invoke();
-                OnConsoleLine($"[Launcher] Java configurado para este servidor: {path}");
+                OnConsoleLine(string.Format(Localizer.Get("Msg_JavaConfigured"), path));
             }
         }
         catch (Exception ex)
         {
-            OnConsoleLine($"[Aviso] No se pudo preparar Java {required}: {ex.Message}. Se intentará iniciar igualmente.");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_JavaPrepareFailStart"), required, ex.Message));
         }
     }
 
@@ -425,7 +426,7 @@ public partial class ServerViewModel : ObservableObject
     private async Task<bool> TryFreePortAsync(int port)
     {
         var pid = _ports.GetListeningPid(port);
-        string procDesc = "otra aplicación";
+        string procDesc = Localizer.Get("Msg_OtherApp");
         if (pid.HasValue)
         {
             try { procDesc = $"\"{System.Diagnostics.Process.GetProcessById(pid.Value).ProcessName}\" (PID {pid})"; }
@@ -433,15 +434,13 @@ public partial class ServerViewModel : ObservableObject
         }
 
         var answer = System.Windows.MessageBox.Show(
-            $"El puerto {port} ya está en uso por {procDesc}.\n\n" +
-            "Esto suele pasar si un servidor anterior se quedó colgado.\n" +
-            "¿Quieres cerrar ese proceso e iniciar el servidor?",
-            "Puerto ocupado",
+            string.Format(Localizer.Get("Msg_PortBusyConfirm"), port, procDesc),
+            Localizer.Get("Msg_PortBusyTitle"),
             System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
 
         if (answer != System.Windows.MessageBoxResult.Yes)
         {
-            OnConsoleLine($"[Error] El puerto {port} está ocupado por {procDesc}. No se inició.");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_PortBusyNotStarted"), port, procDesc));
             return false;
         }
 
@@ -450,12 +449,12 @@ public partial class ServerViewModel : ObservableObject
             if (pid.HasValue)
             {
                 System.Diagnostics.Process.GetProcessById(pid.Value).Kill(entireProcessTree: true);
-                OnConsoleLine($"[Launcher] Cerrado el proceso que ocupaba el puerto {port} ({procDesc}).");
+                OnConsoleLine(string.Format(Localizer.Get("Msg_ClosedPortProcess"), port, procDesc));
             }
         }
         catch (Exception ex)
         {
-            OnConsoleLine($"[Error] No se pudo cerrar el proceso: {ex.Message}");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_CannotKill"), ex.Message));
             return false;
         }
 
@@ -465,7 +464,7 @@ public partial class ServerViewModel : ObservableObject
 
         if (_ports.IsPortInUse(port))
         {
-            OnConsoleLine($"[Error] El puerto {port} sigue ocupado. Inténtalo de nuevo en unos segundos.");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_PortStillBusy"), port));
             return false;
         }
         return true;
@@ -480,7 +479,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine($"[Error] {ex.Message}");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
         }
     }
 
@@ -519,7 +518,7 @@ public partial class ServerViewModel : ObservableObject
     {
         if (!_playit.IsInstalled)
         {
-            OnConsoleLine("[Playit] El servicio de Playit no está instalado en este equipo.");
+            OnConsoleLine(Localizer.Get("Msg_PlayitServiceNotInstalled"));
             return;
         }
 
@@ -533,8 +532,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine("[Playit] No se pudo cambiar el servicio (suele requerir " +
-                          $"ejecutar la app como administrador, o usar el icono de la bandeja): {ex.Message}");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_PlayitServiceChangeFail"), ex.Message));
         }
     }
 
@@ -570,22 +568,22 @@ public partial class ServerViewModel : ObservableObject
         var port = _properties.GetServerPort(Config.PropertiesPath);
         if (!port.HasValue)
         {
-            OnConsoleLine("[Playit] No se pudo determinar el puerto del servidor (¿falta server.properties?).");
+            OnConsoleLine(Localizer.Get("Msg_PortUnknown"));
             return;
         }
 
         try
         {
-            OnConsoleLine($"[Playit] Creando túnel Minecraft Java para el puerto {port}...");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_CreatingTunnel"), port));
             var created = await _playitApi.EnsureMinecraftTunnelAsync(writeKey, Name, port.Value);
             OnConsoleLine(created
-                ? "[Playit] Túnel creado correctamente. La dirección aparecerá en unos segundos."
-                : $"[Playit] Ya existía un túnel para el puerto {port}; se reutiliza.");
+                ? Localizer.Get("Msg_TunnelCreated")
+                : string.Format(Localizer.Get("Msg_TunnelExists"), port));
             await RefreshTunnelAddressAsync();
         }
         catch (Exception ex)
         {
-            OnConsoleLine($"[Playit] Error al crear el túnel: {ex.Message}");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ex.Message));
         }
     }
 
@@ -603,7 +601,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine($"[Error] No se pudo abrir el navegador: {ex.Message}");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_BrowserError"), ex.Message));
         }
     }
 
@@ -670,7 +668,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine($"[Whitelist] {ex.Message}");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ex.Message));
         }
     }
 
@@ -695,7 +693,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine($"[Whitelist] {ex.Message}");
+            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ex.Message));
         }
     }
 
@@ -746,7 +744,7 @@ public partial class ServerViewModel : ObservableObject
     private bool EnsureRunning(string action)
     {
         if (_process.IsRunning) return true;
-        OnConsoleLine($"[Jugadores] El servidor debe estar encendido para {action}.");
+        OnConsoleLine(string.Format(Localizer.Get("Msg_NeedRunningFor"), action));
         return false;
     }
 
@@ -761,28 +759,28 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand]
     private async Task OpPlayer(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning("dar OP")) return;
+        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Op"))) return;
         await PlayerCommandAsync($"op {name}");
     }
 
     [RelayCommand]
     private async Task DeopPlayer(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning("quitar OP")) return;
+        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Deop"))) return;
         await PlayerCommandAsync($"deop {name}");
     }
 
     [RelayCommand]
     private async Task KickPlayer(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning("expulsar")) return;
+        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Kick"))) return;
         await PlayerCommandAsync($"kick {name}");
     }
 
     [RelayCommand]
     private async Task BanPlayer(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning("banear")) return;
+        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Ban"))) return;
         await PlayerCommandAsync($"ban {name}");
     }
 

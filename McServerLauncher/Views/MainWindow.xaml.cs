@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using McServerLauncher.Localization;
 using McServerLauncher.ViewModels;
 using Wpf.Ui.Controls;
 
@@ -27,7 +28,7 @@ public partial class MainWindow : FluentWindow
             e.Cancel = true;
             _shuttingDown = true;
             if (_viewModel.AnyServerRunning)
-                Title = "MC Server Launcher — deteniendo servidores y guardando...";
+                Title = Localizer.Get("Msg_ClosingTitle");
 
             // Ya hemos guardado la config y detenido los servidores aquí dentro.
             await _viewModel.ShutdownAllAsync();

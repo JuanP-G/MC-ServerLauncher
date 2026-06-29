@@ -189,4 +189,85 @@
   <data name="Cs_PortNote" xml:space="preserve"><value>Para tener varios servidores encendidos a la vez, cada uno debe usar un puerto distinto.</value></data>
   <data name="Cs_Creating" xml:space="preserve"><value>Creando servidor...</value></data>
   <data name="Cs_LoadingVersions" xml:space="preserve"><value>Cargando versiones...</value></data>
+  <data name="Msg_JavaCompatibleFound" xml:space="preserve"><value>Java {0} compatible encontrado. No hace falta instalar nada.</value></data>
+  <data name="Msg_JavaNotCompatibleDownloading" xml:space="preserve"><value>No hay Java compatible. Descargando Java {0} (Temurin)...</value></data>
+  <data name="Msg_JavaDownloading" xml:space="preserve"><value>Descargando Java (puede tardar un poco)...</value></data>
+  <data name="Msg_JavaInstalling" xml:space="preserve"><value>Instalando Java...</value></data>
+  <data name="Msg_JavaInstalled" xml:space="preserve"><value>Java {0} instalado correctamente.</value></data>
+  <data name="Msg_JavaExeNotFound" xml:space="preserve"><value>Java se descargó pero no se encontró java.exe.</value></data>
+  <data name="Msg_DownloadingJarSize" xml:space="preserve"><value>Descargando server.jar ({0} MB)...</value></data>
+  <data name="Msg_DownloadingJar" xml:space="preserve"><value>Descargando server.jar...</value></data>
+  <data name="Msg_DownloadComplete" xml:space="preserve"><value>Descarga completada.</value></data>
+  <data name="Msg_NoServerDownload" xml:space="preserve"><value>La versión {0} no tiene un servidor descargable disponible.</value></data>
+  <data name="Msg_MissingWriteKey" xml:space="preserve"><value>Falta la clave de escritura de Playit.</value></data>
+  <data name="Msg_PlayitAuthFail" xml:space="preserve"><value>No se pudo autenticar con Playit para leer los túneles.</value></data>
+  <data name="Msg_PlayerNotFoundMojang" xml:space="preserve"><value>No se encontró el jugador '{0}' en Mojang. Revisa que el nombre esté bien escrito.</value></data>
+  <data name="Msg_LauncherStarting" xml:space="preserve"><value>[Launcher] Iniciando: {0} {1}</value></data>
+  <data name="Msg_ServerStopped" xml:space="preserve"><value>[Launcher] El servidor se ha detenido.</value></data>
+  <data name="Msg_StoppingSaving" xml:space="preserve"><value>[Launcher] Enviando 'stop' y guardando el mundo...</value></data>
+  <data name="Msg_NotRespondingKill" xml:space="preserve"><value>[Launcher] El servidor no respondió a tiempo; forzando el cierre.</value></data>
+  <data name="Msg_PlayitServiceNotInstalled" xml:space="preserve"><value>[Playit] El servicio de Playit no está instalado en este equipo.</value></data>
+  <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] No se pudo cambiar el servicio (suele requerir ejecutar la app como administrador, o usar el icono de la bandeja): {0}</value></data>
+  <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] No se pudo determinar el puerto del servidor (¿falta server.properties?).</value></data>
+  <data name="Msg_NeedsJavaPreparing" xml:space="preserve"><value>[Launcher] Este servidor necesita Java {0}. Preparando Java compatible...</value></data>
+  <data name="Msg_NeedsJavaCurrentPreparing" xml:space="preserve"><value>[Launcher] Este servidor necesita Java {0} (el configurado es Java {1}). Preparando Java compatible...</value></data>
+  <data name="Msg_JavaConfigured" xml:space="preserve"><value>[Launcher] Java configurado para este servidor: {0}</value></data>
+  <data name="Msg_JavaPrepareFailStart" xml:space="preserve"><value>[Aviso] No se pudo preparar Java {0}: {1}. Se intentará iniciar igualmente.</value></data>
+  <data name="Msg_PortBusyNotStarted" xml:space="preserve"><value>[Error] El puerto {0} está ocupado por {1}. No se inició.</value></data>
+  <data name="Msg_ClosedPortProcess" xml:space="preserve"><value>[Launcher] Cerrado el proceso que ocupaba el puerto {0} ({1}).</value></data>
+  <data name="Msg_CannotKill" xml:space="preserve"><value>[Error] No se pudo cerrar el proceso: {0}</value></data>
+  <data name="Msg_PortStillBusy" xml:space="preserve"><value>[Error] El puerto {0} sigue ocupado. Inténtalo de nuevo en unos segundos.</value></data>
+  <data name="Msg_ErrorFmt" xml:space="preserve"><value>[Error] {0}</value></data>
+  <data name="Msg_CreatingTunnel" xml:space="preserve"><value>[Playit] Creando túnel Minecraft Java para el puerto {0}...</value></data>
+  <data name="Msg_TunnelCreated" xml:space="preserve"><value>[Playit] Túnel creado correctamente. La dirección aparecerá en unos segundos.</value></data>
+  <data name="Msg_TunnelExists" xml:space="preserve"><value>[Playit] Ya existía un túnel para el puerto {0}; se reutiliza.</value></data>
+  <data name="Msg_TunnelCreateError" xml:space="preserve"><value>[Playit] Error al crear el túnel: {0}</value></data>
+  <data name="Msg_BrowserError" xml:space="preserve"><value>[Error] No se pudo abrir el navegador: {0}</value></data>
+  <data name="Msg_WhitelistError" xml:space="preserve"><value>[Whitelist] {0}</value></data>
+  <data name="Msg_NeedRunningFor" xml:space="preserve"><value>[Jugadores] El servidor debe estar encendido para {0}.</value></data>
+  <data name="Action_Op" xml:space="preserve"><value>dar OP</value></data>
+  <data name="Action_Deop" xml:space="preserve"><value>quitar OP</value></data>
+  <data name="Action_Kick" xml:space="preserve"><value>expulsar</value></data>
+  <data name="Action_Ban" xml:space="preserve"><value>banear</value></data>
+  <data name="Msg_OtherApp" xml:space="preserve"><value>otra aplicación</value></data>
+  <data name="Msg_PortBusyTitle" xml:space="preserve"><value>Puerto ocupado</value></data>
+  <data name="Msg_PortBusyConfirm" xml:space="preserve"><value>El puerto {0} ya está en uso por {1}. Esto suele pasar si un servidor anterior se quedó colgado. ¿Quieres cerrar ese proceso e iniciar el servidor?</value></data>
+  <data name="Msg_UpdateAvailableFmt" xml:space="preserve"><value>Hay una actualización disponible: versión {0}.</value></data>
+  <data name="Msg_IconCreateError" xml:space="preserve"><value>No se pudo crear el icono: {0}</value></data>
+  <data name="Title_ChangeIcon" xml:space="preserve"><value>Cambiar icono</value></data>
+  <data name="Title_DeleteTunnel" xml:space="preserve"><value>Eliminar túnel</value></data>
+  <data name="Msg_NoTunnelForPort" xml:space="preserve"><value>No se encontró ningún túnel de Playit para el puerto {0}. No se borró ningún túnel.</value></data>
+  <data name="Msg_TunnelDeleteError" xml:space="preserve"><value>No se pudo eliminar el túnel de Playit: {0}</value></data>
+  <data name="Title_DeleteFiles" xml:space="preserve"><value>Eliminar archivos</value></data>
+  <data name="Msg_FilesDeleteError" xml:space="preserve"><value>El servidor se quitó de la lista, pero no se pudieron borrar todos los archivos: {0}</value></data>
+  <data name="Msg_NameRequired" xml:space="preserve"><value>Indica un nombre para el servidor.</value></data>
+  <data name="Msg_FolderNotExistCreate" xml:space="preserve"><value>La carpeta donde crear el servidor no existe.</value></data>
+  <data name="Msg_SelectVersion" xml:space="preserve"><value>Selecciona una versión de Minecraft.</value></data>
+  <data name="Msg_RamMaxMin" xml:space="preserve"><value>La RAM máxima debe ser mayor o igual que la mínima.</value></data>
+  <data name="Msg_PortAssigned" xml:space="preserve"><value>El puerto {0} ya está asignado a otro servidor registrado. Elige un puerto distinto (el botón te sugiere uno libre).</value></data>
+  <data name="Msg_PortInUseOther" xml:space="preserve"><value>El puerto {0} ya está en uso por otra aplicación del sistema. Elige un puerto distinto.</value></data>
+  <data name="Title_FolderExists" xml:space="preserve"><value>Carpeta existente</value></data>
+  <data name="Msg_FolderExists" xml:space="preserve"><value>La carpeta ya existe y no está vacía: {0}. ¿Usarla de todas formas?</value></data>
+  <data name="Msg_Resolving" xml:space="preserve"><value>Resolviendo la descarga de Minecraft {0}...</value></data>
+  <data name="Msg_CheckingJava" xml:space="preserve"><value>Comprobando Java (Minecraft {0} necesita Java {1})...</value></data>
+  <data name="Msg_JavaPrepareFail" xml:space="preserve"><value>[Aviso] No se pudo preparar Java {0}: {1}</value></data>
+  <data name="Msg_UseSystemJava" xml:space="preserve"><value>Se usará el 'java' del sistema; si no es compatible, instálalo a mano.</value></data>
+  <data name="Msg_WritingEula" xml:space="preserve"><value>Aceptando el EULA y generando run.bat...</value></data>
+  <data name="Msg_ServerCreated" xml:space="preserve"><value>¡Servidor creado correctamente!</value></data>
+  <data name="Msg_CreateServerError" xml:space="preserve"><value>No se pudo crear el servidor: {0}</value></data>
+  <data name="Msg_PortsInUseByServers" xml:space="preserve"><value>Puertos ya en uso por otros servidores: {0}</value></data>
+  <data name="Msg_LatestRelease" xml:space="preserve"><value>Última versión release: {0}</value></data>
+  <data name="Msg_VersionsLoadError" xml:space="preserve"><value>No se pudieron cargar las versiones: {0}</value></data>
+  <data name="Msg_NameEmpty" xml:space="preserve"><value>El nombre no puede estar vacío.</value></data>
+  <data name="Msg_FolderNotExist" xml:space="preserve"><value>La carpeta del servidor no existe.</value></data>
+  <data name="Title_Validation" xml:space="preserve"><value>Validación</value></data>
+  <data name="Title_SelectServerFolder" xml:space="preserve"><value>Selecciona la carpeta del servidor</value></data>
+  <data name="Title_SelectJava" xml:space="preserve"><value>Selecciona java.exe</value></data>
+  <data name="Filter_Java" xml:space="preserve"><value>Ejecutable de Java (java.exe)|java.exe|Todos los ejecutables (*.exe)|*.exe</value></data>
+  <data name="Title_SelectFolderCreate" xml:space="preserve"><value>Carpeta donde crear el servidor</value></data>
+  <data name="Title_SelectImage" xml:space="preserve"><value>Elige una imagen para el icono del servidor</value></data>
+  <data name="Filter_Images" xml:space="preserve"><value>Imágenes (*.png;*.jpg;*.jpeg;*.bmp;*.gif)|*.png;*.jpg;*.jpeg;*.bmp;*.gif|Todos los archivos (*.*)|*.*</value></data>
+  <data name="Msg_PasteKey" xml:space="preserve"><value>Pega tu clave de Playit.</value></data>
+  <data name="Msg_ConfigSaveError" xml:space="preserve"><value>No se pudo guardar la configuración: {0}</value></data>
+  <data name="Msg_ClosingTitle" xml:space="preserve"><value>MC Server Launcher — deteniendo servidores y guardando...</value></data>
 </root>

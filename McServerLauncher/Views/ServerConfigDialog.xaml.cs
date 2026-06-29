@@ -74,8 +74,8 @@ public partial class ServerConfigDialog : FluentWindow
         catch (Exception ex)
         {
             System.Windows.MessageBox.Show(
-                $"No se pudo guardar la configuración:\n\n{ex.Message}",
-                "Configuración", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                string.Format(Localizer.Get("Msg_ConfigSaveError"), ex.Message),
+                Localizer.Get("Cfg_Title"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
         }
     }
 

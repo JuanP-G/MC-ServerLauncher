@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using McServerLauncher.Localization;
 
 namespace McServerLauncher.Services;
 
@@ -79,7 +80,7 @@ public class PlayitApiService
                 type = d.TryGetProperty("type", out var ty) ? ty.GetString() : null;
                 msg = d.TryGetProperty("message", out var m) ? m.GetString() ?? d.ToString() : d.ToString();
             }
-            throw new PlayitApiException(type, msg ?? "error desconocido");
+            throw new PlayitApiException(type, $"Playit API: {msg ?? json}");
         }
         return root.GetProperty("data").Clone();
     }
@@ -144,10 +145,10 @@ public class PlayitApiService
     public async Task<bool> EnsureMinecraftTunnelAsync(string writeKey, string name, int localPort, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(writeKey))
-            throw new InvalidOperationException("Falta la clave de escritura de Playit.");
+            throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
 
         var readAuth = ReadAuth(writeKey)
-            ?? throw new InvalidOperationException("No se pudo autenticar con Playit para leer los túneles.");
+            ?? throw new InvalidOperationException(Localizer.Get("Msg_PlayitAuthFail"));
 
         var (agentId, tunnels) = await GetRunDataAsync(readAuth, ct);
         if (tunnels.Any(t => t.LocalPort == localPort))
@@ -180,10 +181,10 @@ public class PlayitApiService
     public async Task<bool> DeleteTunnelForPortAsync(string writeKey, int localPort, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(writeKey))
-            throw new InvalidOperationException("Falta la clave de escritura de Playit.");
+            throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
 
         var readAuth = ReadAuth(writeKey)
-            ?? throw new InvalidOperationException("No se pudo autenticar con Playit para leer los túneles.");
+            ?? throw new InvalidOperationException(Localizer.Get("Msg_PlayitAuthFail"));
 
         var (_, tunnels) = await GetRunDataAsync(readAuth, ct);
         var match = tunnels.FirstOrDefault(t => t.LocalPort == localPort);

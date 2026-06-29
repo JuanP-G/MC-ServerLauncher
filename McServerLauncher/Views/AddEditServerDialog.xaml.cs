@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Windows;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using Microsoft.Win32;
 using Wpf.Ui.Controls;
@@ -23,7 +24,7 @@ public partial class AddEditServerDialog : FluentWindow
 
     private void BrowseFolder_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog { Title = "Selecciona la carpeta del servidor" };
+        var dialog = new OpenFolderDialog { Title = Localizer.Get("Title_SelectServerFolder") };
         if (Directory.Exists(_config.FolderPath))
             dialog.InitialDirectory = _config.FolderPath;
 
@@ -47,8 +48,8 @@ public partial class AddEditServerDialog : FluentWindow
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Selecciona java.exe",
-            Filter = "Ejecutable de Java (java.exe)|java.exe|Todos los ejecutables (*.exe)|*.exe"
+            Title = Localizer.Get("Title_SelectJava"),
+            Filter = Localizer.Get("Filter_Java")
         };
         if (dialog.ShowDialog() == true)
         {
@@ -63,20 +64,20 @@ public partial class AddEditServerDialog : FluentWindow
     {
         if (string.IsNullOrWhiteSpace(_config.Name))
         {
-            System.Windows.MessageBox.Show("El nombre no puede estar vacío.", "Validación",
+            System.Windows.MessageBox.Show(Localizer.Get("Msg_NameEmpty"), Localizer.Get("Title_Validation"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             return;
         }
         if (!Directory.Exists(_config.FolderPath))
         {
-            System.Windows.MessageBox.Show("La carpeta del servidor no existe.", "Validación",
+            System.Windows.MessageBox.Show(Localizer.Get("Msg_FolderNotExist"), Localizer.Get("Title_Validation"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             return;
         }
         if (_config.MaxRamGb < _config.MinRamGb)
         {
-            System.Windows.MessageBox.Show("La RAM máxima debe ser mayor o igual que la mínima.",
-                "Validación", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            System.Windows.MessageBox.Show(Localizer.Get("Msg_RamMaxMin"),
+                Localizer.Get("Title_Validation"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             return;
         }
 

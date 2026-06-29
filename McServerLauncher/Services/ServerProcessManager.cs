@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 
 namespace McServerLauncher.Services;
@@ -73,7 +74,7 @@ public class ServerProcessManager
             _process.Exited += OnProcessExited;
 
             State = ServerState.Starting;
-            OutputReceived?.Invoke($"[Launcher] Iniciando: {config.JavaPath} {args}");
+            OutputReceived?.Invoke(string.Format(Localizer.Get("Msg_LauncherStarting"), config.JavaPath, args));
 
             try
             {
@@ -108,7 +109,7 @@ public class ServerProcessManager
 
     private void OnProcessExited(object? sender, EventArgs e)
     {
-        OutputReceived?.Invoke("[Launcher] El servidor se ha detenido.");
+        OutputReceived?.Invoke(Localizer.Get("Msg_ServerStopped"));
         lock (_lock)
         {
             _process?.Dispose();
@@ -146,7 +147,7 @@ public class ServerProcessManager
 
         try
         {
-            OutputReceived?.Invoke("[Launcher] Enviando 'stop' y guardando el mundo...");
+            OutputReceived?.Invoke(Localizer.Get("Msg_StoppingSaving"));
             proc.StandardInput.WriteLine("stop");
             proc.StandardInput.Flush();
 
@@ -155,7 +156,7 @@ public class ServerProcessManager
         }
         catch (OperationCanceledException)
         {
-            OutputReceived?.Invoke("[Launcher] El servidor no respondió a tiempo; forzando el cierre.");
+            OutputReceived?.Invoke(Localizer.Get("Msg_NotRespondingKill"));
             TryKill(proc);
         }
         catch

@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using McServerLauncher.Localization;
 
 namespace McServerLauncher.Services;
 
@@ -61,7 +62,7 @@ public class WhitelistService
 
         if (uuid is null)
             throw new InvalidOperationException(
-                $"No se encontró el jugador '{name}' en Mojang. Revisa que el nombre esté bien escrito.");
+                string.Format(Localizer.Get("Msg_PlayerNotFoundMojang"), name));
 
         entries.Add(new Entry { uuid = uuid, name = name });
         WriteEntries(folder, entries);

@@ -99,7 +99,7 @@ public partial class MainViewModel : ObservableObject
             if (info is not null)
             {
                 _releaseUrl = info.Url;
-                UpdateText = $"Hay una actualización disponible: versión {info.Version}.";
+                UpdateText = string.Format(Localizer.Get("Msg_UpdateAvailableFmt"), info.Version);
                 UpdateAvailable = true;
             }
         }
@@ -237,8 +237,8 @@ public partial class MainViewModel : ObservableObject
 
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Elige una imagen para el icono del servidor",
-            Filter = "Imágenes (*.png;*.jpg;*.jpeg;*.bmp;*.gif)|*.png;*.jpg;*.jpeg;*.bmp;*.gif|Todos los archivos (*.*)|*.*"
+            Title = Localizer.Get("Title_SelectImage"),
+            Filter = Localizer.Get("Filter_Images")
         };
         if (dialog.ShowDialog() != true)
             return;
@@ -251,8 +251,8 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             System.Windows.MessageBox.Show(
-                $"No se pudo crear el icono:\n\n{ex.Message}",
-                "Cambiar icono", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                string.Format(Localizer.Get("Msg_IconCreateError"), ex.Message),
+                Localizer.Get("Title_ChangeIcon"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
         }
     }
 
@@ -301,15 +301,14 @@ public partial class MainViewModel : ObservableObject
                 }
                 else if (!deleted)
                     System.Windows.MessageBox.Show(
-                        $"No se encontró ningún túnel de Playit para el puerto {port}. " +
-                        "No se borró ningún túnel.",
-                        "Eliminar túnel", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                        string.Format(Localizer.Get("Msg_NoTunnelForPort"), port),
+                        Localizer.Get("Title_DeleteTunnel"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    $"No se pudo eliminar el túnel de Playit:\n\n{ex.Message}",
-                    "Eliminar túnel", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    string.Format(Localizer.Get("Msg_TunnelDeleteError"), ex.Message),
+                    Localizer.Get("Title_DeleteTunnel"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
         }
 
@@ -322,8 +321,8 @@ public partial class MainViewModel : ObservableObject
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    $"El servidor se quitó de la lista, pero no se pudieron borrar todos los archivos:\n\n{ex.Message}",
-                    "Eliminar archivos",
+                    string.Format(Localizer.Get("Msg_FilesDeleteError"), ex.Message),
+                    Localizer.Get("Title_DeleteFiles"),
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Warning);
             }

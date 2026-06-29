@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 using Microsoft.Win32;
@@ -39,7 +40,7 @@ public partial class CreateServerDialog : FluentWindow
         // Sugerir un puerto libre que no choque con los servidores ya existentes.
         PortBox.Value = SuggestFreePort();
         if (_usedPorts.Count > 0)
-            PortStatus.Text = $"Puertos ya en uso por otros servidores: {string.Join(", ", _usedPorts.OrderBy(p => p))}";
+            PortStatus.Text = string.Format(Localizer.Get("Msg_PortsInUseByServers"), string.Join(", ", _usedPorts.OrderBy(p => p)));
 
         NameBox.TextChanged += (_, _) => UpdateFinalPath();
         ParentFolderBox.TextChanged += (_, _) => UpdateFinalPath();
@@ -61,11 +62,11 @@ public partial class CreateServerDialog : FluentWindow
             _latestRelease = latest;
             _allVersions = list;
             PopulateVersions();
-            VersionStatus.Text = $"Última versión release: {latest}";
+            VersionStatus.Text = string.Format(Localizer.Get("Msg_LatestRelease"), latest);
         }
         catch (Exception ex)
         {
-            VersionStatus.Text = $"No se pudieron cargar las versiones: {ex.Message}";
+            VersionStatus.Text = string.Format(Localizer.Get("Msg_VersionsLoadError"), ex.Message);
         }
     }
 
@@ -111,7 +112,7 @@ public partial class CreateServerDialog : FluentWindow
 
     private void BrowseParent_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog { Title = "Carpeta donde crear el servidor" };
+        var dialog = new OpenFolderDialog { Title = Localizer.Get("Title_SelectFolderCreate") };
         if (Directory.Exists(ParentFolderBox.Text))
             dialog.InitialDirectory = ParentFolderBox.Text;
         if (dialog.ShowDialog() == true)
@@ -123,17 +124,17 @@ public partial class CreateServerDialog : FluentWindow
         var name = NameBox.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(name))
         {
-            Warn("Indica un nombre para el servidor.");
+            Warn(Localizer.Get("Msg_NameRequired"));
             return;
         }
         if (!Directory.Exists(ParentFolderBox.Text))
         {
-            Warn("La carpeta donde crear el servidor no existe.");
+            Warn(Localizer.Get("Msg_FolderNotExistCreate"));
             return;
         }
         if (VersionCombo.SelectedItem is not MinecraftVersion version)
         {
-            Warn("Selecciona una versión de Minecraft.");
+            Warn(Localizer.Get("Msg_SelectVersion"));
             return;
         }
 
@@ -141,21 +142,19 @@ public partial class CreateServerDialog : FluentWindow
         var maxGb = (int)(MaxRamBox.Value ?? 4);
         if (maxGb < minGb)
         {
-            Warn("La RAM máxima debe ser mayor o igual que la mínima.");
+            Warn(Localizer.Get("Msg_RamMaxMin"));
             return;
         }
 
         var port = (int)(PortBox.Value ?? 25565);
         if (_usedPorts.Contains(port))
         {
-            Warn($"El puerto {port} ya está asignado a otro servidor registrado.\n\n" +
-                 "Elige un puerto distinto (el botón te sugiere uno libre).");
+            Warn(string.Format(Localizer.Get("Msg_PortAssigned"), port));
             return;
         }
         if (_ports.IsPortInUse(port))
         {
-            Warn($"El puerto {port} ya está en uso por otra aplicación del sistema.\n\n" +
-                 "Elige un puerto distinto.");
+            Warn(string.Format(Localizer.Get("Msg_PortInUseOther"), port));
             return;
         }
 
@@ -164,8 +163,8 @@ public partial class CreateServerDialog : FluentWindow
         if (Directory.Exists(folder) && Directory.EnumerateFileSystemEntries(folder).Any())
         {
             var ok = System.Windows.MessageBox.Show(
-                $"La carpeta ya existe y no está vacía:\n{folder}\n\n¿Usarla de todas formas?",
-                "Carpeta existente", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+                string.Format(Localizer.Get("Msg_FolderExists"), folder),
+                Localizer.Get("Title_FolderExists"), System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
             if (ok != System.Windows.MessageBoxResult.Yes)
                 return;
         }
@@ -177,14 +176,14 @@ public partial class CreateServerDialog : FluentWindow
         {
             Directory.CreateDirectory(folder);
 
-            AppendLog($"Resolviendo la descarga de Minecraft {version.Id}...");
+            AppendLog(string.Format(Localizer.Get("Msg_Resolving"), version.Id));
             var details = await _versions.GetVersionDetailsAsync(version);
 
             var jarPath = Path.Combine(folder, "server.jar");
             await _versions.DownloadFileAsync(details.ServerUrl, jarPath, progress);
 
             // Comprobar/instalar el Java que necesita esta versión de Minecraft.
-            AppendLog($"Comprobando Java (Minecraft {version.Id} necesita Java {details.JavaMajor})...");
+            AppendLog(string.Format(Localizer.Get("Msg_CheckingJava"), version.Id, details.JavaMajor));
             var javaPath = "java";
             try
             {
@@ -192,11 +191,11 @@ public partial class CreateServerDialog : FluentWindow
             }
             catch (Exception jex)
             {
-                AppendLog($"[Aviso] No se pudo preparar Java {details.JavaMajor}: {jex.Message}");
-                AppendLog("Se usará el 'java' del sistema; si no es compatible, instálalo a mano.");
+                AppendLog(string.Format(Localizer.Get("Msg_JavaPrepareFail"), details.JavaMajor, jex.Message));
+                AppendLog(Localizer.Get("Msg_UseSystemJava"));
             }
 
-            AppendLog("Aceptando el EULA y generando run.bat...");
+            AppendLog(Localizer.Get("Msg_WritingEula"));
             _creation.WriteEula(folder);
             _creation.WriteRunBat(folder, minGb, maxGb, "server.jar", javaPath);
             _creation.WriteInitialProperties(folder, port, $"{name} - creado con MC Server Launcher");
@@ -216,14 +215,14 @@ public partial class CreateServerDialog : FluentWindow
             // el resultado/errores salgan en la consola del servidor (que no desaparece).
             CreateTunnel = ResultConfig.PlayitEnabled && CreateTunnelCheck.IsChecked == true;
 
-            AppendLog("¡Servidor creado correctamente!");
+            AppendLog(Localizer.Get("Msg_ServerCreated"));
             DialogResult = true;
             Close();
         }
         catch (Exception ex)
         {
-            AppendLog($"[Error] {ex.Message}");
-            Warn($"No se pudo crear el servidor:\n\n{ex.Message}");
+            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            Warn(string.Format(Localizer.Get("Msg_CreateServerError"), ex.Message));
             SetBusy(false);
         }
     }
@@ -249,6 +248,6 @@ public partial class CreateServerDialog : FluentWindow
     }
 
     private static void Warn(string message) =>
-        System.Windows.MessageBox.Show(message, "Crear servidor",
+        System.Windows.MessageBox.Show(message, Localizer.Get("CreateServer"),
             System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
 }
