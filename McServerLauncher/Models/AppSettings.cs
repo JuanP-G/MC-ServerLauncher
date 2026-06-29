@@ -11,4 +11,7 @@ public class AppSettings
 
     /// <summary>Idioma de la interfaz (es, en, pt, fr, de). Vacío = idioma del sistema.</summary>
     public string? Language { get; set; }
+
+    /// <summary>Última versión de la app que el usuario ya ha visto (para mostrar las novedades tras actualizar).</summary>
+    public string? LastVersionSeen { get; set; }
 }

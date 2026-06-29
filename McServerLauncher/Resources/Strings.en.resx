@@ -226,4 +226,8 @@
   <data name="Msg_ClosingTitle" xml:space="preserve"><value>MC Server Launcher — stopping servers and saving...</value></data>
   <data name="Update_Now" xml:space="preserve"><value>Update</value></data>
   <data name="Update_Downloading" xml:space="preserve"><value>Downloading update...</value></data>
+  <data name="Whatsnew_Title" xml:space="preserve"><value>What's new</value></data>
+  <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>What's new in version {0}</value></data>
+  <data name="Whatsnew_Ok" xml:space="preserve"><value>Got it</value></data>
+  <data name="Whatsnew_Body" xml:space="preserve"><value>• Update from the app: when a new version is available, click “Update” and it downloads and installs itself, no need to go to GitHub.&#10;• The whole app is translated to Spanish, English, Portuguese, French and German, including console messages, warnings and dialogs.&#10;• This window will show you what's new every time you update.</value></data>
 </root>

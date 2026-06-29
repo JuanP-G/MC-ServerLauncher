@@ -96,6 +96,30 @@ public partial class MainViewModel : ObservableObject
         Environment.Exit(0);
     }
 
+    /// <summary>
+    /// Si la versión actual es distinta de la última vista por el usuario (es decir, se acaba de
+    /// actualizar), muestra la ventana de novedades. Guarda la versión vista para no repetirla.
+    /// </summary>
+    public void ShowWhatsNewIfUpdated(System.Windows.Window owner)
+    {
+        var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        if (current is null) return;
+        var version = $"{current.Major}.{current.Minor}.{Math.Max(0, current.Build)}";
+
+        var settings = _settings.Load();
+        if (settings.LastVersionSeen == version) return; // ya la ha visto en esta versión
+
+        settings.LastVersionSeen = version;
+        _settings.Save(settings);
+
+        try
+        {
+            var dialog = new WhatsNewDialog(version) { Owner = owner };
+            dialog.ShowDialog();
+        }
+        catch { /* si algo falla, no bloquear el arranque */ }
+    }
+
     private async Task CheckForUpdatesAsync()
     {
         try

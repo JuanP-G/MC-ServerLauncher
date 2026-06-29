@@ -18,6 +18,7 @@ public partial class MainWindow : FluentWindow
         InitializeComponent();
         _viewModel = new MainViewModel();
         DataContext = _viewModel;
+        Loaded += (_, _) => _viewModel.ShowWhatsNewIfUpdated(this);
     }
 
     protected override async void OnClosing(CancelEventArgs e)

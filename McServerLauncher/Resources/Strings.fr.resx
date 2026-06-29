@@ -226,4 +226,8 @@
   <data name="Msg_ClosingTitle" xml:space="preserve"><value>MC Server Launcher — arrêt des serveurs et sauvegarde...</value></data>
   <data name="Update_Now" xml:space="preserve"><value>Mettre à jour</value></data>
   <data name="Update_Downloading" xml:space="preserve"><value>Téléchargement de la mise à jour...</value></data>
+  <data name="Whatsnew_Title" xml:space="preserve"><value>Nouveautés</value></data>
+  <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>Nouveautés de la version {0}</value></data>
+  <data name="Whatsnew_Ok" xml:space="preserve"><value>Compris</value></data>
+  <data name="Whatsnew_Body" xml:space="preserve"><value>• Mise à jour depuis l'app : quand une nouvelle version est disponible, clique sur « Mettre à jour » et elle se télécharge et s'installe toute seule, sans passer par GitHub.&#10;• Toute l'app est traduite en espagnol, anglais, portugais, français et allemand, y compris les messages de la console, les avertissements et les dialogues.&#10;• Cette fenêtre t'affichera les nouveautés à chaque mise à jour.</value></data>
 </root>
