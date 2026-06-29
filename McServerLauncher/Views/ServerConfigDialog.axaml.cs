@@ -11,6 +11,9 @@ public partial class ServerConfigDialog : Window
     private readonly ServerPropertiesService _service = new();
     private readonly ServerConfig _config;
 
+    // Parameterless constructor for the Avalonia XAML loader / designer only.
+    public ServerConfigDialog() : this(new ServerConfig()) { }
+
     public ServerConfigDialog(ServerConfig config)
     {
         InitializeComponent();

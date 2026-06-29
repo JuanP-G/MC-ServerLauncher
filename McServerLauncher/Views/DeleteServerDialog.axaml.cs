@@ -12,6 +12,9 @@ public partial class DeleteServerDialog : Window
     /// <summary>True if the user checked "also delete its Playit tunnel".</summary>
     public bool DeleteTunnel { get; private set; }
 
+    // Parameterless constructor for the Avalonia XAML loader / designer only.
+    public DeleteServerDialog() : this(string.Empty, string.Empty) { }
+
     public DeleteServerDialog(string serverName, string folderPath)
     {
         InitializeComponent();

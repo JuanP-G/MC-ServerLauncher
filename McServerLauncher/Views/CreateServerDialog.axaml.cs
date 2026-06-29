@@ -29,6 +29,9 @@ public partial class CreateServerDialog : Window
     /// <summary>Ports already used by other registered servers (to avoid conflicts).</summary>
     private readonly HashSet<int> _usedPorts;
 
+    // Parameterless constructor for the Avalonia XAML loader / designer only.
+    public CreateServerDialog() : this(null) { }
+
     public CreateServerDialog(IEnumerable<int>? usedPorts = null)
     {
         InitializeComponent();

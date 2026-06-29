@@ -13,6 +13,9 @@ public partial class AddEditServerDialog : Window
     private readonly ServerConfig _config;
     private readonly string _snapshot;
 
+    // Parameterless constructor for the Avalonia XAML loader / designer only.
+    public AddEditServerDialog() : this(new ServerConfig()) { }
+
     public AddEditServerDialog(ServerConfig config)
     {
         InitializeComponent();

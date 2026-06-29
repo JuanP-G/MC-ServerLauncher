@@ -9,7 +9,10 @@ public partial class PlayitApiKeyDialog : Window
     /// <summary>The entered key (valid if the dialog returned true).</summary>
     public string ApiKey { get; private set; } = string.Empty;
 
-    public PlayitApiKeyDialog(string? current = null)
+    // Parameterless constructor for the Avalonia XAML loader / designer only.
+    public PlayitApiKeyDialog() : this(null) { }
+
+    public PlayitApiKeyDialog(string? current)
     {
         InitializeComponent();
         KeyBox.Text = current ?? string.Empty;
