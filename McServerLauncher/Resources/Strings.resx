@@ -270,4 +270,6 @@
   <data name="Msg_PasteKey" xml:space="preserve"><value>Pega tu clave de Playit.</value></data>
   <data name="Msg_ConfigSaveError" xml:space="preserve"><value>No se pudo guardar la configuración: {0}</value></data>
   <data name="Msg_ClosingTitle" xml:space="preserve"><value>MC Server Launcher — deteniendo servidores y guardando...</value></data>
+  <data name="Update_Now" xml:space="preserve"><value>Actualizar</value></data>
+  <data name="Update_Downloading" xml:space="preserve"><value>Descargando actualización...</value></data>
 </root>

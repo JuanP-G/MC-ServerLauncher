@@ -3,7 +3,7 @@
 ; Antes de compilar este script hay que publicar la app (ver publish.ps1).
 
 #define MyAppName "MC Server Launcher"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "1.0.2"
 #define MyAppPublisher "JuanP-G"
 #define MyAppURL "https://github.com/JuanP-G/MC-ServerLauncher"
 #define MyAppExeName "McServerLauncher.exe"
@@ -29,6 +29,10 @@ WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=admin
+; Para la actualización desde la app: cierra la app en uso y NO la relanza el propio Restart Manager
+; (la relanzamos nosotros en [Run] como usuario normal).
+CloseApplications=force
+RestartApplications=no
 
 [Languages]
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
@@ -46,4 +50,6 @@ Name: "{group}\Desinstalar MC Server Launcher"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\MC Server Launcher"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,MC Server Launcher}"; Flags: nowait postinstall skipifsilent
+; Sin skipifsilent y con runasoriginaluser: tras una actualización silenciosa desde la app, se
+; relanza automáticamente como usuario normal (no elevado). En instalación normal es la casilla final.
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,MC Server Launcher}"; Flags: nowait postinstall runasoriginaluser

@@ -31,7 +31,11 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _updateText = string.Empty;
 
+    [ObservableProperty]
+    private bool _isUpdating;
+
     private string? _releaseUrl;
+    private string? _installerUrl;
 
     public record LanguageOption(string Code, string Name);
 
@@ -60,6 +64,8 @@ public partial class MainViewModel : ObservableObject
 
         _ = CheckForUpdatesAsync();
     }
+
+    partial void OnIsUpdatingChanged(bool value) => UpdateNowCommand.NotifyCanExecuteChanged();
 
     partial void OnSelectedLanguageChanged(LanguageOption? value)
     {
@@ -99,6 +105,7 @@ public partial class MainViewModel : ObservableObject
             if (info is not null)
             {
                 _releaseUrl = info.Url;
+                _installerUrl = info.InstallerUrl;
                 UpdateText = string.Format(Localizer.Get("Msg_UpdateAvailableFmt"), info.Version);
                 UpdateAvailable = true;
             }
@@ -109,7 +116,48 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
+    private bool CanUpdateNow => !IsUpdating;
+
+    /// <summary>
+    /// Descarga el instalador de la nueva versión y lo ejecuta para actualizar la app sin pasar por
+    /// GitHub. Si no hay instalador en la release, abre la página como respaldo.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanUpdateNow))]
+    private async Task UpdateNow()
+    {
+        // Sin instalador descargable: abrir la página de la release (respaldo).
+        if (string.IsNullOrEmpty(_installerUrl))
+        {
+            OpenRelease();
+            return;
+        }
+
+        IsUpdating = true;
+        UpdateText = Localizer.Get("Update_Downloading");
+        try
+        {
+            var dest = Path.Combine(Path.GetTempPath(), "MC-ServerLauncher-Setup.exe");
+            await new UpdateService().DownloadInstallerAsync(_installerUrl, dest);
+
+            // Cerramos servidores y lanzamos el instalador en silencio; al terminar relanza la app.
+            await ShutdownAllAsync();
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = dest,
+                Arguments = "/SILENT /SUPPRESSMSGBOXES /NORESTART",
+                UseShellExecute = true   // permite la elevación (UAC) del instalador
+            });
+            Environment.Exit(0);
+        }
+        catch
+        {
+            // Si la descarga/instalación falla, dejamos abrir la página manualmente.
+            IsUpdating = false;
+            UpdateText = string.Empty;
+            OpenRelease();
+        }
+    }
+
     private void OpenRelease()
     {
         if (string.IsNullOrEmpty(_releaseUrl)) return;

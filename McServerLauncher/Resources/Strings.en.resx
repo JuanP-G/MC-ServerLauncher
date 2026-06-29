@@ -224,4 +224,6 @@
   <data name="Msg_PasteKey" xml:space="preserve"><value>Paste your Playit key.</value></data>
   <data name="Msg_ConfigSaveError" xml:space="preserve"><value>Could not save the configuration: {0}</value></data>
   <data name="Msg_ClosingTitle" xml:space="preserve"><value>MC Server Launcher — stopping servers and saving...</value></data>
+  <data name="Update_Now" xml:space="preserve"><value>Update</value></data>
+  <data name="Update_Downloading" xml:space="preserve"><value>Downloading update...</value></data>
 </root>

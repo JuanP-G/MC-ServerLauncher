@@ -40,8 +40,8 @@
                                VerticalAlignment="Center" Margin="0,0,10,0" />
                 <TextBlock Grid.Column="1" Text="{Binding UpdateText}" Foreground="White"
                            VerticalAlignment="Center" />
-                <ui:Button Grid.Column="2" Content="{loc:Loc Update_Download}" Appearance="Light" Margin="0,0,8,0"
-                           Command="{Binding OpenReleaseCommand}" />
+                <ui:Button Grid.Column="2" Content="{loc:Loc Update_Now}" Appearance="Light" Margin="0,0,8,0"
+                           Command="{Binding UpdateNowCommand}" />
                 <ui:Button Grid.Column="3" Icon="{ui:SymbolIcon Dismiss24}" Appearance="Transparent"
                            Foreground="White" Command="{Binding DismissUpdateCommand}"
                            ToolTip="{loc:Loc Tip_Hide}" />
