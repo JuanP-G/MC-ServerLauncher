@@ -2,9 +2,9 @@
 
 > 🇪🇸 ¿Prefieres español? Lee la versión en [español](architecture.es.md).
 
-MC Server Launcher is a **WPF / .NET 9** desktop app that follows the **MVVM** pattern
+MC Server Launcher is a **Avalonia / .NET 9** desktop app that follows the **MVVM** pattern
 (using [CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)) with the
-[WPF-UI](https://wpfui.lepo.co/) Fluent theme. It manages one or more Minecraft servers without
+[Avalonia](https://avaloniaui.net/) Fluent theme (cross-platform). It manages one or more Minecraft servers without
 `.bat` files, console windows or editing config files by hand.
 
 ## Layers
@@ -15,10 +15,10 @@ The project (`McServerLauncher/`) is organized by responsibility:
 |---|---|
 | `Models/` | Plain data: persisted config (`ServerConfig`), settings (`AppSettings`), enums (`ServerState`, `PlayitState`). |
 | `Services/` | All the logic with no UI: processes, files, network, Java, Playit, ports, etc. Each service is a small, focused class. |
-| `ViewModels/` | The state and commands the UI binds to (`MainViewModel`, `ServerViewModel`). No WPF controls here, only `ObservableObject`/`RelayCommand`. |
+| `ViewModels/` | The state and commands the UI binds to (`MainViewModel`, `ServerViewModel`). No Avalonia controls here, only `ObservableObject`/`RelayCommand`. |
 | `Views/` | The XAML windows/dialogs and their thin code-behind. |
 | `Localization/` | The translation system (`Localizer` + `{loc:Loc}` markup extension). |
-| `Behaviors/`, `Converters/` | Small WPF helpers (auto-scroll, MOTD coloring, bool→visibility). |
+| `Behaviors/`, `Converters/` | Small UI helpers (auto-scroll, MOTD coloring, bool→visibility). |
 | `Resources/` | `Strings*.resx` (translations) and `app.ico`. |
 
 Data lives **per user** under `%APPDATA%\McServerLauncher\`: `servers.json` (the server list),

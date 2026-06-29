@@ -2,9 +2,9 @@
 
 > 🇬🇧 Prefer English? Read the [English version](architecture.md).
 
-MC Server Launcher es una app de escritorio en **WPF / .NET 9** que sigue el patrón **MVVM**
+MC Server Launcher es una app de escritorio en **Avalonia / .NET 9** que sigue el patrón **MVVM**
 (con [CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)) y el tema
-Fluent de [WPF-UI](https://wpfui.lepo.co/). Gestiona uno o varios servidores de Minecraft sin
+Fluent de [Avalonia](https://avaloniaui.net/) (multiplataforma). Gestiona uno o varios servidores de Minecraft sin
 archivos `.bat`, ventanas de consola ni editar configuración a mano.
 
 ## Capas
@@ -15,10 +15,10 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 |---|---|
 | `Models/` | Datos puros: configuración persistida (`ServerConfig`), ajustes (`AppSettings`), enums (`ServerState`, `PlayitState`). |
 | `Services/` | Toda la lógica sin interfaz: procesos, archivos, red, Java, Playit, puertos, etc. Cada servicio es una clase pequeña y centrada. |
-| `ViewModels/` | El estado y los comandos a los que se enlaza la interfaz (`MainViewModel`, `ServerViewModel`). Aquí no hay controles WPF, solo `ObservableObject`/`RelayCommand`. |
+| `ViewModels/` | El estado y los comandos a los que se enlaza la interfaz (`MainViewModel`, `ServerViewModel`). Aquí no hay controles de Avalonia, solo `ObservableObject`/`RelayCommand`. |
 | `Views/` | Las ventanas/diálogos XAML y su code-behind ligero. |
 | `Localization/` | El sistema de traducción (`Localizer` + la extensión de marcado `{loc:Loc}`). |
-| `Behaviors/`, `Converters/` | Pequeñas ayudas de WPF (auto-scroll, color del MOTD, bool→visibilidad). |
+| `Behaviors/`, `Converters/` | Pequeñas ayudas de la interfaz (auto-scroll, color del MOTD, bool→visibilidad). |
 | `Resources/` | `Strings*.resx` (traducciones) y `app.ico`. |
 
 Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`: `servers.json` (la lista de
