@@ -1,16 +1,18 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
-using Wpf.Ui.Controls;
 
 namespace McServerLauncher.Views;
 
-public partial class ServerConfigDialog : FluentWindow
+public partial class ServerConfigDialog : Window
 {
     private readonly ServerPropertiesService _service = new();
     private readonly ServerConfig _config;
+
+    // Parameterless constructor for the Avalonia XAML loader / designer only.
+    public ServerConfigDialog() : this(new ServerConfig()) { }
 
     public ServerConfigDialog(ServerConfig config)
     {
@@ -44,23 +46,23 @@ public partial class ServerConfigDialog : FluentWindow
         WhitelistToggle.IsChecked = GetBool(p, "white-list", false);
     }
 
-    private void Save_Click(object sender, RoutedEventArgs e)
+    private async void Save_Click(object? sender, RoutedEventArgs e)
     {
         var changes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["motd"] = MotdBox.Text?.Trim() ?? string.Empty,
             ["gamemode"] = TagOf(GamemodeBox) ?? "survival",
             ["difficulty"] = TagOf(DifficultyBox) ?? "easy",
-            ["max-players"] = ((int)(MaxPlayersBox.Value ?? 20)).ToString(),
+            ["max-players"] = ((int)(MaxPlayersBox.Value ?? 20m)).ToString(),
             ["pvp"] = B(PvpToggle),
             ["hardcore"] = B(HardcoreToggle),
             ["allow-flight"] = B(AllowFlightToggle),
             ["enable-command-block"] = B(CommandBlockToggle),
-            ["spawn-protection"] = ((int)(SpawnProtectionBox.Value ?? 16)).ToString(),
-            ["view-distance"] = ((int)(ViewDistanceBox.Value ?? 10)).ToString(),
-            ["simulation-distance"] = ((int)(SimulationDistanceBox.Value ?? 10)).ToString(),
+            ["spawn-protection"] = ((int)(SpawnProtectionBox.Value ?? 16m)).ToString(),
+            ["view-distance"] = ((int)(ViewDistanceBox.Value ?? 10m)).ToString(),
+            ["simulation-distance"] = ((int)(SimulationDistanceBox.Value ?? 10m)).ToString(),
             ["generate-structures"] = B(GenerateStructuresToggle),
-            ["server-port"] = ((int)(PortBox.Value ?? 25565)).ToString(),
+            ["server-port"] = ((int)(PortBox.Value ?? 25565m)).ToString(),
             ["online-mode"] = B(OnlineModeToggle),
             ["white-list"] = B(WhitelistToggle),
         };
@@ -68,22 +70,17 @@ public partial class ServerConfigDialog : FluentWindow
         try
         {
             _service.Update(_config.PropertiesPath, changes);
-            DialogResult = true;
-            Close();
+            Close(true);
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show(
+            await MessageBox.ShowAsync(
                 string.Format(Localizer.Get("Msg_ConfigSaveError"), ex.Message),
-                Localizer.Get("Cfg_Title"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                Localizer.Get("Cfg_Title"), this);
         }
     }
 
-    private void Cancel_Click(object sender, RoutedEventArgs e)
-    {
-        DialogResult = false;
-        Close();
-    }
+    private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
 
     // --- Helpers ---
 
@@ -102,9 +99,9 @@ public partial class ServerConfigDialog : FluentWindow
 
     private static void SelectByTag(ComboBox combo, string tag)
     {
-        foreach (ComboBoxItem item in combo.Items)
+        foreach (var obj in combo.Items)
         {
-            if ((item.Tag as string) == tag)
+            if (obj is ComboBoxItem item && (item.Tag as string) == tag)
             {
                 combo.SelectedItem = item;
                 return;

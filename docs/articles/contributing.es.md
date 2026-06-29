@@ -7,7 +7,7 @@ habituales.
 
 ## Requisitos
 
-- **Windows** 10/11 (la interfaz usa WPF, exclusivo de Windows).
+- **Windows**, **Linux** o **macOS** (la interfaz usa Avalonia, multiplataforma).
 - **.NET 9 SDK**.
 - *(Solo para generar el instalador)* **Inno Setup 6**.
 

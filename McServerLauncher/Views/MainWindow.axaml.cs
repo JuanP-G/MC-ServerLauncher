@@ -1,14 +1,14 @@
-using System.ComponentModel;
+using System.Collections;
 using System.Linq;
-using System.Windows;
-using System.Windows.Input;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using McServerLauncher.Localization;
 using McServerLauncher.ViewModels;
-using Wpf.Ui.Controls;
 
 namespace McServerLauncher.Views;
 
-public partial class MainWindow : FluentWindow
+public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
     private bool _shuttingDown;
@@ -21,7 +21,7 @@ public partial class MainWindow : FluentWindow
         Loaded += (_, _) => _viewModel.ShowWhatsNewIfUpdated(this);
     }
 
-    protected override async void OnClosing(CancelEventArgs e)
+    protected override async void OnClosing(WindowClosingEventArgs e)
     {
         // Avoid closing abruptly with servers running: stop them cleanly first.
         if (!_shuttingDown)
@@ -34,7 +34,7 @@ public partial class MainWindow : FluentWindow
             // We've already saved the config and stopped the servers in here.
             await _viewModel.ShutdownAllAsync();
 
-            // Immediate exit: avoids the ~2 s WPF/WPF-UI takes to release its resources on close.
+            // Immediate exit: avoids the time the toolkit takes to release its resources on close.
             Environment.Exit(0);
             return;
         }
@@ -42,30 +42,30 @@ public partial class MainWindow : FluentWindow
         base.OnClosing(e);
     }
 
-    private void ConsoleCopy_Click(object sender, RoutedEventArgs e) => CopyConsole(selectedOnly: true);
+    private void ConsoleCopy_Click(object? sender, RoutedEventArgs e) => _ = CopyConsole(selectedOnly: true);
 
-    private void ConsoleCopyAll_Click(object sender, RoutedEventArgs e) => CopyConsole(selectedOnly: false);
+    private void ConsoleCopyAll_Click(object? sender, RoutedEventArgs e) => _ = CopyConsole(selectedOnly: false);
 
-    private void ConsoleList_PreviewKeyDown(object sender, KeyEventArgs e)
+    private void ConsoleList_KeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Key == Key.C && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
+        if (e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control))
         {
-            CopyConsole(selectedOnly: true);
+            _ = CopyConsole(selectedOnly: true);
             e.Handled = true;
         }
     }
 
-    private void CopyConsole(bool selectedOnly)
+    private async System.Threading.Tasks.Task CopyConsole(bool selectedOnly)
     {
-        var source = selectedOnly && ConsoleList.SelectedItems.Count > 0
+        IList source = selectedOnly && ConsoleList.SelectedItems is { Count: > 0 }
             ? ConsoleList.SelectedItems
-            : (System.Collections.IList)ConsoleList.Items;
+            : ConsoleList.Items;
 
         var lines = source.Cast<object?>().Select(o => o?.ToString() ?? string.Empty);
         var text = string.Join(Environment.NewLine, lines);
-        if (!string.IsNullOrEmpty(text))
+        if (!string.IsNullOrEmpty(text) && Clipboard is not null)
         {
-            try { Clipboard.SetText(text); } catch { /* portapapeles ocupado */ }
+            try { await Clipboard.SetTextAsync(text); } catch { /* clipboard busy */ }
         }
     }
 }

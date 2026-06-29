@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -11,7 +12,7 @@ namespace McServerLauncher.Services;
 
 /// <summary>
 /// Detects the machine's Java installations and, if needed, downloads the right version
-/// (Adoptium Temurin) for a specific Minecraft version.
+/// (Adoptium Temurin) for a specific Minecraft version. Works on Windows and Linux.
 /// </summary>
 public partial class JavaService
 {
@@ -22,10 +23,13 @@ public partial class JavaService
     private static string ManagedRoot => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "java");
 
+    /// <summary>The java executable name for the current OS ("java.exe" on Windows, "java" elsewhere).</summary>
+    private static string JavaExeName => OperatingSystem.IsWindows() ? "java.exe" : "java";
+
     [GeneratedRegex("version \"(\\d+)(?:\\.(\\d+))?")]
     private static partial Regex VersionRegex();
 
-    /// <summary>Searches for java.exe in common locations and returns their versions.</summary>
+    /// <summary>Searches for the java executable in common locations and returns their versions.</summary>
     public List<JavaInstall> DetectInstalled()
     {
         var candidates = new List<string>();
@@ -37,32 +41,45 @@ public partial class JavaService
                 if (!Directory.Exists(root)) return;
                 foreach (var dir in Directory.GetDirectories(root))
                 {
-                    var exe = Path.Combine(dir, "bin", "java.exe");
+                    var exe = Path.Combine(dir, "bin", JavaExeName);
                     if (File.Exists(exe)) candidates.Add(exe);
                 }
             }
             catch { /* ignore */ }
         }
 
-        foreach (var pf in new[]
-                 {
-                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                 })
+        if (OperatingSystem.IsWindows())
         {
-            if (string.IsNullOrEmpty(pf)) continue;
-            AddFrom(Path.Combine(pf, "Eclipse Adoptium"));
-            AddFrom(Path.Combine(pf, "Java"));
-            AddFrom(Path.Combine(pf, "Microsoft"));
-            AddFrom(Path.Combine(pf, "Zulu"));
-            AddFrom(Path.Combine(pf, "Amazon Corretto"));
+            foreach (var pf in new[]
+                     {
+                         Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                         Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                     })
+            {
+                if (string.IsNullOrEmpty(pf)) continue;
+                AddFrom(Path.Combine(pf, "Eclipse Adoptium"));
+                AddFrom(Path.Combine(pf, "Java"));
+                AddFrom(Path.Combine(pf, "Microsoft"));
+                AddFrom(Path.Combine(pf, "Zulu"));
+                AddFrom(Path.Combine(pf, "Amazon Corretto"));
+            }
+        }
+        else
+        {
+            // Common JVM locations on Linux (and macOS).
+            AddFrom("/usr/lib/jvm");
+            AddFrom("/usr/java");
+            AddFrom("/opt/java");
+            AddFrom("/opt");
+            var onPath = WhichJava();
+            if (onPath is not null) candidates.Add(onPath);
         }
         AddFrom(ManagedRoot);
 
         var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
         if (!string.IsNullOrWhiteSpace(javaHome))
         {
-            var exe = Path.Combine(javaHome, "bin", "java.exe");
+            var exe = Path.Combine(javaHome, "bin", JavaExeName);
             if (File.Exists(exe)) candidates.Add(exe);
         }
 
@@ -137,7 +154,7 @@ public partial class JavaService
     }
 
     /// <summary>
-    /// Returns the path to a java.exe compatible with the required version. If none is
+    /// Returns the path to a java executable compatible with the required version. If none is
     /// installed, downloads and installs the matching Temurin. Throws if it can't.
     /// </summary>
     public async Task<string> EnsureJavaAsync(int requiredMajor, IProgress<string>? log, CancellationToken ct = default)
@@ -167,8 +184,9 @@ public partial class JavaService
             Architecture.X86 => "x86",
             _ => "x64"
         };
+        var os = OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsMacOS() ? "mac" : "linux";
         var apiUrl = $"https://api.adoptium.net/v3/assets/latest/{major}/hotspot" +
-                     $"?architecture={arch}&image_type=jre&os=windows&vendor=eclipse";
+                     $"?architecture={arch}&image_type=jre&os={os}&vendor=eclipse";
         var json = await Http.GetStringAsync(apiUrl, ct);
 
         string? link = null;
@@ -186,28 +204,79 @@ public partial class JavaService
             }
         }
         if (string.IsNullOrEmpty(link))
-            throw new InvalidOperationException($"No Java {major} download was found for Windows.");
+            throw new InvalidOperationException($"No Java {major} download was found for {os}/{arch}.");
 
         Directory.CreateDirectory(ManagedRoot);
-        var zipPath = Path.Combine(ManagedRoot, $"jre-{major}.zip");
+        var isZip = OperatingSystem.IsWindows();
+        var archivePath = Path.Combine(ManagedRoot, $"jre-{major}" + (isZip ? ".zip" : ".tar.gz"));
 
         log?.Report(Localizer.Get("Msg_JavaDownloading"));
         using (var resp = await Http.GetAsync(link, HttpCompletionOption.ResponseHeadersRead, ct))
         {
             resp.EnsureSuccessStatusCode();
-            await using var fs = File.Create(zipPath);
+            await using var fs = File.Create(archivePath);
             await resp.Content.CopyToAsync(fs, ct);
         }
 
         log?.Report(Localizer.Get("Msg_JavaInstalling"));
         if (Directory.Exists(target)) Directory.Delete(target, true);
-        ZipFile.ExtractToDirectory(zipPath, target);
-        try { File.Delete(zipPath); } catch { /* doesn't matter */ }
+        Directory.CreateDirectory(target);
+        if (isZip)
+            ZipFile.ExtractToDirectory(archivePath, target);
+        else
+            await ExtractTarGzAsync(archivePath, target, ct);
+        try { File.Delete(archivePath); } catch { /* doesn't matter */ }
 
         var javaExe = FindJavaExe(target)
             ?? throw new InvalidOperationException(Localizer.Get("Msg_JavaExeNotFound"));
+
+        // Make sure the java binary is executable on Unix (tar usually preserves this, but be safe).
+        if (!OperatingSystem.IsWindows())
+        {
+            try
+            {
+                File.SetUnixFileMode(javaExe,
+                    UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                    UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                    UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+            }
+            catch { /* best-effort */ }
+        }
+
         log?.Report(string.Format(Localizer.Get("Msg_JavaInstalled"), major));
         return javaExe;
+    }
+
+    private static async Task ExtractTarGzAsync(string targzPath, string destDir, CancellationToken ct)
+    {
+        await using var fs = File.OpenRead(targzPath);
+        await using var gz = new GZipStream(fs, CompressionMode.Decompress);
+        await TarFile.ExtractToDirectoryAsync(gz, destDir, overwriteFiles: true, ct);
+    }
+
+    /// <summary>Resolves the 'java' executable on PATH (Linux/macOS) via 'which'. Null if not found.</summary>
+    private static string? WhichJava()
+    {
+        try
+        {
+            using var p = Process.Start(new ProcessStartInfo
+            {
+                FileName = "which",
+                Arguments = "java",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            });
+            if (p is null) return null;
+            var outp = p.StandardOutput.ReadLine();
+            p.WaitForExit(3000);
+            return !string.IsNullOrWhiteSpace(outp) && File.Exists(outp) ? outp : null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static string? FindJavaExe(string root)
@@ -215,8 +284,10 @@ public partial class JavaService
         if (!Directory.Exists(root)) return null;
         try
         {
-            return Directory.GetFiles(root, "java.exe", SearchOption.AllDirectories)
-                .FirstOrDefault(p => p.EndsWith(Path.Combine("bin", "java.exe"), StringComparison.OrdinalIgnoreCase));
+            var name = JavaExeName;
+            var binSuffix = Path.Combine("bin", name);
+            return Directory.GetFiles(root, name, SearchOption.AllDirectories)
+                .FirstOrDefault(p => p.EndsWith(binSuffix, StringComparison.OrdinalIgnoreCase));
         }
         catch
         {

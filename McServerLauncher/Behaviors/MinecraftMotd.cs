@@ -1,9 +1,9 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Media;
 
 namespace McServerLauncher.Behaviors;
 
@@ -13,34 +13,39 @@ namespace McServerLauncher.Behaviors;
 /// </summary>
 public static partial class MinecraftMotd
 {
-    public static readonly DependencyProperty TextProperty = DependencyProperty.RegisterAttached(
-        "Text", typeof(string), typeof(MinecraftMotd), new PropertyMetadata(null, OnTextChanged));
+    public static readonly AttachedProperty<string?> TextProperty =
+        AvaloniaProperty.RegisterAttached<TextBlock, string?>("Text", typeof(MinecraftMotd));
 
-    public static string? GetText(DependencyObject o) => (string?)o.GetValue(TextProperty);
-    public static void SetText(DependencyObject o, string? v) => o.SetValue(TextProperty, v);
+    public static string? GetText(TextBlock o) => o.GetValue(TextProperty);
+    public static void SetText(TextBlock o, string? v) => o.SetValue(TextProperty, v);
+
+    static MinecraftMotd()
+    {
+        TextProperty.Changed.AddClassHandler<TextBlock>((tb, e) => OnTextChanged(tb, e));
+    }
 
     // Official Minecraft color palette (§0-§9, §a-§f).
     private static readonly Dictionary<char, Color> Palette = new()
     {
-        ['0'] = FromHex("#000000"), ['1'] = FromHex("#0000AA"), ['2'] = FromHex("#00AA00"),
-        ['3'] = FromHex("#00AAAA"), ['4'] = FromHex("#AA0000"), ['5'] = FromHex("#AA00AA"),
-        ['6'] = FromHex("#FFAA00"), ['7'] = FromHex("#AAAAAA"), ['8'] = FromHex("#555555"),
-        ['9'] = FromHex("#5555FF"), ['a'] = FromHex("#55FF55"), ['b'] = FromHex("#55FFFF"),
-        ['c'] = FromHex("#FF5555"), ['d'] = FromHex("#FF55FF"), ['e'] = FromHex("#FFFF55"),
-        ['f'] = FromHex("#FFFFFF"),
+        ['0'] = Color.Parse("#000000"), ['1'] = Color.Parse("#0000AA"), ['2'] = Color.Parse("#00AA00"),
+        ['3'] = Color.Parse("#00AAAA"), ['4'] = Color.Parse("#AA0000"), ['5'] = Color.Parse("#AA00AA"),
+        ['6'] = Color.Parse("#FFAA00"), ['7'] = Color.Parse("#AAAAAA"), ['8'] = Color.Parse("#555555"),
+        ['9'] = Color.Parse("#5555FF"), ['a'] = Color.Parse("#55FF55"), ['b'] = Color.Parse("#55FFFF"),
+        ['c'] = Color.Parse("#FF5555"), ['d'] = Color.Parse("#FF55FF"), ['e'] = Color.Parse("#FFFF55"),
+        ['f'] = Color.Parse("#FFFFFF"),
     };
 
-    private static readonly Color Default = FromHex("#AAAAAA");
+    private static readonly Color Default = Color.Parse("#AAAAAA");
 
     [GeneratedRegex(@"\\u([0-9a-fA-F]{4})")]
     private static partial Regex UnicodeEscapeRegex();
 
-    private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnTextChanged(TextBlock tb, AvaloniaPropertyChangedEventArgs e)
     {
-        if (d is not TextBlock tb) return;
-        tb.Inlines.Clear();
+        tb.Inlines?.Clear();
+        var inlines = tb.Inlines ??= new InlineCollection();
 
-        var text = Unescape((string?)e.NewValue ?? string.Empty);
+        var text = Unescape(e.NewValue as string ?? string.Empty);
         if (text.Length == 0) return;
 
         var color = Default;
@@ -51,16 +56,16 @@ public static partial class MinecraftMotd
         {
             if (sb.Length == 0) return;
             var run = new Run(sb.ToString()) { Foreground = new SolidColorBrush(color) };
-            if (bold) run.FontWeight = FontWeights.Bold;
-            if (italic) run.FontStyle = FontStyles.Italic;
+            if (bold) run.FontWeight = FontWeight.Bold;
+            if (italic) run.FontStyle = FontStyle.Italic;
             if (underline || strike)
             {
                 var dec = new TextDecorationCollection();
-                if (underline) dec.Add(TextDecorations.Underline);
-                if (strike) dec.Add(TextDecorations.Strikethrough);
+                if (underline) dec.Add(new TextDecoration { Location = TextDecorationLocation.Underline });
+                if (strike) dec.Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
                 run.TextDecorations = dec;
             }
-            tb.Inlines.Add(run);
+            inlines.Add(run);
             sb.Clear();
         }
 
@@ -89,7 +94,7 @@ public static partial class MinecraftMotd
             else if (c == '\n')
             {
                 Flush();
-                tb.Inlines.Add(new LineBreak());
+                inlines.Add(new LineBreak());
             }
             else
             {
@@ -106,6 +111,4 @@ public static partial class MinecraftMotd
         s = UnicodeEscapeRegex().Replace(s, m => ((char)Convert.ToInt32(m.Groups[1].Value, 16)).ToString());
         return s;
     }
-
-    private static Color FromHex(string hex) => (Color)ColorConverter.ConvertFromString(hex);
 }

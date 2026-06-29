@@ -1,15 +1,17 @@
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Media.Immutable;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
+using McServerLauncher.Views;
 
 namespace McServerLauncher.ViewModels;
 
@@ -31,7 +33,6 @@ public partial class ServerViewModel : ObservableObject
     private int _playitTickCounter;
     private readonly DispatcherTimer _statsTimer;
     private readonly DispatcherTimer _playitTimer;
-    private readonly object _consoleLock = new();
 
     public ServerConfig Config { get; }
 
@@ -103,7 +104,7 @@ public partial class ServerViewModel : ObservableObject
     // --- Minecraft server-list style view ---
 
     [ObservableProperty]
-    private ImageSource? _serverIcon;
+    private Bitmap? _serverIcon;
 
     public bool HasIcon => ServerIcon is not null;
 
@@ -143,17 +144,17 @@ public partial class ServerViewModel : ObservableObject
     private string _newWhitelistName = string.Empty;
 
     // Colors per state (status text/dot and the card's signal bars).
-    private static readonly Brush BrushGreen = Frozen("#3FB950");
-    private static readonly Brush BrushSignalGreen = Frozen("#55FF55");
-    private static readonly Brush BrushAmber = Frozen("#E3A82B");
-    private static readonly Brush BrushRed = Frozen("#E05561");
-    private static readonly Brush BrushGray = Frozen("#6E7681");
+    private static readonly IBrush BrushGreen = Frozen("#3FB950");
+    private static readonly IBrush BrushSignalGreen = Frozen("#55FF55");
+    private static readonly IBrush BrushAmber = Frozen("#E3A82B");
+    private static readonly IBrush BrushRed = Frozen("#E05561");
+    private static readonly IBrush BrushGray = Frozen("#6E7681");
 
     [ObservableProperty]
-    private Brush _statusBrush = BrushRed;
+    private IBrush _statusBrush = BrushRed;
 
     [ObservableProperty]
-    private Brush _signalBrush = BrushGray;
+    private IBrush _signalBrush = BrushGray;
 
     [ObservableProperty]
     private string _signalHint = Localizer.Get("Signal_Off");
@@ -161,12 +162,7 @@ public partial class ServerViewModel : ObservableObject
     [ObservableProperty]
     private bool _showTunnelWarning;
 
-    private static Brush Frozen(string hex)
-    {
-        var b = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
-        b.Freeze();
-        return b;
-    }
+    private static IBrush Frozen(string hex) => new ImmutableSolidColorBrush(Color.Parse(hex));
 
     /// <summary>Raised when something persistable about the server changes (to save).</summary>
     public event Action? ConfigChanged;
@@ -176,9 +172,6 @@ public partial class ServerViewModel : ObservableObject
         Config = config;
         _name = config.Name;
         _tunnelAddress = config.TunnelAddress;
-
-        // Allows updating ConsoleLines safely from background threads.
-        BindingOperations.EnableCollectionSynchronization(ConsoleLines, _consoleLock);
 
         _process.OutputReceived += OnConsoleLine;
         _process.StateChanged += OnServerStateChanged;
@@ -433,12 +426,11 @@ public partial class ServerViewModel : ObservableObject
             catch { procDesc = $"PID {pid}"; }
         }
 
-        var answer = System.Windows.MessageBox.Show(
+        var accepted = await MessageBox.ConfirmAsync(
             string.Format(Localizer.Get("Msg_PortBusyConfirm"), port, procDesc),
-            Localizer.Get("Msg_PortBusyTitle"),
-            System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+            Localizer.Get("Msg_PortBusyTitle"));
 
-        if (answer != System.Windows.MessageBoxResult.Yes)
+        if (!accepted)
         {
             OnConsoleLine(string.Format(Localizer.Get("Msg_PortBusyNotStarted"), port, procDesc));
             return false;
@@ -537,10 +529,12 @@ public partial class ServerViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(HasTunnelAddress))]
-    private void CopyTunnelAddress()
+    private async Task CopyTunnelAddress()
     {
-        if (!string.IsNullOrEmpty(TunnelAddress))
-            Clipboard.SetText(TunnelAddress);
+        if (string.IsNullOrEmpty(TunnelAddress)) return;
+        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (top?.Clipboard is { } cb)
+            await cb.SetTextAsync(TunnelAddress);
     }
 
     private bool HasTunnelAddress => !string.IsNullOrEmpty(TunnelAddress);
@@ -611,7 +605,7 @@ public partial class ServerViewModel : ObservableObject
         PortText = port?.ToString() ?? "—";
     }
 
-    partial void OnServerIconChanged(ImageSource? value) => OnPropertyChanged(nameof(HasIcon));
+    partial void OnServerIconChanged(Bitmap? value) => OnPropertyChanged(nameof(HasIcon));
 
     /// <summary>Re-reads data from disk (after editing server.properties).</summary>
     public void RefreshFromDisk()
@@ -708,14 +702,9 @@ public partial class ServerViewModel : ObservableObject
         }
         try
         {
-            var bmp = new BitmapImage();
-            bmp.BeginInit();
-            bmp.CacheOption = BitmapCacheOption.OnLoad;
-            bmp.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-            bmp.UriSource = new Uri(path);
-            bmp.EndInit();
-            bmp.Freeze();
-            ServerIcon = bmp;
+            // Read fully into memory so the file isn't locked and updates are picked up.
+            using var fs = File.OpenRead(path);
+            ServerIcon = new Bitmap(fs);
         }
         catch
         {
@@ -829,10 +818,9 @@ public partial class ServerViewModel : ObservableObject
 
     private static void RunOnUi(Action action)
     {
-        var app = Application.Current;
-        if (app?.Dispatcher.CheckAccess() ?? true)
+        if (Dispatcher.UIThread.CheckAccess())
             action();
         else
-            app.Dispatcher.Invoke(action);
+            Dispatcher.UIThread.Post(action);
     }
 }

@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        x:Class="McServerLauncher.Views.WhatsNewDialog"
+        Title="{loc:Loc Whatsnew_Title}"
+        Width="560" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,Auto">
+        <StackPanel Grid.Row="0" Margin="20,20,20,8">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12" Spacing="10">
+                <ic:SymbolIcon Symbol="Sparkle" FontSize="22" VerticalAlignment="Center" />
+                <TextBlock x:Name="HeaderText" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock x:Name="BodyText" TextWrapping="Wrap" FontSize="14" LineHeight="22" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,12,20,16">
+            <Button Classes="accent" Content="{loc:Loc Whatsnew_Ok}" Click="Ok_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

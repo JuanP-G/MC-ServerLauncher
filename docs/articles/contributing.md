@@ -7,7 +7,7 @@ common changes.
 
 ## Requirements
 
-- **Windows** 10/11 (the UI uses WPF, which is Windows-only).
+- **Windows**, **Linux** or **macOS** (the UI uses Avalonia, which is cross-platform).
 - **.NET 9 SDK**.
 - *(Only to build the installer)* **Inno Setup 6**.
 

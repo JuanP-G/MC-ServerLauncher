@@ -1,5 +1,8 @@
+using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Text.RegularExpressions;
 
 namespace McServerLauncher.Services;
 
@@ -60,6 +63,48 @@ public class PortService
 
     /// <summary>PID of the process listening (LISTEN) on that TCP port, or null.</summary>
     public int? GetListeningPid(int port)
+    {
+        if (OperatingSystem.IsWindows()) return GetListeningPidWindows(port);
+        if (OperatingSystem.IsLinux()) return GetListeningPidLinux(port);
+        return null;
+    }
+
+    /// <summary>Linux: parse 'ss -ltnp' to find the PID listening on the port.</summary>
+    private static int? GetListeningPidLinux(int port)
+    {
+        try
+        {
+            using var p = Process.Start(new ProcessStartInfo
+            {
+                FileName = "ss",
+                Arguments = "-ltnpH",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            });
+            if (p is null) return null;
+            var output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit(4000);
+
+            foreach (var line in output.Split('\n'))
+            {
+                // The listening line contains the local address ":<port>" and users:(("name",pid=NNN,fd=N)).
+                if (!Regex.IsMatch(line, $@":{port}\b")) continue;
+                var m = Regex.Match(line, @"pid=(\d+)");
+                if (m.Success && int.TryParse(m.Groups[1].Value, out var pid))
+                    return pid;
+            }
+        }
+        catch
+        {
+            // ss not available or no permission: we just can't identify the PID.
+        }
+        return null;
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static int? GetListeningPidWindows(int port)
     {
         var size = 0;
         GetExtendedTcpTable(IntPtr.Zero, ref size, true, AF_INET, TCP_TABLE_OWNER_PID_LISTENER, 0);

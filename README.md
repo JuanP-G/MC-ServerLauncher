@@ -12,7 +12,7 @@ graphical interface, **without `.bat` files, black console windows or editing co
 Designed so anyone can set up and run their server easily: create the server, pick the version, open
 it to the Internet with Playit.gg, manage players and change the configuration… all with buttons.
 
-> Built with **WPF / .NET 9** and the **WPF-UI** library (Fluent design, dark theme).
+> Built with **Avalonia / .NET 9** (cross-platform, Fluent design, dark theme).
 
 ### ⬇️ Download & install
 
@@ -94,7 +94,11 @@ Per-user, no hard-coded paths: `"%APPDATA%\McServerLauncher\servers.json"` (serv
 |---|---|
 | Windows x64 / x86 | ✅ Yes |
 | Windows ARM64 | ✅ Yes |
-| Linux / macOS | ❌ No (the UI uses WPF, Windows-only) |
+| Linux x64 | ✅ Yes (AppImage) |
+| macOS | ⚙️ Builds from source (no prebuilt package yet) |
+
+> The UI is built with **Avalonia**, so a single codebase runs on Windows, Linux and macOS.
+> On Linux, download the **`.AppImage`** from the release, make it executable (`chmod +x`) and run it.
 
 ### ⚠️ Notice
 
@@ -113,7 +117,7 @@ Pensada para que cualquiera pueda montar y administrar su servidor de forma senc
 servidor, elegir la versión, abrirlo a Internet con Playit.gg, gestionar jugadores y cambiar la
 configuración… todo con botones.
 
-> Hecha con **WPF / .NET 9** y la librería de interfaz **WPF-UI** (diseño Fluent, tema oscuro).
+> Hecha con **Avalonia / .NET 9** (multiplataforma, diseño Fluent, tema oscuro).
 
 ### ⬇️ Descargar e instalar
 
@@ -198,7 +202,11 @@ Por usuario, sin rutas fijas en el código: `"%APPDATA%\McServerLauncher\servers
 |---|---|
 | Windows x64 / x86 | ✅ Sí |
 | Windows ARM64 | ✅ Sí |
-| Linux / macOS | ❌ No (la interfaz usa WPF, exclusivo de Windows) |
+| Linux x64 | ✅ Sí (AppImage) |
+| macOS | ⚙️ Se compila desde el código (aún sin paquete prehecho) |
+
+> La interfaz usa **Avalonia**, así que un único código corre en Windows, Linux y macOS.
+> En Linux, descarga el **`.AppImage`** de la release, dale permiso de ejecución (`chmod +x`) y ábrelo.
 
 ### ⚠️ Aviso
 

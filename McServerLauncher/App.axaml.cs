@@ -1,12 +1,17 @@
 using System.Globalization;
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
 using McServerLauncher.Services;
+using McServerLauncher.Views;
 
 namespace McServerLauncher;
 
 public partial class App : Application
 {
-    protected override void OnStartup(StartupEventArgs e)
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+
+    public override void OnFrameworkInitializationCompleted()
     {
         // Apply the saved language BEFORE creating the window.
         var lang = new AppSettingsService().Load().Language;
@@ -24,6 +29,9 @@ public partial class App : Application
             }
         }
 
-        base.OnStartup(e);
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            desktop.MainWindow = new MainWindow();
+
+        base.OnFrameworkInitializationCompleted();
     }
 }
