@@ -32,12 +32,14 @@
     <Compile Remove="Behaviors\**\*.cs" />
     <Compile Remove="Converters\**\*.cs" />
     <Compile Remove="ViewModels\**\*.cs" />
-    <Compile Remove="Services\ServerIconService.cs" />
     <None Remove="App.xaml" />
     <None Remove="Views\**\*.xaml" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Cross-platform reference: compiles everywhere, only used at runtime on Windows (guarded with
+         OperatingSystem.IsWindows()). On Linux Playit is managed via systemctl instead. -->
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
     <PackageReference Include="Avalonia" Version="11.2.3" />
     <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
@@ -46,11 +48,6 @@
     <PackageReference Include="FluentIcons.Avalonia" Version="1.1.265" />
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
-  </ItemGroup>
-
-  <!-- Windows-only: Playit integration talks to the Windows service via ServiceController. -->
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) Or '$(RuntimeIdentifier)' == 'win-x64' Or '$(RuntimeIdentifier)' == 'win-arm64'">
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
   </ItemGroup>
 
 </Project>

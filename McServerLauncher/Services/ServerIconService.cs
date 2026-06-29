@@ -1,43 +1,36 @@
 using System.IO;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using SkiaSharp;
 
 namespace McServerLauncher.Services;
 
 /// <summary>
 /// Generates a server's server-icon.png (64x64 PNG) from any image, cropping it to a centered
-/// square and scaling. This is the icon players see in the server list.
+/// square and scaling. This is the icon players see in the server list. Uses SkiaSharp so it works
+/// on Windows and Linux.
 /// </summary>
 public class ServerIconService
 {
     public void SetIconFromImage(string serverFolder, string sourceImagePath)
     {
-        var decoder = BitmapDecoder.Create(
-            new Uri(sourceImagePath),
-            BitmapCreateOptions.IgnoreImageCache,
-            BitmapCacheOption.OnLoad);
-        var frame = decoder.Frames[0];
+        using var input = File.OpenRead(sourceImagePath);
+        using var original = SKBitmap.Decode(input)
+            ?? throw new InvalidOperationException("Could not read the selected image.");
 
         // Centered square crop to avoid distortion.
-        var side = Math.Min(frame.PixelWidth, frame.PixelHeight);
-        var x = (frame.PixelWidth - side) / 2;
-        var y = (frame.PixelHeight - side) / 2;
-        var cropped = new CroppedBitmap(frame, new Int32Rect(x, y, side, side));
+        var side = Math.Min(original.Width, original.Height);
+        var x = (original.Width - side) / 2;
+        var y = (original.Height - side) / 2;
 
-        // Scale to 64x64.
-        var visual = new DrawingVisual();
-        using (var dc = visual.RenderOpen())
-            dc.DrawImage(cropped, new Rect(0, 0, 64, 64));
+        using var cropped = new SKBitmap(side, side);
+        original.ExtractSubset(cropped, SKRectI.Create(x, y, side, side));
 
-        var rtb = new RenderTargetBitmap(64, 64, 96, 96, PixelFormats.Pbgra32);
-        rtb.Render(visual);
-
-        var encoder = new PngBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(rtb));
+        // Scale to 64x64 and encode as PNG.
+        using var resized = cropped.Resize(new SKImageInfo(64, 64), SKFilterQuality.High);
+        using var image = SKImage.FromBitmap(resized);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
 
         var dest = Path.Combine(serverFolder, "server-icon.png");
-        using var fs = File.Create(dest);
-        encoder.Save(fs);
+        using var output = File.Create(dest);
+        data.SaveTo(output);
     }
 }
