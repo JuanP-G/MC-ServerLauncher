@@ -24,18 +24,6 @@
     <AvaloniaResource Include="Resources\app.ico" />
   </ItemGroup>
 
-  <!-- TEMPORARY during the WPF→Avalonia migration: files still using WPF are excluded from the
-       build and re-included one by one as they are ported. -->
-  <ItemGroup>
-    <Compile Remove="App.xaml.cs" />
-    <Compile Remove="Views\**\*.cs" />
-    <Compile Remove="Behaviors\**\*.cs" />
-    <Compile Remove="Converters\**\*.cs" />
-    <Compile Remove="ViewModels\**\*.cs" />
-    <None Remove="App.xaml" />
-    <None Remove="Views\**\*.xaml" />
-  </ItemGroup>
-
   <ItemGroup>
     <!-- Cross-platform reference: compiles everywhere, only used at runtime on Windows (guarded with
          OperatingSystem.IsWindows()). On Linux Playit is managed via systemctl instead. -->

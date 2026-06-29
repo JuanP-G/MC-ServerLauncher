@@ -1,6 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using McServerLauncher.Localization;
@@ -17,6 +21,10 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly ServerStorageService _storage = new();
     private readonly AppSettingsService _settings = new();
+
+    /// <summary>The main window, used as the owner of modal dialogs.</summary>
+    private static Window? Owner =>
+        (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
 
     public ObservableCollection<ServerViewModel> Servers { get; } = new();
 
@@ -77,11 +85,13 @@ public partial class MainViewModel : ObservableObject
         settings.Language = value.Code;
         _settings.Save(settings);
 
-        var answer = System.Windows.MessageBox.Show(
-            Localizer.Get("RestartNeeded"), Localizer.Get("Language"),
-            System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
-        if (answer == System.Windows.MessageBoxResult.Yes)
-            _ = RestartAppAsync();
+        _ = AskRestartAsync();
+    }
+
+    private async Task AskRestartAsync()
+    {
+        if (await MessageBox.ConfirmAsync(Localizer.Get("RestartNeeded"), Localizer.Get("Language")))
+            await RestartAppAsync();
     }
 
     private async Task RestartAppAsync()
@@ -100,24 +110,23 @@ public partial class MainViewModel : ObservableObject
     /// If the current version differs from the last one seen by the user (i.e. it was just
     /// updated), shows the what's-new window. Saves the seen version so it isn't repeated.
     /// </summary>
-    public void ShowWhatsNewIfUpdated(System.Windows.Window owner)
+    public void ShowWhatsNewIfUpdated(Window owner)
     {
         var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         if (current is null) return;
         var version = $"{current.Major}.{current.Minor}.{Math.Max(0, current.Build)}";
 
         var settings = _settings.Load();
-        if (settings.LastVersionSeen == version) return; // ya la ha visto en esta versión
+        if (settings.LastVersionSeen == version) return; // already seen in this version
 
         settings.LastVersionSeen = version;
         _settings.Save(settings);
 
         try
         {
-            var dialog = new WhatsNewDialog(version) { Owner = owner };
-            dialog.ShowDialog();
+            _ = new WhatsNewDialog(version).ShowDialog(owner);
         }
-        catch { /* si algo falla, no bloquear el arranque */ }
+        catch { /* if something fails, don't block startup */ }
     }
 
     private async Task CheckForUpdatesAsync()
@@ -149,8 +158,9 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanUpdateNow))]
     private async Task UpdateNow()
     {
-        // No downloadable installer: open the release page (fallback).
-        if (string.IsNullOrEmpty(_installerUrl))
+        // On non-Windows (or with no installer asset), open the releases page so the user can
+        // download the right package (e.g. the Linux AppImage). The silent .exe installer is Windows-only.
+        if (!OperatingSystem.IsWindows() || string.IsNullOrEmpty(_installerUrl))
         {
             OpenRelease();
             return;
@@ -214,14 +224,14 @@ public partial class MainViewModel : ObservableObject
     /// Returns the Playit write key; if it's not saved, asks the user for it and saves it.
     /// Returns null if the user cancels.
     /// </summary>
-    private string? EnsurePlayitApiKey()
+    private async Task<string?> EnsurePlayitApiKeyAsync()
     {
         var settings = _settings.Load();
         if (!string.IsNullOrWhiteSpace(settings.PlayitApiKey))
             return settings.PlayitApiKey;
 
-        var dialog = new PlayitApiKeyDialog { Owner = System.Windows.Application.Current.MainWindow };
-        if (dialog.ShowDialog() != true)
+        var dialog = new PlayitApiKeyDialog();
+        if (Owner is null || !await dialog.ShowDialog<bool>(Owner))
             return null;
 
         settings.PlayitApiKey = dialog.ApiKey;
@@ -234,7 +244,7 @@ public partial class MainViewModel : ObservableObject
     private async Task CreateTunnelForSelected()
     {
         if (SelectedServer is null) return;
-        var key = EnsurePlayitApiKey();
+        var key = await EnsurePlayitApiKeyAsync();
         if (key is null) return;
         await SelectedServer.CreateTunnelAsync(key);
     }
@@ -249,11 +259,12 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void AddServer()
+    private async Task AddServer()
     {
+        if (Owner is null) return;
         var config = new ServerConfig();
-        var dialog = new AddEditServerDialog(config) { Owner = System.Windows.Application.Current.MainWindow };
-        if (dialog.ShowDialog() == true)
+        var dialog = new AddEditServerDialog(config);
+        if (await dialog.ShowDialog<bool>(Owner))
         {
             SelectedServer = Register(config);
             Save();
@@ -269,8 +280,9 @@ public partial class MainViewModel : ObservableObject
             .Where(p => p.HasValue)
             .Select(p => p!.Value);
 
-        var dialog = new CreateServerDialog(usedPorts) { Owner = System.Windows.Application.Current.MainWindow };
-        if (dialog.ShowDialog() == true && dialog.ResultConfig is not null)
+        if (Owner is null) return;
+        var dialog = new CreateServerDialog(usedPorts);
+        if (await dialog.ShowDialog<bool>(Owner) && dialog.ResultConfig is not null)
         {
             var vm = Register(dialog.ResultConfig);
             SelectedServer = vm;
@@ -279,7 +291,7 @@ public partial class MainViewModel : ObservableObject
             // Create the Playit tunnel (errors are visible in the server's console).
             if (dialog.CreateTunnel)
             {
-                var key = EnsurePlayitApiKey();
+                var key = await EnsurePlayitApiKeyAsync();
                 if (key is not null)
                     await vm.CreateTunnelAsync(key);
             }
@@ -291,11 +303,11 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void EditServer()
+    private async Task EditServer()
     {
-        if (SelectedServer is null) return;
-        var dialog = new AddEditServerDialog(SelectedServer.Config) { Owner = System.Windows.Application.Current.MainWindow };
-        if (dialog.ShowDialog() == true)
+        if (SelectedServer is null || Owner is null) return;
+        var dialog = new AddEditServerDialog(SelectedServer.Config);
+        if (await dialog.ShowDialog<bool>(Owner))
         {
             SelectedServer.Name = SelectedServer.Config.Name;
             Save();
@@ -303,40 +315,45 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void ChangeIconForSelected()
+    private async Task ChangeIconForSelected()
     {
-        if (SelectedServer is null) return;
+        if (SelectedServer is null || Owner is null) return;
 
-        var dialog = new Microsoft.Win32.OpenFileDialog
+        var files = await Owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = Localizer.Get("Title_SelectImage"),
-            Filter = Localizer.Get("Filter_Images")
-        };
-        if (dialog.ShowDialog() != true)
-            return;
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType(Localizer.Get("Title_SelectImage"))
+                {
+                    Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif" }
+                }
+            }
+        });
+
+        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
+        if (string.IsNullOrEmpty(path)) return;
 
         try
         {
-            new ServerIconService().SetIconFromImage(SelectedServer.Config.FolderPath, dialog.FileName);
+            new ServerIconService().SetIconFromImage(SelectedServer.Config.FolderPath, path);
             SelectedServer.RefreshFromDisk();
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show(
+            await MessageBox.ShowAsync(
                 string.Format(Localizer.Get("Msg_IconCreateError"), ex.Message),
-                Localizer.Get("Title_ChangeIcon"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                Localizer.Get("Title_ChangeIcon"));
         }
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void ConfigureServer()
+    private async Task ConfigureServer()
     {
-        if (SelectedServer is null) return;
-        var dialog = new ServerConfigDialog(SelectedServer.Config)
-        {
-            Owner = System.Windows.Application.Current.MainWindow
-        };
-        if (dialog.ShowDialog() == true)
+        if (SelectedServer is null || Owner is null) return;
+        var dialog = new ServerConfigDialog(SelectedServer.Config);
+        if (await dialog.ShowDialog<bool>(Owner))
             SelectedServer.RefreshFromDisk();
     }
 
@@ -349,11 +366,9 @@ public partial class MainViewModel : ObservableObject
         // Read the port BEFORE deleting anything (we need it to locate the tunnel).
         var port = new ServerPropertiesService().GetServerPort(SelectedServer.Config.PropertiesPath);
 
-        var dialog = new DeleteServerDialog(SelectedServer.Name, folder)
-        {
-            Owner = System.Windows.Application.Current.MainWindow
-        };
-        if (dialog.ShowDialog() != true)
+        if (Owner is null) return;
+        var dialog = new DeleteServerDialog(SelectedServer.Name, folder);
+        if (!await dialog.ShowDialog<bool>(Owner))
             return;
 
         await SelectedServer.ShutdownAsync();
@@ -363,7 +378,7 @@ public partial class MainViewModel : ObservableObject
 
         if (dialog.DeleteTunnel && port.HasValue)
         {
-            var key = EnsurePlayitApiKey();
+            var key = await EnsurePlayitApiKeyAsync();
             try
             {
                 var deleted = key is not null && await new PlayitApiService().DeleteTunnelForPortAsync(key, port.Value);
@@ -372,15 +387,15 @@ public partial class MainViewModel : ObservableObject
                     // The user didn't provide a key; the tunnel is not deleted.
                 }
                 else if (!deleted)
-                    System.Windows.MessageBox.Show(
+                    await MessageBox.ShowAsync(
                         string.Format(Localizer.Get("Msg_NoTunnelForPort"), port),
-                        Localizer.Get("Title_DeleteTunnel"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                        Localizer.Get("Title_DeleteTunnel"));
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(
+                await MessageBox.ShowAsync(
                     string.Format(Localizer.Get("Msg_TunnelDeleteError"), ex.Message),
-                    Localizer.Get("Title_DeleteTunnel"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    Localizer.Get("Title_DeleteTunnel"));
             }
         }
 
@@ -392,11 +407,9 @@ public partial class MainViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(
+                await MessageBox.ShowAsync(
                     string.Format(Localizer.Get("Msg_FilesDeleteError"), ex.Message),
-                    Localizer.Get("Title_DeleteFiles"),
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    Localizer.Get("Title_DeleteFiles"));
             }
         }
     }

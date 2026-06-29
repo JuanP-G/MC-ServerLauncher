@@ -1,0 +1,33 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        x:Class="McServerLauncher.Views.PlayitApiKeyDialog"
+        Title="{loc:Loc Pk_Title}"
+        Width="560" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,Auto">
+        <StackPanel Grid.Row="0" Margin="20,20,20,8">
+            <TextBlock TextWrapping="Wrap" FontSize="14" Text="{loc:Loc Pk_Intro}" />
+
+            <TextBlock TextWrapping="Wrap" FontSize="13" Opacity="0.8" Margin="0,12,0,0"
+                       Text="{loc:Loc Pk_Steps}" />
+
+            <Button Margin="0,12,0,0" Click="OpenPlayit_Click">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ic:SymbolIcon Symbol="Open" />
+                    <TextBlock Text="{loc:Loc Pk_OpenPlayit}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+
+            <TextBlock Text="{loc:Loc Pk_KeyLabel}" Margin="0,16,0,4" />
+            <TextBox x:Name="KeyBox" Watermark="{loc:Loc Pk_KeyPlaceholder}" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,12,20,16" Spacing="8">
+            <Button Content="{loc:Loc Cancel}" Click="Cancel_Click" />
+            <Button Classes="accent" Content="{loc:Loc Save}" Click="Save_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

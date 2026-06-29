@@ -1,14 +1,14 @@
 using System.IO;
-using System.Windows;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
-using Microsoft.Win32;
-using Wpf.Ui.Controls;
 
 namespace McServerLauncher.Views;
 
-public partial class CreateServerDialog : FluentWindow
+public partial class CreateServerDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();
     private readonly ServerCreationService _creation = new();
@@ -17,7 +17,7 @@ public partial class CreateServerDialog : FluentWindow
     private List<MinecraftVersion> _allVersions = new();
     private string _latestRelease = string.Empty;
 
-    /// <summary>Configuration of the created server (valid if DialogResult == true).</summary>
+    /// <summary>Configuration of the created server (valid if the dialog returned true).</summary>
     public ServerConfig? ResultConfig { get; private set; }
 
     /// <summary>Whether to start the server at the end to generate the world.</summary>
@@ -53,7 +53,7 @@ public partial class CreateServerDialog : FluentWindow
     /// </summary>
     private int SuggestFreePort() => _ports.FindFreePort(25565, _usedPorts);
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+    private async void OnLoaded(object? sender, RoutedEventArgs e)
     {
         UpdateFinalPath();
         try
@@ -70,7 +70,7 @@ public partial class CreateServerDialog : FluentWindow
         }
     }
 
-    private void Snapshots_Changed(object sender, RoutedEventArgs e) => PopulateVersions();
+    private void Snapshots_Changed(object? sender, RoutedEventArgs e) => PopulateVersions();
 
     private void PopulateVersions()
     {
@@ -90,9 +90,7 @@ public partial class CreateServerDialog : FluentWindow
     private void UpdateFinalPath()
     {
         var folder = GetTargetFolder();
-        FinalPathText.Text = string.IsNullOrWhiteSpace(folder)
-            ? string.Empty
-            : $"Se creará en: {folder}";
+        FinalPathText.Text = string.IsNullOrWhiteSpace(folder) ? string.Empty : "→ " + folder;
     }
 
     private string GetTargetFolder()
@@ -103,70 +101,48 @@ public partial class CreateServerDialog : FluentWindow
         return Path.Combine(ParentFolderBox.Text.Trim(), name);
     }
 
-    private static string SanitizeFolderName(string name)
+    private static string SanitizeFolderName(string? name)
     {
         if (string.IsNullOrWhiteSpace(name)) return string.Empty;
         var invalid = Path.GetInvalidFileNameChars();
         return new string(name.Trim().Where(c => !invalid.Contains(c)).ToArray());
     }
 
-    private void BrowseParent_Click(object sender, RoutedEventArgs e)
+    private async void BrowseParent_Click(object? sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog { Title = Localizer.Get("Title_SelectFolderCreate") };
-        if (Directory.Exists(ParentFolderBox.Text))
-            dialog.InitialDirectory = ParentFolderBox.Text;
-        if (dialog.ShowDialog() == true)
-            ParentFolderBox.Text = dialog.FolderName;
+        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = Localizer.Get("Title_SelectFolderCreate"),
+            AllowMultiple = false
+        });
+        var path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+        if (!string.IsNullOrEmpty(path))
+            ParentFolderBox.Text = path;
     }
 
-    private async void Create_Click(object sender, RoutedEventArgs e)
+    private async void Create_Click(object? sender, RoutedEventArgs e)
     {
         var name = NameBox.Text?.Trim() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            Warn(Localizer.Get("Msg_NameRequired"));
-            return;
-        }
-        if (!Directory.Exists(ParentFolderBox.Text))
-        {
-            Warn(Localizer.Get("Msg_FolderNotExistCreate"));
-            return;
-        }
-        if (VersionCombo.SelectedItem is not MinecraftVersion version)
-        {
-            Warn(Localizer.Get("Msg_SelectVersion"));
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(name)) { await Warn(Localizer.Get("Msg_NameRequired")); return; }
+        if (!Directory.Exists(ParentFolderBox.Text)) { await Warn(Localizer.Get("Msg_FolderNotExistCreate")); return; }
+        if (VersionCombo.SelectedItem is not MinecraftVersion version) { await Warn(Localizer.Get("Msg_SelectVersion")); return; }
 
-        var minGb = (int)(MinRamBox.Value ?? 2);
-        var maxGb = (int)(MaxRamBox.Value ?? 4);
-        if (maxGb < minGb)
-        {
-            Warn(Localizer.Get("Msg_RamMaxMin"));
-            return;
-        }
+        var minGb = (int)(MinRamBox.Value ?? 2m);
+        var maxGb = (int)(MaxRamBox.Value ?? 4m);
+        if (maxGb < minGb) { await Warn(Localizer.Get("Msg_RamMaxMin")); return; }
 
-        var port = (int)(PortBox.Value ?? 25565);
-        if (_usedPorts.Contains(port))
-        {
-            Warn(string.Format(Localizer.Get("Msg_PortAssigned"), port));
-            return;
-        }
-        if (_ports.IsPortInUse(port))
-        {
-            Warn(string.Format(Localizer.Get("Msg_PortInUseOther"), port));
-            return;
-        }
+        var port = (int)(PortBox.Value ?? 25565m);
+        if (_usedPorts.Contains(port)) { await Warn(string.Format(Localizer.Get("Msg_PortAssigned"), port)); return; }
+        if (_ports.IsPortInUse(port)) { await Warn(string.Format(Localizer.Get("Msg_PortInUseOther"), port)); return; }
 
         var folder = GetTargetFolder();
 
         if (Directory.Exists(folder) && Directory.EnumerateFileSystemEntries(folder).Any())
         {
-            var ok = System.Windows.MessageBox.Show(
+            var ok = await MessageBox.ConfirmAsync(
                 string.Format(Localizer.Get("Msg_FolderExists"), folder),
-                Localizer.Get("Title_FolderExists"), System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
-            if (ok != System.Windows.MessageBoxResult.Yes)
-                return;
+                Localizer.Get("Title_FolderExists"), this);
+            if (!ok) return;
         }
 
         SetBusy(true);
@@ -198,7 +174,7 @@ public partial class CreateServerDialog : FluentWindow
             AppendLog(Localizer.Get("Msg_WritingEula"));
             _creation.WriteEula(folder);
             _creation.WriteRunBat(folder, minGb, maxGb, "server.jar", javaPath);
-            _creation.WriteInitialProperties(folder, port, $"{name} - creado con MC Server Launcher");
+            _creation.WriteInitialProperties(folder, port, $"{name} - MC Server Launcher");
 
             ResultConfig = new ServerConfig
             {
@@ -216,38 +192,32 @@ public partial class CreateServerDialog : FluentWindow
             CreateTunnel = ResultConfig.PlayitEnabled && CreateTunnelCheck.IsChecked == true;
 
             AppendLog(Localizer.Get("Msg_ServerCreated"));
-            DialogResult = true;
-            Close();
+            Close(true);
         }
         catch (Exception ex)
         {
             AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
-            Warn(string.Format(Localizer.Get("Msg_CreateServerError"), ex.Message));
+            await Warn(string.Format(Localizer.Get("Msg_CreateServerError"), ex.Message));
             SetBusy(false);
         }
     }
 
-    private void Cancel_Click(object sender, RoutedEventArgs e)
-    {
-        DialogResult = false;
-        Close();
-    }
+    private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
 
     private void SetBusy(bool busy)
     {
         FormPanel.IsEnabled = !busy;
         CreateButton.IsEnabled = !busy;
-        ProgressBox.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+        ProgressBox.IsVisible = busy;
         Spinner.IsIndeterminate = busy;
     }
 
     private void AppendLog(string line)
     {
-        ProgressLog.AppendText(line + Environment.NewLine);
-        ProgressLog.ScrollToEnd();
+        ProgressLog.Text += line + Environment.NewLine;
+        ProgressLog.CaretIndex = ProgressLog.Text?.Length ?? 0;
     }
 
-    private static void Warn(string message) =>
-        System.Windows.MessageBox.Show(message, Localizer.Get("CreateServer"),
-            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+    private Task Warn(string message) =>
+        MessageBox.ShowAsync(message, Localizer.Get("CreateServer"), this);
 }

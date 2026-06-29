@@ -1,74 +1,65 @@
 using System.Collections.Specialized;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Threading;
 
 namespace McServerLauncher.Behaviors;
 
 /// <summary>
-/// Attached property that makes a ListBox auto-scroll to the end when items
-/// are added (useful for the real-time console).
+/// Attached property that makes a ListBox auto-scroll to the end when items are
+/// added (useful for the real-time console).
 /// </summary>
 public static class AutoScrollBehavior
 {
-    public static readonly DependencyProperty AutoScrollProperty =
-        DependencyProperty.RegisterAttached(
-            "AutoScroll",
-            typeof(bool),
-            typeof(AutoScrollBehavior),
-            new PropertyMetadata(false, OnAutoScrollChanged));
+    public static readonly AttachedProperty<bool> AutoScrollProperty =
+        AvaloniaProperty.RegisterAttached<ListBox, bool>("AutoScroll", typeof(AutoScrollBehavior));
 
-    public static bool GetAutoScroll(DependencyObject obj) => (bool)obj.GetValue(AutoScrollProperty);
-    public static void SetAutoScroll(DependencyObject obj, bool value) => obj.SetValue(AutoScrollProperty, value);
+    public static bool GetAutoScroll(ListBox o) => o.GetValue(AutoScrollProperty);
+    public static void SetAutoScroll(ListBox o, bool value) => o.SetValue(AutoScrollProperty, value);
 
-    private static void OnAutoScrollChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    static AutoScrollBehavior()
     {
-        if (d is not ListBox listBox)
-            return;
+        AutoScrollProperty.Changed.AddClassHandler<ListBox>((lb, e) => OnChanged(lb, e));
+    }
 
-        if (e.NewValue is true)
+    private static void OnChanged(ListBox listBox, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is not true) return;
+
+        // Re-hook whenever the bound collection (ItemsSource) changes (e.g. switching server).
+        listBox.PropertyChanged += (_, args) =>
         {
-            listBox.Loaded += ListBoxOnLoaded;
-            // Re-hook when the ItemsSource changes (when switching the selected server).
-            ((INotifyCollectionChanged?)listBox.Items)!.CollectionChanged += (_, args) =>
-                ScrollOnAdd(listBox, args);
+            if (args.Property == ItemsControl.ItemsSourceProperty)
+                Hook(listBox, args.OldValue as INotifyCollectionChanged, args.NewValue as INotifyCollectionChanged);
+        };
+        Hook(listBox, null, listBox.ItemsSource as INotifyCollectionChanged);
+    }
+
+    private static void Hook(ListBox listBox, INotifyCollectionChanged? old, INotifyCollectionChanged? @new)
+    {
+        if (old is not null) old.CollectionChanged -= OnCollectionChanged;
+        if (@new is not null)
+        {
+            @new.CollectionChanged += OnCollectionChanged;
+            _listBoxes[@new] = listBox;
         }
+        ScrollToEnd(listBox);
     }
 
-    private static void ListBoxOnLoaded(object sender, RoutedEventArgs e)
-    {
-        if (sender is ListBox listBox && listBox.Items.Count > 0)
-            ScrollToEnd(listBox);
-    }
+    // Maps a watched collection to its ListBox so the static handler can find it.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<INotifyCollectionChanged, ListBox> _listBoxes = new();
 
-    private static void ScrollOnAdd(ListBox listBox, NotifyCollectionChangedEventArgs args)
+    private static void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (args.Action is NotifyCollectionChangedAction.Add or NotifyCollectionChangedAction.Reset)
-            ScrollToEnd(listBox);
+        if (e.Action is not (NotifyCollectionChangedAction.Add or NotifyCollectionChangedAction.Reset)) return;
+        if (sender is INotifyCollectionChanged c && _listBoxes.TryGetValue(c, out var lb))
+            Dispatcher.UIThread.Post(() => ScrollToEnd(lb));
     }
 
     private static void ScrollToEnd(ListBox listBox)
     {
-        if (listBox.Items.Count == 0)
-            return;
-
-        var scrollViewer = FindScrollViewer(listBox);
-        scrollViewer?.ScrollToBottom();
-    }
-
-    private static ScrollViewer? FindScrollViewer(DependencyObject root)
-    {
-        if (root is ScrollViewer sv)
-            return sv;
-
-        var count = VisualTreeHelper.GetChildrenCount(root);
-        for (var i = 0; i < count; i++)
-        {
-            var child = VisualTreeHelper.GetChild(root, i);
-            var result = FindScrollViewer(child);
-            if (result is not null)
-                return result;
-        }
-        return null;
+        var count = listBox.ItemCount;
+        if (count > 0)
+            listBox.ScrollIntoView(count - 1);
     }
 }

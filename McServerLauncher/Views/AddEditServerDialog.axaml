@@ -1,0 +1,58 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:models="using:McServerLauncher.Models"
+        x:Class="McServerLauncher.Views.AddEditServerDialog"
+        x:DataType="models:ServerConfig"
+        Title="{loc:Loc Cfg_Title}"
+        Width="620" Height="640" MinWidth="560"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollViewer Grid.Row="0" Margin="20,20,20,8" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc Cs_Name}" Margin="0,4" />
+                <TextBox Text="{Binding Name, Mode=TwoWay}" />
+
+                <TextBlock Text="{loc:Loc Ae_Folder}" Margin="0,12,0,4" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding FolderPath, Mode=TwoWay}" />
+                    <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseFolder_Click" />
+                </Grid>
+
+                <TextBlock Text="{loc:Loc Ae_Jar}" Margin="0,12,0,4" />
+                <TextBox Text="{Binding JarFile, Mode=TwoWay}" />
+
+                <TextBlock Text="{loc:Loc Ae_Java}" Margin="0,12,0,4" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding JavaPath, Mode=TwoWay}"
+                             Watermark="{loc:Loc Ae_JavaPlaceholder}" />
+                    <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseJava_Click" />
+                </Grid>
+
+                <Grid ColumnDefinitions="*,*" Margin="0,12,0,0">
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="{loc:Loc Cs_RamMin}" Margin="0,0,0,4" />
+                        <NumericUpDown Value="{Binding MinRamGb}" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                        <TextBlock Text="{loc:Loc Cs_RamMax}" Margin="0,0,0,4" />
+                        <NumericUpDown Value="{Binding MaxRamGb}" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="{loc:Loc Ae_ExtraArgs}" Margin="0,12,0,4" />
+                <TextBox Text="{Binding ExtraJvmArgs, Mode=TwoWay}" Watermark="e.g. -XX:+UseG1GC" />
+
+                <Separator Margin="0,18,0,12" />
+
+                <CheckBox Content="{loc:Loc Cs_UsePlayit}" IsChecked="{Binding PlayitEnabled, Mode=TwoWay}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,8,20,16" Spacing="8">
+            <Button Content="{loc:Loc Cancel}" Click="Cancel_Click" />
+            <Button Classes="accent" Content="{loc:Loc Save}" Click="Save_Click" />
+        </StackPanel>
+    </Grid>
+</Window>
