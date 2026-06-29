@@ -47,9 +47,21 @@ Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubd
 [Icons]
 Name: "{group}\MC Server Launcher"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\Desinstalar MC Server Launcher"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\MC Server Launcher"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+; Recrea el acceso directo del escritorio si el usuario lo marca O si ya tenía uno (así una
+; actualización refresca su icono aunque no se vuelva a marcar la casilla).
+Name: "{autodesktop}\MC Server Launcher"; Filename: "{app}\{#MyAppExeName}"; Check: ShouldCreateDesktopIcon
 
 [Run]
+; Refresca la caché de iconos de Windows para que el acceso directo muestre el icono nuevo tras
+; una actualización (como usuario normal: la caché de iconos es por usuario).
+Filename: "{sys}\ie4uinit.exe"; Parameters: "-show"; Flags: runhidden runasoriginaluser
 ; Sin skipifsilent y con runasoriginaluser: tras una actualización silenciosa desde la app, se
 ; relanza automáticamente como usuario normal (no elevado). En instalación normal es la casilla final.
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,MC Server Launcher}"; Flags: nowait postinstall runasoriginaluser
+
+[Code]
+function ShouldCreateDesktopIcon: Boolean;
+begin
+  Result := WizardIsTaskSelected('desktopicon') or
+            FileExists(ExpandConstant('{autodesktop}\MC Server Launcher.lnk'));
+end;
