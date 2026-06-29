@@ -17,16 +17,16 @@ public partial class CreateServerDialog : FluentWindow
     private List<MinecraftVersion> _allVersions = new();
     private string _latestRelease = string.Empty;
 
-    /// <summary>Configuración del servidor creado (válida si DialogResult == true).</summary>
+    /// <summary>Configuration of the created server (valid if DialogResult == true).</summary>
     public ServerConfig? ResultConfig { get; private set; }
 
-    /// <summary>Si hay que iniciar el servidor al terminar para generar el mundo.</summary>
+    /// <summary>Whether to start the server at the end to generate the world.</summary>
     public bool AutoStart { get; private set; }
 
-    /// <summary>Si hay que crear el túnel de Playit para este servidor.</summary>
+    /// <summary>Whether to create the Playit tunnel for this server.</summary>
     public bool CreateTunnel { get; private set; }
 
-    /// <summary>Puertos ya ocupados por otros servidores registrados (para evitar conflictos).</summary>
+    /// <summary>Ports already used by other registered servers (to avoid conflicts).</summary>
     private readonly HashSet<int> _usedPorts;
 
     public CreateServerDialog(IEnumerable<int>? usedPorts = null)
@@ -37,7 +37,7 @@ public partial class CreateServerDialog : FluentWindow
         ParentFolderBox.Text = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
 
-        // Sugerir un puerto libre que no choque con los servidores ya existentes.
+        // Suggest a free port that doesn't clash with existing servers.
         PortBox.Value = SuggestFreePort();
         if (_usedPorts.Count > 0)
             PortStatus.Text = string.Format(Localizer.Get("Msg_PortsInUseByServers"), string.Join(", ", _usedPorts.OrderBy(p => p)));
@@ -48,8 +48,8 @@ public partial class CreateServerDialog : FluentWindow
     }
 
     /// <summary>
-    /// Primer puerto libre desde 25565 que no use otro servidor registrado NI ninguna otra
-    /// aplicación del sistema.
+    /// First free port from 25565 that is not used by another registered server NOR any other
+    /// application on the system.
     /// </summary>
     private int SuggestFreePort() => _ports.FindFreePort(25565, _usedPorts);
 
@@ -182,7 +182,7 @@ public partial class CreateServerDialog : FluentWindow
             var jarPath = Path.Combine(folder, "server.jar");
             await _versions.DownloadFileAsync(details.ServerUrl, jarPath, progress);
 
-            // Comprobar/instalar el Java que necesita esta versión de Minecraft.
+            // Check/install the Java this Minecraft version needs.
             AppendLog(string.Format(Localizer.Get("Msg_CheckingJava"), version.Id, details.JavaMajor));
             var javaPath = "java";
             try
@@ -211,8 +211,8 @@ public partial class CreateServerDialog : FluentWindow
                 PlayitEnabled = PlayitCheck.IsChecked == true
             };
             AutoStart = AutoStartCheck.IsChecked == true;
-            // La creación del túnel la hace MainViewModel sobre el servidor ya añadido, para que
-            // el resultado/errores salgan en la consola del servidor (que no desaparece).
+            // The tunnel creation is done by MainViewModel on the already-added server, so the
+            // result/errors appear in the server's console (which doesn't disappear).
             CreateTunnel = ResultConfig.PlayitEnabled && CreateTunnelCheck.IsChecked == true;
 
             AppendLog(Localizer.Get("Msg_ServerCreated"));

@@ -4,15 +4,14 @@ using System.Text;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Lectura del archivo server.properties (formato key=value, una por línea).
-/// En el MVP sólo se usa para leer (p.ej. el puerto). La escritura llegará en la fase
-/// de "Configuración visual".
+/// Reads and writes the server.properties file (key=value format, one per line).
+/// Used to read values (e.g. the port) and to update them from the visual configuration screen.
 /// </summary>
 public class ServerPropertiesService
 {
     /// <summary>
-    /// Lee server.properties y devuelve un diccionario clave→valor.
-    /// Devuelve vacío si el archivo no existe.
+    /// Reads server.properties and returns a key→value dictionary.
+    /// Returns empty if the file does not exist.
     /// </summary>
     public Dictionary<string, string> Read(string propertiesPath)
     {
@@ -38,7 +37,7 @@ public class ServerPropertiesService
         return result;
     }
 
-    /// <summary>Devuelve el puerto del servidor (server-port) o null si no se encuentra.</summary>
+    /// <summary>Returns the server port (server-port) or null if not found.</summary>
     public int? GetServerPort(string propertiesPath)
     {
         var props = Read(propertiesPath);
@@ -48,8 +47,8 @@ public class ServerPropertiesService
     }
 
     /// <summary>
-    /// Actualiza las claves indicadas en server.properties conservando el resto de líneas,
-    /// comentarios y orden. Las claves nuevas se añaden al final. Crea el archivo si no existe.
+    /// Updates the given keys in server.properties, preserving the rest of the lines,
+    /// comments and order. New keys are appended at the end. Creates the file if it doesn't exist.
     /// </summary>
     public void Update(string propertiesPath, IDictionary<string, string> changes)
     {

@@ -4,9 +4,9 @@ using McServerLauncher.Models;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Integración con Playit.gg apoyándose en el SERVICIO de Windows que instala playit
-/// (normalmente "playitd"), que ya mantiene los túneles en segundo plano 24/7.
-/// La app no lanza su propio playit.exe: solo consulta y, si se puede, arranca/detiene el servicio.
+/// Playit.gg integration relying on the Windows SERVICE that playit installs
+/// (usually "playitd"), which already keeps the tunnels running 24/7 in the background.
+/// The app does not launch its own playit.exe: it only queries and, if possible, starts/stops the service.
 /// </summary>
 public class PlayitManager
 {
@@ -26,18 +26,18 @@ public class PlayitManager
         }
     }
 
-    /// <summary>True si el servicio de playit está instalado en el sistema.</summary>
+    /// <summary>True if the playit service is installed on the system.</summary>
     public bool IsInstalled { get; private set; }
 
     public bool IsRunning => State == PlayitState.Running;
 
-    /// <summary>Consulta el estado actual del servicio y actualiza <see cref="State"/>.</summary>
+    /// <summary>Queries the current service status and updates <see cref="State"/>.</summary>
     public void RefreshState()
     {
         try
         {
             using var sc = new ServiceController(ServiceName);
-            var status = sc.Status; // lanza si el servicio no existe
+            var status = sc.Status; // throws if the service does not exist
             IsInstalled = true;
             State = status switch
             {
@@ -53,7 +53,7 @@ public class PlayitManager
         }
     }
 
-    /// <summary>Arranca el servicio de playit (puede requerir permisos de administrador).</summary>
+    /// <summary>Starts the playit service (may require administrator permissions).</summary>
     public async Task StartServiceAsync()
     {
         await Task.Run(() =>
@@ -68,7 +68,7 @@ public class PlayitManager
         RefreshState();
     }
 
-    /// <summary>Detiene el servicio de playit (puede requerir permisos de administrador).</summary>
+    /// <summary>Stops the playit service (may require administrator permissions).</summary>
     public async Task StopServiceAsync()
     {
         await Task.Run(() =>

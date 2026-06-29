@@ -14,8 +14,8 @@ using McServerLauncher.Services;
 namespace McServerLauncher.ViewModels;
 
 /// <summary>
-/// Representa un servidor en la interfaz: su configuración, estado en vivo, consola
-/// integrada, envío de comandos e integración con Playit.
+/// Represents a server in the UI: its configuration, live state, embedded
+/// console, command sending and Playit integration.
 /// </summary>
 public partial class ServerViewModel : ObservableObject
 {
@@ -35,7 +35,7 @@ public partial class ServerViewModel : ObservableObject
 
     public ServerConfig Config { get; }
 
-    /// <summary>Líneas de la consola integrada (stdout/stderr del servidor + Playit).</summary>
+    /// <summary>Lines of the embedded console (server stdout/stderr + Playit).</summary>
     public ObservableCollection<string> ConsoleLines { get; } = new();
 
     [ObservableProperty]
@@ -59,7 +59,7 @@ public partial class ServerViewModel : ObservableObject
     [ObservableProperty]
     private bool _isCommandHelpOpen;
 
-    /// <summary>Comandos habituales con su explicación (para la ayuda de la consola).</summary>
+    /// <summary>Common commands with their explanation (for the console help).</summary>
     public IReadOnlyList<CommandHelp> CommandHelp => SharedCommandHelp;
 
     private static readonly IReadOnlyList<CommandHelp> SharedCommandHelp = new List<CommandHelp>
@@ -100,7 +100,7 @@ public partial class ServerViewModel : ObservableObject
     [ObservableProperty]
     private string _portText = "—";
 
-    // --- Vista estilo lista de Minecraft ---
+    // --- Minecraft server-list style view ---
 
     [ObservableProperty]
     private ImageSource? _serverIcon;
@@ -117,23 +117,23 @@ public partial class ServerViewModel : ObservableObject
 
     private readonly PlayersService _players = new();
 
-    /// <summary>Jugadores conectados ahora (en vivo, leído de la consola).</summary>
+    /// <summary>Players connected right now (live, read from the console).</summary>
     public ObservableCollection<string> ConnectedPlayers { get; } = new();
 
-    /// <summary>Operadores (ops.json).</summary>
+    /// <summary>Operators (ops.json).</summary>
     public ObservableCollection<string> OpPlayers { get; } = new();
 
-    /// <summary>Baneados (banned-players.json).</summary>
+    /// <summary>Banned players (banned-players.json).</summary>
     public ObservableCollection<string> BannedPlayers { get; } = new();
 
-    /// <summary>Jugadores que han entrado alguna vez (usercache.json).</summary>
+    /// <summary>Players who have ever joined (usercache.json).</summary>
     public ObservableCollection<string> KnownPlayers { get; } = new();
 
-    // --- Lista blanca (whitelist) ---
+    // --- Whitelist ---
 
     private readonly WhitelistService _whitelist = new();
 
-    /// <summary>Jugadores actualmente en la whitelist (nombres).</summary>
+    /// <summary>Players currently in the whitelist (names).</summary>
     public ObservableCollection<string> WhitelistPlayers { get; } = new();
 
     [ObservableProperty]
@@ -142,7 +142,7 @@ public partial class ServerViewModel : ObservableObject
     [ObservableProperty]
     private string _newWhitelistName = string.Empty;
 
-    // Colores según el estado (texto/punto de estado y barras de señal de la tarjeta).
+    // Colors per state (status text/dot and the card's signal bars).
     private static readonly Brush BrushGreen = Frozen("#3FB950");
     private static readonly Brush BrushSignalGreen = Frozen("#55FF55");
     private static readonly Brush BrushAmber = Frozen("#E3A82B");
@@ -168,7 +168,7 @@ public partial class ServerViewModel : ObservableObject
         return b;
     }
 
-    /// <summary>Se dispara cuando cambia algo persistible del servidor (para guardar).</summary>
+    /// <summary>Raised when something persistable about the server changes (to save).</summary>
     public event Action? ConfigChanged;
 
     public ServerViewModel(ServerConfig config)
@@ -177,7 +177,7 @@ public partial class ServerViewModel : ObservableObject
         _name = config.Name;
         _tunnelAddress = config.TunnelAddress;
 
-        // Permite actualizar ConsoleLines desde hilos de fondo de forma segura.
+        // Allows updating ConsoleLines safely from background threads.
         BindingOperations.EnableCollectionSynchronization(ConsoleLines, _consoleLock);
 
         _process.OutputReceived += OnConsoleLine;
@@ -187,8 +187,8 @@ public partial class ServerViewModel : ObservableObject
         _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _statsTimer.Tick += (_, _) => UpdateStats();
 
-        // El servicio de Playit corre de fondo; consultamos su estado periódicamente, y la
-        // dirección del túnel (vía API de playit) con menos frecuencia.
+        // The Playit service runs in the background; we poll its state periodically, and the
+        // tunnel address (via the playit API) less often.
         _playitTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _playitTimer.Tick += OnPlayitTimerTick;
         _playitTimer.Start();
@@ -204,12 +204,12 @@ public partial class ServerViewModel : ObservableObject
     private void OnPlayitTimerTick(object? sender, EventArgs e)
     {
         _playit.RefreshState();
-        // Cada ~30 s (10 ticks de 3 s) refrescamos la dirección del túnel desde la API.
+        // Every ~30 s (10 ticks of 3 s) we refresh the tunnel address from the API.
         if (++_playitTickCounter % 10 == 0)
             _ = RefreshTunnelAddressAsync();
     }
 
-    /// <summary>Obtiene la dirección del túnel de la API de playit emparejando por puerto.</summary>
+    /// <summary>Gets the tunnel address from the playit API, matching by port.</summary>
     private async Task RefreshTunnelAddressAsync()
     {
         try
@@ -223,7 +223,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch
         {
-            // Best-effort: si la API falla, se mantiene la dirección guardada/manual.
+            // Best-effort: if the API fails, the saved/manual address is kept.
         }
     }
 
@@ -235,8 +235,8 @@ public partial class ServerViewModel : ObservableObject
     };
 
     /// <summary>
-    /// Calcula la "señal" (accesibilidad real): verde solo si el servidor está encendido y, cuando
-    /// usa Playit, el túnel está activo. Si está encendido sin túnel, rojo + aviso.
+    /// Computes the "signal" (real reachability): green only if the server is running and, when
+    /// using Playit, the tunnel is active. If running without a tunnel, red + warning.
     /// </summary>
     private void UpdateSignal()
     {
@@ -333,7 +333,7 @@ public partial class ServerViewModel : ObservableObject
         TrackPlayers(line);
     });
 
-    // Jugadores conectados en vivo leyendo los mensajes de entrada/salida de la consola.
+    // Live connected players, read from the join/leave messages in the console.
     private void TrackPlayers(string line)
     {
         var joined = NameBefore(line, " joined the game");
@@ -352,7 +352,7 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
-    /// <summary>Extrae el nombre justo antes de un marcador (p. ej. " joined the game").</summary>
+    /// <summary>Extracts the name right before a marker (e.g. " joined the game").</summary>
     private static string? NameBefore(string line, string marker)
     {
         var idx = line.IndexOf(marker, StringComparison.Ordinal);
@@ -371,16 +371,16 @@ public partial class ServerViewModel : ObservableObject
             RefreshPort();
             RefreshInfo();
 
-            // Si el puerto está ocupado, ofrecemos cerrar el proceso que lo tiene.
+            // If the port is busy, offer to close the process holding it.
             var port = _properties.GetServerPort(Config.PropertiesPath);
             if (port.HasValue && _ports.IsPortInUse(port.Value) && !await TryFreePortAsync(port.Value))
                 return;
 
-            // Asegurar que el Java configurado es compatible con la versión de este servidor.
+            // Make sure the configured Java is compatible with this server's version.
             await EnsureCompatibleJavaAsync();
 
             _process.Start(Config);
-            // Playit ya corre como servicio en segundo plano: no lanzamos otro agente.
+            // Playit already runs as a background service: we don't launch another agent.
         }
         catch (Exception ex)
         {
@@ -389,8 +389,8 @@ public partial class ServerViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Comprueba que el Java configurado sirve para la versión de este servidor (leída del jar).
-    /// Si no, instala/usa el Java correcto y lo guarda en la config.
+    /// Checks that the configured Java works for this server's version (read from the jar).
+    /// If not, installs/uses the correct Java and saves it in the config.
     /// </summary>
     private async Task EnsureCompatibleJavaAsync()
     {
@@ -421,7 +421,7 @@ public partial class ServerViewModel : ObservableObject
     }
 
     /// <summary>
-    /// El puerto está ocupado: identifica el proceso y ofrece cerrarlo. Devuelve true si quedó libre.
+    /// The port is busy: identifies the process and offers to close it. Returns true if it became free.
     /// </summary>
     private async Task<bool> TryFreePortAsync(int port)
     {
@@ -458,7 +458,7 @@ public partial class ServerViewModel : ObservableObject
             return false;
         }
 
-        // Esperar a que el puerto quede libre.
+        // Wait for the port to become free.
         for (var i = 0; i < 12 && _ports.IsPortInUse(port); i++)
             await Task.Delay(300);
 
@@ -504,7 +504,7 @@ public partial class ServerViewModel : ObservableObject
 
     partial void OnCommandTextChanged(string value) => SendCommandCommand.NotifyCanExecuteChanged();
 
-    /// <summary>Pone el comando elegido de la ayuda en la caja (listo para completar y enviar).</summary>
+    /// <summary>Puts the chosen help command into the box (ready to complete and send).</summary>
     [RelayCommand]
     private void UseCommand(CommandHelp? item)
     {
@@ -560,8 +560,8 @@ public partial class ServerViewModel : ObservableObject
     private void ClearConsole() => ConsoleLines.Clear();
 
     /// <summary>
-    /// Crea (si no existe) el túnel de Playit para el puerto de este servidor, usando la clave de
-    /// escritura. Los mensajes salen en la consola del servidor.
+    /// Creates (if it doesn't exist) the Playit tunnel for this server's port, using the write
+    /// key. Messages are shown in the server's console.
     /// </summary>
     public async Task CreateTunnelAsync(string writeKey)
     {
@@ -587,7 +587,7 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
-    /// <summary>Abre el panel de túneles de Playit.gg en el navegador (para crear/ver túneles).</summary>
+    /// <summary>Opens the Playit.gg tunnels panel in the browser (to create/view tunnels).</summary>
     [RelayCommand]
     private void OpenPlayitDashboard()
     {
@@ -613,14 +613,14 @@ public partial class ServerViewModel : ObservableObject
 
     partial void OnServerIconChanged(ImageSource? value) => OnPropertyChanged(nameof(HasIcon));
 
-    /// <summary>Vuelve a leer datos del disco (tras editar server.properties).</summary>
+    /// <summary>Re-reads data from disk (after editing server.properties).</summary>
     public void RefreshFromDisk()
     {
         RefreshPort();
         RefreshInfo();
     }
 
-    /// <summary>Lee MOTD, máximo de jugadores e icono del servidor (vista estilo Minecraft).</summary>
+    /// <summary>Reads MOTD, max players and the server icon (Minecraft-style view).</summary>
     private void RefreshInfo()
     {
         var props = _properties.Read(Config.PropertiesPath);
@@ -699,7 +699,7 @@ public partial class ServerViewModel : ObservableObject
 
     private void LoadIcon()
     {
-        // El icono que ven los jugadores en la lista de servidores es server-icon.png (raíz, 64x64).
+        // The icon players see in the server list is server-icon.png (root, 64x64).
         var path = Path.Combine(Config.FolderPath, "server-icon.png");
         if (!File.Exists(path))
         {
@@ -725,7 +725,7 @@ public partial class ServerViewModel : ObservableObject
 
     private void UpdatePlayerCount() => PlayerCountText = $"{ConnectedPlayers.Count}/{_maxPlayers}";
 
-    /// <summary>Lee ops.json, banned-players.json, usercache.json y la whitelist.</summary>
+    /// <summary>Reads ops.json, banned-players.json, usercache.json and the whitelist.</summary>
     [RelayCommand]
     private void RefreshPlayers()
     {
@@ -818,7 +818,7 @@ public partial class ServerViewModel : ObservableObject
             ? $"{(int)t.TotalHours}h {t.Minutes}m {t.Seconds}s"
             : $"{t.Minutes}m {t.Seconds}s";
 
-    /// <summary>Detiene el servidor al cerrar la app. NO toca el servicio de Playit (sigue de fondo).</summary>
+    /// <summary>Stops the server when the app closes. Does NOT touch the Playit service (keeps running in the background).</summary>
     public async Task ShutdownAsync()
     {
         _statsTimer.Stop();

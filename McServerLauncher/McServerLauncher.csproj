@@ -11,7 +11,11 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>
     <Version>1.0.3</Version>
-    <!-- Idiomas que incluimos (los nuestros). Evita arrastrar todos los idiomas de las librerías. -->
+    <!-- Generate the XML documentation file from /// comments (consumed by DocFX). -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Don't require docs on every public member (avoids CS1591 noise); we document what matters. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Languages we ship (ours). Avoids pulling in every language of the libraries. -->
     <SatelliteResourceLanguages>en;pt;fr;de</SatelliteResourceLanguages>
   </PropertyGroup>
 

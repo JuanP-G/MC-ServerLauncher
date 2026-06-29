@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Comprueba en las Releases de GitHub si hay una versión más nueva que la instalada.
+/// Checks the GitHub Releases for a version newer than the installed one.
 /// </summary>
 public class UpdateService
 {
@@ -13,10 +13,10 @@ public class UpdateService
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
     private static readonly HttpClient DownloadHttp = new() { Timeout = TimeSpan.FromMinutes(10) };
 
-    /// <summary>Datos de la actualización. <see cref="InstallerUrl"/> es el .exe del instalador (null si no hay).</summary>
+    /// <summary>Update data. <see cref="InstallerUrl"/> is the installer .exe (null if there isn't one).</summary>
     public record UpdateInfo(string Version, string Url, string? InstallerUrl);
 
-    /// <summary>Devuelve la última versión si es más nueva que <paramref name="current"/>; si no, null.</summary>
+    /// <summary>Returns the latest version if it is newer than <paramref name="current"/>; otherwise null.</summary>
     public async Task<UpdateInfo?> CheckAsync(Version current, CancellationToken ct = default)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
@@ -40,7 +40,7 @@ public class UpdateService
         var cur = Normalize(current);
         if (latest <= cur) return null;
 
-        // Buscar el instalador (.exe) entre los assets de la release para poder actualizar desde la app.
+        // Look for the installer (.exe) among the release assets so we can update from the app.
         string? installerUrl = null;
         if (root.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
         {
@@ -59,7 +59,7 @@ public class UpdateService
         return new UpdateInfo(tag.TrimStart('v', 'V'), url, installerUrl);
     }
 
-    /// <summary>Descarga el instalador a <paramref name="destPath"/>. Devuelve la ruta descargada.</summary>
+    /// <summary>Downloads the installer to <paramref name="destPath"/>. Returns the downloaded path.</summary>
     public async Task<string> DownloadInstallerAsync(string url, string destPath, CancellationToken ct = default)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, url);

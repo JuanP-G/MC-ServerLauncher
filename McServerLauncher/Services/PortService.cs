@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Comprueba qué puertos TCP están en uso en el equipo (por cualquier aplicación) y ayuda a
-/// encontrar el siguiente puerto libre.
+/// Checks which TCP ports are in use on the machine (by any application) and helps
+/// find the next free port.
 /// </summary>
 public class PortService
 {
-    /// <summary>True si algún proceso del sistema está escuchando en ese puerto TCP.</summary>
+    /// <summary>True if any system process is listening on that TCP port.</summary>
     public bool IsPortInUse(int port)
     {
         try
@@ -19,14 +19,14 @@ public class PortService
         }
         catch
         {
-            // Si no se puede consultar, no bloqueamos por seguridad.
+            // If it can't be queried, don't block to be safe.
             return false;
         }
     }
 
     /// <summary>
-    /// Primer puerto libre desde <paramref name="start"/> que no esté en uso por el sistema ni en
-    /// el conjunto <paramref name="alsoAvoid"/> (p.ej. puertos de otros servidores registrados).
+    /// First free port from <paramref name="start"/> that is not in use by the system nor in
+    /// the <paramref name="alsoAvoid"/> set (e.g. ports of other registered servers).
     /// </summary>
     public int FindFreePort(int start, ISet<int> alsoAvoid)
     {
@@ -38,7 +38,7 @@ public class PortService
         return start;
     }
 
-    // --- Identificar el PID que escucha en un puerto (para liberarlo) ---
+    // --- Identify the PID listening on a port (to free it) ---
 
     [StructLayout(LayoutKind.Sequential)]
     private struct MibTcpRowOwnerPid
@@ -58,7 +58,7 @@ public class PortService
     private const int AF_INET = 2;
     private const int TCP_TABLE_OWNER_PID_LISTENER = 3;
 
-    /// <summary>PID del proceso que está escuchando (LISTEN) en ese puerto TCP, o null.</summary>
+    /// <summary>PID of the process listening (LISTEN) on that TCP port, or null.</summary>
     public int? GetListeningPid(int port)
     {
         var size = 0;

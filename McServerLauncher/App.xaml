@@ -14,7 +14,7 @@
             <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
             <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
 
-            <!-- Tarjeta de estado reutilizable -->
+            <!-- Reusable status card -->
             <Style x:Key="StatCard" TargetType="Border">
                 <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />

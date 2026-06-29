@@ -1,0 +1,12 @@
+- name: 🇬🇧 English
+  items:
+    - name: Architecture
+      href: architecture.md
+    - name: Contributing
+      href: contributing.md
+- name: 🇪🇸 Español
+  items:
+    - name: Arquitectura
+      href: architecture.es.md
+    - name: Cómo contribuir
+      href: contributing.es.md

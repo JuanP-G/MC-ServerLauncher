@@ -7,7 +7,7 @@ using McServerLauncher.Localization;
 
 namespace McServerLauncher.Services;
 
-/// <summary>Error devuelto por la API de Playit (status != success).</summary>
+/// <summary>Error returned by the Playit API (status != success).</summary>
 public class PlayitApiException : Exception
 {
     public string? ErrorType { get; }
@@ -17,11 +17,11 @@ public class PlayitApiException : Exception
 }
 
 /// <summary>
-/// Cliente de la API de Playit.gg.
-/// - Lecturas (listar túneles / dirección): usan el secret_key del agente (playit.toml), que suele
-///   ser de solo lectura.
-/// - Escrituras (crear/eliminar túnel): requieren una clave con permiso de escritura que aporta el
-///   usuario (se envía como Api-Key, con respaldo Agent-Key).
+/// Playit.gg API client.
+/// - Reads (list tunnels / address): use the agent's secret_key (playit.toml), which is usually
+///   read-only.
+/// - Writes (create/delete tunnel): require a key with write permission provided by the
+///   user (sent as Api-Key, with an Agent-Key fallback).
 /// </summary>
 public class PlayitApiService
 {
@@ -40,7 +40,7 @@ public class PlayitApiService
         public string? Address => string.IsNullOrEmpty(CustomDomain) ? AssignedDomain : CustomDomain;
     }
 
-    /// <summary>Lee el secret_key (de solo lectura) de playit.toml. Null si no se encuentra.</summary>
+    /// <summary>Reads the (read-only) secret_key from playit.toml. Null if not found.</summary>
     public string? ReadSecretKey()
     {
         foreach (var path in TomlPaths)
@@ -56,7 +56,7 @@ public class PlayitApiService
                     if (idx > 0) return t[(idx + 1)..].Trim().Trim('"');
                 }
             }
-            catch { /* probar siguiente ruta */ }
+            catch { /* try the next path */ }
         }
         return null;
     }
@@ -85,7 +85,7 @@ public class PlayitApiService
         return root.GetProperty("data").Clone();
     }
 
-    /// <summary>POST de escritura: prueba con Api-Key y, si hay error de auth, reintenta con Agent-Key.</summary>
+    /// <summary>Write POST: tries Api-Key and, on an auth error, retries with Agent-Key.</summary>
     private async Task<JsonElement> PostWriteAsync(string path, string writeKey, string body, CancellationToken ct)
     {
         try
@@ -98,7 +98,7 @@ public class PlayitApiService
         }
     }
 
-    /// <summary>Lee agent_id y túneles usando una clave (por defecto la de solo lectura del agente).</summary>
+    /// <summary>Reads agent_id and tunnels using a key (by default the agent's read-only one).</summary>
     public async Task<(string AgentId, List<PlayitTunnel> Tunnels)> GetRunDataAsync(string readAuthValue, CancellationToken ct = default)
     {
         var data = await PostAsync("/agents/rundata", readAuthValue, "", ct);
@@ -120,7 +120,7 @@ public class PlayitApiService
         return (agentId, list);
     }
 
-    /// <summary>Dirección pública del túnel cuyo puerto local coincide con <paramref name="port"/>, o null.</summary>
+    /// <summary>Public address of the tunnel whose local port matches <paramref name="port"/>, or null.</summary>
     public async Task<string?> GetAddressForPortAsync(int port, CancellationToken ct = default)
     {
         var secret = ReadSecretKey();
@@ -130,7 +130,7 @@ public class PlayitApiService
         return tunnels.FirstOrDefault(t => t.LocalPort == port)?.Address;
     }
 
-    /// <summary>Devuelve el authValue para leer (clave del agente si existe, si no la de escritura).</summary>
+    /// <summary>Returns the authValue for reading (the agent key if present, otherwise the write key).</summary>
     private string? ReadAuth(string writeKey)
     {
         var secret = ReadSecretKey();
@@ -139,8 +139,8 @@ public class PlayitApiService
     }
 
     /// <summary>
-    /// Crea el túnel Minecraft Java del servidor si no existe ya uno para ese puerto.
-    /// Devuelve true si lo creó, false si ya existía. Requiere clave de escritura.
+    /// Creates the server's Minecraft Java tunnel if one doesn't already exist for that port.
+    /// Returns true if it created one, false if it already existed. Requires a write key.
     /// </summary>
     public async Task<bool> EnsureMinecraftTunnelAsync(string writeKey, string name, int localPort, CancellationToken ct = default)
     {
@@ -177,7 +177,7 @@ public class PlayitApiService
         return true;
     }
 
-    /// <summary>Elimina el túnel cuyo puerto local coincide. Devuelve true si borró alguno. Requiere clave de escritura.</summary>
+    /// <summary>Deletes the tunnel whose local port matches. Returns true if one was deleted. Requires a write key.</summary>
     public async Task<bool> DeleteTunnelForPortAsync(string writeKey, int localPort, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(writeKey))

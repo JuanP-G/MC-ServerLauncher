@@ -10,8 +10,8 @@ using McServerLauncher.Localization;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Detecta las instalaciones de Java del equipo y, si hace falta, descarga la versión adecuada
-/// (Temurin de Adoptium) para una versión de Minecraft concreta.
+/// Detects the machine's Java installations and, if needed, downloads the right version
+/// (Adoptium Temurin) for a specific Minecraft version.
 /// </summary>
 public partial class JavaService
 {
@@ -25,7 +25,7 @@ public partial class JavaService
     [GeneratedRegex("version \"(\\d+)(?:\\.(\\d+))?")]
     private static partial Regex VersionRegex();
 
-    /// <summary>Busca java.exe en ubicaciones habituales y devuelve sus versiones.</summary>
+    /// <summary>Searches for java.exe in common locations and returns their versions.</summary>
     public List<JavaInstall> DetectInstalled()
     {
         var candidates = new List<string>();
@@ -41,7 +41,7 @@ public partial class JavaService
                     if (File.Exists(exe)) candidates.Add(exe);
                 }
             }
-            catch { /* ignorar */ }
+            catch { /* ignore */ }
         }
 
         foreach (var pf in new[]
@@ -75,7 +75,7 @@ public partial class JavaService
         return result;
     }
 
-    /// <summary>Ejecuta "java -version" y devuelve la versión mayor (8, 17, 21, 25...). 0 si falla.</summary>
+    /// <summary>Runs "java -version" and returns the major version (8, 17, 21, 25...). 0 on failure.</summary>
     public int GetMajorVersion(string javaExe)
     {
         try
@@ -107,13 +107,13 @@ public partial class JavaService
         }
     }
 
-    /// <summary>Una versión de Java instalada vale para la requerida (exacta, o más nueva si es 17+).</summary>
+    /// <summary>An installed Java version is valid for the required one (exact, or newer if 17+).</summary>
     public static bool IsCompatible(int installed, int required)
         => installed == required || (required >= 17 && installed >= required);
 
     /// <summary>
-    /// Lee el Java que necesita un server.jar (las versiones modernas lo incluyen en version.json).
-    /// Devuelve null si no se puede determinar (servidores muy antiguos o jars no estándar).
+    /// Reads the Java a server.jar needs (modern versions include it in version.json).
+    /// Returns null if it can't be determined (very old servers or non-standard jars).
     /// </summary>
     public int? GetRequiredJavaFromJar(string jarPath)
     {
@@ -137,8 +137,8 @@ public partial class JavaService
     }
 
     /// <summary>
-    /// Devuelve la ruta a un java.exe compatible con la versión requerida. Si no hay ninguno
-    /// instalado, descarga e instala el Temurin correspondiente. Lanza si no se puede.
+    /// Returns the path to a java.exe compatible with the required version. If none is
+    /// installed, downloads and installs the matching Temurin. Throws if it can't.
     /// </summary>
     public async Task<string> EnsureJavaAsync(int requiredMajor, IProgress<string>? log, CancellationToken ct = default)
     {
@@ -157,7 +157,7 @@ public partial class JavaService
     {
         var target = Path.Combine(ManagedRoot, $"jre-{major}");
 
-        // ¿Ya instalado por nosotros antes?
+        // Already installed by us before?
         var existing = FindJavaExe(target);
         if (existing is not null) return existing;
 
@@ -186,7 +186,7 @@ public partial class JavaService
             }
         }
         if (string.IsNullOrEmpty(link))
-            throw new InvalidOperationException($"No se encontró una descarga de Java {major} para Windows.");
+            throw new InvalidOperationException($"No Java {major} download was found for Windows.");
 
         Directory.CreateDirectory(ManagedRoot);
         var zipPath = Path.Combine(ManagedRoot, $"jre-{major}.zip");
@@ -202,7 +202,7 @@ public partial class JavaService
         log?.Report(Localizer.Get("Msg_JavaInstalling"));
         if (Directory.Exists(target)) Directory.Delete(target, true);
         ZipFile.ExtractToDirectory(zipPath, target);
-        try { File.Delete(zipPath); } catch { /* da igual */ }
+        try { File.Delete(zipPath); } catch { /* doesn't matter */ }
 
         var javaExe = FindJavaExe(target)
             ?? throw new InvalidOperationException(Localizer.Get("Msg_JavaExeNotFound"));

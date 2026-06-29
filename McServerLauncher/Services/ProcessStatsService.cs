@@ -3,8 +3,8 @@ using System.Diagnostics;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Calcula uso de CPU (%) y RAM (MB) de un proceso, muestreando el tiempo de CPU
-/// entre llamadas consecutivas.
+/// Computes CPU usage (%) and RAM (MB) of a process, sampling the CPU time
+/// between consecutive calls.
 /// </summary>
 public class ProcessStatsService
 {
@@ -13,7 +13,7 @@ public class ProcessStatsService
 
     public record Stats(double CpuPercent, long RamMb, TimeSpan Uptime);
 
-    /// <summary>Reinicia el muestreo (al cambiar de proceso/servidor).</summary>
+    /// <summary>Resets the sampling (when switching process/server).</summary>
     public void Reset()
     {
         _lastCpuTime = TimeSpan.Zero;
@@ -21,7 +21,7 @@ public class ProcessStatsService
     }
 
     /// <summary>
-    /// Toma una muestra de estadísticas del proceso. Devuelve null si el proceso ya no existe.
+    /// Takes a sample of the process stats. Returns null if the process no longer exists.
     /// </summary>
     public Stats? Sample(Process? process)
     {

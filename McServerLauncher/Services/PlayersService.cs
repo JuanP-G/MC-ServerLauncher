@@ -6,8 +6,8 @@ using System.Text.Json.Nodes;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Lee las listas de jugadores que guarda el servidor en archivos JSON:
-/// ops.json (operadores), banned-players.json (baneados) y usercache.json (conocidos).
+/// Reads the player lists the server stores in JSON files:
+/// ops.json (operators), banned-players.json (banned) and usercache.json (known).
 /// </summary>
 public class PlayersService
 {
@@ -31,12 +31,12 @@ public class PlayersService
         }
         catch
         {
-            // archivo corrupto o en uso: devolvemos lo que haya
+            // corrupt or in-use file: return whatever we have
         }
         return list.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(x => x).ToList();
     }
 
-    /// <summary>Quita a un jugador (por nombre) de banned-players.json. Devuelve true si quitó alguno.</summary>
+    /// <summary>Removes a player (by name) from banned-players.json. Returns true if any was removed.</summary>
     public bool Unban(string folder, string name)
     {
         var path = Path.Combine(folder, "banned-players.json");

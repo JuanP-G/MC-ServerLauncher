@@ -7,8 +7,8 @@ using McServerLauncher.Models;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Obtiene la lista de versiones de Minecraft del manifiesto oficial de Mojang y
-/// descarga el server.jar de la versión elegida.
+/// Gets the list of Minecraft versions from Mojang's official manifest and
+/// downloads the server.jar of the chosen version.
 /// </summary>
 public class MinecraftVersionService
 {
@@ -17,7 +17,7 @@ public class MinecraftVersionService
 
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
 
-    /// <summary>Descarga el manifiesto y devuelve (versión release más reciente, lista de versiones).</summary>
+    /// <summary>Downloads the manifest and returns (latest release version, list of versions).</summary>
     public async Task<(string LatestRelease, List<MinecraftVersion> Versions)> GetVersionsAsync(
         CancellationToken ct = default)
     {
@@ -40,14 +40,14 @@ public class MinecraftVersionService
         return (latest, list);
     }
 
-    /// <summary>URL del server.jar y versión de Java requerida para una versión de Minecraft.</summary>
+    /// <summary>server.jar URL and required Java version for a Minecraft version.</summary>
     public record VersionDetails(string ServerUrl, int JavaMajor);
 
-    /// <summary>Resuelve la URL del server.jar para una versión concreta.</summary>
+    /// <summary>Resolves the server.jar URL for a specific version.</summary>
     public async Task<string> GetServerJarUrlAsync(MinecraftVersion version, CancellationToken ct = default)
         => (await GetVersionDetailsAsync(version, ct)).ServerUrl;
 
-    /// <summary>Resuelve la descarga del servidor y la versión de Java que necesita esa versión.</summary>
+    /// <summary>Resolves the server download and the Java version that version needs.</summary>
     public async Task<VersionDetails> GetVersionDetailsAsync(MinecraftVersion version, CancellationToken ct = default)
     {
         var json = await Http.GetStringAsync(version.Url, ct);
@@ -63,7 +63,7 @@ public class MinecraftVersionService
                 string.Format(Localizer.Get("Msg_NoServerDownload"), version.Id));
         }
 
-        // Java recomendado por Mojang (si falta, asumimos Java 8 para versiones muy antiguas).
+        // Java recommended by Mojang (if missing, assume Java 8 for very old versions).
         var javaMajor = 8;
         if (root.TryGetProperty("javaVersion", out var jv) &&
             jv.TryGetProperty("majorVersion", out var mj) && mj.TryGetInt32(out var m))
@@ -74,7 +74,7 @@ public class MinecraftVersionService
         return new VersionDetails(serverUrl, javaMajor);
     }
 
-    /// <summary>Descarga un archivo a disco.</summary>
+    /// <summary>Downloads a file to disk.</summary>
     public async Task DownloadFileAsync(string url, string destPath, IProgress<string>? log,
         CancellationToken ct = default)
     {

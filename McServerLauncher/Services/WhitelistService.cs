@@ -8,9 +8,9 @@ using McServerLauncher.Localization;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Gestiona el archivo whitelist.json de un servidor (lista de jugadores permitidos).
-/// Cada entrada lleva uuid + nombre. Resuelve el UUID desde Mojang (modo online) o lo calcula
-/// de forma offline cuando el servidor no usa cuentas oficiales.
+/// Manages a server's whitelist.json file (list of allowed players).
+/// Each entry has uuid + name. It resolves the UUID from Mojang (online mode) or computes it
+/// offline when the server does not use official accounts.
 /// </summary>
 public class WhitelistService
 {
@@ -25,7 +25,7 @@ public class WhitelistService
 
     private static string PathOf(string folder) => Path.Combine(folder, "whitelist.json");
 
-    /// <summary>Devuelve los nombres de los jugadores en la whitelist.</summary>
+    /// <summary>Returns the names of the players in the whitelist.</summary>
     public List<string> ReadNames(string folder)
     {
         var entries = ReadEntries(folder);
@@ -49,7 +49,7 @@ public class WhitelistService
     private void WriteEntries(string folder, List<Entry> entries)
         => File.WriteAllText(PathOf(folder), JsonSerializer.Serialize(entries, JsonOptions), new UTF8Encoding(false));
 
-    /// <summary>Añade un jugador a whitelist.json (resolviendo su UUID). No duplica.</summary>
+    /// <summary>Adds a player to whitelist.json (resolving their UUID). Does not duplicate.</summary>
     public async Task AddAsync(string folder, string name, bool onlineMode, CancellationToken ct = default)
     {
         var entries = ReadEntries(folder);
@@ -68,7 +68,7 @@ public class WhitelistService
         WriteEntries(folder, entries);
     }
 
-    /// <summary>Quita un jugador (por nombre) de whitelist.json.</summary>
+    /// <summary>Removes a player (by name) from whitelist.json.</summary>
     public void Remove(string folder, string name)
     {
         var entries = ReadEntries(folder);
@@ -78,7 +78,7 @@ public class WhitelistService
             WriteEntries(folder, entries);
     }
 
-    /// <summary>Resuelve el UUID (con guiones) de un nombre vía la API de Mojang. Null si no existe.</summary>
+    /// <summary>Resolves the (dashed) UUID of a name via the Mojang API. Null if it doesn't exist.</summary>
     private async Task<string?> ResolveOnlineUuidAsync(string name, CancellationToken ct)
     {
         var resp = await Http.GetAsync($"https://api.mojang.com/users/profiles/minecraft/{Uri.EscapeDataString(name)}", ct);
@@ -97,16 +97,16 @@ public class WhitelistService
         return string.IsNullOrEmpty(id) ? null : Dash(id);
     }
 
-    /// <summary>UUID offline (igual que Java: UUID v3 de "OfflinePlayer:&lt;name&gt;").</summary>
+    /// <summary>Offline UUID (same as Java: UUID v3 of "OfflinePlayer:&lt;name&gt;").</summary>
     public static string OfflineUuid(string name)
     {
         var hash = MD5.HashData(Encoding.UTF8.GetBytes("OfflinePlayer:" + name));
-        hash[6] = (byte)((hash[6] & 0x0f) | 0x30); // versión 3
-        hash[8] = (byte)((hash[8] & 0x3f) | 0x80); // variante
+        hash[6] = (byte)((hash[6] & 0x0f) | 0x30); // version 3
+        hash[8] = (byte)((hash[8] & 0x3f) | 0x80); // variant
         return Dash(Convert.ToHexString(hash).ToLowerInvariant());
     }
 
-    /// <summary>Convierte un UUID de 32 hex en formato con guiones 8-4-4-4-12.</summary>
+    /// <summary>Converts a 32-hex UUID into the dashed 8-4-4-4-12 format.</summary>
     private static string Dash(string hex32)
     {
         hex32 = hex32.Replace("-", "").ToLowerInvariant();

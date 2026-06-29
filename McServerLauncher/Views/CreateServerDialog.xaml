@@ -87,7 +87,7 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Progreso -->
+        <!-- Progress -->
         <Border Grid.Row="2" x:Name="ProgressBox" Margin="20,0,20,8" Padding="12"
                 CornerRadius="8" Background="#1E1E1E" Visibility="Collapsed" Height="140">
             <Grid>

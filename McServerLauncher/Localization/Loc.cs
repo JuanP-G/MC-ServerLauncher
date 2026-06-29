@@ -4,7 +4,7 @@ using System.Windows.Markup;
 
 namespace McServerLauncher.Localization;
 
-/// <summary>Acceso a los textos traducidos (Resources/Strings.resx y sus idiomas).</summary>
+/// <summary>Access to the translated texts (Resources/Strings.resx and its languages).</summary>
 public static class Localizer
 {
     private static readonly ResourceManager Rm =
@@ -18,8 +18,8 @@ public static class Localizer
 }
 
 /// <summary>
-/// Extensión de marcado para usar textos traducidos en XAML: <c>{loc:Loc Clave}</c>.
-/// Como el idioma se aplica al iniciar, devuelve el texto del idioma activo al cargar la vista.
+/// Markup extension to use translated texts in XAML: <c>{loc:Loc Key}</c>.
+/// Since the language is applied at startup, it returns the text for the active language when the view loads.
 /// </summary>
 [MarkupExtensionReturnType(typeof(string))]
 public class LocExtension : MarkupExtension

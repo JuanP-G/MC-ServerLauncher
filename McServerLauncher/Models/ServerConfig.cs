@@ -4,51 +4,51 @@ using System.Text.Json.Serialization;
 namespace McServerLauncher.Models;
 
 /// <summary>
-/// Datos persistidos de un servidor de Minecraft registrado en la aplicación.
-/// Se guardan en %APPDATA%\McServerLauncher\servers.json.
+/// Persisted data of a Minecraft server registered in the application.
+/// Stored in %APPDATA%\McServerLauncher\servers.json.
 /// </summary>
 public class ServerConfig
 {
-    /// <summary>Identificador estable (para no depender del nombre, que puede cambiar).</summary>
+    /// <summary>Stable identifier (so we don't depend on the name, which may change).</summary>
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
 
-    /// <summary>Nombre visible del servidor (p.ej. "Survival", "Modded").</summary>
+    /// <summary>Display name of the server (e.g. "Survival", "Modded").</summary>
     public string Name { get; set; } = "Nuevo servidor";
 
-    /// <summary>Carpeta raíz del servidor (donde está el .jar y server.properties).</summary>
+    /// <summary>Server root folder (where the .jar and server.properties live).</summary>
     public string FolderPath { get; set; } = string.Empty;
 
-    /// <summary>Nombre del archivo .jar del servidor (relativo a la carpeta). Por defecto server.jar.</summary>
+    /// <summary>Server .jar file name (relative to the folder). Defaults to server.jar.</summary>
     public string JarFile { get; set; } = "server.jar";
 
-    /// <summary>Ruta al ejecutable de Java. "java" usa el del PATH.</summary>
+    /// <summary>Path to the Java executable. "java" uses the one on the PATH.</summary>
     public string JavaPath { get; set; } = "java";
 
-    /// <summary>Memoria mínima en GB (-Xms).</summary>
+    /// <summary>Minimum memory in GB (-Xms).</summary>
     public int MinRamGb { get; set; } = 4;
 
-    /// <summary>Memoria máxima en GB (-Xmx).</summary>
+    /// <summary>Maximum memory in GB (-Xmx).</summary>
     public int MaxRamGb { get; set; } = 6;
 
-    /// <summary>Argumentos extra de la JVM (opcional, p.ej. flags de GC).</summary>
+    /// <summary>Extra JVM arguments (optional, e.g. GC flags).</summary>
     public string ExtraJvmArgs { get; set; } = string.Empty;
 
     // --- Playit.gg ---
 
-    /// <summary>Si la integración con Playit.gg está activada para este servidor.</summary>
+    /// <summary>Whether the Playit.gg integration is enabled for this server.</summary>
     public bool PlayitEnabled { get; set; }
 
     /// <summary>
-    /// Dirección pública del túnel para este servidor. Se detecta automáticamente al ejecutar
-    /// playit, pero también se puede escribir/pegar a mano y queda guardada.
+    /// Public tunnel address for this server. It is detected automatically when running
+    /// playit, but it can also be typed/pasted by hand and is kept saved.
     /// </summary>
     public string? TunnelAddress { get; set; }
 
-    /// <summary>Ruta completa al .jar combinando carpeta + nombre del jar.</summary>
+    /// <summary>Full path to the .jar combining folder + jar name.</summary>
     [JsonIgnore]
     public string JarFullPath => Path.Combine(FolderPath, JarFile);
 
-    /// <summary>Ruta al server.properties dentro de la carpeta del servidor.</summary>
+    /// <summary>Path to server.properties inside the server folder.</summary>
     [JsonIgnore]
     public string PropertiesPath => Path.Combine(FolderPath, "server.properties");
 }

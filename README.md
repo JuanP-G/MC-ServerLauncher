@@ -73,6 +73,16 @@ dotnet publish McServerLauncher -c Release -r win-x64 --self-contained     # Int
 dotnet publish McServerLauncher -c Release -r win-arm64 --self-contained   # ARM64
 ```
 
+### 📖 Documentation (for contributors)
+
+Developer documentation — architecture, contributing guide and a full **API reference** generated
+from the code — is published with **DocFX** at:
+
+**https://juanp-g.github.io/MC-ServerLauncher/**
+
+The guide is available in English and Spanish. The source lives in [`docs/`](docs/); build it locally
+with `.\docs\build-docs.ps1`.
+
 ### 📁 Where data is stored
 
 Per-user, no hard-coded paths: `"%APPDATA%\McServerLauncher\servers.json"` (servers),
@@ -166,6 +176,16 @@ dotnet run --project McServerLauncher
 dotnet publish McServerLauncher -c Release -r win-x64 --self-contained     # Intel/AMD 64 bits
 dotnet publish McServerLauncher -c Release -r win-arm64 --self-contained   # ARM64
 ```
+
+### 📖 Documentación (para colaboradores)
+
+La documentación de desarrollo — arquitectura, guía de contribución y una **referencia de API**
+completa generada a partir del código — se publica con **DocFX** en:
+
+**https://juanp-g.github.io/MC-ServerLauncher/**
+
+La guía está disponible en inglés y español. El origen está en [`docs/`](docs/); genérala en local
+con `.\docs\build-docs.ps1`.
 
 ### 📁 Dónde se guardan los datos
 

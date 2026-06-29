@@ -4,7 +4,7 @@ using Wpf.Ui.Controls;
 
 namespace McServerLauncher.Views;
 
-/// <summary>Muestra las novedades de la versión actual tras una actualización.</summary>
+/// <summary>Shows the current version's what's-new notes after an update.</summary>
 public partial class WhatsNewDialog : FluentWindow
 {
     public WhatsNewDialog(string version)

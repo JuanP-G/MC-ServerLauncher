@@ -1,0 +1,38 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../McServerLauncher",
+          "files": [ "**/*.csproj" ]
+        }
+      ],
+      "dest": "api",
+      "namespaceLayout": "nested",
+      "outputFormat": "mref"
+    }
+  ],
+  "build": {
+    "content": [
+      { "files": [ "api/**.{md,yml}" ] },
+      { "files": [ "articles/**.{md,yml}", "toc.yml", "*.md" ] }
+    ],
+    "resource": [
+      { "files": [ "images/**" ] }
+    ],
+    "output": "_site",
+    "template": [ "default", "modern" ],
+    "globalMetadata": {
+      "_appName": "MC Server Launcher",
+      "_appTitle": "MC Server Launcher",
+      "_appFooter": "MC Server Launcher — developer documentation",
+      "_enableSearch": true,
+      "_disableContribution": false,
+      "_gitContribute": {
+        "repo": "https://github.com/JuanP-G/MC-ServerLauncher",
+        "branch": "main"
+      },
+      "pdf": false
+    }
+  }
+}

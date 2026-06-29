@@ -6,8 +6,8 @@ using System.Windows.Media;
 namespace McServerLauncher.Behaviors;
 
 /// <summary>
-/// Propiedad adjunta que hace que un ListBox haga auto-scroll al final cuando se
-/// añaden elementos (útil para la consola en tiempo real).
+/// Attached property that makes a ListBox auto-scroll to the end when items
+/// are added (useful for the real-time console).
 /// </summary>
 public static class AutoScrollBehavior
 {
@@ -29,7 +29,7 @@ public static class AutoScrollBehavior
         if (e.NewValue is true)
         {
             listBox.Loaded += ListBoxOnLoaded;
-            // Re-enganchar cuando cambia el ItemsSource (al cambiar de servidor seleccionado).
+            // Re-hook when the ItemsSource changes (when switching the selected server).
             ((INotifyCollectionChanged?)listBox.Items)!.CollectionChanged += (_, args) =>
                 ScrollOnAdd(listBox, args);
         }

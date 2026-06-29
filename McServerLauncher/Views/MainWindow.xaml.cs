@@ -23,7 +23,7 @@ public partial class MainWindow : FluentWindow
 
     protected override async void OnClosing(CancelEventArgs e)
     {
-        // Evitamos cerrar de golpe con servidores corriendo: paramos limpiamente primero.
+        // Avoid closing abruptly with servers running: stop them cleanly first.
         if (!_shuttingDown)
         {
             e.Cancel = true;
@@ -31,10 +31,10 @@ public partial class MainWindow : FluentWindow
             if (_viewModel.AnyServerRunning)
                 Title = Localizer.Get("Msg_ClosingTitle");
 
-            // Ya hemos guardado la config y detenido los servidores aquí dentro.
+            // We've already saved the config and stopped the servers in here.
             await _viewModel.ShutdownAllAsync();
 
-            // Salida inmediata: evita el ~2 s que tarda WPF/WPF-UI en liberar sus recursos al cerrar.
+            // Immediate exit: avoids the ~2 s WPF/WPF-UI takes to release its resources on close.
             Environment.Exit(0);
             return;
         }

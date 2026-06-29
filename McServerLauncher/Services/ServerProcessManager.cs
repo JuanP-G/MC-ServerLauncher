@@ -6,19 +6,19 @@ using McServerLauncher.Models;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Gestiona el ciclo de vida del proceso java de un servidor de Minecraft:
-/// arranque, parada limpia (enviando "stop" por stdin), envío de comandos y
-/// reemisión de la salida de consola en tiempo real.
+/// Manages the lifecycle of a Minecraft server's java process:
+/// startup, clean shutdown (sending "stop" over stdin), command sending and
+/// re-emitting the console output in real time.
 /// </summary>
 public class ServerProcessManager
 {
     private Process? _process;
     private readonly object _lock = new();
 
-    /// <summary>Se dispara por cada línea de salida (stdout o stderr) del servidor.</summary>
+    /// <summary>Raised for each output line (stdout or stderr) from the server.</summary>
     public event Action<string>? OutputReceived;
 
-    /// <summary>Se dispara cuando cambia el estado del servidor.</summary>
+    /// <summary>Raised when the server state changes.</summary>
     public event Action<ServerState>? StateChanged;
 
     private ServerState _state = ServerState.Stopped;
@@ -35,13 +35,13 @@ public class ServerProcessManager
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
 
-    /// <summary>Proceso en curso (para estadísticas de CPU/RAM). Null si no hay servidor activo.</summary>
+    /// <summary>The running process (for CPU/RAM stats). Null if there is no active server.</summary>
     public Process? CurrentProcess
     {
         get { lock (_lock) { return _process; } }
     }
 
-    /// <summary>Arranca el servidor. Equivale a run.bat pero sin ventana de consola.</summary>
+    /// <summary>Starts the server. Equivalent to run.bat but without a console window.</summary>
     public void Start(ServerConfig config)
     {
         lock (_lock)
@@ -50,7 +50,7 @@ public class ServerProcessManager
                 return;
 
             if (!File.Exists(config.JarFullPath))
-                throw new FileNotFoundException($"No se encontró el .jar del servidor: {config.JarFullPath}");
+                throw new FileNotFoundException($"Server .jar not found: {config.JarFullPath}");
 
             var args = BuildJavaArguments(config);
 
@@ -81,8 +81,8 @@ public class ServerProcessManager
                 _process.Start();
                 _process.BeginOutputReadLine();
                 _process.BeginErrorReadLine();
-                // El servidor está "Starting" hasta que detectemos el "Done"; lo elevamos
-                // a Running en cuanto vemos esa línea (ver OnOutputData).
+                // The server stays "Starting" until we detect "Done"; we promote it
+                // to Running as soon as we see that line (see OnOutputData).
                 State = ServerState.Running;
             }
             catch
@@ -118,7 +118,7 @@ public class ServerProcessManager
         State = ServerState.Stopped;
     }
 
-    /// <summary>Envía un comando arbitrario por stdin (como teclearlo en la consola).</summary>
+    /// <summary>Sends an arbitrary command over stdin (like typing it into the console).</summary>
     public void SendCommand(string command)
     {
         lock (_lock)
@@ -131,8 +131,8 @@ public class ServerProcessManager
     }
 
     /// <summary>
-    /// Detiene el servidor de forma limpia: envía "stop" y espera el cierre.
-    /// Si no cierra en el tiempo indicado, mata el árbol de procesos.
+    /// Stops the server cleanly: sends "stop" and waits for it to exit.
+    /// If it doesn't exit within the given time, it kills the process tree.
     /// </summary>
     public async Task StopAsync(TimeSpan timeout)
     {
@@ -174,7 +174,7 @@ public class ServerProcessManager
         }
         catch
         {
-            // El proceso ya pudo haber terminado.
+            // The process may have already exited.
         }
     }
 }

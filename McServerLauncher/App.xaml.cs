@@ -8,7 +8,7 @@ public partial class App : Application
 {
     protected override void OnStartup(StartupEventArgs e)
     {
-        // Aplicar el idioma guardado ANTES de crear la ventana.
+        // Apply the saved language BEFORE creating the window.
         var lang = new AppSettingsService().Load().Language;
         if (!string.IsNullOrWhiteSpace(lang))
         {
@@ -20,7 +20,7 @@ public partial class App : Application
             }
             catch
             {
-                // Código de idioma inválido: se usa el del sistema.
+                // Invalid language code: fall back to the system one.
             }
         }
 

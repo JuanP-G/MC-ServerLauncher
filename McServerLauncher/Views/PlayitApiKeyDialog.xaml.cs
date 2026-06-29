@@ -6,7 +6,7 @@ namespace McServerLauncher.Views;
 
 public partial class PlayitApiKeyDialog : FluentWindow
 {
-    /// <summary>La clave introducida (válida si DialogResult == true).</summary>
+    /// <summary>The entered key (valid if DialogResult == true).</summary>
     public string ApiKey { get; private set; } = string.Empty;
 
     public PlayitApiKeyDialog(string? current = null)
@@ -27,7 +27,7 @@ public partial class PlayitApiKeyDialog : FluentWindow
         }
         catch
         {
-            // Ignorar si no hay navegador disponible.
+            // Ignore if there's no browser available.
         }
     }
 

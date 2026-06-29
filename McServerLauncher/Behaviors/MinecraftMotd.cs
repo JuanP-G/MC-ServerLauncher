@@ -8,8 +8,8 @@ using System.Windows.Media;
 namespace McServerLauncher.Behaviors;
 
 /// <summary>
-/// Propiedad adjunta que renderiza un MOTD de Minecraft (con códigos de color/formato §) como
-/// texto con colores dentro de un TextBlock, igual que se ve en la lista de servidores del juego.
+/// Attached property that renders a Minecraft MOTD (with § color/format codes) as
+/// colored text inside a TextBlock, just like it looks in the game's server list.
 /// </summary>
 public static partial class MinecraftMotd
 {
@@ -19,7 +19,7 @@ public static partial class MinecraftMotd
     public static string? GetText(DependencyObject o) => (string?)o.GetValue(TextProperty);
     public static void SetText(DependencyObject o, string? v) => o.SetValue(TextProperty, v);
 
-    // Paleta oficial de colores de Minecraft (§0-§9, §a-§f).
+    // Official Minecraft color palette (§0-§9, §a-§f).
     private static readonly Dictionary<char, Color> Palette = new()
     {
         ['0'] = FromHex("#000000"), ['1'] = FromHex("#0000AA"), ['2'] = FromHex("#00AA00"),
@@ -73,7 +73,7 @@ public static partial class MinecraftMotd
                 var code = char.ToLowerInvariant(text[++i]);
                 if (Palette.TryGetValue(code, out var col))
                 {
-                    color = col; // un color reinicia el formato (como en Minecraft)
+                    color = col; // a color resets the formatting (as in Minecraft)
                     bold = italic = underline = strike = false;
                 }
                 else switch (code)
@@ -82,7 +82,7 @@ public static partial class MinecraftMotd
                     case 'o': italic = true; break;
                     case 'n': underline = true; break;
                     case 'm': strike = true; break;
-                    case 'k': break; // ofuscado: lo mostramos normal
+                    case 'k': break; // obfuscated: shown as normal text
                     case 'r': color = Default; bold = italic = underline = strike = false; break;
                 }
             }
@@ -99,7 +99,7 @@ public static partial class MinecraftMotd
         Flush();
     }
 
-    /// <summary>Convierte secuencias de properties de Java (\n y \uXXXX) a sus caracteres reales.</summary>
+    /// <summary>Converts Java properties escape sequences (\n and \uXXXX) to their real characters.</summary>
     private static string Unescape(string s)
     {
         s = s.Replace("\\n", "\n");

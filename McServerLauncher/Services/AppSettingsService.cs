@@ -4,7 +4,7 @@ using McServerLauncher.Models;
 
 namespace McServerLauncher.Services;
 
-/// <summary>Carga y guarda los ajustes globales en %APPDATA%\McServerLauncher\settings.json.</summary>
+/// <summary>Loads and saves the global settings in %APPDATA%\McServerLauncher\settings.json.</summary>
 public class AppSettingsService
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };

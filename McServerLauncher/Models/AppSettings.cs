@@ -1,17 +1,17 @@
 namespace McServerLauncher.Models;
 
-/// <summary>Ajustes globales de la aplicación (no por servidor).</summary>
+/// <summary>Global application settings (not per-server).</summary>
 public class AppSettings
 {
     /// <summary>
-    /// Clave de Playit con permiso de escritura, para crear/eliminar túneles.
-    /// (La clave del agente en playit.toml es de solo lectura y no sirve para esto.)
+    /// Playit key with write permission, used to create/delete tunnels.
+    /// (The agent key in playit.toml is read-only and is not valid for this.)
     /// </summary>
     public string? PlayitApiKey { get; set; }
 
-    /// <summary>Idioma de la interfaz (es, en, pt, fr, de). Vacío = idioma del sistema.</summary>
+    /// <summary>UI language (es, en, pt, fr, de). Empty = system language.</summary>
     public string? Language { get; set; }
 
-    /// <summary>Última versión de la app que el usuario ya ha visto (para mostrar las novedades tras actualizar).</summary>
+    /// <summary>Last app version the user has already seen (to show the what's-new screen after updating).</summary>
     public string? LastVersionSeen { get; set; }
 }

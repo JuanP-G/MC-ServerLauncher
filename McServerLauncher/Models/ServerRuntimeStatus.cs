@@ -1,6 +1,6 @@
 namespace McServerLauncher.Models;
 
-/// <summary>Estado de ejecución de un servidor.</summary>
+/// <summary>Run state of a server.</summary>
 public enum ServerState
 {
     Stopped,
@@ -9,7 +9,7 @@ public enum ServerState
     Stopping
 }
 
-/// <summary>Estado del túnel de Playit.gg.</summary>
+/// <summary>State of the Playit.gg tunnel.</summary>
 public enum PlayitState
 {
     Stopped,

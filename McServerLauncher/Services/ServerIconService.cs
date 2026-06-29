@@ -6,8 +6,8 @@ using System.Windows.Media.Imaging;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Genera el server-icon.png (64x64 PNG) de un servidor a partir de cualquier imagen, recortando al
-/// centro en cuadrado y escalando. Es el icono que los jugadores ven en la lista de servidores.
+/// Generates a server's server-icon.png (64x64 PNG) from any image, cropping it to a centered
+/// square and scaling. This is the icon players see in the server list.
 /// </summary>
 public class ServerIconService
 {
@@ -19,13 +19,13 @@ public class ServerIconService
             BitmapCacheOption.OnLoad);
         var frame = decoder.Frames[0];
 
-        // Recorte central a cuadrado para no deformar.
+        // Centered square crop to avoid distortion.
         var side = Math.Min(frame.PixelWidth, frame.PixelHeight);
         var x = (frame.PixelWidth - side) / 2;
         var y = (frame.PixelHeight - side) / 2;
         var cropped = new CroppedBitmap(frame, new Int32Rect(x, y, side, side));
 
-        // Escalado a 64x64.
+        // Scale to 64x64.
         var visual = new DrawingVisual();
         using (var dc = visual.RenderOpen())
             dc.DrawImage(cropped, new Rect(0, 0, 64, 64));

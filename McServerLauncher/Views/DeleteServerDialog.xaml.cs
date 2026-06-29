@@ -6,10 +6,10 @@ namespace McServerLauncher.Views;
 
 public partial class DeleteServerDialog : FluentWindow
 {
-    /// <summary>True si el usuario marcó "eliminar también los archivos del disco".</summary>
+    /// <summary>True if the user checked "also delete the files on disk".</summary>
     public bool DeleteFiles { get; private set; }
 
-    /// <summary>True si el usuario marcó "eliminar también su túnel de Playit".</summary>
+    /// <summary>True if the user checked "also delete its Playit tunnel".</summary>
     public bool DeleteTunnel { get; private set; }
 
     public DeleteServerDialog(string serverName, string folderPath)

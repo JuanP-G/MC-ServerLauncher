@@ -11,7 +11,7 @@ using McServerLauncher.Views;
 namespace McServerLauncher.ViewModels;
 
 /// <summary>
-/// ViewModel principal: gestiona la lista de servidores, el seleccionado y la persistencia.
+/// Main ViewModel: manages the server list, the selected server and persistence.
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
@@ -97,8 +97,8 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Si la versión actual es distinta de la última vista por el usuario (es decir, se acaba de
-    /// actualizar), muestra la ventana de novedades. Guarda la versión vista para no repetirla.
+    /// If the current version differs from the last one seen by the user (i.e. it was just
+    /// updated), shows the what's-new window. Saves the seen version so it isn't repeated.
     /// </summary>
     public void ShowWhatsNewIfUpdated(System.Windows.Window owner)
     {
@@ -136,20 +136,20 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
-            // Sin conexión o GitHub no disponible: no pasa nada.
+            // No connection or GitHub unavailable: it's fine.
         }
     }
 
     private bool CanUpdateNow => !IsUpdating;
 
     /// <summary>
-    /// Descarga el instalador de la nueva versión y lo ejecuta para actualizar la app sin pasar por
-    /// GitHub. Si no hay instalador en la release, abre la página como respaldo.
+    /// Downloads the new version's installer and runs it to update the app without going through
+    /// GitHub. If the release has no installer, opens the page as a fallback.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanUpdateNow))]
     private async Task UpdateNow()
     {
-        // Sin instalador descargable: abrir la página de la release (respaldo).
+        // No downloadable installer: open the release page (fallback).
         if (string.IsNullOrEmpty(_installerUrl))
         {
             OpenRelease();
@@ -163,7 +163,7 @@ public partial class MainViewModel : ObservableObject
             var dest = Path.Combine(Path.GetTempPath(), "MC-ServerLauncher-Setup.exe");
             await new UpdateService().DownloadInstallerAsync(_installerUrl, dest);
 
-            // Cerramos servidores y lanzamos el instalador en silencio; al terminar relanza la app.
+            // Stop servers and launch the installer silently; it relaunches the app when done.
             await ShutdownAllAsync();
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
@@ -175,7 +175,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
-            // Si la descarga/instalación falla, dejamos abrir la página manualmente.
+            // If the download/install fails, let the user open the page manually.
             IsUpdating = false;
             UpdateText = string.Empty;
             OpenRelease();
@@ -201,7 +201,7 @@ public partial class MainViewModel : ObservableObject
 
     private void Load()
     {
-        // La app arranca sin servidores; el usuario crea uno nuevo o añade una carpeta existente.
+        // The app starts with no servers; the user creates a new one or adds an existing folder.
         foreach (var cfg in _storage.Load())
             Register(cfg);
 
@@ -211,8 +211,8 @@ public partial class MainViewModel : ObservableObject
     partial void OnSelectedServerChanged(ServerViewModel? value) => OnPropertyChanged(nameof(HasSelection));
 
     /// <summary>
-    /// Devuelve la clave de escritura de Playit; si no está guardada, la pide al usuario y la guarda.
-    /// Devuelve null si el usuario cancela.
+    /// Returns the Playit write key; if it's not saved, asks the user for it and saves it.
+    /// Returns null if the user cancels.
     /// </summary>
     private string? EnsurePlayitApiKey()
     {
@@ -229,7 +229,7 @@ public partial class MainViewModel : ObservableObject
         return dialog.ApiKey;
     }
 
-    /// <summary>Crea el túnel de Playit del servidor seleccionado (botón "Crear túnel").</summary>
+    /// <summary>Creates the Playit tunnel for the selected server (the "Create tunnel" button).</summary>
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private async Task CreateTunnelForSelected()
     {
@@ -239,7 +239,7 @@ public partial class MainViewModel : ObservableObject
         await SelectedServer.CreateTunnelAsync(key);
     }
 
-    /// <summary>Crea el ViewModel de un servidor, lo añade a la lista y persiste sus cambios.</summary>
+    /// <summary>Creates a server's ViewModel, adds it to the list and persists its changes.</summary>
     private ServerViewModel Register(ServerConfig config)
     {
         var vm = new ServerViewModel(config);
@@ -276,7 +276,7 @@ public partial class MainViewModel : ObservableObject
             SelectedServer = vm;
             Save();
 
-            // Crear el túnel de Playit (errores visibles en la consola del servidor).
+            // Create the Playit tunnel (errors are visible in the server's console).
             if (dialog.CreateTunnel)
             {
                 var key = EnsurePlayitApiKey();
@@ -284,7 +284,7 @@ public partial class MainViewModel : ObservableObject
                     await vm.CreateTunnelAsync(key);
             }
 
-            // Primer arranque para generar mundo y archivos.
+            // First launch to generate the world and files.
             if (dialog.AutoStart)
                 vm.StartCommand.Execute(null);
         }
@@ -346,7 +346,7 @@ public partial class MainViewModel : ObservableObject
         if (SelectedServer is null) return;
 
         var folder = SelectedServer.Config.FolderPath;
-        // Leemos el puerto ANTES de borrar nada (lo necesitamos para localizar el túnel).
+        // Read the port BEFORE deleting anything (we need it to locate the tunnel).
         var port = new ServerPropertiesService().GetServerPort(SelectedServer.Config.PropertiesPath);
 
         var dialog = new DeleteServerDialog(SelectedServer.Name, folder)
@@ -369,7 +369,7 @@ public partial class MainViewModel : ObservableObject
                 var deleted = key is not null && await new PlayitApiService().DeleteTunnelForPortAsync(key, port.Value);
                 if (key is null)
                 {
-                    // El usuario no aportó clave; no se borra el túnel.
+                    // The user didn't provide a key; the tunnel is not deleted.
                 }
                 else if (!deleted)
                     System.Windows.MessageBox.Show(
@@ -404,10 +404,10 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void Save() => _storage.Save(Servers.Select(s => s.Config));
 
-    /// <summary>True si algún servidor está encendido (para avisar al cerrar).</summary>
+    /// <summary>True if any server is running (to warn on close).</summary>
     public bool AnyServerRunning => Servers.Any(s => s.IsRunning);
 
-    /// <summary>Detiene todos los servidores EN PARALELO y guarda al cerrar la app.</summary>
+    /// <summary>Stops all servers IN PARALLEL and saves when the app closes.</summary>
     public async Task ShutdownAllAsync()
     {
         await Task.WhenAll(Servers.Select(s => s.ShutdownAsync()));

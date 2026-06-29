@@ -17,7 +17,7 @@ public partial class AddEditServerDialog : FluentWindow
     {
         InitializeComponent();
         _config = config;
-        // Guardamos una copia para restaurar si el usuario cancela.
+        // Keep a copy to restore if the user cancels.
         _snapshot = JsonSerializer.Serialize(config);
         DataContext = _config;
     }
@@ -34,7 +34,7 @@ public partial class AddEditServerDialog : FluentWindow
             DataContext = null;
             DataContext = _config;
 
-            // Si el nombre sigue siendo el por defecto, sugerimos el de la carpeta.
+            // If the name is still the default, suggest the folder's name.
             if (string.IsNullOrWhiteSpace(_config.Name) || _config.Name == "Nuevo servidor")
             {
                 _config.Name = new DirectoryInfo(dialog.FolderName).Name;

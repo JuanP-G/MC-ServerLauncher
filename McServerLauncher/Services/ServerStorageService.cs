@@ -5,7 +5,7 @@ using McServerLauncher.Models;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Carga y guarda la lista de servidores registrados en
+/// Loads and saves the list of registered servers in
 /// %APPDATA%\McServerLauncher\servers.json.
 /// </summary>
 public class ServerStorageService
@@ -26,7 +26,7 @@ public class ServerStorageService
         _filePath = Path.Combine(_dataDir, "servers.json");
     }
 
-    /// <summary>Carga la lista de servidores. Devuelve lista vacía si no hay archivo.</summary>
+    /// <summary>Loads the list of servers. Returns an empty list if there is no file.</summary>
     public List<ServerConfig> Load()
     {
         try
@@ -40,12 +40,12 @@ public class ServerStorageService
         }
         catch
         {
-            // Si el archivo está corrupto, empezamos limpio en vez de reventar la app.
+            // If the file is corrupt, start clean instead of crashing the app.
             return new List<ServerConfig>();
         }
     }
 
-    /// <summary>Guarda la lista de servidores.</summary>
+    /// <summary>Saves the list of servers.</summary>
     public void Save(IEnumerable<ServerConfig> servers)
     {
         Directory.CreateDirectory(_dataDir);
