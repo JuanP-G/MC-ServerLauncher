@@ -41,7 +41,7 @@ public static class AutoScrollBehavior
         if (@new is not null)
         {
             @new.CollectionChanged += OnCollectionChanged;
-            _listBoxes[@new] = listBox;
+            _listBoxes.AddOrUpdate(@new, listBox);
         }
         ScrollToEnd(listBox);
     }

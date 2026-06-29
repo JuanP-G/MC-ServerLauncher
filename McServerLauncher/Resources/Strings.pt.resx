@@ -230,4 +230,5 @@
   <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>Novidades da versão {0}</value></data>
   <data name="Whatsnew_Ok" xml:space="preserve"><value>Entendido</value></data>
   <data name="Whatsnew_Body" xml:space="preserve"><value>• Atualização a partir da app: quando houver uma versão nova, clica em «Atualizar» e descarrega e instala-se sozinha, sem ir ao GitHub.&#10;• Toda a app está traduzida para espanhol, inglês, português, francês e alemão, incluindo as mensagens da consola, avisos e diálogos.&#10;• Esta janela mostra-te as novidades sempre que atualizares.</value></data>
+  <data name="Cmd_HelpIntro" xml:space="preserve"><value>Clica num comando para o pôr na caixa e preencher os dados. Estes comandos só funcionam com o servidor ligado.</value></data>
 </root>

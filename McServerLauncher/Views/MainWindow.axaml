@@ -1,0 +1,551 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:b="using:McServerLauncher.Behaviors"
+        xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        x:Class="McServerLauncher.Views.MainWindow"
+        x:CompileBindings="False"
+        Title="MC Server Launcher"
+        Icon="/Resources/app.ico"
+        Width="1150" Height="720"
+        MinWidth="900" MinHeight="560"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Styles>
+        <Style Selector="Border.stat">
+            <Setter Property="Background" Value="#15FFFFFF" />
+            <Setter Property="BorderBrush" Value="#22FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="Margin" Value="4" />
+        </Style>
+        <Style Selector="TextBlock.statLabel">
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="TextBlock.statValue">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,2,0,0" />
+        </Style>
+        <!-- Compact rows for the console list -->
+        <Style Selector="ListBox.console ListBoxItem">
+            <Setter Property="Padding" Value="2,0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Update-available banner -->
+        <Border Grid.Row="0" Background="#2F6FB0" Padding="14,8" IsVisible="{Binding UpdateAvailable}">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                <ic:SymbolIcon Grid.Column="0" Symbol="ArrowDownload" Foreground="White"
+                               VerticalAlignment="Center" Margin="0,0,10,0" />
+                <TextBlock Grid.Column="1" Text="{Binding UpdateText}" Foreground="White" VerticalAlignment="Center" />
+                <Button Grid.Column="2" Content="{loc:Loc Update_Now}" Margin="0,0,8,0" Command="{Binding UpdateNowCommand}" />
+                <Button Grid.Column="3" Background="Transparent" Foreground="White"
+                        Command="{Binding DismissUpdateCommand}" ToolTip.Tip="{loc:Loc Tip_Hide}">
+                    <ic:SymbolIcon Symbol="Dismiss" />
+                </Button>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="280,*">
+
+            <!-- Side panel: server list -->
+            <Border Grid.Column="0" Background="#11000000" Padding="12">
+                <Grid RowDefinitions="Auto,*,Auto,Auto">
+                    <TextBlock Grid.Row="0" Text="{loc:Loc Servers}" FontSize="18" FontWeight="SemiBold" Margin="4,0,0,10" />
+
+                    <ListBox Grid.Row="1"
+                             ItemsSource="{Binding Servers}"
+                             SelectedItem="{Binding SelectedServer}"
+                             Background="Transparent"
+                             HorizontalAlignment="Stretch"
+                             BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="2,6" ColumnDefinitions="Auto,*,Auto">
+                                    <!-- Status dot with a colored halo -->
+                                    <Panel Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,10,0">
+                                        <Ellipse Fill="{Binding StatusBrush}" Opacity="0.25" />
+                                        <Ellipse Width="8" Height="8" Fill="{Binding StatusBrush}"
+                                                 HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Panel>
+
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" />
+                                        <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{Binding StatusBrush}" />
+                                    </StackPanel>
+
+                                    <!-- Connected players when running -->
+                                    <TextBlock Grid.Column="2" Text="{Binding PlayerCountText}" FontSize="12"
+                                               Foreground="{Binding SignalBrush}" VerticalAlignment="Center"
+                                               Margin="6,0,2,0" IsVisible="{Binding IsRunning}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Grid.Row="2" Margin="0,10,0,0" Spacing="8">
+                        <Button Classes="accent" HorizontalAlignment="Stretch" Command="{Binding CreateServerCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                <ic:SymbolIcon Symbol="Sparkle" />
+                                <TextBlock Text="{loc:Loc CreateServer}" />
+                            </StackPanel>
+                        </Button>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Button Command="{Binding AddServerCommand}" ToolTip.Tip="{loc:Loc Tip_Add}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ic:SymbolIcon Symbol="FolderAdd" />
+                                    <TextBlock Text="{loc:Loc Add}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding EditServerCommand}" ToolTip.Tip="{loc:Loc Tip_Edit}">
+                                <ic:SymbolIcon Symbol="Edit" />
+                            </Button>
+                            <Button Command="{Binding RemoveServerCommand}" ToolTip.Tip="{loc:Loc Tip_Delete}">
+                                <ic:SymbolIcon Symbol="Delete" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Language selector -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="2,12,0,0" VerticalAlignment="Center" Spacing="8">
+                        <ic:SymbolIcon Symbol="LocalLanguage" Opacity="0.7" VerticalAlignment="Center" />
+                        <ComboBox Width="150" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}"
+                                  ToolTip.Tip="{loc:Loc Language}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Main panel: selected server detail -->
+            <Panel Grid.Column="1" Margin="16">
+                <TextBlock Text="{loc:Loc EmptyState}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="16" Opacity="0.6"
+                           IsVisible="{Binding !HasSelection}" />
+
+                <Grid DataContext="{Binding SelectedServer}"
+                      RowDefinitions="Auto,Auto,Auto,*"
+                      IsVisible="{Binding DataContext.HasSelection, RelativeSource={RelativeSource AncestorType=Window}}">
+
+                    <!-- Header: name + control buttons -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
+                        <!-- Minecraft server-list style view -->
+                        <Border Grid.Column="0" Background="#FF2B2B2B" BorderBrush="#3A3A3A" BorderThickness="1"
+                                CornerRadius="6" Padding="10" Margin="0,0,16,0" VerticalAlignment="Center">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <!-- Server icon (server-icon.png) or a placeholder if none. Click to change it -->
+                                <Button Grid.Column="0" Width="64" Height="64" Padding="0" Cursor="Hand"
+                                        Background="#1A1A1A"
+                                        ToolTip.Tip="{loc:Loc Tip_ChangeIcon}"
+                                        Command="{Binding DataContext.ChangeIconForSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                                    <Panel>
+                                        <ic:SymbolIcon Symbol="Server" FontSize="28" Opacity="0.5"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       IsVisible="{Binding !HasIcon}" />
+                                        <Image Source="{Binding ServerIcon}" Width="64" Height="64"
+                                               RenderOptions.BitmapInterpolationMode="None"
+                                               IsVisible="{Binding HasIcon}" />
+                                    </Panel>
+                                </Button>
+
+                                <!-- Title (name) + colored MOTD -->
+                                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"
+                                               FontSize="16" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock b:MinecraftMotd.Text="{Binding MotdText}" FontSize="13"
+                                               TextWrapping="Wrap" Margin="0,3,0,0"
+                                               FontFamily="Cascadia Mono, Consolas, monospace" />
+                                </StackPanel>
+
+                                <!-- Players + signal bars -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                            VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10,2,0,0">
+                                    <TextBlock Text="{Binding PlayerCountText}" Foreground="#AAAAAA" FontSize="13"
+                                               Margin="0,0,6,0" VerticalAlignment="Center" />
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip.Tip="{Binding SignalHint}">
+                                        <Rectangle Width="3" Height="4" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                        <Rectangle Width="3" Height="6" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                        <Rectangle Width="3" Height="8" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                        <Rectangle Width="3" Height="10" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                        <Rectangle Width="3" Height="12" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <Border HorizontalAlignment="Right" Margin="0,0,0,8" CornerRadius="10" Padding="10,3" Background="#22FFFFFF">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="10" Height="10" Fill="{Binding StatusBrush}" VerticalAlignment="Center" Margin="0,0,7,0" />
+                                    <TextBlock Text="{Binding StatusText}" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{Binding StatusBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                                <Button Classes="accent" Command="{Binding StartCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <ic:SymbolIcon Symbol="Play" />
+                                        <TextBlock Text="{loc:Loc Start}" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding StopCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <ic:SymbolIcon Symbol="Stop" />
+                                        <TextBlock Text="{loc:Loc Stop}" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding RestartCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <ic:SymbolIcon Symbol="ArrowClockwise" />
+                                        <TextBlock Text="{loc:Loc Restart}" />
+                                    </StackPanel>
+                                </Button>
+                                <Button ToolTip.Tip="{loc:Loc Tip_Configure}"
+                                        Command="{Binding DataContext.ConfigureServerCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <ic:SymbolIcon Symbol="Settings" />
+                                        <TextBlock Text="{loc:Loc Configure}" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Warning: running but without a Playit tunnel -->
+                        <Border Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0" Padding="10,6"
+                                CornerRadius="6" Background="#33E05561" BorderBrush="#E05561" BorderThickness="1"
+                                IsVisible="{Binding ShowTunnelWarning}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <ic:SymbolIcon Symbol="Warning" Foreground="#FF8A8A" VerticalAlignment="Center" />
+                                <TextBlock Foreground="#FFC9C9" TextWrapping="Wrap" VerticalAlignment="Center"
+                                           Text="{loc:Loc Signal_NoTunnel}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Status cards -->
+                    <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,8">
+                        <Border Classes="stat">
+                            <StackPanel>
+                                <TextBlock Text="CPU" Classes="statLabel" />
+                                <TextBlock Text="{Binding CpuText}" Classes="statValue" />
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat">
+                            <StackPanel>
+                                <TextBlock Text="RAM" Classes="statLabel" />
+                                <TextBlock Text="{Binding RamText}" Classes="statValue" />
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Uptime}" Classes="statLabel" />
+                                <TextBlock Text="{Binding UptimeText}" Classes="statValue" />
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Port}" Classes="statLabel" />
+                                <TextBlock Text="{Binding PortText}" Classes="statValue" />
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <!-- Playit.gg -->
+                    <Border Grid.Row="2" Classes="stat" Margin="4,4,4,12">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding PlayitStatusText}" FontSize="12" Opacity="0.7" />
+                            </StackPanel>
+                            <TextBox Grid.Column="1" Margin="16,0" Text="{Binding TunnelAddress}"
+                                     Watermark="{loc:Loc Tunnel_Placeholder}" VerticalAlignment="Center" />
+                            <Button Grid.Column="2" Command="{Binding CopyTunnelAddressCommand}" Margin="0,0,8,0">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ic:SymbolIcon Symbol="Copy" />
+                                    <TextBlock Text="{loc:Loc Copy}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="3" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Tip_CreateTunnel}"
+                                    Command="{Binding DataContext.CreateTunnelForSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ic:SymbolIcon Symbol="AddCircle" />
+                                    <TextBlock Text="{loc:Loc CreateTunnel}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="4" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Tip_Web}"
+                                    Command="{Binding OpenPlayitDashboardCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ic:SymbolIcon Symbol="Open" />
+                                    <TextBlock Text="Web" />
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="5" ToolTip.Tip="{loc:Loc Tip_Service}" Command="{Binding TogglePlayitCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ic:SymbolIcon Symbol="Power" />
+                                    <TextBlock Text="{loc:Loc Service}" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Tabs: Console / Players -->
+                    <TabControl Grid.Row="3" Background="Transparent" Margin="4,0">
+                        <TabItem Header="{loc:Loc Console}">
+                            <Grid Margin="0,8,0,0" RowDefinitions="*,Auto">
+                                <!-- Console -->
+                                <Border Grid.Row="0" Classes="stat" Margin="0" Padding="0">
+                                    <Grid RowDefinitions="Auto,*">
+                                        <Grid Grid.Row="0" Margin="12,8">
+                                            <TextBlock Text="{loc:Loc Console}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                            <Button HorizontalAlignment="Right" Command="{Binding ClearConsoleCommand}" Padding="8,2">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <ic:SymbolIcon Symbol="Eraser" />
+                                                    <TextBlock Text="{loc:Loc Clear}" />
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
+                                        <ListBox Grid.Row="1" x:Name="ConsoleList" Classes="console"
+                                                 ItemsSource="{Binding ConsoleLines}"
+                                                 b:AutoScrollBehavior.AutoScroll="True"
+                                                 FontFamily="Cascadia Mono, Consolas, monospace"
+                                                 FontSize="12" Background="#1E1E1E" BorderThickness="0"
+                                                 Padding="0,0,0,4" SelectionMode="Multiple"
+                                                 KeyDown="ConsoleList_KeyDown"
+                                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                            <ListBox.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="{loc:Loc Copy_Selection}" Click="ConsoleCopy_Click" />
+                                                    <MenuItem Header="{loc:Loc Copy_All}" Click="ConsoleCopyAll_Click" />
+                                                </ContextMenu>
+                                            </ListBox.ContextMenu>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#DDDDDD" />
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Command box -->
+                                <Grid Grid.Row="1" Margin="0,12,0,0" ColumnDefinitions="*,Auto,Auto">
+                                    <TextBox Grid.Column="0" Text="{Binding CommandText}"
+                                             Watermark="{loc:Loc Command_Placeholder}" Margin="0,0,8,0">
+                                        <TextBox.KeyBindings>
+                                            <KeyBinding Gesture="Enter" Command="{Binding SendCommandCommand}" />
+                                        </TextBox.KeyBindings>
+                                    </TextBox>
+
+                                    <!-- Command help -->
+                                    <ToggleButton Grid.Column="1" x:Name="CommandHelpToggle" Margin="0,0,8,0"
+                                                  IsChecked="{Binding IsCommandHelpOpen, Mode=TwoWay}"
+                                                  ToolTip.Tip="{loc:Loc Tip_Commands}" Padding="10,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <ic:SymbolIcon Symbol="QuestionCircle" />
+                                            <TextBlock Text="{loc:Loc Commands}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </ToggleButton>
+
+                                    <Popup PlacementTarget="{Binding #CommandHelpToggle}" Placement="Top"
+                                           IsOpen="{Binding IsCommandHelpOpen, Mode=TwoWay}" IsLightDismissEnabled="True"
+                                           HorizontalOffset="0" VerticalOffset="-6">
+                                        <Border Background="#1F1F1F" BorderBrush="#33FFFFFF" BorderThickness="1"
+                                                CornerRadius="8" Width="460" MaxHeight="380" Padding="6">
+                                            <Grid RowDefinitions="Auto,*">
+                                                <TextBlock Grid.Row="0" Margin="8,6,8,8" Opacity="0.8" TextWrapping="Wrap"
+                                                           Text="{loc:Loc Cmd_HelpIntro}" />
+                                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                                    <ItemsControl ItemsSource="{Binding CommandHelp}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Button HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" Margin="2"
+                                                                        Background="Transparent" BorderThickness="0" Padding="8,6"
+                                                                        Command="{Binding DataContext.UseCommandCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold"
+                                                                                   FontFamily="Cascadia Mono, Consolas, monospace" />
+                                                                        <TextBlock Text="{Binding Description}" FontSize="12"
+                                                                                   Opacity="0.7" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                                                    </StackPanel>
+                                                                </Button>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </Grid>
+                                        </Border>
+                                    </Popup>
+
+                                    <Button Grid.Column="2" Classes="accent" Command="{Binding SendCommandCommand}">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <ic:SymbolIcon Symbol="Send" />
+                                            <TextBlock Text="{loc:Loc Send}" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="{loc:Loc Players}">
+                            <ScrollViewer Margin="0,8,0,0" VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <Grid Margin="4,0,4,8">
+                                        <TextBlock Text="{loc:Loc Players_Manage}" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
+                                        <Button HorizontalAlignment="Right" Padding="8,2" Command="{Binding RefreshPlayersCommand}">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <ic:SymbolIcon Symbol="ArrowClockwise" />
+                                                <TextBlock Text="{loc:Loc Refresh}" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Connected -->
+                                    <Border Classes="stat">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Connected}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding ConnectedPlayers.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
+                                            <TextBlock Classes="statLabel" Text="{loc:Loc Players_ConnectedHint}" />
+                                            <ItemsControl ItemsSource="{Binding ConnectedPlayers}" Margin="0,6,0,0">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="0,3" ColumnDefinitions="*,Auto">
+                                                            <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" />
+                                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                                                <Button Content="OP" Padding="8,2"
+                                                                        Command="{Binding DataContext.OpPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}" />
+                                                                <Button Content="{loc:Loc Kick}" Padding="8,2"
+                                                                        Command="{Binding DataContext.KickPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}" />
+                                                                <Button Content="{loc:Loc Ban}" Padding="8,2" Background="#C42B1C" Foreground="White"
+                                                                        Command="{Binding DataContext.BanPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Operators -->
+                                    <Border Classes="stat">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Ops}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding OpPlayers.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
+                                            <ItemsControl ItemsSource="{Binding OpPlayers}" Margin="0,6,0,0">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="0,3" ColumnDefinitions="*,Auto">
+                                                            <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" />
+                                                            <Button Grid.Column="1" Content="{loc:Loc RemoveOp}" Padding="8,2"
+                                                                    Command="{Binding DataContext.DeopPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                    CommandParameter="{Binding}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Whitelist -->
+                                    <Border Classes="stat">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Whitelist}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding WhitelistPlayers.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
+                                            <TextBlock Classes="statLabel" Text="{loc:Loc Whitelist_Hint}" />
+                                            <Grid Margin="0,8,0,8" ColumnDefinitions="*,Auto">
+                                                <TextBox Grid.Column="0" Margin="0,0,8,0" Text="{Binding NewWhitelistName}"
+                                                         Watermark="{loc:Loc Player_Placeholder}">
+                                                    <TextBox.KeyBindings>
+                                                        <KeyBinding Gesture="Enter" Command="{Binding AddToWhitelistCommand}" />
+                                                    </TextBox.KeyBindings>
+                                                </TextBox>
+                                                <Button Grid.Column="1" Classes="accent" Command="{Binding AddToWhitelistCommand}">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <ic:SymbolIcon Symbol="PersonAdd" />
+                                                        <TextBlock Text="{loc:Loc Add}" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+                                            <ItemsControl ItemsSource="{Binding WhitelistPlayers}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="0,3" ColumnDefinitions="*,Auto">
+                                                            <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" />
+                                                            <Button Grid.Column="1" Content="{loc:Loc Remove}" Padding="8,2"
+                                                                    Command="{Binding DataContext.RemoveFromWhitelistCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                    CommandParameter="{Binding}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Banned -->
+                                    <Border Classes="stat">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Banned}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding BannedPlayers.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
+                                            <ItemsControl ItemsSource="{Binding BannedPlayers}" Margin="0,6,0,0">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="0,3" ColumnDefinitions="*,Auto">
+                                                            <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" />
+                                                            <Button Grid.Column="1" Content="{loc:Loc Unban}" Padding="8,2"
+                                                                    Command="{Binding DataContext.PardonPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                    CommandParameter="{Binding}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Known -->
+                                    <Border Classes="stat">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Known}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding KnownPlayers.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
+                                            <ItemsControl ItemsSource="{Binding KnownPlayers}" Margin="0,6,0,0">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding}" Margin="0,3" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </Panel>
+        </Grid>
+    </Grid>
+</Window>

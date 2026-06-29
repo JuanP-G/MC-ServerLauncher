@@ -230,4 +230,5 @@
   <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>What's new in version {0}</value></data>
   <data name="Whatsnew_Ok" xml:space="preserve"><value>Got it</value></data>
   <data name="Whatsnew_Body" xml:space="preserve"><value>• Update from the app: when a new version is available, click “Update” and it downloads and installs itself, no need to go to GitHub.&#10;• The whole app is translated to Spanish, English, Portuguese, French and German, including console messages, warnings and dialogs.&#10;• This window will show you what's new every time you update.</value></data>
+  <data name="Cmd_HelpIntro" xml:space="preserve"><value>Click a command to put it in the box and fill in the details. These commands only work while the server is running.</value></data>
 </root>

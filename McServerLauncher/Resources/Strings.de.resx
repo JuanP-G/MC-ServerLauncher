@@ -230,4 +230,5 @@
   <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>Neuerungen in Version {0}</value></data>
   <data name="Whatsnew_Ok" xml:space="preserve"><value>Verstanden</value></data>
   <data name="Whatsnew_Body" xml:space="preserve"><value>• Aktualisierung aus der App: Wenn eine neue Version verfügbar ist, klicke auf „Aktualisieren“, und sie wird automatisch heruntergeladen und installiert – ohne GitHub.&#10;• Die ganze App ist auf Spanisch, Englisch, Portugiesisch, Französisch und Deutsch übersetzt, einschließlich Konsolenmeldungen, Hinweise und Dialoge.&#10;• Dieses Fenster zeigt dir bei jeder Aktualisierung die Neuerungen.</value></data>
+  <data name="Cmd_HelpIntro" xml:space="preserve"><value>Klicke auf einen Befehl, um ihn in das Feld zu setzen und die Details auszufüllen. Diese Befehle funktionieren nur, wenn der Server läuft.</value></data>
 </root>
