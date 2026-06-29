@@ -58,4 +58,89 @@
   <data name="Copy_Selection" xml:space="preserve"><value>Copier la sélection</value></data>
   <data name="Copy_All" xml:space="preserve"><value>Tout copier</value></data>
   <data name="RestartNeeded" xml:space="preserve"><value>La langue sera appliquée au redémarrage de l'application. Redémarrer maintenant ?</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="Browse" xml:space="preserve"><value>Parcourir...</value></data>
+  <data name="Cs_Name" xml:space="preserve"><value>Nom du serveur</value></data>
+  <data name="Cs_NamePlaceholder" xml:space="preserve"><value>ex. Survie, Créatif, Événements...</value></data>
+  <data name="Cs_ParentFolder" xml:space="preserve"><value>Créer dans le dossier</value></data>
+  <data name="Cs_Version" xml:space="preserve"><value>Version de Minecraft</value></data>
+  <data name="Cs_Snapshots" xml:space="preserve"><value>Inclure les snapshots</value></data>
+  <data name="Cs_RamMin" xml:space="preserve"><value>RAM min (Go)</value></data>
+  <data name="Cs_RamMax" xml:space="preserve"><value>RAM max (Go)</value></data>
+  <data name="Cs_UsePlayit" xml:space="preserve"><value>Utiliser Playit.gg pour ce serveur (tunnel Internet)</value></data>
+  <data name="Cs_AutoCreateTunnel" xml:space="preserve"><value>Créer automatiquement le tunnel Playit.gg pour ce serveur</value></data>
+  <data name="Cs_AutoStart" xml:space="preserve"><value>Démarrer le serveur à la fin pour générer le monde et les fichiers</value></data>
+  <data name="Cs_CreateButton" xml:space="preserve"><value>Créer le serveur</value></data>
+  <data name="Cfg_Title" xml:space="preserve"><value>Configuration du serveur</value></data>
+  <data name="Cfg_HeaderFmt" xml:space="preserve"><value>Paramètres de "{0}". Les changements s'appliquent au (re)démarrage du serveur.</value></data>
+  <data name="Cfg_General" xml:space="preserve"><value>Général</value></data>
+  <data name="Cfg_Gameplay" xml:space="preserve"><value>Gameplay</value></data>
+  <data name="Cfg_Performance" xml:space="preserve"><value>Performances et monde</value></data>
+  <data name="Cfg_Network" xml:space="preserve"><value>Réseau et accès</value></data>
+  <data name="Cfg_Motd" xml:space="preserve"><value>MOTD (message du serveur)</value></data>
+  <data name="Cfg_MotdDesc" xml:space="preserve"><value>Le texte que voient les joueurs sous le nom du serveur dans la liste Minecraft. Accepte les codes couleur avec § (ex. §a vert, §6 doré, §l gras).</value></data>
+  <data name="Cfg_Gamemode" xml:space="preserve"><value>Mode de jeu</value></data>
+  <data name="Cfg_GamemodeDesc" xml:space="preserve"><value>Mode par défaut à la connexion : Survie (vie/faim), Créatif (ressources illimitées et vol), Aventure (ne pas casser les blocs) ou Spectateur.</value></data>
+  <data name="Cfg_Difficulty" xml:space="preserve"><value>Difficulté</value></data>
+  <data name="Cfg_DifficultyDesc" xml:space="preserve"><value>Dégâts des ennemis et de la faim. Paisible ne génère pas de monstres et ne vide pas la faim ; Difficile frappe plus fort et vous pouvez mourir de faim.</value></data>
+  <data name="Cfg_MaxPlayers" xml:space="preserve"><value>Joueurs maximum</value></data>
+  <data name="Cfg_MaxPlayersDesc" xml:space="preserve"><value>Nombre maximum de joueurs connectés en même temps. Plus de joueurs = plus de RAM et de CPU.</value></data>
+  <data name="Cfg_Pvp" xml:space="preserve"><value>PvP (combat entre joueurs)</value></data>
+  <data name="Cfg_PvpDesc" xml:space="preserve"><value>Si activé, les joueurs peuvent se blesser. Désactivez-le pour un serveur paisible/coopératif.</value></data>
+  <data name="Cfg_Hardcore" xml:space="preserve"><value>Hardcore</value></data>
+  <data name="Cfg_HardcoreDesc" xml:space="preserve"><value>Mode extrême : difficulté bloquée sur Difficile et, à la mort, le joueur passe en spectateur définitivement. À utiliser pour les défis.</value></data>
+  <data name="Cfg_Flight" xml:space="preserve"><value>Autoriser le vol</value></data>
+  <data name="Cfg_FlightDesc" xml:space="preserve"><value>En Survie, empêche le serveur d'expulser les joueurs qui volent (utile avec des mods/plugins de vol). Ne donne pas le vol par lui-même.</value></data>
+  <data name="Cfg_CmdBlocks" xml:space="preserve"><value>Blocs de commande</value></data>
+  <data name="Cfg_CmdBlocksDesc" xml:space="preserve"><value>Permet d'utiliser les command blocks pour des mécaniques automatiques (cartes, mini-jeux). Laissez désactivé si vous ne les utilisez pas.</value></data>
+  <data name="Cfg_SpawnProt" xml:space="preserve"><value>Protection du spawn</value></data>
+  <data name="Cfg_SpawnProtDesc" xml:space="preserve"><value>Rayon (en blocs) autour du point d'apparition où les joueurs normaux ne peuvent ni construire ni casser. 0 le désactive.</value></data>
+  <data name="Cfg_ViewDist" xml:space="preserve"><value>Distance d'affichage (chunks)</value></data>
+  <data name="Cfg_ViewDistDesc" xml:space="preserve"><value>Jusqu'où les chunks sont chargés et envoyés aux joueurs. Plus haut = on voit plus loin, mais plus de CPU et de réseau. Typique : 8–12.</value></data>
+  <data name="Cfg_SimDist" xml:space="preserve"><value>Distance de simulation (chunks)</value></data>
+  <data name="Cfg_SimDistDesc" xml:space="preserve"><value>Jusqu'où le serveur 'simule' le monde (mobs, cultures, redstone). Plus haut = plus d'éléments actifs, plus de CPU. Typique : 8–10.</value></data>
+  <data name="Cfg_GenStructures" xml:space="preserve"><value>Générer les structures</value></data>
+  <data name="Cfg_GenStructuresDesc" xml:space="preserve"><value>Si villages, donjons, temples, forteresses, etc. se génèrent dans le monde. Presque toujours laissé activé.</value></data>
+  <data name="Cfg_PortDesc" xml:space="preserve"><value>Port local sur lequel le serveur écoute. Si vous le changez, le tunnel Playit doit pointer vers ce même port.</value></data>
+  <data name="Cfg_OnlineMode" xml:space="preserve"><value>Mode en ligne (comptes officiels)</value></data>
+  <data name="Cfg_OnlineModeDesc" xml:space="preserve"><value>Activé : seuls les comptes Minecraft légitimes peuvent rejoindre (recommandé et sûr). Désactivé ('cracked') : tout le monde peut rejoindre, sans vérification d'identité ni de skin.</value></data>
+  <data name="Cfg_WhitelistDesc" xml:space="preserve"><value>Si activée, seuls les joueurs ajoutés à la liste blanche peuvent rejoindre. Idéal pour les serveurs privés entre amis.</value></data>
+  <data name="Gm_Survival" xml:space="preserve"><value>Survie</value></data>
+  <data name="Gm_Creative" xml:space="preserve"><value>Créatif</value></data>
+  <data name="Gm_Adventure" xml:space="preserve"><value>Aventure</value></data>
+  <data name="Gm_Spectator" xml:space="preserve"><value>Spectateur</value></data>
+  <data name="Diff_Peaceful" xml:space="preserve"><value>Paisible</value></data>
+  <data name="Diff_Easy" xml:space="preserve"><value>Facile</value></data>
+  <data name="Diff_Normal" xml:space="preserve"><value>Normal</value></data>
+  <data name="Diff_Hard" xml:space="preserve"><value>Difficile</value></data>
+  <data name="Ae_Folder" xml:space="preserve"><value>Dossier du serveur</value></data>
+  <data name="Ae_Jar" xml:space="preserve"><value>Fichier .jar (relatif au dossier)</value></data>
+  <data name="Ae_Java" xml:space="preserve"><value>Chemin de Java</value></data>
+  <data name="Ae_JavaPlaceholder" xml:space="preserve"><value>java (celui du PATH) ou chemin vers java.exe</value></data>
+  <data name="Ae_ExtraArgs" xml:space="preserve"><value>Arguments JVM supplémentaires (facultatif)</value></data>
+  <data name="Del_Title" xml:space="preserve"><value>Supprimer le serveur</value></data>
+  <data name="Del_ConfirmFmt" xml:space="preserve"><value>Retirer le serveur "{0}" de la liste ?</value></data>
+  <data name="Del_Tunnel" xml:space="preserve"><value>Supprimer aussi son tunnel Playit.gg (celui qui pointe vers son port).</value></data>
+  <data name="Del_Files" xml:space="preserve"><value>Supprimer aussi tous les fichiers du serveur sur le disque (y compris le monde).</value></data>
+  <data name="Del_Warning" xml:space="preserve"><value>Le dossier complet du serveur sera supprimé définitivement. Cette action est IRRÉVERSIBLE.</value></data>
+  <data name="Del_Delete" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="Pk_Title" xml:space="preserve"><value>Clé Playit (écriture)</value></data>
+  <data name="Pk_Intro" xml:space="preserve"><value>Pour créer et supprimer des tunnels automatiquement, l'app a besoin d'une clé Playit avec permission d'écriture. La clé d'agent que vous avez déjà est en lecture seule et ne convient pas.</value></data>
+  <data name="Pk_Steps" xml:space="preserve"><value>Générez une clé dans votre compte playit.gg (section clés / API, avec permission d'écriture) et collez-la ici. Elle est stockée uniquement sur votre ordinateur.</value></data>
+  <data name="Pk_OpenPlayit" xml:space="preserve"><value>Ouvrir playit.gg</value></data>
+  <data name="Pk_KeyLabel" xml:space="preserve"><value>Clé d'écriture Playit</value></data>
+  <data name="Pk_KeyPlaceholder" xml:space="preserve"><value>Collez votre clé ici...</value></data>
+  <data name="Playit_ActiveBg" xml:space="preserve"><value>Actif (service en arrière-plan)</value></data>
+  <data name="Playit_Active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Playit_Stopped" xml:space="preserve"><value>Arrêté</value></data>
+  <data name="Playit_NotInstalled" xml:space="preserve"><value>Service non installé</value></data>
+  <data name="Playit_Checking" xml:space="preserve"><value>Vérification...</value></data>
+  <data name="Signal_Off" xml:space="preserve"><value>Serveur éteint</value></data>
+  <data name="Signal_Transition" xml:space="preserve"><value>Changement d'état...</value></data>
+  <data name="Signal_NoTunnel" xml:space="preserve"><value>Allumé sur votre PC, mais le tunnel Playit est éteint : personne ne peut rejoindre depuis Internet.</value></data>
+  <data name="Signal_Accessible" xml:space="preserve"><value>Accessible</value></data>
+  <data name="Cs_PortNote" xml:space="preserve"><value>Pour avoir plusieurs serveurs allumés en même temps, chacun doit utiliser un port différent.</value></data>
+  <data name="Cs_Creating" xml:space="preserve"><value>Création du serveur...</value></data>
+  <data name="Cs_LoadingVersions" xml:space="preserve"><value>Chargement des versions...</value></data>
 </root>

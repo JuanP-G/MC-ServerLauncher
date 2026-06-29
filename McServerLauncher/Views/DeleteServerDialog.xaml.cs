@@ -1,4 +1,5 @@
 using System.Windows;
+using McServerLauncher.Localization;
 using Wpf.Ui.Controls;
 
 namespace McServerLauncher.Views;
@@ -14,8 +15,8 @@ public partial class DeleteServerDialog : FluentWindow
     public DeleteServerDialog(string serverName, string folderPath)
     {
         InitializeComponent();
-        MessageText.Text = $"¿Eliminar el servidor \"{serverName}\" de la lista?";
-        FolderText.Text = $"Carpeta: {folderPath}";
+        MessageText.Text = string.Format(Localizer.Get("Del_ConfirmFmt"), serverName);
+        FolderText.Text = $"{Localizer.Get("Ae_Folder")}: {folderPath}";
         DeleteFilesCheck.Checked += OnCheckChanged;
         DeleteFilesCheck.Unchecked += OnCheckChanged;
     }

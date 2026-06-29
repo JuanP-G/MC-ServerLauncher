@@ -48,7 +48,7 @@ public partial class ServerViewModel : ObservableObject
     private PlayitState _playitState = PlayitState.Stopped;
 
     [ObservableProperty]
-    private string _playitStatusText = "Comprobando...";
+    private string _playitStatusText = Localizer.Get("Playit_Checking");
 
     [ObservableProperty]
     private string? _tunnelAddress;
@@ -156,7 +156,7 @@ public partial class ServerViewModel : ObservableObject
     private Brush _signalBrush = BrushGray;
 
     [ObservableProperty]
-    private string _signalHint = "Servidor apagado";
+    private string _signalHint = Localizer.Get("Signal_Off");
 
     [ObservableProperty]
     private bool _showTunnelWarning;
@@ -229,9 +229,9 @@ public partial class ServerViewModel : ObservableObject
 
     private void UpdatePlayitStatusText() => PlayitStatusText = PlayitState switch
     {
-        PlayitState.Running => _playit.IsInstalled ? "Activo (servicio en 2º plano)" : "Activo",
-        PlayitState.Starting => "Iniciando...",
-        _ => _playit.IsInstalled ? "Detenido" : "Servicio no instalado"
+        PlayitState.Running => Localizer.Get(_playit.IsInstalled ? "Playit_ActiveBg" : "Playit_Active"),
+        PlayitState.Starting => Localizer.Get("Status_Starting"),
+        _ => Localizer.Get(_playit.IsInstalled ? "Playit_Stopped" : "Playit_NotInstalled")
     };
 
     /// <summary>
@@ -246,7 +246,7 @@ public partial class ServerViewModel : ObservableObject
         if (!running)
         {
             SignalBrush = transitioning ? BrushAmber : BrushGray;
-            SignalHint = transitioning ? "Cambiando de estado..." : "Servidor apagado";
+            SignalHint = Localizer.Get(transitioning ? "Signal_Transition" : "Signal_Off");
             ShowTunnelWarning = false;
             return;
         }
@@ -254,13 +254,13 @@ public partial class ServerViewModel : ObservableObject
         if (Config.PlayitEnabled && PlayitState != PlayitState.Running)
         {
             SignalBrush = BrushRed;
-            SignalHint = "Encendido en tu PC, pero el túnel de Playit está apagado: nadie puede entrar desde Internet.";
+            SignalHint = Localizer.Get("Signal_NoTunnel");
             ShowTunnelWarning = true;
         }
         else
         {
             SignalBrush = BrushSignalGreen;
-            SignalHint = "Accesible";
+            SignalHint = Localizer.Get("Signal_Accessible");
             ShowTunnelWarning = false;
         }
     }

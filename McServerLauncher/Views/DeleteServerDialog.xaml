@@ -2,7 +2,8 @@
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-                 Title="Eliminar servidor"
+                 xmlns:loc="clr-namespace:McServerLauncher.Localization"
+                 Title="{loc:Loc Del_Title}"
                  Width="500" SizeToContent="Height"
                  ResizeMode="NoResize"
                  WindowStartupLocation="CenterOwner"
@@ -15,16 +16,16 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Grid.Row="0" Title="Eliminar servidor" />
+        <ui:TitleBar Grid.Row="0" Title="{loc:Loc Del_Title}" />
 
         <StackPanel Grid.Row="1" Margin="20,8,20,8">
             <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontSize="14" />
 
             <CheckBox x:Name="DeleteTunnelCheck" Margin="0,16,0,0" IsChecked="True"
-                      Content="Eliminar también su túnel de Playit.gg (el que apunta a su puerto)." />
+                      Content="{loc:Loc Del_Tunnel}" />
 
             <CheckBox x:Name="DeleteFilesCheck" Margin="0,10,0,0"
-                      Content="Eliminar también todos los archivos del servidor en disco (incluido el mundo)." />
+                      Content="{loc:Loc Del_Files}" />
 
             <Border x:Name="WarningBox" Margin="0,10,0,0" Padding="12"
                     CornerRadius="8"
@@ -33,7 +34,7 @@
                 <StackPanel Orientation="Horizontal">
                     <ui:SymbolIcon Symbol="Warning24" Foreground="#FF6B6B" Margin="0,0,10,0" VerticalAlignment="Center" />
                     <TextBlock TextWrapping="Wrap" Foreground="#FFB3B3" Width="380"
-                               Text="Se borrará la carpeta completa del servidor de forma permanente. Esta acción NO se puede deshacer." />
+                               Text="{loc:Loc Del_Warning}" />
                 </StackPanel>
             </Border>
 
@@ -42,8 +43,8 @@
         </StackPanel>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,8,20,16">
-            <ui:Button Content="Cancelar" Margin="0,0,8,0" Click="Cancel_Click" />
-            <ui:Button x:Name="DeleteButton" Appearance="Danger" Content="Eliminar" Click="Delete_Click" />
+            <ui:Button Content="{loc:Loc Cancel}" Margin="0,0,8,0" Click="Cancel_Click" />
+            <ui:Button x:Name="DeleteButton" Appearance="Danger" Content="{loc:Loc Del_Delete}" Click="Delete_Click" />
         </StackPanel>
     </Grid>
 </ui:FluentWindow>

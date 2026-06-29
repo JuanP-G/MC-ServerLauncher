@@ -2,7 +2,8 @@
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-                 Title="Clave de Playit (escritura)"
+                 xmlns:loc="clr-namespace:McServerLauncher.Localization"
+                 Title="{loc:Loc Pk_Title}"
                  Width="560" SizeToContent="Height"
                  ResizeMode="NoResize"
                  WindowStartupLocation="CenterOwner"
@@ -15,25 +16,24 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Grid.Row="0" Title="Clave de Playit (escritura)" />
+        <ui:TitleBar Grid.Row="0" Title="{loc:Loc Pk_Title}" />
 
         <StackPanel Grid.Row="1" Margin="20,8,20,8">
-            <TextBlock TextWrapping="Wrap" FontSize="14"
-                       Text="Para crear y eliminar túneles automáticamente, la app necesita una clave de Playit con permiso de escritura. La clave del agente que ya tienes es de solo lectura y no sirve para esto." />
+            <TextBlock TextWrapping="Wrap" FontSize="14" Text="{loc:Loc Pk_Intro}" />
 
             <TextBlock TextWrapping="Wrap" FontSize="13" Opacity="0.8" Margin="0,12,0,0"
-                       Text="Genera una clave en tu cuenta de playit.gg (sección de claves / API, con permisos de escritura) y pégala aquí. Se guarda solo en tu equipo." />
+                       Text="{loc:Loc Pk_Steps}" />
 
-            <ui:Button Margin="0,12,0,0" Icon="{ui:SymbolIcon Open24}" Content="Abrir playit.gg"
+            <ui:Button Margin="0,12,0,0" Icon="{ui:SymbolIcon Open24}" Content="{loc:Loc Pk_OpenPlayit}"
                        Click="OpenPlayit_Click" />
 
-            <TextBlock Text="Clave de escritura de Playit" Margin="0,16,0,4" />
-            <ui:TextBox x:Name="KeyBox" PlaceholderText="Pega aquí tu clave..." />
+            <TextBlock Text="{loc:Loc Pk_KeyLabel}" Margin="0,16,0,4" />
+            <ui:TextBox x:Name="KeyBox" PlaceholderText="{loc:Loc Pk_KeyPlaceholder}" />
         </StackPanel>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,12,20,16">
-            <ui:Button Content="Cancelar" Margin="0,0,8,0" Click="Cancel_Click" />
-            <ui:Button Appearance="Primary" Content="Guardar" Click="Save_Click" />
+            <ui:Button Content="{loc:Loc Cancel}" Margin="0,0,8,0" Click="Cancel_Click" />
+            <ui:Button Appearance="Primary" Content="{loc:Loc Save}" Click="Save_Click" />
         </StackPanel>
     </Grid>
 </ui:FluentWindow>

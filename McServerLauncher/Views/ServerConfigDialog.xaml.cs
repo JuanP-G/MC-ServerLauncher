@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 using Wpf.Ui.Controls;
@@ -15,7 +16,7 @@ public partial class ServerConfigDialog : FluentWindow
     {
         InitializeComponent();
         _config = config;
-        HeaderText.Text = $"Ajustes de \"{config.Name}\". Los cambios se aplican al (re)iniciar el servidor.";
+        HeaderText.Text = string.Format(Localizer.Get("Cfg_HeaderFmt"), config.Name);
         Load();
     }
 
