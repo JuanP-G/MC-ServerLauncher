@@ -173,13 +173,24 @@ public partial class MainViewModel : ObservableObject
             var dest = Path.Combine(Path.GetTempPath(), "MC-ServerLauncher-Setup.exe");
             await new UpdateService().DownloadInstallerAsync(_installerUrl, dest);
 
-            // Stop servers and launch the installer silently; it relaunches the app when done.
+            // Run the installer from a helper that first waits for THIS app to fully exit, then
+            // launches it. This avoids the UAC-elevation race where the app closed too soon and the
+            // silent install never actually applied.
+            var helper = Path.Combine(Path.GetTempPath(), "mcsl-update.cmd");
+            await File.WriteAllTextAsync(helper,
+                "@echo off\r\n" +
+                ":wait\r\n" +
+                "tasklist /FI \"IMAGENAME eq McServerLauncher.exe\" 2>nul | find /I \"McServerLauncher.exe\" >nul\r\n" +
+                "if not errorlevel 1 ( timeout /t 1 /nobreak >nul & goto wait )\r\n" +
+                $"\"{dest}\" /SILENT /SUPPRESSMSGBOXES /NORESTART\r\n");
+
             await ShutdownAllAsync();
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
-                FileName = dest,
-                Arguments = "/SILENT /SUPPRESSMSGBOXES /NORESTART",
-                UseShellExecute = true   // permite la elevación (UAC) del instalador
+                FileName = "cmd.exe",
+                Arguments = $"/c \"{helper}\"",
+                UseShellExecute = false,
+                CreateNoWindow = true
             });
             Environment.Exit(0);
         }
