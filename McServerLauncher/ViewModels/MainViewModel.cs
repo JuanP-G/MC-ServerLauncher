@@ -223,8 +223,16 @@ public partial class MainViewModel : ObservableObject
     private void Load()
     {
         // The app starts with no servers; the user creates a new one or adds an existing folder.
+        // For servers saved before Type/GameVersion existed, detect them from the folder so the
+        // mods browser works (older Fabric/Forge servers).
+        var detector = new ServerDetectionService();
+        var changed = false;
         foreach (var cfg in _storage.Load())
+        {
+            if (detector.DetectAndFill(cfg)) changed = true;
             Register(cfg);
+        }
+        if (changed) Save();
 
         SelectedServer = Servers.FirstOrDefault();
     }

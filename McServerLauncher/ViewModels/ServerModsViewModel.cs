@@ -267,6 +267,13 @@ public partial class ServerModsViewModel : ObservableObject
             Directory.CreateDirectory(modsFolder);
             var destPath = Path.Combine(modsFolder, file.Filename);
 
+            // If the same mod is already present but disabled, remove the disabled copy first so we
+            // don't end up with two files (a new enabled one + an old disabled one) that then clash
+            // when toggling. The download below overwrites any enabled copy of the same name.
+            var disabledPath = destPath + ".disabled";
+            try { if (File.Exists(disabledPath)) File.Delete(disabledPath); }
+            catch { /* best-effort */ }
+
             SearchStatus = string.Format(Localizer.Get("Msg_DownloadingMod"), file.Filename);
 
             await _modrinthService.DownloadModAsync(file.Url, destPath);

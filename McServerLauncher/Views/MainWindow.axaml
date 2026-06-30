@@ -323,7 +323,7 @@
                     </Border>
 
                     <!-- Tabs: Console / Players / Mods -->
-                    <TabControl Grid.Row="3" Background="Transparent" Margin="4,0">
+                    <TabControl Grid.Row="3" x:Name="ServerTabs" Background="Transparent" Margin="4,0">
                         <TabItem Header="{loc:Loc Console}">
                             <Grid Margin="0,8,0,0" RowDefinitions="*,Auto">
                                 <!-- Console -->

@@ -19,6 +19,14 @@ public partial class MainWindow : Window
         _viewModel = new MainViewModel();
         DataContext = _viewModel;
         Loaded += (_, _) => _viewModel.ShowWhatsNewIfUpdated(this);
+
+        // When switching servers, go back to the Console tab. Otherwise the previously selected tab
+        // (e.g. Mods) could stay shown for a server that doesn't have it (a vanilla server).
+        _viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MainViewModel.SelectedServer))
+                ServerTabs.SelectedIndex = 0;
+        };
     }
 
     protected override async void OnClosing(WindowClosingEventArgs e)
