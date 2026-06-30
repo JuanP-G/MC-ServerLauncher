@@ -99,22 +99,38 @@ public partial class InstallLoaderDialog : Window
                 AppendLog(Localizer.Get("Msg_UseSystemJava"));
             }
 
-            // Only Fabric for now (LoaderCombo index 0); Forge will be added once it's stable.
-            AppendLog(Localizer.Get("Msg_FabricResolving"));
-            var loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync();
-            const string jarName = "fabric-server.jar";
-            await _mods.DownloadFabricServerAsync(version.Id, loaderVersion,
-                Path.Combine(_config.FolderPath, jarName), progress);
-
-            _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
-
             // Update the existing server's config in place (the world is kept).
-            _config.Type = ServerType.Fabric;
-            _config.GameVersion = version.Id;
-            _config.ModLoaderVersion = loaderVersion;
-            _config.ForgeArgs = string.Empty;
-            _config.JarFile = jarName;
-            _config.JavaPath = javaPath;
+            if (LoaderCombo.SelectedIndex == 1)
+            {
+                // Revert to Vanilla: download the vanilla server jar for this version.
+                const string jarName = "server.jar";
+                await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(_config.FolderPath, jarName), progress);
+                _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
+
+                _config.Type = ServerType.Vanilla;
+                _config.GameVersion = version.Id;
+                _config.ModLoaderVersion = string.Empty;
+                _config.ForgeArgs = string.Empty;
+                _config.JarFile = jarName;
+                _config.JavaPath = javaPath;
+            }
+            else
+            {
+                // Fabric (index 0). Forge (index 2) is disabled for now.
+                AppendLog(Localizer.Get("Msg_FabricResolving"));
+                var loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync();
+                const string jarName = "fabric-server.jar";
+                await _mods.DownloadFabricServerAsync(version.Id, loaderVersion,
+                    Path.Combine(_config.FolderPath, jarName), progress);
+                _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
+
+                _config.Type = ServerType.Fabric;
+                _config.GameVersion = version.Id;
+                _config.ModLoaderVersion = loaderVersion;
+                _config.ForgeArgs = string.Empty;
+                _config.JarFile = jarName;
+                _config.JavaPath = javaPath;
+            }
 
             AppendLog(Localizer.Get("Loader_Done"));
             Close(true);

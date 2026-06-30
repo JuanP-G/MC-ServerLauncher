@@ -250,12 +250,14 @@
   <data name="Loader_Section" xml:space="preserve"><value>Mods / Loader</value></data>
   <data name="Loader_Current" xml:space="preserve"><value>Loader atual: </value></data>
   <data name="Loader_ChangeButton" xml:space="preserve"><value>Instalar / mudar loader…</value></data>
-  <data name="Loader_Intro" xml:space="preserve"><value>Instala um loader de mods (Fabric) neste servidor para poderes adicionar mods. O teu mundo é mantido.</value></data>
-  <data name="Loader_Warning" xml:space="preserve"><value>O servidor passará para Fabric com a versão escolhida. Usa a mesma versão que o servidor já tinha para não estragar o mundo.</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Instala ou muda o loader de mods deste servidor, ou volta a Vanilla. O teu mundo é mantido.</value></data>
+  <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sem mods)</value></data>
+  <data name="Forge_Soon" xml:space="preserve"><value>Forge (em breve)</value></data>
+  <data name="Loader_Warning" xml:space="preserve"><value>O loader escolhido será aplicado com essa versão. Usa a mesma versão que o servidor já tinha para não estragar o mundo.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>A instalar o loader...</value></data>
   <data name="Loader_InstallButton" xml:space="preserve"><value>Instalar</value></data>
   <data name="Loader_DetectedFmt" xml:space="preserve"><value>Versão do servidor detetada: {0}</value></data>
-  <data name="Loader_Done" xml:space="preserve"><value>Loader instalado. O servidor já suporta mods.</value></data>
+  <data name="Loader_Done" xml:space="preserve"><value>Concluído. O servidor foi atualizado.</value></data>
   <data name="Loader_Error" xml:space="preserve"><value>Não foi possível instalar o loader: {0}</value></data>
   <data name="Msg_ModBrowserNeedsLoader" xml:space="preserve"><value>O explorador de mods só está disponível em servidores Fabric ou Forge.</value></data>
   <data name="Msg_SearchingModrinth" xml:space="preserve"><value>A procurar no Modrinth...</value></data>

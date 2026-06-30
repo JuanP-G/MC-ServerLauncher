@@ -296,12 +296,14 @@
   <data name="Loader_Section" xml:space="preserve"><value>Mods / Loader</value></data>
   <data name="Loader_Current" xml:space="preserve"><value>Loader actual: </value></data>
   <data name="Loader_ChangeButton" xml:space="preserve"><value>Instalar / cambiar loader…</value></data>
-  <data name="Loader_Intro" xml:space="preserve"><value>Instala un loader de mods (Fabric) en este servidor para poder añadir mods. Tu mundo se conserva.</value></data>
-  <data name="Loader_Warning" xml:space="preserve"><value>Se cambiará el servidor a Fabric con la versión elegida. Usa la misma versión que ya tenía el servidor para no romper el mundo.</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Instala o cambia el loader de mods de este servidor, o vuelve a Vanilla. Tu mundo se conserva.</value></data>
+  <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sin mods)</value></data>
+  <data name="Forge_Soon" xml:space="preserve"><value>Forge (próximamente)</value></data>
+  <data name="Loader_Warning" xml:space="preserve"><value>Se aplicará el loader elegido con esa versión. Usa la misma versión que ya tenía el servidor para no romper el mundo.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>Instalando loader...</value></data>
   <data name="Loader_InstallButton" xml:space="preserve"><value>Instalar</value></data>
   <data name="Loader_DetectedFmt" xml:space="preserve"><value>Versión detectada del servidor: {0}</value></data>
-  <data name="Loader_Done" xml:space="preserve"><value>Loader instalado. El servidor ya admite mods.</value></data>
+  <data name="Loader_Done" xml:space="preserve"><value>Hecho. El servidor se ha actualizado.</value></data>
   <data name="Loader_Error" xml:space="preserve"><value>No se pudo instalar el loader: {0}</value></data>
   <data name="Msg_ModBrowserNeedsLoader" xml:space="preserve"><value>El explorador de mods solo está disponible en servidores Fabric o Forge.</value></data>
   <data name="Msg_SearchingModrinth" xml:space="preserve"><value>Buscando en Modrinth...</value></data>

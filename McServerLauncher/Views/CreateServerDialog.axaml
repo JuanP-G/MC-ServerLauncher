@@ -25,7 +25,7 @@
                         <ComboBox x:Name="TypeCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
                             <ComboBoxItem Content="Vanilla" />
                             <ComboBoxItem Content="Fabric" />
-                            <ComboBoxItem Content="Forge" />
+                            <ComboBoxItem Content="{loc:Loc Forge_Soon}" IsEnabled="False" />
                         </ComboBox>
                     </StackPanel>
                 </Grid>
