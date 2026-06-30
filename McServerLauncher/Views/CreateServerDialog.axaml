@@ -25,6 +25,7 @@
                         <ComboBox x:Name="TypeCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
                             <ComboBoxItem Content="Vanilla" />
                             <ComboBoxItem Content="Fabric" />
+                            <ComboBoxItem Content="Forge" />
                         </ComboBox>
                     </StackPanel>
                 </Grid>

@@ -233,4 +233,50 @@
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Clique sur une commande pour la mettre dans la case et compléter les détails. Ces commandes ne fonctionnent que lorsque le serveur est allumé.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Oui</value></data>
   <data name="Btn_No" xml:space="preserve"><value>Non</value></data>
+  <data name="Browse_Mods" xml:space="preserve"><value>Explorer les mods</value></data>
+  <data name="SearchMods_Placeholder" xml:space="preserve"><value>Rechercher sur Modrinth...</value></data>
+  <data name="Search" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="Installed_Mods" xml:space="preserve"><value>Mods installés</value></data>
+  <data name="No_Installed_Mods" xml:space="preserve"><value>Aucun mod installé pour l'instant.</value></data>
+  <data name="Install" xml:space="preserve"><value>Installer</value></data>
+  <data name="Mods" xml:space="preserve"><value>Mods</value></data>
+  <data name="Sort_Label" xml:space="preserve"><value>Trier par :</value></data>
+  <data name="Sort_Relevance" xml:space="preserve"><value>Pertinence</value></data>
+  <data name="Sort_Downloads" xml:space="preserve"><value>Téléchargements</value></data>
+  <data name="LoadMore" xml:space="preserve"><value>Charger plus</value></data>
+  <data name="Export_Modpack" xml:space="preserve"><value>Exporter le modpack</value></data>
+  <data name="Msg_ModBrowserNeedsLoader" xml:space="preserve"><value>L'explorateur de mods n'est disponible que sur les serveurs Fabric ou Forge.</value></data>
+  <data name="Msg_SearchingModrinth" xml:space="preserve"><value>Recherche sur Modrinth...</value></data>
+  <data name="Msg_ModsFoundFmt" xml:space="preserve"><value>{0} résultats.</value></data>
+  <data name="Msg_NoModsFound" xml:space="preserve"><value>Aucun mod trouvé pour cette version et ce type de serveur.</value></data>
+  <data name="Msg_ModErrorFmt" xml:space="preserve"><value>Erreur : {0}</value></data>
+  <data name="Msg_ResolvingVersion" xml:space="preserve"><value>Recherche de la dernière version compatible...</value></data>
+  <data name="Msg_NoCompatibleVersion" xml:space="preserve"><value>Aucune version compatible trouvée.</value></data>
+  <data name="Msg_DownloadingMod" xml:space="preserve"><value>Téléchargement de {0}...</value></data>
+  <data name="Msg_ModInstalled" xml:space="preserve"><value>Mod installé avec succès.</value></data>
+  <data name="Msg_InstallErrorFmt" xml:space="preserve"><value>Erreur lors de l'installation du mod : {0}</value></data>
+  <data name="Msg_FabricResolving" xml:space="preserve"><value>Résolution de la version de Fabric...</value></data>
+  <data name="Msg_ForgeResolving" xml:space="preserve"><value>Résolution de la version de Forge...</value></data>
+  <data name="Msg_ForgeNoVersion" xml:space="preserve"><value>Aucune version de Forge n'est disponible pour Minecraft {0}.</value></data>
+  <data name="Msg_ForgeDownloadingInstaller" xml:space="preserve"><value>Téléchargement de l'installateur Forge {0}...</value></data>
+  <data name="Msg_ForgeRunningInstaller" xml:space="preserve"><value>Exécution de l'installateur Forge (cela peut prendre un moment)...</value></data>
+  <data name="Msg_ForgeInstallerFailed" xml:space="preserve"><value>L'installateur Forge a échoué (code {0}).</value></data>
+  <data name="Msg_ForgeInstallNoOutput" xml:space="preserve"><value>L'installateur Forge n'a pas produit de serveur reconnaissable.</value></data>
+  <data name="HowToPlay_Title" xml:space="preserve"><value>Comment jouer sur ce serveur</value></data>
+  <data name="HowToPlay_FabricFmt" xml:space="preserve"><value>Ce serveur utilise Fabric (Minecraft {0}). Pour jouer avec des mods :
+1. Installe le client Fabric depuis https://fabricmc.net/use (choisis la version {0}).
+2. Ouvre le lanceur Minecraft et sélectionne le profil "fabric-loader-{0}".
+3. Copie les mods (.jar) dans %appdata%\.minecraft\mods.
+4. Les versions des mods du client doivent correspondre à celles du serveur.</value></data>
+  <data name="HowToPlay_ForgeFmt" xml:space="preserve"><value>Ce serveur utilise Forge (Minecraft {0}). Pour jouer avec des mods :
+1. Télécharge l'installateur Forge pour {0} depuis https://files.minecraftforge.net et installe le client ("Install client").
+2. Ouvre le lanceur Minecraft et sélectionne le profil "forge".
+3. Copie les mods (.jar) dans %appdata%\.minecraft\mods.
+4. La version de Forge du client doit correspondre à celle du serveur.</value></data>
+  <data name="Export_InstructionsFmt" xml:space="preserve"><value>Serveur : {0}
+Type : {1}  ·  Version de Minecraft : {2}
+
+{3}
+
+Les mods se trouvent dans le dossier "mods" de ce pack.</value></data>
 </root>

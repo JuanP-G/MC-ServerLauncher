@@ -1,0 +1,159 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:McServerLauncher.ViewModels"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="McServerLauncher.Views.ServerModsView"
+             x:DataType="vm:ServerModsViewModel"
+             x:CompileBindings="False">
+
+    <Grid RowDefinitions="Auto,*" Margin="0,8,0,0">
+
+        <!-- How to play (collapsible instructions, depends on the server type) -->
+        <Expander Grid.Row="0" Margin="0,0,0,8" HorizontalAlignment="Stretch" IsExpanded="False">
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ic:SymbolIcon Symbol="QuestionCircle" />
+                    <TextBlock Text="{Binding HowToPlayTitle}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Expander.Header>
+            <TextBlock Text="{Binding HowToPlaySteps}" TextWrapping="Wrap" Opacity="0.9"
+                       FontSize="13" Margin="4,2" LineHeight="20" />
+        </Expander>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,300">
+            <!-- Left panel: Browser -->
+            <Border Grid.Column="0" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
+                    CornerRadius="8" Padding="12" Margin="0,0,8,0">
+                <Grid RowDefinitions="Auto,Auto,Auto,*">
+                    <TextBlock Grid.Row="0" Text="{loc:Loc Browse_Mods}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" />
+
+                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                        <TextBox Grid.Column="0" Text="{Binding SearchQuery}"
+                                 Watermark="{loc:Loc SearchMods_Placeholder}" Margin="0,0,8,0">
+                            <TextBox.KeyBindings>
+                                <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
+                            </TextBox.KeyBindings>
+                        </TextBox>
+                        <Button Grid.Column="1" Command="{Binding SearchCommand}" Classes="accent" IsEnabled="{Binding !IsSearching}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Search" />
+                                <TextBlock Text="{loc:Loc Search}" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- Sort -->
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*" Margin="0,0,0,12">
+                        <TextBlock Grid.Column="0" Text="{loc:Loc Sort_Label}" VerticalAlignment="Center"
+                                   Opacity="0.7" Margin="0,0,8,0" />
+                        <ComboBox Grid.Column="1" Width="180" HorizontalAlignment="Left"
+                                  ItemsSource="{Binding SortOptions}" SelectedIndex="{Binding SelectedSortIndex}" />
+                    </Grid>
+
+                    <Grid Grid.Row="3">
+                        <TextBlock Text="{Binding SearchStatus}" Opacity="0.7" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   IsVisible="{Binding !SearchResults.Count}" />
+
+                        <Grid IsVisible="{Binding SearchResults.Count}" RowDefinitions="*,Auto">
+                            <ListBox Grid.Row="0" ItemsSource="{Binding SearchResults}" Background="Transparent"
+                                     BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#1A1A1A" CornerRadius="6" Padding="10" Margin="0,4">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <!-- Icon (or placeholder) -->
+                                                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="6"
+                                                        Background="#22FFFFFF" Margin="0,0,10,0" ClipToBounds="True">
+                                                    <Panel>
+                                                        <ic:SymbolIcon Symbol="Box" FontSize="22" Opacity="0.5"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                       IsVisible="{Binding !HasIcon}" />
+                                                        <Image Source="{Binding Icon}" Width="48" Height="48"
+                                                               IsVisible="{Binding HasIcon}" />
+                                                    </Panel>
+                                                </Border>
+
+                                                <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,4">
+                                                        <TextBlock Text="{Binding Author}" FontSize="12" Opacity="0.7" />
+                                                        <StackPanel Orientation="Horizontal" Spacing="3">
+                                                            <ic:SymbolIcon Symbol="ArrowDownload" FontSize="12" Opacity="0.7" />
+                                                            <TextBlock Text="{Binding DownloadsText}" FontSize="12" Opacity="0.7" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Description}" FontSize="12" TextWrapping="Wrap" Opacity="0.9" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2" Command="{Binding InstallCommand}"
+                                                        Content="{loc:Loc Install}" VerticalAlignment="Center"
+                                                        IsEnabled="{Binding !IsInstalling}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <Button Grid.Row="1" HorizontalAlignment="Center" Margin="0,8,0,0"
+                                    Command="{Binding LoadMoreCommand}" IsVisible="{Binding CanLoadMore}"
+                                    IsEnabled="{Binding !IsSearching}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ic:SymbolIcon Symbol="ChevronDown" />
+                                    <TextBlock Text="{loc:Loc LoadMore}" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- Right panel: Installed -->
+            <Border Grid.Column="1" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
+                    CornerRadius="8" Padding="12">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
+                        <TextBlock Grid.Column="0" Text="{loc:Loc Installed_Mods}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+
+                        <Button Grid.Column="1" Command="{Binding ExportModpackCommand}" Padding="6,4" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Export_Modpack}">
+                            <ic:SymbolIcon Symbol="Share" />
+                        </Button>
+
+                        <Button Grid.Column="2" Command="{Binding RefreshInstalledModsCommand}" Padding="6,4">
+                            <ic:SymbolIcon Symbol="ArrowClockwise" />
+                        </Button>
+                    </Grid>
+
+                    <TextBlock Grid.Row="1" Text="{loc:Loc No_Installed_Mods}" Opacity="0.7"
+                               HorizontalAlignment="Center" Margin="0,20,0,0"
+                               IsVisible="{Binding !InstalledMods.Count}" />
+
+                    <ListBox Grid.Row="2" ItemsSource="{Binding InstalledMods}" Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,4">
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding FileName}" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" ToolTip.Tip="On/Off" Background="Transparent" Padding="4" Margin="0,0,4,0"
+                                            Command="{Binding DataContext.ToggleModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            CommandParameter="{Binding}">
+                                        <ic:SymbolIcon Symbol="Power" />
+                                    </Button>
+                                    <Button Grid.Column="2" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="4"
+                                            Command="{Binding DataContext.DeleteModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            CommandParameter="{Binding}">
+                                        <ic:SymbolIcon Symbol="Delete" Foreground="#E05561" />
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

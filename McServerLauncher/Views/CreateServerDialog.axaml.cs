@@ -158,25 +158,19 @@ public partial class CreateServerDialog : Window
 
             AppendLog(string.Format(Localizer.Get("Msg_Resolving"), version.Id));
             var details = await _versions.GetVersionDetailsAsync(version);
-            
-            var isFabric = TypeCombo.SelectedIndex == 1;
-            var serverType = isFabric ? ServerType.Fabric : ServerType.Vanilla;
+
+            var serverType = TypeCombo.SelectedIndex switch
+            {
+                1 => ServerType.Fabric,
+                2 => ServerType.Forge,
+                _ => ServerType.Vanilla
+            };
             var loaderVersion = string.Empty;
-            var jarName = isFabric ? "fabric-server.jar" : "server.jar";
-            var jarPath = Path.Combine(folder, jarName);
+            var forgeArgs = string.Empty;
+            var jarName = serverType == ServerType.Fabric ? "fabric-server.jar" : "server.jar";
 
-            if (isFabric)
-            {
-                AppendLog("Resolviendo versión de Fabric...");
-                loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync();
-                await _mods.DownloadFabricServerAsync(version.Id, loaderVersion, jarPath, progress);
-            }
-            else
-            {
-                await _versions.DownloadFileAsync(details.ServerUrl, jarPath, progress);
-            }
-
-            // Check/install the Java this Minecraft version needs.
+            // Install/locate the Java this Minecraft version needs first: the Forge installer also
+            // requires a compatible Java to run.
             AppendLog(string.Format(Localizer.Get("Msg_CheckingJava"), version.Id, details.JavaMajor));
             var javaPath = "java";
             try
@@ -189,18 +183,56 @@ public partial class CreateServerDialog : Window
                 AppendLog(Localizer.Get("Msg_UseSystemJava"));
             }
 
+            if (serverType == ServerType.Fabric)
+            {
+                AppendLog(Localizer.Get("Msg_FabricResolving"));
+                loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync();
+                await _mods.DownloadFabricServerAsync(version.Id, loaderVersion, Path.Combine(folder, jarName), progress);
+            }
+            else if (serverType == ServerType.Forge)
+            {
+                AppendLog(Localizer.Get("Msg_ForgeResolving"));
+                var forgeVersion = await _mods.GetRecommendedForgeVersionAsync(version.Id);
+                if (string.IsNullOrEmpty(forgeVersion))
+                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_ForgeNoVersion"), version.Id));
+
+                loaderVersion = forgeVersion;
+                var forge = await _mods.InstallForgeServerAsync(folder, version.Id, forgeVersion, javaPath, progress);
+                if (forge.ArgsId is not null)
+                {
+                    forgeArgs = forge.ArgsId;     // modern Forge: launched via args file, no runnable jar
+                    jarName = string.Empty;
+                }
+                else if (!string.IsNullOrEmpty(forge.JarFile))
+                {
+                    jarName = forge.JarFile;      // old Forge: a runnable forge-*.jar
+                }
+                else
+                {
+                    throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallNoOutput"));
+                }
+            }
+            else
+            {
+                await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(folder, jarName), progress);
+            }
+
             AppendLog(Localizer.Get("Msg_WritingEula"));
             _creation.WriteEula(folder);
-            _creation.WriteRunBat(folder, minGb, maxGb, jarName, javaPath);
+            // Modern Forge ships its own run.bat (no single jar); only write ours when there is a jar.
+            if (!string.IsNullOrEmpty(jarName))
+                _creation.WriteRunBat(folder, minGb, maxGb, jarName, javaPath);
             _creation.WriteInitialProperties(folder, port, $"{name} - MC Server Launcher");
 
             ResultConfig = new ServerConfig
             {
                 Name = name,
                 FolderPath = folder,
-                JarFile = jarName,
+                JarFile = string.IsNullOrEmpty(jarName) ? "server.jar" : jarName,
                 Type = serverType,
+                GameVersion = version.Id,
                 ModLoaderVersion = loaderVersion,
+                ForgeArgs = forgeArgs,
                 JavaPath = javaPath,
                 MinRamGb = minGb,
                 MaxRamGb = maxGb,

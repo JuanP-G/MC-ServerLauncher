@@ -31,8 +31,19 @@ public class ServerConfig
     /// <summary>Type of the server (Vanilla, Fabric, Forge).</summary>
     public ServerType Type { get; set; } = ServerType.Vanilla;
 
+    /// <summary>Minecraft game version (e.g. 1.20.1).</summary>
+    public string GameVersion { get; set; } = string.Empty;
+
     /// <summary>Version of the mod loader (e.g. 0.16.2 for Fabric).</summary>
     public string ModLoaderVersion { get; set; } = string.Empty;
+
+    /// <summary>
+    /// For modern Forge (1.17+) the server has no runnable jar; it is launched via an args file
+    /// under <c>libraries/net/minecraftforge/forge/&lt;id&gt;/{win,unix}_args.txt</c>. When this holds
+    /// that Forge id (e.g. "1.20.1-47.2.0") the launcher uses the args file instead of "-jar".
+    /// Empty means the classic "-jar JarFile" launch (Vanilla, Fabric, old Forge ≤1.16.5).
+    /// </summary>
+    public string ForgeArgs { get; set; } = string.Empty;
 
     /// <summary>Path to the Java executable. "java" uses the one on the PATH.</summary>
     public string JavaPath { get; set; } = "java";
