@@ -84,12 +84,17 @@ public partial class ServerModsViewModel : ObservableObject
         var modsFolder = Path.Combine(_config.FolderPath, "mods");
         if (Directory.Exists(modsFolder))
         {
-            var files = Directory.GetFiles(modsFolder, "*.jar");
+            // Include disabled mods (.jar.disabled) so they can be re-enabled from the app.
+            var files = Directory.EnumerateFiles(modsFolder)
+                .Where(f => f.EndsWith(".jar", StringComparison.OrdinalIgnoreCase)
+                         || f.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase);
+
             foreach (var file in files)
             {
                 var name = Path.GetFileName(file);
-                var isEnabled = !name.EndsWith(".disabled");
-                var display = isEnabled ? name : name.Replace(".disabled", "");
+                var isEnabled = !name.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase);
+                var display = isEnabled ? name : name[..^".disabled".Length];
                 InstalledMods.Add(new ModItem(file, display, isEnabled));
             }
         }
@@ -101,13 +106,10 @@ public partial class ServerModsViewModel : ObservableObject
         if (mod is null) return;
         var newExt = mod.IsEnabled ? ".disabled" : "";
         var newFile = mod.FilePath.Replace(".jar.disabled", ".jar") + newExt;
-        
-        try
-        {
-            File.Move(mod.FilePath, newFile);
-            RefreshInstalledMods();
-        }
-        catch { }
+
+        try { File.Move(mod.FilePath, newFile); }
+        catch { /* ignore; the refresh below resyncs the toggle with the real file state */ }
+        RefreshInstalledMods();
     }
 
     [RelayCommand]

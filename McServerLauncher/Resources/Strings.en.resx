@@ -245,6 +245,7 @@
   <data name="Sort_Downloads" xml:space="preserve"><value>Downloads</value></data>
   <data name="LoadMore" xml:space="preserve"><value>Load more</value></data>
   <data name="Export_Modpack" xml:space="preserve"><value>Export modpack</value></data>
+  <data name="Tip_ToggleMod" xml:space="preserve"><value>Enable / Disable</value></data>
   <data name="Msg_ModBrowserNeedsLoader" xml:space="preserve"><value>The mod browser is only available on Fabric or Forge servers.</value></data>
   <data name="Msg_SearchingModrinth" xml:space="preserve"><value>Searching Modrinth...</value></data>
   <data name="Msg_ModsFoundFmt" xml:space="preserve"><value>{0} results.</value></data>

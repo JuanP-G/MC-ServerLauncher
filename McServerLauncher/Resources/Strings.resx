@@ -291,6 +291,7 @@
   <data name="Sort_Downloads" xml:space="preserve"><value>Descargas</value></data>
   <data name="LoadMore" xml:space="preserve"><value>Cargar más</value></data>
   <data name="Export_Modpack" xml:space="preserve"><value>Exportar modpack</value></data>
+  <data name="Tip_ToggleMod" xml:space="preserve"><value>Activar / Desactivar</value></data>
   <data name="Msg_ModBrowserNeedsLoader" xml:space="preserve"><value>El explorador de mods solo está disponible en servidores Fabric o Forge.</value></data>
   <data name="Msg_SearchingModrinth" xml:space="preserve"><value>Buscando en Modrinth...</value></data>
   <data name="Msg_ModsFoundFmt" xml:space="preserve"><value>{0} resultados.</value></data>

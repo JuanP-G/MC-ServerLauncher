@@ -135,14 +135,14 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,4">
-                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding FileName}" FontSize="13" TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
-                                    <Button Grid.Column="1" ToolTip.Tip="On/Off" Background="Transparent" Padding="4" Margin="0,0,4,0"
-                                            Command="{Binding DataContext.ToggleModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                            CommandParameter="{Binding}">
-                                        <ic:SymbolIcon Symbol="Power" />
-                                    </Button>
+                                    <TextBlock Grid.Column="0" Text="{Binding FileName}" FontSize="13"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                               Opacity="{Binding IsEnabled, Converter={x:Static vm:BoolOpacityConverter.Instance}}" />
+                                    <ToggleSwitch Grid.Column="1" Margin="0,0,8,0" MinWidth="0" VerticalAlignment="Center"
+                                                  OnContent="" OffContent="" ToolTip.Tip="{loc:Loc Tip_ToggleMod}"
+                                                  IsChecked="{Binding IsEnabled, Mode=OneWay}"
+                                                  Command="{Binding DataContext.ToggleModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                  CommandParameter="{Binding}" />
                                     <Button Grid.Column="2" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="4"
                                             Command="{Binding DataContext.DeleteModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                             CommandParameter="{Binding}">
