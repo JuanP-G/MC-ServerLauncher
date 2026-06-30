@@ -7,7 +7,7 @@
 #define MyAppPublisher "JuanP-G"
 #define MyAppURL "https://github.com/JuanP-G/MC-ServerLauncher"
 #define MyAppExeName "McServerLauncher.exe"
-#define PublishDir "..\McServerLauncher\bin\Release\net9.0-windows\win-x64\publish"
+#define PublishDir "..\McServerLauncher\bin\Release\net9.0\win-x64\publish"
 
 [Setup]
 AppId={{B8E7A3C1-2F4D-4A9B-9C1E-7D5F6A8B0C23}}
@@ -43,6 +43,11 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+
+; Remove any previous install contents first, so upgrading from the old WPF build leaves no orphan
+; files behind (user data lives in %APPDATA%, not here, so this is safe).
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\*"
 
 [Files]
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
