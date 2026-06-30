@@ -3,6 +3,13 @@ using System.Text.Json.Serialization;
 
 namespace McServerLauncher.Models;
 
+public enum ServerType
+{
+    Vanilla,
+    Fabric,
+    Forge
+}
+
 /// <summary>
 /// Persisted data of a Minecraft server registered in the application.
 /// Stored in %APPDATA%\McServerLauncher\servers.json.
@@ -20,6 +27,12 @@ public class ServerConfig
 
     /// <summary>Server .jar file name (relative to the folder). Defaults to server.jar.</summary>
     public string JarFile { get; set; } = "server.jar";
+
+    /// <summary>Type of the server (Vanilla, Fabric, Forge).</summary>
+    public ServerType Type { get; set; } = ServerType.Vanilla;
+
+    /// <summary>Version of the mod loader (e.g. 0.16.2 for Fabric).</summary>
+    public string ModLoaderVersion { get; set; } = string.Empty;
 
     /// <summary>Path to the Java executable. "java" uses the one on the PATH.</summary>
     public string JavaPath { get; set; } = "java";

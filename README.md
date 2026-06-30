@@ -30,7 +30,7 @@ it to the Internet with Playit.gg, manage players and change the configuration�
 ### ✨ Features
 
 - **Multiple servers** at once, each with its own configuration.
-- **Create a new (Vanilla) server** automatically: name, **version** (official Mojang list), **port**
+- **Create a new server** automatically (Vanilla or Fabric): name, **version** (official Mojang list), **port**
   and **RAM**; the app downloads `server.jar`, **accepts the EULA**, generates `run.bat` and an initial
   `server.properties`, and can start it to generate the world.
 - **Add** an existing server, or **delete** one (optionally removing its world folder and Playit tunnel).
@@ -135,7 +135,7 @@ configuración… todo con botones.
 ### ✨ Funcionalidades
 
 - **Varios servidores** a la vez, cada uno con su configuración.
-- **Crear un servidor nuevo** (Vanilla) automáticamente: eliges nombre, **versión** (lista oficial de
+- **Crear un servidor nuevo** automáticamente (Vanilla o Fabric): eliges nombre, **versión** (lista oficial de
   Mojang), **puerto** y **RAM**, y la app descarga el `server.jar`, **acepta el EULA**, genera el
   `run.bat` y un `server.properties` inicial, y opcionalmente lo arranca para generar el mundo.
 - **Añadir** un servidor que ya tengas, o **eliminar** uno (con opción de borrar su carpeta del mundo

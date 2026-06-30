@@ -11,6 +11,7 @@ namespace McServerLauncher.Views;
 public partial class CreateServerDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();
+    private readonly ModLoaderService _mods = new();
     private readonly ServerCreationService _creation = new();
     private readonly PortService _ports = new();
     private readonly JavaService _java = new();
@@ -157,9 +158,23 @@ public partial class CreateServerDialog : Window
 
             AppendLog(string.Format(Localizer.Get("Msg_Resolving"), version.Id));
             var details = await _versions.GetVersionDetailsAsync(version);
+            
+            var isFabric = TypeCombo.SelectedIndex == 1;
+            var serverType = isFabric ? ServerType.Fabric : ServerType.Vanilla;
+            var loaderVersion = string.Empty;
+            var jarName = isFabric ? "fabric-server.jar" : "server.jar";
+            var jarPath = Path.Combine(folder, jarName);
 
-            var jarPath = Path.Combine(folder, "server.jar");
-            await _versions.DownloadFileAsync(details.ServerUrl, jarPath, progress);
+            if (isFabric)
+            {
+                AppendLog("Resolviendo versión de Fabric...");
+                loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync();
+                await _mods.DownloadFabricServerAsync(version.Id, loaderVersion, jarPath, progress);
+            }
+            else
+            {
+                await _versions.DownloadFileAsync(details.ServerUrl, jarPath, progress);
+            }
 
             // Check/install the Java this Minecraft version needs.
             AppendLog(string.Format(Localizer.Get("Msg_CheckingJava"), version.Id, details.JavaMajor));
@@ -176,14 +191,16 @@ public partial class CreateServerDialog : Window
 
             AppendLog(Localizer.Get("Msg_WritingEula"));
             _creation.WriteEula(folder);
-            _creation.WriteRunBat(folder, minGb, maxGb, "server.jar", javaPath);
+            _creation.WriteRunBat(folder, minGb, maxGb, jarName, javaPath);
             _creation.WriteInitialProperties(folder, port, $"{name} - MC Server Launcher");
 
             ResultConfig = new ServerConfig
             {
                 Name = name,
                 FolderPath = folder,
-                JarFile = "server.jar",
+                JarFile = jarName,
+                Type = serverType,
+                ModLoaderVersion = loaderVersion,
                 JavaPath = javaPath,
                 MinRamGb = minGb,
                 MaxRamGb = maxGb,

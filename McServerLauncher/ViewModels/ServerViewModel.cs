@@ -191,6 +191,7 @@ public partial class ServerViewModel : ObservableObject
 
         RefreshPort();
         RefreshInfo();
+        RefreshMods();
         _ = RefreshTunnelAddressAsync();
     }
 
@@ -785,6 +786,108 @@ public partial class ServerViewModel : ObservableObject
         {
             _players.Unban(Config.FolderPath, name);
             RefreshPlayers();
+        }
+    }
+
+    // --- Mods ---
+
+    public ObservableCollection<ModItem> Mods { get; } = new();
+
+    public bool IsModded => Config.Type != ServerType.Vanilla;
+
+    [RelayCommand]
+    private void RefreshMods()
+    {
+        Mods.Clear();
+        var modsFolder = Path.Combine(Config.FolderPath, "mods");
+        if (!Directory.Exists(modsFolder)) return;
+
+        foreach (var file in Directory.EnumerateFiles(modsFolder, "*.jar*"))
+        {
+            var fileName = Path.GetFileName(file);
+            var isEnabled = !fileName.EndsWith(".disabled");
+            var display = isEnabled ? fileName : fileName.Replace(".disabled", "");
+            Mods.Add(new ModItem(file, display, isEnabled));
+        }
+    }
+
+    [RelayCommand]
+    private void ToggleMod(ModItem? mod)
+    {
+        if (mod is null) return;
+        var newExt = mod.IsEnabled ? ".disabled" : "";
+        var newFile = mod.FilePath.Replace(".jar.disabled", ".jar") + newExt;
+        
+        try
+        {
+            File.Move(mod.FilePath, newFile);
+            RefreshMods();
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine($"Error toggling mod: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private void DeleteMod(ModItem? mod)
+    {
+        if (mod is null) return;
+        try
+        {
+            File.Delete(mod.FilePath);
+            RefreshMods();
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine($"Error deleting mod: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExportModpack()
+    {
+        var modsFolder = Path.Combine(Config.FolderPath, "mods");
+        if (!Directory.Exists(modsFolder)) return;
+
+        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (top == null) return;
+
+        var file = await top.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
+        {
+            Title = "Exportar Modpack",
+            DefaultExtension = "zip",
+            SuggestedFileName = $"{Config.Name}-Modpack.zip",
+            FileTypeChoices = new[] { new Avalonia.Platform.Storage.FilePickerFileType("ZIP Archive") { Patterns = new[] { "*.zip" } } }
+        });
+
+        if (file == null) return;
+
+        try
+        {
+            var tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempFolder);
+            var tempMods = Path.Combine(tempFolder, "mods");
+            Directory.CreateDirectory(tempMods);
+
+            foreach (var modFile in Directory.EnumerateFiles(modsFolder, "*.jar"))
+            {
+                File.Copy(modFile, Path.Combine(tempMods, Path.GetFileName(modFile)));
+            }
+
+            var instrPath = Path.Combine(tempFolder, "INSTRUCCIONES.txt");
+            var instructions = $"Para jugar en este servidor:\n1. Instala {Config.Type} version {Config.ModLoaderVersion}\n2. Copia todos los archivos de la carpeta 'mods' a tu carpeta %appdata%\\.minecraft\\mods";
+            File.WriteAllText(instrPath, instructions);
+
+            if (File.Exists(file.Path.LocalPath)) File.Delete(file.Path.LocalPath);
+            System.IO.Compression.ZipFile.CreateFromDirectory(tempFolder, file.Path.LocalPath);
+            Directory.Delete(tempFolder, true);
+
+            OnConsoleLine("Modpack exportado con éxito.");
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine($"Error exporting modpack: {ex.Message}");
         }
     }
 
