@@ -246,6 +246,17 @@
   <data name="LoadMore" xml:space="preserve"><value>Charger plus</value></data>
   <data name="Export_Modpack" xml:space="preserve"><value>Exporter le modpack</value></data>
   <data name="Tip_ToggleMod" xml:space="preserve"><value>Activer / Désactiver</value></data>
+  <data name="Loader_Title" xml:space="preserve"><value>Installer / changer le loader</value></data>
+  <data name="Loader_Section" xml:space="preserve"><value>Mods / Loader</value></data>
+  <data name="Loader_Current" xml:space="preserve"><value>Loader actuel : </value></data>
+  <data name="Loader_ChangeButton" xml:space="preserve"><value>Installer / changer le loader…</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Installe un loader de mods (Fabric) sur ce serveur pour pouvoir ajouter des mods. Ton monde est conservé.</value></data>
+  <data name="Loader_Warning" xml:space="preserve"><value>Le serveur passera à Fabric avec la version choisie. Utilise la même version que celle déjà présente pour ne pas casser le monde.</value></data>
+  <data name="Loader_Installing" xml:space="preserve"><value>Installation du loader...</value></data>
+  <data name="Loader_InstallButton" xml:space="preserve"><value>Installer</value></data>
+  <data name="Loader_DetectedFmt" xml:space="preserve"><value>Version du serveur détectée : {0}</value></data>
+  <data name="Loader_Done" xml:space="preserve"><value>Loader installé. Le serveur prend désormais en charge les mods.</value></data>
+  <data name="Loader_Error" xml:space="preserve"><value>Impossible d'installer le loader : {0}</value></data>
   <data name="Msg_ModBrowserNeedsLoader" xml:space="preserve"><value>L'explorateur de mods n'est disponible que sur les serveurs Fabric ou Forge.</value></data>
   <data name="Msg_SearchingModrinth" xml:space="preserve"><value>Recherche sur Modrinth...</value></data>
   <data name="Msg_ModsFoundFmt" xml:space="preserve"><value>{0} résultats.</value></data>

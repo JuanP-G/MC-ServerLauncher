@@ -246,6 +246,17 @@
   <data name="LoadMore" xml:space="preserve"><value>Load more</value></data>
   <data name="Export_Modpack" xml:space="preserve"><value>Export modpack</value></data>
   <data name="Tip_ToggleMod" xml:space="preserve"><value>Enable / Disable</value></data>
+  <data name="Loader_Title" xml:space="preserve"><value>Install / change loader</value></data>
+  <data name="Loader_Section" xml:space="preserve"><value>Mods / Loader</value></data>
+  <data name="Loader_Current" xml:space="preserve"><value>Current loader: </value></data>
+  <data name="Loader_ChangeButton" xml:space="preserve"><value>Install / change loader…</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Install a mod loader (Fabric) on this server so you can add mods. Your world is kept.</value></data>
+  <data name="Loader_Warning" xml:space="preserve"><value>The server will be switched to Fabric with the chosen version. Use the same version the server already had to avoid breaking the world.</value></data>
+  <data name="Loader_Installing" xml:space="preserve"><value>Installing loader...</value></data>
+  <data name="Loader_InstallButton" xml:space="preserve"><value>Install</value></data>
+  <data name="Loader_DetectedFmt" xml:space="preserve"><value>Detected server version: {0}</value></data>
+  <data name="Loader_Done" xml:space="preserve"><value>Loader installed. The server now supports mods.</value></data>
+  <data name="Loader_Error" xml:space="preserve"><value>Could not install the loader: {0}</value></data>
   <data name="Msg_ModBrowserNeedsLoader" xml:space="preserve"><value>The mod browser is only available on Fabric or Forge servers.</value></data>
   <data name="Msg_SearchingModrinth" xml:space="preserve"><value>Searching Modrinth...</value></data>
   <data name="Msg_ModsFoundFmt" xml:space="preserve"><value>{0} results.</value></data>

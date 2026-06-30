@@ -46,6 +46,18 @@
 
                 <Separator Margin="0,18,0,12" />
 
+                <TextBlock Text="{loc:Loc Loader_Section}" FontWeight="SemiBold" />
+                <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap">
+                        <Run Text="{loc:Loc Loader_Current}" />
+                        <Run Text="{Binding Type}" FontWeight="SemiBold" />
+                        <Run Text="{Binding GameVersion}" />
+                    </TextBlock>
+                    <Button Grid.Column="1" Content="{loc:Loc Loader_ChangeButton}" Click="InstallLoader_Click" />
+                </Grid>
+
+                <Separator Margin="0,18,0,12" />
+
                 <CheckBox Content="{loc:Loc Cs_UsePlayit}" IsChecked="{Binding PlayitEnabled, Mode=TwoWay}" />
             </StackPanel>
         </ScrollViewer>

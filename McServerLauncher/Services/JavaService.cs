@@ -154,6 +154,31 @@ public partial class JavaService
     }
 
     /// <summary>
+    /// Reads the Minecraft version a server.jar belongs to (modern vanilla jars include it in
+    /// version.json as "id"). Returns null if it can't be determined.
+    /// </summary>
+    public string? GetGameVersionFromJar(string jarPath)
+    {
+        try
+        {
+            if (!File.Exists(jarPath)) return null;
+            using var zip = ZipFile.OpenRead(jarPath);
+            var entry = zip.GetEntry("version.json");
+            if (entry is null) return null;
+
+            using var stream = entry.Open();
+            using var doc = JsonDocument.Parse(stream);
+            if (doc.RootElement.TryGetProperty("id", out var id) && id.GetString() is { Length: > 0 } v)
+                return v;
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Returns the path to a java executable compatible with the required version. If none is
     /// installed, downloads and installs the matching Temurin. Throws if it can't.
     /// </summary>

@@ -317,12 +317,33 @@ public partial class MainViewModel : ObservableObject
     private async Task EditServer()
     {
         if (SelectedServer is null || Owner is null) return;
-        var dialog = new AddEditServerDialog(SelectedServer.Config);
+        var server = SelectedServer;
+        var oldType = server.Config.Type;
+
+        var dialog = new AddEditServerDialog(server.Config);
         if (await dialog.ShowDialog<bool>(Owner))
         {
-            SelectedServer.Name = SelectedServer.Config.Name;
+            server.Name = server.Config.Name;
             Save();
+
+            // If the loader type changed (e.g. a vanilla server was converted to Fabric), rebuild the
+            // view model so computed state (IsModded, the Mods tab/browser) refreshes.
+            if (server.Config.Type != oldType && !server.IsRunning)
+                ReplaceServer(server);
         }
+    }
+
+    /// <summary>Replaces a server's view model in place (keeping its position) and reselects it.</summary>
+    private void ReplaceServer(ServerViewModel old)
+    {
+        var index = Servers.IndexOf(old);
+        if (index < 0) return;
+
+        _ = old.ShutdownAsync(); // stop its timers (it isn't running)
+        var vm = new ServerViewModel(old.Config);
+        vm.ConfigChanged += Save;
+        Servers[index] = vm;
+        SelectedServer = vm;
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
