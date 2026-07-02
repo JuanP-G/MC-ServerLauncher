@@ -246,18 +246,18 @@
   <data name="LoadMore" xml:space="preserve"><value>Mehr laden</value></data>
   <data name="Export_Modpack" xml:space="preserve"><value>Modpack exportieren</value></data>
   <data name="Tip_ToggleMod" xml:space="preserve"><value>Aktivieren / Deaktivieren</value></data>
-  <data name="Loader_Title" xml:space="preserve"><value>Loader installieren / ändern</value></data>
-  <data name="Loader_Section" xml:space="preserve"><value>Mods / Loader</value></data>
+  <data name="Loader_Title" xml:space="preserve"><value>Servertyp ändern</value></data>
+  <data name="Loader_Section" xml:space="preserve"><value>Servertyp</value></data>
   <data name="Loader_Current" xml:space="preserve"><value>Aktueller Loader: </value></data>
-  <data name="Loader_ChangeButton" xml:space="preserve"><value>Loader installieren / ändern…</value></data>
-  <data name="Loader_Intro" xml:space="preserve"><value>Installiere oder ändere den Mod-Loader dieses Servers oder stelle ihn auf Vanilla zurück. Deine Welt bleibt erhalten.</value></data>
+  <data name="Loader_ChangeButton" xml:space="preserve"><value>Servertyp ändern…</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Ändere den Typ dieses Servers: Fabric oder Forge für Mods, Paper für Plugins oder Vanilla ohne alles. Deine Welt bleibt erhalten.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (ohne Mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Aktuelle Startdatei (run.bat) behalten</value></data>
-  <data name="Loader_Kept" xml:space="preserve"><value>Welt, server.properties sowie die Ordner mods und config bleiben erhalten.</value></data>
+  <data name="Loader_Kept" xml:space="preserve"><value>Welt, server.properties sowie deine mods/plugins- und config-Ordner bleiben erhalten.</value></data>
   <data name="Loader_WarnSame" xml:space="preserve"><value>Du installierst denselben Servertyp neu. Sinnvoll nur, um die Version zu ändern; der Start wird überschrieben und einige Einstellungen könnten verloren gehen.</value></data>
-  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Einen Loader zu einem Vanilla-Server hinzuzufügen ist sicher. Welt und Konfiguration bleiben erhalten; danach kannst du Mods installieren.</value></data>
-  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Achtung! Die Rückkehr zu Vanilla von einem Server mit Mods kann Bereiche der Welt mit modifizierten Blöcken oder Entities beschädigen oder leeren. Erstelle ein Backup. Mit dem vorherigen Loader lässt es sich meist wiederherstellen.</value></data>
-  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Gefahr! Der Wechsel zwischen Fabric und Forge verwendet zueinander inkompatible Mods und kann die Welt zerstören: Blöcke und Entities eines Loaders existieren im anderen nicht. Mache vorher ein Backup. Mit dem vorherigen Loader lässt es sich meist wiederherstellen.</value></data>
+  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Den Typ eines Vanilla-Servers zu ändern ist sicher. Die Welt bleibt erhalten; danach kannst du je nach gewähltem Typ Mods oder Plugins installieren.</value></data>
+  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Achtung! Die Rückkehr zu Vanilla von einem Server mit Mods oder Plugins kann Bereiche der Welt mit hinzugefügtem Inhalt (Blöcke oder Entities) beschädigen oder leeren. Erstelle ein Backup. Mit dem vorherigen Typ lässt es sich meist wiederherstellen.</value></data>
+  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Gefahr! Der Wechsel zwischen Typen mit inkompatiblem Inhalt (von einem Mod-Loader zum anderen oder zwischen Mods und Paper-Plugins) kann die Welt zerstören: hinzugefügter Inhalt des einen existiert im anderen nicht. Mache vorher ein Backup. Mit dem vorherigen Typ lässt es sich meist wiederherstellen.</value></data>
   <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>Der Forge-Installer hat zu lange gebraucht und wurde abgebrochen. Prüfe deine Verbindung und versuche es erneut.</value></data>
   <data name="Plugins" xml:space="preserve"><value>Plugins</value></data>
   <data name="Browse_Plugins" xml:space="preserve"><value>Plugins durchsuchen</value></data>

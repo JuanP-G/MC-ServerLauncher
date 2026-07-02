@@ -246,18 +246,18 @@
   <data name="LoadMore" xml:space="preserve"><value>Load more</value></data>
   <data name="Export_Modpack" xml:space="preserve"><value>Export modpack</value></data>
   <data name="Tip_ToggleMod" xml:space="preserve"><value>Enable / Disable</value></data>
-  <data name="Loader_Title" xml:space="preserve"><value>Install / change loader</value></data>
-  <data name="Loader_Section" xml:space="preserve"><value>Mods / Loader</value></data>
+  <data name="Loader_Title" xml:space="preserve"><value>Change the server type</value></data>
+  <data name="Loader_Section" xml:space="preserve"><value>Server type</value></data>
   <data name="Loader_Current" xml:space="preserve"><value>Current loader: </value></data>
-  <data name="Loader_ChangeButton" xml:space="preserve"><value>Install / change loader…</value></data>
-  <data name="Loader_Intro" xml:space="preserve"><value>Install or change the mod loader of this server, or switch it back to Vanilla. Your world is kept.</value></data>
+  <data name="Loader_ChangeButton" xml:space="preserve"><value>Change server type…</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Change this server's type: Fabric or Forge for mods, Paper for plugins, or Vanilla for none. Your world is kept.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (no mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Keep the current startup file (run.bat)</value></data>
-  <data name="Loader_Kept" xml:space="preserve"><value>The world, server.properties and the mods and config folders are kept.</value></data>
+  <data name="Loader_Kept" xml:space="preserve"><value>The world, server.properties and your mods/plugins and config folders are kept.</value></data>
   <data name="Loader_WarnSame" xml:space="preserve"><value>You're reinstalling the same server type. It only makes sense to change version; the startup is rewritten and you may lose some settings.</value></data>
-  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Adding a loader to a vanilla server is safe. The world and config are kept; you'll be able to install mods afterwards.</value></data>
-  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Warning! Going back to Vanilla from a modded server can corrupt or empty parts of the world that use modded blocks or entities. Make a backup. Switching back to the previous loader usually recovers it.</value></data>
-  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Danger! Switching between Fabric and Forge uses mutually incompatible mods and can break the world: blocks and entities from one loader don't exist in the other. Back up first. Returning to the previous loader usually recovers it.</value></data>
+  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Changing the type of a vanilla server is safe. The world is kept; you'll then be able to install mods or plugins depending on the chosen type.</value></data>
+  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Warning! Going back to Vanilla from a server with mods or plugins can corrupt or empty parts of the world that use added content (blocks or entities). Make a backup. Switching back to the previous type usually recovers it.</value></data>
+  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Danger! Switching between types with incompatible content (from one mod loader to another, or between mods and Paper plugins) can break the world: added content from one doesn't exist in the other. Back up first. Returning to the previous type usually recovers it.</value></data>
   <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>The Forge installer took too long and was cancelled. Check your connection and try again.</value></data>
   <data name="Plugins" xml:space="preserve"><value>Plugins</value></data>
   <data name="Browse_Plugins" xml:space="preserve"><value>Browse Plugins</value></data>

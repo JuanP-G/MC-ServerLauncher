@@ -292,18 +292,18 @@
   <data name="LoadMore" xml:space="preserve"><value>Cargar más</value></data>
   <data name="Export_Modpack" xml:space="preserve"><value>Exportar modpack</value></data>
   <data name="Tip_ToggleMod" xml:space="preserve"><value>Activar / Desactivar</value></data>
-  <data name="Loader_Title" xml:space="preserve"><value>Instalar / cambiar loader</value></data>
-  <data name="Loader_Section" xml:space="preserve"><value>Mods / Loader</value></data>
+  <data name="Loader_Title" xml:space="preserve"><value>Cambiar el tipo de servidor</value></data>
+  <data name="Loader_Section" xml:space="preserve"><value>Tipo de servidor</value></data>
   <data name="Loader_Current" xml:space="preserve"><value>Loader actual: </value></data>
-  <data name="Loader_ChangeButton" xml:space="preserve"><value>Instalar / cambiar loader…</value></data>
-  <data name="Loader_Intro" xml:space="preserve"><value>Instala o cambia el loader de mods de este servidor, o vuelve a Vanilla. Tu mundo se conserva.</value></data>
+  <data name="Loader_ChangeButton" xml:space="preserve"><value>Cambiar tipo de servidor…</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Cambia el tipo de este servidor: Fabric o Forge para mods, Paper para plugins, o Vanilla sin nada. Tu mundo se conserva.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sin mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Conservar el archivo de arranque actual (run.bat)</value></data>
-  <data name="Loader_Kept" xml:space="preserve"><value>Se conservan el mundo, server.properties y las carpetas mods y config.</value></data>
+  <data name="Loader_Kept" xml:space="preserve"><value>Se conservan el mundo, server.properties y tus carpetas de mods/plugins y config.</value></data>
   <data name="Loader_WarnSame" xml:space="preserve"><value>Vas a reinstalar el mismo tipo de servidor. Solo tiene sentido para cambiar de versión; se reescribe el arranque y podrías perder algunos ajustes.</value></data>
-  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Añadir un loader a un servidor vanilla es seguro. Se conservan el mundo y la configuración; después podrás instalar mods.</value></data>
-  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>¡Atención! Volver a Vanilla desde un servidor con mods puede corromper o vaciar zonas del mundo que usen bloques o entidades de mods. Haz una copia de seguridad. Si vuelves al loader anterior, normalmente se recupera.</value></data>
-  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>¡Peligro! Cambiar entre Fabric y Forge usa mods incompatibles entre sí y puede romper el mundo: los bloques y entidades de un loader no existen en el otro. Haz una copia de seguridad antes. Volver al loader anterior suele recuperarlo.</value></data>
+  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Cambiar el tipo de un servidor vanilla es seguro. Se conserva el mundo; después podrás instalar mods o plugins según el tipo elegido.</value></data>
+  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>¡Atención! Volver a Vanilla desde un servidor con mods o plugins puede corromper o vaciar zonas del mundo que usen contenido añadido (bloques o entidades). Haz una copia de seguridad. Si vuelves al tipo anterior, normalmente se recupera.</value></data>
+  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>¡Peligro! Cambiar entre tipos con contenido incompatible (de un loader de mods a otro, o entre mods y plugins de Paper) puede romper el mundo: el contenido añadido de uno no existe en el otro. Haz una copia de seguridad antes. Volver al tipo anterior suele recuperarlo.</value></data>
   <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>El instalador de Forge tardó demasiado y se canceló. Comprueba tu conexión e inténtalo de nuevo.</value></data>
   <data name="Plugins" xml:space="preserve"><value>Plugins</value></data>
   <data name="Browse_Plugins" xml:space="preserve"><value>Explorar plugins</value></data>

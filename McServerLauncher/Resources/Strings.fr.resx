@@ -246,18 +246,18 @@
   <data name="LoadMore" xml:space="preserve"><value>Charger plus</value></data>
   <data name="Export_Modpack" xml:space="preserve"><value>Exporter le modpack</value></data>
   <data name="Tip_ToggleMod" xml:space="preserve"><value>Activer / Désactiver</value></data>
-  <data name="Loader_Title" xml:space="preserve"><value>Installer / changer le loader</value></data>
-  <data name="Loader_Section" xml:space="preserve"><value>Mods / Loader</value></data>
+  <data name="Loader_Title" xml:space="preserve"><value>Changer le type de serveur</value></data>
+  <data name="Loader_Section" xml:space="preserve"><value>Type de serveur</value></data>
   <data name="Loader_Current" xml:space="preserve"><value>Loader actuel : </value></data>
-  <data name="Loader_ChangeButton" xml:space="preserve"><value>Installer / changer le loader…</value></data>
-  <data name="Loader_Intro" xml:space="preserve"><value>Installe ou change le loader de mods de ce serveur, ou reviens à Vanilla. Ton monde est conservé.</value></data>
+  <data name="Loader_ChangeButton" xml:space="preserve"><value>Changer le type de serveur…</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Change le type de ce serveur : Fabric ou Forge pour les mods, Paper pour les plugins, ou Vanilla sans rien. Ton monde est conservé.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sans mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Conserver le fichier de démarrage actuel (run.bat)</value></data>
-  <data name="Loader_Kept" xml:space="preserve"><value>Le monde, server.properties et les dossiers mods et config sont conservés.</value></data>
+  <data name="Loader_Kept" xml:space="preserve"><value>Le monde, server.properties et tes dossiers mods/plugins et config sont conservés.</value></data>
   <data name="Loader_WarnSame" xml:space="preserve"><value>Tu réinstalles le même type de serveur. Cela n'a de sens que pour changer de version ; le démarrage est réécrit et tu peux perdre certains réglages.</value></data>
-  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Ajouter un loader à un serveur vanilla est sûr. Le monde et la configuration sont conservés ; tu pourras ensuite installer des mods.</value></data>
-  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Attention ! Revenir à Vanilla depuis un serveur moddé peut corrompre ou vider des zones du monde utilisant des blocs ou entités de mods. Fais une sauvegarde. Revenir au loader précédent permet généralement de récupérer.</value></data>
-  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Danger ! Passer de Fabric à Forge (ou inversement) utilise des mods incompatibles et peut casser le monde : les blocs et entités d'un loader n'existent pas dans l'autre. Fais une sauvegarde avant. Revenir au loader précédent permet généralement de récupérer.</value></data>
+  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Changer le type d'un serveur vanilla est sûr. Le monde est conservé ; tu pourras ensuite installer des mods ou des plugins selon le type choisi.</value></data>
+  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Attention ! Revenir à Vanilla depuis un serveur avec des mods ou des plugins peut corrompre ou vider des zones du monde utilisant du contenu ajouté (blocs ou entités). Fais une sauvegarde. Revenir au type précédent permet généralement de récupérer.</value></data>
+  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Danger ! Passer entre des types au contenu incompatible (d'un loader de mods à un autre, ou entre des mods et des plugins Paper) peut casser le monde : le contenu ajouté de l'un n'existe pas dans l'autre. Fais une sauvegarde avant. Revenir au type précédent permet généralement de récupérer.</value></data>
   <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>L'installateur Forge a mis trop de temps et a été annulé. Vérifie ta connexion et réessaie.</value></data>
   <data name="Plugins" xml:space="preserve"><value>Plugins</value></data>
   <data name="Browse_Plugins" xml:space="preserve"><value>Explorer les plugins</value></data>
