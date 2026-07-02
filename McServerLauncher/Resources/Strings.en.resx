@@ -252,6 +252,12 @@
   <data name="Loader_ChangeButton" xml:space="preserve"><value>Install / change loader…</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Install or change the mod loader of this server, or switch it back to Vanilla. Your world is kept.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (no mods)</value></data>
+  <data name="Loader_KeepConfig" xml:space="preserve"><value>Keep the current startup file (run.bat)</value></data>
+  <data name="Loader_Kept" xml:space="preserve"><value>The world, server.properties and the mods and config folders are kept.</value></data>
+  <data name="Loader_WarnSame" xml:space="preserve"><value>You're reinstalling the same server type. It only makes sense to change version; the startup is rewritten and you may lose some settings.</value></data>
+  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Adding a loader to a vanilla server is safe. The world and config are kept; you'll be able to install mods afterwards.</value></data>
+  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Warning! Going back to Vanilla from a modded server can corrupt or empty parts of the world that use modded blocks or entities. Make a backup. Switching back to the previous loader usually recovers it.</value></data>
+  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Danger! Switching between Fabric and Forge uses mutually incompatible mods and can break the world: blocks and entities from one loader don't exist in the other. Back up first. Returning to the previous loader usually recovers it.</value></data>
   <data name="Forge_Soon" xml:space="preserve"><value>Forge (coming soon)</value></data>
   <data name="Loader_Warning" xml:space="preserve"><value>The chosen loader will be applied with that version. Use the same version the server already had to avoid breaking the world.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>Installing loader...</value></data>

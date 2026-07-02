@@ -298,6 +298,12 @@
   <data name="Loader_ChangeButton" xml:space="preserve"><value>Instalar / cambiar loader…</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Instala o cambia el loader de mods de este servidor, o vuelve a Vanilla. Tu mundo se conserva.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sin mods)</value></data>
+  <data name="Loader_KeepConfig" xml:space="preserve"><value>Conservar el archivo de arranque actual (run.bat)</value></data>
+  <data name="Loader_Kept" xml:space="preserve"><value>Se conservan el mundo, server.properties y las carpetas mods y config.</value></data>
+  <data name="Loader_WarnSame" xml:space="preserve"><value>Vas a reinstalar el mismo tipo de servidor. Solo tiene sentido para cambiar de versión; se reescribe el arranque y podrías perder algunos ajustes.</value></data>
+  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Añadir un loader a un servidor vanilla es seguro. Se conservan el mundo y la configuración; después podrás instalar mods.</value></data>
+  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>¡Atención! Volver a Vanilla desde un servidor con mods puede corromper o vaciar zonas del mundo que usen bloques o entidades de mods. Haz una copia de seguridad. Si vuelves al loader anterior, normalmente se recupera.</value></data>
+  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>¡Peligro! Cambiar entre Fabric y Forge usa mods incompatibles entre sí y puede romper el mundo: los bloques y entidades de un loader no existen en el otro. Haz una copia de seguridad antes. Volver al loader anterior suele recuperarlo.</value></data>
   <data name="Forge_Soon" xml:space="preserve"><value>Forge (próximamente)</value></data>
   <data name="Loader_Warning" xml:space="preserve"><value>Se aplicará el loader elegido con esa versión. Usa la misma versión que ya tenía el servidor para no romper el mundo.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>Instalando loader...</value></data>

@@ -252,6 +252,12 @@
   <data name="Loader_ChangeButton" xml:space="preserve"><value>Loader installieren / ändern…</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Installiere oder ändere den Mod-Loader dieses Servers oder stelle ihn auf Vanilla zurück. Deine Welt bleibt erhalten.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (ohne Mods)</value></data>
+  <data name="Loader_KeepConfig" xml:space="preserve"><value>Aktuelle Startdatei (run.bat) behalten</value></data>
+  <data name="Loader_Kept" xml:space="preserve"><value>Welt, server.properties sowie die Ordner mods und config bleiben erhalten.</value></data>
+  <data name="Loader_WarnSame" xml:space="preserve"><value>Du installierst denselben Servertyp neu. Sinnvoll nur, um die Version zu ändern; der Start wird überschrieben und einige Einstellungen könnten verloren gehen.</value></data>
+  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Einen Loader zu einem Vanilla-Server hinzuzufügen ist sicher. Welt und Konfiguration bleiben erhalten; danach kannst du Mods installieren.</value></data>
+  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Achtung! Die Rückkehr zu Vanilla von einem Server mit Mods kann Bereiche der Welt mit modifizierten Blöcken oder Entities beschädigen oder leeren. Erstelle ein Backup. Mit dem vorherigen Loader lässt es sich meist wiederherstellen.</value></data>
+  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Gefahr! Der Wechsel zwischen Fabric und Forge verwendet zueinander inkompatible Mods und kann die Welt zerstören: Blöcke und Entities eines Loaders existieren im anderen nicht. Mache vorher ein Backup. Mit dem vorherigen Loader lässt es sich meist wiederherstellen.</value></data>
   <data name="Forge_Soon" xml:space="preserve"><value>Forge (in Kürze)</value></data>
   <data name="Loader_Warning" xml:space="preserve"><value>Der gewählte Loader wird mit dieser Version angewendet. Verwende dieselbe Version, die der Server bereits hatte, um die Welt nicht zu beschädigen.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>Loader wird installiert...</value></data>

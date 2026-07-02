@@ -252,6 +252,12 @@
   <data name="Loader_ChangeButton" xml:space="preserve"><value>Instalar / mudar loader…</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Instala ou muda o loader de mods deste servidor, ou volta a Vanilla. O teu mundo é mantido.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sem mods)</value></data>
+  <data name="Loader_KeepConfig" xml:space="preserve"><value>Manter o ficheiro de arranque atual (run.bat)</value></data>
+  <data name="Loader_Kept" xml:space="preserve"><value>O mundo, o server.properties e as pastas mods e config são mantidos.</value></data>
+  <data name="Loader_WarnSame" xml:space="preserve"><value>Vais reinstalar o mesmo tipo de servidor. Só faz sentido para mudar de versão; o arranque é reescrito e podes perder alguns ajustes.</value></data>
+  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Adicionar um loader a um servidor vanilla é seguro. O mundo e a configuração são mantidos; depois poderás instalar mods.</value></data>
+  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Atenção! Voltar a Vanilla a partir de um servidor com mods pode corromper ou esvaziar zonas do mundo que usem blocos ou entidades de mods. Faz uma cópia de segurança. Voltar ao loader anterior normalmente recupera.</value></data>
+  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Perigo! Mudar entre Fabric e Forge usa mods incompatíveis entre si e pode estragar o mundo: os blocos e entidades de um loader não existem no outro. Faz uma cópia de segurança antes. Voltar ao loader anterior normalmente recupera.</value></data>
   <data name="Forge_Soon" xml:space="preserve"><value>Forge (em breve)</value></data>
   <data name="Loader_Warning" xml:space="preserve"><value>O loader escolhido será aplicado com essa versão. Usa a mesma versão que o servidor já tinha para não estragar o mundo.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>A instalar o loader...</value></data>

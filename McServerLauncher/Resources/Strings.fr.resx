@@ -252,6 +252,12 @@
   <data name="Loader_ChangeButton" xml:space="preserve"><value>Installer / changer le loader…</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Installe ou change le loader de mods de ce serveur, ou reviens à Vanilla. Ton monde est conservé.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sans mods)</value></data>
+  <data name="Loader_KeepConfig" xml:space="preserve"><value>Conserver le fichier de démarrage actuel (run.bat)</value></data>
+  <data name="Loader_Kept" xml:space="preserve"><value>Le monde, server.properties et les dossiers mods et config sont conservés.</value></data>
+  <data name="Loader_WarnSame" xml:space="preserve"><value>Tu réinstalles le même type de serveur. Cela n'a de sens que pour changer de version ; le démarrage est réécrit et tu peux perdre certains réglages.</value></data>
+  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Ajouter un loader à un serveur vanilla est sûr. Le monde et la configuration sont conservés ; tu pourras ensuite installer des mods.</value></data>
+  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Attention ! Revenir à Vanilla depuis un serveur moddé peut corrompre ou vider des zones du monde utilisant des blocs ou entités de mods. Fais une sauvegarde. Revenir au loader précédent permet généralement de récupérer.</value></data>
+  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Danger ! Passer de Fabric à Forge (ou inversement) utilise des mods incompatibles et peut casser le monde : les blocs et entités d'un loader n'existent pas dans l'autre. Fais une sauvegarde avant. Revenir au loader précédent permet généralement de récupérer.</value></data>
   <data name="Forge_Soon" xml:space="preserve"><value>Forge (bientôt disponible)</value></data>
   <data name="Loader_Warning" xml:space="preserve"><value>Le loader choisi sera appliqué avec cette version. Utilise la même version que celle déjà présente pour ne pas casser le monde.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>Installation du loader...</value></data>

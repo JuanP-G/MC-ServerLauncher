@@ -1,6 +1,8 @@
 using System.IO;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
+using FluentIcons.Common;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
@@ -32,6 +34,37 @@ public partial class InstallLoaderDialog : Window
         InitializeComponent();
         _config = config;
         Loaded += OnLoaded;
+        LoaderCombo.SelectionChanged += (_, _) => UpdateWarning();
+        UpdateWarning();
+    }
+
+    /// <summary>Shows a warning whose wording and color depend on the conversion direction.</summary>
+    private void UpdateWarning()
+    {
+        var current = _config.Type;
+        var target = LoaderCombo.SelectedIndex switch
+        {
+            1 => ServerType.Vanilla,
+            2 => ServerType.Forge,
+            _ => ServerType.Fabric
+        };
+
+        string key, bg, border;
+        bool danger;
+        if (current == target)
+            (key, bg, border, danger) = ("Loader_WarnSame", "#33E3A82B", "#E3A82B", false);
+        else if (current == ServerType.Vanilla)
+            (key, bg, border, danger) = ("Loader_WarnVanillaToLoader", "#332E7D32", "#3FB950", false);
+        else if (target == ServerType.Vanilla)
+            (key, bg, border, danger) = ("Loader_WarnToVanilla", "#33E05561", "#E05561", true);
+        else // crossing between Fabric and Forge
+            (key, bg, border, danger) = ("Loader_WarnCrossLoader", "#33E05561", "#E05561", true);
+
+        WarnText.Text = Localizer.Get(key);
+        WarnText.FontWeight = danger ? FontWeight.SemiBold : FontWeight.Normal;
+        WarnBox.Background = new SolidColorBrush(Color.Parse(bg));
+        WarnBox.BorderBrush = new SolidColorBrush(Color.Parse(border));
+        WarnIcon.Symbol = danger ? Symbol.Warning : Symbol.Info;
     }
 
     private async void OnLoaded(object? sender, RoutedEventArgs e)
@@ -105,7 +138,8 @@ public partial class InstallLoaderDialog : Window
                 // Revert to Vanilla: download the vanilla server jar for this version.
                 const string jarName = "server.jar";
                 await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(_config.FolderPath, jarName), progress);
-                _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
+                if (KeepRunBatCheck.IsChecked != true)
+                    _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
 
                 _config.Type = ServerType.Vanilla;
                 _config.GameVersion = version.Id;
@@ -122,7 +156,8 @@ public partial class InstallLoaderDialog : Window
                 const string jarName = "fabric-server.jar";
                 await _mods.DownloadFabricServerAsync(version.Id, loaderVersion,
                     Path.Combine(_config.FolderPath, jarName), progress);
-                _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
+                if (KeepRunBatCheck.IsChecked != true)
+                    _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
 
                 _config.Type = ServerType.Fabric;
                 _config.GameVersion = version.Id;
