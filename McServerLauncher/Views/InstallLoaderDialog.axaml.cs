@@ -2,6 +2,7 @@ using System.IO;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using FluentIcons.Common;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
@@ -29,6 +30,12 @@ public partial class InstallLoaderDialog : Window
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public InstallLoaderDialog() : this(new ServerConfig()) { }
 
+    // --- Log batching (see CreateServerDialog): the Forge installer prints thousands of lines. ---
+    private const int MaxLogLines = 400;
+    private readonly List<string> _logLines = new();
+    private bool _logDirty;
+    private readonly DispatcherTimer _logTimer;
+
     public InstallLoaderDialog(ServerConfig config)
     {
         InitializeComponent();
@@ -36,6 +43,16 @@ public partial class InstallLoaderDialog : Window
         Loaded += OnLoaded;
         LoaderCombo.SelectionChanged += (_, _) => UpdateWarning();
         UpdateWarning();
+
+        _logTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+        _logTimer.Tick += (_, _) => FlushLog();
+        _logTimer.Start();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _logTimer.Stop();
+        base.OnClosed(e);
     }
 
     /// <summary>Shows a warning whose wording and color depend on the conversion direction.</summary>
@@ -148,9 +165,52 @@ public partial class InstallLoaderDialog : Window
                 _config.JarFile = jarName;
                 _config.JavaPath = javaPath;
             }
+            else if (LoaderCombo.SelectedIndex == 2)
+            {
+                // Forge: run the official installer in the server folder.
+                AppendLog(Localizer.Get("Msg_ForgeResolving"));
+                var forgeVersion = await _mods.GetRecommendedForgeVersionAsync(version.Id);
+                if (string.IsNullOrEmpty(forgeVersion))
+                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_ForgeNoVersion"), version.Id));
+
+                // The Forge installer overwrites run.bat; back it up if the user asked to keep it.
+                var runBatPath = Path.Combine(_config.FolderPath, "run.bat");
+                var keptRunBat = KeepRunBatCheck.IsChecked == true && File.Exists(runBatPath)
+                    ? File.ReadAllText(runBatPath) : null;
+
+                var forge = await _mods.InstallForgeServerAsync(_config.FolderPath, version.Id, forgeVersion, javaPath, progress);
+                if (forge.ArgsId is not null)
+                {
+                    // Modern Forge: launched via args file; Forge's own run.bat reads user_jvm_args.txt.
+                    _config.ForgeArgs = forge.ArgsId;
+                    _config.JarFile = "server.jar";
+                    if (KeepRunBatCheck.IsChecked != true)
+                        _creation.WriteForgeUserJvmArgs(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb);
+                }
+                else if (!string.IsNullOrEmpty(forge.JarFile))
+                {
+                    // Old Forge (≤1.16.5): a runnable forge-*.jar.
+                    _config.ForgeArgs = string.Empty;
+                    _config.JarFile = forge.JarFile;
+                    if (KeepRunBatCheck.IsChecked != true)
+                        _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, forge.JarFile, javaPath);
+                }
+                else
+                {
+                    throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallNoOutput"));
+                }
+
+                if (keptRunBat is not null)
+                    File.WriteAllText(runBatPath, keptRunBat);
+
+                _config.Type = ServerType.Forge;
+                _config.GameVersion = version.Id;
+                _config.ModLoaderVersion = forgeVersion;
+                _config.JavaPath = javaPath;
+            }
             else
             {
-                // Fabric (index 0). Forge (index 2) is disabled for now.
+                // Fabric (index 0).
                 AppendLog(Localizer.Get("Msg_FabricResolving"));
                 var loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync();
                 const string jarName = "fabric-server.jar";
@@ -191,8 +251,17 @@ public partial class InstallLoaderDialog : Window
 
     private void AppendLog(string line)
     {
-        ProgressLog.Text += line + Environment.NewLine;
-        ProgressLog.CaretIndex = ProgressLog.Text?.Length ?? 0;
+        _logLines.Add(line);
+        if (_logLines.Count > MaxLogLines) _logLines.RemoveRange(0, _logLines.Count - MaxLogLines);
+        _logDirty = true;
+    }
+
+    private void FlushLog()
+    {
+        if (!_logDirty) return;
+        _logDirty = false;
+        ProgressLog.Text = string.Join(Environment.NewLine, _logLines) + Environment.NewLine;
+        ProgressLog.CaretIndex = ProgressLog.Text.Length;
     }
 
     private Task Warn(string message) => MessageBox.ShowAsync(message, Localizer.Get("Loader_Title"), this);

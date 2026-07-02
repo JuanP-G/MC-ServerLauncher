@@ -258,7 +258,7 @@
   <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Ajouter un loader à un serveur vanilla est sûr. Le monde et la configuration sont conservés ; tu pourras ensuite installer des mods.</value></data>
   <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Attention ! Revenir à Vanilla depuis un serveur moddé peut corrompre ou vider des zones du monde utilisant des blocs ou entités de mods. Fais une sauvegarde. Revenir au loader précédent permet généralement de récupérer.</value></data>
   <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Danger ! Passer de Fabric à Forge (ou inversement) utilise des mods incompatibles et peut casser le monde : les blocs et entités d'un loader n'existent pas dans l'autre. Fais une sauvegarde avant. Revenir au loader précédent permet généralement de récupérer.</value></data>
-  <data name="Forge_Soon" xml:space="preserve"><value>Forge (bientôt disponible)</value></data>
+  <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>L'installateur Forge a mis trop de temps et a été annulé. Vérifie ta connexion et réessaie.</value></data>
   <data name="Loader_Warning" xml:space="preserve"><value>Le loader choisi sera appliqué avec cette version. Utilise la même version que celle déjà présente pour ne pas casser le monde.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>Installation du loader...</value></data>
   <data name="Loader_InstallButton" xml:space="preserve"><value>Installer</value></data>

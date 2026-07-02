@@ -13,6 +13,12 @@ public class ModLoaderService
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
 
+    static ModLoaderService()
+    {
+        // Some CDNs (Forge's maven included) reject requests without a User-Agent.
+        Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
+    }
+
     public async Task<string> GetLatestFabricLoaderVersionAsync(CancellationToken ct = default)
     {
         var json = await Http.GetStringAsync("https://meta.fabricmc.net/v2/versions/loader", ct);
@@ -142,7 +148,20 @@ public class ModLoaderService
         p.Start();
         p.BeginOutputReadLine();
         p.BeginErrorReadLine();
-        await p.WaitForExitAsync(ct);
+
+        // Hard cap so a stuck installer can never hang the creation flow forever.
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromMinutes(15));
+        try
+        {
+            await p.WaitForExitAsync(timeout.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            try { p.Kill(entireProcessTree: true); } catch { /* already gone */ }
+            if (ct.IsCancellationRequested) throw;
+            throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallerTimeout"));
+        }
 
         if (p.ExitCode != 0)
             throw new InvalidOperationException(string.Format(Localizer.Get("Msg_ForgeInstallerFailed"), p.ExitCode));

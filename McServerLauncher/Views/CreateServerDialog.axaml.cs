@@ -2,6 +2,7 @@ using System.IO;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
@@ -33,10 +34,23 @@ public partial class CreateServerDialog : Window
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public CreateServerDialog() : this(null) { }
 
+    // --- Log batching ---
+    // The Forge installer can print thousands of lines; appending each one to the TextBox
+    // (Text += line) froze the UI. Lines are buffered and flushed a few times per second,
+    // keeping only the most recent ones.
+    private const int MaxLogLines = 400;
+    private readonly List<string> _logLines = new();
+    private bool _logDirty;
+    private readonly DispatcherTimer _logTimer;
+
     public CreateServerDialog(IEnumerable<int>? usedPorts = null)
     {
         InitializeComponent();
         _usedPorts = new HashSet<int>(usedPorts ?? Enumerable.Empty<int>());
+
+        _logTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+        _logTimer.Tick += (_, _) => FlushLog();
+        _logTimer.Start();
 
         ParentFolderBox.Text = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
@@ -202,6 +216,8 @@ public partial class CreateServerDialog : Window
                 {
                     forgeArgs = forge.ArgsId;     // modern Forge: launched via args file, no runnable jar
                     jarName = string.Empty;
+                    // Forge ships its own run.bat that reads user_jvm_args.txt; give it our RAM settings.
+                    _creation.WriteForgeUserJvmArgs(folder, minGb, maxGb);
                 }
                 else if (!string.IsNullOrEmpty(forge.JarFile))
                 {
@@ -266,8 +282,23 @@ public partial class CreateServerDialog : Window
 
     private void AppendLog(string line)
     {
-        ProgressLog.Text += line + Environment.NewLine;
-        ProgressLog.CaretIndex = ProgressLog.Text?.Length ?? 0;
+        _logLines.Add(line);
+        if (_logLines.Count > MaxLogLines) _logLines.RemoveRange(0, _logLines.Count - MaxLogLines);
+        _logDirty = true;
+    }
+
+    private void FlushLog()
+    {
+        if (!_logDirty) return;
+        _logDirty = false;
+        ProgressLog.Text = string.Join(Environment.NewLine, _logLines) + Environment.NewLine;
+        ProgressLog.CaretIndex = ProgressLog.Text.Length;
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _logTimer.Stop();
+        base.OnClosed(e);
     }
 
     private Task Warn(string message) =>
