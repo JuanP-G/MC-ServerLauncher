@@ -101,7 +101,7 @@ public partial class MainViewModel : ObservableObject
         if (!string.IsNullOrEmpty(exe))
         {
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = exe, UseShellExecute = true }); }
-            catch { /* si no se puede relanzar, al menos cerramos */ }
+            catch { /* if it can't be relaunched, at least exit */ }
         }
         Environment.Exit(0);
     }
@@ -170,13 +170,16 @@ public partial class MainViewModel : ObservableObject
         UpdateText = Localizer.Get("Update_Downloading");
         try
         {
-            var dest = Path.Combine(Path.GetTempPath(), "MC-ServerLauncher-Setup.exe");
+            // Random per-run folder: fixed names in %TEMP% could be pre-planted/replaced by
+            // another local process between download and execution.
+            var updateDir = Path.Combine(Path.GetTempPath(), "mcsl-" + Path.GetRandomFileName());
+            var dest = Path.Combine(updateDir, "MC-ServerLauncher-Setup.exe");
             await new UpdateService().DownloadInstallerAsync(_installerUrl, dest);
 
             // Run the installer from a helper that first waits for THIS app to fully exit, then
             // launches it. This avoids the UAC-elevation race where the app closed too soon and the
             // silent install never actually applied.
-            var helper = Path.Combine(Path.GetTempPath(), "mcsl-update.cmd");
+            var helper = Path.Combine(updateDir, "mcsl-update.cmd");
             await File.WriteAllTextAsync(helper,
                 "@echo off\r\n" +
                 ":wait\r\n" +
@@ -214,7 +217,7 @@ public partial class MainViewModel : ObservableObject
                 UseShellExecute = true
             });
         }
-        catch { /* sin navegador */ }
+        catch { /* no browser available */ }
     }
 
     [RelayCommand]
@@ -223,8 +226,16 @@ public partial class MainViewModel : ObservableObject
     private void Load()
     {
         // The app starts with no servers; the user creates a new one or adds an existing folder.
+        // For servers saved before Type/GameVersion existed, detect them from the folder so the
+        // mods browser works (older Fabric/Forge servers).
+        var detector = new ServerDetectionService();
+        var changed = false;
         foreach (var cfg in _storage.Load())
+        {
+            if (detector.DetectAndFill(cfg)) changed = true;
             Register(cfg);
+        }
+        if (changed) Save();
 
         SelectedServer = Servers.FirstOrDefault();
     }
@@ -317,12 +328,33 @@ public partial class MainViewModel : ObservableObject
     private async Task EditServer()
     {
         if (SelectedServer is null || Owner is null) return;
-        var dialog = new AddEditServerDialog(SelectedServer.Config);
+        var server = SelectedServer;
+        var oldType = server.Config.Type;
+
+        var dialog = new AddEditServerDialog(server.Config);
         if (await dialog.ShowDialog<bool>(Owner))
         {
-            SelectedServer.Name = SelectedServer.Config.Name;
+            server.Name = server.Config.Name;
             Save();
+
+            // If the loader type changed (e.g. a vanilla server was converted to Fabric), rebuild the
+            // view model so computed state (IsModded, the Mods tab/browser) refreshes.
+            if (server.Config.Type != oldType && !server.IsRunning)
+                ReplaceServer(server);
         }
+    }
+
+    /// <summary>Replaces a server's view model in place (keeping its position) and reselects it.</summary>
+    private void ReplaceServer(ServerViewModel old)
+    {
+        var index = Servers.IndexOf(old);
+        if (index < 0) return;
+
+        _ = old.ShutdownAsync(); // stop its timers (it isn't running)
+        var vm = new ServerViewModel(old.Config);
+        vm.ConfigChanged += Save;
+        Servers[index] = vm;
+        SelectedServer = vm;
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]

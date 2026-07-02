@@ -279,4 +279,124 @@
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Haz clic en un comando para ponerlo en la caja y completar los datos. Estos comandos solo funcionan con el servidor encendido.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Sí</value></data>
   <data name="Btn_No" xml:space="preserve"><value>No</value></data>
+  <data name="Browse_Mods" xml:space="preserve"><value>Explorar mods</value></data>
+  <data name="SearchMods_Placeholder" xml:space="preserve"><value>Buscar en Modrinth...</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar</value></data>
+  <data name="Installed_Mods" xml:space="preserve"><value>Mods instalados</value></data>
+  <data name="No_Installed_Mods" xml:space="preserve"><value>Aún no hay mods instalados.</value></data>
+  <data name="Install" xml:space="preserve"><value>Instalar</value></data>
+  <data name="Mods" xml:space="preserve"><value>Mods</value></data>
+  <data name="Sort_Label" xml:space="preserve"><value>Ordenar por:</value></data>
+  <data name="Sort_Relevance" xml:space="preserve"><value>Relevancia</value></data>
+  <data name="Sort_Downloads" xml:space="preserve"><value>Descargas</value></data>
+  <data name="LoadMore" xml:space="preserve"><value>Cargar más</value></data>
+  <data name="Export_Modpack" xml:space="preserve"><value>Exportar modpack</value></data>
+  <data name="Tip_ToggleMod" xml:space="preserve"><value>Activar / Desactivar</value></data>
+  <data name="Loader_Title" xml:space="preserve"><value>Cambiar el tipo de servidor</value></data>
+  <data name="Loader_Section" xml:space="preserve"><value>Tipo de servidor</value></data>
+  <data name="Loader_Current" xml:space="preserve"><value>Loader actual: </value></data>
+  <data name="Loader_ChangeButton" xml:space="preserve"><value>Cambiar tipo de servidor…</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Cambia el tipo de este servidor: Fabric o Forge para mods, Paper para plugins, o Vanilla sin nada. Tu mundo se conserva.</value></data>
+  <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sin mods)</value></data>
+  <data name="Loader_KeepConfig" xml:space="preserve"><value>Conservar el archivo de arranque actual (run.bat)</value></data>
+  <data name="Loader_Kept" xml:space="preserve"><value>Se conservan el mundo, server.properties y tus carpetas de mods/plugins y config.</value></data>
+  <data name="Loader_WarnSame" xml:space="preserve"><value>Vas a reinstalar el mismo tipo de servidor. Solo tiene sentido para cambiar de versión; se reescribe el arranque y podrías perder algunos ajustes.</value></data>
+  <data name="Loader_WarnVanillaToLoader" xml:space="preserve"><value>Cambiar el tipo de un servidor vanilla es seguro. Se conserva el mundo; después podrás instalar mods o plugins según el tipo elegido.</value></data>
+  <data name="Loader_WarnToVanilla" xml:space="preserve"><value>¡Atención! Volver a Vanilla desde un servidor con mods o plugins puede corromper o vaciar zonas del mundo que usen contenido añadido (bloques o entidades). Haz una copia de seguridad. Si vuelves al tipo anterior, normalmente se recupera.</value></data>
+  <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>¡Peligro! Cambiar entre tipos con contenido incompatible (de un loader de mods a otro, o entre mods y plugins de Paper) puede romper el mundo: el contenido añadido de uno no existe en el otro. Haz una copia de seguridad antes. Volver al tipo anterior suele recuperarlo.</value></data>
+  <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>El instalador de Forge tardó demasiado y se canceló. Comprueba tu conexión e inténtalo de nuevo.</value></data>
+  <data name="Plugins" xml:space="preserve"><value>Plugins</value></data>
+  <data name="Filter_Tip" xml:space="preserve"><value>Solo se muestran resultados compatibles con este tipo de servidor y versión de Minecraft.</value></data>
+  <data name="Browse_Plugins" xml:space="preserve"><value>Explorar plugins</value></data>
+  <data name="Installed_Plugins" xml:space="preserve"><value>Plugins instalados</value></data>
+  <data name="SearchPlugins_Placeholder" xml:space="preserve"><value>Buscar plugins en Modrinth...</value></data>
+  <data name="No_Installed_Plugins" xml:space="preserve"><value>Aún no hay plugins instalados.</value></data>
+  <data name="Msg_PaperResolving" xml:space="preserve"><value>Resolviendo la última build de Paper...</value></data>
+  <data name="Msg_PaperNoBuild" xml:space="preserve"><value>No hay una build de Paper para Minecraft {0}.</value></data>
+  <data name="HowToPlay_PaperFmt" xml:space="preserve"><value>Este servidor usa Paper (Minecraft {0}). Los plugins van solo en el servidor:
+1. Los jugadores solo tienen que entrar con Minecraft normal (versión {0}); no instalan nada.
+2. Los plugins (.jar) se ponen en la carpeta plugins del servidor.
+3. Reinicia el servidor tras añadir o quitar plugins.</value></data>
+  <data name="Loader_Warning" xml:space="preserve"><value>Se aplicará el loader elegido con esa versión. Usa la misma versión que ya tenía el servidor para no romper el mundo.</value></data>
+  <data name="Loader_Installing" xml:space="preserve"><value>Instalando loader...</value></data>
+  <data name="Loader_InstallButton" xml:space="preserve"><value>Instalar</value></data>
+  <data name="Loader_DetectedFmt" xml:space="preserve"><value>Versión detectada del servidor: {0}</value></data>
+  <data name="Loader_Done" xml:space="preserve"><value>Hecho. El servidor se ha actualizado.</value></data>
+  <data name="Loader_Error" xml:space="preserve"><value>No se pudo instalar el loader: {0}</value></data>
+  <data name="Msg_ModBrowserNeedsLoader" xml:space="preserve"><value>El explorador de mods solo está disponible en servidores Fabric o Forge.</value></data>
+  <data name="Msg_SearchingModrinth" xml:space="preserve"><value>Buscando en Modrinth...</value></data>
+  <data name="Msg_ModsFoundFmt" xml:space="preserve"><value>{0} resultados.</value></data>
+  <data name="Msg_NoModsFound" xml:space="preserve"><value>No se encontraron mods para esta versión y este tipo de servidor.</value></data>
+  <data name="Msg_ModErrorFmt" xml:space="preserve"><value>Error: {0}</value></data>
+  <data name="Msg_ResolvingVersion" xml:space="preserve"><value>Buscando la última versión compatible...</value></data>
+  <data name="Msg_NoCompatibleVersion" xml:space="preserve"><value>No se encontró una versión compatible.</value></data>
+  <data name="Msg_DownloadingMod" xml:space="preserve"><value>Descargando {0}...</value></data>
+  <data name="Msg_ModInstalled" xml:space="preserve"><value>Mod instalado correctamente.</value></data>
+  <data name="Msg_InstallErrorFmt" xml:space="preserve"><value>Error al instalar el mod: {0}</value></data>
+  <data name="Msg_FabricResolving" xml:space="preserve"><value>Resolviendo la versión de Fabric...</value></data>
+  <data name="Msg_ForgeResolving" xml:space="preserve"><value>Resolviendo la versión de Forge...</value></data>
+  <data name="Msg_ForgeNoVersion" xml:space="preserve"><value>No hay una versión de Forge disponible para Minecraft {0}.</value></data>
+  <data name="Msg_ForgeDownloadingInstaller" xml:space="preserve"><value>Descargando el instalador de Forge {0}...</value></data>
+  <data name="Msg_ForgeRunningInstaller" xml:space="preserve"><value>Ejecutando el instalador de Forge (puede tardar un poco)...</value></data>
+  <data name="Msg_ForgeInstallerFailed" xml:space="preserve"><value>El instalador de Forge falló (código {0}).</value></data>
+  <data name="Msg_ForgeInstallNoOutput" xml:space="preserve"><value>El instalador de Forge no generó un servidor reconocible.</value></data>
+  <data name="HowToPlay_Title" xml:space="preserve"><value>¿Cómo jugar en este servidor?</value></data>
+  <data name="HowToPlay_FabricFmt" xml:space="preserve"><value>Este servidor usa Fabric (Minecraft {0}). Para entrar con mods:
+1. Instala el cliente de Fabric desde https://fabricmc.net/use (elige la versión {0}).
+2. Abre el lanzador de Minecraft y selecciona el perfil «fabric-loader-{0}».
+3. Copia los mods (.jar) en %appdata%\.minecraft\mods.
+4. La versión de los mods del cliente debe coincidir con la del servidor.</value></data>
+  <data name="HowToPlay_ForgeFmt" xml:space="preserve"><value>Este servidor usa Forge (Minecraft {0}). Para entrar con mods:
+1. Descarga el instalador de Forge para {0} en https://files.minecraftforge.net e instala el cliente («Install client»).
+2. Abre el lanzador de Minecraft y selecciona el perfil «forge».
+3. Copia los mods (.jar) en %appdata%\.minecraft\mods.
+4. La versión de Forge del cliente debe coincidir con la del servidor.</value></data>
+  <data name="Export_InstructionsFmt" xml:space="preserve"><value>Servidor: {0}
+Tipo: {1}  ·  Versión de Minecraft: {2}
+
+{3}
+
+Los archivos están en la carpeta «{4}» de este paquete.</value></data>
+  <data name="Name_NewServer" xml:space="preserve"><value>Nuevo servidor</value></data>
+  <data name="Export_InstructionsFile" xml:space="preserve"><value>INSTRUCCIONES.txt</value></data>
+  <data name="Msg_ModDeleteError" xml:space="preserve"><value>No se pudo eliminar el archivo: {0}</value></data>
+  <data name="Msg_ExportError" xml:space="preserve"><value>No se pudo exportar el modpack: {0}</value></data>
+  <data name="Cmd_Say_Title" xml:space="preserve"><value>say &lt;mensaje&gt;</value></data>
+  <data name="Cmd_Say_Desc" xml:space="preserve"><value>Envía un mensaje en el chat a todos los jugadores.</value></data>
+  <data name="Cmd_List_Title" xml:space="preserve"><value>list</value></data>
+  <data name="Cmd_List_Desc" xml:space="preserve"><value>Muestra los jugadores conectados ahora mismo.</value></data>
+  <data name="Cmd_Op_Title" xml:space="preserve"><value>op &lt;jugador&gt;</value></data>
+  <data name="Cmd_Op_Desc" xml:space="preserve"><value>Da permisos de operador (administrador) a un jugador.</value></data>
+  <data name="Cmd_Deop_Title" xml:space="preserve"><value>deop &lt;jugador&gt;</value></data>
+  <data name="Cmd_Deop_Desc" xml:space="preserve"><value>Quita los permisos de operador a un jugador.</value></data>
+  <data name="Cmd_Kick_Title" xml:space="preserve"><value>kick &lt;jugador&gt; [razón]</value></data>
+  <data name="Cmd_Kick_Desc" xml:space="preserve"><value>Expulsa a un jugador (puede volver a entrar).</value></data>
+  <data name="Cmd_Ban_Title" xml:space="preserve"><value>ban &lt;jugador&gt; [razón]</value></data>
+  <data name="Cmd_Ban_Desc" xml:space="preserve"><value>Banea a un jugador para que no pueda entrar.</value></data>
+  <data name="Cmd_Pardon_Title" xml:space="preserve"><value>pardon &lt;jugador&gt;</value></data>
+  <data name="Cmd_Pardon_Desc" xml:space="preserve"><value>Quita el baneo a un jugador.</value></data>
+  <data name="Cmd_WlAdd_Title" xml:space="preserve"><value>whitelist add &lt;jugador&gt;</value></data>
+  <data name="Cmd_WlAdd_Desc" xml:space="preserve"><value>Añade un jugador a la lista blanca.</value></data>
+  <data name="Cmd_WlRemove_Title" xml:space="preserve"><value>whitelist remove &lt;jugador&gt;</value></data>
+  <data name="Cmd_WlRemove_Desc" xml:space="preserve"><value>Quita un jugador de la lista blanca.</value></data>
+  <data name="Cmd_Gamemode_Title" xml:space="preserve"><value>gamemode &lt;modo&gt; [jugador]</value></data>
+  <data name="Cmd_Gamemode_Desc" xml:space="preserve"><value>Cambia el modo de juego (survival, creative, adventure, spectator).</value></data>
+  <data name="Cmd_Tp_Title" xml:space="preserve"><value>tp &lt;jugador&gt; &lt;destino&gt;</value></data>
+  <data name="Cmd_Tp_Desc" xml:space="preserve"><value>Teletransporta a un jugador hasta otro jugador o coordenadas.</value></data>
+  <data name="Cmd_Give_Title" xml:space="preserve"><value>give &lt;jugador&gt; &lt;objeto&gt; [cantidad]</value></data>
+  <data name="Cmd_Give_Desc" xml:space="preserve"><value>Da objetos a un jugador.</value></data>
+  <data name="Cmd_TimeSet_Title" xml:space="preserve"><value>time set &lt;day|night|valor&gt;</value></data>
+  <data name="Cmd_TimeSet_Desc" xml:space="preserve"><value>Cambia la hora del mundo.</value></data>
+  <data name="Cmd_Weather_Title" xml:space="preserve"><value>weather &lt;clear|rain|thunder&gt;</value></data>
+  <data name="Cmd_Weather_Desc" xml:space="preserve"><value>Cambia el clima.</value></data>
+  <data name="Cmd_Difficulty_Title" xml:space="preserve"><value>difficulty &lt;dificultad&gt;</value></data>
+  <data name="Cmd_Difficulty_Desc" xml:space="preserve"><value>Cambia la dificultad (peaceful, easy, normal, hard).</value></data>
+  <data name="Cmd_Gamerule_Title" xml:space="preserve"><value>gamerule &lt;regla&gt; &lt;valor&gt;</value></data>
+  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Cambia una regla del juego (p. ej. keepInventory true).</value></data>
+  <data name="Cmd_Seed_Title" xml:space="preserve"><value>seed</value></data>
+  <data name="Cmd_Seed_Desc" xml:space="preserve"><value>Muestra la semilla del mundo.</value></data>
+  <data name="Cmd_SaveAll_Title" xml:space="preserve"><value>save-all</value></data>
+  <data name="Cmd_SaveAll_Desc" xml:space="preserve"><value>Guarda el mundo en disco de inmediato.</value></data>
+  <data name="Cmd_Stop_Title" xml:space="preserve"><value>stop</value></data>
+  <data name="Cmd_Stop_Desc" xml:space="preserve"><value>Apaga el servidor de forma segura (guardando el mundo).</value></data>
 </root>

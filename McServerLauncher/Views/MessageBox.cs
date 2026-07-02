@@ -47,6 +47,10 @@ public static class MessageBox
 
         void Close(bool? r) { result.TrySetResult(r); window.Close(); }
 
+        // If the user closes the window with the title-bar X, resolve the task anyway
+        // (as "no"); otherwise the awaiting caller would hang forever.
+        window.Closed += (_, _) => result.TrySetResult(null);
+
         if (confirm)
         {
             var no = new Button

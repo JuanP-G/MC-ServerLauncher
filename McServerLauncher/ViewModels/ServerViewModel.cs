@@ -24,7 +24,8 @@ public partial class ServerViewModel : ObservableObject
     private const int MaxConsoleLines = 2000;
 
     private readonly ServerProcessManager _process = new();
-    private readonly PlayitManager _playit = new();
+    private readonly PlayitManager _playit = PlayitManager.Shared;
+    private readonly Action<PlayitState> _onPlayitStateChanged;
     private readonly ProcessStatsService _stats = new();
     private readonly ServerPropertiesService _properties = new();
     private readonly PortService _ports = new();
@@ -63,27 +64,31 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Common commands with their explanation (for the console help).</summary>
     public IReadOnlyList<CommandHelp> CommandHelp => SharedCommandHelp;
 
+    /// <summary>Builds a localized help entry from a resx key pair (Cmd_X_Title / Cmd_X_Desc).</summary>
+    private static CommandHelp Cmd(string insert, string key) =>
+        new(insert, Localizer.Get(key + "_Title"), Localizer.Get(key + "_Desc"));
+
     private static readonly IReadOnlyList<CommandHelp> SharedCommandHelp = new List<CommandHelp>
     {
-        new("say ", "say <mensaje>", "Envía un mensaje en el chat a todos los jugadores."),
-        new("list", "list", "Muestra los jugadores conectados ahora mismo."),
-        new("op ", "op <jugador>", "Da permisos de operador (administrador) a un jugador."),
-        new("deop ", "deop <jugador>", "Quita los permisos de operador a un jugador."),
-        new("kick ", "kick <jugador> [razón]", "Expulsa a un jugador (puede volver a entrar)."),
-        new("ban ", "ban <jugador> [razón]", "Banea a un jugador para que no pueda entrar."),
-        new("pardon ", "pardon <jugador>", "Quita el baneo a un jugador."),
-        new("whitelist add ", "whitelist add <jugador>", "Añade un jugador a la lista blanca."),
-        new("whitelist remove ", "whitelist remove <jugador>", "Quita un jugador de la lista blanca."),
-        new("gamemode ", "gamemode <modo> [jugador]", "Cambia el modo de juego (survival, creative, adventure, spectator)."),
-        new("tp ", "tp <jugador> <destino>", "Teletransporta a un jugador hasta otro jugador o coordenadas."),
-        new("give ", "give <jugador> <objeto> [cantidad]", "Da objetos a un jugador."),
-        new("time set ", "time set <day|night|valor>", "Cambia la hora del mundo."),
-        new("weather ", "weather <clear|rain|thunder>", "Cambia el clima."),
-        new("difficulty ", "difficulty <dificultad>", "Cambia la dificultad (peaceful, easy, normal, hard)."),
-        new("gamerule ", "gamerule <regla> <valor>", "Cambia una regla del juego (p. ej. keepInventory true)."),
-        new("seed", "seed", "Muestra la semilla del mundo."),
-        new("save-all", "save-all", "Guarda el mundo en disco de inmediato."),
-        new("stop", "stop", "Apaga el servidor de forma segura (guardando el mundo)."),
+        Cmd("say ", "Cmd_Say"),
+        Cmd("list", "Cmd_List"),
+        Cmd("op ", "Cmd_Op"),
+        Cmd("deop ", "Cmd_Deop"),
+        Cmd("kick ", "Cmd_Kick"),
+        Cmd("ban ", "Cmd_Ban"),
+        Cmd("pardon ", "Cmd_Pardon"),
+        Cmd("whitelist add ", "Cmd_WlAdd"),
+        Cmd("whitelist remove ", "Cmd_WlRemove"),
+        Cmd("gamemode ", "Cmd_Gamemode"),
+        Cmd("tp ", "Cmd_Tp"),
+        Cmd("give ", "Cmd_Give"),
+        Cmd("time set ", "Cmd_TimeSet"),
+        Cmd("weather ", "Cmd_Weather"),
+        Cmd("difficulty ", "Cmd_Difficulty"),
+        Cmd("gamerule ", "Cmd_Gamerule"),
+        Cmd("seed", "Cmd_Seed"),
+        Cmd("save-all", "Cmd_SaveAll"),
+        Cmd("stop", "Cmd_Stop"),
     };
 
     [ObservableProperty]
@@ -108,6 +113,27 @@ public partial class ServerViewModel : ObservableObject
 
     public bool HasIcon => ServerIcon is not null;
 
+    public ServerModsViewModel Mods { get; }
+
+    public bool IsModded => Config.Type != ServerType.Vanilla;
+
+    /// <summary>Server type shown as a badge (Vanilla/Fabric/Forge, and any future type).</summary>
+    public string ServerTypeText => Config.Type.ToString();
+
+    /// <summary>Minecraft version (empty until known).</summary>
+    public string GameVersionText => Config.GameVersion;
+
+    /// <summary>Badge color per type; unknown/future types fall back to gray.</summary>
+    public IBrush ServerTypeBrush => Config.Type switch
+    {
+        ServerType.Vanilla => BrushTypeVanilla,
+        ServerType.Fabric => BrushTypeFabric,
+        ServerType.Forge => BrushTypeForge,
+        ServerType.Paper => BrushTypePaper,
+        _ => BrushGray
+    };
+
+    // --- State properties ---
     [ObservableProperty]
     private string _motdText = "A Minecraft Server";
 
@@ -150,6 +176,12 @@ public partial class ServerViewModel : ObservableObject
     private static readonly IBrush BrushRed = Frozen("#E05561");
     private static readonly IBrush BrushGray = Frozen("#6E7681");
 
+    // Type badge colors (distinct enough to tell apart at a glance).
+    private static readonly IBrush BrushTypeVanilla = Frozen("#6E9E52");
+    private static readonly IBrush BrushTypeFabric = Frozen("#B58D5A");
+    private static readonly IBrush BrushTypeForge = Frozen("#5A8AB5");
+    private static readonly IBrush BrushTypePaper = Frozen("#C0563E");
+
     [ObservableProperty]
     private IBrush _statusBrush = BrushRed;
 
@@ -175,7 +207,10 @@ public partial class ServerViewModel : ObservableObject
 
         _process.OutputReceived += OnConsoleLine;
         _process.StateChanged += OnServerStateChanged;
-        _playit.StateChanged += s => RunOnUi(() => { PlayitState = s; UpdatePlayitStatusText(); UpdateSignal(); });
+        // Keep a reference to the handler: the manager is shared, so it must be unsubscribed
+        // in ShutdownAsync or replaced view models would leak.
+        _onPlayitStateChanged = s => RunOnUi(() => { PlayitState = s; UpdatePlayitStatusText(); UpdateSignal(); });
+        _playit.StateChanged += _onPlayitStateChanged;
 
         _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _statsTimer.Tick += (_, _) => UpdateStats();
@@ -186,12 +221,15 @@ public partial class ServerViewModel : ObservableObject
         _playitTimer.Tick += OnPlayitTimerTick;
         _playitTimer.Start();
         _playit.RefreshState();
+        // Sync directly: the shared manager may already know the state (another view model
+        // refreshed it before we subscribed), in which case no change event will fire.
+        PlayitState = _playit.State;
         UpdatePlayitStatusText();
         UpdateSignal();
 
         RefreshPort();
         RefreshInfo();
-        RefreshMods();
+        Mods = new ServerModsViewModel(config);
         _ = RefreshTunnelAddressAsync();
     }
 
@@ -296,7 +334,7 @@ public partial class ServerViewModel : ObservableObject
             CpuText = RamText = UptimeText = "—";
             ConnectedPlayers.Clear();
             UpdatePlayerCount();
-            RefreshPlayers(); // los archivos (ops/banned/whitelist) pueden haber cambiado
+            RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
         }
         else if (state == ServerState.Starting)
         {
@@ -389,7 +427,7 @@ public partial class ServerViewModel : ObservableObject
     private async Task EnsureCompatibleJavaAsync()
     {
         var required = _java.GetRequiredJavaFromJar(Config.JarFullPath);
-        if (required is null) return; // no se puede saber (jar antiguo): no bloqueamos
+        if (required is null) return; // cannot be determined (old jar): don't block the start
 
         var current = _java.GetMajorVersion(Config.JavaPath);
         if (current > 0 && JavaService.IsCompatible(current, required.Value))
@@ -789,108 +827,6 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
-    // --- Mods ---
-
-    public ObservableCollection<ModItem> Mods { get; } = new();
-
-    public bool IsModded => Config.Type != ServerType.Vanilla;
-
-    [RelayCommand]
-    private void RefreshMods()
-    {
-        Mods.Clear();
-        var modsFolder = Path.Combine(Config.FolderPath, "mods");
-        if (!Directory.Exists(modsFolder)) return;
-
-        foreach (var file in Directory.EnumerateFiles(modsFolder, "*.jar*"))
-        {
-            var fileName = Path.GetFileName(file);
-            var isEnabled = !fileName.EndsWith(".disabled");
-            var display = isEnabled ? fileName : fileName.Replace(".disabled", "");
-            Mods.Add(new ModItem(file, display, isEnabled));
-        }
-    }
-
-    [RelayCommand]
-    private void ToggleMod(ModItem? mod)
-    {
-        if (mod is null) return;
-        var newExt = mod.IsEnabled ? ".disabled" : "";
-        var newFile = mod.FilePath.Replace(".jar.disabled", ".jar") + newExt;
-        
-        try
-        {
-            File.Move(mod.FilePath, newFile);
-            RefreshMods();
-        }
-        catch (Exception ex)
-        {
-            OnConsoleLine($"Error toggling mod: {ex.Message}");
-        }
-    }
-
-    [RelayCommand]
-    private void DeleteMod(ModItem? mod)
-    {
-        if (mod is null) return;
-        try
-        {
-            File.Delete(mod.FilePath);
-            RefreshMods();
-        }
-        catch (Exception ex)
-        {
-            OnConsoleLine($"Error deleting mod: {ex.Message}");
-        }
-    }
-
-    [RelayCommand]
-    private async Task ExportModpack()
-    {
-        var modsFolder = Path.Combine(Config.FolderPath, "mods");
-        if (!Directory.Exists(modsFolder)) return;
-
-        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-        if (top == null) return;
-
-        var file = await top.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
-        {
-            Title = "Exportar Modpack",
-            DefaultExtension = "zip",
-            SuggestedFileName = $"{Config.Name}-Modpack.zip",
-            FileTypeChoices = new[] { new Avalonia.Platform.Storage.FilePickerFileType("ZIP Archive") { Patterns = new[] { "*.zip" } } }
-        });
-
-        if (file == null) return;
-
-        try
-        {
-            var tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempFolder);
-            var tempMods = Path.Combine(tempFolder, "mods");
-            Directory.CreateDirectory(tempMods);
-
-            foreach (var modFile in Directory.EnumerateFiles(modsFolder, "*.jar"))
-            {
-                File.Copy(modFile, Path.Combine(tempMods, Path.GetFileName(modFile)));
-            }
-
-            var instrPath = Path.Combine(tempFolder, "INSTRUCCIONES.txt");
-            var instructions = $"Para jugar en este servidor:\n1. Instala {Config.Type} version {Config.ModLoaderVersion}\n2. Copia todos los archivos de la carpeta 'mods' a tu carpeta %appdata%\\.minecraft\\mods";
-            File.WriteAllText(instrPath, instructions);
-
-            if (File.Exists(file.Path.LocalPath)) File.Delete(file.Path.LocalPath);
-            System.IO.Compression.ZipFile.CreateFromDirectory(tempFolder, file.Path.LocalPath);
-            Directory.Delete(tempFolder, true);
-
-            OnConsoleLine("Modpack exportado con éxito.");
-        }
-        catch (Exception ex)
-        {
-            OnConsoleLine($"Error exporting modpack: {ex.Message}");
-        }
-    }
-
     private void UpdateStats()
     {
         var sample = _stats.Sample(_process.CurrentProcess);
@@ -915,6 +851,7 @@ public partial class ServerViewModel : ObservableObject
     {
         _statsTimer.Stop();
         _playitTimer.Stop();
+        _playit.StateChanged -= _onPlayitStateChanged; // the manager is shared and outlives us
         if (_process.IsRunning)
             await _process.StopAsync(TimeSpan.FromSeconds(15));
     }

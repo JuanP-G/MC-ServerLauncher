@@ -14,7 +14,14 @@ namespace McServerLauncher.Services;
 /// </summary>
 public class PlayitManager
 {
+    /// <summary>
+    /// Shared instance: the agent is machine-wide state, so every ServerViewModel polls this one
+    /// instead of creating its own (avoids N status queries per tick with N servers).
+    /// </summary>
+    public static PlayitManager Shared { get; } = new();
+
     private const string WindowsServiceName = "playitd";
+    private DateTime _lastRefresh = DateTime.MinValue;
 
     // Likely systemd unit names for the Playit agent on Linux.
     private static readonly string[] LinuxUnitNames = { "playit", "playit-agent", "playitd" };
@@ -39,9 +46,17 @@ public class PlayitManager
 
     public bool IsRunning => State == PlayitState.Running;
 
-    /// <summary>Queries the current agent status and updates <see cref="State"/>.</summary>
-    public void RefreshState()
+    /// <summary>
+    /// Queries the current agent status and updates <see cref="State"/>. Calls are throttled
+    /// (several view models poll the shared instance); pass <paramref name="force"/> to bypass
+    /// the throttle, e.g. right after starting/stopping the service.
+    /// </summary>
+    public void RefreshState(bool force = false)
     {
+        if (!force && DateTime.UtcNow - _lastRefresh < TimeSpan.FromSeconds(2))
+            return;
+        _lastRefresh = DateTime.UtcNow;
+
         if (OperatingSystem.IsWindows())
             RefreshWindows();
         else if (OperatingSystem.IsLinux())
@@ -113,7 +128,7 @@ public class PlayitManager
             await Task.Run(StartWindows);
         else if (OperatingSystem.IsLinux() && _linuxUnit is not null)
             await Task.Run(() => Systemctl("start", _linuxUnit));
-        RefreshState();
+        RefreshState(force: true);
     }
 
     /// <summary>Stops the Playit agent (Windows service / Linux systemd unit). May require privileges.</summary>
@@ -123,7 +138,7 @@ public class PlayitManager
             await Task.Run(StopWindows);
         else if (OperatingSystem.IsLinux() && _linuxUnit is not null)
             await Task.Run(() => Systemctl("stop", _linuxUnit));
-        RefreshState();
+        RefreshState(force: true);
     }
 
     [SupportedOSPlatform("windows")]

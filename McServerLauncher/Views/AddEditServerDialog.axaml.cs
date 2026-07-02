@@ -11,7 +11,7 @@ namespace McServerLauncher.Views;
 public partial class AddEditServerDialog : Window
 {
     private readonly ServerConfig _config;
-    private readonly string _snapshot;
+    private string _snapshot;
 
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public AddEditServerDialog() : this(new ServerConfig()) { }
@@ -45,7 +45,10 @@ public partial class AddEditServerDialog : Window
         RefreshDataContext();
 
         // If the name is still the default, suggest the folder's name.
-        if (string.IsNullOrWhiteSpace(_config.Name) || _config.Name == "Nuevo servidor")
+        // ("Nuevo servidor" is the legacy hardcoded default of configs saved by old versions.)
+        if (string.IsNullOrWhiteSpace(_config.Name)
+            || _config.Name == Localizer.Get("Name_NewServer")
+            || _config.Name == "Nuevo servidor")
         {
             _config.Name = new DirectoryInfo(path).Name;
             RefreshDataContext();
@@ -71,6 +74,24 @@ public partial class AddEditServerDialog : Window
 
         _config.JavaPath = path;
         RefreshDataContext();
+    }
+
+    private async void InstallLoader_Click(object? sender, RoutedEventArgs e)
+    {
+        if (!Directory.Exists(_config.FolderPath))
+        {
+            await MessageBox.ShowAsync(Localizer.Get("Msg_FolderNotExist"), Localizer.Get("Title_Validation"), this);
+            return;
+        }
+
+        var dialog = new InstallLoaderDialog(_config);
+        if (await dialog.ShowDialog<bool>(this))
+        {
+            // The loader files are already on disk and _config was updated; refresh the snapshot so
+            // a later Cancel doesn't revert the new loader/jar/java fields, and re-bind to show them.
+            _snapshot = JsonSerializer.Serialize(_config);
+            RefreshDataContext();
+        }
     }
 
     private async void Save_Click(object? sender, RoutedEventArgs e)

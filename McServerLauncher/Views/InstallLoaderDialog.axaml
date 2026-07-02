@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        x:Class="McServerLauncher.Views.InstallLoaderDialog"
+        Title="{loc:Loc Loader_Title}"
+        Width="560" Height="520" MinWidth="500"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <Grid RowDefinitions="*,Auto,Auto">
+        <ScrollViewer Grid.Row="0" Margin="20,20,20,8" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="FormPanel">
+                <TextBlock Text="{loc:Loc Loader_Intro}" TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,12" />
+
+                <TextBlock Text="Loader" Margin="0,0,0,4" />
+                <ComboBox x:Name="LoaderCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
+                    <ComboBoxItem Content="Fabric" />
+                    <ComboBoxItem Content="{loc:Loc Loader_Vanilla}" />
+                    <ComboBoxItem Content="Forge" />
+                    <ComboBoxItem Content="Paper" />
+                </ComboBox>
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{loc:Loc Cs_Version}" Margin="0,0,0,4" />
+                        <ComboBox x:Name="VersionCombo" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                    <CheckBox Grid.Column="1" x:Name="SnapshotsCheck" Content="{loc:Loc Cs_Snapshots}"
+                              VerticalAlignment="Bottom" Margin="12,0,0,4" IsCheckedChanged="Snapshots_Changed" />
+                </Grid>
+                <TextBlock x:Name="VersionStatus" Margin="2,4,0,0" FontSize="12" Opacity="0.7"
+                           Text="{loc:Loc Cs_LoadingVersions}" TextWrapping="Wrap" />
+
+                <!-- Directional warning (color/severity set from code-behind) -->
+                <Border x:Name="WarnBox" Margin="0,14,0,0" Padding="10" CornerRadius="6"
+                        Background="#33E3A82B" BorderBrush="#E3A82B" BorderThickness="1">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <ic:SymbolIcon Grid.Column="0" x:Name="WarnIcon" Symbol="Warning"
+                                       VerticalAlignment="Top" Margin="0,0,8,0" />
+                        <TextBlock Grid.Column="1" x:Name="WarnText" TextWrapping="Wrap" FontSize="12" />
+                    </Grid>
+                </Border>
+
+                <CheckBox x:Name="KeepRunBatCheck" Margin="0,14,0,0" Content="{loc:Loc Loader_KeepConfig}" />
+                <TextBlock Text="{loc:Loc Loader_Kept}" FontSize="12" Opacity="0.7" TextWrapping="Wrap" Margin="0,4,0,0" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="1" x:Name="ProgressBox" Margin="20,0,20,8" Padding="12"
+                CornerRadius="8" Background="#1E1E1E" IsVisible="False" Height="140">
+            <Grid RowDefinitions="Auto,*">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6" Spacing="8">
+                    <ProgressBar x:Name="Spinner" IsIndeterminate="True" Width="120" Height="4" VerticalAlignment="Center" />
+                    <TextBlock Text="{loc:Loc Loader_Installing}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBox Grid.Row="1" x:Name="ProgressLog" IsReadOnly="True" TextWrapping="Wrap"
+                         Background="Transparent" BorderThickness="0" Foreground="#DDDDDD"
+                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12"
+                         AcceptsReturn="True" />
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,4,20,16" Spacing="8">
+            <Button x:Name="CancelButton" Content="{loc:Loc Cancel}" Click="Cancel_Click" />
+            <Button x:Name="InstallButton" Classes="accent" Content="{loc:Loc Loader_InstallButton}" Click="Install_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

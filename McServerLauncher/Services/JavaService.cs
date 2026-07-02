@@ -66,11 +66,35 @@ public partial class JavaService
         }
         else
         {
-            // Common JVM locations on Linux (and macOS).
+            // Common JVM locations on Linux.
             AddFrom("/usr/lib/jvm");
             AddFrom("/usr/java");
             AddFrom("/opt/java");
             AddFrom("/opt");
+
+            if (OperatingSystem.IsMacOS())
+            {
+                // macOS JDK bundles keep the JRE under <bundle>/Contents/Home.
+                void AddMacFrom(string root)
+                {
+                    try
+                    {
+                        if (!Directory.Exists(root)) return;
+                        foreach (var dir in Directory.GetDirectories(root))
+                        {
+                            var exe = Path.Combine(dir, "Contents", "Home", "bin", "java");
+                            if (File.Exists(exe)) candidates.Add(exe);
+                        }
+                    }
+                    catch { /* ignore */ }
+                }
+
+                AddMacFrom("/Library/Java/JavaVirtualMachines");
+                AddMacFrom(Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Library", "Java", "JavaVirtualMachines"));
+            }
+
             var onPath = WhichJava();
             if (onPath is not null) candidates.Add(onPath);
         }
@@ -145,6 +169,31 @@ public partial class JavaService
             using var doc = JsonDocument.Parse(stream);
             if (doc.RootElement.TryGetProperty("java_version", out var jv) && jv.TryGetInt32(out var m))
                 return m;
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Reads the Minecraft version a server.jar belongs to (modern vanilla jars include it in
+    /// version.json as "id"). Returns null if it can't be determined.
+    /// </summary>
+    public string? GetGameVersionFromJar(string jarPath)
+    {
+        try
+        {
+            if (!File.Exists(jarPath)) return null;
+            using var zip = ZipFile.OpenRead(jarPath);
+            var entry = zip.GetEntry("version.json");
+            if (entry is null) return null;
+
+            using var stream = entry.Open();
+            using var doc = JsonDocument.Parse(stream);
+            if (doc.RootElement.TryGetProperty("id", out var id) && id.GetString() is { Length: > 0 } v)
+                return v;
             return null;
         }
         catch
