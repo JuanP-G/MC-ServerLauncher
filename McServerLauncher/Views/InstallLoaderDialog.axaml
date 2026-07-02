@@ -33,10 +33,11 @@
                 <!-- Directional warning (color/severity set from code-behind) -->
                 <Border x:Name="WarnBox" Margin="0,14,0,0" Padding="10" CornerRadius="6"
                         Background="#33E3A82B" BorderBrush="#E3A82B" BorderThickness="1">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <ic:SymbolIcon x:Name="WarnIcon" Symbol="Warning" VerticalAlignment="Top" />
-                        <TextBlock x:Name="WarnText" TextWrapping="Wrap" FontSize="12" />
-                    </StackPanel>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <ic:SymbolIcon Grid.Column="0" x:Name="WarnIcon" Symbol="Warning"
+                                       VerticalAlignment="Top" Margin="0,0,8,0" />
+                        <TextBlock Grid.Column="1" x:Name="WarnText" TextWrapping="Wrap" FontSize="12" />
+                    </Grid>
                 </Border>
 
                 <CheckBox x:Name="KeepRunBatCheck" Margin="0,14,0,0" Content="{loc:Loc Loader_KeepConfig}" />
