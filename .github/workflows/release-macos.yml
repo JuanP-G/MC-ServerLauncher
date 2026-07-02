@@ -1,0 +1,103 @@
+name: Release (macOS DMG)
+
+# Builds self-contained macOS .app bundles (Apple Silicon + Intel), packages each into a .dmg
+# (drag to Applications) and attaches them to the GitHub release.
+# Triggers when a release is published, or manually (pick a tag).
+#
+# NOTE: the app is ad-hoc signed (no Apple Developer ID / notarization yet). It runs, but on first
+# launch macOS Gatekeeper asks the user to right-click -> Open. Add real signing + notarization later
+# if an Apple Developer account is available.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to attach the DMGs to (e.g. v1.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  dmg:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: osx-arm64
+            arch: AppleSilicon
+          - rid: osx-x64
+            arch: Intel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Publish (${{ matrix.rid }}, self-contained)
+        run: |
+          dotnet publish McServerLauncher/McServerLauncher.csproj \
+            -c Release -r ${{ matrix.rid }} --self-contained \
+            -p:PublishSingleFile=false \
+            -o publish-mac
+
+      - name: Build .app bundle
+        run: |
+          APP="MC Server Launcher.app"
+          mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+          cp -R publish-mac/. "$APP/Contents/MacOS/"
+          chmod +x "$APP/Contents/MacOS/McServerLauncher"
+
+          # Finder icon (.ico -> .icns). Best-effort: a missing icon just shows the default one.
+          brew install imagemagick || true
+          if magick "McServerLauncher/Resources/app.ico[0]" icon_src.png; then
+            magick icon_src.png -resize 1024x1024 icon_1024.png
+            mkdir icon.iconset
+            for s in 16 32 128 256 512; do
+              sips -z $s $s icon_1024.png --out "icon.iconset/icon_${s}x${s}.png"
+              sips -z $((s*2)) $((s*2)) icon_1024.png --out "icon.iconset/icon_${s}x${s}@2x.png"
+            done
+            iconutil -c icns icon.iconset -o "$APP/Contents/Resources/app.icns" || true
+          fi
+
+          cat > "$APP/Contents/Info.plist" <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key><string>MC Server Launcher</string>
+            <key>CFBundleDisplayName</key><string>MC Server Launcher</string>
+            <key>CFBundleIdentifier</key><string>com.juanpg.mcserverlauncher</string>
+            <key>CFBundleVersion</key><string>1.0</string>
+            <key>CFBundleShortVersionString</key><string>1.0</string>
+            <key>CFBundleExecutable</key><string>McServerLauncher</string>
+            <key>CFBundleIconFile</key><string>app.icns</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>LSMinimumSystemVersion</key><string>11.0</string>
+            <key>NSHighResolutionCapable</key><true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Ad-hoc codesign (required so Apple Silicon binaries run)
+        run: codesign --force --deep --sign - "MC Server Launcher.app"
+
+      - name: Build DMG
+        run: |
+          mkdir dmg-root
+          cp -R "MC Server Launcher.app" dmg-root/
+          ln -s /Applications dmg-root/Applications
+          hdiutil create -volname "MC Server Launcher" -srcfolder dmg-root \
+            -ov -format UDZO "MC-ServerLauncher-${{ matrix.arch }}.dmg"
+
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ github.event.release.tag_name || github.event.inputs.tag }}"
+          gh release upload "$TAG" "MC-ServerLauncher-${{ matrix.arch }}.dmg" --clobber --repo "${{ github.repository }}"

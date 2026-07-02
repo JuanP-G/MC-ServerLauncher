@@ -40,6 +40,10 @@ todo con botones.
 
 > La primera vez, Windows puede mostrar un aviso de SmartScreen (app nueva sin firma): pulsa
 > *Más información → Ejecutar de todas formas*.
+>
+> **macOS / Linux:** descarga el `.dmg` (macOS) o el `.AppImage` (Linux) de la misma release. En macOS la app
+> aún no está firmada por Apple, así que la primera vez **haz clic derecho en la app → Abrir** para pasar
+> Gatekeeper.
 
 ## ✨ Funcionalidades
 
@@ -82,7 +86,7 @@ dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 |---|---|
 | Windows x64 / x86 / ARM64 | ✅ Sí |
 | Linux x64 | ✅ Sí (AppImage) |
-| macOS | ⚙️ Se compila desde el código (aún sin paquete prehecho) |
+| macOS (Apple Silicon e Intel) | ✅ Sí (DMG) |
 
 ## 📖 Documentación y datos
 

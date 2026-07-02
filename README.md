@@ -38,6 +38,9 @@ all with buttons.
    **What's new** window tells you what changed.
 
 > The first time, Windows SmartScreen may warn (new, unsigned app): click *More info → Run anyway*.
+>
+> **macOS / Linux:** grab the `.dmg` (macOS) or `.AppImage` (Linux) from the same release. On macOS the app
+> isn't Apple-signed yet, so the first time **right-click the app → Open** to get past Gatekeeper.
 
 ## ✨ Features
 
@@ -78,7 +81,7 @@ dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 |---|---|
 | Windows x64 / x86 / ARM64 | ✅ Yes |
 | Linux x64 | ✅ Yes (AppImage) |
-| macOS | ⚙️ Builds from source (no prebuilt package yet) |
+| macOS (Apple Silicon & Intel) | ✅ Yes (DMG) |
 
 ## 📖 Docs & data
 
