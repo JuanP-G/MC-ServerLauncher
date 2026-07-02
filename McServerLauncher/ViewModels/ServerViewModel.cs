@@ -109,8 +109,23 @@ public partial class ServerViewModel : ObservableObject
     public bool HasIcon => ServerIcon is not null;
 
     public ServerModsViewModel Mods { get; }
-    
+
     public bool IsModded => Config.Type != ServerType.Vanilla;
+
+    /// <summary>Server type shown as a badge (Vanilla/Fabric/Forge, and any future type).</summary>
+    public string ServerTypeText => Config.Type.ToString();
+
+    /// <summary>Minecraft version (empty until known).</summary>
+    public string GameVersionText => Config.GameVersion;
+
+    /// <summary>Badge color per type; unknown/future types fall back to gray.</summary>
+    public IBrush ServerTypeBrush => Config.Type switch
+    {
+        ServerType.Vanilla => BrushTypeVanilla,
+        ServerType.Fabric => BrushTypeFabric,
+        ServerType.Forge => BrushTypeForge,
+        _ => BrushGray
+    };
 
     // --- State properties ---
     [ObservableProperty]
@@ -154,6 +169,11 @@ public partial class ServerViewModel : ObservableObject
     private static readonly IBrush BrushAmber = Frozen("#E3A82B");
     private static readonly IBrush BrushRed = Frozen("#E05561");
     private static readonly IBrush BrushGray = Frozen("#6E7681");
+
+    // Type badge colors (distinct enough to tell apart at a glance).
+    private static readonly IBrush BrushTypeVanilla = Frozen("#6E9E52");
+    private static readonly IBrush BrushTypeFabric = Frozen("#B58D5A");
+    private static readonly IBrush BrushTypeForge = Frozen("#5A8AB5");
 
     [ObservableProperty]
     private IBrush _statusBrush = BrushRed;
