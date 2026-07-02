@@ -260,6 +260,7 @@
   <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Gefahr! Der Wechsel zwischen Typen mit inkompatiblem Inhalt (von einem Mod-Loader zum anderen oder zwischen Mods und Paper-Plugins) kann die Welt zerstören: hinzugefügter Inhalt des einen existiert im anderen nicht. Mache vorher ein Backup. Mit dem vorherigen Typ lässt es sich meist wiederherstellen.</value></data>
   <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>Der Forge-Installer hat zu lange gebraucht und wurde abgebrochen. Prüfe deine Verbindung und versuche es erneut.</value></data>
   <data name="Plugins" xml:space="preserve"><value>Plugins</value></data>
+  <data name="Filter_Tip" xml:space="preserve"><value>Es werden nur Ergebnisse angezeigt, die mit diesem Servertyp und dieser Minecraft-Version kompatibel sind.</value></data>
   <data name="Browse_Plugins" xml:space="preserve"><value>Plugins durchsuchen</value></data>
   <data name="Installed_Plugins" xml:space="preserve"><value>Installierte Plugins</value></data>
   <data name="SearchPlugins_Placeholder" xml:space="preserve"><value>Plugins auf Modrinth suchen...</value></data>

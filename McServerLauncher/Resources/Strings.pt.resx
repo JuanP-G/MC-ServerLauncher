@@ -260,6 +260,7 @@
   <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Perigo! Mudar entre tipos com conteúdo incompatível (de um loader de mods para outro, ou entre mods e plugins do Paper) pode estragar o mundo: o conteúdo adicionado de um não existe no outro. Faz uma cópia de segurança antes. Voltar ao tipo anterior normalmente recupera.</value></data>
   <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>O instalador do Forge demorou demasiado e foi cancelado. Verifica a tua ligação e tenta novamente.</value></data>
   <data name="Plugins" xml:space="preserve"><value>Plugins</value></data>
+  <data name="Filter_Tip" xml:space="preserve"><value>Só são mostrados resultados compatíveis com este tipo de servidor e versão do Minecraft.</value></data>
   <data name="Browse_Plugins" xml:space="preserve"><value>Explorar plugins</value></data>
   <data name="Installed_Plugins" xml:space="preserve"><value>Plugins instalados</value></data>
   <data name="SearchPlugins_Placeholder" xml:space="preserve"><value>Procurar plugins no Modrinth...</value></data>

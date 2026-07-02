@@ -29,7 +29,21 @@
             <Border Grid.Column="0" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
                     CornerRadius="8" Padding="12" Margin="0,0,8,0">
                 <Grid RowDefinitions="Auto,Auto,Auto,*">
-                    <TextBlock Grid.Row="0" Text="{Binding BrowseTitle}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" />
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                        <TextBlock Grid.Column="0" Text="{Binding BrowseTitle}" FontSize="16"
+                                   FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <!-- Active filter: makes it clear results are limited to this type + version -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                    ToolTip.Tip="{Binding FilterTip}">
+                            <ic:SymbolIcon Symbol="Filter" FontSize="13" Opacity="0.7" VerticalAlignment="Center" />
+                            <Border CornerRadius="4" Padding="6,2" Background="{Binding FilterTypeBrush}">
+                                <TextBlock Text="{Binding FilterTypeText}" FontSize="11" FontWeight="SemiBold" Foreground="White" />
+                            </Border>
+                            <Border CornerRadius="4" Padding="6,2" Background="#2AFFFFFF">
+                                <TextBlock Text="{Binding FilterVersionText}" FontSize="11" />
+                            </Border>
+                        </StackPanel>
+                    </Grid>
 
                     <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                         <TextBox Grid.Column="0" Text="{Binding SearchQuery}"

@@ -14,6 +14,7 @@ using McServerLauncher.Models.Modrinth;
 using McServerLauncher.Services;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 
@@ -72,6 +73,21 @@ public partial class ServerModsViewModel : ObservableObject
     public string InstalledTitle => Localizer.Get(IsPluginBased ? "Installed_Plugins" : "Installed_Mods");
     public string SearchPlaceholder => Localizer.Get(IsPluginBased ? "SearchPlugins_Placeholder" : "SearchMods_Placeholder");
     public string NoInstalledText => Localizer.Get(IsPluginBased ? "No_Installed_Plugins" : "No_Installed_Mods");
+
+    // Active filter (results are always limited to this server's type + version).
+    public string FilterTypeText => _config.Type.ToString();
+    public string FilterVersionText => _config.GameVersion;
+    public string FilterTip => Localizer.Get("Filter_Tip");
+    public IBrush FilterTypeBrush => _config.Type switch
+    {
+        ServerType.Vanilla => TypeBrush("#6E9E52"),
+        ServerType.Fabric => TypeBrush("#B58D5A"),
+        ServerType.Forge => TypeBrush("#5A8AB5"),
+        ServerType.Paper => TypeBrush("#C0563E"),
+        _ => TypeBrush("#6E7681")
+    };
+
+    private static IBrush TypeBrush(string hex) => new SolidColorBrush(Color.Parse(hex));
 
     // --- "How to play" instructions (depend on the server type) ---
 
