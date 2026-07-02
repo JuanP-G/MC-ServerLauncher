@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json.Serialization;
+using McServerLauncher.Localization;
 
 namespace McServerLauncher.Models;
 
@@ -21,7 +22,7 @@ public class ServerConfig
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
 
     /// <summary>Display name of the server (e.g. "Survival", "Modded").</summary>
-    public string Name { get; set; } = "Nuevo servidor";
+    public string Name { get; set; } = Localizer.Get("Name_NewServer");
 
     /// <summary>Server root folder (where the .jar and server.properties live).</summary>
     public string FolderPath { get; set; } = string.Empty;

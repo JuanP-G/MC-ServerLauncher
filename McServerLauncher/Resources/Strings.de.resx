@@ -311,4 +311,46 @@ Typ: {1}  ·  Minecraft-Version: {2}
 {3}
 
 Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
+  <data name="Name_NewServer" xml:space="preserve"><value>Neuer Server</value></data>
+  <data name="Export_InstructionsFile" xml:space="preserve"><value>ANLEITUNG.txt</value></data>
+  <data name="Msg_ModDeleteError" xml:space="preserve"><value>Datei konnte nicht gelöscht werden: {0}</value></data>
+  <data name="Msg_ExportError" xml:space="preserve"><value>Modpack konnte nicht exportiert werden: {0}</value></data>
+  <data name="Cmd_Say_Title" xml:space="preserve"><value>say &lt;Nachricht&gt;</value></data>
+  <data name="Cmd_Say_Desc" xml:space="preserve"><value>Sendet eine Chat-Nachricht an alle Spieler.</value></data>
+  <data name="Cmd_List_Title" xml:space="preserve"><value>list</value></data>
+  <data name="Cmd_List_Desc" xml:space="preserve"><value>Zeigt die aktuell verbundenen Spieler.</value></data>
+  <data name="Cmd_Op_Title" xml:space="preserve"><value>op &lt;Spieler&gt;</value></data>
+  <data name="Cmd_Op_Desc" xml:space="preserve"><value>Gibt einem Spieler Operator-Rechte (Administrator).</value></data>
+  <data name="Cmd_Deop_Title" xml:space="preserve"><value>deop &lt;Spieler&gt;</value></data>
+  <data name="Cmd_Deop_Desc" xml:space="preserve"><value>Entzieht einem Spieler die Operator-Rechte.</value></data>
+  <data name="Cmd_Kick_Title" xml:space="preserve"><value>kick &lt;Spieler&gt; [Grund]</value></data>
+  <data name="Cmd_Kick_Desc" xml:space="preserve"><value>Wirft einen Spieler vom Server (er kann wieder beitreten).</value></data>
+  <data name="Cmd_Ban_Title" xml:space="preserve"><value>ban &lt;Spieler&gt; [Grund]</value></data>
+  <data name="Cmd_Ban_Desc" xml:space="preserve"><value>Bannt einen Spieler, sodass er nicht mehr beitreten kann.</value></data>
+  <data name="Cmd_Pardon_Title" xml:space="preserve"><value>pardon &lt;Spieler&gt;</value></data>
+  <data name="Cmd_Pardon_Desc" xml:space="preserve"><value>Hebt den Bann eines Spielers auf.</value></data>
+  <data name="Cmd_WlAdd_Title" xml:space="preserve"><value>whitelist add &lt;Spieler&gt;</value></data>
+  <data name="Cmd_WlAdd_Desc" xml:space="preserve"><value>Fügt einen Spieler zur Whitelist hinzu.</value></data>
+  <data name="Cmd_WlRemove_Title" xml:space="preserve"><value>whitelist remove &lt;Spieler&gt;</value></data>
+  <data name="Cmd_WlRemove_Desc" xml:space="preserve"><value>Entfernt einen Spieler von der Whitelist.</value></data>
+  <data name="Cmd_Gamemode_Title" xml:space="preserve"><value>gamemode &lt;Modus&gt; [Spieler]</value></data>
+  <data name="Cmd_Gamemode_Desc" xml:space="preserve"><value>Ändert den Spielmodus (survival, creative, adventure, spectator).</value></data>
+  <data name="Cmd_Tp_Title" xml:space="preserve"><value>tp &lt;Spieler&gt; &lt;Ziel&gt;</value></data>
+  <data name="Cmd_Tp_Desc" xml:space="preserve"><value>Teleportiert einen Spieler zu einem anderen Spieler oder zu Koordinaten.</value></data>
+  <data name="Cmd_Give_Title" xml:space="preserve"><value>give &lt;Spieler&gt; &lt;Gegenstand&gt; [Anzahl]</value></data>
+  <data name="Cmd_Give_Desc" xml:space="preserve"><value>Gibt einem Spieler Gegenstände.</value></data>
+  <data name="Cmd_TimeSet_Title" xml:space="preserve"><value>time set &lt;day|night|Wert&gt;</value></data>
+  <data name="Cmd_TimeSet_Desc" xml:space="preserve"><value>Ändert die Zeit der Welt.</value></data>
+  <data name="Cmd_Weather_Title" xml:space="preserve"><value>weather &lt;clear|rain|thunder&gt;</value></data>
+  <data name="Cmd_Weather_Desc" xml:space="preserve"><value>Ändert das Wetter.</value></data>
+  <data name="Cmd_Difficulty_Title" xml:space="preserve"><value>difficulty &lt;Schwierigkeit&gt;</value></data>
+  <data name="Cmd_Difficulty_Desc" xml:space="preserve"><value>Ändert den Schwierigkeitsgrad (peaceful, easy, normal, hard).</value></data>
+  <data name="Cmd_Gamerule_Title" xml:space="preserve"><value>gamerule &lt;Regel&gt; &lt;Wert&gt;</value></data>
+  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Ändert eine Spielregel (z. B. keepInventory true).</value></data>
+  <data name="Cmd_Seed_Title" xml:space="preserve"><value>seed</value></data>
+  <data name="Cmd_Seed_Desc" xml:space="preserve"><value>Zeigt den Seed der Welt.</value></data>
+  <data name="Cmd_SaveAll_Title" xml:space="preserve"><value>save-all</value></data>
+  <data name="Cmd_SaveAll_Desc" xml:space="preserve"><value>Speichert die Welt sofort auf der Festplatte.</value></data>
+  <data name="Cmd_Stop_Title" xml:space="preserve"><value>stop</value></data>
+  <data name="Cmd_Stop_Desc" xml:space="preserve"><value>Fährt den Server sicher herunter (die Welt wird gespeichert).</value></data>
 </root>

@@ -45,7 +45,10 @@ public partial class AddEditServerDialog : Window
         RefreshDataContext();
 
         // If the name is still the default, suggest the folder's name.
-        if (string.IsNullOrWhiteSpace(_config.Name) || _config.Name == "Nuevo servidor")
+        // ("Nuevo servidor" is the legacy hardcoded default of configs saved by old versions.)
+        if (string.IsNullOrWhiteSpace(_config.Name)
+            || _config.Name == Localizer.Get("Name_NewServer")
+            || _config.Name == "Nuevo servidor")
         {
             _config.Name = new DirectoryInfo(path).Name;
             RefreshDataContext();

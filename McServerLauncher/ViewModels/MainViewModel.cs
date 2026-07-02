@@ -101,7 +101,7 @@ public partial class MainViewModel : ObservableObject
         if (!string.IsNullOrEmpty(exe))
         {
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = exe, UseShellExecute = true }); }
-            catch { /* si no se puede relanzar, al menos cerramos */ }
+            catch { /* if it can't be relaunched, at least exit */ }
         }
         Environment.Exit(0);
     }
@@ -170,13 +170,16 @@ public partial class MainViewModel : ObservableObject
         UpdateText = Localizer.Get("Update_Downloading");
         try
         {
-            var dest = Path.Combine(Path.GetTempPath(), "MC-ServerLauncher-Setup.exe");
+            // Random per-run folder: fixed names in %TEMP% could be pre-planted/replaced by
+            // another local process between download and execution.
+            var updateDir = Path.Combine(Path.GetTempPath(), "mcsl-" + Path.GetRandomFileName());
+            var dest = Path.Combine(updateDir, "MC-ServerLauncher-Setup.exe");
             await new UpdateService().DownloadInstallerAsync(_installerUrl, dest);
 
             // Run the installer from a helper that first waits for THIS app to fully exit, then
             // launches it. This avoids the UAC-elevation race where the app closed too soon and the
             // silent install never actually applied.
-            var helper = Path.Combine(Path.GetTempPath(), "mcsl-update.cmd");
+            var helper = Path.Combine(updateDir, "mcsl-update.cmd");
             await File.WriteAllTextAsync(helper,
                 "@echo off\r\n" +
                 ":wait\r\n" +
@@ -214,7 +217,7 @@ public partial class MainViewModel : ObservableObject
                 UseShellExecute = true
             });
         }
-        catch { /* sin navegador */ }
+        catch { /* no browser available */ }
     }
 
     [RelayCommand]

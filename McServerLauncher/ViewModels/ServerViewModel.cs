@@ -24,7 +24,8 @@ public partial class ServerViewModel : ObservableObject
     private const int MaxConsoleLines = 2000;
 
     private readonly ServerProcessManager _process = new();
-    private readonly PlayitManager _playit = new();
+    private readonly PlayitManager _playit = PlayitManager.Shared;
+    private readonly Action<PlayitState> _onPlayitStateChanged;
     private readonly ProcessStatsService _stats = new();
     private readonly ServerPropertiesService _properties = new();
     private readonly PortService _ports = new();
@@ -63,27 +64,31 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Common commands with their explanation (for the console help).</summary>
     public IReadOnlyList<CommandHelp> CommandHelp => SharedCommandHelp;
 
+    /// <summary>Builds a localized help entry from a resx key pair (Cmd_X_Title / Cmd_X_Desc).</summary>
+    private static CommandHelp Cmd(string insert, string key) =>
+        new(insert, Localizer.Get(key + "_Title"), Localizer.Get(key + "_Desc"));
+
     private static readonly IReadOnlyList<CommandHelp> SharedCommandHelp = new List<CommandHelp>
     {
-        new("say ", "say <mensaje>", "Envía un mensaje en el chat a todos los jugadores."),
-        new("list", "list", "Muestra los jugadores conectados ahora mismo."),
-        new("op ", "op <jugador>", "Da permisos de operador (administrador) a un jugador."),
-        new("deop ", "deop <jugador>", "Quita los permisos de operador a un jugador."),
-        new("kick ", "kick <jugador> [razón]", "Expulsa a un jugador (puede volver a entrar)."),
-        new("ban ", "ban <jugador> [razón]", "Banea a un jugador para que no pueda entrar."),
-        new("pardon ", "pardon <jugador>", "Quita el baneo a un jugador."),
-        new("whitelist add ", "whitelist add <jugador>", "Añade un jugador a la lista blanca."),
-        new("whitelist remove ", "whitelist remove <jugador>", "Quita un jugador de la lista blanca."),
-        new("gamemode ", "gamemode <modo> [jugador]", "Cambia el modo de juego (survival, creative, adventure, spectator)."),
-        new("tp ", "tp <jugador> <destino>", "Teletransporta a un jugador hasta otro jugador o coordenadas."),
-        new("give ", "give <jugador> <objeto> [cantidad]", "Da objetos a un jugador."),
-        new("time set ", "time set <day|night|valor>", "Cambia la hora del mundo."),
-        new("weather ", "weather <clear|rain|thunder>", "Cambia el clima."),
-        new("difficulty ", "difficulty <dificultad>", "Cambia la dificultad (peaceful, easy, normal, hard)."),
-        new("gamerule ", "gamerule <regla> <valor>", "Cambia una regla del juego (p. ej. keepInventory true)."),
-        new("seed", "seed", "Muestra la semilla del mundo."),
-        new("save-all", "save-all", "Guarda el mundo en disco de inmediato."),
-        new("stop", "stop", "Apaga el servidor de forma segura (guardando el mundo)."),
+        Cmd("say ", "Cmd_Say"),
+        Cmd("list", "Cmd_List"),
+        Cmd("op ", "Cmd_Op"),
+        Cmd("deop ", "Cmd_Deop"),
+        Cmd("kick ", "Cmd_Kick"),
+        Cmd("ban ", "Cmd_Ban"),
+        Cmd("pardon ", "Cmd_Pardon"),
+        Cmd("whitelist add ", "Cmd_WlAdd"),
+        Cmd("whitelist remove ", "Cmd_WlRemove"),
+        Cmd("gamemode ", "Cmd_Gamemode"),
+        Cmd("tp ", "Cmd_Tp"),
+        Cmd("give ", "Cmd_Give"),
+        Cmd("time set ", "Cmd_TimeSet"),
+        Cmd("weather ", "Cmd_Weather"),
+        Cmd("difficulty ", "Cmd_Difficulty"),
+        Cmd("gamerule ", "Cmd_Gamerule"),
+        Cmd("seed", "Cmd_Seed"),
+        Cmd("save-all", "Cmd_SaveAll"),
+        Cmd("stop", "Cmd_Stop"),
     };
 
     [ObservableProperty]
@@ -202,7 +207,10 @@ public partial class ServerViewModel : ObservableObject
 
         _process.OutputReceived += OnConsoleLine;
         _process.StateChanged += OnServerStateChanged;
-        _playit.StateChanged += s => RunOnUi(() => { PlayitState = s; UpdatePlayitStatusText(); UpdateSignal(); });
+        // Keep a reference to the handler: the manager is shared, so it must be unsubscribed
+        // in ShutdownAsync or replaced view models would leak.
+        _onPlayitStateChanged = s => RunOnUi(() => { PlayitState = s; UpdatePlayitStatusText(); UpdateSignal(); });
+        _playit.StateChanged += _onPlayitStateChanged;
 
         _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _statsTimer.Tick += (_, _) => UpdateStats();
@@ -213,6 +221,9 @@ public partial class ServerViewModel : ObservableObject
         _playitTimer.Tick += OnPlayitTimerTick;
         _playitTimer.Start();
         _playit.RefreshState();
+        // Sync directly: the shared manager may already know the state (another view model
+        // refreshed it before we subscribed), in which case no change event will fire.
+        PlayitState = _playit.State;
         UpdatePlayitStatusText();
         UpdateSignal();
 
@@ -323,7 +334,7 @@ public partial class ServerViewModel : ObservableObject
             CpuText = RamText = UptimeText = "—";
             ConnectedPlayers.Clear();
             UpdatePlayerCount();
-            RefreshPlayers(); // los archivos (ops/banned/whitelist) pueden haber cambiado
+            RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
         }
         else if (state == ServerState.Starting)
         {
@@ -416,7 +427,7 @@ public partial class ServerViewModel : ObservableObject
     private async Task EnsureCompatibleJavaAsync()
     {
         var required = _java.GetRequiredJavaFromJar(Config.JarFullPath);
-        if (required is null) return; // no se puede saber (jar antiguo): no bloqueamos
+        if (required is null) return; // cannot be determined (old jar): don't block the start
 
         var current = _java.GetMajorVersion(Config.JavaPath);
         if (current > 0 && JavaService.IsCompatible(current, required.Value))
@@ -840,6 +851,7 @@ public partial class ServerViewModel : ObservableObject
     {
         _statsTimer.Stop();
         _playitTimer.Stop();
+        _playit.StateChanged -= _onPlayitStateChanged; // the manager is shared and outlives us
         if (_process.IsRunning)
             await _process.StopAsync(TimeSpan.FromSeconds(15));
     }

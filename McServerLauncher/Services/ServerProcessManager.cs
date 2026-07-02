@@ -53,7 +53,8 @@ public class ServerProcessManager
             if (isForgeArgs)
             {
                 if (ResolveForgeArgsFile(config) is null)
-                    throw new FileNotFoundException($"Forge launch args not found under {config.FolderPath}\\libraries");
+                    throw new FileNotFoundException(
+                        $"Forge launch args not found under {Path.Combine(config.FolderPath, "libraries")}");
             }
             else if (!File.Exists(config.JarFullPath))
             {
@@ -89,9 +90,8 @@ public class ServerProcessManager
                 _process.Start();
                 _process.BeginOutputReadLine();
                 _process.BeginErrorReadLine();
-                // The server stays "Starting" until we detect "Done"; we promote it
-                // to Running as soon as we see that line (see OnOutputData).
-                State = ServerState.Running;
+                // The server stays "Starting" until it reports it finished loading;
+                // OnOutputData promotes it to Running when it sees the "Done (...)!" line.
             }
             catch
             {
@@ -144,6 +144,10 @@ public class ServerProcessManager
     private void OnOutputData(object sender, DataReceivedEventArgs e)
     {
         if (e.Data is null) return;
+        // Vanilla/Fabric/Forge/Paper all log a line like
+        // `[12:00:00] [Server thread/INFO]: Done (3.2s)! For help, type "help"` when ready.
+        if (State == ServerState.Starting && e.Data.Contains("Done (", StringComparison.Ordinal))
+            State = ServerState.Running;
         OutputReceived?.Invoke(e.Data);
     }
 

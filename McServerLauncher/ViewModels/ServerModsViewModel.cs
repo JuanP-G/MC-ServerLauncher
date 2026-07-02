@@ -16,7 +16,9 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.Immutable;
 using Avalonia.Threading;
+using McServerLauncher.Views;
 
 namespace McServerLauncher.ViewModels;
 
@@ -80,14 +82,19 @@ public partial class ServerModsViewModel : ObservableObject
     public string FilterTip => Localizer.Get("Filter_Tip");
     public IBrush FilterTypeBrush => _config.Type switch
     {
-        ServerType.Vanilla => TypeBrush("#6E9E52"),
-        ServerType.Fabric => TypeBrush("#B58D5A"),
-        ServerType.Forge => TypeBrush("#5A8AB5"),
-        ServerType.Paper => TypeBrush("#C0563E"),
-        _ => TypeBrush("#6E7681")
+        ServerType.Vanilla => BrushTypeVanilla,
+        ServerType.Fabric => BrushTypeFabric,
+        ServerType.Forge => BrushTypeForge,
+        ServerType.Paper => BrushTypePaper,
+        _ => BrushTypeUnknown
     };
 
-    private static IBrush TypeBrush(string hex) => new SolidColorBrush(Color.Parse(hex));
+    // Same palette as ServerViewModel's type badges; immutable so they can be shared safely.
+    private static readonly IBrush BrushTypeVanilla = new ImmutableSolidColorBrush(Color.Parse("#6E9E52"));
+    private static readonly IBrush BrushTypeFabric = new ImmutableSolidColorBrush(Color.Parse("#B58D5A"));
+    private static readonly IBrush BrushTypeForge = new ImmutableSolidColorBrush(Color.Parse("#5A8AB5"));
+    private static readonly IBrush BrushTypePaper = new ImmutableSolidColorBrush(Color.Parse("#C0563E"));
+    private static readonly IBrush BrushTypeUnknown = new ImmutableSolidColorBrush(Color.Parse("#6E7681"));
 
     // --- "How to play" instructions (depend on the server type) ---
 
@@ -144,15 +151,20 @@ public partial class ServerModsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void DeleteMod(ModItem? mod)
+    private async Task DeleteMod(ModItem? mod)
     {
         if (mod is null) return;
         try
         {
             File.Delete(mod.FilePath);
-            RefreshInstalledMods();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            // Typically the file is locked because the server is running.
+            await MessageBox.ShowAsync(
+                string.Format(Localizer.Get("Msg_ModDeleteError"), ex.Message), ContentTabTitle);
+        }
+        RefreshInstalledMods();
     }
 
     [RelayCommand]
@@ -174,10 +186,9 @@ public partial class ServerModsViewModel : ObservableObject
 
         if (file == null) return;
 
+        var tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
-            var tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempFolder);
             var tempMods = Path.Combine(tempFolder, ContentFolder);
             Directory.CreateDirectory(tempMods);
 
@@ -186,16 +197,24 @@ public partial class ServerModsViewModel : ObservableObject
                 File.Copy(modFile, Path.Combine(tempMods, Path.GetFileName(modFile)));
             }
 
-            var instrPath = Path.Combine(tempFolder, "INSTRUCCIONES.txt");
+            var instrPath = Path.Combine(tempFolder, Localizer.Get("Export_InstructionsFile"));
             var instructions = string.Format(Localizer.Get("Export_InstructionsFmt"),
                 _config.Name, _config.Type, _config.GameVersion, HowToPlaySteps, ContentFolder);
             File.WriteAllText(instrPath, instructions);
 
             if (File.Exists(file.Path.LocalPath)) File.Delete(file.Path.LocalPath);
             System.IO.Compression.ZipFile.CreateFromDirectory(tempFolder, file.Path.LocalPath);
-            Directory.Delete(tempFolder, true);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            await MessageBox.ShowAsync(
+                string.Format(Localizer.Get("Msg_ExportError"), ex.Message), Localizer.Get("Export_Modpack"));
+        }
+        finally
+        {
+            try { if (Directory.Exists(tempFolder)) Directory.Delete(tempFolder, true); }
+            catch { /* best-effort cleanup */ }
+        }
     }
 
     /// <summary>Loads the first page of mods the first time the Mods tab is shown.</summary>
@@ -296,7 +315,9 @@ public partial class ServerModsViewModel : ObservableObject
 
             var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
             Directory.CreateDirectory(modsFolder);
-            var destPath = Path.Combine(modsFolder, file.Filename);
+            // The filename comes from the Modrinth API: keep only the name so a malicious
+            // value (e.g. "..\\x.jar") can never write outside the mods folder.
+            var destPath = Path.Combine(modsFolder, Path.GetFileName(file.Filename));
 
             // If the same mod is already present but disabled, remove the disabled copy first so we
             // don't end up with two files (a new enabled one + an old disabled one) that then clash
