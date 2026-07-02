@@ -89,12 +89,3 @@ dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 La documentación de desarrollo (arquitectura, guía de contribución y una **referencia de API** completa) se
 publica con **DocFX** en **https://juanp-g.github.io/MC-ServerLauncher/**. Los datos por usuario se guardan en
 `%APPDATA%\McServerLauncher\` (`servers.json`, `settings.json`, el `java\` que instala la app).
-
-## ⚠️ Aviso
-
-Al usar Minecraft aceptas el [EULA de Minecraft](https://aka.ms/MinecraftEULA). Este proyecto no está afiliado a
-Mojang, Microsoft ni Playit.gg.
-
----
-
-🤖 Desarrollado con ayuda de [Claude Code](https://claude.com/claude-code).
