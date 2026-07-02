@@ -26,6 +26,7 @@
                             <ComboBoxItem Content="Vanilla" />
                             <ComboBoxItem Content="Fabric" />
                             <ComboBoxItem Content="Forge" />
+                            <ComboBoxItem Content="Paper" />
                         </ComboBox>
                     </StackPanel>
                 </Grid>

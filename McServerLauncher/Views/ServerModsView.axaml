@@ -29,11 +29,11 @@
             <Border Grid.Column="0" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
                     CornerRadius="8" Padding="12" Margin="0,0,8,0">
                 <Grid RowDefinitions="Auto,Auto,Auto,*">
-                    <TextBlock Grid.Row="0" Text="{loc:Loc Browse_Mods}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" />
+                    <TextBlock Grid.Row="0" Text="{Binding BrowseTitle}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" />
 
                     <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                         <TextBox Grid.Column="0" Text="{Binding SearchQuery}"
-                                 Watermark="{loc:Loc SearchMods_Placeholder}" Margin="0,0,8,0">
+                                 Watermark="{Binding SearchPlaceholder}" Margin="0,0,8,0">
                             <TextBox.KeyBindings>
                                 <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
                             </TextBox.KeyBindings>
@@ -116,7 +116,7 @@
                     CornerRadius="8" Padding="12">
                 <Grid RowDefinitions="Auto,Auto,*">
                     <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
-                        <TextBlock Grid.Column="0" Text="{loc:Loc Installed_Mods}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="0" Text="{Binding InstalledTitle}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
 
                         <Button Grid.Column="1" Command="{Binding ExportModpackCommand}" Padding="6,4" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Export_Modpack}">
                             <ic:SymbolIcon Symbol="Share" />
@@ -127,7 +127,7 @@
                         </Button>
                     </Grid>
 
-                    <TextBlock Grid.Row="1" Text="{loc:Loc No_Installed_Mods}" Opacity="0.7"
+                    <TextBlock Grid.Row="1" Text="{Binding NoInstalledText}" Opacity="0.7"
                                HorizontalAlignment="Center" Margin="0,20,0,0"
                                IsVisible="{Binding !InstalledMods.Count}" />
 

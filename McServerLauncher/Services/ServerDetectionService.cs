@@ -21,7 +21,22 @@ public class ServerDetectionService
         if (!string.IsNullOrEmpty(config.GameVersion)) return false; // already known (new-style config)
         if (string.IsNullOrEmpty(config.FolderPath) || !Directory.Exists(config.FolderPath)) return false;
 
-        return TryForge(config) || TryFabric(config) || TryVanilla(config);
+        return TryForge(config) || TryFabric(config) || TryPaper(config) || TryVanilla(config);
+    }
+
+    private bool TryPaper(ServerConfig config)
+    {
+        var paperJar = Directory.EnumerateFiles(config.FolderPath, "paper*.jar")
+            .Select(Path.GetFileName)
+            .FirstOrDefault(n => n is not null);
+        if (paperJar is null) return false;
+
+        config.Type = ServerType.Paper;
+        config.JarFile = paperJar;
+        // Paper jars are based on the vanilla server, so version.json is present.
+        var version = _java.GetGameVersionFromJar(Path.Combine(config.FolderPath, paperJar));
+        if (version is not null) config.GameVersion = version;
+        return true;
     }
 
     private static bool TryForge(ServerConfig config)

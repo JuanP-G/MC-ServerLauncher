@@ -19,6 +19,7 @@ public partial class InstallLoaderDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();
     private readonly ModLoaderService _mods = new();
+    private readonly PaperService _paper = new();
     private readonly JavaService _java = new();
     private readonly ServerCreationService _creation = new();
     private readonly ServerConfig _config;
@@ -63,6 +64,7 @@ public partial class InstallLoaderDialog : Window
         {
             1 => ServerType.Vanilla,
             2 => ServerType.Forge,
+            3 => ServerType.Paper,
             _ => ServerType.Fabric
         };
 
@@ -161,6 +163,26 @@ public partial class InstallLoaderDialog : Window
                 _config.Type = ServerType.Vanilla;
                 _config.GameVersion = version.Id;
                 _config.ModLoaderVersion = string.Empty;
+                _config.ForgeArgs = string.Empty;
+                _config.JarFile = jarName;
+                _config.JavaPath = javaPath;
+            }
+            else if (LoaderCombo.SelectedIndex == 3)
+            {
+                // Paper: download the runnable server jar (plugins go in plugins/).
+                AppendLog(Localizer.Get("Msg_PaperResolving"));
+                var build = await _paper.GetLatestBuildAsync(version.Id);
+                if (build is null)
+                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_PaperNoBuild"), version.Id));
+
+                const string jarName = "paper-server.jar";
+                await _paper.DownloadPaperServerAsync(build, Path.Combine(_config.FolderPath, jarName), progress);
+                if (KeepRunBatCheck.IsChecked != true)
+                    _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
+
+                _config.Type = ServerType.Paper;
+                _config.GameVersion = version.Id;
+                _config.ModLoaderVersion = build.Build.ToString();
                 _config.ForgeArgs = string.Empty;
                 _config.JarFile = jarName;
                 _config.JavaPath = javaPath;

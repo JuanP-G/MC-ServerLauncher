@@ -13,6 +13,7 @@ public partial class CreateServerDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();
     private readonly ModLoaderService _mods = new();
+    private readonly PaperService _paper = new();
     private readonly ServerCreationService _creation = new();
     private readonly PortService _ports = new();
     private readonly JavaService _java = new();
@@ -177,6 +178,7 @@ public partial class CreateServerDialog : Window
             {
                 1 => ServerType.Fabric,
                 2 => ServerType.Forge,
+                3 => ServerType.Paper,
                 _ => ServerType.Vanilla
             };
             var loaderVersion = string.Empty;
@@ -227,6 +229,17 @@ public partial class CreateServerDialog : Window
                 {
                     throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallNoOutput"));
                 }
+            }
+            else if (serverType == ServerType.Paper)
+            {
+                AppendLog(Localizer.Get("Msg_PaperResolving"));
+                var build = await _paper.GetLatestBuildAsync(version.Id);
+                if (build is null)
+                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_PaperNoBuild"), version.Id));
+
+                loaderVersion = build.Build.ToString();
+                jarName = "paper-server.jar";
+                await _paper.DownloadPaperServerAsync(build, Path.Combine(folder, jarName), progress);
             }
             else
             {

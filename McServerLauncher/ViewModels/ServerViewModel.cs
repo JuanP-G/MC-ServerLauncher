@@ -124,6 +124,7 @@ public partial class ServerViewModel : ObservableObject
         ServerType.Vanilla => BrushTypeVanilla,
         ServerType.Fabric => BrushTypeFabric,
         ServerType.Forge => BrushTypeForge,
+        ServerType.Paper => BrushTypePaper,
         _ => BrushGray
     };
 
@@ -174,6 +175,7 @@ public partial class ServerViewModel : ObservableObject
     private static readonly IBrush BrushTypeVanilla = Frozen("#6E9E52");
     private static readonly IBrush BrushTypeFabric = Frozen("#B58D5A");
     private static readonly IBrush BrushTypeForge = Frozen("#5A8AB5");
+    private static readonly IBrush BrushTypePaper = Frozen("#C0563E");
 
     [ObservableProperty]
     private IBrush _statusBrush = BrushRed;

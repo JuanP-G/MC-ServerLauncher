@@ -305,6 +305,17 @@
   <data name="Loader_WarnToVanilla" xml:space="preserve"><value>¡Atención! Volver a Vanilla desde un servidor con mods puede corromper o vaciar zonas del mundo que usen bloques o entidades de mods. Haz una copia de seguridad. Si vuelves al loader anterior, normalmente se recupera.</value></data>
   <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>¡Peligro! Cambiar entre Fabric y Forge usa mods incompatibles entre sí y puede romper el mundo: los bloques y entidades de un loader no existen en el otro. Haz una copia de seguridad antes. Volver al loader anterior suele recuperarlo.</value></data>
   <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>El instalador de Forge tardó demasiado y se canceló. Comprueba tu conexión e inténtalo de nuevo.</value></data>
+  <data name="Plugins" xml:space="preserve"><value>Plugins</value></data>
+  <data name="Browse_Plugins" xml:space="preserve"><value>Explorar plugins</value></data>
+  <data name="Installed_Plugins" xml:space="preserve"><value>Plugins instalados</value></data>
+  <data name="SearchPlugins_Placeholder" xml:space="preserve"><value>Buscar plugins en Modrinth...</value></data>
+  <data name="No_Installed_Plugins" xml:space="preserve"><value>Aún no hay plugins instalados.</value></data>
+  <data name="Msg_PaperResolving" xml:space="preserve"><value>Resolviendo la última build de Paper...</value></data>
+  <data name="Msg_PaperNoBuild" xml:space="preserve"><value>No hay una build de Paper para Minecraft {0}.</value></data>
+  <data name="HowToPlay_PaperFmt" xml:space="preserve"><value>Este servidor usa Paper (Minecraft {0}). Los plugins van solo en el servidor:
+1. Los jugadores solo tienen que entrar con Minecraft normal (versión {0}); no instalan nada.
+2. Los plugins (.jar) se ponen en la carpeta plugins del servidor.
+3. Reinicia el servidor tras añadir o quitar plugins.</value></data>
   <data name="Loader_Warning" xml:space="preserve"><value>Se aplicará el loader elegido con esa versión. Usa la misma versión que ya tenía el servidor para no romper el mundo.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>Instalando loader...</value></data>
   <data name="Loader_InstallButton" xml:space="preserve"><value>Instalar</value></data>
@@ -344,5 +355,5 @@ Tipo: {1}  ·  Versión de Minecraft: {2}
 
 {3}
 
-Los mods están en la carpeta «mods» de este paquete.</value></data>
+Los archivos están en la carpeta «{4}» de este paquete.</value></data>
 </root>

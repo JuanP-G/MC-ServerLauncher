@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -21,10 +22,28 @@ public class ModrinthService
         Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
     }
 
+    /// <summary>
+    /// Maps a server type to the Modrinth search target: the categories facet group, the project
+    /// type (mod vs plugin) and the loaders array for version resolution. Paper searches plugins
+    /// across the bukkit-family loaders; the mod loaders search their own category.
+    /// </summary>
+    private static (string CategoriesGroup, string ProjectType, string LoadersJson) TargetFor(ServerType type)
+    {
+        if (type == ServerType.Paper)
+        {
+            var loaders = new[] { "paper", "spigot", "bukkit", "purpur", "folia" };
+            var cats = string.Join(",", loaders.Select(l => $"\"categories:{l}\""));
+            var arr = string.Join(",", loaders.Select(l => $"\"{l}\""));
+            return ($"[{cats}]", "plugin", $"[{arr}]");
+        }
+        var one = type.ToString().ToLowerInvariant();
+        return ($"[\"categories:{one}\"]", "mod", $"[\"{one}\"]");
+    }
+
     public async Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion, string index = "relevance", int offset = 0, int limit = 20, CancellationToken ct = default)
     {
-        var loaderStr = loader.ToString().ToLowerInvariant();
-        var facets = $"[[\"categories:{loaderStr}\"],[\"versions:{mcVersion}\"],[\"project_type:mod\"],[\"server_side:required\",\"server_side:optional\"]]";
+        var (categoriesGroup, projectType, _) = TargetFor(loader);
+        var facets = $"[{categoriesGroup},[\"versions:{mcVersion}\"],[\"project_type:{projectType}\"],[\"server_side:required\",\"server_side:optional\"]]";
         var escapedFacets = Uri.EscapeDataString(facets);
         var escapedQuery = Uri.EscapeDataString(query);
         var escapedIndex = Uri.EscapeDataString(index);
@@ -45,8 +64,8 @@ public class ModrinthService
 
     public async Task<VersionResult?> GetLatestProjectVersionAsync(string projectId, ServerType loader, string mcVersion, CancellationToken ct = default)
     {
-        var loaderStr = loader.ToString().ToLowerInvariant();
-        var loadersJson = Uri.EscapeDataString($"[\"{loaderStr}\"]");
+        var (_, _, loaders) = TargetFor(loader);
+        var loadersJson = Uri.EscapeDataString(loaders);
         var gameVersionsJson = Uri.EscapeDataString($"[\"{mcVersion}\"]");
 
         var url = $"{ApiBaseUrl}/project/{projectId}/version?loaders={loadersJson}&game_versions={gameVersionsJson}";

@@ -259,6 +259,17 @@
   <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Achtung! Die Rückkehr zu Vanilla von einem Server mit Mods kann Bereiche der Welt mit modifizierten Blöcken oder Entities beschädigen oder leeren. Erstelle ein Backup. Mit dem vorherigen Loader lässt es sich meist wiederherstellen.</value></data>
   <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Gefahr! Der Wechsel zwischen Fabric und Forge verwendet zueinander inkompatible Mods und kann die Welt zerstören: Blöcke und Entities eines Loaders existieren im anderen nicht. Mache vorher ein Backup. Mit dem vorherigen Loader lässt es sich meist wiederherstellen.</value></data>
   <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>Der Forge-Installer hat zu lange gebraucht und wurde abgebrochen. Prüfe deine Verbindung und versuche es erneut.</value></data>
+  <data name="Plugins" xml:space="preserve"><value>Plugins</value></data>
+  <data name="Browse_Plugins" xml:space="preserve"><value>Plugins durchsuchen</value></data>
+  <data name="Installed_Plugins" xml:space="preserve"><value>Installierte Plugins</value></data>
+  <data name="SearchPlugins_Placeholder" xml:space="preserve"><value>Plugins auf Modrinth suchen...</value></data>
+  <data name="No_Installed_Plugins" xml:space="preserve"><value>Noch keine Plugins installiert.</value></data>
+  <data name="Msg_PaperResolving" xml:space="preserve"><value>Ermittle den neuesten Paper-Build...</value></data>
+  <data name="Msg_PaperNoBuild" xml:space="preserve"><value>Für Minecraft {0} ist kein Paper-Build verfügbar.</value></data>
+  <data name="HowToPlay_PaperFmt" xml:space="preserve"><value>Dieser Server nutzt Paper (Minecraft {0}). Plugins liegen nur auf dem Server:
+1. Spieler treten einfach mit normalem Minecraft bei (Version {0}); sie installieren nichts.
+2. Plugins (.jar) kommen in den Ordner plugins des Servers.
+3. Starte den Server nach dem Hinzufügen oder Entfernen von Plugins neu.</value></data>
   <data name="Loader_Warning" xml:space="preserve"><value>Der gewählte Loader wird mit dieser Version angewendet. Verwende dieselbe Version, die der Server bereits hatte, um die Welt nicht zu beschädigen.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>Loader wird installiert...</value></data>
   <data name="Loader_InstallButton" xml:space="preserve"><value>Installieren</value></data>
@@ -298,5 +309,5 @@ Typ: {1}  ·  Minecraft-Version: {2}
 
 {3}
 
-Die Mods befinden sich im Ordner "mods" dieses Pakets.</value></data>
+Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
 </root>

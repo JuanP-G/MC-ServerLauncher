@@ -7,7 +7,8 @@ public enum ServerType
 {
     Vanilla,
     Fabric,
-    Forge
+    Forge,
+    Paper
 }
 
 /// <summary>

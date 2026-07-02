@@ -583,7 +583,7 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <TabItem Header="{loc:Loc Mods}" IsVisible="{Binding IsModded}">
+                        <TabItem Header="{Binding Mods.ContentTabTitle}" IsVisible="{Binding IsModded}">
                             <ContentControl Content="{Binding Mods}">
                                 <ContentControl.DataTemplates>
                                     <DataTemplate DataType="vm:ServerModsViewModel">

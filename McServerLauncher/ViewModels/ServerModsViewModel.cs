@@ -59,15 +59,30 @@ public partial class ServerModsViewModel : ObservableObject
 
     public ObservableCollection<ModrinthProjectViewModel> SearchResults { get; } = new();
 
+    // --- Plugins vs mods (Paper uses plugins in plugins/; the loaders use mods in mods/) ---
+
+    private bool IsPluginBased => _config.Type == ServerType.Paper;
+
+    /// <summary>Folder where content is installed: "plugins" for Paper, "mods" otherwise.</summary>
+    private string ContentFolder => IsPluginBased ? "plugins" : "mods";
+
+    // Labels shown in the view, adapted to mods vs plugins.
+    public string ContentTabTitle => Localizer.Get(IsPluginBased ? "Plugins" : "Mods");
+    public string BrowseTitle => Localizer.Get(IsPluginBased ? "Browse_Plugins" : "Browse_Mods");
+    public string InstalledTitle => Localizer.Get(IsPluginBased ? "Installed_Plugins" : "Installed_Mods");
+    public string SearchPlaceholder => Localizer.Get(IsPluginBased ? "SearchPlugins_Placeholder" : "SearchMods_Placeholder");
+    public string NoInstalledText => Localizer.Get(IsPluginBased ? "No_Installed_Plugins" : "No_Installed_Mods");
+
     // --- "How to play" instructions (depend on the server type) ---
 
     public string HowToPlayTitle => Localizer.Get("HowToPlay_Title");
 
-    /// <summary>Step-by-step instructions to install the matching loader client and add the mods.</summary>
+    /// <summary>Instructions to play: install the loader client (mods) or just join (plugins).</summary>
     public string HowToPlaySteps => _config.Type switch
     {
         ServerType.Fabric => string.Format(Localizer.Get("HowToPlay_FabricFmt"), _config.GameVersion),
         ServerType.Forge => string.Format(Localizer.Get("HowToPlay_ForgeFmt"), _config.GameVersion),
+        ServerType.Paper => string.Format(Localizer.Get("HowToPlay_PaperFmt"), _config.GameVersion),
         _ => string.Empty
     };
 
@@ -81,7 +96,7 @@ public partial class ServerModsViewModel : ObservableObject
     private void RefreshInstalledMods()
     {
         InstalledMods.Clear();
-        var modsFolder = Path.Combine(_config.FolderPath, "mods");
+        var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
         if (Directory.Exists(modsFolder))
         {
             // Include disabled mods (.jar.disabled) so they can be re-enabled from the app.
@@ -127,7 +142,7 @@ public partial class ServerModsViewModel : ObservableObject
     [RelayCommand]
     private async Task ExportModpack()
     {
-        var modsFolder = Path.Combine(_config.FolderPath, "mods");
+        var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
         if (!Directory.Exists(modsFolder)) return;
 
         var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
@@ -137,7 +152,7 @@ public partial class ServerModsViewModel : ObservableObject
         {
             Title = Localizer.Get("Export_Modpack"),
             DefaultExtension = "zip",
-            SuggestedFileName = $"{_config.Name}-Modpack.zip",
+            SuggestedFileName = $"{_config.Name}-{ContentFolder}.zip",
             FileTypeChoices = new[] { new Avalonia.Platform.Storage.FilePickerFileType("ZIP Archive") { Patterns = new[] { "*.zip" } } }
         });
 
@@ -147,7 +162,7 @@ public partial class ServerModsViewModel : ObservableObject
         {
             var tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempFolder);
-            var tempMods = Path.Combine(tempFolder, "mods");
+            var tempMods = Path.Combine(tempFolder, ContentFolder);
             Directory.CreateDirectory(tempMods);
 
             foreach (var modFile in Directory.EnumerateFiles(modsFolder, "*.jar"))
@@ -157,7 +172,7 @@ public partial class ServerModsViewModel : ObservableObject
 
             var instrPath = Path.Combine(tempFolder, "INSTRUCCIONES.txt");
             var instructions = string.Format(Localizer.Get("Export_InstructionsFmt"),
-                _config.Name, _config.Type, _config.GameVersion, HowToPlaySteps);
+                _config.Name, _config.Type, _config.GameVersion, HowToPlaySteps, ContentFolder);
             File.WriteAllText(instrPath, instructions);
 
             if (File.Exists(file.Path.LocalPath)) File.Delete(file.Path.LocalPath);
@@ -263,7 +278,7 @@ public partial class ServerModsViewModel : ObservableObject
 
             var file = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.First();
 
-            var modsFolder = Path.Combine(_config.FolderPath, "mods");
+            var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
             Directory.CreateDirectory(modsFolder);
             var destPath = Path.Combine(modsFolder, file.Filename);
 

@@ -259,6 +259,17 @@
   <data name="Loader_WarnToVanilla" xml:space="preserve"><value>Atenção! Voltar a Vanilla a partir de um servidor com mods pode corromper ou esvaziar zonas do mundo que usem blocos ou entidades de mods. Faz uma cópia de segurança. Voltar ao loader anterior normalmente recupera.</value></data>
   <data name="Loader_WarnCrossLoader" xml:space="preserve"><value>Perigo! Mudar entre Fabric e Forge usa mods incompatíveis entre si e pode estragar o mundo: os blocos e entidades de um loader não existem no outro. Faz uma cópia de segurança antes. Voltar ao loader anterior normalmente recupera.</value></data>
   <data name="Msg_ForgeInstallerTimeout" xml:space="preserve"><value>O instalador do Forge demorou demasiado e foi cancelado. Verifica a tua ligação e tenta novamente.</value></data>
+  <data name="Plugins" xml:space="preserve"><value>Plugins</value></data>
+  <data name="Browse_Plugins" xml:space="preserve"><value>Explorar plugins</value></data>
+  <data name="Installed_Plugins" xml:space="preserve"><value>Plugins instalados</value></data>
+  <data name="SearchPlugins_Placeholder" xml:space="preserve"><value>Procurar plugins no Modrinth...</value></data>
+  <data name="No_Installed_Plugins" xml:space="preserve"><value>Ainda não há plugins instalados.</value></data>
+  <data name="Msg_PaperResolving" xml:space="preserve"><value>A resolver a build mais recente do Paper...</value></data>
+  <data name="Msg_PaperNoBuild" xml:space="preserve"><value>Não há build do Paper para o Minecraft {0}.</value></data>
+  <data name="HowToPlay_PaperFmt" xml:space="preserve"><value>Este servidor usa Paper (Minecraft {0}). Os plugins vão só no servidor:
+1. Os jogadores entram com o Minecraft normal (versão {0}); não instalam nada.
+2. Os plugins (.jar) vão na pasta plugins do servidor.
+3. Reinicia o servidor depois de adicionar ou remover plugins.</value></data>
   <data name="Loader_Warning" xml:space="preserve"><value>O loader escolhido será aplicado com essa versão. Usa a mesma versão que o servidor já tinha para não estragar o mundo.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>A instalar o loader...</value></data>
   <data name="Loader_InstallButton" xml:space="preserve"><value>Instalar</value></data>
@@ -298,5 +309,5 @@ Tipo: {1}  ·  Versão do Minecraft: {2}
 
 {3}
 
-Os mods estão na pasta "mods" deste pacote.</value></data>
+Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
 </root>
