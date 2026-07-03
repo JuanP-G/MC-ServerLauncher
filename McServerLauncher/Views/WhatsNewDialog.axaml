@@ -13,7 +13,10 @@
                 <ic:SymbolIcon Symbol="Sparkle" FontSize="22" VerticalAlignment="Center" />
                 <TextBlock x:Name="HeaderText" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" />
             </StackPanel>
-            <TextBlock x:Name="BodyText" TextWrapping="Wrap" FontSize="14" LineHeight="22" />
+            <!-- One section per unseen version (headers only appear when there is more than one). -->
+            <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="BodyPanel" Spacing="14" />
+            </ScrollViewer>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,12,20,16">

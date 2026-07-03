@@ -275,7 +275,8 @@
   <data name="Whatsnew_Title" xml:space="preserve"><value>Novedades</value></data>
   <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>Novedades de la versión {0}</value></data>
   <data name="Whatsnew_Ok" xml:space="preserve"><value>Entendido</value></data>
-  <data name="Whatsnew_Body" xml:space="preserve"><value>• Ahora MC Server Launcher también funciona en Linux (además de Windows), gracias a una nueva interfaz multiplataforma.&#10;• En Linux se descarga como AppImage desde las releases; en Windows todo sigue igual (instalador y actualización automática).&#10;• Se mantienen los 5 idiomas, la consola, los jugadores y la configuración visual.</value></data>
+  <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• Ahora MC Server Launcher también funciona en Linux (además de Windows), gracias a una nueva interfaz multiplataforma.&#10;• En Linux se descarga como AppImage desde las releases; en Windows todo sigue igual (instalador y actualización automática).&#10;• Se mantienen los 5 idiomas, la consola, los jugadores y la configuración visual.</value></data>
+  <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• Ahora puedes crear servidores Forge y Paper, además de Vanilla y Fabric.&#10;• Buscador de mods y plugins integrado (Modrinth), filtrado por el tipo y la versión de tu servidor, con orden e instalación en un clic.&#10;• Activa/desactiva o borra lo instalado, y convierte un servidor existente a otro tipo conservando el mundo.&#10;• Cada servidor muestra una etiqueta con su tipo.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Haz clic en un comando para ponerlo en la caja y completar los datos. Estos comandos solo funcionan con el servidor encendido.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Sí</value></data>
   <data name="Btn_No" xml:space="preserve"><value>No</value></data>
