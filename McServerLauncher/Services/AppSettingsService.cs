@@ -26,13 +26,14 @@ public class AppSettingsService
             if (!File.Exists(_filePath)) return new AppSettings();
             var settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(_filePath)) ?? new AppSettings();
 
-            // The Playit key is stored DPAPI-protected on Windows; callers always see the plaintext.
-            // A plaintext key written by an older version is migrated (re-saved encrypted) right away.
+            // The Playit key is stored encrypted (DPAPI on Windows, AES elsewhere); callers always
+            // see the plaintext. A plaintext key written by an older version is migrated
+            // (re-saved encrypted) right away.
             if (!string.IsNullOrEmpty(settings.PlayitApiKey))
             {
                 var wasProtected = SecretProtector.IsProtected(settings.PlayitApiKey);
                 settings.PlayitApiKey = SecretProtector.Unprotect(settings.PlayitApiKey);
-                if (!wasProtected && OperatingSystem.IsWindows())
+                if (!wasProtected)
                     Save(settings);
             }
             return settings;
