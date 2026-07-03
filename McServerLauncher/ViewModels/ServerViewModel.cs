@@ -680,6 +680,7 @@ public partial class ServerViewModel : ObservableObject
     {
         var name = NewWhitelistName?.Trim();
         if (string.IsNullOrEmpty(name)) return;
+        name = SanitizePlayerName(name);
 
         try
         {
@@ -709,6 +710,7 @@ public partial class ServerViewModel : ObservableObject
     private async Task RemoveFromWhitelist(string? name)
     {
         if (string.IsNullOrWhiteSpace(name)) return;
+        name = SanitizePlayerName(name);
 
         try
         {
@@ -784,38 +786,45 @@ public partial class ServerViewModel : ObservableObject
         RefreshPlayers();
     }
 
+    /// <summary>
+    /// Strips CR/LF from a player name before it's embedded in a console command sent over stdin.
+    /// Without this, a name containing "\n" would inject a second command line into the server console.
+    /// </summary>
+    private static string SanitizePlayerName(string name) => name.Replace("\r", "").Replace("\n", "");
+
     [RelayCommand]
     private async Task OpPlayer(string? name)
     {
         if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Op"))) return;
-        await PlayerCommandAsync($"op {name}");
+        await PlayerCommandAsync($"op {SanitizePlayerName(name)}");
     }
 
     [RelayCommand]
     private async Task DeopPlayer(string? name)
     {
         if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Deop"))) return;
-        await PlayerCommandAsync($"deop {name}");
+        await PlayerCommandAsync($"deop {SanitizePlayerName(name)}");
     }
 
     [RelayCommand]
     private async Task KickPlayer(string? name)
     {
         if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Kick"))) return;
-        await PlayerCommandAsync($"kick {name}");
+        await PlayerCommandAsync($"kick {SanitizePlayerName(name)}");
     }
 
     [RelayCommand]
     private async Task BanPlayer(string? name)
     {
         if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Ban"))) return;
-        await PlayerCommandAsync($"ban {name}");
+        await PlayerCommandAsync($"ban {SanitizePlayerName(name)}");
     }
 
     [RelayCommand]
     private async Task PardonPlayer(string? name)
     {
         if (string.IsNullOrWhiteSpace(name)) return;
+        name = SanitizePlayerName(name);
         if (_process.IsRunning)
         {
             await PlayerCommandAsync($"pardon {name}");
