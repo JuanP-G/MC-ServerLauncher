@@ -156,7 +156,7 @@ public partial class InstallLoaderDialog : Window
             {
                 // Revert to Vanilla: download the vanilla server jar for this version.
                 const string jarName = "server.jar";
-                await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(_config.FolderPath, jarName), progress);
+                await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(_config.FolderPath, jarName), progress, details.Sha1);
                 if (KeepRunBatCheck.IsChecked != true)
                     _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
 

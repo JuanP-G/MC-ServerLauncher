@@ -152,6 +152,8 @@
   <data name="Msg_DownloadingJarSize" xml:space="preserve"><value>Downloading server.jar ({0} MB)...</value></data>
   <data name="Msg_DownloadingJar" xml:space="preserve"><value>Downloading server.jar...</value></data>
   <data name="Msg_DownloadComplete" xml:space="preserve"><value>Download complete.</value></data>
+  <data name="Msg_VerifyingChecksum" xml:space="preserve"><value>Verifying the downloaded file's integrity...</value></data>
+  <data name="Msg_ChecksumMismatchFmt" xml:space="preserve"><value>The downloaded file ({0}) didn't match the official checksum and was deleted. The download may have been corrupted or tampered with; try again.</value></data>
   <data name="Msg_NoServerDownload" xml:space="preserve"><value>Version {0} has no downloadable server available.</value></data>
   <data name="Msg_MissingWriteKey" xml:space="preserve"><value>The Playit write key is missing.</value></data>
   <data name="Msg_PlayitAuthFail" xml:space="preserve"><value>Could not authenticate with Playit to read the tunnels.</value></data>
@@ -232,6 +234,7 @@
   <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• MC Server Launcher now runs on Linux too (not just Windows), thanks to a new cross-platform interface.&#10;• On Linux, download it as an AppImage from the releases; on Windows everything stays the same (installer and auto-update).&#10;• All 5 languages, the console, the players view and the visual configuration are kept.</value></data>
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• You can now create Forge and Paper servers, on top of Vanilla and Fabric.&#10;• Built-in mods &amp; plugins browser (Modrinth), filtered by your server's type and version, with sorting and one-click install.&#10;• Enable/disable or delete what's installed, and convert an existing server to another type while keeping the world.&#10;• Each server now shows a type badge.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• More security: the Playit API key is now stored encrypted (previously plain text), on every OS. Migration is automatic.&#10;• Refreshed high-resolution app icon.</value></data>
+  <data name="Whatsnew_1_2_2" xml:space="preserve"><value>• More security: Minecraft (Mojang), Java (Adoptium) and Paper downloads are now verified against their official checksum; a mismatch deletes the file and warns instead of using it.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Click a command to put it in the box and fill in the details. These commands only work while the server is running.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Btn_No" xml:space="preserve"><value>No</value></data>

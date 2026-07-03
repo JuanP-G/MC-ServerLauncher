@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ public class PaperService
         Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
     }
 
-    public record PaperBuild(int Build, string FileName, string Url);
+    public record PaperBuild(int Build, string FileName, string Url, string? Sha256);
 
     /// <summary>
     /// Latest build for a Minecraft version. Prefers the newest STABLE build; if none exist yet
@@ -57,7 +58,11 @@ public class PaperService
         if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(url))
             return null;
 
-        return new PaperBuild(build, name, url);
+        string? sha256 = null;
+        if (server.TryGetProperty("checksums", out var checksums) && checksums.TryGetProperty("sha256", out var s))
+            sha256 = s.GetString();
+
+        return new PaperBuild(build, name, url, sha256);
     }
 
     public async Task DownloadPaperServerAsync(PaperBuild build, string destPath, IProgress<string>? log,
@@ -71,8 +76,14 @@ public class PaperService
             ? string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#"))
             : Localizer.Get("Msg_DownloadingJar"));
 
-        await using var fs = File.Create(destPath);
-        await resp.Content.CopyToAsync(fs, ct);
+        await using (var fs = File.Create(destPath))
+            await resp.Content.CopyToAsync(fs, ct);
+
+        if (!string.IsNullOrEmpty(build.Sha256))
+        {
+            log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+            await DownloadVerifier.VerifyAsync(destPath, build.Sha256, HashAlgorithmName.SHA256, ct);
+        }
 
         log?.Report(Localizer.Get("Msg_DownloadComplete"));
     }

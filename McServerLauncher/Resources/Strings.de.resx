@@ -152,6 +152,8 @@
   <data name="Msg_DownloadingJarSize" xml:space="preserve"><value>server.jar wird heruntergeladen ({0} MB)...</value></data>
   <data name="Msg_DownloadingJar" xml:space="preserve"><value>server.jar wird heruntergeladen...</value></data>
   <data name="Msg_DownloadComplete" xml:space="preserve"><value>Download abgeschlossen.</value></data>
+  <data name="Msg_VerifyingChecksum" xml:space="preserve"><value>Integrität der heruntergeladenen Datei wird geprüft...</value></data>
+  <data name="Msg_ChecksumMismatchFmt" xml:space="preserve"><value>Die heruntergeladene Datei ({0}) stimmte nicht mit der offiziellen Prüfsumme überein und wurde gelöscht. Der Download könnte beschädigt oder manipuliert worden sein; versuche es erneut.</value></data>
   <data name="Msg_NoServerDownload" xml:space="preserve"><value>Für Version {0} ist kein herunterladbarer Server verfügbar.</value></data>
   <data name="Msg_MissingWriteKey" xml:space="preserve"><value>Der Playit-Schreibschlüssel fehlt.</value></data>
   <data name="Msg_PlayitAuthFail" xml:space="preserve"><value>Authentifizierung bei Playit zum Lesen der Tunnel fehlgeschlagen.</value></data>
@@ -232,6 +234,7 @@
   <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• MC Server Launcher läuft jetzt auch unter Linux (nicht nur Windows), dank einer neuen plattformübergreifenden Oberfläche.&#10;• Unter Linux lädst du es als AppImage aus den Releases; unter Windows bleibt alles gleich (Installer und automatische Updates).&#10;• Alle 5 Sprachen, die Konsole, die Spieleransicht und die visuelle Konfiguration bleiben erhalten.</value></data>
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• Du kannst jetzt Forge- und Paper-Server erstellen, zusätzlich zu Vanilla und Fabric.&#10;• Integrierter Mod- und Plugin-Browser (Modrinth), gefiltert nach Servertyp und -version, mit Sortierung und Ein-Klick-Installation.&#10;• Installiertes aktivieren/deaktivieren oder löschen und einen vorhandenen Server unter Beibehaltung der Welt in einen anderen Typ umwandeln.&#10;• Jeder Server zeigt jetzt eine Typ-Kennzeichnung.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• Mehr Sicherheit: der Playit-API-Schlüssel wird jetzt verschlüsselt gespeichert (vorher Klartext), auf allen Systemen. Die Migration erfolgt automatisch.&#10;• Überarbeitetes App-Symbol in hoher Auflösung.</value></data>
+  <data name="Whatsnew_1_2_2" xml:space="preserve"><value>• Mehr Sicherheit: Downloads von Minecraft (Mojang), Java (Adoptium) und Paper werden jetzt anhand ihrer offiziellen Prüfsumme verifiziert; bei einer Abweichung wird die Datei gelöscht und gewarnt, statt sie zu verwenden.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Klicke auf einen Befehl, um ihn in das Feld zu setzen und die Details auszufüllen. Diese Befehle funktionieren nur, wenn der Server läuft.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Ja</value></data>
   <data name="Btn_No" xml:space="preserve"><value>Nein</value></data>

@@ -152,6 +152,8 @@
   <data name="Msg_DownloadingJarSize" xml:space="preserve"><value>A baixar server.jar ({0} MB)...</value></data>
   <data name="Msg_DownloadingJar" xml:space="preserve"><value>A baixar server.jar...</value></data>
   <data name="Msg_DownloadComplete" xml:space="preserve"><value>Download concluído.</value></data>
+  <data name="Msg_VerifyingChecksum" xml:space="preserve"><value>A verificar a integridade do ficheiro descarregado...</value></data>
+  <data name="Msg_ChecksumMismatchFmt" xml:space="preserve"><value>O ficheiro descarregado ({0}) não corresponde ao checksum oficial e foi eliminado. O download pode ter sido corrompido ou adulterado; tenta novamente.</value></data>
   <data name="Msg_NoServerDownload" xml:space="preserve"><value>A versão {0} não tem um servidor disponível para download.</value></data>
   <data name="Msg_MissingWriteKey" xml:space="preserve"><value>Falta a chave de escrita do Playit.</value></data>
   <data name="Msg_PlayitAuthFail" xml:space="preserve"><value>Não foi possível autenticar no Playit para ler os túneis.</value></data>
@@ -232,6 +234,7 @@
   <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• O MC Server Launcher agora também funciona em Linux (além do Windows), graças a uma nova interface multiplataforma.&#10;• No Linux descarrega-se como AppImage a partir das releases; no Windows tudo continua igual (instalador e atualização automática).&#10;• Mantêm-se os 5 idiomas, a consola, os jogadores e a configuração visual.</value></data>
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• Agora podes criar servidores Forge e Paper, além de Vanilla e Fabric.&#10;• Explorador de mods e plugins integrado (Modrinth), filtrado pelo tipo e versão do teu servidor, com ordenação e instalação num clique.&#10;• Ativa/desativa ou apaga o que está instalado, e converte um servidor existente para outro tipo mantendo o mundo.&#10;• Cada servidor mostra agora uma etiqueta de tipo.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• Mais segurança: a chave da API do Playit agora é guardada cifrada (antes texto simples), em todos os sistemas. A migração é automática.&#10;• Ícone da aplicação renovado em alta resolução.</value></data>
+  <data name="Whatsnew_1_2_2" xml:space="preserve"><value>• Mais segurança: os downloads do Minecraft (Mojang), Java (Adoptium) e Paper agora são verificados com o checksum oficial; se não corresponder, o ficheiro é eliminado e é dado um aviso em vez de o usar.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Clica num comando para o pôr na caixa e preencher os dados. Estes comandos só funcionam com o servidor ligado.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Sim</value></data>
   <data name="Btn_No" xml:space="preserve"><value>Não</value></data>

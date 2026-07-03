@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using McServerLauncher.Localization;
@@ -239,6 +240,7 @@ public partial class JavaService
         var json = await Http.GetStringAsync(apiUrl, ct);
 
         string? link = null;
+        string? checksum = null;
         using (var doc = JsonDocument.Parse(json))
         {
             foreach (var asset in doc.RootElement.EnumerateArray())
@@ -248,6 +250,7 @@ public partial class JavaService
                     pkg.TryGetProperty("link", out var lk))
                 {
                     link = lk.GetString();
+                    checksum = pkg.TryGetProperty("checksum", out var cs) ? cs.GetString() : null;
                     break;
                 }
             }
@@ -265,6 +268,12 @@ public partial class JavaService
             resp.EnsureSuccessStatusCode();
             await using var fs = File.Create(archivePath);
             await resp.Content.CopyToAsync(fs, ct);
+        }
+
+        if (!string.IsNullOrEmpty(checksum))
+        {
+            log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+            await DownloadVerifier.VerifyAsync(archivePath, checksum, HashAlgorithmName.SHA256, ct);
         }
 
         log?.Report(Localizer.Get("Msg_JavaInstalling"));

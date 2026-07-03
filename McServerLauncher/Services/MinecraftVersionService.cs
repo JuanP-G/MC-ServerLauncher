@@ -1,5 +1,6 @@
 using System.IO;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text.Json;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
@@ -40,8 +41,8 @@ public class MinecraftVersionService
         return (latest, list);
     }
 
-    /// <summary>server.jar URL and required Java version for a Minecraft version.</summary>
-    public record VersionDetails(string ServerUrl, int JavaMajor);
+    /// <summary>server.jar URL, required Java version and its official SHA-1 (for integrity checking).</summary>
+    public record VersionDetails(string ServerUrl, int JavaMajor, string? Sha1);
 
     /// <summary>Resolves the server.jar URL for a specific version.</summary>
     public async Task<string> GetServerJarUrlAsync(MinecraftVersion version, CancellationToken ct = default)
@@ -71,12 +72,17 @@ public class MinecraftVersionService
             javaMajor = m;
         }
 
-        return new VersionDetails(serverUrl, javaMajor);
+        var sha1 = server.TryGetProperty("sha1", out var shaEl) ? shaEl.GetString() : null;
+
+        return new VersionDetails(serverUrl, javaMajor, sha1);
     }
 
-    /// <summary>Downloads a file to disk.</summary>
+    /// <summary>
+    /// Downloads a file to disk. If <paramref name="expectedSha1"/> is given (Mojang returns one for
+    /// every server.jar), the download is verified against it; a mismatch deletes the file and throws.
+    /// </summary>
     public async Task DownloadFileAsync(string url, string destPath, IProgress<string>? log,
-        CancellationToken ct = default)
+        string? expectedSha1 = null, CancellationToken ct = default)
     {
         using var resp = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();
@@ -86,8 +92,14 @@ public class MinecraftVersionService
             ? string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#"))
             : Localizer.Get("Msg_DownloadingJar"));
 
-        await using var fs = File.Create(destPath);
-        await resp.Content.CopyToAsync(fs, ct);
+        await using (var fs = File.Create(destPath))
+            await resp.Content.CopyToAsync(fs, ct);
+
+        if (!string.IsNullOrEmpty(expectedSha1))
+        {
+            log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+            await DownloadVerifier.VerifyAsync(destPath, expectedSha1, HashAlgorithmName.SHA1, ct);
+        }
 
         log?.Report(Localizer.Get("Msg_DownloadComplete"));
     }

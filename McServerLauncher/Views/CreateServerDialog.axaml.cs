@@ -243,7 +243,7 @@ public partial class CreateServerDialog : Window
             }
             else
             {
-                await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(folder, jarName), progress);
+                await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(folder, jarName), progress, details.Sha1);
             }
 
             AppendLog(Localizer.Get("Msg_WritingEula"));
