@@ -112,21 +112,35 @@ public partial class MainViewModel : ObservableObject
     /// </summary>
     public void ShowWhatsNewIfUpdated(Window owner)
     {
-        var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-        if (current is null) return;
-        var version = $"{current.Major}.{current.Minor}.{Math.Max(0, current.Build)}";
+        var asmVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        if (asmVersion is null) return;
+        var current = new Version(asmVersion.Major, asmVersion.Minor, Math.Max(0, asmVersion.Build));
+        var version = $"{current.Major}.{current.Minor}.{current.Build}";
 
         var settings = _settings.Load();
         if (settings.LastVersionSeen == version) return; // already seen in this version
 
+        // Show the notes of every version between the last one seen and this one (accumulated),
+        // so users who skipped releases still learn what's new in each.
+        var lastSeen = ParseSeenVersion(settings.LastVersionSeen);
+        var sections = Changelog.NotesSince(lastSeen, current);
+
         settings.LastVersionSeen = version;
         _settings.Save(settings);
 
+        if (sections.Count == 0) return;
         try
         {
-            _ = new WhatsNewDialog(version).ShowDialog(owner);
+            _ = new WhatsNewDialog(version, sections).ShowDialog(owner);
         }
         catch { /* if something fails, don't block startup */ }
+    }
+
+    /// <summary>Parses a stored "seen version" string (e.g. "1.1.0"). Null on a fresh install.</summary>
+    private static Version? ParseSeenVersion(string? seen)
+    {
+        if (string.IsNullOrWhiteSpace(seen) || !Version.TryParse(seen, out var v)) return null;
+        return new Version(v.Major, v.Minor, Math.Max(0, v.Build));
     }
 
     private async Task CheckForUpdatesAsync()
