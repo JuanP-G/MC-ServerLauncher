@@ -13,8 +13,13 @@ public class UpdateService
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
     private static readonly HttpClient DownloadHttp = new() { Timeout = TimeSpan.FromMinutes(10) };
 
-    /// <summary>Update data. <see cref="InstallerUrl"/> is the installer .exe (null if there isn't one).</summary>
-    public record UpdateInfo(string Version, string Url, string? InstallerUrl);
+    /// <summary>
+    /// Update data. <see cref="InstallerUrl"/>/<see cref="InstallerName"/> are the installer .exe
+    /// (null if there isn't one). <see cref="Sha256SumsUrl"/> is a "SHA256SUMS.txt" asset published
+    /// alongside it (null on releases published before this existed), used to verify the installer
+    /// before running it.
+    /// </summary>
+    public record UpdateInfo(string Version, string Url, string? InstallerUrl, string? InstallerName, string? Sha256SumsUrl);
 
     /// <summary>Returns the latest version if it is newer than <paramref name="current"/>; otherwise null.</summary>
     public async Task<UpdateInfo?> CheckAsync(Version current, CancellationToken ct = default)
@@ -40,23 +45,64 @@ public class UpdateService
         var cur = Normalize(current);
         if (latest <= cur) return null;
 
-        // Look for the installer (.exe) among the release assets so we can update from the app.
+        // Look for the installer (.exe) and its checksum file among the release assets.
         string? installerUrl = null;
+        string? installerName = null;
+        string? sha256SumsUrl = null;
         if (root.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
         {
             foreach (var a in assets.EnumerateArray())
             {
                 var name = a.TryGetProperty("name", out var n) ? n.GetString() : null;
-                if (name is not null && name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-                    && a.TryGetProperty("browser_download_url", out var d))
+                var downloadUrl = a.TryGetProperty("browser_download_url", out var d) ? d.GetString() : null;
+                if (name is null || downloadUrl is null) continue;
+
+                if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 {
-                    installerUrl = d.GetString();
-                    break;
+                    installerUrl = downloadUrl;
+                    installerName = name;
+                }
+                else if (string.Equals(name, "SHA256SUMS.txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    sha256SumsUrl = downloadUrl;
                 }
             }
         }
 
-        return new UpdateInfo(tag.TrimStart('v', 'V'), url, installerUrl);
+        return new UpdateInfo(tag.TrimStart('v', 'V'), url, installerUrl, installerName, sha256SumsUrl);
+    }
+
+    /// <summary>
+    /// Reads the expected checksum for <paramref name="fileName"/> from a "SHA256SUMS.txt"-style
+    /// asset (lines of "&lt;hex&gt;  &lt;filename&gt;", one per file). Best-effort: returns null if
+    /// the asset is missing, unreachable, or has no entry for that file — the caller then simply
+    /// skips verification instead of failing the update.
+    /// </summary>
+    public async Task<string?> GetExpectedSha256Async(string sha256SumsUrl, string fileName, CancellationToken ct = default)
+    {
+        try
+        {
+            var text = await Http.GetStringAsync(sha256SumsUrl, ct);
+            foreach (var rawLine in text.Split('\n'))
+            {
+                var line = rawLine.Trim();
+                if (line.Length == 0) continue;
+
+                var parts = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 2) continue;
+
+                var hash = parts[0];
+                // sha256sum-style output prefixes the filename with '*' in binary mode.
+                var name = parts[1].TrimStart('*');
+                if (string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase))
+                    return hash;
+            }
+        }
+        catch
+        {
+            // Best-effort: an unreachable or malformed sums file just means no verification.
+        }
+        return null;
     }
 
     /// <summary>Downloads the installer to <paramref name="destPath"/>. Returns the downloaded path.</summary>

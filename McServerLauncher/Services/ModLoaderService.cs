@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -103,6 +104,16 @@ public class ModLoaderService
             await resp.Content.CopyToAsync(fs, ct);
         }
 
+        // Forge's maven publishes a plain-text .sha1 file next to every artifact. It comes from the
+        // same server as the jar, so it guards against a corrupted download more than a compromised
+        // server, but it's consistent with the checksum verification done for the other sources.
+        var expectedSha1 = await TryGetRemoteHashAsync(installerUrl + ".sha1", ct);
+        if (!string.IsNullOrEmpty(expectedSha1))
+        {
+            log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+            await DownloadVerifier.VerifyAsync(installerPath, expectedSha1, HashAlgorithmName.SHA1, ct);
+        }
+
         log?.Report(Localizer.Get("Msg_ForgeRunningInstaller"));
         await RunForgeInstallerAsync(installerPath, folder, javaPath, log, ct);
 
@@ -171,5 +182,23 @@ public class ModLoaderService
     {
         try { if (File.Exists(path)) File.Delete(path); }
         catch { /* best-effort cleanup */ }
+    }
+
+    /// <summary>
+    /// Fetches a plain-text checksum file (e.g. Maven's "*.sha1"). Best-effort: if it's missing or
+    /// the request fails, returns null so the caller simply skips verification rather than failing
+    /// the whole install over an optional side file.
+    /// </summary>
+    private static async Task<string?> TryGetRemoteHashAsync(string url, CancellationToken ct)
+    {
+        try
+        {
+            var text = await Http.GetStringAsync(url, ct);
+            return text.Trim();
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

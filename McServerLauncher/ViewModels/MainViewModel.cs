@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Security.Cryptography;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -44,6 +45,8 @@ public partial class MainViewModel : ObservableObject
 
     private string? _releaseUrl;
     private string? _installerUrl;
+    private string? _installerName;
+    private string? _sha256SumsUrl;
 
     public record LanguageOption(string Code, string Name);
 
@@ -153,6 +156,8 @@ public partial class MainViewModel : ObservableObject
             {
                 _releaseUrl = info.Url;
                 _installerUrl = info.InstallerUrl;
+                _installerName = info.InstallerName;
+                _sha256SumsUrl = info.Sha256SumsUrl;
                 UpdateText = string.Format(Localizer.Get("Msg_UpdateAvailableFmt"), info.Version);
                 UpdateAvailable = true;
             }
@@ -188,7 +193,21 @@ public partial class MainViewModel : ObservableObject
             // another local process between download and execution.
             var updateDir = Path.Combine(Path.GetTempPath(), "mcsl-" + Path.GetRandomFileName());
             var dest = Path.Combine(updateDir, "MC-ServerLauncher-Setup.exe");
-            await new UpdateService().DownloadInstallerAsync(_installerUrl, dest);
+            var updateService = new UpdateService();
+            await updateService.DownloadInstallerAsync(_installerUrl, dest);
+
+            // Verify the installer we're about to run against the release's SHA256SUMS.txt (if the
+            // release published one). Best-effort: older releases won't have it, in which case
+            // verification is simply skipped rather than blocking the update.
+            if (!string.IsNullOrEmpty(_sha256SumsUrl) && !string.IsNullOrEmpty(_installerName))
+            {
+                var expectedSha256 = await updateService.GetExpectedSha256Async(_sha256SumsUrl, _installerName);
+                if (!string.IsNullOrEmpty(expectedSha256))
+                {
+                    UpdateText = Localizer.Get("Msg_VerifyingChecksum");
+                    await DownloadVerifier.VerifyAsync(dest, expectedSha256, HashAlgorithmName.SHA256);
+                }
+            }
 
             // Run the installer from a helper that first waits for THIS app to fully exit, then
             // launches it. This avoids the UAC-elevation race where the app closed too soon and the
@@ -210,6 +229,16 @@ public partial class MainViewModel : ObservableObject
                 CreateNoWindow = true
             });
             Environment.Exit(0);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // This is DownloadVerifier's mismatch exception: a real security-relevant event (the
+            // downloaded installer doesn't match the release's checksum), not just a network hiccup.
+            // Tell the user explicitly instead of silently falling back to the browser.
+            IsUpdating = false;
+            UpdateText = string.Empty;
+            await MessageBox.ShowAsync(ex.Message, Localizer.Get("Update_Now"), Owner);
+            OpenRelease();
         }
         catch
         {

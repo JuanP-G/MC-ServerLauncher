@@ -236,6 +236,7 @@
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• Plus de sécurité : la clé API de Playit est désormais stockée chiffrée (auparavant en clair), sur tous les systèmes. La migration est automatique.&#10;• Icône de l'application renouvelée en haute résolution.</value></data>
   <data name="Whatsnew_1_2_2" xml:space="preserve"><value>• Plus de sécurité : les téléchargements Minecraft (Mojang), Java (Adoptium) et Paper sont désormais vérifiés par leur somme de contrôle officielle ; en cas de différence, le fichier est supprimé et un avertissement s'affiche au lieu de l'utiliser.</value></data>
   <data name="Whatsnew_1_2_3" xml:space="preserve"><value>• Plus de sécurité : les mods et plugins que tu installes depuis Modrinth sont désormais aussi vérifiés par leur somme de contrôle officielle avant utilisation.</value></data>
+  <data name="Whatsnew_1_2_4" xml:space="preserve"><value>• Plus de sécurité : l'installateur Forge est désormais vérifié via la somme de contrôle du maven de Forge, et le propre outil de mise à jour de l'appli vérifie l'installateur téléchargé avant de l'exécuter.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Clique sur une commande pour la mettre dans la case et compléter les détails. Ces commandes ne fonctionnent que lorsque le serveur est allumé.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Oui</value></data>
   <data name="Btn_No" xml:space="preserve"><value>Non</value></data>
