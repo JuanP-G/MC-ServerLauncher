@@ -10,7 +10,7 @@
     <AssemblyName>McServerLauncher</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <!-- Generate the XML documentation file from /// comments (consumed by DocFX). -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -28,6 +28,9 @@
     <!-- Cross-platform reference: compiles everywhere, only used at runtime on Windows (guarded with
          OperatingSystem.IsWindows()). On Linux Playit is managed via systemctl instead. -->
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
+    <!-- DPAPI to store the Playit API key encrypted at rest. Windows-only at runtime (guarded with
+         OperatingSystem.IsWindows()); on Linux/macOS the key is kept as-is. -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.0" />
     <PackageReference Include="Avalonia" Version="11.2.3" />
     <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
