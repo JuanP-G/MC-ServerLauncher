@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,37 +89,52 @@ public class ModrinthService
         return null;
     }
 
-    public async Task DownloadModAsync(string downloadUrl, string destinationPath, IProgress<double>? progress = null, CancellationToken ct = default)
+    /// <summary>
+    /// Downloads a mod/plugin file from Modrinth. Mods are third-party jars chosen by the user, so
+    /// whenever Modrinth provides a hash for the file (it always does), the download is verified
+    /// against it; a mismatch deletes the file and throws instead of installing it. Sha512 is
+    /// preferred (stronger); Sha1 is used only if Modrinth didn't provide a Sha512 for this file.
+    /// </summary>
+    public async Task DownloadModAsync(string downloadUrl, string destinationPath, string? expectedSha512 = null,
+        string? expectedSha1 = null, IProgress<double>? progress = null, CancellationToken ct = default)
     {
         using var response = await Http.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, ct);
         response.EnsureSuccessStatusCode();
 
         var totalBytes = response.Content.Headers.ContentLength;
 
-        await using var fs = File.Create(destinationPath);
-        await using var contentStream = await response.Content.ReadAsStreamAsync(ct);
-
-        var buffer = new byte[8192];
-        var isMoreToRead = true;
-        var totalRead = 0L;
-
-        do
+        // The write handle must be closed before verifying: File.Create opens with FileShare.None,
+        // so DownloadVerifier's read would otherwise fail with a sharing violation on Windows.
+        await using (var fs = File.Create(destinationPath))
+        await using (var contentStream = await response.Content.ReadAsStreamAsync(ct))
         {
-            var read = await contentStream.ReadAsync(buffer, 0, buffer.Length, ct);
-            if (read == 0)
-            {
-                isMoreToRead = false;
-            }
-            else
-            {
-                await fs.WriteAsync(buffer, 0, read, ct);
-                totalRead += read;
+            var buffer = new byte[8192];
+            var isMoreToRead = true;
+            var totalRead = 0L;
 
-                if (totalBytes.HasValue && progress != null)
+            do
+            {
+                var read = await contentStream.ReadAsync(buffer, 0, buffer.Length, ct);
+                if (read == 0)
                 {
-                    progress.Report((double)totalRead / totalBytes.Value);
+                    isMoreToRead = false;
                 }
-            }
-        } while (isMoreToRead);
+                else
+                {
+                    await fs.WriteAsync(buffer, 0, read, ct);
+                    totalRead += read;
+
+                    if (totalBytes.HasValue && progress != null)
+                    {
+                        progress.Report((double)totalRead / totalBytes.Value);
+                    }
+                }
+            } while (isMoreToRead);
+        }
+
+        if (!string.IsNullOrEmpty(expectedSha512))
+            await DownloadVerifier.VerifyAsync(destinationPath, expectedSha512, HashAlgorithmName.SHA512, ct);
+        else if (!string.IsNullOrEmpty(expectedSha1))
+            await DownloadVerifier.VerifyAsync(destinationPath, expectedSha1, HashAlgorithmName.SHA1, ct);
     }
 }

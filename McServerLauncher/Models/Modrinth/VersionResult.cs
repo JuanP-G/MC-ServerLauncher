@@ -34,4 +34,17 @@ public class VersionFile
 
     [JsonPropertyName("primary")]
     public bool Primary { get; set; }
+
+    [JsonPropertyName("hashes")]
+    public FileHashes? Hashes { get; set; }
+}
+
+/// <summary>Official checksums Modrinth provides for a file, used to verify the download.</summary>
+public class FileHashes
+{
+    [JsonPropertyName("sha1")]
+    public string? Sha1 { get; set; }
+
+    [JsonPropertyName("sha512")]
+    public string? Sha512 { get; set; }
 }

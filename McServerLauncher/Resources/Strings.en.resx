@@ -235,6 +235,7 @@
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• You can now create Forge and Paper servers, on top of Vanilla and Fabric.&#10;• Built-in mods &amp; plugins browser (Modrinth), filtered by your server's type and version, with sorting and one-click install.&#10;• Enable/disable or delete what's installed, and convert an existing server to another type while keeping the world.&#10;• Each server now shows a type badge.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• More security: the Playit API key is now stored encrypted (previously plain text), on every OS. Migration is automatic.&#10;• Refreshed high-resolution app icon.</value></data>
   <data name="Whatsnew_1_2_2" xml:space="preserve"><value>• More security: Minecraft (Mojang), Java (Adoptium) and Paper downloads are now verified against their official checksum; a mismatch deletes the file and warns instead of using it.</value></data>
+  <data name="Whatsnew_1_2_3" xml:space="preserve"><value>• More security: mods and plugins you install from Modrinth are now also verified against their official checksum before use.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Click a command to put it in the box and fill in the details. These commands only work while the server is running.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Btn_No" xml:space="preserve"><value>No</value></data>

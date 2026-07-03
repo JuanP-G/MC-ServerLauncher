@@ -235,6 +235,7 @@
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• Agora podes criar servidores Forge e Paper, além de Vanilla e Fabric.&#10;• Explorador de mods e plugins integrado (Modrinth), filtrado pelo tipo e versão do teu servidor, com ordenação e instalação num clique.&#10;• Ativa/desativa ou apaga o que está instalado, e converte um servidor existente para outro tipo mantendo o mundo.&#10;• Cada servidor mostra agora uma etiqueta de tipo.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• Mais segurança: a chave da API do Playit agora é guardada cifrada (antes texto simples), em todos os sistemas. A migração é automática.&#10;• Ícone da aplicação renovado em alta resolução.</value></data>
   <data name="Whatsnew_1_2_2" xml:space="preserve"><value>• Mais segurança: os downloads do Minecraft (Mojang), Java (Adoptium) e Paper agora são verificados com o checksum oficial; se não corresponder, o ficheiro é eliminado e é dado um aviso em vez de o usar.</value></data>
+  <data name="Whatsnew_1_2_3" xml:space="preserve"><value>• Mais segurança: os mods e plugins que instalas a partir do Modrinth agora também são verificados com o checksum oficial antes de serem usados.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Clica num comando para o pôr na caixa e preencher os dados. Estes comandos só funcionam com o servidor ligado.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Sim</value></data>
   <data name="Btn_No" xml:space="preserve"><value>Não</value></data>

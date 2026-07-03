@@ -328,7 +328,8 @@ public partial class ServerModsViewModel : ObservableObject
 
             SearchStatus = string.Format(Localizer.Get("Msg_DownloadingMod"), file.Filename);
 
-            await _modrinthService.DownloadModAsync(file.Url, destPath);
+            // Mods are third-party jars chosen by the user: verify against Modrinth's own checksum.
+            await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512, file.Hashes?.Sha1);
 
             SearchStatus = Localizer.Get("Msg_ModInstalled");
             RefreshInstalledMods();
