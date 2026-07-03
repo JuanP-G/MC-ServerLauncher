@@ -162,6 +162,11 @@
   <data name="Msg_ServerStopped" xml:space="preserve"><value>[Launcher] Le serveur s'est arrêté.</value></data>
   <data name="Msg_StoppingSaving" xml:space="preserve"><value>[Launcher] Envoi de 'stop' et sauvegarde du monde...</value></data>
   <data name="Msg_NotRespondingKill" xml:space="preserve"><value>[Launcher] Le serveur n'a pas répondu à temps ; fermeture forcée.</value></data>
+  <data name="Msg_ServerCrashedFmt" xml:space="preserve"><value>[Launcher] Le serveur s'est arrêté de manière inattendue (code de sortie : {0}).</value></data>
+  <data name="Msg_ServerCrashedReasonFmt" xml:space="preserve"><value>[Launcher] Le serveur s'est arrêté de manière inattendue (code de sortie : {0}). Raison : {1}</value></data>
+  <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] Redémarrage automatique (tentative {0} sur {1})...</value></data>
+  <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] Le serveur a planté plusieurs fois de suite ; il ne sera plus redémarré automatiquement (limite : {0} tentatives). Vérifie la console ou le dossier crash-reports.</value></data>
+  <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Redémarrage automatique annulé : le port {0} est occupé.</value></data>
   <data name="Msg_PlayitServiceNotInstalled" xml:space="preserve"><value>[Playit] Le service Playit n'est pas installé sur cet ordinateur.</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Impossible de changer le service (nécessite souvent de lancer l'app en administrateur, ou d'utiliser l'icône de la barre d'état) : {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Impossible de déterminer le port du serveur (server.properties manquant ?).</value></data>
@@ -237,6 +242,7 @@
   <data name="Whatsnew_1_2_2" xml:space="preserve"><value>• Plus de sécurité : les téléchargements Minecraft (Mojang), Java (Adoptium) et Paper sont désormais vérifiés par leur somme de contrôle officielle ; en cas de différence, le fichier est supprimé et un avertissement s'affiche au lieu de l'utiliser.</value></data>
   <data name="Whatsnew_1_2_3" xml:space="preserve"><value>• Plus de sécurité : les mods et plugins que tu installes depuis Modrinth sont désormais aussi vérifiés par leur somme de contrôle officielle avant utilisation.</value></data>
   <data name="Whatsnew_1_2_4" xml:space="preserve"><value>• Plus de sécurité : l'installateur Forge est désormais vérifié via la somme de contrôle du maven de Forge, et le propre outil de mise à jour de l'appli vérifie l'installateur téléchargé avant de l'exécuter.</value></data>
+  <data name="Whatsnew_1_2_5" xml:space="preserve"><value>• Si un serveur s'arrête tout seul de manière inattendue (pas via le bouton Arrêter), il redémarre maintenant automatiquement (jusqu'à 3 tentatives), en affichant la raison si un rapport de plantage est disponible.&#10;• La console de chaque serveur est désormais aussi enregistrée dans un fichier journal persistant, pour ne pas perdre l'historique en fermant l'application.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Clique sur une commande pour la mettre dans la case et compléter les détails. Ces commandes ne fonctionnent que lorsque le serveur est allumé.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Oui</value></data>
   <data name="Btn_No" xml:space="preserve"><value>Non</value></data>

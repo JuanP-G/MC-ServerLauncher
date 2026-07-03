@@ -31,9 +31,21 @@ public partial class ServerViewModel : ObservableObject
     private readonly PortService _ports = new();
     private readonly JavaService _java = new();
     private readonly PlayitApiService _playitApi = new();
+    private readonly CrashReportService _crashReports = new();
     private int _playitTickCounter;
     private readonly DispatcherTimer _statsTimer;
     private readonly DispatcherTimer _playitTimer;
+
+    // --- Auto-restart on crash ---
+    // If the server exits on its own (not via the Stop button), it's relaunched automatically, up
+    // to a limited number of consecutive attempts so a persistently-crashing server doesn't loop
+    // forever. The streak resets whenever a run has been stable (Running) for a while, or the user
+    // starts the server manually.
+    private const int MaxAutoRestarts = 3;
+    private static readonly TimeSpan StabilityWindow = TimeSpan.FromMinutes(2);
+    private static readonly TimeSpan AutoRestartDelay = TimeSpan.FromSeconds(5);
+    private int _consecutiveCrashes;
+    private DateTime? _lastRunningAtUtc;
 
     public ServerConfig Config { get; }
 
@@ -207,6 +219,7 @@ public partial class ServerViewModel : ObservableObject
 
         _process.OutputReceived += OnConsoleLine;
         _process.StateChanged += OnServerStateChanged;
+        _process.UnexpectedExit += OnUnexpectedExit;
         // Keep a reference to the handler: the manager is shared, so it must be unsubscribed
         // in ShutdownAsync or replaced view models would leak.
         _onPlayitStateChanged = s => RunOnUi(() => { PlayitState = s; UpdatePlayitStatusText(); UpdateSignal(); });
@@ -327,6 +340,7 @@ public partial class ServerViewModel : ObservableObject
         {
             _stats.Reset();
             _statsTimer.Start();
+            _lastRunningAtUtc = DateTime.UtcNow;
         }
         else if (state == ServerState.Stopped)
         {
@@ -356,14 +370,21 @@ public partial class ServerViewModel : ObservableObject
         SendCommandCommand.NotifyCanExecuteChanged();
     }
 
-    private void OnConsoleLine(string line) => RunOnUi(() =>
+    private void OnConsoleLine(string line)
     {
-        ConsoleLines.Add(line);
-        if (ConsoleLines.Count > MaxConsoleLines)
-            ConsoleLines.RemoveAt(0);
+        // Off the UI thread on purpose (OnConsoleLine itself is often called from a background
+        // thread): file I/O shouldn't block RunOnUi's dispatch of the in-memory console update.
+        ConsoleLogService.Shared.Log(Name, line);
 
-        TrackPlayers(line);
-    });
+        RunOnUi(() =>
+        {
+            ConsoleLines.Add(line);
+            if (ConsoleLines.Count > MaxConsoleLines)
+                ConsoleLines.RemoveAt(0);
+
+            TrackPlayers(line);
+        });
+    }
 
     // Live connected players, read from the join/leave messages in the console.
     private void TrackPlayers(string line)
@@ -398,21 +419,82 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task Start()
     {
+        _consecutiveCrashes = 0; // a deliberate Start gives auto-restart a fresh budget
+        await StartInternal(isAutoRestart: false);
+    }
+
+    private async Task StartInternal(bool isAutoRestart)
+    {
+        // Judged fresh on every attempt: whether THIS run stays up long enough to "forgive" a
+        // previous crash streak must not be based on a stale timestamp from an earlier run/session.
+        _lastRunningAtUtc = null;
+
         try
         {
             RefreshPort();
             RefreshInfo();
 
-            // If the port is busy, offer to close the process holding it.
+            // If the port is busy, offer to close the process holding it. Skipped during an
+            // unattended auto-restart: nobody would be there to answer the confirmation dialog.
             var port = _properties.GetServerPort(Config.PropertiesPath);
-            if (port.HasValue && _ports.IsPortInUse(port.Value) && !await TryFreePortAsync(port.Value))
-                return;
+            if (port.HasValue && _ports.IsPortInUse(port.Value))
+            {
+                if (isAutoRestart)
+                {
+                    OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartPortBusyFmt"), port.Value));
+                    return;
+                }
+                if (!await TryFreePortAsync(port.Value))
+                    return;
+            }
 
             // Make sure the configured Java is compatible with this server's version.
             await EnsureCompatibleJavaAsync();
 
             _process.Start(Config);
             // Playit already runs as a background service: we don't launch another agent.
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
+
+    /// <summary>
+    /// Reacts to the server process ending on its own (crash, killed externally, JVM exit). Shows
+    /// the crash-report reason if one was written, then relaunches automatically unless the crash
+    /// streak has hit the limit (a run that stays healthy for <see cref="StabilityWindow"/> resets
+    /// the streak, so a single occasional crash doesn't count against a persistently-crashing server).
+    /// </summary>
+    private void OnUnexpectedExit(int? exitCode) => RunOnUi(() => _ = HandleUnexpectedExitAsync(exitCode));
+
+    private async Task HandleUnexpectedExitAsync(int? exitCode)
+    {
+        try
+        {
+            var reason = _crashReports.FindRecentCrashReason(Config.FolderPath, _process.StartedAtUtc);
+            var codeText = exitCode?.ToString() ?? "?";
+            OnConsoleLine(reason is not null
+                ? string.Format(Localizer.Get("Msg_ServerCrashedReasonFmt"), codeText, reason)
+                : string.Format(Localizer.Get("Msg_ServerCrashedFmt"), codeText));
+
+            var stableRun = _lastRunningAtUtc is { } last && DateTime.UtcNow - last >= StabilityWindow;
+            if (stableRun) _consecutiveCrashes = 0;
+            _consecutiveCrashes++;
+
+            if (_consecutiveCrashes > MaxAutoRestarts)
+            {
+                OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartGaveUpFmt"), MaxAutoRestarts));
+                return;
+            }
+
+            OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartingFmt"), _consecutiveCrashes, MaxAutoRestarts));
+            await Task.Delay(AutoRestartDelay);
+
+            // Only proceed if nothing else already started it in the meantime (e.g. the user
+            // clicked Start manually right after the crash).
+            if (CanStart)
+                await StartInternal(isAutoRestart: true);
         }
         catch (Exception ex)
         {
@@ -518,7 +600,8 @@ public partial class ServerViewModel : ObservableObject
     private async Task Restart()
     {
         await _process.StopAsync(TimeSpan.FromSeconds(30));
-        await Start();
+        _consecutiveCrashes = 0; // a deliberate Restart gives auto-restart a fresh budget too
+        await StartInternal(isAutoRestart: false);
     }
 
     private bool CanSend => IsRunning && !string.IsNullOrWhiteSpace(CommandText);

@@ -10,7 +10,7 @@
     <AssemblyName>McServerLauncher</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>
-    <Version>1.2.4</Version>
+    <Version>1.2.5</Version>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <!-- Generate the XML documentation file from /// comments (consumed by DocFX). -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

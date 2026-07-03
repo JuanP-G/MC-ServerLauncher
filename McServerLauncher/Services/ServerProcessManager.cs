@@ -14,12 +14,24 @@ public class ServerProcessManager
 {
     private Process? _process;
     private readonly object _lock = new();
+    private DateTime _startedAtUtc;
 
     /// <summary>Raised for each output line (stdout or stderr) from the server.</summary>
     public event Action<string>? OutputReceived;
 
     /// <summary>Raised when the server state changes.</summary>
     public event Action<ServerState>? StateChanged;
+
+    /// <summary>
+    /// Raised when the process ends WITHOUT us having asked it to (i.e. it crashed, was killed
+    /// externally, or the JVM exited on its own) — not raised for a clean Stop/StopAsync, including
+    /// the forced-kill-after-timeout path (that's still a stop WE requested). The exit code is
+    /// passed when available.
+    /// </summary>
+    public event Action<int?>? UnexpectedExit;
+
+    /// <summary>When the current (or most recently started) process was launched.</summary>
+    public DateTime StartedAtUtc => _startedAtUtc;
 
     private ServerState _state = ServerState.Stopped;
     public ServerState State
@@ -83,6 +95,7 @@ public class ServerProcessManager
             _process.Exited += OnProcessExited;
 
             State = ServerState.Starting;
+            _startedAtUtc = DateTime.UtcNow;
             OutputReceived?.Invoke(string.Format(Localizer.Get("Msg_LauncherStarting"), config.JavaPath, args));
 
             try
@@ -153,6 +166,14 @@ public class ServerProcessManager
 
     private void OnProcessExited(object? sender, EventArgs e)
     {
+        // Capture BEFORE resetting to Stopped: State == Stopping means WE asked it to stop (either
+        // the graceful "stop" command worked, or we killed it ourselves after a timeout); anything
+        // else (Running, or Starting if it dies mid-boot) means it exited on its own — a crash.
+        var wasRequested = State == ServerState.Stopping;
+        int? exitCode = null;
+        try { exitCode = (sender as Process)?.ExitCode; }
+        catch { /* not always available; best-effort */ }
+
         OutputReceived?.Invoke(Localizer.Get("Msg_ServerStopped"));
         lock (_lock)
         {
@@ -160,6 +181,9 @@ public class ServerProcessManager
             _process = null;
         }
         State = ServerState.Stopped;
+
+        if (!wasRequested)
+            UnexpectedExit?.Invoke(exitCode);
     }
 
     /// <summary>Sends an arbitrary command over stdin (like typing it into the console).</summary>

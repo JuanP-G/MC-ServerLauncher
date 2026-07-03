@@ -162,6 +162,11 @@
   <data name="Msg_ServerStopped" xml:space="preserve"><value>[Launcher] O servidor parou.</value></data>
   <data name="Msg_StoppingSaving" xml:space="preserve"><value>[Launcher] A enviar 'stop' e a guardar o mundo...</value></data>
   <data name="Msg_NotRespondingKill" xml:space="preserve"><value>[Launcher] O servidor não respondeu a tempo; a forçar o encerramento.</value></data>
+  <data name="Msg_ServerCrashedFmt" xml:space="preserve"><value>[Launcher] O servidor encerrou inesperadamente (código de saída: {0}).</value></data>
+  <data name="Msg_ServerCrashedReasonFmt" xml:space="preserve"><value>[Launcher] O servidor encerrou inesperadamente (código de saída: {0}). Motivo: {1}</value></data>
+  <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] A reiniciar automaticamente (tentativa {0} de {1})...</value></data>
+  <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] O servidor caiu várias vezes seguidas; não será reiniciado automaticamente mais vezes (limite: {0} tentativas). Verifica a consola ou a pasta crash-reports.</value></data>
+  <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Reinício automático cancelado: a porta {0} está ocupada.</value></data>
   <data name="Msg_PlayitServiceNotInstalled" xml:space="preserve"><value>[Playit] O serviço Playit não está instalado neste computador.</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Não foi possível mudar o serviço (costuma exigir executar a app como administrador, ou usar o ícone da bandeja): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Não foi possível determinar a porta do servidor (falta o server.properties?).</value></data>
@@ -237,6 +242,7 @@
   <data name="Whatsnew_1_2_2" xml:space="preserve"><value>• Mais segurança: os downloads do Minecraft (Mojang), Java (Adoptium) e Paper agora são verificados com o checksum oficial; se não corresponder, o ficheiro é eliminado e é dado um aviso em vez de o usar.</value></data>
   <data name="Whatsnew_1_2_3" xml:space="preserve"><value>• Mais segurança: os mods e plugins que instalas a partir do Modrinth agora também são verificados com o checksum oficial antes de serem usados.</value></data>
   <data name="Whatsnew_1_2_4" xml:space="preserve"><value>• Mais segurança: o instalador do Forge agora é verificado com o checksum do próprio maven do Forge, e o atualizador da aplicação verifica o instalador descarregado antes de o executar.</value></data>
+  <data name="Whatsnew_1_2_5" xml:space="preserve"><value>• Se um servidor encerrar sozinho de forma inesperada (não pelo botão Parar), agora é reiniciado automaticamente (até 3 tentativas), mostrando o motivo se houver um crash-report disponível.&#10;• A consola de cada servidor também passa a ser guardada num ficheiro de log persistente, para não perderes o histórico ao fechar a aplicação.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Clica num comando para o pôr na caixa e preencher os dados. Estes comandos só funcionam com o servidor ligado.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Sim</value></data>
   <data name="Btn_No" xml:space="preserve"><value>Não</value></data>
