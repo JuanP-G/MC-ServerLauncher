@@ -13,10 +13,11 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment.
+# Allow only one concurrent deployment, but let an in-progress Pages deployment finish
+# (cancelling it mid-way is what causes intermittent "Deployment failed, try again later").
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
