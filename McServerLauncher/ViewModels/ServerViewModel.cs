@@ -32,6 +32,7 @@ public partial class ServerViewModel : ObservableObject
     private readonly JavaService _java = new();
     private readonly PlayitApiService _playitApi = new();
     private readonly CrashReportService _crashReports = new();
+    private readonly WorldBackupService _backups = new();
     private int _playitTickCounter;
     private readonly DispatcherTimer _statsTimer;
     private readonly DispatcherTimer _playitTimer;
@@ -126,6 +127,8 @@ public partial class ServerViewModel : ObservableObject
     public bool HasIcon => ServerIcon is not null;
 
     public ServerModsViewModel Mods { get; }
+
+    public ServerBackupsViewModel Backups { get; }
 
     public bool IsModded => Config.Type != ServerType.Vanilla;
 
@@ -243,6 +246,7 @@ public partial class ServerViewModel : ObservableObject
         RefreshPort();
         RefreshInfo();
         Mods = new ServerModsViewModel(config);
+        Backups = new ServerBackupsViewModel(this);
         _ = RefreshTunnelAddressAsync();
     }
 
@@ -451,8 +455,14 @@ public partial class ServerViewModel : ObservableObject
             // Make sure the configured Java is compatible with this server's version.
             await EnsureCompatibleJavaAsync();
 
+            // Back up the world right before touching it again: the safety net that matters most,
+            // since it covers every start path (manual, Restart, and auto-restart after a crash).
+            if (Config.BackupsEnabled)
+                await _backups.CreateBackupAsync(Config, "start", new Progress<string>(OnConsoleLine));
+
             _process.Start(Config);
             // Playit already runs as a background service: we don't launch another agent.
+            Backups.RefreshCommand.Execute(null);
         }
         catch (Exception ex)
         {
@@ -589,6 +599,15 @@ public partial class ServerViewModel : ObservableObject
         try
         {
             await _process.StopAsync(TimeSpan.FromSeconds(30));
+
+            // A snapshot of the good state just reached by stopping cleanly. Not done for Restart's
+            // internal stop or for the app-closing ShutdownAsync: the next Start's own pre-backup
+            // (or, when closing, simply not needing one) already covers those.
+            if (Config.BackupsEnabled)
+            {
+                await _backups.CreateBackupAsync(Config, "stop", new Progress<string>(OnConsoleLine));
+                Backups.RefreshCommand.Execute(null);
+            }
         }
         catch (Exception ex)
         {

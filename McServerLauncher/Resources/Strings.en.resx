@@ -167,6 +167,31 @@
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] Restarting automatically (attempt {0} of {1})...</value></data>
   <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] The server has crashed several times in a row; it won't be restarted automatically anymore (limit: {0} attempts). Check the console or the crash-reports folder.</value></data>
   <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Automatic restart cancelled: port {0} is busy.</value></data>
+  <data name="Msg_BackupCreatingFmt" xml:space="preserve"><value>[Launcher] Creating backup of "{0}"...</value></data>
+  <data name="Msg_BackupCreatedFmt" xml:space="preserve"><value>[Launcher] Backup created ({0} MB).</value></data>
+  <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Saving a copy of the current state before restoring (in case you want to undo it)...</value></data>
+  <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Restoring the backup...</value></data>
+  <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Backup restored.</value></data>
+  <data name="Backups" xml:space="preserve"><value>Backups</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>A world backup is created automatically before every start and when you stop the server. Backups can only be created or restored while the server is stopped.</value></data>
+  <data name="Backup_NowButton" xml:space="preserve"><value>Back up now</value></data>
+  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>The server must be stopped to create a backup.</value></data>
+  <data name="Backup_NoneYet" xml:space="preserve"><value>No backups yet.</value></data>
+  <data name="Backup_RestoreButton" xml:space="preserve"><value>Restore</value></data>
+  <data name="Backup_RestoreTitle" xml:space="preserve"><value>Restore backup</value></data>
+  <data name="Backup_ConfirmRestoreFmt" xml:space="preserve"><value>Restore "{0}"? The current world will be replaced with this backup's. A copy of the current state will be saved first, in case you want to undo it.</value></data>
+  <data name="Backup_ConfirmDeleteFmt" xml:space="preserve"><value>Delete the backup "{0}"? This cannot be undone.</value></data>
+  <data name="Backup_Creating" xml:space="preserve"><value>Creating backup...</value></data>
+  <data name="Backup_Done" xml:space="preserve"><value>Backup created.</value></data>
+  <data name="Backup_NothingToBackUp" xml:space="preserve"><value>There's no world to back up yet (the server has never been started).</value></data>
+  <data name="Backup_TriggerStart" xml:space="preserve"><value>before start</value></data>
+  <data name="Backup_TriggerStop" xml:space="preserve"><value>on stop</value></data>
+  <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
+  <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>before restore</value></data>
+  <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
+  <data name="Backup_Section" xml:space="preserve"><value>World backups</value></data>
+  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Create backups automatically (before starting and on stop)</value></data>
+  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Backups to keep:</value></data>
   <data name="Msg_PlayitServiceNotInstalled" xml:space="preserve"><value>[Playit] The Playit service is not installed on this computer.</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Could not change the service (usually needs running the app as administrator, or using the tray icon): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Could not determine the server port (is server.properties missing?).</value></data>
@@ -243,6 +268,7 @@
   <data name="Whatsnew_1_2_3" xml:space="preserve"><value>• More security: mods and plugins you install from Modrinth are now also verified against their official checksum before use.</value></data>
   <data name="Whatsnew_1_2_4" xml:space="preserve"><value>• More security: the Forge installer is now verified against Forge's own maven checksum, and the app's own updater checks the downloaded installer before running it.</value></data>
   <data name="Whatsnew_1_2_5" xml:space="preserve"><value>• If a server exits unexpectedly on its own (not via the Stop button), it's now restarted automatically (up to 3 attempts), showing the reason if a crash report is available.&#10;• Each server's console is now also saved to a persistent log file, so you don't lose the history when you close the app.</value></data>
+  <data name="Whatsnew_1_3_0" xml:space="preserve"><value>• Automatic world backups: a zip is created before every start and when you stop the server, with configurable retention (the last 5, by default).&#10;• New "Backups" tab: make a manual backup anytime and restore any saved one with one click.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Click a command to put it in the box and fill in the details. These commands only work while the server is running.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Btn_No" xml:space="preserve"><value>No</value></data>

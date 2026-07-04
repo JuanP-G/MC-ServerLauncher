@@ -213,6 +213,31 @@
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] Reiniciando automáticamente (intento {0} de {1})...</value></data>
   <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] El servidor se ha caído varias veces seguidas; no se reiniciará automáticamente más (límite: {0} intentos). Revisa la consola o la carpeta crash-reports.</value></data>
   <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Reinicio automático cancelado: el puerto {0} está ocupado.</value></data>
+  <data name="Msg_BackupCreatingFmt" xml:space="preserve"><value>[Launcher] Creando copia de seguridad de "{0}"...</value></data>
+  <data name="Msg_BackupCreatedFmt" xml:space="preserve"><value>[Launcher] Copia de seguridad creada ({0} MB).</value></data>
+  <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Guardando una copia del estado actual antes de restaurar (por si quieres deshacerlo)...</value></data>
+  <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Restaurando la copia de seguridad...</value></data>
+  <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Copia de seguridad restaurada.</value></data>
+  <data name="Backups" xml:space="preserve"><value>Copias de seguridad</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>Se crea una copia de seguridad del mundo automáticamente antes de cada arranque y al detener el servidor. Solo puedes crear o restaurar copias con el servidor detenido.</value></data>
+  <data name="Backup_NowButton" xml:space="preserve"><value>Copia de seguridad ahora</value></data>
+  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>El servidor debe estar detenido para crear una copia de seguridad.</value></data>
+  <data name="Backup_NoneYet" xml:space="preserve"><value>Aún no hay copias de seguridad.</value></data>
+  <data name="Backup_RestoreButton" xml:space="preserve"><value>Restaurar</value></data>
+  <data name="Backup_RestoreTitle" xml:space="preserve"><value>Restaurar copia de seguridad</value></data>
+  <data name="Backup_ConfirmRestoreFmt" xml:space="preserve"><value>¿Restaurar "{0}"? Se sustituirá el mundo actual por el de esta copia. Se guardará antes una copia del estado actual, por si quieres deshacerlo.</value></data>
+  <data name="Backup_ConfirmDeleteFmt" xml:space="preserve"><value>¿Eliminar la copia de seguridad "{0}"? Esta acción no se puede deshacer.</value></data>
+  <data name="Backup_Creating" xml:space="preserve"><value>Creando copia de seguridad...</value></data>
+  <data name="Backup_Done" xml:space="preserve"><value>Copia de seguridad creada.</value></data>
+  <data name="Backup_NothingToBackUp" xml:space="preserve"><value>Todavía no hay mundo que respaldar (el servidor no se ha arrancado nunca).</value></data>
+  <data name="Backup_TriggerStart" xml:space="preserve"><value>antes de arrancar</value></data>
+  <data name="Backup_TriggerStop" xml:space="preserve"><value>al detener</value></data>
+  <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
+  <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>antes de restaurar</value></data>
+  <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
+  <data name="Backup_Section" xml:space="preserve"><value>Copias de seguridad del mundo</value></data>
+  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Crear copias de seguridad automáticamente (antes de arrancar y al detener)</value></data>
+  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Copias a conservar:</value></data>
   <data name="Msg_PlayitServiceNotInstalled" xml:space="preserve"><value>[Playit] El servicio de Playit no está instalado en este equipo.</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] No se pudo cambiar el servicio (suele requerir ejecutar la app como administrador, o usar el icono de la bandeja): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] No se pudo determinar el puerto del servidor (¿falta server.properties?).</value></data>
@@ -289,6 +314,7 @@
   <data name="Whatsnew_1_2_3" xml:space="preserve"><value>• Más seguridad: los mods y plugins que instalas desde Modrinth también se verifican ahora con su checksum oficial antes de usarlos.</value></data>
   <data name="Whatsnew_1_2_4" xml:space="preserve"><value>• Más seguridad: el instalador de Forge se verifica ahora con el checksum del propio maven de Forge, y el propio actualizador de la app comprueba el instalador descargado antes de ejecutarlo.</value></data>
   <data name="Whatsnew_1_2_5" xml:space="preserve"><value>• Si un servidor se cierra solo de forma inesperada (no por el botón Detener), ahora se reinicia automáticamente (hasta 3 intentos), mostrando el motivo si hay un crash-report disponible.&#10;• La consola de cada servidor ahora también se guarda en un archivo de log persistente, para no perder el historial si cierras la app.</value></data>
+  <data name="Whatsnew_1_3_0" xml:space="preserve"><value>• Copias de seguridad automáticas del mundo: se crea un zip antes de cada arranque y al detener el servidor, con retención configurable (por defecto, las últimas 5).&#10;• Nueva pestaña "Copias de seguridad": haz una copia manual en cualquier momento y restaura cualquiera de las guardadas con un clic.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Haz clic en un comando para ponerlo en la caja y completar los datos. Estos comandos solo funcionan con el servidor encendido.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Sí</value></data>
   <data name="Btn_No" xml:space="preserve"><value>No</value></data>

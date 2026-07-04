@@ -167,6 +167,31 @@
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] Automatischer Neustart (Versuch {0} von {1})...</value></data>
   <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] Der Server ist mehrmals hintereinander abgestürzt; er wird nicht mehr automatisch neu gestartet (Grenze: {0} Versuche). Prüfe die Konsole oder den Ordner crash-reports.</value></data>
   <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Automatischer Neustart abgebrochen: Port {0} ist belegt.</value></data>
+  <data name="Msg_BackupCreatingFmt" xml:space="preserve"><value>[Launcher] Sicherung von "{0}" wird erstellt...</value></data>
+  <data name="Msg_BackupCreatedFmt" xml:space="preserve"><value>[Launcher] Sicherung erstellt ({0} MB).</value></data>
+  <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Aktueller Zustand wird vor der Wiederherstellung gesichert (falls du es rückgängig machen möchtest)...</value></data>
+  <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Sicherung wird wiederhergestellt...</value></data>
+  <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Sicherung wiederhergestellt.</value></data>
+  <data name="Backups" xml:space="preserve"><value>Sicherungen</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>Vor jedem Start und beim Stoppen des Servers wird automatisch eine Sicherung der Welt erstellt. Sicherungen können nur erstellt oder wiederhergestellt werden, während der Server gestoppt ist.</value></data>
+  <data name="Backup_NowButton" xml:space="preserve"><value>Jetzt sichern</value></data>
+  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Der Server muss gestoppt sein, um eine Sicherung zu erstellen.</value></data>
+  <data name="Backup_NoneYet" xml:space="preserve"><value>Noch keine Sicherungen vorhanden.</value></data>
+  <data name="Backup_RestoreButton" xml:space="preserve"><value>Wiederherstellen</value></data>
+  <data name="Backup_RestoreTitle" xml:space="preserve"><value>Sicherung wiederherstellen</value></data>
+  <data name="Backup_ConfirmRestoreFmt" xml:space="preserve"><value>"{0}" wiederherstellen? Die aktuelle Welt wird durch diese Sicherung ersetzt. Der aktuelle Zustand wird vorher gesichert, falls du es rückgängig machen möchtest.</value></data>
+  <data name="Backup_ConfirmDeleteFmt" xml:space="preserve"><value>Sicherung "{0}" löschen? Dies kann nicht rückgängig gemacht werden.</value></data>
+  <data name="Backup_Creating" xml:space="preserve"><value>Sicherung wird erstellt...</value></data>
+  <data name="Backup_Done" xml:space="preserve"><value>Sicherung erstellt.</value></data>
+  <data name="Backup_NothingToBackUp" xml:space="preserve"><value>Es gibt noch keine Welt zum Sichern (der Server wurde noch nie gestartet).</value></data>
+  <data name="Backup_TriggerStart" xml:space="preserve"><value>vor dem Start</value></data>
+  <data name="Backup_TriggerStop" xml:space="preserve"><value>beim Stoppen</value></data>
+  <data name="Backup_TriggerManual" xml:space="preserve"><value>manuell</value></data>
+  <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>vor der Wiederherstellung</value></data>
+  <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
+  <data name="Backup_Section" xml:space="preserve"><value>Welt-Sicherungen</value></data>
+  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Sicherungen automatisch erstellen (vor dem Start und beim Stoppen)</value></data>
+  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Aufzubewahrende Sicherungen:</value></data>
   <data name="Msg_PlayitServiceNotInstalled" xml:space="preserve"><value>[Playit] Der Playit-Dienst ist auf diesem Computer nicht installiert.</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Der Dienst konnte nicht geändert werden (erfordert meist, die App als Administrator zu starten oder das Tray-Symbol zu verwenden): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Der Server-Port konnte nicht ermittelt werden (fehlt server.properties?).</value></data>
@@ -243,6 +268,7 @@
   <data name="Whatsnew_1_2_3" xml:space="preserve"><value>• Mehr Sicherheit: Mods und Plugins, die du von Modrinth installierst, werden jetzt vor der Verwendung ebenfalls anhand ihrer offiziellen Prüfsumme überprüft.</value></data>
   <data name="Whatsnew_1_2_4" xml:space="preserve"><value>• Mehr Sicherheit: Der Forge-Installer wird jetzt anhand der Prüfsumme von Forges eigenem Maven verifiziert, und der App-Updater prüft den heruntergeladenen Installer, bevor er ihn ausführt.</value></data>
   <data name="Whatsnew_1_2_5" xml:space="preserve"><value>• Wenn ein Server unerwartet von selbst beendet wird (nicht über den Stopp-Button), wird er jetzt automatisch neu gestartet (bis zu 3 Versuche) und zeigt den Grund an, falls ein Absturzbericht verfügbar ist.&#10;• Die Konsole jedes Servers wird jetzt zusätzlich in einer dauerhaften Protokolldatei gespeichert, damit der Verlauf beim Schließen der App nicht verloren geht.</value></data>
+  <data name="Whatsnew_1_3_0" xml:space="preserve"><value>• Automatische Welt-Sicherungen: Vor jedem Start und beim Stoppen des Servers wird eine Zip-Sicherung erstellt, mit konfigurierbarer Aufbewahrung (standardmäßig die letzten 5).&#10;• Neuer Tab "Sicherungen": Erstelle jederzeit eine manuelle Sicherung und stelle jede gespeicherte mit einem Klick wieder her.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Klicke auf einen Befehl, um ihn in das Feld zu setzen und die Details auszufüllen. Diese Befehle funktionieren nur, wenn der Server läuft.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Ja</value></data>
   <data name="Btn_No" xml:space="preserve"><value>Nein</value></data>

@@ -70,6 +70,14 @@ public class ServerConfig
     /// </summary>
     public string? TunnelAddress { get; set; }
 
+    // --- World backups ---
+
+    /// <summary>Whether a zip backup of the world is made before starting and after an explicit stop.</summary>
+    public bool BackupsEnabled { get; set; } = true;
+
+    /// <summary>How many backups to keep; older ones are deleted after each new one.</summary>
+    public int BackupRetention { get; set; } = 5;
+
     /// <summary>Full path to the .jar combining folder + jar name.</summary>
     [JsonIgnore]
     public string JarFullPath => Path.Combine(FolderPath, JarFile);

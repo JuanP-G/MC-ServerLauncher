@@ -592,6 +592,16 @@
                                 </ContentControl.DataTemplates>
                             </ContentControl>
                         </TabItem>
+
+                        <TabItem Header="{loc:Loc Backups}">
+                            <ContentControl Content="{Binding Backups}">
+                                <ContentControl.DataTemplates>
+                                    <DataTemplate DataType="vm:ServerBackupsViewModel">
+                                        <views:ServerBackupsView />
+                                    </DataTemplate>
+                                </ContentControl.DataTemplates>
+                            </ContentControl>
+                        </TabItem>
                     </TabControl>
                 </Grid>
             </Panel>

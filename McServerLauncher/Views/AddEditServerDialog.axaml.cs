@@ -133,5 +133,7 @@ public partial class AddEditServerDialog : Window
         _config.MaxRamGb = original.MaxRamGb;
         _config.ExtraJvmArgs = original.ExtraJvmArgs;
         _config.PlayitEnabled = original.PlayitEnabled;
+        _config.BackupsEnabled = original.BackupsEnabled;
+        _config.BackupRetention = original.BackupRetention;
     }
 }

@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:McServerLauncher.ViewModels"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="McServerLauncher.Views.ServerBackupsView"
+             x:DataType="vm:ServerBackupsViewModel"
+             x:CompileBindings="False">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="0,8,0,0">
+
+        <TextBlock Grid.Row="0" Text="{loc:Loc Backup_Hint}" TextWrapping="Wrap" Opacity="0.7"
+                   FontSize="12" Margin="4,0,4,10" />
+
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="4,0,4,10">
+            <Button Grid.Column="0" Classes="accent" Command="{Binding BackupNowCommand}"
+                    IsEnabled="{Binding CanBackupNow}" Margin="0,0,8,0"
+                    ToolTip.Tip="{loc:Loc Backup_NeedsStoppedTip}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ic:SymbolIcon Symbol="Save" />
+                    <TextBlock Text="{loc:Loc Backup_NowButton}" />
+                </StackPanel>
+            </Button>
+
+            <TextBlock Grid.Column="1" Text="{Binding StatusText}" Opacity="0.75" VerticalAlignment="Center"
+                       TextWrapping="Wrap" Margin="0,0,8,0" />
+
+            <Button Grid.Column="2" Command="{Binding RefreshCommand}" Padding="6,4">
+                <ic:SymbolIcon Symbol="ArrowClockwise" />
+            </Button>
+        </Grid>
+
+        <Border Grid.Row="2" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
+                CornerRadius="8" Padding="12">
+            <Grid RowDefinitions="Auto,*">
+                <TextBlock Grid.Row="0" Text="{loc:Loc Backup_NoneYet}" Opacity="0.7"
+                           HorizontalAlignment="Center" Margin="0,20,0,0"
+                           IsVisible="{Binding !Items.Count}" />
+
+                <ListBox Grid.Row="1" ItemsSource="{Binding Items}" Background="Transparent" BorderThickness="0"
+                         IsVisible="{Binding Items.Count}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#1A1A1A" CornerRadius="6" Padding="10" Margin="0,4">
+                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" FontSize="13"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <Border CornerRadius="4" Padding="5,1" Background="#2AFFFFFF">
+                                                <TextBlock Text="{Binding TriggerText}" FontSize="10" Opacity="0.85" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock FontSize="12" Opacity="0.7" Margin="0,2,0,0">
+                                            <Run Text="{Binding CreatedAtText}" />
+                                            <Run Text=" · " />
+                                            <Run Text="{Binding SizeText}" />
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1" Margin="0,0,8,0" Padding="8,4"
+                                            Content="{loc:Loc Backup_RestoreButton}"
+                                            Command="{Binding DataContext.RestoreCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            CommandParameter="{Binding}"
+                                            IsEnabled="{Binding DataContext.CanBackupNow, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+
+                                    <Button Grid.Column="2" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="6"
+                                            Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            CommandParameter="{Binding}">
+                                        <ic:SymbolIcon Symbol="Delete" Foreground="#E05561" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
