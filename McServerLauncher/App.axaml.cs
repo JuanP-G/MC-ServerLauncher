@@ -1,7 +1,10 @@
 using System.Globalization;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
+using McServerLauncher.Localization;
 using McServerLauncher.Services;
 using McServerLauncher.Views;
 
@@ -30,8 +33,55 @@ public partial class App : Application
         }
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
             desktop.MainWindow = new MainWindow();
+            SetupTrayIcon(desktop);
+        }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    /// <summary>
+    /// System tray icon: lets the app live minimized in the tray (the window hides itself when
+    /// minimized, see MainWindow) and offers Show/Exit. Clicking the icon restores the window.
+    /// </summary>
+    private void SetupTrayIcon(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        try
+        {
+            var tray = new TrayIcon
+            {
+                Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://McServerLauncher/Resources/app.ico"))),
+                ToolTipText = "MC Server Launcher",
+                IsVisible = true
+            };
+            tray.Clicked += (_, _) => RestoreMainWindow(desktop);
+
+            var menu = new NativeMenu();
+            var show = new NativeMenuItem(Localizer.Get("Tray_Show"));
+            show.Click += (_, _) => RestoreMainWindow(desktop);
+            var exit = new NativeMenuItem(Localizer.Get("Tray_Exit"));
+            exit.Click += (_, _) => desktop.MainWindow?.Close(); // goes through the clean-shutdown path
+            menu.Items.Add(show);
+            menu.Items.Add(new NativeMenuItemSeparator());
+            menu.Items.Add(exit);
+            tray.Menu = menu;
+
+            TrayIcon.SetIcons(this, new TrayIcons { tray });
+        }
+        catch
+        {
+            // Some Linux desktops have no tray support; the app works fine without it.
+        }
+    }
+
+    /// <summary>Brings the main window back from the tray (or from behind other windows).</summary>
+    public static void RestoreMainWindow(IClassicDesktopStyleApplicationLifetime? desktop = null)
+    {
+        desktop ??= Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+        if (desktop?.MainWindow is not { } w) return;
+        w.Show();
+        w.WindowState = WindowState.Normal;
+        w.Activate();
     }
 }

@@ -53,6 +53,30 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Lines of the embedded console (server stdout/stderr + Playit).</summary>
     public ObservableCollection<string> ConsoleLines { get; } = new();
 
+    /// <summary>
+    /// The lines currently shown in the console UI: all of <see cref="ConsoleLines"/> when the
+    /// filter box is empty, or the matching subset (kept in order, updated incrementally as new
+    /// lines arrive) while a filter is typed.
+    /// </summary>
+    public ObservableCollection<string> VisibleConsoleLines { get; } = new();
+
+    [ObservableProperty]
+    private string _consoleFilter = string.Empty;
+
+    partial void OnConsoleFilterChanged(string value) => RebuildVisibleConsole();
+
+    private bool MatchesConsoleFilter(string line) =>
+        string.IsNullOrWhiteSpace(ConsoleFilter)
+        || line.Contains(ConsoleFilter.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private void RebuildVisibleConsole()
+    {
+        VisibleConsoleLines.Clear();
+        foreach (var line in ConsoleLines)
+            if (MatchesConsoleFilter(line))
+                VisibleConsoleLines.Add(line);
+    }
+
     [ObservableProperty]
     private string _name;
 
@@ -118,6 +142,17 @@ public partial class ServerViewModel : ObservableObject
 
     [ObservableProperty]
     private string _portText = "—";
+
+    // --- CPU/RAM history for the mini charts (2 s sampling → 150 samples ≈ last 5 minutes) ---
+    private const int MaxStatSamples = 150;
+    private readonly List<double> _cpuHistory = new();
+    private readonly List<double> _ramHistory = new();
+
+    [ObservableProperty]
+    private IReadOnlyList<double>? _cpuSeries;
+
+    [ObservableProperty]
+    private IReadOnlyList<double>? _ramSeries;
 
     // --- Minecraft server-list style view ---
 
@@ -350,6 +385,10 @@ public partial class ServerViewModel : ObservableObject
         {
             _statsTimer.Stop();
             CpuText = RamText = UptimeText = "—";
+            _cpuHistory.Clear();
+            _ramHistory.Clear();
+            CpuSeries = null;
+            RamSeries = null;
             ConnectedPlayers.Clear();
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
@@ -383,8 +422,18 @@ public partial class ServerViewModel : ObservableObject
         RunOnUi(() =>
         {
             ConsoleLines.Add(line);
+            if (MatchesConsoleFilter(line))
+                VisibleConsoleLines.Add(line);
+
             if (ConsoleLines.Count > MaxConsoleLines)
+            {
+                var removed = ConsoleLines[0];
                 ConsoleLines.RemoveAt(0);
+                // The visible list is an ordered subset of ConsoleLines, so if the trimmed line
+                // matched the filter it is exactly the visible head.
+                if (VisibleConsoleLines.Count > 0 && MatchesConsoleFilter(removed))
+                    VisibleConsoleLines.RemoveAt(0);
+            }
 
             TrackPlayers(line);
         });
@@ -398,6 +447,10 @@ public partial class ServerViewModel : ObservableObject
         {
             if (!ConnectedPlayers.Contains(joined)) ConnectedPlayers.Add(joined);
             UpdatePlayerCount();
+            // Only toast when nobody is looking at the app (tray/minimized/unfocused);
+            // if you're watching the console you already saw the join line.
+            if (ToastService.MainWindowInactive)
+                ToastService.Shared.Notify(Name, string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
             return;
         }
 
@@ -487,6 +540,8 @@ public partial class ServerViewModel : ObservableObject
             OnConsoleLine(reason is not null
                 ? string.Format(Localizer.Get("Msg_ServerCrashedReasonFmt"), codeText, reason)
                 : string.Format(Localizer.Get("Msg_ServerCrashedFmt"), codeText));
+            if (ToastService.MainWindowInactive)
+                ToastService.Shared.Notify(Name, Localizer.Get("Notif_Crashed"));
 
             var stableRun = _lastRunningAtUtc is { } last && DateTime.UtcNow - last >= StabilityWindow;
             if (stableRun) _consecutiveCrashes = 0;
@@ -495,6 +550,8 @@ public partial class ServerViewModel : ObservableObject
             if (_consecutiveCrashes > MaxAutoRestarts)
             {
                 OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartGaveUpFmt"), MaxAutoRestarts));
+                if (ToastService.MainWindowInactive)
+                    ToastService.Shared.Notify(Name, Localizer.Get("Notif_GaveUp"));
                 return;
             }
 
@@ -692,7 +749,11 @@ public partial class ServerViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ClearConsole() => ConsoleLines.Clear();
+    private void ClearConsole()
+    {
+        ConsoleLines.Clear();
+        VisibleConsoleLines.Clear();
+    }
 
     /// <summary>
     /// Creates (if it doesn't exist) the Playit tunnel for this server's port, using the write
@@ -950,6 +1011,14 @@ public partial class ServerViewModel : ObservableObject
         CpuText = $"{sample.CpuPercent:0.#} %";
         RamText = $"{sample.RamMb} MB";
         UptimeText = FormatUptime(sample.Uptime);
+
+        // Feed the mini charts; snapshots because the Sparkline control re-renders per assignment.
+        _cpuHistory.Add(sample.CpuPercent);
+        _ramHistory.Add(sample.RamMb);
+        if (_cpuHistory.Count > MaxStatSamples) _cpuHistory.RemoveAt(0);
+        if (_ramHistory.Count > MaxStatSamples) _ramHistory.RemoveAt(0);
+        CpuSeries = _cpuHistory.ToArray();
+        RamSeries = _ramHistory.ToArray();
     }
 
     private static string FormatUptime(TimeSpan t) =>

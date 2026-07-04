@@ -167,6 +167,12 @@
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] Automatischer Neustart (Versuch {0} von {1})...</value></data>
   <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] Der Server ist mehrmals hintereinander abgestürzt; er wird nicht mehr automatisch neu gestartet (Grenze: {0} Versuche). Prüfe die Konsole oder den Ordner crash-reports.</value></data>
   <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Automatischer Neustart abgebrochen: Port {0} ist belegt.</value></data>
+  <data name="Tray_Show" xml:space="preserve"><value>Anzeigen</value></data>
+  <data name="Tray_Exit" xml:space="preserve"><value>Beenden</value></data>
+  <data name="Console_FilterPlaceholder" xml:space="preserve"><value>Konsole filtern...</value></data>
+  <data name="Notif_PlayerJoinedFmt" xml:space="preserve"><value>{0} ist dem Server beigetreten.</value></data>
+  <data name="Notif_Crashed" xml:space="preserve"><value>Der Server wurde unerwartet beendet.</value></data>
+  <data name="Notif_GaveUp" xml:space="preserve"><value>Er ist mehrmals hintereinander abgestürzt; er wird nicht mehr automatisch neu gestartet.</value></data>
   <data name="Msg_BackupCreatingFmt" xml:space="preserve"><value>[Launcher] Sicherung von "{0}" wird erstellt...</value></data>
   <data name="Msg_BackupCreatedFmt" xml:space="preserve"><value>[Launcher] Sicherung erstellt ({0} MB).</value></data>
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Aktueller Zustand wird vor der Wiederherstellung gesichert (falls du es rückgängig machen möchtest)...</value></data>
@@ -269,6 +275,7 @@
   <data name="Whatsnew_1_2_4" xml:space="preserve"><value>• Mehr Sicherheit: Der Forge-Installer wird jetzt anhand der Prüfsumme von Forges eigenem Maven verifiziert, und der App-Updater prüft den heruntergeladenen Installer, bevor er ihn ausführt.</value></data>
   <data name="Whatsnew_1_2_5" xml:space="preserve"><value>• Wenn ein Server unerwartet von selbst beendet wird (nicht über den Stopp-Button), wird er jetzt automatisch neu gestartet (bis zu 3 Versuche) und zeigt den Grund an, falls ein Absturzbericht verfügbar ist.&#10;• Die Konsole jedes Servers wird jetzt zusätzlich in einer dauerhaften Protokolldatei gespeichert, damit der Verlauf beim Schließen der App nicht verloren geht.</value></data>
   <data name="Whatsnew_1_3_0" xml:space="preserve"><value>• Automatische Welt-Sicherungen: Vor jedem Start und beim Stoppen des Servers wird eine Zip-Sicherung erstellt, mit konfigurierbarer Aufbewahrung (standardmäßig die letzten 5).&#10;• Neuer Tab "Sicherungen": Erstelle jederzeit eine manuelle Sicherung und stelle jede gespeicherte mit einem Klick wieder her.</value></data>
+  <data name="Whatsnew_1_4_0" xml:space="preserve"><value>• Die App minimiert sich jetzt in den Infobereich (Tray) und benachrichtigt dich, wenn ein Spieler beitritt, der Server abstürzt oder der automatische Neustart aufgibt.&#10;• Neuer Suchfilter in der Konsole und Mini-Diagramme für CPU und RAM in den Statuskarten.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Klicke auf einen Befehl, um ihn in das Feld zu setzen und die Details auszufüllen. Diese Befehle funktionieren nur, wenn der Server läuft.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Ja</value></data>
   <data name="Btn_No" xml:space="preserve"><value>Nein</value></data>

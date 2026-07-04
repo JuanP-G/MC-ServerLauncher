@@ -167,6 +167,12 @@
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] A reiniciar automaticamente (tentativa {0} de {1})...</value></data>
   <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] O servidor caiu várias vezes seguidas; não será reiniciado automaticamente mais vezes (limite: {0} tentativas). Verifica a consola ou a pasta crash-reports.</value></data>
   <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Reinício automático cancelado: a porta {0} está ocupada.</value></data>
+  <data name="Tray_Show" xml:space="preserve"><value>Mostrar</value></data>
+  <data name="Tray_Exit" xml:space="preserve"><value>Sair</value></data>
+  <data name="Console_FilterPlaceholder" xml:space="preserve"><value>Filtrar a consola...</value></data>
+  <data name="Notif_PlayerJoinedFmt" xml:space="preserve"><value>{0} entrou no servidor.</value></data>
+  <data name="Notif_Crashed" xml:space="preserve"><value>O servidor encerrou inesperadamente.</value></data>
+  <data name="Notif_GaveUp" xml:space="preserve"><value>Caiu várias vezes seguidas; não será reiniciado automaticamente mais vezes.</value></data>
   <data name="Msg_BackupCreatingFmt" xml:space="preserve"><value>[Launcher] A criar cópia de segurança de "{0}"...</value></data>
   <data name="Msg_BackupCreatedFmt" xml:space="preserve"><value>[Launcher] Cópia de segurança criada ({0} MB).</value></data>
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] A guardar uma cópia do estado atual antes de restaurar (caso queiras desfazer)...</value></data>
@@ -269,6 +275,7 @@
   <data name="Whatsnew_1_2_4" xml:space="preserve"><value>• Mais segurança: o instalador do Forge agora é verificado com o checksum do próprio maven do Forge, e o atualizador da aplicação verifica o instalador descarregado antes de o executar.</value></data>
   <data name="Whatsnew_1_2_5" xml:space="preserve"><value>• Se um servidor encerrar sozinho de forma inesperada (não pelo botão Parar), agora é reiniciado automaticamente (até 3 tentativas), mostrando o motivo se houver um crash-report disponível.&#10;• A consola de cada servidor também passa a ser guardada num ficheiro de log persistente, para não perderes o histórico ao fechar a aplicação.</value></data>
   <data name="Whatsnew_1_3_0" xml:space="preserve"><value>• Cópias de segurança automáticas do mundo: é criado um zip antes de cada arranque e ao parar o servidor, com retenção configurável (as últimas 5, por predefinição).&#10;• Novo separador "Cópias de segurança": faz uma cópia manual a qualquer momento e restaura qualquer uma guardada com um clique.</value></data>
+  <data name="Whatsnew_1_4_0" xml:space="preserve"><value>• A aplicação agora minimiza para a bandeja do sistema e avisa-te quando um jogador entra, o servidor cai ou o reinício automático desiste.&#10;• Novo filtro de pesquisa na consola e mini-gráficos de CPU e RAM nos cartões de estado.</value></data>
   <data name="Cmd_HelpIntro" xml:space="preserve"><value>Clica num comando para o pôr na caixa e preencher os dados. Estes comandos só funcionam com o servidor ligado.</value></data>
   <data name="Btn_Yes" xml:space="preserve"><value>Sim</value></data>
   <data name="Btn_No" xml:space="preserve"><value>Não</value></data>

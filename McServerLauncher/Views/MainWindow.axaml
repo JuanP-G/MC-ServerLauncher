@@ -5,6 +5,7 @@
         xmlns:ic="using:FluentIcons.Avalonia"
         xmlns:views="using:McServerLauncher.Views"
         xmlns:vm="using:McServerLauncher.ViewModels"
+        xmlns:controls="using:McServerLauncher.Controls"
         x:Class="McServerLauncher.Views.MainWindow"
         x:CompileBindings="False"
         Title="MC Server Launcher"
@@ -279,12 +280,18 @@
                             <StackPanel>
                                 <TextBlock Text="CPU" Classes="statLabel" />
                                 <TextBlock Text="{Binding CpuText}" Classes="statValue" />
+                                <controls:Sparkline Height="22" Margin="0,4,0,0"
+                                                    Values="{Binding CpuSeries}" MaxValue="100"
+                                                    Stroke="#3FB950" />
                             </StackPanel>
                         </Border>
                         <Border Classes="stat">
                             <StackPanel>
                                 <TextBlock Text="RAM" Classes="statLabel" />
                                 <TextBlock Text="{Binding RamText}" Classes="statValue" />
+                                <controls:Sparkline Height="22" Margin="0,4,0,0"
+                                                    Values="{Binding RamSeries}"
+                                                    Stroke="#5A8AB5" />
                             </StackPanel>
                         </Border>
                         <Border Classes="stat">
@@ -346,9 +353,12 @@
                                 <!-- Console -->
                                 <Border Grid.Row="0" Classes="stat" Margin="0" Padding="0">
                                     <Grid RowDefinitions="Auto,*">
-                                        <Grid Grid.Row="0" Margin="12,8">
-                                            <TextBlock Text="{loc:Loc Console}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                            <Button HorizontalAlignment="Right" Command="{Binding ClearConsoleCommand}" Padding="8,2">
+                                        <Grid Grid.Row="0" Margin="12,8" ColumnDefinitions="Auto,*,Auto,Auto">
+                                            <TextBlock Grid.Column="0" Text="{loc:Loc Console}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                            <TextBox Grid.Column="2" Width="240" Margin="0,0,8,0" Padding="8,4"
+                                                     Text="{Binding ConsoleFilter, Mode=TwoWay}"
+                                                     Watermark="{loc:Loc Console_FilterPlaceholder}" />
+                                            <Button Grid.Column="3" Command="{Binding ClearConsoleCommand}" Padding="8,2" VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                                     <ic:SymbolIcon Symbol="Eraser" />
                                                     <TextBlock Text="{loc:Loc Clear}" />
@@ -356,7 +366,7 @@
                                             </Button>
                                         </Grid>
                                         <ListBox Grid.Row="1" x:Name="ConsoleList" Classes="console"
-                                                 ItemsSource="{Binding ConsoleLines}"
+                                                 ItemsSource="{Binding VisibleConsoleLines}"
                                                  b:AutoScrollBehavior.AutoScroll="True"
                                                  FontFamily="Cascadia Mono, Consolas, monospace"
                                                  FontSize="12" Background="#1E1E1E" BorderThickness="0"

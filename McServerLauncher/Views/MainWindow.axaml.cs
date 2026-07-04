@@ -27,6 +27,14 @@ public partial class MainWindow : Window
             if (e.PropertyName == nameof(MainViewModel.SelectedServer))
                 ServerTabs.SelectedIndex = 0;
         };
+
+        // Minimize-to-tray: hiding the window removes it from the taskbar; the tray icon (see App)
+        // is the way back. Servers keep running in the background.
+        PropertyChanged += (_, e) =>
+        {
+            if (e.Property == WindowStateProperty && WindowState == WindowState.Minimized)
+                Hide();
+        };
     }
 
     protected override async void OnClosing(WindowClosingEventArgs e)
