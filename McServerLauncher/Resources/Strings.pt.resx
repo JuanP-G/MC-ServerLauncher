@@ -408,4 +408,5 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Pára o servidor antes de atualizar (o ficheiro antigo está em uso).</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Atualizar para {0}</value></data>
   <data name="Whatsnew_1_5_0" xml:space="preserve"><value>• Já podes procurar atualizações dos teus mods e plugins instalados com um botão: a app identifica cada ficheiro no Modrinth e avisa-te dos que têm uma versão mais recente.&#10;• Atualiza cada mod com um clique (transferência verificada por checksum, mantém o estado ativado/desativado).</value></data>
+  <data name="Whatsnew_1_6_0" xml:space="preserve"><value>• Ao minimizar, a janela fica na barra de tarefas como qualquer app normal.&#10;• Ao fechar no X, a app continua em segundo plano (com os servidores ativos) e sai da barra de tarefas — fica na bandeja do sistema.&#10;• Para a fechar de vez, clica com o botão direito no ícone da bandeja e escolhe Sair.</value></data>
 </root>

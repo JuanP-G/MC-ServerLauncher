@@ -12,6 +12,7 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
     private bool _shuttingDown;
+    private bool _exitRequested;
 
     public MainWindow()
     {
@@ -28,17 +29,30 @@ public partial class MainWindow : Window
                 ServerTabs.SelectedIndex = 0;
         };
 
-        // Minimize-to-tray: hiding the window removes it from the taskbar; the tray icon (see App)
-        // is the way back. Servers keep running in the background.
-        PropertyChanged += (_, e) =>
-        {
-            if (e.Property == WindowStateProperty && WindowState == WindowState.Minimized)
-                Hide();
-        };
+    }
+
+    /// <summary>
+    /// Really quit the app (stops servers and exits). Called from the tray's Exit menu; closing the
+    /// window with the X button only hides it to the tray (see <see cref="OnClosing"/>).
+    /// </summary>
+    public void RequestExit()
+    {
+        _exitRequested = true;
+        Show();          // make sure the window exists/isn't hidden so Close() runs its handler
+        Close();
     }
 
     protected override async void OnClosing(WindowClosingEventArgs e)
     {
+        // VPN-style behavior: clicking the X doesn't quit, it hides the window to the tray (removing it
+        // from the taskbar) and keeps the servers running. Exit only happens from the tray's Exit menu.
+        if (!_exitRequested)
+        {
+            e.Cancel = true;
+            Hide();
+            return;
+        }
+
         // Avoid closing abruptly with servers running: stop them cleanly first.
         if (!_shuttingDown)
         {

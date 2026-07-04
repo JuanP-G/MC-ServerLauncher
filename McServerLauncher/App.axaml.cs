@@ -42,8 +42,9 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// System tray icon: lets the app live minimized in the tray (the window hides itself when
-    /// minimized, see MainWindow) and offers Show/Exit. Clicking the icon restores the window.
+    /// System tray icon: lets the app live in the background after the window is closed to the tray
+    /// (see MainWindow.OnClosing) and offers Show/Exit. Clicking the icon restores the window; Exit is
+    /// the only way to actually quit.
     /// </summary>
     private void SetupTrayIcon(IClassicDesktopStyleApplicationLifetime desktop)
     {
@@ -61,7 +62,14 @@ public partial class App : Application
             var show = new NativeMenuItem(Localizer.Get("Tray_Show"));
             show.Click += (_, _) => RestoreMainWindow(desktop);
             var exit = new NativeMenuItem(Localizer.Get("Tray_Exit"));
-            exit.Click += (_, _) => desktop.MainWindow?.Close(); // goes through the clean-shutdown path
+            exit.Click += (_, _) =>
+            {
+                // The only real quit path: closing the window just hides it to the tray.
+                if (desktop.MainWindow is MainWindow mw)
+                    mw.RequestExit();
+                else
+                    desktop.MainWindow?.Close();
+            };
             menu.Items.Add(show);
             menu.Items.Add(new NativeMenuItemSeparator());
             menu.Items.Add(exit);
