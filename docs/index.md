@@ -1,7 +1,8 @@
 # MC Server Launcher — Developer Documentation
 
-Welcome to the developer documentation for **MC Server Launcher**, a Windows desktop app
-(WPF / .NET 9) to manage one or more Minecraft servers from a graphical interface.
+Welcome to the developer documentation for **MC Server Launcher**, a cross-platform desktop app
+(Avalonia / .NET 9) for Windows, Linux and macOS to manage one or more Minecraft servers from a
+graphical interface.
 
 This site has two parts:
 

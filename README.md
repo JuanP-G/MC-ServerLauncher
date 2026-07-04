@@ -79,12 +79,18 @@ dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 
 | Platform | Works? |
 |---|---|
-| Windows x64 / x86 / ARM64 | ✅ Yes |
+| Windows x64 | ✅ Yes (installer `.exe`) |
+| Windows ARM64 | ✅ Yes, via x64 emulation (no native build yet) |
 | Linux x64 | ✅ Yes (AppImage) |
 | macOS (Apple Silicon & Intel) | ✅ Yes (DMG) |
+
+> The published Windows installer is **x64 only** (Inno Setup `ArchitecturesAllowed=x64compatible`);
+> there's no separate x86 or native ARM64 build.
 
 ## 📖 Docs & data
 
 Developer documentation (architecture, contributing guide and a full **API reference**) is published with
 **DocFX** at **https://juanp-g.github.io/MC-ServerLauncher/**. Per-user data lives under
-`%APPDATA%\McServerLauncher\` (`servers.json`, `settings.json`, installed `java\`).
+`%APPDATA%\McServerLauncher\`: `servers.json`, `settings.json`, the installed `java\`, the persistent
+console `logs\` (kept 14 days) and, on Linux/macOS, `.secret.key`. Each server's own folder also
+keeps a `backups\` directory with the automatic world backups.

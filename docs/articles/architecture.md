@@ -16,14 +16,26 @@ The project (`McServerLauncher/`) is organized by responsibility:
 | `Models/` | Plain data: persisted config (`ServerConfig`), settings (`AppSettings`), enums (`ServerState`, `PlayitState`). |
 | `Services/` | All the logic with no UI: processes, files, network, Java, Playit, ports, etc. Each service is a small, focused class. |
 | `ViewModels/` | The state and commands the UI binds to (`MainViewModel`, `ServerViewModel`). No Avalonia controls here, only `ObservableObject`/`RelayCommand`. |
-| `Views/` | The XAML windows/dialogs and their thin code-behind. |
+| `Views/` | The `.axaml` windows/dialogs (Avalonia XAML) and their thin code-behind. |
 | `Localization/` | The translation system (`Localizer` + `{loc:Loc}` markup extension). |
-| `Behaviors/`, `Converters/` | Small UI helpers (auto-scroll, MOTD coloring, bool→visibility). |
+| `Behaviors/` | Attached behaviors (`AutoScrollBehavior`, MOTD coloring in `MinecraftMotd`). |
+| `Controls/` | Custom controls (`Sparkline` for the CPU/RAM mini-charts). |
 | `Resources/` | `Strings*.resx` (translations) and `app.ico`. |
 
-Data lives **per user** under `%APPDATA%\McServerLauncher\`: `servers.json` (the server list),
-`settings.json` (global settings) and `java\` (Java runtimes the app installs). There are no
-hard-coded machine paths.
+> The single value converter, `BoolOpacityConverter`, lives in `ViewModels/` — there is no
+> `Converters/` folder.
+
+Data lives **per user** under `%APPDATA%\McServerLauncher\`:
+
+- `servers.json` — the server list and each server's config.
+- `settings.json` — global settings (language, Playit key, last-seen version…).
+- `java\` — Java runtimes the app installs (Temurin/Adoptium).
+- `logs\` — the persistent console log (`launcher-yyyy-MM-dd.log`, pruned after 14 days).
+- `.secret.key` — the AES-GCM key that encrypts secrets on Linux/macOS (Windows uses DPAPI, so no
+  key file there).
+
+Each server's own folder also holds a `backups\` directory with the automatic world backups. There
+are no hard-coded machine paths.
 
 ## Key services
 
@@ -42,8 +54,38 @@ hard-coded machine paths.
   the PID listening on a port so a stuck server can be freed.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — read/write the
   server's files (`server.properties`, `ops.json`, `banned-players.json`, `whitelist.json`).
-- **`UpdateService`** — checks GitHub Releases for a newer version and downloads the installer for
-  the in-app update.
+- **`ServerCreationService`** — writes the initial files of a new server: `eula.txt`,
+  `run.bat`/`user_jvm_args.txt` and a minimal `server.properties` with the chosen port. (The jar
+  download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is
+  picked by `PortService`, all orchestrated by `CreateServerDialog`.)
+- **`ModLoaderService`** / **`PaperService`** — install a mod loader (Fabric/Forge) or a Paper build
+  onto an existing server, keeping the world.
+- **`ModrinthService`** — searches Modrinth and downloads mods/plugins (filtered by the server's type
+  and version), and drives the "check for mod updates" flow.
+- **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version
+  when the user adds one that already exists.
+- **`ServerIconService`** — generates a server's `server-icon.png`: takes any user image, crops it to
+  a centered square and scales it to 64×64 with SkiaSharp. (`ServerViewModel.LoadIcon` is what reads
+  it back for the Minecraft-style view.)
+- **`WorldBackupService`** — creates and restores zip backups of a server's world folder
+  (`<server>/backups/`), pruning old ones past the retention.
+- **`CrashReportService`** — reads `crash-reports/*.txt` to pull out the `Description:` line and show
+  a human-readable reason for a crash. (The unexpected-exit detection is `ServerProcessManager`'s
+  `UnexpectedExit` event; the auto-restart logic lives in `ServerViewModel`.)
+- **`ConsoleLogService`** — mirrors every console line to `%APPDATA%\McServerLauncher\logs\` so the
+  history survives restarts (14-day retention).
+- **`ProcessStatsService`** — samples CPU/RAM of the running `java` process for the live stats and the
+  `Sparkline` mini-charts.
+- **`ToastService`** — shows the app's own pop-up notifications — always-on-top Avalonia windows in
+  the bottom-right corner (player joined, server crashed, restart exhausted); they work even without
+  OS notification support.
+- **`SecretProtector`** — encrypts secrets at rest (DPAPI on Windows, AES-GCM + `.secret.key` on
+  Linux/macOS), used for the Playit write key.
+- **`DownloadVerifier`** — the shared checksum verifier for downloads (Mojang SHA-1, Adoptium/Paper
+  SHA-256, Modrinth SHA-512/SHA-1), deleting the file on mismatch.
+- **`Changelog`** — the per-version "what's new" notes shown after an update (see the flow below).
+- **`UpdateService`** — checks GitHub Releases for a newer version, downloads the installer for the
+  in-app update, and (best-effort) verifies it against the release's `SHA256SUMS.txt` asset.
 
 ## Important flows
 
@@ -69,7 +111,31 @@ On startup `MainViewModel.CheckForUpdatesAsync` asks `UpdateService` for the lat
 installer asset. The **Update** button (`UpdateNowCommand`) downloads the installer, stops servers,
 runs it silently and exits; the installer reinstalls and relaunches the app. After an update,
 `MainWindow.Loaded` calls `ShowWhatsNewIfUpdated`, which compares the running version with
-`AppSettings.LastVersionSeen` and shows `WhatsNewDialog` (localized) when it changed.
+`AppSettings.LastVersionSeen` and shows `WhatsNewDialog` (localized) with the notes from
+`Changelog` for every version the user hadn't seen yet.
+
+### World backups
+`WorldBackupService` zips a server's world into `<server>/backups/` on demand and automatically:
+before every start (the main safety net — it also covers Restart and auto-restart after a crash),
+after a manual clean stop, and before a restore. It keeps the most recent ones up to the configured
+retention. `ServerBackupsView` lists them and can restore any backup (taking a safety backup first).
+
+### Auto-restart after a crash
+When a server exits unexpectedly, `ServerProcessManager` raises its `UnexpectedExit` event and
+`ServerViewModel` restarts it within a budget (a few attempts inside a stability window) to avoid
+crash loops, notifying the user via `ToastService` if the budget is exhausted. `CrashReportService`
+reads the server's crash report to add a human-readable reason to that notification.
+
+### System tray
+`App` installs a `TrayIcon`. Minimizing keeps the window on the taskbar as usual; closing it with the
+**X** hides it to the tray (servers keep running) instead of quitting. The tray menu restores the
+window (**Show**) or really quits (**Exit** → `MainWindow.RequestExit`, which runs the clean
+shutdown).
+
+### Checking mods/plugins for updates
+`ServerModsViewModel` asks `ModrinthService` to identify each installed file on Modrinth and flag the
+ones with a newer version; the user updates each with one click (checksum-verified download via
+`DownloadVerifier`, preserving its enabled/disabled state).
 
 ## Localization
 
@@ -77,5 +143,5 @@ All user-facing text lives in `Resources/Strings.resx` (Spanish, the neutral/bas
 satellite files `Strings.en.resx`, `Strings.pt.resx`, `Strings.fr.resx`, `Strings.de.resx`. Code
 reads them with `Localizer.Get("Key")` (and `string.Format` for parameters); XAML uses the
 `{loc:Loc Key}` markup extension. The active language comes from `AppSettings.Language` and is
-applied in `App.OnStartup` before any window is created, so changing the language requires a
-restart. See [Contributing](contributing.md) for how to add a language or a new string.
+applied in `App.OnFrameworkInitializationCompleted` before any window is created, so changing the
+language requires a restart. See [Contributing](contributing.md) for how to add a language or a new string.

@@ -17,10 +17,27 @@ foreach ($p in @(
 }
 if (-not $iscc) { $cmd = Get-Command iscc.exe -ErrorAction SilentlyContinue; if ($cmd) { $iscc = $cmd.Source } }
 
+# La versión vive en el .csproj (fuente única de verdad); se la pasamos a Inno Setup para que el
+# nombre del instalador y su AppVersion siempre coincidan sin tocar el .iss a mano.
+[xml]$csproj = Get-Content "$root\McServerLauncher\McServerLauncher.csproj"
+$version = ($csproj.Project.PropertyGroup.Version | Where-Object { $_ }) | Select-Object -First 1
+
 if ($iscc) {
-    Write-Host "==> Generando instalador con Inno Setup..." -ForegroundColor Cyan
-    & $iscc "$root\installer\MC-ServerLauncher.iss"
+    Write-Host "==> Generando instalador con Inno Setup (versión $version)..." -ForegroundColor Cyan
+    & $iscc "/DMyAppVersion=$version" "$root\installer\MC-ServerLauncher.iss"
     Write-Host "==> Instalador creado en: $root\dist" -ForegroundColor Green
+
+    # SHA256SUMS.txt: el actualizador in-app (UpdateService) lo busca como asset de la release para
+    # verificar el .exe antes de ejecutarlo. Lo generamos para el instalador recién creado.
+    $setup = "MC-ServerLauncher-Setup-$version.exe"
+    $setupPath = Join-Path "$root\dist" $setup
+    if (Test-Path $setupPath) {
+        $hash = (Get-FileHash $setupPath -Algorithm SHA256).Hash.ToLower()
+        "$hash  $setup" | Out-File -FilePath "$root\dist\SHA256SUMS.txt" -Encoding ascii -NoNewline
+        Write-Host "==> SHA256SUMS.txt generado para $setup" -ForegroundColor Green
+    } else {
+        Write-Host "AVISO: no encontré $setup en dist\; no se generó SHA256SUMS.txt." -ForegroundColor Yellow
+    }
 } else {
     Write-Host "Inno Setup no está instalado. Instálalo desde https://jrsoftware.org/isdl.php" -ForegroundColor Yellow
     Write-Host "y vuelve a ejecutar este script para generar el instalador." -ForegroundColor Yellow

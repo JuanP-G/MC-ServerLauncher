@@ -49,24 +49,41 @@ dotnet tool install -g docfx   # solo la primera vez
    (usa `string.Format(Localizer.Get("MiClave"), arg)` si tiene huecos `{0}`).
 
 ### Añadir un ajuste de `server.properties` al editor visual
-1. Añade el control + etiqueta/descripción en `Views/ServerConfigDialog.xaml` (y enlázalo en su
+1. Añade el control + etiqueta/descripción en `Views/ServerConfigDialog.axaml` (y enlázalo en su
    code-behind).
 2. Lee/escribe la clave con `ServerPropertiesService.Read` / `Update`, que conserva el resto del
    archivo, los comentarios y el orden.
 
 ### Añadir un diálogo o servicio nuevo
-- **Diálogo:** crea `Views/MiDialogo.xaml` + `.xaml.cs` como `ui:FluentWindow`, localiza sus textos
-  con `{loc:Loc ...}` y ábrelo desde un comando del ViewModel (mira `WhatsNewDialog` o
-  `PlayitApiKeyDialog` como ejemplos pequeños).
+- **Diálogo:** crea `Views/MiDialogo.axaml` + `.axaml.cs` como una `Window` normal de Avalonia,
+  localiza sus textos con `{loc:Loc ...}` y ábrelo desde un comando del ViewModel (mira
+  `WhatsNewDialog` o `PlayitApiKeyDialog` como ejemplos pequeños).
 - **Servicio:** añade una clase centrada en `Services/`, sin interfaz, e instánciala desde el
   ViewModel correspondiente (mira cómo `ServerViewModel` compone sus servicios).
 
 ### Sacar una versión nueva
-1. Sube `<Version>` en `McServerLauncher/McServerLauncher.csproj` **y** `MyAppVersion` en
-   `installer/MC-ServerLauncher.iss`.
-2. Ejecuta `publish.ps1` (publish self-contained + instalador de Inno Setup en `dist/`).
-3. `gh release create vX.Y.Z dist/MC-ServerLauncher-Setup-X.Y.Z.exe` con notas **bilingües**.
-4. El actualizador de la app busca el asset `.exe` en la última release, así que adjúntalo siempre.
+1. Sube `<Version>` en `McServerLauncher/McServerLauncher.csproj` — es la **fuente única de verdad**.
+   `publish.ps1` la lee y se la pasa a Inno Setup, así que no tocas el `.iss` (su `MyAppVersion` es
+   solo un valor por defecto para compilar el instalador a mano).
+2. Añade una entrada de **novedades** para que el diálogo de actualización tenga algo que mostrar:
+   - Una nueva tupla al principio de `Entries` en `Services/Changelog.cs` (la más nueva primero),
+     p. ej. `(new Version(1, 6, 0), "Whatsnew_1_6_0")`.
+   - La clave `Whatsnew_x_y_z` correspondiente en **los cinco** archivos `.resx` (el texto en español
+     en el neutral `Strings.resx`, las traducciones en el resto). Mira *Añadir un texto traducible*
+     más arriba.
+3. Ejecuta `publish.ps1`. Publica el build self-contained `win-x64`, genera el instalador de Inno
+   Setup en `dist/` **y** escribe `dist/SHA256SUMS.txt` junto a él.
+4. Crea la release con **ambos** assets y notas **bilingües**:
+   ```powershell
+   gh release create vX.Y.Z dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt
+   ```
+   - El actualizador de la app busca el asset `.exe` (así que adjúntalo siempre) **y** el
+     `SHA256SUMS.txt`, que usa para verificar el instalador antes de ejecutarlo
+     (`UpdateService.CheckAsync`). Sin ese archivo la actualización se ejecuta igual, pero sin
+     verificar — no lo omitas.
+5. Publicar la release dispara automáticamente los workflows de **Linux** (`release-linux.yml`) y
+   **macOS** (`release-macos.yml`), que generan y adjuntan el `.AppImage` y los dos `.dmg`. No los
+   subas a mano — basta con esperar a que terminen los workflows.
 
 ## Sitio de documentación (GitHub Pages)
 
