@@ -399,4 +399,13 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Cmd_SaveAll_Desc" xml:space="preserve"><value>Guarda o mundo no disco imediatamente.</value></data>
   <data name="Cmd_Stop_Title" xml:space="preserve"><value>stop</value></data>
   <data name="Cmd_Stop_Desc" xml:space="preserve"><value>Desliga o servidor em segurança (guardando o mundo).</value></data>
+  <data name="CheckUpdates" xml:space="preserve"><value>Procurar atualizações</value></data>
+  <data name="Msg_CheckingUpdates" xml:space="preserve"><value>A procurar atualizações…</value></data>
+  <data name="Msg_UpdatesFoundFmt" xml:space="preserve"><value>{0} atualização(ões) disponível(is)</value></data>
+  <data name="Msg_NoUpdates" xml:space="preserve"><value>Está tudo atualizado</value></data>
+  <data name="Msg_ModUpdated" xml:space="preserve"><value>Atualizado ✔</value></data>
+  <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Não foi possível atualizar: {0}</value></data>
+  <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Pára o servidor antes de atualizar (o ficheiro antigo está em uso).</value></data>
+  <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Atualizar para {0}</value></data>
+  <data name="Whatsnew_1_5_0" xml:space="preserve"><value>• Já podes procurar atualizações dos teus mods e plugins instalados com um botão: a app identifica cada ficheiro no Modrinth e avisa-te dos que têm uma versão mais recente.&#10;• Atualiza cada mod com um clique (transferência verificada por checksum, mantém o estado ativado/desativado).</value></data>
 </root>

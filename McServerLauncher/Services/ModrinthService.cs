@@ -5,7 +5,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using McServerLauncher.Models;
@@ -87,6 +89,48 @@ public class ModrinthService
             // Ignore errors and return null
         }
         return null;
+    }
+
+    /// <summary>
+    /// Given the SHA-1 of each installed jar, asks Modrinth (in a single request) for the latest
+    /// version of each corresponding project that is compatible with this server's loader and Minecraft
+    /// version. Returns a map keyed by the SAME input hash the caller passed. Hashes that Modrinth
+    /// doesn't recognise (jars from CurseForge or built by hand) are simply absent from the result.
+    /// </summary>
+    public async Task<Dictionary<string, VersionResult>> GetLatestVersionsByHashAsync(
+        IEnumerable<string> sha1Hashes, ServerType loader, string mcVersion, CancellationToken ct = default)
+    {
+        var hashes = sha1Hashes.Where(h => !string.IsNullOrEmpty(h)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var result = new Dictionary<string, VersionResult>(StringComparer.OrdinalIgnoreCase);
+        if (hashes.Count == 0) return result;
+
+        var (_, _, loadersJson) = TargetFor(loader);
+        var body = new JsonObject
+        {
+            ["hashes"] = new JsonArray(hashes.Select(h => (JsonNode)JsonValue.Create(h)!).ToArray()),
+            ["algorithm"] = "sha1",
+            ["loaders"] = JsonNode.Parse(loadersJson),
+            ["game_versions"] = new JsonArray(JsonValue.Create(mcVersion)!)
+        };
+
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Post, $"{ApiBaseUrl}/version_files/update");
+            req.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
+
+            using var response = await Http.SendAsync(req, ct);
+            response.EnsureSuccessStatusCode();
+
+            var map = await response.Content.ReadFromJsonAsync<Dictionary<string, VersionResult>>(cancellationToken: ct);
+            if (map != null)
+                foreach (var kv in map)
+                    result[kv.Key] = kv.Value;
+        }
+        catch
+        {
+            // Offline or API error: report no updates rather than failing.
+        }
+        return result;
     }
 
     /// <summary>

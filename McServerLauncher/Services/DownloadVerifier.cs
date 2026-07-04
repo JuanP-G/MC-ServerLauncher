@@ -30,7 +30,8 @@ public static class DownloadVerifier
         }
     }
 
-    private static async Task<string> ComputeHashAsync(string filePath, HashAlgorithmName algorithm, CancellationToken ct)
+    /// <summary>Computes the hex-encoded hash of a file in a streaming fashion (no full read into memory).</summary>
+    public static async Task<string> ComputeHashAsync(string filePath, HashAlgorithmName algorithm, CancellationToken ct = default)
     {
         using var hasher = IncrementalHash.CreateHash(algorithm);
         await using var stream = File.OpenRead(filePath);

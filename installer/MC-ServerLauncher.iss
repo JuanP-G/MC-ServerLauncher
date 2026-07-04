@@ -3,7 +3,7 @@
 ; Antes de compilar este script hay que publicar la app (ver publish.ps1).
 
 #define MyAppName "MC Server Launcher"
-#define MyAppVersion "1.4.0"
+#define MyAppVersion "1.5.0"
 #define MyAppPublisher "JuanP-G"
 #define MyAppURL "https://github.com/JuanP-G/MC-ServerLauncher"
 #define MyAppExeName "McServerLauncher.exe"

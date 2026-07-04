@@ -129,35 +129,53 @@
             <Border Grid.Column="1" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
                     CornerRadius="8" Padding="12">
                 <Grid RowDefinitions="Auto,Auto,*">
-                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,12">
                         <TextBlock Grid.Column="0" Text="{Binding InstalledTitle}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
 
-                        <Button Grid.Column="1" Command="{Binding ExportModpackCommand}" Padding="6,4" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Export_Modpack}">
+                        <Button Grid.Column="1" Command="{Binding CheckUpdatesCommand}" Padding="6,4" Margin="0,0,8,0"
+                                IsEnabled="{Binding !IsCheckingUpdates}" ToolTip.Tip="{loc:Loc CheckUpdates}">
+                            <ic:SymbolIcon Symbol="ArrowSync" />
+                        </Button>
+
+                        <Button Grid.Column="2" Command="{Binding ExportModpackCommand}" Padding="6,4" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Export_Modpack}">
                             <ic:SymbolIcon Symbol="Share" />
                         </Button>
 
-                        <Button Grid.Column="2" Command="{Binding RefreshInstalledModsCommand}" Padding="6,4">
+                        <Button Grid.Column="3" Command="{Binding RefreshInstalledModsCommand}" Padding="6,4">
                             <ic:SymbolIcon Symbol="ArrowClockwise" />
                         </Button>
                     </Grid>
 
-                    <TextBlock Grid.Row="1" Text="{Binding NoInstalledText}" Opacity="0.7"
-                               HorizontalAlignment="Center" Margin="0,20,0,0"
-                               IsVisible="{Binding !InstalledMods.Count}" />
+                    <StackPanel Grid.Row="1">
+                        <TextBlock Text="{Binding NoInstalledText}" Opacity="0.7"
+                                   HorizontalAlignment="Center" Margin="0,20,0,0"
+                                   IsVisible="{Binding !InstalledMods.Count}" />
+                        <TextBlock Text="{Binding UpdateStatus}" Opacity="0.7" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" Margin="0,0,0,8"
+                                   IsVisible="{Binding UpdateStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
 
                     <ListBox Grid.Row="2" ItemsSource="{Binding InstalledMods}" Background="Transparent" BorderThickness="0">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,4">
+                                <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,4">
                                     <TextBlock Grid.Column="0" Text="{Binding FileName}" FontSize="13"
                                                VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                                                Opacity="{Binding IsEnabled, Converter={x:Static vm:BoolOpacityConverter.Instance}}" />
-                                    <ToggleSwitch Grid.Column="1" Margin="0,0,8,0" MinWidth="0" VerticalAlignment="Center"
+                                    <Button Grid.Column="1" Margin="0,0,4,0" Background="Transparent" Padding="4"
+                                            VerticalAlignment="Center"
+                                            IsVisible="{Binding UpdateAvailable}" IsEnabled="{Binding !IsUpdating}"
+                                            ToolTip.Tip="{Binding UpdateTooltip}"
+                                            Command="{Binding DataContext.UpdateModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            CommandParameter="{Binding}">
+                                        <ic:SymbolIcon Symbol="ArrowUp" Foreground="#3FB950" />
+                                    </Button>
+                                    <ToggleSwitch Grid.Column="2" Margin="0,0,8,0" MinWidth="0" VerticalAlignment="Center"
                                                   OnContent="" OffContent="" ToolTip.Tip="{loc:Loc Tip_ToggleMod}"
                                                   IsChecked="{Binding IsEnabled, Mode=OneWay}"
                                                   Command="{Binding DataContext.ToggleModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                                   CommandParameter="{Binding}" />
-                                    <Button Grid.Column="2" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="4"
+                                    <Button Grid.Column="3" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="4"
                                             Command="{Binding DataContext.DeleteModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                             CommandParameter="{Binding}">
                                         <ic:SymbolIcon Symbol="Delete" Foreground="#E05561" />

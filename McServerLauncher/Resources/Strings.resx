@@ -445,4 +445,13 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Cmd_SaveAll_Desc" xml:space="preserve"><value>Guarda el mundo en disco de inmediato.</value></data>
   <data name="Cmd_Stop_Title" xml:space="preserve"><value>stop</value></data>
   <data name="Cmd_Stop_Desc" xml:space="preserve"><value>Apaga el servidor de forma segura (guardando el mundo).</value></data>
+  <data name="CheckUpdates" xml:space="preserve"><value>Buscar actualizaciones</value></data>
+  <data name="Msg_CheckingUpdates" xml:space="preserve"><value>Buscando actualizaciones…</value></data>
+  <data name="Msg_UpdatesFoundFmt" xml:space="preserve"><value>{0} actualización(es) disponible(s)</value></data>
+  <data name="Msg_NoUpdates" xml:space="preserve"><value>Todo está actualizado</value></data>
+  <data name="Msg_ModUpdated" xml:space="preserve"><value>Actualizado ✔</value></data>
+  <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>No se pudo actualizar: {0}</value></data>
+  <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Detén el servidor antes de actualizar (el archivo antiguo está en uso).</value></data>
+  <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Actualizar a {0}</value></data>
+  <data name="Whatsnew_1_5_0" xml:space="preserve"><value>• Ahora puedes buscar actualizaciones de tus mods y plugins instalados con un botón: la app identifica cada archivo en Modrinth y te avisa de cuáles tienen una versión más nueva.&#10;• Actualiza cada mod con un clic (descarga verificada con checksum, conserva su estado activado/desactivado).</value></data>
 </root>

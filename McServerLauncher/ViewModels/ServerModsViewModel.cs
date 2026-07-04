@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -41,6 +42,14 @@ public partial class ServerModsViewModel : ObservableObject
 
     [ObservableProperty]
     private string _searchStatus = string.Empty;
+
+    // --- Installed mods update-check state ---
+
+    [ObservableProperty]
+    private bool _isCheckingUpdates;
+
+    [ObservableProperty]
+    private string _updateStatus = string.Empty;
 
     /// <summary>Sort options shown in the UI. Index 0 = relevance, 1 = downloads.</summary>
     public IReadOnlyList<string> SortOptions { get; } = new[]
@@ -119,6 +128,8 @@ public partial class ServerModsViewModel : ObservableObject
     private void RefreshInstalledMods()
     {
         InstalledMods.Clear();
+        // The rebuilt items carry no update flag, so drop any stale "N updates available" text.
+        UpdateStatus = string.Empty;
         var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
         if (Directory.Exists(modsFolder))
         {
@@ -135,6 +146,131 @@ public partial class ServerModsViewModel : ObservableObject
                 var display = isEnabled ? name : name[..^".disabled".Length];
                 InstalledMods.Add(new ModItem(file, display, isEnabled));
             }
+        }
+    }
+
+    /// <summary>
+    /// Identifies each installed jar by its SHA-1 through Modrinth and flags the ones with a newer
+    /// compatible version. Jars Modrinth doesn't know (CurseForge, hand-built) are left untouched.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanCheckUpdates))]
+    private async Task CheckUpdates(CancellationToken ct)
+    {
+        if (InstalledMods.Count == 0) return;
+        if (_config.Type == ServerType.Vanilla || string.IsNullOrEmpty(_config.GameVersion))
+        {
+            UpdateStatus = Localizer.Get("Msg_ModBrowserNeedsLoader");
+            return;
+        }
+
+        IsCheckingUpdates = true;
+        UpdateStatus = Localizer.Get("Msg_CheckingUpdates");
+        try
+        {
+            // Map each jar's SHA-1 to its ModItem (disabled ones included) and clear any prior flag.
+            var byHash = new Dictionary<string, ModItem>(StringComparer.OrdinalIgnoreCase);
+            foreach (var mod in InstalledMods)
+            {
+                mod.Update = null;
+                try
+                {
+                    var sha1 = await DownloadVerifier.ComputeHashAsync(mod.FilePath, HashAlgorithmName.SHA1, ct);
+                    byHash[sha1] = mod;
+                }
+                catch { /* unreadable/locked file: skip it */ }
+            }
+
+            var latest = await _modrinthService.GetLatestVersionsByHashAsync(byHash.Keys, _config.Type, _config.GameVersion, ct);
+
+            var updates = 0;
+            foreach (var (installedHash, version) in latest)
+            {
+                if (!byHash.TryGetValue(installedHash, out var mod)) continue;
+                var file = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.FirstOrDefault();
+                if (file is null) continue;
+
+                // If the latest compatible version's file differs from the installed one, it's an update.
+                if (!string.Equals(file.Hashes?.Sha1, installedHash, StringComparison.OrdinalIgnoreCase))
+                {
+                    mod.Update = new ModUpdateInfo(version.VersionNumber, file.Url,
+                        Path.GetFileName(file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1);
+                    updates++;
+                }
+            }
+
+            UpdateStatus = updates > 0
+                ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), updates)
+                : Localizer.Get("Msg_NoUpdates");
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ex.Message);
+        }
+        finally
+        {
+            IsCheckingUpdates = false;
+        }
+    }
+
+    private bool CanCheckUpdates => !IsCheckingUpdates;
+
+    partial void OnIsCheckingUpdatesChanged(bool value) => CheckUpdatesCommand.NotifyCanExecuteChanged();
+
+    /// <summary>Downloads the newer version flagged by <see cref="CheckUpdates"/> and replaces the old jar.</summary>
+    [RelayCommand]
+    private async Task UpdateMod(ModItem? mod)
+    {
+        if (mod?.Update is null || mod.IsUpdating) return;
+
+        mod.IsUpdating = true;
+        try
+        {
+            var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
+            Directory.CreateDirectory(modsFolder);
+            var wasDisabled = !mod.IsEnabled;
+
+            // Download+verify the new jar under its own (enabled) name first, so a failure never
+            // destroys the currently installed one.
+            var enabledPath = Path.Combine(modsFolder, mod.Update.FileName);
+            await _modrinthService.DownloadModAsync(mod.Update.Url, enabledPath, mod.Update.Sha512, mod.Update.Sha1);
+
+            // Remove the previous jar when the new version has a different file name.
+            var sameFile = string.Equals(
+                Path.GetFullPath(mod.FilePath), Path.GetFullPath(enabledPath), StringComparison.OrdinalIgnoreCase);
+            if (!sameFile)
+            {
+                try
+                {
+                    File.Delete(mod.FilePath);
+                }
+                catch
+                {
+                    // Old jar in use (server running): keeping both would load two versions of the
+                    // mod. Roll the new one back and tell the user to stop the server first.
+                    try { File.Delete(enabledPath); } catch { /* best-effort */ }
+                    UpdateStatus = Localizer.Get("Msg_UpdateNeedsStop");
+                    return;
+                }
+            }
+
+            // Preserve the enabled/disabled state the mod had.
+            if (wasDisabled)
+            {
+                var disabledPath = enabledPath + ".disabled";
+                try { if (File.Exists(disabledPath)) File.Delete(disabledPath); } catch { /* best-effort */ }
+                File.Move(enabledPath, disabledPath);
+            }
+
+            UpdateStatus = Localizer.Get("Msg_ModUpdated");
+            RefreshInstalledMods();
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus = string.Format(Localizer.Get("Msg_UpdateErrorFmt"), ex.Message);
+        }
+        finally
+        {
+            mod.IsUpdating = false;
         }
     }
 

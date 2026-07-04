@@ -399,4 +399,13 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Cmd_SaveAll_Desc" xml:space="preserve"><value>Speichert die Welt sofort auf der Festplatte.</value></data>
   <data name="Cmd_Stop_Title" xml:space="preserve"><value>stop</value></data>
   <data name="Cmd_Stop_Desc" xml:space="preserve"><value>Fährt den Server sicher herunter (die Welt wird gespeichert).</value></data>
+  <data name="CheckUpdates" xml:space="preserve"><value>Nach Updates suchen</value></data>
+  <data name="Msg_CheckingUpdates" xml:space="preserve"><value>Suche nach Updates…</value></data>
+  <data name="Msg_UpdatesFoundFmt" xml:space="preserve"><value>{0} Update(s) verfügbar</value></data>
+  <data name="Msg_NoUpdates" xml:space="preserve"><value>Alles ist aktuell</value></data>
+  <data name="Msg_ModUpdated" xml:space="preserve"><value>Aktualisiert ✔</value></data>
+  <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Aktualisierung fehlgeschlagen: {0}</value></data>
+  <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Stoppe den Server vor der Aktualisierung (die alte Datei wird verwendet).</value></data>
+  <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Auf {0} aktualisieren</value></data>
+  <data name="Whatsnew_1_5_0" xml:space="preserve"><value>• Du kannst jetzt deine installierten Mods und Plugins per Knopfdruck auf Updates prüfen: Die App erkennt jede Datei auf Modrinth und markiert die mit einer neueren Version.&#10;• Aktualisiere jeden Mod mit einem Klick (per Checksumme geprüfter Download, behält den aktiviert/deaktiviert-Zustand bei).</value></data>
 </root>

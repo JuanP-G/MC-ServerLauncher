@@ -399,4 +399,13 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Cmd_SaveAll_Desc" xml:space="preserve"><value>Saves the world to disk immediately.</value></data>
   <data name="Cmd_Stop_Title" xml:space="preserve"><value>stop</value></data>
   <data name="Cmd_Stop_Desc" xml:space="preserve"><value>Shuts down the server safely (saving the world).</value></data>
+  <data name="CheckUpdates" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="Msg_CheckingUpdates" xml:space="preserve"><value>Checking for updates…</value></data>
+  <data name="Msg_UpdatesFoundFmt" xml:space="preserve"><value>{0} update(s) available</value></data>
+  <data name="Msg_NoUpdates" xml:space="preserve"><value>Everything is up to date</value></data>
+  <data name="Msg_ModUpdated" xml:space="preserve"><value>Updated ✔</value></data>
+  <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Could not update: {0}</value></data>
+  <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Stop the server before updating (the old file is in use).</value></data>
+  <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Update to {0}</value></data>
+  <data name="Whatsnew_1_5_0" xml:space="preserve"><value>• You can now check your installed mods and plugins for updates with one button: the app identifies each file on Modrinth and flags the ones with a newer version.&#10;• Update each mod in one click (checksum-verified download, keeps its enabled/disabled state).</value></data>
 </root>
