@@ -47,8 +47,17 @@ public class ServerPropertiesService
     }
 
     /// <summary>
+    /// Strips CR/LF from a value (or key) before it's embedded in the line-oriented
+    /// server.properties format. Without this, a value containing "\n" (e.g. pasted into the MOTD
+    /// or the server name) would inject arbitrary extra keys — say "enable-rcon=true" — into the
+    /// file. Same idea as the player-name sanitization for stdin commands.
+    /// </summary>
+    public static string SanitizeValue(string value) => value.Replace("\r", "").Replace("\n", "");
+
+    /// <summary>
     /// Updates the given keys in server.properties, preserving the rest of the lines,
     /// comments and order. New keys are appended at the end. Creates the file if it doesn't exist.
+    /// Keys and values are sanitized (no CR/LF) so no input can inject extra lines.
     /// </summary>
     public void Update(string propertiesPath, IDictionary<string, string> changes)
     {
@@ -56,7 +65,9 @@ public class ServerPropertiesService
             ? File.ReadAllLines(propertiesPath).ToList()
             : new List<string>();
 
-        var remaining = new Dictionary<string, string>(changes, StringComparer.OrdinalIgnoreCase);
+        var remaining = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var kv in changes)
+            remaining[SanitizeValue(kv.Key)] = SanitizeValue(kv.Value);
 
         for (var i = 0; i < lines.Count; i++)
         {

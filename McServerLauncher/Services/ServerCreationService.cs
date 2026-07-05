@@ -46,7 +46,10 @@ public class ServerCreationService
         if (File.Exists(path))
             return;
 
-        var content = $"#Minecraft server properties\r\nserver-port={port}\r\nmotd={motd}\r\n";
+        // The MOTD derives from the user-typed server name: sanitize it so a pasted value with
+        // line breaks can't inject extra keys into the file (see ServerPropertiesService).
+        var safeMotd = ServerPropertiesService.SanitizeValue(motd);
+        var content = $"#Minecraft server properties\r\nserver-port={port}\r\nmotd={safeMotd}\r\n";
         File.WriteAllText(path, content);
     }
 }
