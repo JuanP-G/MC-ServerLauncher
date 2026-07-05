@@ -415,4 +415,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_ServersRecoveredFmt" xml:space="preserve"><value>The server list file was damaged; the last good copy was restored (the most recent change may be missing).&#10;&#10;The damaged file was kept at:&#10;{0}</value></data>
   <data name="Msg_ServersCorruptFmt" xml:space="preserve"><value>The server list could not be read and there was no usable backup. The app starts with no servers, but the folders are still on disk: use "Add" to bring them back.&#10;&#10;The damaged file was kept at:&#10;{0}</value></data>
   <data name="Msg_UpdateNoChecksum" xml:space="preserve"><value>The new version doesn't publish its verification file (SHA256SUMS.txt), or it couldn't be read, so the installer can't be checked. For safety it won't run automatically: the release page will open so you can download it manually if you wish.</value></data>
+  <data name="Msg_VerifyingFabricJar" xml:space="preserve"><value>[Launcher] Checking the downloaded jar's structure...</value></data>
+  <data name="Msg_FabricJarInvalidFmt" xml:space="preserve"><value>The downloaded Fabric server doesn't have the expected structure (install.properties with version {0} and loader {1}). It was discarded for safety; try again.</value></data>
 </root>

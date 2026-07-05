@@ -104,8 +104,12 @@ public class ServerDetectionService
         return idx > 0 ? (id[..idx], id[(idx + 1)..]) : (id, string.Empty);
     }
 
-    /// <summary>Reads game-version and fabric-loader-version from the fabric launcher jar's install.properties.</summary>
-    private static (string? game, string? loader) ReadFabricInstall(string jarPath)
+    /// <summary>
+    /// Reads game-version and fabric-loader-version from the fabric launcher jar's
+    /// install.properties. Also used by <see cref="ModLoaderService"/> to structurally validate a
+    /// freshly-downloaded Fabric server jar (Fabric's meta endpoint publishes no checksums).
+    /// </summary>
+    internal static (string? game, string? loader) ReadFabricInstall(string jarPath)
     {
         try
         {

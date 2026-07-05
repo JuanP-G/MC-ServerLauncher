@@ -62,7 +62,10 @@ are no hard-coded machine paths.
   download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is
   picked by `PortService`, all orchestrated by `CreateServerDialog`.)
 - **`ModLoaderService`** / **`PaperService`** — install a mod loader (Fabric/Forge) or a Paper build
-  onto an existing server, keeping the world.
+  onto an existing server, keeping the world. Known limitation: Fabric's meta endpoint publishes no
+  checksums, so its server jar can't be hash-verified like the other sources (Mojang SHA-1, Paper
+  SHA-256…); instead the downloaded jar is structurally validated (its `install.properties` must
+  match the requested game/loader versions) and discarded on mismatch.
 - **`ModrinthService`** — searches Modrinth and downloads mods/plugins (filtered by the server's type
   and version), and drives the "check for mod updates" flow.
 - **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version

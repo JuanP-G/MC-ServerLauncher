@@ -61,7 +61,11 @@ mundo. No hay rutas fijas del equipo en el código.
   del jar la hacen `MinecraftVersionService`/`ModLoaderService`/`PaperService` y el puerto lo elige
   `PortService`, todo orquestado por `CreateServerDialog`.)
 - **`ModLoaderService`** / **`PaperService`** — instalan un mod loader (Fabric/Forge) o un build de
-  Paper sobre un servidor existente, conservando el mundo.
+  Paper sobre un servidor existente, conservando el mundo. Limitación conocida: el endpoint meta de
+  Fabric no publica checksums, así que su jar de servidor no se puede verificar por hash como las
+  demás fuentes (Mojang SHA-1, Paper SHA-256…); en su lugar el jar descargado se valida
+  estructuralmente (su `install.properties` debe coincidir con las versiones de juego/loader
+  pedidas) y se descarta si no cuadra.
 - **`ModrinthService`** — busca en Modrinth y descarga mods/plugins (filtrados por el tipo y la
   versión del servidor), y gestiona el flujo de "buscar actualizaciones de mods".
 - **`ServerDetectionService`** — inspecciona una carpeta para averiguar el tipo/versión de un servidor

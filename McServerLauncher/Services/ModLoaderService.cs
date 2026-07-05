@@ -38,12 +38,21 @@ public class ModLoaderService
         return "0.16.2"; // Fallback just in case
     }
 
+    /// <summary>
+    /// Downloads the Fabric server launcher jar. KNOWN LIMITATION: unlike Mojang/Paper/Adoptium/
+    /// Modrinth, Fabric's meta endpoint publishes no checksum for this artifact, so a true
+    /// integrity check isn't possible without changing the source; TLS is the only transport
+    /// protection. As a structural safety net the downloaded jar is opened and required to carry
+    /// the install.properties every Fabric server launcher embeds, with exactly the game/loader
+    /// versions that were requested — a corrupted or swapped file is deleted and rejected instead
+    /// of being executed later.
+    /// </summary>
     public async Task DownloadFabricServerAsync(string gameVersion, string loaderVersion, string destPath, IProgress<string>? log, CancellationToken ct = default)
     {
         var url = $"https://meta.fabricmc.net/v2/versions/loader/{gameVersion}/{loaderVersion}/1.0.0/server/jar";
-        
+
         log?.Report(Localizer.Get("Msg_DownloadingJar"));
-        
+
         using var resp = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();
 
@@ -53,10 +62,33 @@ public class ModLoaderService
             log?.Report(string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#")));
         }
 
-        await using var fs = File.Create(destPath);
-        await resp.Content.CopyToAsync(fs, ct);
+        await using (var fs = File.Create(destPath))
+            await resp.Content.CopyToAsync(fs, ct);
+
+        log?.Report(Localizer.Get("Msg_VerifyingFabricJar"));
+        ValidateFabricServerJar(destPath, gameVersion, loaderVersion);
 
         log?.Report(Localizer.Get("Msg_DownloadComplete"));
+    }
+
+    /// <summary>
+    /// Structural validation of a downloaded Fabric server jar (see
+    /// <see cref="DownloadFabricServerAsync"/>): it must be a readable jar whose
+    /// install.properties matches the requested game and loader versions. On failure the file is
+    /// deleted (so a bad download can't linger and get executed) and an exception is thrown.
+    /// </summary>
+    public static void ValidateFabricServerJar(string jarPath, string expectedGameVersion, string expectedLoaderVersion)
+    {
+        // ReadFabricInstall swallows unreadable/corrupt jars into (null, null), which fails below.
+        var (game, loader) = ServerDetectionService.ReadFabricInstall(jarPath);
+
+        if (!string.Equals(game, expectedGameVersion, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(loader, expectedLoaderVersion, StringComparison.OrdinalIgnoreCase))
+        {
+            TryDelete(jarPath);
+            throw new InvalidOperationException(string.Format(
+                Localizer.Get("Msg_FabricJarInvalidFmt"), expectedGameVersion, expectedLoaderVersion));
+        }
     }
 
     // --- Forge ---
