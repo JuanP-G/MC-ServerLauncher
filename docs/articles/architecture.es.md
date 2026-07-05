@@ -87,9 +87,10 @@ mundo. No hay rutas fijas del equipo en el código.
   Adoptium/Paper SHA-256, Modrinth SHA-512/SHA-1), que borra el archivo si no cuadra.
 - **`Changelog`** — las notas de "novedades" por versión que se muestran tras actualizar (ver el
   flujo más abajo).
-- **`UpdateService`** — comprueba en las Releases de GitHub si hay versión más nueva, descarga el
-  instalador para la actualización dentro de la app y (best-effort) lo verifica contra el asset
-  `SHA256SUMS.txt` de la release.
+- **`UpdateService`** — comprueba en las Releases de GitHub si hay versión más nueva y descarga el
+  instalador para la actualización dentro de la app. La verificación contra el asset
+  `SHA256SUMS.txt` de la release es **obligatoria**: si el checksum falta o no se puede leer, la
+  instalación silenciosa se rechaza y se abre la página de la release en su lugar.
 
 ## Flujos importantes
 

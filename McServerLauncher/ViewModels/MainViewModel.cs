@@ -194,20 +194,23 @@ public partial class MainViewModel : ObservableObject
             var updateDir = Path.Combine(Path.GetTempPath(), "mcsl-" + Path.GetRandomFileName());
             var dest = Path.Combine(updateDir, "MC-ServerLauncher-Setup.exe");
             var updateService = new UpdateService();
+
+            // The installer runs with UAC elevation, so its checksum is REQUIRED, not best-effort.
+            // Every release since 1.6.0 ships SHA256SUMS.txt (publish.ps1 generates it), and the
+            // updater only ever offers a NEWER release than the running one — so a missing or
+            // unreadable checksum means a broken (or tampered) release: refuse the silent install
+            // and send the user to the release page instead of running an unverified binary.
+            // Resolved before the download so a refusal doesn't cost the ~35 MB transfer.
+            var expectedSha256 = string.IsNullOrEmpty(_sha256SumsUrl) || string.IsNullOrEmpty(_installerName)
+                ? null
+                : await updateService.GetExpectedSha256Async(_sha256SumsUrl, _installerName);
+            if (string.IsNullOrEmpty(expectedSha256))
+                throw new InvalidOperationException(Localizer.Get("Msg_UpdateNoChecksum"));
+
             await updateService.DownloadInstallerAsync(_installerUrl, dest);
 
-            // Verify the installer we're about to run against the release's SHA256SUMS.txt (if the
-            // release published one). Best-effort: older releases won't have it, in which case
-            // verification is simply skipped rather than blocking the update.
-            if (!string.IsNullOrEmpty(_sha256SumsUrl) && !string.IsNullOrEmpty(_installerName))
-            {
-                var expectedSha256 = await updateService.GetExpectedSha256Async(_sha256SumsUrl, _installerName);
-                if (!string.IsNullOrEmpty(expectedSha256))
-                {
-                    UpdateText = Localizer.Get("Msg_VerifyingChecksum");
-                    await DownloadVerifier.VerifyAsync(dest, expectedSha256, HashAlgorithmName.SHA256);
-                }
-            }
+            UpdateText = Localizer.Get("Msg_VerifyingChecksum");
+            await DownloadVerifier.VerifyAsync(dest, expectedSha256, HashAlgorithmName.SHA256);
 
             // Run the installer from a helper that first waits for THIS app to fully exit, then
             // launches it. This avoids the UAC-elevation race where the app closed too soon and the
@@ -232,9 +235,10 @@ public partial class MainViewModel : ObservableObject
         }
         catch (InvalidOperationException ex)
         {
-            // This is DownloadVerifier's mismatch exception: a real security-relevant event (the
-            // downloaded installer doesn't match the release's checksum), not just a network hiccup.
-            // Tell the user explicitly instead of silently falling back to the browser.
+            // Security-relevant refusals land here: either DownloadVerifier's mismatch (the
+            // downloaded installer doesn't match the release's checksum) or the release publishing
+            // no usable SHA256SUMS.txt at all. Tell the user explicitly instead of silently
+            // falling back to the browser.
             IsUpdating = false;
             UpdateText = string.Empty;
             await MessageBox.ShowAsync(ex.Message, Localizer.Get("Update_Now"), Owner);

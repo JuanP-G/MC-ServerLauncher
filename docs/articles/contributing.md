@@ -78,8 +78,8 @@ dotnet tool install -g docfx   # first time only
    ```
    - The in-app updater looks for the `.exe` asset (so always attach it) **and** for
      `SHA256SUMS.txt`, which it uses to verify the installer before running it
-     (`UpdateService.CheckAsync`). Without that file the update still runs, but unverified — don't
-     skip it.
+     (`UpdateService.CheckAsync`). Verification is **mandatory**: without that file the updater
+     refuses the silent install and just opens the release page — so never skip it.
 5. Publishing the release automatically triggers the **Linux** (`release-linux.yml`) and **macOS**
    (`release-macos.yml`) workflows, which build and attach the `.AppImage` and the two `.dmg`s. Don't
    upload those by hand — just wait for the workflows to finish.

@@ -87,8 +87,10 @@ are no hard-coded machine paths.
 - **`DownloadVerifier`** — the shared checksum verifier for downloads (Mojang SHA-1, Adoptium/Paper
   SHA-256, Modrinth SHA-512/SHA-1), deleting the file on mismatch.
 - **`Changelog`** — the per-version "what's new" notes shown after an update (see the flow below).
-- **`UpdateService`** — checks GitHub Releases for a newer version, downloads the installer for the
-  in-app update, and (best-effort) verifies it against the release's `SHA256SUMS.txt` asset.
+- **`UpdateService`** — checks GitHub Releases for a newer version and downloads the installer for
+  the in-app update. Verification against the release's `SHA256SUMS.txt` asset is **mandatory**: if
+  the checksum is missing or unreadable, the silent install is refused and the release page opens
+  instead.
 
 ## Important flows
 

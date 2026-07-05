@@ -74,9 +74,9 @@ public class UpdateService
 
     /// <summary>
     /// Reads the expected checksum for <paramref name="fileName"/> from a "SHA256SUMS.txt"-style
-    /// asset (lines of "&lt;hex&gt;  &lt;filename&gt;", one per file). Best-effort: returns null if
-    /// the asset is missing, unreachable, or has no entry for that file — the caller then simply
-    /// skips verification instead of failing the update.
+    /// asset (lines of "&lt;hex&gt;  &lt;filename&gt;", one per file). Returns null if the asset is
+    /// unreachable, malformed, or has no entry for that file — the in-app updater treats that as a
+    /// refusal to run the installer (verification is mandatory), falling back to the release page.
     /// </summary>
     public async Task<string?> GetExpectedSha256Async(string sha256SumsUrl, string fileName, CancellationToken ct = default)
     {
