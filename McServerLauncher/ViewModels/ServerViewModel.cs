@@ -462,16 +462,26 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
-    /// <summary>Extracts the name right before a marker (e.g. " joined the game").</summary>
+    /// <summary>
+    /// Extracts the player name right before a marker (e.g. " joined the game"), but only from a
+    /// real server log entry: the name must be the ONLY text between the log prefix
+    /// ("[…] [Server thread/INFO]: ", or Paper's "[… INFO]: ") and the marker, and must be a valid
+    /// Minecraft name (letters/digits/underscore, 1-16 chars). A chat line quoting the phrase
+    /// ("&lt;Bob&gt; Alice joined the game") keeps the sender tag in between, so it is rejected
+    /// instead of faking a join/leave.
+    /// </summary>
     private static string? NameBefore(string line, string marker)
     {
         var idx = line.IndexOf(marker, StringComparison.Ordinal);
         if (idx <= 0) return null;
         var head = line[..idx];
-        var sp = head.LastIndexOf(' ');
-        var name = sp >= 0 ? head[(sp + 1)..] : head;
-        return string.IsNullOrWhiteSpace(name) ? null : name;
+        var colon = head.LastIndexOf(": ", StringComparison.Ordinal);
+        var name = colon >= 0 ? head[(colon + 2)..] : head;
+        return PlayerNameRegex().IsMatch(name) ? name : null;
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]
+    private static partial System.Text.RegularExpressions.Regex PlayerNameRegex();
 
     [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task Start()
