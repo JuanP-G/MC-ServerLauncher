@@ -672,8 +672,25 @@ public partial class ServerViewModel : ObservableObject
         {
             if (pid.HasValue)
             {
-                System.Diagnostics.Process.GetProcessById(pid.Value).Kill(entireProcessTree: true);
-                OnConsoleLine(string.Format(Localizer.Get("Msg_ClosedPortProcess"), port, procDesc));
+                // The confirmation dialog may have stayed open for a while: re-check that the SAME
+                // process still holds the port right before killing. If the original one died in
+                // the meantime, the OS can reuse its PID — killing blindly (with entireProcessTree)
+                // could take down an innocent process the user never approved.
+                var currentPid = _ports.GetListeningPid(port);
+                if (currentPid is null)
+                {
+                    // Nobody is listening anymore: nothing to kill, fall through to the free check.
+                }
+                else if (currentPid != pid)
+                {
+                    OnConsoleLine(string.Format(Localizer.Get("Msg_PortOwnerChangedFmt"), port));
+                    return false;
+                }
+                else
+                {
+                    System.Diagnostics.Process.GetProcessById(pid.Value).Kill(entireProcessTree: true);
+                    OnConsoleLine(string.Format(Localizer.Get("Msg_ClosedPortProcess"), port, procDesc));
+                }
             }
         }
         catch (Exception ex)
@@ -885,9 +902,8 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand]
     private async Task AddToWhitelist()
     {
-        var name = NewWhitelistName?.Trim();
-        if (string.IsNullOrEmpty(name)) return;
-        name = SanitizePlayerName(name);
+        var name = ValidPlayerNameOrWarn(NewWhitelistName);
+        if (name is null) return;
 
         try
         {
@@ -916,8 +932,7 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand]
     private async Task RemoveFromWhitelist(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name)) return;
-        name = SanitizePlayerName(name);
+        if ((name = ValidPlayerNameOrWarn(name)) is null) return;
 
         try
         {
@@ -994,44 +1009,59 @@ public partial class ServerViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Strips CR/LF from a player name before it's embedded in a console command sent over stdin.
-    /// Without this, a name containing "\n" would inject a second command line into the server console.
+    /// Validates a player name before it's embedded in a console command sent over stdin or
+    /// written to the whitelist/ban files. Only real Minecraft names pass
+    /// (letters/digits/underscore, 1-16 chars — the same rule <see cref="PlayerNameRegex"/>
+    /// enforces for join/leave detection): this both blocks command injection (a "\n" would add a
+    /// second console command) and confusing extra arguments (a name with spaces would turn
+    /// "ban a b" into banning "a" with reason "b"). Returns the trimmed name, or null after
+    /// logging a clear message when the input isn't a valid name.
     /// </summary>
-    private static string SanitizePlayerName(string name) => name.Replace("\r", "").Replace("\n", "");
+    private string? ValidPlayerNameOrWarn(string? name)
+    {
+        name = name?.Trim();
+        if (string.IsNullOrEmpty(name)) return null;
+        if (PlayerNameRegex().IsMatch(name)) return name;
+
+        // Show what was rejected, defanged for display (no line breaks, capped length).
+        var shown = name.Replace("\r", "").Replace("\n", " ");
+        if (shown.Length > 32) shown = shown[..32] + "…";
+        OnConsoleLine(string.Format(Localizer.Get("Msg_InvalidPlayerNameFmt"), shown));
+        return null;
+    }
 
     [RelayCommand]
     private async Task OpPlayer(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Op"))) return;
-        await PlayerCommandAsync($"op {SanitizePlayerName(name)}");
+        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Op"))) return;
+        await PlayerCommandAsync($"op {name}");
     }
 
     [RelayCommand]
     private async Task DeopPlayer(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Deop"))) return;
-        await PlayerCommandAsync($"deop {SanitizePlayerName(name)}");
+        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Deop"))) return;
+        await PlayerCommandAsync($"deop {name}");
     }
 
     [RelayCommand]
     private async Task KickPlayer(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Kick"))) return;
-        await PlayerCommandAsync($"kick {SanitizePlayerName(name)}");
+        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Kick"))) return;
+        await PlayerCommandAsync($"kick {name}");
     }
 
     [RelayCommand]
     private async Task BanPlayer(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name) || !EnsureRunning(Localizer.Get("Action_Ban"))) return;
-        await PlayerCommandAsync($"ban {SanitizePlayerName(name)}");
+        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Ban"))) return;
+        await PlayerCommandAsync($"ban {name}");
     }
 
     [RelayCommand]
     private async Task PardonPlayer(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name)) return;
-        name = SanitizePlayerName(name);
+        if ((name = ValidPlayerNameOrWarn(name)) is null) return;
         if (_process.IsRunning)
         {
             await PlayerCommandAsync($"pardon {name}");
