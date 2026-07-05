@@ -179,6 +179,41 @@ public partial class JavaService
     }
 
     /// <summary>
+    /// Reads the required Java for a modern Forge server, which has no runnable server.jar of its
+    /// own (it launches through an @args-file, so <see cref="GetRequiredJavaFromJar"/> on the
+    /// configured jar path always fails): the Forge installer keeps the vanilla server jar under
+    /// "libraries/net/minecraft/server/&lt;version&gt;/", and that jar carries the usual
+    /// version.json. Prefers the folder matching <paramref name="gameVersion"/> (a leftover from a
+    /// previous Minecraft version could linger after an upgrade), then tries any other. Returns
+    /// null if no readable jar is found.
+    /// </summary>
+    public int? GetRequiredJavaFromForgeLibraries(string serverFolder, string? gameVersion)
+    {
+        try
+        {
+            var root = Path.Combine(serverFolder, "libraries", "net", "minecraft", "server");
+            if (!Directory.Exists(root)) return null;
+
+            var dirs = Directory.GetDirectories(root)
+                .OrderByDescending(d => string.Equals(Path.GetFileName(d), gameVersion, StringComparison.OrdinalIgnoreCase));
+
+            // A version dir holds several jars (server-x.y.z.jar, -extra, -srg...): the plain one
+            // and -extra both carry version.json; the others just return null harmlessly.
+            foreach (var dir in dirs)
+            foreach (var jar in Directory.GetFiles(dir, "server-*.jar"))
+            {
+                if (GetRequiredJavaFromJar(jar) is { } major)
+                    return major;
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Reads the Minecraft version a server.jar belongs to (modern vanilla jars include it in
     /// version.json as "id"). Returns null if it can't be determined.
     /// </summary>

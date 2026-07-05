@@ -576,6 +576,16 @@ public partial class ServerViewModel : ObservableObject
     private async Task EnsureCompatibleJavaAsync()
     {
         var required = _java.GetRequiredJavaFromJar(Config.JarFullPath);
+
+        // Modern Forge launches via an @args-file and Config.JarFullPath points to a server.jar
+        // that doesn't exist, so the lookup above always comes back null for it — leaving exactly
+        // the most fragile servers without the Java safety net. Derive the requirement from the
+        // vanilla server jar the Forge installer keeps under libraries/, or (last resort, needs
+        // network) from Mojang's manifest via GameVersion.
+        if (required is null && !string.IsNullOrWhiteSpace(Config.ForgeArgs))
+            required = _java.GetRequiredJavaFromForgeLibraries(Config.FolderPath, Config.GameVersion)
+                ?? await GetRequiredJavaFromManifestAsync();
+
         if (required is null) return; // cannot be determined (old jar): don't block the start
 
         var current = _java.GetMajorVersion(Config.JavaPath);
@@ -598,6 +608,30 @@ public partial class ServerViewModel : ObservableObject
         catch (Exception ex)
         {
             OnConsoleLine(string.Format(Localizer.Get("Msg_JavaPrepareFailStart"), required, ex.Message));
+        }
+    }
+
+    /// <summary>
+    /// Last-resort Java lookup (used for modern Forge when the local libraries don't yield it):
+    /// asks Mojang's manifest for the Java that <see cref="ServerConfig.GameVersion"/> needs — the
+    /// same source used when the server was created. Null when offline or the version is unknown;
+    /// the caller then simply skips the check rather than blocking the start.
+    /// </summary>
+    private async Task<int?> GetRequiredJavaFromManifestAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Config.GameVersion)) return null;
+        try
+        {
+            var versions = new MinecraftVersionService();
+            var (_, list) = await versions.GetVersionsAsync();
+            var match = list.FirstOrDefault(v =>
+                string.Equals(v.Id, Config.GameVersion, StringComparison.OrdinalIgnoreCase));
+            if (match is null) return null;
+            return (await versions.GetVersionDetailsAsync(match)).JavaMajor;
+        }
+        catch
+        {
+            return null;
         }
     }
 
