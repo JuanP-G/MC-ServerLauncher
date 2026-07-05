@@ -50,11 +50,11 @@ public class ServerConfig
     /// <summary>Path to the Java executable. "java" uses the one on the PATH.</summary>
     public string JavaPath { get; set; } = "java";
 
-    /// <summary>Minimum memory in GB (-Xms).</summary>
-    public int MinRamGb { get; set; } = 4;
+    /// <summary>Minimum memory in GB (-Xms). Same default the create dialog suggests.</summary>
+    public int MinRamGb { get; set; } = 2;
 
-    /// <summary>Maximum memory in GB (-Xmx).</summary>
-    public int MaxRamGb { get; set; } = 6;
+    /// <summary>Maximum memory in GB (-Xmx). Same default the create dialog suggests.</summary>
+    public int MaxRamGb { get; set; } = 4;
 
     /// <summary>Extra JVM arguments (optional, e.g. GC flags).</summary>
     public string ExtraJvmArgs { get; set; } = string.Empty;
