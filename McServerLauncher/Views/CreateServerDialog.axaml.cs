@@ -35,23 +35,15 @@ public partial class CreateServerDialog : Window
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public CreateServerDialog() : this(null) { }
 
-    // --- Log batching ---
-    // The Forge installer can print thousands of lines; appending each one to the TextBox
-    // (Text += line) froze the UI. Lines are buffered and flushed a few times per second,
-    // keeping only the most recent ones.
-    private const int MaxLogLines = 400;
-    private readonly List<string> _logLines = new();
-    private bool _logDirty;
-    private readonly DispatcherTimer _logTimer;
+    // Buffered progress log (see LogBatcher: the Forge installer prints thousands of lines).
+    private readonly LogBatcher _log;
 
     public CreateServerDialog(IEnumerable<int>? usedPorts = null)
     {
         InitializeComponent();
         _usedPorts = new HashSet<int>(usedPorts ?? Enumerable.Empty<int>());
 
-        _logTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
-        _logTimer.Tick += (_, _) => FlushLog();
-        _logTimer.Start();
+        _log = new LogBatcher(ProgressLog);
 
         ParentFolderBox.Text = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
@@ -296,24 +288,11 @@ public partial class CreateServerDialog : Window
         Spinner.IsIndeterminate = busy;
     }
 
-    private void AppendLog(string line)
-    {
-        _logLines.Add(line);
-        if (_logLines.Count > MaxLogLines) _logLines.RemoveRange(0, _logLines.Count - MaxLogLines);
-        _logDirty = true;
-    }
-
-    private void FlushLog()
-    {
-        if (!_logDirty) return;
-        _logDirty = false;
-        ProgressLog.Text = string.Join(Environment.NewLine, _logLines) + Environment.NewLine;
-        ProgressLog.CaretIndex = ProgressLog.Text.Length;
-    }
+    private void AppendLog(string line) => _log.Append(line);
 
     protected override void OnClosed(EventArgs e)
     {
-        _logTimer.Stop();
+        _log.Stop();
         base.OnClosed(e);
     }
 

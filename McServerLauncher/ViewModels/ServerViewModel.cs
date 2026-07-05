@@ -22,6 +22,7 @@ namespace McServerLauncher.ViewModels;
 public partial class ServerViewModel : ObservableObject
 {
     private const int MaxConsoleLines = 2000;
+    private const int ConsoleTrimBlock = 200;
 
     private readonly ServerProcessManager _process = new();
     private readonly PlayitManager _playit = PlayitManager.Shared;
@@ -51,14 +52,14 @@ public partial class ServerViewModel : ObservableObject
     public ServerConfig Config { get; }
 
     /// <summary>Lines of the embedded console (server stdout/stderr + Playit).</summary>
-    public ObservableCollection<string> ConsoleLines { get; } = new();
+    public BulkObservableCollection<string> ConsoleLines { get; } = new();
 
     /// <summary>
     /// The lines currently shown in the console UI: all of <see cref="ConsoleLines"/> when the
     /// filter box is empty, or the matching subset (kept in order, updated incrementally as new
     /// lines arrive) while a filter is typed.
     /// </summary>
-    public ObservableCollection<string> VisibleConsoleLines { get; } = new();
+    public BulkObservableCollection<string> VisibleConsoleLines { get; } = new();
 
     [ObservableProperty]
     private string _consoleFilter = string.Empty;
@@ -69,13 +70,8 @@ public partial class ServerViewModel : ObservableObject
         string.IsNullOrWhiteSpace(ConsoleFilter)
         || line.Contains(ConsoleFilter.Trim(), StringComparison.OrdinalIgnoreCase);
 
-    private void RebuildVisibleConsole()
-    {
-        VisibleConsoleLines.Clear();
-        foreach (var line in ConsoleLines)
-            if (MatchesConsoleFilter(line))
-                VisibleConsoleLines.Add(line);
-    }
+    private void RebuildVisibleConsole() =>
+        VisibleConsoleLines.ReplaceAll(ConsoleLines.Where(MatchesConsoleFilter));
 
     [ObservableProperty]
     private string _name;
@@ -173,15 +169,8 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Minecraft version (empty until known).</summary>
     public string GameVersionText => Config.GameVersion;
 
-    /// <summary>Badge color per type; unknown/future types fall back to gray.</summary>
-    public IBrush ServerTypeBrush => Config.Type switch
-    {
-        ServerType.Vanilla => BrushTypeVanilla,
-        ServerType.Fabric => BrushTypeFabric,
-        ServerType.Forge => BrushTypeForge,
-        ServerType.Paper => BrushTypePaper,
-        _ => BrushGray
-    };
+    /// <summary>Badge color per type (shared palette; unknown/future types fall back to gray).</summary>
+    public IBrush ServerTypeBrush => ServerTypeBrushes.For(Config.Type);
 
     // --- State properties ---
     [ObservableProperty]
@@ -226,12 +215,6 @@ public partial class ServerViewModel : ObservableObject
     private static readonly IBrush BrushRed = Frozen("#E05561");
     private static readonly IBrush BrushGray = Frozen("#6E7681");
 
-    // Type badge colors (distinct enough to tell apart at a glance).
-    private static readonly IBrush BrushTypeVanilla = Frozen("#6E9E52");
-    private static readonly IBrush BrushTypeFabric = Frozen("#B58D5A");
-    private static readonly IBrush BrushTypeForge = Frozen("#5A8AB5");
-    private static readonly IBrush BrushTypePaper = Frozen("#C0563E");
-
     [ObservableProperty]
     private IBrush _statusBrush = BrushRed;
 
@@ -264,7 +247,7 @@ public partial class ServerViewModel : ObservableObject
         _playit.StateChanged += _onPlayitStateChanged;
 
         _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-        _statsTimer.Tick += (_, _) => UpdateStats();
+        _statsTimer.Tick += (_, _) => OnStatsTimerTick();
 
         // The Playit service runs in the background; we poll its state periodically, and the
         // tunnel address (via the playit API) less often.
@@ -285,10 +268,33 @@ public partial class ServerViewModel : ObservableObject
         _ = RefreshTunnelAddressAsync();
     }
 
+    // --- Tray-aware polling (EFI-2) ---
+    // The app is designed to live in the tray with the window hidden; there's no point refreshing
+    // stats text, sparklines and Playit status nobody can see at full cadence. When the window is
+    // hidden the periodic work runs at 1/10th its usual rate (crash detection and the toasts that
+    // matter in the tray are event-driven, not timer-driven, so they're unaffected). Everything
+    // returns to full speed on the first tick after the window is shown again.
+
+    /// <summary>True when the main window is hidden (closed to the tray). Minimized still shows the taskbar entry.</summary>
+    private static bool MainWindowHidden =>
+        (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
+            is not { IsVisible: true };
+
+    private int _hiddenStatsTicks;
+    private int _hiddenPlayitTicks;
+
+    private void OnStatsTimerTick()
+    {
+        if (MainWindowHidden && ++_hiddenStatsTicks % 10 != 0) return;
+        UpdateStats();
+    }
+
     private void OnPlayitTimerTick(object? sender, EventArgs e)
     {
+        if (MainWindowHidden && ++_hiddenPlayitTicks % 10 != 0) return;
+
         _playit.RefreshState();
-        // Every ~30 s (10 ticks of 3 s) we refresh the tunnel address from the API.
+        // Every ~30 s (10 ticks of 3 s; ~5 min while in the tray) refresh the tunnel address.
         if (++_playitTickCounter % 10 == 0)
             _ = RefreshTunnelAddressAsync();
     }
@@ -425,14 +431,14 @@ public partial class ServerViewModel : ObservableObject
             if (MatchesConsoleFilter(line))
                 VisibleConsoleLines.Add(line);
 
-            if (ConsoleLines.Count > MaxConsoleLines)
+            // Trim in blocks (EFI-4): one RemoveAt(0) per line was an O(n) shift plus a UI
+            // notification for EVERY line once the cap was reached. Letting the list overshoot by
+            // ConsoleTrimBlock and cutting back to the cap in a single bulk operation makes the
+            // per-line cost amortized O(1), at the price of momentarily holding up to 2200 lines.
+            if (ConsoleLines.Count > MaxConsoleLines + ConsoleTrimBlock)
             {
-                var removed = ConsoleLines[0];
-                ConsoleLines.RemoveAt(0);
-                // The visible list is an ordered subset of ConsoleLines, so if the trimmed line
-                // matched the filter it is exactly the visible head.
-                if (VisibleConsoleLines.Count > 0 && MatchesConsoleFilter(removed))
-                    VisibleConsoleLines.RemoveAt(0);
+                ConsoleLines.RemoveFromStart(ConsoleLines.Count - MaxConsoleLines);
+                RebuildVisibleConsole(); // the visible list is a subset; rebuild it from what survived
             }
 
             TrackPlayers(line);

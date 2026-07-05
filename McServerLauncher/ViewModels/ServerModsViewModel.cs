@@ -89,21 +89,7 @@ public partial class ServerModsViewModel : ObservableObject
     public string FilterTypeText => _config.Type.ToString();
     public string FilterVersionText => _config.GameVersion;
     public string FilterTip => Localizer.Get("Filter_Tip");
-    public IBrush FilterTypeBrush => _config.Type switch
-    {
-        ServerType.Vanilla => BrushTypeVanilla,
-        ServerType.Fabric => BrushTypeFabric,
-        ServerType.Forge => BrushTypeForge,
-        ServerType.Paper => BrushTypePaper,
-        _ => BrushTypeUnknown
-    };
-
-    // Same palette as ServerViewModel's type badges; immutable so they can be shared safely.
-    private static readonly IBrush BrushTypeVanilla = new ImmutableSolidColorBrush(Color.Parse("#6E9E52"));
-    private static readonly IBrush BrushTypeFabric = new ImmutableSolidColorBrush(Color.Parse("#B58D5A"));
-    private static readonly IBrush BrushTypeForge = new ImmutableSolidColorBrush(Color.Parse("#5A8AB5"));
-    private static readonly IBrush BrushTypePaper = new ImmutableSolidColorBrush(Color.Parse("#C0563E"));
-    private static readonly IBrush BrushTypeUnknown = new ImmutableSolidColorBrush(Color.Parse("#6E7681"));
+    public IBrush FilterTypeBrush => ServerTypeBrushes.For(_config.Type);
 
     // --- "How to play" instructions (depend on the server type) ---
 

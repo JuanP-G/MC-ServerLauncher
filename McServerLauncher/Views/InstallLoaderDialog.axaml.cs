@@ -31,11 +31,8 @@ public partial class InstallLoaderDialog : Window
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public InstallLoaderDialog() : this(new ServerConfig()) { }
 
-    // --- Log batching (see CreateServerDialog): the Forge installer prints thousands of lines. ---
-    private const int MaxLogLines = 400;
-    private readonly List<string> _logLines = new();
-    private bool _logDirty;
-    private readonly DispatcherTimer _logTimer;
+    // Buffered progress log (see LogBatcher: the Forge installer prints thousands of lines).
+    private readonly LogBatcher _log;
 
     public InstallLoaderDialog(ServerConfig config)
     {
@@ -45,14 +42,12 @@ public partial class InstallLoaderDialog : Window
         LoaderCombo.SelectionChanged += (_, _) => UpdateWarning();
         UpdateWarning();
 
-        _logTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
-        _logTimer.Tick += (_, _) => FlushLog();
-        _logTimer.Start();
+        _log = new LogBatcher(ProgressLog);
     }
 
     protected override void OnClosed(EventArgs e)
     {
-        _logTimer.Stop();
+        _log.Stop();
         base.OnClosed(e);
     }
 
@@ -271,20 +266,7 @@ public partial class InstallLoaderDialog : Window
         Spinner.IsIndeterminate = busy;
     }
 
-    private void AppendLog(string line)
-    {
-        _logLines.Add(line);
-        if (_logLines.Count > MaxLogLines) _logLines.RemoveRange(0, _logLines.Count - MaxLogLines);
-        _logDirty = true;
-    }
-
-    private void FlushLog()
-    {
-        if (!_logDirty) return;
-        _logDirty = false;
-        ProgressLog.Text = string.Join(Environment.NewLine, _logLines) + Environment.NewLine;
-        ProgressLog.CaretIndex = ProgressLog.Text.Length;
-    }
+    private void AppendLog(string line) => _log.Append(line);
 
     private Task Warn(string message) => MessageBox.ShowAsync(message, Localizer.Get("Loader_Title"), this);
 }
