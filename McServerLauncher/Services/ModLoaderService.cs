@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -65,7 +66,7 @@ public class ModLoaderService
         await using (var fs = File.Create(destPath))
             await resp.Content.CopyToAsync(fs, ct);
 
-        log?.Report(Localizer.Get("Msg_VerifyingFabricJar"));
+        log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
         ValidateFabricServerJar(destPath, gameVersion, loaderVersion);
 
         log?.Report(Localizer.Get("Msg_DownloadComplete"));
@@ -136,15 +137,26 @@ public class ModLoaderService
             await resp.Content.CopyToAsync(fs, ct);
         }
 
-        // Forge's maven publishes a plain-text .sha1 file next to every artifact. It comes from the
-        // same server as the jar, so it guards against a corrupted download more than a compromised
-        // server, but it's consistent with the checksum verification done for the other sources.
+        // TRUST ASSUMPTION (documented, see architecture.md): Forge publishes no independent
+        // signatures, so the plain-text .sha1 next to each artifact comes from the SAME maven as
+        // the jar — it protects against corruption/truncation, not against a compromised server.
+        // But since this jar is about to be EXECUTED (java -jar ... --installServer), the check is
+        // now REQUIRED rather than best-effort: no readable .sha1, no install. Maven repos always
+        // publish it, so a missing one means a broken download path, not a normal condition.
         var expectedSha1 = await TryGetRemoteHashAsync(installerUrl + ".sha1", ct);
-        if (!string.IsNullOrEmpty(expectedSha1))
+        if (string.IsNullOrEmpty(expectedSha1))
         {
-            log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
-            await DownloadVerifier.VerifyAsync(installerPath, expectedSha1, HashAlgorithmName.SHA1, ct);
+            TryDelete(installerPath);
+            throw new InvalidOperationException(Localizer.Get("Msg_ForgeNoChecksum"));
         }
+        log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+        await DownloadVerifier.VerifyAsync(installerPath, expectedSha1, HashAlgorithmName.SHA1, ct);
+
+        // Structural sanity net before handing the jar to java (same idea as the Fabric jar
+        // validation): it must at least BE a Forge installer. A swapped or truncated file is
+        // deleted and refused instead of being executed.
+        log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
+        ValidateForgeInstallerJar(installerPath);
 
         log?.Report(Localizer.Get("Msg_ForgeRunningInstaller"));
         await RunForgeInstallerAsync(installerPath, folder, javaPath, log, ct);
@@ -210,6 +222,43 @@ public class ModLoaderService
             throw new InvalidOperationException(string.Format(Localizer.Get("Msg_ForgeInstallerFailed"), p.ExitCode));
     }
 
+    /// <summary>
+    /// Structural validation of a downloaded Forge installer before it is executed: it must be a
+    /// readable jar that actually looks like a Forge installer — carrying the install_profile.json
+    /// every Forge installer embeds, or (fallback for exotic/legacy layouts) a manifest whose
+    /// Main-Class names the installer. On failure the file is deleted and an exception is thrown,
+    /// so a swapped or truncated download never reaches <c>java -jar</c>.
+    /// </summary>
+    public static void ValidateForgeInstallerJar(string jarPath)
+    {
+        var looksLikeInstaller = false;
+        try
+        {
+            using var zip = ZipFile.OpenRead(jarPath);
+            looksLikeInstaller = zip.GetEntry("install_profile.json") is not null || HasInstallerMainClass(zip);
+        }
+        catch
+        {
+            // Not a readable jar at all: stays false and is rejected below.
+        }
+
+        if (!looksLikeInstaller)
+        {
+            TryDelete(jarPath);
+            throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallerInvalid"));
+        }
+    }
+
+    private static bool HasInstallerMainClass(ZipArchive zip)
+    {
+        var manifest = zip.GetEntry("META-INF/MANIFEST.MF");
+        if (manifest is null) return false;
+        using var sr = new StreamReader(manifest.Open());
+        var text = sr.ReadToEnd();
+        return text.Contains("Main-Class", StringComparison.OrdinalIgnoreCase) &&
+               text.Contains("installer", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static void TryDelete(string path)
     {
         try { if (File.Exists(path)) File.Delete(path); }
@@ -217,9 +266,9 @@ public class ModLoaderService
     }
 
     /// <summary>
-    /// Fetches a plain-text checksum file (e.g. Maven's "*.sha1"). Best-effort: if it's missing or
-    /// the request fails, returns null so the caller simply skips verification rather than failing
-    /// the whole install over an optional side file.
+    /// Fetches a plain-text checksum file (e.g. Maven's "*.sha1"). Returns null if it's missing or
+    /// the request fails — the Forge install path treats that as a refusal (the installer is about
+    /// to be executed, so its checksum is mandatory).
     /// </summary>
     private static async Task<string?> TryGetRemoteHashAsync(string url, CancellationToken ct)
     {

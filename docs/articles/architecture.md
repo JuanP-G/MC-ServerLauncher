@@ -65,7 +65,12 @@ are no hard-coded machine paths.
   onto an existing server, keeping the world. Known limitation: Fabric's meta endpoint publishes no
   checksums, so its server jar can't be hash-verified like the other sources (Mojang SHA-1, Paper
   SHA-256…); instead the downloaded jar is structurally validated (its `install.properties` must
-  match the requested game/loader versions) and discarded on mismatch.
+  match the requested game/loader versions) and discarded on mismatch. Forge's trust assumption:
+  its maven publishes a `.sha1` next to each artifact but **from the same server** (no independent
+  signatures exist in the Forge ecosystem), so the mandatory hash check protects against
+  corruption, not a compromised server; since the installer is *executed*, it is additionally
+  validated structurally (it must carry `install_profile.json` or an installer manifest) before
+  `java -jar` ever sees it.
 - **`ModrinthService`** — searches Modrinth and downloads mods/plugins (filtered by the server's type
   and version), and drives the "check for mod updates" flow.
 - **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version

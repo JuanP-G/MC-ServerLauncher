@@ -65,7 +65,11 @@ mundo. No hay rutas fijas del equipo en el código.
   Fabric no publica checksums, así que su jar de servidor no se puede verificar por hash como las
   demás fuentes (Mojang SHA-1, Paper SHA-256…); en su lugar el jar descargado se valida
   estructuralmente (su `install.properties` debe coincidir con las versiones de juego/loader
-  pedidas) y se descarta si no cuadra.
+  pedidas) y se descarta si no cuadra. Supuesto de confianza de Forge: su maven publica un `.sha1`
+  junto a cada artefacto pero **desde el mismo servidor** (el ecosistema Forge no tiene firmas
+  independientes), así que la verificación obligatoria del hash protege de corrupción, no de un
+  servidor comprometido; como el instalador se *ejecuta*, además se valida estructuralmente (debe
+  llevar `install_profile.json` o un manifest de installer) antes de que `java -jar` lo toque.
 - **`ModrinthService`** — busca en Modrinth y descarga mods/plugins (filtrados por el tipo y la
   versión del servidor), y gestiona el flujo de "buscar actualizaciones de mods".
 - **`ServerDetectionService`** — inspecciona una carpeta para averiguar el tipo/versión de un servidor
