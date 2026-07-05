@@ -90,7 +90,9 @@ mundo. No hay rutas fijas del equipo en el código.
   encima en la esquina inferior derecha (jugador entra, servidor caído, reinicio agotado); funcionan
   aunque el SO no soporte notificaciones.
 - **`SecretProtector`** — cifra los secretos en reposo (DPAPI en Windows, AES-GCM + `.secret.key` en
-  Linux/macOS), usado para la clave de escritura de Playit.
+  Linux/macOS), usado para la clave de escritura de Playit. Si el cifrado falla, la clave **no** se
+  persiste (nunca llega texto plano al disco): sigue funcionando durante la sesión, el fallo queda
+  en el log diario y se avisa al usuario una vez.
 - **`DownloadVerifier`** — el verificador de checksums compartido para las descargas (Mojang SHA-1,
   Adoptium/Paper SHA-256, Modrinth SHA-512/SHA-1), que borra el archivo si no cuadra.
 - **`Changelog`** — las notas de "novedades" por versión que se muestran tras actualizar (ver el

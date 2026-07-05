@@ -33,12 +33,16 @@ public static class SecretProtector
         || stored?.StartsWith(AesPrefix, StringComparison.Ordinal) == true;
 
     /// <summary>
-    /// Returns the protected form of <paramref name="plain"/> (idempotent). Best-effort: if
-    /// encryption fails, the value is returned unchanged rather than lost.
+    /// Tries to protect <paramref name="plain"/> (idempotent: empty or already-protected input
+    /// succeeds unchanged). Returns false when encryption fails (DPAPI unavailable, key file not
+    /// writable…), leaving <paramref name="result"/> as the original plaintext so the CALLER
+    /// decides what to do — a secret is never silently downgraded to plaintext on disk anymore:
+    /// <see cref="AppSettingsService.Save"/> refuses to persist it and warns instead.
     /// </summary>
-    public static string Protect(string plain)
+    public static bool TryProtect(string? plain, out string? result)
     {
-        if (string.IsNullOrEmpty(plain) || IsProtected(plain)) return plain;
+        result = plain;
+        if (string.IsNullOrEmpty(plain) || IsProtected(plain)) return true;
 
         try
         {
@@ -46,13 +50,18 @@ public static class SecretProtector
             {
                 var bytes = ProtectedData.Protect(
                     Encoding.UTF8.GetBytes(plain), optionalEntropy: null, DataProtectionScope.CurrentUser);
-                return DpapiPrefix + Convert.ToBase64String(bytes);
+                result = DpapiPrefix + Convert.ToBase64String(bytes);
             }
-            return AesPrefix + Convert.ToBase64String(EncryptAesGcm(plain));
+            else
+            {
+                result = AesPrefix + Convert.ToBase64String(EncryptAesGcm(plain));
+            }
+            return true;
         }
         catch
         {
-            return plain;
+            result = plain;
+            return false;
         }
     }
 

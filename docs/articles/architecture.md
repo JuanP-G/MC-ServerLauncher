@@ -91,7 +91,9 @@ are no hard-coded machine paths.
   the bottom-right corner (player joined, server crashed, restart exhausted); they work even without
   OS notification support.
 - **`SecretProtector`** — encrypts secrets at rest (DPAPI on Windows, AES-GCM + `.secret.key` on
-  Linux/macOS), used for the Playit write key.
+  Linux/macOS), used for the Playit write key. If encryption ever fails, the key is **not**
+  persisted (plaintext never lands on disk): it keeps working for the session, the failure goes to
+  the daily log, and the user is warned once.
 - **`DownloadVerifier`** — the shared checksum verifier for downloads (Mojang SHA-1, Adoptium/Paper
   SHA-256, Modrinth SHA-512/SHA-1), deleting the file on mismatch.
 - **`Changelog`** — the per-version "what's new" notes shown after an update (see the flow below).

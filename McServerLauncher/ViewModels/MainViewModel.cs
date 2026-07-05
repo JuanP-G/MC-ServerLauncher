@@ -336,8 +336,19 @@ public partial class MainViewModel : ObservableObject
 
         settings.PlayitApiKey = dialog.ApiKey;
         _settings.Save(settings);
+
+        // If the key couldn't be encrypted, Save refused to persist it (plaintext never lands on
+        // disk): tell the user once — the key still works for this session but will be asked again.
+        if (_settings.LastSaveCouldNotProtectKey && !_keyProtectWarned)
+        {
+            _keyProtectWarned = true;
+            await MessageBox.ShowAsync(Localizer.Get("Msg_PlayitKeyNotProtected"), Localizer.Get("Pk_Title"), Owner);
+        }
+
         return dialog.ApiKey;
     }
+
+    private bool _keyProtectWarned;
 
     /// <summary>Creates the Playit tunnel for the selected server (the "Create tunnel" button).</summary>
     [RelayCommand(CanExecute = nameof(HasSelection))]
