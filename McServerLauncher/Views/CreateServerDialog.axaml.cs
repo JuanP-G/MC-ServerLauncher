@@ -70,7 +70,10 @@ public partial class CreateServerDialog : Window
     /// First free port from 25565 that is not used by another registered server NOR any other
     /// application on the system.
     /// </summary>
-    private int SuggestFreePort() => _ports.FindFreePort(25565, _usedPorts);
+    private int SuggestFreePort() =>
+        // null = every port is taken (absurd in practice): suggest the default anyway; the
+        // Create button's own validation will refuse a busy port before anything is written.
+        _ports.FindFreePort(25565, _usedPorts) ?? 25565;
 
     private async void OnLoaded(object? sender, RoutedEventArgs e)
     {

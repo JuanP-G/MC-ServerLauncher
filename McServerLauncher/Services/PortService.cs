@@ -29,16 +29,31 @@ public class PortService
 
     /// <summary>
     /// First free port from <paramref name="start"/> that is not in use by the system nor in
-    /// the <paramref name="alsoAvoid"/> set (e.g. ports of other registered servers).
+    /// the <paramref name="alsoAvoid"/> set (e.g. ports of other registered servers). Returns
+    /// null if every port up to 65535 is taken, so the caller can react instead of silently
+    /// getting a busy port back. The system's listener table is snapshotted once for the whole
+    /// scan (instead of re-queried per port).
     /// </summary>
-    public int FindFreePort(int start, ISet<int> alsoAvoid)
+    public int? FindFreePort(int start, ISet<int> alsoAvoid)
     {
+        HashSet<int>? inUse = null;
+        try
+        {
+            inUse = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners()
+                .Select(ep => ep.Port)
+                .ToHashSet();
+        }
+        catch
+        {
+            // If the table can't be queried, fall back to only avoiding the known ports.
+        }
+
         for (var port = start; port <= 65535; port++)
         {
-            if (!alsoAvoid.Contains(port) && !IsPortInUse(port))
+            if (!alsoAvoid.Contains(port) && inUse?.Contains(port) != true)
                 return port;
         }
-        return start;
+        return null;
     }
 
     // --- Identify the PID listening on a port (to free it) ---
