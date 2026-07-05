@@ -23,8 +23,10 @@ public class AppSettingsService
     {
         try
         {
-            if (!File.Exists(_filePath)) return new AppSettings();
-            var settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(_filePath)) ?? new AppSettings();
+            // Corrupt file → the last good ".bak" copy is restored automatically; if there is none,
+            // falling back to defaults is fine for settings (nothing irreplaceable lives here).
+            var (loaded, _) = AtomicJsonFile.Load<AppSettings>(_filePath, JsonOptions);
+            var settings = loaded ?? new AppSettings();
 
             // The Playit key is stored encrypted (DPAPI on Windows, AES elsewhere); callers always
             // see the plaintext. A plaintext key written by an older version is migrated
@@ -56,6 +58,6 @@ public class AppSettingsService
             Language = settings.Language,
             LastVersionSeen = settings.LastVersionSeen
         };
-        File.WriteAllText(_filePath, JsonSerializer.Serialize(toWrite, JsonOptions));
+        AtomicJsonFile.Write(_filePath, toWrite, JsonOptions);
     }
 }

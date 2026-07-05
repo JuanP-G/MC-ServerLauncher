@@ -283,6 +283,29 @@ public partial class MainViewModel : ObservableObject
         SelectedServer = Servers.FirstOrDefault();
     }
 
+    private bool _corruptWarned;
+
+    /// <summary>
+    /// If servers.json was corrupt at startup, tells the user what happened — recovered from the
+    /// ".bak" backup, or started empty with the damaged file kept as ".bad" — instead of silently
+    /// showing an empty list. Called from MainWindow.Loaded, which in Avalonia can fire again every
+    /// time the window re-attaches to the visual tree (e.g. restoring from the tray), so the
+    /// warning is one-shot per session.
+    /// </summary>
+    public async Task WarnIfServersFileWasCorruptAsync(Window owner)
+    {
+        var outcome = _storage.LastLoadOutcome;
+        if (outcome == AtomicJsonFile.LoadOutcome.Ok || _corruptWarned) return;
+        _corruptWarned = true;
+
+        var key = outcome == AtomicJsonFile.LoadOutcome.RecoveredFromBackup
+            ? "Msg_ServersRecoveredFmt"
+            : "Msg_ServersCorruptFmt";
+        await MessageBox.ShowAsync(
+            string.Format(Localizer.Get(key), _storage.QuarantinedFilePath),
+            Localizer.Get("Title_ServersDamaged"), owner);
+    }
+
     partial void OnSelectedServerChanged(ServerViewModel? value) => OnPropertyChanged(nameof(HasSelection));
 
     /// <summary>

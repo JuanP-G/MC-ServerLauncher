@@ -19,7 +19,12 @@ public partial class MainWindow : Window
         InitializeComponent();
         _viewModel = new MainViewModel();
         DataContext = _viewModel;
-        Loaded += (_, _) => _viewModel.ShowWhatsNewIfUpdated(this);
+        Loaded += async (_, _) =>
+        {
+            // Warn about a corrupt servers.json first (rare), then the what's-new dialog.
+            await _viewModel.WarnIfServersFileWasCorruptAsync(this);
+            _viewModel.ShowWhatsNewIfUpdated(this);
+        };
 
         // When switching servers, go back to the Console tab. Otherwise the previously selected tab
         // (e.g. Mods) could stay shown for a server that doesn't have it (a vanilla server).

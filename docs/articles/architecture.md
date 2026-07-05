@@ -29,6 +29,9 @@ Data lives **per user** under `%APPDATA%\McServerLauncher\`:
 
 - `servers.json` — the server list and each server's config.
 - `settings.json` — global settings (language, Playit key, last-seen version…).
+  Both JSON files are written **atomically** (`AtomicJsonFile`): the previous version is kept as
+  `.bak`, and a corrupt file is quarantined as `.bad` and recovered from the `.bak` when possible
+  (the user is warned at startup instead of silently losing the list).
 - `java\` — Java runtimes the app installs (Temurin/Adoptium).
 - `logs\` — the persistent console log (`launcher-yyyy-MM-dd.log`, pruned after 14 days).
 - `.secret.key` — the AES-GCM key that encrypts secrets on Linux/macOS (Windows uses DPAPI, so no

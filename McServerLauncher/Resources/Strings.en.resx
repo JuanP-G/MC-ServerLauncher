@@ -409,4 +409,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Update to {0}</value></data>
   <data name="Whatsnew_1_5_0" xml:space="preserve"><value>• You can now check your installed mods and plugins for updates with one button: the app identifies each file on Modrinth and flags the ones with a newer version.&#10;• Update each mod in one click (checksum-verified download, keeps its enabled/disabled state).</value></data>
   <data name="Whatsnew_1_6_0" xml:space="preserve"><value>• When you minimize, the window stays on the taskbar like any normal app.&#10;• When you close it with the X, the app keeps running in the background (servers stay up) and leaves the taskbar — it lives in the system tray.&#10;• To quit for good, right-click the tray icon and choose Exit.</value></data>
+  <data name="Title_ServersDamaged" xml:space="preserve"><value>Server list damaged</value></data>
+  <data name="Msg_ServersRecoveredFmt" xml:space="preserve"><value>The server list file was damaged; the last good copy was restored (the most recent change may be missing).&#10;&#10;The damaged file was kept at:&#10;{0}</value></data>
+  <data name="Msg_ServersCorruptFmt" xml:space="preserve"><value>The server list could not be read and there was no usable backup. The app starts with no servers, but the folders are still on disk: use "Add" to bring them back.&#10;&#10;The damaged file was kept at:&#10;{0}</value></data>
 </root>

@@ -29,6 +29,9 @@ Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`:
 
 - `servers.json` — la lista de servidores y la configuración de cada uno.
 - `settings.json` — ajustes globales (idioma, clave de Playit, última versión vista…).
+  Ambos JSON se escriben de forma **atómica** (`AtomicJsonFile`): la versión anterior se conserva
+  como `.bak`, y un archivo corrupto se aparta como `.bad` y se recupera desde el `.bak` cuando es
+  posible (avisando al usuario al arrancar en vez de perder la lista en silencio).
 - `java\` — las versiones de Java que instala la app (Temurin/Adoptium).
 - `logs\` — el log de consola persistente (`launcher-yyyy-MM-dd.log`, se poda a los 14 días).
 - `.secret.key` — la clave AES-GCM que cifra los secretos en Linux/macOS (Windows usa DPAPI, así que
