@@ -23,6 +23,13 @@ public partial class MainViewModel : ObservableObject
     private readonly ServerStorageService _storage = new();
     private readonly AppSettingsService _settings = new();
 
+    /// <summary>
+    /// The settings, loaded once at startup and kept in memory (EFI-7): every use used to re-read
+    /// and re-deserialize settings.json (and re-decrypt the Playit key). This view model is the
+    /// only writer, so the cached instance can't go stale.
+    /// </summary>
+    private readonly AppSettings _appSettings;
+
     /// <summary>The main window, used as the owner of modal dialogs.</summary>
     private static Window? Owner =>
         (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
@@ -67,8 +74,9 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel()
     {
         Load();
+        _appSettings = _settings.Load();
 
-        var saved = _settings.Load().Language;
+        var saved = _appSettings.Language;
         var code = !string.IsNullOrWhiteSpace(saved) ? saved : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
         SelectedLanguage = Languages.FirstOrDefault(l => l.Code == code) ?? Languages[0];
         _languageReady = true;
@@ -82,11 +90,10 @@ public partial class MainViewModel : ObservableObject
     {
         if (!_languageReady || value is null) return;
 
-        var settings = _settings.Load();
-        if (settings.Language == value.Code) return;
+        if (_appSettings.Language == value.Code) return;
 
-        settings.Language = value.Code;
-        _settings.Save(settings);
+        _appSettings.Language = value.Code;
+        _settings.Save(_appSettings);
 
         _ = AskRestartAsync();
     }
@@ -120,19 +127,18 @@ public partial class MainViewModel : ObservableObject
         var current = new Version(asmVersion.Major, asmVersion.Minor, Math.Max(0, asmVersion.Build));
         var version = $"{current.Major}.{current.Minor}.{current.Build}";
 
-        var settings = _settings.Load();
-        if (settings.LastVersionSeen == version) return; // already seen in this version
+        if (_appSettings.LastVersionSeen == version) return; // already seen in this version
 
         // Show the notes of every version between the last one seen and this one (accumulated),
         // so users who skipped releases still learn what's new in each.
-        var lastSeen = ParseSeenVersion(settings.LastVersionSeen);
+        var lastSeen = ParseSeenVersion(_appSettings.LastVersionSeen);
         var sections = Changelog.NotesSince(lastSeen, current);
 
         if (sections.Count == 0)
         {
             // Nothing to show for this version: just mark it as seen.
-            settings.LastVersionSeen = version;
-            _settings.Save(settings);
+            _appSettings.LastVersionSeen = version;
+            _settings.Save(_appSettings);
             return;
         }
 
@@ -141,8 +147,8 @@ public partial class MainViewModel : ObservableObject
             _ = new WhatsNewDialog(version, sections).ShowDialog(owner);
             // Marked as seen only once the dialog is actually up: if creating/showing it threw,
             // the notes are offered again on the next start instead of being lost forever.
-            settings.LastVersionSeen = version;
-            _settings.Save(settings);
+            _appSettings.LastVersionSeen = version;
+            _settings.Save(_appSettings);
         }
         catch { /* if something fails, don't block startup; the notes stay pending */ }
     }
@@ -326,16 +332,15 @@ public partial class MainViewModel : ObservableObject
     /// </summary>
     private async Task<string?> EnsurePlayitApiKeyAsync()
     {
-        var settings = _settings.Load();
-        if (!string.IsNullOrWhiteSpace(settings.PlayitApiKey))
-            return settings.PlayitApiKey;
+        if (!string.IsNullOrWhiteSpace(_appSettings.PlayitApiKey))
+            return _appSettings.PlayitApiKey;
 
         var dialog = new PlayitApiKeyDialog();
         if (Owner is null || !await dialog.ShowDialog<bool>(Owner))
             return null;
 
-        settings.PlayitApiKey = dialog.ApiKey;
-        _settings.Save(settings);
+        _appSettings.PlayitApiKey = dialog.ApiKey;
+        _settings.Save(_appSettings);
 
         // If the key couldn't be encrypted, Save refused to persist it (plaintext never lands on
         // disk): tell the user once — the key still works for this session but will be asked again.
@@ -563,6 +568,9 @@ public partial class MainViewModel : ObservableObject
     {
         await Task.WhenAll(Servers.Select(s => s.ShutdownAsync()));
         Save();
+        // The console log buffers and flushes on a timer (EFI-5); push the tail out before the
+        // Environment.Exit that follows every shutdown path.
+        ConsoleLogService.Shared.Flush();
     }
 
     partial void OnSelectedServerChanged(ServerViewModel? oldValue, ServerViewModel? newValue)

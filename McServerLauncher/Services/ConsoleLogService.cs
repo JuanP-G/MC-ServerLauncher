@@ -24,9 +24,17 @@ public sealed class ConsoleLogService
     private StreamWriter? _writer;
     private DateOnly _writerDate;
 
+    // Flushing to disk once per interval instead of per line (EFI-5): a verbose server used to
+    // pay a synchronous disk flush for every console line. Losing at most the last couple of
+    // seconds of log if the whole app dies abruptly is an acceptable trade for this use; the
+    // clean-shutdown path calls Flush() explicitly.
+    private static readonly TimeSpan FlushInterval = TimeSpan.FromSeconds(2);
+    private readonly System.Threading.Timer _flushTimer;
+
     private ConsoleLogService()
     {
         TryPruneOldLogs();
+        _flushTimer = new System.Threading.Timer(_ => Flush(), null, FlushInterval, FlushInterval);
     }
 
     /// <summary>Appends one line, timestamped and tagged with the server's name, to today's log file.</summary>
@@ -38,12 +46,25 @@ public sealed class ConsoleLogService
             {
                 EnsureWriterForToday();
                 _writer!.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{serverName}] {line}");
-                _writer.Flush();
             }
         }
         catch
         {
             // Best-effort: a logging failure must never break the console.
+        }
+    }
+
+    /// <summary>Forces buffered lines to disk. Called periodically and on clean shutdown.</summary>
+    public void Flush()
+    {
+        try
+        {
+            lock (_lock)
+                _writer?.Flush();
+        }
+        catch
+        {
+            // Best-effort, same as Log.
         }
     }
 
