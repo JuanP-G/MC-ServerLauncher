@@ -483,8 +483,6 @@ public partial class ServerModsViewModel : ObservableObject
 
 public partial class ModrinthProjectViewModel : ObservableObject
 {
-    private static readonly HttpClient IconHttp = new() { Timeout = TimeSpan.FromSeconds(20) };
-
     private readonly ServerModsViewModel _parent;
 
     public string Id { get; }
@@ -525,7 +523,11 @@ public partial class ModrinthProjectViewModel : ObservableObject
     {
         try
         {
-            var bytes = await IconHttp.GetByteArrayAsync(url);
+            // Size- and content-type-guarded download (see ModrinthService.FetchIconAsync): a
+            // huge or mislabeled icon_url can't balloon memory or feed the decoder junk.
+            var bytes = await ModrinthService.FetchIconAsync(url);
+            if (bytes is null) return;
+
             using var ms = new MemoryStream(bytes);
             var bmp = new Bitmap(ms);
             if (Dispatcher.UIThread.CheckAccess()) Icon = bmp;
@@ -533,7 +535,7 @@ public partial class ModrinthProjectViewModel : ObservableObject
         }
         catch
         {
-            // Best-effort: webp/svg or network failures simply leave the placeholder.
+            // Best-effort: webp/svg or decoding failures simply leave the placeholder.
         }
     }
 

@@ -23,6 +23,51 @@ public class ModrinthService
     static ModrinthService()
     {
         Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
+        IconHttp.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
+    }
+
+    // --- Project icons ---
+
+    private static readonly HttpClient IconHttp = new() { Timeout = TimeSpan.FromSeconds(20) };
+
+    /// <summary>Generous cap for a project icon (they're typically a few KB).</summary>
+    private const int MaxIconBytes = 2 * 1024 * 1024;
+
+    /// <summary>
+    /// Downloads a project icon with guardrails: the URL comes from Modrinth's API but is still
+    /// remote input, so the response must declare an image content-type and stay under
+    /// <see cref="MaxIconBytes"/> — enforced while streaming, so a missing or lying Content-Length
+    /// can't balloon memory either. Returns the image bytes, or null when anything is off
+    /// (the caller just keeps the placeholder icon).
+    /// </summary>
+    public static async Task<byte[]?> FetchIconAsync(string url, CancellationToken ct = default)
+    {
+        try
+        {
+            using var resp = await IconHttp.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+            if (!resp.IsSuccessStatusCode) return null;
+            if (resp.Content.Headers.ContentType?.MediaType is not { } mime ||
+                !mime.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                return null;
+            if (resp.Content.Headers.ContentLength is > MaxIconBytes) return null;
+
+            using var buffered = new MemoryStream();
+            await using (var stream = await resp.Content.ReadAsStreamAsync(ct))
+            {
+                var buffer = new byte[16 * 1024];
+                int read;
+                while ((read = await stream.ReadAsync(buffer, ct)) > 0)
+                {
+                    if (buffered.Length + read > MaxIconBytes) return null;
+                    buffered.Write(buffer, 0, read);
+                }
+            }
+            return buffered.ToArray();
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>
