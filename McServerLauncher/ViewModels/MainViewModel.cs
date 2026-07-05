@@ -128,15 +128,23 @@ public partial class MainViewModel : ObservableObject
         var lastSeen = ParseSeenVersion(settings.LastVersionSeen);
         var sections = Changelog.NotesSince(lastSeen, current);
 
-        settings.LastVersionSeen = version;
-        _settings.Save(settings);
+        if (sections.Count == 0)
+        {
+            // Nothing to show for this version: just mark it as seen.
+            settings.LastVersionSeen = version;
+            _settings.Save(settings);
+            return;
+        }
 
-        if (sections.Count == 0) return;
         try
         {
             _ = new WhatsNewDialog(version, sections).ShowDialog(owner);
+            // Marked as seen only once the dialog is actually up: if creating/showing it threw,
+            // the notes are offered again on the next start instead of being lost forever.
+            settings.LastVersionSeen = version;
+            _settings.Save(settings);
         }
-        catch { /* if something fails, don't block startup */ }
+        catch { /* if something fails, don't block startup; the notes stay pending */ }
     }
 
     /// <summary>Parses a stored "seen version" string (e.g. "1.1.0"). Null on a fresh install.</summary>
