@@ -40,8 +40,34 @@ public class PlayitApiService
         public string? Address => string.IsNullOrEmpty(CustomDomain) ? AssignedDomain : CustomDomain;
     }
 
-    /// <summary>Reads the (read-only) secret_key from playit.toml. Null if not found.</summary>
+    // --- secret_key cache (EFI-1) ---
+    // Every ServerViewModel used to re-read playit.toml from disk on each tunnel refresh; the key
+    // almost never changes (only when the user re-installs the agent), so a short TTL removes the
+    // repeated file I/O while still picking up a new install quickly.
+    private static readonly object SecretLock = new();
+    private static string? _cachedSecret;
+    private static DateTime _secretReadAtUtc = DateTime.MinValue;
+    private static readonly TimeSpan SecretTtl = TimeSpan.FromSeconds(30);
+
+    /// <summary>Reads the (read-only) secret_key from playit.toml (cached ~30 s). Null if not found.</summary>
     public string? ReadSecretKey()
+    {
+        lock (SecretLock)
+        {
+            if (DateTime.UtcNow - _secretReadAtUtc < SecretTtl)
+                return _cachedSecret;
+        }
+
+        var value = ReadSecretKeyUncached();
+        lock (SecretLock)
+        {
+            _cachedSecret = value;
+            _secretReadAtUtc = DateTime.UtcNow;
+        }
+        return value;
+    }
+
+    private static string? ReadSecretKeyUncached()
     {
         foreach (var path in TomlPaths)
         {
@@ -120,14 +146,58 @@ public class PlayitApiService
         return (agentId, list);
     }
 
+    // --- Shared tunnel-list cache (EFI-1) ---
+    // Every ServerViewModel refreshes its tunnel address every ~30 s; with N servers that used to
+    // mean N identical HTTP calls to api.playit.gg returning the same data. One shared, throttled
+    // fetch serves them all: the first caller inside the TTL window pays the request, the rest
+    // await the same task and just filter by their port.
+    private static readonly object TunnelCacheLock = new();
+    private static Task<List<PlayitTunnel>>? _tunnelFetch;
+    private static DateTime _tunnelFetchAtUtc = DateTime.MinValue;
+    private static readonly TimeSpan TunnelCacheTtl = TimeSpan.FromSeconds(25);
+
     /// <summary>Public address of the tunnel whose local port matches <paramref name="port"/>, or null.</summary>
     public async Task<string?> GetAddressForPortAsync(int port, CancellationToken ct = default)
     {
-        var secret = ReadSecretKey();
-        if (string.IsNullOrEmpty(secret)) return null;
+        var tunnels = await GetTunnelsSharedAsync(ct);
+        return tunnels?.FirstOrDefault(t => t.LocalPort == port)?.Address;
+    }
 
-        var (_, tunnels) = await GetRunDataAsync($"agent-key {secret}", ct);
-        return tunnels.FirstOrDefault(t => t.LocalPort == port)?.Address;
+    private Task<List<PlayitTunnel>> StartTunnelFetch() => Task.Run(async () =>
+    {
+        var secret = ReadSecretKey();
+        if (string.IsNullOrEmpty(secret)) return new List<PlayitTunnel>();
+        var (_, tunnels) = await GetRunDataAsync($"agent-key {secret}", CancellationToken.None);
+        return tunnels;
+    });
+
+    private async Task<List<PlayitTunnel>?> GetTunnelsSharedAsync(CancellationToken ct)
+    {
+        Task<List<PlayitTunnel>> fetch;
+        lock (TunnelCacheLock)
+        {
+            // A failed fetch also stays cached until the TTL expires: no point hammering the API
+            // when it's down; the next window retries naturally.
+            if (_tunnelFetch is null || DateTime.UtcNow - _tunnelFetchAtUtc >= TunnelCacheTtl)
+            {
+                _tunnelFetchAtUtc = DateTime.UtcNow;
+                _tunnelFetch = StartTunnelFetch(); // detached from any single caller's ct
+            }
+            fetch = _tunnelFetch;
+        }
+
+        try { return await fetch.WaitAsync(ct); }
+        catch { return null; }
+    }
+
+    /// <summary>Drops the shared tunnel cache (called after creating/deleting a tunnel).</summary>
+    private static void InvalidateTunnelCache()
+    {
+        lock (TunnelCacheLock)
+        {
+            _tunnelFetch = null;
+            _tunnelFetchAtUtc = DateTime.MinValue;
+        }
     }
 
     /// <summary>Returns the authValue for reading (the agent key if present, otherwise the write key).</summary>
@@ -174,6 +244,7 @@ public class PlayitApiService
         }.ToJsonString();
 
         await PostWriteAsync("/tunnels/create", writeKey, body, ct);
+        InvalidateTunnelCache(); // so the next address refresh sees the new tunnel right away
         return true;
     }
 
@@ -192,6 +263,7 @@ public class PlayitApiService
 
         var body = new JsonObject { ["tunnel_id"] = match.Id }.ToJsonString();
         await PostWriteAsync("/tunnels/delete", writeKey, body, ct);
+        InvalidateTunnelCache(); // so the next address refresh stops showing the deleted tunnel
         return true;
     }
 }
