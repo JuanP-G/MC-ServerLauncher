@@ -22,6 +22,16 @@ if (-not $iscc) { $cmd = Get-Command iscc.exe -ErrorAction SilentlyContinue; if 
 [xml]$csproj = Get-Content "$root\McServerLauncher\McServerLauncher.csproj"
 $version = ($csproj.Project.PropertyGroup.Version | Where-Object { $_ }) | Select-Object -First 1
 
+# Una release no debe salir sin sus notas de novedades: comprobamos que Changelog.cs tiene la
+# entrada de esta versión (su clave Whatsnew_x_y_z en los 5 .resx va de la mano de esa entrada).
+$verParts = $version.Split('.')
+$entry = "new Version($($verParts[0]), $($verParts[1]), $($verParts[2]))"
+$changelog = Get-Content "$root\McServerLauncher\Services\Changelog.cs" -Raw
+if ($changelog -notlike "*$entry*") {
+    throw ("Services/Changelog.cs no tiene entrada para la versión $version ($entry). " +
+           "Añádela al principio de Entries (y su clave Whatsnew_$($verParts -join '_') en los 5 .resx) antes de publicar.")
+}
+
 if ($iscc) {
     Write-Host "==> Generando instalador con Inno Setup (versión $version)..." -ForegroundColor Cyan
     & $iscc "/DMyAppVersion=$version" "$root\installer\MC-ServerLauncher.iss"
