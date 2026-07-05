@@ -162,6 +162,7 @@
   <data name="Msg_ServerStopped" xml:space="preserve"><value>[Launcher] Der Server wurde gestoppt.</value></data>
   <data name="Msg_StoppingSaving" xml:space="preserve"><value>[Launcher] 'stop' wird gesendet und die Welt gespeichert...</value></data>
   <data name="Msg_NotRespondingKill" xml:space="preserve"><value>[Launcher] Der Server hat nicht rechtzeitig reagiert; erzwinge das Schließen.</value></data>
+  <data name="Msg_KillTimedOut" xml:space="preserve"><value>[Launcher] Der zwangsweise beendete Prozess ist immer noch nicht beendet; eventuell musst du ihn manuell schließen.</value></data>
   <data name="Msg_ServerCrashedFmt" xml:space="preserve"><value>[Launcher] Der Server wurde unerwartet beendet (Exit-Code: {0}).</value></data>
   <data name="Msg_ServerCrashedReasonFmt" xml:space="preserve"><value>[Launcher] Der Server wurde unerwartet beendet (Exit-Code: {0}). Grund: {1}</value></data>
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] Automatischer Neustart (Versuch {0} von {1})...</value></data>
@@ -210,6 +211,7 @@
   <data name="Msg_CannotKill" xml:space="preserve"><value>[Fehler] Prozess konnte nicht geschlossen werden: {0}</value></data>
   <data name="Msg_PortStillBusy" xml:space="preserve"><value>[Fehler] Port {0} ist weiterhin belegt. Versuche es in ein paar Sekunden erneut.</value></data>
   <data name="Msg_ErrorFmt" xml:space="preserve"><value>[Fehler] {0}</value></data>
+  <data name="Msg_ServerStillStopping" xml:space="preserve"><value>Der Server wird noch beendet; warte ein paar Sekunden und versuche es erneut.</value></data>
   <data name="Msg_CreatingTunnel" xml:space="preserve"><value>[Playit] Minecraft-Java-Tunnel für Port {0} wird erstellt...</value></data>
   <data name="Msg_TunnelCreated" xml:space="preserve"><value>[Playit] Tunnel erfolgreich erstellt. Die Adresse erscheint gleich.</value></data>
   <data name="Msg_TunnelExists" xml:space="preserve"><value>[Playit] Für Port {0} existierte bereits ein Tunnel; wird wiederverwendet.</value></data>

@@ -58,8 +58,11 @@ public class ServerProcessManager
     {
         lock (_lock)
         {
+            // Stopping (including the kill-after-timeout path in StopAsync) waits for the process
+            // to actually die before returning, so this should be rare; still, fail loudly instead
+            // of silently no-op-ing if something calls Start() while a stop is still in flight.
             if (IsRunning)
-                return;
+                throw new InvalidOperationException(Localizer.Get("Msg_ServerStillStopping"));
 
             var isForgeArgs = !string.IsNullOrWhiteSpace(config.ForgeArgs);
             if (isForgeArgs)
@@ -225,15 +228,30 @@ public class ServerProcessManager
         catch (OperationCanceledException)
         {
             OutputReceived?.Invoke(Localizer.Get("Msg_NotRespondingKill"));
-            TryKill(proc);
+            await KillAndWaitAsync(proc);
         }
         catch
         {
-            TryKill(proc);
+            await KillAndWaitAsync(proc);
         }
+
+        // At this point the OS process is confirmed gone (either the graceful stop finished above,
+        // or KillAndWaitAsync waited for the forced kill to land). Process.Exited - which is what
+        // actually flips State away from Stopping via OnProcessExited - fires around the same time
+        // but isn't guaranteed to have already run. A short bounded poll removes that race for
+        // callers (Restart, in particular) that check IsRunning/call Start() right after this
+        // method returns; in the vast majority of cases the event has already fired and this loop
+        // exits on its first check.
+        var settleDeadline = DateTime.UtcNow.AddSeconds(2);
+        while (State == ServerState.Stopping && DateTime.UtcNow < settleDeadline)
+            await Task.Delay(10);
     }
 
-    private void TryKill(Process proc)
+    /// <summary>
+    /// Kills the process tree and waits (briefly) for the OS to actually finish tearing it down,
+    /// instead of returning right after issuing the kill.
+    /// </summary>
+    private async Task KillAndWaitAsync(Process proc)
     {
         try
         {
@@ -243,6 +261,22 @@ public class ServerProcessManager
         catch
         {
             // The process may have already exited.
+        }
+
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await proc.WaitForExitAsync(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Extremely unlikely (the OS refused to tear down the tree in 5s), but don't hang
+            // StopAsync forever over it; OnProcessExited will still fire whenever it does finish.
+            OutputReceived?.Invoke(Localizer.Get("Msg_KillTimedOut"));
+        }
+        catch
+        {
+            // Process handle already gone, etc. - nothing more to wait on.
         }
     }
 }

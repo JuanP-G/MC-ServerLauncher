@@ -162,6 +162,7 @@
   <data name="Msg_ServerStopped" xml:space="preserve"><value>[Launcher] O servidor parou.</value></data>
   <data name="Msg_StoppingSaving" xml:space="preserve"><value>[Launcher] A enviar 'stop' e a guardar o mundo...</value></data>
   <data name="Msg_NotRespondingKill" xml:space="preserve"><value>[Launcher] O servidor não respondeu a tempo; a forçar o encerramento.</value></data>
+  <data name="Msg_KillTimedOut" xml:space="preserve"><value>[Launcher] O processo forçado a fechar ainda não terminou; pode ser preciso fechá-lo manualmente.</value></data>
   <data name="Msg_ServerCrashedFmt" xml:space="preserve"><value>[Launcher] O servidor encerrou inesperadamente (código de saída: {0}).</value></data>
   <data name="Msg_ServerCrashedReasonFmt" xml:space="preserve"><value>[Launcher] O servidor encerrou inesperadamente (código de saída: {0}). Motivo: {1}</value></data>
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] A reiniciar automaticamente (tentativa {0} de {1})...</value></data>
@@ -210,6 +211,7 @@
   <data name="Msg_CannotKill" xml:space="preserve"><value>[Erro] Não foi possível fechar o processo: {0}</value></data>
   <data name="Msg_PortStillBusy" xml:space="preserve"><value>[Erro] A porta {0} continua ocupada. Tenta de novo dentro de uns segundos.</value></data>
   <data name="Msg_ErrorFmt" xml:space="preserve"><value>[Erro] {0}</value></data>
+  <data name="Msg_ServerStillStopping" xml:space="preserve"><value>O servidor ainda está a parar; espera uns segundos e tenta de novo.</value></data>
   <data name="Msg_CreatingTunnel" xml:space="preserve"><value>[Playit] A criar túnel Minecraft Java para a porta {0}...</value></data>
   <data name="Msg_TunnelCreated" xml:space="preserve"><value>[Playit] Túnel criado com sucesso. O endereço aparecerá em breve.</value></data>
   <data name="Msg_TunnelExists" xml:space="preserve"><value>[Playit] Já existia um túnel para a porta {0}; a reutilizar.</value></data>

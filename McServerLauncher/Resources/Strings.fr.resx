@@ -162,6 +162,7 @@
   <data name="Msg_ServerStopped" xml:space="preserve"><value>[Launcher] Le serveur s'est arrêté.</value></data>
   <data name="Msg_StoppingSaving" xml:space="preserve"><value>[Launcher] Envoi de 'stop' et sauvegarde du monde...</value></data>
   <data name="Msg_NotRespondingKill" xml:space="preserve"><value>[Launcher] Le serveur n'a pas répondu à temps ; fermeture forcée.</value></data>
+  <data name="Msg_KillTimedOut" xml:space="preserve"><value>[Launcher] Le processus forcé à se fermer n'a toujours pas terminé ; il faudra peut-être le fermer manuellement.</value></data>
   <data name="Msg_ServerCrashedFmt" xml:space="preserve"><value>[Launcher] Le serveur s'est arrêté de manière inattendue (code de sortie : {0}).</value></data>
   <data name="Msg_ServerCrashedReasonFmt" xml:space="preserve"><value>[Launcher] Le serveur s'est arrêté de manière inattendue (code de sortie : {0}). Raison : {1}</value></data>
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] Redémarrage automatique (tentative {0} sur {1})...</value></data>
@@ -210,6 +211,7 @@
   <data name="Msg_CannotKill" xml:space="preserve"><value>[Erreur] Impossible de fermer le processus : {0}</value></data>
   <data name="Msg_PortStillBusy" xml:space="preserve"><value>[Erreur] Le port {0} est toujours occupé. Réessaie dans quelques secondes.</value></data>
   <data name="Msg_ErrorFmt" xml:space="preserve"><value>[Erreur] {0}</value></data>
+  <data name="Msg_ServerStillStopping" xml:space="preserve"><value>Le serveur est encore en train de s'arrêter ; attends quelques secondes et réessaie.</value></data>
   <data name="Msg_CreatingTunnel" xml:space="preserve"><value>[Playit] Création du tunnel Minecraft Java pour le port {0}...</value></data>
   <data name="Msg_TunnelCreated" xml:space="preserve"><value>[Playit] Tunnel créé avec succès. L'adresse apparaîtra dans un instant.</value></data>
   <data name="Msg_TunnelExists" xml:space="preserve"><value>[Playit] Un tunnel pour le port {0} existait déjà ; réutilisation.</value></data>

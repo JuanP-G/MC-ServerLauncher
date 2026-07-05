@@ -85,15 +85,50 @@ public class WorldBackupService
         // Region files (.mca) are already internally compressed, so re-deflating them at the
         // "Optimal" level burns CPU for little gain; "Fastest" keeps backups quick without giving
         // up much size.
-        await Task.Run(() =>
-            ZipFile.CreateFromDirectory(worldDir, zipPath, CompressionLevel.Fastest, includeBaseDirectory: false),
-            ct);
+        await Task.Run(() => CreateZipWithRetry(worldDir, zipPath), ct);
 
         var sizeMb = new FileInfo(zipPath).Length / (1024.0 * 1024.0);
         log?.Report(string.Format(Localizer.Get("Msg_BackupCreatedFmt"), sizeMb.ToString("0.#")));
 
         PruneOldBackups(config, protectFromPruning);
         return zipPath;
+    }
+
+    /// <summary>
+    /// Zips <paramref name="worldDir"/>, retrying once after a short pause if a file inside it is
+    /// still transiently locked (e.g. antivirus scanning a region file the server process just
+    /// closed). The server is expected to already be fully stopped by the time this runs
+    /// (<see cref="ServerProcessManager.StopAsync"/> waits for the real OS exit before returning),
+    /// so this retry is a defense-in-depth net for the rare residual lock, not the primary fix.
+    /// </summary>
+    private static void CreateZipWithRetry(string worldDir, string zipPath)
+    {
+        try
+        {
+            ZipFile.CreateFromDirectory(worldDir, zipPath, CompressionLevel.Fastest, includeBaseDirectory: false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Antivirus-style transient locks surface as either exception type depending on how
+            // the scanner holds the file, so both take the retry path.
+            TryDeleteZip(zipPath); // CreateFromDirectory already created a partial file before failing
+            Thread.Sleep(1000);
+            try
+            {
+                ZipFile.CreateFromDirectory(worldDir, zipPath, CompressionLevel.Fastest, includeBaseDirectory: false);
+            }
+            catch
+            {
+                // Still locked: don't leave a partial/corrupt zip in backups/ for the list to show.
+                TryDeleteZip(zipPath);
+                throw;
+            }
+        }
+    }
+
+    private static void TryDeleteZip(string zipPath)
+    {
+        try { File.Delete(zipPath); } catch { /* best-effort */ }
     }
 
     private void PruneOldBackups(ServerConfig config, string? protectFromPruning = null)
