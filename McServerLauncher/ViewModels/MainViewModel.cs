@@ -398,7 +398,13 @@ public partial class MainViewModel : ObservableObject
         var oldType = server.Config.Type;
 
         var dialog = new AddEditServerDialog(server.Config);
-        if (await dialog.ShowDialog<bool>(Owner))
+        var accepted = await dialog.ShowDialog<bool>(Owner);
+
+        // A loader install mutates the config and the disk in the act (files already downloaded),
+        // so it must be persisted even if the user then cancels the edit dialog — otherwise the
+        // type badge, the Mods tab and servers.json keep showing the old type while the disk is
+        // already Fabric/Forge/Paper. Cancel still reverts the ordinary editable fields.
+        if (accepted || dialog.LoaderInstalled)
         {
             server.Name = server.Config.Name;
             Save();

@@ -13,6 +13,14 @@ public partial class AddEditServerDialog : Window
     private readonly ServerConfig _config;
     private string _snapshot;
 
+    /// <summary>
+    /// True if a mod loader was installed during this dialog session. The install mutates the
+    /// config AND the disk immediately (files are already downloaded), so the caller must persist
+    /// the config even if the user then closes this dialog with Cancel — Cancel only reverts the
+    /// editable fields, it cannot undo the loader change.
+    /// </summary>
+    public bool LoaderInstalled { get; private set; }
+
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public AddEditServerDialog() : this(new ServerConfig()) { }
 
@@ -89,6 +97,7 @@ public partial class AddEditServerDialog : Window
         {
             // The loader files are already on disk and _config was updated; refresh the snapshot so
             // a later Cancel doesn't revert the new loader/jar/java fields, and re-bind to show them.
+            LoaderInstalled = true;
             _snapshot = JsonSerializer.Serialize(_config);
             RefreshDataContext();
         }
