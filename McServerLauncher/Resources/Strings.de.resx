@@ -136,6 +136,7 @@
   <data name="Msg_PartnerNotConfigured" xml:space="preserve"><value>Die Playit-Verbindung ist in dieser App-Version nicht verfügbar.</value></data>
   <data name="Msg_SetupCodeFailedFmt" xml:space="preserve"><value>Verbindung mit Playit fehlgeschlagen: {0}</value></data>
   <data name="Msg_SetupCodeNoAgent" xml:space="preserve"><value>Playit hat für diesen Code keinen gültigen Agenten zurückgegeben.</value></data>
+  <data name="Msg_PartnerVariantNotFound" xml:space="preserve"><value>Deine App ist bei Playit noch nicht vollständig registriert (variant_id fehlt oder die Version passt nicht zu einer registrierten). Frag Playit nach der variant_id deiner App.</value></data>
   <data name="Msg_AgentOverLimit" xml:space="preserve"><value>Du hast das Agenten-Limit deines Playit-Kontos erreicht. Du kannst sie auf playit.gg verwalten.</value></data>
   <data name="Playit_ActiveBg" xml:space="preserve"><value>Aktiv (Hintergrunddienst)</value></data>
   <data name="Playit_Active" xml:space="preserve"><value>Aktiv</value></data>

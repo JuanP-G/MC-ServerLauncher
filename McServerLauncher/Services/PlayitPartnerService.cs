@@ -88,8 +88,11 @@ public class PlayitPartnerService
             using var resp = await _http.SendAsync(req, ct);
             json = await resp.Content.ReadAsStringAsync(ct);
             if (!resp.IsSuccessStatusCode)
-                throw new InvalidOperationException(string.Format(
-                    Localizer.Get("Msg_SetupCodeFailedFmt"), ExtractError(json) ?? $"HTTP {(int)resp.StatusCode}"));
+            {
+                var err = ExtractError(json);
+                throw new InvalidOperationException(string.Format(Localizer.Get("Msg_SetupCodeFailedFmt"),
+                    err is null ? $"HTTP {(int)resp.StatusCode}" : DescribeFail(err)));
+            }
         }
         catch (InvalidOperationException)
         {
@@ -131,12 +134,23 @@ public class PlayitPartnerService
         if (root.TryGetProperty("status", out var status) && root.TryGetProperty("data", out var data))
         {
             if (status.GetString() != "success")
-                throw new InvalidOperationException(string.Format(
-                    Localizer.Get("Msg_SetupCodeFailedFmt"), ExtractError(data.GetRawText()) ?? status.GetString() ?? "error"));
+                throw new InvalidOperationException(string.Format(Localizer.Get("Msg_SetupCodeFailedFmt"),
+                    DescribeFail(ExtractError(data.GetRawText()) ?? status.GetString() ?? "error")));
             return data;
         }
         return root;
     }
+
+    /// <summary>
+    /// Maps known Playit "fail" codes to a clearer message; unknown codes pass through so they're
+    /// still visible. <c>AgentVariantVersionNotFound</c> means the app's variant_id/version isn't
+    /// registered on Playit's side yet (the app is still waiting on its variant_id).
+    /// </summary>
+    private static string DescribeFail(string raw) => raw switch
+    {
+        "AgentVariantVersionNotFound" => Localizer.Get("Msg_PartnerVariantNotFound"),
+        _ => raw
+    };
 
     /// <summary>Best-effort human-readable error from an API error body.</summary>
     private static string? ExtractError(string json)
