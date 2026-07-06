@@ -14,4 +14,11 @@ public class AppSettings
 
     /// <summary>Last app version the user has already seen (to show the what's-new screen after updating).</summary>
     public string? LastVersionSeen { get; set; }
+
+    /// <summary>
+    /// Global desktop-notification preferences: the master switch and which kinds are enabled.
+    /// These apply to every server unless the server has its own override (see
+    /// <see cref="ServerConfig.UseCustomNotifications"/>).
+    /// </summary>
+    public NotificationSettings Notifications { get; set; } = new();
 }

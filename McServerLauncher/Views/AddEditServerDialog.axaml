@@ -70,6 +70,23 @@
                     <NumericUpDown Grid.Column="1" Width="120" Value="{Binding BackupRetention}"
                                    Minimum="1" Maximum="50" Increment="1" FormatString="0" />
                 </Grid>
+
+                <Separator Margin="0,18,0,12" />
+
+                <TextBlock Text="{loc:Loc Notif_Section}" FontWeight="SemiBold" />
+                <CheckBox x:Name="UseCustomNotifCheck" Margin="0,8,0,0" Content="{loc:Loc Notif_UseCustom}"
+                          IsChecked="{Binding UseCustomNotifications, Mode=TwoWay}" />
+                <StackPanel Margin="24,6,0,0" Spacing="4" IsEnabled="{Binding #UseCustomNotifCheck.IsChecked}">
+                    <CheckBox x:Name="NotifEnabledCheck" Content="{loc:Loc Notif_Enabled}"
+                              IsChecked="{Binding Notifications.Enabled, Mode=TwoWay}" FontWeight="SemiBold" />
+                    <StackPanel Margin="24,2,0,0" Spacing="4" IsEnabled="{Binding #NotifEnabledCheck.IsChecked}">
+                        <CheckBox Content="{loc:Loc Notif_Join}" IsChecked="{Binding Notifications.PlayerJoined, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Notif_Leave}" IsChecked="{Binding Notifications.PlayerLeft, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Notif_Death}" IsChecked="{Binding Notifications.PlayerDeath, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Notif_Crash}" IsChecked="{Binding Notifications.ServerCrashed, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Notif_OptGaveUp}" IsChecked="{Binding Notifications.AutoRestartGaveUp, Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
 

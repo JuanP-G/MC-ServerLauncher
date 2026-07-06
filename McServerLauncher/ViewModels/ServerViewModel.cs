@@ -453,10 +453,7 @@ public partial class ServerViewModel : ObservableObject
         {
             if (!ConnectedPlayers.Contains(joined)) ConnectedPlayers.Add(joined);
             UpdatePlayerCount();
-            // Only toast when nobody is looking at the app (tray/minimized/unfocused);
-            // if you're watching the console you already saw the join line.
-            if (ToastService.MainWindowInactive)
-                ToastService.Shared.Notify(Name, string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
+            NotifyIf(NotificationKind.PlayerJoined, string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
             return;
         }
 
@@ -465,8 +462,26 @@ public partial class ServerViewModel : ObservableObject
         {
             ConnectedPlayers.Remove(left);
             UpdatePlayerCount();
+            NotifyIf(NotificationKind.PlayerLeft, string.Format(Localizer.Get("Notif_PlayerLeftFmt"), left));
+            return;
         }
+
+        var death = DeathMessageDetector.Detect(line);
+        if (death is not null)
+            NotifyIf(NotificationKind.PlayerDeath, death);
     }
+
+    /// <summary>
+    /// Raises a toast for <paramref name="kind"/> if it's enabled (global + per-server settings) and
+    /// nobody is looking at the app — if you're watching the console you already saw the line. The
+    /// toast title is the server name, so it's always clear which server it came from.
+    /// </summary>
+    private void NotifyIf(NotificationKind kind, string message)
+    {
+        if (ToastService.MainWindowInactive && NotificationPreferences.ShouldNotify(Config, kind))
+            ToastService.Shared.Notify(Name, message);
+    }
+
 
     /// <summary>
     /// Extracts the player name right before a marker (e.g. " joined the game"), but only from a
@@ -556,8 +571,7 @@ public partial class ServerViewModel : ObservableObject
             OnConsoleLine(reason is not null
                 ? string.Format(Localizer.Get("Msg_ServerCrashedReasonFmt"), codeText, reason)
                 : string.Format(Localizer.Get("Msg_ServerCrashedFmt"), codeText));
-            if (ToastService.MainWindowInactive)
-                ToastService.Shared.Notify(Name, Localizer.Get("Notif_Crashed"));
+            NotifyIf(NotificationKind.ServerCrashed, Localizer.Get("Notif_Crashed"));
 
             var stableRun = _lastRunningAtUtc is { } last && DateTime.UtcNow - last >= StabilityWindow;
             if (stableRun) _consecutiveCrashes = 0;
@@ -566,8 +580,7 @@ public partial class ServerViewModel : ObservableObject
             if (_consecutiveCrashes > MaxAutoRestarts)
             {
                 OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartGaveUpFmt"), MaxAutoRestarts));
-                if (ToastService.MainWindowInactive)
-                    ToastService.Shared.Notify(Name, Localizer.Get("Notif_GaveUp"));
+                NotifyIf(NotificationKind.AutoRestartGaveUp, Localizer.Get("Notif_GaveUp"));
                 return;
             }
 

@@ -87,8 +87,12 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`ProcessStatsService`** — muestrea CPU/RAM del proceso `java` en marcha para las estadísticas en
   vivo y las mini-gráficas `Sparkline`.
 - **`ToastService`** — muestra notificaciones emergentes propias — ventanas de Avalonia siempre
-  encima en la esquina inferior derecha (jugador entra, servidor caído, reinicio agotado); funcionan
-  aunque el SO no soporte notificaciones.
+  encima en la esquina inferior derecha (con el nombre del servidor como título), solo cuando la app
+  no tiene el foco; funcionan aunque el SO no soporte notificaciones.
+- **`NotificationPreferences`** — decide qué notificaciones se muestran, combinando los ajustes
+  globales (interruptor maestro + por tipo: entra, sale, muerte/baja, caída, reinicio agotado) con
+  una posible anulación por servidor (`ServerConfig.UseCustomNotifications`). `DeathMessageDetector`
+  detecta las líneas de muerte/baja en la consola para la notificación de muertes.
 - **`SecretProtector`** — cifra los secretos en reposo (DPAPI en Windows, AES-GCM + `.secret.key` en
   Linux/macOS), usado para la clave de escritura de Playit. Si el cifrado falla, la clave **no** se
   persiste (nunca llega texto plano al disco): sigue funcionando durante la sesión, el fallo queda

@@ -76,6 +76,9 @@ public partial class MainViewModel : ObservableObject
         Load();
         _appSettings = _settings.Load();
 
+        // Make the saved notification preferences the app-wide defaults for this session.
+        NotificationPreferences.Global = _appSettings.Notifications;
+
         var saved = _appSettings.Language;
         var code = !string.IsNullOrWhiteSpace(saved) ? saved : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
         SelectedLanguage = Languages.FirstOrDefault(l => l.Code == code) ?? Languages[0];
@@ -102,6 +105,24 @@ public partial class MainViewModel : ObservableObject
     {
         if (await MessageBox.ConfirmAsync(Localizer.Get("RestartNeeded"), Localizer.Get("Language")))
             await RestartAppAsync();
+    }
+
+    /// <summary>Opens the app settings (language, notifications, …).</summary>
+    [RelayCommand]
+    private async Task OpenSettings()
+    {
+        if (Owner is null) return;
+        var dialog = new SettingsDialog(Languages, SelectedLanguage, _appSettings.Notifications);
+        if (!await dialog.ShowDialog<bool>(Owner)) return;
+
+        // Notifications: apply + persist immediately.
+        _appSettings.Notifications = dialog.Notifications;
+        NotificationPreferences.Global = _appSettings.Notifications;
+        _settings.Save(_appSettings);
+
+        // Language: assigning SelectedLanguage reuses the existing handler (persist + restart prompt).
+        if (dialog.SelectedLanguage is { } lang && lang.Code != _appSettings.Language)
+            SelectedLanguage = lang;
     }
 
     private async Task RestartAppAsync()
