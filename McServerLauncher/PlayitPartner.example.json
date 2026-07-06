@@ -1,0 +1,5 @@
+{
+  "_comment": "Copy this file to PlayitPartner.local.json (which is gitignored) and fill in the Playit third-party partner credentials. Never commit the real values. Alternatively set the PLAYIT_PARTNER_API_KEY and PLAYIT_PARTNER_VARIANT_ID environment variables. When absent, the app falls back to the legacy manual-key Playit flow.",
+  "apiKey": "<your playit partner Api-Key>",
+  "variantId": "<your playit variant_id>"
+}

@@ -4,10 +4,21 @@ namespace McServerLauncher.Models;
 public class AppSettings
 {
     /// <summary>
-    /// Playit key with write permission, used to create/delete tunnels.
-    /// (The agent key in playit.toml is read-only and is not valid for this.)
+    /// Legacy Playit key with write permission, used to create/delete tunnels. Superseded by the
+    /// partner setup-code flow (<see cref="PlayitAgentSecretKey"/>); kept for users still on the
+    /// old model.
     /// </summary>
     public string? PlayitApiKey { get; set; }
+
+    /// <summary>
+    /// Per-user self-managed agent secret key obtained from the partner setup-code flow
+    /// (/v1/partner/create_agent). Used as the <c>agent-key</c> for all tunnel management. Stored
+    /// encrypted at rest (like <see cref="PlayitApiKey"/>).
+    /// </summary>
+    public string? PlayitAgentSecretKey { get; set; }
+
+    /// <summary>The agent id that pairs with <see cref="PlayitAgentSecretKey"/> (tunnel origin).</summary>
+    public string? PlayitAgentId { get; set; }
 
     /// <summary>UI language (es, en, pt, fr, de). Empty = system language.</summary>
     public string? Language { get; set; }

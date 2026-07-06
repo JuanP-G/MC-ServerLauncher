@@ -18,15 +18,44 @@ public class PlayitApiException : Exception
 
 /// <summary>
 /// Playit.gg API client.
-/// - Reads (list tunnels / address): use the agent's secret_key (playit.toml), which is usually
-///   read-only.
-/// - Writes (create/delete tunnel): require a key with write permission provided by the
-///   user (sent as Api-Key, with an Agent-Key fallback).
+/// - Preferred: a per-user self-managed agent secret key from the partner setup-code flow
+///   (<see cref="PlayitPartnerService"/>), set app-wide via <see cref="SetAgentKey"/> and used as
+///   <c>agent-key</c> for both reads AND writes.
+/// - Fallback (legacy): the agent's secret_key from playit.toml (reads) and a user-pasted write
+///   key (writes, sent as Api-Key/Agent-Key). Auth is resolved by trying the schemes in order, so a
+///   caller doesn't need to know which kind of key it holds.
 /// </summary>
 public class PlayitApiService
 {
     private const string BaseUrl = "https://api.playit.gg";
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
+
+    // Auth schemes tried in order. The per-user agent secret key authenticates as "agent-key"; a
+    // legacy account write key as "Api-Key" (with "Agent-Key" as a last resort). Only auth errors
+    // fall through to the next scheme; any other API error propagates immediately.
+    private static readonly string[] AuthSchemes = { "agent-key", "Api-Key", "Agent-Key" };
+
+    // App-wide per-user agent secret key from the partner setup-code flow. When set, it is the
+    // credential used for all Playit API calls (reads and writes), superseding playit.toml.
+    private static string? _agentKey;
+
+    /// <summary>
+    /// Sets (or clears) the per-user agent secret key used for all Playit API auth. Called once at
+    /// startup from settings and again after the setup-code flow mints a new key. Drops the shared
+    /// tunnel cache so the next refresh uses the new credential.
+    /// </summary>
+    public static void SetAgentKey(string? agentSecretKey)
+    {
+        lock (SecretLock) { _agentKey = string.IsNullOrWhiteSpace(agentSecretKey) ? null : agentSecretKey; }
+        InvalidateTunnelCache();
+    }
+
+    /// <summary>The credential to read with: the partner agent key if set, else the playit.toml secret.</summary>
+    private string? CurrentReadKey()
+    {
+        lock (SecretLock) { if (_agentKey is not null) return _agentKey; }
+        return ReadSecretKey();
+    }
 
     private static readonly string[] TomlPaths =
     {
@@ -111,23 +140,25 @@ public class PlayitApiService
         return root.GetProperty("data").Clone();
     }
 
-    /// <summary>Write POST: tries Api-Key and, on an auth error, retries with Agent-Key.</summary>
-    private async Task<JsonElement> PostWriteAsync(string path, string writeKey, string body, CancellationToken ct)
+    /// <summary>
+    /// POSTs trying each auth scheme in <see cref="AuthSchemes"/> until one is not rejected for auth
+    /// reasons. Works for both the agent secret key (agent-key) and a legacy write key (Api-Key).
+    /// </summary>
+    private async Task<JsonElement> PostWithAuthFallbackAsync(string path, string key, string body, CancellationToken ct)
     {
-        try
+        PlayitApiException? lastAuthError = null;
+        foreach (var scheme in AuthSchemes)
         {
-            return await PostAsync(path, $"Api-Key {writeKey}", body, ct);
+            try { return await PostAsync(path, $"{scheme} {key}", body, ct); }
+            catch (PlayitApiException ex) when (ex.IsAuthError) { lastAuthError = ex; }
         }
-        catch (PlayitApiException ex) when (ex.IsAuthError)
-        {
-            return await PostAsync(path, $"Agent-Key {writeKey}", body, ct);
-        }
+        throw lastAuthError ?? new PlayitApiException("auth", Localizer.Get("Msg_PlayitAuthFail"));
     }
 
-    /// <summary>Reads agent_id and tunnels using a key (by default the agent's read-only one).</summary>
-    public async Task<(string AgentId, List<PlayitTunnel> Tunnels)> GetRunDataAsync(string readAuthValue, CancellationToken ct = default)
+    /// <summary>Reads agent_id and tunnels using <paramref name="key"/> (agent secret or write key).</summary>
+    public async Task<(string AgentId, List<PlayitTunnel> Tunnels)> GetRunDataAsync(string key, CancellationToken ct = default)
     {
-        var data = await PostAsync("/agents/rundata", readAuthValue, "", ct);
+        var data = await PostWithAuthFallbackAsync("/agents/rundata", key, "", ct);
         var agentId = data.TryGetProperty("agent_id", out var a) ? a.GetString() ?? "" : "";
 
         var list = new List<PlayitTunnel>();
@@ -165,9 +196,9 @@ public class PlayitApiService
 
     private Task<List<PlayitTunnel>> StartTunnelFetch() => Task.Run(async () =>
     {
-        var secret = ReadSecretKey();
-        if (string.IsNullOrEmpty(secret)) return new List<PlayitTunnel>();
-        var (_, tunnels) = await GetRunDataAsync($"agent-key {secret}", CancellationToken.None);
+        var key = CurrentReadKey();
+        if (string.IsNullOrEmpty(key)) return new List<PlayitTunnel>();
+        var (_, tunnels) = await GetRunDataAsync(key, CancellationToken.None);
         return tunnels;
     });
 
@@ -200,27 +231,17 @@ public class PlayitApiService
         }
     }
 
-    /// <summary>Returns the authValue for reading (the agent key if present, otherwise the write key).</summary>
-    private string? ReadAuth(string writeKey)
-    {
-        var secret = ReadSecretKey();
-        if (!string.IsNullOrEmpty(secret)) return $"agent-key {secret}";
-        return string.IsNullOrEmpty(writeKey) ? null : $"Api-Key {writeKey}";
-    }
-
     /// <summary>
     /// Creates the server's Minecraft Java tunnel if one doesn't already exist for that port.
-    /// Returns true if it created one, false if it already existed. Requires a write key.
+    /// Returns true if it created one, false if it already existed. <paramref name="key"/> is the
+    /// per-user agent secret key (preferred) or a legacy write key.
     /// </summary>
-    public async Task<bool> EnsureMinecraftTunnelAsync(string writeKey, string name, int localPort, CancellationToken ct = default)
+    public async Task<bool> EnsureMinecraftTunnelAsync(string key, string name, int localPort, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(writeKey))
+        if (string.IsNullOrWhiteSpace(key))
             throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
 
-        var readAuth = ReadAuth(writeKey)
-            ?? throw new InvalidOperationException(Localizer.Get("Msg_PlayitAuthFail"));
-
-        var (agentId, tunnels) = await GetRunDataAsync(readAuth, ct);
+        var (agentId, tunnels) = await GetRunDataAsync(key, ct);
         if (tunnels.Any(t => t.LocalPort == localPort))
             return false;
 
@@ -243,26 +264,26 @@ public class PlayitApiService
             }
         }.ToJsonString();
 
-        await PostWriteAsync("/tunnels/create", writeKey, body, ct);
+        await PostWithAuthFallbackAsync("/tunnels/create", key, body, ct);
         InvalidateTunnelCache(); // so the next address refresh sees the new tunnel right away
         return true;
     }
 
-    /// <summary>Deletes the tunnel whose local port matches. Returns true if one was deleted. Requires a write key.</summary>
-    public async Task<bool> DeleteTunnelForPortAsync(string writeKey, int localPort, CancellationToken ct = default)
+    /// <summary>
+    /// Deletes the tunnel whose local port matches. Returns true if one was deleted.
+    /// <paramref name="key"/> is the per-user agent secret key (preferred) or a legacy write key.
+    /// </summary>
+    public async Task<bool> DeleteTunnelForPortAsync(string key, int localPort, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(writeKey))
+        if (string.IsNullOrWhiteSpace(key))
             throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
 
-        var readAuth = ReadAuth(writeKey)
-            ?? throw new InvalidOperationException(Localizer.Get("Msg_PlayitAuthFail"));
-
-        var (_, tunnels) = await GetRunDataAsync(readAuth, ct);
+        var (_, tunnels) = await GetRunDataAsync(key, ct);
         var match = tunnels.FirstOrDefault(t => t.LocalPort == localPort);
         if (match is null || string.IsNullOrEmpty(match.Id)) return false;
 
         var body = new JsonObject { ["tunnel_id"] = match.Id }.ToJsonString();
-        await PostWriteAsync("/tunnels/delete", writeKey, body, ct);
+        await PostWithAuthFallbackAsync("/tunnels/delete", key, body, ct);
         InvalidateTunnelCache(); // so the next address refresh stops showing the deleted tunnel
         return true;
     }

@@ -36,23 +36,23 @@ public class AppSettingsService
             var (loaded, _) = AtomicJsonFile.Load<AppSettings>(_filePath, JsonOptions);
             var settings = loaded ?? new AppSettings();
 
-            // The Playit key is stored encrypted (DPAPI on Windows, AES elsewhere); callers always
-            // see the plaintext. A plaintext key written by an older version is migrated
+            // Playit secrets are stored encrypted (DPAPI on Windows, AES elsewhere); callers always
+            // see the plaintext. A plaintext secret written by an older version is migrated
             // (re-saved encrypted) right away — but only if encryption actually works right now:
-            // re-saving while it's broken would drop the key from a file that already contained it
-            // in plaintext, i.e. destroy data without making anything safer.
-            if (!string.IsNullOrEmpty(settings.PlayitApiKey))
+            // re-saving while it's broken would drop the secret from a file that already contained
+            // it in plaintext, i.e. destroy data without making anything safer.
+            var needsMigration = false;
+            settings.PlayitApiKey = DecryptTracking(settings.PlayitApiKey, ref needsMigration);
+            settings.PlayitAgentSecretKey = DecryptTracking(settings.PlayitAgentSecretKey, ref needsMigration);
+
+            if (needsMigration)
             {
-                var wasProtected = SecretProtector.IsProtected(settings.PlayitApiKey);
-                settings.PlayitApiKey = SecretProtector.Unprotect(settings.PlayitApiKey);
-                if (!wasProtected)
-                {
-                    if (SecretProtector.TryProtect(settings.PlayitApiKey, out _))
-                        Save(settings);
-                    else
-                        ConsoleLogService.Shared.Log("Launcher",
-                            "Could not encrypt the legacy plaintext Playit API key (protection unavailable); leaving settings.json unchanged.");
-                }
+                if (SecretProtector.TryProtect(settings.PlayitApiKey, out _) &&
+                    SecretProtector.TryProtect(settings.PlayitAgentSecretKey, out _))
+                    Save(settings);
+                else
+                    ConsoleLogService.Shared.Log("Launcher",
+                        "Could not encrypt a legacy plaintext Playit secret (protection unavailable); leaving settings.json unchanged.");
             }
             return settings;
         }
@@ -66,24 +66,35 @@ public class AppSettingsService
     {
         Directory.CreateDirectory(_dataDir);
 
-        // Write a copy with the key protected, so the caller's instance keeps the usable plaintext.
-        // If encryption fails (DPAPI unavailable, key file not writable…), REFUSE to persist the
-        // key rather than silently downgrading it to plaintext on disk (SEG-4): the in-memory
-        // session keeps working and the app will simply ask for the key again next time.
-        LastSaveCouldNotProtectKey = !SecretProtector.TryProtect(settings.PlayitApiKey, out var protectedKey);
+        // Write a copy with the secrets protected, so the caller's instance keeps the usable
+        // plaintext. If encryption fails (DPAPI unavailable, key file not writable…), REFUSE to
+        // persist that secret rather than silently downgrading it to plaintext on disk (SEG-4): the
+        // in-memory session keeps working and the app will simply ask for it again next time.
+        var legacyOk = SecretProtector.TryProtect(settings.PlayitApiKey, out var protectedKey);
+        var agentOk = SecretProtector.TryProtect(settings.PlayitAgentSecretKey, out var protectedAgent);
+        LastSaveCouldNotProtectKey = !legacyOk || !agentOk;
+        if (!legacyOk) protectedKey = string.Empty;
+        if (!agentOk) protectedAgent = string.Empty;
         if (LastSaveCouldNotProtectKey)
-        {
-            protectedKey = string.Empty;
             ConsoleLogService.Shared.Log("Launcher",
-                "Could not encrypt the Playit API key (DPAPI/key-file failure); the key was NOT saved to disk and will be asked for again.");
-        }
+                "Could not encrypt a Playit secret (DPAPI/key-file failure); it was NOT saved to disk and will be asked for again.");
 
         var toWrite = new AppSettings
         {
             PlayitApiKey = protectedKey,
+            PlayitAgentSecretKey = protectedAgent,
+            PlayitAgentId = settings.PlayitAgentId,
             Language = settings.Language,
             LastVersionSeen = settings.LastVersionSeen
         };
         AtomicJsonFile.Write(_filePath, toWrite, JsonOptions);
+    }
+
+    /// <summary>Decrypts a stored secret; flags <paramref name="needsMigration"/> if it was plaintext.</summary>
+    private static string? DecryptTracking(string? stored, ref bool needsMigration)
+    {
+        if (string.IsNullOrEmpty(stored)) return stored;
+        if (!SecretProtector.IsProtected(stored)) needsMigration = true;
+        return SecretProtector.Unprotect(stored);
     }
 }

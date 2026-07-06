@@ -28,7 +28,7 @@ The project (`McServerLauncher/`) is organized by responsibility:
 Data lives **per user** under `%APPDATA%\McServerLauncher\`:
 
 - `servers.json` — the server list and each server's config.
-- `settings.json` — global settings (language, Playit key, last-seen version…).
+- `settings.json` — global settings (language, Playit agent secret key, last-seen version…).
   Both JSON files are written **atomically** (`AtomicJsonFile`): the previous version is kept as
   `.bak`, and a corrupt file is quarantined as `.bad` and recovered from the `.bak` when possible
   (the user is warned at startup instead of silently losing the list).
@@ -50,9 +50,14 @@ are no hard-coded machine paths.
   server.
 - **`MinecraftVersionService`** — reads Mojang's version manifest, resolves the `server.jar`
   download URL and the required Java version, and downloads files.
-- **`PlayitApiService`** / **`PlayitManager`** — talk to Playit.gg: read the public tunnel address
-  (via the agent's read-only key) and create/delete tunnels (with a user-provided write key);
-  `PlayitManager` queries/starts/stops the background Windows service.
+- **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — talk to Playit.gg.
+  `PlayitPartnerService` runs the third-party **setup-code** flow (`/v1/partner/create_agent` with
+  the app's partner Api-Key + variant_id) to mint a **per-user self-managed agent secret key** from
+  a code the user pastes. `PlayitApiService` then uses that key (as `agent-key`, set app-wide via
+  `SetAgentKey`) to list/create/delete tunnels — falling back to a legacy `playit.toml` secret or
+  pasted write key when the partner flow isn't configured. `PlayitManager` queries/starts/stops the
+  background Windows/systemd service. Partner credentials load from env vars or a **gitignored**
+  `PlayitPartner.local.json` (never committed).
 - **`PortService`** — checks which TCP ports are in use, finds a free one, and (via P/Invoke) finds
   the PID listening on a port so a stuck server can be freed.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — read/write the
@@ -117,9 +122,16 @@ embedded in `server.jar` (`version.json`) and installs/uses a compatible runtime
 `ServerConfig.JavaPath`.
 
 ### Playit tunnel
+First time the user connects Playit, `MainViewModel.EnsurePlayitAgentAsync` shows the setup-code
+dialog (opens `playit.gg/l/setup-third-party` only on a click), exchanges the pasted code via
+`PlayitPartnerService.CreateAgentAsync` for a per-user agent secret key, and stores it encrypted.
 When creating a server (or via the "Create tunnel" button), `MainViewModel` calls
-`PlayitApiService.EnsureMinecraftTunnelAsync` with the write key. The public address is detected
-periodically by `ServerViewModel` via `GetAddressForPortAsync`, matching by local port.
+`PlayitApiService.EnsureMinecraftTunnelAsync` with that key. The public address is detected
+periodically by `ServerViewModel` via `GetAddressForPortAsync`, matching by local port. Compliance
+with Playit's third-party rules: the browser only opens on an explicit click, a disclaimer states
+the app is not affiliated with Playit, and the user can always reach their Playit account directly.
+Note: a self-managed agent forwards traffic only while the agent process runs — running/bundling
+that agent is a separate, deferred piece of work.
 
 ### In-app update + what's-new
 On startup `MainViewModel.CheckForUpdatesAsync` asks `UpdateService` for the latest release and its

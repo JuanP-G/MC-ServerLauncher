@@ -125,12 +125,18 @@
   <data name="Del_Files" xml:space="preserve"><value>Auch alle Serverdateien auf der Festplatte löschen (einschließlich der Welt).</value></data>
   <data name="Del_Warning" xml:space="preserve"><value>Der gesamte Server-Ordner wird dauerhaft gelöscht. Diese Aktion kann NICHT rückgängig gemacht werden.</value></data>
   <data name="Del_Delete" xml:space="preserve"><value>Löschen</value></data>
-  <data name="Pk_Title" xml:space="preserve"><value>Playit-Schlüssel (Schreiben)</value></data>
-  <data name="Pk_Intro" xml:space="preserve"><value>Um Tunnel automatisch zu erstellen und zu löschen, braucht die App einen Playit-Schlüssel mit Schreibrechten. Der vorhandene Agent-Schlüssel ist schreibgeschützt und reicht dafür nicht.</value></data>
-  <data name="Pk_Steps" xml:space="preserve"><value>Erstelle einen Schlüssel in deinem playit.gg-Konto (Bereich Schlüssel / API, mit Schreibrechten) und füge ihn hier ein. Er wird nur auf deinem Computer gespeichert.</value></data>
-  <data name="Pk_OpenPlayit" xml:space="preserve"><value>playit.gg öffnen</value></data>
-  <data name="Pk_KeyLabel" xml:space="preserve"><value>Playit-Schreibschlüssel</value></data>
-  <data name="Pk_KeyPlaceholder" xml:space="preserve"><value>Schlüssel hier einfügen...</value></data>
+  <data name="Pk_Title" xml:space="preserve"><value>Mit Playit verbinden</value></data>
+  <data name="Pk_Intro" xml:space="preserve"><value>Um Tunnel automatisch zu erstellen und zu verwalten, verbinde dein Playit-Konto. Kein Schlüssel zum Einfügen: Hol dir einen Einrichtungscode auf playit.gg und füge ihn hier ein.</value></data>
+  <data name="Pk_Steps" xml:space="preserve"><value>Klicke auf die Schaltfläche, um playit.gg zu öffnen, melde dich an (oder erstelle dein Konto) und wähle „MC Server Launcher" (oder „Andere"), um einen Einrichtungscode zu erzeugen. Kopiere ihn und füge ihn unten ein.</value></data>
+  <data name="Pk_OpenPlayit" xml:space="preserve"><value>playit.gg öffnen, um den Code zu holen</value></data>
+  <data name="Pk_KeyLabel" xml:space="preserve"><value>Einrichtungscode</value></data>
+  <data name="Pk_KeyPlaceholder" xml:space="preserve"><value>Füge deinen Einrichtungscode hier ein...</value></data>
+  <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher ist weder mit Playit verbunden noch gehört es Playit; es integriert sich nur in dessen Netzwerk. Dein Konto gehört dir: Du kannst es direkt auf playit.gg verwalten.</value></data>
+  <data name="Msg_PasteSetupCode" xml:space="preserve"><value>Füge den Einrichtungscode ein, den du auf playit.gg erhalten hast.</value></data>
+  <data name="Msg_PartnerNotConfigured" xml:space="preserve"><value>Die Playit-Verbindung ist in dieser App-Version nicht verfügbar.</value></data>
+  <data name="Msg_SetupCodeFailedFmt" xml:space="preserve"><value>Verbindung mit Playit fehlgeschlagen: {0}</value></data>
+  <data name="Msg_SetupCodeNoAgent" xml:space="preserve"><value>Playit hat für diesen Code keinen gültigen Agenten zurückgegeben.</value></data>
+  <data name="Msg_AgentOverLimit" xml:space="preserve"><value>Du hast das Agenten-Limit deines Playit-Kontos erreicht. Du kannst sie auf playit.gg verwalten.</value></data>
   <data name="Playit_ActiveBg" xml:space="preserve"><value>Aktiv (Hintergrunddienst)</value></data>
   <data name="Playit_Active" xml:space="preserve"><value>Aktiv</value></data>
   <data name="Playit_Stopped" xml:space="preserve"><value>Gestoppt</value></data>

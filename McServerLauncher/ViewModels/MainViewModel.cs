@@ -76,6 +76,10 @@ public partial class MainViewModel : ObservableObject
         Load();
         _appSettings = _settings.Load();
 
+        // Make the per-user Playit agent key (if the user already connected) the credential for all
+        // Playit API reads/writes this session.
+        PlayitApiService.SetAgentKey(_appSettings.PlayitAgentSecretKey);
+
         var saved = _appSettings.Language;
         var code = !string.IsNullOrWhiteSpace(saved) ? saved : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
         SelectedLanguage = Languages.FirstOrDefault(l => l.Code == code) ?? Languages[0];
@@ -327,30 +331,53 @@ public partial class MainViewModel : ObservableObject
     partial void OnSelectedServerChanged(ServerViewModel? value) => OnPropertyChanged(nameof(HasSelection));
 
     /// <summary>
-    /// Returns the Playit write key; if it's not saved, asks the user for it and saves it.
-    /// Returns null if the user cancels.
+    /// Returns the Playit credential used for tunnel management (the per-user agent secret key from
+    /// the setup-code flow, or a legacy write key for users who already had one). If none is stored,
+    /// runs the setup-code flow. Returns null if the user cancels or the flow is unavailable.
     /// </summary>
-    private async Task<string?> EnsurePlayitApiKeyAsync()
+    private async Task<string?> EnsurePlayitAgentAsync()
     {
+        // Already connected via the setup-code flow.
+        if (!string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
+            return _appSettings.PlayitAgentSecretKey;
+        // Legacy: a manually-pasted write key from an older version still works.
         if (!string.IsNullOrWhiteSpace(_appSettings.PlayitApiKey))
             return _appSettings.PlayitApiKey;
 
+        if (Owner is null) return null;
+
+        // The dialog runs the setup-code flow when the partner build is configured, or falls back to
+        // the legacy write-key entry otherwise (so the feature never regresses).
         var dialog = new PlayitApiKeyDialog();
-        if (Owner is null || !await dialog.ShowDialog<bool>(Owner))
+        if (!await dialog.ShowDialog<bool>(Owner))
             return null;
 
-        _appSettings.PlayitApiKey = dialog.ApiKey;
+        string? credential;
+        if (dialog.IsSetupResult)
+        {
+            _appSettings.PlayitAgentSecretKey = dialog.AgentSecretKey;
+            _appSettings.PlayitAgentId = dialog.AgentId;
+            credential = dialog.AgentSecretKey;
+        }
+        else
+        {
+            _appSettings.PlayitApiKey = dialog.LegacyWriteKey;
+            credential = dialog.LegacyWriteKey;
+        }
         _settings.Save(_appSettings);
+        PlayitApiService.SetAgentKey(_appSettings.PlayitAgentSecretKey); // no-op for the legacy path
 
-        // If the key couldn't be encrypted, Save refused to persist it (plaintext never lands on
-        // disk): tell the user once — the key still works for this session but will be asked again.
+        // If the secret couldn't be encrypted, Save refused to persist it (plaintext never lands on
+        // disk): tell the user once — it still works this session but will be asked again next time.
         if (_settings.LastSaveCouldNotProtectKey && !_keyProtectWarned)
         {
             _keyProtectWarned = true;
             await MessageBox.ShowAsync(Localizer.Get("Msg_PlayitKeyNotProtected"), Localizer.Get("Pk_Title"), Owner);
         }
+        if (dialog.AgentOverLimit)
+            await MessageBox.ShowAsync(Localizer.Get("Msg_AgentOverLimit"), Localizer.Get("Pk_Title"), Owner);
 
-        return dialog.ApiKey;
+        return credential;
     }
 
     private bool _keyProtectWarned;
@@ -360,7 +387,7 @@ public partial class MainViewModel : ObservableObject
     private async Task CreateTunnelForSelected()
     {
         if (SelectedServer is null) return;
-        var key = await EnsurePlayitApiKeyAsync();
+        var key = await EnsurePlayitAgentAsync();
         if (key is null) return;
         await SelectedServer.CreateTunnelAsync(key);
     }
@@ -407,7 +434,7 @@ public partial class MainViewModel : ObservableObject
             // Create the Playit tunnel (errors are visible in the server's console).
             if (dialog.CreateTunnel)
             {
-                var key = await EnsurePlayitApiKeyAsync();
+                var key = await EnsurePlayitAgentAsync();
                 if (key is not null)
                     await vm.CreateTunnelAsync(key);
             }
@@ -521,7 +548,7 @@ public partial class MainViewModel : ObservableObject
 
         if (dialog.DeleteTunnel && port.HasValue)
         {
-            var key = await EnsurePlayitApiKeyAsync();
+            var key = await EnsurePlayitAgentAsync();
             try
             {
                 var deleted = key is not null && await new PlayitApiService().DeleteTunnelForPortAsync(key, port.Value);

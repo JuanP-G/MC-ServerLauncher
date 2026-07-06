@@ -23,11 +23,17 @@
 
             <TextBlock Text="{loc:Loc Pk_KeyLabel}" Margin="0,16,0,4" />
             <TextBox x:Name="KeyBox" Watermark="{loc:Loc Pk_KeyPlaceholder}" />
+
+            <TextBlock x:Name="StatusText" Foreground="#E05561" TextWrapping="Wrap"
+                       Margin="0,8,0,0" IsVisible="False" />
+
+            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.65" Margin="0,14,0,0"
+                       Text="{loc:Loc Pk_Disclaimer}" />
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,12,20,16" Spacing="8">
-            <Button Content="{loc:Loc Cancel}" Click="Cancel_Click" />
-            <Button Classes="accent" Content="{loc:Loc Save}" Click="Save_Click" />
+            <Button x:Name="CancelButton" Content="{loc:Loc Cancel}" Click="Cancel_Click" />
+            <Button x:Name="SaveButton" Classes="accent" Content="{loc:Loc Save}" Click="Save_Click" />
         </StackPanel>
     </Grid>
 </Window>

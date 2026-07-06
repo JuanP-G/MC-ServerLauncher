@@ -28,7 +28,7 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`:
 
 - `servers.json` — la lista de servidores y la configuración de cada uno.
-- `settings.json` — ajustes globales (idioma, clave de Playit, última versión vista…).
+- `settings.json` — ajustes globales (idioma, clave secreta del agente de Playit, última versión vista…).
   Ambos JSON se escriben de forma **atómica** (`AtomicJsonFile`): la versión anterior se conserva
   como `.bak`, y un archivo corrupto se aparta como `.bad` y se recupera desde el `.bak` cuando es
   posible (avisando al usuario al arrancar en vez de perder la lista en silencio).
@@ -49,9 +49,15 @@ mundo. No hay rutas fijas del equipo en el código.
   Temurin (Adoptium) adecuado para la arquitectura. Se usa al crear y al iniciar un servidor.
 - **`MinecraftVersionService`** — lee el manifiesto de versiones de Mojang, resuelve la URL del
   `server.jar` y la versión de Java necesaria, y descarga archivos.
-- **`PlayitApiService`** / **`PlayitManager`** — hablan con Playit.gg: leen la dirección pública del
-  túnel (con la clave de solo lectura del agente) y crean/eliminan túneles (con una clave de
-  escritura del usuario); `PlayitManager` consulta/arranca/detiene el servicio de Windows de fondo.
+- **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — hablan con Playit.gg.
+  `PlayitPartnerService` ejecuta el flujo de **código de configuración** de terceros
+  (`/v1/partner/create_agent` con la Api-Key de socio + variant_id de la app) para obtener una
+  **clave secreta de agente autogestionado por usuario** a partir de un código que el usuario pega.
+  `PlayitApiService` usa esa clave (como `agent-key`, fijada globalmente con `SetAgentKey`) para
+  listar/crear/eliminar túneles — con reserva al `playit.toml` heredado o a una clave de escritura
+  pegada cuando el flujo de socio no está configurado. `PlayitManager` consulta/arranca/detiene el
+  servicio de fondo (Windows/systemd). Las credenciales de socio se cargan de variables de entorno
+  o de un `PlayitPartner.local.json` **ignorado por git** (nunca se commitea).
 - **`PortService`** — comprueba qué puertos TCP están en uso, encuentra uno libre y (vía P/Invoke)
   localiza el PID que escucha en un puerto para liberar un servidor colgado.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — leen/escriben los
@@ -117,9 +123,16 @@ Al **crear**, `CreateServerDialog` pide a `MinecraftVersionService` el Java nece
 `ServerConfig.JavaPath`.
 
 ### Túnel de Playit
-Al crear un servidor (o con el botón "Crear túnel"), `MainViewModel` llama a
-`PlayitApiService.EnsureMinecraftTunnelAsync` con la clave de escritura. La dirección pública la
-detecta periódicamente `ServerViewModel` con `GetAddressForPortAsync`, emparejando por puerto local.
+La primera vez que el usuario conecta Playit, `MainViewModel.EnsurePlayitAgentAsync` muestra el
+diálogo de código de configuración (abre `playit.gg/l/setup-third-party` solo al pulsar), canjea el
+código pegado con `PlayitPartnerService.CreateAgentAsync` por una clave secreta de agente por
+usuario y la guarda cifrada. Al crear un servidor (o con el botón "Crear túnel"), `MainViewModel`
+llama a `PlayitApiService.EnsureMinecraftTunnelAsync` con esa clave. La dirección pública la detecta
+periódicamente `ServerViewModel` con `GetAddressForPortAsync`, emparejando por puerto local.
+Cumplimiento de las reglas de terceros de Playit: el navegador solo se abre al pulsar, un aviso
+indica que la app no está afiliada a Playit y el usuario siempre puede acceder a su cuenta de Playit
+directamente. Nota: un agente autogestionado solo reenvía tráfico mientras su proceso corre —
+ejecutar/empaquetar ese agente es una pieza aparte, aplazada.
 
 ### Actualización in-app + novedades
 Al arrancar, `MainViewModel.CheckForUpdatesAsync` pide a `UpdateService` la última release y su
