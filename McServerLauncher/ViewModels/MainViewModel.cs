@@ -80,6 +80,11 @@ public partial class MainViewModel : ObservableObject
         // Playit API reads/writes this session.
         PlayitApiService.SetAgentKey(_appSettings.PlayitAgentSecretKey);
 
+        // If already connected, run the embedded Playit agent so tunnels forward traffic (downloads
+        // it once; nothing for the user to install).
+        if (!string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
+            _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
+
         // Make the saved notification preferences the app-wide defaults for this session.
         NotificationPreferences.Global = _appSettings.Notifications;
 
@@ -575,6 +580,7 @@ public partial class MainViewModel : ObservableObject
     /// <summary>Stops all servers IN PARALLEL and saves when the app closes.</summary>
     public async Task ShutdownAllAsync()
     {
+        PlayitAgentRunner.Shared.Stop(); // stop the embedded Playit agent along with the servers
         await Task.WhenAll(Servers.Select(s => s.ShutdownAsync()));
         Save();
         // The console log buffers and flushes on a timer (EFI-5); push the tail out before the

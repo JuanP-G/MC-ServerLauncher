@@ -51,6 +51,12 @@ public static class PlayitConnection
         service.Save(settings);
         PlayitApiService.SetAgentKey(settings.PlayitAgentSecretKey); // no-op for the legacy path
 
+        // Start the embedded Playit agent so the user's tunnels actually forward traffic (the app
+        // downloads and runs it; nothing to install). Only for the partner agent key, not a legacy
+        // write key (that model relies on the user's own installed agent).
+        if (!string.IsNullOrWhiteSpace(settings.PlayitAgentSecretKey))
+            _ = PlayitAgentRunner.Shared.StartAsync(settings.PlayitAgentSecretKey);
+
         // If the secret couldn't be encrypted, Save refused to persist it (never plaintext on disk):
         // it still works this session but will be asked for again next time.
         if (service.LastSaveCouldNotProtectKey)
@@ -61,7 +67,7 @@ public static class PlayitConnection
         return Credential(settings);
     }
 
-    /// <summary>Clears the stored Playit connection (agent key + any legacy key).</summary>
+    /// <summary>Clears the stored Playit connection (agent key + any legacy key) and stops the agent.</summary>
     public static void Disconnect(AppSettings settings, AppSettingsService service)
     {
         settings.PlayitAgentSecretKey = null;
@@ -69,5 +75,6 @@ public static class PlayitConnection
         settings.PlayitApiKey = null;
         service.Save(settings);
         PlayitApiService.SetAgentKey(null);
+        PlayitAgentRunner.Shared.Stop();
     }
 }

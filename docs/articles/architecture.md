@@ -136,8 +136,11 @@ When creating a server (or via the "Create tunnel" button), `MainViewModel` call
 periodically by `ServerViewModel` via `GetAddressForPortAsync`, matching by local port. Compliance
 with Playit's third-party rules: the browser only opens on an explicit click, a disclaimer states
 the app is not affiliated with Playit, and the user can always reach their Playit account directly.
-Note: a self-managed agent forwards traffic only while the agent process runs — running/bundling
-that agent is a separate, deferred piece of work.
+A self-managed agent forwards traffic only while the agent process runs, so `PlayitAgentRunner`
+downloads Playit's official `playitd` binary (once, pinned to the registered version) and runs it as
+a hidden child process with `--secret <the per-user key>` while the app is open and connected — the
+user installs nothing. One agent serves all the user's tunnels. Not available on macOS (Playit ships
+no macOS binary); there the user runs Playit themselves.
 
 ### In-app update + what's-new
 On startup `MainViewModel.CheckForUpdatesAsync` asks `UpdateService` for the latest release and its
