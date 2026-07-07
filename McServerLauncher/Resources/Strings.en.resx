@@ -132,6 +132,12 @@
   <data name="Pk_KeyLabel" xml:space="preserve"><value>Setup code</value></data>
   <data name="Pk_KeyPlaceholder" xml:space="preserve"><value>Paste your setup code here...</value></data>
   <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher is not affiliated with or owned by Playit; it only integrates with their network. Your account is yours: you can manage it directly at playit.gg.</value></data>
+  <data name="Pk_SettingsDesc" xml:space="preserve"><value>Connect your Playit account to create and manage tunnels automatically. You only paste a code — no key needed.</value></data>
+  <data name="Pk_Connect" xml:space="preserve"><value>Connect to Playit</value></data>
+  <data name="Pk_Reconnect" xml:space="preserve"><value>Reconnect</value></data>
+  <data name="Pk_Disconnect" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="Pk_Connected" xml:space="preserve"><value>Connected</value></data>
+  <data name="Pk_NotConnected" xml:space="preserve"><value>Not connected</value></data>
   <data name="Msg_PasteSetupCode" xml:space="preserve"><value>Paste the setup code you obtained from playit.gg.</value></data>
   <data name="Msg_PartnerNotConfigured" xml:space="preserve"><value>Playit connection isn't available in this build of the app.</value></data>
   <data name="Msg_SetupCodeFailedFmt" xml:space="preserve"><value>Couldn't connect to Playit: {0}</value></data>

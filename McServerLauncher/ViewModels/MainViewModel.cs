@@ -116,7 +116,7 @@ public partial class MainViewModel : ObservableObject
     private async Task OpenSettings()
     {
         if (Owner is null) return;
-        var dialog = new SettingsDialog(Languages, SelectedLanguage, _appSettings.Notifications);
+        var dialog = new SettingsDialog(Languages, SelectedLanguage, _appSettings.Notifications, _appSettings, _settings);
         if (!await dialog.ShowDialog<bool>(Owner)) return;
 
         // Notifications: apply + persist immediately.
@@ -358,50 +358,11 @@ public partial class MainViewModel : ObservableObject
     /// </summary>
     private async Task<string?> EnsurePlayitAgentAsync()
     {
-        // Already connected via the setup-code flow.
-        if (!string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
-            return _appSettings.PlayitAgentSecretKey;
-        // Legacy: a manually-pasted write key from an older version still works.
-        if (!string.IsNullOrWhiteSpace(_appSettings.PlayitApiKey))
-            return _appSettings.PlayitApiKey;
-
         if (Owner is null) return null;
-
-        // The dialog runs the setup-code flow when the partner build is configured, or falls back to
-        // the legacy write-key entry otherwise (so the feature never regresses).
-        var dialog = new PlayitApiKeyDialog();
-        if (!await dialog.ShowDialog<bool>(Owner))
-            return null;
-
-        string? credential;
-        if (dialog.IsSetupResult)
-        {
-            _appSettings.PlayitAgentSecretKey = dialog.AgentSecretKey;
-            _appSettings.PlayitAgentId = dialog.AgentId;
-            credential = dialog.AgentSecretKey;
-        }
-        else
-        {
-            _appSettings.PlayitApiKey = dialog.LegacyWriteKey;
-            credential = dialog.LegacyWriteKey;
-        }
-        _settings.Save(_appSettings);
-        PlayitApiService.SetAgentKey(_appSettings.PlayitAgentSecretKey); // no-op for the legacy path
-
-        // If the secret couldn't be encrypted, Save refused to persist it (plaintext never lands on
-        // disk): tell the user once — it still works this session but will be asked again next time.
-        if (_settings.LastSaveCouldNotProtectKey && !_keyProtectWarned)
-        {
-            _keyProtectWarned = true;
-            await MessageBox.ShowAsync(Localizer.Get("Msg_PlayitKeyNotProtected"), Localizer.Get("Pk_Title"), Owner);
-        }
-        if (dialog.AgentOverLimit)
-            await MessageBox.ShowAsync(Localizer.Get("Msg_AgentOverLimit"), Localizer.Get("Pk_Title"), Owner);
-
-        return credential;
+        // Returns the stored connection if there is one, or runs the "Connect to Playit" flow (paste
+        // a setup code) right here — so clicking "Create tunnel" while not connected just works.
+        return await PlayitConnection.EnsureAsync(Owner, _appSettings, _settings);
     }
-
-    private bool _keyProtectWarned;
 
     /// <summary>Creates the Playit tunnel for the selected server (the "Create tunnel" button).</summary>
     [RelayCommand(CanExecute = nameof(HasSelection))]

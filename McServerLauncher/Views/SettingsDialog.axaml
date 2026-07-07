@@ -43,6 +43,19 @@
                 <Button Content="{loc:Loc Notif_Test}" Margin="0,12,0,0" HorizontalAlignment="Left"
                         Click="TestNotification_Click" ToolTip.Tip="{loc:Loc Notif_TestTip}" />
 
+                <Separator Margin="0,16,0,12" />
+
+                <!-- Playit.gg connection -->
+                <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
+                <TextBlock Text="{loc:Loc Pk_SettingsDesc}" TextWrapping="Wrap" Opacity="0.7" FontSize="13" Margin="0,4,0,6" />
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Ellipse x:Name="PlayitDot" Width="10" Height="10" VerticalAlignment="Center" />
+                    <TextBlock x:Name="PlayitStatus" VerticalAlignment="Center" />
+                    <Button x:Name="ConnectBtn" Content="{loc:Loc Pk_Connect}" Click="ConnectPlayit_Click" />
+                    <Button x:Name="DisconnectBtn" Content="{loc:Loc Pk_Disconnect}" Click="DisconnectPlayit_Click" />
+                </StackPanel>
+                <TextBlock Text="{loc:Loc Pk_Disclaimer}" TextWrapping="Wrap" Opacity="0.55" FontSize="11" Margin="0,8,0,0" />
+
             </StackPanel>
         </ScrollViewer>
 
