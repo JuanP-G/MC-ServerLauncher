@@ -202,6 +202,8 @@
   <data name="Playit_Active" xml:space="preserve"><value>Activo</value></data>
   <data name="Playit_Stopped" xml:space="preserve"><value>Detenido</value></data>
   <data name="Playit_NotInstalled" xml:space="preserve"><value>Servicio no instalado</value></data>
+  <data name="Playit_AgentFailed" xml:space="preserve"><value>Túnel apagado (fallo del agente — mira Ajustes)</value></data>
+  <data name="Playit_AgentStopped" xml:space="preserve"><value>Túnel apagado (agente detenido)</value></data>
   <data name="Playit_Checking" xml:space="preserve"><value>Comprobando...</value></data>
   <data name="Signal_Off" xml:space="preserve"><value>Servidor apagado</value></data>
   <data name="Signal_Transition" xml:space="preserve"><value>Cambiando de estado...</value></data>

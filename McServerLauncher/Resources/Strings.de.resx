@@ -156,6 +156,8 @@
   <data name="Playit_Active" xml:space="preserve"><value>Aktiv</value></data>
   <data name="Playit_Stopped" xml:space="preserve"><value>Gestoppt</value></data>
   <data name="Playit_NotInstalled" xml:space="preserve"><value>Dienst nicht installiert</value></data>
+  <data name="Playit_AgentFailed" xml:space="preserve"><value>Tunnel aus (Agent fehlgeschlagen — siehe Einstellungen)</value></data>
+  <data name="Playit_AgentStopped" xml:space="preserve"><value>Tunnel aus (Agent gestoppt)</value></data>
   <data name="Playit_Checking" xml:space="preserve"><value>Wird geprüft...</value></data>
   <data name="Signal_Off" xml:space="preserve"><value>Server aus</value></data>
   <data name="Signal_Transition" xml:space="preserve"><value>Statuswechsel...</value></data>

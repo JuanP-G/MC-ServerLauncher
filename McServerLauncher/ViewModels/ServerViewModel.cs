@@ -26,7 +26,9 @@ public partial class ServerViewModel : ObservableObject
 
     private readonly ServerProcessManager _process = new();
     private readonly PlayitManager _playit = PlayitManager.Shared;
+    private readonly PlayitAgentRunner _agent = PlayitAgentRunner.Shared;
     private readonly Action<PlayitState> _onPlayitStateChanged;
+    private readonly Action<AgentRunState> _onAgentStateChanged;
     private readonly ProcessStatsService _stats = new();
     private readonly ServerPropertiesService _properties = new();
     private readonly PortService _ports = new();
@@ -243,8 +245,12 @@ public partial class ServerViewModel : ObservableObject
         _process.UnexpectedExit += OnUnexpectedExit;
         // Keep a reference to the handler: the manager is shared, so it must be unsubscribed
         // in ShutdownAsync or replaced view models would leak.
-        _onPlayitStateChanged = s => RunOnUi(() => { PlayitState = s; UpdatePlayitStatusText(); UpdateSignal(); });
+        // Both the legacy system service (PlayitManager) and our embedded agent (PlayitAgentRunner)
+        // can drive the tunnel; the panel reflects whichever is in play (see EffectivePlayitState).
+        _onPlayitStateChanged = _ => RunOnUi(RefreshPlayit);
+        _onAgentStateChanged = _ => RunOnUi(RefreshPlayit);
         _playit.StateChanged += _onPlayitStateChanged;
+        _agent.StateChanged += _onAgentStateChanged;
 
         _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _statsTimer.Tick += (_, _) => OnStatsTimerTick();
@@ -255,11 +261,9 @@ public partial class ServerViewModel : ObservableObject
         _playitTimer.Tick += OnPlayitTimerTick;
         _playitTimer.Start();
         _playit.RefreshState();
-        // Sync directly: the shared manager may already know the state (another view model
+        // Sync directly: the shared manager/agent may already know the state (another view model
         // refreshed it before we subscribed), in which case no change event will fire.
-        PlayitState = _playit.State;
-        UpdatePlayitStatusText();
-        UpdateSignal();
+        RefreshPlayit();
 
         RefreshPort();
         RefreshInfo();
@@ -317,12 +321,52 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
-    private void UpdatePlayitStatusText() => PlayitStatusText = PlayitState switch
+    /// <summary>
+    /// The tunnel data-plane state as the UI should see it: our embedded agent when the user has
+    /// connected their account (the model this app uses), otherwise the legacy system service.
+    /// </summary>
+    private PlayitState EffectivePlayitState => _agent.HasSecret
+        ? _agent.State switch
+        {
+            AgentRunState.Running => PlayitState.Running,
+            AgentRunState.Downloading or AgentRunState.Starting => PlayitState.Starting,
+            _ => PlayitState.Stopped
+        }
+        : _playit.State;
+
+    /// <summary>Recomputes the tunnel status/signal from whichever data-plane is in play.</summary>
+    private void RefreshPlayit()
     {
-        PlayitState.Running => Localizer.Get(_playit.IsInstalled ? "Playit_ActiveBg" : "Playit_Active"),
-        PlayitState.Starting => Localizer.Get("Status_Starting"),
-        _ => Localizer.Get(_playit.IsInstalled ? "Playit_Stopped" : "Playit_NotInstalled")
-    };
+        PlayitState = EffectivePlayitState;
+        UpdatePlayitStatusText();
+        UpdateSignal();
+    }
+
+    private void UpdatePlayitStatusText()
+    {
+        // Embedded-agent model: report what the agent is actually doing (this is what forwards
+        // traffic — the system "service" is irrelevant here and mustn't say "not installed").
+        if (_agent.HasSecret)
+        {
+            PlayitStatusText = _agent.State switch
+            {
+                AgentRunState.Running => Localizer.Get("Playit_Active"),
+                AgentRunState.Downloading => Localizer.Get("Pk_Agent_Downloading"),
+                AgentRunState.Starting => Localizer.Get("Status_Starting"),
+                AgentRunState.Failed => Localizer.Get("Playit_AgentFailed"),
+                AgentRunState.Unsupported => Localizer.Get("Pk_Agent_Unsupported"),
+                _ => Localizer.Get("Playit_AgentStopped")
+            };
+            return;
+        }
+
+        PlayitStatusText = PlayitState switch
+        {
+            PlayitState.Running => Localizer.Get(_playit.IsInstalled ? "Playit_ActiveBg" : "Playit_Active"),
+            PlayitState.Starting => Localizer.Get("Status_Starting"),
+            _ => Localizer.Get(_playit.IsInstalled ? "Playit_Stopped" : "Playit_NotInstalled")
+        };
+    }
 
     /// <summary>
     /// Computes the "signal" (real reachability): green only if the server is running and, when
@@ -786,6 +830,16 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand]
     private async Task TogglePlayit()
     {
+        // Embedded-agent model: there's no system service to toggle — (re)start our own agent so a
+        // failed/stopped tunnel comes back up. The app manages one agent for all the user's tunnels.
+        if (_agent.HasSecret)
+        {
+            if (_agent.State is not (AgentRunState.Running or AgentRunState.Starting or AgentRunState.Downloading))
+                await _agent.RetryAsync();
+            UpdatePlayitStatusText();
+            return;
+        }
+
         if (!_playit.IsInstalled)
         {
             OnConsoleLine(Localizer.Get("Msg_PlayitServiceNotInstalled"));
@@ -1125,6 +1179,7 @@ public partial class ServerViewModel : ObservableObject
         _statsTimer.Stop();
         _playitTimer.Stop();
         _playit.StateChanged -= _onPlayitStateChanged; // the manager is shared and outlives us
+        _agent.StateChanged -= _onAgentStateChanged;   // the agent runner is shared too
         if (_process.IsRunning)
             await _process.StopAsync(TimeSpan.FromSeconds(15));
     }

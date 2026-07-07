@@ -31,6 +31,7 @@ public class PlayitAgentRunner
     private readonly SemaphoreSlim _startGate = new(1, 1); // serialize StartAsync so two calls can't both launch
     private Process? _process;
     private string? _runningSecret;
+    private string? _lastSecret; // last secret we were asked to run (for HasSecret / RetryAsync)
     private bool _reachedRunning;
     private int _generation; // bumped on each start/stop so a replaced or intentionally-killed process is ignored
     private readonly List<string> _recentOutput = new();
@@ -39,6 +40,12 @@ public class PlayitAgentRunner
 
     /// <summary>Human-readable reason for the last <see cref="AgentRunState.Failed"/> (for the UI).</summary>
     public string? LastError { get; private set; }
+
+    /// <summary>True once the app has an agent key to run (i.e. the user connected their Playit account).</summary>
+    public bool HasSecret => !string.IsNullOrWhiteSpace(_lastSecret);
+
+    /// <summary>(Re)starts the agent with the last known secret. No-op if we never had one.</summary>
+    public Task RetryAsync() => _lastSecret is { } s ? StartAsync(s) : Task.CompletedTask;
 
     /// <summary>Raised when <see cref="State"/> changes.</summary>
     public event Action<AgentRunState>? StateChanged;
@@ -85,6 +92,7 @@ public class PlayitAgentRunner
     public async Task StartAsync(string secretKey)
     {
         if (string.IsNullOrWhiteSpace(secretKey)) return;
+        _lastSecret = secretKey;
         if (AssetName is null) { SetState(AgentRunState.Unsupported); return; }
 
         // Serialize starts: without this, two near-simultaneous calls (e.g. app-startup + connect)
@@ -207,6 +215,7 @@ public class PlayitAgentRunner
             TryKill();
             _process = null;
             _runningSecret = null;
+            _lastSecret = null; // disconnected: no key to retry with
         }
         SetState(AgentRunState.Stopped);
     }
