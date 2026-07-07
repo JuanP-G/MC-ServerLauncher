@@ -132,6 +132,13 @@
   <data name="Pk_KeyLabel" xml:space="preserve"><value>Einrichtungscode</value></data>
   <data name="Pk_KeyPlaceholder" xml:space="preserve"><value>Füge deinen Einrichtungscode hier ein...</value></data>
   <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher ist weder mit Playit verbunden noch gehört es Playit; es integriert sich nur in dessen Netzwerk. Dein Konto gehört dir: Du kannst es direkt auf playit.gg verwalten.</value></data>
+  <data name="Pk_Agent_Downloading" xml:space="preserve"><value>Playit-Agent wird heruntergeladen… (nur beim ersten Mal)</value></data>
+  <data name="Pk_Agent_Starting" xml:space="preserve"><value>Agent wird gestartet…</value></data>
+  <data name="Pk_Agent_Running" xml:space="preserve"><value>Agent aktiv: Deine Tunnel leiten Datenverkehr weiter.</value></data>
+  <data name="Pk_Agent_Stopped" xml:space="preserve"><value>Agent gestoppt.</value></data>
+  <data name="Pk_Agent_Failed" xml:space="preserve"><value>Agent konnte nicht gestartet werden: {0}</value></data>
+  <data name="Pk_Agent_Unsupported" xml:space="preserve"><value>Dein System kann den Agenten nicht automatisch ausführen; starte Playit selbst.</value></data>
+  <data name="Pk_Agent_Retry" xml:space="preserve"><value>Erneut versuchen</value></data>
   <data name="Pk_SettingsDesc" xml:space="preserve"><value>Verbinde dein Playit-Konto, um Tunnel automatisch zu erstellen und zu verwalten. Du fügst nur einen Code ein — kein Schlüssel nötig.</value></data>
   <data name="Pk_Connect" xml:space="preserve"><value>Mit Playit verbinden</value></data>
   <data name="Pk_Reconnect" xml:space="preserve"><value>Neu verbinden</value></data>

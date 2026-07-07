@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 
@@ -26,8 +28,14 @@ public class PlayitAgentRunner
     private readonly object _lock = new();
     private Process? _process;
     private string? _runningSecret;
+    private bool _reachedRunning;
+    private int _generation; // bumped on each start/stop so a replaced or intentionally-killed process is ignored
+    private readonly List<string> _recentOutput = new();
 
     public AgentRunState State { get; private set; } = AgentRunState.Stopped;
+
+    /// <summary>Human-readable reason for the last <see cref="AgentRunState.Failed"/> (for the UI).</summary>
+    public string? LastError { get; private set; }
 
     /// <summary>Raised when <see cref="State"/> changes.</summary>
     public event Action<AgentRunState>? StateChanged;
@@ -59,6 +67,15 @@ public class PlayitAgentRunner
     private static string BinaryPath => Path.Combine(AgentDir, OperatingSystem.IsWindows() ? "playitd.exe" : "playitd");
 
     /// <summary>
+    /// A private IPC socket/named pipe for our managed agent, so it never clashes with a system-wide
+    /// Playit service the user may have installed (which uses playitd's default path and would make us
+    /// fail with "Another instance is already running").
+    /// </summary>
+    private static string SocketPath => OperatingSystem.IsWindows()
+        ? @"\\.\pipe\mc-server-launcher-playitd"
+        : Path.Combine(AgentDir, "playitd.sock");
+
+    /// <summary>
     /// Ensures the agent binary is present (downloading it once) and runs it with the given secret.
     /// No-op if already running with the same secret. Safe to call repeatedly.
     /// </summary>
@@ -76,8 +93,11 @@ public class PlayitAgentRunner
             }
         }
 
+        int myGen;
         try
         {
+            LastError = null;
+            lock (_lock) { _reachedRunning = false; _recentOutput.Clear(); myGen = ++_generation; }
             var exe = await EnsureBinaryAsync();
 
             var psi = new ProcessStartInfo
@@ -90,14 +110,41 @@ public class PlayitAgentRunner
             };
             psi.ArgumentList.Add("--secret");
             psi.ArgumentList.Add(secretKey);
+            psi.ArgumentList.Add("--socket-path");
+            psi.ArgumentList.Add(SocketPath);
 
             var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
             proc.OutputDataReceived += OnAgentLine;
             proc.ErrorDataReceived += OnAgentLine;
             proc.Exited += (_, _) =>
             {
-                lock (_lock) { _process = null; _runningSecret = null; }
-                SetState(AgentRunState.Stopped);
+                bool startupFailure;
+                lock (_lock)
+                {
+                    // A newer start (or Stop) bumped the generation: this process was replaced or
+                    // killed on purpose — ignore its exit entirely.
+                    if (myGen != _generation) return;
+                    _process = null;
+                    _runningSecret = null;
+                    // Exiting before it ever came up = a startup failure (bad/expired secret, port,
+                    // conflicting agent…).
+                    startupFailure = !_reachedRunning;
+                }
+                if (!startupFailure) { SetState(AgentRunState.Stopped); return; }
+
+                // Exited can fire before the last stdout/stderr callbacks do; give them a moment to
+                // drain so we can surface playitd's own last words as the failure reason.
+                _ = Task.Delay(400).ContinueWith(_ =>
+                {
+                    string? reason;
+                    lock (_lock)
+                    {
+                        if (myGen != _generation) return; // a new start began meanwhile
+                        reason = _recentOutput.Count > 0 ? string.Join(" ", _recentOutput.TakeLast(2)) : null;
+                    }
+                    if (!string.IsNullOrWhiteSpace(reason)) LastError = reason;
+                    SetState(AgentRunState.Failed);
+                });
             };
 
             lock (_lock)
@@ -113,14 +160,18 @@ public class PlayitAgentRunner
             // Consider it running once it stays up briefly (it keeps a persistent control connection).
             _ = Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(_ =>
             {
+                bool up;
                 lock (_lock)
                 {
-                    if (_process is { HasExited: false }) SetState(AgentRunState.Running);
+                    up = myGen == _generation && _process is { HasExited: false };
+                    if (up) _reachedRunning = true;
                 }
+                if (up) SetState(AgentRunState.Running);
             });
         }
         catch (Exception ex)
         {
+            LastError = ex.Message;
             ConsoleLogService.Shared.Log("Playit", $"Could not start the Playit agent: {ex.Message}");
             SetState(AgentRunState.Failed);
         }
@@ -131,6 +182,7 @@ public class PlayitAgentRunner
     {
         lock (_lock)
         {
+            _generation++; // invalidate the running process's Exited handler (this stop is intentional)
             TryKill();
             _process = null;
             _runningSecret = null;
@@ -144,10 +196,15 @@ public class PlayitAgentRunner
         catch { /* already gone */ }
     }
 
-    private static void OnAgentLine(object? sender, DataReceivedEventArgs e)
+    private void OnAgentLine(object? sender, DataReceivedEventArgs e)
     {
-        if (!string.IsNullOrWhiteSpace(e.Data))
-            ConsoleLogService.Shared.Log("Playit", e.Data);
+        if (string.IsNullOrWhiteSpace(e.Data)) return;
+        ConsoleLogService.Shared.Log("Playit", e.Data);
+        lock (_lock)
+        {
+            _recentOutput.Add(e.Data);
+            if (_recentOutput.Count > 12) _recentOutput.RemoveAt(0);
+        }
     }
 
     /// <summary>Downloads the agent binary to <see cref="AgentDir"/> if not already there. Returns its path.</summary>

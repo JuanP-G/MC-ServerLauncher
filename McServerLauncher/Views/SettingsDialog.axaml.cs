@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
@@ -42,6 +43,12 @@ public partial class SettingsDialog : Window
         _settingsService = settingsService;
         DataContext = this;
         UpdatePlayitStatus();
+
+        // Reflect the embedded agent's live state (downloading / running / failed) so the user can see
+        // the app is actually bringing their tunnels online — and retry if the download failed.
+        PlayitAgentRunner.Shared.StateChanged += OnAgentStateChanged;
+        Closed += (_, _) => PlayitAgentRunner.Shared.StateChanged -= OnAgentStateChanged;
+        UpdateAgentStatus(PlayitAgentRunner.Shared.State);
     }
 
     /// <summary>Reflects the current Playit connection state in the status dot/text and buttons.</summary>
@@ -52,6 +59,45 @@ public partial class SettingsDialog : Window
         PlayitStatus.Text = Localizer.Get(connected ? "Pk_Connected" : "Pk_NotConnected");
         ConnectBtn.Content = Localizer.Get(connected ? "Pk_Reconnect" : "Pk_Connect");
         DisconnectBtn.IsVisible = connected;
+        UpdateAgentStatus(PlayitAgentRunner.Shared.State);
+    }
+
+    private void OnAgentStateChanged(AgentRunState state)
+        => Dispatcher.UIThread.Post(() => UpdateAgentStatus(state));
+
+    /// <summary>Shows what the embedded Playit agent is doing (only relevant once connected).</summary>
+    private void UpdateAgentStatus(AgentRunState state)
+    {
+        var connected = _appSettings is not null && PlayitConnection.IsConnected(_appSettings);
+        // Only meaningful for the partner agent key (the legacy write-key model uses the user's own agent).
+        var usesAgent = connected && !string.IsNullOrWhiteSpace(_appSettings?.PlayitAgentSecretKey);
+        AgentRow.IsVisible = usesAgent;
+        if (!usesAgent) return;
+
+        AgentStatus.Text = state switch
+        {
+            AgentRunState.Downloading => Localizer.Get("Pk_Agent_Downloading"),
+            AgentRunState.Starting => Localizer.Get("Pk_Agent_Starting"),
+            AgentRunState.Running => Localizer.Get("Pk_Agent_Running"),
+            AgentRunState.Unsupported => Localizer.Get("Pk_Agent_Unsupported"),
+            AgentRunState.Failed => string.Format(Localizer.Get("Pk_Agent_Failed"),
+                PlayitAgentRunner.Shared.LastError ?? ""),
+            _ => Localizer.Get("Pk_Agent_Stopped"),
+        };
+        AgentStatus.Foreground = new SolidColorBrush(Color.Parse(state switch
+        {
+            AgentRunState.Running => "#3FB950",
+            AgentRunState.Failed => "#F85149",
+            _ => "#8B949E",
+        }));
+        // Offer a manual retry when it isn't up (failed, or stopped with a key present).
+        AgentRetryBtn.IsVisible = state is AgentRunState.Failed or AgentRunState.Stopped;
+    }
+
+    private void RetryAgent_Click(object? sender, RoutedEventArgs e)
+    {
+        if (!string.IsNullOrWhiteSpace(_appSettings?.PlayitAgentSecretKey))
+            _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
     }
 
     private async void ConnectPlayit_Click(object? sender, RoutedEventArgs e)
