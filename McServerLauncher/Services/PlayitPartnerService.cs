@@ -1,5 +1,4 @@
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -26,6 +25,17 @@ public class PlayitPartnerService
     private const string DefaultBaseUrl = "https://api.playit.gg";
     private const string AgentName = "MC Server Launcher";
 
+    // Public (non-secret) values from Playit's open-source agent — Playit told us to use their
+    // current release's variant. The variant_id is DEFAULT_VARIANT_ID in playitd's daemon.rs and the
+    // version is the workspace package version; the API requires the (variant_id, version) pair to
+    // be a registered one, so we send the agent's version, NOT this app's. Baked in as defaults so
+    // the only thing the user must supply is the secret Api-Key. Both can still be overridden via
+    // PlayitPartnerConfig if Playit ever assigns a custom variant.
+    private const string DefaultVariantId = "308943e8-faef-4835-a2ba-270351f72aa3";
+    private const int AgentVersionMajor = 1;
+    private const int AgentVersionMinor = 0;
+    private const int AgentVersionPatch = 10;
+
     private static readonly HttpClient SharedHttp = new() { Timeout = TimeSpan.FromSeconds(30) };
 
     private readonly string? _apiKey;
@@ -41,14 +51,18 @@ public class PlayitPartnerService
     {
         if (apiKey is null && variantId is null)
             (apiKey, variantId) = PlayitPartnerConfig.Load();
-        _apiKey = apiKey;
-        _variantId = variantId;
+        _apiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
+        // variant_id has a public default (the Playit agent's); the config only overrides it.
+        _variantId = string.IsNullOrWhiteSpace(variantId) ? DefaultVariantId : variantId;
         _baseUrl = (baseUrl ?? DefaultBaseUrl).TrimEnd('/');
         _http = http ?? SharedHttp;
     }
 
-    /// <summary>True when the app has partner credentials, i.e. the setup-code flow is available.</summary>
-    public bool IsConfigured => !string.IsNullOrWhiteSpace(_apiKey) && !string.IsNullOrWhiteSpace(_variantId);
+    /// <summary>
+    /// True when the setup-code flow is available. Only the secret Api-Key is required; the
+    /// variant_id and version are public and baked in.
+    /// </summary>
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(_apiKey);
 
     /// <summary>
     /// Exchanges the user's setup code for their own self-managed agent secret key.
@@ -62,7 +76,6 @@ public class PlayitPartnerService
         if (string.IsNullOrWhiteSpace(setupCode))
             throw new InvalidOperationException(Localizer.Get("Msg_PasteSetupCode"));
 
-        var v = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
         var body = new JsonObject
         {
             ["agent_name"] = AgentName,
@@ -70,9 +83,9 @@ public class PlayitPartnerService
             ["agent_details"] = new JsonObject
             {
                 ["variant_id"] = _variantId,
-                ["version_major"] = v.Major,
-                ["version_minor"] = Math.Max(0, v.Minor),
-                ["version_patch"] = Math.Max(0, v.Build)
+                ["version_major"] = AgentVersionMajor,
+                ["version_minor"] = AgentVersionMinor,
+                ["version_patch"] = AgentVersionPatch
             },
             ["platform"] = CurrentPlatform,
             ["account_setup_code"] = setupCode.Trim()
