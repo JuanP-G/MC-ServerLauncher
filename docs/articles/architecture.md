@@ -93,8 +93,12 @@ are no hard-coded machine paths.
 - **`ProcessStatsService`** — samples CPU/RAM of the running `java` process for the live stats and the
   `Sparkline` mini-charts.
 - **`ToastService`** — shows the app's own pop-up notifications — always-on-top Avalonia windows in
-  the bottom-right corner (player joined, server crashed, restart exhausted); they work even without
-  OS notification support.
+  the bottom-right corner (titled with the server's name), shown only when the app isn't in focus;
+  they work even without OS notification support.
+- **`NotificationPreferences`** — decides which notifications are shown, combining the global
+  settings (master switch + per-kind: join, leave, death/kill, crash, auto-restart-gave-up) with an
+  optional per-server override (`ServerConfig.UseCustomNotifications`). `DeathMessageDetector` spots
+  death/kill lines in the console for the deaths notification.
 - **`SecretProtector`** — encrypts secrets at rest (DPAPI on Windows, AES-GCM + `.secret.key` on
   Linux/macOS), used for the Playit write key. If encryption ever fails, the key is **not**
   persisted (plaintext never lands on disk): it keeps working for the session, the failure goes to

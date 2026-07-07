@@ -85,7 +85,8 @@ public class AppSettingsService
             PlayitAgentSecretKey = protectedAgent,
             PlayitAgentId = settings.PlayitAgentId,
             Language = settings.Language,
-            LastVersionSeen = settings.LastVersionSeen
+            LastVersionSeen = settings.LastVersionSeen,
+            Notifications = settings.Notifications
         };
         AtomicJsonFile.Write(_filePath, toWrite, JsonOptions);
     }

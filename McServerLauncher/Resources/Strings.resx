@@ -225,8 +225,24 @@
   <data name="Tray_Exit" xml:space="preserve"><value>Salir</value></data>
   <data name="Console_FilterPlaceholder" xml:space="preserve"><value>Filtrar la consola...</value></data>
   <data name="Notif_PlayerJoinedFmt" xml:space="preserve"><value>{0} ha entrado al servidor.</value></data>
+  <data name="Notif_PlayerLeftFmt" xml:space="preserve"><value>{0} ha salido del servidor.</value></data>
   <data name="Notif_Crashed" xml:space="preserve"><value>El servidor se ha cerrado inesperadamente.</value></data>
   <data name="Notif_GaveUp" xml:space="preserve"><value>Se ha caído varias veces seguidas; no se reiniciará automáticamente más.</value></data>
+  <data name="Notif_Title" xml:space="preserve"><value>Notificaciones</value></data>
+  <data name="Notif_Intro" xml:space="preserve"><value>Elige qué avisos quieres recibir cuando no estás mirando la app. Aparecen en la esquina de la pantalla con el nombre del servidor.</value></data>
+  <data name="Notif_Section" xml:space="preserve"><value>Notificaciones</value></data>
+  <data name="Notif_UseCustom" xml:space="preserve"><value>Usar una configuración de notificaciones propia para este servidor</value></data>
+  <data name="Notif_Enabled" xml:space="preserve"><value>Activar notificaciones</value></data>
+  <data name="Notif_Join" xml:space="preserve"><value>Cuando entra un jugador</value></data>
+  <data name="Notif_Leave" xml:space="preserve"><value>Cuando sale un jugador</value></data>
+  <data name="Notif_Death" xml:space="preserve"><value>Muertes y bajas (PvP)</value></data>
+  <data name="Notif_Crash" xml:space="preserve"><value>Cuando el servidor se cierra inesperadamente</value></data>
+  <data name="Notif_OptGaveUp" xml:space="preserve"><value>Cuando se agota el reinicio automático</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>Ajustes</value></data>
+  <data name="Settings_LangRestart" xml:space="preserve"><value>El cambio de idioma se aplica al reiniciar la app.</value></data>
+  <data name="Notif_Test" xml:space="preserve"><value>Probar notificación</value></data>
+  <data name="Notif_TestTip" xml:space="preserve"><value>Muestra una notificación de ejemplo para ver cómo se ven en tu pantalla.</value></data>
+  <data name="Notif_TestBody" xml:space="preserve"><value>Notificación de ejemplo: así se verán los avisos de tus servidores.</value></data>
   <data name="Msg_BackupCreatingFmt" xml:space="preserve"><value>[Launcher] Creando copia de seguridad de "{0}"...</value></data>
   <data name="Msg_BackupCreatedFmt" xml:space="preserve"><value>[Launcher] Copia de seguridad creada ({0} MB).</value></data>
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Guardando una copia del estado actual antes de restaurar (por si quieres deshacerlo)...</value></data>

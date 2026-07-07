@@ -28,6 +28,9 @@ public partial class AddEditServerDialog : Window
     {
         InitializeComponent();
         _config = config;
+        // The per-server notification override must be non-null for the checkboxes to bind; seed it
+        // from the current global defaults so a fresh custom config starts sensibly.
+        _config.Notifications ??= Services.NotificationPreferences.Global.Clone();
         // Keep a copy to restore if the user cancels.
         _snapshot = JsonSerializer.Serialize(config);
         DataContext = _config;
@@ -144,5 +147,7 @@ public partial class AddEditServerDialog : Window
         _config.PlayitEnabled = original.PlayitEnabled;
         _config.BackupsEnabled = original.BackupsEnabled;
         _config.BackupRetention = original.BackupRetention;
+        _config.UseCustomNotifications = original.UseCustomNotifications;
+        _config.Notifications = original.Notifications;
     }
 }

@@ -1,0 +1,54 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        x:Class="McServerLauncher.Views.SettingsDialog"
+        x:CompileBindings="False"
+        Title="{loc:Loc Settings_Title}"
+        Width="480" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollViewer Grid.Row="0" Margin="20,20,20,8" MaxHeight="600" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="6">
+
+                <!-- Language -->
+                <TextBlock Text="{loc:Loc Language}" FontWeight="SemiBold" />
+                <ComboBox Width="220" HorizontalAlignment="Left" Margin="0,4,0,0"
+                          ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Text="{loc:Loc Settings_LangRestart}" FontSize="12" Opacity="0.6"
+                           TextWrapping="Wrap" Margin="0,4,0,0" />
+
+                <Separator Margin="0,16,0,12" />
+
+                <!-- Notifications -->
+                <TextBlock Text="{loc:Loc Notif_Section}" FontWeight="SemiBold" />
+                <TextBlock Text="{loc:Loc Notif_Intro}" TextWrapping="Wrap" Opacity="0.7" FontSize="13" Margin="0,4,0,6" />
+                <CheckBox x:Name="NotifMaster" Content="{loc:Loc Notif_Enabled}"
+                          IsChecked="{Binding Notifications.Enabled, Mode=TwoWay}" FontWeight="SemiBold" />
+                <StackPanel Margin="24,4,0,0" Spacing="4" IsEnabled="{Binding #NotifMaster.IsChecked}">
+                    <CheckBox Content="{loc:Loc Notif_Join}" IsChecked="{Binding Notifications.PlayerJoined, Mode=TwoWay}" />
+                    <CheckBox Content="{loc:Loc Notif_Leave}" IsChecked="{Binding Notifications.PlayerLeft, Mode=TwoWay}" />
+                    <CheckBox Content="{loc:Loc Notif_Death}" IsChecked="{Binding Notifications.PlayerDeath, Mode=TwoWay}" />
+                    <CheckBox Content="{loc:Loc Notif_Crash}" IsChecked="{Binding Notifications.ServerCrashed, Mode=TwoWay}" />
+                    <CheckBox Content="{loc:Loc Notif_OptGaveUp}" IsChecked="{Binding Notifications.AutoRestartGaveUp, Mode=TwoWay}" />
+                </StackPanel>
+
+                <Button Content="{loc:Loc Notif_Test}" Margin="0,12,0,0" HorizontalAlignment="Left"
+                        Click="TestNotification_Click" ToolTip.Tip="{loc:Loc Notif_TestTip}" />
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,12,20,16" Spacing="8">
+            <Button Content="{loc:Loc Cancel}" Click="Cancel_Click" />
+            <Button Classes="accent" Content="{loc:Loc Save}" Click="Save_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

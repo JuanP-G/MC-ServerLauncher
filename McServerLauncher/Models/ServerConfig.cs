@@ -78,6 +78,17 @@ public class ServerConfig
     /// <summary>How many backups to keep; older ones are deleted after each new one.</summary>
     public int BackupRetention { get; set; } = 5;
 
+    // --- Notifications ---
+
+    /// <summary>
+    /// When true, this server uses its own <see cref="Notifications"/> instead of the global
+    /// notification settings. When false (default), the global settings apply.
+    /// </summary>
+    public bool UseCustomNotifications { get; set; }
+
+    /// <summary>Per-server notification override, used only when <see cref="UseCustomNotifications"/>.</summary>
+    public NotificationSettings? Notifications { get; set; }
+
     /// <summary>Full path to the .jar combining folder + jar name.</summary>
     [JsonIgnore]
     public string JarFullPath => Path.Combine(FolderPath, JarFile);
