@@ -14,65 +14,55 @@ namespace McServerLauncher.Services;
 public record CreateAgentResult(long AccountId, string AgentId, string AgentSecretKey, bool AgentOverLimit);
 
 /// <summary>
-/// Third-party "Integration"-tier onboarding (see docs/architecture): exchanges a Playit
-/// <c>account_setup_code</c> (that the user obtained from playit.gg) for a per-user self-managed
-/// agent secret key, using the app's partner Api-Key + variant_id. This is the only call that uses
-/// the partner key; everything after uses the returned per-user secret via
-/// <see cref="PlayitApiService"/>.
+/// Third-party "Integration"-tier onboarding: exchanges a Playit <c>account_setup_code</c> (that the
+/// user obtained from playit.gg) for a per-user self-managed agent secret key. The request goes
+/// through a small proxy (a Cloudflare Worker, see <c>playit-proxy/</c>) that injects the partner
+/// Api-Key server-side — so NO secret ships inside this (public, open-source) app. Everything after
+/// uses the returned per-user secret via <see cref="PlayitApiService"/>.
 /// </summary>
 public class PlayitPartnerService
 {
-    private const string DefaultBaseUrl = "https://api.playit.gg";
+    // The proxy that adds the partner Api-Key and forwards to Playit. Public (not a secret): it can
+    // only reach create_agent, which still needs a user-authorized setup code. Override in dev with
+    // the PLAYIT_PROXY_URL environment variable.
+    private const string DefaultProxyUrl = "https://dawn-hall-c5a8.gustofparaps4.workers.dev";
     private const string AgentName = "MC Server Launcher";
 
-    // Public (non-secret) values from Playit's open-source agent — Playit told us to use their
-    // current release's variant. The variant_id is DEFAULT_VARIANT_ID in playitd's daemon.rs and the
-    // version is the workspace package version; the API requires the (variant_id, version) pair to
-    // be a registered one, so we send the agent's version, NOT this app's. Baked in as defaults so
-    // the only thing the user must supply is the secret Api-Key. Both can still be overridden via
-    // PlayitPartnerConfig if Playit ever assigns a custom variant.
-    private const string DefaultVariantId = "308943e8-faef-4835-a2ba-270351f72aa3";
+    // Public values from Playit's open-source agent (Playit told us to use their current release's
+    // variant). variant_id = DEFAULT_VARIANT_ID in playitd's daemon.rs; version = the agent's
+    // workspace version. The API requires the (variant_id, version) pair to be a registered one, so
+    // we send the AGENT's version, not this app's.
+    private const string VariantId = "308943e8-faef-4835-a2ba-270351f72aa3";
     private const int AgentVersionMajor = 1;
     private const int AgentVersionMinor = 0;
     private const int AgentVersionPatch = 10;
 
     private static readonly HttpClient SharedHttp = new() { Timeout = TimeSpan.FromSeconds(30) };
 
-    private readonly string? _apiKey;
-    private readonly string? _variantId;
     private readonly string _baseUrl;
     private readonly HttpClient _http;
 
-    /// <summary>Production constructor: partner credentials come from <see cref="PlayitPartnerConfig"/>.</summary>
-    public PlayitPartnerService() : this(null, null, null, null) { }
+    public PlayitPartnerService() : this(null, null) { }
 
-    /// <summary>Test/overridable constructor. Null apiKey/variantId falls back to the config loader.</summary>
-    public PlayitPartnerService(string? apiKey, string? variantId, string? baseUrl, HttpClient? http)
+    /// <summary>Test/overridable constructor. Null baseUrl uses the proxy (or PLAYIT_PROXY_URL).</summary>
+    public PlayitPartnerService(string? baseUrl, HttpClient? http)
     {
-        if (apiKey is null && variantId is null)
-            (apiKey, variantId) = PlayitPartnerConfig.Load();
-        _apiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
-        // variant_id has a public default (the Playit agent's); the config only overrides it.
-        _variantId = string.IsNullOrWhiteSpace(variantId) ? DefaultVariantId : variantId;
-        _baseUrl = (baseUrl ?? DefaultBaseUrl).TrimEnd('/');
+        _baseUrl = (baseUrl
+            ?? Environment.GetEnvironmentVariable("PLAYIT_PROXY_URL")
+            ?? DefaultProxyUrl).TrimEnd('/');
         _http = http ?? SharedHttp;
     }
 
-    /// <summary>
-    /// True when the setup-code flow is available. Only the secret Api-Key is required; the
-    /// variant_id and version are public and baked in.
-    /// </summary>
-    public bool IsConfigured => !string.IsNullOrWhiteSpace(_apiKey);
+    /// <summary>Always available: the proxy URL is baked in and there is no per-app secret to set.</summary>
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(_baseUrl);
 
     /// <summary>
-    /// Exchanges the user's setup code for their own self-managed agent secret key.
-    /// Throws <see cref="InvalidOperationException"/> (with a localized message) if the app isn't
-    /// configured, the network/API fails, or the code is invalid/expired.
+    /// Exchanges the user's setup code for their own self-managed agent secret key (via the proxy).
+    /// Throws <see cref="InvalidOperationException"/> (with a localized message) on network/API
+    /// failure or an invalid/expired code.
     /// </summary>
     public async Task<CreateAgentResult> CreateAgentAsync(string setupCode, CancellationToken ct = default)
     {
-        if (!IsConfigured)
-            throw new InvalidOperationException(Localizer.Get("Msg_PartnerNotConfigured"));
         if (string.IsNullOrWhiteSpace(setupCode))
             throw new InvalidOperationException(Localizer.Get("Msg_PasteSetupCode"));
 
@@ -82,7 +72,7 @@ public class PlayitPartnerService
             ["self_managed"] = true,
             ["agent_details"] = new JsonObject
             {
-                ["variant_id"] = _variantId,
+                ["variant_id"] = VariantId,
                 ["version_major"] = AgentVersionMajor,
                 ["version_minor"] = AgentVersionMinor,
                 ["version_patch"] = AgentVersionPatch
@@ -91,8 +81,8 @@ public class PlayitPartnerService
             ["account_setup_code"] = setupCode.Trim()
         }.ToJsonString();
 
+        // No Authorization header — the proxy injects the partner Api-Key server-side.
         using var req = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/v1/partner/create_agent");
-        req.Headers.TryAddWithoutValidation("Authorization", $"Api-Key {_apiKey}");
         req.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
         string json;
@@ -162,6 +152,7 @@ public class PlayitPartnerService
     private static string DescribeFail(string raw) => raw switch
     {
         "AgentVariantVersionNotFound" => Localizer.Get("Msg_PartnerVariantNotFound"),
+        "SetupCodeNotFound" or "AccountSetupCodeNotFound" => Localizer.Get("Msg_SetupCodeInvalid"),
         _ => raw
     };
 

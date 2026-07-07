@@ -50,14 +50,15 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`MinecraftVersionService`** — lee el manifiesto de versiones de Mojang, resuelve la URL del
   `server.jar` y la versión de Java necesaria, y descarga archivos.
 - **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — hablan con Playit.gg.
-  `PlayitPartnerService` ejecuta el flujo de **código de configuración** de terceros
-  (`/v1/partner/create_agent` con la Api-Key de socio + variant_id de la app) para obtener una
-  **clave secreta de agente autogestionado por usuario** a partir de un código que el usuario pega.
-  `PlayitApiService` usa esa clave (como `agent-key`, fijada globalmente con `SetAgentKey`) para
-  listar/crear/eliminar túneles — con reserva al `playit.toml` heredado o a una clave de escritura
-  pegada cuando el flujo de socio no está configurado. `PlayitManager` consulta/arranca/detiene el
-  servicio de fondo (Windows/systemd). Las credenciales de socio se cargan de variables de entorno
-  o de un `PlayitPartner.local.json` **ignorado por git** (nunca se commitea).
+  `PlayitPartnerService` ejecuta el flujo de **código de configuración** de terceros (`create_agent`)
+  para obtener una **clave secreta de agente autogestionado por usuario** a partir de un código que
+  el usuario pega. La **Api-Key de socio no está en la app** (es pública + open-source): la llamada
+  pasa por un pequeño proxy (un Cloudflare Worker, ver `playit-proxy/`) que añade la clave en el
+  servidor. El variant_id/versión son públicos y van incrustados. `PlayitApiService` usa la clave
+  por usuario devuelta (como `agent-key`, fijada con `SetAgentKey`) para listar/crear/eliminar
+  túneles — con reserva al `playit.toml` heredado o a una clave de escritura pegada. `PlayitManager`
+  consulta/arranca/detiene el servicio de fondo (Windows/systemd). `PlayitConnection` es el flujo
+  compartido de conectar/desconectar que usan los botones de túnel y el diálogo de Ajustes.
 - **`PortService`** — comprueba qué puertos TCP están en uso, encuentra uno libre y (vía P/Invoke)
   localiza el PID que escucha en un puerto para liberar un servidor colgado.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — leen/escriben los

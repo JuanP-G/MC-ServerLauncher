@@ -24,11 +24,6 @@
     <AvaloniaResource Include="Resources\app.ico" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Ship the Playit partner credentials next to the exe IF present (gitignored, never in source
-         control). Absent in dev/CI without the file -> the app uses the legacy manual-key flow. -->
-    <None Include="PlayitPartner.local.json" Condition="Exists('PlayitPartner.local.json')" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
 
   <ItemGroup>
     <!-- Cross-platform reference: compiles everywhere, only used at runtime on Windows (guarded with

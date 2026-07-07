@@ -1,4 +1,0 @@
-{
-  "_comment": "Copy this file to PlayitPartner.local.json (gitignored) and put your Playit third-party partner Api-Key. That key is the only secret needed: the variant_id and version are public values from Playit's open-source agent and are baked into the app as defaults. You can optionally override 'variantId' here if Playit ever assigns you a custom one. You can also set the PLAYIT_PARTNER_API_KEY environment variable instead. When absent, the app falls back to the legacy manual-key Playit flow.",
-  "apiKey": "<your playit partner Api-Key>"
-}

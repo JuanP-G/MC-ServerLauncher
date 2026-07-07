@@ -51,13 +51,15 @@ are no hard-coded machine paths.
 - **`MinecraftVersionService`** — reads Mojang's version manifest, resolves the `server.jar`
   download URL and the required Java version, and downloads files.
 - **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — talk to Playit.gg.
-  `PlayitPartnerService` runs the third-party **setup-code** flow (`/v1/partner/create_agent` with
-  the app's partner Api-Key + variant_id) to mint a **per-user self-managed agent secret key** from
-  a code the user pastes. `PlayitApiService` then uses that key (as `agent-key`, set app-wide via
-  `SetAgentKey`) to list/create/delete tunnels — falling back to a legacy `playit.toml` secret or
-  pasted write key when the partner flow isn't configured. `PlayitManager` queries/starts/stops the
-  background Windows/systemd service. Partner credentials load from env vars or a **gitignored**
-  `PlayitPartner.local.json` (never committed).
+  `PlayitPartnerService` runs the third-party **setup-code** flow (`create_agent`) to mint a
+  **per-user self-managed agent secret key** from a code the user pastes. The partner **Api-Key is
+  never in the app** (it's public + open-source): the call goes through a small proxy (a Cloudflare
+  Worker, see `playit-proxy/`) that injects the key server-side. The variant_id/version are public
+  and baked in. `PlayitApiService` then uses the returned per-user key (as `agent-key`, set app-wide
+  via `SetAgentKey`) to list/create/delete tunnels — falling back to a legacy `playit.toml` secret
+  or pasted write key otherwise. `PlayitManager` queries/starts/stops the background Windows/systemd
+  service. `PlayitConnection` is the shared connect/disconnect flow used by the tunnel buttons and
+  the Settings dialog.
 - **`PortService`** — checks which TCP ports are in use, finds a free one, and (via P/Invoke) finds
   the PID listening on a port so a stuck server can be freed.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — read/write the

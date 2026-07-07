@@ -1,0 +1,7 @@
+name = "mcsl-playit"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# The partner Api-Key is NOT stored here. Set it as a secret (never committed):
+#   wrangler secret put PLAYIT_API_KEY
+# or via the Cloudflare dashboard: Settings -> Variables and Secrets -> add Secret.
