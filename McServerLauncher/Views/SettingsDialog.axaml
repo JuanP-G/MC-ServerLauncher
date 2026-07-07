@@ -54,10 +54,11 @@
                     <Button x:Name="ConnectBtn" Content="{loc:Loc Pk_Connect}" Click="ConnectPlayit_Click" />
                     <Button x:Name="DisconnectBtn" Content="{loc:Loc Pk_Disconnect}" Click="DisconnectPlayit_Click" />
                 </StackPanel>
-                <StackPanel x:Name="AgentRow" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,8,0,0">
-                    <TextBlock x:Name="AgentStatus" VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap" />
+                <StackPanel x:Name="AgentRow" Spacing="6" Margin="0,8,0,0">
+                    <SelectableTextBlock x:Name="AgentStatus" FontSize="12" TextWrapping="Wrap" MaxWidth="430"
+                                         HorizontalAlignment="Left" />
                     <Button x:Name="AgentRetryBtn" Content="{loc:Loc Pk_Agent_Retry}" FontSize="12" Padding="8,2"
-                            Click="RetryAgent_Click" IsVisible="False" />
+                            HorizontalAlignment="Left" Click="RetryAgent_Click" IsVisible="False" />
                 </StackPanel>
                 <TextBlock Text="{loc:Loc Pk_Disclaimer}" TextWrapping="Wrap" Opacity="0.55" FontSize="11" Margin="0,8,0,0" />
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace McServerLauncher.Services;
 
@@ -116,8 +117,9 @@ public class PlayitAgentRunner
             var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
             proc.OutputDataReceived += OnAgentLine;
             proc.ErrorDataReceived += OnAgentLine;
-            proc.Exited += (_, _) =>
+            proc.Exited += (sender, _) =>
             {
+                var exitCode = sender is Process p && p.HasExited ? p.ExitCode : (int?)null;
                 bool startupFailure;
                 lock (_lock)
                 {
@@ -134,15 +136,15 @@ public class PlayitAgentRunner
 
                 // Exited can fire before the last stdout/stderr callbacks do; give them a moment to
                 // drain so we can surface playitd's own last words as the failure reason.
-                _ = Task.Delay(400).ContinueWith(_ =>
+                Task.Delay(400).ContinueWith(t =>
                 {
-                    string? reason;
+                    List<string> lines;
                     lock (_lock)
                     {
                         if (myGen != _generation) return; // a new start began meanwhile
-                        reason = _recentOutput.Count > 0 ? string.Join(" ", _recentOutput.TakeLast(2)) : null;
+                        lines = new List<string>(_recentOutput);
                     }
-                    if (!string.IsNullOrWhiteSpace(reason)) LastError = reason;
+                    LastError = BuildFailureReason(lines, exitCode);
                     SetState(AgentRunState.Failed);
                 });
             };
@@ -205,6 +207,33 @@ public class PlayitAgentRunner
             _recentOutput.Add(e.Data);
             if (_recentOutput.Count > 12) _recentOutput.RemoveAt(0);
         }
+    }
+
+    // Strips playitd's log prefix ("2026-…Z ERROR playitd::daemon: ") to leave the human message.
+    private static readonly Regex LogPrefix =
+        new(@"^\S+Z\s+(TRACE|DEBUG|INFO|WARN|ERROR)\s+[\w:]+:\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    /// <summary>Turns playitd's raw output into a short, human-readable failure reason for the UI.</summary>
+    private static string BuildFailureReason(List<string> rawLines, int? exitCode)
+    {
+        var cleaned = rawLines
+            .Select(l => LogPrefix.Replace(l, "").Trim())
+            .Where(l => l.Length > 0)
+            .ToList();
+
+        // Prefer the lines that actually explain the failure.
+        var errs = cleaned.Where(l =>
+            l.Contains("error", StringComparison.OrdinalIgnoreCase) ||
+            l.Contains("invalid", StringComparison.OrdinalIgnoreCase) ||
+            l.Contains("failed", StringComparison.OrdinalIgnoreCase)).ToList();
+
+        var pick = (errs.Count > 0 ? errs : cleaned).TakeLast(2).ToList();
+        var msg = string.Join(" — ", pick);
+
+        // If nothing informative was captured, at least report the exit code so it isn't a black box.
+        if (msg.Length == 0)
+            msg = exitCode is int c ? $"the agent exited (code {c})" : "the agent stopped unexpectedly";
+        return msg;
     }
 
     /// <summary>Downloads the agent binary to <see cref="AgentDir"/> if not already there. Returns its path.</summary>
