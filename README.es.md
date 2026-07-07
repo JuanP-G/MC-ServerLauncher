@@ -65,8 +65,14 @@ todo con botones.
 - **Jugadores** 👥 — conectados (en vivo), operadores, lista blanca, baneados y conocidos, con acciones OP /
   expulsar / banear / lista blanca.
 - **Configuración visual de `server.properties`** con explicaciones claras.
-- **Integración con Playit.gg** 🌐 — detecta el servicio en segundo plano, muestra/copia la dirección pública y
-  puede crear/eliminar túneles.
+- **Abre tu servidor a Internet con Playit.gg** 🌐 — conecta tu cuenta pegando un **código de configuración**
+  de un solo uso (sin claves ni archivos). La app **crea el túnel y ejecuta el agente de Playit por ti**, así
+  tu servidor es accesible desde cualquier sitio y tus amigos entran con la dirección pública — **tú no instalas
+  nada**. La app no contiene ningún secreto propio (la credencial vive en un pequeño proxy).
+- **Notificaciones** 🔔 — avisos opcionales cuando un jugador entra o sale, alguien muere (PvP), el servidor
+  se cae o el reinicio automático se rinde. Configurables por tipo, de forma global y **por servidor**, con
+  botón de prueba.
+- **Ajustes en un solo sitio** ⚙️ — idioma, notificaciones y tu conexión de Playit en un único diálogo.
 - **Multi-idioma** — español, inglés, portugués, francés y alemán.
 
 ## 🛠️ Compilar desde el código

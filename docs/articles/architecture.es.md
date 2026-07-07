@@ -101,7 +101,7 @@ mundo. No hay rutas fijas del equipo en el código.
   una posible anulación por servidor (`ServerConfig.UseCustomNotifications`). `DeathMessageDetector`
   detecta las líneas de muerte/baja en la consola para la notificación de muertes.
 - **`SecretProtector`** — cifra los secretos en reposo (DPAPI en Windows, AES-GCM + `.secret.key` en
-  Linux/macOS), usado para la clave de escritura de Playit. Si el cifrado falla, la clave **no** se
+  Linux/macOS), usado para la clave de agente por usuario de Playit (y la clave de escritura heredada). Si el cifrado falla, la clave **no** se
   persiste (nunca llega texto plano al disco): sigue funcionando durante la sesión, el fallo queda
   en el log diario y se avisa al usuario una vez.
 - **`DownloadVerifier`** — el verificador de checksums compartido para las descargas (Mojang SHA-1,

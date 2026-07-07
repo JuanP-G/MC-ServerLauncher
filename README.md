@@ -60,8 +60,13 @@ all with buttons.
 - **Players** 👥 — connected (live), operators, whitelist, banned and known players, with OP / kick / ban /
   whitelist actions.
 - **Visual `server.properties` editor** with plain-language explanations.
-- **Playit.gg integration** 🌐 — detects the background service, shows/copies the public address and can
-  create/delete tunnels.
+- **Share to the Internet with Playit.gg** 🌐 — connect your account by pasting a one-time **setup code**
+  (no keys, no files). The app **creates the tunnel and runs the Playit agent for you**, so your server is
+  reachable from anywhere and friends join with the public address — **you install nothing**. The app ships
+  no secret of its own (the credential lives in a small proxy).
+- **Notifications** 🔔 — optional pop-ups when a player joins or leaves, someone dies (PvP), the server
+  crashes, or auto-restart gives up. Configurable per type, globally and **per server**, with a test button.
+- **Settings in one place** ⚙️ — language, notifications and your Playit connection in a single dialog.
 - **Multi-language** — English, Spanish, Portuguese, French and German.
 
 ## 🛠️ Build from source

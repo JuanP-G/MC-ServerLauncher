@@ -102,7 +102,7 @@ are no hard-coded machine paths.
   optional per-server override (`ServerConfig.UseCustomNotifications`). `DeathMessageDetector` spots
   death/kill lines in the console for the deaths notification.
 - **`SecretProtector`** — encrypts secrets at rest (DPAPI on Windows, AES-GCM + `.secret.key` on
-  Linux/macOS), used for the Playit write key. If encryption ever fails, the key is **not**
+  Linux/macOS), used for the Playit per-user agent secret key (and the legacy write key). If encryption ever fails, the key is **not**
   persisted (plaintext never lands on disk): it keeps working for the session, the failure goes to
   the daily log, and the user is warned once.
 - **`DownloadVerifier`** — the shared checksum verifier for downloads (Mojang SHA-1, Adoptium/Paper
