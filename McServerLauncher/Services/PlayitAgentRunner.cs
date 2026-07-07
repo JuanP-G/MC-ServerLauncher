@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace McServerLauncher.Services;
 
@@ -27,6 +28,7 @@ public class PlayitAgentRunner
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
 
     private readonly object _lock = new();
+    private readonly SemaphoreSlim _startGate = new(1, 1); // serialize StartAsync so two calls can't both launch
     private Process? _process;
     private string? _runningSecret;
     private bool _reachedRunning;
@@ -85,23 +87,35 @@ public class PlayitAgentRunner
         if (string.IsNullOrWhiteSpace(secretKey)) return;
         if (AssetName is null) { SetState(AgentRunState.Unsupported); return; }
 
-        lock (_lock)
-        {
-            if (_process is { HasExited: false })
-            {
-                if (_runningSecret == secretKey) return; // already running with this secret
-                TryKill();                                // secret changed (reconnect): restart
-            }
-        }
-
-        int myGen;
+        // Serialize starts: without this, two near-simultaneous calls (e.g. app-startup + connect)
+        // could both pass the "already running" check during the download window and launch two
+        // agents, which then collide on the pipe.
+        await _startGate.WaitAsync();
         try
         {
-            LastError = null;
-            lock (_lock) { _reachedRunning = false; _recentOutput.Clear(); myGen = ++_generation; }
-            var exe = await EnsureBinaryAsync();
+            lock (_lock)
+            {
+                if (_process is { HasExited: false })
+                {
+                    if (_runningSecret == secretKey) return; // already running with this secret
+                    TryKill();                                // secret changed (reconnect): restart
+                }
+            }
 
-            var psi = new ProcessStartInfo
+            int myGen;
+            try
+            {
+                LastError = null;
+                lock (_lock) { _reachedRunning = false; _recentOutput.Clear(); myGen = ++_generation; }
+                var exe = await EnsureBinaryAsync();
+
+                // A playitd from a previous session (ungraceful exit, app killed, closed to tray then
+                // terminated…) may still be listening on our private pipe; playitd would then refuse
+                // to start with "another instance is already running". It runs from our own path, so
+                // it's safe to reclaim — this never touches a system-wide Playit the user installed.
+                KillStrayAgents();
+
+                var psi = new ProcessStartInfo
             {
                 FileName = exe,
                 UseShellExecute = false,
@@ -171,11 +185,16 @@ public class PlayitAgentRunner
                 if (up) SetState(AgentRunState.Running);
             });
         }
-        catch (Exception ex)
+            catch (Exception ex)
+            {
+                LastError = ex.Message;
+                ConsoleLogService.Shared.Log("Playit", $"Could not start the Playit agent: {ex.Message}");
+                SetState(AgentRunState.Failed);
+            }
+        }
+        finally
         {
-            LastError = ex.Message;
-            ConsoleLogService.Shared.Log("Playit", $"Could not start the Playit agent: {ex.Message}");
-            SetState(AgentRunState.Failed);
+            _startGate.Release();
         }
     }
 
@@ -196,6 +215,33 @@ public class PlayitAgentRunner
     {
         try { if (_process is { HasExited: false } p) p.Kill(entireProcessTree: true); }
         catch { /* already gone */ }
+    }
+
+    /// <summary>
+    /// Kills any leftover agent process running from <em>our</em> binary path (an orphan from a prior
+    /// session still holding the private pipe). Matching on the full image path means we never touch a
+    /// system-wide Playit the user installed separately (different path, and usually not even killable).
+    /// </summary>
+    private static void KillStrayAgents()
+    {
+        try
+        {
+            var ourPath = BinaryPath;
+            foreach (var p in Process.GetProcessesByName("playitd"))
+            {
+                try
+                {
+                    if (string.Equals(p.MainModule?.FileName, ourPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        p.Kill(entireProcessTree: true);
+                        p.WaitForExit(3000); // let the OS release the named pipe before we rebind it
+                    }
+                }
+                catch { /* not ours (access denied) or already gone */ }
+                finally { p.Dispose(); }
+            }
+        }
+        catch { /* best-effort cleanup */ }
     }
 
     private void OnAgentLine(object? sender, DataReceivedEventArgs e)
