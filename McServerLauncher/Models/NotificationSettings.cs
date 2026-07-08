@@ -38,6 +38,18 @@ public class NotificationSettings
         _ => true
     };
 
-    /// <summary>A shallow copy (used to seed a per-server override from the global defaults).</summary>
-    public NotificationSettings Clone() => (NotificationSettings)MemberwiseClone();
+    /// <summary>
+    /// A copy (used to seed a per-server override from the global defaults). Copied field-by-field on
+    /// purpose: if a reference-typed field is ever added here, a <c>MemberwiseClone</c> would silently
+    /// share it between the global and per-server copies — this makes each field an explicit choice.
+    /// </summary>
+    public NotificationSettings Clone() => new()
+    {
+        Enabled = Enabled,
+        PlayerJoined = PlayerJoined,
+        PlayerLeft = PlayerLeft,
+        PlayerDeath = PlayerDeath,
+        ServerCrashed = ServerCrashed,
+        AutoRestartGaveUp = AutoRestartGaveUp,
+    };
 }

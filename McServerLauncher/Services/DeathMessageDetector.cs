@@ -30,23 +30,32 @@ public static partial class DeathMessageDetector
 
     /// <summary>
     /// Returns the death message (e.g. "Alice was slain by Bob") if <paramref name="line"/> is a
-    /// vanilla death log entry, or null. The message part (after the "]: " log prefix) must start
-    /// with a valid player name and contain a known death phrase.
+    /// vanilla death log entry, or null. The message part (after the "]: " log prefix) must be
+    /// "&lt;valid player name&gt; &lt;death phrase&gt;…": the phrase has to come <em>immediately</em>
+    /// after the name, not merely appear somewhere in the line — so a plugin/chat line that only
+    /// mentions a keyword ("the player Steve died in tutorial") doesn't fire a false death.
     /// </summary>
     public static string? Detect(string line)
     {
         var i = line.IndexOf("]: ", StringComparison.Ordinal);
         if (i < 0) return null;
         var msg = line[(i + 3)..].Trim();
-        if (msg.Length == 0) return null;
 
         var space = msg.IndexOf(' ');
-        var subject = space > 0 ? msg[..space] : msg;
+        if (space <= 0) return null; // needs "<name> <phrase>"
+        var subject = msg[..space];
         if (!PlayerName().IsMatch(subject)) return null;
 
+        var rest = msg[(space + 1)..];
         foreach (var phrase in Phrases)
-            if (msg.Contains(phrase, StringComparison.Ordinal))
+            if (StartsWithPhrase(rest, phrase))
                 return msg;
         return null;
     }
+
+    // The phrase must be a whole leading token of <paramref name="rest"/>: immediately after it comes
+    // a space or the end of the line. So "died" matches "Alice died" but not "died-worlds plugin".
+    private static bool StartsWithPhrase(string rest, string phrase) =>
+        rest.StartsWith(phrase, StringComparison.Ordinal) &&
+        (rest.Length == phrase.Length || rest[phrase.Length] == ' ');
 }

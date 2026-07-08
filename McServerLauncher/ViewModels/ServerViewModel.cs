@@ -526,7 +526,6 @@ public partial class ServerViewModel : ObservableObject
             ToastService.Shared.Notify(Name, message);
     }
 
-
     /// <summary>
     /// Extracts the player name right before a marker (e.g. " joined the game"), but only from a
     /// real server log entry: the name must be the ONLY text between the log prefix
