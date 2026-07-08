@@ -54,9 +54,11 @@ are no hard-coded machine paths.
   `PlayitPartnerService` runs the third-party **setup-code** flow (`create_agent`) to mint a
   **per-user self-managed agent secret key** from a code the user pastes. The partner **Api-Key is
   never in the app** (it's public + open-source): the call goes through a small proxy (a Cloudflare
-  Worker, see `playit-proxy/`) that injects the key server-side. The variant_id/version are public
-  and baked in. `PlayitApiService` then uses the returned per-user key (as `agent-key`, set app-wide
-  via `SetAgentKey`) to list/create/delete tunnels — falling back to a legacy `playit.toml` secret
+  Worker, see `playit-proxy/`) that injects the key server-side. The Worker only accepts the
+  create-agent POST shape the desktop app sends, rejects browser-origin traffic, and can rate-limit
+  per IP. The variant_id/version are public and baked in. `PlayitApiService` then uses the returned
+  per-user key (as `agent-key`, set app-wide via `SetAgentKey`) to list/create/delete tunnels —
+  falling back to a legacy `playit.toml` secret
   or pasted write key otherwise. `PlayitManager` queries/starts/stops the background Windows/systemd
   service. `PlayitConnection` is the shared connect/disconnect flow used by the tunnel buttons and
   the Settings dialog.
@@ -99,8 +101,11 @@ are no hard-coded machine paths.
   they work even without OS notification support.
 - **`NotificationPreferences`** — decides which notifications are shown, combining the global
   settings (master switch + per-kind: join, leave, death/kill, crash, auto-restart-gave-up) with an
-  optional per-server override (`ServerConfig.UseCustomNotifications`). `DeathMessageDetector` spots
-  death/kill lines in the console for the deaths notification.
+  optional per-server override (`ServerConfig.UseCustomNotifications`). Per-server overrides are
+  cloned field-by-field from the global defaults so later changes don't share mutable state.
+  `DeathMessageDetector` spots death/kill lines in the console for the deaths notification, requiring
+  a valid player-name subject followed immediately by a known vanilla death phrase to reduce chat or
+  plugin false positives.
 - **`SecretProtector`** — encrypts secrets at rest (DPAPI on Windows, AES-GCM + `.secret.key` on
   Linux/macOS), used for the Playit per-user agent secret key (and the legacy write key). If encryption ever fails, the key is **not**
   persisted (plaintext never lands on disk): it keeps working for the session, the failure goes to

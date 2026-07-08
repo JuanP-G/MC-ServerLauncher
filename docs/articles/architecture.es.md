@@ -54,7 +54,9 @@ mundo. No hay rutas fijas del equipo en el código.
   para obtener una **clave secreta de agente autogestionado por usuario** a partir de un código que
   el usuario pega. La **Api-Key de socio no está en la app** (es pública + open-source): la llamada
   pasa por un pequeño proxy (un Cloudflare Worker, ver `playit-proxy/`) que añade la clave en el
-  servidor. El variant_id/versión son públicos y van incrustados. `PlayitApiService` usa la clave
+  servidor. El Worker solo acepta el POST de create-agent con la forma que envía la app de
+  escritorio, rechaza tráfico con origen de navegador y puede limitar intentos por IP. El
+  variant_id/versión son públicos y van incrustados. `PlayitApiService` usa la clave
   por usuario devuelta (como `agent-key`, fijada con `SetAgentKey`) para listar/crear/eliminar
   túneles — con reserva al `playit.toml` heredado o a una clave de escritura pegada. `PlayitManager`
   consulta/arranca/detiene el servicio de fondo (Windows/systemd). `PlayitConnection` es el flujo
@@ -98,8 +100,11 @@ mundo. No hay rutas fijas del equipo en el código.
   no tiene el foco; funcionan aunque el SO no soporte notificaciones.
 - **`NotificationPreferences`** — decide qué notificaciones se muestran, combinando los ajustes
   globales (interruptor maestro + por tipo: entra, sale, muerte/baja, caída, reinicio agotado) con
-  una posible anulación por servidor (`ServerConfig.UseCustomNotifications`). `DeathMessageDetector`
-  detecta las líneas de muerte/baja en la consola para la notificación de muertes.
+  una posible anulación por servidor (`ServerConfig.UseCustomNotifications`). Las anulaciones por
+  servidor se clonan campo a campo desde los ajustes globales para no compartir estado mutable.
+  `DeathMessageDetector` detecta las líneas de muerte/baja en la consola para la notificación de
+  muertes, exigiendo un nombre de jugador válido seguido inmediatamente por una frase de muerte
+  vanilla conocida para reducir falsos positivos de chat o plugins.
 - **`SecretProtector`** — cifra los secretos en reposo (DPAPI en Windows, AES-GCM + `.secret.key` en
   Linux/macOS), usado para la clave de agente por usuario de Playit (y la clave de escritura heredada). Si el cifrado falla, la clave **no** se
   persiste (nunca llega texto plano al disco): sigue funcionando durante la sesión, el fallo queda

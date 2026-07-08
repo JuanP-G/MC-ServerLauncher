@@ -63,8 +63,8 @@ dotnet tool install -g docfx   # solo la primera vez
 
 ### Sacar una versión nueva
 1. Sube `<Version>` en `McServerLauncher/McServerLauncher.csproj` — es la **fuente única de verdad**.
-   `publish.ps1` la lee y se la pasa a Inno Setup, así que no tocas el `.iss` (su `MyAppVersion` es
-   solo un valor por defecto para compilar el instalador a mano).
+   `publish.ps1` la lee y se la pasa a Inno Setup. Mantén alineado el fallback `MyAppVersion` del
+   `.iss` solo para que una compilación manual/directa con Inno Setup no genere un nombre antiguo.
 2. Añade una entrada de **novedades** para que el diálogo de actualización tenga algo que mostrar:
    - Una nueva tupla al principio de `Entries` en `Services/Changelog.cs` (la más nueva primero),
      p. ej. `(new Version(1, 6, 0), "Whatsnew_1_6_0")`.
