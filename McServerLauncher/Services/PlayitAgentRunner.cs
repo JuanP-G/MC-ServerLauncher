@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -25,6 +26,19 @@ public class PlayitAgentRunner
 
     // Pinned to match the (variant_id, version) pair the app registers via create_agent.
     private const string AgentVersion = "v1.0.10";
+
+    // Pinned SHA-256 of each v1.0.10 release asset we may download. The agent binary runs with the
+    // user's key and is the highest-privilege code the app fetches, so — like every other download
+    // (Mojang/Adoptium/Paper/Modrinth and our own installer) — it is checksum-verified before running.
+    // Because AgentVersion is pinned, these are known constants; bump them whenever AgentVersion changes.
+    private static readonly Dictionary<string, string> AssetSha256 = new(StringComparer.Ordinal)
+    {
+        ["playit-windows-x86_64-signed.exe"] = "2dbdaad119844cbbc062cc9774b8b462afa5f1b4b7832a9fc5ef4676cae887cf",
+        ["playit-windows-x86-signed.exe"]    = "9cec088fa4ee9ad4d59acd27512cf914078bdb31742e9abc946b81ea705f9d35",
+        ["playit-linux-amd64"]               = "2df7d9f10227ab312b1ad341853db4e8a8243df5cfcdbae58713a4271711c339",
+        ["playit-linux-aarch64"]             = "4c0db3e7b3a8158e249441c2f0b73f54e83429395890c7b1ca45fd7a6303d763",
+    };
+
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
 
     private readonly object _lock = new();
@@ -291,12 +305,30 @@ public class PlayitAgentRunner
         return msg;
     }
 
-    /// <summary>Downloads the agent binary to <see cref="AgentDir"/> if not already there. Returns its path.</summary>
+    /// <summary>
+    /// Downloads the agent binary to <see cref="AgentDir"/> if not already there, and returns its path.
+    /// The binary runs as a child process with the user's agent key, so it's the highest-privilege code
+    /// the app fetches: it is <b>verified against a pinned SHA-256</b> (of the exact <see cref="AgentVersion"/>
+    /// asset) before it is ever executed — on mismatch it is deleted and this throws, so a tampered or
+    /// corrupted binary is never trusted. A cached copy is re-checked too (a poisoned cache is re-fetched).
+    /// </summary>
     private async Task<string> EnsureBinaryAsync()
     {
         var path = BinaryPath;
+        var expectedHash = AssetName is { } asset && AssetSha256.TryGetValue(asset, out var h) ? h : null;
+        if (string.IsNullOrEmpty(expectedHash))
+            // No pinned hash => refuse to run an unverifiable native binary (should never happen: every
+            // supported AssetName has a pinned hash).
+            throw new InvalidOperationException("No pinned checksum for the Playit agent binary on this platform.");
+
+        // Reuse a cached binary only if it still matches the pinned hash.
         if (File.Exists(path) && new FileInfo(path).Length > 0)
-            return path;
+        {
+            var cachedHash = await DownloadVerifier.ComputeHashAsync(path, HashAlgorithmName.SHA256);
+            if (string.Equals(cachedHash, expectedHash, StringComparison.OrdinalIgnoreCase))
+                return path;
+            TryDeleteFile(path); // stale or tampered — re-download and re-verify
+        }
 
         SetState(AgentRunState.Downloading);
         Directory.CreateDirectory(AgentDir);
@@ -309,6 +341,10 @@ public class PlayitAgentRunner
             await using var fs = File.Create(tmp);
             await resp.Content.CopyToAsync(fs);
         }
+
+        // Verify BEFORE it is ever moved into place / executed: deletes tmp and throws on mismatch.
+        await DownloadVerifier.VerifyAsync(tmp, expectedHash, HashAlgorithmName.SHA256);
+
         if (File.Exists(path)) File.Delete(path);
         File.Move(tmp, path);
 
@@ -324,5 +360,11 @@ public class PlayitAgentRunner
             catch { /* best-effort */ }
         }
         return path;
+    }
+
+    private static void TryDeleteFile(string p)
+    {
+        try { if (File.Exists(p)) File.Delete(p); }
+        catch { /* best-effort */ }
     }
 }

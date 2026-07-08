@@ -139,8 +139,11 @@ the app is not affiliated with Playit, and the user can always reach their Playi
 A self-managed agent forwards traffic only while the agent process runs, so `PlayitAgentRunner`
 downloads Playit's official `playitd` binary (once, pinned to the registered version) and runs it as
 a hidden child process with `--secret <the per-user key>` while the app is open and connected — the
-user installs nothing. One agent serves all the user's tunnels. Not available on macOS (Playit ships
-no macOS binary); there the user runs Playit themselves.
+user installs nothing. Since that native binary is the highest-privilege code the app fetches, it is
+**verified against a hard-coded SHA-256** (of the exact pinned version) before it ever runs — on
+download and when reusing a cached copy — and deleted/failed on mismatch, just like every other
+download (`DownloadVerifier`). One agent serves all the user's tunnels. Not available on macOS
+(Playit ships no macOS binary); there the user runs Playit themselves.
 
 ### In-app update + what's-new
 On startup `MainViewModel.CheckForUpdatesAsync` asks `UpdateService` for the latest release and its

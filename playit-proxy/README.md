@@ -51,3 +51,26 @@ Note there is **no** `Authorization` header here — the Worker adds it.
 
 If the key is ever compromised, rotate it in Playit and update the `PLAYIT_API_KEY` secret in the
 Worker. Nothing in the app changes (the app never sees the key).
+
+## Trust assumption: the Playit agent binary
+
+To actually forward tunnel traffic, the app downloads Playit's official **`playitd`** agent and runs
+it as a child process with the user's per-user agent key (`PlayitAgentRunner`). Because that native
+binary is the highest-privilege code the app fetches, it is **pinned and checksum-verified** before
+it ever runs, exactly like every other download (Mojang/Adoptium/Paper/Modrinth and the app's own
+installer):
+
+- The agent version is pinned (`AgentVersion`, currently `v1.0.10`), and the **SHA-256 of each
+  per-OS asset is hard-coded** in `PlayitAgentRunner` (`AssetSha256`).
+- After download — and also when reusing a cached copy on disk — the file is verified against that
+  pinned hash via `DownloadVerifier`. On mismatch it is deleted and the start fails; a tampered or
+  corrupted binary is never executed. This closes the "someone serves an altered binary at the
+  GitHub Releases URL" vector (repo/account compromise, a re-uploaded release, a broken-TLS MITM, or
+  a hostile DNS/proxy).
+- **Upgrading the agent:** when you bump `AgentVersion`, you must also update the pinned hashes in
+  `AssetSha256` (download the new assets and record their SHA-256). A version bump without matching
+  hashes will (correctly) refuse to run.
+
+The pins are the exact bytes of Playit's signed `v1.0.10` release assets; the SHA-256 pin is
+stricter than an Authenticode publisher check (it fixes the precise binary, not just "signed by
+someone"), so it's the primary integrity control here.
