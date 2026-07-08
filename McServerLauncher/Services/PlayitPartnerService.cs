@@ -27,15 +27,15 @@ public class PlayitPartnerService
     // the PLAYIT_PROXY_URL environment variable.
     private const string DefaultProxyUrl = "https://dawn-hall-c5a8.gustofparaps4.workers.dev";
     private const string AgentName = "MC Server Launcher";
+    // Sent as X-MCSL-Client so the proxy can filter out random traffic (see playit-proxy/worker.js).
+    private const string ClientHeader = "mc-server-launcher";
 
     // Public values from Playit's open-source agent (Playit told us to use their current release's
-    // variant). variant_id = DEFAULT_VARIANT_ID in playitd's daemon.rs; version = the agent's
-    // workspace version. The API requires the (variant_id, version) pair to be a registered one, so
-    // we send the AGENT's version, not this app's.
+    // variant). variant_id = DEFAULT_VARIANT_ID in playitd's daemon.rs. The API requires the
+    // (variant_id, version) pair to be a registered one, so we send the AGENT's version — which must
+    // match the binary we actually download and run. That version is defined ONCE in
+    // PlayitAgentRunner (with its pinned hashes) and reused here, so the two can't drift apart.
     private const string VariantId = "308943e8-faef-4835-a2ba-270351f72aa3";
-    private const int AgentVersionMajor = 1;
-    private const int AgentVersionMinor = 0;
-    private const int AgentVersionPatch = 10;
 
     private static readonly HttpClient SharedHttp = new() { Timeout = TimeSpan.FromSeconds(30) };
 
@@ -73,9 +73,9 @@ public class PlayitPartnerService
             ["agent_details"] = new JsonObject
             {
                 ["variant_id"] = VariantId,
-                ["version_major"] = AgentVersionMajor,
-                ["version_minor"] = AgentVersionMinor,
-                ["version_patch"] = AgentVersionPatch
+                ["version_major"] = PlayitAgentRunner.VersionMajor,
+                ["version_minor"] = PlayitAgentRunner.VersionMinor,
+                ["version_patch"] = PlayitAgentRunner.VersionPatch
             },
             ["platform"] = CurrentPlatform,
             ["account_setup_code"] = setupCode.Trim()
@@ -84,6 +84,9 @@ public class PlayitPartnerService
         // No Authorization header — the proxy injects the partner Api-Key server-side.
         using var req = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/v1/partner/create_agent");
         req.Content = new StringContent(body, Encoding.UTF8, "application/json");
+        // A known client marker so the proxy can turn away random internet noise. Not a secret (the
+        // app is open source); the proxy's real abuse protection is per-IP rate limiting.
+        req.Headers.Add("X-MCSL-Client", ClientHeader);
 
         string json;
         try

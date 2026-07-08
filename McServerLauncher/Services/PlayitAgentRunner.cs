@@ -24,8 +24,18 @@ public class PlayitAgentRunner
 {
     public static PlayitAgentRunner Shared { get; } = new();
 
-    // Pinned to match the (variant_id, version) pair the app registers via create_agent.
-    private const string AgentVersion = "v1.0.10";
+    // Single source of truth for the pinned Playit agent version. It MUST stay in lockstep across
+    // THREE places, all keyed off these numbers: (1) the version the app registers via create_agent
+    // (PlayitPartnerService reuses these), (2) the GitHub release we download (AgentVersion tag), and
+    // (3) the pinned per-asset hashes in AssetSha256 below. Bump them together — a version change
+    // without matching hashes refuses to run, and one that doesn't match the registered variant fails
+    // create_agent (AgentVariantVersionNotFound).
+    public const int VersionMajor = 1;
+    public const int VersionMinor = 0;
+    public const int VersionPatch = 10;
+
+    // GitHub release tag for the pinned version (derived, so the numbers above are the only source).
+    private static readonly string AgentVersion = $"v{VersionMajor}.{VersionMinor}.{VersionPatch}";
 
     // Pinned SHA-256 of each v1.0.10 release asset we may download. The agent binary runs with the
     // user's key and is the highest-privilege code the app fetches, so — like every other download

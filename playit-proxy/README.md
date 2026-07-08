@@ -26,6 +26,30 @@ is far more than this needs.
 That URL (public, not secret) is what gets baked into the app. The Api-Key stays only in the
 Worker secret.
 
+6. **Add the rate-limit binding** (recommended — see *Abuse protection* below). Dashboard:
+   **Settings → Bindings → Add → Rate limiting**, name `SETUP_LIMITER`, e.g. **20 requests / 60 s**.
+   With the CLI, it's already in [`wrangler.toml`](wrangler.toml), so `wrangler deploy` sets it up.
+
+## Abuse protection
+
+The proxy URL is baked into a public app, so it's known. Even though a leaked URL can't do anything a
+user-authorized setup code wouldn't already allow (and never exposes the Api-Key), someone could still
+spam junk requests to burn the Worker's free quota or hammer Playit's partner endpoint. The Worker
+guards against that:
+
+- **Only** `POST /v1/partner/create_agent` is accepted; everything else is 404/405.
+- **No browser access**: any request with an `Origin` header is rejected and no CORS headers are ever
+  returned, so the proxy can't be driven from a web page.
+- **Body limits + validation**: bodies over 4 KB are refused, and the JSON must actually look like a
+  create_agent request (a non-empty `account_setup_code` and the expected `agent_name`).
+- **Per-IP rate limit**: `SETUP_LIMITER` caps create_agent attempts per client IP (default 20/min).
+  If the binding isn't configured the Worker still runs but the limit is skipped — so configure it.
+- **Optional client header**: set an `APP_TOKEN` var to require the app's `X-MCSL-Client` header to
+  match it (extra noise filter). Leave it unset to stay compatible with older app builds.
+
+And the Api-Key never leaves the Worker, so none of the above can leak it. Keep the key rotation below
+handy in case Playit ever rate-limits or flags the partner account.
+
 ## Deploy (CLI, alternative)
 
 ```bash

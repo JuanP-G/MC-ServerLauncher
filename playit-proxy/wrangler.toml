@@ -5,3 +5,15 @@ compatibility_date = "2025-01-01"
 # The partner Api-Key is NOT stored here. Set it as a secret (never committed):
 #   wrangler secret put PLAYIT_API_KEY
 # or via the Cloudflare dashboard: Settings -> Variables and Secrets -> add Secret.
+
+# Per-IP rate limit for create_agent (abuse protection). The Worker calls env.SETUP_LIMITER.limit();
+# if this binding is absent the Worker still runs (the limit is simply skipped), so configuring it is
+# strongly recommended. namespace_id is any number unique within your account; period must be 10 or 60.
+[[unsafe.bindings]]
+name = "SETUP_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }   # max 20 create_agent attempts per IP per minute
+
+# Optional: set APP_TOKEN as a plain var/secret to require the app's X-MCSL-Client header to match it
+# (extra noise filter). Leave it unset to stay compatible with older app builds that don't send it.
