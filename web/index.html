@@ -121,15 +121,16 @@ img{max-width:100%; display:block}
   box-shadow:0 0 0 6px rgba(255,231,115,.55), 0 0 90px 34px rgba(255,214,92,.45)}
 .moon{top:58vh; background:#F4F7FF;
   box-shadow:0 0 0 5px rgba(226,235,255,.4), 0 0 60px 20px rgba(200,220,255,.32)}
-/* colinas de bloques con parallax */
-.hills{position:absolute; left:0; right:0; bottom:0; width:100%; height:auto}
-.hill-far{opacity:.55}
-.hill-mid{opacity:.8}
-.grass-strip{position:absolute; left:0; right:0; bottom:0; height:74px;
+/* El suelo NO va en el fondo fijo: si se queda pegado al borde inferior de la ventana,
+   se cruza con el texto de las secciones al hacer scroll. Va en el flujo de la página
+   (cierra el hero y cierra el pie), así que baja con el contenido y nunca lo pisa. */
+/* Ancho completo sin trucos de 100vw: 100vw incluye la barra de desplazamiento y
+   provocaba desbordamiento horizontal. Va suelto en el flujo, que ya ocupa todo. */
+.terrain{position:relative; width:100%; height:118px; pointer-events:none;
   background:
-    repeating-linear-gradient(90deg,#2E7D32 0 32px,#276E2B 32px 64px) 0 0/64px 16px no-repeat,
-    repeating-linear-gradient(90deg,#5A3A22 0 32px,#4E3220 32px 64px);
-  border-top:4px solid #3FB950; opacity:.85}
+    repeating-linear-gradient(90deg,#43A047 0 32px,#3B9440 32px 64px) 0 0/64px 20px no-repeat,
+    repeating-linear-gradient(90deg,#6B4A2F 0 32px,#5E4029 32px 64px) 0 20px/64px 98px;
+  box-shadow:inset 0 5px 0 #5CE07B}
 
 /* ---------- BARRA DE XP (progreso de scroll) ---------- */
 .xpbar{position:fixed; top:0; left:0; right:0; height:8px; z-index:60;
@@ -149,17 +150,35 @@ img{max-width:100%; display:block}
 .nav nav{display:flex; gap:30px}
 .nav nav a{color:var(--muted); font-size:15px; transition:color .2s}
 .nav nav a:hover{color:var(--bright)}
-.btn{display:inline-flex; align-items:center; gap:9px; border-radius:11px;
-  padding:12px 22px; font-weight:700; font-size:15px; cursor:pointer;
-  border:1px solid transparent; transition:transform .12s, box-shadow .2s, background .2s}
-.btn:active{transform:translateY(2px)}
-.btn-primary{color:#06210D; background:linear-gradient(180deg,#6BEE86,#29A84C);
-  box-shadow:0 6px 0 #17692F, 0 12px 26px rgba(40,168,76,.35)}
-.btn-primary:hover{box-shadow:0 6px 0 #17692F, 0 16px 34px rgba(63,185,80,.55)}
-.btn-primary:active{box-shadow:0 2px 0 #17692F, 0 8px 18px rgba(40,168,76,.3)}
-.btn-ghost{color:var(--text); background:rgba(17,28,46,.75); border-color:var(--border)}
-.btn-ghost:hover{border-color:var(--green)}
-.btn-sm{padding:9px 18px; font-size:14px}
+/* Botones al estilo de la interfaz de Minecraft: esquinas rectas, contorno oscuro,
+   bisel pixelado (luz arriba-izquierda, sombra abajo-derecha) y un zócalo grueso
+   que hace de bloque. Al pulsar, el botón baja hasta comerse el zócalo. */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  border-radius:0; padding:15px 26px; cursor:pointer;
+  font-family:"Press Start 2P",monospace; font-size:11px; line-height:1.6;
+  border:3px solid #07130B; text-align:center;
+  box-shadow:
+    inset 2px 2px 0 rgba(255,255,255,.34),
+    inset -2px -2px 0 rgba(0,0,0,.34),
+    0 6px 0 var(--btn-base,#0C2E17),
+    0 10px 20px rgba(0,0,0,.45);
+  transition:filter .12s, transform .06s, box-shadow .06s}
+.btn:hover{filter:brightness(1.14)}
+.btn:active{transform:translateY(6px);
+  box-shadow:
+    inset 2px 2px 0 rgba(255,255,255,.24),
+    inset -2px -2px 0 rgba(0,0,0,.34),
+    0 0 0 var(--btn-base,#0C2E17),
+    0 4px 10px rgba(0,0,0,.4)}
+.btn-primary{--btn-base:#14602C; color:#07210E; background:#4FD86F}
+.btn-ghost{--btn-base:#141F2E; color:var(--text); background:#31445E; border-color:#0A1119}
+.btn-sm{padding:11px 18px; font-size:9px; box-shadow:
+    inset 2px 2px 0 rgba(255,255,255,.32),
+    inset -2px -2px 0 rgba(0,0,0,.32),
+    0 4px 0 var(--btn-base,#0C2E17),
+    0 8px 14px rgba(0,0,0,.4)}
+.btn-sm:active{transform:translateY(4px)}
+.btn-lg{padding:19px 32px; font-size:13px}
 
 /* ---------- SECCIONES ---------- */
 section{position:relative; padding:110px 0}
@@ -174,8 +193,11 @@ section{position:relative; padding:110px 0}
 /* La columna de la captura pesa más que el texto: es la prueba visual del producto.
    El ancho extra sale de la rejilla, no de sacar la imagen fuera del contenedor
    (eso provocaba desbordamiento horizontal de la página). */
-.hero{padding:88px 0 120px; display:grid; grid-template-columns:0.78fr 1.22fr;
-  gap:44px; align-items:center; max-width:1380px}
+/* La primera pantalla es solo el hero: ocupa el alto de la ventana menos el nav,
+   así no asoma el contenido de la sección siguiente. */
+.hero{padding:52px 0 52px; display:grid; grid-template-columns:0.78fr 1.22fr;
+  gap:44px; align-items:center; align-content:center; max-width:1380px;
+  min-height:calc(100vh - 190px); position:relative}
 .badge{display:inline-flex; align-items:center; gap:10px; padding:9px 18px;
   border:1px solid var(--border); background:rgba(17,28,46,.7); border-radius:999px;
   font-family:"Press Start 2P",monospace; font-size:9px; color:var(--bright)}
@@ -259,7 +281,7 @@ section{position:relative; padding:110px 0}
 footer{border-top:none; background:linear-gradient(180deg,
   rgba(7,11,20,0) 0%, rgba(7,11,20,.55) 26%, rgba(7,11,20,.78) 60%, rgba(7,11,20,0) 100%)}
 footer .wrap{display:flex; justify-content:center; gap:26px;
-  padding-top:26px; padding-bottom:104px; color:var(--muted); font-size:14px; flex-wrap:wrap}
+  padding-top:26px; padding-bottom:30px; color:var(--muted); font-size:14px; flex-wrap:wrap}
 footer nav{display:flex; gap:26px}
 footer a:hover{color:var(--bright)}
 
@@ -305,13 +327,6 @@ footer a:hover{color:var(--bright)}
   <div class="stars" id="stars"></div>
   <div class="clouds" id="clouds"></div>
   <div class="orbit" id="orbit"><div class="sun"></div><div class="moon"></div></div>
-  <svg class="hills hill-far" id="hillFar" viewBox="0 0 1200 220" preserveAspectRatio="none" height="220">
-    <path fill="#0B1B2E" d="M0 220V150h40v-20h40v-20h40v20h40v20h40v-40h40v-20h40v20h40v40h40v-20h40v20h40v-40h40v40h40v20h40v-20h40v-20h40v40h40v20h40v-40h40v40h40v20h40v-20h40v20h40v20H0z"/>
-  </svg>
-  <svg class="hills hill-mid" id="hillMid" viewBox="0 0 1200 160" preserveAspectRatio="none" height="160">
-    <path fill="#0A2418" d="M0 160v-50h50v-20h50v20h50v-40h50v20h50v20h50v-30h50v30h50v20h50v-40h50v40h50v-20h50v20h50v-30h50v30h50v20h50v-20h50v20h50v20H0z"/>
-  </svg>
-  <div class="grass-strip"></div>
 </div>
 
 <div class="xpbar" aria-hidden="true"><i id="xp"></i></div>
@@ -353,6 +368,7 @@ footer a:hover{color:var(--bright)}
            alt="Ventana de MC-ServerLauncher mostrando la lista de servidores, las estadísticas de CPU y RAM y la consola en vivo de un servidor de Minecraft">
     </figure>
   </section>
+  <div class="terrain" aria-hidden="true"></div>
 
   <section class="stats">
     <div class="wrap reveal">
@@ -432,7 +448,7 @@ footer a:hover{color:var(--bright)}
       </svg>
       <h2 class="h2 build">¿Listo para crear tu mundo?</h2>
       <p class="lead reveal">Descarga MC-ServerLauncher y monta tu servidor esta misma tarde.</p>
-      <a class="btn btn-primary reveal" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest" style="font-size:18px; padding:18px 38px">Descargar MC-ServerLauncher</a>
+      <a class="btn btn-primary btn-lg reveal" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar MC-ServerLauncher</a>
     </div>
   </section>
 </main>
@@ -445,6 +461,7 @@ footer a:hover{color:var(--bright)}
       <a href="https://github.com/JuanP-G/MC-ServerLauncher/issues">Reportar un fallo</a>
     </nav>
   </div>
+  <div class="terrain" aria-hidden="true"></div>
 </footer>
 
 <script>
@@ -540,7 +557,6 @@ footer a:hover{color:var(--bright)}
 
   // --- scroll: barra de XP, ciclo día/noche, parallax del terreno ---
   var xp = document.getElementById('xp'), orbit = document.getElementById('orbit'),
-      hillFar = document.getElementById('hillFar'), hillMid = document.getElementById('hillMid'),
       root = document.documentElement, ticking = false;
 
   // amanece en el primer tercio y anochece en el último: el día vive en el centro
@@ -567,12 +583,6 @@ footer a:hover{color:var(--bright)}
     // Va ligado a la posición del scroll, igual que el color del cielo, así que también
     // se aplica con "movimiento reducido": si no, el cielo cambiaba sin que el sol se moviera.
     orbit.style.setProperty('--orbit', (180 + p * 360).toFixed(1) + 'deg');
-
-    // Esto sí es movimiento decorativo por sí mismo: solo si el usuario lo acepta.
-    if (!reduced) {
-      hillFar.style.transform = 'translateY(' + (p * 46) + 'px)';
-      hillMid.style.transform = 'translateY(' + (p * 22) + 'px)';
-    }
     ticking = false;
   }
   addEventListener('scroll', function(){
