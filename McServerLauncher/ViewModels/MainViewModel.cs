@@ -87,6 +87,7 @@ public partial class MainViewModel : ObservableObject
 
         // Make the saved notification preferences the app-wide defaults for this session.
         NotificationPreferences.Global = _appSettings.Notifications;
+        ApplyWindowBehavior();
 
         var saved = _appSettings.Language;
         var code = !string.IsNullOrWhiteSpace(saved) ? saved : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
@@ -124,14 +125,24 @@ public partial class MainViewModel : ObservableObject
         var dialog = new SettingsDialog(Languages, SelectedLanguage, _appSettings.Notifications, _appSettings, _settings);
         if (!await dialog.ShowDialog<bool>(Owner)) return;
 
-        // Notifications: apply + persist immediately.
+        // Notifications and window behavior: apply + persist immediately (no restart needed).
         _appSettings.Notifications = dialog.Notifications;
         NotificationPreferences.Global = _appSettings.Notifications;
+        _appSettings.MinimizeToTray = dialog.MinimizeToTray;
+        _appSettings.CloseToTray = dialog.CloseToTray;
+        ApplyWindowBehavior();
         _settings.Save(_appSettings);
 
         // Language: assigning SelectedLanguage reuses the existing handler (persist + restart prompt).
         if (dialog.SelectedLanguage is { } lang && lang.Code != _appSettings.Language)
             SelectedLanguage = lang;
+    }
+
+    /// <summary>Pushes the saved minimize/close preferences to the app-wide state the window reads.</summary>
+    private void ApplyWindowBehavior()
+    {
+        WindowBehavior.MinimizeToTray = _appSettings.MinimizeToTray;
+        WindowBehavior.CloseToTray = _appSettings.CloseToTray;
     }
 
     private async Task RestartAppAsync()

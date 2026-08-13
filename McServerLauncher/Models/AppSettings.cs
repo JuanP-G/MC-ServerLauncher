@@ -32,4 +32,15 @@ public class AppSettings
     /// <see cref="ServerConfig.UseCustomNotifications"/>).
     /// </summary>
     public NotificationSettings Notifications { get; set; } = new();
+
+    /// <summary>
+    /// Minimizing sends the window to the tray (it leaves the taskbar) instead of minimizing normally.
+    /// </summary>
+    public bool MinimizeToTray { get; set; } = true;
+
+    /// <summary>
+    /// Closing the window with the X sends it to the tray instead of quitting the app. Off by default:
+    /// the X quits, which is what most people expect.
+    /// </summary>
+    public bool CloseToTray { get; set; }
 }

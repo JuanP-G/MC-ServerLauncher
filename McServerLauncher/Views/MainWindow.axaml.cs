@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using McServerLauncher.Localization;
+using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views;
@@ -13,6 +14,7 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
     private bool _shuttingDown;
+    private bool _exitRequested;
 
     public MainWindow()
     {
@@ -37,27 +39,41 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Minimize-to-tray: minimizing hides the window, so it leaves the taskbar and lives on only as the
-    /// tray icon while the servers keep running. Closing with the X really quits (see <see cref="OnClosing"/>).
-    /// Guarded by <see cref="App.TrayAvailable"/>: on a desktop with no tray there would be no way to
-    /// bring the window back, so there minimize keeps its normal behavior.
+    /// Optional minimize-to-tray (see settings): minimizing hides the window, so it leaves the taskbar
+    /// and lives on only as the tray icon while the servers keep running. Also guarded by
+    /// <see cref="App.TrayAvailable"/>: on a desktop with no tray there would be no way to bring the
+    /// window back, so there minimize always keeps its normal behavior.
     /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == WindowStateProperty && WindowState == WindowState.Minimized && App.TrayAvailable)
+        if (change.Property == WindowStateProperty && WindowState == WindowState.Minimized
+            && WindowBehavior.MinimizeToTray && App.TrayAvailable)
             Hide();
     }
 
     /// <summary>
-    /// Quits the app (stops servers and exits). Used by the tray's Exit menu; the window's X button
-    /// goes through the same path on its own.
+    /// Quits the app (stops servers and exits). Used by the tray's Exit menu, and the only way out
+    /// when close-to-tray is enabled and the X no longer quits.
     /// </summary>
-    public void RequestExit() => Close();
+    public void RequestExit()
+    {
+        _exitRequested = true;
+        Close();
+    }
 
     protected override async void OnClosing(WindowClosingEventArgs e)
     {
+        // Optional close-to-tray (see settings): the X hides the window instead of quitting, and the
+        // tray's Exit menu (RequestExit) stays the way out. Same tray guard as minimize.
+        if (!_exitRequested && WindowBehavior.CloseToTray && App.TrayAvailable)
+        {
+            e.Cancel = true;
+            Hide();
+            return;
+        }
+
         // Avoid closing abruptly with servers running: stop them cleanly first.
         if (!_shuttingDown)
         {

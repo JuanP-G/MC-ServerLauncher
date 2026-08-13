@@ -27,6 +27,14 @@
 
                 <Separator Margin="0,16,0,12" />
 
+                <!-- Window buttons (minimize / close) -->
+                <TextBlock Text="{loc:Loc Win_Section}" FontWeight="SemiBold" />
+                <TextBlock Text="{loc:Loc Win_Intro}" TextWrapping="Wrap" Opacity="0.7" FontSize="13" Margin="0,4,0,6" />
+                <CheckBox Content="{loc:Loc Win_MinimizeToTray}" IsChecked="{Binding MinimizeToTray, Mode=TwoWay}" />
+                <CheckBox Content="{loc:Loc Win_CloseToTray}" IsChecked="{Binding CloseToTray, Mode=TwoWay}" />
+
+                <Separator Margin="0,16,0,12" />
+
                 <!-- Notifications -->
                 <TextBlock Text="{loc:Loc Notif_Section}" FontWeight="SemiBold" />
                 <TextBlock Text="{loc:Loc Notif_Intro}" TextWrapping="Wrap" Opacity="0.7" FontSize="13" Margin="0,4,0,6" />

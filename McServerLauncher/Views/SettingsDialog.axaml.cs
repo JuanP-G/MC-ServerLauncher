@@ -25,6 +25,12 @@ public partial class SettingsDialog : Window
     /// <summary>The edited notification settings (a copy; applied by the caller on Save).</summary>
     public NotificationSettings Notifications { get; }
 
+    /// <summary>Minimizing sends the window to the tray instead of the taskbar (read back on Save).</summary>
+    public bool MinimizeToTray { get; set; }
+
+    /// <summary>The X button sends the window to the tray instead of quitting (read back on Save).</summary>
+    public bool CloseToTray { get; set; }
+
     private readonly AppSettings? _appSettings;
     private readonly AppSettingsService? _settingsService;
 
@@ -41,6 +47,8 @@ public partial class SettingsDialog : Window
         Notifications = notifications.Clone();
         _appSettings = appSettings;
         _settingsService = settingsService;
+        MinimizeToTray = appSettings?.MinimizeToTray ?? true;
+        CloseToTray = appSettings?.CloseToTray ?? false;
         DataContext = this;
         UpdatePlayitStatus();
 
