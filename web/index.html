@@ -121,16 +121,17 @@ img{max-width:100%; display:block}
   box-shadow:0 0 0 6px rgba(255,231,115,.55), 0 0 90px 34px rgba(255,214,92,.45)}
 .moon{top:58vh; background:#F4F7FF;
   box-shadow:0 0 0 5px rgba(226,235,255,.4), 0 0 60px 20px rgba(200,220,255,.32)}
-/* El suelo NO va en el fondo fijo: si se queda pegado al borde inferior de la ventana,
-   se cruza con el texto de las secciones al hacer scroll. Va en el flujo de la página
-   (cierra el hero y cierra el pie), así que baja con el contenido y nunca lo pisa. */
-/* Ancho completo sin trucos de 100vw: 100vw incluye la barra de desplazamiento y
-   provocaba desbordamiento horizontal. Va suelto en el flujo, que ya ocupa todo. */
-.terrain{position:relative; width:100%; height:118px; pointer-events:none;
+/* El suelo forma parte del decorado FIJO: al hacer scroll se mueve el contenido por
+   delante, no el mundo del fondo. Por eso la tierra está siempre presente. */
+.terrain{position:absolute; left:0; right:0; bottom:0; height:118px; pointer-events:none;
   background:
     repeating-linear-gradient(90deg,#43A047 0 32px,#3B9440 32px 64px) 0 0/64px 20px no-repeat,
     repeating-linear-gradient(90deg,#6B4A2F 0 32px,#5E4029 32px 64px) 0 20px/64px 98px;
   box-shadow:inset 0 5px 0 #5CE07B}
+/* Colinas de bloques recortadas contra el cielo, por detrás de la tierra */
+.hills{position:absolute; left:0; right:0; bottom:100px; width:100%; height:auto}
+.hill-far{opacity:.5}
+.hill-mid{opacity:.75}
 
 /* ---------- BARRA DE XP (progreso de scroll) ---------- */
 .xpbar{position:fixed; top:0; left:0; right:0; height:8px; z-index:60;
@@ -181,7 +182,14 @@ img{max-width:100%; display:block}
 .btn-lg{padding:19px 32px; font-size:13px}
 
 /* ---------- SECCIONES ---------- */
-section{position:relative; padding:110px 0}
+/* Cada apartado ocupa la ventana entera y se centra: al saltar desde el menú no
+   aparecen dos secciones a la vez. scroll-margin-top compensa el nav pegajoso,
+   que si no se comía el principio de la sección al usar los enlaces del menú. */
+/* El relleno inferior es mayor que el superior a propósito: la franja de tierra ocupa
+   los últimos 118 px de la ventana, y así el contenido nunca queda por detrás. */
+section{position:relative; padding:80px 0 142px; scroll-margin-top:86px;
+  min-height:100vh; display:flex; flex-direction:column; justify-content:center}
+.hero{scroll-margin-top:0}
 .eyebrow{font-family:"Press Start 2P",monospace; font-size:10px; color:var(--bright);
   letter-spacing:.06em; margin-bottom:18px; display:inline-block}
 .h2{font-size:clamp(30px,4vw,44px); font-weight:800; margin-bottom:16px}
@@ -195,9 +203,9 @@ section{position:relative; padding:110px 0}
    (eso provocaba desbordamiento horizontal de la página). */
 /* La primera pantalla es solo el hero: ocupa el alto de la ventana menos el nav,
    así no asoma el contenido de la sección siguiente. */
-.hero{padding:52px 0 52px; display:grid; grid-template-columns:0.78fr 1.22fr;
+.hero{padding:48px 0 150px; display:grid; grid-template-columns:0.78fr 1.22fr;
   gap:44px; align-items:center; align-content:center; max-width:1380px;
-  min-height:calc(100vh - 190px); position:relative}
+  min-height:calc(100vh - 72px); position:relative}
 .badge{display:inline-flex; align-items:center; gap:10px; padding:9px 18px;
   border:1px solid var(--border); background:rgba(17,28,46,.7); border-radius:999px;
   font-family:"Press Start 2P",monospace; font-size:9px; color:var(--bright)}
@@ -225,7 +233,8 @@ section{position:relative; padding:110px 0}
 .shot img.cap{width:100%; height:auto}
 
 /* ---------- BARRA DE DATOS ---------- */
-.stats{padding:0 0 40px}
+/* Esta franja es un remate del hero, no un apartado: no debe ocupar una pantalla. */
+.stats{padding:0 0 40px; min-height:0; display:block}
 .stats .wrap{display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap;
   background:rgba(13,21,36,.75); border:1px solid var(--border); border-radius:16px;
   padding:26px 34px; max-width:calc(var(--maxw) - 0px)}
@@ -234,14 +243,14 @@ section{position:relative; padding:110px 0}
 .stat span{color:var(--muted); font-size:15px}
 
 /* ---------- REJILLAS ---------- */
-.grid{display:grid; gap:20px; margin-top:52px}
+.grid{display:grid; gap:18px; margin-top:38px}
 .g3{grid-template-columns:repeat(3,1fr)}
 .card{background:rgba(17,28,46,.82); border:1px solid var(--border); border-radius:16px;
-  padding:28px; transition:transform .25s, border-color .25s, box-shadow .25s}
+  padding:24px; transition:transform .25s, border-color .25s, box-shadow .25s}
 .card:hover{transform:translateY(-6px); border-color:var(--green);
   box-shadow:0 18px 40px rgba(0,0,0,.45)}
-.ico{width:46px; height:46px; border-radius:12px; display:grid; place-items:center;
-  font-size:20px; background:rgba(28,90,48,.55); margin-bottom:15px}
+.ico{width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
+  font-size:19px; background:rgba(28,90,48,.55); margin-bottom:12px}
 .card h3{font-size:19px; margin-bottom:10px}
 .card p{color:var(--muted); font-size:15px}
 .step-n{font-family:"Press Start 2P",monospace; font-size:15px; color:var(--bright);
@@ -255,6 +264,23 @@ section{position:relative; padding:110px 0}
 .os p{margin-bottom:20px}
 .os .btn{width:100%; justify-content:center}
 .note{color:var(--muted); font-size:14px; text-align:center; margin-top:26px}
+
+/* Listado de versiones publicadas, traído de la API de GitHub */
+.releases{max-width:860px; margin:56px auto 0; text-align:left}
+.releases-title{font-size:19px; margin-bottom:16px; text-align:center}
+.release-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px}
+.release-list li{display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  background:rgba(17,28,46,.82); border:1px solid var(--border); padding:14px 20px}
+.release-list li.latest{border-color:var(--green)}
+.rel-tag{font-family:"Press Start 2P",monospace; font-size:11px; color:var(--bright)}
+.rel-name{color:var(--text); font-size:15px; flex:1 1 220px; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.rel-date{color:var(--muted); font-size:13px}
+.rel-badge{font-size:11px; font-weight:700; color:#07210E; background:var(--bright);
+  padding:3px 9px; letter-spacing:.03em}
+.release-empty{color:var(--muted); font-size:14px; justify-content:center}
+.all-releases{display:block; text-align:center; margin-top:20px; color:var(--muted); font-size:14px}
+.all-releases:hover{color:var(--bright)}
 
 /* ---------- FAQ ---------- */
 .faq{max-width:900px; margin:46px auto 0}
@@ -281,7 +307,7 @@ section{position:relative; padding:110px 0}
 footer{border-top:none; background:linear-gradient(180deg,
   rgba(7,11,20,0) 0%, rgba(7,11,20,.55) 26%, rgba(7,11,20,.78) 60%, rgba(7,11,20,0) 100%)}
 footer .wrap{display:flex; justify-content:center; gap:26px;
-  padding-top:26px; padding-bottom:30px; color:var(--muted); font-size:14px; flex-wrap:wrap}
+  padding-top:26px; padding-bottom:104px; color:var(--muted); font-size:14px; flex-wrap:wrap}
 footer nav{display:flex; gap:26px}
 footer a:hover{color:var(--bright)}
 
@@ -327,6 +353,13 @@ footer a:hover{color:var(--bright)}
   <div class="stars" id="stars"></div>
   <div class="clouds" id="clouds"></div>
   <div class="orbit" id="orbit"><div class="sun"></div><div class="moon"></div></div>
+  <svg class="hills hill-far" viewBox="0 0 1200 220" preserveAspectRatio="none" height="220">
+    <path fill="#0B1B2E" d="M0 220V150h40v-20h40v-20h40v20h40v20h40v-40h40v-20h40v20h40v40h40v-20h40v20h40v-40h40v40h40v20h40v-20h40v-20h40v40h40v20h40v-40h40v40h40v20h40v-20h40v20h40v20H0z"/>
+  </svg>
+  <svg class="hills hill-mid" viewBox="0 0 1200 160" preserveAspectRatio="none" height="160">
+    <path fill="#0A2418" d="M0 160v-50h50v-20h50v20h50v-40h50v20h50v20h50v-30h50v30h50v20h50v-40h50v40h50v-20h50v20h50v-30h50v30h50v20h50v-20h50v20h50v20H0z"/>
+  </svg>
+  <div class="terrain"></div>
 </div>
 
 <div class="xpbar" aria-hidden="true"><i id="xp"></i></div>
@@ -368,7 +401,6 @@ footer a:hover{color:var(--bright)}
            alt="Ventana de MC-ServerLauncher mostrando la lista de servidores, las estadísticas de CPU y RAM y la consola en vivo de un servidor de Minecraft">
     </figure>
   </section>
-  <div class="terrain" aria-hidden="true"></div>
 
   <section class="stats">
     <div class="wrap reveal">
@@ -412,11 +444,22 @@ footer a:hover{color:var(--bright)}
       <h2 class="h2 build">Descarga MC-ServerLauncher gratis</h2>
       <p class="lead reveal">Última versión estable · Sin anuncios, sin cuentas, sin límites.</p>
       <div class="os">
-        <article class="card featured reveal"><h3>Windows</h3><p>10 y 11 · 64 bits</p><a class="btn btn-primary" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Instalador .exe</a></article>
-        <article class="card reveal"><h3>Linux</h3><p>AppImage · x86_64</p><a class="btn btn-ghost" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar AppImage</a></article>
-        <article class="card reveal"><h3>macOS</h3><p>Apple Silicon e Intel</p><a class="btn btn-ghost" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar .dmg</a></article>
+        <article class="card featured reveal"><h3>Windows</h3><p>10 y 11 · 64 bits</p>
+          <a class="btn btn-primary" data-dl="win" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Instalador .exe</a></article>
+        <article class="card reveal"><h3>Linux</h3><p>AppImage · x86_64</p>
+          <a class="btn btn-ghost" data-dl="linux" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar AppImage</a></article>
+        <article class="card reveal"><h3>macOS</h3><p>Apple Silicon e Intel</p>
+          <a class="btn btn-ghost" data-dl="mac" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar .dmg</a></article>
       </div>
       <p class="note reveal">Cada versión se publica con su suma SHA-256 para que puedas verificar la descarga.</p>
+
+      <div class="releases reveal">
+        <h3 class="releases-title">Versiones publicadas</h3>
+        <ol id="releaseList" class="release-list">
+          <li class="release-empty">Cargando las versiones desde GitHub…</li>
+        </ol>
+        <a class="all-releases" href="https://github.com/JuanP-G/MC-ServerLauncher/releases">Ver el historial completo en GitHub →</a>
+      </div>
     </div>
   </section>
 
@@ -447,7 +490,7 @@ footer a:hover{color:var(--bright)}
         <rect x="5" y="5" width="1" height="2" fill="#0E1A0E"/>
       </svg>
       <h2 class="h2 build">¿Listo para crear tu mundo?</h2>
-      <p class="lead reveal">Descarga MC-ServerLauncher y monta tu servidor esta misma tarde.</p>
+      <p class="lead reveal">Descarga MC-ServerLauncher y monta tu servidor hoy.</p>
       <a class="btn btn-primary btn-lg reveal" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar MC-ServerLauncher</a>
     </div>
   </section>
@@ -461,7 +504,6 @@ footer a:hover{color:var(--bright)}
       <a href="https://github.com/JuanP-G/MC-ServerLauncher/issues">Reportar un fallo</a>
     </nav>
   </div>
-  <div class="terrain" aria-hidden="true"></div>
 </footer>
 
 <script>
@@ -589,6 +631,76 @@ footer a:hover{color:var(--bright)}
     if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
   }, { passive: true });
   onScroll();
+
+  // --- versiones y descargas reales, desde la API de GitHub ---
+  // Sin autenticar son 60 peticiones/hora por IP; si falla (límite, sin red, repo privado)
+  // los enlaces se quedan como están, apuntando a la página de releases. Nunca rompe la página.
+  var REPO = 'JuanP-G/MC-ServerLauncher';
+  var MATCH = {
+    win:   function(n){ return /\.exe$/i.test(n); },
+    linux: function(n){ return /\.AppImage$/i.test(n); },
+    mac:   function(n){ return /AppleSilicon.*\.dmg$/i.test(n) || /\.dmg$/i.test(n); }
+  };
+
+  fetch('https://api.github.com/repos/' + REPO + '/releases?per_page=8')
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(releases){
+      if (!Array.isArray(releases) || !releases.length) throw new Error('sin versiones');
+      var published = releases.filter(function(r){ return !r.draft; });
+      var latest = published.find(function(r){ return !r.prerelease; }) || published[0];
+
+      // Cada botón apunta al archivo concreto de la última versión.
+      if (latest && latest.assets) {
+        Object.keys(MATCH).forEach(function(os){
+          var asset = latest.assets.find(function(a){ return MATCH[os](a.name); });
+          var btn = document.querySelector('[data-dl="' + os + '"]');
+          if (asset && btn) {
+            btn.href = asset.browser_download_url;
+            btn.setAttribute('download', '');
+            btn.title = asset.name + ' · ' + (asset.size / 1048576).toFixed(0) + ' MB';
+          }
+        });
+        var navBtn = document.querySelector('.nav .btn');
+        var winAsset = latest.assets.find(function(a){ return MATCH.win(a.name); });
+        if (navBtn && winAsset) navBtn.href = winAsset.browser_download_url;
+        var heroBtn = document.querySelector('.hero-cta .btn-primary');
+        if (heroBtn && winAsset) heroBtn.href = winAsset.browser_download_url;
+        var finalBtn = document.querySelector('.final .btn-primary');
+        if (finalBtn && winAsset) finalBtn.href = winAsset.browser_download_url;
+      }
+
+      // Listado de versiones publicadas.
+      var list = document.getElementById('releaseList');
+      if (!list) return;
+      list.innerHTML = '';
+      published.slice(0, 6).forEach(function(rel, i){
+        var li = document.createElement('li');
+        if (rel === latest) li.className = 'latest';
+        var tag = document.createElement('span');
+        tag.className = 'rel-tag'; tag.textContent = rel.tag_name;
+        var name = document.createElement('a');
+        name.className = 'rel-name'; name.href = rel.html_url;
+        // Muchos títulos repiten el número de versión al principio; nos quedamos con la parte útil.
+        name.textContent = (rel.name || rel.tag_name).replace(/^MC Server Launcher\s*[\d.]*\s*[—-]\s*/, '');
+        var date = document.createElement('span');
+        date.className = 'rel-date';
+        date.textContent = new Date(rel.published_at).toLocaleDateString('es-ES',
+          { day: 'numeric', month: 'short', year: 'numeric' });
+        li.appendChild(tag); li.appendChild(name); li.appendChild(date);
+        if (rel === latest) {
+          var b = document.createElement('span');
+          b.className = 'rel-badge'; b.textContent = 'ÚLTIMA';
+          li.appendChild(b);
+        }
+        list.appendChild(li);
+      });
+    })
+    .catch(function(){
+      var list = document.getElementById('releaseList');
+      if (list) list.innerHTML =
+        '<li class="release-empty">No se pudo cargar el listado ahora mismo. ' +
+        '<a href="https://github.com/' + REPO + '/releases" style="color:var(--bright)">Míralo en GitHub</a>.</li>';
+    });
 
   // --- la captura se inclina siguiendo el ratón ---
   var shot = document.getElementById('shot');
