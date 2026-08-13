@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MC-ServerLauncher — Crea tu servidor de Minecraft en tu PC (gratis)</title>
+<meta name="description" content="Crea y gestiona servidores de Minecraft en tu PC sin tocar la consola: mods, copias de seguridad automáticas y acceso por Internet. Gratis y de código abierto.">
+<link rel="canonical" href="https://juanp-g.github.io/MC-ServerLauncher/">
+<meta name="theme-color" content="#070B14">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" href="assets/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/logo.png">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+<meta property="og:site_name" content="MC-ServerLauncher">
+<meta property="og:title" content="MC-ServerLauncher — Tu servidor de Minecraft, en tu propio PC">
+<meta property="og:description" content="Crea, configura y gestiona servidores de Minecraft sin tocar la consola. Gratis, de código abierto, para Windows, Linux y macOS.">
+<meta property="og:url" content="https://juanp-g.github.io/MC-ServerLauncher/">
+<meta property="og:image" content="https://juanp-g.github.io/MC-ServerLauncher/assets/app-screenshot.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MC-ServerLauncher — Tu servidor de Minecraft, en tu propio PC">
+<meta name="twitter:description" content="Crea y gestiona servidores de Minecraft sin tocar la consola. Gratis y de código abierto.">
+<meta name="twitter:image" content="https://juanp-g.github.io/MC-ServerLauncher/assets/app-screenshot.jpg">
+
+<link rel="preload" as="image" href="assets/app-screenshot.jpg" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "MC-ServerLauncher",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Windows 10, Windows 11, Linux, macOS",
+  "description": "Aplicación de escritorio gratuita y de código abierto para crear y gestionar servidores de Minecraft en tu propio ordenador, con instalación de mods desde Modrinth, copias de seguridad automáticas del mundo y acceso desde Internet mediante túnel.",
+  "url": "https://juanp-g.github.io/MC-ServerLauncher/",
+  "downloadUrl": "https://github.com/JuanP-G/MC-ServerLauncher/releases/latest",
+  "softwareVersion": "1.7.3",
+  "inLanguage": ["es", "en", "de", "fr", "pt"],
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "author": { "@type": "Person", "name": "JuanP-G" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "¿Cómo creo un servidor de Minecraft en mi PC?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Instala MC-ServerLauncher, pulsa «Crear servidor», elige la versión y el tipo (Vanilla, Paper, Forge o Fabric) y la aplicación descarga los archivos oficiales, acepta el EULA y genera el mundo por ti." } },
+    { "@type": "Question", "name": "¿Es gratis y seguro?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sí. Es gratuito y de código abierto, con el código publicado en GitHub. Todas las descargas (Minecraft, Java, mods e incluso las actualizaciones de la propia app) se verifican con su huella oficial antes de ejecutarse." } },
+    { "@type": "Question", "name": "¿Necesito abrir puertos del router para jugar con amigos?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. La aplicación integra un túnel de Playit.gg que te da una dirección pública para compartir, sin tocar la configuración del router." } },
+    { "@type": "Question", "name": "¿Funciona en Linux y macOS?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sí. Se publica un AppImage para Linux y un DMG para macOS (Apple Silicon e Intel), además del instalador para Windows 10 y 11." } },
+    { "@type": "Question", "name": "¿Puedo instalar mods y plugins?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sí, desde el buscador de Modrinth integrado, que filtra automáticamente por tu versión de Minecraft y por el tipo de servidor, e instala mods o plugins con un clic." } },
+    { "@type": "Question", "name": "¿Qué pasa si el servidor se cae?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Se reinicia solo hasta tres veces seguidas y te muestra el motivo leyendo el informe de error de Minecraft, además de avisarte con una notificación de escritorio." } }
+  ]
+}
+</script>
+
+<style>
+:root{
+  --bg-base:#070B14; --bg-elev:#0D1524; --bg-card:#111C2E;
+  --border:#1E2D45; --text:#E8F0F8; --muted:#93A4BC;
+  --green:#3FB950; --bright:#5CE07B; --deep:#1B7F3B;
+  --maxw:1200px; --day:0;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg-base); color:var(--text);
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+h1,h2,h3{margin:0; letter-spacing:-.02em; line-height:1.1}
+p{margin:0; line-height:1.65}
+a{color:inherit; text-decoration:none}
+img{max-width:100%; display:block}
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px}
+
+/* ---------- ESCENARIO MINECRAFT (fijo, detrás de todo) ---------- */
+.scene{position:fixed; inset:0; z-index:-1; overflow:hidden}
+/* dos cielos superpuestos: la opacidad la mueve el scroll = ciclo día/noche */
+/* Sin transition a propósito: el valor lo mueve el scroll fotograma a fotograma, así que
+   una transición solo añadiría retardo — y en navegadores que suprimen animaciones
+   (modo automatizado, "reducir movimiento" agresivo) dejaba el cielo congelado. */
+.sky{position:absolute; inset:0}
+.sky-night{background:linear-gradient(180deg,#04070F 0%,#0A1224 45%,#101E38 100%); opacity:calc(1 - var(--day))}
+.sky-day{background:linear-gradient(180deg,#1E5C9E 0%,#4B9BD4 55%,#8FC5E8 100%); opacity:var(--day)}
+.stars{position:absolute; inset:0; opacity:calc(1 - var(--day))}
+.star{position:absolute; width:2px; height:2px; background:#fff; opacity:.8; animation:tw 4s infinite ease-in-out}
+@keyframes tw{0%,100%{opacity:.15}50%{opacity:.9}}
+/* sol y luna: un mismo eje que rota con el scroll */
+.orbit{position:absolute; left:50%; top:58%; width:1px; height:1px; transform:rotate(var(--orbit,0deg))}
+.sun,.moon{position:absolute; left:-26px; width:52px; height:52px; image-rendering:pixelated}
+.sun{top:-46vh; background:#FFE873; box-shadow:0 0 70px 20px rgba(255,224,110,.45)}
+.moon{top:46vh; background:#EAF0FF; box-shadow:0 0 50px 14px rgba(210,225,255,.35)}
+/* colinas de bloques con parallax */
+.hills{position:absolute; left:0; right:0; bottom:0; width:100%; height:auto}
+.hill-far{opacity:.55}
+.hill-mid{opacity:.8}
+.grass-strip{position:absolute; left:0; right:0; bottom:0; height:74px;
+  background:
+    repeating-linear-gradient(90deg,#2E7D32 0 32px,#276E2B 32px 64px) 0 0/64px 16px no-repeat,
+    repeating-linear-gradient(90deg,#5A3A22 0 32px,#4E3220 32px 64px);
+  border-top:4px solid #3FB950; opacity:.85}
+
+/* ---------- BARRA DE XP (progreso de scroll) ---------- */
+.xpbar{position:fixed; top:0; left:0; right:0; height:8px; z-index:60;
+  background:#0A0F1A; border-bottom:2px solid #05070C}
+/* Igual que el cielo: el ancho lo fija el scroll en cada fotograma, sin transition. */
+.xpbar i{display:block; height:100%; width:var(--p,0%);
+  background:repeating-linear-gradient(90deg,#7CFF9E 0 10px,#4FD86F 10px 20px);
+  box-shadow:0 0 12px rgba(92,224,123,.7)}
+
+/* ---------- NAV ---------- */
+.nav{position:sticky; top:8px; z-index:50; backdrop-filter:blur(12px);
+  background:rgba(13,21,36,.82); border-bottom:1px solid var(--border)}
+.nav .wrap{display:flex; align-items:center; justify-content:space-between; height:72px; gap:24px}
+.brand{display:flex; align-items:center; gap:12px; font-weight:800; font-size:19px}
+.brand img{width:34px; height:34px; image-rendering:pixelated;
+  filter:drop-shadow(0 0 10px rgba(63,185,80,.45))}
+.nav nav{display:flex; gap:30px}
+.nav nav a{color:var(--muted); font-size:15px; transition:color .2s}
+.nav nav a:hover{color:var(--bright)}
+.btn{display:inline-flex; align-items:center; gap:9px; border-radius:11px;
+  padding:12px 22px; font-weight:700; font-size:15px; cursor:pointer;
+  border:1px solid transparent; transition:transform .12s, box-shadow .2s, background .2s}
+.btn:active{transform:translateY(2px)}
+.btn-primary{color:#06210D; background:linear-gradient(180deg,#6BEE86,#29A84C);
+  box-shadow:0 6px 0 #17692F, 0 12px 26px rgba(40,168,76,.35)}
+.btn-primary:hover{box-shadow:0 6px 0 #17692F, 0 16px 34px rgba(63,185,80,.55)}
+.btn-primary:active{box-shadow:0 2px 0 #17692F, 0 8px 18px rgba(40,168,76,.3)}
+.btn-ghost{color:var(--text); background:rgba(17,28,46,.75); border-color:var(--border)}
+.btn-ghost:hover{border-color:var(--green)}
+.btn-sm{padding:9px 18px; font-size:14px}
+
+/* ---------- SECCIONES ---------- */
+section{position:relative; padding:110px 0}
+.eyebrow{font-family:"Press Start 2P",monospace; font-size:10px; color:var(--bright);
+  letter-spacing:.06em; margin-bottom:18px; display:inline-block}
+.h2{font-size:clamp(30px,4vw,44px); font-weight:800; margin-bottom:16px}
+.lead{color:var(--muted); font-size:18px; max-width:640px}
+.center{text-align:center}
+.center .lead{margin:0 auto}
+
+/* ---------- HERO ---------- */
+.hero{padding:96px 0 120px; display:grid; grid-template-columns:1.02fr 1fr;
+  gap:56px; align-items:center}
+.badge{display:inline-flex; align-items:center; gap:10px; padding:9px 18px;
+  border:1px solid var(--border); background:rgba(17,28,46,.7); border-radius:999px;
+  font-family:"Press Start 2P",monospace; font-size:9px; color:var(--bright)}
+.badge b{width:8px; height:8px; background:var(--bright); border-radius:50%;
+  animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(92,224,123,.6)}50%{opacity:.6; box-shadow:0 0 0 7px rgba(92,224,123,0)}}
+.hero h1{font-size:clamp(38px,5.2vw,64px); font-weight:800; margin:22px 0 20px; line-height:1.06}
+.hero h1 .kw{color:var(--bright); text-shadow:0 0 30px rgba(92,224,123,.45)}
+.hero .lead{font-size:19px}
+.hero-cta{display:flex; gap:14px; margin:32px 0 22px; flex-wrap:wrap}
+.trust{display:flex; gap:22px; flex-wrap:wrap; color:var(--muted); font-size:14px}
+.trust span::before{content:"✓ "; color:var(--green); font-weight:700}
+
+/* ventana con la captura real */
+.shot{position:relative; border-radius:14px; overflow:hidden; border:1px solid var(--border);
+  background:var(--bg-elev); box-shadow:0 30px 70px rgba(0,0,0,.6);
+  transform:perspective(1400px) rotateY(var(--ry,-5deg)) rotateX(var(--rx,3deg));
+  transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.shot-bar{display:flex; align-items:center; gap:9px; padding:11px 14px;
+  background:var(--bg-card); border-bottom:1px solid var(--border)}
+.shot-bar img{width:18px; height:18px; image-rendering:pixelated}
+.shot-bar b{font-size:13px; font-weight:600}
+.shot-bar i{margin-left:auto; color:var(--muted); font-style:normal; font-size:12px; letter-spacing:2px}
+.shot img.cap{width:100%; height:auto}
+
+/* ---------- BARRA DE DATOS ---------- */
+.stats{padding:0 0 40px}
+.stats .wrap{display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap;
+  background:rgba(13,21,36,.75); border:1px solid var(--border); border-radius:16px;
+  padding:26px 34px; max-width:calc(var(--maxw) - 0px)}
+.stat{display:flex; align-items:baseline; gap:10px}
+.stat b{font-size:26px; font-weight:800; color:var(--bright)}
+.stat span{color:var(--muted); font-size:15px}
+
+/* ---------- REJILLAS ---------- */
+.grid{display:grid; gap:20px; margin-top:52px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.card{background:rgba(17,28,46,.82); border:1px solid var(--border); border-radius:16px;
+  padding:28px; transition:transform .25s, border-color .25s, box-shadow .25s}
+.card:hover{transform:translateY(-6px); border-color:var(--green);
+  box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.ico{width:46px; height:46px; border-radius:12px; display:grid; place-items:center;
+  font-size:20px; background:rgba(28,90,48,.55); margin-bottom:15px}
+.card h3{font-size:19px; margin-bottom:10px}
+.card p{color:var(--muted); font-size:15px}
+.step-n{font-family:"Press Start 2P",monospace; font-size:15px; color:var(--bright);
+  margin-bottom:14px; display:block}
+
+/* ---------- DESCARGAS ---------- */
+.os{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:46px}
+.os .card{text-align:center}
+.os .card.featured{border-color:var(--bright); box-shadow:0 0 40px rgba(63,185,80,.16)}
+.os h3{font-size:22px; margin-bottom:6px}
+.os p{margin-bottom:20px}
+.os .btn{width:100%; justify-content:center}
+.note{color:var(--muted); font-size:14px; text-align:center; margin-top:26px}
+
+/* ---------- FAQ ---------- */
+.faq{max-width:900px; margin:46px auto 0}
+.faq details{background:rgba(17,28,46,.82); border:1px solid var(--border);
+  border-radius:14px; padding:20px 24px; margin-bottom:14px; transition:border-color .2s}
+.faq details[open]{border-color:var(--green)}
+.faq summary{font-weight:700; font-size:17px; cursor:pointer; list-style:none;
+  display:flex; justify-content:space-between; gap:16px; align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+"; color:var(--bright); font-size:22px; line-height:1; flex:none}
+.faq details[open] summary::after{content:"–"}
+.faq p{color:var(--muted); font-size:15px; margin-top:12px}
+
+/* ---------- CTA FINAL + PIE ---------- */
+.final{text-align:center; padding:120px 0}
+.final .h2{font-size:clamp(32px,4.4vw,46px)}
+.creeper{width:78px; margin:0 auto 26px; image-rendering:pixelated}
+footer{border-top:1px solid var(--border); background:rgba(7,11,20,.9)}
+footer .wrap{display:flex; justify-content:space-between; gap:20px;
+  padding-top:28px; padding-bottom:28px; color:var(--muted); font-size:14px; flex-wrap:wrap}
+footer nav{display:flex; gap:24px}
+footer a:hover{color:var(--bright)}
+
+/* ---------- ANIMACIONES DE ENTRADA ---------- */
+/* "colocar bloque": cae, aplasta al aterrizar y suelta un destello */
+.reveal{opacity:0; transform:translateY(34px) scale(.97)}
+.reveal.in{animation:place .58s cubic-bezier(.2,1.5,.35,1) forwards}
+@keyframes place{
+  0%{opacity:0; transform:translateY(34px) scale(.97)}
+  60%{opacity:1; transform:translateY(0) scale(1.03,.95)}
+  100%{opacity:1; transform:translateY(0) scale(1)}
+}
+/* titulares que se montan palabra a palabra, como bloques encajando */
+.build > span{display:inline-block; opacity:0; transform:translateY(-26px) rotate(-6deg)}
+.build.in > span{animation:snap .5s cubic-bezier(.2,1.6,.4,1) forwards;
+  animation-delay:calc(var(--i) * .07s)}
+@keyframes snap{to{opacity:1; transform:translateY(0) rotate(0)}}
+/* "carga de chunk": el bloque aparece por franjas verticales, como el terreno al generarse */
+.chunk{clip-path:inset(0 100% 0 0)}
+.chunk.in{animation:chunkin .8s steps(8,end) forwards}
+@keyframes chunkin{to{clip-path:inset(0 0 0 0)}}
+
+@media (prefers-reduced-motion:reduce){
+  .reveal,.build > span,.chunk{opacity:1 !important; transform:none !important;
+    clip-path:none !important; animation:none !important}
+  html{scroll-behavior:auto}
+  .star,.badge b{animation:none}
+}
+@media (max-width:960px){
+  .hero{grid-template-columns:1fr; gap:40px}
+  .g3,.os{grid-template-columns:1fr}
+  .nav nav{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Escenario: cielo con ciclo día/noche, estrellas, sol/luna y terreno de bloques -->
+<div class="scene" aria-hidden="true">
+  <div class="sky sky-night"></div>
+  <div class="sky sky-day"></div>
+  <div class="stars" id="stars"></div>
+  <div class="orbit" id="orbit"><div class="sun"></div><div class="moon"></div></div>
+  <svg class="hills hill-far" id="hillFar" viewBox="0 0 1200 220" preserveAspectRatio="none" height="220">
+    <path fill="#0B1B2E" d="M0 220V150h40v-20h40v-20h40v20h40v20h40v-40h40v-20h40v20h40v40h40v-20h40v20h40v-40h40v40h40v20h40v-20h40v-20h40v40h40v20h40v-40h40v40h40v20h40v-20h40v20h40v20H0z"/>
+  </svg>
+  <svg class="hills hill-mid" id="hillMid" viewBox="0 0 1200 160" preserveAspectRatio="none" height="160">
+    <path fill="#0A2418" d="M0 160v-50h50v-20h50v20h50v-40h50v20h50v20h50v-30h50v30h50v20h50v-40h50v40h50v-20h50v20h50v-30h50v30h50v20h50v-20h50v20h50v20H0z"/>
+  </svg>
+  <div class="grass-strip"></div>
+</div>
+
+<div class="xpbar" aria-hidden="true"><i id="xp"></i></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#inicio"><img src="assets/logo.png" alt="Logo de MC-ServerLauncher" width="34" height="34">MC-ServerLauncher</a>
+    <nav>
+      <a href="#caracteristicas">Características</a>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#descargas">Descargas</a>
+      <a href="#faqs">FAQs</a>
+    </nav>
+    <a class="btn btn-primary btn-sm" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">⬇ Descargar</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap" id="inicio">
+    <div>
+      <span class="badge reveal"><b></b>CREA. GESTIONA. JUEGA.</span>
+      <h1 class="build">Tu servidor de <span class="kw">Minecraft</span>, en tu propio PC.</h1>
+      <p class="lead reveal">Crea, configura y gestiona servidores de Minecraft en Windows, Linux y macOS sin tocar la consola. Mods de Modrinth, copias de seguridad automáticas y acceso desde Internet en un par de clics.</p>
+      <div class="hero-cta reveal">
+        <a class="btn btn-primary" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar gratis</a>
+        <a class="btn btn-ghost" href="https://github.com/JuanP-G/MC-ServerLauncher">Ver en GitHub</a>
+      </div>
+      <div class="trust reveal">
+        <span>Gratis y de código abierto</span>
+        <span>Sin cuentas ni registros</span>
+        <span>Windows · Linux · macOS</span>
+      </div>
+    </div>
+    <figure class="shot reveal" id="shot" style="margin:0">
+      <div class="shot-bar">
+        <img src="assets/logo.png" alt="" width="18" height="18">
+        <b>MC Server Launcher</b><i>—  ▢  ✕</i>
+      </div>
+      <img class="cap" src="assets/app-screenshot.jpg" width="1600" height="900" fetchpriority="high"
+           alt="Ventana de MC-ServerLauncher mostrando la lista de servidores, las estadísticas de CPU y RAM y la consola en vivo de un servidor de Minecraft">
+    </figure>
+  </section>
+
+  <section class="stats">
+    <div class="wrap reveal">
+      <div class="stat"><b data-count="100" data-suffix=" %">0 %</b><span>gratis y open source</span></div>
+      <div class="stat"><b data-count="3">0</b><span>sistemas operativos</span></div>
+      <div class="stat"><b data-count="1" data-suffix=" clic">0 clic</b><span>para abrirlo a Internet</span></div>
+      <div class="stat"><b data-count="0">0</b><span>conocimientos técnicos</span></div>
+    </div>
+  </section>
+
+  <section id="caracteristicas">
+    <div class="wrap center">
+      <span class="eyebrow reveal">CARACTERÍSTICAS</span>
+      <h2 class="h2 build">Todo lo que necesita tu servidor, sin abrir una terminal</h2>
+      <p class="lead reveal">Lo que normalmente son archivos de configuración, comandos y carpetas sueltas, aquí son botones.</p>
+      <div class="grid g3">
+        <article class="card reveal"><div class="ico">🧱</div><h3>Crea servidores en 2 minutos</h3><p>Elige versión y listo: descarga el JAR oficial, acepta el EULA y genera el mundo por ti. Vanilla, Paper, Forge y Fabric.</p></article>
+        <article class="card reveal"><div class="ico">🧩</div><h3>Mods y plugins de Modrinth</h3><p>Busca e instala mods sin salir de la app, filtrados por tu versión y tipo de servidor. Se verifica cada descarga.</p></article>
+        <article class="card reveal"><div class="ico">💾</div><h3>Copias de seguridad automáticas</h3><p>Guarda tu mundo antes de cada arranque y al parar, con las copias que quieras conservar y restauración en un clic.</p></article>
+        <article class="card reveal"><div class="ico">🌍</div><h3>Juega con amigos por Internet</h3><p>Túnel de Playit.gg integrado: comparte una dirección y entran desde cualquier sitio. Sin abrir puertos del router.</p></article>
+        <article class="card reveal"><div class="ico">📊</div><h3>Consola, jugadores y estadísticas</h3><p>CPU y RAM en vivo, buscador en la consola, gestión de OPs, baneos y whitelist con botones en vez de comandos.</p></article>
+        <article class="card reveal"><div class="ico">🔄</div><h3>Se recupera solo de las caídas</h3><p>Si el servidor casca, se reinicia solo y te dice por qué, leyendo el informe de error. Con avisos de escritorio.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="como-funciona">
+    <div class="wrap center">
+      <span class="eyebrow reveal">CÓMO FUNCIONA</span>
+      <h2 class="h2 build">De cero a jugando, en tres pasos</h2>
+      <div class="grid g3">
+        <article class="card reveal"><span class="step-n">01</span><h3>Descarga e instala</h3><p>Un instalador normal para Windows, un AppImage para Linux o un DMG para macOS. Sin Java preinstalado: la app lo detecta o lo descarga.</p></article>
+        <article class="card reveal"><span class="step-n">02</span><h3>Crea tu servidor</h3><p>Ponle nombre, elige la versión de Minecraft y el tipo. La app baja los archivos oficiales, verifica su huella y genera el mundo.</p></article>
+        <article class="card reveal"><span class="step-n">03</span><h3>Dale a Iniciar y juega</h3><p>Comparte la dirección con tus amigos y gestiona todo desde la ventana: consola, mods, jugadores y copias de seguridad.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="descargas">
+    <div class="wrap center">
+      <span class="eyebrow reveal">DESCARGAS</span>
+      <h2 class="h2 build">Descarga MC-ServerLauncher gratis</h2>
+      <p class="lead reveal">Última versión estable · Sin anuncios, sin cuentas, sin límites.</p>
+      <div class="os">
+        <article class="card featured reveal"><h3>Windows</h3><p>10 y 11 · 64 bits</p><a class="btn btn-primary" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Instalador .exe</a></article>
+        <article class="card reveal"><h3>Linux</h3><p>AppImage · x86_64</p><a class="btn btn-ghost" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar AppImage</a></article>
+        <article class="card reveal"><h3>macOS</h3><p>Apple Silicon e Intel</p><a class="btn btn-ghost" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar .dmg</a></article>
+      </div>
+      <p class="note reveal">Cada versión se publica con su suma SHA-256 para que puedas verificar la descarga.</p>
+    </div>
+  </section>
+
+  <section id="faqs">
+    <div class="wrap center">
+      <span class="eyebrow reveal">PREGUNTAS FRECUENTES</span>
+      <h2 class="h2 build">Dudas habituales</h2>
+      <div class="faq">
+        <details class="reveal"><summary>¿Cómo creo un servidor de Minecraft en mi PC?</summary><p>Instala MC-ServerLauncher, pulsa «Crear servidor», elige la versión y el tipo (Vanilla, Paper, Forge o Fabric) y la app descarga los archivos oficiales, acepta el EULA y genera el mundo por ti.</p></details>
+        <details class="reveal"><summary>¿Es gratis y seguro?</summary><p>Sí. Es gratuito y de código abierto: puedes revisar el código en GitHub. Todas las descargas (Minecraft, Java, mods y las propias actualizaciones) se verifican con su huella oficial antes de ejecutarse.</p></details>
+        <details class="reveal"><summary>¿Necesito abrir puertos del router para jugar con amigos?</summary><p>No. La app integra un túnel de Playit.gg: te da una dirección pública que puedes compartir, sin tocar la configuración del router.</p></details>
+        <details class="reveal"><summary>¿Funciona en Linux y macOS?</summary><p>Sí. Hay AppImage para Linux y DMG para macOS (Apple Silicon e Intel), además del instalador de Windows.</p></details>
+        <details class="reveal"><summary>¿Puedo instalar mods y plugins?</summary><p>Sí, desde el buscador de Modrinth integrado, que filtra automáticamente por tu versión de Minecraft y tu tipo de servidor.</p></details>
+        <details class="reveal"><summary>¿Qué pasa si el servidor se cae?</summary><p>Se reinicia solo (hasta tres intentos) y te muestra el motivo leyendo el informe de error de Minecraft, además de avisarte con una notificación.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <svg class="creeper chunk" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true">
+        <rect width="8" height="8" fill="#5BA84E"/>
+        <rect x="0" y="0" width="8" height="1" fill="#4E9743"/>
+        <rect x="1" y="2" width="2" height="2" fill="#0E1A0E"/>
+        <rect x="5" y="2" width="2" height="2" fill="#0E1A0E"/>
+        <rect x="3" y="4" width="2" height="2" fill="#0E1A0E"/>
+        <rect x="2" y="5" width="1" height="2" fill="#0E1A0E"/>
+        <rect x="5" y="5" width="1" height="2" fill="#0E1A0E"/>
+      </svg>
+      <h2 class="h2 build">¿Listo para crear tu mundo?</h2>
+      <p class="lead center reveal" style="margin-bottom:30px">Descarga MC-ServerLauncher y monta tu servidor esta misma tarde.</p>
+      <a class="btn btn-primary reveal" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest" style="font-size:18px; padding:18px 38px">Descargar MC-ServerLauncher</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 MC-ServerLauncher · Software libre bajo licencia MIT</span>
+    <nav>
+      <a href="https://github.com/JuanP-G/MC-ServerLauncher">GitHub</a>
+      <a href="https://github.com/JuanP-G/MC-ServerLauncher/releases">Novedades</a>
+      <a href="https://github.com/JuanP-G/MC-ServerLauncher/issues">Reportar un fallo</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // --- estrellas del cielo nocturno ---
+  var stars = document.getElementById('stars'), frag = document.createDocumentFragment();
+  for (var i = 0; i < 90; i++) {
+    var s = document.createElement('i');
+    s.className = 'star';
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.top = (Math.random() * 70) + '%';
+    s.style.animationDelay = (Math.random() * 4) + 's';
+    frag.appendChild(s);
+  }
+  stars.appendChild(frag);
+
+  // --- titulares que se montan palabra a palabra ---
+  // Recorre los nodos hijos en vez de partir el HTML en crudo: así las etiquetas
+  // internas (p. ej. la palabra resaltada) sobreviven intactas.
+  document.querySelectorAll('.build').forEach(function(el){
+    var out = document.createDocumentFragment(), i = 0;
+    [].slice.call(el.childNodes).forEach(function(node){
+      if (node.nodeType === 3) {
+        node.textContent.split(/(\s+)/).forEach(function(tok){
+          if (!tok) return;
+          if (!tok.trim()) { out.appendChild(document.createTextNode(tok)); return; }
+          var s = document.createElement('span');
+          s.style.setProperty('--i', i++);
+          s.textContent = tok;
+          out.appendChild(s);
+        });
+      } else {
+        var w = document.createElement('span');
+        w.style.setProperty('--i', i++);
+        w.appendChild(node.cloneNode(true));
+        out.appendChild(w);
+      }
+    });
+    el.textContent = '';
+    el.appendChild(out);
+  });
+
+  // --- aparición al entrar en pantalla (bloque colocado / chunk cargado) ---
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (!e.isIntersecting) return;
+      var el = e.target;
+      if (el.classList.contains('grid') || el.parentElement.classList.contains('grid') || el.parentElement.classList.contains('os')) {
+        var sibs = [].slice.call(el.parentElement.children);
+        el.style.animationDelay = (sibs.indexOf(el) * 0.09) + 's';
+      }
+      el.classList.add('in');
+      io.unobserve(el);
+      if (el.dataset.count !== undefined) countUp(el);
+      el.querySelectorAll && el.querySelectorAll('[data-count]').forEach(countUp);
+    });
+  }, { threshold: 0.18, rootMargin: '0px 0px -60px 0px' });
+
+  document.querySelectorAll('.reveal, .build, .chunk').forEach(function(el){
+    if (reduced) { el.classList.add('in'); el.querySelectorAll('[data-count]').forEach(countUp); return; }
+    io.observe(el);
+  });
+
+  // --- contadores ---
+  function countUp(el){
+    if (el.dataset.done) return;
+    el.dataset.done = '1';
+    var target = parseInt(el.dataset.count, 10), suffix = el.dataset.suffix || '', t0 = null;
+    if (reduced || target === 0) { el.textContent = target + suffix; return; }
+    requestAnimationFrame(function step(ts){
+      if (!t0) t0 = ts;
+      var k = Math.min((ts - t0) / 900, 1);
+      el.textContent = Math.round(target * (1 - Math.pow(1 - k, 3))) + suffix;
+      if (k < 1) requestAnimationFrame(step);
+    });
+  }
+
+  // --- scroll: barra de XP, ciclo día/noche, parallax del terreno ---
+  var xp = document.getElementById('xp'), orbit = document.getElementById('orbit'),
+      hillFar = document.getElementById('hillFar'), hillMid = document.getElementById('hillMid'),
+      root = document.documentElement, ticking = false;
+
+  // amanece en el primer tercio y anochece en el último: el día vive en el centro
+  function dayAt(p){
+    var d = p < 0.35 ? p / 0.35 : (p > 0.78 ? 1 - (p - 0.78) / 0.22 : 1);
+    return Math.max(0, Math.min(1, d));
+  }
+
+  function onScroll(){
+    var max = document.body.scrollHeight - innerHeight;
+    var p = max > 0 ? Math.min(scrollY / max, 1) : 0;
+    // La barra de XP es un indicador de progreso, no un adorno: se actualiza siempre,
+    // también con "movimiento reducido" activado.
+    xp.style.setProperty('--p', (p * 100) + '%');
+    // El resto sí es decorativo: con movimiento reducido se queda quieto.
+    if (!reduced) {
+      root.style.setProperty('--day', dayAt(p).toFixed(3));
+      orbit.style.setProperty('--orbit', (p * 200 - 30) + 'deg');
+      hillFar.style.transform = 'translateY(' + (p * 46) + 'px)';
+      hillMid.style.transform = 'translateY(' + (p * 22) + 'px)';
+    }
+    ticking = false;
+  }
+  addEventListener('scroll', function(){
+    if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+  }, { passive: true });
+  onScroll();
+
+  // --- la captura se inclina siguiendo el ratón ---
+  var shot = document.getElementById('shot');
+  if (shot && !reduced && matchMedia('(pointer:fine)').matches) {
+    addEventListener('mousemove', function(e){
+      var k = (e.clientX / innerWidth - 0.5);
+      var j = (e.clientY / innerHeight - 0.5);
+      shot.style.setProperty('--ry', (-5 + k * 8).toFixed(2) + 'deg');
+      shot.style.setProperty('--rx', (3 - j * 5).toFixed(2) + 'deg');
+    }, { passive: true });
+  }
+})();
+</script>
+</body>
+</html>
