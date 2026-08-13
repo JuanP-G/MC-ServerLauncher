@@ -110,10 +110,17 @@ img{max-width:100%; display:block}
 .star{position:absolute; width:2px; height:2px; background:#fff; opacity:.8; animation:tw 4s infinite ease-in-out}
 @keyframes tw{0%,100%{opacity:.15}50%{opacity:.9}}
 /* sol y luna: un mismo eje que rota con el scroll */
-.orbit{position:absolute; left:50%; top:58%; width:1px; height:1px; transform:rotate(var(--orbit,0deg))}
-.sun,.moon{position:absolute; left:-26px; width:52px; height:52px; image-rendering:pixelated}
-.sun{top:-46vh; background:#FFE873; box-shadow:0 0 70px 20px rgba(255,224,110,.45)}
-.moon{top:46vh; background:#EAF0FF; box-shadow:0 0 50px 14px rgba(210,225,255,.35)}
+/* Sol y luna en un mismo eje, separados 180°: al girar, uno sale por un lado
+   mientras el otro se pone por el contrario, como en Minecraft. El centro del eje
+   está bajo el horizonte para que ambos describan un arco por el cielo. */
+.orbit{position:absolute; left:50%; top:92%; width:1px; height:1px;
+  transform:rotate(var(--orbit,180deg))}
+.sun,.moon{position:absolute; left:-31px; width:62px; height:62px; image-rendering:pixelated;
+  transform:rotate(calc(var(--orbit,180deg) * -1))} /* se mantienen rectos al girar el eje */
+.sun{top:-58vh; background:#FFF3A8;
+  box-shadow:0 0 0 6px rgba(255,231,115,.55), 0 0 90px 34px rgba(255,214,92,.45)}
+.moon{top:58vh; background:#F4F7FF;
+  box-shadow:0 0 0 5px rgba(226,235,255,.4), 0 0 60px 20px rgba(200,220,255,.32)}
 /* colinas de bloques con parallax */
 .hills{position:absolute; left:0; right:0; bottom:0; width:100%; height:auto}
 .hill-far{opacity:.55}
@@ -240,13 +247,20 @@ section{position:relative; padding:110px 0}
 .faq p{color:var(--muted); font-size:15px; margin-top:12px}
 
 /* ---------- CTA FINAL + PIE ---------- */
-.final{text-align:center; padding:120px 0}
+.final{text-align:center; padding:120px 0 90px}
 .final .h2{font-size:clamp(32px,4.4vw,46px)}
+/* .lead lleva max-width, así que centrarlo necesita márgenes automáticos:
+   con text-align solo, el bloque se quedaba pegado a la izquierda. */
+.final .lead{margin:0 auto 30px}
 .creeper{width:78px; margin:0 auto 26px; image-rendering:pixelated}
-footer{border-top:1px solid var(--border); background:rgba(7,11,20,.9)}
-footer .wrap{display:flex; justify-content:space-between; gap:20px;
-  padding-top:28px; padding-bottom:28px; color:var(--muted); font-size:14px; flex-wrap:wrap}
-footer nav{display:flex; gap:24px}
+/* El suelo de bloques está fijo al fondo de la ventana. En vez de taparlo con una
+   barra negra, el pie se funde con él: degradado que muere en transparente y hueco
+   inferior suficiente para que el texto quede sobre la hierba, no debajo. */
+footer{border-top:none; background:linear-gradient(180deg,
+  rgba(7,11,20,0) 0%, rgba(7,11,20,.55) 26%, rgba(7,11,20,.78) 60%, rgba(7,11,20,0) 100%)}
+footer .wrap{display:flex; justify-content:center; gap:26px;
+  padding-top:26px; padding-bottom:104px; color:var(--muted); font-size:14px; flex-wrap:wrap}
+footer nav{display:flex; gap:26px}
 footer a:hover{color:var(--bright)}
 
 /* ---------- ANIMACIONES DE ENTRADA ---------- */
@@ -417,7 +431,7 @@ footer a:hover{color:var(--bright)}
         <rect x="5" y="5" width="1" height="2" fill="#0E1A0E"/>
       </svg>
       <h2 class="h2 build">¿Listo para crear tu mundo?</h2>
-      <p class="lead center reveal" style="margin-bottom:30px">Descarga MC-ServerLauncher y monta tu servidor esta misma tarde.</p>
+      <p class="lead reveal">Descarga MC-ServerLauncher y monta tu servidor esta misma tarde.</p>
       <a class="btn btn-primary reveal" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest" style="font-size:18px; padding:18px 38px">Descargar MC-ServerLauncher</a>
     </div>
   </section>
@@ -425,7 +439,6 @@ footer a:hover{color:var(--bright)}
 
 <footer>
   <div class="wrap">
-    <span>© 2026 MC-ServerLauncher</span>
     <nav>
       <a href="https://github.com/JuanP-G/MC-ServerLauncher">GitHub</a>
       <a href="https://github.com/JuanP-G/MC-ServerLauncher/releases">Novedades</a>
@@ -548,9 +561,15 @@ footer a:hover{color:var(--bright)}
     root.style.setProperty('--day', d.toFixed(3));
     // El naranja del amanecer/atardecer se enciende a medio camino entre noche y día.
     root.style.setProperty('--dusk', (1 - Math.abs(2 * d - 1)).toFixed(3));
-    // Esto sí se mueve: solo cuando el usuario acepta movimiento.
+    // Sol y luna: una vuelta completa a lo largo de la página, sincronizada con el ciclo.
+    // A 180° la luna está en lo alto (noche, arriba del todo); a 0° lo está el sol
+    // (mediodía, mitad de la página); al final vuelve a 180° y anochece otra vez.
+    // Va ligado a la posición del scroll, igual que el color del cielo, así que también
+    // se aplica con "movimiento reducido": si no, el cielo cambiaba sin que el sol se moviera.
+    orbit.style.setProperty('--orbit', (180 + p * 360).toFixed(1) + 'deg');
+
+    // Esto sí es movimiento decorativo por sí mismo: solo si el usuario lo acepta.
     if (!reduced) {
-      orbit.style.setProperty('--orbit', (p * 200 - 30) + 'deg');
       hillFar.style.transform = 'translateY(' + (p * 46) + 'px)';
       hillMid.style.transform = 'translateY(' + (p * 22) + 'px)';
     }
