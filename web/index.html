@@ -39,7 +39,6 @@
   "downloadUrl": "https://github.com/JuanP-G/MC-ServerLauncher/releases/latest",
   "softwareVersion": "1.7.3",
   "inLanguage": ["es", "en", "de", "fr", "pt"],
-  "license": "https://opensource.org/licenses/MIT",
   "isAccessibleForFree": true,
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
   "author": { "@type": "Person", "name": "JuanP-G" }
@@ -95,7 +94,19 @@ img{max-width:100%; display:block}
 .sky{position:absolute; inset:0}
 .sky-night{background:linear-gradient(180deg,#04070F 0%,#0A1224 45%,#101E38 100%); opacity:calc(1 - var(--day))}
 .sky-day{background:linear-gradient(180deg,#1E5C9E 0%,#4B9BD4 55%,#8FC5E8 100%); opacity:var(--day)}
+/* Franja naranja de amanecer/atardecer: se enciende justo en las transiciones
+   (--dusk vale 1 a mitad de camino entre noche y día) para que se note el paso del tiempo. */
+.sky-dusk{background:linear-gradient(180deg,#1B2A4A 0%,#8A4A3C 55%,#E8934A 85%,#F5C06B 100%); opacity:var(--dusk,0)}
 .stars{position:absolute; inset:0; opacity:calc(1 - var(--day))}
+
+/* Nubes de bloques que cruzan el cielo: se ven de día y se apagan de noche */
+.clouds{position:absolute; inset:0; overflow:hidden; opacity:calc(var(--day) * .92)}
+.cloud{position:absolute; left:-260px; width:110px; height:22px; background:#F2F7FF;
+  box-shadow:
+     44px -22px 0 0 #F2F7FF,  110px 0 0 0 #F2F7FF,  66px 22px 0 0 #F2F7FF,
+    -22px  22px 0 0 #E2ECF7,  88px -22px 0 0 #E2ECF7;
+  animation:drift linear infinite; will-change:transform}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(calc(100vw + 520px))}}
 .star{position:absolute; width:2px; height:2px; background:#fff; opacity:.8; animation:tw 4s infinite ease-in-out}
 @keyframes tw{0%,100%{opacity:.15}50%{opacity:.9}}
 /* sol y luna: un mismo eje que rota con el scroll */
@@ -153,15 +164,18 @@ section{position:relative; padding:110px 0}
 .center .lead{margin:0 auto}
 
 /* ---------- HERO ---------- */
-.hero{padding:96px 0 120px; display:grid; grid-template-columns:1.02fr 1fr;
-  gap:56px; align-items:center}
+/* La columna de la captura pesa más que el texto: es la prueba visual del producto.
+   El ancho extra sale de la rejilla, no de sacar la imagen fuera del contenedor
+   (eso provocaba desbordamiento horizontal de la página). */
+.hero{padding:88px 0 120px; display:grid; grid-template-columns:0.78fr 1.22fr;
+  gap:44px; align-items:center; max-width:1380px}
 .badge{display:inline-flex; align-items:center; gap:10px; padding:9px 18px;
   border:1px solid var(--border); background:rgba(17,28,46,.7); border-radius:999px;
   font-family:"Press Start 2P",monospace; font-size:9px; color:var(--bright)}
 .badge b{width:8px; height:8px; background:var(--bright); border-radius:50%;
   animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(92,224,123,.6)}50%{opacity:.6; box-shadow:0 0 0 7px rgba(92,224,123,0)}}
-.hero h1{font-size:clamp(38px,5.2vw,64px); font-weight:800; margin:22px 0 20px; line-height:1.06}
+.hero h1{font-size:clamp(36px,4.6vw,58px); font-weight:800; margin:0 0 20px; line-height:1.06}
 .hero h1 .kw{color:var(--bright); text-shadow:0 0 30px rgba(92,224,123,.45)}
 .hero .lead{font-size:19px}
 .hero-cta{display:flex; gap:14px; margin:32px 0 22px; flex-wrap:wrap}
@@ -170,7 +184,8 @@ section{position:relative; padding:110px 0}
 
 /* ventana con la captura real */
 .shot{position:relative; border-radius:14px; overflow:hidden; border:1px solid var(--border);
-  background:var(--bg-elev); box-shadow:0 30px 70px rgba(0,0,0,.6);
+  background:var(--bg-elev); box-shadow:0 34px 80px rgba(0,0,0,.65);
+  width:100%;
   transform:perspective(1400px) rotateY(var(--ry,-5deg)) rotateX(var(--rx,3deg));
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .shot-bar{display:flex; align-items:center; gap:9px; padding:11px 14px;
@@ -257,7 +272,7 @@ footer a:hover{color:var(--bright)}
   .reveal,.build > span,.chunk{opacity:1 !important; transform:none !important;
     clip-path:none !important; animation:none !important}
   html{scroll-behavior:auto}
-  .star,.badge b{animation:none}
+  .star,.badge b,.cloud{animation:none}
 }
 @media (max-width:960px){
   .hero{grid-template-columns:1fr; gap:40px}
@@ -272,7 +287,9 @@ footer a:hover{color:var(--bright)}
 <div class="scene" aria-hidden="true">
   <div class="sky sky-night"></div>
   <div class="sky sky-day"></div>
+  <div class="sky sky-dusk"></div>
   <div class="stars" id="stars"></div>
+  <div class="clouds" id="clouds"></div>
   <div class="orbit" id="orbit"><div class="sun"></div><div class="moon"></div></div>
   <svg class="hills hill-far" id="hillFar" viewBox="0 0 1200 220" preserveAspectRatio="none" height="220">
     <path fill="#0B1B2E" d="M0 220V150h40v-20h40v-20h40v20h40v20h40v-40h40v-20h40v20h40v40h40v-20h40v20h40v-40h40v40h40v20h40v-20h40v-20h40v40h40v20h40v-40h40v40h40v20h40v-20h40v20h40v20H0z"/>
@@ -301,7 +318,6 @@ footer a:hover{color:var(--bright)}
 <main>
   <section class="hero wrap" id="inicio">
     <div>
-      <span class="badge reveal"><b></b>CREA. GESTIONA. JUEGA.</span>
       <h1 class="build">Tu servidor de <span class="kw">Minecraft</span>, en tu propio PC.</h1>
       <p class="lead reveal">Crea, configura y gestiona servidores de Minecraft en Windows, Linux y macOS sin tocar la consola. Mods de Modrinth, copias de seguridad automáticas y acceso desde Internet en un par de clics.</p>
       <div class="hero-cta reveal">
@@ -328,7 +344,6 @@ footer a:hover{color:var(--bright)}
     <div class="wrap reveal">
       <div class="stat"><b data-count="100" data-suffix=" %">0 %</b><span>gratis y open source</span></div>
       <div class="stat"><b data-count="3">0</b><span>sistemas operativos</span></div>
-      <div class="stat"><b data-count="1" data-suffix=" clic">0 clic</b><span>para abrirlo a Internet</span></div>
       <div class="stat"><b data-count="0">0</b><span>conocimientos técnicos</span></div>
     </div>
   </section>
@@ -410,7 +425,7 @@ footer a:hover{color:var(--bright)}
 
 <footer>
   <div class="wrap">
-    <span>© 2026 MC-ServerLauncher · Software libre bajo licencia MIT</span>
+    <span>© 2026 MC-ServerLauncher</span>
     <nav>
       <a href="https://github.com/JuanP-G/MC-ServerLauncher">GitHub</a>
       <a href="https://github.com/JuanP-G/MC-ServerLauncher/releases">Novedades</a>
@@ -434,6 +449,20 @@ footer a:hover{color:var(--bright)}
     frag.appendChild(s);
   }
   stars.appendChild(frag);
+
+  // --- nubes de bloques cruzando el cielo ---
+  var clouds = document.getElementById('clouds'), cfrag = document.createDocumentFragment();
+  for (var c = 0; c < 7; c++) {
+    var cl = document.createElement('span');
+    cl.className = 'cloud';
+    cl.style.top = (6 + c * 9 + Math.random() * 4) + '%';
+    cl.style.transform = 'scale(' + (0.7 + Math.random() * 0.9).toFixed(2) + ')';
+    cl.style.animationDuration = (70 + Math.random() * 70).toFixed(0) + 's';
+    cl.style.animationDelay = (-Math.random() * 90).toFixed(0) + 's'; // ya en marcha al cargar
+    cl.style.opacity = (0.55 + Math.random() * 0.45).toFixed(2);
+    cfrag.appendChild(cl);
+  }
+  clouds.appendChild(cfrag);
 
   // --- titulares que se montan palabra a palabra ---
   // Recorre los nodos hijos en vez de partir el HTML en crudo: así las etiquetas
@@ -513,9 +542,14 @@ footer a:hover{color:var(--bright)}
     // La barra de XP es un indicador de progreso, no un adorno: se actualiza siempre,
     // también con "movimiento reducido" activado.
     xp.style.setProperty('--p', (p * 100) + '%');
-    // El resto sí es decorativo: con movimiento reducido se queda quieto.
+    // El ciclo día/noche es un cambio de color ligado a la posición, no un movimiento:
+    // se aplica también con "movimiento reducido" para que nadie se pierda el efecto.
+    var d = dayAt(p);
+    root.style.setProperty('--day', d.toFixed(3));
+    // El naranja del amanecer/atardecer se enciende a medio camino entre noche y día.
+    root.style.setProperty('--dusk', (1 - Math.abs(2 * d - 1)).toFixed(3));
+    // Esto sí se mueve: solo cuando el usuario acepta movimiento.
     if (!reduced) {
-      root.style.setProperty('--day', dayAt(p).toFixed(3));
       orbit.style.setProperty('--orbit', (p * 200 - 30) + 'deg');
       hillFar.style.transform = 'translateY(' + (p * 46) + 'px)';
       hillMid.style.transform = 'translateY(' + (p * 22) + 'px)';
