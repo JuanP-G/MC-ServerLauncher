@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -12,7 +13,6 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
     private bool _shuttingDown;
-    private bool _exitRequested;
 
     public MainWindow()
     {
@@ -37,27 +37,27 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Really quit the app (stops servers and exits). Called from the tray's Exit menu; closing the
-    /// window with the X button only hides it to the tray (see <see cref="OnClosing"/>).
+    /// Minimize-to-tray: minimizing hides the window, so it leaves the taskbar and lives on only as the
+    /// tray icon while the servers keep running. Closing with the X really quits (see <see cref="OnClosing"/>).
+    /// Guarded by <see cref="App.TrayAvailable"/>: on a desktop with no tray there would be no way to
+    /// bring the window back, so there minimize keeps its normal behavior.
     /// </summary>
-    public void RequestExit()
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        _exitRequested = true;
-        Show();          // make sure the window exists/isn't hidden so Close() runs its handler
-        Close();
+        base.OnPropertyChanged(change);
+
+        if (change.Property == WindowStateProperty && WindowState == WindowState.Minimized && App.TrayAvailable)
+            Hide();
     }
+
+    /// <summary>
+    /// Quits the app (stops servers and exits). Used by the tray's Exit menu; the window's X button
+    /// goes through the same path on its own.
+    /// </summary>
+    public void RequestExit() => Close();
 
     protected override async void OnClosing(WindowClosingEventArgs e)
     {
-        // VPN-style behavior: clicking the X doesn't quit, it hides the window to the tray (removing it
-        // from the taskbar) and keeps the servers running. Exit only happens from the tray's Exit menu.
-        if (!_exitRequested)
-        {
-            e.Cancel = true;
-            Hide();
-            return;
-        }
-
         // Avoid closing abruptly with servers running: stop them cleanly first.
         if (!_shuttingDown)
         {

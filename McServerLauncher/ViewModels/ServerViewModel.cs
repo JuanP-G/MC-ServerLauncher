@@ -279,7 +279,7 @@ public partial class ServerViewModel : ObservableObject
     // matter in the tray are event-driven, not timer-driven, so they're unaffected). Everything
     // returns to full speed on the first tick after the window is shown again.
 
-    /// <summary>True when the main window is hidden (closed to the tray). Minimized still shows the taskbar entry.</summary>
+    /// <summary>True when the main window is hidden, i.e. minimized to the tray (see MainWindow).</summary>
     private static bool MainWindowHidden =>
         (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
             is not { IsVisible: true };
