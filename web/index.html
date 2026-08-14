@@ -93,10 +93,17 @@ img{max-width:100%; display:block}
    (modo automatizado, "reducir movimiento" agresivo) dejaba el cielo congelado. */
 .sky{position:absolute; inset:0}
 .sky-night{background:linear-gradient(180deg,#04070F 0%,#0A1224 45%,#101E38 100%); opacity:calc(1 - var(--day))}
-.sky-day{background:linear-gradient(180deg,#1E5C9E 0%,#4B9BD4 55%,#8FC5E8 100%); opacity:var(--day)}
+/* Azul de día deliberadamente contenido: con el celeste claro anterior, el texto que
+   va suelto encima se quedaba en 2:1 de contraste. Este tono mantiene la sensación de
+   día (frente al casi negro de la noche) y deja el texto por encima de 4.5:1 sin
+   necesidad de poner paneles detrás. */
+.sky-day{background:linear-gradient(180deg,#0D2A4C 0%,#17416E 55%,#245A8A 100%); opacity:var(--day)}
 /* Franja naranja de amanecer/atardecer: se enciende justo en las transiciones
    (--dusk vale 1 a mitad de camino entre noche y día) para que se note el paso del tiempo. */
-.sky-dusk{background:linear-gradient(180deg,#1B2A4A 0%,#8A4A3C 55%,#E8934A 85%,#F5C06B 100%); opacity:var(--dusk,0)}
+/* El naranja no llega a opacidad plena: tiñe el cielo en vez de sustituirlo, para que
+   el amanecer/atardecer se note sin dejar el texto sobre un fondo claro. */
+.sky-dusk{background:linear-gradient(180deg,#16233E 0%,#7A4238 55%,#C2793E 85%,#D69A57 100%);
+  opacity:calc(var(--dusk,0) * .72)}
 .stars{position:absolute; inset:0; opacity:calc(1 - var(--day))}
 
 /* Nubes de bloques que cruzan el cielo: se ven de día y se apagan de noche */
@@ -184,6 +191,37 @@ img{max-width:100%; display:block}
 .btn-sm:active{transform:translateY(4px)}
 .btn-lg{padding:19px 32px; font-size:13px}
 
+/* Botón de descarga del nav: panel de piedra con textura de 16x16 escalada, borde
+   oscuro grueso y bisel pixelado, icono de descarga a la izquierda separado por una
+   junta, y dos líneas de texto. Lleva a la sección de descargas, donde se elige el
+   sistema operativo. */
+.dlbtn{display:inline-flex; align-items:center; gap:0; padding:0;
+  border:3px solid #0C0F13; cursor:pointer; position:relative;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%234A4F55'/%3E%3Crect x='1' y='2' width='3' height='2' fill='%233E434A'/%3E%3Crect x='7' y='1' width='2' height='2' fill='%23565C63'/%3E%3Crect x='11' y='4' width='3' height='2' fill='%233E434A'/%3E%3Crect x='3' y='7' width='2' height='3' fill='%23565C63'/%3E%3Crect x='8' y='6' width='3' height='2' fill='%233E434A'/%3E%3Crect x='13' y='9' width='2' height='2' fill='%23565C63'/%3E%3Crect x='1' y='11' width='3' height='2' fill='%233E434A'/%3E%3Crect x='6' y='12' width='2' height='3' fill='%23565C63'/%3E%3Crect x='10' y='13' width='3' height='2' fill='%233E434A'/%3E%3C/svg%3E") 0 0/44px 44px,
+    linear-gradient(180deg,#565C63 0%,#464B52 45%,#3A3F45 100%);
+  image-rendering:pixelated;
+  box-shadow:
+    inset 2px 2px 0 rgba(255,255,255,.22),
+    inset -2px -2px 0 rgba(0,0,0,.38),
+    0 5px 0 #1B1F24, 0 9px 18px rgba(0,0,0,.5);
+  transition:filter .12s, transform .06s, box-shadow .06s}
+.dlbtn:hover{filter:brightness(1.15)}
+.dlbtn:hover .dlbtn-txt i{color:#7CFF9E}
+.dlbtn:active{transform:translateY(5px);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.18), inset -2px -2px 0 rgba(0,0,0,.38),
+    0 0 0 #1B1F24, 0 4px 9px rgba(0,0,0,.45)}
+.dlbtn-ico{display:grid; place-items:center; padding:0 14px; color:#F2F7FF;
+  filter:drop-shadow(0 2px 0 rgba(0,0,0,.55))}
+.dlbtn-sep{width:3px; align-self:stretch; background:rgba(0,0,0,.42);
+  box-shadow:1px 0 0 rgba(255,255,255,.12)}
+.dlbtn-txt{display:flex; flex-direction:column; gap:3px; padding:9px 18px 9px 16px;
+  font-family:"Press Start 2P",monospace; line-height:1}
+.dlbtn-txt b{font-size:13px; font-weight:400; color:#FFFFFF;
+  text-shadow:0 2px 0 rgba(0,0,0,.6)}
+.dlbtn-txt i{font-size:8px; font-style:normal; color:var(--bright);
+  text-shadow:0 2px 0 rgba(0,0,0,.6); transition:color .12s}
+
 /* ---------- SECCIONES ---------- */
 /* Cada apartado se ajusta a su contenido en lugar de estirarse a la ventana entera:
    forzar 100vh dejaba huecos enormes en los apartados cortos (p. ej. Cómo funciona).
@@ -193,15 +231,7 @@ img{max-width:100%; display:block}
 section{position:relative; padding:84px 0 168px; scroll-margin-top:86px}
 .hero{scroll-margin-top:0}
 
-/* Halo oscuro difuminado detrás del contenido de cada apartado. Sin él, el texto suelto
-   quedaba con un contraste de 2:1 sobre el cielo de día (hace falta 4.5:1 para leer
-   cómodamente); con él sube por encima de 7:1 sin tapar el cielo, porque los bordes se
-   desvanecen en vez de recortar un panel. */
 section > .wrap{position:relative}
-section > .wrap::before{content:""; position:absolute; inset:-56px -40px; z-index:-1;
-  pointer-events:none;
-  background:radial-gradient(ellipse 75% 62% at 50% 50%,
-    rgba(5,10,18,.74) 0%, rgba(5,10,18,.62) 48%, rgba(5,10,18,.28) 78%, rgba(5,10,18,0) 100%)}
 /* Todo el texto que va suelto sobre el cielo tiene que leerse igual de noche (fondo
    casi negro) que de día (azul claro). El gris apagado desaparecía sobre el cielo
    diurno, así que estos textos suben de contraste y llevan una sombra oscura que los
@@ -400,7 +430,19 @@ footer a:hover{color:var(--bright)}
       <a href="#descargas">Descargas</a>
       <a href="#faqs">FAQs</a>
     </nav>
-    <a class="btn btn-primary btn-sm" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">⬇ Descargar</a>
+    <a class="dlbtn" href="#descargas">
+      <span class="dlbtn-ico" aria-hidden="true">
+        <svg viewBox="0 0 16 16" shape-rendering="crispEdges" width="20" height="20">
+          <rect x="6" y="1" width="4" height="6" fill="currentColor"/>
+          <rect x="3" y="7" width="10" height="2" fill="currentColor"/>
+          <rect x="5" y="9" width="6" height="2" fill="currentColor"/>
+          <rect x="7" y="11" width="2" height="1" fill="currentColor"/>
+          <rect x="2" y="13" width="12" height="2" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="dlbtn-sep" aria-hidden="true"></span>
+      <span class="dlbtn-txt"><b>Descargar</b><i>MC-ServerLauncher</i></span>
+    </a>
   </div>
 </header>
 
@@ -410,7 +452,7 @@ footer a:hover{color:var(--bright)}
       <h1 class="build">Tu servidor de <span class="kw">Minecraft</span>, en tu propio PC.</h1>
       <p class="lead reveal">Crea, configura y gestiona servidores de Minecraft en Windows, Linux y macOS sin tocar la consola. Mods de Modrinth, copias de seguridad automáticas y acceso desde Internet en un par de clics.</p>
       <div class="hero-cta reveal">
-        <a class="btn btn-primary" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar gratis</a>
+        <a class="btn btn-primary" href="#descargas">Descargar gratis</a>
         <a class="btn btn-ghost" href="https://github.com/JuanP-G/MC-ServerLauncher">Ver en GitHub</a>
       </div>
       <div class="trust reveal">
@@ -470,7 +512,6 @@ footer a:hover{color:var(--bright)}
         <article class="card reveal"><h3>macOS</h3><p>Apple Silicon e Intel</p>
           <a class="btn btn-ghost" data-dl="mac" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar .dmg</a></article>
       </div>
-      <p class="note reveal">Cada versión se publica con su suma SHA-256 para que puedas verificar la descarga.</p>
 
       <div class="releases reveal">
         <h3 class="releases-title">Versiones publicadas</h3>
@@ -510,7 +551,7 @@ footer a:hover{color:var(--bright)}
       </svg>
       <h2 class="h2 build">¿Listo para crear tu mundo?</h2>
       <p class="lead reveal">Descarga MC-ServerLauncher y monta tu servidor hoy.</p>
-      <a class="btn btn-primary btn-lg reveal" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Descargar MC-ServerLauncher</a>
+      <a class="btn btn-primary btn-lg reveal" href="#descargas">Descargar MC-ServerLauncher</a>
     </div>
   </section>
 </main>
@@ -668,7 +709,9 @@ footer a:hover{color:var(--bright)}
       var published = releases.filter(function(r){ return !r.draft; });
       var latest = published.find(function(r){ return !r.prerelease; }) || published[0];
 
-      // Cada botón apunta al archivo concreto de la última versión.
+      // Solo las tarjetas por sistema operativo descargan el archivo: los botones
+      // generales (nav, hero y cierre) llevan a esta sección para que el usuario elija
+      // el suyo, en vez de bajarle el de Windows sin preguntar.
       if (latest && latest.assets) {
         Object.keys(MATCH).forEach(function(os){
           var asset = latest.assets.find(function(a){ return MATCH[os](a.name); });
@@ -679,13 +722,6 @@ footer a:hover{color:var(--bright)}
             btn.title = asset.name + ' · ' + (asset.size / 1048576).toFixed(0) + ' MB';
           }
         });
-        var navBtn = document.querySelector('.nav .btn');
-        var winAsset = latest.assets.find(function(a){ return MATCH.win(a.name); });
-        if (navBtn && winAsset) navBtn.href = winAsset.browser_download_url;
-        var heroBtn = document.querySelector('.hero-cta .btn-primary');
-        if (heroBtn && winAsset) heroBtn.href = winAsset.browser_download_url;
-        var finalBtn = document.querySelector('.final .btn-primary');
-        if (finalBtn && winAsset) finalBtn.href = winAsset.browser_download_url;
       }
 
       // Listado de versiones publicadas.
