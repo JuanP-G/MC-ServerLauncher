@@ -193,20 +193,29 @@ img{max-width:100%; display:block}
 /* ---------- NAV ---------- */
 .nav{position:sticky; top:8px; z-index:50; backdrop-filter:blur(12px);
   background:rgba(13,21,36,.82); border-bottom:1px solid var(--border)}
-.nav .wrap{display:flex; align-items:center; justify-content:space-between; height:72px; gap:24px}
-.brand{display:flex; align-items:center; gap:12px; font-weight:800; font-size:19px}
-.brand img{width:34px; height:34px; image-rendering:pixelated;
+/* La barra se descuadraba en los idiomas de palabras largas (Fonctionnalités,
+   Transferências): la marca y los enlaces partían en dos líneas. Ahora nada parte
+   (nowrap), la marca y el botón no se encogen, y el bloque de la derecha se separa
+   con margin-left:auto en lugar de space-between, para que marca y secciones queden
+   pegadas a la izquierda. */
+.nav .wrap{display:flex; align-items:center; height:72px; gap:20px; max-width:1420px}
+.brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px;
+  white-space:nowrap; flex-shrink:0}
+.brand img{width:32px; height:32px; image-rendering:pixelated;
   filter:drop-shadow(0 0 10px rgba(63,185,80,.45))}
-.nav nav{display:flex; gap:30px}
-.nav nav a{color:var(--muted); font-size:15px; transition:color .2s}
+.nav nav{display:flex; gap:22px; white-space:nowrap; margin-left:8px}
+.nav nav a{color:var(--muted); font-size:15px; transition:color .2s; white-space:nowrap}
 .nav nav a:hover{color:var(--bright)}
 /* Selector de idioma: una URL por idioma, no un cambio de textos por JavaScript,
    para que los buscadores puedan indexar cada versión por separado. */
-.langs{display:flex; gap:2px; margin-left:auto}
-.langs a{font-family:"Press Start 2P",monospace; font-size:8px; color:var(--muted);
-  padding:7px 7px; border:1px solid transparent; transition:color .15s, border-color .15s}
-.langs a:hover{color:var(--bright)}
-.langs a.on{color:#07210E; background:var(--bright)}
+.langs{display:flex; gap:5px; margin-left:auto; flex-shrink:0}
+.langs a{display:grid; place-items:center; padding:5px; border:2px solid transparent;
+  opacity:.5; transition:opacity .15s, border-color .15s}
+.langs a svg{display:block; width:21px; height:14px; image-rendering:pixelated;
+  box-shadow:0 0 0 1px rgba(0,0,0,.55)}
+.langs a:hover{opacity:1}
+.langs a.on{opacity:1; border-color:var(--bright)}
+.dlbtn{flex-shrink:0}
 /* Botones al estilo de la interfaz de Minecraft: esquinas rectas, contorno oscuro,
    bisel pixelado (luz arriba-izquierda, sombra abajo-derecha) y un zócalo grueso
    que hace de bloque. Al pulsar, el botón baja hasta comerse el zócalo. */
@@ -439,10 +448,33 @@ footer a:hover{color:var(--bright)}
   html{scroll-behavior:auto}
   .star,.badge b,.cloud{animation:none}
 }
+/* Entre 1040 y 1200 px los idiomas de palabras largas (Fonctionnalités,
+   Transferências) hacían que el botón de descarga se saliera de la pantalla. En vez
+   de romper la barra, se compacta: menos separación, texto algo menor y el botón
+   pierde su segunda línea, que es decorativa. */
+@media (max-width:1200px){
+  .nav .wrap{gap:14px}
+  .nav nav{gap:16px; margin-left:0}
+  .nav nav a{font-size:14px}
+  .brand{font-size:16px}
+  .brand img{width:28px; height:28px}
+  .langs{gap:2px}
+  .langs a{padding:3px}
+  .langs a svg{width:16px; height:11px}
+  .dlbtn-txt i{display:none}
+  .dlbtn-txt{padding:11px 14px}
+  .dlbtn-txt b{font-size:12px}
+  .dlbtn-ico{padding:0 11px}
+}
+/* Por debajo de esto ya no caben los enlaces en francés ni en portugués sin apretarlos
+   hasta ser ilegibles, así que se ocultan (las secciones siguen alcanzables desde el
+   pie y haciendo scroll). El umbral se fijó midiendo el francés, que es el más ancho. */
+@media (max-width:1100px){
+  .nav nav{display:none}
+}
 @media (max-width:960px){
   .hero{grid-template-columns:1fr; gap:40px}
   .g3,.os{grid-template-columns:1fr}
-  .nav nav{display:none}
 }
 </style>
 </head>
@@ -476,13 +508,20 @@ footer a:hover{color:var(--bright)}
       <a href="#descargas">Transferências</a>
       <a href="#faqs">FAQs</a>
     </nav>
-    <!-- Los enlaces relativos los reescribe web/_i18n/build.py para cada idioma. -->
+    <!-- Los enlaces relativos los reescribe web/_i18n/build.py para cada idioma.
+         Banderas dibujadas en SVG y no emoji: Windows no dibuja las banderas emoji,
+         las muestra como dos letras, así que se verían rotas en muchos equipos. -->
     <div class="langs">
-      <a href="../" hreflang="es">ES</a>
-      <a href="../en/" hreflang="en">EN</a>
-      <a href="../de/" hreflang="de">DE</a>
-      <a href="../fr/" hreflang="fr">FR</a>
-      <a href="../pt/" class="on" hreflang="pt">PT</a>
+      <a href="../" hreflang="es" title="Español" aria-label="Español">
+        <svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#C60B1E"/><rect y="3" width="16" height="5" fill="#FFC400"/></svg></a>
+      <a href="../en/" hreflang="en" title="English" aria-label="English">
+        <svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#012169"/><path d="M0 0l16 11M16 0L0 11" stroke="#FFF" stroke-width="2.4"/><path d="M0 0l16 11M16 0L0 11" stroke="#C8102E" stroke-width="1.1"/><path d="M8 0v11M0 5.5h16" stroke="#FFF" stroke-width="3.6"/><path d="M8 0v11M0 5.5h16" stroke="#C8102E" stroke-width="2"/></svg></a>
+      <a href="../de/" hreflang="de" title="Deutsch" aria-label="Deutsch">
+        <svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#000"/><rect y="3.67" width="16" height="3.67" fill="#DD0000"/><rect y="7.34" width="16" height="3.66" fill="#FFCE00"/></svg></a>
+      <a href="../fr/" hreflang="fr" title="Français" aria-label="Français">
+        <svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#FFF"/><rect width="5.33" height="11" fill="#002395"/><rect x="10.67" width="5.33" height="11" fill="#ED2939"/></svg></a>
+      <a href="../pt/" class="on" hreflang="pt" title="Português" aria-label="Português">
+        <svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#DA291C"/><rect width="6.4" height="11" fill="#046A38"/><circle cx="6.4" cy="5.5" r="2.1" fill="#FFE000"/><circle cx="6.4" cy="5.5" r="1.15" fill="#DA291C"/></svg></a>
     </div>
     <a class="dlbtn" href="#descargas">
       <span class="dlbtn-ico" aria-hidden="true">
