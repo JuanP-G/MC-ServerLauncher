@@ -122,14 +122,17 @@ img{max-width:100%; display:block}
 .moon{top:58vh; background:#F4F7FF;
   box-shadow:0 0 0 5px rgba(226,235,255,.4), 0 0 60px 20px rgba(200,220,255,.32)}
 /* El suelo forma parte del decorado FIJO: al hacer scroll se mueve el contenido por
-   delante, no el mundo del fondo. Por eso la tierra está siempre presente. */
-.terrain{position:absolute; left:0; right:0; bottom:0; height:118px; pointer-events:none;
+   delante, no el mundo del fondo. Por eso la tierra está siempre presente.
+   La textura son dos teselas de 16x16 px dibujadas como en el juego (hierba con borde
+   irregular sobre tierra, y tierra con motas), escaladas x4 a bloques de 64 px y
+   renderizadas con image-rendering:pixelated para que el pixel quede nítido. */
+.terrain{position:absolute; left:0; right:0; bottom:0; height:128px; pointer-events:none;
+  image-rendering:pixelated;
   background:
-    repeating-linear-gradient(90deg,#43A047 0 32px,#3B9440 32px 64px) 0 0/64px 20px no-repeat,
-    repeating-linear-gradient(90deg,#6B4A2F 0 32px,#5E4029 32px 64px) 0 20px/64px 98px;
-  box-shadow:inset 0 5px 0 #5CE07B}
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%238B6141'/%3E%3Crect x='2' y='7' width='3' height='2' fill='%237A5437'/%3E%3Crect x='9' y='6' width='2' height='3' fill='%237A5437'/%3E%3Crect x='6' y='11' width='3' height='2' fill='%239A6E4A'/%3E%3Crect x='12' y='10' width='3' height='2' fill='%237A5437'/%3E%3Crect x='1' y='13' width='2' height='2' fill='%239A6E4A'/%3E%3Crect x='13' y='14' width='2' height='2' fill='%239A6E4A'/%3E%3Crect width='16' height='3' fill='%235B8C36'/%3E%3Crect x='0' y='0' width='4' height='1' fill='%236BA044'/%3E%3Crect x='7' y='0' width='3' height='1' fill='%236BA044'/%3E%3Crect x='12' y='1' width='3' height='1' fill='%234F7D2E'/%3E%3Crect x='5' y='2' width='2' height='1' fill='%234F7D2E'/%3E%3Crect x='0' y='3' width='2' height='1' fill='%235B8C36'/%3E%3Crect x='3' y='3' width='3' height='1' fill='%235B8C36'/%3E%3Crect x='8' y='3' width='2' height='1' fill='%235B8C36'/%3E%3Crect x='11' y='3' width='2' height='1' fill='%235B8C36'/%3E%3Crect x='14' y='3' width='2' height='1' fill='%235B8C36'/%3E%3Crect x='4' y='4' width='1' height='1' fill='%235B8C36'/%3E%3Crect x='9' y='4' width='1' height='1' fill='%235B8C36'/%3E%3Crect x='12' y='4' width='1' height='1' fill='%235B8C36'/%3E%3C/svg%3E") 0 0/64px 64px repeat-x,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%238B6141'/%3E%3Crect x='1' y='2' width='3' height='2' fill='%237A5437'/%3E%3Crect x='6' y='1' width='2' height='2' fill='%239A6E4A'/%3E%3Crect x='11' y='3' width='3' height='2' fill='%237A5437'/%3E%3Crect x='3' y='7' width='2' height='3' fill='%239A6E4A'/%3E%3Crect x='8' y='6' width='3' height='2' fill='%237A5437'/%3E%3Crect x='13' y='9' width='2' height='2' fill='%239A6E4A'/%3E%3Crect x='1' y='11' width='3' height='2' fill='%237A5437'/%3E%3Crect x='6' y='12' width='2' height='3' fill='%239A6E4A'/%3E%3Crect x='10' y='13' width='3' height='2' fill='%237A5437'/%3E%3C/svg%3E") 0 64px/64px 64px repeat}
 /* Colinas de bloques recortadas contra el cielo, por detrás de la tierra */
-.hills{position:absolute; left:0; right:0; bottom:100px; width:100%; height:auto}
+.hills{position:absolute; left:0; right:0; bottom:110px; width:100%; height:auto}
 .hill-far{opacity:.5}
 .hill-mid{opacity:.75}
 
@@ -182,13 +185,12 @@ img{max-width:100%; display:block}
 .btn-lg{padding:19px 32px; font-size:13px}
 
 /* ---------- SECCIONES ---------- */
-/* Cada apartado ocupa la ventana entera y se centra: al saltar desde el menú no
-   aparecen dos secciones a la vez. scroll-margin-top compensa el nav pegajoso,
-   que si no se comía el principio de la sección al usar los enlaces del menú. */
-/* El relleno inferior es mayor que el superior a propósito: la franja de tierra ocupa
-   los últimos 118 px de la ventana, y así el contenido nunca queda por detrás. */
-section{position:relative; padding:80px 0 142px; scroll-margin-top:86px;
-  min-height:100vh; display:flex; flex-direction:column; justify-content:center}
+/* Cada apartado se ajusta a su contenido en lugar de estirarse a la ventana entera:
+   forzar 100vh dejaba huecos enormes en los apartados cortos (p. ej. Cómo funciona).
+   scroll-margin-top compensa el nav pegajoso, que si no se comía el principio de la
+   sección al llegar desde el menú. El relleno inferior es mayor que el superior
+   porque la franja de tierra ocupa los últimos 128 px de la ventana. */
+section{position:relative; padding:84px 0 168px; scroll-margin-top:86px}
 .hero{scroll-margin-top:0}
 .eyebrow{font-family:"Press Start 2P",monospace; font-size:10px; color:var(--bright);
   letter-spacing:.06em; margin-bottom:18px; display:inline-block}
@@ -203,7 +205,7 @@ section{position:relative; padding:80px 0 142px; scroll-margin-top:86px;
    (eso provocaba desbordamiento horizontal de la página). */
 /* La primera pantalla es solo el hero: ocupa el alto de la ventana menos el nav,
    así no asoma el contenido de la sección siguiente. */
-.hero{padding:48px 0 150px; display:grid; grid-template-columns:0.78fr 1.22fr;
+.hero{padding:48px 0 160px; display:grid; grid-template-columns:0.78fr 1.22fr;
   gap:44px; align-items:center; align-content:center; max-width:1380px;
   min-height:calc(100vh - 72px); position:relative}
 .badge{display:inline-flex; align-items:center; gap:10px; padding:9px 18px;
@@ -233,8 +235,8 @@ section{position:relative; padding:80px 0 142px; scroll-margin-top:86px;
 .shot img.cap{width:100%; height:auto}
 
 /* ---------- BARRA DE DATOS ---------- */
-/* Esta franja es un remate del hero, no un apartado: no debe ocupar una pantalla. */
-.stats{padding:0 0 40px; min-height:0; display:block}
+/* Esta franja es un remate del hero, no un apartado. */
+.stats{padding:0 0 40px}
 .stats .wrap{display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap;
   background:rgba(13,21,36,.75); border:1px solid var(--border); border-radius:16px;
   padding:26px 34px; max-width:calc(var(--maxw) - 0px)}
@@ -257,7 +259,7 @@ section{position:relative; padding:80px 0 142px; scroll-margin-top:86px;
   margin-bottom:14px; display:block}
 
 /* ---------- DESCARGAS ---------- */
-.os{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:46px}
+.os{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:34px}
 .os .card{text-align:center}
 .os .card.featured{border-color:var(--bright); box-shadow:0 0 40px rgba(63,185,80,.16)}
 .os h3{font-size:22px; margin-bottom:6px}
@@ -266,7 +268,7 @@ section{position:relative; padding:80px 0 142px; scroll-margin-top:86px;
 .note{color:var(--muted); font-size:14px; text-align:center; margin-top:26px}
 
 /* Listado de versiones publicadas, traído de la API de GitHub */
-.releases{max-width:860px; margin:56px auto 0; text-align:left}
+.releases{max-width:860px; margin:38px auto 0; text-align:left}
 .releases-title{font-size:19px; margin-bottom:16px; text-align:center}
 .release-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px}
 .release-list li{display:flex; align-items:center; gap:16px; flex-wrap:wrap;
@@ -307,7 +309,7 @@ section{position:relative; padding:80px 0 142px; scroll-margin-top:86px;
 footer{border-top:none; background:linear-gradient(180deg,
   rgba(7,11,20,0) 0%, rgba(7,11,20,.55) 26%, rgba(7,11,20,.78) 60%, rgba(7,11,20,0) 100%)}
 footer .wrap{display:flex; justify-content:center; gap:26px;
-  padding-top:26px; padding-bottom:104px; color:var(--muted); font-size:14px; flex-wrap:wrap}
+  padding-top:26px; padding-bottom:150px; color:var(--muted); font-size:14px; flex-wrap:wrap}
 footer nav{display:flex; gap:26px}
 footer a:hover{color:var(--bright)}
 
@@ -673,7 +675,7 @@ footer a:hover{color:var(--bright)}
       var list = document.getElementById('releaseList');
       if (!list) return;
       list.innerHTML = '';
-      published.slice(0, 6).forEach(function(rel, i){
+      published.slice(0, 4).forEach(function(rel, i){
         var li = document.createElement('li');
         if (rel === latest) li.className = 'latest';
         var tag = document.createElement('span');
