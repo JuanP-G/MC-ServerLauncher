@@ -192,10 +192,27 @@ img{max-width:100%; display:block}
    porque la franja de tierra ocupa los últimos 128 px de la ventana. */
 section{position:relative; padding:84px 0 168px; scroll-margin-top:86px}
 .hero{scroll-margin-top:0}
+
+/* Halo oscuro difuminado detrás del contenido de cada apartado. Sin él, el texto suelto
+   quedaba con un contraste de 2:1 sobre el cielo de día (hace falta 4.5:1 para leer
+   cómodamente); con él sube por encima de 7:1 sin tapar el cielo, porque los bordes se
+   desvanecen en vez de recortar un panel. */
+section > .wrap{position:relative}
+section > .wrap::before{content:""; position:absolute; inset:-56px -40px; z-index:-1;
+  pointer-events:none;
+  background:radial-gradient(ellipse 75% 62% at 50% 50%,
+    rgba(5,10,18,.74) 0%, rgba(5,10,18,.62) 48%, rgba(5,10,18,.28) 78%, rgba(5,10,18,0) 100%)}
+/* Todo el texto que va suelto sobre el cielo tiene que leerse igual de noche (fondo
+   casi negro) que de día (azul claro). El gris apagado desaparecía sobre el cielo
+   diurno, así que estos textos suben de contraste y llevan una sombra oscura que los
+   despega del fondo pase lo que pase. */
 .eyebrow{font-family:"Press Start 2P",monospace; font-size:10px; color:var(--bright);
-  letter-spacing:.06em; margin-bottom:18px; display:inline-block}
-.h2{font-size:clamp(30px,4vw,44px); font-weight:800; margin-bottom:16px}
-.lead{color:var(--muted); font-size:18px; max-width:640px}
+  letter-spacing:.06em; margin-bottom:18px; display:inline-block;
+  text-shadow:0 2px 0 rgba(3,8,16,.9), 0 0 14px rgba(3,8,16,.8)}
+.h2{font-size:clamp(30px,4vw,44px); font-weight:800; margin-bottom:16px;
+  text-shadow:0 3px 0 rgba(3,8,16,.55), 0 2px 18px rgba(3,8,16,.75)}
+.lead{color:#CBD8E8; font-size:18px; max-width:640px; font-weight:500;
+  text-shadow:0 2px 3px rgba(3,8,16,.85), 0 0 16px rgba(3,8,16,.7)}
 .center{text-align:center}
 .center .lead{margin:0 auto}
 
@@ -265,11 +282,18 @@ section{position:relative; padding:84px 0 168px; scroll-margin-top:86px}
 .os h3{font-size:22px; margin-bottom:6px}
 .os p{margin-bottom:20px}
 .os .btn{width:100%; justify-content:center}
-.note{color:var(--muted); font-size:14px; text-align:center; margin-top:26px}
+/* Los textos pequeños sueltos (aviso del SHA-256, enlace al historial) son los que peor
+   se leían: además del contraste llevan una cápsula oscura translúcida detrás. */
+.note{color:#CBD8E8; font-size:14px; text-align:center; margin-top:26px}
+.note, .all-releases{display:block; width:fit-content; margin-left:auto; margin-right:auto;
+  padding:9px 18px; border-radius:999px; background:rgba(6,11,20,.62);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  border:1px solid rgba(120,150,185,.18)}
 
 /* Listado de versiones publicadas, traído de la API de GitHub */
 .releases{max-width:860px; margin:38px auto 0; text-align:left}
-.releases-title{font-size:19px; margin-bottom:16px; text-align:center}
+.releases-title{font-size:19px; margin-bottom:16px; text-align:center;
+  text-shadow:0 2px 4px rgba(3,8,16,.85)}
 .release-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px}
 .release-list li{display:flex; align-items:center; gap:16px; flex-wrap:wrap;
   background:rgba(17,28,46,.82); border:1px solid var(--border); padding:14px 20px}
@@ -281,8 +305,8 @@ section{position:relative; padding:84px 0 168px; scroll-margin-top:86px}
 .rel-badge{font-size:11px; font-weight:700; color:#07210E; background:var(--bright);
   padding:3px 9px; letter-spacing:.03em}
 .release-empty{color:var(--muted); font-size:14px; justify-content:center}
-.all-releases{display:block; text-align:center; margin-top:20px; color:var(--muted); font-size:14px}
-.all-releases:hover{color:var(--bright)}
+.all-releases{text-align:center; margin-top:20px; color:#CBD8E8; font-size:14px}
+.all-releases:hover{color:var(--bright); border-color:rgba(92,224,123,.5)}
 
 /* ---------- FAQ ---------- */
 .faq{max-width:900px; margin:46px auto 0}
@@ -309,7 +333,8 @@ section{position:relative; padding:84px 0 168px; scroll-margin-top:86px}
 footer{border-top:none; background:linear-gradient(180deg,
   rgba(7,11,20,0) 0%, rgba(7,11,20,.55) 26%, rgba(7,11,20,.78) 60%, rgba(7,11,20,0) 100%)}
 footer .wrap{display:flex; justify-content:center; gap:26px;
-  padding-top:26px; padding-bottom:150px; color:var(--muted); font-size:14px; flex-wrap:wrap}
+  padding-top:26px; padding-bottom:150px; color:#CBD8E8; font-size:14px; flex-wrap:wrap;
+  text-shadow:0 2px 4px rgba(3,8,16,.85)}
 footer nav{display:flex; gap:26px}
 footer a:hover{color:var(--bright)}
 
@@ -404,13 +429,6 @@ footer a:hover{color:var(--bright)}
     </figure>
   </section>
 
-  <section class="stats">
-    <div class="wrap reveal">
-      <div class="stat"><b data-count="100" data-suffix=" %">0 %</b><span>gratis y open source</span></div>
-      <div class="stat"><b data-count="3">0</b><span>sistemas operativos</span></div>
-      <div class="stat"><b data-count="0">0</b><span>conocimientos técnicos</span></div>
-    </div>
-  </section>
 
   <section id="caracteristicas">
     <div class="wrap center">
@@ -444,7 +462,6 @@ footer a:hover{color:var(--bright)}
     <div class="wrap center">
       <span class="eyebrow reveal">DESCARGAS</span>
       <h2 class="h2 build">Descarga MC-ServerLauncher gratis</h2>
-      <p class="lead reveal">Última versión estable · Sin anuncios, sin cuentas, sin límites.</p>
       <div class="os">
         <article class="card featured reveal"><h3>Windows</h3><p>10 y 11 · 64 bits</p>
           <a class="btn btn-primary" data-dl="win" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Instalador .exe</a></article>
