@@ -40,6 +40,12 @@ jobs:
       - name: Build documentation
         run: docfx docs/docfx.json
 
+      # Regenera las traducciones desde el índice en español. Falla si alguna cadena
+      # del diccionario ya no existe en el HTML, para que no se publique una versión
+      # a medio traducir sin que nadie se entere.
+      - name: Generate translated pages
+        run: python web/_i18n/build.py
+
       - name: Assemble site (landing at the root, docs under /docs/)
         shell: pwsh
         run: |
