@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- IMPORTANTE: cambia la dirección por la definitiva cuando la web esté publicada. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://juanp-g.github.io/MC-ServerLauncher/</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://juanp-g.github.io/MC-ServerLauncher/assets/app-screenshot.jpg</image:loc>
+      <image:title>MC-ServerLauncher gestionando un servidor de Minecraft</image:title>
+    </image:image>
+  </url>
+</urlset>

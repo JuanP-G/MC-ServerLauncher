@@ -1,0 +1,7 @@
+# MC-ServerLauncher
+# Se permite el rastreo completo: no hay zonas privadas en este sitio.
+User-agent: *
+Allow: /
+
+# IMPORTANTE: cambia esta dirección por la definitiva cuando la web esté publicada.
+Sitemap: https://juanp-g.github.io/MC-ServerLauncher/sitemap.xml

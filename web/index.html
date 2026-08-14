@@ -3,8 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MC-ServerLauncher — Crea tu servidor de Minecraft en tu PC (gratis)</title>
-<meta name="description" content="Crea y gestiona servidores de Minecraft en tu PC sin tocar la consola: mods, copias de seguridad automáticas y acceso por Internet. Gratis y de código abierto.">
+<!-- ================================================================================
+     DIRECCIÓN DEL SITIO — cámbiala en cuanto la web esté publicada.
+     Aparece en: canonical, og:url, og:image, twitter:image, el JSON-LD de más abajo,
+     robots.txt y sitemap.xml. Mientras apunte a una dirección que no existe, los
+     buscadores no pueden indexar la página correctamente.
+     ================================================================================ -->
+<title>Crear un servidor de Minecraft en tu PC gratis | MC-ServerLauncher</title>
+<meta name="description" content="Crea y hostea tu servidor de Minecraft gratis en tu PC, sin comandos ni abrir puertos. Vanilla, Paper, Forge y Fabric, con mods y copias de seguridad.">
 <link rel="canonical" href="https://juanp-g.github.io/MC-ServerLauncher/">
 <meta name="theme-color" content="#070B14">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -14,16 +20,20 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_ES">
 <meta property="og:site_name" content="MC-ServerLauncher">
-<meta property="og:title" content="MC-ServerLauncher — Tu servidor de Minecraft, en tu propio PC">
-<meta property="og:description" content="Crea, configura y gestiona servidores de Minecraft sin tocar la consola. Gratis, de código abierto, para Windows, Linux y macOS.">
+<meta property="og:title" content="Crear un servidor de Minecraft en tu PC, gratis y sin comandos">
+<meta property="og:description" content="Monta y gestiona tu servidor de Minecraft desde una app: mods, copias de seguridad y acceso por Internet sin abrir puertos. Gratis y de código abierto.">
 <meta property="og:url" content="https://juanp-g.github.io/MC-ServerLauncher/">
 <meta property="og:image" content="https://juanp-g.github.io/MC-ServerLauncher/assets/app-screenshot.jpg">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="900">
+<meta property="og:image:alt" content="La aplicación MC-ServerLauncher gestionando un servidor de Minecraft">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MC-ServerLauncher — Tu servidor de Minecraft, en tu propio PC">
-<meta name="twitter:description" content="Crea y gestiona servidores de Minecraft sin tocar la consola. Gratis y de código abierto.">
+<meta name="twitter:title" content="Crear un servidor de Minecraft en tu PC, gratis y sin comandos">
+<meta name="twitter:description" content="Monta y gestiona tu servidor de Minecraft desde una app. Gratis y de código abierto.">
 <meta name="twitter:image" content="https://juanp-g.github.io/MC-ServerLauncher/assets/app-screenshot.jpg">
 
 <link rel="preload" as="image" href="assets/app-screenshot.jpg" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400&family=Press+Start+2P&display=swap" rel="stylesheet">
 
@@ -47,10 +57,33 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Cómo crear un servidor de Minecraft en tu PC",
+  "description": "Guía para montar y hostear tu propio servidor de Minecraft en tu ordenador de forma gratuita, sin usar comandos ni abrir puertos del router.",
+  "totalTime": "PT10M",
+  "estimatedCost": { "@type": "MonetaryAmount", "currency": "EUR", "value": "0" },
+  "tool": [{ "@type": "HowToTool", "name": "MC-ServerLauncher" }],
+  "step": [
+    { "@type": "HowToStep", "position": 1, "name": "Descarga e instala MC-ServerLauncher",
+      "text": "Descarga el instalador para Windows, el AppImage para Linux o el DMG para macOS. No necesitas tener Java instalado: la aplicación lo detecta o lo descarga por ti." },
+    { "@type": "HowToStep", "position": 2, "name": "Crea tu servidor",
+      "text": "Ponle nombre, elige la versión de Minecraft y el tipo de servidor (Vanilla, Paper, Forge o Fabric). La aplicación descarga los archivos oficiales, verifica su huella, acepta el EULA y genera el mundo." },
+    { "@type": "HowToStep", "position": 3, "name": "Inicia el servidor y juega con tus amigos",
+      "text": "Pulsa Iniciar y comparte la dirección del túnel para que entren desde Internet sin abrir puertos del router. Desde la ventana gestionas la consola, los mods, los jugadores y las copias de seguridad." }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
     { "@type": "Question", "name": "¿Cómo creo un servidor de Minecraft en mi PC?",
       "acceptedAnswer": { "@type": "Answer", "text": "Instala MC-ServerLauncher, pulsa «Crear servidor», elige la versión y el tipo (Vanilla, Paper, Forge o Fabric) y la aplicación descarga los archivos oficiales, acepta el EULA y genera el mundo por ti." } },
+    { "@type": "Question", "name": "¿Cómo hostear un servidor de Minecraft gratis?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Hospedándolo tú mismo en tu propio ordenador. MC-ServerLauncher se encarga de descargar el servidor oficial, configurarlo y mantenerlo en marcha, y el túnel integrado le da una dirección pública para que tus amigos entren sin que pagues una cuota mensual ni abras puertos del router." } },
+    { "@type": "Question", "name": "¿Es mejor un servidor de Minecraft gratis en mi PC o uno de pago?",
+      "acceptedAnswer": { "@type": "Answer", "text": "En tu PC no pagas nada, no hay límites de jugadores ni de mods impuestos por un plan, y el mundo es tuyo: los archivos están en tu disco. A cambio, el servidor solo está disponible mientras tu ordenador esté encendido. Un servidor de pago está siempre en línea, pero cuesta una cuota mensual y suele limitar RAM y mods." } },
     { "@type": "Question", "name": "¿Es gratis y seguro?",
       "acceptedAnswer": { "@type": "Answer", "text": "Sí. Es gratuito y de código abierto, con el código publicado en GitHub. Todas las descargas (Minecraft, Java, mods e incluso las actualizaciones de la propia app) se verifican con su huella oficial antes de ejecutarse." } },
     { "@type": "Question", "name": "¿Necesito abrir puertos del router para jugar con amigos?",
@@ -449,7 +482,7 @@ footer a:hover{color:var(--bright)}
 <main>
   <section class="hero wrap" id="inicio">
     <div>
-      <h1 class="build">Tu servidor de <span class="kw">Minecraft</span>, en tu propio PC.</h1>
+      <h1 class="build">Crea tu servidor de <span class="kw">Minecraft</span> en tu propio PC.</h1>
       <p class="lead reveal">Crea, configura y gestiona servidores de Minecraft en Windows, Linux y macOS sin tocar la consola. Mods de Modrinth, copias de seguridad automáticas y acceso desde Internet en un par de clics.</p>
       <div class="hero-cta reveal">
         <a class="btn btn-primary" href="#descargas">Descargar gratis</a>
@@ -491,7 +524,8 @@ footer a:hover{color:var(--bright)}
   <section id="como-funciona">
     <div class="wrap center">
       <span class="eyebrow reveal">CÓMO FUNCIONA</span>
-      <h2 class="h2 build">De cero a jugando, en tres pasos</h2>
+      <h2 class="h2 build">Cómo crear un servidor de Minecraft en tu PC</h2>
+      <p class="lead reveal">De cero a jugando en tres pasos, sin escribir un solo comando.</p>
       <div class="grid g3">
         <article class="card reveal"><span class="step-n">01</span><h3>Descarga e instala</h3><p>Un instalador normal para Windows, un AppImage para Linux o un DMG para macOS. Sin Java preinstalado: la app lo detecta o lo descarga.</p></article>
         <article class="card reveal"><span class="step-n">02</span><h3>Crea tu servidor</h3><p>Ponle nombre, elige la versión de Minecraft y el tipo. La app baja los archivos oficiales, verifica su huella y genera el mundo.</p></article>
@@ -503,7 +537,7 @@ footer a:hover{color:var(--bright)}
   <section id="descargas">
     <div class="wrap center">
       <span class="eyebrow reveal">DESCARGAS</span>
-      <h2 class="h2 build">Descarga MC-ServerLauncher gratis</h2>
+      <h2 class="h2 build">Descarga tu servidor de Minecraft gratis</h2>
       <div class="os">
         <article class="card featured reveal"><h3>Windows</h3><p>10 y 11 · 64 bits</p>
           <a class="btn btn-primary" data-dl="win" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">Instalador .exe</a></article>
@@ -529,6 +563,8 @@ footer a:hover{color:var(--bright)}
       <h2 class="h2 build">Dudas habituales</h2>
       <div class="faq">
         <details class="reveal"><summary>¿Cómo creo un servidor de Minecraft en mi PC?</summary><p>Instala MC-ServerLauncher, pulsa «Crear servidor», elige la versión y el tipo (Vanilla, Paper, Forge o Fabric) y la app descarga los archivos oficiales, acepta el EULA y genera el mundo por ti.</p></details>
+        <details class="reveal"><summary>¿Cómo hostear un servidor de Minecraft gratis?</summary><p>Hospedándolo tú mismo en tu propio ordenador. MC-ServerLauncher descarga el servidor oficial, lo configura y lo mantiene en marcha, y el túnel integrado le da una dirección pública para que tus amigos entren sin pagar una cuota mensual ni abrir puertos del router.</p></details>
+        <details class="reveal"><summary>¿Es mejor un servidor gratis en mi PC o uno de pago?</summary><p>En tu PC no pagas nada, no hay límites de jugadores ni de mods impuestos por un plan, y el mundo es tuyo: los archivos están en tu disco. A cambio, solo está disponible mientras tu ordenador esté encendido. Uno de pago está siempre en línea, pero cuesta una cuota y suele limitar RAM y mods.</p></details>
         <details class="reveal"><summary>¿Es gratis y seguro?</summary><p>Sí. Es gratuito y de código abierto: puedes revisar el código en GitHub. Todas las descargas (Minecraft, Java, mods y las propias actualizaciones) se verifican con su huella oficial antes de ejecutarse.</p></details>
         <details class="reveal"><summary>¿Necesito abrir puertos del router para jugar con amigos?</summary><p>No. La app integra un túnel de Playit.gg: te da una dirección pública que puedes compartir, sin tocar la configuración del router.</p></details>
         <details class="reveal"><summary>¿Funciona en Linux y macOS?</summary><p>Sí. Hay AppImage para Linux y DMG para macOS (Apple Silicon e Intel), además del instalador de Windows.</p></details>
