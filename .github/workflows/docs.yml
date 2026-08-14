@@ -1,6 +1,10 @@
-name: Documentation
+name: Website and documentation
 
-# Build the DocFX site (API reference + articles) and publish it to GitHub Pages.
+# Publishes two things to GitHub Pages in a single deployment:
+#   /       -> the landing page in web/ (what search engines should index)
+#   /docs/  -> the DocFX site (API reference + articles)
+# La landing va en la raíz a propósito: es la página que debe posicionar, y su
+# etiqueta canónica y el sitemap apuntan a esa dirección.
 # One-time setup: in the repo, go to Settings → Pages → Source: "GitHub Actions".
 
 on:
@@ -36,10 +40,21 @@ jobs:
       - name: Build documentation
         run: docfx docs/docfx.json
 
+      - name: Assemble site (landing at the root, docs under /docs/)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force _pages | Out-Null
+          Copy-Item web\* _pages\ -Recurse -Force
+          New-Item -ItemType Directory -Force _pages\docs | Out-Null
+          Copy-Item docs\_site\* _pages\docs\ -Recurse -Force
+          # Sin esto, Pages pasa el sitio por Jekyll y descarta lo que empieza por "_"
+          New-Item -ItemType File -Force _pages\.nojekyll | Out-Null
+          Get-ChildItem _pages | Select-Object Name
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/_site
+          path: _pages
 
   deploy:
     needs: build
