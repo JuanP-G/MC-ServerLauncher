@@ -3,5 +3,5 @@
 User-agent: *
 Allow: /
 
-# IMPORTANTE: cambia esta dirección por la definitiva cuando la web esté publicada.
-Sitemap: https://juanp-g.github.io/MC-ServerLauncher/sitemap.xml
+# La web vive en Vercel; GitHub Pages sirve la documentación en /docs/.
+Sitemap: https://mc-server-launcher.vercel.app/sitemap.xml

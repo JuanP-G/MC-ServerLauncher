@@ -22,7 +22,7 @@ import pathlib
 import re
 import sys
 
-BASE_URL = "https://juanp-g.github.io/MC-ServerLauncher"
+BASE_URL = "https://mc-server-launcher.vercel.app"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent      # web/
 SOURCE = ROOT / "index.html"

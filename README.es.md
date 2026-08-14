@@ -2,6 +2,17 @@
 
 **🇬🇧 [English](README.md) · 🇪🇸 Español**
 
+[![Web](https://img.shields.io/badge/Web-mc--server--launcher.vercel.app-3FB950?style=for-the-badge&logo=vercel&logoColor=white)](https://mc-server-launcher.vercel.app)
+[![Documentación](https://img.shields.io/badge/Docs-Referencia%20de%20API-1F6FEB?style=for-the-badge&logo=readthedocs&logoColor=white)](https://juanp-g.github.io/MC-ServerLauncher/docs/)
+[![Descargar](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?style=for-the-badge&label=Descargar&color=5CE07B)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
+
+🌐 **[Página web](https://mc-server-launcher.vercel.app)** (también en
+[English](https://mc-server-launcher.vercel.app/en/) ·
+[Deutsch](https://mc-server-launcher.vercel.app/de/) ·
+[Français](https://mc-server-launcher.vercel.app/fr/) ·
+[Português](https://mc-server-launcher.vercel.app/pt/)) —
+📖 **[Documentación](https://juanp-g.github.io/MC-ServerLauncher/docs/)**
+
 Aplicación de escritorio para **Windows** (y Linux) para gestionar uno o varios servidores de **Minecraft**
 desde una interfaz gráfica moderna — **sin archivos `.bat`, ventanas de consola negras ni editar
 configuraciones a mano**.
@@ -101,7 +112,7 @@ dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 ## 📖 Documentación y datos
 
 La documentación de desarrollo (arquitectura, guía de contribución y una **referencia de API** completa) se
-publica con **DocFX** en **https://juanp-g.github.io/MC-ServerLauncher/**. Los datos por usuario se guardan en
+publica con **DocFX** en **https://juanp-g.github.io/MC-ServerLauncher/docs/**. Los datos por usuario se guardan en
 `%APPDATA%\McServerLauncher\`: `servers.json`, `settings.json`, el `java\` que instala la app, los
 `logs\` de consola persistentes (se guardan 14 días) y, en Linux/macOS, `.secret.key`. Además, la
 carpeta de cada servidor tiene un directorio `backups\` con las copias automáticas del mundo.
