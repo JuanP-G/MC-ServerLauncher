@@ -6,7 +6,7 @@
     "locale": "en_US",
     "label": "English",
     "strings": {
-      "Crear un servidor de Minecraft en tu PC gratis | MC-ServerLauncher": "Make a Minecraft server on your PC for free | MC-ServerLauncher",
+      "Crear un servidor de Minecraft en tu PC | MC-ServerLauncher": "Make a Minecraft server on your PC | MC-ServerLauncher",
       "Crea y hostea tu servidor de Minecraft gratis en tu PC, sin comandos ni abrir puertos. Vanilla, Paper, Forge y Fabric, con mods y copias de seguridad.": "Create and host your own Minecraft server for free on your PC, with no commands and no port forwarding. Vanilla, Paper, Forge and Fabric, with mods and backups.",
       "Crear un servidor de Minecraft en tu PC, gratis y sin comandos": "Make a Minecraft server on your PC, free and without commands",
       "Monta y gestiona tu servidor de Minecraft desde una app: mods, copias de seguridad y acceso por Internet sin abrir puertos. Gratis y de código abierto.": "Set up and manage your Minecraft server from an app: mods, backups and Internet access without port forwarding. Free and open source.",
@@ -105,7 +105,7 @@
     "locale": "de_DE",
     "label": "Deutsch",
     "strings": {
-      "Crear un servidor de Minecraft en tu PC gratis | MC-ServerLauncher": "Minecraft-Server auf dem eigenen PC erstellen, kostenlos | MC-ServerLauncher",
+      "Crear un servidor de Minecraft en tu PC | MC-ServerLauncher": "Minecraft-Server auf dem PC erstellen | MC-ServerLauncher",
       "Crea y hostea tu servidor de Minecraft gratis en tu PC, sin comandos ni abrir puertos. Vanilla, Paper, Forge y Fabric, con mods y copias de seguridad.": "Erstelle und hoste deinen Minecraft-Server kostenlos auf deinem PC, ohne Befehle und ohne Portfreigabe. Vanilla, Paper, Forge und Fabric, mit Mods und Sicherungen.",
       "Crear un servidor de Minecraft en tu PC, gratis y sin comandos": "Minecraft-Server auf dem eigenen PC, kostenlos und ohne Befehle",
       "Monta y gestiona tu servidor de Minecraft desde una app: mods, copias de seguridad y acceso por Internet sin abrir puertos. Gratis y de código abierto.": "Richte deinen Minecraft-Server per App ein und verwalte ihn: Mods, Sicherungen und Internetzugang ohne Portfreigabe. Kostenlos und quelloffen.",
@@ -204,7 +204,7 @@
     "locale": "fr_FR",
     "label": "Français",
     "strings": {
-      "Crear un servidor de Minecraft en tu PC gratis | MC-ServerLauncher": "Créer un serveur Minecraft sur son PC gratuitement | MC-ServerLauncher",
+      "Crear un servidor de Minecraft en tu PC | MC-ServerLauncher": "Créer un serveur Minecraft sur son PC | MC-ServerLauncher",
       "Crea y hostea tu servidor de Minecraft gratis en tu PC, sin comandos ni abrir puertos. Vanilla, Paper, Forge y Fabric, con mods y copias de seguridad.": "Crée et héberge ton serveur Minecraft gratuitement sur ton PC, sans commandes ni ouverture de ports. Vanilla, Paper, Forge et Fabric, avec mods et sauvegardes.",
       "Crear un servidor de Minecraft en tu PC, gratis y sin comandos": "Créer un serveur Minecraft sur son PC, gratuit et sans commandes",
       "Monta y gestiona tu servidor de Minecraft desde una app: mods, copias de seguridad y acceso por Internet sin abrir puertos. Gratis y de código abierto.": "Monte et gère ton serveur Minecraft depuis une application : mods, sauvegardes et accès Internet sans ouvrir de ports. Gratuit et open source.",
@@ -303,7 +303,7 @@
     "locale": "pt_PT",
     "label": "Português",
     "strings": {
-      "Crear un servidor de Minecraft en tu PC gratis | MC-ServerLauncher": "Criar um servidor de Minecraft no teu PC grátis | MC-ServerLauncher",
+      "Crear un servidor de Minecraft en tu PC | MC-ServerLauncher": "Criar um servidor de Minecraft no PC | MC-ServerLauncher",
       "Crea y hostea tu servidor de Minecraft gratis en tu PC, sin comandos ni abrir puertos. Vanilla, Paper, Forge y Fabric, con mods y copias de seguridad.": "Cria e aloja o teu servidor de Minecraft grátis no teu PC, sem comandos nem abrir portas. Vanilla, Paper, Forge e Fabric, com mods e cópias de segurança.",
       "Crear un servidor de Minecraft en tu PC, gratis y sin comandos": "Criar um servidor de Minecraft no teu PC, grátis e sem comandos",
       "Monta y gestiona tu servidor de Minecraft desde una app: mods, copias de seguridad y acceso por Internet sin abrir puertos. Gratis y de código abierto.": "Monta e gere o teu servidor de Minecraft a partir de uma aplicação: mods, cópias de segurança e acesso pela Internet sem abrir portas. Grátis e de código aberto.",
