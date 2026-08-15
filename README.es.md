@@ -123,7 +123,8 @@ carpeta de cada servidor tiene un directorio `backups\` con las copias automáti
 Publicado bajo la **[licencia MIT](LICENSE)**: puedes usarlo, modificarlo y redistribuirlo, incluso
 con fines comerciales, siempre que mantengas el aviso de copyright. Se ofrece tal cual, sin garantías.
 
-La licencia cubre el código de este proyecto. *Minecraft* es una marca de Mojang Studios / Microsoft,
+La licencia cubre el código de este proyecto; en [NOTICE](NOTICE) están las notas del software de terceros.
+*Minecraft* es una marca de Mojang Studios / Microsoft,
 y este proyecto no está afiliado a ellos ni cuenta con su respaldo. Los archivos del servidor de
 Minecraft, los entornos de Java, los mods y el agente de Playit.gg que descarga la aplicación
 pertenecen a sus respectivos dueños y mantienen sus propias licencias.

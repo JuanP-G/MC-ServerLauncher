@@ -117,7 +117,8 @@ keeps a `backups\` directory with the automatic world backups.
 Released under the **[MIT License](LICENSE)** — free to use, modify and redistribute, including
 commercially, as long as the copyright notice stays. Provided as is, without warranty.
 
-The licence covers this project's own source code. *Minecraft* is a trademark of Mojang Studios /
+The licence covers this project's own source code — see [NOTICE](NOTICE) for third-party software.
+*Minecraft* is a trademark of Mojang Studios /
 Microsoft, and this project is not affiliated with or endorsed by them. The Minecraft server files,
 Java runtimes, mods and the Playit.gg agent the app downloads belong to their respective owners and
 keep their own licences.

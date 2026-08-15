@@ -19,13 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-This license covers the MC-ServerLauncher source code only.
-
-Minecraft is a trademark of Mojang Studios / Microsoft. This project is not
-affiliated with, endorsed by or associated with Mojang Studios or Microsoft.
-The Minecraft server files, Java runtimes, mods and the Playit.gg agent that
-the application downloads are distributed by their respective owners under
-their own licences and terms.

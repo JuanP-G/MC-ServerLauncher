@@ -1,0 +1,23 @@
+MC-ServerLauncher — third-party notices
+=======================================
+
+The MIT licence in LICENSE covers this project's own source code only.
+
+Minecraft is a trademark of Mojang Studios / Microsoft. This project is not
+affiliated with, endorsed by or associated with Mojang Studios or Microsoft.
+
+The application downloads, at the user's request, software that belongs to
+third parties and keeps its own licences and terms of use:
+
+  * Minecraft server files      Mojang Studios / Microsoft (Minecraft EULA)
+  * Paper, Forge, Fabric        their respective projects
+  * Java runtimes (Adoptium)    Eclipse Foundation (GPLv2 with Classpath Exception)
+  * Mods and plugins            their respective authors, via Modrinth
+  * Playit.gg agent             Playit.gg
+
+None of the above is redistributed as part of this project: the application
+fetches them from their official sources and verifies their checksums before
+running them.
+
+Bundled libraries and fonts used by the application keep their own licences,
+listed in the project's NuGet dependencies.
