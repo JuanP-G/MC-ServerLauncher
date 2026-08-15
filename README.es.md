@@ -5,6 +5,7 @@
 [![Web](https://img.shields.io/badge/Web-mc--server--launcher.vercel.app-3FB950?style=for-the-badge&logo=vercel&logoColor=white)](https://mc-server-launcher.vercel.app)
 [![Documentación](https://img.shields.io/badge/Docs-Referencia%20de%20API-1F6FEB?style=for-the-badge&logo=readthedocs&logoColor=white)](https://juanp-g.github.io/MC-ServerLauncher/docs/)
 [![Descargar](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?style=for-the-badge&label=Descargar&color=5CE07B)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
+[![Licencia](https://img.shields.io/badge/Licencia-MIT-8B949E?style=for-the-badge)](LICENSE)
 
 🌐 **[Página web](https://mc-server-launcher.vercel.app)** (también en
 [English](https://mc-server-launcher.vercel.app/en/) ·
@@ -116,3 +117,13 @@ publica con **DocFX** en **https://juanp-g.github.io/MC-ServerLauncher/docs/**. 
 `%APPDATA%\McServerLauncher\`: `servers.json`, `settings.json`, el `java\` que instala la app, los
 `logs\` de consola persistentes (se guardan 14 días) y, en Linux/macOS, `.secret.key`. Además, la
 carpeta de cada servidor tiene un directorio `backups\` con las copias automáticas del mundo.
+
+## 📄 Licencia
+
+Publicado bajo la **[licencia MIT](LICENSE)**: puedes usarlo, modificarlo y redistribuirlo, incluso
+con fines comerciales, siempre que mantengas el aviso de copyright. Se ofrece tal cual, sin garantías.
+
+La licencia cubre el código de este proyecto. *Minecraft* es una marca de Mojang Studios / Microsoft,
+y este proyecto no está afiliado a ellos ni cuenta con su respaldo. Los archivos del servidor de
+Minecraft, los entornos de Java, los mods y el agente de Playit.gg que descarga la aplicación
+pertenecen a sus respectivos dueños y mantienen sus propias licencias.
