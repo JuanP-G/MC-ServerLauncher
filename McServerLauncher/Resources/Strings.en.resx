@@ -465,6 +465,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_PlayitKeyNotProtected" xml:space="preserve"><value>The Playit key could not be encrypted, so for safety it was NOT saved to disk. It will keep working during this session and you'll be asked for it again next time. The failure details are in the logs folder.</value></data>
   <data name="Msg_ForgeNoChecksum" xml:space="preserve"><value>The Forge installer's checksum (.sha1) couldn't be fetched, so it can't be verified. For safety it won't run; try again.</value></data>
   <data name="Msg_ForgeInstallerInvalid" xml:space="preserve"><value>The downloaded Forge installer doesn't have the expected structure. It was discarded for safety; try again.</value></data>
+  <data name="Whatsnew_1_8_0" xml:space="preserve"><value>• The mod store now has a full details page: description in your language, gallery, versions, dependencies, links and related mods, without leaving the app.&#10;• New Filters panel: pick several categories at once, see which ones are applied and remove them one by one. Changing a filter takes the list back to the top.&#10;• Every mod comes with a plain-language summary of what it does, and warns you when it also has to be installed on the client.</value></data>
   <data name="Whatsnew_1_7_3" xml:space="preserve"><value>• You now choose in Settings what the window buttons do: whether minimizing sends the app to the tray (leaving the taskbar), and whether the X quits the app or also sends it to the tray.&#10;• Keep it like 1.7.2 or get the previous behavior back, without restarting the app.</value></data>
   <data name="Whatsnew_1_7_2" xml:space="preserve"><value>• Minimizing now sends the app to the system tray: it leaves the taskbar and lives on as the icon next to the clock (servers keep running).&#10;• The close (X) button really quits the app again, like it used to.&#10;• To bring the window back, click the tray icon.</value></data>
   <data name="Whatsnew_1_7_1" xml:space="preserve"><value>• Playit is safer: the official agent downloaded by the app is verified against a pinned SHA-256 before it runs, including cached copies.&#10;• The Playit connection proxy now rejects traffic outside the expected flow, rate-limits attempts per IP, and uses the same agent version the app downloads.&#10;• Death notifications avoid more false positives, and per-server notification preferences are copied independently.</value></data>
@@ -472,4 +473,56 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Whatsnew_1_6_3" xml:space="preserve"><value>• Lower background usage: with the app in the tray, status polling runs at a tenth of its usual rate (everything returns to normal when you open the window).&#10;• With several servers, the Playit tunnel lookup is done once and shared instead of repeated per server.&#10;• The console handles very verbose servers (e.g. Forge booting) with far less UI work, and the on-disk log is written in batches.&#10;• Internal cleanup: fewer repeated settings reads and unified duplicated code.</value></data>
   <data name="Whatsnew_1_6_2" xml:space="preserve"><value>• Security: the Forge installer now requires its checksum and its structure is validated before it runs; the Fabric jar was already validated since 1.6.1.&#10;• The Playit key is never saved unencrypted: if encryption ever fails, it isn't saved and you're warned.&#10;• The settings editor and the MOTD can no longer sneak extra lines into server.properties.&#10;• Player names are validated against Minecraft's real pattern before sending commands.&#10;• Freeing a busy port re-checks the process is still the same one before closing it, and mod icons have size and type limits.</value></data>
   <data name="Whatsnew_1_6_1" xml:space="preserve"><value>• Reliability: the server list is saved atomically with a backup copy; if the file gets damaged, it recovers on its own and lets you know.&#10;• Restarting a hung server no longer silently "does nothing", and the world backup on stop waits until the process is fully gone.&#10;• Modern Forge servers also check and install the right Java before starting.&#10;• Security: the in-app update requires verifying the installer (checksum) before running it, and the downloaded Fabric jar is validated before use.&#10;• Details: installing a loader and then cancelling the edit no longer desyncs the server type; the player counter can't be spoofed from chat; default RAM unified (2/4 GB).</value></data>
+  <data name="Store_Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Store_ByFmt" xml:space="preserve"><value>by {0}</value></data>
+  <data name="Store_Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Store_Gallery" xml:space="preserve"><value>Images</value></data>
+  <data name="Store_Compatibility" xml:space="preserve"><value>Compatibility</value></data>
+  <data name="Store_Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="Store_Dependencies" xml:space="preserve"><value>Dependencies</value></data>
+  <data name="Store_RelatedMods" xml:space="preserve"><value>Related mods</value></data>
+  <data name="Store_RelatedPlugins" xml:space="preserve"><value>Related plugins</value></data>
+  <data name="Store_Versions" xml:space="preserve"><value>Available versions</value></data>
+  <data name="Store_Links" xml:space="preserve"><value>Links</value></data>
+  <data name="Store_Compatible" xml:space="preserve"><value>Compatible</value></data>
+  <data name="Store_NotCompatible" xml:space="preserve"><value>Not compatible</value></data>
+  <data name="Store_CompatibleDetailFmt" xml:space="preserve"><value>There are versions for {0} and Minecraft {1}.</value></data>
+  <data name="Store_NotCompatibleDetailFmt" xml:space="preserve"><value>There is no version for {0} and Minecraft {1}.</value></data>
+  <data name="Store_Downloads" xml:space="preserve"><value>Downloads</value></data>
+  <data name="Store_Followers" xml:space="preserve"><value>Followers</value></data>
+  <data name="Store_Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="Store_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="Store_License" xml:space="preserve"><value>License</value></data>
+  <data name="Store_Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="Store_LoadError" xml:space="preserve"><value>The details could not be loaded. Check your connection.</value></data>
+  <data name="Store_OpenOnModrinth" xml:space="preserve"><value>View on Modrinth</value></data>
+  <data name="Store_Source" xml:space="preserve"><value>Source code</value></data>
+  <data name="Store_Issues" xml:space="preserve"><value>Report a bug</value></data>
+  <data name="Store_Wiki" xml:space="preserve"><value>Wiki</value></data>
+  <data name="Store_Discord" xml:space="preserve"><value>Discord</value></data>
+  <data name="Store_Donate" xml:space="preserve"><value>Support the author</value></data>
+  <data name="Store_DepRequired" xml:space="preserve"><value>Required</value></data>
+  <data name="Store_DepOptional" xml:space="preserve"><value>Optional</value></data>
+  <data name="Store_BodyTruncated" xml:space="preserve"><value>The description goes on; the rest is on Modrinth.</value></data>
+  <data name="Store_NoDescription" xml:space="preserve"><value>This project has no long description.</value></data>
+  <data name="Store_Fallback_Mod" xml:space="preserve"><value>A mod for your server.</value></data>
+  <data name="Store_Fallback_Plugin" xml:space="preserve"><value>A plugin for your server.</value></data>
+  <data name="Store_Fallback_ModFmt" xml:space="preserve"><value>{0} mod for your server.</value></data>
+  <data name="Store_Fallback_PluginFmt" xml:space="preserve"><value>{0} plugin for your server.</value></data>
+  <data name="Store_Side_NeedsClient" xml:space="preserve"><value>Players will have to install it in their Minecraft too.</value></data>
+  <data name="Store_Side_ServerOnly" xml:space="preserve"><value>It only goes on the server; players need nothing.</value></data>
+  <data name="Store_Side_ClientOptional" xml:space="preserve"><value>It goes on the server; on the client it is optional.</value></data>
+  <data name="Store_BrowseBy" xml:space="preserve"><value>Categories</value></data>
+  <data name="Store_NeedsClientBadge" xml:space="preserve"><value>Client needed</value></data>
+  <data name="Store_ViewDetails" xml:space="preserve"><value>View details</value></data>
+  <data name="Store_VersionsNote" xml:space="preserve"><value>Showing the most recent compatible versions.</value></data>
+  <data name="Filters" xml:space="preserve"><value>Filters</value></data>
+  <data name="Filters_Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Filters_Categories" xml:space="preserve"><value>Categories</value></data>
+  <data name="Filters_Topics" xml:space="preserve"><value>Topics</value></data>
+  <data name="Filters_CategoriesHint" xml:space="preserve"><value>These combine: a mod has to match all of them.</value></data>
+  <data name="Filters_TopicsHint" xml:space="preserve"><value>One at a time.</value></data>
+  <data name="Tip_RemoveFilter" xml:space="preserve"><value>Remove this filter</value></data>
+  <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Show or hide the installed list</value></data>
+  <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Nothing matches these filters. Try removing one.</value></data>
 </root>

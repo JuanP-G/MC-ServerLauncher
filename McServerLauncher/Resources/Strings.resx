@@ -511,6 +511,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_PlayitKeyNotProtected" xml:space="preserve"><value>No se pudo cifrar la clave de Playit, así que por seguridad NO se ha guardado en el disco. Seguirá funcionando durante esta sesión y se te volverá a pedir la próxima vez. El detalle del fallo está en la carpeta logs.</value></data>
   <data name="Msg_ForgeNoChecksum" xml:space="preserve"><value>No se pudo obtener el checksum (.sha1) del instalador de Forge, así que no se puede verificar. Por seguridad no se ejecutará; vuelve a intentarlo.</value></data>
   <data name="Msg_ForgeInstallerInvalid" xml:space="preserve"><value>El instalador de Forge descargado no tiene la estructura esperada. Se ha descartado por seguridad; vuelve a intentarlo.</value></data>
+  <data name="Whatsnew_1_8_0" xml:space="preserve"><value>• La tienda de mods ahora tiene ficha completa: descripción en tu idioma, galería, versiones, dependencias, enlaces y mods relacionados, sin salir de la app.&#10;• Nuevo panel de Filtros: elige varias categorías a la vez, ve cuáles tienes puestas y quítalas de una en una. Al cambiar un filtro, la lista vuelve al principio.&#10;• Cada mod trae un resumen en lenguaje claro de para qué sirve, y avisa cuando además hay que instalarlo en el cliente.</value></data>
   <data name="Whatsnew_1_7_3" xml:space="preserve"><value>• Ahora eliges en Ajustes qué hacen los botones de la ventana: si minimizar la manda a la bandeja (y sale de la barra de tareas) y si la X cierra la app o la manda también a la bandeja.&#10;• Puedes dejarlo como en la 1.7.2 o recuperar el comportamiento anterior, sin reiniciar la app.</value></data>
   <data name="Whatsnew_1_7_2" xml:space="preserve"><value>• Al minimizar, la app ahora se va a la bandeja del sistema: desaparece de la barra de tareas y sigue funcionando como icono junto al reloj (los servidores siguen corriendo).&#10;• El botón de cerrar (X) vuelve a cerrar la aplicación de verdad, como antes.&#10;• Para recuperar la ventana, haz clic en el icono de la bandeja.</value></data>
   <data name="Whatsnew_1_7_1" xml:space="preserve"><value>• Playit es más seguro: el agente oficial que descarga la app se verifica con un SHA-256 fijado antes de ejecutarse, también si ya estaba en caché.&#10;• El proxy de conexión de Playit ahora rechaza tráfico que no sea el flujo esperado, limita intentos por IP y usa la misma versión del agente que la app descarga.&#10;• Las notificaciones de muertes evitan más falsos positivos y las preferencias por servidor se copian de forma independiente.</value></data>
@@ -518,4 +519,56 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Whatsnew_1_6_3" xml:space="preserve"><value>• Menos consumo en segundo plano: con la app en la bandeja, los sondeos de estado corren a una décima parte de su ritmo (todo vuelve a la normalidad al abrir la ventana).&#10;• Con varios servidores, la consulta de túneles de Playit se hace una sola vez y se comparte, en vez de repetirse por servidor.&#10;• La consola aguanta servidores muy verbosos (p. ej. Forge arrancando) con mucho menos trabajo de interfaz, y el log en disco se escribe por lotes.&#10;• Limpieza interna: menos lecturas repetidas de configuración y código duplicado unificado.</value></data>
   <data name="Whatsnew_1_6_2" xml:space="preserve"><value>• Seguridad: el instalador de Forge exige ahora su checksum y se valida su estructura antes de ejecutarse; el jar de Fabric ya se validaba desde la 1.6.1.&#10;• La clave de Playit nunca se guarda sin cifrar: si el cifrado fallara, no se guarda y se te avisa.&#10;• El editor de configuración y el MOTD ya no permiten colar líneas extra en server.properties.&#10;• Los nombres de jugador se validan contra el patrón real de Minecraft antes de enviar comandos.&#10;• Al liberar un puerto ocupado se comprueba que el proceso siga siendo el mismo antes de cerrarlo, y los iconos de mods tienen límite de tamaño y tipo.</value></data>
   <data name="Whatsnew_1_6_1" xml:space="preserve"><value>• Fiabilidad: la lista de servidores se guarda de forma atómica con copia de seguridad; si el archivo se daña, se recupera solo y te avisa.&#10;• Reiniciar un servidor colgado ya no se queda "sin hacer nada", y la copia del mundo al detener espera a que el proceso muera del todo.&#10;• Los servidores Forge modernos también comprueban e instalan el Java correcto antes de arrancar.&#10;• Seguridad: la actualización de la app exige verificar el instalador (checksum) antes de ejecutarlo, y el jar de Fabric descargado se valida antes de usarse.&#10;• Detalles: instalar un loader y cancelar la edición ya no desincroniza el tipo del servidor; el contador de jugadores no se puede engañar desde el chat; RAM por defecto unificada (2/4 GB).</value></data>
+  <data name="Store_Back" xml:space="preserve"><value>Volver</value></data>
+  <data name="Store_ByFmt" xml:space="preserve"><value>por {0}</value></data>
+  <data name="Store_Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="Store_Gallery" xml:space="preserve"><value>Imágenes</value></data>
+  <data name="Store_Compatibility" xml:space="preserve"><value>Compatibilidad</value></data>
+  <data name="Store_Tags" xml:space="preserve"><value>Etiquetas</value></data>
+  <data name="Store_Dependencies" xml:space="preserve"><value>Dependencias</value></data>
+  <data name="Store_RelatedMods" xml:space="preserve"><value>Mods relacionados</value></data>
+  <data name="Store_RelatedPlugins" xml:space="preserve"><value>Plugins relacionados</value></data>
+  <data name="Store_Versions" xml:space="preserve"><value>Versiones disponibles</value></data>
+  <data name="Store_Links" xml:space="preserve"><value>Enlaces</value></data>
+  <data name="Store_Compatible" xml:space="preserve"><value>Compatible</value></data>
+  <data name="Store_NotCompatible" xml:space="preserve"><value>No compatible</value></data>
+  <data name="Store_CompatibleDetailFmt" xml:space="preserve"><value>Hay versiones para {0} y Minecraft {1}.</value></data>
+  <data name="Store_NotCompatibleDetailFmt" xml:space="preserve"><value>No hay ninguna versión para {0} y Minecraft {1}.</value></data>
+  <data name="Store_Downloads" xml:space="preserve"><value>Descargas</value></data>
+  <data name="Store_Followers" xml:space="preserve"><value>Seguidores</value></data>
+  <data name="Store_Updated" xml:space="preserve"><value>Actualizado</value></data>
+  <data name="Store_Published" xml:space="preserve"><value>Publicado</value></data>
+  <data name="Store_License" xml:space="preserve"><value>Licencia</value></data>
+  <data name="Store_Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="Store_LoadError" xml:space="preserve"><value>No se han podido cargar los detalles. Comprueba tu conexión.</value></data>
+  <data name="Store_OpenOnModrinth" xml:space="preserve"><value>Ver en Modrinth</value></data>
+  <data name="Store_Source" xml:space="preserve"><value>Código fuente</value></data>
+  <data name="Store_Issues" xml:space="preserve"><value>Reportar un fallo</value></data>
+  <data name="Store_Wiki" xml:space="preserve"><value>Wiki</value></data>
+  <data name="Store_Discord" xml:space="preserve"><value>Discord</value></data>
+  <data name="Store_Donate" xml:space="preserve"><value>Apoyar al autor</value></data>
+  <data name="Store_DepRequired" xml:space="preserve"><value>Obligatoria</value></data>
+  <data name="Store_DepOptional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="Store_BodyTruncated" xml:space="preserve"><value>La descripción sigue; el resto está en Modrinth.</value></data>
+  <data name="Store_NoDescription" xml:space="preserve"><value>Este proyecto no tiene una descripción larga.</value></data>
+  <data name="Store_Fallback_Mod" xml:space="preserve"><value>Mod para tu servidor.</value></data>
+  <data name="Store_Fallback_Plugin" xml:space="preserve"><value>Plugin para tu servidor.</value></data>
+  <data name="Store_Fallback_ModFmt" xml:space="preserve"><value>Mod de {0} para tu servidor.</value></data>
+  <data name="Store_Fallback_PluginFmt" xml:space="preserve"><value>Plugin de {0} para tu servidor.</value></data>
+  <data name="Store_Side_NeedsClient" xml:space="preserve"><value>Los jugadores también tendrán que instalarlo en su Minecraft.</value></data>
+  <data name="Store_Side_ServerOnly" xml:space="preserve"><value>Solo se instala en el servidor; los jugadores no necesitan nada.</value></data>
+  <data name="Store_Side_ClientOptional" xml:space="preserve"><value>Se instala en el servidor; en el cliente es opcional.</value></data>
+  <data name="Store_BrowseBy" xml:space="preserve"><value>Categorías</value></data>
+  <data name="Store_NeedsClientBadge" xml:space="preserve"><value>Requiere cliente</value></data>
+  <data name="Store_ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Store_VersionsNote" xml:space="preserve"><value>Se muestran las versiones compatibles más recientes.</value></data>
+  <data name="Filters" xml:space="preserve"><value>Filtros</value></data>
+  <data name="Filters_Clear" xml:space="preserve"><value>Limpiar</value></data>
+  <data name="Filters_Categories" xml:space="preserve"><value>Categorías</value></data>
+  <data name="Filters_Topics" xml:space="preserve"><value>Temas</value></data>
+  <data name="Filters_CategoriesHint" xml:space="preserve"><value>Se pueden combinar: los mods tienen que cumplir todas.</value></data>
+  <data name="Filters_TopicsHint" xml:space="preserve"><value>Solo uno a la vez.</value></data>
+  <data name="Tip_RemoveFilter" xml:space="preserve"><value>Quitar este filtro</value></data>
+  <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Mostrar u ocultar la lista de instalados</value></data>
+  <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Ningún resultado con estos filtros. Prueba a quitar alguno.</value></data>
 </root>

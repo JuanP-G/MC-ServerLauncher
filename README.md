@@ -60,9 +60,13 @@ all with buttons.
 - **Create a server** automatically: pick the **type**, **version** (official Mojang list), **port** and **RAM**;
   the app downloads the right server, accepts the EULA, prepares `run.bat` / `server.properties`, and installs
   the correct **Java** (Temurin) if needed. Vanilla/Fabric/Forge use **mods**; Paper uses **plugins**.
-- **Mods & plugins browser** 🧩 — search **Modrinth** inside the app, already **filtered by your server's type
-  and version** (with type + version chips so it's obvious). Sort by relevance or downloads, one-click
-  **Install**, and **enable/disable** or delete installed items. Paper servers browse plugins; the rest, mods.
+- **Mods & plugins store** 🧩 — search **Modrinth** inside the app, already **filtered by your server's type
+  and version** (with type + version chips so it's obvious). Every result carries a **plain-language summary of
+  what it does in your language** and a warning when it also has to be installed on the client. Open a **details
+  page** with the gallery, versions, dependencies, links and related mods without leaving the app. A **Filters
+  panel** combines several categories at once and shows the applied ones as chips you can remove one by one.
+  One-click **Install**, and **enable/disable** or delete installed items. Paper servers browse plugins; the
+  rest, mods.
 - **Change a server's type** — turn an existing server into Fabric/Forge/Paper or back to Vanilla, **keeping the
   world**, with clear colour-coded warnings about what each change can affect.
 - **Start / Stop / Restart** with a clean stop that saves the world; detects and frees a **busy port**; live
