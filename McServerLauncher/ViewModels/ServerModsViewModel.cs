@@ -12,8 +12,10 @@ using CommunityToolkit.Mvvm.Input;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Models.Modrinth;
+using McServerLauncher.Models.Store;
 using McServerLauncher.Services;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -69,11 +71,209 @@ public partial class ServerModsViewModel : ObservableObject
     private bool _hasLoadedOnce;
     private const int PageSize = 20;
 
-    public ObservableCollection<ModrinthProjectViewModel> SearchResults { get; } = new();
+    /// <summary>
+    /// The results, flat. Replaced in one go rather than emptied and refilled: a list that sits
+    /// empty across a network round trip makes the whole panel blink out and back.
+    /// </summary>
+    public BulkObservableCollection<ModrinthProjectViewModel> SearchResults { get; } = new();
+
+    /// <summary>Cancels the search in flight when a newer one starts.</summary>
+    private CancellationTokenSource? _reload;
+
+    // --- Browsing by category ---
+
+    /// <summary>
+    /// The category chips, built from the tag catalogue and filtered to what makes sense for this
+    /// kind of server. Tags that map to a Modrinth facet filter exactly; the rest fall back to a
+    /// search term.
+    /// </summary>
+    public IReadOnlyList<StoreTagViewModel> BrowseTags { get; }
+
+    /// <summary>
+    /// Categories Modrinth can filter on exactly. These stack: each adds its own facet group, and
+    /// Modrinth ANDs the groups.
+    /// </summary>
+    public IReadOnlyList<StoreTagViewModel> FacetTags { get; }
+
+    /// <summary>
+    /// Categories Modrinth has no facet for, which can only contribute words to the query. Picking
+    /// a second one would blur the search instead of narrowing it, so they behave as a radio group.
+    /// </summary>
+    public IReadOnlyList<StoreTagViewModel> QueryTags { get; }
+
+    /// <summary>
+    /// The categories currently filtering the browse, in the order the user picked them. Shown as
+    /// removable chips, so a filter can never be selected but scrolled out of sight.
+    /// </summary>
+    public ObservableCollection<StoreTagViewModel> SelectedTags { get; } = new();
+
+    public bool HasSelectedTags => SelectedTags.Count > 0;
+
+    /// <summary>
+    /// Everything narrowing the results right now, as one row of chips: the server's own loader and
+    /// Minecraft version (always on, not removable) followed by the categories the user picked.
+    /// Putting them together answers "why am I seeing these results?" in one glance.
+    /// </summary>
+    public ObservableCollection<ActiveFilterViewModel> ActiveFilters { get; } = new();
+
+    private void RebuildActiveFilters()
+    {
+        ActiveFilters.Clear();
+        ActiveFilters.Add(new ActiveFilterViewModel(FilterTypeText, FilterTypeBrush, FilterTip));
+        ActiveFilters.Add(new ActiveFilterViewModel(FilterVersionText, VersionChipBrush, FilterTip));
+        foreach (var tag in SelectedTags)
+            ActiveFilters.Add(new ActiveFilterViewModel(tag));
+    }
+
+    private static readonly IBrush VersionChipBrush = new ImmutableSolidColorBrush(Color.Parse("#40FFFFFF"));
+
+    /// <summary>
+    /// Adds or removes a category from the filter.
+    /// <para>
+    /// Tags backed by a Modrinth facet stack: each one adds its own facet group, and groups are
+    /// ANDed, so picking two means "both", the same as Modrinth's own site. Tags with no facet
+    /// only have search words to offer, and concatenating several of those blurs the query instead
+    /// of narrowing it — so those behave like a radio button among themselves.
+    /// </para>
+    /// </summary>
+    [RelayCommand]
+    private void ToggleTag(StoreTagViewModel? tag)
+    {
+        if (tag is null) return;
+
+        if (SelectedTags.Contains(tag))
+        {
+            SelectedTags.Remove(tag);
+        }
+        else
+        {
+            if (tag.Definition.Facets.Count == 0)
+                foreach (var other in SelectedTags.Where(t => t.Definition.Facets.Count == 0).ToList())
+                    SelectedTags.Remove(other);
+            SelectedTags.Add(tag);
+        }
+
+        OnSelectionChanged();
+    }
+
+    /// <summary>Removes one category from the filter (the ✕ on its chip).</summary>
+    [RelayCommand]
+    private void RemoveTag(StoreTagViewModel? tag)
+    {
+        if (tag is null || !SelectedTags.Remove(tag)) return;
+        OnSelectionChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(HasSelectedTags))]
+    private void ClearFilters()
+    {
+        if (SelectedTags.Count == 0) return;
+        SelectedTags.Clear();
+        OnSelectionChanged();
+    }
+
+    private void OnSelectionChanged()
+    {
+        foreach (var chip in BrowseTags) chip.IsActive = SelectedTags.Contains(chip);
+        OnPropertyChanged(nameof(HasSelectedTags));
+        ClearFiltersCommand.NotifyCanExecuteChanged();
+        RebuildActiveFilters();
+        _ = LoadPageAsync(append: false, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Whether the installed panel is showing. Collapsing it is the cheapest way to give the
+    /// results room: it is 300px that mostly holds a short list, and on a 1150px window it is the
+    /// difference between one column of results and two.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isInstalledPanelOpen = true;
+
+    /// <summary>Whether the filters popup is open (its toggle button binds both ways).</summary>
+    [ObservableProperty]
+    private bool _isFiltersOpen;
+
+    /// <summary>Whether the "how to play" popup is open.</summary>
+    [ObservableProperty]
+    private bool _isHowToPlayOpen;
+
+    // --- Details page ---
+
+    /// <summary>
+    /// The open details page, or null while the browser list is showing. The list is deliberately
+    /// left untouched underneath, so coming back is instant and keeps the scroll position.
+    /// </summary>
+    [ObservableProperty]
+    private ModDetailsViewModel? _details;
+
+    public bool IsBrowsing => Details is null;
+
+    /// <summary>Where the user came from, so a dependency four levels deep can walk back out.</summary>
+    private readonly Stack<StoreItem> _history = new();
+
+    /// <summary>Opens the details page for a store item, remembering the current one.</summary>
+    public void ShowDetails(StoreItem item)
+    {
+        if (Details is { } current)
+            _history.Push(current.CurrentItem);
+
+        OpenDetails(item);
+    }
+
+    /// <summary>Goes back to the previous details page, or to the list when there isn't one.</summary>
+    public void GoBack()
+    {
+        if (_history.Count > 0)
+        {
+            OpenDetails(_history.Pop());
+            return;
+        }
+
+        var closing = Details;
+        Details = null;
+        closing?.Dispose();
+    }
+
+    /// <summary>
+    /// Drops the open details page, cancelling whatever it is still fetching. Called when the app
+    /// closes so pending requests don't outlive the window they were going to fill.
+    /// </summary>
+    public void Shutdown()
+    {
+        var open = Details;
+        Details = null;
+        open?.Dispose();
+        _history.Clear();
+
+        try { _reload?.Cancel(); } catch { /* already disposed */ }
+        _reload?.Dispose();
+        _reload = null;
+    }
+
+    private void OpenDetails(StoreItem item)
+    {
+        var previous = Details;
+        var page = new ModDetailsViewModel(this, _modrinthService, item);
+        Details = page;
+        // Disposed after the swap so its cancellation can't race the new page's requests.
+        previous?.Dispose();
+        _ = page.LoadAsync();
+    }
+
+    partial void OnDetailsChanged(ModDetailsViewModel? value) => OnPropertyChanged(nameof(IsBrowsing));
 
     // --- Plugins vs mods (Paper uses plugins in plugins/; the loaders use mods in mods/) ---
 
-    private bool IsPluginBased => _config.Type == ServerType.Paper;
+    public bool IsPluginBased => _config.Type == ServerType.Paper;
+
+    /// <summary>This server's loader, used by the details page to resolve compatible versions.</summary>
+    internal ServerType ServerType => _config.Type;
+
+    /// <summary>This server's Minecraft version.</summary>
+    internal string GameVersion => _config.GameVersion;
+
+    /// <summary>What Modrinth calls this kind of content, for the tag catalogue's chip filter.</summary>
+    private string ProjectTypeName => IsPluginBased ? "plugin" : "mod";
 
     /// <summary>Folder where content is installed: "plugins" for Paper, "mods" otherwise.</summary>
     private string ContentFolder => IsPluginBased ? "plugins" : "mods";
@@ -107,6 +307,13 @@ public partial class ServerModsViewModel : ObservableObject
     public ServerModsViewModel(ServerConfig config)
     {
         _config = config;
+        BrowseTags = StoreTagService.Shared.BrowseTags(ProjectTypeName)
+            .Select(t => new StoreTagViewModel(t))
+            .ToList();
+        // The two halves behave differently when several are picked, so the panel shows them apart.
+        FacetTags = BrowseTags.Where(t => t.Definition.Facets.Count > 0).ToList();
+        QueryTags = BrowseTags.Where(t => t.Definition.Facets.Count == 0).ToList();
+        RebuildActiveFilters();
         RefreshInstalledMods();
     }
 
@@ -369,31 +576,51 @@ public partial class ServerModsViewModel : ObservableObject
         if (_config.Type == ServerType.Vanilla || string.IsNullOrEmpty(_config.GameVersion))
         {
             SearchStatus = Localizer.Get("Msg_ModBrowserNeedsLoader");
-            SearchResults.Clear();
+            SetResults(Array.Empty<ModrinthProjectViewModel>(), append: false);
             CanLoadMore = false;
             return;
         }
 
+        // Every new search supersedes the one before it. Without this, two quick clicks on two
+        // chips race: both responses land on the same list, the paging offset is advanced twice
+        // and "load more" silently skips a page.
+        CancellationTokenSource? mine = null;
         if (!append)
         {
+            _reload?.Cancel();
+            _reload?.Dispose();
+            mine = _reload = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            ct = mine.Token;
             _offset = 0;
-            SearchResults.Clear();
-            SearchStatus = Localizer.Get("Msg_SearchingModrinth");
         }
 
         IsSearching = true;
         _hasLoadedOnce = true;
         var index = SelectedSortIndex == 1 ? "downloads" : "relevance";
 
+        // Facet-backed categories stack into separate groups, which Modrinth ANDs. The ones with
+        // no facet contribute their words to the query instead (only ever one of those at a time).
+        var facets = SelectedTags.SelectMany(t => t.Definition.Facets).ToList();
+        var query = SearchQuery ?? string.Empty;
+        foreach (var loose in SelectedTags.Where(t => t.Definition.Facets.Count == 0))
+            if (loose.Definition.Query is { Length: > 0 } words)
+                query = string.IsNullOrWhiteSpace(query) ? words : query + " " + words;
+
         try
         {
             var response = await _modrinthService.SearchModsAsync(
-                SearchQuery ?? string.Empty, _config.Type, _config.GameVersion, index, _offset, PageSize, ct);
+                query, _config.Type, _config.GameVersion, index, _offset, PageSize,
+                facets.Count > 0 ? facets : null, ct);
+
+            // A newer search started while this one was in flight: its results are the ones that
+            // match what the interface is showing, so drop these.
+            if (ct.IsCancellationRequested || (mine is not null && !ReferenceEquals(_reload, mine)))
+                return;
 
             if (response != null)
             {
-                foreach (var hit in response.Hits)
-                    SearchResults.Add(new ModrinthProjectViewModel(hit, this));
+                var page = response.Hits.Select(hit => new ModrinthProjectViewModel(hit, this));
+                SetResults(page, append);
 
                 _totalHits = response.TotalHits;
                 _offset += response.Hits.Count;
@@ -405,9 +632,15 @@ public partial class ServerModsViewModel : ObservableObject
             }
             else if (!append)
             {
+                // Keep whatever was on screen: an empty panel says less than the old results plus
+                // an explanation of why they didn't refresh.
                 SearchStatus = Localizer.Get("Msg_NoModsFound");
                 CanLoadMore = false;
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer search; the one that replaced it owns the UI now.
         }
         catch (Exception ex)
         {
@@ -415,18 +648,45 @@ public partial class ServerModsViewModel : ObservableObject
         }
         finally
         {
-            IsSearching = false;
+            // Only the search still in charge may clear the spinner.
+            if (append || mine is null || ReferenceEquals(_reload, mine)) IsSearching = false;
         }
     }
 
-    public async Task InstallModAsync(string projectId)
+    /// <summary>
+    /// Puts a page of results on screen: appended for "load more", swapped in one operation for
+    /// everything else.
+    /// <para>
+    /// The swap matters. Emptying the list and refilling it after the response arrives leaves the
+    /// panel blank for the length of a network round trip, which reads as the view jumping. One
+    /// replacement means the old results stay put until the new ones are ready.
+    /// </para>
+    /// <para>
+    /// The two branches are also what drives the scroll position: a replacement raises a single
+    /// Reset, which <c>ResetScrollBehavior</c> takes as "these are different results" and sends the
+    /// list back to the top; appending raises Add, which leaves the user where they were reading.
+    /// </para>
+    /// </summary>
+    private void SetResults(IEnumerable<ModrinthProjectViewModel> page, bool append)
+    {
+        if (append) foreach (var item in page) SearchResults.Add(item);
+        else SearchResults.ReplaceAll(page);
+    }
+
+    /// <summary>
+    /// Installs a project. <paramref name="chosen"/> installs that exact version (the details page
+    /// offers the last few); without it the newest compatible one is resolved, as before.
+    /// This is the only install path in the app — the details page routes through it too.
+    /// </summary>
+    public async Task InstallModAsync(string projectId, VersionResult? chosen = null)
     {
         IsSearching = true;
         SearchStatus = Localizer.Get("Msg_ResolvingVersion");
 
         try
         {
-            var version = await _modrinthService.GetLatestProjectVersionAsync(projectId, _config.Type, _config.GameVersion);
+            var version = chosen
+                ?? await _modrinthService.GetLatestProjectVersionAsync(projectId, _config.Type, _config.GameVersion);
             if (version == null || version.Files.Count == 0)
             {
                 SearchStatus = Localizer.Get("Msg_NoCompatibleVersion");
@@ -467,71 +727,120 @@ public partial class ServerModsViewModel : ObservableObject
     }
 }
 
+/// <summary>
+/// One chip in the "what is filtering right now" row. Some of them are the server's own loader and
+/// version, which are not the user's to remove; the rest are categories, which are.
+/// </summary>
+public class ActiveFilterViewModel
+{
+    public string Label { get; }
+
+    public IBrush Brush { get; }
+
+    public string Tip { get; }
+
+    /// <summary>The tag behind the chip, or null for the fixed loader/version chips.</summary>
+    public StoreTagViewModel? Tag { get; }
+
+    public bool CanRemove => Tag is not null;
+
+    public ActiveFilterViewModel(string label, IBrush brush, string tip)
+    {
+        Label = label;
+        Brush = brush;
+        Tip = tip;
+    }
+
+    public ActiveFilterViewModel(StoreTagViewModel tag)
+    {
+        Tag = tag;
+        Label = tag.Label;
+        Brush = tag.Brush;
+        Tip = tag.Label;
+    }
+}
+
+/// <summary>One card in the browser: a store item, its tags, and the two buttons it offers.</summary>
 public partial class ModrinthProjectViewModel : ObservableObject
 {
     private readonly ServerModsViewModel _parent;
+    private readonly StoreItem _item;
 
-    public string Id { get; }
-    public string Title { get; }
-    public string Description { get; }
-    public string Author { get; }
-    public int Downloads { get; }
+    public string Id => _item.Id;
+    public string Title => _item.Title;
+    public string Author => _item.Author;
+    public long Downloads => _item.Downloads;
     public string DownloadsText { get; }
-    public string? IconUrl { get; }
+    public string? IconUrl => _item.IconUrl;
+
+    /// <summary>What the project does, in the user's language.</summary>
+    public string Description { get; }
+
+    /// <summary>
+    /// The author's own line, shown small underneath. It is the only English left on a card, and
+    /// only when the catalogue has nothing for this project — dropping it entirely would trade a
+    /// wrong language for less information.
+    /// </summary>
+    public string Tagline { get; }
+
+    public bool HasTagline => !string.IsNullOrEmpty(Tagline);
+
+    /// <summary>The few tags that fit on a card, most important first.</summary>
+    public IReadOnlyList<StoreTagViewModel> Tags { get; }
+
+    public bool HasTags => Tags.Count > 0;
+
+    /// <summary>True when players have to install it too — the one caveat worth showing up front.</summary>
+    public bool NeedsClient => _item.NeedsClient;
 
     [ObservableProperty]
     private bool _isInstalling;
 
-    /// <summary>Mod icon, loaded asynchronously from <see cref="IconUrl"/> (best-effort).</summary>
+    /// <summary>Mod icon, loaded asynchronously through the shared image cache (best-effort).</summary>
     [ObservableProperty]
     private Bitmap? _icon;
 
     public bool HasIcon => Icon is not null;
 
     public ModrinthProjectViewModel(ProjectResult project, ServerModsViewModel parent)
+        : this(StoreItem.From(project), parent)
+    {
+    }
+
+    public ModrinthProjectViewModel(StoreItem item, ServerModsViewModel parent)
     {
         _parent = parent;
-        Id = project.ProjectId;
-        Title = project.Title;
-        Description = project.Description;
-        Author = project.Author;
-        Downloads = project.Downloads;
-        DownloadsText = FormatDownloads(project.Downloads);
-        IconUrl = project.IconUrl;
+        _item = item;
+        DownloadsText = ModDetailsViewModel.FormatCount(item.Downloads);
 
-        if (!string.IsNullOrEmpty(IconUrl))
-            _ = LoadIconAsync(IconUrl);
+        var blurb = StoreSummaryService.Shared.Blurb(item);
+        Description = blurb.Summary;
+        Tagline = blurb.Tagline;
+
+        // Three fits one line on a card. The install side isn't among them: the card shows that as
+        // its own badge next to the download count.
+        Tags = StoreTagService.Shared.Classify(item, max: 3, onlyKind: StoreTagService.TopicKind)
+            .Select(t => new StoreTagViewModel(t))
+            .ToList();
+
+        _ = LoadIconAsync(item.IconUrl);
     }
 
     partial void OnIconChanged(Bitmap? value) => OnPropertyChanged(nameof(HasIcon));
 
-    private async Task LoadIconAsync(string url)
+    private async Task LoadIconAsync(string? url)
     {
-        try
-        {
-            // Size- and content-type-guarded download (see ModrinthService.FetchIconAsync): a
-            // huge or mislabeled icon_url can't balloon memory or feed the decoder junk.
-            var bytes = await ModrinthService.FetchIconAsync(url);
-            if (bytes is null) return;
-
-            using var ms = new MemoryStream(bytes);
-            var bmp = new Bitmap(ms);
-            if (Dispatcher.UIThread.CheckAccess()) Icon = bmp;
-            else Dispatcher.UIThread.Post(() => Icon = bmp);
-        }
-        catch
-        {
-            // Best-effort: webp/svg or decoding failures simply leave the placeholder.
-        }
+        // Size- and content-type-guarded, cached in memory and on disk (see ImageCache): a huge or
+        // mislabeled icon_url can't balloon memory, and scrolling back up costs no request.
+        var bitmap = await ImageCache.GetAsync(url);
+        if (bitmap is null) return;
+        if (Dispatcher.UIThread.CheckAccess()) Icon = bitmap;
+        else Dispatcher.UIThread.Post(() => Icon = bitmap);
     }
 
-    /// <summary>Compact download count, e.g. 1234 -> "1.2K", 3500000 -> "3.5M".</summary>
-    private static string FormatDownloads(int downloads) => downloads switch
-    {
-        >= 1_000_000 => (downloads / 1_000_000.0).ToString("0.#") + "M",
-        >= 1_000 => (downloads / 1_000.0).ToString("0.#") + "K",
-        _ => downloads.ToString()
-    };
+    /// <summary>Opens the full details page for this project.</summary>
+    [RelayCommand]
+    private void Open() => _parent.ShowDetails(_item);
 
     [RelayCommand]
     private async Task InstallAsync()

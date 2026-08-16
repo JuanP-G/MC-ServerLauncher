@@ -11,8 +11,22 @@ public class VersionResult
     [JsonPropertyName("project_id")]
     public string ProjectId { get; set; } = string.Empty;
 
+    /// <summary>Human-readable version name, e.g. "6.0.8 for 1.20.1".</summary>
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
     [JsonPropertyName("version_number")]
     public string VersionNumber { get; set; } = string.Empty;
+
+    /// <summary>"release", "beta" or "alpha".</summary>
+    [JsonPropertyName("version_type")]
+    public string? VersionType { get; set; }
+
+    [JsonPropertyName("date_published")]
+    public DateTimeOffset? DatePublished { get; set; }
+
+    [JsonPropertyName("downloads")]
+    public long Downloads { get; set; }
 
     [JsonPropertyName("game_versions")]
     public List<string> GameVersions { get; set; } = new();
@@ -22,6 +36,10 @@ public class VersionResult
 
     [JsonPropertyName("files")]
     public List<VersionFile> Files { get; set; } = new();
+
+    /// <summary>Other projects this version needs (or conflicts with).</summary>
+    [JsonPropertyName("dependencies")]
+    public List<VersionDependency> Dependencies { get; set; } = new();
 }
 
 public class VersionFile
@@ -35,6 +53,10 @@ public class VersionFile
     [JsonPropertyName("primary")]
     public bool Primary { get; set; }
 
+    /// <summary>File size in bytes.</summary>
+    [JsonPropertyName("size")]
+    public long Size { get; set; }
+
     [JsonPropertyName("hashes")]
     public FileHashes? Hashes { get; set; }
 }
@@ -47,4 +69,24 @@ public class FileHashes
 
     [JsonPropertyName("sha512")]
     public string? Sha512 { get; set; }
+}
+
+/// <summary>
+/// A dependency declared by a version. <see cref="DependencyType"/> is "required", "optional",
+/// "incompatible" or "embedded"; only the project id is guaranteed, so the project itself has to be
+/// looked up to show a name.
+/// </summary>
+public class VersionDependency
+{
+    [JsonPropertyName("version_id")]
+    public string? VersionId { get; set; }
+
+    [JsonPropertyName("project_id")]
+    public string? ProjectId { get; set; }
+
+    [JsonPropertyName("file_name")]
+    public string? FileName { get; set; }
+
+    [JsonPropertyName("dependency_type")]
+    public string? DependencyType { get; set; }
 }

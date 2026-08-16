@@ -3,89 +3,268 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:McServerLauncher.ViewModels"
+             xmlns:views="using:McServerLauncher.Views"
              xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:b="using:McServerLauncher.Behaviors"
              xmlns:ic="using:FluentIcons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="McServerLauncher.Views.ServerModsView"
              x:DataType="vm:ServerModsViewModel"
              x:CompileBindings="False">
 
-    <Grid RowDefinitions="Auto,*" Margin="0,8,0,0">
+    <UserControl.Styles>
+        <!-- Chip for an applied filter: label plus the ✕ that removes it. -->
+        <Style Selector="Border.filterChip">
+            <Setter Property="CornerRadius" Value="11" />
+            <Setter Property="Padding" Value="9,2,4,2" />
+            <Setter Property="Margin" Value="0,0,6,4" />
+        </Style>
+        <!-- Fluent gives every Button a 32px minimum, which made a one-line chip 40px tall. -->
+        <Style Selector="Border.filterChip Button">
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Padding" Value="2" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <!-- The results are cards, not list rows: no selection chrome, no padding of its own. -->
+        <Style Selector="ListBox.results ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="ListBox.results ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBox.results ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="#1A1A1A" />
+            <Setter Property="BorderBrush" Value="#1AFFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10" />
+            <!-- The right margin is a gutter for the scrollbar, which in this theme floats over the
+                 content instead of taking space of its own. -->
+            <Setter Property="Margin" Value="0,0,10,8" />
+        </Style>
+        <Style Selector="Border.card:pointerover">
+            <Setter Property="BorderBrush" Value="#40FFFFFF" />
+        </Style>
+        <Style Selector="TextBlock.popupTitle">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+        <Style Selector="TextBlock.popupHint">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </UserControl.Styles>
 
-        <!-- How to play (collapsible instructions, depends on the server type) -->
-        <Expander Grid.Row="0" Margin="0,0,0,8" HorizontalAlignment="Stretch" IsExpanded="False">
-            <Expander.Header>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ic:SymbolIcon Symbol="QuestionCircle" />
-                    <TextBlock Text="{Binding HowToPlayTitle}" VerticalAlignment="Center" />
-                </StackPanel>
-            </Expander.Header>
-            <TextBlock Text="{Binding HowToPlaySteps}" TextWrapping="Wrap" Opacity="0.9"
-                       FontSize="13" Margin="4,2" LineHeight="20" />
-        </Expander>
+    <!-- A fixed right column, not Auto: the installed panel is a constant 300px, and giving the
+         grid one star column plus one fixed one is the arrangement this view has always used. -->
+    <Grid ColumnDefinitions="*,300" Margin="0,8,0,0">
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,300">
-            <!-- Left panel: Browser -->
-            <Border Grid.Column="0" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
-                    CornerRadius="8" Padding="12" Margin="0,0,8,0">
-                <Grid RowDefinitions="Auto,Auto,Auto,*">
-                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
-                        <TextBlock Grid.Column="0" Text="{Binding BrowseTitle}" FontSize="16"
-                                   FontWeight="SemiBold" VerticalAlignment="Center" />
-                        <!-- Active filter: makes it clear results are limited to this type + version -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
-                                    ToolTip.Tip="{Binding FilterTip}">
-                            <ic:SymbolIcon Symbol="Filter" FontSize="13" Opacity="0.7" VerticalAlignment="Center" />
-                            <Border CornerRadius="4" Padding="6,2" Background="{Binding FilterTypeBrush}">
-                                <TextBlock Text="{Binding FilterTypeText}" FontSize="11" FontWeight="SemiBold" Foreground="White" />
-                            </Border>
-                            <Border CornerRadius="4" Padding="6,2" Background="#2AFFFFFF">
-                                <TextBlock Text="{Binding FilterVersionText}" FontSize="11" />
-                            </Border>
-                        </StackPanel>
-                    </Grid>
+        <!-- Left: the browser, or the details page in its place -->
+        <Border Grid.Column="0" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
+                CornerRadius="8" Padding="12" Margin="0,0,8,0">
+            <Panel>
+                <!-- The details page replaces the list in place; the list is kept alive underneath
+                     so going back is instant and keeps its results and scroll position. -->
+                <ContentControl Content="{Binding Details}" IsVisible="{Binding !IsBrowsing}">
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType="vm:ModDetailsViewModel">
+                            <views:ModDetailsView />
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
 
-                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-                        <TextBox Grid.Column="0" Text="{Binding SearchQuery}"
-                                 Watermark="{Binding SearchPlaceholder}" Margin="0,0,8,0">
+                <Grid RowDefinitions="Auto,Auto,*" IsVisible="{Binding IsBrowsing}">
+
+                    <!-- ============ Row 0: one toolbar ============ -->
+                    <!-- Explicit columns rather than a DockPanel. A DockPanel decides widths from
+                         the order the children are declared in, and measured here it handed the
+                         first docked child the whole 516px and pushed the search box off to x=-45.
+                         A star column plus Autos is what the rest of this view already uses. -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,8">
+                        <!-- Filters: a button that opens the whole catalogue at once. The old
+                             horizontal strip could not show it, and its scrollbar drew on top of
+                             the very chips it was meant to scroll. -->
+                        <!-- A Flyout, not a Popup: a Popup is declared inside the panel and takes
+                             part in its measure pass, so the toolbar would claim room for content
+                             that is not on screen. A Flyout lives outside the layout entirely. -->
+                        <Button Grid.Column="1" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Filters}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Filter" />
+                                <TextBlock Text="{loc:Loc Filters}" />
+                                <Border CornerRadius="8" Padding="6,0" Background="#2F6FB0"
+                                        VerticalAlignment="Center" IsVisible="{Binding HasSelectedTags}">
+                                    <TextBlock Text="{Binding SelectedTags.Count}" FontSize="11"
+                                               Foreground="White" FontWeight="SemiBold" />
+                                </Border>
+                            </StackPanel>
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight">
+                                    <StackPanel Width="272">
+                                        <!-- Sort lives here rather than in the bar: at the smallest
+                                             window the browse column is ~268px, and a 140px combo
+                                             plus the buttons left the search box no room at all. -->
+                                        <TextBlock Classes="popupTitle" Text="{loc:Loc Sort_Label}" />
+                                        <ComboBox HorizontalAlignment="Stretch" Margin="0,0,0,12"
+                                                  ItemsSource="{Binding SortOptions}"
+                                                  SelectedIndex="{Binding SelectedSortIndex}" />
+
+                                        <!-- Padding on the right reserves a gutter for the floating
+                                             scrollbar, which in this theme draws over the content —
+                                             the very problem the old chip strip had. -->
+                                        <ScrollViewer MaxHeight="340" VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled" Padding="0,0,14,0">
+                                            <StackPanel>
+                                                <TextBlock Classes="popupTitle" Text="{loc:Loc Filters_Categories}" />
+                                                <TextBlock Classes="popupHint" Text="{loc:Loc Filters_CategoriesHint}" />
+                                                <ItemsControl ItemsSource="{Binding FacetTags}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <CheckBox Content="{Binding Label}" FontSize="12"
+                                                                      MinHeight="0" Margin="0,1"
+                                                                      IsChecked="{Binding IsActive, Mode=OneWay}"
+                                                                      Command="{Binding $parent[ItemsControl].DataContext.ToggleTagCommand}"
+                                                                      CommandParameter="{Binding}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <TextBlock Classes="popupTitle" Text="{loc:Loc Filters_Topics}"
+                                                           Margin="0,12,0,2" />
+                                                <TextBlock Classes="popupHint" Text="{loc:Loc Filters_TopicsHint}" />
+                                                <ItemsControl ItemsSource="{Binding QueryTags}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <CheckBox Content="{Binding Label}" FontSize="12"
+                                                                      MinHeight="0" Margin="0,1"
+                                                                      IsChecked="{Binding IsActive, Mode=OneWay}"
+                                                                      Command="{Binding $parent[ItemsControl].DataContext.ToggleTagCommand}"
+                                                                      CommandParameter="{Binding}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </ScrollViewer>
+
+                                        <Button HorizontalAlignment="Right" Margin="0,10,0,0" Padding="10,4"
+                                                Content="{loc:Loc Filters_Clear}" FontSize="12"
+                                                Command="{Binding ClearFiltersCommand}" />
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+
+                        <Button Grid.Column="2" Padding="7,4" ToolTip.Tip="{Binding HowToPlayTitle}">
+                            <ic:SymbolIcon Symbol="QuestionCircle" />
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight">
+                                    <StackPanel Width="380">
+                                        <TextBlock Classes="popupTitle" Text="{Binding HowToPlayTitle}" />
+                                        <TextBlock Text="{Binding HowToPlaySteps}" TextWrapping="Wrap"
+                                                   FontSize="13" LineHeight="20" Opacity="0.9" />
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+
+                        <TextBox Grid.Column="0" MinWidth="90" Text="{Binding SearchQuery}" Margin="0,0,8,0"
+                                 Watermark="{Binding SearchPlaceholder}">
                             <TextBox.KeyBindings>
                                 <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
                             </TextBox.KeyBindings>
+                            <TextBox.InnerRightContent>
+                                <Button Background="Transparent" BorderThickness="0" Padding="6,2"
+                                        Command="{Binding SearchCommand}" IsEnabled="{Binding !IsSearching}"
+                                        ToolTip.Tip="{loc:Loc Search}">
+                                    <ic:SymbolIcon Symbol="Search" />
+                                </Button>
+                            </TextBox.InnerRightContent>
                         </TextBox>
-                        <Button Grid.Column="1" Command="{Binding SearchCommand}" Classes="accent" IsEnabled="{Binding !IsSearching}">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <ic:SymbolIcon Symbol="Search" />
-                                <TextBlock Text="{loc:Loc Search}" />
-                            </StackPanel>
-                        </Button>
                     </Grid>
 
-                    <!-- Sort -->
-                    <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*" Margin="0,0,0,12">
-                        <TextBlock Grid.Column="0" Text="{loc:Loc Sort_Label}" VerticalAlignment="Center"
-                                   Opacity="0.7" Margin="0,0,8,0" />
-                        <ComboBox Grid.Column="1" Width="180" HorizontalAlignment="Left"
-                                  ItemsSource="{Binding SortOptions}" SelectedIndex="{Binding SelectedSortIndex}" />
-                    </Grid>
+                    <!-- ============ Row 1: what is filtering right now ============ -->
+                    <!-- A WrapPanel, so a selected filter can never be scrolled out of sight.
+                         Capped on purpose: this row is Auto in a grid whose last row is star, and
+                         letting it grow without limit would squeeze the results to nothing. -->
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding ActiveFilters}" Margin="0,0,0,6"
+                                  MaxHeight="54" ClipToBounds="True">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!-- Centred, not stretched: a WrapPanel line is as tall as its
+                                     tallest chip, and stretching made the plain loader/version
+                                     chips grow to match the ones carrying a ✕. -->
+                                <Border Classes="filterChip" Background="{Binding Brush}"
+                                        VerticalAlignment="Center" ToolTip.Tip="{Binding Tip}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{Binding Label}" FontSize="11" Foreground="White"
+                                                   FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        <!-- Fluent's Button minimums are 32px square; without these
+                                             a one-line chip is drawn 40px tall. -->
+                                        <Button Padding="1" MinWidth="0" MinHeight="0" Width="16" Height="16"
+                                                Background="Transparent" BorderThickness="0"
+                                                VerticalAlignment="Center"
+                                                IsVisible="{Binding CanRemove}"
+                                                ToolTip.Tip="{loc:Loc Tip_RemoveFilter}"
+                                                Command="{Binding $parent[ItemsControl].DataContext.RemoveTagCommand}"
+                                                CommandParameter="{Binding Tag}">
+                                            <ic:SymbolIcon Symbol="Dismiss" FontSize="11" Foreground="White" />
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-                    <Grid Grid.Row="3">
+                    <!-- ============ Row 2: results ============ -->
+                    <!-- A Panel, not a Grid: this only ever stacks the status text and the list on
+                         top of each other, and a Grid with no definitions of its own is where the
+                         resize crash came from. -->
+                    <Panel Grid.Row="2">
                         <TextBlock Text="{Binding SearchStatus}" Opacity="0.7" TextWrapping="Wrap"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   TextAlignment="Center" MaxWidth="320"
                                    IsVisible="{Binding !SearchResults.Count}" />
 
-                        <Grid IsVisible="{Binding SearchResults.Count}" RowDefinitions="*,Auto">
-                            <ListBox Grid.Row="0" ItemsSource="{Binding SearchResults}" Background="Transparent"
-                                     BorderThickness="0">
+                        <Grid IsVisible="{Binding SearchResults.Count}" RowDefinitions="Auto,*,Auto">
+                            <!-- Reloading shows a thin bar rather than emptying the list, which used
+                                 to blank the panel for the length of a request. -->
+                            <ProgressBar Grid.Row="0" IsIndeterminate="True" Height="2"
+                                         IsVisible="{Binding IsSearching}" />
+
+                            <!-- ResetScrollBehavior reads the collection change: a Reset means a new
+                                 set of results and goes back to the top, an Add means "load more"
+                                 and leaves the position alone. -->
+                            <ListBox Grid.Row="1" Classes="results" ItemsSource="{Binding SearchResults}"
+                                     Background="Transparent" BorderThickness="0"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     b:ResetScrollBehavior.ResetOnReset="True">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="#1A1A1A" CornerRadius="6" Padding="10" Margin="0,4">
+                                        <!-- Double-click anywhere on the card opens its details; the
+                                             ⓘ button is there to make that discoverable. -->
+                                        <Border Classes="card" DoubleTapped="OnCardDoubleTapped">
                                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                                <!-- Icon (or placeholder) -->
                                                 <Border Grid.Column="0" Width="48" Height="48" CornerRadius="6"
-                                                        Background="#22FFFFFF" Margin="0,0,10,0" ClipToBounds="True">
+                                                        Background="#22FFFFFF" Margin="0,0,10,0"
+                                                        ClipToBounds="True" VerticalAlignment="Top">
                                                     <Panel>
                                                         <ic:SymbolIcon Symbol="Box" FontSize="22" Opacity="0.5"
-                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"
                                                                        IsVisible="{Binding !HasIcon}" />
                                                         <Image Source="{Binding Icon}" Width="48" Height="48"
                                                                IsVisible="{Binding HasIcon}" />
@@ -93,26 +272,79 @@
                                                 </Border>
 
                                                 <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" />
-                                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,4">
-                                                        <TextBlock Text="{Binding Author}" FontSize="12" Opacity="0.7" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   VerticalAlignment="Center" />
+                                                        <!-- Client-only content installed on a server does nothing:
+                                                             say so before the download, not after. -->
+                                                        <Border CornerRadius="4" Padding="5,1" Background="#33E3A82B"
+                                                                VerticalAlignment="Center"
+                                                                IsVisible="{Binding NeedsClient}">
+                                                            <TextBlock Text="{loc:Loc Store_NeedsClientBadge}"
+                                                                       FontSize="10" Foreground="#E3A82B" />
+                                                        </Border>
+                                                    </StackPanel>
+
+                                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,0">
+                                                        <TextBlock Text="{Binding Author}" FontSize="12" Opacity="0.7"
+                                                                   TextTrimming="CharacterEllipsis" />
                                                         <StackPanel Orientation="Horizontal" Spacing="3">
                                                             <ic:SymbolIcon Symbol="ArrowDownload" FontSize="12" Opacity="0.7" />
                                                             <TextBlock Text="{Binding DownloadsText}" FontSize="12" Opacity="0.7" />
                                                         </StackPanel>
                                                     </StackPanel>
-                                                    <TextBlock Text="{Binding Description}" FontSize="12" TextWrapping="Wrap" Opacity="0.9" />
+
+                                                    <!-- What it does, in the user's own language -->
+                                                    <TextBlock Text="{Binding Description}" FontSize="12"
+                                                               TextWrapping="Wrap" Opacity="0.9" MaxLines="3"
+                                                               TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
+
+                                                    <!-- The author's own line, only when it adds something -->
+                                                    <TextBlock Text="{Binding Tagline}" FontSize="11" Opacity="0.5"
+                                                               FontStyle="Italic" TextWrapping="Wrap" MaxLines="2"
+                                                               TextTrimming="CharacterEllipsis" Margin="0,3,0,0"
+                                                               IsVisible="{Binding HasTagline}" />
+
+                                                    <ItemsControl ItemsSource="{Binding Tags}" Margin="0,6,0,0"
+                                                                  IsVisible="{Binding HasTags}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel Orientation="Horizontal" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border CornerRadius="9" Padding="7,1" Margin="0,0,4,4"
+                                                                        Background="{Binding Brush}">
+                                                                    <TextBlock Text="{Binding Label}" FontSize="10"
+                                                                               FontWeight="SemiBold" Foreground="White" />
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
                                                 </StackPanel>
-                                                <Button Grid.Column="2" Command="{Binding InstallCommand}"
-                                                        Content="{loc:Loc Install}" VerticalAlignment="Center"
-                                                        IsEnabled="{Binding !IsInstalling}" />
+
+                                                <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
+                                                    <Button Command="{Binding InstallCommand}"
+                                                            Content="{loc:Loc Install}"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Center"
+                                                            IsEnabled="{Binding !IsInstalling}" />
+                                                    <Button Command="{Binding OpenCommand}"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Center"
+                                                            ToolTip.Tip="{loc:Loc Store_ViewDetails}">
+                                                        <ic:SymbolIcon Symbol="Info" />
+                                                    </Button>
+                                                </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
 
-                            <Button Grid.Row="1" HorizontalAlignment="Center" Margin="0,8,0,0"
+                            <Button Grid.Row="2" HorizontalAlignment="Center" Margin="0,8,0,0"
                                     Command="{Binding LoadMoreCommand}" IsVisible="{Binding CanLoadMore}"
                                     IsEnabled="{Binding !IsSearching}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
@@ -121,71 +353,73 @@
                                 </StackPanel>
                             </Button>
                         </Grid>
-                    </Grid>
+                    </Panel>
                 </Grid>
-            </Border>
+            </Panel>
+        </Border>
 
-            <!-- Right panel: Installed -->
-            <Border Grid.Column="1" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
-                    CornerRadius="8" Padding="12">
-                <Grid RowDefinitions="Auto,Auto,*">
-                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,12">
-                        <TextBlock Grid.Column="0" Text="{Binding InstalledTitle}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+        <!-- Right: installed -->
+        <Border Grid.Column="1" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
+                CornerRadius="8" Padding="12">
+            <Grid RowDefinitions="Auto,Auto,*">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,12">
+                    <TextBlock Grid.Column="0" Text="{Binding InstalledTitle}" FontSize="16"
+                               FontWeight="SemiBold" VerticalAlignment="Center" />
 
-                        <Button Grid.Column="1" Command="{Binding CheckUpdatesCommand}" Padding="6,4" Margin="0,0,8,0"
-                                IsEnabled="{Binding !IsCheckingUpdates}" ToolTip.Tip="{loc:Loc CheckUpdates}">
-                            <ic:SymbolIcon Symbol="ArrowSync" />
-                        </Button>
+                    <Button Grid.Column="1" Command="{Binding CheckUpdatesCommand}" Padding="6,4" Margin="0,0,8,0"
+                            IsEnabled="{Binding !IsCheckingUpdates}" ToolTip.Tip="{loc:Loc CheckUpdates}">
+                        <ic:SymbolIcon Symbol="ArrowSync" />
+                    </Button>
 
-                        <Button Grid.Column="2" Command="{Binding ExportModpackCommand}" Padding="6,4" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Export_Modpack}">
-                            <ic:SymbolIcon Symbol="Share" />
-                        </Button>
+                    <Button Grid.Column="2" Command="{Binding ExportModpackCommand}" Padding="6,4" Margin="0,0,8,0"
+                            ToolTip.Tip="{loc:Loc Export_Modpack}">
+                        <ic:SymbolIcon Symbol="Share" />
+                    </Button>
 
-                        <Button Grid.Column="3" Command="{Binding RefreshInstalledModsCommand}" Padding="6,4">
-                            <ic:SymbolIcon Symbol="ArrowClockwise" />
-                        </Button>
-                    </Grid>
-
-                    <StackPanel Grid.Row="1">
-                        <TextBlock Text="{Binding NoInstalledText}" Opacity="0.7"
-                                   HorizontalAlignment="Center" Margin="0,20,0,0"
-                                   IsVisible="{Binding !InstalledMods.Count}" />
-                        <TextBlock Text="{Binding UpdateStatus}" Opacity="0.7" TextWrapping="Wrap"
-                                   HorizontalAlignment="Center" Margin="0,0,0,8"
-                                   IsVisible="{Binding UpdateStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                    </StackPanel>
-
-                    <ListBox Grid.Row="2" ItemsSource="{Binding InstalledMods}" Background="Transparent" BorderThickness="0">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,4">
-                                    <TextBlock Grid.Column="0" Text="{Binding FileName}" FontSize="13"
-                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                                               Opacity="{Binding IsEnabled, Converter={x:Static vm:BoolOpacityConverter.Instance}}" />
-                                    <Button Grid.Column="1" Margin="0,0,4,0" Background="Transparent" Padding="4"
-                                            VerticalAlignment="Center"
-                                            IsVisible="{Binding UpdateAvailable}" IsEnabled="{Binding !IsUpdating}"
-                                            ToolTip.Tip="{Binding UpdateTooltip}"
-                                            Command="{Binding DataContext.UpdateModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                            CommandParameter="{Binding}">
-                                        <ic:SymbolIcon Symbol="ArrowUp" Foreground="#3FB950" />
-                                    </Button>
-                                    <ToggleSwitch Grid.Column="2" Margin="0,0,8,0" MinWidth="0" VerticalAlignment="Center"
-                                                  OnContent="" OffContent="" ToolTip.Tip="{loc:Loc Tip_ToggleMod}"
-                                                  IsChecked="{Binding IsEnabled, Mode=OneWay}"
-                                                  Command="{Binding DataContext.ToggleModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                                  CommandParameter="{Binding}" />
-                                    <Button Grid.Column="3" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="4"
-                                            Command="{Binding DataContext.DeleteModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                            CommandParameter="{Binding}">
-                                        <ic:SymbolIcon Symbol="Delete" Foreground="#E05561" />
-                                    </Button>
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                    <Button Grid.Column="3" Command="{Binding RefreshInstalledModsCommand}" Padding="6,4">
+                        <ic:SymbolIcon Symbol="ArrowClockwise" />
+                    </Button>
                 </Grid>
-            </Border>
-        </Grid>
+
+                <StackPanel Grid.Row="1">
+                    <TextBlock Text="{Binding NoInstalledText}" Opacity="0.7"
+                               HorizontalAlignment="Center" Margin="0,20,0,0"
+                               IsVisible="{Binding !InstalledMods.Count}" />
+                    <TextBlock Text="{Binding UpdateStatus}" Opacity="0.7" TextWrapping="Wrap"
+                               HorizontalAlignment="Center" Margin="0,0,0,8"
+                               IsVisible="{Binding UpdateStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+
+                <ListBox Grid.Row="2" ItemsSource="{Binding InstalledMods}" Background="Transparent" BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,4">
+                                <TextBlock Grid.Column="0" Text="{Binding FileName}" FontSize="13"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                           Opacity="{Binding IsEnabled, Converter={x:Static vm:BoolOpacityConverter.Instance}}" />
+                                <Button Grid.Column="1" Margin="0,0,4,0" Background="Transparent" Padding="4"
+                                        VerticalAlignment="Center"
+                                        IsVisible="{Binding UpdateAvailable}" IsEnabled="{Binding !IsUpdating}"
+                                        ToolTip.Tip="{Binding UpdateTooltip}"
+                                        Command="{Binding DataContext.UpdateModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                        CommandParameter="{Binding}">
+                                    <ic:SymbolIcon Symbol="ArrowUp" Foreground="#3FB950" />
+                                </Button>
+                                <ToggleSwitch Grid.Column="2" Margin="0,0,8,0" MinWidth="0" VerticalAlignment="Center"
+                                              OnContent="" OffContent="" ToolTip.Tip="{loc:Loc Tip_ToggleMod}"
+                                              IsChecked="{Binding IsEnabled, Mode=OneWay}"
+                                              Command="{Binding DataContext.ToggleModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                              CommandParameter="{Binding}" />
+                                <Button Grid.Column="3" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="4"
+                                        Command="{Binding DataContext.DeleteModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                        CommandParameter="{Binding}">
+                                    <ic:SymbolIcon Symbol="Delete" Foreground="#E05561" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

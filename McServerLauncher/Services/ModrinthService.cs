@@ -23,52 +23,17 @@ public class ModrinthService
     static ModrinthService()
     {
         Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-        IconHttp.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
     }
 
-    // --- Project icons ---
+    // --- How long each kind of answer stays usable ---
+    // A project's description and links change rarely; its version list changes when the author
+    // publishes; a team never really changes. Everything also survives on disk past these windows
+    // as an offline fallback (see StoreCache).
 
-    private static readonly HttpClient IconHttp = new() { Timeout = TimeSpan.FromSeconds(20) };
-
-    /// <summary>Generous cap for a project icon (they're typically a few KB).</summary>
-    private const int MaxIconBytes = 2 * 1024 * 1024;
-
-    /// <summary>
-    /// Downloads a project icon with guardrails: the URL comes from Modrinth's API but is still
-    /// remote input, so the response must declare an image content-type and stay under
-    /// <see cref="MaxIconBytes"/> — enforced while streaming, so a missing or lying Content-Length
-    /// can't balloon memory either. Returns the image bytes, or null when anything is off
-    /// (the caller just keeps the placeholder icon).
-    /// </summary>
-    public static async Task<byte[]?> FetchIconAsync(string url, CancellationToken ct = default)
-    {
-        try
-        {
-            using var resp = await IconHttp.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
-            if (!resp.IsSuccessStatusCode) return null;
-            if (resp.Content.Headers.ContentType?.MediaType is not { } mime ||
-                !mime.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-                return null;
-            if (resp.Content.Headers.ContentLength is > MaxIconBytes) return null;
-
-            using var buffered = new MemoryStream();
-            await using (var stream = await resp.Content.ReadAsStreamAsync(ct))
-            {
-                var buffer = new byte[16 * 1024];
-                int read;
-                while ((read = await stream.ReadAsync(buffer, ct)) > 0)
-                {
-                    if (buffered.Length + read > MaxIconBytes) return null;
-                    buffered.Write(buffer, 0, read);
-                }
-            }
-            return buffered.ToArray();
-        }
-        catch
-        {
-            return null;
-        }
-    }
+    private static readonly TimeSpan ProjectTtl = TimeSpan.FromHours(6);
+    private static readonly TimeSpan VersionsTtl = TimeSpan.FromHours(1);
+    private static readonly TimeSpan TeamTtl = TimeSpan.FromHours(24);
+    private static readonly TimeSpan SearchTtl = TimeSpan.FromMinutes(30);
 
     /// <summary>
     /// Maps a server type to the Modrinth search target: the categories facet group, the project
@@ -88,52 +53,106 @@ public class ModrinthService
         return ($"[\"categories:{one}\"]", "mod", $"[\"{one}\"]");
     }
 
-    public async Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion, string index = "relevance", int offset = 0, int limit = 20, CancellationToken ct = default)
+    /// <summary>
+    /// Searches Modrinth for content compatible with a server. <paramref name="extraFacetGroups"/>
+    /// adds already-formatted facet groups (e.g. <c>["categories:optimization"]</c>) that are ANDed
+    /// with the loader/version/type filter — this is what the category chips use.
+    /// </summary>
+    public async Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion,
+        string index = "relevance", int offset = 0, int limit = 20,
+        IReadOnlyCollection<string>? extraFacetGroups = null, CancellationToken ct = default)
     {
         var (categoriesGroup, projectType, _) = TargetFor(loader);
-        var facets = $"[{categoriesGroup},[\"versions:{mcVersion}\"],[\"project_type:{projectType}\"],[\"server_side:required\",\"server_side:optional\"]]";
-        var escapedFacets = Uri.EscapeDataString(facets);
-        var escapedQuery = Uri.EscapeDataString(query);
-        var escapedIndex = Uri.EscapeDataString(index);
+        var groups = new List<string>
+        {
+            categoriesGroup,
+            $"[\"versions:{mcVersion}\"]",
+            $"[\"project_type:{projectType}\"]",
+            "[\"server_side:required\",\"server_side:optional\"]"
+        };
+        if (extraFacetGroups is { Count: > 0 }) groups.AddRange(extraFacetGroups);
 
-        var url = $"{ApiBaseUrl}/search?query={escapedQuery}&facets={escapedFacets}&index={escapedIndex}&offset={offset}&limit={limit}";
+        var facets = $"[{string.Join(",", groups)}]";
+        var url = $"{ApiBaseUrl}/search?query={Uri.EscapeDataString(query)}" +
+                  $"&facets={Uri.EscapeDataString(facets)}" +
+                  $"&index={Uri.EscapeDataString(index)}&offset={offset}&limit={limit}";
 
+        // Only cache the unsearched, first-page browsing (and the related-mods queries, which use
+        // an empty query too). A typed search should feel live rather than replay an old answer.
+        if (string.IsNullOrWhiteSpace(query))
+            return await StoreCache.Shared.GetOrFetchAsync($"search:{url}", SearchTtl,
+                token => GetJsonAsync<SearchResponse>(url, token), ct);
+
+        return await GetJsonAsync<SearchResponse>(url, ct);
+    }
+
+    /// <summary>Full project: long description, gallery, links and licence.</summary>
+    public Task<ProjectDetail?> GetProjectAsync(string idOrSlug, CancellationToken ct = default) =>
+        StoreCache.Shared.GetOrFetchAsync($"project:{idOrSlug}", ProjectTtl,
+            token => GetJsonAsync<ProjectDetail>($"{ApiBaseUrl}/project/{Uri.EscapeDataString(idOrSlug)}", token), ct);
+
+    /// <summary>
+    /// Every published version of a project, newest first. When <paramref name="mcVersion"/> is
+    /// given the list is narrowed to what runs on this server's loader and Minecraft version — the
+    /// same filter the installer uses, so what the details page offers is what actually installs.
+    /// </summary>
+    public Task<List<VersionResult>?> GetProjectVersionsAsync(string projectId, ServerType loader,
+        string? mcVersion = null, CancellationToken ct = default)
+    {
+        var (_, _, loaders) = TargetFor(loader);
+        var url = $"{ApiBaseUrl}/project/{Uri.EscapeDataString(projectId)}/version?loaders={Uri.EscapeDataString(loaders)}";
+        if (!string.IsNullOrEmpty(mcVersion))
+            url += $"&game_versions={Uri.EscapeDataString($"[\"{mcVersion}\"]")}";
+
+        return StoreCache.Shared.GetOrFetchAsync($"versions:{url}", VersionsTtl,
+            token => GetJsonAsync<List<VersionResult>>(url, token), ct);
+    }
+
+    /// <summary>
+    /// Several projects in a single request. Used for dependencies and related mods, so opening a
+    /// mod with five dependencies costs one request rather than five.
+    /// </summary>
+    public async Task<List<ProjectDetail>?> GetProjectsAsync(IEnumerable<string> ids, CancellationToken ct = default)
+    {
+        // Sorted + deduplicated so two callers asking for the same set share one cache entry.
+        var list = ids.Where(i => !string.IsNullOrWhiteSpace(i))
+                      .Distinct(StringComparer.Ordinal)
+                      .OrderBy(i => i, StringComparer.Ordinal)
+                      .ToList();
+        if (list.Count == 0) return new List<ProjectDetail>();
+
+        var idsJson = "[" + string.Join(",", list.Select(i => JsonSerializer.Serialize(i))) + "]";
+        var url = $"{ApiBaseUrl}/projects?ids={Uri.EscapeDataString(idsJson)}";
+
+        return await StoreCache.Shared.GetOrFetchAsync($"projects:{url}", ProjectTtl,
+            token => GetJsonAsync<List<ProjectDetail>>(url, token), ct);
+    }
+
+    /// <summary>The project's team, which is where the author names live.</summary>
+    public Task<List<TeamMember>?> GetTeamMembersAsync(string teamId, CancellationToken ct = default) =>
+        StoreCache.Shared.GetOrFetchAsync($"team:{teamId}", TeamTtl,
+            token => GetJsonAsync<List<TeamMember>>($"{ApiBaseUrl}/team/{Uri.EscapeDataString(teamId)}/members", token), ct);
+
+    public async Task<VersionResult?> GetLatestProjectVersionAsync(string projectId, ServerType loader, string mcVersion, CancellationToken ct = default)
+    {
+        // The API returns them sorted by newest first.
+        var versions = await GetProjectVersionsAsync(projectId, loader, mcVersion, ct);
+        return versions is { Count: > 0 } ? versions[0] : null;
+    }
+
+    /// <summary>Shared GET + JSON deserialisation. Returns null on any failure, including offline.</summary>
+    private static async Task<T?> GetJsonAsync<T>(string url, CancellationToken ct) where T : class
+    {
         try
         {
-            var response = await Http.GetAsync(url, ct);
+            using var response = await Http.GetAsync(url, ct);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<SearchResponse>(cancellationToken: ct);
+            return await response.Content.ReadFromJsonAsync<T>(cancellationToken: ct);
         }
         catch
         {
             return null;
         }
-    }
-
-    public async Task<VersionResult?> GetLatestProjectVersionAsync(string projectId, ServerType loader, string mcVersion, CancellationToken ct = default)
-    {
-        var (_, _, loaders) = TargetFor(loader);
-        var loadersJson = Uri.EscapeDataString(loaders);
-        var gameVersionsJson = Uri.EscapeDataString($"[\"{mcVersion}\"]");
-
-        var url = $"{ApiBaseUrl}/project/{projectId}/version?loaders={loadersJson}&game_versions={gameVersionsJson}";
-
-        try
-        {
-            var response = await Http.GetAsync(url, ct);
-            response.EnsureSuccessStatusCode();
-            var versions = await response.Content.ReadFromJsonAsync<List<VersionResult>>(cancellationToken: ct);
-            
-            if (versions != null && versions.Count > 0)
-            {
-                return versions[0]; // The API returns them sorted by newest first
-            }
-        }
-        catch
-        {
-            // Ignore errors and return null
-        }
-        return null;
     }
 
     /// <summary>

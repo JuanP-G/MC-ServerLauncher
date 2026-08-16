@@ -1,0 +1,387 @@
+{
+  "$comment": [
+    "Tag catalogue for the store. This file is DATA, not code: adding, renaming, recolouring or",
+    "re-mapping a tag only means editing this file. The app reads the copy embedded in the binary,",
+    "and an optional override at %APPDATA%\\McServerLauncher\\store-tags.json wins over it, so a tag",
+    "set can be changed or extended without rebuilding.",
+    "",
+    "How a project gets a tag (any rule matching is enough):",
+    "  categories  Modrinth category slugs (see https://api.modrinth.com/v2/tag/category).",
+    "  keywords    lowercase, accent-insensitive substrings matched against title + description.",
+    "  clientSide  matches the project's client_side value: required | optional | unsupported.",
+    "  serverSide  matches the project's server_side value.",
+    "How a tag becomes a browse chip:",
+    "  browse      true to show it as a filter chip in the browser.",
+    "  facets      Modrinth facet groups used to filter (exact, preferred).",
+    "  query       search text used when the tag has no facet of its own.",
+    "  projectTypes  restricts the chip to 'mod' or 'plugin' servers (default: both).",
+    "priority orders the chips and decides which tags survive the limit on a card (lower first)."
+  ],
+  "version": 1,
+  "tags": [
+    {
+      "id": "performance",
+      "priority": 1,
+      "color": "#3FB950",
+      "labels": {
+        "es": "Rendimiento", "en": "Performance", "de": "Leistung",
+        "fr": "Performances", "pt": "Desempenho"
+      },
+      "categories": ["optimization"],
+      "keywords": ["performance", "optimiz", "fps", "tps", "lag ", "lag,", "lags", "memory usage", "faster"],
+      "browse": true,
+      "facets": ["[\"categories:optimization\"]"]
+    },
+    {
+      "id": "library",
+      "priority": 2,
+      "color": "#8B949E",
+      "labels": {
+        "es": "Librería", "en": "Library", "de": "Bibliothek",
+        "fr": "Bibliothèque", "pt": "Biblioteca"
+      },
+      "categories": ["library"],
+      "browse": true,
+      "facets": ["[\"categories:library\"]"]
+    },
+    {
+      "id": "worldgen",
+      "priority": 3,
+      "color": "#2EA043",
+      "labels": {
+        "es": "Generación de mundo", "en": "World generation", "de": "Weltgenerierung",
+        "fr": "Génération de monde", "pt": "Geração de mundo"
+      },
+      "categories": ["worldgen"],
+      "keywords": ["world generation", "worldgen", "terrain generation"],
+      "browse": true,
+      "facets": ["[\"categories:worldgen\"]"]
+    },
+    {
+      "id": "biomes",
+      "priority": 4,
+      "color": "#2EA043",
+      "labels": {
+        "es": "Biomas", "en": "Biomes", "de": "Biome",
+        "fr": "Biomes", "pt": "Biomas"
+      },
+      "keywords": ["biome"],
+      "browse": true,
+      "query": "biomes"
+    },
+    {
+      "id": "structures",
+      "priority": 5,
+      "color": "#B07D48",
+      "labels": {
+        "es": "Estructuras", "en": "Structures", "de": "Strukturen",
+        "fr": "Structures", "pt": "Estruturas"
+      },
+      "keywords": ["structure", "dungeon", "village", "ruins", "temple"],
+      "browse": true,
+      "query": "structures"
+    },
+    {
+      "id": "mobs",
+      "priority": 6,
+      "color": "#D2691E",
+      "labels": {
+        "es": "Criaturas", "en": "Mobs", "de": "Kreaturen",
+        "fr": "Créatures", "pt": "Criaturas"
+      },
+      "categories": ["mobs"],
+      "keywords": ["mobs", "creature", "monster", "animal"],
+      "browse": true,
+      "facets": ["[\"categories:mobs\"]"]
+    },
+    {
+      "id": "technology",
+      "priority": 7,
+      "color": "#4D9DE0",
+      "labels": {
+        "es": "Tecnología", "en": "Technology", "de": "Technik",
+        "fr": "Technologie", "pt": "Tecnologia"
+      },
+      "categories": ["technology"],
+      "keywords": ["automation", "machinery", "machines"],
+      "browse": true,
+      "facets": ["[\"categories:technology\"]"]
+    },
+    {
+      "id": "magic",
+      "priority": 8,
+      "color": "#A371F7",
+      "labels": {
+        "es": "Magia", "en": "Magic", "de": "Magie",
+        "fr": "Magie", "pt": "Magia"
+      },
+      "categories": ["magic"],
+      "keywords": ["magic", "spell", "wizard", "enchant"],
+      "browse": true,
+      "facets": ["[\"categories:magic\"]"]
+    },
+    {
+      "id": "adventure",
+      "priority": 9,
+      "color": "#E3A82B",
+      "labels": {
+        "es": "Aventura", "en": "Adventure", "de": "Abenteuer",
+        "fr": "Aventure", "pt": "Aventura"
+      },
+      "categories": ["adventure"],
+      "keywords": ["adventure", "quest"],
+      "browse": true,
+      "facets": ["[\"categories:adventure\"]"]
+    },
+    {
+      "id": "exploration",
+      "priority": 10,
+      "color": "#E3A82B",
+      "labels": {
+        "es": "Exploración", "en": "Exploration", "de": "Erkundung",
+        "fr": "Exploration", "pt": "Exploração"
+      },
+      "keywords": ["explor", "map", "minimap", "waypoint"]
+    },
+    {
+      "id": "combat",
+      "priority": 11,
+      "color": "#E05561",
+      "labels": {
+        "es": "Combate", "en": "Combat", "de": "Kampf",
+        "fr": "Combat", "pt": "Combate"
+      },
+      "categories": ["equipment"],
+      "keywords": ["combat", "weapon", "pvp", "sword", "armor", "armour"],
+      "browse": true,
+      "facets": ["[\"categories:equipment\"]"]
+    },
+    {
+      "id": "storage",
+      "priority": 12,
+      "color": "#8957E5",
+      "labels": {
+        "es": "Almacenamiento", "en": "Storage", "de": "Lagerung",
+        "fr": "Stockage", "pt": "Armazenamento"
+      },
+      "categories": ["storage"],
+      "keywords": ["storage", "backpack", "shulker", "inventory"],
+      "browse": true,
+      "facets": ["[\"categories:storage\"]"]
+    },
+    {
+      "id": "decoration",
+      "priority": 13,
+      "color": "#DB6D9D",
+      "labels": {
+        "es": "Decoración", "en": "Decoration", "de": "Dekoration",
+        "fr": "Décoration", "pt": "Decoração"
+      },
+      "categories": ["decoration"],
+      "keywords": ["decorat", "furniture"],
+      "browse": true,
+      "facets": ["[\"categories:decoration\"]"]
+    },
+    {
+      "id": "building",
+      "priority": 14,
+      "color": "#B07D48",
+      "labels": {
+        "es": "Construcción", "en": "Building", "de": "Bauen",
+        "fr": "Construction", "pt": "Construção"
+      },
+      "keywords": ["building", "builder", "schematic", "worldedit", "blueprint"]
+    },
+    {
+      "id": "farming",
+      "priority": 15,
+      "color": "#3FB950",
+      "labels": {
+        "es": "Agricultura", "en": "Farming", "de": "Landwirtschaft",
+        "fr": "Agriculture", "pt": "Agricultura"
+      },
+      "keywords": ["farming", "crop", "harvest", "agricultur"]
+    },
+    {
+      "id": "food",
+      "priority": 16,
+      "color": "#E8A33D",
+      "labels": {
+        "es": "Comida", "en": "Food", "de": "Essen",
+        "fr": "Nourriture", "pt": "Comida"
+      },
+      "categories": ["food"],
+      "keywords": ["cooking", "cuisine", "hunger"]
+    },
+    {
+      "id": "transportation",
+      "priority": 17,
+      "color": "#4D9DE0",
+      "labels": {
+        "es": "Transporte", "en": "Transport", "de": "Transport",
+        "fr": "Transport", "pt": "Transporte"
+      },
+      "categories": ["transportation"],
+      "keywords": ["teleport", "warp", "elevator", "vehicle"],
+      "browse": true,
+      "facets": ["[\"categories:transportation\"]"]
+    },
+    {
+      "id": "economy",
+      "priority": 18,
+      "color": "#E8A33D",
+      "labels": {
+        "es": "Economía", "en": "Economy", "de": "Wirtschaft",
+        "fr": "Économie", "pt": "Economia"
+      },
+      "categories": ["economy"],
+      "keywords": ["economy", "shop", "currency", "trading", "auction"],
+      "browse": true,
+      "facets": ["[\"categories:economy\"]"],
+      "projectTypes": ["plugin"]
+    },
+    {
+      "id": "protection",
+      "priority": 19,
+      "color": "#2F81F7",
+      "labels": {
+        "es": "Protección de terreno", "en": "Land protection", "de": "Gebietsschutz",
+        "fr": "Protection de terrain", "pt": "Proteção de terreno"
+      },
+      "keywords": ["grief", "claim", "land protection", "region protect", "worldguard", "protect your"],
+      "browse": true,
+      "query": "grief protection claims",
+      "projectTypes": ["plugin"]
+    },
+    {
+      "id": "moderation",
+      "priority": 20,
+      "color": "#E05561",
+      "labels": {
+        "es": "Moderación", "en": "Moderation", "de": "Moderation",
+        "fr": "Modération", "pt": "Moderação"
+      },
+      "keywords": ["anti-cheat", "anticheat", "moderation", "punish", "ban ", "mute", "staff"],
+      "browse": true,
+      "query": "moderation anticheat",
+      "projectTypes": ["plugin"]
+    },
+    {
+      "id": "permissions",
+      "priority": 21,
+      "color": "#8957E5",
+      "labels": {
+        "es": "Permisos y rangos", "en": "Permissions & ranks", "de": "Rechte & Ränge",
+        "fr": "Permissions & rangs", "pt": "Permissões e cargos"
+      },
+      "keywords": ["permission", "rank", "prefix", "group manager"],
+      "browse": true,
+      "query": "permissions ranks",
+      "projectTypes": ["plugin"]
+    },
+    {
+      "id": "social",
+      "priority": 22,
+      "color": "#DB6D9D",
+      "labels": {
+        "es": "Chat y social", "en": "Chat & social", "de": "Chat & Sozial",
+        "fr": "Chat & social", "pt": "Chat e social"
+      },
+      "categories": ["social"],
+      "keywords": ["chat", "discord", "voice chat", "message"],
+      "browse": true,
+      "facets": ["[\"categories:social\"]"]
+    },
+    {
+      "id": "minigames",
+      "priority": 23,
+      "color": "#A371F7",
+      "labels": {
+        "es": "Minijuegos", "en": "Minigames", "de": "Minispiele",
+        "fr": "Mini-jeux", "pt": "Minijogos"
+      },
+      "categories": ["minigame"],
+      "keywords": ["minigame", "arena", "lobby"]
+    },
+    {
+      "id": "management",
+      "priority": 24,
+      "color": "#6E7681",
+      "labels": {
+        "es": "Administración", "en": "Administration", "de": "Verwaltung",
+        "fr": "Administration", "pt": "Administração"
+      },
+      "categories": ["management"],
+      "keywords": ["admin", "server management", "console", "dashboard"],
+      "browse": true,
+      "facets": ["[\"categories:management\"]"]
+    },
+    {
+      "id": "backup",
+      "priority": 25,
+      "color": "#2F81F7",
+      "labels": {
+        "es": "Copias de seguridad", "en": "Backups", "de": "Backups",
+        "fr": "Sauvegardes", "pt": "Backups"
+      },
+      "keywords": ["backup", "restore world", "snapshot"]
+    },
+    {
+      "id": "compatibility",
+      "priority": 26,
+      "color": "#4D9DE0",
+      "labels": {
+        "es": "Compatibilidad de versiones", "en": "Version compatibility", "de": "Versionskompatibilität",
+        "fr": "Compatibilité des versions", "pt": "Compatibilidade de versões"
+      },
+      "keywords": ["older versions", "version support", "cross-version", "bedrock", "crossplay", "protocol"]
+    },
+    {
+      "id": "qol",
+      "priority": 27,
+      "color": "#3FB950",
+      "labels": {
+        "es": "Calidad de vida", "en": "Quality of life", "de": "Komfort",
+        "fr": "Confort de jeu", "pt": "Qualidade de vida"
+      },
+      "categories": ["game-mechanics"],
+      "keywords": ["quality of life", "convenien", "tweaks", "small improvements"],
+      "browse": true,
+      "facets": ["[\"categories:game-mechanics\"]"]
+    },
+    {
+      "id": "utility",
+      "priority": 28,
+      "color": "#6E7681",
+      "labels": {
+        "es": "Utilidades", "en": "Utility", "de": "Werkzeuge",
+        "fr": "Utilitaires", "pt": "Utilidades"
+      },
+      "categories": ["utility"],
+      "browse": true,
+      "facets": ["[\"categories:utility\"]"]
+    },
+    {
+      "id": "needs-client",
+      "priority": 40,
+      "kind": "install",
+      "color": "#E3A82B",
+      "labels": {
+        "es": "También en el cliente", "en": "Needs client install", "de": "Auch im Client",
+        "fr": "Aussi côté client", "pt": "Também no cliente"
+      },
+      "clientSide": ["required"]
+    },
+    {
+      "id": "server-only",
+      "priority": 41,
+      "kind": "install",
+      "color": "#2F81F7",
+      "labels": {
+        "es": "Solo en el servidor", "en": "Server-side only", "de": "Nur Server",
+        "fr": "Serveur uniquement", "pt": "Só no servidor"
+      },
+      "clientSide": ["unsupported"]
+    }
+  ]
+}

@@ -24,6 +24,14 @@
     <AvaloniaResource Include="Resources\app.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Store data read at runtime: the tag catalogue and the plain-language summaries. Both are
+         data, not code, and both can be overridden by a file of the same name in the user's data
+         folder (see StoreTagService / StoreSummaryService). -->
+    <EmbeddedResource Include="Resources\store-tags.json" />
+    <EmbeddedResource Include="Resources\store-summaries.json" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <!-- Cross-platform reference: compiles everywhere, only used at runtime on Windows (guarded with

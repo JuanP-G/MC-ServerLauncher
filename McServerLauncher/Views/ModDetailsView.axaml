@@ -1,0 +1,382 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:McServerLauncher.ViewModels"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:b="using:McServerLauncher.Behaviors"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="760" d:DesignHeight="600"
+             x:Class="McServerLauncher.Views.ModDetailsView"
+             x:DataType="vm:ModDetailsViewModel"
+             x:CompileBindings="False">
+
+    <UserControl.Styles>
+        <!-- Section card: same language as the rest of the app (Border.stat in MainWindow). -->
+        <Style Selector="Border.section">
+            <Setter Property="Background" Value="#12FFFFFF" />
+            <Setter Property="BorderBrush" Value="#1AFFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+        <Style Selector="TextBlock.sectionTitle">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="TextBlock.metaLabel">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Opacity" Value="0.6" />
+        </Style>
+        <Style Selector="TextBlock.metaValue">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <!-- Gallery thumbnail: the selected one gets a visible ring. -->
+        <Style Selector="Border.thumb">
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>
+        <Style Selector="Border.thumb.selected">
+            <Setter Property="BorderBrush" Value="#58A6FF" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Top bar: back, and the escape hatch to Modrinth -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+            <Button Grid.Column="0" Command="{Binding BackCommand}" Padding="8,5">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ic:SymbolIcon Symbol="ArrowLeft" FontSize="14" />
+                    <TextBlock Text="{loc:Loc Store_Back}" />
+                </StackPanel>
+            </Button>
+
+            <ProgressBar Grid.Column="1" IsIndeterminate="True" Height="2" Margin="12,0"
+                         VerticalAlignment="Center" IsVisible="{Binding IsLoading}" />
+
+            <Button Grid.Column="2" Padding="8,5"
+                    Command="{Binding OpenLinkCommand}" CommandParameter="{Binding ModrinthUrl}"
+                    ToolTip.Tip="{loc:Loc Store_OpenOnModrinth}">
+                <ic:SymbolIcon Symbol="Open" FontSize="14" />
+            </Button>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" x:Name="Scroller" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+
+                <!-- Something went wrong fetching the project -->
+                <Border Classes="section" IsVisible="{Binding HasError}" Background="#22E05561">
+                    <TextBlock Text="{Binding ErrorText}" TextWrapping="Wrap" />
+                </Border>
+
+                <!-- Header: icon, name, author, plain-language summary, install -->
+                <Border Classes="section">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Border Grid.Column="0" Width="72" Height="72" CornerRadius="8"
+                                Background="#22FFFFFF" Margin="0,0,14,0" ClipToBounds="True"
+                                VerticalAlignment="Top">
+                            <Panel>
+                                <ic:SymbolIcon Symbol="Box" FontSize="30" Opacity="0.5"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               IsVisible="{Binding !HasIcon}" />
+                                <Image Source="{Binding Icon}" Width="72" Height="72"
+                                       IsVisible="{Binding HasIcon}" />
+                            </Panel>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding AuthorText}" FontSize="12" Opacity="0.7"
+                                       IsVisible="{Binding AuthorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                            <!-- The answer to "what does this do?", in the user's language -->
+                            <TextBlock Text="{Binding Summary}" FontSize="13" TextWrapping="Wrap"
+                                       LineHeight="19" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding Tagline}" FontSize="12" Opacity="0.6"
+                                       TextWrapping="Wrap" FontStyle="Italic"
+                                       IsVisible="{Binding Tagline, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                            <!-- Tags -->
+                            <ItemsControl ItemsSource="{Binding Tags}" Margin="0,8,0,0" IsVisible="{Binding HasTags}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="10" Padding="8,2" Margin="0,0,6,6"
+                                                Background="{Binding Brush}">
+                                            <TextBlock Text="{Binding Label}" FontSize="11"
+                                                       FontWeight="SemiBold" Foreground="White" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Install + the numbers -->
+                            <Grid ColumnDefinitions="Auto,*" Margin="0,8,0,0">
+                                <Button Grid.Column="0" Classes="accent" Padding="16,7"
+                                        Command="{Binding InstallCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <ic:SymbolIcon Symbol="ArrowDownload" />
+                                        <TextBlock Text="{loc:Loc Install}" />
+                                    </StackPanel>
+                                </Button>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="18"
+                                            VerticalAlignment="Center" Margin="18,0,0,0">
+                                    <StackPanel>
+                                        <TextBlock Classes="metaLabel" Text="{loc:Loc Store_Downloads}" />
+                                        <TextBlock Classes="metaValue" Text="{Binding DownloadsText}" />
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Classes="metaLabel" Text="{loc:Loc Store_Followers}" />
+                                        <TextBlock Classes="metaValue" Text="{Binding FollowersText}" />
+                                    </StackPanel>
+                                    <StackPanel IsVisible="{Binding HasUpdated}">
+                                        <TextBlock Classes="metaLabel" Text="{loc:Loc Store_Updated}" />
+                                        <TextBlock Classes="metaValue" Text="{Binding UpdatedText}" />
+                                    </StackPanel>
+                                    <StackPanel IsVisible="{Binding HasPublished}">
+                                        <TextBlock Classes="metaLabel" Text="{loc:Loc Store_Published}" />
+                                        <TextBlock Classes="metaValue" Text="{Binding PublishedText}" />
+                                    </StackPanel>
+                                    <StackPanel IsVisible="{Binding HasLicense}">
+                                        <TextBlock Classes="metaLabel" Text="{loc:Loc Store_License}" />
+                                        <TextBlock Classes="metaValue" Text="{Binding LicenseText}"
+                                                   TextTrimming="CharacterEllipsis" MaxWidth="160" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Compatibility with THIS server -->
+                <Border Classes="section" IsVisible="{Binding CompatibilityKnown}">
+                    <StackPanel>
+                        <TextBlock Classes="sectionTitle" Text="{loc:Loc Store_Compatibility}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Ellipse Width="9" Height="9" VerticalAlignment="Center"
+                                     Fill="{Binding CompatibilityBrush}" />
+                            <TextBlock Text="{Binding CompatibilityText}" FontWeight="SemiBold"
+                                       FontSize="13" Foreground="{Binding CompatibilityBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding CompatibilityDetail}" FontSize="12" Opacity="0.75"
+                                   TextWrapping="Wrap" Margin="17,4,0,0" />
+                        <!-- The thing that decides whether a mod is usable on a public server -->
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="17,8,0,0">
+                            <ic:SymbolIcon Symbol="Info" FontSize="13" Opacity="0.7" VerticalAlignment="Top" />
+                            <TextBlock Text="{Binding SideText}" FontSize="12" TextWrapping="Wrap"
+                                       Opacity="0.85" MaxWidth="560" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Gallery -->
+                <Border Classes="section" IsVisible="{Binding HasGallery}">
+                    <StackPanel>
+                        <TextBlock Classes="sectionTitle" Text="{loc:Loc Store_Gallery}" />
+                        <!-- Bound through the selected image's own DataContext: with a plain
+                             SelectedImage.X path, every project without a gallery logs a binding
+                             error for a section that isn't even shown. -->
+                        <StackPanel DataContext="{Binding SelectedImage}">
+                            <Border CornerRadius="6" ClipToBounds="True" Background="#22000000"
+                                    MinHeight="180">
+                                <Image Source="{Binding Full}" Stretch="Uniform" MaxHeight="340" />
+                            </Border>
+                            <TextBlock Text="{Binding Caption}" FontSize="12" Opacity="0.7"
+                                       TextWrapping="Wrap" Margin="0,6,0,0"
+                                       IsVisible="{Binding HasCaption}" />
+                        </StackPanel>
+
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Disabled" Margin="0,8,0,0">
+                            <ItemsControl ItemsSource="{Binding Gallery}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Background="Transparent" Padding="0" BorderThickness="0"
+                                                Command="{Binding $parent[ItemsControl].DataContext.SelectImageCommand}"
+                                                CommandParameter="{Binding}">
+                                            <Border Classes="thumb" Classes.selected="{Binding IsSelected}"
+                                                    ClipToBounds="True">
+                                                <Image Source="{Binding Thumbnail}" Width="112" Height="63"
+                                                       Stretch="UniformToFill" />
+                                            </Border>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+
+                <!-- Long description (Markdown from Modrinth) -->
+                <Border Classes="section" IsVisible="{Binding HasBody}">
+                    <StackPanel>
+                        <TextBlock Classes="sectionTitle" Text="{loc:Loc Store_Description}" />
+                        <StackPanel b:MarkdownBody.Source="{Binding Body}" />
+                        <TextBlock Text="{loc:Loc Store_BodyTruncated}" FontSize="11" Opacity="0.6"
+                                   Margin="0,8,0,0" IsVisible="{Binding BodyTruncated}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Dependencies -->
+                <Border Classes="section" IsVisible="{Binding HasDependencies}">
+                    <StackPanel>
+                        <TextBlock Classes="sectionTitle" Text="{loc:Loc Store_Dependencies}" />
+                        <ItemsControl ItemsSource="{Binding Dependencies}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Background="Transparent" BorderThickness="0" Padding="6"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Command="{Binding OpenCommand}">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <Border Grid.Column="0" Width="34" Height="34" CornerRadius="5"
+                                                    Background="#22FFFFFF" Margin="0,0,10,0" ClipToBounds="True">
+                                                <Panel>
+                                                    <ic:SymbolIcon Symbol="Box" FontSize="16" Opacity="0.5"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                   IsVisible="{Binding !HasIcon}" />
+                                                    <Image Source="{Binding Icon}" Width="34" Height="34"
+                                                           IsVisible="{Binding HasIcon}" />
+                                                </Panel>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Badge}" FontSize="10" Opacity="0.8"
+                                                           FontWeight="SemiBold" IsVisible="{Binding HasBadge}" />
+                                                <TextBlock Text="{Binding Summary}" FontSize="11" Opacity="0.75"
+                                                           TextWrapping="Wrap" MaxLines="2"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Tagline}" FontSize="10" Opacity="0.5"
+                                                           FontStyle="Italic" TextWrapping="Wrap" MaxLines="1"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           IsVisible="{Binding HasTagline}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Versions -->
+                <Border Classes="section" IsVisible="{Binding HasVersions}">
+                    <StackPanel>
+                        <TextBlock Classes="sectionTitle" Text="{loc:Loc Store_Versions}" />
+                        <ItemsControl ItemsSource="{Binding Versions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,3">
+                                        <Border Grid.Column="0" CornerRadius="4" Padding="6,1" Margin="0,0,10,0"
+                                                VerticalAlignment="Center" Background="{Binding TypeBrush}">
+                                            <TextBlock Text="{Binding TypeText}" FontSize="10"
+                                                       FontWeight="SemiBold" Foreground="White" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontSize="12"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <TextBlock Text="{Binding DateText}" FontSize="11" Opacity="0.6" />
+                                                <TextBlock Text="{Binding DownloadsText}" FontSize="11" Opacity="0.6" />
+                                                <TextBlock Text="{Binding SizeText}" FontSize="11" Opacity="0.6"
+                                                           IsVisible="{Binding HasSize}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Button Grid.Column="3" Padding="10,4" VerticalAlignment="Center"
+                                                Content="{loc:Loc Install}" IsEnabled="{Binding !IsInstalling}"
+                                                Command="{Binding InstallCommand}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{loc:Loc Store_VersionsNote}" FontSize="11" Opacity="0.55"
+                                   Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Related -->
+                <Border Classes="section" IsVisible="{Binding HasRelated}">
+                    <StackPanel>
+                        <TextBlock Classes="sectionTitle" Text="{Binding RelatedTitle}" />
+                        <ItemsControl ItemsSource="{Binding Related}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Background="Transparent" BorderThickness="0" Padding="6"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Command="{Binding OpenCommand}">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <Border Grid.Column="0" Width="34" Height="34" CornerRadius="5"
+                                                    Background="#22FFFFFF" Margin="0,0,10,0" ClipToBounds="True">
+                                                <Panel>
+                                                    <ic:SymbolIcon Symbol="Box" FontSize="16" Opacity="0.5"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                   IsVisible="{Binding !HasIcon}" />
+                                                    <Image Source="{Binding Icon}" Width="34" Height="34"
+                                                           IsVisible="{Binding HasIcon}" />
+                                                </Panel>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Summary}" FontSize="11" Opacity="0.75"
+                                                           TextWrapping="Wrap" MaxLines="2"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Tagline}" FontSize="10" Opacity="0.5"
+                                                           FontStyle="Italic" TextWrapping="Wrap" MaxLines="1"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           IsVisible="{Binding HasTagline}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- External links -->
+                <Border Classes="section" IsVisible="{Binding HasLinks}">
+                    <StackPanel>
+                        <TextBlock Classes="sectionTitle" Text="{loc:Loc Store_Links}" />
+                        <ItemsControl ItemsSource="{Binding Links}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Margin="0,0,8,8" Padding="10,5"
+                                            Command="{Binding $parent[ItemsControl].DataContext.OpenLinkCommand}"
+                                            CommandParameter="{Binding Url}"
+                                            ToolTip.Tip="{Binding Url}">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <ic:SymbolIcon Symbol="{Binding Icon}" FontSize="14" />
+                                            <TextBlock Text="{Binding Label}" FontSize="12" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

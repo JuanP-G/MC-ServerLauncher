@@ -1179,6 +1179,7 @@ public partial class ServerViewModel : ObservableObject
         _playitTimer.Stop();
         _playit.StateChanged -= _onPlayitStateChanged; // the manager is shared and outlives us
         _agent.StateChanged -= _onAgentStateChanged;   // the agent runner is shared too
+        Mods.Shutdown();                               // cancels anything the store was fetching
         if (_process.IsRunning)
             await _process.StopAsync(TimeSpan.FromSeconds(15));
     }
