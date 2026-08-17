@@ -92,14 +92,14 @@ public class MinecraftVersionService
             ? string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#"))
             : Localizer.Get("Msg_DownloadingJar"));
 
-        await using (var fs = File.Create(destPath))
-            await resp.Content.CopyToAsync(fs, ct);
-
-        if (!string.IsNullOrEmpty(expectedSha1))
-        {
-            log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
-            await DownloadVerifier.VerifyAsync(destPath, expectedSha1, HashAlgorithmName.SHA1, ct);
-        }
+        await AtomicDownload.ToFileAsync(resp.Content, destPath,
+            verifyAsync: async (part, token) =>
+            {
+                if (string.IsNullOrEmpty(expectedSha1)) return;
+                log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+                await DownloadVerifier.VerifyAsync(part, expectedSha1, HashAlgorithmName.SHA1, token);
+            },
+            ct: ct);
 
         log?.Report(Localizer.Get("Msg_DownloadComplete"));
     }

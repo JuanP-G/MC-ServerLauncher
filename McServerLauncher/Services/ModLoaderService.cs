@@ -63,11 +63,16 @@ public class ModLoaderService
             log?.Report(string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#")));
         }
 
-        await using (var fs = File.Create(destPath))
-            await resp.Content.CopyToAsync(fs, ct);
-
-        log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
-        ValidateFabricServerJar(destPath, gameVersion, loaderVersion);
+        // Atomic: the structural check below rejects by deleting, so writing in place would let a
+        // dropped connection leave a working server with no jar at all.
+        await AtomicDownload.ToFileAsync(resp.Content, destPath,
+            verifyAsync: (part, _) =>
+            {
+                log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
+                ValidateFabricServerJar(part, gameVersion, loaderVersion);
+                return Task.CompletedTask;
+            },
+            ct: ct);
 
         log?.Report(Localizer.Get("Msg_DownloadComplete"));
     }
@@ -133,30 +138,33 @@ public class ModLoaderService
         using (var resp = await Http.GetAsync(installerUrl, HttpCompletionOption.ResponseHeadersRead, ct))
         {
             resp.EnsureSuccessStatusCode();
-            await using var fs = File.Create(installerPath);
-            await resp.Content.CopyToAsync(fs, ct);
-        }
 
-        // TRUST ASSUMPTION (documented, see architecture.md): Forge publishes no independent
-        // signatures, so the plain-text .sha1 next to each artifact comes from the SAME maven as
-        // the jar — it protects against corruption/truncation, not against a compromised server.
-        // But since this jar is about to be EXECUTED (java -jar ... --installServer), the check is
-        // now REQUIRED rather than best-effort: no readable .sha1, no install. Maven repos always
-        // publish it, so a missing one means a broken download path, not a normal condition.
-        var expectedSha1 = await TryGetRemoteHashAsync(installerUrl + ".sha1", ct);
-        if (string.IsNullOrEmpty(expectedSha1))
-        {
-            TryDelete(installerPath);
-            throw new InvalidOperationException(Localizer.Get("Msg_ForgeNoChecksum"));
-        }
-        log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
-        await DownloadVerifier.VerifyAsync(installerPath, expectedSha1, HashAlgorithmName.SHA1, ct);
+            // Both checks below run against the temporary copy, so nothing that fails them is ever
+            // left behind under a name java could be pointed at.
+            await AtomicDownload.ToFileAsync(resp.Content, installerPath,
+                verifyAsync: async (part, token) =>
+                {
+                    // TRUST ASSUMPTION (documented, see architecture.md): Forge publishes no
+                    // independent signatures, so the plain-text .sha1 next to each artifact comes
+                    // from the SAME maven as the jar — it protects against corruption/truncation,
+                    // not against a compromised server. But since this jar is about to be EXECUTED
+                    // (java -jar ... --installServer), the check is REQUIRED rather than
+                    // best-effort: no readable .sha1, no install. Maven repos always publish it, so
+                    // a missing one means a broken download path, not a normal condition.
+                    var expectedSha1 = await TryGetRemoteHashAsync(installerUrl + ".sha1", token);
+                    if (string.IsNullOrEmpty(expectedSha1))
+                        throw new InvalidOperationException(Localizer.Get("Msg_ForgeNoChecksum"));
 
-        // Structural sanity net before handing the jar to java (same idea as the Fabric jar
-        // validation): it must at least BE a Forge installer. A swapped or truncated file is
-        // deleted and refused instead of being executed.
-        log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
-        ValidateForgeInstallerJar(installerPath);
+                    log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+                    await DownloadVerifier.VerifyAsync(part, expectedSha1, HashAlgorithmName.SHA1, token);
+
+                    // Structural sanity net before handing the jar to java (same idea as the Fabric
+                    // jar validation): it must at least BE a Forge installer.
+                    log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
+                    ValidateForgeInstallerJar(part);
+                },
+                ct: ct);
+        }
 
         log?.Report(Localizer.Get("Msg_ForgeRunningInstaller"));
         await RunForgeInstallerAsync(installerPath, folder, javaPath, log, ct);

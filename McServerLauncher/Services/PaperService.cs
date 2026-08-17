@@ -76,14 +76,14 @@ public class PaperService
             ? string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#"))
             : Localizer.Get("Msg_DownloadingJar"));
 
-        await using (var fs = File.Create(destPath))
-            await resp.Content.CopyToAsync(fs, ct);
-
-        if (!string.IsNullOrEmpty(build.Sha256))
-        {
-            log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
-            await DownloadVerifier.VerifyAsync(destPath, build.Sha256, HashAlgorithmName.SHA256, ct);
-        }
+        await AtomicDownload.ToFileAsync(resp.Content, destPath,
+            verifyAsync: async (part, token) =>
+            {
+                if (string.IsNullOrEmpty(build.Sha256)) return;
+                log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+                await DownloadVerifier.VerifyAsync(part, build.Sha256, HashAlgorithmName.SHA256, token);
+            },
+            ct: ct);
 
         log?.Report(Localizer.Get("Msg_DownloadComplete"));
     }

@@ -301,14 +301,14 @@ public partial class JavaService
         using (var resp = await Http.GetAsync(link, HttpCompletionOption.ResponseHeadersRead, ct))
         {
             resp.EnsureSuccessStatusCode();
-            await using var fs = File.Create(archivePath);
-            await resp.Content.CopyToAsync(fs, ct);
-        }
-
-        if (!string.IsNullOrEmpty(checksum))
-        {
-            log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
-            await DownloadVerifier.VerifyAsync(archivePath, checksum, HashAlgorithmName.SHA256, ct);
+            await AtomicDownload.ToFileAsync(resp.Content, archivePath,
+                verifyAsync: async (part, token) =>
+                {
+                    if (string.IsNullOrEmpty(checksum)) return;
+                    log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+                    await DownloadVerifier.VerifyAsync(part, checksum, HashAlgorithmName.SHA256, token);
+                },
+                ct: ct);
         }
 
         log?.Report(Localizer.Get("Msg_JavaInstalling"));

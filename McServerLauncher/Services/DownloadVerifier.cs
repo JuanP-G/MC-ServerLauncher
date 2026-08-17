@@ -26,7 +26,7 @@ public static class DownloadVerifier
         {
             TryDelete(filePath);
             throw new InvalidOperationException(
-                string.Format(Localizer.Get("Msg_ChecksumMismatchFmt"), Path.GetFileName(filePath)));
+                string.Format(Localizer.Get("Msg_ChecksumMismatchFmt"), AtomicDownload.DisplayName(filePath)));
         }
     }
 

@@ -209,40 +209,17 @@ public class ModrinthService
         using var response = await Http.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, ct);
         response.EnsureSuccessStatusCode();
 
-        var totalBytes = response.Content.Headers.ContentLength;
-
-        // The write handle must be closed before verifying: File.Create opens with FileShare.None,
-        // so DownloadVerifier's read would otherwise fail with a sharing violation on Windows.
-        await using (var fs = File.Create(destinationPath))
-        await using (var contentStream = await response.Content.ReadAsStreamAsync(ct))
-        {
-            var buffer = new byte[8192];
-            var isMoreToRead = true;
-            var totalRead = 0L;
-
-            do
+        // Atomic: reinstalling or updating a mod that is already there must not destroy the working
+        // jar if the download fails halfway.
+        await AtomicDownload.ToFileAsync(response.Content, destinationPath,
+            verifyAsync: async (part, token) =>
             {
-                var read = await contentStream.ReadAsync(buffer, 0, buffer.Length, ct);
-                if (read == 0)
-                {
-                    isMoreToRead = false;
-                }
-                else
-                {
-                    await fs.WriteAsync(buffer, 0, read, ct);
-                    totalRead += read;
-
-                    if (totalBytes.HasValue && progress != null)
-                    {
-                        progress.Report((double)totalRead / totalBytes.Value);
-                    }
-                }
-            } while (isMoreToRead);
-        }
-
-        if (!string.IsNullOrEmpty(expectedSha512))
-            await DownloadVerifier.VerifyAsync(destinationPath, expectedSha512, HashAlgorithmName.SHA512, ct);
-        else if (!string.IsNullOrEmpty(expectedSha1))
-            await DownloadVerifier.VerifyAsync(destinationPath, expectedSha1, HashAlgorithmName.SHA1, ct);
+                if (!string.IsNullOrEmpty(expectedSha512))
+                    await DownloadVerifier.VerifyAsync(part, expectedSha512, HashAlgorithmName.SHA512, token);
+                else if (!string.IsNullOrEmpty(expectedSha1))
+                    await DownloadVerifier.VerifyAsync(part, expectedSha1, HashAlgorithmName.SHA1, token);
+            },
+            progress: progress,
+            ct: ct);
     }
 }

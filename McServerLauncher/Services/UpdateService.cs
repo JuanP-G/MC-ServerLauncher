@@ -114,10 +114,9 @@ public class UpdateService
         using var resp = await DownloadHttp.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();
 
-        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-        await using (var fs = File.Create(destPath))
-        await using (var s = await resp.Content.ReadAsStreamAsync(ct))
-            await s.CopyToAsync(fs, ct);
+        // Atomic, so an interrupted download can't leave a plausible-looking half installer where
+        // the real one should be (the caller verifies it against SHA256SUMS.txt afterwards).
+        await AtomicDownload.ToFileAsync(resp.Content, destPath, ct: ct);
 
         return destPath;
     }
