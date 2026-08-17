@@ -522,6 +522,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Filters_Topics" xml:space="preserve"><value>Temas</value></data>
   <data name="Filters_CategoriesHint" xml:space="preserve"><value>Podem combinar-se: os mods têm de cumprir todas.</value></data>
   <data name="Filters_TopicsHint" xml:space="preserve"><value>Só um de cada vez.</value></data>
+  <data name="Tip_DismissNotice" xml:space="preserve"><value>Dispensar o aviso</value></data>
   <data name="Tip_RemoveFilter" xml:space="preserve"><value>Remover este filtro</value></data>
   <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Mostrar ou ocultar a lista de instalados</value></data>
   <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Nenhum resultado com estes filtros. Tenta remover algum.</value></data>

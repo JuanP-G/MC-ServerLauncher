@@ -355,6 +355,32 @@
                         </Grid>
                     </Panel>
                 </Grid>
+
+                <!-- Install result. It sits in the Panel, over both the list and the details page,
+                     because installing happens from either one — and it is the last child so it
+                     draws on top. A success fades away by itself; a failure waits to be read. -->
+                <Border VerticalAlignment="Bottom" HorizontalAlignment="Stretch"
+                        Margin="0,0,0,4" CornerRadius="6" Padding="10,6"
+                        IsVisible="{Binding HasInstallNotice}"
+                        Background="{Binding InstallFailed, Converter={x:Static vm:NoticeBrushConverter.Instance}}">
+                    <!-- The row must be declared Auto. A Grid with no RowDefinitions gets a single
+                         star row, which measured against the panel's height made the banner ask for
+                         all 766px of it and cover the whole store. -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto">
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Warning" Foreground="White" Margin="0,0,8,0"
+                                       VerticalAlignment="Center" IsVisible="{Binding InstallFailed}" />
+                        <ic:SymbolIcon Grid.Column="0" Symbol="CheckmarkCircle" Foreground="White" Margin="0,0,8,0"
+                                       VerticalAlignment="Center" IsVisible="{Binding !InstallFailed}" />
+                        <TextBlock Grid.Column="1" Text="{Binding InstallNotice}" Foreground="White"
+                                   FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" />
+                        <Button Grid.Column="2" Padding="4" MinWidth="0" MinHeight="0"
+                                Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
+                                ToolTip.Tip="{loc:Loc Tip_DismissNotice}"
+                                Command="{Binding DismissInstallNoticeCommand}">
+                            <ic:SymbolIcon Symbol="Dismiss" FontSize="12" Foreground="White" />
+                        </Button>
+                    </Grid>
+                </Border>
             </Panel>
         </Border>
 

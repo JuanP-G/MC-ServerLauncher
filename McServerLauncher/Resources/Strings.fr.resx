@@ -522,6 +522,7 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Filters_Topics" xml:space="preserve"><value>Thèmes</value></data>
   <data name="Filters_CategoriesHint" xml:space="preserve"><value>Elles se combinent : un mod doit toutes les remplir.</value></data>
   <data name="Filters_TopicsHint" xml:space="preserve"><value>Un seul à la fois.</value></data>
+  <data name="Tip_DismissNotice" xml:space="preserve"><value>Masquer ce message</value></data>
   <data name="Tip_RemoveFilter" xml:space="preserve"><value>Retirer ce filtre</value></data>
   <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Afficher ou masquer la liste des installés</value></data>
   <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Aucun résultat avec ces filtres. Essaie d'en retirer un.</value></data>

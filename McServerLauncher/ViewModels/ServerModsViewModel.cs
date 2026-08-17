@@ -248,6 +248,9 @@ public partial class ServerModsViewModel : ObservableObject
         try { _reload?.Cancel(); } catch { /* already disposed */ }
         _reload?.Dispose();
         _reload = null;
+
+        _noticeTimer?.Stop();
+        _noticeTimer = null;
     }
 
     private void OpenDetails(StoreItem item)
@@ -673,6 +676,62 @@ public partial class ServerModsViewModel : ObservableObject
         else SearchResults.ReplaceAll(page);
     }
 
+    // --- Install feedback ---
+    //
+    // Installing needs a surface of its own. SearchStatus is only drawn when the result list is
+    // EMPTY, which is precisely when you cannot be installing anything, and the details page never
+    // showed it at all — so a checksum that didn't match, a dropped connection or a jar locked by a
+    // running server all failed in complete silence.
+
+    /// <summary>What the last install said, shown as a banner over the store and the details page.</summary>
+    [ObservableProperty]
+    private string? _installNotice;
+
+    /// <summary>True when the notice reports a failure, which draws it in red rather than green.</summary>
+    [ObservableProperty]
+    private bool _installFailed;
+
+    public bool HasInstallNotice => !string.IsNullOrWhiteSpace(InstallNotice);
+
+    partial void OnInstallNoticeChanged(string? value) => OnPropertyChanged(nameof(HasInstallNotice));
+
+    /// <summary>Clears a success notice on its own; failures stay until read.</summary>
+    private DispatcherTimer? _noticeTimer;
+
+    [RelayCommand]
+    private void DismissInstallNotice()
+    {
+        _noticeTimer?.Stop();
+        InstallNotice = null;
+    }
+
+    /// <summary>
+    /// Shows <paramref name="message"/> in the install banner. A success disappears by itself after
+    /// a few seconds; a failure does not — an error nobody read is the bug this exists to fix.
+    /// </summary>
+    private void Notify(string message, bool failed, bool transient = false)
+    {
+        _noticeTimer?.Stop();
+        InstallFailed = failed;
+        InstallNotice = message;
+
+        if (failed || transient) return;
+
+        _noticeTimer ??= CreateNoticeTimer();
+        _noticeTimer.Start();
+    }
+
+    private DispatcherTimer CreateNoticeTimer()
+    {
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(6) };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            if (!InstallFailed) InstallNotice = null;
+        };
+        return timer;
+    }
+
     /// <summary>
     /// Installs a project. <paramref name="chosen"/> installs that exact version (the details page
     /// offers the last few); without it the newest compatible one is resolved, as before.
@@ -681,7 +740,8 @@ public partial class ServerModsViewModel : ObservableObject
     public async Task InstallModAsync(string projectId, VersionResult? chosen = null)
     {
         IsSearching = true;
-        SearchStatus = Localizer.Get("Msg_ResolvingVersion");
+        // transient: progress, not an outcome — it must not time out while the download runs.
+        Notify(Localizer.Get("Msg_ResolvingVersion"), failed: false, transient: true);
 
         try
         {
@@ -689,7 +749,7 @@ public partial class ServerModsViewModel : ObservableObject
                 ?? await _modrinthService.GetLatestProjectVersionAsync(projectId, _config.Type, _config.GameVersion);
             if (version == null || version.Files.Count == 0)
             {
-                SearchStatus = Localizer.Get("Msg_NoCompatibleVersion");
+                Notify(Localizer.Get("Msg_NoCompatibleVersion"), failed: true);
                 return;
             }
 
@@ -708,17 +768,18 @@ public partial class ServerModsViewModel : ObservableObject
             try { if (File.Exists(disabledPath)) File.Delete(disabledPath); }
             catch { /* best-effort */ }
 
-            SearchStatus = string.Format(Localizer.Get("Msg_DownloadingMod"), file.Filename);
+            Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), file.Filename),
+                failed: false, transient: true);
 
             // Mods are third-party jars chosen by the user: verify against Modrinth's own checksum.
             await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512, file.Hashes?.Sha1);
 
-            SearchStatus = Localizer.Get("Msg_ModInstalled");
+            Notify(Localizer.Get("Msg_ModInstalled"), failed: false);
             RefreshInstalledMods();
         }
         catch (Exception ex)
         {
-            SearchStatus = string.Format(Localizer.Get("Msg_InstallErrorFmt"), ex.Message);
+            Notify(string.Format(Localizer.Get("Msg_InstallErrorFmt"), ex.Message), failed: true);
         }
         finally
         {

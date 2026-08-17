@@ -522,6 +522,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Filters_Topics" xml:space="preserve"><value>Topics</value></data>
   <data name="Filters_CategoriesHint" xml:space="preserve"><value>These combine: a mod has to match all of them.</value></data>
   <data name="Filters_TopicsHint" xml:space="preserve"><value>One at a time.</value></data>
+  <data name="Tip_DismissNotice" xml:space="preserve"><value>Dismiss this message</value></data>
   <data name="Tip_RemoveFilter" xml:space="preserve"><value>Remove this filter</value></data>
   <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Show or hide the installed list</value></data>
   <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Nothing matches these filters. Try removing one.</value></data>
