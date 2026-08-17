@@ -297,6 +297,14 @@ public partial class JavaService
         var isZip = OperatingSystem.IsWindows();
         var archivePath = Path.Combine(ManagedRoot, $"jre-{major}" + (isZip ? ".zip" : ".tar.gz"));
 
+        // No checksum, no Java. This archive is extracted and then EXECUTED to run the user's
+        // servers, so verifying it cannot be best-effort the way it was: a response without the
+        // field meant downloading, unpacking and running a JRE that nothing had checked. Adoptium
+        // publishes a checksum for every binary, so a missing one is a broken download path, not a
+        // normal condition — the same rule the Forge installer already follows.
+        if (string.IsNullOrEmpty(checksum))
+            throw new InvalidOperationException(Localizer.Get("Msg_JavaNoChecksum"));
+
         log?.Report(Localizer.Get("Msg_JavaDownloading"));
         using (var resp = await Http.GetAsync(link, HttpCompletionOption.ResponseHeadersRead, ct))
         {
@@ -304,7 +312,6 @@ public partial class JavaService
             await AtomicDownload.ToFileAsync(resp.Content, archivePath,
                 verifyAsync: async (part, token) =>
                 {
-                    if (string.IsNullOrEmpty(checksum)) return;
                     log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
                     await DownloadVerifier.VerifyAsync(part, checksum, HashAlgorithmName.SHA256, token);
                 },
