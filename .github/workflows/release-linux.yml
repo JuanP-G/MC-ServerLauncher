@@ -72,11 +72,37 @@ jobs:
           EOF
           chmod +x "$APPDIR/AppRun"
 
+      # appimagetool is EXECUTED inside the job that builds the binary our users download, so it is
+      # part of this release's supply chain. It used to come from the "continuous" tag — a moving
+      # target, fetched with no checksum and no signature: whoever controlled that asset controlled
+      # what shipped. Now it is a fixed release, verified before it is ever made executable, and a
+      # mismatch fails the build instead of running an unknown binary.
+      #
+      # To move to a newer appimagetool, update both lines together:
+      #   gh api repos/AppImage/appimagetool/releases/tags/<VER> \
+      #     --jq '.assets[] | select(.name=="appimagetool-x86_64.AppImage") | .digest'
       - name: Build AppImage
+        env:
+          APPIMAGETOOL_VERSION: "1.9.1"
+          APPIMAGETOOL_SHA256: "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0"
         run: |
-          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          set -euo pipefail
+
+          url="https://github.com/AppImage/appimagetool/releases/download/${APPIMAGETOOL_VERSION}/appimagetool-x86_64.AppImage"
+          curl -fsSL "$url" -o appimagetool
+
+          echo "${APPIMAGETOOL_SHA256}  appimagetool" | sha256sum --check --status || {
+            echo "::error::appimagetool no coincide con el SHA-256 fijado. Se aborta:"
+            echo "  esperado: ${APPIMAGETOOL_SHA256}"
+            echo "  obtenido: $(sha256sum appimagetool | cut -d' ' -f1)"
+            exit 1
+          }
+          echo "appimagetool ${APPIMAGETOOL_VERSION} verificado."
+
           chmod +x appimagetool
-          ARCH=x86_64 ./appimagetool AppDir MC-ServerLauncher-x86_64.AppImage
+          # --appimage-extract-and-run: unpacks instead of mounting, so the job doesn't depend on
+          # whichever libfuse the runner image happens to ship.
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run AppDir MC-ServerLauncher-x86_64.AppImage
 
       - name: Upload to release
         env:
