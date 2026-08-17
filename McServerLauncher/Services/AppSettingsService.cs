@@ -79,15 +79,12 @@ public class AppSettingsService
             ConsoleLogService.Shared.Log("Launcher",
                 "Could not encrypt a Playit secret (DPAPI/key-file failure); it was NOT saved to disk and will be asked for again.");
 
-        var toWrite = new AppSettings
-        {
-            PlayitApiKey = protectedKey,
-            PlayitAgentSecretKey = protectedAgent,
-            PlayitAgentId = settings.PlayitAgentId,
-            Language = settings.Language,
-            LastVersionSeen = settings.LastVersionSeen,
-            Notifications = settings.Notifications
-        };
+        // Copy everything, then replace only the two secrets. This used to name each property it
+        // wanted to keep, so the tray preferences — added later — were never written at all: they
+        // worked for the session and reverted on restart.
+        var toWrite = settings.ShallowCopy();
+        toWrite.PlayitApiKey = protectedKey;
+        toWrite.PlayitAgentSecretKey = protectedAgent;
         AtomicJsonFile.Write(_filePath, toWrite, JsonOptions);
     }
 

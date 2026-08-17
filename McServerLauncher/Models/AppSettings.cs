@@ -43,4 +43,16 @@ public class AppSettings
     /// the X quits, which is what most people expect.
     /// </summary>
     public bool CloseToTray { get; set; }
+
+    /// <summary>
+    /// A field-for-field copy.
+    /// </summary>
+    /// <remarks>
+    /// Saving needs an instance with the secrets swapped for their encrypted form while the
+    /// caller's copy keeps the usable plaintext. Building that by listing the properties by hand is
+    /// what silently stopped <see cref="MinimizeToTray"/> and <see cref="CloseToTray"/> from ever
+    /// being written: they were added to this class and nobody added them there. Copying everything
+    /// means a new setting is persisted without touching the save path at all.
+    /// </remarks>
+    public AppSettings ShallowCopy() => (AppSettings)MemberwiseClone();
 }
