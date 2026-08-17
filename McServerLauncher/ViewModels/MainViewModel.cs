@@ -308,19 +308,11 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private void OpenRelease()
-    {
-        if (string.IsNullOrEmpty(_releaseUrl)) return;
-        try
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = _releaseUrl,
-                UseShellExecute = true
-            });
-        }
-        catch { /* no browser available */ }
-    }
+    // Through BrowserLauncher, not Process.Start directly: _releaseUrl is the html_url the GitHub
+    // API returned, i.e. a remote value, and UseShellExecute hands whatever it gets to the shell.
+    // The guard that rejects anything but absolute http(s) already exists for exactly this — it was
+    // simply not being used here.
+    private void OpenRelease() => BrowserLauncher.Open(_releaseUrl);
 
     [RelayCommand]
     private void DismissUpdate() => UpdateAvailable = false;
