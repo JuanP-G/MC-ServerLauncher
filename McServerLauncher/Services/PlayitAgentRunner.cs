@@ -16,8 +16,9 @@ public enum AgentRunState { Stopped, Downloading, Starting, Running, Failed, Uns
 /// <summary>
 /// Runs Playit's official agent (<c>playitd</c>) as a child process so the user's tunnels actually
 /// forward traffic — without them installing anything. The binary is downloaded once (pinned to the
-/// same version the app registers, <see cref="AgentVersion"/>) and launched with <c>--secret</c>,
-/// the per-user agent key from the setup-code flow. One agent serves all of the user's tunnels; it
+/// same version the app registers, <see cref="AgentVersion"/>) and launched with
+/// <c>--secret-path</c> (see <see cref="SecretPath"/>) pointing at the per-user agent key from the
+/// setup-code flow. One agent serves all of the user's tunnels; it
 /// runs while the app is open and connected, and is stopped on shutdown. App-wide singleton.
 /// </summary>
 public class PlayitAgentRunner
@@ -110,6 +111,24 @@ public class PlayitAgentRunner
         : Path.Combine(AgentDir, "playitd.sock");
 
     /// <summary>
+    /// Where the agent's secret is handed over, instead of on its command line.
+    /// </summary>
+    /// <remarks>
+    /// The app takes care to encrypt this secret at rest (DPAPI on Windows, AES-GCM elsewhere) and
+    /// then used to pass it as <c>--secret &lt;key&gt;</c>, which publishes it to the whole machine:
+    /// on Linux <c>/proc/&lt;pid&gt;/cmdline</c> is world-readable by default, on Windows any process
+    /// of the same user can read it through WMI, and process-creation events are exactly what
+    /// logging and EDR agents record and ship elsewhere.
+    /// <para>
+    /// playitd accepts <c>--secret-path</c> (mutually exclusive with <c>--secret</c>) and reads the
+    /// file as either a bare hex key or TOML with a <c>secret_key</c> field — the same mechanism its
+    /// own <c>playit.toml</c> uses. The file is written 0600 on Unix and removed as soon as the
+    /// agent stops, so the plaintext exists only while the agent that needs it is running.
+    /// </para>
+    /// </remarks>
+    private static string SecretPath => Path.Combine(AgentDir, "agent-secret");
+
+    /// <summary>
     /// Ensures the agent binary is present (downloading it once) and runs it with the given secret.
     /// No-op if already running with the same secret. Safe to call repeatedly.
     /// </summary>
@@ -155,8 +174,11 @@ public class PlayitAgentRunner
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
-            psi.ArgumentList.Add("--secret");
-            psi.ArgumentList.Add(secretKey);
+            // --secret-path, never --secret: see SecretPath for why the key must not appear in the
+            // process command line.
+            WriteSecretFile(secretKey);
+            psi.ArgumentList.Add("--secret-path");
+            psi.ArgumentList.Add(SecretPath);
             psi.ArgumentList.Add("--socket-path");
             psi.ArgumentList.Add(SocketPath);
 
@@ -248,6 +270,33 @@ public class PlayitAgentRunner
     {
         try { if (_process is { HasExited: false } p) p.Kill(entireProcessTree: true); }
         catch { /* already gone */ }
+        DeleteSecretFile();
+    }
+
+    /// <summary>
+    /// Writes the secret where only this user can read it, for playitd's <c>--secret-path</c>.
+    /// </summary>
+    private static void WriteSecretFile(string secretKey)
+    {
+        Directory.CreateDirectory(AgentDir);
+
+        // Truncate anything already there before writing, so a longer previous key can't leave a
+        // readable tail behind.
+        File.WriteAllText(SecretPath, secretKey.Trim());
+
+        if (!OperatingSystem.IsWindows())
+        {
+            // 0600. Without this the file lands under the process umask, which on many distros is
+            // world-readable — no better than the command line it replaces.
+            File.SetUnixFileMode(SecretPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
+    }
+
+    /// <summary>Removes the secret file, so the plaintext outlives the agent by as little as possible.</summary>
+    private static void DeleteSecretFile()
+    {
+        try { if (File.Exists(SecretPath)) File.Delete(SecretPath); }
+        catch { /* best-effort: it is inside the user's own app-data folder */ }
     }
 
     /// <summary>
