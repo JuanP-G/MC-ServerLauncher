@@ -65,6 +65,10 @@
                 <TextBlock Text="{loc:Loc Idle_Section}" FontWeight="SemiBold" />
                 <TextBlock Text="{loc:Loc Idle_Intro}" TextWrapping="Wrap" Opacity="0.7"
                            FontSize="13" Margin="0,4,0,8" />
+                <CheckBox Content="{loc:Loc Wake_EnabledCheck}" Margin="0,0,0,4"
+                          IsChecked="{Binding WakeOnDemand, Mode=TwoWay}" />
+                <TextBlock Text="{loc:Loc Wake_Hint}" TextWrapping="Wrap" Opacity="0.55"
+                           FontSize="12" Margin="24,0,0,10" />
                 <Grid ColumnDefinitions="Auto,Auto">
                     <TextBlock Grid.Column="0" Text="{loc:Loc Idle_MinutesLabel}"
                                VerticalAlignment="Center" Margin="0,0,10,0" />

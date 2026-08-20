@@ -93,6 +93,16 @@ public class ServerConfig
     /// </remarks>
     public int IdleShutdownMinutes { get; set; }
 
+    /// <summary>
+    /// While stopped, answer on the server's port so that someone trying to join starts it.
+    /// </summary>
+    /// <remarks>
+    /// Off by default: it opens a listening socket, and nobody should end up with one without
+    /// having asked. Pairs with <see cref="IdleShutdownMinutes"/> — sleep when empty, wake on
+    /// demand — but each half works on its own.
+    /// </remarks>
+    public bool WakeOnDemand { get; set; }
+
     public bool UseCustomNotifications { get; set; }
 
     /// <summary>Per-server notification override, used only when <see cref="UseCustomNotifications"/>.</summary>

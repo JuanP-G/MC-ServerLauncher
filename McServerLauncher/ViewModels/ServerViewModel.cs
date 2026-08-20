@@ -184,6 +184,7 @@ public partial class ServerViewModel : ObservableObject
     private int _maxPlayers = 20;
 
     private readonly PlayersService _players = new();
+    private readonly WakeOnDemandListener _wake = new();
 
     /// <summary>Players connected right now (live, read from the console).</summary>
     public ObservableCollection<string> ConnectedPlayers { get; } = new();
@@ -270,6 +271,11 @@ public partial class ServerViewModel : ObservableObject
         Mods = new ServerModsViewModel(config);
         Backups = new ServerBackupsViewModel(this);
         _ = RefreshTunnelAddressAsync();
+
+        // Also here, not only on the transition to Stopped: opening the app finds every server
+        // already stopped and fires no state change, so waiting for one would mean wake-on-demand
+        // never starting until you had run and stopped a server by hand first.
+        StartWakeListener();
     }
 
     // --- Tray-aware polling (EFI-2) ---
@@ -318,7 +324,8 @@ public partial class ServerViewModel : ObservableObject
         if (_idleStopping) return;
 
         var minutes = Config.IdleShutdownMinutes;
-        var counting = ShouldCountIdle(minutes, State == ServerState.Running, ConnectedPlayers.Count);
+        var counting = ShouldCountIdle(minutes, State == ServerState.Running, ConnectedPlayers.Count)
+                       && !IsWithinWakeGrace(_wokeAtUtc, DateTime.UtcNow);
         if (!counting)
         {
             _emptySinceUtc = null;
@@ -344,6 +351,63 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Whether it has been empty long enough to stop.</summary>
     internal static bool IsIdleLongEnough(int minutes, DateTime emptySinceUtc, DateTime nowUtc) =>
         nowUtc - emptySinceUtc >= TimeSpan.FromMinutes(minutes);
+
+    // --- Waking the server when somebody knocks ---
+
+    /// <summary>When the server was last started by someone trying to join, if ever.</summary>
+    private DateTime? _wokeAtUtc;
+
+    /// <summary>
+    /// How long after waking the idle timer is ignored, so a player has time to actually get in.
+    /// </summary>
+    /// <remarks>
+    /// Without this, a server set to stop after a minute would wake, find itself still empty while
+    /// the world loads, and shut down before the player finished connecting — over and over.
+    /// </remarks>
+    private static readonly TimeSpan WakeGrace = TimeSpan.FromMinutes(5);
+
+    internal static bool IsWithinWakeGrace(DateTime? wokeAtUtc, DateTime nowUtc) =>
+        wokeAtUtc is not null && nowUtc - wokeAtUtc.Value < WakeGrace;
+
+    /// <summary>Answers on the server's port while it is stopped, if the owner asked for it.</summary>
+    private void StartWakeListener()
+    {
+        if (!Config.WakeOnDemand) { _wake.Stop(); return; }
+
+        var port = _properties.GetServerPort(Config.PropertiesPath);
+        if (port is null) return;
+
+        if (!_wake.Start(port.Value, BuildWakeStatus, OnJoinAttempt))
+            OnConsoleLine(string.Format(Localizer.Get("Msg_WakePortBusyFmt"), port.Value));
+    }
+
+    /// <summary>What a client sees while the server sleeps: its own MOTD plus what is going on.</summary>
+    private WakeStatus BuildWakeStatus()
+    {
+        var starting = State != ServerState.Stopped;
+        var line = Localizer.Get(starting ? "Wake_MotdStarting" : "Wake_MotdSleeping");
+        var icon = Path.Combine(Config.FolderPath, "server-icon.png");
+
+        return new WakeStatus(
+            Description: string.IsNullOrWhiteSpace(MotdText) ? line : MotdText + (char)10 + line,
+            VersionName: string.IsNullOrWhiteSpace(Config.GameVersion) ? "?" : Config.GameVersion,
+            MaxPlayers: _maxPlayers,
+            IconPath: File.Exists(icon) ? icon : null,
+            DisconnectMessage: Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"));
+    }
+
+    /// <summary>Somebody pressed Join on a sleeping server.</summary>
+    private void OnJoinAttempt() => RunOnUi(() =>
+    {
+        if (State != ServerState.Stopped) return;   // already coming up from an earlier knock
+
+        _wokeAtUtc = DateTime.UtcNow;
+        OnConsoleLine(Localizer.Get("Msg_WakeStarting"));
+
+        // isAutoRestart: nobody is sitting in front of the app to answer a dialog, which is exactly
+        // what that flag already means everywhere else.
+        _ = StartInternal(isAutoRestart: true);
+    });
 
     private async Task StopBecauseIdleAsync()
     {
@@ -507,6 +571,7 @@ public partial class ServerViewModel : ObservableObject
             ConnectedPlayers.Clear();
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
+            StartWakeListener();
         }
         else if (state == ServerState.Starting)
         {
@@ -627,6 +692,10 @@ public partial class ServerViewModel : ObservableObject
 
         try
         {
+            // Before RefreshPort and the busy-port check below: while the server sleeps we are the
+            // ones holding its port, and the check would offer to kill our own process.
+            _wake.Stop();
+
             RefreshPort();
             RefreshInfo();
 
@@ -1245,6 +1314,7 @@ public partial class ServerViewModel : ObservableObject
         _playit.StateChanged -= _onPlayitStateChanged; // the manager is shared and outlives us
         _agent.StateChanged -= _onAgentStateChanged;   // the agent runner is shared too
         Mods.Shutdown();                               // cancels anything the store was fetching
+        _wake.Stop();                                  // frees the port we answer on while asleep
         if (_process.IsRunning)
             await _process.StopAsync(TimeSpan.FromSeconds(15));
     }

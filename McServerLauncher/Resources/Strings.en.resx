@@ -248,8 +248,16 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>before restore</value></data>
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
-  <data name="Idle_Section" xml:space="preserve"><value>Idle shutdown</value></data>
-  <data name="Idle_Intro" xml:space="preserve"><value>Stop the server on its own once nobody has been connected for a while. The world is saved just like a normal stop.</value></data>
+  <data name="Wake_EnabledCheck" xml:space="preserve"><value>Start it when someone tries to join</value></data>
+  <data name="Wake_Hint" xml:space="preserve"><value>While it is off, the server list shows it as asleep. Anyone pressing Join gets a message and the server begins starting up.</value></data>
+  <data name="Wake_MotdSleeping" xml:space="preserve"><value>Asleep · join to wake it up</value></data>
+  <data name="Wake_MotdStarting" xml:space="preserve"><value>Starting up… come back in a few seconds</value></data>
+  <data name="Wake_KickWaking" xml:space="preserve"><value>The server was off and is starting up now.&#10;&#10;Try joining again in a few seconds.</value></data>
+  <data name="Wake_KickStarting" xml:space="preserve"><value>The server is starting up.&#10;&#10;Try joining again in a few seconds.</value></data>
+  <data name="Msg_WakeStarting" xml:space="preserve"><value>Someone tried to join: starting the server.</value></data>
+  <data name="Msg_WakePortBusyFmt" xml:space="preserve"><value>Can't listen for join attempts on port {0}: it is already in use.</value></data>
+  <data name="Idle_Section" xml:space="preserve"><value>Automatic start and stop</value></data>
+  <data name="Idle_Intro" xml:space="preserve"><value>The server can stop itself when nobody is left, and start again when someone tries to join.</value></data>
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutes with no players:</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = never stops. The countdown starts when the last player leaves and resets as soon as someone joins.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>No players for {0} minutes: stopping the server.</value></data>

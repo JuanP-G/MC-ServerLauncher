@@ -248,8 +248,16 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manuell</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>vor der Wiederherstellung</value></data>
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
-  <data name="Idle_Section" xml:space="preserve"><value>Abschalten bei Leerlauf</value></data>
-  <data name="Idle_Intro" xml:space="preserve"><value>Stoppt den Server von selbst, wenn eine Weile niemand verbunden war. Die Welt wird wie bei einem normalen Stopp gespeichert.</value></data>
+  <data name="Wake_EnabledCheck" xml:space="preserve"><value>Starten, wenn jemand beitreten will</value></data>
+  <data name="Wake_Hint" xml:space="preserve"><value>Solange er aus ist, zeigt die Serverliste ihn als schlafend an. Wer auf Beitreten klickt, bekommt eine Nachricht und der Server fährt hoch.</value></data>
+  <data name="Wake_MotdSleeping" xml:space="preserve"><value>Aus · beitreten zum Aufwecken</value></data>
+  <data name="Wake_MotdStarting" xml:space="preserve"><value>Startet… komm in ein paar Sekunden wieder</value></data>
+  <data name="Wake_KickWaking" xml:space="preserve"><value>Der Server war aus und startet gerade.&#10;&#10;Versuch es in ein paar Sekunden noch einmal.</value></data>
+  <data name="Wake_KickStarting" xml:space="preserve"><value>Der Server startet gerade.&#10;&#10;Versuch es in ein paar Sekunden noch einmal.</value></data>
+  <data name="Msg_WakeStarting" xml:space="preserve"><value>Jemand wollte beitreten: Der Server wird gestartet.</value></data>
+  <data name="Msg_WakePortBusyFmt" xml:space="preserve"><value>Auf Port {0} kann nicht auf Beitrittsversuche gewartet werden: schon belegt.</value></data>
+  <data name="Idle_Section" xml:space="preserve"><value>Automatisches Starten und Stoppen</value></data>
+  <data name="Idle_Intro" xml:space="preserve"><value>Der Server kann sich selbst stoppen, wenn niemand mehr da ist, und wieder starten, sobald jemand beitreten will.</value></data>
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minuten ohne Spieler:</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = wird nie gestoppt. Die Zeit läuft ab dem Weggehen des letzten Spielers und wird zurückgesetzt, sobald jemand beitritt.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>{0} Minuten ohne Spieler: Der Server wird gestoppt.</value></data>

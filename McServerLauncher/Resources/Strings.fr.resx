@@ -248,8 +248,16 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manuelle</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>avant restauration</value></data>
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
-  <data name="Idle_Section" xml:space="preserve"><value>Extinction par inactivité</value></data>
-  <data name="Idle_Intro" xml:space="preserve"><value>Arrête le serveur tout seul quand personne ne s'est connecté depuis un moment. Le monde est sauvegardé comme lors d'un arrêt normal.</value></data>
+  <data name="Wake_EnabledCheck" xml:space="preserve"><value>Le démarrer quand quelqu'un essaie de se connecter</value></data>
+  <data name="Wake_Hint" xml:space="preserve"><value>Tant qu'il est éteint, la liste des serveurs le montre endormi. Qui appuie sur Rejoindre reçoit un message et le serveur commence à démarrer.</value></data>
+  <data name="Wake_MotdSleeping" xml:space="preserve"><value>Éteint · rejoins pour le réveiller</value></data>
+  <data name="Wake_MotdStarting" xml:space="preserve"><value>Démarrage… reviens dans quelques secondes</value></data>
+  <data name="Wake_KickWaking" xml:space="preserve"><value>Le serveur était éteint et il démarre.&#10;&#10;Réessaie dans quelques secondes.</value></data>
+  <data name="Wake_KickStarting" xml:space="preserve"><value>Le serveur est en train de démarrer.&#10;&#10;Réessaie dans quelques secondes.</value></data>
+  <data name="Msg_WakeStarting" xml:space="preserve"><value>Quelqu'un a essayé de se connecter : démarrage du serveur.</value></data>
+  <data name="Msg_WakePortBusyFmt" xml:space="preserve"><value>Impossible d'attendre les connexions sur le port {0} : il est déjà utilisé.</value></data>
+  <data name="Idle_Section" xml:space="preserve"><value>Démarrage et arrêt automatiques</value></data>
+  <data name="Idle_Intro" xml:space="preserve"><value>Le serveur peut s'arrêter tout seul quand il ne reste personne, et redémarrer dès que quelqu'un essaie de se connecter.</value></data>
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutes sans joueurs :</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = ne s'arrête jamais. Le compte à rebours démarre au départ du dernier joueur et repart dès que quelqu'un se connecte.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Aucun joueur depuis {0} minutes : arrêt du serveur.</value></data>

@@ -146,6 +146,7 @@ public partial class AddEditServerDialog : Window
         _config.ExtraJvmArgs = original.ExtraJvmArgs;
         _config.PlayitEnabled = original.PlayitEnabled;
         _config.IdleShutdownMinutes = original.IdleShutdownMinutes;
+        _config.WakeOnDemand = original.WakeOnDemand;
         _config.BackupsEnabled = original.BackupsEnabled;
         _config.BackupRetention = original.BackupRetention;
         _config.UseCustomNotifications = original.UseCustomNotifications;

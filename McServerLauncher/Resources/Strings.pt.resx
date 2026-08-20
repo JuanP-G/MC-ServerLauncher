@@ -248,8 +248,16 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>antes de restaurar</value></data>
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
-  <data name="Idle_Section" xml:space="preserve"><value>Desligar por inatividade</value></data>
-  <data name="Idle_Intro" xml:space="preserve"><value>Desliga o servidor sozinho quando ninguém estiver ligado há algum tempo. O mundo é guardado tal como numa paragem normal.</value></data>
+  <data name="Wake_EnabledCheck" xml:space="preserve"><value>Ligá-lo quando alguém tentar entrar</value></data>
+  <data name="Wake_Hint" xml:space="preserve"><value>Enquanto estiver desligado, a lista de servidores mostra-o adormecido. Quem carregar em Entrar recebe uma mensagem e o servidor começa a arrancar.</value></data>
+  <data name="Wake_MotdSleeping" xml:space="preserve"><value>Desligado · entra para o acordar</value></data>
+  <data name="Wake_MotdStarting" xml:space="preserve"><value>A arrancar… volta daqui a uns segundos</value></data>
+  <data name="Wake_KickWaking" xml:space="preserve"><value>O servidor estava desligado e está a arrancar.&#10;&#10;Tenta entrar outra vez daqui a uns segundos.</value></data>
+  <data name="Wake_KickStarting" xml:space="preserve"><value>O servidor está a arrancar.&#10;&#10;Tenta entrar outra vez daqui a uns segundos.</value></data>
+  <data name="Msg_WakeStarting" xml:space="preserve"><value>Alguém tentou entrar: a ligar o servidor.</value></data>
+  <data name="Msg_WakePortBusyFmt" xml:space="preserve"><value>Não é possível esperar ligações na porta {0}: já está ocupada.</value></data>
+  <data name="Idle_Section" xml:space="preserve"><value>Ligar e desligar automáticos</value></data>
+  <data name="Idle_Intro" xml:space="preserve"><value>O servidor pode desligar-se sozinho quando não fica ninguém e voltar a ligar quando alguém tenta entrar.</value></data>
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutos sem jogadores:</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = nunca se desliga. A contagem começa quando sai o último jogador e reinicia assim que alguém entra.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Sem jogadores durante {0} minutos: a desligar o servidor.</value></data>
