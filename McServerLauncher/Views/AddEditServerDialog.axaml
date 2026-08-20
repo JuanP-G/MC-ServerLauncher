@@ -62,6 +62,20 @@
 
                 <Separator Margin="0,18,0,12" />
 
+                <TextBlock Text="{loc:Loc Idle_Section}" FontWeight="SemiBold" />
+                <TextBlock Text="{loc:Loc Idle_Intro}" TextWrapping="Wrap" Opacity="0.7"
+                           FontSize="13" Margin="0,4,0,8" />
+                <Grid ColumnDefinitions="Auto,Auto">
+                    <TextBlock Grid.Column="0" Text="{loc:Loc Idle_MinutesLabel}"
+                               VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <NumericUpDown Grid.Column="1" Width="120" Value="{Binding IdleShutdownMinutes}"
+                                   Minimum="0" Maximum="1440" Increment="5" FormatString="0" />
+                </Grid>
+                <TextBlock Text="{loc:Loc Idle_Hint}" TextWrapping="Wrap" Opacity="0.55"
+                           FontSize="12" Margin="0,6,0,0" />
+
+                <Separator Margin="0,18,0,12" />
+
                 <TextBlock Text="{loc:Loc Backup_Section}" FontWeight="SemiBold" />
                 <CheckBox Margin="0,8,0,0" Content="{loc:Loc Backup_EnabledCheck}"
                           IsChecked="{Binding BackupsEnabled, Mode=TwoWay}" />

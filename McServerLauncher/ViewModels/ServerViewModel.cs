@@ -289,8 +289,73 @@ public partial class ServerViewModel : ObservableObject
 
     private void OnStatsTimerTick()
     {
+        // Before the throttle below, on purpose: the whole point of stopping an empty server is to
+        // stop it while nobody is watching, which is exactly when the window is in the tray.
+        CheckIdleShutdown();
+
         if (MainWindowHidden && ++_hiddenStatsTicks % 10 != 0) return;
         UpdateStats();
+    }
+
+    // --- Stopping an empty server ---
+
+    /// <summary>Since when nobody has been connected, or null while someone is on.</summary>
+    private DateTime? _emptySinceUtc;
+
+    /// <summary>Set while the idle stop is running, so one timeout can't queue several stops.</summary>
+    private bool _idleStopping;
+
+    /// <summary>
+    /// Stops the server once it has been empty for <see cref="ServerConfig.IdleShutdownMinutes"/>.
+    /// </summary>
+    /// <remarks>
+    /// The clock starts when the last player leaves — or when the server finishes starting, if
+    /// nobody ever joins — and is reset by anyone connecting, so a server in use is never stopped
+    /// out from under its players.
+    /// </remarks>
+    private void CheckIdleShutdown()
+    {
+        if (_idleStopping) return;
+
+        var minutes = Config.IdleShutdownMinutes;
+        var counting = ShouldCountIdle(minutes, State == ServerState.Running, ConnectedPlayers.Count);
+        if (!counting)
+        {
+            _emptySinceUtc = null;
+            return;
+        }
+
+        _emptySinceUtc ??= DateTime.UtcNow;
+        if (!IsIdleLongEnough(minutes, _emptySinceUtc.Value, DateTime.UtcNow)) return;
+
+        _idleStopping = true;
+        OnConsoleLine(string.Format(Localizer.Get("Msg_IdleShutdownFmt"), minutes));
+        _ = StopBecauseIdleAsync();
+    }
+
+    /// <summary>Whether the empty-server clock should be running at all.</summary>
+    /// <remarks>
+    /// Pulled out as a plain function so the rule can be checked directly. Getting it wrong means
+    /// either a server that never stops or — far worse — one that stops while people are playing.
+    /// </remarks>
+    internal static bool ShouldCountIdle(int minutes, bool running, int playerCount) =>
+        minutes > 0 && running && playerCount == 0;
+
+    /// <summary>Whether it has been empty long enough to stop.</summary>
+    internal static bool IsIdleLongEnough(int minutes, DateTime emptySinceUtc, DateTime nowUtc) =>
+        nowUtc - emptySinceUtc >= TimeSpan.FromMinutes(minutes);
+
+    private async Task StopBecauseIdleAsync()
+    {
+        // Through the normal Stop, so an automatic shutdown saves the world exactly like a manual
+        // one — the last thing anyone wants from an unattended stop is a missing backup.
+        try { await Stop(); }
+        catch (Exception ex) { OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message)); }
+        finally
+        {
+            _idleStopping = false;
+            _emptySinceUtc = null;
+        }
     }
 
     private void OnPlayitTimerTick(object? sender, EventArgs e)

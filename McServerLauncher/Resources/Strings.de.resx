@@ -248,6 +248,11 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manuell</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>vor der Wiederherstellung</value></data>
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
+  <data name="Idle_Section" xml:space="preserve"><value>Abschalten bei Leerlauf</value></data>
+  <data name="Idle_Intro" xml:space="preserve"><value>Stoppt den Server von selbst, wenn eine Weile niemand verbunden war. Die Welt wird wie bei einem normalen Stopp gespeichert.</value></data>
+  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minuten ohne Spieler:</value></data>
+  <data name="Idle_Hint" xml:space="preserve"><value>0 = wird nie gestoppt. Die Zeit läuft ab dem Weggehen des letzten Spielers und wird zurückgesetzt, sobald jemand beitritt.</value></data>
+  <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>{0} Minuten ohne Spieler: Der Server wird gestoppt.</value></data>
   <data name="Backup_Section" xml:space="preserve"><value>Welt-Sicherungen</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Sicherungen automatisch erstellen (vor dem Start und beim Stoppen)</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Aufzubewahrende Sicherungen:</value></data>

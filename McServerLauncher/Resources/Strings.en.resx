@@ -248,6 +248,11 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>before restore</value></data>
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
+  <data name="Idle_Section" xml:space="preserve"><value>Idle shutdown</value></data>
+  <data name="Idle_Intro" xml:space="preserve"><value>Stop the server on its own once nobody has been connected for a while. The world is saved just like a normal stop.</value></data>
+  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutes with no players:</value></data>
+  <data name="Idle_Hint" xml:space="preserve"><value>0 = never stops. The countdown starts when the last player leaves and resets as soon as someone joins.</value></data>
+  <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>No players for {0} minutes: stopping the server.</value></data>
   <data name="Backup_Section" xml:space="preserve"><value>World backups</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Create backups automatically (before starting and on stop)</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Backups to keep:</value></data>

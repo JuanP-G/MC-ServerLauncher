@@ -248,6 +248,11 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manuelle</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>avant restauration</value></data>
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
+  <data name="Idle_Section" xml:space="preserve"><value>Extinction par inactivité</value></data>
+  <data name="Idle_Intro" xml:space="preserve"><value>Arrête le serveur tout seul quand personne ne s'est connecté depuis un moment. Le monde est sauvegardé comme lors d'un arrêt normal.</value></data>
+  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutes sans joueurs :</value></data>
+  <data name="Idle_Hint" xml:space="preserve"><value>0 = ne s'arrête jamais. Le compte à rebours démarre au départ du dernier joueur et repart dès que quelqu'un se connecte.</value></data>
+  <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Aucun joueur depuis {0} minutes : arrêt du serveur.</value></data>
   <data name="Backup_Section" xml:space="preserve"><value>Sauvegardes du monde</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Créer des sauvegardes automatiquement (avant le démarrage et à l'arrêt)</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Sauvegardes à conserver :</value></data>

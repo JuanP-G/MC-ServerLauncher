@@ -294,6 +294,11 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>antes de restaurar</value></data>
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
+  <data name="Idle_Section" xml:space="preserve"><value>Apagado por inactividad</value></data>
+  <data name="Idle_Intro" xml:space="preserve"><value>Apaga el servidor solo cuando lleve un rato sin nadie conectado. El mundo se guarda igual que con una parada normal.</value></data>
+  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutos sin jugadores:</value></data>
+  <data name="Idle_Hint" xml:space="preserve"><value>0 = no se apaga nunca. La cuenta empieza cuando se va el último jugador y se reinicia en cuanto entra alguien.</value></data>
+  <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Sin jugadores durante {0} minutos: apagando el servidor.</value></data>
   <data name="Backup_Section" xml:space="preserve"><value>Copias de seguridad del mundo</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Crear copias de seguridad automáticamente (antes de arrancar y al detener)</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Copias a conservar:</value></data>

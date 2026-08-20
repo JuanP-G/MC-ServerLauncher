@@ -248,6 +248,11 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>antes de restaurar</value></data>
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
+  <data name="Idle_Section" xml:space="preserve"><value>Desligar por inatividade</value></data>
+  <data name="Idle_Intro" xml:space="preserve"><value>Desliga o servidor sozinho quando ninguém estiver ligado há algum tempo. O mundo é guardado tal como numa paragem normal.</value></data>
+  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutos sem jogadores:</value></data>
+  <data name="Idle_Hint" xml:space="preserve"><value>0 = nunca se desliga. A contagem começa quando sai o último jogador e reinicia assim que alguém entra.</value></data>
+  <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Sem jogadores durante {0} minutos: a desligar o servidor.</value></data>
   <data name="Backup_Section" xml:space="preserve"><value>Cópias de segurança do mundo</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Criar cópias de segurança automaticamente (antes de arrancar e ao parar)</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Cópias a manter:</value></data>

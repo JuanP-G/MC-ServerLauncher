@@ -84,6 +84,15 @@ public class ServerConfig
     /// When true, this server uses its own <see cref="Notifications"/> instead of the global
     /// notification settings. When false (default), the global settings apply.
     /// </summary>
+    /// <summary>
+    /// Minutes with nobody connected before the server stops itself. <c>0</c> means never.
+    /// </summary>
+    /// <remarks>
+    /// Zero is the default so no existing server changes behaviour on update: a server that used to
+    /// stay up forever keeps doing exactly that until its owner asks for something else.
+    /// </remarks>
+    public int IdleShutdownMinutes { get; set; }
+
     public bool UseCustomNotifications { get; set; }
 
     /// <summary>Per-server notification override, used only when <see cref="UseCustomNotifications"/>.</summary>
