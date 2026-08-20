@@ -59,7 +59,11 @@ jobs:
 
           # Finder icon (.ico -> .icns). Best-effort: a missing icon just shows the default one.
           brew install imagemagick || true
-          if magick "McServerLauncher/Resources/app.ico[0]" icon_src.png; then
+          # Largest frame, not [0]: frame 0 of app.ico is 16x16, and upscaling that to 1024 gave
+          # a blurry Finder icon.
+          ICON_SRC="McServerLauncher/Resources/app.ico"
+          BEST=$(magick identify -format '%w %[scene]\n' "$ICON_SRC" | sort -rn | head -1 | awk '{print $2}')
+          if magick "${ICON_SRC}[${BEST}]" icon_src.png; then
             magick icon_src.png -resize 1024x1024 icon_1024.png
             mkdir icon.iconset
             for s in 16 32 128 256 512; do

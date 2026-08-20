@@ -47,8 +47,14 @@ jobs:
           cp -r publish-linux/* "$APPDIR/usr/bin/"
           chmod +x "$APPDIR/usr/bin/McServerLauncher"
 
-          # Icon (convert the .ico to a 256x256 PNG)
-          convert "McServerLauncher/Resources/app.ico[0]" -resize 256x256 "$APPDIR/usr/share/icons/hicolor/256x256/apps/mcserverlauncher.png"
+          # Icon (largest frame of the .ico, as a 256x256 PNG).
+          # app.ico holds seven sizes and frame 0 is the 16x16 one, so "[0]" was taking the
+          # smallest and blowing it up 16x — which is why the Linux icon looked blurry. Ask for the
+          # widths and pick the biggest frame rather than hard-coding an index that can reorder.
+          ICON_SRC="McServerLauncher/Resources/app.ico"
+          BEST=$(identify -format '%w %[scene]\n' "$ICON_SRC" | sort -rn | head -1 | awk '{print $2}')
+          echo "Usando el fotograma $BEST del icono ($(identify -format '%wx%h' "${ICON_SRC}[${BEST}]"))"
+          convert "${ICON_SRC}[${BEST}]" -resize 256x256 "$APPDIR/usr/share/icons/hicolor/256x256/apps/mcserverlauncher.png"
           cp "$APPDIR/usr/share/icons/hicolor/256x256/apps/mcserverlauncher.png" "$APPDIR/mcserverlauncher.png"
 
           # .desktop entry

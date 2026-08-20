@@ -110,7 +110,7 @@ public static class DesktopShortcutService
     private static string CreateLinux(string target, string desktop)
     {
         var entry = Path.Combine(desktop, "mc-server-launcher.desktop");
-        var icon = FindLinuxIcon() ?? "applications-games";
+        var icon = InstallLinuxIcon() ?? "applications-games";
 
         File.WriteAllText(entry, string.Join('\n', new[]
         {
@@ -148,13 +148,69 @@ public static class DesktopShortcutService
         return entry;
     }
 
-    /// <summary>The icon shipped inside the AppImage, when it can be found.</summary>
-    private static string? FindLinuxIcon()
+    /// <summary>
+    /// Copies the app icon somewhere permanent and returns that path, or null if there is no icon.
+    /// </summary>
+    /// <remarks>
+    /// The icon ships inside the AppImage, and $APPDIR is its <em>mount point</em> — a
+    /// /tmp/.mount_XXXX directory that only exists while the app runs. Pointing Icon= there gives a
+    /// shortcut whose icon works until you close the app and is a dangling path forever after, which
+    /// is what the desktop then draws as a blank or generic square. Copying it into the user's icon
+    /// theme makes it outlive the process, and puts it where the menu entry can find it too.
+    /// </remarks>
+    [SupportedOSPlatform("linux")]
+    private static string? InstallLinuxIcon()
     {
         var appDir = Environment.GetEnvironmentVariable("APPDIR");
         if (string.IsNullOrEmpty(appDir)) return null;
-        var png = Path.Combine(appDir, "mcserverlauncher.png");
-        return File.Exists(png) ? png : null;
+
+        var source = Path.Combine(appDir, "mcserverlauncher.png");
+        if (!File.Exists(source)) return null;
+
+        try
+        {
+            var iconsDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".local", "share", "icons", "hicolor", "256x256", "apps");
+            Directory.CreateDirectory(iconsDir);
+
+            var installed = Path.Combine(iconsDir, "mc-server-launcher.png");
+            File.Copy(source, installed, overwrite: true);
+            File.SetUnixFileMode(installed,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite |
+                UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+            TryRefreshIconCache();
+            return installed;
+        }
+        catch
+        {
+            // Couldn't write to the icon theme: the mount path is still better than nothing for
+            // this session, and the shortcut itself will work either way.
+            return source;
+        }
+    }
+
+    /// <summary>Nudges the icon cache so the new icon is picked up without logging out.</summary>
+    private static void TryRefreshIconCache()
+    {
+        try
+        {
+            var hicolor = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".local", "share", "icons", "hicolor");
+            var psi = new ProcessStartInfo("gtk-update-icon-cache")
+            {
+                UseShellExecute = false, CreateNoWindow = true,
+                RedirectStandardOutput = true, RedirectStandardError = true
+            };
+            psi.ArgumentList.Add("-f");
+            psi.ArgumentList.Add("-t");
+            psi.ArgumentList.Add(hicolor);
+            using var p = Process.Start(psi);
+            p?.WaitForExit(5000);
+        }
+        catch { /* not installed, or a desktop that doesn't use it */ }
     }
 
     /// <summary>Marks the entry trusted on GNOME. Best-effort: other desktops don't need it.</summary>
