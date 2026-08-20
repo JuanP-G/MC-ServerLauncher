@@ -99,9 +99,19 @@ jobs:
           hdiutil create -volname "MC Server Launcher" -srcfolder dmg-root \
             -ov -format UDZO "MC-ServerLauncher-${{ matrix.arch }}.dmg"
 
+      # One checksum file per arch: both matrix jobs and the Linux one publish at the same time, so
+      # a shared SHA256SUMS.txt would race. The in-app updater will not install what it can't verify.
+      - name: Checksum
+        run: |
+          shasum -a 256 "MC-ServerLauncher-${{ matrix.arch }}.dmg" \
+            > "MC-ServerLauncher-${{ matrix.arch }}.dmg.sha256"
+
       - name: Upload to release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ github.event.release.tag_name || github.event.inputs.tag }}"
-          gh release upload "$TAG" "MC-ServerLauncher-${{ matrix.arch }}.dmg" --clobber --repo "${{ github.repository }}"
+          gh release upload "$TAG" \
+            "MC-ServerLauncher-${{ matrix.arch }}.dmg" \
+            "MC-ServerLauncher-${{ matrix.arch }}.dmg.sha256" \
+            --clobber --repo "${{ github.repository }}"

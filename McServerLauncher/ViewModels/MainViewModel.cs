@@ -51,9 +51,9 @@ public partial class MainViewModel : ObservableObject
     private bool _isUpdating;
 
     private string? _releaseUrl;
-    private string? _installerUrl;
-    private string? _installerName;
-    private string? _sha256SumsUrl;
+    private string? _packageUrl;
+    private string? _packageName;
+    private string? _checksumUrl;
 
     public record LanguageOption(string Code, string Name);
 
@@ -210,9 +210,9 @@ public partial class MainViewModel : ObservableObject
             if (info is not null)
             {
                 _releaseUrl = info.Url;
-                _installerUrl = info.InstallerUrl;
-                _installerName = info.InstallerName;
-                _sha256SumsUrl = info.Sha256SumsUrl;
+                _packageUrl = info.PackageUrl;
+                _packageName = info.PackageName;
+                _checksumUrl = info.ChecksumUrl;
                 UpdateText = string.Format(Localizer.Get("Msg_UpdateAvailableFmt"), info.Version);
                 UpdateAvailable = true;
             }
@@ -232,10 +232,14 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanUpdateNow))]
     private async Task UpdateNow()
     {
-        // On non-Windows (or with no installer asset), open the releases page so the user can
-        // download the right package (e.g. the Linux AppImage). The silent .exe installer is Windows-only.
-        if (!OperatingSystem.IsWindows() || string.IsNullOrEmpty(_installerUrl))
+        // Every platform updates itself now; only the mechanism differs (see SelfUpdater). The
+        // release page stays as the fallback for when this release ships nothing for us, or when
+        // this particular install can't be replaced in place — an AppImage under /opt, say.
+        if (string.IsNullOrEmpty(_packageUrl) || !SelfUpdater.CanUpdateInPlace)
         {
+            var blocker = string.IsNullOrEmpty(_packageUrl) ? null : SelfUpdater.Blocker;
+            if (!string.IsNullOrEmpty(blocker))
+                await MessageBox.ShowAsync(blocker, Localizer.Get("Update_Now"), Owner);
             OpenRelease();
             return;
         }
@@ -247,45 +251,30 @@ public partial class MainViewModel : ObservableObject
             // Random per-run folder: fixed names in %TEMP% could be pre-planted/replaced by
             // another local process between download and execution.
             var updateDir = Path.Combine(Path.GetTempPath(), "mcsl-" + Path.GetRandomFileName());
-            var dest = Path.Combine(updateDir, "MC-ServerLauncher-Setup.exe");
+            var dest = Path.Combine(updateDir, SelfUpdater.PackageFileName(_packageName));
             var updateService = new UpdateService();
 
-            // The installer runs with UAC elevation, so its checksum is REQUIRED, not best-effort.
-            // Every release since 1.6.0 ships SHA256SUMS.txt (publish.ps1 generates it), and the
-            // updater only ever offers a NEWER release than the running one — so a missing or
-            // unreadable checksum means a broken (or tampered) release: refuse the silent install
-            // and send the user to the release page instead of running an unverified binary.
+            // The package is about to become the app itself, so its checksum is REQUIRED, not
+            // best-effort. A missing or unreadable one means a broken (or tampered) release:
+            // refuse and send the user to the release page rather than install an unverified
             // Resolved before the download so a refusal doesn't cost the ~35 MB transfer.
-            var expectedSha256 = string.IsNullOrEmpty(_sha256SumsUrl) || string.IsNullOrEmpty(_installerName)
+            var expectedSha256 = string.IsNullOrEmpty(_checksumUrl) || string.IsNullOrEmpty(_packageName)
                 ? null
-                : await updateService.GetExpectedSha256Async(_sha256SumsUrl, _installerName);
+                : await updateService.GetExpectedSha256Async(_checksumUrl, _packageName);
             if (string.IsNullOrEmpty(expectedSha256))
                 throw new InvalidOperationException(Localizer.Get("Msg_UpdateNoChecksum"));
 
-            await updateService.DownloadInstallerAsync(_installerUrl, dest);
+            await updateService.DownloadInstallerAsync(_packageUrl, dest);
 
             UpdateText = Localizer.Get("Msg_VerifyingChecksum");
             await DownloadVerifier.VerifyAsync(dest, expectedSha256, HashAlgorithmName.SHA256);
 
-            // Run the installer from a helper that first waits for THIS app to fully exit, then
-            // launches it. This avoids the UAC-elevation race where the app closed too soon and the
-            // silent install never actually applied.
-            var helper = Path.Combine(updateDir, "mcsl-update.cmd");
-            await File.WriteAllTextAsync(helper,
-                "@echo off\r\n" +
-                ":wait\r\n" +
-                "tasklist /FI \"IMAGENAME eq McServerLauncher.exe\" 2>nul | find /I \"McServerLauncher.exe\" >nul\r\n" +
-                "if not errorlevel 1 ( timeout /t 1 /nobreak >nul & goto wait )\r\n" +
-                $"\"{dest}\" /SILENT /SUPPRESSMSGBOXES /NORESTART\r\n");
-
+            UpdateText = Localizer.Get("Update_Installing");
             await ShutdownAllAsync();
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "cmd.exe",
-                Arguments = $"/c \"{helper}\"",
-                UseShellExecute = false,
-                CreateNoWindow = true
-            });
+
+            // From here the platform decides: run the silent installer, swap the AppImage, or
+            // hand the .dmg to a script that replaces the bundle once we are gone.
+            SelfUpdater.Apply(dest);
             Environment.Exit(0);
         }
         catch (InvalidOperationException ex)

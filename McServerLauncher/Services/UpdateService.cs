@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace McServerLauncher.Services;
@@ -14,12 +17,13 @@ public class UpdateService
     private static readonly HttpClient DownloadHttp = new() { Timeout = TimeSpan.FromMinutes(10) };
 
     /// <summary>
-    /// Update data. <see cref="InstallerUrl"/>/<see cref="InstallerName"/> are the installer .exe
-    /// (null if there isn't one). <see cref="Sha256SumsUrl"/> is a "SHA256SUMS.txt" asset published
-    /// alongside it (null on releases published before this existed), used to verify the installer
-    /// before running it.
+    /// Update data. <see cref="PackageUrl"/>/<see cref="PackageName"/> are the package for the
+    /// platform this app is running on — the Windows installer, the Linux AppImage or the macOS
+    /// .dmg for this architecture — and are null when the release ships nothing usable here.
+    /// <see cref="ChecksumUrl"/> is the asset that carries its SHA-256, used to verify the download
+    /// before it is installed; null on releases published before that existed.
     /// </summary>
-    public record UpdateInfo(string Version, string Url, string? InstallerUrl, string? InstallerName, string? Sha256SumsUrl);
+    public record UpdateInfo(string Version, string Url, string? PackageUrl, string? PackageName, string? ChecksumUrl);
 
     /// <summary>Returns the latest version if it is newer than <paramref name="current"/>; otherwise null.</summary>
     public async Task<UpdateInfo?> CheckAsync(Version current, CancellationToken ct = default)
@@ -45,31 +49,69 @@ public class UpdateService
         var cur = Normalize(current);
         if (latest <= cur) return null;
 
-        // Look for the installer (.exe) and its checksum file among the release assets.
-        string? installerUrl = null;
-        string? installerName = null;
-        string? sha256SumsUrl = null;
-        if (root.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var a in assets.EnumerateArray())
-            {
-                var name = a.TryGetProperty("name", out var n) ? n.GetString() : null;
-                var downloadUrl = a.TryGetProperty("browser_download_url", out var d) ? d.GetString() : null;
-                if (name is null || downloadUrl is null) continue;
+        var assets = ReadAssets(root);
+        var (packageName, packageUrl) = PickPackage(assets, CurrentOs, RuntimeInformation.OSArchitecture);
 
-                if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-                {
-                    installerUrl = downloadUrl;
-                    installerName = name;
-                }
-                else if (string.Equals(name, "SHA256SUMS.txt", StringComparison.OrdinalIgnoreCase))
-                {
-                    sha256SumsUrl = downloadUrl;
-                }
-            }
+        // Windows keeps using the shared SHA256SUMS.txt that publish.ps1 writes. The AppImage and
+        // the .dmg files are built afterwards, by three workflows running at the same time, so each
+        // publishes its own "<package>.sha256" rather than racing to append to one shared file.
+        string? checksumUrl = null;
+        if (packageName is not null)
+        {
+            if (packageName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                assets.TryGetValue("SHA256SUMS.txt", out checksumUrl);
+            else
+                assets.TryGetValue(packageName + ".sha256", out checksumUrl);
         }
 
-        return new UpdateInfo(tag.TrimStart('v', 'V'), url, installerUrl, installerName, sha256SumsUrl);
+        return new UpdateInfo(tag.TrimStart('v', 'V'), url, packageUrl, packageName, checksumUrl);
+    }
+
+    private static Dictionary<string, string> ReadAssets(JsonElement root)
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!root.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array)
+            return map;
+
+        foreach (var a in assets.EnumerateArray())
+        {
+            var name = a.TryGetProperty("name", out var n) ? n.GetString() : null;
+            var downloadUrl = a.TryGetProperty("browser_download_url", out var d) ? d.GetString() : null;
+            if (name is not null && downloadUrl is not null) map[name] = downloadUrl;
+        }
+        return map;
+    }
+
+    internal static string CurrentOs =>
+        OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsLinux() ? "linux"
+        : OperatingSystem.IsMacOS() ? "macos" : "other";
+
+    /// <summary>
+    /// The asset that updates <em>this</em> install: the .exe on Windows, the AppImage on Linux,
+    /// and the .dmg matching the running architecture on macOS.
+    /// </summary>
+    /// <remarks>
+    /// Takes the platform as arguments rather than reading it from the environment so the choice
+    /// can be checked for every platform from any of them — picking the wrong asset here would ship
+    /// users an app that cannot start, and it is not something to find out only on release day.
+    /// </remarks>
+    internal static (string? Name, string? Url) PickPackage(
+        IReadOnlyDictionary<string, string> assets, string os, Architecture arch)
+    {
+        var wanted = os switch
+        {
+            "windows" => assets.Keys.FirstOrDefault(k => k.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)),
+            "linux" => assets.Keys.FirstOrDefault(k => k.EndsWith(".AppImage", StringComparison.OrdinalIgnoreCase)),
+            // Installing the wrong architecture would produce an app that cannot start, so the name
+            // is matched exactly rather than falling back to "any .dmg".
+            "macos" => assets.Keys.FirstOrDefault(k =>
+                k.EndsWith(".dmg", StringComparison.OrdinalIgnoreCase) &&
+                k.Contains(arch == Architecture.Arm64 ? "AppleSilicon" : "Intel",
+                           StringComparison.OrdinalIgnoreCase)),
+            _ => null
+        };
+
+        return wanted is not null ? (wanted, assets[wanted]) : (null, null);
     }
 
     /// <summary>

@@ -104,9 +104,18 @@ jobs:
           # whichever libfuse the runner image happens to ship.
           ARCH=x86_64 ./appimagetool --appimage-extract-and-run AppDir MC-ServerLauncher-x86_64.AppImage
 
+      # Its own checksum file, not a line appended to SHA256SUMS.txt: this job and the two macOS
+      # ones run in parallel, and three writers on one asset would race. The app needs it because
+      # the in-app updater refuses to install anything it cannot verify.
+      - name: Checksum
+        run: sha256sum MC-ServerLauncher-x86_64.AppImage > MC-ServerLauncher-x86_64.AppImage.sha256
+
       - name: Upload to release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ github.event.release.tag_name || github.event.inputs.tag }}"
-          gh release upload "$TAG" MC-ServerLauncher-x86_64.AppImage --clobber --repo "${{ github.repository }}"
+          gh release upload "$TAG" \
+            MC-ServerLauncher-x86_64.AppImage \
+            MC-ServerLauncher-x86_64.AppImage.sha256 \
+            --clobber --repo "${{ github.repository }}"

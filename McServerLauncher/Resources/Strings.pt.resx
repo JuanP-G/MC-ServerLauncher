@@ -309,6 +309,11 @@
   <data name="Msg_ConfigSaveError" xml:space="preserve"><value>Não foi possível guardar a configuração: {0}</value></data>
   <data name="Msg_ClosingTitle" xml:space="preserve"><value>MC Server Launcher — a parar servidores e a guardar...</value></data>
   <data name="Update_Now" xml:space="preserve"><value>Atualizar</value></data>
+  <data name="Update_Installing" xml:space="preserve"><value>A instalar a atualização...</value></data>
+  <data name="Msg_UpdateNotAppImage" xml:space="preserve"><value>Esta cópia não está a correr como AppImage, por isso a aplicação não se pode substituir a si própria. Vai abrir-se a página de transferências.</value></data>
+  <data name="Msg_UpdateNotBundle" xml:space="preserve"><value>Esta cópia não está a correr a partir de uma aplicação .app, por isso não se pode substituir a si própria. Vai abrir-se a página de transferências.</value></data>
+  <data name="Msg_UpdateUnsupportedPlatform" xml:space="preserve"><value>As atualizações automáticas não estão disponíveis neste sistema. Vai abrir-se a página de transferências.</value></data>
+  <data name="Msg_UpdateCannotReplaceFmt" xml:space="preserve"><value>Não foi possível substituir {0} ({1}). A tua versão atual está intacta e continua a funcionar; vai abrir-se a página de transferências para atualizares à mão.</value></data>
   <data name="Update_Downloading" xml:space="preserve"><value>A baixar atualização...</value></data>
   <data name="Whatsnew_Title" xml:space="preserve"><value>Novidades</value></data>
   <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>Novidades da versão {0}</value></data>

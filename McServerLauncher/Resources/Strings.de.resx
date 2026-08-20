@@ -309,6 +309,11 @@
   <data name="Msg_ConfigSaveError" xml:space="preserve"><value>Konfiguration konnte nicht gespeichert werden: {0}</value></data>
   <data name="Msg_ClosingTitle" xml:space="preserve"><value>MC Server Launcher — Server werden gestoppt und gespeichert...</value></data>
   <data name="Update_Now" xml:space="preserve"><value>Aktualisieren</value></data>
+  <data name="Update_Installing" xml:space="preserve"><value>Update wird installiert...</value></data>
+  <data name="Msg_UpdateNotAppImage" xml:space="preserve"><value>Diese Kopie läuft nicht als AppImage, daher kann sich die App nicht selbst ersetzen. Stattdessen wird die Download-Seite geöffnet.</value></data>
+  <data name="Msg_UpdateNotBundle" xml:space="preserve"><value>Diese Kopie läuft nicht aus einem .app-Bundle, daher kann sie sich nicht selbst ersetzen. Stattdessen wird die Download-Seite geöffnet.</value></data>
+  <data name="Msg_UpdateUnsupportedPlatform" xml:space="preserve"><value>Automatische Updates sind auf diesem System nicht verfügbar. Stattdessen wird die Download-Seite geöffnet.</value></data>
+  <data name="Msg_UpdateCannotReplaceFmt" xml:space="preserve"><value>{0} konnte nicht ersetzt werden ({1}). Deine aktuelle Version ist unberührt und funktioniert weiter; die Download-Seite wird geöffnet, damit du von Hand aktualisieren kannst.</value></data>
   <data name="Update_Downloading" xml:space="preserve"><value>Update wird heruntergeladen...</value></data>
   <data name="Whatsnew_Title" xml:space="preserve"><value>Neuerungen</value></data>
   <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>Neuerungen in Version {0}</value></data>

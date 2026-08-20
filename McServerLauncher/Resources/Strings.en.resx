@@ -309,6 +309,11 @@
   <data name="Msg_ConfigSaveError" xml:space="preserve"><value>Could not save the configuration: {0}</value></data>
   <data name="Msg_ClosingTitle" xml:space="preserve"><value>MC Server Launcher — stopping servers and saving...</value></data>
   <data name="Update_Now" xml:space="preserve"><value>Update</value></data>
+  <data name="Update_Installing" xml:space="preserve"><value>Installing the update...</value></data>
+  <data name="Msg_UpdateNotAppImage" xml:space="preserve"><value>This copy isn't running as an AppImage, so the app can't replace itself. The downloads page will open instead.</value></data>
+  <data name="Msg_UpdateNotBundle" xml:space="preserve"><value>This copy isn't running from a .app bundle, so it can't replace itself. The downloads page will open instead.</value></data>
+  <data name="Msg_UpdateUnsupportedPlatform" xml:space="preserve"><value>Automatic updates aren't available on this system. The downloads page will open instead.</value></data>
+  <data name="Msg_UpdateCannotReplaceFmt" xml:space="preserve"><value>Couldn't replace {0} ({1}). Your current version is untouched and still works; the downloads page will open so you can update by hand.</value></data>
   <data name="Update_Downloading" xml:space="preserve"><value>Downloading update...</value></data>
   <data name="Whatsnew_Title" xml:space="preserve"><value>What's new</value></data>
   <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>What's new in version {0}</value></data>
