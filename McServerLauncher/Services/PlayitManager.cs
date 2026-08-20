@@ -41,8 +41,8 @@ public class PlayitManager
     /// <summary>Result of the one-off <c>which playit</c>, kept so it isn't asked again each tick.</summary>
     private bool _linuxBinaryOnPath;
 
-    /// <summary>Guards against several view models probing at once (each probe spawns processes).</summary>
-    private int _probing;
+    /// <summary>Serialises probes: several view models share this instance and a probe spawns processes.</summary>
+    private readonly SemaphoreSlim _probeGate = new(1, 1);
 
     public event Action<PlayitState>? StateChanged;
 
@@ -78,24 +78,31 @@ public class PlayitManager
     {
         if (!force && DateTime.UtcNow - _lastRefresh < TimeSpan.FromSeconds(2))
             return;
-        _lastRefresh = DateTime.UtcNow;
 
-        // A forced refresh follows an install/start/stop, so anything the one-off probe concluded
-        // may no longer hold — ask again.
-        if (force) _linuxProbed = false;
+        // A timer-driven refresh is droppable: if a probe is already running its result is about to
+        // arrive anyway, and piling up probes is the cost this method exists to avoid. A forced one
+        // is NOT droppable — it follows a start/stop and its whole job is to observe the new state,
+        // so it waits its turn and always probes.
+        if (force)
+            await _probeGate.WaitAsync();
+        else if (!await _probeGate.WaitAsync(0))
+            return;
 
-        // One probe at a time. The throttle above stops the same view model hammering it, but
-        // several servers share this instance and a probe means spawning processes.
-        if (Interlocked.Exchange(ref _probing, 1) != 0) return;
         try
         {
+            _lastRefresh = DateTime.UtcNow;
+
+            // A forced refresh follows an install/start/stop, so anything the one-off probe
+            // concluded may no longer hold — ask again.
+            if (force) _linuxProbed = false;
+
             // Off the dispatcher: querying the agent runs external commands that block for up to
             // five seconds each, and this is called from a 3 s UI timer.
             await Task.Run(Probe);
         }
         finally
         {
-            Volatile.Write(ref _probing, 0);
+            _probeGate.Release();
         }
     }
 
