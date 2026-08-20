@@ -27,6 +27,23 @@ public class PlayitManager
     private static readonly string[] LinuxUnitNames = { "playit", "playit-agent", "playitd" };
     private string? _linuxUnit;
 
+    /// <summary>
+    /// Whether the one-off Linux probe (which unit exists, is the binary on PATH) has already run.
+    /// </summary>
+    /// <remarks>
+    /// A separate flag is needed because the answer may legitimately be "none", and
+    /// <c>_linuxUnit ??= …</c> cannot remember that: on a machine without Playit — every Linux user
+    /// who doesn't use it — the probe re-ran on every tick, spawning three <c>systemctl status</c>
+    /// plus a <c>which</c>, each blocking up to five seconds, on the UI thread.
+    /// </remarks>
+    private bool _linuxProbed;
+
+    /// <summary>Result of the one-off <c>which playit</c>, kept so it isn't asked again each tick.</summary>
+    private bool _linuxBinaryOnPath;
+
+    /// <summary>Guards against several view models probing at once (each probe spawns processes).</summary>
+    private int _probing;
+
     public event Action<PlayitState>? StateChanged;
 
     private PlayitState _state = PlayitState.Stopped;
@@ -51,12 +68,39 @@ public class PlayitManager
     /// (several view models poll the shared instance); pass <paramref name="force"/> to bypass
     /// the throttle, e.g. right after starting/stopping the service.
     /// </summary>
-    public void RefreshState(bool force = false)
+    public void RefreshState(bool force = false) => _ = RefreshStateAsync(force);
+
+    /// <summary>
+    /// Same as <see cref="RefreshState"/>, awaitable — for callers that need the state updated
+    /// before they continue (starting or stopping the service).
+    /// </summary>
+    public async Task RefreshStateAsync(bool force = false)
     {
         if (!force && DateTime.UtcNow - _lastRefresh < TimeSpan.FromSeconds(2))
             return;
         _lastRefresh = DateTime.UtcNow;
 
+        // A forced refresh follows an install/start/stop, so anything the one-off probe concluded
+        // may no longer hold — ask again.
+        if (force) _linuxProbed = false;
+
+        // One probe at a time. The throttle above stops the same view model hammering it, but
+        // several servers share this instance and a probe means spawning processes.
+        if (Interlocked.Exchange(ref _probing, 1) != 0) return;
+        try
+        {
+            // Off the dispatcher: querying the agent runs external commands that block for up to
+            // five seconds each, and this is called from a 3 s UI timer.
+            await Task.Run(Probe);
+        }
+        finally
+        {
+            Volatile.Write(ref _probing, 0);
+        }
+    }
+
+    private void Probe()
+    {
         if (OperatingSystem.IsWindows())
             RefreshWindows();
         else if (OperatingSystem.IsLinux())
@@ -92,8 +136,15 @@ public class PlayitManager
 
     private void RefreshLinux()
     {
-        // Find a known systemd unit the first time.
-        _linuxUnit ??= LinuxUnitNames.FirstOrDefault(UnitExists);
+        // The expensive questions — which unit exists, is the binary on PATH — are asked once.
+        // Neither answer changes while the app runs, short of the user installing Playit, which a
+        // forced refresh re-probes for.
+        if (!_linuxProbed)
+        {
+            _linuxProbed = true;
+            _linuxUnit = LinuxUnitNames.FirstOrDefault(UnitExists);
+            _linuxBinaryOnPath = _linuxUnit is null && Run("which", "playit").ExitCode == 0;
+        }
 
         if (_linuxUnit is not null)
         {
@@ -108,9 +159,10 @@ public class PlayitManager
             return;
         }
 
-        // No systemd unit: fall back to detecting a running 'playit' process or the binary on PATH.
+        // No systemd unit: the only thing worth re-checking each tick is whether the process is
+        // alive, and that reads the process table without starting anything.
         var running = Process.GetProcessesByName("playit").Length > 0;
-        IsInstalled = running || Run("which", "playit").ExitCode == 0;
+        IsInstalled = running || _linuxBinaryOnPath;
         State = running ? PlayitState.Running : PlayitState.Stopped;
     }
 
@@ -128,7 +180,7 @@ public class PlayitManager
             await Task.Run(StartWindows);
         else if (OperatingSystem.IsLinux() && _linuxUnit is not null)
             await Task.Run(() => Systemctl("start", _linuxUnit));
-        RefreshState(force: true);
+        await RefreshStateAsync(force: true);
     }
 
     /// <summary>Stops the Playit agent (Windows service / Linux systemd unit). May require privileges.</summary>
@@ -138,7 +190,7 @@ public class PlayitManager
             await Task.Run(StopWindows);
         else if (OperatingSystem.IsLinux() && _linuxUnit is not null)
             await Task.Run(() => Systemctl("stop", _linuxUnit));
-        RefreshState(force: true);
+        await RefreshStateAsync(force: true);
     }
 
     [SupportedOSPlatform("windows")]
