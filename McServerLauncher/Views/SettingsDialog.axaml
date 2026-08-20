@@ -35,6 +35,19 @@
 
                 <Separator Margin="0,16,0,12" />
 
+                <!-- Desktop shortcut -->
+                <TextBlock Text="{loc:Loc Shortcut_Section}" FontWeight="SemiBold" />
+                <TextBlock Text="{loc:Loc Shortcut_Intro}" TextWrapping="Wrap" Opacity="0.7"
+                           FontSize="13" Margin="0,4,0,6" />
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Button x:Name="ShortcutBtn" Content="{loc:Loc Shortcut_Create}"
+                            Click="CreateShortcut_Click" />
+                    <TextBlock x:Name="ShortcutStatus" VerticalAlignment="Center" FontSize="12"
+                               TextWrapping="Wrap" MaxWidth="320" />
+                </StackPanel>
+
+                <Separator Margin="0,16,0,12" />
+
                 <!-- Notifications -->
                 <TextBlock Text="{loc:Loc Notif_Section}" FontWeight="SemiBold" />
                 <TextBlock Text="{loc:Loc Notif_Intro}" TextWrapping="Wrap" Opacity="0.7" FontSize="13" Margin="0,4,0,6" />

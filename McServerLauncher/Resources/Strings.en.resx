@@ -201,6 +201,14 @@
   <data name="Notif_GaveUp" xml:space="preserve"><value>It has crashed several times in a row; it won't be restarted automatically anymore.</value></data>
   <data name="Notif_Title" xml:space="preserve"><value>Notifications</value></data>
   <data name="Notif_Intro" xml:space="preserve"><value>Choose which alerts you get when you're not looking at the app. They pop up in the corner of the screen with the server's name.</value></data>
+  <data name="Shortcut_Section" xml:space="preserve"><value>Desktop shortcut</value></data>
+  <data name="Shortcut_Intro" xml:space="preserve"><value>Put a shortcut on your desktop so the app is one double-click away.</value></data>
+  <data name="Shortcut_Create" xml:space="preserve"><value>Add to desktop</value></data>
+  <data name="Shortcut_DoneFmt" xml:space="preserve"><value>Done: {0} is on your desktop.</value></data>
+  <data name="Msg_ShortcutNoTarget" xml:space="preserve"><value>Couldn't work out where the app is running from, so the shortcut can't be created.</value></data>
+  <data name="Msg_ShortcutNoDesktop" xml:space="preserve"><value>No desktop folder was found on this system.</value></data>
+  <data name="Msg_ShortcutFailed" xml:space="preserve"><value>The shortcut could not be created.</value></data>
+  <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>The shortcut could not be created. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Window</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Choose what the minimize and close buttons do. With the app in the tray, servers keep running and you get the window back by clicking the icon next to the clock.</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Minimizing sends it to the tray (leaves the taskbar)</value></data>

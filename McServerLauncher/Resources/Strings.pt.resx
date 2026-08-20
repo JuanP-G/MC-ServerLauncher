@@ -201,6 +201,14 @@
   <data name="Notif_GaveUp" xml:space="preserve"><value>Caiu várias vezes seguidas; não será reiniciado automaticamente mais vezes.</value></data>
   <data name="Notif_Title" xml:space="preserve"><value>Notificações</value></data>
   <data name="Notif_Intro" xml:space="preserve"><value>Escolhe que avisos queres receber quando não estás a olhar para a app. Aparecem no canto do ecrã com o nome do servidor.</value></data>
+  <data name="Shortcut_Section" xml:space="preserve"><value>Atalho</value></data>
+  <data name="Shortcut_Intro" xml:space="preserve"><value>Cria um atalho no teu ambiente de trabalho para abrires a app com um duplo clique.</value></data>
+  <data name="Shortcut_Create" xml:space="preserve"><value>Adicionar ao ambiente de trabalho</value></data>
+  <data name="Shortcut_DoneFmt" xml:space="preserve"><value>Pronto: {0} está no teu ambiente de trabalho.</value></data>
+  <data name="Msg_ShortcutNoTarget" xml:space="preserve"><value>Não foi possível saber de onde a app está a correr, por isso o atalho não pode ser criado.</value></data>
+  <data name="Msg_ShortcutNoDesktop" xml:space="preserve"><value>Não se encontrou a pasta do ambiente de trabalho neste sistema.</value></data>
+  <data name="Msg_ShortcutFailed" xml:space="preserve"><value>Não foi possível criar o atalho.</value></data>
+  <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>Não foi possível criar o atalho. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Janela</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Escolhe o que fazem os botões de minimizar e fechar. Com a aplicação na bandeja, os servidores continuam a correr e recuperas a janela clicando no ícone junto ao relógio.</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Ao minimizar, enviar para a bandeja (sai da barra de tarefas)</value></data>

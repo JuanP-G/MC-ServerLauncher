@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using System.IO;
 using Avalonia.Media;
 using Avalonia.Threading;
 using McServerLauncher.Localization;
@@ -130,6 +131,26 @@ public partial class SettingsDialog : Window
         => ToastService.Shared.Notify("MC Server Launcher", Localizer.Get("Notif_TestBody"));
 
     private void Save_Click(object? sender, RoutedEventArgs e) => Close(true);
+
+    /// <summary>
+    /// Puts the app on the desktop. The result is reported next to the button rather than in a
+    /// dialog: it is a one-click action and a modal for "done" would be more interruption than
+    /// information.
+    /// </summary>
+    private void CreateShortcut_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DesktopShortcutService.Create();
+            ShortcutStatus.Text = string.Format(Localizer.Get("Shortcut_DoneFmt"), Path.GetFileName(path));
+            ShortcutStatus.Foreground = Avalonia.Media.Brushes.MediumSeaGreen;
+        }
+        catch (Exception ex)
+        {
+            ShortcutStatus.Text = ex.Message;
+            ShortcutStatus.Foreground = Avalonia.Media.Brushes.IndianRed;
+        }
+    }
 
     private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
 }

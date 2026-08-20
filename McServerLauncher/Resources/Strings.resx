@@ -247,6 +247,14 @@
   <data name="Notif_GaveUp" xml:space="preserve"><value>Se ha caído varias veces seguidas; no se reiniciará automáticamente más.</value></data>
   <data name="Notif_Title" xml:space="preserve"><value>Notificaciones</value></data>
   <data name="Notif_Intro" xml:space="preserve"><value>Elige qué avisos quieres recibir cuando no estás mirando la app. Aparecen en la esquina de la pantalla con el nombre del servidor.</value></data>
+  <data name="Shortcut_Section" xml:space="preserve"><value>Acceso directo</value></data>
+  <data name="Shortcut_Intro" xml:space="preserve"><value>Crea un acceso directo en tu escritorio para abrir la app de un doble clic.</value></data>
+  <data name="Shortcut_Create" xml:space="preserve"><value>Añadir al escritorio</value></data>
+  <data name="Shortcut_DoneFmt" xml:space="preserve"><value>Listo: {0} está en tu escritorio.</value></data>
+  <data name="Msg_ShortcutNoTarget" xml:space="preserve"><value>No se ha podido averiguar desde dónde se está ejecutando la app, así que no se puede crear el acceso directo.</value></data>
+  <data name="Msg_ShortcutNoDesktop" xml:space="preserve"><value>No se ha encontrado la carpeta del escritorio en este sistema.</value></data>
+  <data name="Msg_ShortcutFailed" xml:space="preserve"><value>No se ha podido crear el acceso directo.</value></data>
+  <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>No se ha podido crear el acceso directo. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Ventana</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Decide qué hacen los botones de minimizar y cerrar. Con la app en la bandeja, los servidores siguen corriendo y la recuperas haciendo clic en el icono junto al reloj.</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Al minimizar, enviar a la bandeja (sale de la barra de tareas)</value></data>
