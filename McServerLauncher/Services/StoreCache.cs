@@ -130,10 +130,11 @@ public sealed class StoreCache
 
         // Not in memory (or expired): a disk copy written within the TTL is just as good, and it is
         // what makes the second run of the app feel instant.
-        var (disk, ageOk) = ReadDisk<T>(key, ttl);
-        if (disk is not null && ageOk)
+        var (disk, storedUtc) = ReadDisk<T>(key);
+        if (disk is not null && DateTime.UtcNow - storedUtc < ttl)
         {
-            _memory[key] = new Entry(disk, DateTime.UtcNow);
+            // Carried over, not reset: reading an entry is not the same as refreshing it.
+            _memory[key] = new Entry(disk, storedUtc);
             value = disk;
             return true;
         }
@@ -143,28 +144,43 @@ public sealed class StoreCache
     }
 
     /// <summary>Last resort: any disk copy, however old, when the network is unavailable.</summary>
+    /// <remarks>
+    /// The entry is cached under its <em>original</em> timestamp. Stamping it with the current
+    /// time — which is what this used to do — made a copy of up to <see cref="MaxDiskAge"/> look
+    /// fresh, so <see cref="TryGetFresh"/> kept serving it for a whole TTL and stopped going to
+    /// the network at all: one dropped request left the page showing month-old data long after the
+    /// connection was back.
+    /// </remarks>
     private T? ReadStale<T>(string key) where T : class
     {
-        var (value, _) = ReadDisk<T>(key, TimeSpan.MaxValue);
-        if (value is not null) _memory[key] = new Entry(value, DateTime.UtcNow);
+        var (value, storedUtc) = ReadDisk<T>(key);
+        if (value is not null) _memory[key] = new Entry(value, storedUtc);
         return value;
     }
 
-    private (T? Value, bool WithinTtl) ReadDisk<T>(string key, TimeSpan ttl) where T : class
+    /// <summary>
+    /// Reads a disk entry along with <em>when it was actually stored</em>.
+    /// </summary>
+    /// <remarks>
+    /// Returning the real timestamp rather than a "is this still fresh" flag is the whole point:
+    /// the callers put what they read into memory, and stamping that copy with the current time
+    /// would make a month-old file look brand new.
+    /// </remarks>
+    private (T? Value, DateTime StoredUtc) ReadDisk<T>(string key) where T : class
     {
         try
         {
             var path = PathFor(key);
-            if (!File.Exists(path)) return (null, false);
+            if (!File.Exists(path)) return (null, default);
 
-            var age = DateTime.UtcNow - File.GetLastWriteTimeUtc(path);
+            var storedUtc = File.GetLastWriteTimeUtc(path);
             var value = JsonSerializer.Deserialize<T>(File.ReadAllText(path), JsonOptions);
-            return (value, ttl == TimeSpan.MaxValue || age < ttl);
+            return (value, storedUtc);
         }
         catch
         {
             // Corrupt or unreadable cache entry: treat it as a miss (and let it be overwritten).
-            return (null, false);
+            return (null, default);
         }
     }
 
