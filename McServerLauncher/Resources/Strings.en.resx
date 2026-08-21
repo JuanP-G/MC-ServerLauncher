@@ -557,4 +557,22 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Tip_RemoveFilter" xml:space="preserve"><value>Remove this filter</value></data>
   <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Show or hide the installed list</value></data>
   <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Nothing matches these filters. Try removing one.</value></data>
+  <data name="Idle_CountdownFmt" xml:space="preserve">
+    <value>Stops in {0}</value>
+  </data>
+  <data name="Idle_CountdownHint" xml:space="preserve">
+    <value>Nobody is on the server. If no one joins before this reaches zero, it will stop itself.</value>
+  </data>
+  <data name="Notif_OptIdleStop" xml:space="preserve">
+    <value>Stopped after being empty</value>
+  </data>
+  <data name="Notif_OptWoke" xml:space="preserve">
+    <value>Started because someone tried to join</value>
+  </data>
+  <data name="Notif_IdleStopped" xml:space="preserve">
+    <value>Empty for {0} min: stopping the server.</value>
+  </data>
+  <data name="Notif_Woke" xml:space="preserve">
+    <value>Someone tried to join: starting the server.</value>
+  </data>
 </root>

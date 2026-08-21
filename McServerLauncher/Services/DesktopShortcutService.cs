@@ -235,6 +235,12 @@ public static class DesktopShortcutService
     private static string CreateMacOs(string target, string desktop)
     {
         var link = Path.Combine(desktop, "MC Server Launcher");
+
+        // If it already points where it should, leave it exactly as it is. Finder remembers where
+        // each icon sits by name, in the folder's .DS_Store; deleting the file drops that entry and
+        // the replacement lands in the first free slot, shuffling the desktop for no reason.
+        if (new FileInfo(link).LinkTarget == target) return link;
+
         try { if (File.Exists(link) || Directory.Exists(link)) File.Delete(link); }
         catch { /* replaced below, or reported by the failure that follows */ }
 

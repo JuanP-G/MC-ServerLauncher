@@ -14,8 +14,8 @@
 [Português](https://mc-server-launcher.vercel.app/pt/)) —
 📖 **[Documentación](https://juanp-g.github.io/MC-ServerLauncher/docs/)**
 
-Aplicación de escritorio para **Windows** (y Linux) para gestionar uno o varios servidores de **Minecraft**
-desde una interfaz gráfica moderna — **sin archivos `.bat`, ventanas de consola negras ni editar
+Aplicación de escritorio para **Windows, Linux y macOS** para gestionar uno o varios servidores de
+**Minecraft** desde una interfaz gráfica moderna — **sin archivos `.bat`, ventanas de consola negras ni editar
 configuraciones a mano**.
 
 Crea un servidor, elige el **tipo** (Vanilla, Fabric, Forge o Paper) y la versión, añade **mods o plugins**
@@ -47,8 +47,10 @@ todo con botones.
 1. Ve a la **[última versión (Releases)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)**.
 2. Descarga **`MC-ServerLauncher-Setup-x.y.z.exe`** y ejecútalo (crea acceso directo en Escritorio y menú Inicio).
 3. Abre la app y crea o añade tu servidor. **No necesitas instalar .NET ni Java** — la app se encarga.
-4. Las actualizaciones se hacen **dentro de la app**: cuando hay una versión nueva, un aviso muestra un botón
-   **Actualizar**, y una ventana de **Novedades** te cuenta qué ha cambiado.
+4. Las actualizaciones se hacen **dentro de la app, en las tres plataformas**: cuando hay una versión nueva,
+   un aviso muestra un botón **Actualizar**, y la app la descarga, **la verifica contra su SHA-256 publicado**
+   y la instala sola — ejecutando el instalador en Windows, reemplazando el AppImage en Linux y el paquete de
+   la app en macOS. Después, una ventana de **Novedades** te cuenta qué ha cambiado.
 
 > La primera vez, Windows puede mostrar un aviso de SmartScreen (app nueva sin firma): pulsa
 > *Más información → Ejecutar de todas formas*.
@@ -80,14 +82,27 @@ todo con botones.
 - **Jugadores** 👥 — conectados (en vivo), operadores, lista blanca, baneados y conocidos, con acciones OP /
   expulsar / banear / lista blanca.
 - **Configuración visual de `server.properties`** con explicaciones claras.
+- **Se apaga y se enciende solo** 💤 — un servidor puede **apagarse solo a los N minutos sin nadie dentro** y
+  **volver a encenderse cuando alguien intenta entrar**. Mientras duerme, la app responde en el puerto del
+  servidor: en la lista se ve *«Apagado · entra para encenderlo»*, y quien pulse Entrar recibe un mensaje
+  mientras arranca. La ventana muestra una **cuenta atrás** hasta el apagado, y un servidor recién despertado
+  tiene un margen para que no se apague antes de que dé tiempo a entrar. Las dos mitades son **por servidor y
+  vienen desactivadas**.
+- **Copias de seguridad del mundo** 💾 — una copia antes de cada arranque y en cada parada, con el número de
+  copias que quieras conservar, más **copia ahora** y **restaurar** con un clic desde la app.
+- **No estorba** — puedes minimizar y/o cerrar **a la bandeja del sistema** para que tus servidores sigan
+  funcionando sin la ventana en medio. Y si vuelves a abrir la app, recupera esa ventana en lugar de abrir una
+  segunda copia sobre los mismos servidores.
 - **Abre tu servidor a Internet con Playit.gg** 🌐 — conecta tu cuenta pegando un **código de configuración**
   de un solo uso (sin claves ni archivos). La app **crea el túnel y ejecuta el agente de Playit por ti**, así
   tu servidor es accesible desde cualquier sitio y tus amigos entran con la dirección pública — **tú no instalas
   nada**. La app no contiene ningún secreto propio (la credencial vive en un pequeño proxy).
 - **Notificaciones** 🔔 — avisos opcionales cuando un jugador entra o sale, alguien muere (PvP), el servidor
-  se cae o el reinicio automático se rinde. Configurables por tipo, de forma global y **por servidor**, con
-  botón de prueba.
-- **Ajustes en un solo sitio** ⚙️ — idioma, notificaciones y tu conexión de Playit en un único diálogo.
+  se cae, el reinicio automático se rinde, un **servidor vacío se apaga solo** o uno **se enciende porque
+  alguien ha intentado entrar**. Configurables por tipo, de forma global y **por servidor**, con botón de
+  prueba.
+- **Ajustes en un solo sitio** ⚙️ — idioma, notificaciones, comportamiento de la bandeja, tu conexión de
+  Playit y un botón de **añadir al escritorio**, todo en un único diálogo.
 - **Multi-idioma** — español, inglés, portugués, francés y alemán.
 
 ## 🛠️ Compilar desde el código
@@ -117,8 +132,9 @@ dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 
 La documentación de desarrollo (arquitectura, guía de contribución y una **referencia de API** completa) se
 publica con **DocFX** en **https://juanp-g.github.io/MC-ServerLauncher/docs/**. Los datos por usuario se guardan en
-`%APPDATA%\McServerLauncher\`: `servers.json`, `settings.json`, el `java\` que instala la app, los
-`logs\` de consola persistentes (se guardan 14 días) y, en Linux/macOS, `.secret.key`. Además, la
+`%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` en Linux y macOS): `servers.json`,
+`settings.json`, el `java\` que instala la app, los `logs\` de consola persistentes (se guardan 14 días),
+el `instance.lock` que mantiene una sola copia de la app abierta y, en Linux/macOS, `.secret.key`. Además, la
 carpeta de cada servidor tiene un directorio `backups\` con las copias automáticas del mundo.
 
 ## 📄 Licencia

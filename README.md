@@ -14,8 +14,8 @@
 [Português](https://mc-server-launcher.vercel.app/pt/)) —
 📖 **[Documentation](https://juanp-g.github.io/MC-ServerLauncher/docs/)**
 
-Desktop app for **Windows** (and Linux) to manage one or several **Minecraft** servers from a modern
-graphical interface — **no `.bat` files, black console windows or editing config files by hand**.
+Desktop app for **Windows, Linux and macOS** to manage one or several **Minecraft** servers from a
+modern graphical interface — **no `.bat` files, black console windows or editing config files by hand**.
 
 Create a server, pick the **type** (Vanilla, Fabric, Forge or Paper) and version, add **mods or plugins**
 with a couple of clicks, open it to the Internet with Playit.gg, manage players and tweak the settings…
@@ -46,8 +46,10 @@ all with buttons.
 1. Go to the **[latest release](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)**.
 2. Download **`MC-ServerLauncher-Setup-x.y.z.exe`** and run it (creates a Desktop + Start-menu shortcut).
 3. Open the app and create or add your server. **You don't need to install .NET or Java** — the app handles it.
-4. Updates happen **inside the app**: when a new version exists, a banner offers an **Update** button, and a
-   **What's new** window tells you what changed.
+4. Updates happen **inside the app, on all three platforms**: when a new version exists a banner offers an
+   **Update** button, and the app downloads it, **checks it against its published SHA-256** and installs it
+   by itself — running the installer on Windows, swapping the AppImage on Linux and the app bundle on macOS.
+   A **What's new** window then tells you what changed.
 
 > The first time, Windows SmartScreen may warn (new, unsigned app): click *More info → Run anyway*.
 >
@@ -76,13 +78,25 @@ all with buttons.
 - **Players** 👥 — connected (live), operators, whitelist, banned and known players, with OP / kick / ban /
   whitelist actions.
 - **Visual `server.properties` editor** with plain-language explanations.
+- **Sleeps and wakes on its own** 💤 — a server can **stop itself after N minutes with nobody on**, and
+  **start itself again when somebody tries to join**. While it sleeps the app answers on the server's port,
+  so the server list shows *"Off · join to start it"* and whoever presses Join gets a message while it boots.
+  The window shows a **countdown** to the shutdown, and a freshly woken server gets a grace period so it is
+  never stopped before anyone can get in. Both halves are per server and **off by default**.
+- **Automatic world backups** 💾 — a copy before every start and on every stop, a configurable number kept,
+  plus **Back up now** and one-click **restore** from the app.
+- **Stays out of the way** — optionally minimize and/or close **to the system tray** so your servers keep
+  running with the window gone. Launching the app again brings that window back instead of opening a second
+  copy over the same servers.
 - **Share to the Internet with Playit.gg** 🌐 — connect your account by pasting a one-time **setup code**
   (no keys, no files). The app **creates the tunnel and runs the Playit agent for you**, so your server is
   reachable from anywhere and friends join with the public address — **you install nothing**. The app ships
   no secret of its own (the credential lives in a small proxy).
 - **Notifications** 🔔 — optional pop-ups when a player joins or leaves, someone dies (PvP), the server
-  crashes, or auto-restart gives up. Configurable per type, globally and **per server**, with a test button.
-- **Settings in one place** ⚙️ — language, notifications and your Playit connection in a single dialog.
+  crashes, auto-restart gives up, an **empty server stops itself**, or one **starts itself because somebody
+  tried to join**. Configurable per type, globally and **per server**, with a test button.
+- **Settings in one place** ⚙️ — language, notifications, tray behaviour, your Playit connection and an
+  **Add to desktop** button, all in a single dialog.
 - **Multi-language** — English, Spanish, Portuguese, French and German.
 
 ## 🛠️ Build from source
@@ -112,8 +126,9 @@ dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 
 Developer documentation (architecture, contributing guide and a full **API reference**) is published with
 **DocFX** at **https://juanp-g.github.io/MC-ServerLauncher/docs/**. Per-user data lives under
-`%APPDATA%\McServerLauncher\`: `servers.json`, `settings.json`, the installed `java\`, the persistent
-console `logs\` (kept 14 days) and, on Linux/macOS, `.secret.key`. Each server's own folder also
+`%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux and macOS): `servers.json`,
+`settings.json`, the installed `java\`, the persistent console `logs\` (kept 14 days), the `instance.lock`
+that keeps the app to one running copy, and, on Linux/macOS, `.secret.key`. Each server's own folder also
 keeps a `backups\` directory with the automatic world backups.
 
 ## 📄 License

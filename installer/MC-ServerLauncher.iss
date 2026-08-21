@@ -59,8 +59,8 @@ Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubd
 [Icons]
 Name: "{group}\MC Server Launcher"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\{cm:UninstallProgram,MC Server Launcher}"; Filename: "{uninstallexe}"
-; Recrea el acceso directo del escritorio si el usuario lo marca O si ya tenía uno (así una
-; actualización refresca su icono aunque no se vuelva a marcar la casilla).
+; Solo se crea si el usuario lo pide y aún no hay ninguno. Una actualización NO lo vuelve a crear:
+; ver ShouldCreateDesktopIcon.
 Name: "{autodesktop}\MC Server Launcher"; Filename: "{app}\{#MyAppExeName}"; Check: ShouldCreateDesktopIcon
 
 [Run]
@@ -72,8 +72,31 @@ Filename: "{sys}\ie4uinit.exe"; Parameters: "-show"; Flags: runhidden runasorigi
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,MC Server Launcher}"; Flags: nowait postinstall runasoriginaluser
 
 [Code]
+// El instalador escribe en autodesktop (con privilegios de admin, el escritorio comun), pero el
+// boton "Anadir al escritorio" de la propia app escribe en el escritorio del usuario. Cualquiera
+// de los dos cuenta como "ya tiene un acceso directo".
+function DesktopIconExists: Boolean;
+begin
+  Result := FileExists(ExpandConstant('{autodesktop}\MC Server Launcher.lnk')) or
+            FileExists(ExpandConstant('{userdesktop}\MC Server Launcher.lnk'));
+end;
+
+// Si ya hay un acceso directo, no se toca.
+//
+// Recrearlo no es "sobrescribirlo": Inno borra el .lnk y lo vuelve a crear, y Windows guarda la
+// posicion de cada icono del escritorio indexada por el nombre del fichero. Al desaparecer el
+// fichero se pierde su posicion, y el nuevo aparece en el primer hueco libre: por eso el
+// escritorio se reordenaba entero en cada actualizacion.
+//
+// No hace falta recrearlo para refrescar el icono. La ruta de instalacion es fija, de modo que el
+// acceso directo que ya existe sigue apuntando al sitio correcto y saca el icono del .exe nuevo;
+// de refrescar la cache se encarga el ie4uinit de la seccion Run.
+//
+// WizardSilent cubre el caso que queda: si el usuario habia borrado el icono a proposito,
+// una actualizacion desde la propia app (que lanza el instalador con /SILENT) tampoco se lo
+// devuelve. Dicho de otro modo: una instalacion silenciosa nunca toca el escritorio.
 function ShouldCreateDesktopIcon: Boolean;
 begin
-  Result := WizardIsTaskSelected('desktopicon') or
-            FileExists(ExpandConstant('{autodesktop}\MC Server Launcher.lnk'));
+  Result := WizardIsTaskSelected('desktopicon') and not WizardSilent and
+            not DesktopIconExists;
 end;

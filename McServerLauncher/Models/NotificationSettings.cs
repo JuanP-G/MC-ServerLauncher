@@ -7,7 +7,13 @@ public enum NotificationKind
     PlayerLeft,
     PlayerDeath,
     ServerCrashed,
-    AutoRestartGaveUp
+    AutoRestartGaveUp,
+
+    /// <summary>An empty server stopped itself after the configured wait.</summary>
+    IdleShutdown,
+
+    /// <summary>A stopped server started itself because somebody tried to join.</summary>
+    WokeOnDemand
 }
 
 /// <summary>
@@ -26,6 +32,8 @@ public class NotificationSettings
     public bool PlayerDeath { get; set; } = true;
     public bool ServerCrashed { get; set; } = true;
     public bool AutoRestartGaveUp { get; set; } = true;
+    public bool IdleShutdown { get; set; } = true;
+    public bool WokeOnDemand { get; set; } = true;
 
     /// <summary>True if this scope allows <paramref name="kind"/> (master on AND that kind on).</summary>
     public bool Allows(NotificationKind kind) => Enabled && kind switch
@@ -35,6 +43,8 @@ public class NotificationSettings
         NotificationKind.PlayerDeath => PlayerDeath,
         NotificationKind.ServerCrashed => ServerCrashed,
         NotificationKind.AutoRestartGaveUp => AutoRestartGaveUp,
+        NotificationKind.IdleShutdown => IdleShutdown,
+        NotificationKind.WokeOnDemand => WokeOnDemand,
         _ => true
     };
 
@@ -51,5 +61,7 @@ public class NotificationSettings
         PlayerDeath = PlayerDeath,
         ServerCrashed = ServerCrashed,
         AutoRestartGaveUp = AutoRestartGaveUp,
+        IdleShutdown = IdleShutdown,
+        WokeOnDemand = WokeOnDemand,
     };
 }

@@ -229,6 +229,16 @@
                                                Foreground="{Binding StatusBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Border>
+
+                            <!-- Only while the empty-server clock is actually running (HasIdleCountdown). -->
+                            <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right"
+                                        Margin="0,-4,2,8" IsVisible="{Binding HasIdleCountdown}"
+                                        ToolTip.Tip="{loc:Loc Idle_CountdownHint}">
+                                <ic:SymbolIcon Symbol="Timer" FontSize="13" Foreground="#AAAAAA"
+                                               VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding IdleCountdownText}" FontSize="12"
+                                           Foreground="#AAAAAA" VerticalAlignment="Center" />
+                            </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                                 <Button Classes="accent" Command="{Binding StartCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">

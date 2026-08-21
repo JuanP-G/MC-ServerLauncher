@@ -557,4 +557,22 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Tip_RemoveFilter" xml:space="preserve"><value>Diesen Filter entfernen</value></data>
   <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Installierte Liste ein- oder ausblenden</value></data>
   <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Nichts passt zu diesen Filtern. Entferne einen davon.</value></data>
+  <data name="Idle_CountdownFmt" xml:space="preserve">
+    <value>Stoppt in {0}</value>
+  </data>
+  <data name="Idle_CountdownHint" xml:space="preserve">
+    <value>Niemand ist auf dem Server. Wenn bis null niemand beitritt, stoppt er von selbst.</value>
+  </data>
+  <data name="Notif_OptIdleStop" xml:space="preserve">
+    <value>Wegen Leerlauf gestoppt</value>
+  </data>
+  <data name="Notif_OptWoke" xml:space="preserve">
+    <value>Gestartet, weil jemand beitreten wollte</value>
+  </data>
+  <data name="Notif_IdleStopped" xml:space="preserve">
+    <value>Seit {0} Min leer: Server wird gestoppt.</value>
+  </data>
+  <data name="Notif_Woke" xml:space="preserve">
+    <value>Jemand wollte beitreten: Server wird gestartet.</value>
+  </data>
 </root>

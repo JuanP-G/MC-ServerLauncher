@@ -557,4 +557,22 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Tip_RemoveFilter" xml:space="preserve"><value>Retirer ce filtre</value></data>
   <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Afficher ou masquer la liste des installés</value></data>
   <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Aucun résultat avec ces filtres. Essaie d'en retirer un.</value></data>
+  <data name="Idle_CountdownFmt" xml:space="preserve">
+    <value>Arrêt dans {0}</value>
+  </data>
+  <data name="Idle_CountdownHint" xml:space="preserve">
+    <value>Il n'y a personne sur le serveur. Si personne ne se connecte avant zéro, il s'arrêtera tout seul.</value>
+  </data>
+  <data name="Notif_OptIdleStop" xml:space="preserve">
+    <value>Arrêt pour inactivité</value>
+  </data>
+  <data name="Notif_OptWoke" xml:space="preserve">
+    <value>Démarre parce que quelqu'un a essayé de se connecter</value>
+  </data>
+  <data name="Notif_IdleStopped" xml:space="preserve">
+    <value>Vide depuis {0} min : arret du serveur.</value>
+  </data>
+  <data name="Notif_Woke" xml:space="preserve">
+    <value>Quelqu'un a essayé de se connecter : démarrage du serveur.</value>
+  </data>
 </root>

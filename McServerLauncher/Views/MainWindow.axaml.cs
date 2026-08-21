@@ -48,9 +48,20 @@ public partial class MainWindow : Window
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == WindowStateProperty && WindowState == WindowState.Minimized
-            && WindowBehavior.MinimizeToTray && App.TrayAvailable)
-            Hide();
+        if (change.Property != WindowStateProperty || WindowState != WindowState.Minimized) return;
+        if (!WindowBehavior.MinimizeToTray || !App.TrayAvailable) return;
+
+        // Leave the minimized state behind BEFORE hiding, and never hide straight from it.
+        //
+        // On X11 an iconified window is already unmapped, so unmapping it again leaves the window
+        // manager unable to tell "withdrawn" from "iconified": it keeps the taskbar button, and
+        // mapping it again brings back a frame whose contents were never re-rendered — a window
+        // that is nothing but its title bar. Both symptoms, one cause.
+        //
+        // The tell is that close-to-tray never had either problem: it hides from the normal state.
+        // This makes minimize take exactly the same path.
+        WindowState = WindowState.Normal;
+        Hide();
     }
 
     /// <summary>

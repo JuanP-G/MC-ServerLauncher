@@ -103,6 +103,8 @@
                         <CheckBox Content="{loc:Loc Notif_Death}" IsChecked="{Binding Notifications.PlayerDeath, Mode=TwoWay}" />
                         <CheckBox Content="{loc:Loc Notif_Crash}" IsChecked="{Binding Notifications.ServerCrashed, Mode=TwoWay}" />
                         <CheckBox Content="{loc:Loc Notif_OptGaveUp}" IsChecked="{Binding Notifications.AutoRestartGaveUp, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Notif_OptIdleStop}" IsChecked="{Binding Notifications.IdleShutdown, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Notif_OptWoke}" IsChecked="{Binding Notifications.WokeOnDemand, Mode=TwoWay}" />
                     </StackPanel>
                 </StackPanel>
             </StackPanel>

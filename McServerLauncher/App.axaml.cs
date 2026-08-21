@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using McServerLauncher.Localization;
 using McServerLauncher.Services;
 using McServerLauncher.Views;
@@ -36,6 +37,12 @@ public partial class App : Application
         {
             desktop.MainWindow = new MainWindow();
             SetupTrayIcon(desktop);
+
+            // Launching the app again brings this window back rather than opening a second copy.
+            // The event arrives on a pipe-listener thread, so it has to hop to the UI thread before
+            // touching the window.
+            if (Program.Instance is { } instance)
+                instance.ActivationRequested += () => Dispatcher.UIThread.Post(() => RestoreMainWindow(desktop));
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -90,12 +97,31 @@ public partial class App : Application
     }
 
     /// <summary>Brings the main window back from the tray (or from behind other windows).</summary>
+    /// <remarks>
+    /// The Topmost flick is not decoration. Windows refuses SetForegroundWindow to a process that
+    /// isn't already in front, so when the request comes from a second launch of the app (see
+    /// <see cref="Services.SingleInstance"/>) a plain Activate() only flashes the taskbar button.
+    /// Briefly making the window topmost puts it in front for real; it is put back immediately so
+    /// the window doesn't end up permanently hovering over everything else.
+    /// </remarks>
     public static void RestoreMainWindow(IClassicDesktopStyleApplicationLifetime? desktop = null)
     {
         desktop ??= Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
         if (desktop?.MainWindow is not { } w) return;
-        w.Show();
+
+        // Normal first, then Show — not the other way round. Mapping a window that is still flagged
+        // minimized is the same mistake that broke minimize-to-tray on Linux (see MainWindow): the
+        // frame comes back but its contents are never redrawn.
         w.WindowState = WindowState.Normal;
+        w.Show();
+
+        var wasTopmost = w.Topmost;
+        w.Topmost = true;
         w.Activate();
+
+        // Long enough for the window manager to have acted on it. Posting the revert at Background
+        // priority instead ran it inside the same frame, which put the window back down before
+        // anything had a chance to raise it.
+        DispatcherTimer.RunOnce(() => w.Topmost = wasTopmost, TimeSpan.FromMilliseconds(400));
     }
 }

@@ -603,4 +603,22 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Tip_RemoveFilter" xml:space="preserve"><value>Quitar este filtro</value></data>
   <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Mostrar u ocultar la lista de instalados</value></data>
   <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Ningún resultado con estos filtros. Prueba a quitar alguno.</value></data>
+  <data name="Idle_CountdownFmt" xml:space="preserve">
+    <value>Se apaga en {0}</value>
+  </data>
+  <data name="Idle_CountdownHint" xml:space="preserve">
+    <value>No queda nadie en el servidor. Si no entra nadie antes de que llegue a cero, se apagará solo.</value>
+  </data>
+  <data name="Notif_OptIdleStop" xml:space="preserve">
+    <value>Apagado por inactividad</value>
+  </data>
+  <data name="Notif_OptWoke" xml:space="preserve">
+    <value>Encendido porque alguien intentó entrar</value>
+  </data>
+  <data name="Notif_IdleStopped" xml:space="preserve">
+    <value>Sin jugadores {0} min: apagando el servidor.</value>
+  </data>
+  <data name="Notif_Woke" xml:space="preserve">
+    <value>Alguien intentó entrar: encendiendo el servidor.</value>
+  </data>
 </root>

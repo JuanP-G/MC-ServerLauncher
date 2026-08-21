@@ -38,6 +38,9 @@ public partial class ServerViewModel : ObservableObject
     private readonly WorldBackupService _backups = new();
     private int _playitTickCounter;
     private readonly DispatcherTimer _statsTimer;
+
+    /// <summary>Refreshes the idle countdown once a second. Runs only while one is on screen.</summary>
+    private readonly DispatcherTimer _idleCountdownTimer;
     private readonly DispatcherTimer _playitTimer;
 
     // --- Auto-restart on crash ---
@@ -140,6 +143,19 @@ public partial class ServerViewModel : ObservableObject
 
     [ObservableProperty]
     private string _portText = "—";
+
+    /// <summary>How long until the empty server stops itself, or null when nothing is counting.</summary>
+    /// <remarks>
+    /// Only set while the clock is actually running, so the UI can bind its visibility straight to
+    /// this: an idle countdown showing "0:00" on a server nobody configured to stop would be a lie.
+    /// </remarks>
+    [ObservableProperty]
+    private string? _idleCountdownText;
+
+    /// <summary>True while there is a countdown to show.</summary>
+    public bool HasIdleCountdown => IdleCountdownText is not null;
+
+    partial void OnIdleCountdownTextChanged(string? value) => OnPropertyChanged(nameof(HasIdleCountdown));
 
     // --- CPU/RAM history for the mini charts (2 s sampling → 150 samples ≈ last 5 minutes) ---
     private const int MaxStatSamples = 150;
@@ -253,6 +269,9 @@ public partial class ServerViewModel : ObservableObject
         _playit.StateChanged += _onPlayitStateChanged;
         _agent.StateChanged += _onAgentStateChanged;
 
+        _idleCountdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _idleCountdownTimer.Tick += (_, _) => UpdateIdleCountdown();
+
         _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _statsTimer.Tick += (_, _) => OnStatsTimerTick();
 
@@ -323,21 +342,73 @@ public partial class ServerViewModel : ObservableObject
     {
         if (_idleStopping) return;
 
+        var now = DateTime.UtcNow;
         var minutes = Config.IdleShutdownMinutes;
         var counting = ShouldCountIdle(minutes, State == ServerState.Running, ConnectedPlayers.Count)
-                       && !IsWithinWakeGrace(_wokeAtUtc, DateTime.UtcNow);
+                       && !IsWithinWakeGrace(_wokeAtUtc, now);
         if (!counting)
         {
             _emptySinceUtc = null;
+            StopIdleCountdown();
             return;
         }
 
-        _emptySinceUtc ??= DateTime.UtcNow;
-        if (!IsIdleLongEnough(minutes, _emptySinceUtc.Value, DateTime.UtcNow)) return;
+        _emptySinceUtc ??= now;
+        UpdateIdleCountdown();
+        _idleCountdownTimer.Start();    // no-op when it is already running
+
+        if (!IsIdleLongEnough(minutes, _emptySinceUtc.Value, now)) return;
 
         _idleStopping = true;
+        StopIdleCountdown();
         OnConsoleLine(string.Format(Localizer.Get("Msg_IdleShutdownFmt"), minutes));
+        NotifyIf(NotificationKind.IdleShutdown,
+            string.Format(Localizer.Get("Notif_IdleStopped"), minutes));
         _ = StopBecauseIdleAsync();
+    }
+
+    // --- Showing the countdown ---
+    // This check runs off the 2 s stats timer, which is the right cadence for deciding when to stop
+    // but the wrong one for a clock: a seconds display driven by it would skip every other second.
+    // Rather than speed up the stats timer (its 2 s cadence is what makes the CPU/RAM history worth
+    // ~5 minutes) the countdown gets its own, which only runs while there is something to count.
+
+    private void UpdateIdleCountdown()
+    {
+        if (_emptySinceUtc is null) { StopIdleCountdown(); return; }
+
+        IdleCountdownText = string.Format(
+            Localizer.Get("Idle_CountdownFmt"),
+            FormatCountdown(IdleRemaining(Config.IdleShutdownMinutes, _emptySinceUtc.Value, DateTime.UtcNow)));
+    }
+
+    private void StopIdleCountdown()
+    {
+        _idleCountdownTimer.Stop();
+        IdleCountdownText = null;
+    }
+
+    /// <summary>How long is left before an empty server stops itself. Never negative.</summary>
+    internal static TimeSpan IdleRemaining(int minutes, DateTime emptySinceUtc, DateTime nowUtc)
+    {
+        var left = TimeSpan.FromMinutes(minutes) - (nowUtc - emptySinceUtc);
+        return left > TimeSpan.Zero ? left : TimeSpan.Zero;
+    }
+
+    /// <summary>
+    /// Formats the countdown, rounding seconds <em>up</em>.
+    /// </summary>
+    /// <remarks>
+    /// Truncating would park the display on 0:00 for up to a second while the server is still
+    /// perfectly alive, which reads as a stuck clock. Rounding up means it shows 0:01 until the
+    /// moment it really is zero.
+    /// </remarks>
+    internal static string FormatCountdown(TimeSpan left)
+    {
+        var t = TimeSpan.FromSeconds(Math.Ceiling(left.TotalSeconds));
+        return t.TotalHours >= 1
+            ? $"{(int)t.TotalHours}:{t.Minutes:00}:{t.Seconds:00}"
+            : $"{t.Minutes}:{t.Seconds:00}";
     }
 
     /// <summary>Whether the empty-server clock should be running at all.</summary>
@@ -381,19 +452,49 @@ public partial class ServerViewModel : ObservableObject
             OnConsoleLine(string.Format(Localizer.Get("Msg_WakePortBusyFmt"), port.Value));
     }
 
+    // --- How the notice looks in the server list ---
+    // The leading reset matters as much as the colour. Minecraft carries formatting across a line
+    // break, so without it the notice inherited whatever colour the owner's MOTD happened to end
+    // on — gold under one server, plain grey under the next — and read as a third line of their own
+    // message instead of as the launcher speaking.
+
+    /// <summary>Bold yellow: off, and waiting for you to do something about it.</summary>
+    private const string SleepingStyle = "§r§e§l";
+
+    /// <summary>Bold green: already on its way up, nothing to do but wait.</summary>
+    private const string StartingStyle = "§r§a§l";
+
+    /// <summary>Yellow, not bold: the disconnect screen is several lines and bold shouts.</summary>
+    private const string KickStyle = "§e";
+
+    /// <summary>Builds the two-line server-list entry: the owner's MOTD, then the notice.</summary>
+    /// <remarks>
+    /// Only the owner's FIRST line is kept. The list shows two lines and no more, so a MOTD that
+    /// already uses both would push the notice off the bottom — and the notice is the one line that
+    /// has to be read for any of this to work.
+    /// </remarks>
+    internal static string ComposeWakeMotd(string? motd, string notice)
+    {
+        if (string.IsNullOrWhiteSpace(motd)) return notice;
+
+        var first = motd.Split((char)10, (char)13)[0].TrimEnd();
+        return first.Length == 0 ? notice : first + (char)10 + notice;
+    }
+
     /// <summary>What a client sees while the server sleeps: its own MOTD plus what is going on.</summary>
     private WakeStatus BuildWakeStatus()
     {
         var starting = State != ServerState.Stopped;
-        var line = Localizer.Get(starting ? "Wake_MotdStarting" : "Wake_MotdSleeping");
+        var line = (starting ? StartingStyle : SleepingStyle) +
+                   Localizer.Get(starting ? "Wake_MotdStarting" : "Wake_MotdSleeping");
         var icon = Path.Combine(Config.FolderPath, "server-icon.png");
 
         return new WakeStatus(
-            Description: string.IsNullOrWhiteSpace(MotdText) ? line : MotdText + (char)10 + line,
+            Description: ComposeWakeMotd(MotdText, line),
             VersionName: string.IsNullOrWhiteSpace(Config.GameVersion) ? "?" : Config.GameVersion,
             MaxPlayers: _maxPlayers,
             IconPath: File.Exists(icon) ? icon : null,
-            DisconnectMessage: Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"));
+            DisconnectMessage: KickStyle + Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"));
     }
 
     /// <summary>Somebody pressed Join on a sleeping server.</summary>
@@ -403,6 +504,7 @@ public partial class ServerViewModel : ObservableObject
 
         _wokeAtUtc = DateTime.UtcNow;
         OnConsoleLine(Localizer.Get("Msg_WakeStarting"));
+        NotifyIf(NotificationKind.WokeOnDemand, Localizer.Get("Notif_Woke"));
 
         // isAutoRestart: nobody is sitting in front of the app to answer a dialog, which is exactly
         // what that flag already means everywhere else.
@@ -563,6 +665,13 @@ public partial class ServerViewModel : ObservableObject
         else if (state == ServerState.Stopped)
         {
             _statsTimer.Stop();
+
+            // Explicitly, not just by waiting for the next CheckIdleShutdown: that runs off the
+            // stats timer, which has just been stopped, so a server that went straight from Running
+            // to Stopped between two ticks would leave a countdown ticking away on a dead server.
+            _emptySinceUtc = null;
+            StopIdleCountdown();
+
             CpuText = RamText = UptimeText = "—";
             _cpuHistory.Clear();
             _ramHistory.Clear();
@@ -1310,6 +1419,7 @@ public partial class ServerViewModel : ObservableObject
     public async Task ShutdownAsync()
     {
         _statsTimer.Stop();
+        _idleCountdownTimer.Stop();
         _playitTimer.Stop();
         _playit.StateChanged -= _onPlayitStateChanged; // the manager is shared and outlives us
         _agent.StateChanged -= _onAgentStateChanged;   // the agent runner is shared too

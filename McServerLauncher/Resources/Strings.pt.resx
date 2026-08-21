@@ -557,4 +557,22 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Tip_RemoveFilter" xml:space="preserve"><value>Remover este filtro</value></data>
   <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Mostrar ou ocultar a lista de instalados</value></data>
   <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Nenhum resultado com estes filtros. Tenta remover algum.</value></data>
+  <data name="Idle_CountdownFmt" xml:space="preserve">
+    <value>Desliga em {0}</value>
+  </data>
+  <data name="Idle_CountdownHint" xml:space="preserve">
+    <value>Não há ninguém no servidor. Se ninguém entrar antes de chegar a zero, ele desliga-se sozinho.</value>
+  </data>
+  <data name="Notif_OptIdleStop" xml:space="preserve">
+    <value>Desligado por inatividade</value>
+  </data>
+  <data name="Notif_OptWoke" xml:space="preserve">
+    <value>Ligado porque alguém tentou entrar</value>
+  </data>
+  <data name="Notif_IdleStopped" xml:space="preserve">
+    <value>Sem jogadores há {0} min: a desligar o servidor.</value>
+  </data>
+  <data name="Notif_Woke" xml:space="preserve">
+    <value>Alguém tentou entrar: a ligar o servidor.</value>
+  </data>
 </root>
