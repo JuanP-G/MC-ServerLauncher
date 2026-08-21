@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8099", "--directory", "web"],
       "port": 8099
+    },
+    {
+      "name": "web-redesign",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8100", "--directory", "web"],
+      "port": 8100
     }
   ]
 }
