@@ -9,12 +9,17 @@ namespace McServerLauncher.Tests;
 /// <remarks>
 /// These drive the real lock file and the real named pipe — mocking them would test the mock, and
 /// the whole mechanism <em>is</em> the operating system's behaviour. <see cref="SingleInstance.Scope"/>
-/// keeps them in their own namespace so they never touch the copy of the app the developer has open.
-/// One class, so xUnit runs them in sequence and they cannot trip over each other's scope.
+/// keeps them in their own namespace so they never touch the copy of the app the developer has open,
+/// and each test gets a fresh one so they cannot inherit each other's leftovers either.
 /// </remarks>
 public class SingleInstanceTests : IDisposable
 {
-    public SingleInstanceTests() => SingleInstance.Scope = "tests";
+    // A scope of its own per test, not one shared by the class. xUnit builds a fresh instance for
+    // each test, and on Linux a named pipe is a socket file in /tmp: a listener from the previous
+    // test still letting go of that path made the next one unable to bind, which failed on CI and
+    // not on Windows.
+    public SingleInstanceTests() =>
+        SingleInstance.Scope = "tests-" + Guid.NewGuid().ToString("N")[..8];
 
     public void Dispose() => SingleInstance.Scope = null;
 
@@ -77,8 +82,7 @@ public class SingleInstanceTests : IDisposable
         // Connect, say nothing, and — this is the part that matters — stay connected. Closing the
         // pipe would end the read by itself and prove nothing; the bug is a peer that holds the
         // connection open in silence.
-        using var mute = new NamedPipeClientStream(".", PipeNameForTests(), PipeDirection.Out);
-        mute.Connect(3000);
+        using var mute = await ConnectWhenListening();
         await Task.Delay(200);
 
         // The listener has to recover on its own and answer the next launch. Generous, because it
@@ -95,6 +99,34 @@ public class SingleInstanceTests : IDisposable
         }
 
         Assert.True(recovered, "la activación quedó colgada tras una conexión que no escribió nada");
+    }
+
+    /// <summary>
+    /// Connects once the listener is actually up, rather than assuming it already is.
+    /// </summary>
+    /// <remarks>
+    /// The listener is started on a background task, and on Unix the socket only exists from the
+    /// first WaitForConnection onwards, so a connect issued immediately after acquiring can arrive
+    /// before there is anything to connect to.
+    /// </remarks>
+    private static async Task<NamedPipeClientStream> ConnectWhenListening()
+    {
+        var limit = DateTime.UtcNow + TimeSpan.FromSeconds(15);
+        while (true)
+        {
+            var pipe = new NamedPipeClientStream(".", PipeNameForTests(), PipeDirection.Out);
+            try
+            {
+                pipe.Connect(500);
+                return pipe;
+            }
+            catch (TimeoutException)
+            {
+                pipe.Dispose();
+                if (DateTime.UtcNow > limit) throw;
+                await Task.Delay(100);
+            }
+        }
     }
 
     /// <summary>The same name the service builds, so the test connects where it is really listening.</summary>
