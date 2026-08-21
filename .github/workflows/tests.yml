@@ -1,0 +1,36 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, 'release/**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: dotnet test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Both, deliberately. Several of these exercise real sockets, named pipes and file locks,
+        # and .NET implements those differently on each platform — a named pipe is a Unix domain
+        # socket on Linux. Testing on one would leave the other's behaviour assumed, and the app
+        # ships on both.
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restaurar
+        run: dotnet restore McServerLauncher.Tests/McServerLauncher.Tests.csproj
+
+      - name: Compilar
+        run: dotnet build McServerLauncher.Tests/McServerLauncher.Tests.csproj -c Release --no-restore
+
+      - name: Ejecutar las pruebas
+        run: dotnet test McServerLauncher.Tests/McServerLauncher.Tests.csproj -c Release --no-build --logger "console;verbosity=normal"

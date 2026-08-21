@@ -342,6 +342,42 @@ public static class DesktopShortcutService
                 string.Format(Localizer.Get("Msg_ShortcutFailedFmt"), error.Trim()));
     }
 
-    /// <summary>Quotes a path for a .desktop Exec line, where spaces separate arguments.</summary>
-    internal static string Quote(string path) => "\"" + path.Replace("\"", "\\\"") + "\"";
+    /// <summary>Quotes a path for a .desktop <c>Exec=</c> line, where spaces separate arguments.</summary>
+    /// <remarks>
+    /// <para>
+    /// Two separate layers of escaping apply here, and missing either one produces a shortcut that
+    /// is created perfectly happily and then launches nothing, with no message anywhere.
+    /// </para>
+    /// <para>
+    /// freedesktop requires an <c>Exec</c> argument to be wrapped in double quotes with <c>"</c>,
+    /// <c>`</c>, <c>$</c> and <c>\</c> each escaped by a preceding backslash. On top of that, the
+    /// whole line is a desktop-entry <em>string</em>, where the backslash is itself the escape
+    /// character — so every backslash the first layer produced has to be doubled again.
+    /// </para>
+    /// <para>
+    /// <c>%</c> is the odd one out: it is not backslash-escaped but doubled, because <c>%f</c>,
+    /// <c>%U</c> and friends are field codes the launcher expands after unquoting. A folder called
+    /// "Backup 100%" is all it takes to hit that.
+    /// </para>
+    /// <para>
+    /// An ordinary path, spaces and all, comes out of this untouched: none of these characters
+    /// appear in one, so only the exotic cases change.
+    /// </para>
+    /// </remarks>
+    internal static string Quote(string path)
+    {
+        // Backslash first. In any other order, the backslashes the later replacements introduce
+        // would themselves be escaped, and the result would be wrong in a way that still looks
+        // plausible.
+        var exec = path
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("`", "\\`")
+            .Replace("$", "\\$");
+
+        // Then the desktop-entry string layer, over what the Exec layer just produced.
+        var value = exec.Replace("\\", "\\\\");
+
+        return "\"" + value.Replace("%", "%%") + "\"";
+    }
 }

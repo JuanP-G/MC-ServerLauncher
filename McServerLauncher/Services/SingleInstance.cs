@@ -40,7 +40,18 @@ public sealed class SingleInstance : IDisposable
     private static string Dir => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher");
 
-    private static string LockPath => Path.Combine(Dir, "instance.lock");
+    /// <summary>
+    /// Which single-instance namespace this is. Null in production, where there is exactly one.
+    /// </summary>
+    /// <remarks>
+    /// It feeds both the lock file's name and the pipe's, because the two have to agree: they are
+    /// the two halves of one mechanism. Tests set it so they can drive the real lock and the real
+    /// pipe without fighting the user's own running copy for them.
+    /// </remarks>
+    internal static string? Scope { get; set; }
+
+    private static string LockPath =>
+        Path.Combine(Dir, Scope is null ? "instance.lock" : $"instance-{Scope}.lock");
 
     /// <summary>
     /// The pipe name, which has to be unique per user but identical between two launches by the
@@ -57,7 +68,7 @@ public sealed class SingleInstance : IDisposable
     {
         get
         {
-            var who = Environment.UserName + "@" + Environment.MachineName;
+            var who = Environment.UserName + "@" + Environment.MachineName + "/" + Scope;
             var hash = SHA256.HashData(Encoding.UTF8.GetBytes(who));
             return "mc-server-launcher-" + Convert.ToHexString(hash, 0, 8).ToLowerInvariant();
         }
@@ -148,6 +159,9 @@ public sealed class SingleInstance : IDisposable
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool AllowSetForegroundWindow(int dwProcessId);
 
+    /// <summary>How long an accepted connection has to actually say something.</summary>
+    private static readonly TimeSpan SignalReadTimeout = TimeSpan.FromSeconds(5);
+
     /// <summary>Waits for other launches, one at a time, until the app closes.</summary>
     private void Listen() => _ = Task.Run(async () =>
     {
@@ -159,11 +173,27 @@ public sealed class SingleInstance : IDisposable
                     PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
 
                 await server.WaitForConnectionAsync(_cts.Token);
-                if (server.ReadByte() >= 0) ActivationRequested?.Invoke();
+
+                // ReadByte() would be synchronous, unbounded and deaf to the token: anything that
+                // connected and then never wrote — a second launch that dies between Connect and
+                // Write is enough — would block this loop for good. From that moment on, launching
+                // the app again quietly stops bringing the window back, with nothing to show why.
+                //
+                // A deadline on top of the token is what fixes it. The token alone only fires when
+                // the app closes, so a silent peer would still hold the loop until then; a real
+                // second launch writes its byte the instant it connects, so this costs it nothing.
+                using var attempt = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+                attempt.CancelAfter(SignalReadTimeout);
+
+                var signal = new byte[1];
+                if (await server.ReadAsync(signal, attempt.Token) > 0) ActivationRequested?.Invoke();
             }
             catch (OperationCanceledException)
             {
-                return;         // shutting down
+                // Only a real shutdown ends the loop. Anything else is one abandoned connection
+                // hitting its deadline, and dropping it is the entire point — taking the listener
+                // down with it would be the bug this guards against.
+                if (_cts.IsCancellationRequested) return;
             }
             catch (Exception ex)
             {
