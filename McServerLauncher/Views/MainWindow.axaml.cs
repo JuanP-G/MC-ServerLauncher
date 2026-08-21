@@ -51,17 +51,19 @@ public partial class MainWindow : Window
         if (change.Property != WindowStateProperty || WindowState != WindowState.Minimized) return;
         if (!WindowBehavior.MinimizeToTray || !App.TrayAvailable) return;
 
-        // Leave the minimized state behind BEFORE hiding, and never hide straight from it.
+        // Hide FIRST, and only then clear the minimized state — while the window is already gone.
         //
-        // On X11 an iconified window is already unmapped, so unmapping it again leaves the window
-        // manager unable to tell "withdrawn" from "iconified": it keeps the taskbar button, and
-        // mapping it again brings back a frame whose contents were never re-rendered — a window
-        // that is nothing but its title bar. Both symptoms, one cause.
+        // The order is the whole point, and getting it backwards is worse than either alternative.
+        // Restoring the window before hiding it asks the window manager to map it and unmap it in
+        // the same breath; those are asynchronous, so the map can land last and leave a mapped
+        // window whose contents were never painted — a bare frame sitting on the desktop. Hiding
+        // first issues exactly one operation to the window manager, so there is nothing to race.
         //
-        // The tell is that close-to-tray never had either problem: it hides from the normal state.
-        // This makes minimize take exactly the same path.
-        WindowState = WindowState.Normal;
+        // Clearing the state afterwards still matters: it is only ever read again by the next
+        // Show(), and mapping a window that is still flagged minimized is what used to bring it
+        // back empty. Setting it here costs nothing because an unmapped window has nothing to draw.
         Hide();
+        WindowState = WindowState.Normal;
     }
 
     /// <summary>

@@ -576,4 +576,13 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Notif_Woke" xml:space="preserve">
     <value>Someone tried to join: starting the server.</value>
   </data>
+  <data name="Notif_UpdateTitle" xml:space="preserve">
+    <value>MC Server Launcher</value>
+  </data>
+  <data name="Notif_UpdateFmt" xml:space="preserve">
+    <value>Version {0} is available. Open the app to update.</value>
+  </data>
+  <data name="Notif_UpdateWhileRunningFmt" xml:space="preserve">
+    <value>Version {0} is available. You have servers running: updating will stop them.</value>
+  </data>
 </root>

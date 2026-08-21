@@ -576,4 +576,13 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Notif_Woke" xml:space="preserve">
     <value>Alguém tentou entrar: a ligar o servidor.</value>
   </data>
+  <data name="Notif_UpdateTitle" xml:space="preserve">
+    <value>MC Server Launcher</value>
+  </data>
+  <data name="Notif_UpdateFmt" xml:space="preserve">
+    <value>Versão {0} disponível. Abre a app para atualizar.</value>
+  </data>
+  <data name="Notif_UpdateWhileRunningFmt" xml:space="preserve">
+    <value>Versão {0} disponível. Tens servidores a correr: atualizar vai pará-los.</value>
+  </data>
 </root>

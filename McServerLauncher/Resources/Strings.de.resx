@@ -576,4 +576,13 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Notif_Woke" xml:space="preserve">
     <value>Jemand wollte beitreten: Server wird gestartet.</value>
   </data>
+  <data name="Notif_UpdateTitle" xml:space="preserve">
+    <value>MC Server Launcher</value>
+  </data>
+  <data name="Notif_UpdateFmt" xml:space="preserve">
+    <value>Version {0} ist verfügbar. Öffne die App zum Aktualisieren.</value>
+  </data>
+  <data name="Notif_UpdateWhileRunningFmt" xml:space="preserve">
+    <value>Version {0} ist verfügbar. Es laufen Server: ein Update stoppt sie.</value>
+  </data>
 </root>

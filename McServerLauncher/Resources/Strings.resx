@@ -622,4 +622,13 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Notif_Woke" xml:space="preserve">
     <value>Alguien intentó entrar: encendiendo el servidor.</value>
   </data>
+  <data name="Notif_UpdateTitle" xml:space="preserve">
+    <value>MC Server Launcher</value>
+  </data>
+  <data name="Notif_UpdateFmt" xml:space="preserve">
+    <value>Versión {0} disponible. Abre la app para actualizar.</value>
+  </data>
+  <data name="Notif_UpdateWhileRunningFmt" xml:space="preserve">
+    <value>Versión {0} disponible. Tienes servidores en marcha: actualizar los parará.</value>
+  </data>
 </root>
