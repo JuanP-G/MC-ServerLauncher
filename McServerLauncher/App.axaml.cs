@@ -43,6 +43,12 @@ public partial class App : Application
             // touching the window.
             if (Program.Instance is { } instance)
                 instance.ActivationRequested += () => Dispatcher.UIThread.Post(() => RestoreMainWindow(desktop));
+
+            // On Linux the desktop shortcut points at a copy of the icon, and updating replaces
+            // only the AppImage — so without this, changing the app icon would never reach anyone
+            // who already had a shortcut. Off the UI thread: it touches the disk and may shell out
+            // to gtk-update-icon-cache, and nothing on screen is waiting for it.
+            Task.Run(DesktopShortcutService.RefreshInstalledIcon);
         }
 
         base.OnFrameworkInitializationCompleted();
