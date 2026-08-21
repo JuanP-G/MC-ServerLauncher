@@ -14,10 +14,14 @@
 
                 <TextBlock Text="Loader" Margin="0,0,0,4" />
                 <ComboBox x:Name="LoaderCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
-                    <ComboBoxItem Content="Fabric" />
-                    <ComboBoxItem Content="{loc:Loc Loader_Vanilla}" />
-                    <ComboBoxItem Content="Forge" />
-                    <ComboBoxItem Content="Paper" />
+                    <!-- El Tag es lo que lee el codigo: asi el orden visual se puede cambiar sin
+                         tocar nada mas. Antes se mapeaba por indice, y en un orden distinto al del
+                         otro dialogo. -->
+                    <ComboBoxItem Content="Fabric" Tag="Fabric" />
+                    <ComboBoxItem Content="{loc:Loc Loader_Vanilla}" Tag="Vanilla" />
+                    <ComboBoxItem Content="Forge" Tag="Forge" />
+                    <ComboBoxItem Content="NeoForge" Tag="NeoForge" />
+                    <ComboBoxItem Content="Paper" Tag="Paper" />
                 </ComboBox>
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">

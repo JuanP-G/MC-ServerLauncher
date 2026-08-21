@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using McServerLauncher.Localization;
@@ -95,7 +96,34 @@ public partial class MainViewModel : ObservableObject
         _languageReady = true;
 
         _ = CheckForUpdatesAsync();
+
+        // Checking only at startup missed the case this app is designed for: it lives in the tray
+        // with the servers running, so on a machine that is never turned off it would simply never
+        // look again.
+        _updateTimer = new DispatcherTimer { Interval = UpdateCheckInterval };
+        _updateTimer.Tick += (_, _) => _ = CheckForUpdatesAsync();
+        _updateTimer.Start();
     }
+
+    /// <summary>
+    /// How often to look for a new version while the app stays open.
+    /// </summary>
+    /// <remarks>
+    /// Four requests a day against GitHub's 60-per-hour unauthenticated limit, for something that
+    /// changes every few weeks. Frequent enough that an app left running for a month still finds
+    /// out the same day.
+    /// </remarks>
+    private static readonly TimeSpan UpdateCheckInterval = TimeSpan.FromHours(6);
+
+    private readonly DispatcherTimer _updateTimer;
+
+    /// <summary>The version already announced, so the same one is never announced twice.</summary>
+    /// <remarks>
+    /// Kept in memory only. Persisting it would mean an update that appeared while the app was
+    /// closed goes unannounced on the next launch, and the point of this is to reach people who
+    /// leave the app running — for whom in-memory is exactly as good.
+    /// </remarks>
+    private string? _notifiedVersion;
 
     partial void OnIsUpdatingChanged(bool value) => UpdateNowCommand.NotifyCanExecuteChanged();
 
@@ -215,12 +243,37 @@ public partial class MainViewModel : ObservableObject
                 _checksumUrl = info.ChecksumUrl;
                 UpdateText = string.Format(Localizer.Get("Msg_UpdateAvailableFmt"), info.Version);
                 UpdateAvailable = true;
+                NotifyUpdateOnce(info.Version);
             }
         }
         catch
         {
             // No connection or GitHub unavailable: it's fine.
         }
+    }
+
+    /// <summary>
+    /// Raises a desktop notification the first time a given version is seen, and only while the
+    /// window is out of sight — the banner already says it when the window is there to be read.
+    /// </summary>
+    private void NotifyUpdateOnce(string version)
+    {
+        if (_notifiedVersion == version) return;
+        _notifiedVersion = version;
+
+        if (!ToastService.MainWindowInactive) return;
+
+        // The global master switch silences this like everything else: someone who turned
+        // notifications off does not want the launcher tapping them on the shoulder either.
+        if (!NotificationPreferences.Global.Enabled) return;
+
+        // Updating restarts the app, which stops every server with it. Saying so is the difference
+        // between an informed choice and pulling the rug out from under whoever is playing.
+        var message = string.Format(
+            Localizer.Get(AnyServerRunning ? "Notif_UpdateWhileRunningFmt" : "Notif_UpdateFmt"),
+            version);
+
+        ToastService.Shared.Notify(Localizer.Get("Notif_UpdateTitle"), message);
     }
 
     private bool CanUpdateNow => !IsUpdating;

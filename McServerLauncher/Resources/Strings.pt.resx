@@ -492,6 +492,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_PlayitKeyNotProtected" xml:space="preserve"><value>Não foi possível cifrar a chave do Playit, por isso, por segurança, NÃO foi guardada no disco. Continuará a funcionar durante esta sessão e será pedida de novo da próxima vez. O detalhe da falha está na pasta logs.</value></data>
   <data name="Msg_ForgeNoChecksum" xml:space="preserve"><value>Não foi possível obter o checksum (.sha1) do instalador do Forge, por isso não pode ser verificado. Por segurança não será executado; tenta de novo.</value></data>
   <data name="Msg_ForgeInstallerInvalid" xml:space="preserve"><value>O instalador do Forge transferido não tem a estrutura esperada. Foi descartado por segurança; tenta de novo.</value></data>
+  <data name="Whatsnew_1_10_0" xml:space="preserve"><value>• Já podes criar e gerir servidores NeoForge, ou converter um que já tenhas mantendo o mundo. A loja de mods filtra-se sozinha por NeoForge.&#10;• Nas versões do Minecraft em que o NeoForge só publica uma beta, a app usa-a e avisa-te antes de instalar, não depois.&#10;• O instalador do NeoForge é verificado com SHA-256, mais forte que o SHA-1 que é tudo o que o Forge oferece. Sem impressão digital não há instalação.&#10;• A contagem decrescente do encerramento por inatividade, os avisos de ligar e desligar sozinho, e a app já não abre duas vezes.&#10;• Corrigido no Linux: minimizar para a bandeja deixava a janela na barra de tarefas e devolvia-a vazia.&#10;• O aviso de servidor adormecido tem a sua própria cor na lista de servidores, e atualizar já não desarruma os ícones do ambiente de trabalho.</value></data>
   <data name="Whatsnew_1_9_2" xml:space="preserve"><value>• A contagem decrescente ate ao encerramento automatico ja aparece na janela: ves quanto falta a um servidor vazio sem fazer contas.&#10;• Dois avisos novos, opcionais: quando um servidor vazio se desliga sozinho e quando se liga porque alguem tentou entrar.&#10;• A app ja nao abre duas vezes. Se a lancares outra vez, recupera a janela que ja tinhas em vez de abrir uma segunda copia.&#10;• Corrigido no Linux: minimizar para a bandeja deixava a app na barra de tarefas e devolvia-a como uma janela vazia.&#10;• O aviso de servidor desligado tem agora a sua propria cor na lista de servidores, em vez de herdar a do fim do teu MOTD.&#10;• Atualizar ja nao desarruma os icones do ambiente de trabalho: o instalador deixa no sitio o atalho que ja tinhas.</value></data>
   <data name="Whatsnew_1_9_1" xml:space="preserve"><value>• O teu servidor pode cuidar-se sozinho: desliga-se quando já não há ninguém há algum tempo e volta a ligar assim que alguém tenta entrar. Ativa-se nas definições de cada servidor.&#10;• Quem tentar entrar enquanto está desligado recebe um aviso a sério, tanto na lista de servidores como ao carregar em Entrar, em vez do erro de ligação do costume.&#10;• O ícone da aplicação já não se vê desfocado no Linux nem no macOS: estava a empacotar-se o tamanho mais pequeno ampliado.</value></data>
   <data name="Whatsnew_1_9_0" xml:space="preserve"><value>• O Linux e o macOS passam a atualizar-se sozinhos, tal como o Windows: o botão Atualizar transfere, verifica e instala a versão nova e reabre a aplicação, em vez de te mandar para a página fazê-lo à mão.&#10;• Novo botão nas Definições para adicionar a aplicação ao teu ambiente de trabalho, com ícone e tudo.&#10;• A loja de mods deixa de ficar presa a dados antigos após uma falha de rede pontual, e a aplicação consome menos no Linux quando não usas o Playit.</value></data>
@@ -576,4 +577,21 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Notif_Woke" xml:space="preserve">
     <value>Alguém tentou entrar: a ligar o servidor.</value>
   </data>
+  <data name="Notif_UpdateTitle" xml:space="preserve">
+    <value>MC Server Launcher</value>
+  </data>
+  <data name="Notif_UpdateFmt" xml:space="preserve">
+    <value>Versão {0} disponível. Abre a app para atualizar.</value>
+  </data>
+  <data name="Notif_UpdateWhileRunningFmt" xml:space="preserve">
+    <value>Versão {0} disponível. Tens servidores a correr: atualizar vai pará-los.</value>
+  </data>
+  <data name="Msg_NeoForgeResolving" xml:space="preserve"><value>A procurar a versão de NeoForge para esta versão do Minecraft…</value></data>
+  <data name="Msg_NeoForgeNoVersion" xml:space="preserve"><value>O NeoForge não tem nenhuma versão para o Minecraft {0}. O NeoForge existe desde a 1.20.2.</value></data>
+  <data name="Msg_NeoForgeBetaWarning" xml:space="preserve"><value>Aviso: {0} é uma versão beta. Para esta versão do Minecraft é a única que o NeoForge publica.</value></data>
+  <data name="Msg_NeoForgeDownloadingInstaller" xml:space="preserve"><value>A descarregar o instalador do NeoForge {0}…</value></data>
+  <data name="Msg_NeoForgeRunningInstaller" xml:space="preserve"><value>A executar o instalador do NeoForge (pode demorar alguns minutos)…</value></data>
+  <data name="Msg_NeoForgeNoChecksum" xml:space="preserve"><value>O NeoForge não forneceu a impressão digital do instalador. Cancelado: nada se executa sem verificar.</value></data>
+  <data name="Msg_NeoForgeInstallNoOutput" xml:space="preserve"><value>O instalador do NeoForge terminou mas não deixou o ficheiro de arranque esperado.</value></data>
+  <data name="HowToPlay_NeoForgeFmt" xml:space="preserve"><value>Este servidor usa NeoForge (Minecraft {0}). Para entrar com mods:&#10;1. Descarrega o instalador do NeoForge para {0} em https://neoforged.net e instala o cliente («Install client»).&#10;2. Abre o launcher do Minecraft e escolhe o perfil «neoforge».&#10;3. Copia os mods (.jar) para %appdata%\.minecraft\mods.&#10;4. A versão de NeoForge do cliente tem de coincidir com a do servidor.</value></data>
 </root>

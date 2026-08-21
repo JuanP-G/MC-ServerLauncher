@@ -44,6 +44,16 @@ public static class DesktopShortcutService
 
     private static string DesktopDir => Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
+    /// <summary>The icon file as it is packaged inside the AppImage, under $APPDIR.</summary>
+    private const string AppImageIconName = "mcserverlauncher.png";
+
+    /// <summary>
+    /// Where the Linux icon is copied to, and what the .desktop entry's <c>Icon=</c> points at.
+    /// </summary>
+    private static string InstalledLinuxIconPath => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+        ".local", "share", "icons", "hicolor", "256x256", "apps", "mc-server-launcher.png");
+
     /// <summary>True when a desktop folder exists to put anything in.</summary>
     public static bool IsAvailable => LaunchTarget is not null && Directory.Exists(DesktopDir);
 
@@ -164,21 +174,16 @@ public static class DesktopShortcutService
         var appDir = Environment.GetEnvironmentVariable("APPDIR");
         if (string.IsNullOrEmpty(appDir)) return null;
 
-        var source = Path.Combine(appDir, "mcserverlauncher.png");
+        var source = Path.Combine(appDir, AppImageIconName);
         if (!File.Exists(source)) return null;
 
         try
         {
-            var iconsDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".local", "share", "icons", "hicolor", "256x256", "apps");
-            Directory.CreateDirectory(iconsDir);
+            var installed = InstalledLinuxIconPath;
+            Directory.CreateDirectory(Path.GetDirectoryName(installed)!);
 
-            var installed = Path.Combine(iconsDir, "mc-server-launcher.png");
             File.Copy(source, installed, overwrite: true);
-            File.SetUnixFileMode(installed,
-                UnixFileMode.UserRead | UnixFileMode.UserWrite |
-                UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+            MakeIconReadable(installed);
 
             TryRefreshIconCache();
             return installed;
@@ -190,6 +195,81 @@ public static class DesktopShortcutService
             return source;
         }
     }
+
+    /// <summary>
+    /// Brings an already-installed desktop icon back in line with the build that is running.
+    /// Called at startup; does nothing at all on Windows and macOS.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Windows and macOS need no such thing: their shortcut points at the executable or the .app
+    /// bundle, both of which the updater replaces wholesale, so the icon they draw is always the
+    /// current one. Linux is the odd one out because the .desktop entry cannot point into the
+    /// AppImage — the icon only exists under $APPDIR, a /tmp mount that is gone the moment the app
+    /// exits — so what it points at is a <em>copy</em>, taken once when the shortcut was created.
+    /// Updating replaces the AppImage and nothing else, which leaves that copy showing the old
+    /// icon forever.
+    /// </para>
+    /// <para>
+    /// Deliberately never creates anything: putting the app on someone's desktop is the Settings
+    /// button's job, not startup's. It also never rewrites the .desktop entry, because deleting and
+    /// recreating that file is what loses an icon's position on the desktop.
+    /// </para>
+    /// </remarks>
+    public static void RefreshInstalledIcon()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+
+        try
+        {
+            var appDir = Environment.GetEnvironmentVariable("APPDIR");
+            if (string.IsNullOrEmpty(appDir)) return;   // not running from an AppImage
+
+            var installed = InstalledLinuxIconPath;
+            if (!RefreshIconFrom(Path.Combine(appDir, AppImageIconName), installed)) return;
+
+            MakeIconReadable(installed);
+            TryRefreshIconCache();
+        }
+        catch
+        {
+            // Cosmetic to the last: an icon that stays stale is a far better outcome than an app
+            // that will not start.
+        }
+    }
+
+    /// <summary>
+    /// Copies <paramref name="source"/> over <paramref name="installed"/> when — and only when —
+    /// both already exist and their contents differ. True if it wrote anything.
+    /// </summary>
+    /// <remarks>
+    /// The "installed must already exist" half is the important one: it is what makes this a
+    /// refresh rather than an install. The contents check is what keeps it from rewriting the file
+    /// and poking the icon cache on every single launch.
+    /// </remarks>
+    internal static bool RefreshIconFrom(string source, string installed)
+    {
+        if (!File.Exists(source) || !File.Exists(installed)) return false;
+        if (!FilesDiffer(source, installed)) return false;
+
+        File.Copy(source, installed, overwrite: true);
+        return true;
+    }
+
+    /// <summary>Compares two files by content. Sizes first, so the usual "identical" case is cheap.</summary>
+    private static bool FilesDiffer(string a, string b)
+    {
+        var fa = new FileInfo(a);
+        var fb = new FileInfo(b);
+        if (fa.Length != fb.Length) return true;
+
+        return !File.ReadAllBytes(a).AsSpan().SequenceEqual(File.ReadAllBytes(b));
+    }
+
+    [SupportedOSPlatform("linux")]
+    private static void MakeIconReadable(string path) => File.SetUnixFileMode(path,
+        UnixFileMode.UserRead | UnixFileMode.UserWrite |
+        UnixFileMode.GroupRead | UnixFileMode.OtherRead);
 
     /// <summary>Nudges the icon cache so the new icon is picked up without logging out.</summary>
     private static void TryRefreshIconCache()
@@ -262,6 +342,42 @@ public static class DesktopShortcutService
                 string.Format(Localizer.Get("Msg_ShortcutFailedFmt"), error.Trim()));
     }
 
-    /// <summary>Quotes a path for a .desktop Exec line, where spaces separate arguments.</summary>
-    internal static string Quote(string path) => "\"" + path.Replace("\"", "\\\"") + "\"";
+    /// <summary>Quotes a path for a .desktop <c>Exec=</c> line, where spaces separate arguments.</summary>
+    /// <remarks>
+    /// <para>
+    /// Two separate layers of escaping apply here, and missing either one produces a shortcut that
+    /// is created perfectly happily and then launches nothing, with no message anywhere.
+    /// </para>
+    /// <para>
+    /// freedesktop requires an <c>Exec</c> argument to be wrapped in double quotes with <c>"</c>,
+    /// <c>`</c>, <c>$</c> and <c>\</c> each escaped by a preceding backslash. On top of that, the
+    /// whole line is a desktop-entry <em>string</em>, where the backslash is itself the escape
+    /// character — so every backslash the first layer produced has to be doubled again.
+    /// </para>
+    /// <para>
+    /// <c>%</c> is the odd one out: it is not backslash-escaped but doubled, because <c>%f</c>,
+    /// <c>%U</c> and friends are field codes the launcher expands after unquoting. A folder called
+    /// "Backup 100%" is all it takes to hit that.
+    /// </para>
+    /// <para>
+    /// An ordinary path, spaces and all, comes out of this untouched: none of these characters
+    /// appear in one, so only the exotic cases change.
+    /// </para>
+    /// </remarks>
+    internal static string Quote(string path)
+    {
+        // Backslash first. In any other order, the backslashes the later replacements introduce
+        // would themselves be escaped, and the result would be wrong in a way that still looks
+        // plausible.
+        var exec = path
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("`", "\\`")
+            .Replace("$", "\\$");
+
+        // Then the desktop-entry string layer, over what the Exec layer just produced.
+        var value = exec.Replace("\\", "\\\\");
+
+        return "\"" + value.Replace("%", "%%") + "\"";
+    }
 }

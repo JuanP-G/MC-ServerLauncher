@@ -44,7 +44,23 @@ public sealed class WakeOnDemandListener : IDisposable
     /// <summary>Protocol maximum is 32767, but nothing we read legitimately comes close.</summary>
     private const int MaxStringChars = 512;
 
+    /// <summary>How long a single read may stall. NOT a limit on the connection — see below.</summary>
     private const int ConnectionTimeoutMs = 5000;
+
+    /// <summary>
+    /// The actual ceiling on a connection's life, from accept to close.
+    /// </summary>
+    /// <remarks>
+    /// Generous for a handshake plus its ping, which a real client completes in milliseconds, and
+    /// far too short to be worth camping on a slot.
+    /// </remarks>
+    private const int ConnectionDeadlineMs = 15000;
+
+    /// <summary>
+    /// The deadline actually applied. Settable so a test can exercise it in seconds instead of
+    /// waiting out the real one; production never touches it.
+    /// </summary>
+    internal TimeSpan ConnectionDeadline { get; set; } = TimeSpan.FromMilliseconds(ConnectionDeadlineMs);
 
     /// <summary>Enough for a household; past this someone is not trying to play.</summary>
     private const int MaxConcurrentConnections = 16;
@@ -140,6 +156,23 @@ public sealed class WakeOnDemandListener : IDisposable
     private void Serve(TcpClient client)
     {
         client.ReceiveTimeout = client.SendTimeout = ConnectionTimeoutMs;
+
+        // ReceiveTimeout alone is not a deadline: it limits how long ONE read may stall, and every
+        // byte that arrives resets it. A client that declares a large packet and then dribbles a
+        // byte every few seconds holds its slot indefinitely; sixteen of those exhaust
+        // MaxConcurrentConnections and the server can no longer be woken at all — which, behind a
+        // Playit tunnel, is reachable by anyone on the internet.
+        //
+        // Closing the socket from the timer is what makes this work without touching the parsing
+        // helpers: whichever read is blocked throws, and the catch around Serve already treats that
+        // as a malformed client. Those helpers are static over Stream so they stay testable with a
+        // MemoryStream, and threading a deadline through them would have cost exactly that.
+        using var deadline = new CancellationTokenSource(ConnectionDeadline);
+        using var closeOnDeadline = deadline.Token.Register(() =>
+        {
+            try { client.Close(); } catch { /* already on its way out */ }
+        });
+
         using var stream = client.GetStream();
 
         var handshake = ReadPacket(stream);

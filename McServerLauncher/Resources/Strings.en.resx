@@ -492,6 +492,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_PlayitKeyNotProtected" xml:space="preserve"><value>The Playit key could not be encrypted, so for safety it was NOT saved to disk. It will keep working during this session and you'll be asked for it again next time. The failure details are in the logs folder.</value></data>
   <data name="Msg_ForgeNoChecksum" xml:space="preserve"><value>The Forge installer's checksum (.sha1) couldn't be fetched, so it can't be verified. For safety it won't run; try again.</value></data>
   <data name="Msg_ForgeInstallerInvalid" xml:space="preserve"><value>The downloaded Forge installer doesn't have the expected structure. It was discarded for safety; try again.</value></data>
+  <data name="Whatsnew_1_10_0" xml:space="preserve"><value>• You can now create and manage NeoForge servers, or convert one you already have while keeping the world. The mod store filters itself by NeoForge.&#10;• For the Minecraft versions where NeoForge only ever published a beta, the app uses it and tells you before installing, not after.&#10;• The NeoForge installer is verified with SHA-256, stronger than the SHA-1 that is all Forge offers. No checksum, no install.&#10;• The idle-shutdown countdown, alerts for stopping and starting by itself, and the app no longer opening twice.&#10;• Fixed on Linux: minimizing to the tray left the window in the taskbar and brought it back empty.&#10;• The sleeping-server notice has its own colour in the server list, and updating no longer rearranges your desktop icons.</value></data>
   <data name="Whatsnew_1_9_2" xml:space="preserve"><value>• The countdown to the automatic shutdown is now shown in the window: you can see how long an empty server has left without doing the maths.&#10;• Two new optional alerts: when an empty server stops itself, and when one starts itself because somebody tried to join.&#10;• The app no longer opens twice. Launching it again brings back the window you already had, instead of a second copy that could not see what the first one was doing.&#10;• Fixed on Linux: minimizing to the tray left the app in the taskbar and brought it back as an empty window with no content.&#10;• The "server is off" notice now has its own colour in the server list, instead of inheriting whatever colour your MOTD ended on.&#10;• Updating no longer rearranges your desktop icons: the installer leaves the shortcut you already had where it was.</value></data>
   <data name="Whatsnew_1_9_1" xml:space="preserve"><value>• Your server can look after itself: it stops once nobody has been on for a while, and starts again as soon as someone tries to join. Turn it on in each server's settings.&#10;• Anyone trying to join while it is off gets a proper message, both in the server list and when pressing Join, instead of the usual connection error.&#10;• The app icon is no longer blurry on Linux and macOS: the smallest size was being packaged, scaled up.</value></data>
   <data name="Whatsnew_1_9_0" xml:space="preserve"><value>• Linux and macOS now update themselves, just like Windows: the Update button downloads, verifies and installs the new version and reopens the app, instead of sending you to the page to do it by hand.&#10;• New button in Settings to add the app to your desktop, icon and all.&#10;• The mod store no longer gets stuck on old data after a one-off network failure, and the app uses less CPU on Linux when you don't use Playit.</value></data>
@@ -576,4 +577,21 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Notif_Woke" xml:space="preserve">
     <value>Someone tried to join: starting the server.</value>
   </data>
+  <data name="Notif_UpdateTitle" xml:space="preserve">
+    <value>MC Server Launcher</value>
+  </data>
+  <data name="Notif_UpdateFmt" xml:space="preserve">
+    <value>Version {0} is available. Open the app to update.</value>
+  </data>
+  <data name="Notif_UpdateWhileRunningFmt" xml:space="preserve">
+    <value>Version {0} is available. You have servers running: updating will stop them.</value>
+  </data>
+  <data name="Msg_NeoForgeResolving" xml:space="preserve"><value>Looking up the NeoForge build for this Minecraft version…</value></data>
+  <data name="Msg_NeoForgeNoVersion" xml:space="preserve"><value>NeoForge has no build for Minecraft {0}. NeoForge starts at 1.20.2.</value></data>
+  <data name="Msg_NeoForgeBetaWarning" xml:space="preserve"><value>Note: {0} is a beta. For this Minecraft version it is the only build NeoForge publishes.</value></data>
+  <data name="Msg_NeoForgeDownloadingInstaller" xml:space="preserve"><value>Downloading the NeoForge {0} installer…</value></data>
+  <data name="Msg_NeoForgeRunningInstaller" xml:space="preserve"><value>Running the NeoForge installer (this can take a couple of minutes)…</value></data>
+  <data name="Msg_NeoForgeNoChecksum" xml:space="preserve"><value>NeoForge did not provide the installer checksum. Cancelled: nothing unverified gets run.</value></data>
+  <data name="Msg_NeoForgeInstallNoOutput" xml:space="preserve"><value>The NeoForge installer finished but did not leave the expected launch file.</value></data>
+  <data name="HowToPlay_NeoForgeFmt" xml:space="preserve"><value>This server uses NeoForge (Minecraft {0}). To join with mods:&#10;1. Download the NeoForge installer for {0} from https://neoforged.net and install the client (“Install client”).&#10;2. Open the Minecraft launcher and pick the “neoforge” profile.&#10;3. Put the mods (.jar) in %appdata%\.minecraft\mods.&#10;4. The client’s NeoForge version must match the server’s.</value></data>
 </root>

@@ -16,6 +16,8 @@ public static class ServerTypeBrushes
     private static readonly IBrush Fabric = Make("#B58D5A");
     private static readonly IBrush Forge = Make("#5A8AB5");
     private static readonly IBrush Paper = Make("#C0563E");
+    // Naranja: pariente de Forge, pero que no se confunda con su azul de un vistazo.
+    private static readonly IBrush NeoForge = Make("#D08A3E");
     private static readonly IBrush Unknown = Make("#6E7681");
 
     /// <summary>Badge color for a server type; unknown/future types fall back to gray.</summary>
@@ -25,6 +27,7 @@ public static class ServerTypeBrushes
         ServerType.Fabric => Fabric,
         ServerType.Forge => Forge,
         ServerType.Paper => Paper,
+        ServerType.NeoForge => NeoForge,
         _ => Unknown
     };
 

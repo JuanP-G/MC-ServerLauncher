@@ -17,7 +17,7 @@
 Desktop app for **Windows, Linux and macOS** to manage one or several **Minecraft** servers from a
 modern graphical interface — **no `.bat` files, black console windows or editing config files by hand**.
 
-Create a server, pick the **type** (Vanilla, Fabric, Forge or Paper) and version, add **mods or plugins**
+Create a server, pick the **type** (Vanilla, Fabric, Forge, NeoForge or Paper) and version, add **mods or plugins**
 with a couple of clicks, open it to the Internet with Playit.gg, manage players and tweak the settings…
 all with buttons.
 
@@ -58,10 +58,10 @@ all with buttons.
 
 ## ✨ Features
 
-- **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Fabric / Forge / Paper).
+- **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Fabric / Forge / NeoForge / Paper).
 - **Create a server** automatically: pick the **type**, **version** (official Mojang list), **port** and **RAM**;
   the app downloads the right server, accepts the EULA, prepares `run.bat` / `server.properties`, and installs
-  the correct **Java** (Temurin) if needed. Vanilla/Fabric/Forge use **mods**; Paper uses **plugins**.
+  the correct **Java** (Temurin) if needed. Vanilla, Fabric, Forge and NeoForge use **mods**; Paper uses **plugins**.
 - **Mods & plugins store** 🧩 — search **Modrinth** inside the app, already **filtered by your server's type
   and version** (with type + version chips so it's obvious). Every result carries a **plain-language summary of
   what it does in your language** and a warning when it also has to be installed on the client. Open a **details
@@ -69,7 +69,7 @@ all with buttons.
   panel** combines several categories at once and shows the applied ones as chips you can remove one by one.
   One-click **Install**, and **enable/disable** or delete installed items. Paper servers browse plugins; the
   rest, mods.
-- **Change a server's type** — turn an existing server into Fabric/Forge/Paper or back to Vanilla, **keeping the
+- **Change a server's type** — turn an existing server into Fabric/Forge/NeoForge/Paper or back to Vanilla, **keeping the
   world**, with clear colour-coded warnings about what each change can affect.
 - **Start / Stop / Restart** with a clean stop that saves the world; detects and frees a **busy port**; live
   **CPU, RAM, uptime and port** with colour status.

@@ -51,17 +51,24 @@ public partial class InstallLoaderDialog : Window
         base.OnClosed(e);
     }
 
+    /// <summary>Reads the picked loader from the combo's Tag.</summary>
+    /// <remarks>
+    /// By Tag rather than by SelectedIndex, which is what this used to do — in a different order
+    /// from the create dialog's, so the same magic number meant a different loader in each. An
+    /// index switch also means inserting an entry anywhere but the end silently changes what every
+    /// option below it installs.
+    /// </remarks>
+    private ServerType SelectedLoader() =>
+        (LoaderCombo.SelectedItem as ComboBoxItem)?.Tag is string tag &&
+        Enum.TryParse<ServerType>(tag, out var type)
+            ? type
+            : ServerType.Fabric;
+
     /// <summary>Shows a warning whose wording and color depend on the conversion direction.</summary>
     private void UpdateWarning()
     {
         var current = _config.Type;
-        var target = LoaderCombo.SelectedIndex switch
-        {
-            1 => ServerType.Vanilla,
-            2 => ServerType.Forge,
-            3 => ServerType.Paper,
-            _ => ServerType.Fabric
-        };
+        var target = SelectedLoader();
 
         string key, bg, border;
         bool danger;
@@ -71,7 +78,7 @@ public partial class InstallLoaderDialog : Window
             (key, bg, border, danger) = ("Loader_WarnVanillaToLoader", "#332E7D32", "#3FB950", false);
         else if (target == ServerType.Vanilla)
             (key, bg, border, danger) = ("Loader_WarnToVanilla", "#33E05561", "#E05561", true);
-        else // crossing between Fabric and Forge
+        else // crossing between loaders: Fabric, Forge, NeoForge, Paper
             (key, bg, border, danger) = ("Loader_WarnCrossLoader", "#33E05561", "#E05561", true);
 
         WarnText.Text = Localizer.Get(key);
@@ -147,7 +154,8 @@ public partial class InstallLoaderDialog : Window
             }
 
             // Update the existing server's config in place (the world is kept).
-            if (LoaderCombo.SelectedIndex == 1)
+            var target = SelectedLoader();
+            if (target == ServerType.Vanilla)
             {
                 // Revert to Vanilla: download the vanilla server jar for this version.
                 const string jarName = "server.jar";
@@ -162,7 +170,7 @@ public partial class InstallLoaderDialog : Window
                 _config.JarFile = jarName;
                 _config.JavaPath = javaPath;
             }
-            else if (LoaderCombo.SelectedIndex == 3)
+            else if (target == ServerType.Paper)
             {
                 // Paper: download the runnable server jar (plugins go in plugins/).
                 AppendLog(Localizer.Get("Msg_PaperResolving"));
@@ -182,7 +190,7 @@ public partial class InstallLoaderDialog : Window
                 _config.JarFile = jarName;
                 _config.JavaPath = javaPath;
             }
-            else if (LoaderCombo.SelectedIndex == 2)
+            else if (target == ServerType.Forge)
             {
                 // Forge: run the official installer in the server folder.
                 AppendLog(Localizer.Get("Msg_ForgeResolving"));
@@ -225,9 +233,43 @@ public partial class InstallLoaderDialog : Window
                 _config.ModLoaderVersion = forgeVersion;
                 _config.JavaPath = javaPath;
             }
+            else if (target == ServerType.NeoForge)
+            {
+                AppendLog(Localizer.Get("Msg_NeoForgeResolving"));
+                var choice = await _mods.GetNeoForgeVersionAsync(version.Id);
+                if (choice is null)
+                    throw new InvalidOperationException(
+                        string.Format(Localizer.Get("Msg_NeoForgeNoVersion"), version.Id));
+
+                if (choice.IsBeta)
+                    AppendLog(string.Format(Localizer.Get("Msg_NeoForgeBetaWarning"), choice.Version));
+
+                // The installer overwrites run.bat, same as Forge's; keep it if that was asked for.
+                var runBatPath = Path.Combine(_config.FolderPath, "run.bat");
+                var keptRunBat = KeepRunBatCheck.IsChecked == true && File.Exists(runBatPath)
+                    ? File.ReadAllText(runBatPath) : null;
+
+                var neo = await _mods.InstallNeoForgeServerAsync(
+                    _config.FolderPath, choice.Version, javaPath, progress);
+                if (neo.ArgsId is null)
+                    throw new InvalidOperationException(Localizer.Get("Msg_NeoForgeInstallNoOutput"));
+
+                _config.ForgeArgs = neo.ArgsId;
+                _config.JarFile = "server.jar";
+                if (KeepRunBatCheck.IsChecked != true)
+                    _creation.WriteForgeUserJvmArgs(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb);
+
+                if (keptRunBat is not null)
+                    File.WriteAllText(runBatPath, keptRunBat);
+
+                _config.Type = ServerType.NeoForge;
+                _config.GameVersion = version.Id;
+                _config.ModLoaderVersion = choice.Version;
+                _config.JavaPath = javaPath;
+            }
             else
             {
-                // Fabric (index 0).
+                // Fabric.
                 AppendLog(Localizer.Get("Msg_FabricResolving"));
                 var loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync();
                 const string jarName = "fabric-server.jar";

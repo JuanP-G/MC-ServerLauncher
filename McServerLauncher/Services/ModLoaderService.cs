@@ -187,6 +187,90 @@ public class ModLoaderService
         return new ForgeInstallResult(jar, null);
     }
 
+    // --- NeoForge ---
+
+    private const string NeoForgeMaven = "https://maven.neoforged.net/releases/net/neoforged/neoforge";
+
+    /// <summary>
+    /// The NeoForge build to install for a Minecraft version, or null when there is none.
+    /// </summary>
+    /// <remarks>
+    /// NeoForge publishes no equivalent of Forge's promotions feed — just one flat list of every
+    /// build, with the Minecraft version encoded inside the build number. The choosing is done by
+    /// <see cref="NeoForgeVersions"/>, which is pure and tested; this only fetches the list.
+    /// </remarks>
+    public async Task<NeoForgeVersions.Choice?> GetNeoForgeVersionAsync(
+        string mcVersion, CancellationToken ct = default)
+    {
+        var json = await Http.GetStringAsync(
+            "https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge", ct);
+
+        using var doc = JsonDocument.Parse(json);
+        if (!doc.RootElement.TryGetProperty("versions", out var versions)) return null;
+
+        var all = versions.EnumerateArray()
+            .Select(e => e.GetString())
+            .Where(v => !string.IsNullOrEmpty(v))
+            .Select(v => v!)
+            .ToList();
+
+        return NeoForgeVersions.Pick(all, mcVersion);
+    }
+
+    /// <summary>
+    /// Downloads the NeoForge installer and runs it with <c>--installServer</c>.
+    /// </summary>
+    /// <remarks>
+    /// The same shape as the Forge path, with one difference worth having: NeoForge's maven
+    /// publishes a <c>.sha256</c> beside each artifact, so this verifies with SHA-256 rather than
+    /// the SHA-1 that is all Forge offers. The trust assumption is otherwise identical — the hash
+    /// comes from the same server as the jar, so it protects against a corrupted download, not
+    /// against a compromised maven — and, as there, a missing hash means no install at all,
+    /// because what follows is <c>java -jar</c>.
+    /// </remarks>
+    public async Task<ForgeInstallResult> InstallNeoForgeServerAsync(string folder, string neoForgeVersion,
+        string javaPath, IProgress<string>? log, CancellationToken ct = default)
+    {
+        var installerUrl = $"{NeoForgeMaven}/{neoForgeVersion}/neoforge-{neoForgeVersion}-installer.jar";
+        var installerPath = Path.Combine(folder, $"neoforge-{neoForgeVersion}-installer.jar");
+
+        log?.Report(string.Format(Localizer.Get("Msg_NeoForgeDownloadingInstaller"), neoForgeVersion));
+        using (var resp = await Http.GetAsync(installerUrl, HttpCompletionOption.ResponseHeadersRead, ct))
+        {
+            resp.EnsureSuccessStatusCode();
+
+            await AtomicDownload.ToFileAsync(resp.Content, installerPath,
+                verifyAsync: async (part, token) =>
+                {
+                    var expected = await TryGetRemoteHashAsync(installerUrl + ".sha256", token);
+                    if (string.IsNullOrEmpty(expected))
+                        throw new InvalidOperationException(Localizer.Get("Msg_NeoForgeNoChecksum"));
+
+                    log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+                    await DownloadVerifier.VerifyAsync(part, expected, HashAlgorithmName.SHA256, token);
+
+                    log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
+                    ValidateForgeInstallerJar(part);
+                },
+                ct: ct);
+        }
+
+        log?.Report(Localizer.Get("Msg_NeoForgeRunningInstaller"));
+        await RunForgeInstallerAsync(installerPath, folder, javaPath, log, ct);
+
+        TryDelete(installerPath);
+        TryDelete(installerPath + ".log");
+        TryDelete(Path.Combine(folder, "installer.log"));
+
+        // Looked for rather than assumed: if NeoForge ever changes its layout, the caller gets a
+        // clear "no args file" instead of a server that installs and then will not start.
+        var root = LoaderPaths.LibrariesRoot(folder, Models.ServerType.NeoForge)!;
+        var argsFile = Path.Combine(root, neoForgeVersion, LoaderPaths.ArgsFileName);
+        return File.Exists(argsFile)
+            ? new ForgeInstallResult(null, neoForgeVersion)
+            : new ForgeInstallResult(null, null);
+    }
+
     private static async Task RunForgeInstallerAsync(string installerPath, string folder, string javaPath,
         IProgress<string>? log, CancellationToken ct)
     {

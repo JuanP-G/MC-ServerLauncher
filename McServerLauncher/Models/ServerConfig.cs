@@ -4,12 +4,27 @@ using McServerLauncher.Localization;
 
 namespace McServerLauncher.Models;
 
+/// <summary>What kind of server this is: which loader, if any, runs the mods or plugins.</summary>
+/// <remarks>
+/// <para>
+/// <strong>The numbers are part of the file format.</strong> servers.json is written with the
+/// default serializer options, so these persist as integers, not names — a real config reads
+/// <c>"Type": 0</c>. Inserting a member anywhere but the end silently renumbers the ones after it,
+/// and every existing Forge server on every machine would come back as something else the next
+/// time the app opened. Add to the bottom, never in the middle, and never reorder.
+/// </para>
+/// <para>
+/// The values are written out explicitly so that rule is visible at the point where it could be
+/// broken, rather than implied.
+/// </para>
+/// </remarks>
 public enum ServerType
 {
-    Vanilla,
-    Fabric,
-    Forge,
-    Paper
+    Vanilla = 0,
+    Fabric = 1,
+    Forge = 2,
+    Paper = 3,
+    NeoForge = 4
 }
 
 /// <summary>
@@ -30,7 +45,7 @@ public class ServerConfig
     /// <summary>Server .jar file name (relative to the folder). Defaults to server.jar.</summary>
     public string JarFile { get; set; } = "server.jar";
 
-    /// <summary>Type of the server (Vanilla, Fabric, Forge).</summary>
+    /// <summary>Type of the server (Vanilla, Fabric, Forge, Paper, NeoForge).</summary>
     public ServerType Type { get; set; } = ServerType.Vanilla;
 
     /// <summary>Minecraft game version (e.g. 1.20.1).</summary>
@@ -40,10 +55,15 @@ public class ServerConfig
     public string ModLoaderVersion { get; set; } = string.Empty;
 
     /// <summary>
-    /// For modern Forge (1.17+) the server has no runnable jar; it is launched via an args file
-    /// under <c>libraries/net/minecraftforge/forge/&lt;id&gt;/{win,unix}_args.txt</c>. When this holds
-    /// that Forge id (e.g. "1.20.1-47.2.0") the launcher uses the args file instead of "-jar".
-    /// Empty means the classic "-jar JarFile" launch (Vanilla, Fabric, old Forge ≤1.16.5).
+    /// Modern Forge (1.17+) and every NeoForge build have no runnable jar; they are launched via an
+    /// args file under <c>libraries/&lt;loader-root&gt;/&lt;id&gt;/{win,unix}_args.txt</c>. When this
+    /// holds that id — "1.20.1-47.2.0" for Forge, "21.1.248" for NeoForge — the launcher uses the
+    /// args file instead of "-jar". Empty means the classic "-jar JarFile" launch (Vanilla, Fabric,
+    /// old Forge ≤1.16.5).
+    /// <para>
+    /// The name stays <c>ForgeArgs</c> even though it now covers both: it is the key in every
+    /// existing servers.json, and renaming it would leave installed Forge servers unable to start.
+    /// </para>
     /// </summary>
     public string ForgeArgs { get; set; } = string.Empty;
 

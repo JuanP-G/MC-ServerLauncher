@@ -169,13 +169,7 @@ public partial class CreateServerDialog : Window
             AppendLog(string.Format(Localizer.Get("Msg_Resolving"), version.Id));
             var details = await _versions.GetVersionDetailsAsync(version);
 
-            var serverType = TypeCombo.SelectedIndex switch
-            {
-                1 => ServerType.Fabric,
-                2 => ServerType.Forge,
-                3 => ServerType.Paper,
-                _ => ServerType.Vanilla
-            };
+            var serverType = SelectedServerType();
             var loaderVersion = string.Empty;
             var forgeArgs = string.Empty;
             var jarName = serverType == ServerType.Fabric ? "fabric-server.jar" : "server.jar";
@@ -224,6 +218,29 @@ public partial class CreateServerDialog : Window
                 {
                     throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallNoOutput"));
                 }
+            }
+            else if (serverType == ServerType.NeoForge)
+            {
+                AppendLog(Localizer.Get("Msg_NeoForgeResolving"));
+                var choice = await _mods.GetNeoForgeVersionAsync(version.Id);
+                if (choice is null)
+                    throw new InvalidOperationException(
+                        string.Format(Localizer.Get("Msg_NeoForgeNoVersion"), version.Id));
+
+                // Said before installing, not after: for six Minecraft versions a pre-release is
+                // the only NeoForge there has ever been, and that is worth knowing up front.
+                if (choice.IsBeta)
+                    AppendLog(string.Format(Localizer.Get("Msg_NeoForgeBetaWarning"), choice.Version));
+
+                loaderVersion = choice.Version;
+                var neo = await _mods.InstallNeoForgeServerAsync(folder, choice.Version, javaPath, progress);
+                if (neo.ArgsId is null)
+                    throw new InvalidOperationException(Localizer.Get("Msg_NeoForgeInstallNoOutput"));
+
+                forgeArgs = neo.ArgsId;           // NeoForge always launches via the args file
+                jarName = string.Empty;
+                // Same as Forge: its run script reads user_jvm_args.txt, so give it our RAM settings.
+                _creation.WriteForgeUserJvmArgs(folder, minGb, maxGb);
             }
             else if (serverType == ServerType.Paper)
             {
@@ -277,6 +294,19 @@ public partial class CreateServerDialog : Window
             SetBusy(false);
         }
     }
+
+    /// <summary>Reads the picked server type from the combo's Tag.</summary>
+    /// <remarks>
+    /// By Tag rather than by SelectedIndex, which is what this used to do. An index switch means
+    /// reordering the list, or inserting an entry anywhere but the end, silently changes what every
+    /// option below it creates — and the two dialogs that offer this list did not even use the same
+    /// order. Falls back to Vanilla, the one type that needs no loader and cannot be wrong.
+    /// </remarks>
+    private ServerType SelectedServerType() =>
+        (TypeCombo.SelectedItem as ComboBoxItem)?.Tag is string tag &&
+        Enum.TryParse<ServerType>(tag, out var type)
+            ? type
+            : ServerType.Vanilla;
 
     private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
 
