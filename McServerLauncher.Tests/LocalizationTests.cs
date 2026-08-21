@@ -72,6 +72,36 @@ public class LocalizationTests
     }
 
     [Fact]
+    public void EveryKeyTheCodeAsksForExists()
+    {
+        // Localizer.Get returns the key itself when it is missing — no exception, no warning. So a
+        // typo or a forgotten resx entry ships as literal "Msg_NeoForgeBetaWarning" on screen, and
+        // nothing catches it before a user does. This walks the source instead.
+        var neutral = Load("Strings.resx");
+        var source = Path.Combine(RepoRoot(), "McServerLauncher");
+
+        var used = new SortedSet<string>();
+        foreach (var file in Directory.EnumerateFiles(source, "*.cs", SearchOption.AllDirectories))
+        {
+            if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") ||
+                file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"))
+                continue;
+
+            foreach (System.Text.RegularExpressions.Match m in
+                     System.Text.RegularExpressions.Regex.Matches(
+                         File.ReadAllText(file), @"Localizer\.Get\(""([A-Za-z0-9_]+)""\)"))
+            {
+                used.Add(m.Groups[1].Value);
+            }
+        }
+
+        Assert.True(used.Count > 100, $"solo se encontraron {used.Count} claves: el escaneo no funciona");
+
+        var missing = used.Where(k => !neutral.ContainsKey(k)).ToList();
+        Assert.True(missing.Count == 0, "claves usadas en el código que no existen: " + string.Join(", ", missing));
+    }
+
+    [Fact]
     public void PlaceholdersSurviveTranslation()
     {
         // string.Format throws on a missing argument and prints the raw brace on a stray one, so a

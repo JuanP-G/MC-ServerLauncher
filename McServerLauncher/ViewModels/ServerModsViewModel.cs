@@ -303,6 +303,7 @@ public partial class ServerModsViewModel : ObservableObject
     {
         ServerType.Fabric => string.Format(Localizer.Get("HowToPlay_FabricFmt"), _config.GameVersion),
         ServerType.Forge => string.Format(Localizer.Get("HowToPlay_ForgeFmt"), _config.GameVersion),
+        ServerType.NeoForge => string.Format(Localizer.Get("HowToPlay_NeoForgeFmt"), _config.GameVersion),
         ServerType.Paper => string.Format(Localizer.Get("HowToPlay_PaperFmt"), _config.GameVersion),
         _ => string.Empty
     };

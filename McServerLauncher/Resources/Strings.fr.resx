@@ -585,4 +585,12 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Notif_UpdateWhileRunningFmt" xml:space="preserve">
     <value>Version {0} disponible. Des serveurs tournent : la mise à jour les arrêtera.</value>
   </data>
+  <data name="Msg_NeoForgeResolving" xml:space="preserve"><value>Recherche de la version de NeoForge pour cette version de Minecraft…</value></data>
+  <data name="Msg_NeoForgeNoVersion" xml:space="preserve"><value>NeoForge n’a aucune version pour Minecraft {0}. NeoForge existe depuis la 1.20.2.</value></data>
+  <data name="Msg_NeoForgeBetaWarning" xml:space="preserve"><value>Attention : {0} est une bêta. Pour cette version de Minecraft, c’est la seule que NeoForge publie.</value></data>
+  <data name="Msg_NeoForgeDownloadingInstaller" xml:space="preserve"><value>Téléchargement de l’installateur NeoForge {0}…</value></data>
+  <data name="Msg_NeoForgeRunningInstaller" xml:space="preserve"><value>Exécution de l’installateur NeoForge (cela peut prendre quelques minutes)…</value></data>
+  <data name="Msg_NeoForgeNoChecksum" xml:space="preserve"><value>NeoForge n’a pas fourni l’empreinte de l’installateur. Annulé : rien ne s’exécute sans vérification.</value></data>
+  <data name="Msg_NeoForgeInstallNoOutput" xml:space="preserve"><value>L’installateur NeoForge a terminé mais n’a pas laissé le fichier de lancement attendu.</value></data>
+  <data name="HowToPlay_NeoForgeFmt" xml:space="preserve"><value>Ce serveur utilise NeoForge (Minecraft {0}). Pour jouer avec des mods :&#10;1. Télécharge l’installateur NeoForge pour {0} sur https://neoforged.net et installe le client (« Install client »).&#10;2. Ouvre le lanceur Minecraft et choisis le profil « neoforge ».&#10;3. Copie les mods (.jar) dans %appdata%\.minecraft\mods.&#10;4. La version de NeoForge du client doit correspondre à celle du serveur.</value></data>
 </root>

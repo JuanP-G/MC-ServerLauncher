@@ -23,10 +23,13 @@
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Software" Margin="0,0,0,4" />
                         <ComboBox x:Name="TypeCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
-                            <ComboBoxItem Content="Vanilla" />
-                            <ComboBoxItem Content="Fabric" />
-                            <ComboBoxItem Content="Forge" />
-                            <ComboBoxItem Content="Paper" />
+                            <!-- El Tag es lo que lee el codigo: asi el orden visual se puede
+                                 cambiar sin tocar nada mas. Antes se mapeaba por indice. -->
+                            <ComboBoxItem Content="Vanilla" Tag="Vanilla" />
+                            <ComboBoxItem Content="Fabric" Tag="Fabric" />
+                            <ComboBoxItem Content="Forge" Tag="Forge" />
+                            <ComboBoxItem Content="NeoForge" Tag="NeoForge" />
+                            <ComboBoxItem Content="Paper" Tag="Paper" />
                         </ComboBox>
                     </StackPanel>
                 </Grid>

@@ -21,7 +21,10 @@ public class ServerDetectionService
         if (!string.IsNullOrEmpty(config.GameVersion)) return false; // already known (new-style config)
         if (string.IsNullOrEmpty(config.FolderPath) || !Directory.Exists(config.FolderPath)) return false;
 
-        return TryForge(config) || TryFabric(config) || TryPaper(config) || TryVanilla(config);
+        // NeoForge before Forge: both leave an args file under libraries/, and a NeoForge server has
+        // no Forge directory to confuse them, but ordering it first keeps the intent explicit.
+        return TryNeoForge(config) || TryForge(config) || TryFabric(config)
+               || TryPaper(config) || TryVanilla(config);
     }
 
     private bool TryPaper(ServerConfig config)
@@ -37,6 +40,35 @@ public class ServerDetectionService
         var version = _java.GetGameVersionFromJar(Path.Combine(config.FolderPath, paperJar));
         if (version is not null) config.GameVersion = version;
         return true;
+    }
+
+    /// <summary>
+    /// A NeoForge server: an args file under libraries/net/neoforged/neoforge/&lt;version&gt;/.
+    /// </summary>
+    /// <remarks>
+    /// Unlike Forge's, the directory name is the NeoForge build alone (e.g. "21.1.248") and already
+    /// encodes the Minecraft version, so the game version is derived from it rather than split off
+    /// a composite id.
+    /// </remarks>
+    private static bool TryNeoForge(ServerConfig config)
+    {
+        var root = LoaderPaths.LibrariesRoot(config.FolderPath, ServerType.NeoForge);
+        if (root is null || !Directory.Exists(root)) return false;
+
+        foreach (var dir in Directory.GetDirectories(root))
+        {
+            if (!File.Exists(Path.Combine(dir, "win_args.txt")) &&
+                !File.Exists(Path.Combine(dir, "unix_args.txt")))
+                continue;
+
+            var version = Path.GetFileName(dir);
+            config.Type = ServerType.NeoForge;
+            config.ForgeArgs = version;
+            config.ModLoaderVersion = version;
+            config.GameVersion = NeoForgeVersions.MinecraftVersionOf(version) ?? string.Empty;
+            return true;
+        }
+        return false;
     }
 
     private static bool TryForge(ServerConfig config)
