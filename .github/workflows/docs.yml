@@ -27,10 +27,10 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 9.0.x
 
@@ -58,9 +58,13 @@ jobs:
           Get-ChildItem _pages | Select-Object Name
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: _pages
+          # Obligatorio desde la v4, que dejó de incluir los ficheros ocultos: sin esto el
+          # .nojekyll de arriba se cae del artefacto en silencio y Pages vuelve a pasar el sitio
+          # por Jekyll, descartando todo lo que empieza por "_".
+          include-hidden-files: true
 
   deploy:
     needs: build
@@ -71,4 +75,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
