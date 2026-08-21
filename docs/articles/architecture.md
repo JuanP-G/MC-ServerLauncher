@@ -70,7 +70,7 @@ are no hard-coded machine paths.
   `run.bat`/`user_jvm_args.txt` and a minimal `server.properties` with the chosen port. (The jar
   download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is
   picked by `PortService`, all orchestrated by `CreateServerDialog`.)
-- **`ModLoaderService`** / **`PaperService`** — install a mod loader (Fabric/Forge) or a Paper build
+- **`ModLoaderService`** / **`PaperService`** — install a mod loader (Fabric/Forge/NeoForge) or a Paper build
   onto an existing server, keeping the world. Known limitation: Fabric's meta endpoint publishes no
   checksums, so its server jar can't be hash-verified like the other sources (Mojang SHA-1, Paper
   SHA-256…); instead the downloaded jar is structurally validated (its `install.properties` must
@@ -79,7 +79,12 @@ are no hard-coded machine paths.
   signatures exist in the Forge ecosystem), so the mandatory hash check protects against
   corruption, not a compromised server; since the installer is *executed*, it is additionally
   validated structurally (it must carry `install_profile.json` or an installer manifest) before
-  `java -jar` ever sees it.
+  `java -jar` ever sees it. NeoForge is the same shape with a better hash: its maven publishes a
+  `.sha256` beside each artifact, so that is what is checked. The trust assumption is unchanged —
+  same server as the jar — and a missing hash still means no install, because what follows is
+  `java -jar`. Which build belongs to which Minecraft version is decided by `NeoForgeVersions`,
+  separately from the download: NeoForge has no promotions feed, so the mapping is derived from the
+  build number and is unit-tested on its own.
 - **`ModrinthService`** — searches Modrinth and downloads mods/plugins (filtered by the server's type
   and version), and drives the "check for mod updates" flow.
 - **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version
