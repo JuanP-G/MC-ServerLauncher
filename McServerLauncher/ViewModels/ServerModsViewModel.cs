@@ -321,6 +321,18 @@ public partial class ServerModsViewModel : ObservableObject
         RefreshInstalledMods();
     }
 
+    /// <summary>
+    /// Re-reads the content folder, for jars that arrived without the user putting them there.
+    /// </summary>
+    /// <remarks>
+    /// The panel takes its snapshot when it is built, which is the same moment the server is
+    /// created — before crossplay has downloaded Geyser and Floodgate into it. Without this the two
+    /// jars are on disk and loaded by the server while the Mods tab still shows nothing, and the
+    /// only way to see them is the refresh button, which nobody thinks to press for mods they did
+    /// not install.
+    /// </remarks>
+    public void ReloadInstalled() => RefreshInstalledMods();
+
     [RelayCommand]
     private void RefreshInstalledMods()
     {

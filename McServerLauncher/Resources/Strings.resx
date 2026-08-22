@@ -659,4 +659,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_UpdateBetaAvailableFmt" xml:space="preserve"><value>Versión {0} disponible — BETA. Trae funciones nuevas sin rodar del todo; si prefieres ir sobre seguro, espera a la estable.</value></data>
   <data name="Notif_UpdateBetaFmt" xml:space="preserve"><value>Versión {0} disponible (BETA). Abre la app para actualizar.</value></data>
   <data name="Notif_UpdateBetaWhileRunningFmt" xml:space="preserve"><value>Versión {0} disponible (BETA). Tienes servidores en marcha: actualizar los parará.</value></data>
+  <data name="Msg_CrossplayModdedKick" xml:space="preserve"><value>Han rechazado a un jugador de Bedrock porque este servidor tiene mods que el cliente necesita tener. Geyser entra como un cliente sin mods, así que solo puede entrar donde también entraría un cliente sin mods. Deja únicamente mods de servidor (rendimiento, generación de mundo) o pasa a un servidor Paper con plugins.</value></data>
+  <data name="Crossplay_ModdedNote" xml:space="preserve"><value>Ojo con los mods: quien entre desde Bedrock llega como un cliente sin mods. En cuanto añadas mods que el cliente necesite — los que añaden bloques u objetos — el servidor dejará de admitirlo. Para tener contenido y Bedrock a la vez, usa Paper con plugins.</value></data>
 </root>

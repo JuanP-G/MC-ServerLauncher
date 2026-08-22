@@ -613,4 +613,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_UpdateBetaAvailableFmt" xml:space="preserve"><value>Version {0} is available — BETA. It brings new features that aren't fully proven yet; if you'd rather play safe, wait for the stable one.</value></data>
   <data name="Notif_UpdateBetaFmt" xml:space="preserve"><value>Version {0} is available (BETA). Open the app to update.</value></data>
   <data name="Notif_UpdateBetaWhileRunningFmt" xml:space="preserve"><value>Version {0} is available (BETA). You have servers running: updating will stop them.</value></data>
+  <data name="Msg_CrossplayModdedKick" xml:space="preserve"><value>A Bedrock player was turned away because this server has mods the client is required to have. Geyser joins as a client with no mods, so it can only get in where a client with no mods could. Keep to server-side mods (performance, world generation), or move to a Paper server with plugins.</value></data>
+  <data name="Crossplay_ModdedNote" xml:space="preserve"><value>About mods: players joining from Bedrock arrive as a client with no mods. The moment you add mods the client needs — the ones adding blocks or items — the server will turn them away. To have both content and Bedrock, use Paper with plugins.</value></data>
 </root>

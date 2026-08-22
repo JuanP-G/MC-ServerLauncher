@@ -67,6 +67,25 @@ public class CrossplayService
     public static bool CanEnable(ServerType type) => GeyserConfigService.Supports(type);
 
     /// <summary>
+    /// Whether the mods installed on this kind of server can shut Bedrock players out.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// True for the mod loaders, false for Paper. Geyser joins the Java server as a client with no
+    /// mods, and a mod loader carrying content the client is required to have refuses exactly that
+    /// connection — so crossplay works the day it is switched on and stops working the day a mod
+    /// adding blocks or items is installed, with nothing linking the two events.
+    /// </para>
+    /// <para>
+    /// Paper is not affected because plugins run only on the server; a client with no plugins is
+    /// the only kind there is. Which is why it is the honest recommendation for wanting both
+    /// content and Bedrock players.
+    /// </para>
+    /// </remarks>
+    public static bool ModsCanLockOutBedrock(ServerType type) =>
+        type is ServerType.Fabric or ServerType.NeoForge;
+
+    /// <summary>
     /// A free local UDP port for Geyser, starting at Bedrock's default.
     /// </summary>
     /// <remarks>

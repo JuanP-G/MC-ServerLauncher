@@ -314,6 +314,7 @@ public partial class CreateServerDialog : Window
         CrossplayCheck.IsEnabled = supported;
         CrossplayHint.IsVisible = supported;
         CrossplayWhyNot.IsVisible = !supported;
+        CrossplayModdedNote.IsVisible = supported && CrossplayService.ModsCanLockOutBedrock(type);
 
         if (!supported)
         {

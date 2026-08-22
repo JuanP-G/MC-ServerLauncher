@@ -149,6 +149,8 @@ public partial class AddEditServerDialog : Window
         CrossplayCheck.IsEnabled = supported;
         CrossplayHint.IsVisible = supported;
         CrossplayWhyNot.IsVisible = !supported;
+        CrossplayModdedNote.IsVisible =
+            supported && Services.CrossplayService.ModsCanLockOutBedrock(_config.Type);
 
         if (!supported)
         {

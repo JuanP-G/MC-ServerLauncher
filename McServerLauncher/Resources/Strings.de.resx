@@ -613,4 +613,6 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_UpdateBetaAvailableFmt" xml:space="preserve"><value>Version {0} ist verfügbar — BETA. Sie bringt Neues, das noch nicht ganz erprobt ist; wenn du auf Nummer sicher gehen willst, warte auf die stabile.</value></data>
   <data name="Notif_UpdateBetaFmt" xml:space="preserve"><value>Version {0} ist verfügbar (BETA). Öffne die App zum Aktualisieren.</value></data>
   <data name="Notif_UpdateBetaWhileRunningFmt" xml:space="preserve"><value>Version {0} ist verfügbar (BETA). Es laufen Server: ein Update stoppt sie.</value></data>
+  <data name="Msg_CrossplayModdedKick" xml:space="preserve"><value>Ein Bedrock-Spieler wurde abgewiesen, weil dieser Server Mods hat, die der Client haben muss. Geyser verbindet sich als Client ohne Mods und kommt daher nur dorthin, wohin auch ein Client ohne Mods käme. Bleib bei serverseitigen Mods (Leistung, Weltgenerierung), oder wechsle zu einem Paper-Server mit Plugins.</value></data>
+  <data name="Crossplay_ModdedNote" xml:space="preserve"><value>Zu den Mods: Wer von Bedrock aus beitritt, kommt als Client ohne Mods an. Sobald du Mods hinzufügst, die der Client braucht — die mit neuen Blöcken oder Gegenständen — weist der Server ihn ab. Für Inhalte und Bedrock zugleich nimm Paper mit Plugins.</value></data>
 </root>

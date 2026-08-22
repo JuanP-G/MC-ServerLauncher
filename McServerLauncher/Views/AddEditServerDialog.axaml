@@ -68,6 +68,12 @@
                            TextWrapping="Wrap" Text="{loc:Loc Crossplay_Hint}" />
                 <TextBlock x:Name="CrossplayWhyNot" Margin="24,4,0,0" FontSize="12" Opacity="0.75"
                            TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B" />
+                <!-- Shown on Fabric and NeoForge only: Geyser installs fine there, and then the
+                     first content mod locks Bedrock players out. Better said here than discovered
+                     as a kick message telling a phone to install a mod loader. -->
+                <TextBlock x:Name="CrossplayModdedNote" Margin="24,4,0,0" FontSize="12" Opacity="0.75"
+                           TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B"
+                           Text="{loc:Loc Crossplay_ModdedNote}" />
 
                 <Separator Margin="0,18,0,12" />
 

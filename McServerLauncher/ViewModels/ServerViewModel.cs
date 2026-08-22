@@ -52,6 +52,9 @@ public partial class ServerViewModel : ObservableObject
     private static readonly TimeSpan StabilityWindow = TimeSpan.FromMinutes(2);
     private static readonly TimeSpan AutoRestartDelay = TimeSpan.FromSeconds(5);
     private int _consecutiveCrashes;
+
+    /// <summary>Whether this run has already explained a Bedrock player being kicked for having no mods.</summary>
+    private bool _moddedKickWarned;
     private DateTime? _lastRunningAtUtc;
 
     public ServerConfig Config { get; }
@@ -733,7 +736,32 @@ public partial class ServerViewModel : ObservableObject
             }
 
             TrackPlayers(line);
+            WarnAboutModdedKick(line);
         });
+    }
+
+    /// <summary>
+    /// Turns the loader's "install NeoForge" kick into an explanation that fits what happened.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Only on a crossplay server, because on a Java-only one the message is already addressed to
+    /// somebody who can act on it. Here it is not: the player who was turned away is on a phone or
+    /// a console and cannot install a mod loader at all. What actually happened is that Geyser
+    /// joins as a client with no mods, and this server now carries mods that the client must have.
+    /// </para>
+    /// <para>
+    /// Once per run. A Bedrock client retries on its own, and repeating the same paragraph down the
+    /// console would bury the server's real output under it.
+    /// </para>
+    /// </remarks>
+    private void WarnAboutModdedKick(string line)
+    {
+        if (_moddedKickWarned || !Config.CrossplayEnabled) return;
+        if (!CrossplayDiagnostics.IsModdedClientRejection(line)) return;
+
+        _moddedKickWarned = true;
+        OnConsoleLine(Localizer.Get("Msg_CrossplayModdedKick"));
     }
 
     // Live connected players, read from the join/leave messages in the console.
@@ -798,6 +826,7 @@ public partial class ServerViewModel : ObservableObject
     private async Task Start()
     {
         _consecutiveCrashes = 0; // a deliberate Start gives auto-restart a fresh budget
+        _moddedKickWarned = false; // and a fresh chance to explain the kick, in case the mods changed
         await StartInternal(isAutoRestart: false);
     }
 
@@ -1206,6 +1235,10 @@ public partial class ServerViewModel : ObservableObject
 
             var log = new Progress<string>(OnConsoleLine);
             await _crossplay.InstallAsync(Config, log);
+
+            // Geyser and Floodgate are mods like any other, and the Mods tab listed the folder
+            // before they existed. Left alone it would keep claiming the server has none.
+            RunOnUi(Mods.ReloadInstalled);
 
             int? publicPort = null;
             if (Config.PlayitEnabled && !string.IsNullOrEmpty(playitKey))
