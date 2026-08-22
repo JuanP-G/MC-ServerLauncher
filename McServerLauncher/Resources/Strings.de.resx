@@ -594,4 +594,19 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_NeoForgeNoChecksum" xml:space="preserve"><value>NeoForge hat keine Prüfsumme für den Installer geliefert. Abgebrochen: nichts wird unverifiziert ausgeführt.</value></data>
   <data name="Msg_NeoForgeInstallNoOutput" xml:space="preserve"><value>Der NeoForge-Installer ist fertig, hat aber die erwartete Startdatei nicht hinterlassen.</value></data>
   <data name="HowToPlay_NeoForgeFmt" xml:space="preserve"><value>Dieser Server nutzt NeoForge (Minecraft {0}). So spielst du mit Mods:&#10;1. Lade den NeoForge-Installer für {0} von https://neoforged.net und installiere den Client („Install client“).&#10;2. Öffne den Minecraft-Launcher und wähle das Profil „neoforge“.&#10;3. Kopiere die Mods (.jar) nach %appdata%\.minecraft\mods.&#10;4. Die NeoForge-Version des Clients muss zu der des Servers passen.</value></data>
+  <data name="Crossplay_Check" xml:space="preserve"><value>Auch von Bedrock aus beitreten lassen (Handy, Konsole, Windows 10/11)</value></data>
+  <data name="Crossplay_Hint" xml:space="preserve"><value>Installiert Geyser und Floodgate und erstellt einen zweiten Tunnel. Wer von Bedrock aus beitritt, muss Minecraft Java nicht kaufen: die Identität wird nicht von Mojang geprüft und der Name erscheint mit einem Punkt davor. Die Whitelist nimmt sie trotzdem an.</value></data>
+  <data name="Crossplay_Unsupported" xml:space="preserve"><value>Geyser veröffentlicht nichts für diesen Servertyp. Es funktioniert mit Paper, Fabric und NeoForge.</value></data>
+  <data name="Crossplay_UnsupportedVanilla" xml:space="preserve"><value>Vanilla nimmt weder Mods noch Plugins, kann Bedrock also nicht übersetzen. Ändere den Typ auf Paper (die Welt bleibt erhalten), dann geht es.</value></data>
+  <data name="Crossplay_BedrockAddress" xml:space="preserve"><value>Adresse für Bedrock</value></data>
+  <data name="Crossplay_BedrockHost" xml:space="preserve"><value>Server</value></data>
+  <data name="Crossplay_BedrockPort" xml:space="preserve"><value>Port</value></data>
+  <data name="Crossplay_BedrockHint" xml:space="preserve"><value>Bei Bedrock kommen Server und Port in getrennte Felder.</value></data>
+  <data name="Msg_CrossplayUnsupportedFmt" xml:space="preserve"><value>Crossplay ist auf {0}-Servern nicht verfügbar.</value></data>
+  <data name="Msg_CrossplayResolvingFmt" xml:space="preserve"><value>Suche die {0}-Version für diesen Server…</value></data>
+  <data name="Msg_CrossplayInstallingFmt" xml:space="preserve"><value>Installiere {0} {1}…</value></data>
+  <data name="Msg_CrossplayNoVersionFmt" xml:space="preserve"><value>Es gibt keine {0}-Version für Minecraft {1} auf einem {2}-Server.</value></data>
+  <data name="Msg_CrossplayNoChecksum" xml:space="preserve"><value>Die Prüfsumme von Floodgate war nicht zu bekommen. Abgebrochen: nichts wird unverifiziert installiert.</value></data>
+  <data name="Msg_CrossplayTunnelFmt" xml:space="preserve"><value>Erstelle den Bedrock-Tunnel (UDP) auf Port {0}…</value></data>
+  <data name="Msg_CrossplayReady" xml:space="preserve"><value>Crossplay bereit. Starte den Server neu, damit Geyser hochfährt.</value></data>
 </root>

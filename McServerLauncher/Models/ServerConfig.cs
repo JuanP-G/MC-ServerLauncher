@@ -123,6 +123,26 @@ public class ServerConfig
     /// </remarks>
     public bool WakeOnDemand { get; set; }
 
+    // --- Crossplay (Java + Bedrock) ---
+
+    /// <summary>
+    /// Whether Bedrock players (phone, console, Windows 10/11) can join this server too.
+    /// </summary>
+    /// <remarks>
+    /// Remembered rather than set up once and forgotten, because it is not a one-off action: it
+    /// needs a second tunnel to keep existing, and Geyser has to keep advertising that tunnel's
+    /// public port. Both can drift, and only something that knows the server is meant to be
+    /// crossplay can put them back.
+    /// </remarks>
+    public bool CrossplayEnabled { get; set; }
+
+    /// <summary>The local <em>UDP</em> port Geyser listens on. 0 until crossplay is set up.</summary>
+    /// <remarks>
+    /// UDP, and a different namespace from the Java port: this one can be 19132 while some other
+    /// program holds TCP 19132, and vice versa.
+    /// </remarks>
+    public int BedrockPort { get; set; }
+
     public bool UseCustomNotifications { get; set; }
 
     /// <summary>Per-server notification override, used only when <see cref="UseCustomNotifications"/>.</summary>
