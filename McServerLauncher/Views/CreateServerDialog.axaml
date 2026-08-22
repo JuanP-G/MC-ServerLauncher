@@ -63,6 +63,14 @@
 
                 <Separator Margin="0,18,0,12" />
 
+                <CheckBox x:Name="CrossplayCheck" Content="{loc:Loc Crossplay_Check}" />
+                <TextBlock x:Name="CrossplayHint" Margin="24,4,0,0" FontSize="12" Opacity="0.6"
+                           TextWrapping="Wrap" Text="{loc:Loc Crossplay_Hint}" />
+                <TextBlock x:Name="CrossplayWhyNot" Margin="24,4,0,0" FontSize="12" Opacity="0.75"
+                           TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B" />
+
+                <Separator Margin="0,18,0,12" />
+
                 <CheckBox x:Name="PlayitCheck" Content="{loc:Loc Cs_UsePlayit}" IsChecked="True" />
 
                 <CheckBox x:Name="CreateTunnelCheck" Margin="0,16,0,0" IsChecked="True"

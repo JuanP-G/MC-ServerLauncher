@@ -62,6 +62,15 @@
 
                 <Separator Margin="0,18,0,12" />
 
+                <CheckBox x:Name="CrossplayCheck" Content="{loc:Loc Crossplay_Check}"
+                          IsChecked="{Binding CrossplayEnabled, Mode=TwoWay}" />
+                <TextBlock x:Name="CrossplayHint" Margin="24,4,0,0" FontSize="12" Opacity="0.6"
+                           TextWrapping="Wrap" Text="{loc:Loc Crossplay_Hint}" />
+                <TextBlock x:Name="CrossplayWhyNot" Margin="24,4,0,0" FontSize="12" Opacity="0.75"
+                           TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B" />
+
+                <Separator Margin="0,18,0,12" />
+
                 <TextBlock Text="{loc:Loc Idle_Section}" FontWeight="SemiBold" />
                 <TextBlock Text="{loc:Loc Idle_Intro}" TextWrapping="Wrap" Opacity="0.7"
                            FontSize="13" Margin="0,4,0,8" />

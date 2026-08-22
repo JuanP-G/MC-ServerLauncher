@@ -291,6 +291,11 @@ public partial class ServerViewModel : ObservableObject
         Backups = new ServerBackupsViewModel(this);
         _ = RefreshTunnelAddressAsync();
 
+        // Crossplay is a remembered setting, so it gets checked rather than assumed: the tunnel's
+        // public port can change, and Geyser has to be re-pointed at it or the server quietly stops
+        // being reachable from Bedrock.
+        _ = RefreshBedrockAddressAsync();
+
         // Also here, not only on the transition to Stopped: opening the app finds every server
         // already stopped and fires no state change, so waiting for one would mean wake-on-demand
         // never starting until you had run and stopped a server by hand first.
@@ -531,7 +536,10 @@ public partial class ServerViewModel : ObservableObject
         _playit.RefreshState();
         // Every ~30 s (10 ticks of 3 s; ~5 min while in the tray) refresh the tunnel address.
         if (++_playitTickCounter % 10 == 0)
+        {
             _ = RefreshTunnelAddressAsync();
+            _ = RefreshBedrockAddressAsync();   // no-op unless this server does crossplay
+        }
     }
 
     /// <summary>Gets the tunnel address from the playit API, matching by port.</summary>
@@ -1157,6 +1165,126 @@ public partial class ServerViewModel : ObservableObject
         {
             OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ex.Message));
         }
+    }
+
+    // --- Crossplay: Java and Bedrock on the same server ---
+
+    private readonly CrossplayService _crossplay = new();
+
+    /// <summary>The Bedrock host and port, shown separately. Null when there is no Bedrock tunnel.</summary>
+    [ObservableProperty]
+    private string? _bedrockHost;
+
+    [ObservableProperty]
+    private string? _bedrockPortText;
+
+    /// <summary>True once there is a Bedrock address worth showing.</summary>
+    public bool HasBedrockAddress => !string.IsNullOrEmpty(BedrockHost);
+
+    partial void OnBedrockHostChanged(string? value) => OnPropertyChanged(nameof(HasBedrockAddress));
+
+    /// <summary>
+    /// Installs Geyser and Floodgate, creates the Bedrock tunnel and points Geyser at it.
+    /// </summary>
+    /// <remarks>
+    /// The order matters. The tunnel has to exist before the config is written, because the one
+    /// value Geyser cannot work out for itself is the tunnel's public port — and writing the config
+    /// first would leave it advertising the wrong one until something happened to rewrite it.
+    /// </remarks>
+    public async Task SetUpCrossplayAsync(string? playitKey)
+    {
+        if (!CrossplayService.CanEnable(Config.Type))
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_CrossplayUnsupportedFmt"), Config.Type));
+            return;
+        }
+
+        try
+        {
+            if (Config.BedrockPort <= 0)
+                Config.BedrockPort = _crossplay.PickBedrockPort(Array.Empty<int>());
+
+            var log = new Progress<string>(OnConsoleLine);
+            await _crossplay.InstallAsync(Config, log);
+
+            int? publicPort = null;
+            if (Config.PlayitEnabled && !string.IsNullOrEmpty(playitKey))
+                publicPort = await EnsureBedrockTunnelAsync(playitKey!);
+
+            _crossplay.WriteConfig(Config, publicPort);
+            Config.CrossplayEnabled = true;
+
+            await RefreshBedrockAddressAsync();
+            OnConsoleLine(Localizer.Get("Msg_CrossplayReady"));
+            ConfigChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
+
+    /// <summary>Creates the Bedrock (UDP) tunnel if it isn't there, and returns its public port.</summary>
+    private async Task<int?> EnsureBedrockTunnelAsync(string playitKey)
+    {
+        OnConsoleLine(string.Format(Localizer.Get("Msg_CrossplayTunnelFmt"), Config.BedrockPort));
+
+        await _playitApi.EnsureMinecraftTunnelAsync(
+            playitKey, Name + " (Bedrock)", Config.BedrockPort,
+            PlayitApiService.TunnelEdition.Bedrock);
+
+        var tunnel = await FindBedrockTunnelAsync();
+        return tunnel?.PublicPort > 0 ? tunnel.PublicPort : null;
+    }
+
+    /// <summary>The server's Bedrock tunnel, matched on both the local port and the protocol.</summary>
+    /// <remarks>
+    /// On protocol too, not just the port: a crossplay server has two tunnels, and matching on the
+    /// number alone would pick the Java one whenever the two local ports happened to coincide.
+    /// </remarks>
+    private Task<PlayitApiService.PlayitTunnel?> FindBedrockTunnelAsync() =>
+        _playitApi.GetTunnelAsync(Config.BedrockPort, udp: true);
+
+    /// <summary>
+    /// Refreshes the Bedrock address, and re-points Geyser if the tunnel's public port has moved.
+    /// </summary>
+    /// <remarks>
+    /// The re-pointing is the reason crossplay is a remembered setting rather than a one-off
+    /// action. If the tunnel is ever reassigned a different public port, a config written once and
+    /// never revisited would keep advertising the old one, and the server would simply stop being
+    /// joinable from Bedrock with nothing to explain why.
+    /// </remarks>
+    private async Task RefreshBedrockAddressAsync()
+    {
+        if (!Config.CrossplayEnabled || Config.BedrockPort <= 0) return;
+
+        try
+        {
+            var tunnel = await FindBedrockTunnelAsync();
+            if (tunnel?.Address is not { } host || tunnel.PublicPort <= 0) return;
+
+            RunOnUi(() =>
+            {
+                BedrockHost = host;
+                BedrockPortText = tunnel.PublicPort.ToString();
+            });
+
+            _crossplay.WriteConfig(Config, tunnel.PublicPort);
+        }
+        catch
+        {
+            // Best-effort, like the Java address: a failed lookup keeps whatever was shown.
+        }
+    }
+
+    /// <summary>Copies the Bedrock host. The port is shown beside it, and typed separately.</summary>
+    [RelayCommand]
+    private async Task CopyBedrockAddress()
+    {
+        if (string.IsNullOrEmpty(BedrockHost)) return;
+        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (top?.Clipboard is { } cb)
+            await cb.SetTextAsync(BedrockHost!);
     }
 
     /// <summary>Opens the Playit.gg tunnels panel in the browser (to create/view tunnels).</summary>

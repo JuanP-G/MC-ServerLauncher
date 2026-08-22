@@ -464,11 +464,20 @@ public partial class MainViewModel : ObservableObject
             Save();
 
             // Create the Playit tunnel (errors are visible in the server's console).
+            string? playitKey = null;
             if (dialog.CreateTunnel)
             {
-                var key = await EnsurePlayitAgentAsync();
-                if (key is not null)
-                    await vm.CreateTunnelAsync(key);
+                playitKey = await EnsurePlayitAgentAsync();
+                if (playitKey is not null)
+                    await vm.CreateTunnelAsync(playitKey);
+            }
+
+            // Crossplay after the Java tunnel, not before: setting it up needs the Playit key that
+            // step obtains, and the Bedrock tunnel is a second one alongside the Java one.
+            if (dialog.ResultConfig.CrossplayEnabled)
+            {
+                await vm.SetUpCrossplayAsync(playitKey);
+                Save();
             }
 
             // First launch to generate the world and files.
@@ -565,8 +574,14 @@ public partial class MainViewModel : ObservableObject
         if (SelectedServer is null) return;
 
         var folder = SelectedServer.Config.FolderPath;
-        // Read the port BEFORE deleting anything (we need it to locate the tunnel).
+        // Read the ports BEFORE deleting anything (we need them to locate the tunnels).
         var port = new ServerPropertiesService().GetServerPort(SelectedServer.Config.PropertiesPath);
+
+        // A crossplay server has two: the Java one and the Bedrock one. Forgetting the second
+        // leaves an orphan tunnel on the account that nothing will ever clean up.
+        var bedrockPort = SelectedServer.Config.CrossplayEnabled && SelectedServer.Config.BedrockPort > 0
+            ? SelectedServer.Config.BedrockPort
+            : (int?)null;
 
         if (Owner is null) return;
         var dialog = new DeleteServerDialog(SelectedServer.Name, folder);
@@ -583,7 +598,11 @@ public partial class MainViewModel : ObservableObject
             var key = await EnsurePlayitAgentAsync();
             try
             {
-                var deleted = key is not null && await new PlayitApiService().DeleteTunnelForPortAsync(key, port.Value);
+                var api = new PlayitApiService();
+                var deleted = key is not null && await api.DeleteTunnelForPortAsync(key, port.Value);
+
+                if (key is not null && bedrockPort is { } bp)
+                    await api.DeleteTunnelForPortAsync(key, bp);
                 if (key is null)
                 {
                     // The user didn't provide a key; the tunnel is not deleted.

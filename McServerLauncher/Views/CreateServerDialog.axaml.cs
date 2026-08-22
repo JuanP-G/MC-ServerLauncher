@@ -55,6 +55,8 @@ public partial class CreateServerDialog : Window
 
         NameBox.TextChanged += (_, _) => UpdateFinalPath();
         ParentFolderBox.TextChanged += (_, _) => UpdateFinalPath();
+        TypeCombo.SelectionChanged += (_, _) => UpdateCrossplayAvailability();
+        UpdateCrossplayAvailability();
         Loaded += OnLoaded;
     }
 
@@ -277,7 +279,8 @@ public partial class CreateServerDialog : Window
                 JavaPath = javaPath,
                 MinRamGb = minGb,
                 MaxRamGb = maxGb,
-                PlayitEnabled = PlayitCheck.IsChecked == true
+                PlayitEnabled = PlayitCheck.IsChecked == true,
+                CrossplayEnabled = CrossplayCheck.IsChecked == true && CrossplayService.CanEnable(serverType)
             };
             AutoStart = AutoStartCheck.IsChecked == true;
             // The tunnel creation is done by MainViewModel on the already-added server, so the
@@ -292,6 +295,32 @@ public partial class CreateServerDialog : Window
             AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
             await Warn(string.Format(Localizer.Get("Msg_CreateServerError"), ex.Message));
             SetBusy(false);
+        }
+    }
+
+    /// <summary>
+    /// Greys out crossplay for the server types Geyser has no build for, and says which.
+    /// </summary>
+    /// <remarks>
+    /// Explained rather than merely disabled: a checkbox that is simply grey invites the reader to
+    /// assume it is broken. Vanilla gets its own wording because it has a way out — changing the
+    /// type to Paper keeps the world — while Forge simply has no Geyser at all.
+    /// </remarks>
+    private void UpdateCrossplayAvailability()
+    {
+        var type = SelectedServerType();
+        var supported = CrossplayService.CanEnable(type);
+
+        CrossplayCheck.IsEnabled = supported;
+        CrossplayHint.IsVisible = supported;
+        CrossplayWhyNot.IsVisible = !supported;
+
+        if (!supported)
+        {
+            CrossplayCheck.IsChecked = false;
+            CrossplayWhyNot.Text = Localizer.Get(type == ServerType.Vanilla
+                ? "Crossplay_UnsupportedVanilla"
+                : "Crossplay_Unsupported");
         }
     }
 

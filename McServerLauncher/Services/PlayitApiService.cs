@@ -214,6 +214,20 @@ public class PlayitApiService
         return tunnels?.FirstOrDefault(t => t.LocalPort == port)?.Address;
     }
 
+    /// <summary>
+    /// The tunnel on a local port for one protocol, or null. Callers that need the public port —
+    /// Bedrock does, since players type it in — need the whole tunnel, not just its address.
+    /// </summary>
+    /// <remarks>
+    /// Matched on the protocol as well as the port, because a crossplay server has two tunnels and
+    /// the port alone would return whichever came first.
+    /// </remarks>
+    public async Task<PlayitTunnel?> GetTunnelAsync(int localPort, bool udp, CancellationToken ct = default)
+    {
+        var tunnels = await GetTunnelsSharedAsync(ct);
+        return tunnels?.FirstOrDefault(t => t.LocalPort == localPort && t.IsUdp == udp);
+    }
+
     private Task<List<PlayitTunnel>> StartTunnelFetch() => Task.Run(async () =>
     {
         var key = CurrentReadKey();

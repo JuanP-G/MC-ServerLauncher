@@ -34,6 +34,8 @@ public partial class AddEditServerDialog : Window
         // Keep a copy to restore if the user cancels.
         _snapshot = JsonSerializer.Serialize(config);
         DataContext = _config;
+
+        UpdateCrossplayAvailability();
     }
 
     private void RefreshDataContext()
@@ -133,6 +135,30 @@ public partial class AddEditServerDialog : Window
         Close(false);
     }
 
+    /// <summary>
+    /// Greys out crossplay on the server types Geyser has no build for, and says which.
+    /// </summary>
+    /// <remarks>
+    /// The type cannot change from this dialog, so this runs once. Explained rather than merely
+    /// disabled: a grey checkbox with no reason reads as a bug in the app.
+    /// </remarks>
+    private void UpdateCrossplayAvailability()
+    {
+        var supported = Services.CrossplayService.CanEnable(_config.Type);
+
+        CrossplayCheck.IsEnabled = supported;
+        CrossplayHint.IsVisible = supported;
+        CrossplayWhyNot.IsVisible = !supported;
+
+        if (!supported)
+        {
+            _config.CrossplayEnabled = false;
+            CrossplayWhyNot.Text = Localizer.Get(_config.Type == Models.ServerType.Vanilla
+                ? "Crossplay_UnsupportedVanilla"
+                : "Crossplay_Unsupported");
+        }
+    }
+
     private void RestoreSnapshot()
     {
         var original = JsonSerializer.Deserialize<ServerConfig>(_snapshot);
@@ -147,6 +173,8 @@ public partial class AddEditServerDialog : Window
         _config.PlayitEnabled = original.PlayitEnabled;
         _config.IdleShutdownMinutes = original.IdleShutdownMinutes;
         _config.WakeOnDemand = original.WakeOnDemand;
+        _config.CrossplayEnabled = original.CrossplayEnabled;
+        _config.BedrockPort = original.BedrockPort;
         _config.BackupsEnabled = original.BackupsEnabled;
         _config.BackupRetention = original.BackupRetention;
         _config.UseCustomNotifications = original.UseCustomNotifications;
