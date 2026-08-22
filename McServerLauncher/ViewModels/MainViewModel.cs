@@ -125,6 +125,12 @@ public partial class MainViewModel : ObservableObject
     /// </remarks>
     private string? _notifiedVersion;
 
+    /// <summary>Whether the update currently on offer is a pre-release.</summary>
+    private bool _updateIsBeta;
+
+    /// <summary>Shown next to the update banner so the warning is visible, not just in the text.</summary>
+    public bool UpdateIsBeta => _updateIsBeta;
+
     partial void OnIsUpdatingChanged(bool value) => UpdateNowCommand.NotifyCanExecuteChanged();
 
     partial void OnSelectedLanguageChanged(LanguageOption? value)
@@ -241,9 +247,13 @@ public partial class MainViewModel : ObservableObject
                 _packageUrl = info.PackageUrl;
                 _packageName = info.PackageName;
                 _checksumUrl = info.ChecksumUrl;
-                UpdateText = string.Format(Localizer.Get("Msg_UpdateAvailableFmt"), info.Version);
+                // A beta says so before the button, not after installing.
+                UpdateText = string.Format(
+                    Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
+                    info.Version);
                 UpdateAvailable = true;
-                NotifyUpdateOnce(info.Version);
+                _updateIsBeta = info.IsPreRelease;
+                NotifyUpdateOnce(info.Version, info.IsPreRelease);
             }
         }
         catch
@@ -256,7 +266,7 @@ public partial class MainViewModel : ObservableObject
     /// Raises a desktop notification the first time a given version is seen, and only while the
     /// window is out of sight — the banner already says it when the window is there to be read.
     /// </summary>
-    private void NotifyUpdateOnce(string version)
+    private void NotifyUpdateOnce(string version, bool isBeta)
     {
         if (_notifiedVersion == version) return;
         _notifiedVersion = version;
@@ -269,9 +279,11 @@ public partial class MainViewModel : ObservableObject
 
         // Updating restarts the app, which stops every server with it. Saying so is the difference
         // between an informed choice and pulling the rug out from under whoever is playing.
-        var message = string.Format(
-            Localizer.Get(AnyServerRunning ? "Notif_UpdateWhileRunningFmt" : "Notif_UpdateFmt"),
-            version);
+        var key = isBeta
+            ? (AnyServerRunning ? "Notif_UpdateBetaWhileRunningFmt" : "Notif_UpdateBetaFmt")
+            : (AnyServerRunning ? "Notif_UpdateWhileRunningFmt" : "Notif_UpdateFmt");
+
+        var message = string.Format(Localizer.Get(key), version);
 
         ToastService.Shared.Notify(Localizer.Get("Notif_UpdateTitle"), message);
     }

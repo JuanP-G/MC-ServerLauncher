@@ -12,7 +12,16 @@ namespace McServerLauncher.Services;
 /// </summary>
 public class UpdateService
 {
-    private const string ApiUrl = "https://api.github.com/repos/JuanP-G/MC-ServerLauncher/releases/latest";
+    /// <summary>
+    /// The release list, not <c>/releases/latest</c>.
+    /// </summary>
+    /// <remarks>
+    /// GitHub leaves pre-releases out of <c>/releases/latest</c> entirely, so a beta published that
+    /// way is invisible to the app and could only ever be installed by hand. Reading the list keeps
+    /// betas reachable, at the price of having to pick the newest one here rather than being handed
+    /// it — and of having to say clearly, everywhere it is offered, that it is a beta.
+    /// </remarks>
+    private const string ApiUrl = "https://api.github.com/repos/JuanP-G/MC-ServerLauncher/releases?per_page=20";
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
     private static readonly HttpClient DownloadHttp = new() { Timeout = TimeSpan.FromMinutes(10) };
 
@@ -23,7 +32,13 @@ public class UpdateService
     /// <see cref="ChecksumUrl"/> is the asset that carries its SHA-256, used to verify the download
     /// before it is installed; null on releases published before that existed.
     /// </summary>
-    public record UpdateInfo(string Version, string Url, string? PackageUrl, string? PackageName, string? ChecksumUrl);
+    /// <remarks>
+    /// <c>IsPreRelease</c> exists so nobody can be moved onto a beta without being told: it is what
+    /// the banner and the notification use to say so, before the button is pressed rather than
+    /// after.
+    /// </remarks>
+    public record UpdateInfo(string Version, string Url, string? PackageUrl, string? PackageName,
+        string? ChecksumUrl, bool IsPreRelease = false);
 
     /// <summary>Returns the latest version if it is newer than <paramref name="current"/>; otherwise null.</summary>
     public async Task<UpdateInfo?> CheckAsync(Version current, CancellationToken ct = default)
@@ -37,19 +52,18 @@ public class UpdateService
 
         var json = await resp.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
+        if (doc.RootElement.ValueKind != JsonValueKind.Array) return null;
 
-        var tag = root.TryGetProperty("tag_name", out var t) ? t.GetString() : null;
-        var url = root.TryGetProperty("html_url", out var u) ? u.GetString() : null;
+        var root = PickNewestRelease(doc.RootElement, Normalize(current));
+        if (root is not { } release) return null;
+
+        var tag = release.TryGetProperty("tag_name", out var t) ? t.GetString() : null;
+        var url = release.TryGetProperty("html_url", out var u) ? u.GetString() : null;
         if (tag is null || url is null) return null;
 
-        var latest = ParseVersion(tag);
-        if (latest is null) return null;
+        var isPreRelease = release.TryGetProperty("prerelease", out var pre) && pre.ValueKind == JsonValueKind.True;
 
-        var cur = Normalize(current);
-        if (latest <= cur) return null;
-
-        var assets = ReadAssets(root);
+        var assets = ReadAssets(release);
         var (packageName, packageUrl) = PickPackage(assets, CurrentOs, RuntimeInformation.OSArchitecture);
 
         // Windows keeps using the shared SHA256SUMS.txt that publish.ps1 writes. The AppImage and
@@ -64,7 +78,36 @@ public class UpdateService
                 assets.TryGetValue(packageName + ".sha256", out checksumUrl);
         }
 
-        return new UpdateInfo(tag.TrimStart('v', 'V'), url, packageUrl, packageName, checksumUrl);
+        return new UpdateInfo(tag.TrimStart('v', 'V'), url, packageUrl, packageName, checksumUrl, isPreRelease);
+    }
+
+    /// <summary>
+    /// The newest published release above <paramref name="current"/>, betas included, or null.
+    /// </summary>
+    /// <remarks>
+    /// Drafts are skipped: they are not published and their assets may not exist yet. Order comes
+    /// from the version numbers rather than from the list, because GitHub sorts by creation date
+    /// and a patch to an older line can be published after a newer release.
+    /// </remarks>
+    private static JsonElement? PickNewestRelease(JsonElement releases, Version current)
+    {
+        JsonElement? best = null;
+        Version? bestVersion = null;
+
+        foreach (var release in releases.EnumerateArray())
+        {
+            if (release.TryGetProperty("draft", out var draft) && draft.ValueKind == JsonValueKind.True)
+                continue;
+
+            var tag = release.TryGetProperty("tag_name", out var t) ? t.GetString() : null;
+            if (tag is null || ParseVersion(tag) is not { } version) continue;
+            if (version <= current) continue;
+            if (bestVersion is not null && version <= bestVersion) continue;
+
+            best = release;
+            bestVersion = version;
+        }
+        return best;
     }
 
     private static Dictionary<string, string> ReadAssets(JsonElement root)
