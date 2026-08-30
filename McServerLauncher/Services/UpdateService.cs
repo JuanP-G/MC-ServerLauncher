@@ -54,7 +54,7 @@ public class UpdateService
         using var doc = JsonDocument.Parse(json);
         if (doc.RootElement.ValueKind != JsonValueKind.Array) return null;
 
-        var root = PickNewestRelease(doc.RootElement, Normalize(current));
+        var root = PickNewestRelease(doc.RootElement, current);
         if (root is not { } release) return null;
 
         var tag = release.TryGetProperty("tag_name", out var t) ? t.GetString() : null;
@@ -91,6 +91,11 @@ public class UpdateService
     /// </remarks>
     private static JsonElement? PickNewestRelease(JsonElement releases, Version current)
     {
+        // Normalized here rather than trusted from the caller: .NET reports an unspecified
+        // component as -1, so an un-padded 1.10.1 compares as 1.10.1.-1 and every parsed tag looks
+        // newer than it — the app would offer you the version you are already running.
+        current = Normalize(current);
+
         JsonElement? best = null;
         Version? bestVersion = null;
 
@@ -206,7 +211,18 @@ public class UpdateService
         return destPath;
     }
 
-    private static Version Normalize(Version v) => new(v.Major, v.Minor, Math.Max(0, v.Build));
+    /// <summary>
+    /// Pads a version out to four numbers, so comparisons never depend on how many were written.
+    /// </summary>
+    /// <remarks>
+    /// The fourth number is the beta counter, and it extends the stable a beta <em>follows</em>:
+    /// 1.10.3, then 1.10.3.1 and 1.10.3.2, with the finished work shipping as the next stable
+    /// number. Numbering betas after the version they lead to would make a stable sort below its
+    /// own betas and strand everyone who tested them. .NET reports an unspecified component as -1,
+    /// so padding is what stops 1.10.3 comparing as 1.10.3.-1 and losing to itself.
+    /// </remarks>
+    private static Version Normalize(Version v) =>
+        new(v.Major, v.Minor, Math.Max(0, v.Build), Math.Max(0, v.Revision));
 
     private static Version? ParseVersion(string tag)
     {
@@ -215,6 +231,7 @@ public class UpdateService
         if (parts.Length < 2) return null;
         if (!int.TryParse(parts[0], out var major) || !int.TryParse(parts[1], out var minor)) return null;
         var build = parts.Length > 2 && int.TryParse(parts[2], out var b) ? b : 0;
-        return new Version(major, minor, build);
+        var revision = parts.Length > 3 && int.TryParse(parts[3], out var r) ? r : 0;
+        return new Version(major, minor, build, revision);
     }
 }

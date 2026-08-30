@@ -35,7 +35,7 @@ public partial class AddEditServerDialog : Window
         _snapshot = JsonSerializer.Serialize(config);
         DataContext = _config;
 
-        UpdateCrossplayAvailability();
+        UpdateTypeDependentOptions();
     }
 
     private void RefreshDataContext()
@@ -105,6 +105,11 @@ public partial class AddEditServerDialog : Window
             LoaderInstalled = true;
             _snapshot = JsonSerializer.Serialize(_config);
             RefreshDataContext();
+            // The type just changed, and everything below depends on it. Without this the crossplay
+            // and version-bridging checkboxes keep the previous type's answer — convert a Vanilla
+            // server to Paper and they stay greyed out saying Vanilla takes no plugins, which reads
+            // as the conversion not having happened at all.
+            UpdateTypeDependentOptions();
         }
     }
 
@@ -136,13 +141,13 @@ public partial class AddEditServerDialog : Window
     }
 
     /// <summary>
-    /// Greys out crossplay on the server types Geyser has no build for, and says which.
+    /// Greys out the options the current type cannot do, and says why for each.
     /// </summary>
     /// <remarks>
-    /// The type cannot change from this dialog, so this runs once. Explained rather than merely
-    /// disabled: a grey checkbox with no reason reads as a bug in the app.
+    /// Runs again after a type conversion, not only once at open: the Install-loader button changes
+    /// the type from inside this dialog, and the comment here used to claim it could not.
     /// </remarks>
-    private void UpdateCrossplayAvailability()
+    private void UpdateTypeDependentOptions()
     {
         var supported = Services.CrossplayService.CanEnable(_config.Type);
 

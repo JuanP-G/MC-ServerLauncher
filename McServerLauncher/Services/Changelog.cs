@@ -14,6 +14,7 @@ public static class Changelog
     // Newest first. Each version's notes live in a localized resx key.
     private static readonly (Version Version, string Key)[] Entries =
     {
+        (new Version(1, 10, 3, 1), "Whatsnew_1_10_3_1"),
         (new Version(1, 10, 3), "Whatsnew_1_10_3"),
         (new Version(1, 10, 2), "Whatsnew_1_10_2"),
         (new Version(1, 10, 1), "Whatsnew_1_10_1"),
@@ -71,5 +72,15 @@ public static class Changelog
         return result;
     }
 
-    private static string Format(Version v) => $"{v.Major}.{v.Minor}.{v.Build}";
+    /// <summary>
+    /// The version as the release calls itself: three numbers, or four for a beta.
+    /// </summary>
+    /// <remarks>
+    /// The fourth number is only shown when there is one. Printing "1.10.4.0" for a stable release
+    /// would not match its own tag, its installer filename, or anything the user has seen.
+    /// </remarks>
+    private static string Format(Version v) =>
+        v.Revision > 0
+            ? $"{v.Major}.{v.Minor}.{v.Build}.{v.Revision}"
+            : $"{v.Major}.{v.Minor}.{v.Build}";
 }

@@ -80,6 +80,11 @@ dotnet tool install -g docfx   # first time only
      `SHA256SUMS.txt`, which it uses to verify the installer before running it
      (`UpdateService.CheckAsync`). Verification is **mandatory**: without that file the updater
      refuses the silent install and just opens the release page — so never skip it.
+> **Numbering.** A beta carries a fourth number that extends the stable it follows: after `1.10.3`
+> come `1.10.3.1`, `1.10.3.2`, and the finished work ships as the next stable (`1.11.0`). It is that
+> way round on purpose — numbering betas after the version they lead *to* would make the stable sort
+> below its own betas, stranding everyone who tested them.
+
 5. **For a beta**, publish it as a pre-release from its branch instead:
    ```powershell
    gh release create vX.Y.Z --prerelease --target <branch> dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt

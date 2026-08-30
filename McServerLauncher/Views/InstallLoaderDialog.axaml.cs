@@ -162,6 +162,13 @@ public partial class InstallLoaderDialog : Window
             var keepRunBat = KeepRunBatCheck.IsChecked == true;
             var keptRunBat = keepRunBat && File.Exists(runBatPath) ? File.ReadAllText(runBatPath) : null;
 
+            // Before the config says the new type: the old family's folder has to be found under
+            // the name the OLD type used.
+            var archived = ContentMigrationService.ArchiveIfFamilyChanged(
+                _config.FolderPath, _config.Type, target, DateTime.Now);
+            if (archived is not null)
+                AppendLog(string.Format(Localizer.Get("Msg_ContentArchivedFmt"), archived));
+
             var installed = await _installer.InstallAsync(
                 target, _config.FolderPath, version.Id, details, javaPath,
                 _config.MinRamGb, _config.MaxRamGb, progress, writeLoaderJvmArgs: !keepRunBat);

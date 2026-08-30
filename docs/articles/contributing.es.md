@@ -82,6 +82,11 @@ dotnet tool install -g docfx   # solo la primera vez
      (`UpdateService.CheckAsync`). La verificación es **obligatoria**: sin ese archivo el
      actualizador rechaza la instalación silenciosa y solo abre la página de la release — no lo
      omitas nunca.
+> **Numeración.** Una beta lleva un cuarto número que prolonga la estable a la que sigue: tras
+> `1.10.3` vienen `1.10.3.1`, `1.10.3.2`, y lo terminado sale como la siguiente estable (`1.11.0`).
+> Es así a propósito: numerar las betas según la versión a la que llevan haría que la estable
+> quedara por debajo de sus propias betas y dejara tirado a quien las probó.
+
 5. **Si es una beta**, publícala como pre-release desde su rama:
    ```powershell
    gh release create vX.Y.Z --prerelease --target <rama> dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt

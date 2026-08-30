@@ -49,7 +49,11 @@ public class ChangelogTests
         var built = typeof(Changelog).Assembly.GetName().Version!;
         var newest = Entries()[0].Version;
 
-        Assert.Equal(new Version(built.Major, built.Minor, built.Build), newest);
+        // All four numbers: the fourth is the beta counter, and ignoring it would let 1.10.4.1 ship
+        // with 1.10.4's notes and no complaint.
+        Assert.Equal(
+            new Version(built.Major, built.Minor, Math.Max(0, built.Build), Math.Max(0, built.Revision)),
+            new Version(newest.Major, newest.Minor, Math.Max(0, newest.Build), Math.Max(0, newest.Revision)));
     }
 
     [Fact]
