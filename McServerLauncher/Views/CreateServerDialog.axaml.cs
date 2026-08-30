@@ -55,7 +55,11 @@ public partial class CreateServerDialog : Window
 
         NameBox.TextChanged += (_, _) => UpdateFinalPath();
         ParentFolderBox.TextChanged += (_, _) => UpdateFinalPath();
-        TypePicker.SelectionChanged += (_, _) => UpdateTypeDependentOptions();
+        TypePicker.SelectionChanged += (_, _) =>
+        {
+            UpdateTypeDependentOptions();
+            UpdatePathWarning();     // the rule only applies to some types, so it moves with the pick
+        };
         UpdateTypeDependentOptions();
         Loaded += OnLoaded;
     }
@@ -107,6 +111,27 @@ public partial class CreateServerDialog : Window
     {
         var folder = GetTargetFolder();
         FinalPathText.Text = string.IsNullOrWhiteSpace(folder) ? string.Empty : "→ " + folder;
+        UpdatePathWarning(folder);
+    }
+
+    /// <summary>
+    /// Warns while the name is still being typed, for the two characters Paper will not start from.
+    /// </summary>
+    /// <remarks>
+    /// Here rather than only at the Create button because the folder name comes from the server
+    /// name: someone calling a server "Java+Bedrock" should find out now, not after the download
+    /// and three silent restart attempts.
+    /// </remarks>
+    private void UpdatePathWarning(string? folder = null)
+    {
+        folder ??= GetTargetFolder();
+        var offender = BukkitPathRule.Applies(SelectedServerType())
+            ? BukkitPathRule.OffendingCharacter(folder)
+            : null;
+
+        PathWarning.IsVisible = offender is not null;
+        if (offender is { } c)
+            PathWarning.Text = string.Format(Localizer.Get("Msg_BukkitPathFmt"), c);
     }
 
     private string GetTargetFolder()
@@ -152,6 +177,14 @@ public partial class CreateServerDialog : Window
         if (_ports.IsPortInUse(port)) { await Warn(string.Format(Localizer.Get("Msg_PortInUseOther"), port)); return; }
 
         var folder = GetTargetFolder();
+
+        // Refused rather than warned about: the server would download, install, and then exit on
+        // every start without ever reaching the world.
+        if (BukkitPathRule.OffendingCharacter(folder) is { } bad && BukkitPathRule.Applies(SelectedServerType()))
+        {
+            await Warn(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+            return;
+        }
 
         if (Directory.Exists(folder) && Directory.EnumerateFileSystemEntries(folder).Any())
         {

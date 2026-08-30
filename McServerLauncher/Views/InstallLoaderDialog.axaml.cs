@@ -162,6 +162,17 @@ public partial class InstallLoaderDialog : Window
             var keepRunBat = KeepRunBatCheck.IsChecked == true;
             var keptRunBat = keepRunBat && File.Exists(runBatPath) ? File.ReadAllText(runBatPath) : null;
 
+            // Checked before anything is downloaded or moved: converting to Paper in a folder it
+            // refuses to run from produces a server that installs perfectly and never starts.
+            if (BukkitPathRule.Rejects(_config.FolderPath, target))
+            {
+                var bad = BukkitPathRule.OffendingCharacter(_config.FolderPath)!.Value;
+                AppendLog(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+                await Warn(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+                SetBusy(false);
+                return;
+            }
+
             // Before the config says the new type: the old family's folder has to be found under
             // the name the OLD type used.
             var archived = ContentMigrationService.ArchiveIfFamilyChanged(

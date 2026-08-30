@@ -19,6 +19,8 @@
                     <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseParent_Click" />
                 </Grid>
                 <TextBlock x:Name="FinalPathText" Margin="2,4,0,0" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                <TextBlock x:Name="PathWarning" Margin="2,4,0,0" FontSize="12" TextWrapping="Wrap"
+                           IsVisible="False" Foreground="#E3A82B" />
 
                 <TextBlock Text="Software" Margin="0,12,0,4" />
                 <views:ServerTypePicker x:Name="TypePicker" />

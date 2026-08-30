@@ -44,18 +44,28 @@ public partial class ServerTypePicker : UserControl
     }
 
     /// <summary>The type currently picked. Setting it moves the selection without raising the event.</summary>
+    /// <remarks>
+    /// Tracked in a field rather than read back from whichever card is checked. Reading the cards
+    /// made this one selection behind: a RadioButton raises its own "checked" before its siblings
+    /// are cleared, so during the event both the old and the new card were checked and the answer
+    /// came from whichever happened to come first. Everything that reacts to the change — the
+    /// crossplay options, the path warning, the conversion warning — was reading the type the user
+    /// had just moved away from, which looks exactly like the change not taking effect.
+    /// </remarks>
     public ServerType SelectedType
     {
-        get => _cards.FirstOrDefault(c => c.Value.IsChecked == true).Key;
+        get => _selected;
         set
         {
             if (!_cards.TryGetValue(value, out var card)) return;
             _suppress = true;
+            _selected = value;
             card.IsChecked = true;
             _suppress = false;
         }
     }
 
+    private ServerType _selected;
     private bool _suppress;
 
     /// <summary>
@@ -135,7 +145,11 @@ public partial class ServerTypePicker : UserControl
         card.IsCheckedChanged += (_, _) =>
         {
             Paint(card, accent, picked: card.IsChecked == true);
-            if (card.IsChecked == true && !_suppress) SelectionChanged?.Invoke(this, EventArgs.Empty);
+            if (card.IsChecked != true) return;
+
+            // Before the event, so every handler sees the type that was just picked.
+            _selected = entry.Type;
+            if (!_suppress) SelectionChanged?.Invoke(this, EventArgs.Empty);
         };
 
         return card;

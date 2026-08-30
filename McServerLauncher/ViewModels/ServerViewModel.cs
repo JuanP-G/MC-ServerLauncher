@@ -55,6 +55,9 @@ public partial class ServerViewModel : ObservableObject
 
     /// <summary>Whether this run has already explained a Bedrock player being kicked for having no mods.</summary>
     private bool _moddedKickWarned;
+
+    /// <summary>Whether this run has already explained the server refusing to start from its path.</summary>
+    private bool _pathRejectionWarned;
     private DateTime? _lastRunningAtUtc;
 
     public ServerConfig Config { get; }
@@ -737,6 +740,7 @@ public partial class ServerViewModel : ObservableObject
 
             TrackPlayers(line);
             WarnAboutModdedKick(line);
+            WarnAboutRejectedPath(line);
         });
     }
 
@@ -755,6 +759,26 @@ public partial class ServerViewModel : ObservableObject
     /// console would bury the server's real output under it.
     /// </para>
     /// </remarks>
+    /// <summary>
+    /// Turns Paper's "rename the affected folder" into an explanation of what has to be renamed.
+    /// </summary>
+    /// <remarks>
+    /// The server exits cleanly here, so the launcher reads it as a crash and restarts twice more,
+    /// burying the one line that said why under two more attempts. Saying it once, in the user's
+    /// language, with the character and the path named, is the difference between a five-second fix
+    /// and an afternoon.
+    /// </remarks>
+    private void WarnAboutRejectedPath(string line)
+    {
+        if (_pathRejectionWarned || !BukkitPathRule.IsPathRejection(line)) return;
+
+        _pathRejectionWarned = true;
+        var bad = BukkitPathRule.OffendingCharacter(Config.FolderPath);
+        OnConsoleLine(bad is { } c
+            ? string.Format(Localizer.Get("Msg_BukkitPathFmt"), c)
+            : Localizer.Get("Msg_BukkitPathUnknown"));
+    }
+
     private void WarnAboutModdedKick(string line)
     {
         if (_moddedKickWarned || !Config.CrossplayEnabled) return;
@@ -827,6 +851,7 @@ public partial class ServerViewModel : ObservableObject
     {
         _consecutiveCrashes = 0; // a deliberate Start gives auto-restart a fresh budget
         _moddedKickWarned = false; // and a fresh chance to explain the kick, in case the mods changed
+        _pathRejectionWarned = false;
         await StartInternal(isAutoRestart: false);
     }
 
