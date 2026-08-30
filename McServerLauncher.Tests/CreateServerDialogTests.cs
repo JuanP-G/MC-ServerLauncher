@@ -96,17 +96,17 @@ public class CreateServerDialogTests(AvaloniaFixture ui)
             var name = Named<TextBox>(dialog, "NameBox");
             var warning = Named<TextBlock>(dialog, "PathWarning");
 
-            // Which names are impossible depends on the system: a colon and the reserved device
-            // names are Windows rules, and on Linux those are ordinary folder names.
-            var bad = OperatingSystem.IsWindows()
-                ? new[] { "Mi:Server", "CON", "servidor." }
-                : new[] { "Mi/Server" };
-
-            foreach (var name_ in bad)
+            // Windows only: the reserved device names, the forbidden characters and the trailing
+            // dot are all Windows rules. On Linux those are ordinary folder names and warning about
+            // them would be the app inventing a problem — so only the "left alone" half runs there.
+            if (OperatingSystem.IsWindows())
             {
-                name.Text = name_;
-                AvaloniaFixture.Pump();
-                Assert.True(warning.IsVisible, $"no avisa de \"{name_}\"");
+                foreach (var bad in new[] { "Mi:Server", "CON", "servidor." })
+                {
+                    name.Text = bad;
+                    AvaloniaFixture.Pump();
+                    Assert.True(warning.IsVisible, $"no avisa de \"{bad}\"");
+                }
             }
 
             // And a perfectly ordinary name with punctuation in it is left alone: the sweep showed

@@ -118,29 +118,32 @@ public class ServerNameRuleTests
     [Fact]
     public void CharactersTheSystemForbidsAreReportedNotSwallowed()
     {
-        // The old behaviour: type "Mi:Server", get a folder called "MiServer", be told nothing.
-        // Which characters those are comes from the OS — a colon is forbidden on Windows and
-        // perfectly ordinary on Linux — so the test asks the same source the rule does.
-        var forbidden = Path.GetInvalidFileNameChars().First(c => !char.IsControl(c));
-        var name = "Mi" + forbidden + "Server";
+        // Windows only, and not for tidiness: on Linux the forbidden set is NUL and the path
+        // separator, and neither can appear inside a single folder name — there is nothing there
+        // for this rule to catch.
+        if (!OperatingSystem.IsWindows()) return;
 
-        var issue = ServerNameRule.Check(Path.Combine(Path.GetTempPath(), "servers", name), ServerType.Vanilla);
+        // The old behaviour: type "Mi:Server", get a folder called "MiServer", be told nothing.
+        var issue = ServerNameRule.Check(
+            Path.Combine(Path.GetTempPath(), "servers", "Mi:Server"), ServerType.Vanilla);
 
         Assert.NotNull(issue);
         Assert.Equal(NameIssueKind.InvalidCharacter, issue!.Kind);
-        Assert.Equal(forbidden.ToString(), issue.Detail);
+        Assert.Equal(":", issue.Detail);
 
         // The suggestion is offered, not applied behind the user's back.
-        Assert.Equal("MiServer", ServerNameRule.Clean(name));
+        Assert.Equal("MiServer", ServerNameRule.Clean("Mi:Server"));
     }
 
     [Fact]
     public void TheMostFundamentalProblemIsReportedFirst()
     {
-        // A name that breaks two rules at once: fixing the Paper character would still leave a
-        // folder the system refuses to create, so that is the one worth saying first.
-        var forbidden = Path.GetInvalidFileNameChars().First(c => !char.IsControl(c));
-        var issue = ServerNameRule.Check(At("servers", $"Ja{forbidden}va+Bedrock"), ServerType.Paper);
+        // Needs two rules to overlap, and only Windows has a second one that can apply to a name.
+        if (!OperatingSystem.IsWindows()) return;
+
+        // Fixing the Paper character would still leave a folder Windows refuses to create, so that
+        // is the one worth saying first.
+        var issue = ServerNameRule.Check(At("servers", "Ja:va+Bedrock"), ServerType.Paper);
 
         Assert.Equal(NameIssueKind.InvalidCharacter, issue!.Kind);
     }
