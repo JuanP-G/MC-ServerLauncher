@@ -898,6 +898,11 @@ public partial class ServerViewModel : ObservableObject
             if (!await TryFixRejectedPathAsync(isAutoRestart))
                 return;
 
+            // Correct a Geyser config the app wrote before it knew better. Cheap, and it is the
+            // only thing that fixes a server already sitting on the wrong authentication.
+            if (Config.CrossplayEnabled && _crossplay.RepairConfig(Config) is { } repaired)
+                OnConsoleLine(repaired);
+
             // Make sure the configured Java is compatible with this server's version.
             await EnsureCompatibleJavaAsync();
 

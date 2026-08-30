@@ -85,6 +85,40 @@ public class CreateServerDialogTests(AvaloniaFixture ui)
     }
 
     [Fact]
+    public void WindowsRulesAreWarnedAboutWhateverTheType()
+    {
+        // These have nothing to do with the server software: the folder either cannot be created or
+        // ends up named something else. They used to be swallowed — typing "Mi:Server" produced
+        // "MiServer" and said nothing about it.
+        ui.Run(() =>
+        {
+            var (dialog, cards) = Open();
+            var name = Named<TextBox>(dialog, "NameBox");
+            var warning = Named<TextBlock>(dialog, "PathWarning");
+
+            foreach (var bad in new[] { "Mi:Server", "CON", "servidor." })
+            {
+                name.Text = bad;
+                AvaloniaFixture.Pump();
+                Assert.True(warning.IsVisible, $"no avisa de \"{bad}\"");
+            }
+
+            // And a perfectly ordinary name with punctuation in it is left alone: the sweep showed
+            // these run fine, and refusing them would be the app inventing problems.
+            foreach (var fine in new[] { "Survival 2026", "Iberia (v2)", "server#2" })
+            {
+                name.Text = fine;
+                AvaloniaFixture.Pump();
+                Assert.False(warning.IsVisible, $"avisa de \"{fine}\" sin motivo");
+            }
+
+            // Still nothing to complain about once a type with rules of its own is picked.
+            cards[ServerType.Paper].IsChecked = true;
+            Assert.False(warning.IsVisible);
+        });
+    }
+
+    [Fact]
     public void ThePathWarningAppearsForTheTypesThatCareAndOnlyThose()
     {
         // Paper refuses to run from a path with "+" in it; the mod loaders do not care. The warning

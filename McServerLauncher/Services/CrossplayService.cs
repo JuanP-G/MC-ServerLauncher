@@ -219,13 +219,87 @@ public class CrossplayService
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
         var port = config.BedrockPort > 0 ? config.BedrockPort : DefaultBedrockPort;
+        var floodgate = IsFloodgateInstalled(config);
 
         // Written before Geyser has ever run when it has to be: Geyser fills in everything else on
         // first start, so crossplay works on that first start instead of only after a restart.
         var yaml = File.Exists(path)
-            ? GeyserConfigService.SetBedrockPorts(File.ReadAllText(path), port, publicPort)
-            : GeyserConfigService.MinimalConfig(port, publicPort);
+            ? GeyserConfigService.SetBedrockPorts(File.ReadAllText(path), port, publicPort, floodgate)
+            : GeyserConfigService.MinimalConfig(port, publicPort, floodgate);
+
+        yaml = GeyserConfigService.SetJavaAuth(yaml, floodgate, FloodgateKeyPath(config));
 
         File.WriteAllText(path, yaml);
+    }
+
+    /// <summary>
+    /// Corrects a Geyser config the app wrote badly, and says what it changed. Null when nothing did.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Existing servers need this, not just new ones: a config written before this was understood
+    /// sits on <c>auth-type: online</c> for ever, Geyser tries to authenticate against Mojang with
+    /// no account, and every Bedrock player is turned away with Floodgate asking whether it is
+    /// configured correctly. Nothing about that resolves itself.
+    /// </para>
+    /// <para>
+    /// Only the settings the app itself is responsible for are touched, and the file is left alone
+    /// when they already say the right thing — so running it on every start costs nothing and
+    /// cannot fight a config somebody fixed by hand.
+    /// </para>
+    /// </remarks>
+    public string? RepairConfig(ServerConfig config)
+    {
+        var path = GeyserConfigService.ConfigPath(config.FolderPath, config.Type);
+        if (path is null || !File.Exists(path)) return null;
+
+        var before = File.ReadAllText(path);
+        var floodgate = IsFloodgateInstalled(config);
+        var after = GeyserConfigService.SetJavaAuth(before, floodgate, FloodgateKeyPath(config));
+
+        if (after == before) return null;
+
+        File.WriteAllText(path, after);
+        return string.Format(Localizer.Get("Msg_GeyserConfigRepairedFmt"),
+            floodgate ? "floodgate" : "online");
+    }
+
+    /// <summary>Whether a Floodgate jar is sitting in the server's content folder.</summary>
+    /// <remarks>
+    /// Asked of the folder rather than remembered in the config: someone can delete the jar by hand,
+    /// and telling Geyser to authenticate against a Floodgate that is not there turns every Bedrock
+    /// player away.
+    /// </remarks>
+    public static bool IsFloodgateInstalled(ServerConfig config)
+    {
+        var folder = Path.Combine(config.FolderPath, ServerTypeCatalog.ContentFolder(config.Type));
+        if (!Directory.Exists(folder)) return false;
+
+        return Directory.EnumerateFiles(folder)
+            .Select(Path.GetFileName)
+            .Any(n => n is not null
+                   && n.StartsWith("floodgate", StringComparison.OrdinalIgnoreCase)
+                   && n.EndsWith(".jar", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Where Floodgate leaves its key, as Geyser needs to see it: relative to Geyser's own folder.
+    /// </summary>
+    /// <remarks>
+    /// Geyser's comment says a plugin Floodgate is picked up automatically. The mod version is not:
+    /// it writes to <c>config/floodgate/key.pem</c> while Geyser looks beside its own config and
+    /// finds nothing. The relative path is what Geyser resolves, so that is what gets written.
+    /// </remarks>
+    internal static string? FloodgateKeyPath(ServerConfig config)
+    {
+        var geyserConfig = GeyserConfigService.ConfigPath(config.FolderPath, config.Type);
+        if (geyserConfig is null) return null;
+
+        var geyserDir = Path.GetDirectoryName(geyserConfig)!;
+        var key = Path.Combine(config.FolderPath, "config", "floodgate", "key.pem");
+
+        // Forward slashes: this goes into a YAML value that Geyser reads on every platform, and a
+        // Windows backslash in there is an escape waiting to be misread.
+        return Path.GetRelativePath(geyserDir, key).Replace('\\', '/');
     }
 }

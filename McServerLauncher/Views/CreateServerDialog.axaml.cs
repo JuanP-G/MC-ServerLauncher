@@ -115,38 +115,55 @@ public partial class CreateServerDialog : Window
     }
 
     /// <summary>
-    /// Warns while the name is still being typed, for the two characters Paper will not start from.
+    /// Warns while the name is still being typed, for anything that would stop this server working.
     /// </summary>
     /// <remarks>
     /// Here rather than only at the Create button because the folder name comes from the server
-    /// name: someone calling a server "Java+Bedrock" should find out now, not after the download
-    /// and three silent restart attempts.
+    /// name: someone calling a server "Java+Bedrock" should find out now, not after the download and
+    /// three restart attempts. It follows the picked type too, since only some server software
+    /// refuses characters of its own.
     /// </remarks>
     private void UpdatePathWarning(string? folder = null)
     {
         folder ??= GetTargetFolder();
-        var offender = BukkitPathRule.Applies(SelectedServerType())
-            ? BukkitPathRule.OffendingCharacter(folder)
-            : null;
+        var issue = ServerNameRule.Check(folder, SelectedServerType());
 
-        PathWarning.IsVisible = offender is not null;
-        if (offender is { } c)
-            PathWarning.Text = string.Format(Localizer.Get("Msg_BukkitPathFmt"), c);
+        PathWarning.IsVisible = issue is not null;
+        if (issue is not null) PathWarning.Text = Describe(issue, folder);
     }
 
+    /// <summary>Turns a rule violation into something worth reading, with the fix in it.</summary>
+    private static string Describe(NameIssue issue, string folder) => issue.Kind switch
+    {
+        NameIssueKind.InvalidCharacter => string.Format(
+            Localizer.Get("Msg_NameInvalidCharFmt"), issue.Detail,
+            ServerNameRule.Clean(Path.GetFileName(folder))),
+
+        NameIssueKind.ReservedName => string.Format(
+            Localizer.Get("Msg_NameReservedFmt"), issue.Detail),
+
+        NameIssueKind.TrailingDotOrSpace => Localizer.Get("Msg_NameTrailingDot"),
+
+        NameIssueKind.ServerRejectsParentCharacter => string.Format(
+            Localizer.Get("Msg_BukkitPathParentFmt"), issue.Detail),
+
+        _ => string.Format(Localizer.Get("Msg_BukkitPathFmt"), issue.Detail)
+    };
+
+    /// <summary>
+    /// The folder the server would get, using the name exactly as typed.
+    /// </summary>
+    /// <remarks>
+    /// No longer stripped behind the user's back. Typing "Mi:Server" used to produce a folder called
+    /// "MiServer" with nothing said about it; now the name is shown as it is and refused with a
+    /// reason if it cannot be used.
+    /// </remarks>
     private string GetTargetFolder()
     {
-        var name = SanitizeFolderName(NameBox.Text);
+        var name = NameBox.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(ParentFolderBox.Text))
             return string.Empty;
         return Path.Combine(ParentFolderBox.Text.Trim(), name);
-    }
-
-    private static string SanitizeFolderName(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name)) return string.Empty;
-        var invalid = Path.GetInvalidFileNameChars();
-        return new string(name.Trim().Where(c => !invalid.Contains(c)).ToArray());
     }
 
     private async void BrowseParent_Click(object? sender, RoutedEventArgs e)
@@ -178,11 +195,12 @@ public partial class CreateServerDialog : Window
 
         var folder = GetTargetFolder();
 
-        // Refused rather than warned about: the server would download, install, and then exit on
-        // every start without ever reaching the world.
-        if (BukkitPathRule.OffendingCharacter(folder) is { } bad && BukkitPathRule.Applies(SelectedServerType()))
+        // Refused rather than warned about: depending on which rule it breaks, the folder either
+        // cannot be created at all or produces a server that installs fine and then exits on every
+        // start without ever reaching the world.
+        if (ServerNameRule.Check(folder, SelectedServerType()) is { } issue)
         {
-            await Warn(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+            await Warn(Describe(issue, folder));
             return;
         }
 

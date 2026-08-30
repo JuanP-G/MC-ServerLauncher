@@ -10,9 +10,11 @@ namespace McServerLauncher.Services;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Almost nothing needs configuring, because Geyser configures itself: with <c>remote.address</c>
-/// left at <c>auto</c> it picks up the Java server's address, port and auth type, and if Floodgate
-/// is installed alongside it switches to Floodgate authentication and finds its key on its own.
+/// Geyser works out the Java server's address and port on its own. It does <em>not</em> work out
+/// the authentication: a server with Floodgate installed sat on <c>auth-type: online</c> for eight
+/// days, so Geyser tried to authenticate against Mojang, had no account to do it with, and Floodgate
+/// turned every Bedrock player away asking whether it was configured correctly. The launcher writes
+/// that setting rather than trusting it to be detected.
 /// </para>
 /// <para>
 /// Two things it cannot work out by itself. The first is which local UDP port to listen on, when
@@ -66,7 +68,7 @@ public static class GeyserConfigService
     /// one leaves out, so this only needs to carry the parts it could not have guessed. Written
     /// before the first start so crossplay works on the first run rather than the second.
     /// </remarks>
-    public static string MinimalConfig(int bedrockPort, int? broadcastPort)
+    public static string MinimalConfig(int bedrockPort, int? broadcastPort, bool floodgate)
     {
         var lines = new List<string>
         {
@@ -82,14 +84,84 @@ public static class GeyserConfigService
             lines.Add($"  broadcast-port: {advertised}");
         }
 
-        lines.Add("remote:");
-        lines.Add("  # auto: Geyser takes the address, port and auth type from the server it runs on,");
-        lines.Add("  # and switches to Floodgate by itself when Floodgate is installed alongside.");
-        lines.Add("  address: auto");
+        // "java:", not "remote:". Geyser 2.11 renamed the section, and a config still writing
+        // the old name is simply ignored — which is what was happening: the file had no "remote"
+        // in it at all, because Geyser had regenerated it under the new name.
+        lines.Add("java:");
+        lines.Add(floodgate
+            ? "  # Floodgate is installed, so Bedrock players are checked against it rather than Mojang."
+            : "  # No Floodgate installed: Bedrock players would need their own Java account.");
+        lines.Add($"  auth-type: {(floodgate ? "floodgate" : "online")}");
         lines.Add("");
 
         return string.Join('\n', lines);
     }
+
+    /// <summary>
+    /// Sets the authentication Geyser uses towards the Java server, and where to find the key.
+    /// </summary>
+    /// <param name="yaml">The current contents of config.yml.</param>
+    /// <param name="floodgate">Whether Floodgate is installed beside Geyser.</param>
+    /// <param name="keyPath">
+    /// Where Floodgate actually leaves its key, relative to Geyser's own config folder. Pointed at
+    /// rather than copied: Floodgate can regenerate it, and a copy would go stale silently.
+    /// </param>
+    /// <remarks>
+    /// Same line surgery as <see cref="SetBedrockPorts"/>, so the comments Geyser ships — which are
+    /// its real documentation — survive being edited.
+    /// </remarks>
+    public static string SetJavaAuth(string yaml, bool floodgate, string? keyPath = null)
+    {
+        var newline = yaml.Contains("\r\n") ? "\r\n" : "\n";
+        var lines = yaml.Replace("\r\n", "\n").Split('\n').ToList();
+
+        var section = FindSection(lines, "java:");
+        if (section is null)
+        {
+            var appended = yaml.TrimEnd('\r', '\n') + newline + newline
+                           + JavaSection(floodgate).Replace("\n", newline);
+            return appended;
+        }
+
+        var (start, end) = section.Value;
+        SetKey(lines, start, end, "auth-type", floodgate ? "floodgate" : "online");
+
+        var result = string.Join(newline, lines);
+
+        // The key lives under "advanced:", a different section, and only matters with Floodgate.
+        if (floodgate && keyPath is not null)
+            result = SetFloodgateKey(result, keyPath);
+
+        return result;
+    }
+
+    /// <summary>Points Geyser at the key Floodgate generated, wherever that turned out to be.</summary>
+    /// <remarks>
+    /// Geyser resolves this relative to its own config folder and its comment says the plugin
+    /// version is picked up automatically. The mod version is not: Floodgate writes to
+    /// <c>config/floodgate/key.pem</c> while Geyser looks beside itself and finds nothing.
+    /// </remarks>
+    private static string SetFloodgateKey(string yaml, string keyPath)
+    {
+        var newline = yaml.Contains("\r\n") ? "\r\n" : "\n";
+        var lines = yaml.Replace("\r\n", "\n").Split('\n').ToList();
+
+        // Not inside a top-level section of its own: it sits under "advanced:", so the whole file
+        // is searched for the key rather than a range.
+        var index = IndexOfKey(lines, -1, lines.Count, "floodgate-key-file", commented: false);
+        if (index < 0) index = IndexOfKey(lines, -1, lines.Count, "floodgate-key-file", commented: true);
+        if (index < 0) return yaml;   // an older or trimmed config: leave it alone
+
+        var indent = Indent(lines[index]);
+        if (indent.Length == 0) indent = "  ";
+        lines[index] = indent + "floodgate-key-file: " + keyPath;
+
+        return string.Join(newline, lines);
+    }
+
+    /// <summary>The java section as written into a config that has none.</summary>
+    private static string JavaSection(bool floodgate) =>
+        "java:\n  auth-type: " + (floodgate ? "floodgate" : "online") + "\n";
 
     /// <summary>
     /// Returns <paramref name="yaml"/> with the two Bedrock ports set, leaving everything else —
@@ -106,7 +178,7 @@ public static class GeyserConfigService
     /// comment in the file, and in Geyser's config the comments <em>are</em> the documentation —
     /// the next person to open it by hand would find it stripped bare.
     /// </remarks>
-    public static string SetBedrockPorts(string yaml, int bedrockPort, int? broadcastPort)
+    public static string SetBedrockPorts(string yaml, int bedrockPort, int? broadcastPort, bool floodgate = true)
     {
         var newline = yaml.Contains("\r\n") ? "\r\n" : "\n";
         var lines = yaml.Replace("\r\n", "\n").Split('\n').ToList();
@@ -116,7 +188,7 @@ public static class GeyserConfigService
         {
             // No bedrock section at all: append a whole one rather than guess where it belongs.
             var appended = yaml.TrimEnd('\r', '\n') + newline + newline
-                           + MinimalConfig(bedrockPort, broadcastPort).Replace("\n", newline);
+                           + MinimalConfig(bedrockPort, broadcastPort, floodgate).Replace("\n", newline);
             return appended;
         }
 
@@ -190,7 +262,7 @@ public static class GeyserConfigService
     /// <summary>Finds a key line inside a section, live or commented out. -1 when absent.</summary>
     private static int IndexOfKey(List<string> lines, int start, int end, string key, bool commented)
     {
-        for (var i = start + 1; i < end && i < lines.Count; i++)
+        for (var i = Math.Max(0, start + 1); i < end && i < lines.Count; i++)
         {
             var trimmed = lines[i].TrimStart();
 

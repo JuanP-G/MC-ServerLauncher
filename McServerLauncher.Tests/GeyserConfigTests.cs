@@ -169,17 +169,20 @@ public class GeyserConfigTests
     {
         // Written before Geyser has ever run, so crossplay works on the first start and not the
         // second. It must carry the two things Geyser cannot work out for itself.
-        var yaml = GeyserConfigService.MinimalConfig(19140, 51234);
+        var yaml = GeyserConfigService.MinimalConfig(19140, 51234, floodgate: true);
 
         Assert.Equal("19140", ValueOf(yaml, "port"));
         Assert.Equal("51234", ValueOf(yaml, "broadcast-port"));
-        Assert.Equal("auto", ValueOf(yaml, "address"));
+
+        // The authentication too. It used to be left to Geyser to detect, and it never did:
+        // see GeyserAuthTests.
+        Assert.Equal("floodgate", ValueOf(yaml, "auth-type"));
     }
 
     [Fact]
     public void TheMinimalConfigCanBePatchedAfterwards()
     {
-        var yaml = GeyserConfigService.MinimalConfig(19140, 51234);
+        var yaml = GeyserConfigService.MinimalConfig(19140, 51234, floodgate: true);
 
         var patched = GeyserConfigService.SetBedrockPorts(yaml, 19140, 60000);
 
