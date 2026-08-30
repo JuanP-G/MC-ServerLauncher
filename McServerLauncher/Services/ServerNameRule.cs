@@ -83,15 +83,21 @@ public static class ServerNameRule
         if (offending != '\0')
             return new NameIssue(NameIssueKind.InvalidCharacter, offending.ToString());
 
-        // The extension is included in the comparison: "CON.txt" is reserved too.
-        var stem = Path.GetFileNameWithoutExtension(name);
-        if (Reserved.Any(r => string.Equals(r, stem, StringComparison.OrdinalIgnoreCase)))
-            return new NameIssue(NameIssueKind.ReservedName, name);
+        // The next two are Windows rules and are checked only there. On Linux and macOS a folder
+        // called CON, or one ending in a dot, is perfectly ordinary — refusing it would be the app
+        // inventing a problem, which is the thing this class exists not to do.
+        if (OperatingSystem.IsWindows())
+        {
+            // The extension is included in the comparison: "CON.txt" is reserved too.
+            var stem = Path.GetFileNameWithoutExtension(name);
+            if (Reserved.Any(r => string.Equals(r, stem, StringComparison.OrdinalIgnoreCase)))
+                return new NameIssue(NameIssueKind.ReservedName, name);
 
-        // Windows trims these on creation, so the folder ends up with a different name from the one
-        // saved in servers.json, and the server is "missing" the next time the app looks for it.
-        if (name.EndsWith('.') || name.EndsWith(' '))
-            return new NameIssue(NameIssueKind.TrailingDotOrSpace, name);
+            // Windows trims these on creation, so the folder ends up with a different name from the
+            // one saved in servers.json, and the server is "missing" next time the app looks.
+            if (name.EndsWith('.') || name.EndsWith(' '))
+                return new NameIssue(NameIssueKind.TrailingDotOrSpace, name);
+        }
 
         if (BukkitPathRule.Rejects(folderPath, type))
         {

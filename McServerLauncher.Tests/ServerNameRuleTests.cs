@@ -77,49 +77,70 @@ public class ServerNameRuleTests
     [InlineData("COM1")]
     [InlineData("LPT9")]
     [InlineData("Con.txt")]     // reserved with an extension too
-    public void WindowsReservedNamesAreRefused(string name)
+    public void WindowsReservedNamesAreRefusedOnWindows(string name)
     {
-        // Creating one of these fails outright, and nobody would guess why: "CON" looks like a
-        // perfectly ordinary name for a server.
+        // Creating one of these fails outright on Windows, and nobody would guess why: "CON" looks
+        // like a perfectly ordinary name for a server. Elsewhere it is just a name.
         var issue = ServerNameRule.Check(At("servers", name), ServerType.Vanilla);
 
-        Assert.NotNull(issue);
-        Assert.Equal(NameIssueKind.ReservedName, issue!.Kind);
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.NotNull(issue);
+            Assert.Equal(NameIssueKind.ReservedName, issue!.Kind);
+        }
+        else
+        {
+            Assert.Null(issue);
+        }
     }
 
     [Theory]
     [InlineData("servidor.")]
     [InlineData("servidor ")]
-    public void TrailingDotsAndSpacesAreRefused(string name)
+    public void TrailingDotsAndSpacesAreRefusedOnWindows(string name)
     {
         // Windows trims them silently, so the folder ends up named differently from what was saved
-        // in servers.json — and the server goes missing the next time the app looks for it.
+        // in servers.json — and the server goes missing the next time the app looks for it. Other
+        // systems keep the name as given, so there is nothing to warn about.
         var issue = ServerNameRule.Check(Path.Combine(Path.GetTempPath(), "servers", name), ServerType.Vanilla);
 
-        Assert.NotNull(issue);
-        Assert.Equal(NameIssueKind.TrailingDotOrSpace, issue!.Kind);
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.NotNull(issue);
+            Assert.Equal(NameIssueKind.TrailingDotOrSpace, issue!.Kind);
+        }
+        else
+        {
+            Assert.Null(issue);
+        }
     }
 
     [Fact]
-    public void CharactersWindowsForbidsAreReportedNotSwallowed()
+    public void CharactersTheSystemForbidsAreReportedNotSwallowed()
     {
         // The old behaviour: type "Mi:Server", get a folder called "MiServer", be told nothing.
-        var issue = ServerNameRule.Check(Path.Combine(Path.GetTempPath(), "servers", "Mi:Server"), ServerType.Vanilla);
+        // Which characters those are comes from the OS — a colon is forbidden on Windows and
+        // perfectly ordinary on Linux — so the test asks the same source the rule does.
+        var forbidden = Path.GetInvalidFileNameChars().First(c => !char.IsControl(c));
+        var name = "Mi" + forbidden + "Server";
+
+        var issue = ServerNameRule.Check(Path.Combine(Path.GetTempPath(), "servers", name), ServerType.Vanilla);
 
         Assert.NotNull(issue);
         Assert.Equal(NameIssueKind.InvalidCharacter, issue!.Kind);
-        Assert.Equal(":", issue.Detail);
+        Assert.Equal(forbidden.ToString(), issue.Detail);
 
         // The suggestion is offered, not applied behind the user's back.
-        Assert.Equal("MiServer", ServerNameRule.Clean("Mi:Server"));
+        Assert.Equal("MiServer", ServerNameRule.Clean(name));
     }
 
     [Fact]
     public void TheMostFundamentalProblemIsReportedFirst()
     {
         // A name that breaks two rules at once: fixing the Paper character would still leave a
-        // folder Windows refuses to create, so that is the one worth saying.
-        var issue = ServerNameRule.Check(At("servers", "Ja:va+Bedrock"), ServerType.Paper);
+        // folder the system refuses to create, so that is the one worth saying first.
+        var forbidden = Path.GetInvalidFileNameChars().First(c => !char.IsControl(c));
+        var issue = ServerNameRule.Check(At("servers", $"Ja{forbidden}va+Bedrock"), ServerType.Paper);
 
         Assert.Equal(NameIssueKind.InvalidCharacter, issue!.Kind);
     }
