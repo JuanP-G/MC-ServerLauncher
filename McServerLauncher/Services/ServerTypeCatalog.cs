@@ -24,6 +24,32 @@ public enum ServerFamily
     Mods
 }
 
+/// <summary>How well Bedrock players can actually play on a server type.</summary>
+/// <remarks>
+/// <para>
+/// A yes/no answer was not honest enough. Geyser publishes a build for four of the six types, but
+/// "a build exists" and "your friend on a phone can play" are different claims, and the gap between
+/// them is exactly where the questions came from.
+/// </para>
+/// <para>
+/// The levels below are what has actually been observed, not what the projects advertise.
+/// </para>
+/// </remarks>
+public enum CrossplayLevel
+{
+    /// <summary>No Geyser build for this type. Bedrock cannot reach it at all.</summary>
+    None,
+
+    /// <summary>
+    /// It connects, and then depends on the mods. Every mod the client is required to have is a
+    /// door closed to Bedrock, which cannot install any of them.
+    /// </summary>
+    Partial,
+
+    /// <summary>Works. Plugins run on the server alone, so a Bedrock client needs nothing.</summary>
+    Full
+}
+
 /// <summary>
 /// One row per server type: what it is called, what it takes, and whether Bedrock can reach it.
 /// </summary>
@@ -45,15 +71,19 @@ public static class ServerTypeCatalog
     /// <param name="DisplayName">The brand name. Not translated — these are proper nouns.</param>
     /// <param name="Family">Plugins, mods, or neither.</param>
     /// <param name="BadgeColor">Hex, so this table stays free of any UI framework.</param>
-    /// <param name="SupportsCrossplay">Whether Geyser publishes a build that runs on it.</param>
+    /// <param name="Crossplay">How well Bedrock players fare, not merely whether Geyser installs.</param>
     /// <param name="DescriptionKey">resx key for the one line shown under the name in the picker.</param>
     public record Entry(
         ServerType Type,
         string DisplayName,
         ServerFamily Family,
         string BadgeColor,
-        bool SupportsCrossplay,
-        string DescriptionKey);
+        CrossplayLevel Crossplay,
+        string DescriptionKey)
+    {
+        /// <summary>Whether Geyser publishes a build that runs on it — the checkbox's question.</summary>
+        public bool SupportsCrossplay => Crossplay != CrossplayLevel.None;
+    }
 
     /// <summary>
     /// The types, in the order the picker shows them.
@@ -65,18 +95,26 @@ public static class ServerTypeCatalog
     /// </remarks>
     public static readonly Entry[] All =
     {
-        new(ServerType.Vanilla, "Vanilla", ServerFamily.None, "#6E9E52", false, "TypeDesc_Vanilla"),
-        new(ServerType.Paper, "Paper", ServerFamily.Plugins, "#C0563E", true, "TypeDesc_Paper"),
-        new(ServerType.Purpur, "Purpur", ServerFamily.Plugins, "#9B6BC7", true, "TypeDesc_Purpur"),
-        new(ServerType.Fabric, "Fabric", ServerFamily.Mods, "#B58D5A", true, "TypeDesc_Fabric"),
-        new(ServerType.NeoForge, "NeoForge", ServerFamily.Mods, "#D08A3E", true, "TypeDesc_NeoForge"),
-        new(ServerType.Forge, "Forge", ServerFamily.Mods, "#5A8AB5", false, "TypeDesc_Forge"),
+        new(ServerType.Vanilla, "Vanilla", ServerFamily.None, "#6E9E52", CrossplayLevel.None, "TypeDesc_Vanilla"),
+        new(ServerType.Paper, "Paper", ServerFamily.Plugins, "#C0563E", CrossplayLevel.Full, "TypeDesc_Paper"),
+        new(ServerType.Purpur, "Purpur", ServerFamily.Plugins, "#9B6BC7", CrossplayLevel.Full, "TypeDesc_Purpur"),
+        // Full, but only with the Hydraulic checkbox: without it Bedrock connects and sees none of
+        // the content the mods add. That is the checkbox's whole job, and it exists only here.
+        new(ServerType.Fabric, "Fabric", ServerFamily.Mods, "#B58D5A", CrossplayLevel.Full, "TypeDesc_Fabric"),
+        // Partial, and measured: Geyser and Floodgate install and authenticate, and then whether a
+        // Bedrock player gets in depends on which mods are on the server. One that the client is
+        // required to have kicks them with "install NeoForge", which a phone cannot do.
+        new(ServerType.NeoForge, "NeoForge", ServerFamily.Mods, "#D08A3E", CrossplayLevel.Partial, "TypeDesc_NeoForge"),
+        new(ServerType.Forge, "Forge", ServerFamily.Mods, "#5A8AB5", CrossplayLevel.None, "TypeDesc_Forge"),
     };
+
+    /// <summary>How well Bedrock players fare on this type.</summary>
+    public static CrossplayLevel Crossplay(ServerType type) => For(type).Crossplay;
 
     /// <summary>The row for a type. Never null for a value that exists in the enum.</summary>
     public static Entry For(ServerType type) =>
         All.FirstOrDefault(e => e.Type == type)
-        ?? new Entry(type, type.ToString(), ServerFamily.None, "#6E7681", false, string.Empty);
+        ?? new Entry(type, type.ToString(), ServerFamily.None, "#6E7681", CrossplayLevel.None, string.Empty);
 
     /// <summary>Whether this type keeps its content in <c>plugins/</c> rather than <c>mods/</c>.</summary>
     public static bool IsPluginBased(ServerType type) => For(type).Family == ServerFamily.Plugins;

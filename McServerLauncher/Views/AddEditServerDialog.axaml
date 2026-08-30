@@ -68,12 +68,11 @@
                            TextWrapping="Wrap" Text="{loc:Loc Crossplay_Hint}" />
                 <TextBlock x:Name="CrossplayWhyNot" Margin="24,4,0,0" FontSize="12" Opacity="0.75"
                            TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B" />
-                <!-- Shown on Fabric and NeoForge only: Geyser installs fine there, and then the
-                     first content mod locks Bedrock players out. Better said here than discovered
-                     as a kick message telling a phone to install a mod loader. -->
+                <!-- Shown on the mod loaders only, and with different text for each: on Fabric the
+                     content checkbox below is the answer, on NeoForge there is none. The text comes
+                     from CrossplayService.CaveatKey so both dialogs say the same thing. -->
                 <TextBlock x:Name="CrossplayModdedNote" Margin="24,4,0,0" FontSize="12" Opacity="0.75"
-                           TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B"
-                           Text="{loc:Loc Crossplay_ModdedNote}" />
+                           TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B" />
 
                 <CheckBox x:Name="MultiVersionCheck" Margin="0,10,0,0"
                           Content="{loc:Loc MultiVersion_Check}"

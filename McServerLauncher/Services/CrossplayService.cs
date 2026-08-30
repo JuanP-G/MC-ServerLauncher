@@ -86,6 +86,22 @@ public class CrossplayService
         ServerTypeCatalog.For(type).Family == ServerFamily.Mods;
 
     /// <summary>
+    /// The resx key of the caveat to show beside the crossplay checkbox, or null when there is none.
+    /// </summary>
+    /// <remarks>
+    /// Two different caveats, because the two mod loaders are in genuinely different positions and
+    /// one paragraph covering both said less about each. Fabric has an answer — the content
+    /// checkbox — and NeoForge does not, so its note says what to expect instead of what to tick.
+    /// The plugin types get nothing: there is no caveat, and inventing one would be noise.
+    /// </remarks>
+    public static string? CaveatKey(ServerType type) => ServerTypeCatalog.Crossplay(type) switch
+    {
+        CrossplayLevel.Partial => "Crossplay_PartialNote",
+        CrossplayLevel.Full when ModsCanLockOutBedrock(type) => "Crossplay_ModdedNote",
+        _ => null
+    };
+
+    /// <summary>
     /// A free local UDP port for Geyser, starting at Bedrock's default.
     /// </summary>
     /// <remarks>

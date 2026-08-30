@@ -301,7 +301,9 @@ public partial class CreateServerDialog : Window
         CrossplayCheck.IsEnabled = crossplay;
         CrossplayHint.IsVisible = crossplay;
         CrossplayWhyNot.IsVisible = !crossplay;
-        CrossplayModdedNote.IsVisible = crossplay && CrossplayService.ModsCanLockOutBedrock(type);
+        var caveat = CrossplayService.CaveatKey(type);
+        CrossplayModdedNote.IsVisible = crossplay && caveat is not null;
+        if (caveat is not null) CrossplayModdedNote.Text = Localizer.Get(caveat);
 
         if (!crossplay)
         {

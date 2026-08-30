@@ -71,11 +71,22 @@ all with buttons.
   panel** combines several categories at once and shows the applied ones as chips you can remove one by one.
   One-click **Install**, and **enable/disable** or delete installed items. Paper and Purpur browse plugins; the
   mod loaders browse mods.
+- **Installing a mod brings what it needs** — the library mods it depends on (Fabric API, cristallib and the
+  rest) are resolved from Modrinth and installed with it, transitively. This is what the Fabric loader was
+  complaining about when it refused to start with a list of missing dependencies. Only *required* ones, never
+  optional extras, and never a second copy of something already installed. For servers built before this, the
+  **check for updates** button now also reports the libraries that are missing and offers to install them.
 - **Play from Bedrock too** 📱 — one checkbox installs Geyser and Floodgate, picks a free UDP port, creates the
   second (UDP) tunnel Bedrock needs and sets the public port Geyser must advertise — the part almost nobody gets
-  right by hand. Works on Paper, Purpur, Fabric and NeoForge; the card for each type says so before you choose.
-  On the mod loaders there is a catch the app warns about: Geyser joins as a client with no mods, so installing
-  mods the client needs shuts Bedrock players out. For content **and** Bedrock, use Paper or Purpur.
+  right by hand. How well it works depends on the server type, and the card for each type says which before you
+  choose:
+
+  | Type | From Bedrock | Why |
+  |---|---|---|
+  | **Paper**, **Purpur** | ✅ Works | Plugins run on the server alone, so a Bedrock client needs nothing. |
+  | **Fabric** | ✅ Works | With the mod-content checkbox below: Hydraulic converts what the mods add. |
+  | **NeoForge** | ⚠️ Sometimes | It connects and authenticates, and from there it depends on the mods: any that the client is required to have shuts Bedrock out, and Hydraulic no longer publishes for NeoForge. |
+  | **Vanilla**, **Forge** | ❌ No | Geyser publishes no build for them. |
 - **Bedrock players seeing modded content** — on **Fabric**, one more checkbox installs Hydraulic
   (GeyserMC's own) and Fabric API, so the blocks and items the mods add are converted for Bedrock
   clients. Fabric only: Hydraulic stopped publishing NeoForge builds in February 2026. Its authors

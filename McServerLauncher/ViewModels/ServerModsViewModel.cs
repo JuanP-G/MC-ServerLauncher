@@ -29,6 +29,7 @@ public partial class ServerModsViewModel : ObservableObject
 {
     private readonly ServerConfig _config;
     private readonly ModrinthService _modrinthService = new();
+    private readonly ModDependencyService _dependencies;
     
     // --- Local Mods State ---
     
@@ -52,6 +53,21 @@ public partial class ServerModsViewModel : ObservableObject
 
     [ObservableProperty]
     private string _updateStatus = string.Empty;
+
+    // --- Missing library mods ---
+    //
+    // Found by the same scan that looks for updates, because it already knows what every installed
+    // jar is. Kept as a list rather than a count so the offer to install them needs no second walk.
+
+    private IReadOnlyList<ModDependencyService.Needed> _missingDependencies = Array.Empty<ModDependencyService.Needed>();
+
+    [ObservableProperty]
+    private string? _missingDependencyText;
+
+    [ObservableProperty]
+    private bool _isInstallingDependencies;
+
+    public bool HasMissingDependencies => _missingDependencies.Count > 0;
 
     /// <summary>Sort options shown in the UI. Index 0 = relevance, 1 = downloads.</summary>
     public IReadOnlyList<string> SortOptions { get; } = new[]
@@ -312,6 +328,8 @@ public partial class ServerModsViewModel : ObservableObject
     public ServerModsViewModel(ServerConfig config)
     {
         _config = config;
+        // Shares the HTTP client and the store cache with everything else the panel asks for.
+        _dependencies = new ModDependencyService(_modrinthService);
         BrowseTags = StoreTagService.Shared.BrowseTags(ProjectTypeName)
             .Select(t => new StoreTagViewModel(t))
             .ToList();
@@ -411,6 +429,8 @@ public partial class ServerModsViewModel : ObservableObject
             UpdateStatus = updates > 0
                 ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), updates)
                 : Localizer.Get("Msg_NoUpdates");
+
+            await ScanForMissingDependenciesAsync(byHash.Keys, ct);
         }
         catch (Exception ex)
         {
@@ -425,6 +445,194 @@ public partial class ServerModsViewModel : ObservableObject
     private bool CanCheckUpdates => !IsCheckingUpdates;
 
     partial void OnIsCheckingUpdatesChanged(bool value) => CheckUpdatesCommand.NotifyCanExecuteChanged();
+
+    /// <summary>
+    /// Looks for library mods that the installed ones need and that nobody installed.
+    /// </summary>
+    /// <remarks>
+    /// Runs off the hashes the update check already computed, so it costs one extra request. It
+    /// exists for the servers that were built before the installer started pulling dependencies in:
+    /// those fail at start-up with the loader listing what is missing, and there is nothing in the
+    /// app that would otherwise say so.
+    /// </remarks>
+    private async Task ScanForMissingDependenciesAsync(IEnumerable<string> sha1Hashes, CancellationToken ct)
+    {
+        ClearMissingDependencies();
+
+        // What each installed jar *is* — the update endpoint answers what could replace it, and the
+        // dependencies that matter are the ones declared by the file actually on disk.
+        var installed = await _modrinthService.GetVersionsByHashAsync(sha1Hashes, ct);
+        if (installed.Count == 0) return;
+
+        var roots = installed.Values.ToList();
+        var installedIds = roots.Select(r => r.ProjectId).ToList();
+
+        var plan = await _dependencies.ResolveMissingAsync(
+            roots, _config.Type, _config.GameVersion, installedIds, ct);
+
+        // And what the jars ask for themselves, which is how a mod whose Modrinth page lists no
+        // dependencies at all still turns out to need fabric-api.
+        var known = installedIds.Concat(plan.Install.Select(i => i.ProjectId)).ToList();
+        var fromJars = await _dependencies.ResolveByModIdAsync(
+            InstalledMods.SelectMany(m => ModDependencyService.DeclaredModIds(m.FilePath)),
+            _config.Type, _config.GameVersion, known, ct);
+
+        ShowMissingDependencies(new ModDependencyService.Plan(
+            plan.Install.Concat(fromJars.Install).ToList(), plan.Unresolved));
+    }
+
+    /// <summary>Puts a resolved plan on screen. Separated from the scan so it can be shown a plan.</summary>
+    internal void ShowMissingDependencies(ModDependencyService.Plan plan)
+    {
+        if (plan.Install.Count == 0)
+        {
+            ClearMissingDependencies();
+            return;
+        }
+
+        _missingDependencies = plan.Install;
+        MissingDependencyText = string.Format(Localizer.Get("Msg_MissingDepsFoundFmt"),
+            plan.Install.Count, string.Join(", ", plan.Install.Select(d => d.Label)));
+        OnPropertyChanged(nameof(HasMissingDependencies));
+    }
+
+    private void ClearMissingDependencies()
+    {
+        _missingDependencies = Array.Empty<ModDependencyService.Needed>();
+        MissingDependencyText = null;
+        OnPropertyChanged(nameof(HasMissingDependencies));
+    }
+
+    /// <summary>Downloads the library mods the scan found missing.</summary>
+    [RelayCommand]
+    private async Task InstallMissingDependencies(CancellationToken ct)
+    {
+        if (_missingDependencies.Count == 0 || IsInstallingDependencies) return;
+
+        IsInstallingDependencies = true;
+        try
+        {
+            var folder = Path.Combine(_config.FolderPath, ContentFolder);
+            Directory.CreateDirectory(folder);
+
+            foreach (var needed in _missingDependencies)
+            {
+                UpdateStatus = string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label);
+                await DownloadDependencyAsync(needed, folder, ct);
+            }
+
+            UpdateStatus = string.Format(Localizer.Get("Msg_DepsInstalledFmt"), _missingDependencies.Count);
+            ClearMissingDependencies();
+            RefreshInstalledMods();
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ex.Message);
+        }
+        finally
+        {
+            IsInstallingDependencies = false;
+        }
+    }
+
+    /// <summary>
+    /// The project id of every installed jar Modrinth recognises.
+    /// </summary>
+    /// <remarks>
+    /// This is what makes "already installed" a real answer rather than a filename comparison.
+    /// Modrinth's dependencies carry no version range, so a project that is present satisfies them;
+    /// installing a second copy under a different file name is what produces the loader's
+    /// "duplicate mod" failure, which is worse than the one being fixed.
+    /// </remarks>
+    private async Task<List<string>> InstalledProjectIdsAsync(CancellationToken ct)
+    {
+        var folder = Path.Combine(_config.FolderPath, ContentFolder);
+        if (!Directory.Exists(folder)) return new List<string>();
+
+        var hashes = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(folder)
+                     .Where(f => f.EndsWith(".jar", StringComparison.OrdinalIgnoreCase)
+                              || f.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase)))
+        {
+            ct.ThrowIfCancellationRequested();
+            try { hashes.Add(await DownloadVerifier.ComputeHashAsync(file, HashAlgorithmName.SHA1, ct)); }
+            catch { /* unreadable or locked: it simply does not count as installed */ }
+        }
+
+        var known = await _modrinthService.GetVersionsByHashAsync(hashes, ct);
+        return known.Values.Select(v => v.ProjectId).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>
+    /// Installs the required dependencies of <paramref name="version"/> that are not there yet.
+    /// </summary>
+    /// <returns>
+    /// How many were installed, and any that could not be resolved at all. Zero and empty is the
+    /// normal answer for a plugin or for a library mod that depends on nothing.
+    /// </returns>
+    private async Task<(int Installed, IReadOnlyList<string> Unresolved)> InstallDependenciesAsync(
+        VersionResult version, string jarPath, string folder, CancellationToken ct = default)
+    {
+        var declared = ModDependencyService.DeclaredModIds(jarPath);
+        var hasModrinthDeps = version.Dependencies.Any(d =>
+            string.Equals(d.DependencyType, "required", StringComparison.OrdinalIgnoreCase));
+
+        // A plugin, or a mod that genuinely needs nothing: no request, and no hash of the folder.
+        if (!hasModrinthDeps && declared.Count == 0) return (0, Array.Empty<string>());
+
+        Notify(Localizer.Get("Msg_ResolvingDependencies"), failed: false, transient: true);
+
+        var installedIds = await InstalledProjectIdsAsync(ct);
+        var plan = await _dependencies.ResolveMissingAsync(
+            new[] { version }, _config.Type, _config.GameVersion, installedIds, ct);
+
+        var installed = 0;
+        foreach (var needed in plan.Install)
+        {
+            Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label),
+                failed: false, transient: true);
+            await DownloadDependencyAsync(needed, folder, ct);
+            installed++;
+        }
+
+        // Now what the jars themselves ask for, which Modrinth does not always know: Explorify lists
+        // no dependencies there and its own metadata requires fabric-api. Rounds rather than one
+        // pass, because a library pulled in this way can declare its own.
+        var known = new List<string>(installedIds);
+        known.AddRange(plan.Install.Select(i => i.ProjectId));
+        var pending = new List<string>(declared);
+
+        for (var round = 0; round < 3 && pending.Count > 0; round++)
+        {
+            var extra = await _dependencies.ResolveByModIdAsync(
+                pending, _config.Type, _config.GameVersion, known, ct);
+            if (extra.Install.Count == 0) break;
+
+            pending = new List<string>();
+            foreach (var needed in extra.Install)
+            {
+                Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label),
+                    failed: false, transient: true);
+                var written = Path.Combine(folder, Path.GetFileName(needed.File.Filename));
+                await DownloadDependencyAsync(needed, folder, ct);
+
+                known.Add(needed.ProjectId);
+                installed++;
+                pending.AddRange(ModDependencyService.DeclaredModIds(written));
+            }
+        }
+
+        return (installed, plan.Unresolved);
+    }
+
+    /// <summary>One dependency onto disk, verified, with the same path safety as any other install.</summary>
+    private Task DownloadDependencyAsync(ModDependencyService.Needed needed, string folder, CancellationToken ct)
+    {
+        // The file name comes from the API: keep only the name, so it can never write outside here.
+        var path = Path.Combine(folder, Path.GetFileName(needed.File.Filename));
+        return _modrinthService.DownloadModAsync(needed.File.Url, path,
+            needed.File.Hashes?.Sha512, needed.File.Hashes?.Sha1, ct: ct);
+    }
 
     /// <summary>Downloads the newer version flagged by <see cref="CheckUpdates"/> and replaces the old jar.</summary>
     [RelayCommand]
@@ -788,8 +996,23 @@ public partial class ServerModsViewModel : ObservableObject
             // Mods are third-party jars chosen by the user: verify against Modrinth's own checksum.
             await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512, file.Hashes?.Sha1);
 
-            Notify(Localizer.Get("Msg_ModInstalled"), failed: false);
+            // The libraries it needs, in the same click. Almost every Fabric mod declares at least
+            // fabric-api, and a mod installed without them is a server that refuses to start with a
+            // list of names the user never chose and has no way to act on from here.
+            var (extra, unresolved) = await InstallDependenciesAsync(version, destPath, modsFolder);
             RefreshInstalledMods();
+
+            // A dependency with no build for this Minecraft version is not an install failure — the
+            // mod is on disk — but it is the reason the server will not start, so it stays on screen
+            // instead of fading away with the success message.
+            if (unresolved.Count > 0)
+                Notify(string.Format(Localizer.Get("Msg_DepUnresolvedFmt"), string.Join(", ", unresolved)),
+                    failed: true);
+            else
+                Notify(extra == 0
+                        ? Localizer.Get("Msg_ModInstalled")
+                        : string.Format(Localizer.Get("Msg_ModInstalledWithDepsFmt"), extra),
+                    failed: false);
         }
         catch (Exception ex)
         {

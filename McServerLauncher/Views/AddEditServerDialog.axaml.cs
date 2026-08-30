@@ -154,8 +154,9 @@ public partial class AddEditServerDialog : Window
         CrossplayCheck.IsEnabled = supported;
         CrossplayHint.IsVisible = supported;
         CrossplayWhyNot.IsVisible = !supported;
-        CrossplayModdedNote.IsVisible =
-            supported && Services.CrossplayService.ModsCanLockOutBedrock(_config.Type);
+        var caveat = Services.CrossplayService.CaveatKey(_config.Type);
+        CrossplayModdedNote.IsVisible = supported && caveat is not null;
+        if (caveat is not null) CrossplayModdedNote.Text = Localizer.Get(caveat);
 
         var multiVersion = Services.MultiVersionService.CanEnable(_config.Type);
         MultiVersionCheck.IsEnabled = multiVersion;

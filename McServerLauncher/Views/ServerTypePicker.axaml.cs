@@ -104,9 +104,15 @@ public partial class ServerTypePicker : UserControl
                 accent));
 
         // The badge this whole picker exists for: which types a phone or console can actually reach.
-        if (entry.SupportsCrossplay)
-            badges.Children.Add(Badge(Localizer.Get("Badge_Bedrock"),
-                new ImmutableSolidColorBrush(Color.Parse("#3E8AC0"))));
+        // Two badges, not one, because "it works" and "it connects and then the mods decide" are
+        // different promises and only one of them is safe to make in blue.
+        if (entry.Crossplay != CrossplayLevel.None)
+        {
+            var full = entry.Crossplay == CrossplayLevel.Full;
+            badges.Children.Add(Badge(
+                Localizer.Get(full ? "Badge_Bedrock" : "Badge_BedrockPartial"),
+                new ImmutableSolidColorBrush(Color.Parse(full ? "#3E8AC0" : "#B07A2B"))));
+        }
 
         var content = new StackPanel { Spacing = 3 };
         content.Children.Add(new TextBlock
@@ -139,7 +145,11 @@ public partial class ServerTypePicker : UserControl
             Padding = new Avalonia.Thickness(11, 9),
             VerticalContentAlignment = VerticalAlignment.Top
         };
-        ToolTip.SetTip(card, Localizer.Get(entry.DescriptionKey));
+        // The card has room for a badge, not for the caveat behind it. The tooltip carries the rest.
+        var tip = Localizer.Get(entry.DescriptionKey);
+        if (entry.Crossplay == CrossplayLevel.Partial)
+            tip += "\n\n" + Localizer.Get("Crossplay_PartialNote");
+        ToolTip.SetTip(card, tip);
 
         Paint(card, accent, picked: false);
         card.IsCheckedChanged += (_, _) =>

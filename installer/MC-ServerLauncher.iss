@@ -6,7 +6,7 @@
 ; publish.ps1 pasa la versión real con /DMyAppVersion=... (leída del .csproj, fuente única de verdad).
 ; Este valor por defecto solo se usa si se compila el .iss a mano sin ese parámetro.
 #ifndef MyAppVersion
-  #define MyAppVersion "1.10.3.4"
+  #define MyAppVersion "1.11.0"
 #endif
 #define MyAppPublisher "JuanP-G"
 #define MyAppURL "https://github.com/JuanP-G/MC-ServerLauncher"

@@ -74,12 +74,23 @@ todo con botones.
   app. Un **panel de Filtros** combina varias categorías a la vez y muestra las aplicadas como chips que puedes
   quitar de una en una. **Instala** con un clic y **activa/desactiva** o borra lo instalado. Paper y Purpur
   ven plugins; los cargadores de mods ven mods.
+- **Instalar un mod trae lo que necesita** — las librerías de las que depende (Fabric API, cristallib y
+  compañía) se resuelven en Modrinth y se instalan con él, también las de sus dependencias. Es lo que
+  reclamaba el cargador de Fabric cuando se negaba a arrancar con una lista de dependencias que faltaban. Solo
+  las *obligatorias*, nunca los extras opcionales, y nunca una segunda copia de algo que ya está. Para los
+  servidores creados antes, el botón de **buscar actualizaciones** ahora dice además qué librerías faltan y
+  ofrece instalarlas.
 - **Jugar también desde Bedrock** 📱 — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea el
   segundo túnel (UDP) que Bedrock necesita y configura el puerto público que Geyser debe anunciar — la parte que
-  casi nadie acierta a mano. Funciona en Paper, Purpur, Fabric y NeoForge, y la tarjeta de cada tipo lo dice antes
-  de que elijas. En los cargadores de mods hay una trampa de la que la app avisa: Geyser entra como un cliente sin
-  mods, así que instalar mods que el cliente necesita deja fuera a los de Bedrock. Para tener contenido **y**
-  Bedrock, usa Paper o Purpur.
+  casi nadie acierta a mano. Lo bien que funciona depende del tipo de servidor, y la tarjeta de cada tipo lo dice
+  antes de que elijas:
+
+  | Tipo | Desde Bedrock | Por qué |
+  |---|---|---|
+  | **Paper**, **Purpur** | ✅ Funciona | Los plugins solo corren en el servidor: el cliente de Bedrock no necesita nada. |
+  | **Fabric** | ✅ Funciona | Con la casilla de contenido de mods: Hydraulic convierte lo que añaden los mods. |
+  | **NeoForge** | ⚠️ A veces | Conecta y autentica, y a partir de ahí depende de los mods: cualquiera que el cliente necesite tener deja fuera a Bedrock, y Hydraulic ya no publica para NeoForge. |
+  | **Vanilla**, **Forge** | ❌ No | Geyser no publica ninguna versión para ellos. |
 - **Que los de Bedrock vean el contenido de los mods** — en **Fabric**, otra casilla instala
   Hydraulic (de los propios GeyserMC) y Fabric API, y los bloques y objetos que añaden los mods se
   convierten para los clientes de Bedrock. Solo en Fabric: Hydraulic dejó de publicar para NeoForge
