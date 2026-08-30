@@ -42,7 +42,10 @@ public sealed class AvaloniaFixture : IDisposable
         })
         { IsBackground = true, Name = "avalonia-tests" };
 
-        _ui.SetApartmentState(ApartmentState.STA);
+        // Windows only: on Linux this throws PlatformNotSupportedException ("COM Interop is not
+        // supported"), which took the whole Linux CI leg down with it. Avalonia does not need an
+        // STA thread there; it is a Windows COM requirement.
+        if (OperatingSystem.IsWindows()) _ui.SetApartmentState(ApartmentState.STA);
         _ui.Start();
 
         if (!ready.Task.Wait(TimeSpan.FromSeconds(30)))
