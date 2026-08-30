@@ -69,8 +69,13 @@ all with buttons.
   what it does in your language** and a warning when it also has to be installed on the client. Open a **details
   page** with the gallery, versions, dependencies, links and related mods without leaving the app. A **Filters
   panel** combines several categories at once and shows the applied ones as chips you can remove one by one.
-  One-click **Install**, and **enable/disable** or delete installed items. Paper servers browse plugins; the
-  rest, mods.
+  One-click **Install**, and **enable/disable** or delete installed items. Paper and Purpur browse plugins; the
+  mod loaders browse mods.
+- **Play from Bedrock too** 📱 — one checkbox installs Geyser and Floodgate, picks a free UDP port, creates the
+  second (UDP) tunnel Bedrock needs and sets the public port Geyser must advertise — the part almost nobody gets
+  right by hand. Works on Paper, Purpur, Fabric and NeoForge; the card for each type says so before you choose.
+  On the mod loaders there is a catch the app warns about: Geyser joins as a client with no mods, so installing
+  mods the client needs shuts Bedrock players out. For content **and** Bedrock, use Paper or Purpur.
 - **Play from other Minecraft versions** — one checkbox installs ViaVersion and ViaBackwards, so clients both newer
   and older than the server can join. Plugin servers only.
 - **Change a server's type** — turn an existing server into Paper/Purpur/Fabric/Forge/NeoForge or back to Vanilla, **keeping the

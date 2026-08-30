@@ -80,7 +80,15 @@ dotnet tool install -g docfx   # first time only
      `SHA256SUMS.txt`, which it uses to verify the installer before running it
      (`UpdateService.CheckAsync`). Verification is **mandatory**: without that file the updater
      refuses the silent install and just opens the release page — so never skip it.
-5. Publishing the release automatically triggers the **Linux** (`release-linux.yml`) and **macOS**
+5. **For a beta**, publish it as a pre-release from its branch instead:
+   ```powershell
+   gh release create vX.Y.Z --prerelease --target <branch> dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt
+   ```
+   GitHub leaves pre-releases out of `/releases/latest`, so people on the stable line are never pushed onto one.
+   From 1.10.1 the updater reads the release *list* instead, which is what makes a beta reachable at all — and it
+   says it is a beta before the Update button is pressed. Anything older than 1.10.1 cannot see betas at all, so
+   a first beta after a stable has to be handed over by hand.
+6. Publishing the release automatically triggers the **Linux** (`release-linux.yml`) and **macOS**
    (`release-macos.yml`) workflows, which build and attach the `.AppImage` and the two `.dmg`s. Don't
    upload those by hand — just wait for the workflows to finish.
 

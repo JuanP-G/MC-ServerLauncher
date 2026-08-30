@@ -72,8 +72,14 @@ todo con botones.
   en lenguaje claro y en tu idioma** de para qué sirve, y avisa cuando además hay que instalarlo en el cliente.
   Abre la **ficha completa** con galería, versiones, dependencias, enlaces y mods relacionados sin salir de la
   app. Un **panel de Filtros** combina varias categorías a la vez y muestra las aplicadas como chips que puedes
-  quitar de una en una. **Instala** con un clic y **activa/desactiva** o borra lo instalado. Los servidores
-  Paper ven plugins; el resto, mods.
+  quitar de una en una. **Instala** con un clic y **activa/desactiva** o borra lo instalado. Paper y Purpur
+  ven plugins; los cargadores de mods ven mods.
+- **Jugar también desde Bedrock** 📱 — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea el
+  segundo túnel (UDP) que Bedrock necesita y configura el puerto público que Geyser debe anunciar — la parte que
+  casi nadie acierta a mano. Funciona en Paper, Purpur, Fabric y NeoForge, y la tarjeta de cada tipo lo dice antes
+  de que elijas. En los cargadores de mods hay una trampa de la que la app avisa: Geyser entra como un cliente sin
+  mods, así que instalar mods que el cliente necesita deja fuera a los de Bedrock. Para tener contenido **y**
+  Bedrock, usa Paper o Purpur.
 - **Jugar desde otras versiones de Minecraft** — una casilla instala ViaVersion y ViaBackwards, para que entren
   clientes más nuevos y más antiguos que el servidor. Solo en servidores de plugins.
 - **Cambiar el tipo de un servidor** — convierte uno existente a Paper/Purpur/Fabric/Forge/NeoForge o de vuelta a Vanilla,
