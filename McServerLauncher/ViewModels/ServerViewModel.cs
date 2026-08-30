@@ -58,6 +58,9 @@ public partial class ServerViewModel : ObservableObject
 
     /// <summary>Whether this run has already explained the server refusing to start from its path.</summary>
     private bool _pathRejectionWarned;
+
+    /// <summary>Set when the server failed for a reason that repeating the start cannot change.</summary>
+    private bool _startFailureIsFinal;
     private DateTime? _lastRunningAtUtc;
 
     public ServerConfig Config { get; }
@@ -773,6 +776,10 @@ public partial class ServerViewModel : ObservableObject
         if (_pathRejectionWarned || !BukkitPathRule.IsPathRejection(line)) return;
 
         _pathRejectionWarned = true;
+        // Belt as well as braces: the check before starting should mean this is never reached, but
+        // if the server ever refuses the path for a reason that check did not foresee, restarting
+        // three more times would only bury the one line that said why.
+        _startFailureIsFinal = true;
         var bad = BukkitPathRule.OffendingCharacter(Config.FolderPath);
         OnConsoleLine(bad is { } c
             ? string.Format(Localizer.Get("Msg_BukkitPathFmt"), c)
@@ -852,6 +859,7 @@ public partial class ServerViewModel : ObservableObject
         _consecutiveCrashes = 0; // a deliberate Start gives auto-restart a fresh budget
         _moddedKickWarned = false; // and a fresh chance to explain the kick, in case the mods changed
         _pathRejectionWarned = false;
+        _startFailureIsFinal = false;
         await StartInternal(isAutoRestart: false);
     }
 
@@ -883,6 +891,12 @@ public partial class ServerViewModel : ObservableObject
                 if (!await TryFreePortAsync(port.Value))
                     return;
             }
+
+            // Paper and Purpur refuse to run from a path with "+" or "!" in it. Checked here
+            // rather than left to fail: the server would exit cleanly on every attempt, which reads
+            // as a crash and burns the whole auto-restart budget on something a retry cannot change.
+            if (!await TryFixRejectedPathAsync(isAutoRestart))
+                return;
 
             // Make sure the configured Java is compatible with this server's version.
             await EnsureCompatibleJavaAsync();
@@ -920,6 +934,12 @@ public partial class ServerViewModel : ObservableObject
                 ? string.Format(Localizer.Get("Msg_ServerCrashedReasonFmt"), codeText, reason)
                 : string.Format(Localizer.Get("Msg_ServerCrashedFmt"), codeText));
             NotifyIf(NotificationKind.ServerCrashed, Localizer.Get("Notif_Crashed"));
+
+            if (_startFailureIsFinal)
+            {
+                OnConsoleLine(Localizer.Get("Msg_NotRetryingFinal"));
+                return;
+            }
 
             var stableRun = _lastRunningAtUtc is { } last && DateTime.UtcNow - last >= StabilityWindow;
             if (stableRun) _consecutiveCrashes = 0;
@@ -1015,6 +1035,67 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>
     /// The port is busy: identifies the process and offers to close it. Returns true if it became free.
     /// </summary>
+    /// <summary>
+    /// Stops a start that would fail on the path, offering to rename the folder when it can.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Renaming is offered only when the offending character is in the server's own folder name.
+    /// When it sits in a parent, renaming that folder would move everything else under it as well,
+    /// which is not the app's to decide — so it says which character and where, and stops.
+    /// </para>
+    /// <para>
+    /// Skipped during an unattended auto-restart for the same reason the busy-port check is: there
+    /// is nobody there to answer a dialog.
+    /// </para>
+    /// </remarks>
+    private async Task<bool> TryFixRejectedPathAsync(bool isAutoRestart)
+    {
+        if (!BukkitPathRule.Rejects(Config.FolderPath, Config.Type)) return true;
+
+        var bad = BukkitPathRule.OffendingCharacter(Config.FolderPath)!.Value;
+        var suggestion = BukkitPathRule.SuggestCleanPath(Config.FolderPath);
+
+        if (suggestion is null || isAutoRestart)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+            return false;
+        }
+
+        var accepted = await MessageBox.ConfirmAsync(
+            string.Format(Localizer.Get("Msg_BukkitPathRenameConfirm"),
+                bad, Path.GetFileName(Config.FolderPath), Path.GetFileName(suggestion)),
+            Localizer.Get("Msg_BukkitPathRenameTitle"));
+
+        if (!accepted)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+            return false;
+        }
+
+        try
+        {
+            // Refuse rather than merge into something that already exists: a folder of that name
+            // may be another server, and Directory.Move would fail halfway or bury it.
+            if (Directory.Exists(suggestion) || File.Exists(suggestion))
+                throw new IOException(string.Format(
+                    Localizer.Get("Msg_BukkitPathRenameExists"), Path.GetFileName(suggestion)));
+
+            Directory.Move(Config.FolderPath, suggestion);
+            Config.FolderPath = suggestion;
+            ConfigChanged?.Invoke();      // persists the new path before anything else runs
+
+            OnConsoleLine(string.Format(Localizer.Get("Msg_BukkitPathRenamedFmt"), suggestion));
+            RefreshInfo();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            return false;
+        }
+    }
+
     private async Task<bool> TryFreePortAsync(int port)
     {
         var pid = _ports.GetListeningPid(port);
@@ -1224,6 +1305,7 @@ public partial class ServerViewModel : ObservableObject
     // --- Crossplay: Java and Bedrock on the same server ---
 
     private readonly MultiVersionService _multiVersion = new();
+    private readonly HydraulicService _hydraulic = new();
     private readonly CrossplayService _crossplay = new();
 
     /// <summary>The Bedrock host and port, shown separately. Null when there is no Bedrock tunnel.</summary>
@@ -1237,6 +1319,35 @@ public partial class ServerViewModel : ObservableObject
     public bool HasBedrockAddress => !string.IsNullOrEmpty(BedrockHost);
 
     partial void OnBedrockHostChanged(string? value) => OnPropertyChanged(nameof(HasBedrockAddress));
+
+    /// <summary>Installs Hydraulic and Fabric API, so Bedrock players see what the mods add.</summary>
+    /// <remarks>
+    /// The flag is only set once the install has actually succeeded. A server remembering it has
+    /// this when the download failed would leave Bedrock players staring at invisible blocks with
+    /// the app insisting it was handled.
+    /// </remarks>
+    public async Task SetUpBedrockModContentAsync()
+    {
+        if (!HydraulicService.CanEnable(Config.Type))
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_HydraulicUnsupportedFmt"), Config.Type));
+            return;
+        }
+
+        try
+        {
+            await _hydraulic.InstallAsync(Config, new Progress<string>(OnConsoleLine));
+            RunOnUi(Mods.ReloadInstalled);
+
+            Config.BedrockModContentEnabled = true;
+            ConfigChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Config.BedrockModContentEnabled = false;
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
 
     /// <summary>Installs ViaVersion and ViaBackwards, so other Minecraft versions can join.</summary>
     /// <remarks>

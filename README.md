@@ -76,6 +76,10 @@ all with buttons.
   right by hand. Works on Paper, Purpur, Fabric and NeoForge; the card for each type says so before you choose.
   On the mod loaders there is a catch the app warns about: Geyser joins as a client with no mods, so installing
   mods the client needs shuts Bedrock players out. For content **and** Bedrock, use Paper or Purpur.
+- **Bedrock players seeing modded content** — on **Fabric**, one more checkbox installs Hydraulic
+  (GeyserMC's own) and Fabric API, so the blocks and items the mods add are converted for Bedrock
+  clients. Fabric only: Hydraulic stopped publishing NeoForge builds in February 2026. Its authors
+  call it very early development, and the app says so before you tick it.
 - **Play from other Minecraft versions** — one checkbox installs ViaVersion and ViaBackwards, so clients both newer
   and older than the server can join. Plugin servers only.
 - **Change a server's type** — turn an existing server into Paper/Purpur/Fabric/Forge/NeoForge or back to Vanilla, **keeping the

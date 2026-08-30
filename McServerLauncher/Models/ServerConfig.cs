@@ -139,6 +139,14 @@ public class ServerConfig
     /// </remarks>
     public bool CrossplayEnabled { get; set; }
 
+    /// <summary>Whether Hydraulic is installed, so Bedrock players see what the mods add.</summary>
+    /// <remarks>
+    /// Separate from <see cref="CrossplayEnabled"/> because it answers a different question. Geyser
+    /// gets Bedrock players <em>in</em>; without this they arrive to a world whose modded blocks and
+    /// items they cannot see. Fabric only — see <see cref="Services.HydraulicService"/>.
+    /// </remarks>
+    public bool BedrockModContentEnabled { get; set; }
+
     /// <summary>Whether ViaVersion and ViaBackwards are installed, for joining from other versions.</summary>
     /// <remarks>
     /// Separate from <see cref="CrossplayEnabled"/> on purpose. Geyser does not need these to work,

@@ -163,6 +163,12 @@ public partial class AddEditServerDialog : Window
         MultiVersionWhyNot.IsVisible = !multiVersion;
         if (!multiVersion) _config.MultiVersionEnabled = false;
 
+        var modContent = Services.HydraulicService.CanEnable(_config.Type);
+        HydraulicCheck.IsEnabled = modContent;
+        HydraulicHint.IsVisible = modContent;
+        HydraulicWhyNot.IsVisible = !modContent;
+        if (!modContent) _config.BedrockModContentEnabled = false;
+
         if (!supported)
         {
             _config.CrossplayEnabled = false;
@@ -188,6 +194,7 @@ public partial class AddEditServerDialog : Window
         _config.WakeOnDemand = original.WakeOnDemand;
         _config.CrossplayEnabled = original.CrossplayEnabled;
         _config.MultiVersionEnabled = original.MultiVersionEnabled;
+        _config.BedrockModContentEnabled = original.BedrockModContentEnabled;
         _config.BedrockPort = original.BedrockPort;
         _config.BackupsEnabled = original.BackupsEnabled;
         _config.BackupRetention = original.BackupRetention;

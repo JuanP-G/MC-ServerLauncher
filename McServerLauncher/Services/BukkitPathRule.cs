@@ -53,6 +53,44 @@ public static class BukkitPathRule
     public static bool Rejects(string? path, ServerType type) =>
         Applies(type) && OffendingCharacter(path) is not null;
 
+    /// <summary>
+    /// Whether the offending character is in the server's own folder rather than above it.
+    /// </summary>
+    /// <remarks>
+    /// The difference decides whether the app may offer to fix it. Renaming the server's own folder
+    /// affects only that server; renaming a parent would move everything else living under it too,
+    /// which is not the app's to do.
+    /// </remarks>
+    public static bool IsInServerFolderName(string? path)
+    {
+        if (OffendingCharacter(path) is null) return false;
+
+        var name = Path.GetFileName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(path!)));
+        return name.IndexOfAny(Rejected) >= 0;
+    }
+
+    /// <summary>
+    /// The same path with the offending characters replaced by a hyphen, or null when there is
+    /// nothing to fix or the problem is in a parent folder.
+    /// </summary>
+    /// <remarks>
+    /// A hyphen rather than nothing: "Java+Bedrock" becoming "JavaBedrock" reads like a typo, while
+    /// "Java-Bedrock" reads like the name the user meant. Only the last segment is touched.
+    /// </remarks>
+    public static string? SuggestCleanPath(string? path)
+    {
+        if (!IsInServerFolderName(path)) return null;
+
+        var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path!));
+        var parent = Path.GetDirectoryName(full);
+        if (parent is null) return null;
+
+        var cleaned = Path.GetFileName(full);
+        foreach (var c in Rejected) cleaned = cleaned.Replace(c, '-');
+
+        return Path.Combine(parent, cleaned);
+    }
+
     /// <summary>Whether a console line is the server refusing to run because of its path.</summary>
     /// <remarks>
     /// Both wordings, because they come from different programs. Matched so an existing server that

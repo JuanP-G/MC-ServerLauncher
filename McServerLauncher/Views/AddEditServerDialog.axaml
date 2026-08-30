@@ -84,6 +84,15 @@
                            TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B"
                            Text="{loc:Loc MultiVersion_Unsupported}" />
 
+                <CheckBox x:Name="HydraulicCheck" Margin="0,10,0,0"
+                          Content="{loc:Loc Hydraulic_Check}"
+                          IsChecked="{Binding BedrockModContentEnabled, Mode=TwoWay}" />
+                <TextBlock x:Name="HydraulicHint" Margin="24,4,0,0" FontSize="12" Opacity="0.6"
+                           TextWrapping="Wrap" Text="{loc:Loc Hydraulic_Hint}" />
+                <TextBlock x:Name="HydraulicWhyNot" Margin="24,4,0,0" FontSize="12" Opacity="0.75"
+                           TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B"
+                           Text="{loc:Loc Hydraulic_Unsupported}" />
+
                 <Separator Margin="0,18,0,12" />
 
                 <TextBlock Text="{loc:Loc Idle_Section}" FontWeight="SemiBold" />

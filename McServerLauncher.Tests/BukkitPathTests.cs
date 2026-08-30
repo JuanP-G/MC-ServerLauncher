@@ -67,6 +67,61 @@ public class BukkitPathTests
         Assert.False(BukkitPathRule.IsPathRejection(""));
     }
 
+    [Theory]
+    [InlineData(@"C:\Users\JPG\Downloads\Java+Bedrock (paper)", true)]
+    [InlineData(@"C:\servers\wow!", true)]
+    // The character is above the server: renaming that folder would move everything else under it
+    // too, which is not the app's to decide.
+    [InlineData(@"C:\my+stuff\servers\survival", false)]
+    [InlineData(@"C:\servers\survival", false)]
+    public void RenamingIsOnlyOfferedForTheServersOwnFolder(string path, bool expected) =>
+        Assert.Equal(expected, BukkitPathRule.IsInServerFolderName(path));
+
+    [Fact]
+    public void TheSuggestedNameReplacesTheCharacterRatherThanDroppingIt()
+    {
+        // "JavaBedrock" reads like a typo; "Java-Bedrock" reads like the name that was meant.
+        var suggested = BukkitPathRule.SuggestCleanPath(@"C:\Users\JPG\Downloads\Java+Bedrock (paper)");
+
+        Assert.Equal("Java-Bedrock (paper)", Path.GetFileName(suggested));
+        Assert.Equal(@"C:\Users\JPG\Downloads", Path.GetDirectoryName(suggested));
+    }
+
+    [Fact]
+    public void NothingIsSuggestedWhenThereIsNothingToFixOrItIsNotOurs()
+    {
+        Assert.Null(BukkitPathRule.SuggestCleanPath(@"C:\servers\survival"));
+        Assert.Null(BukkitPathRule.SuggestCleanPath(@"C:\my+stuff\servers\survival"));
+        Assert.Null(BukkitPathRule.SuggestCleanPath(null));
+    }
+
+    [Fact]
+    public void TheRenameStringsExistInEveryLanguage()
+    {
+        string[] keys =
+        {
+            "Msg_BukkitPathRenameTitle", "Msg_BukkitPathRenameConfirm",
+            "Msg_BukkitPathRenamedFmt", "Msg_BukkitPathRenameExists", "Msg_NotRetryingFinal",
+        };
+
+        var original = System.Globalization.CultureInfo.CurrentUICulture;
+        try
+        {
+            foreach (var lang in new[] { "es", "en", "pt", "fr", "de" })
+            {
+                System.Globalization.CultureInfo.CurrentUICulture =
+                    System.Globalization.CultureInfo.GetCultureInfo(lang);
+
+                foreach (var key in keys)
+                {
+                    var value = McServerLauncher.Localization.Localizer.Get(key);
+                    Assert.False(string.IsNullOrWhiteSpace(value) || value == key, $"falta {key} en {lang}");
+                }
+            }
+        }
+        finally { System.Globalization.CultureInfo.CurrentUICulture = original; }
+    }
+
     [Fact]
     public void TheExplanationExistsInEveryLanguage()
     {

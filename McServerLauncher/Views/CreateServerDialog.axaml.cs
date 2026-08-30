@@ -241,6 +241,7 @@ public partial class CreateServerDialog : Window
                 JarFile = string.IsNullOrEmpty(jarName) ? "server.jar" : jarName,
                 Type = serverType,
                 MultiVersionEnabled = MultiVersionCheck.IsChecked == true,
+                BedrockModContentEnabled = HydraulicCheck.IsChecked == true,
                 GameVersion = version.Id,
                 ModLoaderVersion = loaderVersion,
                 ForgeArgs = forgeArgs,
@@ -297,6 +298,12 @@ public partial class CreateServerDialog : Window
         MultiVersionHint.IsVisible = multiVersion;
         MultiVersionWhyNot.IsVisible = !multiVersion;
         if (!multiVersion) MultiVersionCheck.IsChecked = false;
+
+        var modContent = HydraulicService.CanEnable(type);
+        HydraulicCheck.IsEnabled = modContent;
+        HydraulicHint.IsVisible = modContent;
+        HydraulicWhyNot.IsVisible = !modContent;
+        if (!modContent) HydraulicCheck.IsChecked = false;
     }
 
     /// <summary>The picked server type.</summary>

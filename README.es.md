@@ -80,6 +80,11 @@ todo con botones.
   de que elijas. En los cargadores de mods hay una trampa de la que la app avisa: Geyser entra como un cliente sin
   mods, así que instalar mods que el cliente necesita deja fuera a los de Bedrock. Para tener contenido **y**
   Bedrock, usa Paper o Purpur.
+- **Que los de Bedrock vean el contenido de los mods** — en **Fabric**, otra casilla instala
+  Hydraulic (de los propios GeyserMC) y Fabric API, y los bloques y objetos que añaden los mods se
+  convierten para los clientes de Bedrock. Solo en Fabric: Hydraulic dejó de publicar para NeoForge
+  en febrero de 2026. Sus autores lo consideran de desarrollo muy temprano, y la app lo dice antes
+  de que marques la casilla.
 - **Jugar desde otras versiones de Minecraft** — una casilla instala ViaVersion y ViaBackwards, para que entren
   clientes más nuevos y más antiguos que el servidor. Solo en servidores de plugins.
 - **Cambiar el tipo de un servidor** — convierte uno existente a Paper/Purpur/Fabric/Forge/NeoForge o de vuelta a Vanilla,

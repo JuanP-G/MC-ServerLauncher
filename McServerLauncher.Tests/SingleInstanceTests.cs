@@ -61,9 +61,15 @@ public class SingleInstanceTests : IDisposable
         var asked = new TaskCompletionSource();
         running!.ActivationRequested += () => asked.TrySetResult();
 
+        // Wait for the listener before signalling. TryAcquire starts it asynchronously, so
+        // signalling straight away raced it: the connection was refused and the test failed about
+        // once in five, blaming the code rather than its own timing. Its neighbour below already
+        // used this helper; this one did not.
+        (await ConnectWhenListening()).Dispose();
+
         Assert.True(SingleInstance.SignalExistingInstance());
 
-        var arrived = await Task.WhenAny(asked.Task, Task.Delay(TimeSpan.FromSeconds(5)));
+        var arrived = await Task.WhenAny(asked.Task, Task.Delay(TimeSpan.FromSeconds(15)));
         Assert.Same(asked.Task, arrived);
     }
 

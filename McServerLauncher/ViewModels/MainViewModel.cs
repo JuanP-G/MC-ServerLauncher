@@ -498,6 +498,12 @@ public partial class MainViewModel : ObservableObject
                 Save();
             }
 
+            if (dialog.ResultConfig.BedrockModContentEnabled)
+            {
+                await vm.SetUpBedrockModContentAsync();
+                Save();
+            }
+
             // First launch to generate the world and files.
             if (dialog.AutoStart)
                 vm.StartCommand.Execute(null);
@@ -517,6 +523,7 @@ public partial class MainViewModel : ObservableObject
         // cannot.
         var hadCrossplay = server.Config.CrossplayEnabled;
         var hadMultiVersion = server.Config.MultiVersionEnabled;
+        var hadModContent = server.Config.BedrockModContentEnabled;
 
         var dialog = new AddEditServerDialog(server.Config);
         var accepted = await dialog.ShowDialog<bool>(Owner);
@@ -540,6 +547,12 @@ public partial class MainViewModel : ObservableObject
             if (!hadMultiVersion && server.Config.MultiVersionEnabled)
             {
                 await server.SetUpMultiVersionAsync();
+                Save();
+            }
+
+            if (!hadModContent && server.Config.BedrockModContentEnabled)
+            {
+                await server.SetUpBedrockModContentAsync();
                 Save();
             }
 
