@@ -1198,6 +1198,7 @@ public partial class ServerViewModel : ObservableObject
 
     // --- Crossplay: Java and Bedrock on the same server ---
 
+    private readonly MultiVersionService _multiVersion = new();
     private readonly CrossplayService _crossplay = new();
 
     /// <summary>The Bedrock host and port, shown separately. Null when there is no Bedrock tunnel.</summary>
@@ -1211,6 +1212,37 @@ public partial class ServerViewModel : ObservableObject
     public bool HasBedrockAddress => !string.IsNullOrEmpty(BedrockHost);
 
     partial void OnBedrockHostChanged(string? value) => OnPropertyChanged(nameof(HasBedrockAddress));
+
+    /// <summary>Installs ViaVersion and ViaBackwards, so other Minecraft versions can join.</summary>
+    /// <remarks>
+    /// Nothing to configure and no tunnel involved: both plugins work as installed. The flag is
+    /// only set once the install has actually succeeded — a server remembering it has them when
+    /// the download failed would turn players away and show no reason for it.
+    /// </remarks>
+    public async Task SetUpMultiVersionAsync()
+    {
+        if (!MultiVersionService.CanEnable(Config.Type))
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_MultiVersionUnsupportedFmt"), Config.Type));
+            return;
+        }
+
+        try
+        {
+            await _multiVersion.InstallAsync(Config, new Progress<string>(OnConsoleLine));
+
+            // Same reason as crossplay: the panel read the folder before these jars existed.
+            RunOnUi(Mods.ReloadInstalled);
+
+            Config.MultiVersionEnabled = true;
+            ConfigChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Config.MultiVersionEnabled = false;   // it did not happen; do not claim that it did
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
 
     /// <summary>
     /// Installs Geyser and Floodgate, creates the Bedrock tunnel and points Geyser at it.

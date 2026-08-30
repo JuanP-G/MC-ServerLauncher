@@ -225,25 +225,38 @@ public class GeyserConfigTests
         // broken rather than half-installed.
         foreach (var type in GeyserConfigService.SupportedTypes)
         {
+            // Modrinth carries the modded builds; the Bukkit family takes the Spigot build from
+            // GeyserMC's own site. Every supported type has to fall on one side or the other.
             var modded = CrossplayService.FloodgateComesFromModrinth(type);
-            Assert.True(modded || type == ServerType.Paper,
+            Assert.True(modded || ServerTypeCatalog.IsPluginBased(type),
                 $"{type} no tiene fuente de Floodgate definida");
         }
     }
 
     [Fact]
-    public void EachSupportedTypeHasItsOwnConfigPath()
+    public void EverySupportedTypeHasAConfigPathInTheRightPlace()
     {
-        var paths = GeyserConfigService.SupportedTypes
-            .Select(t => GeyserConfigService.ConfigPath("/srv", t))
-            .ToList();
+        foreach (var type in GeyserConfigService.SupportedTypes)
+        {
+            var path = GeyserConfigService.ConfigPath("/srv", type);
+            Assert.NotNull(path);
 
-        Assert.All(paths, p => Assert.NotNull(p));
-        Assert.Equal(paths.Count, paths.Distinct().Count());
+            // Plugins live under plugins/, mods under config/ — getting these the wrong way round
+            // writes a file Geyser never reads, and crossplay fails with a correct-looking config.
+            Assert.Contains(ServerTypeCatalog.IsPluginBased(type) ? "plugins" : "config", path!);
+        }
+    }
 
-        // Plugins live under plugins/, mods under config/ — getting these the wrong way round
-        // writes a file Geyser never reads.
-        Assert.Contains("plugins", GeyserConfigService.ConfigPath("/srv", ServerType.Paper)!);
-        Assert.Contains("config", GeyserConfigService.ConfigPath("/srv", ServerType.Fabric)!);
+    [Fact]
+    public void TheBukkitFamilyShareOneGeyserFolder()
+    {
+        // Not an oversight: Paper and Purpur run the same Geyser-Spigot build, so they read the
+        // same config.yml. Giving Purpur a folder of its own would leave Geyser reading Paper's.
+        Assert.Equal(GeyserConfigService.ConfigPath("/srv", ServerType.Paper),
+                     GeyserConfigService.ConfigPath("/srv", ServerType.Purpur));
+
+        // The mod loaders genuinely differ, and must not be collapsed together the same way.
+        Assert.NotEqual(GeyserConfigService.ConfigPath("/srv", ServerType.Fabric),
+                        GeyserConfigService.ConfigPath("/srv", ServerType.NeoForge));
     }
 }

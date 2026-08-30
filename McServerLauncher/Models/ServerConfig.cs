@@ -24,7 +24,10 @@ public enum ServerType
     Fabric = 1,
     Forge = 2,
     Paper = 3,
-    NeoForge = 4
+    NeoForge = 4,
+    // Purpur is a Paper fork: same plugins, more configuration. Appended, like every type after
+    // it must be — these numbers are the file format, not a display order.
+    Purpur = 5
 }
 
 /// <summary>
@@ -135,6 +138,14 @@ public class ServerConfig
     /// crossplay can put them back.
     /// </remarks>
     public bool CrossplayEnabled { get; set; }
+
+    /// <summary>Whether ViaVersion and ViaBackwards are installed, for joining from other versions.</summary>
+    /// <remarks>
+    /// Separate from <see cref="CrossplayEnabled"/> on purpose. Geyser does not need these to work,
+    /// and a Java-only server benefits from them just as much: they are about which Minecraft
+    /// <em>versions</em> may connect, not which edition.
+    /// </remarks>
+    public bool MultiVersionEnabled { get; set; }
 
     /// <summary>The local <em>UDP</em> port Geyser listens on. 0 until crossplay is set up.</summary>
     /// <remarks>

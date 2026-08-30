@@ -13,7 +13,7 @@ public partial class CreateServerDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();
     private readonly ModLoaderService _mods = new();
-    private readonly PaperService _paper = new();
+    private readonly ServerJarInstaller _installer = new();
     private readonly ServerCreationService _creation = new();
     private readonly PortService _ports = new();
     private readonly JavaService _java = new();
@@ -55,8 +55,8 @@ public partial class CreateServerDialog : Window
 
         NameBox.TextChanged += (_, _) => UpdateFinalPath();
         ParentFolderBox.TextChanged += (_, _) => UpdateFinalPath();
-        TypeCombo.SelectionChanged += (_, _) => UpdateCrossplayAvailability();
-        UpdateCrossplayAvailability();
+        TypePicker.SelectionChanged += (_, _) => UpdateTypeDependentOptions();
+        UpdateTypeDependentOptions();
         Loaded += OnLoaded;
     }
 
@@ -172,9 +172,6 @@ public partial class CreateServerDialog : Window
             var details = await _versions.GetVersionDetailsAsync(version);
 
             var serverType = SelectedServerType();
-            var loaderVersion = string.Empty;
-            var forgeArgs = string.Empty;
-            var jarName = serverType == ServerType.Fabric ? "fabric-server.jar" : "server.jar";
 
             // Install/locate the Java this Minecraft version needs first: the Forge installer also
             // requires a compatible Java to run.
@@ -190,75 +187,12 @@ public partial class CreateServerDialog : Window
                 AppendLog(Localizer.Get("Msg_UseSystemJava"));
             }
 
-            if (serverType == ServerType.Fabric)
-            {
-                AppendLog(Localizer.Get("Msg_FabricResolving"));
-                loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync();
-                await _mods.DownloadFabricServerAsync(version.Id, loaderVersion, Path.Combine(folder, jarName), progress);
-            }
-            else if (serverType == ServerType.Forge)
-            {
-                AppendLog(Localizer.Get("Msg_ForgeResolving"));
-                var forgeVersion = await _mods.GetRecommendedForgeVersionAsync(version.Id);
-                if (string.IsNullOrEmpty(forgeVersion))
-                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_ForgeNoVersion"), version.Id));
+            var installed = await _installer.InstallAsync(
+                serverType, folder, version.Id, details, javaPath, minGb, maxGb, progress);
 
-                loaderVersion = forgeVersion;
-                var forge = await _mods.InstallForgeServerAsync(folder, version.Id, forgeVersion, javaPath, progress);
-                if (forge.ArgsId is not null)
-                {
-                    forgeArgs = forge.ArgsId;     // modern Forge: launched via args file, no runnable jar
-                    jarName = string.Empty;
-                    // Forge ships its own run.bat that reads user_jvm_args.txt; give it our RAM settings.
-                    _creation.WriteForgeUserJvmArgs(folder, minGb, maxGb);
-                }
-                else if (!string.IsNullOrEmpty(forge.JarFile))
-                {
-                    jarName = forge.JarFile;      // old Forge: a runnable forge-*.jar
-                }
-                else
-                {
-                    throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallNoOutput"));
-                }
-            }
-            else if (serverType == ServerType.NeoForge)
-            {
-                AppendLog(Localizer.Get("Msg_NeoForgeResolving"));
-                var choice = await _mods.GetNeoForgeVersionAsync(version.Id);
-                if (choice is null)
-                    throw new InvalidOperationException(
-                        string.Format(Localizer.Get("Msg_NeoForgeNoVersion"), version.Id));
-
-                // Said before installing, not after: for six Minecraft versions a pre-release is
-                // the only NeoForge there has ever been, and that is worth knowing up front.
-                if (choice.IsBeta)
-                    AppendLog(string.Format(Localizer.Get("Msg_NeoForgeBetaWarning"), choice.Version));
-
-                loaderVersion = choice.Version;
-                var neo = await _mods.InstallNeoForgeServerAsync(folder, choice.Version, javaPath, progress);
-                if (neo.ArgsId is null)
-                    throw new InvalidOperationException(Localizer.Get("Msg_NeoForgeInstallNoOutput"));
-
-                forgeArgs = neo.ArgsId;           // NeoForge always launches via the args file
-                jarName = string.Empty;
-                // Same as Forge: its run script reads user_jvm_args.txt, so give it our RAM settings.
-                _creation.WriteForgeUserJvmArgs(folder, minGb, maxGb);
-            }
-            else if (serverType == ServerType.Paper)
-            {
-                AppendLog(Localizer.Get("Msg_PaperResolving"));
-                var build = await _paper.GetLatestBuildAsync(version.Id);
-                if (build is null)
-                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_PaperNoBuild"), version.Id));
-
-                loaderVersion = build.Build.ToString();
-                jarName = "paper-server.jar";
-                await _paper.DownloadPaperServerAsync(build, Path.Combine(folder, jarName), progress);
-            }
-            else
-            {
-                await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(folder, jarName), progress, details.Sha1);
-            }
+            var jarName = installed.JarFile;
+            var loaderVersion = installed.LoaderVersion;
+            var forgeArgs = installed.ForgeArgs;
 
             AppendLog(Localizer.Get("Msg_WritingEula"));
             _creation.WriteEula(folder);
@@ -273,6 +207,7 @@ public partial class CreateServerDialog : Window
                 FolderPath = folder,
                 JarFile = string.IsNullOrEmpty(jarName) ? "server.jar" : jarName,
                 Type = serverType,
+                MultiVersionEnabled = MultiVersionCheck.IsChecked == true,
                 GameVersion = version.Id,
                 ModLoaderVersion = loaderVersion,
                 ForgeArgs = forgeArgs,
@@ -299,44 +234,45 @@ public partial class CreateServerDialog : Window
     }
 
     /// <summary>
-    /// Greys out crossplay for the server types Geyser has no build for, and says which.
+    /// Greys out the options the picked type cannot do, and says why for each.
     /// </summary>
     /// <remarks>
     /// Explained rather than merely disabled: a checkbox that is simply grey invites the reader to
-    /// assume it is broken. Vanilla gets its own wording because it has a way out — changing the
-    /// type to Paper keeps the world — while Forge simply has no Geyser at all.
+    /// assume it is broken. Vanilla gets its own crossplay wording because it has a way out —
+    /// changing the type to Paper keeps the world — while Forge simply has no Geyser at all.
     /// </remarks>
-    private void UpdateCrossplayAvailability()
+    private void UpdateTypeDependentOptions()
     {
         var type = SelectedServerType();
-        var supported = CrossplayService.CanEnable(type);
 
-        CrossplayCheck.IsEnabled = supported;
-        CrossplayHint.IsVisible = supported;
-        CrossplayWhyNot.IsVisible = !supported;
-        CrossplayModdedNote.IsVisible = supported && CrossplayService.ModsCanLockOutBedrock(type);
+        var crossplay = CrossplayService.CanEnable(type);
+        CrossplayCheck.IsEnabled = crossplay;
+        CrossplayHint.IsVisible = crossplay;
+        CrossplayWhyNot.IsVisible = !crossplay;
+        CrossplayModdedNote.IsVisible = crossplay && CrossplayService.ModsCanLockOutBedrock(type);
 
-        if (!supported)
+        if (!crossplay)
         {
             CrossplayCheck.IsChecked = false;
             CrossplayWhyNot.Text = Localizer.Get(type == ServerType.Vanilla
                 ? "Crossplay_UnsupportedVanilla"
                 : "Crossplay_Unsupported");
         }
+
+        var multiVersion = MultiVersionService.CanEnable(type);
+        MultiVersionCheck.IsEnabled = multiVersion;
+        MultiVersionHint.IsVisible = multiVersion;
+        MultiVersionWhyNot.IsVisible = !multiVersion;
+        if (!multiVersion) MultiVersionCheck.IsChecked = false;
     }
 
-    /// <summary>Reads the picked server type from the combo's Tag.</summary>
+    /// <summary>The picked server type.</summary>
     /// <remarks>
-    /// By Tag rather than by SelectedIndex, which is what this used to do. An index switch means
-    /// reordering the list, or inserting an entry anywhere but the end, silently changes what every
-    /// option below it creates — and the two dialogs that offer this list did not even use the same
-    /// order. Falls back to Vanilla, the one type that needs no loader and cannot be wrong.
+    /// The picker carries the enum value itself. This used to parse the string in a ComboBoxItem's
+    /// Tag, where a typo produced no error at all: the parse failed, the fallback took over, and
+    /// you got a Vanilla server having asked for something else.
     /// </remarks>
-    private ServerType SelectedServerType() =>
-        (TypeCombo.SelectedItem as ComboBoxItem)?.Tag is string tag &&
-        Enum.TryParse<ServerType>(tag, out var type)
-            ? type
-            : ServerType.Vanilla;
+    private ServerType SelectedServerType() => TypePicker.SelectedType;
 
     private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
 

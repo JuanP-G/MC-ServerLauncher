@@ -492,6 +492,12 @@ public partial class MainViewModel : ObservableObject
                 Save();
             }
 
+            if (dialog.ResultConfig.MultiVersionEnabled)
+            {
+                await vm.SetUpMultiVersionAsync();
+                Save();
+            }
+
             // First launch to generate the world and files.
             if (dialog.AutoStart)
                 vm.StartCommand.Execute(null);
@@ -505,6 +511,13 @@ public partial class MainViewModel : ObservableObject
         var server = SelectedServer;
         var oldType = server.Config.Type;
 
+        // Read before the dialog: these two checkboxes are requests to install something, not
+        // settings that take effect by being remembered. Turning one on and having nothing happen
+        // is worse than not offering it, because the app then claims a server can do something it
+        // cannot.
+        var hadCrossplay = server.Config.CrossplayEnabled;
+        var hadMultiVersion = server.Config.MultiVersionEnabled;
+
         var dialog = new AddEditServerDialog(server.Config);
         var accepted = await dialog.ShowDialog<bool>(Owner);
 
@@ -516,6 +529,19 @@ public partial class MainViewModel : ObservableObject
         {
             server.Name = server.Config.Name;
             Save();
+
+            if (!hadCrossplay && server.Config.CrossplayEnabled)
+            {
+                var key = server.Config.PlayitEnabled ? await EnsurePlayitAgentAsync() : null;
+                await server.SetUpCrossplayAsync(key);
+                Save();
+            }
+
+            if (!hadMultiVersion && server.Config.MultiVersionEnabled)
+            {
+                await server.SetUpMultiVersionAsync();
+                Save();
+            }
 
             // If the loader type changed (e.g. a vanilla server was converted to Fabric), rebuild the
             // view model so computed state (IsModded, the Mods tab/browser) refreshes.

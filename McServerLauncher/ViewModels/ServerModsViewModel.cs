@@ -267,7 +267,7 @@ public partial class ServerModsViewModel : ObservableObject
 
     // --- Plugins vs mods (Paper uses plugins in plugins/; the loaders use mods in mods/) ---
 
-    public bool IsPluginBased => _config.Type == ServerType.Paper;
+    public bool IsPluginBased => ServerTypeCatalog.IsPluginBased(_config.Type);
 
     /// <summary>This server's loader, used by the details page to resolve compatible versions.</summary>
     internal ServerType ServerType => _config.Type;
@@ -304,7 +304,8 @@ public partial class ServerModsViewModel : ObservableObject
         ServerType.Fabric => string.Format(Localizer.Get("HowToPlay_FabricFmt"), _config.GameVersion),
         ServerType.Forge => string.Format(Localizer.Get("HowToPlay_ForgeFmt"), _config.GameVersion),
         ServerType.NeoForge => string.Format(Localizer.Get("HowToPlay_NeoForgeFmt"), _config.GameVersion),
-        ServerType.Paper => string.Format(Localizer.Get("HowToPlay_PaperFmt"), _config.GameVersion),
+        ServerType.Paper or ServerType.Purpur =>
+            string.Format(Localizer.Get("HowToPlay_PaperFmt"), _config.GameVersion),
         _ => string.Empty
     };
 

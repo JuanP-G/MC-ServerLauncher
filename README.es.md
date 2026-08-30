@@ -18,7 +18,8 @@ Aplicación de escritorio para **Windows, Linux y macOS** para gestionar uno o v
 **Minecraft** desde una interfaz gráfica moderna — **sin archivos `.bat`, ventanas de consola negras ni editar
 configuraciones a mano**.
 
-Crea un servidor, elige el **tipo** (Vanilla, Fabric, Forge, NeoForge o Paper) y la versión, añade **mods o plugins**
+Crea un servidor, elige el **tipo** en una rejilla de tarjetas que dice cuáles llevan plugins, cuáles mods y a cuáles
+se puede entrar desde Bedrock (Vanilla, Paper, Purpur, Fabric, NeoForge, Forge), elige la versión, añade **mods o plugins**
 con un par de clics, ábrelo a Internet con Playit.gg, gestiona jugadores y ajusta la configuración…
 todo con botones.
 
@@ -62,10 +63,10 @@ todo con botones.
 ## ✨ Funcionalidades
 
 - **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Fabric /
-  Forge / NeoForge / Paper).
+  Paper / Purpur / Fabric / NeoForge / Forge).
 - **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang), **puerto** y
   **RAM**; la app descarga el servidor correcto, acepta el EULA, prepara `run.bat` / `server.properties` e
-  instala el **Java** adecuado (Temurin) si hace falta. Vanilla, Fabric, Forge y NeoForge usan **mods**; Paper usa **plugins**.
+  instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur usan **plugins**.
 - **Tienda de mods y plugins** 🧩 — busca en **Modrinth** dentro de la app, ya **filtrado por el tipo y la
   versión de tu servidor** (con chips de tipo y versión para que quede claro). Cada resultado trae un **resumen
   en lenguaje claro y en tu idioma** de para qué sirve, y avisa cuando además hay que instalarlo en el cliente.
@@ -73,7 +74,9 @@ todo con botones.
   app. Un **panel de Filtros** combina varias categorías a la vez y muestra las aplicadas como chips que puedes
   quitar de una en una. **Instala** con un clic y **activa/desactiva** o borra lo instalado. Los servidores
   Paper ven plugins; el resto, mods.
-- **Cambiar el tipo de un servidor** — convierte uno existente a Fabric/Forge/NeoForge/Paper o de vuelta a Vanilla,
+- **Jugar desde otras versiones de Minecraft** — una casilla instala ViaVersion y ViaBackwards, para que entren
+  clientes más nuevos y más antiguos que el servidor. Solo en servidores de plugins.
+- **Cambiar el tipo de un servidor** — convierte uno existente a Paper/Purpur/Fabric/Forge/NeoForge o de vuelta a Vanilla,
   **conservando el mundo**, con avisos por colores de lo que puede afectar cada cambio.
 - **Iniciar / Detener / Reiniciar** con parada limpia que guarda el mundo; detecta y libera un **puerto ocupado**;
   **CPU, RAM, tiempo activo y puerto** en vivo con estado por colores.

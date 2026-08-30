@@ -368,7 +368,7 @@
   <data name="Loader_Section" xml:space="preserve"><value>Server type</value></data>
   <data name="Loader_Current" xml:space="preserve"><value>Current loader: </value></data>
   <data name="Loader_ChangeButton" xml:space="preserve"><value>Change server type…</value></data>
-  <data name="Loader_Intro" xml:space="preserve"><value>Change this server's type: Fabric or Forge for mods, Paper for plugins, or Vanilla for none. Your world is kept.</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Change this server's type. Each card says whether it takes plugins or mods, and whether Bedrock can join. Your world is kept.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (no mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Keep the current startup file (run.bat)</value></data>
   <data name="Loader_Kept" xml:space="preserve"><value>The world, server.properties and your mods/plugins and config folders are kept.</value></data>
@@ -616,4 +616,22 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Notif_UpdateBetaWhileRunningFmt" xml:space="preserve"><value>Version {0} is available (BETA). You have servers running: updating will stop them.</value></data>
   <data name="Msg_CrossplayModdedKick" xml:space="preserve"><value>A Bedrock player was turned away because this server has mods the client is required to have. Geyser joins as a client with no mods, so it can only get in where a client with no mods could. Keep to server-side mods (performance, world generation), or move to a Paper server with plugins.</value></data>
   <data name="Crossplay_ModdedNote" xml:space="preserve"><value>About mods: players joining from Bedrock arrive as a client with no mods. The moment you add mods the client needs — the ones adding blocks or items — the server will turn them away. To have both content and Bedrock, use Paper with plugins.</value></data>
+  <data name="TypeDesc_Vanilla" xml:space="preserve"><value>Minecraft as it comes, with nothing added.</value></data>
+  <data name="TypeDesc_Paper" xml:space="preserve"><value>The usual choice for plugins. Fast and compatible.</value></data>
+  <data name="TypeDesc_Purpur" xml:space="preserve"><value>Paper with more settings. The same plugins.</value></data>
+  <data name="TypeDesc_Fabric" xml:space="preserve"><value>Light mods. Reaches each version early.</value></data>
+  <data name="TypeDesc_NeoForge" xml:space="preserve"><value>Mods. The successor to Forge.</value></data>
+  <data name="TypeDesc_Forge" xml:space="preserve"><value>Mods. The classic, for older packs.</value></data>
+  <data name="Family_Plugins" xml:space="preserve"><value>Plugins</value></data>
+  <data name="Family_Mods" xml:space="preserve"><value>Mods</value></data>
+  <data name="Badge_Bedrock" xml:space="preserve"><value>Bedrock</value></data>
+  <data name="Cs_TypeGroupJava" xml:space="preserve"><value>Java Edition</value></data>
+  <data name="Msg_PurpurResolving" xml:space="preserve"><value>Looking up the latest Purpur build...</value></data>
+  <data name="Msg_PurpurNoBuild" xml:space="preserve"><value>Purpur has no build for {0}.</value></data>
+  <data name="Msg_TypeNotInstallableFmt" xml:space="preserve"><value>The app cannot install {0} servers yet.</value></data>
+  <data name="Msg_MultiVersionUnsupportedFmt" xml:space="preserve"><value>Joining from other versions only works on plugin servers, not on {0}.</value></data>
+  <data name="Msg_MultiVersionReady" xml:space="preserve"><value>Ready: people can now join from other Minecraft versions.</value></data>
+  <data name="MultiVersion_Check" xml:space="preserve"><value>Allow joining from other Minecraft versions</value></data>
+  <data name="MultiVersion_Hint" xml:space="preserve"><value>Installs ViaVersion and ViaBackwards. Both are needed: one lets in players on a version newer than the server, the other players on an older one.</value></data>
+  <data name="MultiVersion_Unsupported" xml:space="preserve"><value>Plugin servers only (Paper or Purpur). On mod loaders the loader itself already requires the version to match.</value></data>
 </root>

@@ -1,0 +1,174 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Controls;
+using Avalonia.Styling;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
+using McServerLauncher.Localization;
+using McServerLauncher.Models;
+using McServerLauncher.Services;
+using McServerLauncher.ViewModels;
+
+namespace McServerLauncher.Views;
+
+/// <summary>
+/// Picking the server type as a grid of cards rather than a drop-down of bare names.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The drop-down said "Paper", "Fabric", "NeoForge" and nothing else. Which of those take plugins,
+/// which take mods, and which can be joined from Bedrock were all invisible — and the last one in
+/// particular is not a detail: picking a mod loader and finding out weeks later that Bedrock
+/// players cannot reach it costs an evening.
+/// </para>
+/// <para>
+/// Built in code from <see cref="ServerTypeCatalog"/>, so adding a type is a row in that table and
+/// nothing else. Each card is a <see cref="RadioButton"/> underneath: keyboard navigation, screen
+/// readers and single-selection all come from the framework rather than being re-implemented.
+/// </para>
+/// </remarks>
+public partial class ServerTypePicker : UserControl
+{
+    private readonly Dictionary<ServerType, RadioButton> _cards = new();
+    private readonly string _groupName = "types-" + Guid.NewGuid().ToString("N");
+
+    /// <summary>Raised when the user picks a different type.</summary>
+    public event EventHandler? SelectionChanged;
+
+    public ServerTypePicker()
+    {
+        InitializeComponent();
+        Build(ServerTypeCatalog.All);
+    }
+
+    /// <summary>The type currently picked. Setting it moves the selection without raising the event.</summary>
+    public ServerType SelectedType
+    {
+        get => _cards.FirstOrDefault(c => c.Value.IsChecked == true).Key;
+        set
+        {
+            if (!_cards.TryGetValue(value, out var card)) return;
+            _suppress = true;
+            card.IsChecked = true;
+            _suppress = false;
+        }
+    }
+
+    private bool _suppress;
+
+    /// <summary>
+    /// Limits the picker to a subset, for the dialog that changes an existing server's type.
+    /// </summary>
+    public void Restrict(IEnumerable<ServerType> types)
+    {
+        var allowed = new HashSet<ServerType>(types);
+        Build(ServerTypeCatalog.All.Where(e => allowed.Contains(e.Type)));
+    }
+
+    private void Build(IEnumerable<ServerTypeCatalog.Entry> entries)
+    {
+        CardsPanel.Children.Clear();
+        _cards.Clear();
+
+        foreach (var entry in entries)
+        {
+            var card = MakeCard(entry);
+            _cards[entry.Type] = card;
+            CardsPanel.Children.Add(card);
+        }
+
+        if (_cards.Count > 0 && _cards.Values.All(c => c.IsChecked != true))
+            SelectedType = _cards.Keys.First();
+    }
+
+    private RadioButton MakeCard(ServerTypeCatalog.Entry entry)
+    {
+        var accent = new ImmutableSolidColorBrush(Color.Parse(entry.BadgeColor));
+
+        var badges = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+        if (entry.Family != ServerFamily.None)
+            badges.Children.Add(Badge(
+                ServerTypeCatalog.FamilyEmoji(entry.Family) + " " + ServerTypeCatalog.FamilyLabel(entry.Family),
+                accent));
+
+        // The badge this whole picker exists for: which types a phone or console can actually reach.
+        if (entry.SupportsCrossplay)
+            badges.Children.Add(Badge(Localizer.Get("Badge_Bedrock"),
+                new ImmutableSolidColorBrush(Color.Parse("#3E8AC0"))));
+
+        var content = new StackPanel { Spacing = 3 };
+        content.Children.Add(new TextBlock
+        {
+            Text = entry.DisplayName,
+            FontWeight = FontWeight.SemiBold,
+            FontSize = 14
+        });
+        content.Children.Add(new TextBlock
+        {
+            Text = Localizer.Get(entry.DescriptionKey),
+            FontSize = 11,
+            Opacity = 0.65,
+            TextWrapping = TextWrapping.Wrap,
+            MaxWidth = 150
+        });
+        if (badges.Children.Count > 0) content.Children.Add(badges);
+
+        var card = new RadioButton
+        {
+            GroupName = _groupName,
+            Content = content,
+            Tag = entry.Type,              // the enum value itself, never its name as a string
+            Theme = (ControlTheme?)Resources["TypeCardTheme"],
+            Width = 176,
+            // One height for every card, so the rows line up. Left to fit their content they came
+            // out at three different heights and the grid read as broken rather than compact.
+            Height = 104,
+            Margin = new Avalonia.Thickness(0, 0, 8, 8),
+            Padding = new Avalonia.Thickness(11, 9),
+            VerticalContentAlignment = VerticalAlignment.Top
+        };
+        ToolTip.SetTip(card, Localizer.Get(entry.DescriptionKey));
+
+        Paint(card, accent, picked: false);
+        card.IsCheckedChanged += (_, _) =>
+        {
+            Paint(card, accent, picked: card.IsChecked == true);
+            if (card.IsChecked == true && !_suppress) SelectionChanged?.Invoke(this, EventArgs.Empty);
+        };
+
+        return card;
+    }
+
+    /// <summary>
+    /// Colours a card for its state, in its own type's accent rather than one shared highlight.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately grey and translucent rather than named theme colours: the same two values have
+    /// to stay legible on a light and a dark background, and a fixed pair of neutrals does that
+    /// without a resource lookup that could be missing in either theme.
+    /// </remarks>
+    private static void Paint(RadioButton card, IBrush accent, bool picked)
+    {
+        card.BorderThickness = new Avalonia.Thickness(picked ? 2 : 1);
+        card.BorderBrush = picked ? accent : new ImmutableSolidColorBrush(Color.Parse("#40808080"));
+        card.Background = picked
+            ? new ImmutableSolidColorBrush(Color.Parse("#22808080"))
+            : Brushes.Transparent;
+    }
+
+    private static Border Badge(string text, IBrush accent) => new()
+    {
+        Background = accent,
+        CornerRadius = new Avalonia.CornerRadius(3),
+        Padding = new Avalonia.Thickness(5, 1),
+        Child = new TextBlock
+        {
+            Text = text,
+            FontSize = 10,
+            FontWeight = FontWeight.SemiBold,
+            Foreground = Brushes.White
+        }
+    };
+}

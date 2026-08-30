@@ -70,8 +70,16 @@ are no hard-coded machine paths.
   `run.bat`/`user_jvm_args.txt` and a minimal `server.properties` with the chosen port. (The jar
   download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is
   picked by `PortService`, all orchestrated by `CreateServerDialog`.)
-- **`ModLoaderService`** / **`PaperService`** — install a mod loader (Fabric/Forge/NeoForge) or a Paper build
-  onto an existing server, keeping the world. Known limitation: Fabric's meta endpoint publishes no
+- **`ServerTypeCatalog`** — one row per server type: display name, family (plugins/mods/neither), badge colour and
+  whether Geyser supports it. The picker, the badges, the mod store, the content folder and the crossplay rules all
+  read from it, so adding a type is a row rather than six `switch` statements found by hand.
+- **`ServerJarInstaller`** — the one place that knows how each type is obtained. The create dialog and the
+  change-type dialog both call it; the chain used to be written out inline in both, and a type present in one and
+  missing from the other silently produced a Vanilla server.
+- **`ModLoaderService`** / **`PaperService`** / **`PurpurService`** — install a mod loader (Fabric/Forge/NeoForge) or a
+  Paper/Purpur build. Purpur publishes only an MD5 for its builds, not a SHA-256; HTTPS authenticates the source and
+  the hash is there to catch a corrupted download, which is documented in the service itself. Also
+  installs a loader onto an existing server, keeping the world. Known limitation: Fabric's meta endpoint publishes no
   checksums, so its server jar can't be hash-verified like the other sources (Mojang SHA-1, Paper
   SHA-256…); instead the downloaded jar is structurally validated (its `install.properties` must
   match the requested game/loader versions) and discarded on mismatch. Forge's trust assumption:

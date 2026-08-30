@@ -83,7 +83,7 @@ public class CrossplayService
     /// </para>
     /// </remarks>
     public static bool ModsCanLockOutBedrock(ServerType type) =>
-        type is ServerType.Fabric or ServerType.NeoForge;
+        ServerTypeCatalog.For(type).Family == ServerFamily.Mods;
 
     /// <summary>
     /// A free local UDP port for Geyser, starting at Bedrock's default.
@@ -120,7 +120,7 @@ public class CrossplayService
                 string.Format(Localizer.Get("Msg_CrossplayUnsupportedFmt"), config.Type));
 
         // Paper takes plugins, the mod loaders take mods. Same rule the mod store already uses.
-        var folder = Path.Combine(config.FolderPath, config.Type == ServerType.Paper ? "plugins" : "mods");
+        var folder = Path.Combine(config.FolderPath, ServerTypeCatalog.ContentFolder(config.Type));
         Directory.CreateDirectory(folder);
 
         await InstallFromModrinthAsync(config, folder, GeyserProjectId, "Geyser", log, ct);

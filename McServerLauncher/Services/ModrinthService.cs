@@ -42,7 +42,7 @@ public class ModrinthService
     /// </summary>
     private static (string CategoriesGroup, string ProjectType, string LoadersJson) TargetFor(ServerType type)
     {
-        if (type == ServerType.Paper)
+        if (ServerTypeCatalog.IsPluginBased(type))
         {
             var loaders = new[] { "paper", "spigot", "bukkit", "purpur", "folia" };
             var cats = string.Join(",", loaders.Select(l => $"\"categories:{l}\""));

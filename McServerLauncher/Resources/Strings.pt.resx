@@ -368,7 +368,7 @@
   <data name="Loader_Section" xml:space="preserve"><value>Tipo de servidor</value></data>
   <data name="Loader_Current" xml:space="preserve"><value>Loader atual: </value></data>
   <data name="Loader_ChangeButton" xml:space="preserve"><value>Mudar o tipo de servidor…</value></data>
-  <data name="Loader_Intro" xml:space="preserve"><value>Muda o tipo deste servidor: Fabric ou Forge para mods, Paper para plugins, ou Vanilla sem nada. O teu mundo é mantido.</value></data>
+  <data name="Loader_Intro" xml:space="preserve"><value>Muda o tipo deste servidor. Cada cartão diz se leva plugins ou mods, e se dá para entrar pelo Bedrock. O teu mundo é mantido.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sem mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Manter o ficheiro de arranque atual (run.bat)</value></data>
   <data name="Loader_Kept" xml:space="preserve"><value>O mundo, o server.properties e as tuas pastas mods/plugins e config são mantidos.</value></data>
@@ -616,4 +616,22 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Notif_UpdateBetaWhileRunningFmt" xml:space="preserve"><value>Versão {0} disponível (BETA). Tens servidores a correr: atualizar vai pará-los.</value></data>
   <data name="Msg_CrossplayModdedKick" xml:space="preserve"><value>Um jogador de Bedrock foi recusado porque este servidor tem mods que o cliente precisa de ter. O Geyser entra como um cliente sem mods, por isso só consegue entrar onde um cliente sem mods também conseguiria. Fica-te por mods de servidor (desempenho, geração de mundo) ou passa para um servidor Paper com plugins.</value></data>
   <data name="Crossplay_ModdedNote" xml:space="preserve"><value>Atenção aos mods: quem entra pelo Bedrock chega como um cliente sem mods. Assim que adicionares mods de que o cliente precisa — os que acrescentam blocos ou objetos — o servidor deixa de o aceitar. Para teres conteúdo e Bedrock ao mesmo tempo, usa Paper com plugins.</value></data>
+  <data name="TypeDesc_Vanilla" xml:space="preserve"><value>Minecraft tal como é, sem nada acrescentado.</value></data>
+  <data name="TypeDesc_Paper" xml:space="preserve"><value>A escolha habitual para plugins. Rápido e compatível.</value></data>
+  <data name="TypeDesc_Purpur" xml:space="preserve"><value>Paper com mais definições. Os mesmos plugins.</value></data>
+  <data name="TypeDesc_Fabric" xml:space="preserve"><value>Mods leves. Chega cedo a cada versão.</value></data>
+  <data name="TypeDesc_NeoForge" xml:space="preserve"><value>Mods. O sucessor do Forge.</value></data>
+  <data name="TypeDesc_Forge" xml:space="preserve"><value>Mods. O clássico, para packs antigos.</value></data>
+  <data name="Family_Plugins" xml:space="preserve"><value>Plugins</value></data>
+  <data name="Family_Mods" xml:space="preserve"><value>Mods</value></data>
+  <data name="Badge_Bedrock" xml:space="preserve"><value>Bedrock</value></data>
+  <data name="Cs_TypeGroupJava" xml:space="preserve"><value>Java Edition</value></data>
+  <data name="Msg_PurpurResolving" xml:space="preserve"><value>A procurar a última build do Purpur...</value></data>
+  <data name="Msg_PurpurNoBuild" xml:space="preserve"><value>O Purpur não tem nenhuma build para {0}.</value></data>
+  <data name="Msg_TypeNotInstallableFmt" xml:space="preserve"><value>A app ainda não sabe instalar servidores do tipo {0}.</value></data>
+  <data name="Msg_MultiVersionUnsupportedFmt" xml:space="preserve"><value>Entrar a partir de outras versões só funciona em servidores de plugins, não em {0}.</value></data>
+  <data name="Msg_MultiVersionReady" xml:space="preserve"><value>Pronto: já se pode entrar a partir de outras versões do Minecraft.</value></data>
+  <data name="MultiVersion_Check" xml:space="preserve"><value>Permitir entrar a partir de outras versões do Minecraft</value></data>
+  <data name="MultiVersion_Hint" xml:space="preserve"><value>Instala o ViaVersion e o ViaBackwards. São precisos os dois: um deixa entrar quem tem uma versão mais recente que o servidor, o outro quem a tem mais antiga.</value></data>
+  <data name="MultiVersion_Unsupported" xml:space="preserve"><value>Só em servidores de plugins (Paper ou Purpur). Nos de mods, o próprio carregador já exige que a versão coincida.</value></data>
 </root>

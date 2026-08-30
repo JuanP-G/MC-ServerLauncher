@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:views="using:McServerLauncher.Views"
         x:Class="McServerLauncher.Views.CreateServerDialog"
         Title="{loc:Loc CreateServer}"
         Width="640" Height="720" MinWidth="560"
@@ -19,20 +20,8 @@
                 </Grid>
                 <TextBlock x:Name="FinalPathText" Margin="2,4,0,0" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
 
-                <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Software" Margin="0,0,0,4" />
-                        <ComboBox x:Name="TypeCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
-                            <!-- El Tag es lo que lee el codigo: asi el orden visual se puede
-                                 cambiar sin tocar nada mas. Antes se mapeaba por indice. -->
-                            <ComboBoxItem Content="Vanilla" Tag="Vanilla" />
-                            <ComboBoxItem Content="Fabric" Tag="Fabric" />
-                            <ComboBoxItem Content="Forge" Tag="Forge" />
-                            <ComboBoxItem Content="NeoForge" Tag="NeoForge" />
-                            <ComboBoxItem Content="Paper" Tag="Paper" />
-                        </ComboBox>
-                    </StackPanel>
-                </Grid>
+                <TextBlock Text="Software" Margin="0,12,0,4" />
+                <views:ServerTypePicker x:Name="TypePicker" />
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">
                     <StackPanel Grid.Column="0">
@@ -74,6 +63,14 @@
                 <TextBlock x:Name="CrossplayModdedNote" Margin="24,4,0,0" FontSize="12" Opacity="0.75"
                            TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B"
                            Text="{loc:Loc Crossplay_ModdedNote}" />
+
+                <CheckBox x:Name="MultiVersionCheck" Margin="0,10,0,0"
+                          Content="{loc:Loc MultiVersion_Check}" />
+                <TextBlock x:Name="MultiVersionHint" Margin="24,4,0,0" FontSize="12" Opacity="0.6"
+                           TextWrapping="Wrap" Text="{loc:Loc MultiVersion_Hint}" />
+                <TextBlock x:Name="MultiVersionWhyNot" Margin="24,4,0,0" FontSize="12" Opacity="0.75"
+                           TextWrapping="Wrap" IsVisible="False" Foreground="#E3A82B"
+                           Text="{loc:Loc MultiVersion_Unsupported}" />
 
                 <Separator Margin="0,18,0,12" />
 

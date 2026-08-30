@@ -33,7 +33,7 @@ public static class GeyserConfigService
     /// separate process to supervise, and that is deliberately out of scope.
     /// </remarks>
     public static readonly ServerType[] SupportedTypes =
-        { ServerType.Paper, ServerType.Fabric, ServerType.NeoForge };
+        { ServerType.Paper, ServerType.Purpur, ServerType.Fabric, ServerType.NeoForge };
 
     /// <summary>Whether crossplay can be offered at all for this kind of server.</summary>
     public static bool Supports(ServerType type) => SupportedTypes.Contains(type);
@@ -47,9 +47,11 @@ public static class GeyserConfigService
     /// </remarks>
     public static string? ConfigPath(string serverFolder, ServerType type)
     {
+        // Every Bukkit-family server runs the same Geyser-Spigot build, so they share its folder;
+        // Purpur is a Paper fork and behaves as Paper here in every respect.
         var relative = type switch
         {
-            ServerType.Paper => Path.Combine("plugins", "Geyser-Spigot"),
+            ServerType.Paper or ServerType.Purpur => Path.Combine("plugins", "Geyser-Spigot"),
             ServerType.Fabric => Path.Combine("config", "Geyser-Fabric"),
             ServerType.NeoForge => Path.Combine("config", "Geyser-NeoForge"),
             _ => null

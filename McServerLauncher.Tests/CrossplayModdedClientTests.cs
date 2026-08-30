@@ -65,6 +65,7 @@ public class CrossplayModdedClientTests
         // as a client missing them. Saying otherwise would push people away from the one type that
         // takes both content and Bedrock players.
         Assert.False(CrossplayService.ModsCanLockOutBedrock(ServerType.Paper));
+        Assert.False(CrossplayService.ModsCanLockOutBedrock(ServerType.Purpur));
 
         Assert.True(CrossplayService.ModsCanLockOutBedrock(ServerType.Fabric));
         Assert.True(CrossplayService.ModsCanLockOutBedrock(ServerType.NeoForge));
@@ -76,7 +77,8 @@ public class CrossplayModdedClientTests
         // A type added to SupportedTypes later must have this answered for it too, rather than
         // silently defaulting to "no warning" — which is the answer that loses people an evening.
         foreach (var type in GeyserConfigService.SupportedTypes)
-            Assert.True(type is ServerType.Paper or ServerType.Fabric or ServerType.NeoForge,
+            Assert.True(
+                type is ServerType.Paper or ServerType.Purpur or ServerType.Fabric or ServerType.NeoForge,
                 $"decide si {type} necesita el aviso de mods");
     }
 

@@ -152,6 +152,12 @@ public partial class AddEditServerDialog : Window
         CrossplayModdedNote.IsVisible =
             supported && Services.CrossplayService.ModsCanLockOutBedrock(_config.Type);
 
+        var multiVersion = Services.MultiVersionService.CanEnable(_config.Type);
+        MultiVersionCheck.IsEnabled = multiVersion;
+        MultiVersionHint.IsVisible = multiVersion;
+        MultiVersionWhyNot.IsVisible = !multiVersion;
+        if (!multiVersion) _config.MultiVersionEnabled = false;
+
         if (!supported)
         {
             _config.CrossplayEnabled = false;
@@ -176,6 +182,7 @@ public partial class AddEditServerDialog : Window
         _config.IdleShutdownMinutes = original.IdleShutdownMinutes;
         _config.WakeOnDemand = original.WakeOnDemand;
         _config.CrossplayEnabled = original.CrossplayEnabled;
+        _config.MultiVersionEnabled = original.MultiVersionEnabled;
         _config.BedrockPort = original.BedrockPort;
         _config.BackupsEnabled = original.BackupsEnabled;
         _config.BackupRetention = original.BackupRetention;
