@@ -82,6 +82,14 @@ dotnet tool install -g docfx   # solo la primera vez
      (`UpdateService.CheckAsync`). La verificación es **obligatoria**: sin ese archivo el
      actualizador rechaza la instalación silenciosa y solo abre la página de la release — no lo
      omitas nunca.
+> **Antes de cambiar cómo se numeran las versiones, comprueba qué sabe leer la versión instalada.**
+> Una release cuyo tag tiene una forma que los clientes antiguos no entienden es invisible para
+> ellos por muy correcto que sea el código nuevo — y el código que la entiende viaja *dentro* de esa
+> release. Ha pasado dos veces: las pre-releases eran invisibles antes de la 1.10.1, y los tags de
+> cuatro números antes de la 1.10.3.1, porque en ambos casos había que cambiar `UpdateService` para
+> verlas. La primera release de una forma nueva siempre hay que pasarla a mano; dílo en vez de
+> prometer una actualización automática.
+
 > **Numeración.** Una beta lleva un cuarto número que prolonga la estable a la que sigue: tras
 > `1.10.3` vienen `1.10.3.1`, `1.10.3.2`, y lo terminado sale como la siguiente estable (`1.11.0`).
 > Es así a propósito: numerar las betas según la versión a la que llevan haría que la estable
