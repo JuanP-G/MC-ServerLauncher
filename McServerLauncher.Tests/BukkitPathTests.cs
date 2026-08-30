@@ -67,31 +67,44 @@ public class BukkitPathTests
         Assert.False(BukkitPathRule.IsPathRejection(""));
     }
 
-    [Theory]
-    [InlineData(@"C:\Users\JPG\Downloads\Java+Bedrock (paper)", true)]
-    [InlineData(@"C:\servers\wow!", true)]
-    // The character is above the server: renaming that folder would move everything else under it
-    // too, which is not the app's to decide.
-    [InlineData(@"C:\my+stuff\servers\survival", false)]
-    [InlineData(@"C:\servers\survival", false)]
-    public void RenamingIsOnlyOfferedForTheServersOwnFolder(string path, bool expected) =>
-        Assert.Equal(expected, BukkitPathRule.IsInServerFolderName(path));
+    /// <summary>
+    /// Builds a real path for whichever OS is running.
+    /// </summary>
+    /// <remarks>
+    /// Written out as "C:\a\b" these tests passed on Windows and failed on Linux, where a backslash
+    /// is an ordinary character and the whole string is one file name — so "the parent folder"
+    /// cases were not testing what they claimed to.
+    /// </remarks>
+    private static string Path_(params string[] parts) =>
+        Path.Combine(new[] { Path.GetTempPath() }.Concat(parts).ToArray());
+
+    [Fact]
+    public void RenamingIsOnlyOfferedForTheServersOwnFolder()
+    {
+        Assert.True(BukkitPathRule.IsInServerFolderName(Path_("servers", "Java+Bedrock (paper)")));
+        Assert.True(BukkitPathRule.IsInServerFolderName(Path_("servers", "wow!")));
+
+        // The character is above the server: renaming that folder would move everything else under
+        // it too, which is not the app's to decide.
+        Assert.False(BukkitPathRule.IsInServerFolderName(Path_("my+stuff", "servers", "survival")));
+        Assert.False(BukkitPathRule.IsInServerFolderName(Path_("servers", "survival")));
+    }
 
     [Fact]
     public void TheSuggestedNameReplacesTheCharacterRatherThanDroppingIt()
     {
         // "JavaBedrock" reads like a typo; "Java-Bedrock" reads like the name that was meant.
-        var suggested = BukkitPathRule.SuggestCleanPath(@"C:\Users\JPG\Downloads\Java+Bedrock (paper)");
+        var suggested = BukkitPathRule.SuggestCleanPath(Path_("servers", "Java+Bedrock (paper)"));
 
         Assert.Equal("Java-Bedrock (paper)", Path.GetFileName(suggested));
-        Assert.Equal(@"C:\Users\JPG\Downloads", Path.GetDirectoryName(suggested));
+        Assert.Equal(Path.TrimEndingDirectorySeparator(Path_("servers")), Path.GetDirectoryName(suggested));
     }
 
     [Fact]
     public void NothingIsSuggestedWhenThereIsNothingToFixOrItIsNotOurs()
     {
-        Assert.Null(BukkitPathRule.SuggestCleanPath(@"C:\servers\survival"));
-        Assert.Null(BukkitPathRule.SuggestCleanPath(@"C:\my+stuff\servers\survival"));
+        Assert.Null(BukkitPathRule.SuggestCleanPath(Path_("servers", "survival")));
+        Assert.Null(BukkitPathRule.SuggestCleanPath(Path_("my+stuff", "servers", "survival")));
         Assert.Null(BukkitPathRule.SuggestCleanPath(null));
     }
 

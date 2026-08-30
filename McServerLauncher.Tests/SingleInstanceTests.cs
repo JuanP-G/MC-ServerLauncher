@@ -61,16 +61,20 @@ public class SingleInstanceTests : IDisposable
         var asked = new TaskCompletionSource();
         running!.ActivationRequested += () => asked.TrySetResult();
 
-        // Wait for the listener before signalling. TryAcquire starts it asynchronously, so
-        // signalling straight away raced it: the connection was refused and the test failed about
-        // once in five, blaming the code rather than its own timing. Its neighbour below already
-        // used this helper; this one did not.
-        (await ConnectWhenListening()).Dispose();
+        // Signal until it lands, rather than assuming the listener is already up. TryAcquire
+        // starts it asynchronously, so signalling straight away raced it and the test failed about
+        // once in five. Probing first with a throwaway connection was worse: on Linux, where these
+        // pipes are Unix sockets, the probe consumed the pending connection and the real signal
+        // then arrived before the listener had re-armed. Retrying is also what a person does — they
+        // launch the app again.
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(20);
+        while (!asked.Task.IsCompleted && DateTime.UtcNow < deadline)
+        {
+            SingleInstance.SignalExistingInstance();
+            await Task.WhenAny(asked.Task, Task.Delay(200));
+        }
 
-        Assert.True(SingleInstance.SignalExistingInstance());
-
-        var arrived = await Task.WhenAny(asked.Task, Task.Delay(TimeSpan.FromSeconds(15)));
-        Assert.Same(asked.Task, arrived);
+        Assert.True(asked.Task.IsCompleted, "la activación no llegó en 20 s");
     }
 
     [Fact]
