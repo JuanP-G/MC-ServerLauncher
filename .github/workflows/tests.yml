@@ -1,8 +1,9 @@
 name: Tests
 
 on:
+  # Toda rama, no solo main y release/**: una rama de trabajo sin pruebas es justo donde no te
+  # enteras de que algo se rompio hasta que ya lo has fusionado.
   push:
-    branches: [main, 'release/**']
   pull_request:
   workflow_dispatch:
 

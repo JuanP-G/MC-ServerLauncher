@@ -19,6 +19,13 @@ when suggesting or writing code.
 - Read strings with `Localizer.Get("Key")` (and `string.Format(...)` for `{0}` placeholders) in code,
   or `{loc:Loc Key}` in XAML.
 
+## Adding a server type
+- One row in `Services/ServerTypeCatalog.cs` (name, family, badge colour, crossplay) plus a branch in
+  `Services/ServerJarInstaller.cs`. The picker, the badges, the mod store, the content folder and the
+  crossplay rules all read from the catalogue — do not add another `switch` on `ServerType`.
+- **Never renumber the `ServerType` enum.** `servers.json` stores it as an integer, so moving a member
+  reinterprets every server already saved on every machine. New types go on the end.
+
 ## Code style
 - **Comments and identifiers are in English.** (User-facing text is localized, per above.)
 - No absolute machine paths — use `Environment.GetFolderPath(...)`; per-user data lives under
@@ -27,7 +34,10 @@ when suggesting or writing code.
 
 ## Security / correctness expectations
 - **Verify downloads** against official checksums via the shared `DownloadVerifier` (delete the file
-  on mismatch); most sources publish SHA-1/256/512.
+  on mismatch); most sources publish SHA-1/256/512. Two documented exceptions, both explained in the
+  service that owns them: Fabric's meta endpoint publishes no checksum at all (the jar is validated
+  structurally instead), and Purpur publishes only MD5 (HTTPS authenticates the source; the hash is
+  there to catch a corrupted download, and nothing relies on it for more).
 - **Secrets are encrypted at rest** (`SecretProtector`: DPAPI on Windows, AES-GCM elsewhere).
 - **Sanitize external input** before it reaches a process or a config file (CR/LF in player names for
   stdin, values written to `server.properties`).

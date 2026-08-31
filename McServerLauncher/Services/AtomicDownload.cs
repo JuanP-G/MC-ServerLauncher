@@ -1,5 +1,6 @@
 using System.IO;
 using System.Net.Http;
+using McServerLauncher.Localization;
 
 namespace McServerLauncher.Services;
 
@@ -21,6 +22,34 @@ namespace McServerLauncher.Services;
 public static class AtomicDownload
 {
     private const string PartSuffix = ".part";
+
+    /// <summary>
+    /// Where a file named by a remote server is allowed to land: inside
+    /// <paramref name="folder"/>, always.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>Path.Combine(folder, name)</c> is not a containment check and does not pretend to be one.
+    /// Handed <c>"../../evil.jar"</c> it walks up; handed an absolute path it discards the folder
+    /// entirely and returns that path. The name comes from Modrinth or from GeyserMC's downloads
+    /// API, so nothing hostile is expected there — which is exactly the reasoning that makes a
+    /// boundary get skipped once and then five more times.
+    /// </para>
+    /// <para>
+    /// This exists so the join happens in one place. Every download the app performs goes through
+    /// it, and a name with no usable last segment is refused rather than guessed at: it can only
+    /// mean the API said something the app does not understand.
+    /// </para>
+    /// </remarks>
+    public static string PathIn(string folder, string remoteFileName)
+    {
+        var name = Path.GetFileName(remoteFileName);
+        if (string.IsNullOrWhiteSpace(name))
+            throw new InvalidOperationException(
+                string.Format(Localizer.Get("Msg_BadRemoteFileNameFmt"), remoteFileName));
+
+        return Path.Combine(folder, name);
+    }
 
     /// <summary>
     /// Streams <paramref name="content"/> into <paramref name="destPath"/> atomically.

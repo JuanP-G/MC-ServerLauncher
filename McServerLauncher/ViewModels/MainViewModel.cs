@@ -241,9 +241,12 @@ public partial class MainViewModel : ObservableObject
                 _packageUrl = info.PackageUrl;
                 _packageName = info.PackageName;
                 _checksumUrl = info.ChecksumUrl;
-                UpdateText = string.Format(Localizer.Get("Msg_UpdateAvailableFmt"), info.Version);
+                // A beta says so before the button, not after installing.
+                UpdateText = string.Format(
+                    Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
+                    info.Version);
                 UpdateAvailable = true;
-                NotifyUpdateOnce(info.Version);
+                NotifyUpdateOnce(info.Version, info.IsPreRelease);
             }
         }
         catch
@@ -256,7 +259,7 @@ public partial class MainViewModel : ObservableObject
     /// Raises a desktop notification the first time a given version is seen, and only while the
     /// window is out of sight — the banner already says it when the window is there to be read.
     /// </summary>
-    private void NotifyUpdateOnce(string version)
+    private void NotifyUpdateOnce(string version, bool isBeta)
     {
         if (_notifiedVersion == version) return;
         _notifiedVersion = version;
@@ -269,9 +272,11 @@ public partial class MainViewModel : ObservableObject
 
         // Updating restarts the app, which stops every server with it. Saying so is the difference
         // between an informed choice and pulling the rug out from under whoever is playing.
-        var message = string.Format(
-            Localizer.Get(AnyServerRunning ? "Notif_UpdateWhileRunningFmt" : "Notif_UpdateFmt"),
-            version);
+        var key = isBeta
+            ? (AnyServerRunning ? "Notif_UpdateBetaWhileRunningFmt" : "Notif_UpdateBetaFmt")
+            : (AnyServerRunning ? "Notif_UpdateWhileRunningFmt" : "Notif_UpdateFmt");
+
+        var message = string.Format(Localizer.Get(key), version);
 
         ToastService.Shared.Notify(Localizer.Get("Notif_UpdateTitle"), message);
     }
@@ -424,11 +429,22 @@ public partial class MainViewModel : ObservableObject
         await SelectedServer.CreateTunnelAsync(key);
     }
 
+    /// <summary>The Bedrock ports every server except <paramref name="except"/> already holds.</summary>
+    /// <remarks>
+    /// Read live rather than captured: servers are added and removed while the app runs, and a list
+    /// taken when the view model was built would go stale the first time either happens.
+    /// </remarks>
+    private IEnumerable<int> BedrockPortsOf(ServerViewModel except) =>
+        Servers.Where(s => !ReferenceEquals(s, except))
+               .Select(s => s.Config.BedrockPort)
+               .Where(p => p > 0);
+
     /// <summary>Creates a server's ViewModel, adds it to the list and persists its changes.</summary>
     private ServerViewModel Register(ServerConfig config)
     {
         var vm = new ServerViewModel(config);
         vm.ConfigChanged += Save;
+        vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
         Servers.Add(vm);
         return vm;
     }
@@ -464,11 +480,32 @@ public partial class MainViewModel : ObservableObject
             Save();
 
             // Create the Playit tunnel (errors are visible in the server's console).
+            string? playitKey = null;
             if (dialog.CreateTunnel)
             {
-                var key = await EnsurePlayitAgentAsync();
-                if (key is not null)
-                    await vm.CreateTunnelAsync(key);
+                playitKey = await EnsurePlayitAgentAsync();
+                if (playitKey is not null)
+                    await vm.CreateTunnelAsync(playitKey);
+            }
+
+            // Crossplay after the Java tunnel, not before: setting it up needs the Playit key that
+            // step obtains, and the Bedrock tunnel is a second one alongside the Java one.
+            if (dialog.ResultConfig.CrossplayEnabled)
+            {
+                await vm.SetUpCrossplayAsync(playitKey);
+                Save();
+            }
+
+            if (dialog.ResultConfig.MultiVersionEnabled)
+            {
+                await vm.SetUpMultiVersionAsync();
+                Save();
+            }
+
+            if (dialog.ResultConfig.BedrockModContentEnabled)
+            {
+                await vm.SetUpBedrockModContentAsync();
+                Save();
             }
 
             // First launch to generate the world and files.
@@ -484,6 +521,14 @@ public partial class MainViewModel : ObservableObject
         var server = SelectedServer;
         var oldType = server.Config.Type;
 
+        // Read before the dialog: these two checkboxes are requests to install something, not
+        // settings that take effect by being remembered. Turning one on and having nothing happen
+        // is worse than not offering it, because the app then claims a server can do something it
+        // cannot.
+        var hadCrossplay = server.Config.CrossplayEnabled;
+        var hadMultiVersion = server.Config.MultiVersionEnabled;
+        var hadModContent = server.Config.BedrockModContentEnabled;
+
         var dialog = new AddEditServerDialog(server.Config);
         var accepted = await dialog.ShowDialog<bool>(Owner);
 
@@ -495,6 +540,25 @@ public partial class MainViewModel : ObservableObject
         {
             server.Name = server.Config.Name;
             Save();
+
+            if (!hadCrossplay && server.Config.CrossplayEnabled)
+            {
+                var key = server.Config.PlayitEnabled ? await EnsurePlayitAgentAsync() : null;
+                await server.SetUpCrossplayAsync(key);
+                Save();
+            }
+
+            if (!hadMultiVersion && server.Config.MultiVersionEnabled)
+            {
+                await server.SetUpMultiVersionAsync();
+                Save();
+            }
+
+            if (!hadModContent && server.Config.BedrockModContentEnabled)
+            {
+                await server.SetUpBedrockModContentAsync();
+                Save();
+            }
 
             // If the loader type changed (e.g. a vanilla server was converted to Fabric), rebuild the
             // view model so computed state (IsModded, the Mods tab/browser) refreshes.
@@ -512,6 +576,7 @@ public partial class MainViewModel : ObservableObject
         _ = old.ShutdownAsync(); // stop its timers (it isn't running)
         var vm = new ServerViewModel(old.Config);
         vm.ConfigChanged += Save;
+        vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
         Servers[index] = vm;
         SelectedServer = vm;
     }
@@ -565,8 +630,14 @@ public partial class MainViewModel : ObservableObject
         if (SelectedServer is null) return;
 
         var folder = SelectedServer.Config.FolderPath;
-        // Read the port BEFORE deleting anything (we need it to locate the tunnel).
+        // Read the ports BEFORE deleting anything (we need them to locate the tunnels).
         var port = new ServerPropertiesService().GetServerPort(SelectedServer.Config.PropertiesPath);
+
+        // A crossplay server has two: the Java one and the Bedrock one. Forgetting the second
+        // leaves an orphan tunnel on the account that nothing will ever clean up.
+        var bedrockPort = SelectedServer.Config.CrossplayEnabled && SelectedServer.Config.BedrockPort > 0
+            ? SelectedServer.Config.BedrockPort
+            : (int?)null;
 
         if (Owner is null) return;
         var dialog = new DeleteServerDialog(SelectedServer.Name, folder);
@@ -583,7 +654,13 @@ public partial class MainViewModel : ObservableObject
             var key = await EnsurePlayitAgentAsync();
             try
             {
-                var deleted = key is not null && await new PlayitApiService().DeleteTunnelForPortAsync(key, port.Value);
+                var api = new PlayitApiService();
+                // Java is TCP, Bedrock is UDP. Naming the protocol is what keeps this from
+                // deleting somebody else's tunnel that happens to share the port number.
+                var deleted = key is not null && await api.DeleteTunnelForPortAsync(key, port.Value, udp: false);
+
+                if (key is not null && bedrockPort is { } bp)
+                    await api.DeleteTunnelForPortAsync(key, bp, udp: true);
                 if (key is null)
                 {
                     // The user didn't provide a key; the tunnel is not deleted.

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -12,6 +12,10 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- The picker bug that shipped twice - the selection being one behind inside its own event -
+         is only visible with real Avalonia controls running. Headless gives that without a display,
+         so it runs on the Linux CI leg too. -->
+    <PackageReference Include="Avalonia.Headless" Version="11.2.3" />
   </ItemGroup>
 
   <ItemGroup>

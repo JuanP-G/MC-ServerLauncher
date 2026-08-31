@@ -12,8 +12,7 @@ namespace McServerLauncher.Views;
 public partial class CreateServerDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();
-    private readonly ModLoaderService _mods = new();
-    private readonly PaperService _paper = new();
+    private readonly ServerJarInstaller _installer = new();
     private readonly ServerCreationService _creation = new();
     private readonly PortService _ports = new();
     private readonly JavaService _java = new();
@@ -55,6 +54,12 @@ public partial class CreateServerDialog : Window
 
         NameBox.TextChanged += (_, _) => UpdateFinalPath();
         ParentFolderBox.TextChanged += (_, _) => UpdateFinalPath();
+        TypePicker.SelectionChanged += (_, _) =>
+        {
+            UpdateTypeDependentOptions();
+            UpdatePathWarning();     // the rule only applies to some types, so it moves with the pick
+        };
+        UpdateTypeDependentOptions();
         Loaded += OnLoaded;
     }
 
@@ -105,21 +110,59 @@ public partial class CreateServerDialog : Window
     {
         var folder = GetTargetFolder();
         FinalPathText.Text = string.IsNullOrWhiteSpace(folder) ? string.Empty : "→ " + folder;
+        UpdatePathWarning(folder);
     }
 
+    /// <summary>
+    /// Warns while the name is still being typed, for anything that would stop this server working.
+    /// </summary>
+    /// <remarks>
+    /// Here rather than only at the Create button because the folder name comes from the server
+    /// name: someone calling a server "Java+Bedrock" should find out now, not after the download and
+    /// three restart attempts. It follows the picked type too, since only some server software
+    /// refuses characters of its own.
+    /// </remarks>
+    private void UpdatePathWarning(string? folder = null)
+    {
+        folder ??= GetTargetFolder();
+        var issue = ServerNameRule.Check(folder, SelectedServerType());
+
+        PathWarning.IsVisible = issue is not null;
+        if (issue is not null) PathWarning.Text = Describe(issue, folder);
+    }
+
+    /// <summary>Turns a rule violation into something worth reading, with the fix in it.</summary>
+    private static string Describe(NameIssue issue, string folder) => issue.Kind switch
+    {
+        NameIssueKind.InvalidCharacter => string.Format(
+            Localizer.Get("Msg_NameInvalidCharFmt"), issue.Detail,
+            ServerNameRule.Clean(Path.GetFileName(folder))),
+
+        NameIssueKind.ReservedName => string.Format(
+            Localizer.Get("Msg_NameReservedFmt"), issue.Detail),
+
+        NameIssueKind.TrailingDotOrSpace => Localizer.Get("Msg_NameTrailingDot"),
+
+        NameIssueKind.ServerRejectsParentCharacter => string.Format(
+            Localizer.Get("Msg_BukkitPathParentFmt"), issue.Detail),
+
+        _ => string.Format(Localizer.Get("Msg_BukkitPathFmt"), issue.Detail)
+    };
+
+    /// <summary>
+    /// The folder the server would get, using the name exactly as typed.
+    /// </summary>
+    /// <remarks>
+    /// No longer stripped behind the user's back. Typing "Mi:Server" used to produce a folder called
+    /// "MiServer" with nothing said about it; now the name is shown as it is and refused with a
+    /// reason if it cannot be used.
+    /// </remarks>
     private string GetTargetFolder()
     {
-        var name = SanitizeFolderName(NameBox.Text);
+        var name = NameBox.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(ParentFolderBox.Text))
             return string.Empty;
         return Path.Combine(ParentFolderBox.Text.Trim(), name);
-    }
-
-    private static string SanitizeFolderName(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name)) return string.Empty;
-        var invalid = Path.GetInvalidFileNameChars();
-        return new string(name.Trim().Where(c => !invalid.Contains(c)).ToArray());
     }
 
     private async void BrowseParent_Click(object? sender, RoutedEventArgs e)
@@ -151,6 +194,15 @@ public partial class CreateServerDialog : Window
 
         var folder = GetTargetFolder();
 
+        // Refused rather than warned about: depending on which rule it breaks, the folder either
+        // cannot be created at all or produces a server that installs fine and then exits on every
+        // start without ever reaching the world.
+        if (ServerNameRule.Check(folder, SelectedServerType()) is { } issue)
+        {
+            await Warn(Describe(issue, folder));
+            return;
+        }
+
         if (Directory.Exists(folder) && Directory.EnumerateFileSystemEntries(folder).Any())
         {
             var ok = await MessageBox.ConfirmAsync(
@@ -170,9 +222,6 @@ public partial class CreateServerDialog : Window
             var details = await _versions.GetVersionDetailsAsync(version);
 
             var serverType = SelectedServerType();
-            var loaderVersion = string.Empty;
-            var forgeArgs = string.Empty;
-            var jarName = serverType == ServerType.Fabric ? "fabric-server.jar" : "server.jar";
 
             // Install/locate the Java this Minecraft version needs first: the Forge installer also
             // requires a compatible Java to run.
@@ -188,75 +237,12 @@ public partial class CreateServerDialog : Window
                 AppendLog(Localizer.Get("Msg_UseSystemJava"));
             }
 
-            if (serverType == ServerType.Fabric)
-            {
-                AppendLog(Localizer.Get("Msg_FabricResolving"));
-                loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync();
-                await _mods.DownloadFabricServerAsync(version.Id, loaderVersion, Path.Combine(folder, jarName), progress);
-            }
-            else if (serverType == ServerType.Forge)
-            {
-                AppendLog(Localizer.Get("Msg_ForgeResolving"));
-                var forgeVersion = await _mods.GetRecommendedForgeVersionAsync(version.Id);
-                if (string.IsNullOrEmpty(forgeVersion))
-                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_ForgeNoVersion"), version.Id));
+            var installed = await _installer.InstallAsync(
+                serverType, folder, version.Id, details, javaPath, minGb, maxGb, progress);
 
-                loaderVersion = forgeVersion;
-                var forge = await _mods.InstallForgeServerAsync(folder, version.Id, forgeVersion, javaPath, progress);
-                if (forge.ArgsId is not null)
-                {
-                    forgeArgs = forge.ArgsId;     // modern Forge: launched via args file, no runnable jar
-                    jarName = string.Empty;
-                    // Forge ships its own run.bat that reads user_jvm_args.txt; give it our RAM settings.
-                    _creation.WriteForgeUserJvmArgs(folder, minGb, maxGb);
-                }
-                else if (!string.IsNullOrEmpty(forge.JarFile))
-                {
-                    jarName = forge.JarFile;      // old Forge: a runnable forge-*.jar
-                }
-                else
-                {
-                    throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallNoOutput"));
-                }
-            }
-            else if (serverType == ServerType.NeoForge)
-            {
-                AppendLog(Localizer.Get("Msg_NeoForgeResolving"));
-                var choice = await _mods.GetNeoForgeVersionAsync(version.Id);
-                if (choice is null)
-                    throw new InvalidOperationException(
-                        string.Format(Localizer.Get("Msg_NeoForgeNoVersion"), version.Id));
-
-                // Said before installing, not after: for six Minecraft versions a pre-release is
-                // the only NeoForge there has ever been, and that is worth knowing up front.
-                if (choice.IsBeta)
-                    AppendLog(string.Format(Localizer.Get("Msg_NeoForgeBetaWarning"), choice.Version));
-
-                loaderVersion = choice.Version;
-                var neo = await _mods.InstallNeoForgeServerAsync(folder, choice.Version, javaPath, progress);
-                if (neo.ArgsId is null)
-                    throw new InvalidOperationException(Localizer.Get("Msg_NeoForgeInstallNoOutput"));
-
-                forgeArgs = neo.ArgsId;           // NeoForge always launches via the args file
-                jarName = string.Empty;
-                // Same as Forge: its run script reads user_jvm_args.txt, so give it our RAM settings.
-                _creation.WriteForgeUserJvmArgs(folder, minGb, maxGb);
-            }
-            else if (serverType == ServerType.Paper)
-            {
-                AppendLog(Localizer.Get("Msg_PaperResolving"));
-                var build = await _paper.GetLatestBuildAsync(version.Id);
-                if (build is null)
-                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_PaperNoBuild"), version.Id));
-
-                loaderVersion = build.Build.ToString();
-                jarName = "paper-server.jar";
-                await _paper.DownloadPaperServerAsync(build, Path.Combine(folder, jarName), progress);
-            }
-            else
-            {
-                await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(folder, jarName), progress, details.Sha1);
-            }
+            var jarName = installed.JarFile;
+            var loaderVersion = installed.LoaderVersion;
+            var forgeArgs = installed.ForgeArgs;
 
             AppendLog(Localizer.Get("Msg_WritingEula"));
             _creation.WriteEula(folder);
@@ -271,13 +257,16 @@ public partial class CreateServerDialog : Window
                 FolderPath = folder,
                 JarFile = string.IsNullOrEmpty(jarName) ? "server.jar" : jarName,
                 Type = serverType,
+                MultiVersionEnabled = MultiVersionCheck.IsChecked == true,
+                BedrockModContentEnabled = HydraulicCheck.IsChecked == true,
                 GameVersion = version.Id,
                 ModLoaderVersion = loaderVersion,
                 ForgeArgs = forgeArgs,
                 JavaPath = javaPath,
                 MinRamGb = minGb,
                 MaxRamGb = maxGb,
-                PlayitEnabled = PlayitCheck.IsChecked == true
+                PlayitEnabled = PlayitCheck.IsChecked == true,
+                CrossplayEnabled = CrossplayCheck.IsChecked == true && CrossplayService.CanEnable(serverType)
             };
             AutoStart = AutoStartCheck.IsChecked == true;
             // The tunnel creation is done by MainViewModel on the already-added server, so the
@@ -295,18 +284,54 @@ public partial class CreateServerDialog : Window
         }
     }
 
-    /// <summary>Reads the picked server type from the combo's Tag.</summary>
+    /// <summary>
+    /// Greys out the options the picked type cannot do, and says why for each.
+    /// </summary>
     /// <remarks>
-    /// By Tag rather than by SelectedIndex, which is what this used to do. An index switch means
-    /// reordering the list, or inserting an entry anywhere but the end, silently changes what every
-    /// option below it creates — and the two dialogs that offer this list did not even use the same
-    /// order. Falls back to Vanilla, the one type that needs no loader and cannot be wrong.
+    /// Explained rather than merely disabled: a checkbox that is simply grey invites the reader to
+    /// assume it is broken. Vanilla gets its own crossplay wording because it has a way out —
+    /// changing the type to Paper keeps the world — while Forge simply has no Geyser at all.
     /// </remarks>
-    private ServerType SelectedServerType() =>
-        (TypeCombo.SelectedItem as ComboBoxItem)?.Tag is string tag &&
-        Enum.TryParse<ServerType>(tag, out var type)
-            ? type
-            : ServerType.Vanilla;
+    private void UpdateTypeDependentOptions()
+    {
+        var type = SelectedServerType();
+
+        var crossplay = CrossplayService.CanEnable(type);
+        CrossplayCheck.IsEnabled = crossplay;
+        CrossplayHint.IsVisible = crossplay;
+        CrossplayWhyNot.IsVisible = !crossplay;
+        var caveat = CrossplayService.CaveatKey(type);
+        CrossplayModdedNote.IsVisible = crossplay && caveat is not null;
+        if (caveat is not null) CrossplayModdedNote.Text = Localizer.Get(caveat);
+
+        if (!crossplay)
+        {
+            CrossplayCheck.IsChecked = false;
+            CrossplayWhyNot.Text = Localizer.Get(type == ServerType.Vanilla
+                ? "Crossplay_UnsupportedVanilla"
+                : "Crossplay_Unsupported");
+        }
+
+        var multiVersion = MultiVersionService.CanEnable(type);
+        MultiVersionCheck.IsEnabled = multiVersion;
+        MultiVersionHint.IsVisible = multiVersion;
+        MultiVersionWhyNot.IsVisible = !multiVersion;
+        if (!multiVersion) MultiVersionCheck.IsChecked = false;
+
+        var modContent = HydraulicService.CanEnable(type);
+        HydraulicCheck.IsEnabled = modContent;
+        HydraulicHint.IsVisible = modContent;
+        HydraulicWhyNot.IsVisible = !modContent;
+        if (!modContent) HydraulicCheck.IsChecked = false;
+    }
+
+    /// <summary>The picked server type.</summary>
+    /// <remarks>
+    /// The picker carries the enum value itself. This used to parse the string in a ComboBoxItem's
+    /// Tag, where a typo produced no error at all: the parse failed, the fallback took over, and
+    /// you got a Vanilla server having asked for something else.
+    /// </remarks>
+    private ServerType SelectedServerType() => TypePicker.SelectedType;
 
     private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
 

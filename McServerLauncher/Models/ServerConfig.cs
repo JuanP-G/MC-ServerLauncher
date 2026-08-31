@@ -24,7 +24,10 @@ public enum ServerType
     Fabric = 1,
     Forge = 2,
     Paper = 3,
-    NeoForge = 4
+    NeoForge = 4,
+    // Purpur is a Paper fork: same plugins, more configuration. Appended, like every type after
+    // it must be — these numbers are the file format, not a display order.
+    Purpur = 5
 }
 
 /// <summary>
@@ -122,6 +125,42 @@ public class ServerConfig
     /// demand — but each half works on its own.
     /// </remarks>
     public bool WakeOnDemand { get; set; }
+
+    // --- Crossplay (Java + Bedrock) ---
+
+    /// <summary>
+    /// Whether Bedrock players (phone, console, Windows 10/11) can join this server too.
+    /// </summary>
+    /// <remarks>
+    /// Remembered rather than set up once and forgotten, because it is not a one-off action: it
+    /// needs a second tunnel to keep existing, and Geyser has to keep advertising that tunnel's
+    /// public port. Both can drift, and only something that knows the server is meant to be
+    /// crossplay can put them back.
+    /// </remarks>
+    public bool CrossplayEnabled { get; set; }
+
+    /// <summary>Whether Hydraulic is installed, so Bedrock players see what the mods add.</summary>
+    /// <remarks>
+    /// Separate from <see cref="CrossplayEnabled"/> because it answers a different question. Geyser
+    /// gets Bedrock players <em>in</em>; without this they arrive to a world whose modded blocks and
+    /// items they cannot see. Fabric only — see <see cref="Services.HydraulicService"/>.
+    /// </remarks>
+    public bool BedrockModContentEnabled { get; set; }
+
+    /// <summary>Whether ViaVersion and ViaBackwards are installed, for joining from other versions.</summary>
+    /// <remarks>
+    /// Separate from <see cref="CrossplayEnabled"/> on purpose. Geyser does not need these to work,
+    /// and a Java-only server benefits from them just as much: they are about which Minecraft
+    /// <em>versions</em> may connect, not which edition.
+    /// </remarks>
+    public bool MultiVersionEnabled { get; set; }
+
+    /// <summary>The local <em>UDP</em> port Geyser listens on. 0 until crossplay is set up.</summary>
+    /// <remarks>
+    /// UDP, and a different namespace from the Java port: this one can be 19132 while some other
+    /// program holds TCP 19132, and vice versa.
+    /// </remarks>
+    public int BedrockPort { get; set; }
 
     public bool UseCustomNotifications { get; set; }
 

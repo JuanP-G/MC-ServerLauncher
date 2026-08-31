@@ -69,8 +69,20 @@ mundo. No hay rutas fijas del equipo en el código.
   `run.bat`/`user_jvm_args.txt` y el `server.properties` mínimo con el puerto elegido. (La descarga
   del jar la hacen `MinecraftVersionService`/`ModLoaderService`/`PaperService` y el puerto lo elige
   `PortService`, todo orquestado por `CreateServerDialog`.)
-- **`ModLoaderService`** / **`PaperService`** — instalan un mod loader (Fabric/Forge/NeoForge) o un build de
-  Paper sobre un servidor existente, conservando el mundo. Limitación conocida: el endpoint meta de
+- **`ServerTypeCatalog`** — una fila por tipo de servidor: nombre, familia (plugins/mods/ninguna), color de la
+  insignia y su `CrossplayLevel`. El selector, las insignias, la tienda de mods, la carpeta de contenido y las reglas
+  de crossplay leen de ahí, así que añadir un tipo es una fila y no seis `switch` repartidos.
+  El nivel tiene tres valores en vez de sí/no, porque «Geyser publica una versión» y «tu amigo con el móvil puede
+  jugar» no son la misma afirmación: `Full` en Paper, Purpur y Fabric; `Partial` en NeoForge — conecta y autentica,
+  y a partir de ahí cualquier mod que el cliente necesite tener deja fuera a Bedrock —; y `None` en Vanilla y
+  Forge. `CrossplayService.CaveatKey` convierte el nivel en el aviso que muestran los dos diálogos.
+- **`ServerJarInstaller`** — el único sitio que sabe cómo se obtiene cada tipo. Lo llaman el diálogo de creación y el
+  de cambiar el tipo; antes la cadena estaba escrita en los dos, y un tipo presente en uno y ausente en el otro
+  producía un servidor Vanilla sin decir nada.
+- **`ModLoaderService`** / **`PaperService`** / **`PurpurService`** — instalan un mod loader (Fabric/Forge/NeoForge) o un
+  build de Paper/Purpur. Purpur solo publica MD5 de sus builds, no SHA-256: HTTPS autentica el origen y el hash está
+  para detectar una descarga corrupta, y así queda explicado en el propio servicio. También instalan
+  un loader sobre un servidor existente, conservando el mundo. Limitación conocida: el endpoint meta de
   Fabric no publica checksums, así que su jar de servidor no se puede verificar por hash como las
   demás fuentes (Mojang SHA-1, Paper SHA-256…); en su lugar el jar descargado se valida
   estructuralmente (su `install.properties` debe coincidir con las versiones de juego/loader
@@ -87,6 +99,13 @@ mundo. No hay rutas fijas del equipo en el código.
   por su cuenta.
 - **`ModrinthService`** — busca en Modrinth y descarga mods/plugins (filtrados por el tipo y la
   versión del servidor), y gestiona el flujo de "buscar actualizaciones de mods".
+- **`ModDependencyService`** — recorre las dependencias *obligatorias* de una versión, también las de sus
+  dependencias, y dice cuáles faltan. Dos detalles de los datos de Modrinth lo condicionan: las dependencias no
+  llevan **ningún rango de versiones** (o fijan un id de versión o nombran un proyecto), y por eso «ese proyecto
+  ya está instalado» es una respuesta completa y no una aproximación; y `embedded` significa que la dependencia
+  ya viene dentro del jar, así que instalarla otra vez produce el fallo de *mod duplicado* del cargador. El
+  recorrido (`WalkAsync`) recibe la búsqueda como delegado, de modo que lo que decide se prueba contra una tabla
+  y no contra Modrinth el día que se ejecuta la prueba.
 - **`ServerDetectionService`** — inspecciona una carpeta para averiguar el tipo/versión de un servidor
   existente cuando el usuario añade uno que ya está.
 - **`ServerIconService`** — genera el `server-icon.png` de un servidor: toma cualquier imagen del
@@ -189,6 +208,12 @@ menú de la bandeja restaura la ventana (**Mostrar**) o cierra de verdad (**Sali
 `ServerModsViewModel` pide a `ModrinthService` identificar cada archivo instalado en Modrinth y marcar
 los que tienen una versión más nueva; el usuario actualiza cada uno con un clic (descarga verificada
 con checksum vía `DownloadVerifier`, conservando su estado activado/desactivado).
+
+El mismo barrido responde a una segunda pregunta con los mismos hashes: qué **librerías faltan**.
+`GetVersionsByHashAsync` dice qué *es* cada jar (id de proyecto y dependencias declaradas, al contrario que el
+endpoint de actualizaciones, que dice qué podría sustituirlo), `ModDependencyService` calcula qué hace falta y
+no está, y el panel ofrece instalarlo. Instalar un mod resuelve sus dependencias igual, en el mismo clic — que
+es el arreglo del cargador de Fabric negándose a arrancar por un `fabric-api` que nadie pidió instalar.
 
 ## Localización
 

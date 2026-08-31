@@ -7,8 +7,8 @@ using System.Text.RegularExpressions;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Checks which TCP ports are in use on the machine (by any application) and helps
-/// find the next free port.
+/// Checks which ports are in use on the machine (by any application) and helps find the next free
+/// one. TCP and UDP are asked separately because they are separate namespaces.
 /// </summary>
 public class PortService
 {
@@ -46,6 +46,53 @@ public class PortService
         catch
         {
             // If the table can't be queried, fall back to only avoiding the known ports.
+        }
+
+        for (var port = start; port <= 65535; port++)
+        {
+            if (!alsoAvoid.Contains(port) && inUse?.Contains(port) != true)
+                return port;
+        }
+        return null;
+    }
+
+    // --- UDP ---
+    // A separate table, and asking the wrong one is not a near miss. Minecraft Java is TCP and
+    // Bedrock is UDP, and a port can be busy on one while free on the other, so checking Bedrock's
+    // port against the TCP table would hand out a port something else is already using — and the
+    // clash would only show up as a Geyser that silently fails to bind.
+
+    /// <summary>True if any system process is listening on that UDP port.</summary>
+    public bool IsUdpPortInUse(int port)
+    {
+        try
+        {
+            var listeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
+            return listeners.Any(ep => ep.Port == port);
+        }
+        catch
+        {
+            // Same choice as the TCP one: if it can't be queried, don't block.
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// First free UDP port from <paramref name="start"/>, skipping <paramref name="alsoAvoid"/>.
+    /// Null when everything up to 65535 is taken.
+    /// </summary>
+    public int? FindFreeUdpPort(int start, ISet<int> alsoAvoid)
+    {
+        HashSet<int>? inUse = null;
+        try
+        {
+            inUse = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners()
+                .Select(ep => ep.Port)
+                .ToHashSet();
+        }
+        catch
+        {
+            // As above: fall back to only avoiding the ports we already know about.
         }
 
         for (var port = start; port <= 65535; port++)

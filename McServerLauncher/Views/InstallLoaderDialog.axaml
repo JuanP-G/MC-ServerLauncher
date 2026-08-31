@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="using:McServerLauncher.Localization"
         xmlns:ic="using:FluentIcons.Avalonia"
+        xmlns:views="using:McServerLauncher.Views"
         x:Class="McServerLauncher.Views.InstallLoaderDialog"
         Title="{loc:Loc Loader_Title}"
         Width="560" Height="520" MinWidth="500"
@@ -13,16 +14,7 @@
                 <TextBlock Text="{loc:Loc Loader_Intro}" TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,12" />
 
                 <TextBlock Text="Loader" Margin="0,0,0,4" />
-                <ComboBox x:Name="LoaderCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
-                    <!-- El Tag es lo que lee el codigo: asi el orden visual se puede cambiar sin
-                         tocar nada mas. Antes se mapeaba por indice, y en un orden distinto al del
-                         otro dialogo. -->
-                    <ComboBoxItem Content="Fabric" Tag="Fabric" />
-                    <ComboBoxItem Content="{loc:Loc Loader_Vanilla}" Tag="Vanilla" />
-                    <ComboBoxItem Content="Forge" Tag="Forge" />
-                    <ComboBoxItem Content="NeoForge" Tag="NeoForge" />
-                    <ComboBoxItem Content="Paper" Tag="Paper" />
-                </ComboBox>
+                <views:ServerTypePicker x:Name="TypePicker" />
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">
                     <StackPanel Grid.Column="0">

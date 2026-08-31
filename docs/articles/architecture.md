@@ -70,8 +70,20 @@ are no hard-coded machine paths.
   `run.bat`/`user_jvm_args.txt` and a minimal `server.properties` with the chosen port. (The jar
   download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is
   picked by `PortService`, all orchestrated by `CreateServerDialog`.)
-- **`ModLoaderService`** / **`PaperService`** — install a mod loader (Fabric/Forge/NeoForge) or a Paper build
-  onto an existing server, keeping the world. Known limitation: Fabric's meta endpoint publishes no
+- **`ServerTypeCatalog`** — one row per server type: display name, family (plugins/mods/neither), badge colour and
+  its `CrossplayLevel`. The picker, the badges, the mod store, the content folder and the crossplay rules all
+  read from it, so adding a type is a row rather than six `switch` statements found by hand.
+  The level is three-valued rather than a yes/no, because "Geyser publishes a build" and "your friend on a phone
+  can play" are different claims: `Full` for Paper, Purpur and Fabric, `Partial` for NeoForge — it connects and
+  authenticates, and then any mod the client is required to have shuts Bedrock out — and `None` for Vanilla and
+  Forge. `CrossplayService.CaveatKey` turns the level into the note both dialogs show.
+- **`ServerJarInstaller`** — the one place that knows how each type is obtained. The create dialog and the
+  change-type dialog both call it; the chain used to be written out inline in both, and a type present in one and
+  missing from the other silently produced a Vanilla server.
+- **`ModLoaderService`** / **`PaperService`** / **`PurpurService`** — install a mod loader (Fabric/Forge/NeoForge) or a
+  Paper/Purpur build. Purpur publishes only an MD5 for its builds, not a SHA-256; HTTPS authenticates the source and
+  the hash is there to catch a corrupted download, which is documented in the service itself. Also
+  installs a loader onto an existing server, keeping the world. Known limitation: Fabric's meta endpoint publishes no
   checksums, so its server jar can't be hash-verified like the other sources (Mojang SHA-1, Paper
   SHA-256…); instead the downloaded jar is structurally validated (its `install.properties` must
   match the requested game/loader versions) and discarded on mismatch. Forge's trust assumption:
@@ -87,6 +99,13 @@ are no hard-coded machine paths.
   build number and is unit-tested on its own.
 - **`ModrinthService`** — searches Modrinth and downloads mods/plugins (filtered by the server's type
   and version), and drives the "check for mod updates" flow.
+- **`ModDependencyService`** — walks a version's *required* dependencies, transitively, and says which are
+  missing. Two facts about Modrinth's data shape it: dependencies carry **no version range** (a dependency
+  either pins one version id or names a project), which is why "that project is already installed" is a
+  complete answer rather than an approximation; and `embedded` means the dependency is already inside the jar,
+  so installing it again produces the loader's *duplicate mod* failure. The walk itself (`WalkAsync`) takes its
+  lookup as a delegate, so what it decides is tested against a table rather than against Modrinth on the day
+  the test runs.
 - **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version
   when the user adds one that already exists.
 - **`ServerIconService`** — generates a server's `server-icon.png`: takes any user image, crops it to
@@ -185,6 +204,12 @@ shutdown).
 `ServerModsViewModel` asks `ModrinthService` to identify each installed file on Modrinth and flag the
 ones with a newer version; the user updates each with one click (checksum-verified download via
 `DownloadVerifier`, preserving its enabled/disabled state).
+
+The same scan answers a second question off the same hashes: which **library mods are missing**.
+`GetVersionsByHashAsync` says what each jar *is* (project id and declared dependencies, unlike the update
+endpoint, which says what could replace it), `ModDependencyService` works out what is required and absent, and
+the panel offers to install it. Installing a mod resolves its dependencies the same way, in the same click —
+which is the fix for a Fabric loader refusing to start over a `fabric-api` nobody was ever asked to install.
 
 ## Localization
 

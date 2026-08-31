@@ -24,8 +24,13 @@ $version = ($csproj.Project.PropertyGroup.Version | Where-Object { $_ }) | Selec
 
 # Una release no debe salir sin sus notas de novedades: comprobamos que Changelog.cs tiene la
 # entrada de esta versión (su clave Whatsnew_x_y_z en los 5 .resx va de la mano de esa entrada).
+# Las betas llevan un cuarto numero (1.10.4.1); las estables, tres.
 $verParts = $version.Split('.')
-$entry = "new Version($($verParts[0]), $($verParts[1]), $($verParts[2]))"
+$entry = if ($verParts.Count -ge 4) {
+    "new Version($($verParts[0]), $($verParts[1]), $($verParts[2]), $($verParts[3]))"
+} else {
+    "new Version($($verParts[0]), $($verParts[1]), $($verParts[2]))"
+}
 $changelog = Get-Content "$root\McServerLauncher\Services\Changelog.cs" -Raw
 if ($changelog -notlike "*$entry*") {
     throw ("Services/Changelog.cs no tiene entrada para la versión $version ($entry). " +

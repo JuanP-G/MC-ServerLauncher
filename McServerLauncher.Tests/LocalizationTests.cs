@@ -18,7 +18,8 @@ public class LocalizationTests
         "Strings.resx", "Strings.en.resx", "Strings.pt.resx", "Strings.fr.resx", "Strings.de.resx"
     };
 
-    private static string RepoRoot()
+    /// <summary>The repository root, which other tests that read source files need too.</summary>
+    internal static string RepoRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "McServerLauncher.sln")))
@@ -81,15 +82,24 @@ public class LocalizationTests
         var source = Path.Combine(RepoRoot(), "McServerLauncher");
 
         var used = new SortedSet<string>();
-        foreach (var file in Directory.EnumerateFiles(source, "*.cs", SearchOption.AllDirectories))
+        foreach (var file in Directory.EnumerateFiles(source, "*.*", SearchOption.AllDirectories))
         {
             if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") ||
                 file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"))
                 continue;
 
+            // The markup extension counts too. A key typed into XAML fails exactly as quietly as
+            // one typed into C# — it renders as its own name — and nothing else looks at it.
+            var pattern = Path.GetExtension(file).ToLowerInvariant() switch
+            {
+                ".cs" => @"Localizer\.Get\(""([A-Za-z0-9_]+)""\)",
+                ".axaml" => @"\{loc:Loc\s+([A-Za-z0-9_]+)\s*\}",
+                _ => null
+            };
+            if (pattern is null) continue;
+
             foreach (System.Text.RegularExpressions.Match m in
-                     System.Text.RegularExpressions.Regex.Matches(
-                         File.ReadAllText(file), @"Localizer\.Get\(""([A-Za-z0-9_]+)""\)"))
+                     System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(file), pattern))
             {
                 used.Add(m.Groups[1].Value);
             }

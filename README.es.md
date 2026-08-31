@@ -18,7 +18,8 @@ Aplicación de escritorio para **Windows, Linux y macOS** para gestionar uno o v
 **Minecraft** desde una interfaz gráfica moderna — **sin archivos `.bat`, ventanas de consola negras ni editar
 configuraciones a mano**.
 
-Crea un servidor, elige el **tipo** (Vanilla, Fabric, Forge, NeoForge o Paper) y la versión, añade **mods o plugins**
+Crea un servidor, elige el **tipo** en una rejilla de tarjetas que dice cuáles llevan plugins, cuáles mods y a cuáles
+se puede entrar desde Bedrock (Vanilla, Paper, Purpur, Fabric, NeoForge, Forge), elige la versión, añade **mods o plugins**
 con un par de clics, ábrelo a Internet con Playit.gg, gestiona jugadores y ajusta la configuración…
 todo con botones.
 
@@ -62,18 +63,42 @@ todo con botones.
 ## ✨ Funcionalidades
 
 - **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Fabric /
-  Forge / NeoForge / Paper).
+  Paper / Purpur / Fabric / NeoForge / Forge).
 - **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang), **puerto** y
   **RAM**; la app descarga el servidor correcto, acepta el EULA, prepara `run.bat` / `server.properties` e
-  instala el **Java** adecuado (Temurin) si hace falta. Vanilla, Fabric, Forge y NeoForge usan **mods**; Paper usa **plugins**.
+  instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur usan **plugins**.
 - **Tienda de mods y plugins** 🧩 — busca en **Modrinth** dentro de la app, ya **filtrado por el tipo y la
   versión de tu servidor** (con chips de tipo y versión para que quede claro). Cada resultado trae un **resumen
   en lenguaje claro y en tu idioma** de para qué sirve, y avisa cuando además hay que instalarlo en el cliente.
   Abre la **ficha completa** con galería, versiones, dependencias, enlaces y mods relacionados sin salir de la
   app. Un **panel de Filtros** combina varias categorías a la vez y muestra las aplicadas como chips que puedes
-  quitar de una en una. **Instala** con un clic y **activa/desactiva** o borra lo instalado. Los servidores
-  Paper ven plugins; el resto, mods.
-- **Cambiar el tipo de un servidor** — convierte uno existente a Fabric/Forge/NeoForge/Paper o de vuelta a Vanilla,
+  quitar de una en una. **Instala** con un clic y **activa/desactiva** o borra lo instalado. Paper y Purpur
+  ven plugins; los cargadores de mods ven mods.
+- **Instalar un mod trae lo que necesita** — las librerías de las que depende (Fabric API, cristallib y
+  compañía) se resuelven en Modrinth y se instalan con él, también las de sus dependencias. Es lo que
+  reclamaba el cargador de Fabric cuando se negaba a arrancar con una lista de dependencias que faltaban. Solo
+  las *obligatorias*, nunca los extras opcionales, y nunca una segunda copia de algo que ya está. Para los
+  servidores creados antes, el botón de **buscar actualizaciones** ahora dice además qué librerías faltan y
+  ofrece instalarlas.
+- **Jugar también desde Bedrock** 📱 — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea el
+  segundo túnel (UDP) que Bedrock necesita y configura el puerto público que Geyser debe anunciar — la parte que
+  casi nadie acierta a mano. Lo bien que funciona depende del tipo de servidor, y la tarjeta de cada tipo lo dice
+  antes de que elijas:
+
+  | Tipo | Desde Bedrock | Por qué |
+  |---|---|---|
+  | **Paper**, **Purpur** | ✅ Funciona | Los plugins solo corren en el servidor: el cliente de Bedrock no necesita nada. |
+  | **Fabric** | ✅ Funciona | Con la casilla de contenido de mods: Hydraulic convierte lo que añaden los mods. |
+  | **NeoForge** | ⚠️ A veces | Conecta y autentica, y a partir de ahí depende de los mods: cualquiera que el cliente necesite tener deja fuera a Bedrock, y Hydraulic ya no publica para NeoForge. |
+  | **Vanilla**, **Forge** | ❌ No | Geyser no publica ninguna versión para ellos. |
+- **Que los de Bedrock vean el contenido de los mods** — en **Fabric**, otra casilla instala
+  Hydraulic (de los propios GeyserMC) y Fabric API, y los bloques y objetos que añaden los mods se
+  convierten para los clientes de Bedrock. Solo en Fabric: Hydraulic dejó de publicar para NeoForge
+  en febrero de 2026. Sus autores lo consideran de desarrollo muy temprano, y la app lo dice antes
+  de que marques la casilla.
+- **Jugar desde otras versiones de Minecraft** — una casilla instala ViaVersion y ViaBackwards, para que entren
+  clientes más nuevos y más antiguos que el servidor. Solo en servidores de plugins.
+- **Cambiar el tipo de un servidor** — convierte uno existente a Paper/Purpur/Fabric/Forge/NeoForge o de vuelta a Vanilla,
   **conservando el mundo**, con avisos por colores de lo que puede afectar cada cambio.
 - **Iniciar / Detener / Reiniciar** con parada limpia que guarda el mundo; detecta y libera un **puerto ocupado**;
   **CPU, RAM, tiempo activo y puerto** en vivo con estado por colores.

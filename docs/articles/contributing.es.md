@@ -82,7 +82,28 @@ dotnet tool install -g docfx   # solo la primera vez
      (`UpdateService.CheckAsync`). La verificación es **obligatoria**: sin ese archivo el
      actualizador rechaza la instalación silenciosa y solo abre la página de la release — no lo
      omitas nunca.
-5. Publicar la release dispara automáticamente los workflows de **Linux** (`release-linux.yml`) y
+> **Antes de cambiar cómo se numeran las versiones, comprueba qué sabe leer la versión instalada.**
+> Una release cuyo tag tiene una forma que los clientes antiguos no entienden es invisible para
+> ellos por muy correcto que sea el código nuevo — y el código que la entiende viaja *dentro* de esa
+> release. Ha pasado dos veces: las pre-releases eran invisibles antes de la 1.10.1, y los tags de
+> cuatro números antes de la 1.10.3.1, porque en ambos casos había que cambiar `UpdateService` para
+> verlas. La primera release de una forma nueva siempre hay que pasarla a mano; dílo en vez de
+> prometer una actualización automática.
+
+> **Numeración.** Una beta lleva un cuarto número que prolonga la estable a la que sigue: tras
+> `1.10.3` vienen `1.10.3.1`, `1.10.3.2`, y lo terminado sale como la siguiente estable (`1.11.0`).
+> Es así a propósito: numerar las betas según la versión a la que llevan haría que la estable
+> quedara por debajo de sus propias betas y dejara tirado a quien las probó.
+
+5. **Si es una beta**, publícala como pre-release desde su rama:
+   ```powershell
+   gh release create vX.Y.Z --prerelease --target <rama> dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt
+   ```
+   GitHub deja las pre-releases fuera de `/releases/latest`, así que a quien está en la línea estable no se le
+   empuja a una. Desde la 1.10.1 el actualizador lee la *lista* de releases, que es lo que hace que una beta sea
+   alcanzable, y avisa de que lo es antes de que se pulse Actualizar. Cualquier versión anterior a la 1.10.1 no
+   puede ver betas, así que la primera beta después de una estable hay que pasarla a mano.
+6. Publicar la release dispara automáticamente los workflows de **Linux** (`release-linux.yml`) y
    **macOS** (`release-macos.yml`), que generan y adjuntan el `.AppImage` y los dos `.dmg`. No los
    subas a mano — basta con esperar a que terminen los workflows.
 

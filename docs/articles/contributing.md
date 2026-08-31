@@ -80,7 +80,27 @@ dotnet tool install -g docfx   # first time only
      `SHA256SUMS.txt`, which it uses to verify the installer before running it
      (`UpdateService.CheckAsync`). Verification is **mandatory**: without that file the updater
      refuses the silent install and just opens the release page — so never skip it.
-5. Publishing the release automatically triggers the **Linux** (`release-linux.yml`) and **macOS**
+> **Before changing how versions are numbered, check what the installed version can parse.** A
+> release whose tag has a shape older clients do not understand is invisible to them, however
+> correct the new code is — and the code that understands it ships *inside* that release. It has
+> happened twice: pre-releases were invisible before 1.10.1, and four-number tags before 1.10.3.1,
+> because in both cases `UpdateService` had to change to see them. The first release of a new shape
+> always has to be handed over by hand; say so instead of promising an automatic update.
+
+> **Numbering.** A beta carries a fourth number that extends the stable it follows: after `1.10.3`
+> come `1.10.3.1`, `1.10.3.2`, and the finished work ships as the next stable (`1.11.0`). It is that
+> way round on purpose — numbering betas after the version they lead *to* would make the stable sort
+> below its own betas, stranding everyone who tested them.
+
+5. **For a beta**, publish it as a pre-release from its branch instead:
+   ```powershell
+   gh release create vX.Y.Z --prerelease --target <branch> dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt
+   ```
+   GitHub leaves pre-releases out of `/releases/latest`, so people on the stable line are never pushed onto one.
+   From 1.10.1 the updater reads the release *list* instead, which is what makes a beta reachable at all — and it
+   says it is a beta before the Update button is pressed. Anything older than 1.10.1 cannot see betas at all, so
+   a first beta after a stable has to be handed over by hand.
+6. Publishing the release automatically triggers the **Linux** (`release-linux.yml`) and **macOS**
    (`release-macos.yml`) workflows, which build and attach the `.AppImage` and the two `.dmg`s. Don't
    upload those by hand — just wait for the workflows to finish.
 

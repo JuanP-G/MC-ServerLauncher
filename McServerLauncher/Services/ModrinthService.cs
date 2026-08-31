@@ -42,7 +42,7 @@ public class ModrinthService
     /// </summary>
     private static (string CategoriesGroup, string ProjectType, string LoadersJson) TargetFor(ServerType type)
     {
-        if (type == ServerType.Paper)
+        if (ServerTypeCatalog.IsPluginBased(type))
         {
             var loaders = new[] { "paper", "spigot", "bukkit", "purpur", "folia" };
             var cats = string.Join(",", loaders.Select(l => $"\"categories:{l}\""));
@@ -126,6 +126,56 @@ public class ModrinthService
 
         return await StoreCache.Shared.GetOrFetchAsync($"projects:{url}", ProjectTtl,
             token => GetJsonAsync<List<ProjectDetail>>(url, token), ct);
+    }
+
+    /// <summary>
+    /// One exact version, by its Modrinth id. Used for dependencies that pin a version rather than
+    /// naming a project, where "the newest compatible one" would be the wrong answer.
+    /// </summary>
+    public Task<VersionResult?> GetVersionAsync(string versionId, CancellationToken ct = default) =>
+        StoreCache.Shared.GetOrFetchAsync($"version:{versionId}", VersionsTtl,
+            token => GetJsonAsync<VersionResult>($"{ApiBaseUrl}/version/{Uri.EscapeDataString(versionId)}", token), ct);
+
+    /// <summary>
+    /// Which Modrinth version each installed jar actually is, keyed by the SHA-1 that was passed in.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="GetLatestVersionsByHashAsync"/> this asks what a jar <em>is</em>, not what
+    /// could replace it — so the answer carries the project id and the dependency list of the file
+    /// on disk. That is what makes it possible to tell a server that is missing a library mod from
+    /// one that is complete. Jars Modrinth does not know are simply absent from the result.
+    /// </remarks>
+    public async Task<Dictionary<string, VersionResult>> GetVersionsByHashAsync(
+        IEnumerable<string> sha1Hashes, CancellationToken ct = default)
+    {
+        var hashes = sha1Hashes.Where(h => !string.IsNullOrEmpty(h)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var result = new Dictionary<string, VersionResult>(StringComparer.OrdinalIgnoreCase);
+        if (hashes.Count == 0) return result;
+
+        var body = new JsonObject
+        {
+            ["hashes"] = new JsonArray(hashes.Select(h => (JsonNode)JsonValue.Create(h)!).ToArray()),
+            ["algorithm"] = "sha1"
+        };
+
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Post, $"{ApiBaseUrl}/version_files");
+            req.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
+
+            using var response = await Http.SendAsync(req, ct);
+            response.EnsureSuccessStatusCode();
+
+            var map = await response.Content.ReadFromJsonAsync<Dictionary<string, VersionResult>>(cancellationToken: ct);
+            if (map != null)
+                foreach (var kv in map)
+                    result[kv.Key] = kv.Value;
+        }
+        catch
+        {
+            // Offline or API error: an empty map means "nothing known", which every caller handles.
+        }
+        return result;
     }
 
     /// <summary>The project's team, which is where the author names live.</summary>

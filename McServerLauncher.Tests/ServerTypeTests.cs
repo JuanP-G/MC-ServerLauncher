@@ -19,6 +19,7 @@ public class ServerTypeTests
         Assert.Equal(2, (int)ServerType.Forge);
         Assert.Equal(3, (int)ServerType.Paper);
         Assert.Equal(4, (int)ServerType.NeoForge);
+        Assert.Equal(5, (int)ServerType.Purpur);
     }
 
     [Fact]
@@ -61,39 +62,63 @@ public class ServerTypeTests
         Assert.NotEqual(ServerType.Paper, ServerType.NeoForge);
     }
 
-    // --- the two dialogs that offer the list ---
+    // --- the list both dialogs offer ---
 
-    [Theory]
-    [InlineData("CreateServerDialog.axaml")]
-    [InlineData("InstallLoaderDialog.axaml")]
-    public void EveryTypeIsOfferedAndEveryTagIsReal(string view)
+    [Fact]
+    public void EveryTypeIsOfferedAndCanActuallyBeInstalled()
     {
-        // The dialogs map the picked item to a ServerType through its Tag. A typo there parses to
-        // nothing and silently falls back — you would pick NeoForge and get Vanilla, with no error.
-        var path = Path.Combine(RepoRoot(), "McServerLauncher", "Views", view);
-        var xaml = File.ReadAllText(path);
-
-        var tags = System.Text.RegularExpressions.Regex
-            .Matches(xaml, @"<ComboBoxItem[^>]*\bTag=""([^""]+)""")
-            .Select(m => m.Groups[1].Value)
-            .ToList();
-
-        Assert.NotEmpty(tags);
-        foreach (var tag in tags)
-            Assert.True(Enum.TryParse<ServerType>(tag, out _), $"{view}: Tag \"{tag}\" no es un ServerType");
+        // This used to parse the ComboBoxItem Tags out of each dialog's XAML, because the type was
+        // recovered by parsing that string and a typo silently fell back to Vanilla. Both dialogs
+        // now share one picker built from the catalogue, so the question worth asking has moved:
+        // is every type in the enum offered, and can every offered type be installed?
+        var offered = ServerTypeCatalog.All.Select(e => e.Type).ToList();
 
         foreach (var type in Enum.GetValues<ServerType>())
-            Assert.Contains(type.ToString(), tags);
+            Assert.Contains(type, offered);
+
+        Assert.Equal(offered.Count, offered.Distinct().Count());
+
+        foreach (var type in offered)
+            Assert.Contains(type, ServerJarInstaller.Installable);
     }
 
-    private static string RepoRoot()
+    [Fact]
+    public void EveryTypeHasAFamilyAndADescription()
     {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "McServerLauncher.sln")))
-            dir = dir.Parent;
+        // A type added to the enum without a row lands on the fallback: no family badge, no
+        // description, and quietly treated as taking mods. Better to fail here.
+        foreach (var type in Enum.GetValues<ServerType>())
+        {
+            var entry = ServerTypeCatalog.For(type);
 
-        Assert.NotNull(dir);
-        return dir!.FullName;
+            Assert.Equal(type, entry.Type);
+            Assert.False(string.IsNullOrWhiteSpace(entry.DisplayName));
+            Assert.False(string.IsNullOrWhiteSpace(entry.DescriptionKey));
+            Assert.NotEqual(entry.DescriptionKey,
+                McServerLauncher.Localization.Localizer.Get(entry.DescriptionKey));
+        }
+    }
+
+    [Fact]
+    public void TheFamilyDecidesTheContentFolder()
+    {
+        // The mod store, the crossplay installer and the Mods tab all ask this one question, and a
+        // plugin written into mods/ is simply never loaded.
+        Assert.Equal("plugins", ServerTypeCatalog.ContentFolder(ServerType.Paper));
+        Assert.Equal("plugins", ServerTypeCatalog.ContentFolder(ServerType.Purpur));
+        Assert.Equal("mods", ServerTypeCatalog.ContentFolder(ServerType.Fabric));
+        Assert.Equal("mods", ServerTypeCatalog.ContentFolder(ServerType.NeoForge));
+        Assert.Equal("mods", ServerTypeCatalog.ContentFolder(ServerType.Forge));
+    }
+
+    [Fact]
+    public void TheCrossplayBadgeMatchesWhatGeyserActuallySupports()
+    {
+        // The badge is a promise made in the picker, before anything is downloaded. If it and
+        // GeyserConfigService disagreed, the app would advertise Bedrock support for a server it
+        // then refuses to set up.
+        foreach (var entry in ServerTypeCatalog.All)
+            Assert.Equal(GeyserConfigService.Supports(entry.Type), entry.SupportsCrossplay);
     }
 
     // --- where each loader keeps its launch args ---

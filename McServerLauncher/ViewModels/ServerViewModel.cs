@@ -52,6 +52,15 @@ public partial class ServerViewModel : ObservableObject
     private static readonly TimeSpan StabilityWindow = TimeSpan.FromMinutes(2);
     private static readonly TimeSpan AutoRestartDelay = TimeSpan.FromSeconds(5);
     private int _consecutiveCrashes;
+
+    /// <summary>Whether this run has already explained a Bedrock player being kicked for having no mods.</summary>
+    private bool _moddedKickWarned;
+
+    /// <summary>Whether this run has already explained the server refusing to start from its path.</summary>
+    private bool _pathRejectionWarned;
+
+    /// <summary>Set when the server failed for a reason that repeating the start cannot change.</summary>
+    private bool _startFailureIsFinal;
     private DateTime? _lastRunningAtUtc;
 
     public ServerConfig Config { get; }
@@ -251,6 +260,17 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Raised when something persistable about the server changes (to save).</summary>
     public event Action? ConfigChanged;
 
+    /// <summary>
+    /// The Bedrock ports the other servers have already been given.
+    /// </summary>
+    /// <remarks>
+    /// Supplied by <c>MainViewModel</c>, which is the only thing that knows the other servers exist.
+    /// It matters because the free-port search asks the operating system which UDP ports are
+    /// <em>bound right now</em>: set crossplay up on two stopped servers and both are handed 19132,
+    /// and the collision only shows up later as the second Geyser failing to bind.
+    /// </remarks>
+    public Func<IEnumerable<int>>? BedrockPortsInUse { get; set; }
+
     public ServerViewModel(ServerConfig config)
     {
         Config = config;
@@ -290,6 +310,11 @@ public partial class ServerViewModel : ObservableObject
         Mods = new ServerModsViewModel(config);
         Backups = new ServerBackupsViewModel(this);
         _ = RefreshTunnelAddressAsync();
+
+        // Crossplay is a remembered setting, so it gets checked rather than assumed: the tunnel's
+        // public port can change, and Geyser has to be re-pointed at it or the server quietly stops
+        // being reachable from Bedrock.
+        _ = RefreshBedrockAddressAsync();
 
         // Also here, not only on the transition to Stopped: opening the app finds every server
         // already stopped and fires no state change, so waiting for one would mean wake-on-demand
@@ -531,7 +556,10 @@ public partial class ServerViewModel : ObservableObject
         _playit.RefreshState();
         // Every ~30 s (10 ticks of 3 s; ~5 min while in the tray) refresh the tunnel address.
         if (++_playitTickCounter % 10 == 0)
+        {
             _ = RefreshTunnelAddressAsync();
+            _ = RefreshBedrockAddressAsync();   // no-op unless this server does crossplay
+        }
     }
 
     /// <summary>Gets the tunnel address from the playit API, matching by port.</summary>
@@ -725,7 +753,57 @@ public partial class ServerViewModel : ObservableObject
             }
 
             TrackPlayers(line);
+            WarnAboutModdedKick(line);
+            WarnAboutRejectedPath(line);
         });
+    }
+
+    /// <summary>
+    /// Turns Paper's "rename the affected folder" into an explanation of what has to be renamed.
+    /// </summary>
+    /// <remarks>
+    /// The server exits cleanly here, so the launcher reads it as a crash and restarts twice more,
+    /// burying the one line that said why under two more attempts. Saying it once, in the user's
+    /// language, with the character and the path named, is the difference between a five-second fix
+    /// and an afternoon.
+    /// </remarks>
+    private void WarnAboutRejectedPath(string line)
+    {
+        if (_pathRejectionWarned || !BukkitPathRule.IsPathRejection(line)) return;
+
+        _pathRejectionWarned = true;
+        // Belt as well as braces: the check before starting should mean this is never reached, but
+        // if the server ever refuses the path for a reason that check did not foresee, restarting
+        // three more times would only bury the one line that said why.
+        _startFailureIsFinal = true;
+        var bad = BukkitPathRule.OffendingCharacter(Config.FolderPath);
+        OnConsoleLine(bad is { } c
+            ? string.Format(Localizer.Get("Msg_BukkitPathFmt"), c)
+            : Localizer.Get("Msg_BukkitPathUnknown"));
+    }
+
+    /// <summary>
+    /// Turns the loader's "install NeoForge" kick into an explanation that fits what happened.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Only on a crossplay server, because on a Java-only one the message is already addressed to
+    /// somebody who can act on it. Here it is not: the player who was turned away is on a phone or
+    /// a console and cannot install a mod loader at all. What actually happened is that Geyser
+    /// joins as a client with no mods, and this server now carries mods that the client must have.
+    /// </para>
+    /// <para>
+    /// Once per run. A Bedrock client retries on its own, and repeating the same paragraph down the
+    /// console would bury the server's real output under it.
+    /// </para>
+    /// </remarks>
+    private void WarnAboutModdedKick(string line)
+    {
+        if (_moddedKickWarned || !Config.CrossplayEnabled) return;
+        if (!CrossplayDiagnostics.IsModdedClientRejection(line)) return;
+
+        _moddedKickWarned = true;
+        OnConsoleLine(Localizer.Get("Msg_CrossplayModdedKick"));
     }
 
     // Live connected players, read from the join/leave messages in the console.
@@ -790,6 +868,9 @@ public partial class ServerViewModel : ObservableObject
     private async Task Start()
     {
         _consecutiveCrashes = 0; // a deliberate Start gives auto-restart a fresh budget
+        _moddedKickWarned = false; // and a fresh chance to explain the kick, in case the mods changed
+        _pathRejectionWarned = false;
+        _startFailureIsFinal = false;
         await StartInternal(isAutoRestart: false);
     }
 
@@ -821,6 +902,17 @@ public partial class ServerViewModel : ObservableObject
                 if (!await TryFreePortAsync(port.Value))
                     return;
             }
+
+            // Paper and Purpur refuse to run from a path with "+" or "!" in it. Checked here
+            // rather than left to fail: the server would exit cleanly on every attempt, which reads
+            // as a crash and burns the whole auto-restart budget on something a retry cannot change.
+            if (!await TryFixRejectedPathAsync(isAutoRestart))
+                return;
+
+            // Correct a Geyser config the app wrote before it knew better. Cheap, and it is the
+            // only thing that fixes a server already sitting on the wrong authentication.
+            if (Config.CrossplayEnabled && _crossplay.RepairConfig(Config) is { } repaired)
+                OnConsoleLine(repaired);
 
             // Make sure the configured Java is compatible with this server's version.
             await EnsureCompatibleJavaAsync();
@@ -858,6 +950,12 @@ public partial class ServerViewModel : ObservableObject
                 ? string.Format(Localizer.Get("Msg_ServerCrashedReasonFmt"), codeText, reason)
                 : string.Format(Localizer.Get("Msg_ServerCrashedFmt"), codeText));
             NotifyIf(NotificationKind.ServerCrashed, Localizer.Get("Notif_Crashed"));
+
+            if (_startFailureIsFinal)
+            {
+                OnConsoleLine(Localizer.Get("Msg_NotRetryingFinal"));
+                return;
+            }
 
             var stableRun = _lastRunningAtUtc is { } last && DateTime.UtcNow - last >= StabilityWindow;
             if (stableRun) _consecutiveCrashes = 0;
@@ -947,6 +1045,67 @@ public partial class ServerViewModel : ObservableObject
         catch
         {
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Stops a start that would fail on the path, offering to rename the folder when it can.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Renaming is offered only when the offending character is in the server's own folder name.
+    /// When it sits in a parent, renaming that folder would move everything else under it as well,
+    /// which is not the app's to decide — so it says which character and where, and stops.
+    /// </para>
+    /// <para>
+    /// Skipped during an unattended auto-restart for the same reason the busy-port check is: there
+    /// is nobody there to answer a dialog.
+    /// </para>
+    /// </remarks>
+    private async Task<bool> TryFixRejectedPathAsync(bool isAutoRestart)
+    {
+        if (!BukkitPathRule.Rejects(Config.FolderPath, Config.Type)) return true;
+
+        var bad = BukkitPathRule.OffendingCharacter(Config.FolderPath)!.Value;
+        var suggestion = BukkitPathRule.SuggestCleanPath(Config.FolderPath);
+
+        if (suggestion is null || isAutoRestart)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+            return false;
+        }
+
+        var accepted = await MessageBox.ConfirmAsync(
+            string.Format(Localizer.Get("Msg_BukkitPathRenameConfirm"),
+                bad, Path.GetFileName(Config.FolderPath), Path.GetFileName(suggestion)),
+            Localizer.Get("Msg_BukkitPathRenameTitle"));
+
+        if (!accepted)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+            return false;
+        }
+
+        try
+        {
+            // Refuse rather than merge into something that already exists: a folder of that name
+            // may be another server, and Directory.Move would fail halfway or bury it.
+            if (Directory.Exists(suggestion) || File.Exists(suggestion))
+                throw new IOException(string.Format(
+                    Localizer.Get("Msg_BukkitPathRenameExists"), Path.GetFileName(suggestion)));
+
+            Directory.Move(Config.FolderPath, suggestion);
+            Config.FolderPath = suggestion;
+            ConfigChanged?.Invoke();      // persists the new path before anything else runs
+
+            OnConsoleLine(string.Format(Localizer.Get("Msg_BukkitPathRenamedFmt"), suggestion));
+            RefreshInfo();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            return false;
         }
     }
 
@@ -1157,6 +1316,192 @@ public partial class ServerViewModel : ObservableObject
         {
             OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ex.Message));
         }
+    }
+
+    // --- Crossplay: Java and Bedrock on the same server ---
+
+    private readonly MultiVersionService _multiVersion = new();
+    private readonly HydraulicService _hydraulic = new();
+    private readonly CrossplayService _crossplay = new();
+
+    /// <summary>The Bedrock host and port, shown separately. Null when there is no Bedrock tunnel.</summary>
+    [ObservableProperty]
+    private string? _bedrockHost;
+
+    [ObservableProperty]
+    private string? _bedrockPortText;
+
+    /// <summary>True once there is a Bedrock address worth showing.</summary>
+    public bool HasBedrockAddress => !string.IsNullOrEmpty(BedrockHost);
+
+    partial void OnBedrockHostChanged(string? value) => OnPropertyChanged(nameof(HasBedrockAddress));
+
+    /// <summary>Installs Hydraulic and Fabric API, so Bedrock players see what the mods add.</summary>
+    /// <remarks>
+    /// The flag is only set once the install has actually succeeded. A server remembering it has
+    /// this when the download failed would leave Bedrock players staring at invisible blocks with
+    /// the app insisting it was handled.
+    /// </remarks>
+    public async Task SetUpBedrockModContentAsync()
+    {
+        if (!HydraulicService.CanEnable(Config.Type))
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_HydraulicUnsupportedFmt"), Config.Type));
+            return;
+        }
+
+        try
+        {
+            await _hydraulic.InstallAsync(Config, new Progress<string>(OnConsoleLine));
+            RunOnUi(Mods.ReloadInstalled);
+
+            Config.BedrockModContentEnabled = true;
+            ConfigChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Config.BedrockModContentEnabled = false;
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
+
+    /// <summary>Installs ViaVersion and ViaBackwards, so other Minecraft versions can join.</summary>
+    /// <remarks>
+    /// Nothing to configure and no tunnel involved: both plugins work as installed. The flag is
+    /// only set once the install has actually succeeded — a server remembering it has them when
+    /// the download failed would turn players away and show no reason for it.
+    /// </remarks>
+    public async Task SetUpMultiVersionAsync()
+    {
+        if (!MultiVersionService.CanEnable(Config.Type))
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_MultiVersionUnsupportedFmt"), Config.Type));
+            return;
+        }
+
+        try
+        {
+            await _multiVersion.InstallAsync(Config, new Progress<string>(OnConsoleLine));
+
+            // Same reason as crossplay: the panel read the folder before these jars existed.
+            RunOnUi(Mods.ReloadInstalled);
+
+            Config.MultiVersionEnabled = true;
+            ConfigChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Config.MultiVersionEnabled = false;   // it did not happen; do not claim that it did
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
+
+    /// <summary>
+    /// Installs Geyser and Floodgate, creates the Bedrock tunnel and points Geyser at it.
+    /// </summary>
+    /// <remarks>
+    /// The order matters. The tunnel has to exist before the config is written, because the one
+    /// value Geyser cannot work out for itself is the tunnel's public port — and writing the config
+    /// first would leave it advertising the wrong one until something happened to rewrite it.
+    /// </remarks>
+    public async Task SetUpCrossplayAsync(string? playitKey)
+    {
+        if (!CrossplayService.CanEnable(Config.Type))
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_CrossplayUnsupportedFmt"), Config.Type));
+            return;
+        }
+
+        try
+        {
+            if (Config.BedrockPort <= 0)
+                Config.BedrockPort = _crossplay.PickBedrockPort(BedrockPortsInUse?.Invoke() ?? Array.Empty<int>());
+
+            var log = new Progress<string>(OnConsoleLine);
+            await _crossplay.InstallAsync(Config, log);
+
+            // Geyser and Floodgate are mods like any other, and the Mods tab listed the folder
+            // before they existed. Left alone it would keep claiming the server has none.
+            RunOnUi(Mods.ReloadInstalled);
+
+            int? publicPort = null;
+            if (Config.PlayitEnabled && !string.IsNullOrEmpty(playitKey))
+                publicPort = await EnsureBedrockTunnelAsync(playitKey!);
+
+            _crossplay.WriteConfig(Config, publicPort);
+            Config.CrossplayEnabled = true;
+
+            await RefreshBedrockAddressAsync();
+            OnConsoleLine(Localizer.Get("Msg_CrossplayReady"));
+            ConfigChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
+
+    /// <summary>Creates the Bedrock (UDP) tunnel if it isn't there, and returns its public port.</summary>
+    private async Task<int?> EnsureBedrockTunnelAsync(string playitKey)
+    {
+        OnConsoleLine(string.Format(Localizer.Get("Msg_CrossplayTunnelFmt"), Config.BedrockPort));
+
+        await _playitApi.EnsureMinecraftTunnelAsync(
+            playitKey, Name + " (Bedrock)", Config.BedrockPort,
+            PlayitApiService.TunnelEdition.Bedrock);
+
+        var tunnel = await FindBedrockTunnelAsync();
+        return tunnel?.PublicPort > 0 ? tunnel.PublicPort : null;
+    }
+
+    /// <summary>The server's Bedrock tunnel, matched on both the local port and the protocol.</summary>
+    /// <remarks>
+    /// On protocol too, not just the port: a crossplay server has two tunnels, and matching on the
+    /// number alone would pick the Java one whenever the two local ports happened to coincide.
+    /// </remarks>
+    private Task<PlayitApiService.PlayitTunnel?> FindBedrockTunnelAsync() =>
+        _playitApi.GetTunnelAsync(Config.BedrockPort, udp: true);
+
+    /// <summary>
+    /// Refreshes the Bedrock address, and re-points Geyser if the tunnel's public port has moved.
+    /// </summary>
+    /// <remarks>
+    /// The re-pointing is the reason crossplay is a remembered setting rather than a one-off
+    /// action. If the tunnel is ever reassigned a different public port, a config written once and
+    /// never revisited would keep advertising the old one, and the server would simply stop being
+    /// joinable from Bedrock with nothing to explain why.
+    /// </remarks>
+    private async Task RefreshBedrockAddressAsync()
+    {
+        if (!Config.CrossplayEnabled || Config.BedrockPort <= 0) return;
+
+        try
+        {
+            var tunnel = await FindBedrockTunnelAsync();
+            if (tunnel?.Address is not { } host || tunnel.PublicPort <= 0) return;
+
+            RunOnUi(() =>
+            {
+                BedrockHost = host;
+                BedrockPortText = tunnel.PublicPort.ToString();
+            });
+
+            _crossplay.WriteConfig(Config, tunnel.PublicPort);
+        }
+        catch
+        {
+            // Best-effort, like the Java address: a failed lookup keeps whatever was shown.
+        }
+    }
+
+    /// <summary>Copies the Bedrock host. The port is shown beside it, and typed separately.</summary>
+    [RelayCommand]
+    private async Task CopyBedrockAddress()
+    {
+        if (string.IsNullOrEmpty(BedrockHost)) return;
+        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (top?.Clipboard is { } cb)
+            await cb.SetTextAsync(BedrockHost!);
     }
 
     /// <summary>Opens the Playit.gg tunnels panel in the browser (to create/view tunnels).</summary>

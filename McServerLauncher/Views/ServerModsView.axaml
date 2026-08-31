@@ -414,6 +414,20 @@
                     <TextBlock Text="{Binding UpdateStatus}" Opacity="0.7" TextWrapping="Wrap"
                                HorizontalAlignment="Center" Margin="0,0,0,8"
                                IsVisible="{Binding UpdateStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                    <!-- The library mods the installed ones need and nobody installed. Found by the
+                         same scan as the updates, and shown here because the alternative place the
+                         user learns about it is the loader refusing to start. -->
+                    <Border IsVisible="{Binding HasMissingDependencies}" Margin="0,0,0,8" Padding="10,8"
+                            Background="#22E3A82B" BorderBrush="#55E3A82B" BorderThickness="1" CornerRadius="6">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="{Binding MissingDependencyText}" TextWrapping="Wrap"
+                                       FontSize="12" Foreground="#E3A82B" />
+                            <Button Content="{loc:Loc Deps_InstallMissing}" HorizontalAlignment="Right"
+                                    Padding="10,4" IsEnabled="{Binding !IsInstallingDependencies}"
+                                    Command="{Binding InstallMissingDependenciesCommand}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <ListBox Grid.Row="2" ItemsSource="{Binding InstalledMods}" Background="Transparent" BorderThickness="0">

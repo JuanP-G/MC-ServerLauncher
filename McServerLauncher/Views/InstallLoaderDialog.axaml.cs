@@ -18,8 +18,7 @@ namespace McServerLauncher.Views;
 public partial class InstallLoaderDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();
-    private readonly ModLoaderService _mods = new();
-    private readonly PaperService _paper = new();
+    private readonly ServerJarInstaller _installer = new();
     private readonly JavaService _java = new();
     private readonly ServerCreationService _creation = new();
     private readonly ServerConfig _config;
@@ -39,7 +38,11 @@ public partial class InstallLoaderDialog : Window
         InitializeComponent();
         _config = config;
         Loaded += OnLoaded;
-        LoaderCombo.SelectionChanged += (_, _) => UpdateWarning();
+        // Start on the type the server already is, so pressing Install without touching
+        // anything converts nothing. The old drop-down opened on Fabric whatever the
+        // server was, which made the destructive option the default one.
+        TypePicker.SelectedType = _config.Type;
+        TypePicker.SelectionChanged += (_, _) => UpdateWarning();
         UpdateWarning();
 
         _log = new LogBatcher(ProgressLog);
@@ -51,18 +54,13 @@ public partial class InstallLoaderDialog : Window
         base.OnClosed(e);
     }
 
-    /// <summary>Reads the picked loader from the combo's Tag.</summary>
+    /// <summary>The picked loader.</summary>
     /// <remarks>
-    /// By Tag rather than by SelectedIndex, which is what this used to do — in a different order
-    /// from the create dialog's, so the same magic number meant a different loader in each. An
-    /// index switch also means inserting an entry anywhere but the end silently changes what every
-    /// option below it installs.
+    /// The same picker the create dialog uses, so the two can no longer offer different lists —
+    /// which they did, in different orders, each parsing a string that could silently fail to
+    /// match.
     /// </remarks>
-    private ServerType SelectedLoader() =>
-        (LoaderCombo.SelectedItem as ComboBoxItem)?.Tag is string tag &&
-        Enum.TryParse<ServerType>(tag, out var type)
-            ? type
-            : ServerType.Fabric;
+    private ServerType SelectedLoader() => TypePicker.SelectedType;
 
     /// <summary>Shows a warning whose wording and color depend on the conversion direction.</summary>
     private void UpdateWarning()
@@ -155,136 +153,50 @@ public partial class InstallLoaderDialog : Window
 
             // Update the existing server's config in place (the world is kept).
             var target = SelectedLoader();
-            if (target == ServerType.Vanilla)
+
+            // Forge and NeoForge installers overwrite run.bat. Keep the user's copy if they asked,
+            // and leave user_jvm_args.txt alone in that case too: their script reads it, and
+            // rewriting the memory settings would quietly undo whatever they had set.
+            var runBatPath = Path.Combine(_config.FolderPath, "run.bat");
+            var keepRunBat = KeepRunBatCheck.IsChecked == true;
+            var keptRunBat = keepRunBat && File.Exists(runBatPath) ? File.ReadAllText(runBatPath) : null;
+
+            // Checked before anything is downloaded or moved: converting to Paper in a folder it
+            // refuses to run from produces a server that installs perfectly and never starts.
+            if (BukkitPathRule.Rejects(_config.FolderPath, target))
             {
-                // Revert to Vanilla: download the vanilla server jar for this version.
-                const string jarName = "server.jar";
-                await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(_config.FolderPath, jarName), progress, details.Sha1);
-                if (KeepRunBatCheck.IsChecked != true)
-                    _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
-
-                _config.Type = ServerType.Vanilla;
-                _config.GameVersion = version.Id;
-                _config.ModLoaderVersion = string.Empty;
-                _config.ForgeArgs = string.Empty;
-                _config.JarFile = jarName;
-                _config.JavaPath = javaPath;
+                var bad = BukkitPathRule.OffendingCharacter(_config.FolderPath)!.Value;
+                AppendLog(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+                await Warn(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+                SetBusy(false);
+                return;
             }
-            else if (target == ServerType.Paper)
-            {
-                // Paper: download the runnable server jar (plugins go in plugins/).
-                AppendLog(Localizer.Get("Msg_PaperResolving"));
-                var build = await _paper.GetLatestBuildAsync(version.Id);
-                if (build is null)
-                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_PaperNoBuild"), version.Id));
 
-                const string jarName = "paper-server.jar";
-                await _paper.DownloadPaperServerAsync(build, Path.Combine(_config.FolderPath, jarName), progress);
-                if (KeepRunBatCheck.IsChecked != true)
-                    _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
+            // Before the config says the new type: the old family's folder has to be found under
+            // the name the OLD type used.
+            var archived = ContentMigrationService.ArchiveIfFamilyChanged(
+                _config.FolderPath, _config.Type, target, DateTime.Now);
+            if (archived is not null)
+                AppendLog(string.Format(Localizer.Get("Msg_ContentArchivedFmt"), archived));
 
-                _config.Type = ServerType.Paper;
-                _config.GameVersion = version.Id;
-                _config.ModLoaderVersion = build.Build.ToString();
-                _config.ForgeArgs = string.Empty;
-                _config.JarFile = jarName;
-                _config.JavaPath = javaPath;
-            }
-            else if (target == ServerType.Forge)
-            {
-                // Forge: run the official installer in the server folder.
-                AppendLog(Localizer.Get("Msg_ForgeResolving"));
-                var forgeVersion = await _mods.GetRecommendedForgeVersionAsync(version.Id);
-                if (string.IsNullOrEmpty(forgeVersion))
-                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_ForgeNoVersion"), version.Id));
+            var installed = await _installer.InstallAsync(
+                target, _config.FolderPath, version.Id, details, javaPath,
+                _config.MinRamGb, _config.MaxRamGb, progress, writeLoaderJvmArgs: !keepRunBat);
 
-                // The Forge installer overwrites run.bat; back it up if the user asked to keep it.
-                var runBatPath = Path.Combine(_config.FolderPath, "run.bat");
-                var keptRunBat = KeepRunBatCheck.IsChecked == true && File.Exists(runBatPath)
-                    ? File.ReadAllText(runBatPath) : null;
+            if (keptRunBat is not null)
+                File.WriteAllText(runBatPath, keptRunBat);
+            else if (!keepRunBat && !installed.LaunchesViaArgsFile)
+                _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb,
+                    installed.JarFile, javaPath);
 
-                var forge = await _mods.InstallForgeServerAsync(_config.FolderPath, version.Id, forgeVersion, javaPath, progress);
-                if (forge.ArgsId is not null)
-                {
-                    // Modern Forge: launched via args file; Forge's own run.bat reads user_jvm_args.txt.
-                    _config.ForgeArgs = forge.ArgsId;
-                    _config.JarFile = "server.jar";
-                    if (KeepRunBatCheck.IsChecked != true)
-                        _creation.WriteForgeUserJvmArgs(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb);
-                }
-                else if (!string.IsNullOrEmpty(forge.JarFile))
-                {
-                    // Old Forge (≤1.16.5): a runnable forge-*.jar.
-                    _config.ForgeArgs = string.Empty;
-                    _config.JarFile = forge.JarFile;
-                    if (KeepRunBatCheck.IsChecked != true)
-                        _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, forge.JarFile, javaPath);
-                }
-                else
-                {
-                    throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallNoOutput"));
-                }
-
-                if (keptRunBat is not null)
-                    File.WriteAllText(runBatPath, keptRunBat);
-
-                _config.Type = ServerType.Forge;
-                _config.GameVersion = version.Id;
-                _config.ModLoaderVersion = forgeVersion;
-                _config.JavaPath = javaPath;
-            }
-            else if (target == ServerType.NeoForge)
-            {
-                AppendLog(Localizer.Get("Msg_NeoForgeResolving"));
-                var choice = await _mods.GetNeoForgeVersionAsync(version.Id);
-                if (choice is null)
-                    throw new InvalidOperationException(
-                        string.Format(Localizer.Get("Msg_NeoForgeNoVersion"), version.Id));
-
-                if (choice.IsBeta)
-                    AppendLog(string.Format(Localizer.Get("Msg_NeoForgeBetaWarning"), choice.Version));
-
-                // The installer overwrites run.bat, same as Forge's; keep it if that was asked for.
-                var runBatPath = Path.Combine(_config.FolderPath, "run.bat");
-                var keptRunBat = KeepRunBatCheck.IsChecked == true && File.Exists(runBatPath)
-                    ? File.ReadAllText(runBatPath) : null;
-
-                var neo = await _mods.InstallNeoForgeServerAsync(
-                    _config.FolderPath, choice.Version, javaPath, progress);
-                if (neo.ArgsId is null)
-                    throw new InvalidOperationException(Localizer.Get("Msg_NeoForgeInstallNoOutput"));
-
-                _config.ForgeArgs = neo.ArgsId;
-                _config.JarFile = "server.jar";
-                if (KeepRunBatCheck.IsChecked != true)
-                    _creation.WriteForgeUserJvmArgs(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb);
-
-                if (keptRunBat is not null)
-                    File.WriteAllText(runBatPath, keptRunBat);
-
-                _config.Type = ServerType.NeoForge;
-                _config.GameVersion = version.Id;
-                _config.ModLoaderVersion = choice.Version;
-                _config.JavaPath = javaPath;
-            }
-            else
-            {
-                // Fabric.
-                AppendLog(Localizer.Get("Msg_FabricResolving"));
-                var loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync();
-                const string jarName = "fabric-server.jar";
-                await _mods.DownloadFabricServerAsync(version.Id, loaderVersion,
-                    Path.Combine(_config.FolderPath, jarName), progress);
-                if (KeepRunBatCheck.IsChecked != true)
-                    _creation.WriteRunBat(_config.FolderPath, _config.MinRamGb, _config.MaxRamGb, jarName, javaPath);
-
-                _config.Type = ServerType.Fabric;
-                _config.GameVersion = version.Id;
-                _config.ModLoaderVersion = loaderVersion;
-                _config.ForgeArgs = string.Empty;
-                _config.JarFile = jarName;
-                _config.JavaPath = javaPath;
-            }
+            _config.Type = target;
+            _config.GameVersion = version.Id;
+            _config.ModLoaderVersion = installed.LoaderVersion;
+            _config.ForgeArgs = installed.ForgeArgs;
+            // A loader launched through an args file has no runnable jar; the field still has to
+            // name something, and "server.jar" is what the rest of the app expects to find there.
+            _config.JarFile = installed.LaunchesViaArgsFile ? "server.jar" : installed.JarFile;
+            _config.JavaPath = javaPath;
 
             AppendLog(Localizer.Get("Loader_Done"));
             Close(true);

@@ -64,9 +64,21 @@ public class PlayitApiService
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "playit_gg", "playit.toml"),
     };
 
-    public record PlayitTunnel(string Id, string Name, int LocalPort, string? AssignedDomain, string? CustomDomain)
+    /// <summary>One tunnel as the agent reports it.</summary>
+    /// <remarks>
+    /// <c>Proto</c> is "tcp" or "udp": a crossplay server has one of each, because Java is TCP and
+    /// Bedrock is UDP. <c>PublicPort</c> is the port players actually connect through, which is
+    /// never the local one — Bedrock clients have to be given it by hand, and Geyser needs it for
+    /// its <c>broadcast-port</c> setting.
+    /// </remarks>
+    public record PlayitTunnel(
+        string Id, string Name, int LocalPort, string? AssignedDomain, string? CustomDomain,
+        string Proto = "tcp", int PublicPort = 0)
     {
         public string? Address => string.IsNullOrEmpty(CustomDomain) ? AssignedDomain : CustomDomain;
+
+        /// <summary>True for the Bedrock half of a crossplay server.</summary>
+        public bool IsUdp => string.Equals(Proto, "udp", StringComparison.OrdinalIgnoreCase);
     }
 
     // --- secret_key cache (EFI-1) ---
@@ -171,7 +183,15 @@ public class PlayitApiService
                 var localPort = t.TryGetProperty("local_port", out var lp) && lp.TryGetInt32(out var p) ? p : 0;
                 var assigned = t.TryGetProperty("assigned_domain", out var ad) ? ad.GetString() : null;
                 var custom = t.TryGetProperty("custom_domain", out var cd) ? cd.GetString() : null;
-                list.Add(new PlayitTunnel(id, name, localPort, assigned, custom));
+                var proto = t.TryGetProperty("proto", out var pr) ? pr.GetString() ?? "tcp" : "tcp";
+
+                // "port" is a range; a Minecraft tunnel is one port, so its start is the one.
+                var publicPort = 0;
+                if (t.TryGetProperty("port", out var range) && range.ValueKind == JsonValueKind.Object &&
+                    range.TryGetProperty("from", out var from) && from.TryGetInt32(out var fp))
+                    publicPort = fp;
+
+                list.Add(new PlayitTunnel(id, name, localPort, assigned, custom, proto, publicPort));
             }
         }
         return (agentId, list);
@@ -193,6 +213,31 @@ public class PlayitApiService
         var tunnels = await GetTunnelsSharedAsync(ct);
         return tunnels?.FirstOrDefault(t => t.LocalPort == port)?.Address;
     }
+
+    /// <summary>
+    /// The tunnel on a local port for one protocol, or null. Callers that need the public port —
+    /// Bedrock does, since players type it in — need the whole tunnel, not just its address.
+    /// </summary>
+    /// <remarks>
+    /// Matched on the protocol as well as the port, because a crossplay server has two tunnels and
+    /// the port alone would return whichever came first.
+    /// </remarks>
+    public async Task<PlayitTunnel?> GetTunnelAsync(int localPort, bool udp, CancellationToken ct = default)
+    {
+        var tunnels = await GetTunnelsSharedAsync(ct);
+        return tunnels is null ? null : Match(tunnels, localPort, udp);
+    }
+
+    /// <summary>
+    /// Which tunnel a local port and a protocol identify. The one definition of "the same tunnel".
+    /// </summary>
+    /// <remarks>
+    /// Written once because it had already drifted: the lookup grew the protocol check and the
+    /// delete did not, so deleting could pick a tunnel that merely shared the port number. Both go
+    /// through this now, and it is small enough to test on its own.
+    /// </remarks>
+    internal static PlayitTunnel? Match(IEnumerable<PlayitTunnel> tunnels, int localPort, bool udp) =>
+        tunnels.FirstOrDefault(t => t.LocalPort == localPort && t.IsUdp == udp);
 
     private Task<List<PlayitTunnel>> StartTunnelFetch() => Task.Run(async () =>
     {
@@ -231,25 +276,53 @@ public class PlayitApiService
         }
     }
 
+    /// <summary>Which edition a tunnel carries: they are different protocols, not a preference.</summary>
+    /// <remarks>
+    /// Java is TCP and Bedrock is UDP, so a crossplay server genuinely needs two tunnels — a TCP
+    /// tunnel carries no Bedrock traffic at all. The identifiers below are playit's own, taken from
+    /// their agent's source rather than guessed; a wrong one creates a tunnel that looks fine in
+    /// their dashboard and silently carries nothing.
+    /// </remarks>
+    public enum TunnelEdition
+    {
+        Java,
+        Bedrock
+    }
+
+    /// <summary>The pair playit's API expects for an edition. Internal so it can be pinned by a test.</summary>
+    internal static (string Type, string Port) Wire(TunnelEdition edition) => edition switch
+    {
+        TunnelEdition.Bedrock => ("minecraft-bedrock", "udp"),
+        _ => ("minecraft-java", "tcp")
+    };
+
     /// <summary>
-    /// Creates the server's Minecraft Java tunnel if one doesn't already exist for that port.
+    /// Creates a tunnel for the server if one doesn't already exist for that port and edition.
     /// Returns true if it created one, false if it already existed. <paramref name="key"/> is the
     /// per-user agent secret key (preferred) or a legacy write key.
     /// </summary>
-    public async Task<bool> EnsureMinecraftTunnelAsync(string key, string name, int localPort, CancellationToken ct = default)
+    public async Task<bool> EnsureMinecraftTunnelAsync(string key, string name, int localPort,
+        TunnelEdition edition = TunnelEdition.Java, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(key))
             throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
 
+        var (tunnelType, portType) = Wire(edition);
+
         var (agentId, tunnels) = await GetRunDataAsync(key, ct);
-        if (tunnels.Any(t => t.LocalPort == localPort))
+
+        // Matched on protocol too: a crossplay server has two tunnels, and on a machine where the
+        // Java and Bedrock local ports happened to coincide, matching on the port alone would see
+        // the Java one and decide the Bedrock one already existed.
+        if (tunnels.Any(t => t.LocalPort == localPort &&
+                             string.Equals(t.Proto, portType, StringComparison.OrdinalIgnoreCase)))
             return false;
 
         var body = new JsonObject
         {
             ["name"] = name,
-            ["tunnel_type"] = "minecraft-java",
-            ["port_type"] = "tcp",
+            ["tunnel_type"] = tunnelType,
+            ["port_type"] = portType,
             ["port_count"] = 1,
             ["enabled"] = true,
             ["origin"] = new JsonObject
@@ -270,16 +343,24 @@ public class PlayitApiService
     }
 
     /// <summary>
-    /// Deletes the tunnel whose local port matches. Returns true if one was deleted.
+    /// Deletes the tunnel with this local port <em>and</em> this protocol. True if one was deleted.
     /// <paramref name="key"/> is the per-user agent secret key (preferred) or a legacy write key.
     /// </summary>
-    public async Task<bool> DeleteTunnelForPortAsync(string key, int localPort, CancellationToken ct = default)
+    /// <remarks>
+    /// The protocol is half the identity, the same as in <see cref="GetTunnelAsync"/> and
+    /// <see cref="EnsureMinecraftTunnelAsync"/>: a crossplay server owns two tunnels, Java over TCP
+    /// and Bedrock over UDP, and matching on the port alone deletes whichever the account happens to
+    /// list first. Deleting a tunnel is not undoable, so this is the one place where guessing is
+    /// least acceptable.
+    /// </remarks>
+    public async Task<bool> DeleteTunnelForPortAsync(string key, int localPort, bool udp,
+        CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(key))
             throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
 
         var (_, tunnels) = await GetRunDataAsync(key, ct);
-        var match = tunnels.FirstOrDefault(t => t.LocalPort == localPort);
+        var match = Match(tunnels, localPort, udp);
         if (match is null || string.IsNullOrEmpty(match.Id)) return false;
 
         var body = new JsonObject { ["tunnel_id"] = match.Id }.ToJsonString();

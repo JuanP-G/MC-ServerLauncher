@@ -34,6 +34,8 @@ public partial class AddEditServerDialog : Window
         // Keep a copy to restore if the user cancels.
         _snapshot = JsonSerializer.Serialize(config);
         DataContext = _config;
+
+        UpdateTypeDependentOptions();
     }
 
     private void RefreshDataContext()
@@ -103,6 +105,11 @@ public partial class AddEditServerDialog : Window
             LoaderInstalled = true;
             _snapshot = JsonSerializer.Serialize(_config);
             RefreshDataContext();
+            // The type just changed, and everything below depends on it. Without this the crossplay
+            // and version-bridging checkboxes keep the previous type's answer — convert a Vanilla
+            // server to Paper and they stay greyed out saying Vanilla takes no plugins, which reads
+            // as the conversion not having happened at all.
+            UpdateTypeDependentOptions();
         }
     }
 
@@ -133,6 +140,45 @@ public partial class AddEditServerDialog : Window
         Close(false);
     }
 
+    /// <summary>
+    /// Greys out the options the current type cannot do, and says why for each.
+    /// </summary>
+    /// <remarks>
+    /// Runs again after a type conversion, not only once at open: the Install-loader button changes
+    /// the type from inside this dialog, and the comment here used to claim it could not.
+    /// </remarks>
+    private void UpdateTypeDependentOptions()
+    {
+        var supported = Services.CrossplayService.CanEnable(_config.Type);
+
+        CrossplayCheck.IsEnabled = supported;
+        CrossplayHint.IsVisible = supported;
+        CrossplayWhyNot.IsVisible = !supported;
+        var caveat = Services.CrossplayService.CaveatKey(_config.Type);
+        CrossplayModdedNote.IsVisible = supported && caveat is not null;
+        if (caveat is not null) CrossplayModdedNote.Text = Localizer.Get(caveat);
+
+        var multiVersion = Services.MultiVersionService.CanEnable(_config.Type);
+        MultiVersionCheck.IsEnabled = multiVersion;
+        MultiVersionHint.IsVisible = multiVersion;
+        MultiVersionWhyNot.IsVisible = !multiVersion;
+        if (!multiVersion) _config.MultiVersionEnabled = false;
+
+        var modContent = Services.HydraulicService.CanEnable(_config.Type);
+        HydraulicCheck.IsEnabled = modContent;
+        HydraulicHint.IsVisible = modContent;
+        HydraulicWhyNot.IsVisible = !modContent;
+        if (!modContent) _config.BedrockModContentEnabled = false;
+
+        if (!supported)
+        {
+            _config.CrossplayEnabled = false;
+            CrossplayWhyNot.Text = Localizer.Get(_config.Type == Models.ServerType.Vanilla
+                ? "Crossplay_UnsupportedVanilla"
+                : "Crossplay_Unsupported");
+        }
+    }
+
     private void RestoreSnapshot()
     {
         var original = JsonSerializer.Deserialize<ServerConfig>(_snapshot);
@@ -147,6 +193,10 @@ public partial class AddEditServerDialog : Window
         _config.PlayitEnabled = original.PlayitEnabled;
         _config.IdleShutdownMinutes = original.IdleShutdownMinutes;
         _config.WakeOnDemand = original.WakeOnDemand;
+        _config.CrossplayEnabled = original.CrossplayEnabled;
+        _config.MultiVersionEnabled = original.MultiVersionEnabled;
+        _config.BedrockModContentEnabled = original.BedrockModContentEnabled;
+        _config.BedrockPort = original.BedrockPort;
         _config.BackupsEnabled = original.BackupsEnabled;
         _config.BackupRetention = original.BackupRetention;
         _config.UseCustomNotifications = original.UseCustomNotifications;
