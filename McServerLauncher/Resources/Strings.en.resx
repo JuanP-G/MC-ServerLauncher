@@ -607,7 +607,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Crossplay_Unsupported" xml:space="preserve"><value>Geyser publishes no build for this kind of server. It works on Paper, Fabric and NeoForge.</value></data>
   <data name="Crossplay_UnsupportedVanilla" xml:space="preserve"><value>Vanilla takes neither mods nor plugins, so it cannot translate Bedrock. Change the type to Paper (it keeps the world) and you can turn this on.</value></data>
   <data name="Crossplay_BedrockAddress" xml:space="preserve"><value>Bedrock address</value></data>
-  <data name="Crossplay_BedrockHost" xml:space="preserve"><value>Server</value></data>
   <data name="Crossplay_BedrockPort" xml:space="preserve"><value>Port</value></data>
   <data name="Crossplay_BedrockHint" xml:space="preserve"><value>On Bedrock, the server and the port go in separate boxes.</value></data>
   <data name="Msg_CrossplayUnsupportedFmt" xml:space="preserve"><value>Crossplay isn't available on {0} servers.</value></data>
@@ -638,6 +637,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_MissingDepsFoundFmt" xml:space="preserve"><value>{0} dependencies the installed mods need are missing: {1}</value></data>
   <data name="Msg_DepsInstalledFmt" xml:space="preserve"><value>Dependencies installed: {0}.</value></data>
   <data name="Deps_InstallMissing" xml:space="preserve"><value>Install the missing ones</value></data>
+  <data name="Msg_BadRemoteFileNameFmt" xml:space="preserve"><value>The API returned a file name that cannot be used: {0}</value></data>
   <data name="Badge_Bedrock" xml:space="preserve"><value>Bedrock</value></data>
   <data name="Cs_TypeGroupJava" xml:space="preserve"><value>Java Edition</value></data>
   <data name="Msg_PurpurResolving" xml:space="preserve"><value>Looking up the latest Purpur build...</value></data>

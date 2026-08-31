@@ -12,7 +12,6 @@ namespace McServerLauncher.Views;
 public partial class CreateServerDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();
-    private readonly ModLoaderService _mods = new();
     private readonly ServerJarInstaller _installer = new();
     private readonly ServerCreationService _creation = new();
     private readonly PortService _ports = new();

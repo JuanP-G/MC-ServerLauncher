@@ -260,6 +260,17 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Raised when something persistable about the server changes (to save).</summary>
     public event Action? ConfigChanged;
 
+    /// <summary>
+    /// The Bedrock ports the other servers have already been given.
+    /// </summary>
+    /// <remarks>
+    /// Supplied by <c>MainViewModel</c>, which is the only thing that knows the other servers exist.
+    /// It matters because the free-port search asks the operating system which UDP ports are
+    /// <em>bound right now</em>: set crossplay up on two stopped servers and both are handed 19132,
+    /// and the collision only shows up later as the second Geyser failing to bind.
+    /// </remarks>
+    public Func<IEnumerable<int>>? BedrockPortsInUse { get; set; }
+
     public ServerViewModel(ServerConfig config)
     {
         Config = config;
@@ -748,21 +759,6 @@ public partial class ServerViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Turns the loader's "install NeoForge" kick into an explanation that fits what happened.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Only on a crossplay server, because on a Java-only one the message is already addressed to
-    /// somebody who can act on it. Here it is not: the player who was turned away is on a phone or
-    /// a console and cannot install a mod loader at all. What actually happened is that Geyser
-    /// joins as a client with no mods, and this server now carries mods that the client must have.
-    /// </para>
-    /// <para>
-    /// Once per run. A Bedrock client retries on its own, and repeating the same paragraph down the
-    /// console would bury the server's real output under it.
-    /// </para>
-    /// </remarks>
-    /// <summary>
     /// Turns Paper's "rename the affected folder" into an explanation of what has to be renamed.
     /// </summary>
     /// <remarks>
@@ -786,6 +782,21 @@ public partial class ServerViewModel : ObservableObject
             : Localizer.Get("Msg_BukkitPathUnknown"));
     }
 
+    /// <summary>
+    /// Turns the loader's "install NeoForge" kick into an explanation that fits what happened.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Only on a crossplay server, because on a Java-only one the message is already addressed to
+    /// somebody who can act on it. Here it is not: the player who was turned away is on a phone or
+    /// a console and cannot install a mod loader at all. What actually happened is that Geyser
+    /// joins as a client with no mods, and this server now carries mods that the client must have.
+    /// </para>
+    /// <para>
+    /// Once per run. A Bedrock client retries on its own, and repeating the same paragraph down the
+    /// console would bury the server's real output under it.
+    /// </para>
+    /// </remarks>
     private void WarnAboutModdedKick(string line)
     {
         if (_moddedKickWarned || !Config.CrossplayEnabled) return;
@@ -1038,9 +1049,6 @@ public partial class ServerViewModel : ObservableObject
     }
 
     /// <summary>
-    /// The port is busy: identifies the process and offers to close it. Returns true if it became free.
-    /// </summary>
-    /// <summary>
     /// Stops a start that would fail on the path, offering to rename the folder when it can.
     /// </summary>
     /// <remarks>
@@ -1101,6 +1109,9 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// The port is busy: identifies the process and offers to close it. Returns true if it became free.
+    /// </summary>
     private async Task<bool> TryFreePortAsync(int port)
     {
         var pid = _ports.GetListeningPid(port);
@@ -1404,7 +1415,7 @@ public partial class ServerViewModel : ObservableObject
         try
         {
             if (Config.BedrockPort <= 0)
-                Config.BedrockPort = _crossplay.PickBedrockPort(Array.Empty<int>());
+                Config.BedrockPort = _crossplay.PickBedrockPort(BedrockPortsInUse?.Invoke() ?? Array.Empty<int>());
 
             var log = new Progress<string>(OnConsoleLine);
             await _crossplay.InstallAsync(Config, log);

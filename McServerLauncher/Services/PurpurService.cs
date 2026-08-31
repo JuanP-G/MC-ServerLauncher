@@ -61,23 +61,7 @@ public class PurpurService
     public async Task DownloadPurpurServerAsync(PurpurBuild build, string destPath, IProgress<string>? log,
         CancellationToken ct = default)
     {
-        using var resp = await Http.GetAsync(build.Url, HttpCompletionOption.ResponseHeadersRead, ct);
-        resp.EnsureSuccessStatusCode();
-
-        var totalMb = (resp.Content.Headers.ContentLength ?? 0) / (1024.0 * 1024.0);
-        log?.Report(totalMb > 0
-            ? string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#"))
-            : Localizer.Get("Msg_DownloadingJar"));
-
-        await AtomicDownload.ToFileAsync(resp.Content, destPath,
-            verifyAsync: async (part, token) =>
-            {
-                if (string.IsNullOrEmpty(build.Md5)) return;
-                log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
-                await DownloadVerifier.VerifyAsync(part, build.Md5, HashAlgorithmName.MD5, token);
-            },
-            ct: ct);
-
-        log?.Report(Localizer.Get("Msg_DownloadComplete"));
+        await VerifiedJarDownload.ToFileAsync(Http, build.Url, destPath, build.Md5,
+            HashAlgorithmName.MD5, log, ct);
     }
 }

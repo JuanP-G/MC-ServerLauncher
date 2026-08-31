@@ -173,6 +173,11 @@ public static class GeyserConfigService
     /// The port players connect to. Null removes the setting, for a server no longer behind a
     /// tunnel: leaving a stale one behind would advertise a port that stopped existing.
     /// </param>
+    /// <param name="floodgate">
+    /// Whether Floodgate is installed beside Geyser, which decides the authentication mode written
+    /// into the java section: Bedrock players need "floodgate" there, and "online" turns every one
+    /// of them away.
+    /// </param>
     /// <remarks>
     /// Edited line by line rather than parsed and re-emitted. A YAML round-trip would drop every
     /// comment in the file, and in Geyser's config the comments <em>are</em> the documentation —
@@ -244,13 +249,32 @@ public static class GeyserConfigService
         var commented = IndexOfKey(lines, start, end, key, commented: true);
         if (commented >= 0)
         {
-            // Reuse the commented line's own indentation, minus the comment marker.
-            var indent = new string(' ', Indent(lines[commented]).Length + 2);
-            lines[commented] = indent + key + ": " + value;
+            // The commented line's own indentation, unchanged. It used to add two for the "# " that
+            // is being dropped, which is only right if the # sits in column zero — and in Geyser's
+            // real config it does not: the line is "  # broadcast-port: 19132", so the key came out
+            // at four spaces beside siblings at two, and YAML refuses to parse that.
+            lines[commented] = Indent(lines[commented]) + key + ": " + value;
             return;
         }
 
-        lines.Insert(start + 1, "  " + key + ": " + value);
+        lines.Insert(start + 1, SectionIndent(lines, start, end) + key + ": " + value);
+    }
+
+    /// <summary>
+    /// The indentation the keys of a section use, taken from the section itself.
+    /// </summary>
+    /// <remarks>
+    /// Two spaces is what Geyser ships and what the fallback assumes, but reading it from a sibling
+    /// costs nothing and means a config indented some other way still comes out valid — the same
+    /// mistake as the commented branch above, one line later.
+    /// </remarks>
+    private static string SectionIndent(List<string> lines, int start, int end)
+    {
+        for (var i = start + 1; i < end && i < lines.Count; i++)
+            if (lines[i].TrimStart().Length > 0)
+                return Indent(lines[i]);
+
+        return "  ";
     }
 
     private static void RemoveKey(List<string> lines, int start, int end, string key)

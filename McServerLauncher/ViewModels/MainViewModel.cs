@@ -125,12 +125,6 @@ public partial class MainViewModel : ObservableObject
     /// </remarks>
     private string? _notifiedVersion;
 
-    /// <summary>Whether the update currently on offer is a pre-release.</summary>
-    private bool _updateIsBeta;
-
-    /// <summary>Shown next to the update banner so the warning is visible, not just in the text.</summary>
-    public bool UpdateIsBeta => _updateIsBeta;
-
     partial void OnIsUpdatingChanged(bool value) => UpdateNowCommand.NotifyCanExecuteChanged();
 
     partial void OnSelectedLanguageChanged(LanguageOption? value)
@@ -252,7 +246,6 @@ public partial class MainViewModel : ObservableObject
                     Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
                     info.Version);
                 UpdateAvailable = true;
-                _updateIsBeta = info.IsPreRelease;
                 NotifyUpdateOnce(info.Version, info.IsPreRelease);
             }
         }
@@ -436,11 +429,22 @@ public partial class MainViewModel : ObservableObject
         await SelectedServer.CreateTunnelAsync(key);
     }
 
+    /// <summary>The Bedrock ports every server except <paramref name="except"/> already holds.</summary>
+    /// <remarks>
+    /// Read live rather than captured: servers are added and removed while the app runs, and a list
+    /// taken when the view model was built would go stale the first time either happens.
+    /// </remarks>
+    private IEnumerable<int> BedrockPortsOf(ServerViewModel except) =>
+        Servers.Where(s => !ReferenceEquals(s, except))
+               .Select(s => s.Config.BedrockPort)
+               .Where(p => p > 0);
+
     /// <summary>Creates a server's ViewModel, adds it to the list and persists its changes.</summary>
     private ServerViewModel Register(ServerConfig config)
     {
         var vm = new ServerViewModel(config);
         vm.ConfigChanged += Save;
+        vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
         Servers.Add(vm);
         return vm;
     }
@@ -572,6 +576,7 @@ public partial class MainViewModel : ObservableObject
         _ = old.ShutdownAsync(); // stop its timers (it isn't running)
         var vm = new ServerViewModel(old.Config);
         vm.ConfigChanged += Save;
+        vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
         Servers[index] = vm;
         SelectedServer = vm;
     }
@@ -650,10 +655,12 @@ public partial class MainViewModel : ObservableObject
             try
             {
                 var api = new PlayitApiService();
-                var deleted = key is not null && await api.DeleteTunnelForPortAsync(key, port.Value);
+                // Java is TCP, Bedrock is UDP. Naming the protocol is what keeps this from
+                // deleting somebody else's tunnel that happens to share the port number.
+                var deleted = key is not null && await api.DeleteTunnelForPortAsync(key, port.Value, udp: false);
 
                 if (key is not null && bedrockPort is { } bp)
-                    await api.DeleteTunnelForPortAsync(key, bp);
+                    await api.DeleteTunnelForPortAsync(key, bp, udp: true);
                 if (key is null)
                 {
                     // The user didn't provide a key; the tunnel is not deleted.

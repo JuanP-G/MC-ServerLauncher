@@ -68,7 +68,7 @@ public class MultiVersionService
 
             log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), projectId, version!.VersionNumber));
             await _modrinth.DownloadModAsync(
-                file.Url, Path.Combine(folder, file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct);
+                file.Url, AtomicDownload.PathIn(folder, file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct);
         }
 
         log?.Report(Localizer.Get("Msg_MultiVersionReady"));

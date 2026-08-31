@@ -225,8 +225,19 @@ public class PlayitApiService
     public async Task<PlayitTunnel?> GetTunnelAsync(int localPort, bool udp, CancellationToken ct = default)
     {
         var tunnels = await GetTunnelsSharedAsync(ct);
-        return tunnels?.FirstOrDefault(t => t.LocalPort == localPort && t.IsUdp == udp);
+        return tunnels is null ? null : Match(tunnels, localPort, udp);
     }
+
+    /// <summary>
+    /// Which tunnel a local port and a protocol identify. The one definition of "the same tunnel".
+    /// </summary>
+    /// <remarks>
+    /// Written once because it had already drifted: the lookup grew the protocol check and the
+    /// delete did not, so deleting could pick a tunnel that merely shared the port number. Both go
+    /// through this now, and it is small enough to test on its own.
+    /// </remarks>
+    internal static PlayitTunnel? Match(IEnumerable<PlayitTunnel> tunnels, int localPort, bool udp) =>
+        tunnels.FirstOrDefault(t => t.LocalPort == localPort && t.IsUdp == udp);
 
     private Task<List<PlayitTunnel>> StartTunnelFetch() => Task.Run(async () =>
     {
@@ -332,16 +343,24 @@ public class PlayitApiService
     }
 
     /// <summary>
-    /// Deletes the tunnel whose local port matches. Returns true if one was deleted.
+    /// Deletes the tunnel with this local port <em>and</em> this protocol. True if one was deleted.
     /// <paramref name="key"/> is the per-user agent secret key (preferred) or a legacy write key.
     /// </summary>
-    public async Task<bool> DeleteTunnelForPortAsync(string key, int localPort, CancellationToken ct = default)
+    /// <remarks>
+    /// The protocol is half the identity, the same as in <see cref="GetTunnelAsync"/> and
+    /// <see cref="EnsureMinecraftTunnelAsync"/>: a crossplay server owns two tunnels, Java over TCP
+    /// and Bedrock over UDP, and matching on the port alone deletes whichever the account happens to
+    /// list first. Deleting a tunnel is not undoable, so this is the one place where guessing is
+    /// least acceptable.
+    /// </remarks>
+    public async Task<bool> DeleteTunnelForPortAsync(string key, int localPort, bool udp,
+        CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(key))
             throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
 
         var (_, tunnels) = await GetRunDataAsync(key, ct);
-        var match = tunnels.FirstOrDefault(t => t.LocalPort == localPort);
+        var match = Match(tunnels, localPort, udp);
         if (match is null || string.IsNullOrEmpty(match.Id)) return false;
 
         var body = new JsonObject { ["tunnel_id"] = match.Id }.ToJsonString();

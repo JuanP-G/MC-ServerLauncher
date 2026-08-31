@@ -135,7 +135,10 @@ public partial class ServerTypePicker : UserControl
         {
             GroupName = _groupName,
             Content = content,
-            Tag = entry.Type,              // the enum value itself, never its name as a string
+            // The enum value itself, never its name as a string. Nothing in the app reads it back
+            // — the picker keeps its own dictionary — but it is how the tests identify a card,
+            // and it is the obvious place to look for a card's identity when debugging.
+            Tag = entry.Type,
             Theme = (ControlTheme?)Resources["TypeCardTheme"],
             Width = 176,
             // One height for every card, so the rows line up. Left to fit their content they came

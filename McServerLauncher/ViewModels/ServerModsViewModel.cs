@@ -30,6 +30,9 @@ public partial class ServerModsViewModel : ObservableObject
     private readonly ServerConfig _config;
     private readonly ModrinthService _modrinthService = new();
     private readonly ModDependencyService _dependencies;
+
+    /// <summary>Identifying a jar means hashing it, and both scans want the same answers.</summary>
+    private readonly FileHashCache _hashes = new();
     
     // --- Local Mods State ---
     
@@ -402,8 +405,7 @@ public partial class ServerModsViewModel : ObservableObject
                 mod.Update = null;
                 try
                 {
-                    var sha1 = await DownloadVerifier.ComputeHashAsync(mod.FilePath, HashAlgorithmName.SHA1, ct);
-                    byHash[sha1] = mod;
+                    byHash[await _hashes.Sha1Async(mod.FilePath, ct)] = mod;
                 }
                 catch { /* unreadable/locked file: skip it */ }
             }
@@ -555,7 +557,7 @@ public partial class ServerModsViewModel : ObservableObject
                               || f.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase)))
         {
             ct.ThrowIfCancellationRequested();
-            try { hashes.Add(await DownloadVerifier.ComputeHashAsync(file, HashAlgorithmName.SHA1, ct)); }
+            try { hashes.Add(await _hashes.Sha1Async(file, ct)); }
             catch { /* unreadable or locked: it simply does not count as installed */ }
         }
 
@@ -613,7 +615,7 @@ public partial class ServerModsViewModel : ObservableObject
             {
                 Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label),
                     failed: false, transient: true);
-                var written = Path.Combine(folder, Path.GetFileName(needed.File.Filename));
+                var written = AtomicDownload.PathIn(folder, needed.File.Filename);
                 await DownloadDependencyAsync(needed, folder, ct);
 
                 known.Add(needed.ProjectId);
@@ -628,8 +630,7 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>One dependency onto disk, verified, with the same path safety as any other install.</summary>
     private Task DownloadDependencyAsync(ModDependencyService.Needed needed, string folder, CancellationToken ct)
     {
-        // The file name comes from the API: keep only the name, so it can never write outside here.
-        var path = Path.Combine(folder, Path.GetFileName(needed.File.Filename));
+        var path = AtomicDownload.PathIn(folder, needed.File.Filename);
         return _modrinthService.DownloadModAsync(needed.File.Url, path,
             needed.File.Hashes?.Sha512, needed.File.Hashes?.Sha1, ct: ct);
     }
@@ -979,9 +980,9 @@ public partial class ServerModsViewModel : ObservableObject
 
             var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
             Directory.CreateDirectory(modsFolder);
-            // The filename comes from the Modrinth API: keep only the name so a malicious
-            // value (e.g. "..\\x.jar") can never write outside the mods folder.
-            var destPath = Path.Combine(modsFolder, Path.GetFileName(file.Filename));
+            // The file name comes from the Modrinth API, so the join goes through the one
+            // place that keeps it inside the folder.
+            var destPath = AtomicDownload.PathIn(modsFolder, file.Filename);
 
             // If the same mod is already present but disabled, remove the disabled copy first so we
             // don't end up with two files (a new enabled one + an old disabled one) that then clash

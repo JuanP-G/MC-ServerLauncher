@@ -54,6 +54,30 @@ public class HydraulicTests
     public void TheDeclaredMinecraftRangeIsHonoured(string mcVersion, string range, bool expected) =>
         Assert.Equal(expected, MinecraftRange.Satisfies(mcVersion, range));
 
+    [Theory]
+    // An operator written apart from its version. Splitting on spaces turned ">=" and "1.21" into
+    // two fragments and neither satisfied anything, so a perfectly compatible mod was refused.
+    [InlineData("1.21.4", ">= 1.21", true)]
+    [InlineData("1.21.4", "> 1.22", false)]
+    [InlineData("1.21.4", "<= 1.21.4", true)]
+    // A space is "and", not "or". Read as alternatives, ">=1.21 <1.22" was satisfied by 1.22 and by
+    // 2.0 — a window that let through exactly what it was written to exclude.
+    [InlineData("1.21.4", ">=1.21 <1.22", true)]
+    [InlineData("1.22.0", ">=1.21 <1.22", false)]
+    [InlineData("2.0", ">=1.21 <1.22", false)]
+    // A component wildcard, which appears in the wild and used to satisfy nothing at all.
+    [InlineData("1.21.4", "1.21.x", true)]
+    [InlineData("1.21", "1.21.x", true)]
+    [InlineData("1.22.0", "1.21.x", false)]
+    [InlineData("1.21.4", "1.x", true)]
+    [InlineData("2.1.0", "1.x", false)]
+    // And the two meanings together, which is the shape a real dependency takes.
+    [InlineData("1.21.4", ">=1.21 <1.22 || 1.20.1", true)]
+    [InlineData("1.20.1", ">=1.21 <1.22 || 1.20.1", true)]
+    [InlineData("1.19.2", ">=1.21 <1.22 || 1.20.1", false)]
+    public void TheShapesThatUsedToBeMisread(string mcVersion, string range, bool expected) =>
+        Assert.Equal(expected, MinecraftRange.Satisfies(mcVersion, range));
+
     [Fact]
     public void AVersionThatCannotBeComparedIsRefusedRatherThanGuessed()
     {

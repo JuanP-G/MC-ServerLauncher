@@ -77,6 +77,29 @@ public class GeyserConfigTests
     }
 
     [Fact]
+    public void TheUncommentedKeyLinesUpWithItsSiblings()
+    {
+        // THE bug this file failed to catch. Uncommenting used to add two spaces for the "# " being
+        // dropped, which is only right if the # is in column zero — and in Geyser's real config the
+        // line is "  # broadcast-port: 19132", so the key came out at four spaces beside siblings at
+        // two. That is not a cosmetic difference: YAML reads the extra indentation as the start of a
+        // nested mapping and refuses to parse the file at all.
+        //
+        // Every assertion above this one uses TrimStart or ValueOf, both of which trim — so the
+        // indentation was invisible to the whole suite while the config it produced was unusable.
+        var result = GeyserConfigService.SetBedrockPorts(RealConfig, 19132, 51234);
+
+        Assert.Equal(IndentOf(result, "port:"), IndentOf(result, "broadcast-port:"));
+    }
+
+    /// <summary>The leading spaces of the line holding a key.</summary>
+    private static string IndentOf(string yaml, string key)
+    {
+        var line = Lines(yaml).First(l => l.TrimStart().StartsWith(key, StringComparison.Ordinal));
+        return line[..(line.Length - line.TrimStart().Length)];
+    }
+
+    [Fact]
     public void SetsBroadcastPortWhenItIsAlreadyLive()
     {
         var once = GeyserConfigService.SetBedrockPorts(RealConfig, 19132, 51234);

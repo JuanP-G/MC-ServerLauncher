@@ -1,7 +1,6 @@
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
@@ -33,8 +32,6 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public class HydraulicService
 {
-    private const string Downloads = "https://download.geysermc.org/v2/projects/hydraulic";
-
     /// <summary>Modrinth id for Fabric API, which Hydraulic requires and nothing else installs.</summary>
     /// <remarks>
     /// Declared in Hydraulic's own <c>fabric.mod.json</c> as a hard dependency. Without it the mod
@@ -43,8 +40,6 @@ public class HydraulicService
     /// </remarks>
     public const string FabricApiProjectId = "fabric-api";
 
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
-
     private readonly ModrinthService _modrinth;
 
     public HydraulicService(ModrinthService? modrinth = null) => _modrinth = modrinth ?? new ModrinthService();
@@ -52,48 +47,17 @@ public class HydraulicService
     /// <summary>Whether this server type can run Hydraulic at all.</summary>
     public static bool CanEnable(ServerType type) => type == ServerType.Fabric;
 
-    /// <summary>A published build and the file it offers for Fabric.</summary>
-    public record HydraulicBuild(int Build, string FileName, string Url, string Sha256);
-
     /// <summary>
     /// The newest build that publishes a Fabric download, or null when none does.
     /// </summary>
     /// <remarks>
     /// Walked backwards rather than taking the last build outright: builds are published per commit
     /// and a given one may carry no Fabric artifact at all. Taking the newest blindly is how the
-    /// NeoForge situation was first misread.
+    /// NeoForge situation was first misread. That walk now lives in
+    /// <see cref="GeyserDownloadsApi"/>, which Floodgate for Paper uses as well.
     /// </remarks>
-    public async Task<HydraulicBuild?> GetLatestBuildAsync(CancellationToken ct = default)
-    {
-        var versionsJson = await Http.GetStringAsync(Downloads, ct);
-        using var project = JsonDocument.Parse(versionsJson);
-        var version = project.RootElement.GetProperty("versions").EnumerateArray().Last().GetString();
-        if (version is null) return null;
-
-        var buildsJson = await Http.GetStringAsync($"{Downloads}/versions/{version}", ct);
-        using var versionDoc = JsonDocument.Parse(buildsJson);
-        var builds = versionDoc.RootElement.GetProperty("builds").EnumerateArray()
-            .Select(b => b.GetInt32()).OrderByDescending(b => b).ToList();
-
-        foreach (var build in builds.Take(10))
-        {
-            ct.ThrowIfCancellationRequested();
-
-            var buildJson = await Http.GetStringAsync($"{Downloads}/versions/{version}/builds/{build}", ct);
-            using var doc = JsonDocument.Parse(buildJson);
-
-            if (!doc.RootElement.GetProperty("downloads").TryGetProperty("fabric", out var fabric)) continue;
-
-            var name = fabric.TryGetProperty("name", out var n) ? n.GetString() : null;
-            var sha256 = fabric.TryGetProperty("sha256", out var h) ? h.GetString() : null;
-            if (name is null || string.IsNullOrEmpty(sha256)) continue;   // no checksum, no install
-
-            return new HydraulicBuild(build, name,
-                $"{Downloads}/versions/{version}/builds/{build}/downloads/fabric", sha256!);
-        }
-
-        return null;
-    }
+    public static Task<GeyserDownloadsApi.Artifact?> GetLatestBuildAsync(CancellationToken ct = default) =>
+        GeyserDownloadsApi.LatestAsync("hydraulic", "fabric", ct);
 
     /// <summary>
     /// Installs Fabric API and Hydraulic into the server, verified, or throws saying why not.
@@ -119,7 +83,7 @@ public class HydraulicService
                 Localizer.Get("Msg_CrossplayNoVersionFmt"), "Fabric API", config.GameVersion, config.Type));
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Fabric API", api!.VersionNumber));
-        await _modrinth.DownloadModAsync(apiFile.Url, Path.Combine(folder, apiFile.Filename),
+        await _modrinth.DownloadModAsync(apiFile.Url, AtomicDownload.PathIn(folder, apiFile.Filename),
             apiFile.Hashes?.Sha512, apiFile.Hashes?.Sha1, ct: ct);
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Hydraulic"));
@@ -128,10 +92,10 @@ public class HydraulicService
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Hydraulic", "b" + build.Build));
 
-        using var resp = await Http.GetAsync(build.Url, HttpCompletionOption.ResponseHeadersRead, ct);
+        using var resp = await GeyserDownloadsApi.OpenAsync(build, ct);
         resp.EnsureSuccessStatusCode();
 
-        await AtomicDownload.ToFileAsync(resp.Content, Path.Combine(folder, build.FileName),
+        await AtomicDownload.ToFileAsync(resp.Content, AtomicDownload.PathIn(folder, build.FileName),
             verifyAsync: async (part, token) =>
             {
                 await DownloadVerifier.VerifyAsync(part, build.Sha256, HashAlgorithmName.SHA256, token);

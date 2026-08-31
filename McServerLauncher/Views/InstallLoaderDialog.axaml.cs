@@ -18,7 +18,6 @@ namespace McServerLauncher.Views;
 public partial class InstallLoaderDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();
-    private readonly ModLoaderService _mods = new();
     private readonly ServerJarInstaller _installer = new();
     private readonly JavaService _java = new();
     private readonly ServerCreationService _creation = new();

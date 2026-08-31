@@ -62,6 +62,25 @@ public class PlayitTunnelTests
     }
 
     [Fact]
+    public void TheSamePortOnTheOtherProtocolIsADifferentTunnel()
+    {
+        // Deleting used to match on the port alone while the lookup matched on port and protocol,
+        // so removing a crossplay server could delete a tunnel of the account that merely shared
+        // the number. Both go through one definition now, and deleting a tunnel is not undoable.
+        var tunnels = new List<PlayitApiService.PlayitTunnel>
+        {
+            new("1", "otro", 19132, "a.example", null, "tcp", 51000),
+            new("2", "mio",  19132, "b.example", null, "udp", 51001),
+        };
+
+        Assert.Equal("2", PlayitApiService.Match(tunnels, 19132, udp: true)!.Id);
+        Assert.Equal("1", PlayitApiService.Match(tunnels, 19132, udp: false)!.Id);
+
+        // And nothing at all rather than the wrong one when this protocol has no tunnel there.
+        Assert.Null(PlayitApiService.Match(tunnels, 25565, udp: true));
+    }
+
+    [Fact]
     public void ACustomDomainWinsOverTheAssignedOne()
     {
         var tunnel = new PlayitApiService.PlayitTunnel(

@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Cryptography;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using McServerLauncher.Localization;
@@ -46,13 +44,8 @@ public class CrossplayService
     /// </remarks>
     public const string FloodgateProjectId = "floodgate";
 
-    /// <summary>Where Floodgate for Spigot-family servers actually lives.</summary>
-    private const string GeyserDownloads = "https://download.geysermc.org/v2/projects";
-
     /// <summary>Bedrock's default port. Only a starting point for the search.</summary>
     public const int DefaultBedrockPort = 19132;
-
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
 
     private readonly ModrinthService _modrinth;
     private readonly PortService _ports;
@@ -161,7 +154,7 @@ public class CrossplayService
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), display, version!.VersionNumber));
         await _modrinth.DownloadModAsync(
-            file.Url, Path.Combine(folder, file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct);
+            file.Url, AtomicDownload.PathIn(folder, file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct);
     }
 
     /// <summary>
@@ -176,46 +169,20 @@ public class CrossplayService
         ct.ThrowIfCancellationRequested();
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Floodgate"));
 
-        var (version, build, fileName, sha256) = await LatestSpigotFloodgateAsync(ct);
+        var artifact = await GeyserDownloadsApi.LatestAsync("floodgate", "spigot", ct)
+            ?? throw new InvalidOperationException(string.Format(
+                Localizer.Get("Msg_CrossplayNoVersionFmt"), "Floodgate", "?", ServerType.Paper));
 
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Floodgate", $"{version}-b{build}"));
+        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Floodgate",
+            $"{artifact.Version}-b{artifact.Build}"));
 
-        var url = $"{GeyserDownloads}/floodgate/versions/{version}/builds/{build}/downloads/spigot";
-        using var resp = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+        using var resp = await GeyserDownloadsApi.OpenAsync(artifact, ct);
         resp.EnsureSuccessStatusCode();
 
-        await AtomicDownload.ToFileAsync(resp.Content, Path.Combine(folder, fileName),
+        await AtomicDownload.ToFileAsync(resp.Content, AtomicDownload.PathIn(folder, artifact.FileName),
             verifyAsync: (part, token) =>
-                DownloadVerifier.VerifyAsync(part, sha256, HashAlgorithmName.SHA256, token),
+                DownloadVerifier.VerifyAsync(part, artifact.Sha256, HashAlgorithmName.SHA256, token),
             ct: ct);
-    }
-
-    private static async Task<(string Version, int Build, string FileName, string Sha256)>
-        LatestSpigotFloodgateAsync(CancellationToken ct)
-    {
-        var projectJson = await Http.GetStringAsync($"{GeyserDownloads}/floodgate", ct);
-        using var project = JsonDocument.Parse(projectJson);
-        var version = project.RootElement.GetProperty("versions").EnumerateArray().Last().GetString()!;
-
-        var versionJson = await Http.GetStringAsync($"{GeyserDownloads}/floodgate/versions/{version}", ct);
-        using var versionDoc = JsonDocument.Parse(versionJson);
-        var build = versionDoc.RootElement.GetProperty("builds").EnumerateArray().Last().GetInt32();
-
-        var buildJson = await Http.GetStringAsync($"{GeyserDownloads}/floodgate/versions/{version}/builds/{build}", ct);
-        using var buildDoc = JsonDocument.Parse(buildJson);
-
-        if (!buildDoc.RootElement.GetProperty("downloads").TryGetProperty("spigot", out var spigot))
-            throw new InvalidOperationException(string.Format(
-                Localizer.Get("Msg_CrossplayNoVersionFmt"), "Floodgate", version, ServerType.Paper));
-
-        var name = spigot.GetProperty("name").GetString() ?? "floodgate-spigot.jar";
-        var sha256 = spigot.TryGetProperty("sha256", out var h) ? h.GetString() : null;
-
-        // Same rule as everywhere else: no checksum, no install.
-        if (string.IsNullOrEmpty(sha256))
-            throw new InvalidOperationException(Localizer.Get("Msg_CrossplayNoChecksum"));
-
-        return (version, build, name, sha256);
     }
 
     /// <summary>
@@ -245,7 +212,9 @@ public class CrossplayService
 
         yaml = GeyserConfigService.SetJavaAuth(yaml, floodgate, FloodgateKeyPath(config));
 
-        File.WriteAllText(path, yaml);
+        // Only when it changed. This is called from the address refresh, which runs every thirty
+        // seconds for as long as the server is up, and the answer is almost always the same file.
+        AtomicTextFile.WriteIfChanged(path, yaml);
     }
 
     /// <summary>
@@ -273,9 +242,8 @@ public class CrossplayService
         var floodgate = IsFloodgateInstalled(config);
         var after = GeyserConfigService.SetJavaAuth(before, floodgate, FloodgateKeyPath(config));
 
-        if (after == before) return null;
+        if (!AtomicTextFile.WriteIfChanged(path, after)) return null;
 
-        File.WriteAllText(path, after);
         return string.Format(Localizer.Get("Msg_GeyserConfigRepairedFmt"),
             floodgate ? "floodgate" : "online");
     }
