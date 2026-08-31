@@ -440,9 +440,7 @@ public partial class MainViewModel : ObservableObject
     /// taken when the view model was built would go stale the first time either happens.
     /// </remarks>
     private IEnumerable<int> BedrockPortsOf(ServerViewModel except) =>
-        Servers.Where(s => !ReferenceEquals(s, except))
-               .Select(s => s.Config.BedrockPort)
-               .Where(p => p > 0);
+        CrossplayService.PortsHeldBy(Servers.Select(s => s.Config), except.Config);
 
     /// <summary>Creates a server's ViewModel, adds it to the list and persists its changes.</summary>
     private ServerViewModel Register(ServerConfig config)
