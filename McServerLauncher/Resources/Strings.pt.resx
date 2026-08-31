@@ -609,6 +609,18 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Crossplay_UnsupportedVanilla" xml:space="preserve"><value>O Vanilla não aceita mods nem plugins, por isso não pode traduzir Bedrock. Muda o tipo para Paper (mantém o mundo) e poderás ativar isto.</value></data>
   <data name="Crossplay_BedrockAddress" xml:space="preserve"><value>Endereço para Bedrock</value></data>
   <data name="Crossplay_BedrockPort" xml:space="preserve"><value>Porta</value></data>
+  <data name="Msg_UdpTableUnreadable" xml:space="preserve"><value>[Crossplay] Não foi possível ler as portas UDP do sistema; a porta escolhida pode já estar ocupada.</value></data>
+  <data name="Msg_BedrockPortTakenByTunnelFmt" xml:space="preserve"><value>[Crossplay] A porta {0} já é usada por um túnel da tua conta Playit; usa-se a {1}.</value></data>
+  <data name="Msg_TunnelPortsUnknown" xml:space="preserve"><value>[Crossplay] Não foi possível consultar a tua conta Playit; a porta escolhe-se sem ver os seus túneis.</value></data>
+  <data name="Msg_CrossplayNoTunnel" xml:space="preserve"><value>[Crossplay] Sem túnel Playit: só será possível entrar a partir da tua própria rede.</value></data>
+  <data name="Msg_TunnelForeignMovingFmt" xml:space="preserve"><value>[Crossplay] A porta {0} está ocupada pelo túnel «{1}», que não é deste servidor; procura-se outra porta.</value></data>
+  <data name="Msg_TunnelForeignFmt" xml:space="preserve"><value>[Crossplay] A porta {0} continua ocupada pelo túnel «{1}». Apaga-o no Playit ou muda a porta à mão.</value></data>
+  <data name="Msg_JavaTunnelPortUnknown" xml:space="preserve"><value>Não foi possível ler a porta Java do servidor, por isso o seu túnel não foi apagado. O de Bedrock sim.</value></data>
+  <data name="Crossplay_LocalPort" xml:space="preserve"><value>Porta local:</value></data>
+  <data name="Crossplay_StateWaiting" xml:space="preserve"><value>À espera de que o Playit publique o endereço…</value></data>
+  <data name="Crossplay_StateLocalOnly" xml:space="preserve"><value>Sem túnel: só a partir da tua rede, com o IP local deste computador.</value></data>
+  <data name="Crossplay_StateReady" xml:space="preserve"><value>Pronto: qualquer pessoa pode entrar com o endereço acima.</value></data>
+  <data name="Crossplay_StateFailed" xml:space="preserve"><value>Não foi possível consultar o túnel; tenta-se de novo sozinho.</value></data>
   <data name="Crossplay_BedrockHint" xml:space="preserve"><value>No Bedrock, o servidor e a porta vão em campos separados.</value></data>
   <data name="Msg_CrossplayUnsupportedFmt" xml:space="preserve"><value>O crossplay não está disponível em servidores do tipo {0}.</value></data>
   <data name="Msg_CrossplayResolvingFmt" xml:space="preserve"><value>A procurar a versão de {0} para este servidor…</value></data>

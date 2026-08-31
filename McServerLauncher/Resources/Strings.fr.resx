@@ -609,6 +609,18 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Crossplay_UnsupportedVanilla" xml:space="preserve"><value>Vanilla n’accepte ni mods ni plugins, il ne peut donc pas traduire Bedrock. Passe le type à Paper (le monde est conservé) et tu pourras l’activer.</value></data>
   <data name="Crossplay_BedrockAddress" xml:space="preserve"><value>Adresse pour Bedrock</value></data>
   <data name="Crossplay_BedrockPort" xml:space="preserve"><value>Port</value></data>
+  <data name="Msg_UdpTableUnreadable" xml:space="preserve"><value>[Crossplay] Impossible de lire les ports UDP du système ; le port choisi est peut-être déjà pris.</value></data>
+  <data name="Msg_BedrockPortTakenByTunnelFmt" xml:space="preserve"><value>[Crossplay] Le port {0} est déjà utilisé par un tunnel de ton compte Playit ; on utilise le {1}.</value></data>
+  <data name="Msg_TunnelPortsUnknown" xml:space="preserve"><value>[Crossplay] Impossible d'interroger ton compte Playit ; le port est choisi sans regarder ses tunnels.</value></data>
+  <data name="Msg_CrossplayNoTunnel" xml:space="preserve"><value>[Crossplay] Sans tunnel Playit : on ne pourra s'y connecter que depuis ton propre réseau.</value></data>
+  <data name="Msg_TunnelForeignMovingFmt" xml:space="preserve"><value>[Crossplay] Le port {0} est occupé par le tunnel « {1} », qui n'est pas celui de ce serveur ; on cherche un autre port.</value></data>
+  <data name="Msg_TunnelForeignFmt" xml:space="preserve"><value>[Crossplay] Le port {0} reste occupé par le tunnel « {1} ». Supprime-le sur Playit ou change le port à la main.</value></data>
+  <data name="Msg_JavaTunnelPortUnknown" xml:space="preserve"><value>Le port Java du serveur n'a pas pu être lu, donc son tunnel n'a pas été supprimé. Celui de Bedrock oui.</value></data>
+  <data name="Crossplay_LocalPort" xml:space="preserve"><value>Port local :</value></data>
+  <data name="Crossplay_StateWaiting" xml:space="preserve"><value>En attente de la publication de l'adresse par Playit…</value></data>
+  <data name="Crossplay_StateLocalOnly" xml:space="preserve"><value>Sans tunnel : depuis ton réseau seulement, avec l'IP locale de cet ordinateur.</value></data>
+  <data name="Crossplay_StateReady" xml:space="preserve"><value>Prêt : n'importe qui peut se connecter avec l'adresse ci-dessus.</value></data>
+  <data name="Crossplay_StateFailed" xml:space="preserve"><value>Impossible de consulter le tunnel ; nouvel essai automatique.</value></data>
   <data name="Crossplay_BedrockHint" xml:space="preserve"><value>Sur Bedrock, le serveur et le port vont dans des champs séparés.</value></data>
   <data name="Msg_CrossplayUnsupportedFmt" xml:space="preserve"><value>Le crossplay n’est pas disponible sur les serveurs {0}.</value></data>
   <data name="Msg_CrossplayResolvingFmt" xml:space="preserve"><value>Recherche de la version de {0} pour ce serveur…</value></data>

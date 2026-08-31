@@ -98,12 +98,41 @@ public class CrossplayService
     /// A free local UDP port for Geyser, starting at Bedrock's default.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Asked of the UDP table, not the TCP one. They are separate namespaces, so a port can be
     /// taken for TCP and free for UDP — and picking with the wrong table hands out a port something
     /// else already holds, which shows up only as a Geyser that fails to bind.
+    /// </para>
+    /// <para>
+    /// Three sources, because two were not enough. The UDP table only knows what is bound
+    /// <em>right now</em>, so a stopped server's port looks free; the other servers' ports cover
+    /// the ones this app knows about; and <paramref name="accountTunnels"/> covers the rest — a
+    /// tunnel left behind by a deleted server, one made by hand, or one belonging to another
+    /// machine on the same playit account. Without that third list the port looks free, and
+    /// creating a tunnel on it silently adopts somebody else's.
+    /// </para>
     /// </remarks>
-    public int PickBedrockPort(IEnumerable<int> alsoAvoid) =>
-        _ports.FindFreeUdpPort(DefaultBedrockPort, new HashSet<int>(alsoAvoid)) ?? DefaultBedrockPort;
+    /// <param name="serverPorts">Bedrock ports the app's other servers already hold.</param>
+    /// <param name="accountTunnels">Local ports of the UDP tunnels on the playit account.</param>
+    /// <param name="log">Where to explain a port that was skipped, or a search that could not look.</param>
+    public int PickBedrockPort(IEnumerable<int> serverPorts, IEnumerable<int> accountTunnels,
+        IProgress<string>? log = null)
+    {
+        var taken = new HashSet<int>(serverPorts);
+        var fromAccount = new HashSet<int>(accountTunnels);
+        taken.UnionWith(fromAccount);
+
+        var port = _ports.FindFreeUdpPort(DefaultBedrockPort, taken, out var systemPortsRead)
+                   ?? DefaultBedrockPort;
+
+        if (!systemPortsRead)
+            log?.Report(Localizer.Get("Msg_UdpTableUnreadable"));
+        else if (port != DefaultBedrockPort && fromAccount.Contains(DefaultBedrockPort))
+            log?.Report(string.Format(Localizer.Get("Msg_BedrockPortTakenByTunnelFmt"),
+                DefaultBedrockPort, port));
+
+        return port;
+    }
 
     /// <summary>Whether Floodgate for this server comes from Modrinth or GeyserMC's own site.</summary>
     /// <remarks>

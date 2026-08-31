@@ -649,7 +649,12 @@ public partial class MainViewModel : ObservableObject
         SelectedServer = Servers.FirstOrDefault();
         Save();
 
-        if (dialog.DeleteTunnel && port.HasValue)
+        // Not "&& port.HasValue". The Java port comes from server.properties, which can be
+        // unreadable or already gone, and hanging the whole block on it took the Bedrock tunnel
+        // down with it — even though that one is identified by Config.BedrockPort, which lives in
+        // servers.json and needs no file on disk. The result was an orphan UDP tunnel that nothing
+        // would ever clean up, sitting on a port the next server would be handed as free.
+        if (dialog.DeleteTunnel)
         {
             var key = await EnsurePlayitAgentAsync();
             try
@@ -657,15 +662,22 @@ public partial class MainViewModel : ObservableObject
                 var api = new PlayitApiService();
                 // Java is TCP, Bedrock is UDP. Naming the protocol is what keeps this from
                 // deleting somebody else's tunnel that happens to share the port number.
-                var deleted = key is not null && await api.DeleteTunnelForPortAsync(key, port.Value, udp: false);
+                bool? javaDeleted = null;
+                if (key is not null && port.HasValue)
+                    javaDeleted = await api.DeleteTunnelForPortAsync(key, port.Value, udp: false);
 
-                if (key is not null && bedrockPort is { } bp)
-                    await api.DeleteTunnelForPortAsync(key, bp, udp: true);
+                if (key is not null && PlayitApiService.ShouldDeleteBedrockTunnel(dialog.DeleteTunnel, bedrockPort))
+                    await api.DeleteTunnelForPortAsync(key, bedrockPort!.Value, udp: true);
+
                 if (key is null)
                 {
                     // The user didn't provide a key; the tunnel is not deleted.
                 }
-                else if (!deleted)
+                else if (!port.HasValue)
+                    await MessageBox.ShowAsync(
+                        Localizer.Get("Msg_JavaTunnelPortUnknown"),
+                        Localizer.Get("Title_DeleteTunnel"));
+                else if (javaDeleted == false)
                     await MessageBox.ShowAsync(
                         string.Format(Localizer.Get("Msg_NoTunnelForPort"), port),
                         Localizer.Get("Title_DeleteTunnel"));
