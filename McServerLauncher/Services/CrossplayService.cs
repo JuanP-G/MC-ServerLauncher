@@ -134,6 +134,29 @@ public class CrossplayService
         return port;
     }
 
+    /// <summary>
+    /// The Bedrock ports the other servers already hold, for <see cref="PickBedrockPort"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Here rather than inside the view model that used to hold it, because it is a rule about
+    /// ports and not about a list on screen — and because a rule that decides which port a server
+    /// gets should be provable without building a window. Its three parts each fix a real way to
+    /// hand out a port twice: skip the server being set up (it is allowed to keep its own port),
+    /// drop the zeros (unset, not a port), and drop duplicates.
+    /// </para>
+    /// <para>
+    /// Compared by reference to <paramref name="except"/>, not by name or folder: two servers may
+    /// share either while being different servers, and the one thing that is certainly unique is
+    /// the object itself.
+    /// </para>
+    /// </remarks>
+    public static IEnumerable<int> PortsHeldBy(IEnumerable<ServerConfig> all, ServerConfig except) =>
+        all.Where(c => !ReferenceEquals(c, except))
+           .Select(c => c.BedrockPort)
+           .Where(p => p > 0)
+           .Distinct();
+
     /// <summary>Whether Floodgate for this server comes from Modrinth or GeyserMC's own site.</summary>
     /// <remarks>
     /// Not a preference: Modrinth's Floodgate is the modded build and has nothing for Paper, while

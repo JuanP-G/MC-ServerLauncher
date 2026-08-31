@@ -101,12 +101,8 @@ public class ServerConfig
     /// <summary>How many backups to keep; older ones are deleted after each new one.</summary>
     public int BackupRetention { get; set; } = 5;
 
-    // --- Notifications ---
+    // --- Sleeping and waking ---
 
-    /// <summary>
-    /// When true, this server uses its own <see cref="Notifications"/> instead of the global
-    /// notification settings. When false (default), the global settings apply.
-    /// </summary>
     /// <summary>
     /// Minutes with nobody connected before the server stops itself. <c>0</c> means never.
     /// </summary>
@@ -162,6 +158,12 @@ public class ServerConfig
     /// </remarks>
     public int BedrockPort { get; set; }
 
+    // --- Notifications ---
+
+    /// <summary>
+    /// When true, this server uses its own <see cref="Notifications"/> instead of the global
+    /// notification settings. When false (default), the global settings apply.
+    /// </summary>
     public bool UseCustomNotifications { get; set; }
 
     /// <summary>Per-server notification override, used only when <see cref="UseCustomNotifications"/>.</summary>

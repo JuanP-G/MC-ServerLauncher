@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using McServerLauncher.Localization;
+using McServerLauncher.Models;
 using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 
@@ -81,6 +82,52 @@ public class BedrockPortTests
         // never happen is a port silently moving with no line in the console to explain it.
         SpinWait.SpinUntil(() => said.Count > 0, TimeSpan.FromSeconds(2));
         Assert.Contains(said, m => m.Contains(CrossplayService.DefaultBedrockPort.ToString()));
+    }
+
+    // --- Which ports the other servers hold ---
+
+    [Fact]
+    public void AServerDoesNotCountAsBlockingItsOwnPort()
+    {
+        var mine = new ServerConfig { BedrockPort = 19132 };
+        var other = new ServerConfig { BedrockPort = 19133 };
+
+        // Setting crossplay up again on a server that already has a port must not make it choose a
+        // different one just because it can see itself in the list.
+        Assert.Equal(new[] { 19133 },
+            CrossplayService.PortsHeldBy(new[] { mine, other }, mine).ToArray());
+    }
+
+    [Fact]
+    public void AServerWithNoPortYetHoldsNothing()
+    {
+        var mine = new ServerConfig();
+        var unset = new ServerConfig { BedrockPort = 0 };
+
+        // Zero is "not set up yet", not port zero. Counting it would take a real port out of play.
+        Assert.Empty(CrossplayService.PortsHeldBy(new[] { mine, unset }, mine));
+    }
+
+    [Fact]
+    public void TheSamePortTwiceIsListedOnce()
+    {
+        var mine = new ServerConfig();
+        var a = new ServerConfig { BedrockPort = 19133 };
+        var b = new ServerConfig { BedrockPort = 19133 };
+
+        Assert.Equal(new[] { 19133 }, CrossplayService.PortsHeldBy(new[] { mine, a, b }, mine).ToArray());
+    }
+
+    [Fact]
+    public void TwoServersNamedTheSameAreStillTwoServers()
+    {
+        // Compared by reference, not by name or folder: sharing either is allowed, and matching on
+        // one of them would let a server hide another's port from the search.
+        var mine = new ServerConfig { Name = "server", BedrockPort = 19132 };
+        var twin = new ServerConfig { Name = "server", BedrockPort = 19133 };
+
+        Assert.Equal(new[] { 19133 },
+            CrossplayService.PortsHeldBy(new[] { mine, twin }, mine).ToArray());
     }
 
     // --- Telling "I checked" apart from "I could not look" ---
