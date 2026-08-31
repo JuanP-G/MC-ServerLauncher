@@ -223,6 +223,14 @@
   <data name="Notif_OptGaveUp" xml:space="preserve"><value>Wenn der Auto-Neustart aufgibt</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Einstellungen</value></data>
   <data name="Settings_LangRestart" xml:space="preserve"><value>Die Sprachänderung wird beim Neustart der App wirksam.</value></data>
+  <data name="Notif_Colors" xml:space="preserve"><value>Farben der Benachrichtigungen</value></data>
+  <data name="Notif_ColorsIntro" xml:space="preserve"><value>Eine Farbe pro Stufe, nicht pro Art. Jede Benachrichtigung trägt zusätzlich ihr Emoji, das sie auch dann unterscheidet, wenn die Farben es nicht tun. Gib eine Farbe als #RRGGBB ein.</value></data>
+  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Läuft gut (jemand tritt bei, es wacht auf)</value></data>
+  <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutral (jemand geht oder stirbt)</value></data>
+  <data name="Notif_LevelWarning" xml:space="preserve"><value>Absichtlich gestoppt (Leerlauf)</value></data>
+  <data name="Notif_LevelError" xml:space="preserve"><value>Abgestürzt (oder aufgegeben)</value></data>
+  <data name="Notif_ResetColors" xml:space="preserve"><value>Standardfarben</value></data>
+  <data name="Notif_ResetColorsTip" xml:space="preserve"><value>Setzt die vier mitgelieferten Farben zurück.</value></data>
   <data name="Notif_Test" xml:space="preserve"><value>Benachrichtigung testen</value></data>
   <data name="Notif_TestTip" xml:space="preserve"><value>Zeigt eine Beispiel-Benachrichtigung, damit du siehst, wie sie auf deinem Bildschirm aussehen.</value></data>
   <data name="Notif_TestBody" xml:space="preserve"><value>Beispiel-Benachrichtigung: So sehen die Hinweise deiner Server aus.</value></data>

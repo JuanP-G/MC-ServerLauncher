@@ -223,6 +223,14 @@
   <data name="Notif_OptGaveUp" xml:space="preserve"><value>When auto-restart gives up</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
   <data name="Settings_LangRestart" xml:space="preserve"><value>The language change takes effect when the app restarts.</value></data>
+  <data name="Notif_Colors" xml:space="preserve"><value>Notification colours</value></data>
+  <data name="Notif_ColorsIntro" xml:space="preserve"><value>One colour per level, not per kind. Each notification also carries its own emoji, which tells them apart even if the colours do not. Type a colour as #RRGGBB.</value></data>
+  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Going well (somebody joins, it wakes)</value></data>
+  <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutral (somebody leaves or dies)</value></data>
+  <data name="Notif_LevelWarning" xml:space="preserve"><value>Stopped on purpose (idle shutdown)</value></data>
+  <data name="Notif_LevelError" xml:space="preserve"><value>It crashed (or gave up)</value></data>
+  <data name="Notif_ResetColors" xml:space="preserve"><value>Default colours</value></data>
+  <data name="Notif_ResetColorsTip" xml:space="preserve"><value>Puts the four colours the app ships with back.</value></data>
   <data name="Notif_Test" xml:space="preserve"><value>Test notification</value></data>
   <data name="Notif_TestTip" xml:space="preserve"><value>Show a sample notification to see how they look on your screen.</value></data>
   <data name="Notif_TestBody" xml:space="preserve"><value>Sample notification: this is how your servers' alerts will look.</value></data>

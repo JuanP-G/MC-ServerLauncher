@@ -269,6 +269,14 @@
   <data name="Notif_OptGaveUp" xml:space="preserve"><value>Cuando se agota el reinicio automático</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Ajustes</value></data>
   <data name="Settings_LangRestart" xml:space="preserve"><value>El cambio de idioma se aplica al reiniciar la app.</value></data>
+  <data name="Notif_Colors" xml:space="preserve"><value>Colores de los avisos</value></data>
+  <data name="Notif_ColorsIntro" xml:space="preserve"><value>Un color por nivel, no por tipo de aviso. Cada aviso lleva además su propio emoji, que se distingue aunque no distingas los colores. Escribe un color en formato #RRGGBB.</value></data>
+  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Va bien (entra alguien, despierta)</value></data>
+  <data name="Notif_LevelInfo" xml:space="preserve"><value>Sin más (alguien sale o muere)</value></data>
+  <data name="Notif_LevelWarning" xml:space="preserve"><value>Parado a propósito (por inactividad)</value></data>
+  <data name="Notif_LevelError" xml:space="preserve"><value>Se ha caído (o se ha rendido)</value></data>
+  <data name="Notif_ResetColors" xml:space="preserve"><value>Colores por defecto</value></data>
+  <data name="Notif_ResetColorsTip" xml:space="preserve"><value>Vuelve a los cuatro colores que trae la aplicación.</value></data>
   <data name="Notif_Test" xml:space="preserve"><value>Probar notificación</value></data>
   <data name="Notif_TestTip" xml:space="preserve"><value>Muestra una notificación de ejemplo para ver cómo se ven en tu pantalla.</value></data>
   <data name="Notif_TestBody" xml:space="preserve"><value>Notificación de ejemplo: así se verán los avisos de tus servidores.</value></data>

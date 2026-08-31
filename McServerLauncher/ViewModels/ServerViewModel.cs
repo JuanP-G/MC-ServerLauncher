@@ -839,8 +839,14 @@ public partial class ServerViewModel : ObservableObject
     /// </summary>
     private void NotifyIf(NotificationKind kind, string message)
     {
-        if (ToastService.MainWindowInactive && NotificationPreferences.ShouldNotify(Config, kind))
-            ToastService.Shared.Notify(Name, message);
+        if (!ToastService.MainWindowInactive || !NotificationPreferences.ShouldNotify(Config, kind))
+            return;
+
+        // The look comes from the kind, through the one table that holds it. Working it out here
+        // would put a second opinion about what "crashed" means next to the first.
+        var entry = NotificationCatalog.For(kind);
+        ToastService.Shared.Notify(Name, message, entry.Level, entry.Emoji,
+            NotificationPreferences.EffectiveFor(Config));
     }
 
     /// <summary>

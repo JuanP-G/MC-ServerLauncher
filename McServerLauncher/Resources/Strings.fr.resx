@@ -223,6 +223,14 @@
   <data name="Notif_OptGaveUp" xml:space="preserve"><value>Quand le redémarrage automatique abandonne</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Paramètres</value></data>
   <data name="Settings_LangRestart" xml:space="preserve"><value>Le changement de langue prend effet au redémarrage de l'app.</value></data>
+  <data name="Notif_Colors" xml:space="preserve"><value>Couleurs des notifications</value></data>
+  <data name="Notif_ColorsIntro" xml:space="preserve"><value>Une couleur par niveau, pas par type. Chaque notification porte aussi son emoji, qui les distingue même si les couleurs n'y suffisent pas. Saisis une couleur au format #RRGGBB.</value></data>
+  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Tout va bien (quelqu'un arrive, il se réveille)</value></data>
+  <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutre (quelqu'un part ou meurt)</value></data>
+  <data name="Notif_LevelWarning" xml:space="preserve"><value>Arrêté volontairement (inactivité)</value></data>
+  <data name="Notif_LevelError" xml:space="preserve"><value>Il a planté (ou a abandonné)</value></data>
+  <data name="Notif_ResetColors" xml:space="preserve"><value>Couleurs par défaut</value></data>
+  <data name="Notif_ResetColorsTip" xml:space="preserve"><value>Revient aux quatre couleurs fournies avec l'application.</value></data>
   <data name="Notif_Test" xml:space="preserve"><value>Tester la notification</value></data>
   <data name="Notif_TestTip" xml:space="preserve"><value>Affiche une notification d'exemple pour voir leur apparence sur ton écran.</value></data>
   <data name="Notif_TestBody" xml:space="preserve"><value>Notification d'exemple : voici à quoi ressembleront les alertes de tes serveurs.</value></data>

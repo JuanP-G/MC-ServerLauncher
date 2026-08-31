@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Threading;
+using System.Linq;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
@@ -124,13 +125,74 @@ public partial class SettingsDialog : Window
     }
 
     /// <summary>
-    /// Shows a sample toast so the user can see what notifications look like and confirm they appear
-    /// on their system. Bypasses the enable/inactive gating on purpose — it's a preview.
+    /// Shows one sample toast per level, so the four colours can be judged side by side.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Four rather than one, because the question the button now answers is not only "do
+    /// notifications reach me" but "can I tell these apart" — and a single toast cannot answer the
+    /// second. Four is also exactly what fits: the toast stack holds four before it starts pushing
+    /// the oldest off.
+    /// </para>
+    /// <para>
+    /// Drawn with <see cref="Notifications"/>, the copy this dialog is editing, not the saved
+    /// settings. Previewing the colours the user has just changed is the entire point, and reading
+    /// the global ones would show them the colours they are trying to replace.
+    /// </para>
+    /// <para>
+    /// Bypasses the enable/inactive gating on purpose — it is a preview.
+    /// </para>
+    /// </remarks>
     private void TestNotification_Click(object? sender, RoutedEventArgs e)
-        => ToastService.Shared.Notify("MC Server Launcher", Localizer.Get("Notif_TestBody"));
+    {
+        foreach (var level in Enum.GetValues<NotificationLevel>())
+        {
+            // A kind that is actually shown at this level, so the preview carries the same mark the
+            // real notification will. Info has several; the first is as good as any.
+            var sample = NotificationCatalog.All.FirstOrDefault(x => x.Level == level);
 
-    private void Save_Click(object? sender, RoutedEventArgs e) => Close(true);
+            ToastService.Shared.Notify(
+                Localizer.Get("Notif_Level" + level),
+                Localizer.Get("Notif_TestBody"),
+                level,
+                sample?.Emoji ?? string.Empty,
+                Notifications);
+        }
+    }
+
+    /// <summary>Puts the four colours back to the palette the app ships with.</summary>
+    /// <remarks>
+    /// Written through the boxes rather than into <see cref="Notifications"/> directly, because the
+    /// settings object is a plain serialized model with no change notification: assigning to it
+    /// would update what gets saved while the four boxes carried on showing the old values, and the
+    /// user would be looking at a dialog that disagreed with itself. The two-way bindings carry the
+    /// new text back the moment the boxes change.
+    /// </remarks>
+    private void ResetColors_Click(object? sender, RoutedEventArgs e)
+    {
+        ColorSuccessBox.Text = NotificationPalette.DefaultSuccess;
+        ColorInfoBox.Text = NotificationPalette.DefaultInfo;
+        ColorWarningBox.Text = NotificationPalette.DefaultWarning;
+        ColorErrorBox.Text = NotificationPalette.DefaultError;
+    }
+
+    /// <summary>
+    /// Accepts the dialog, dropping any colour the user left in an unusable state.
+    /// </summary>
+    /// <remarks>
+    /// A half-typed <c>#E0</c> is what a box looks like the moment somebody clicks Save while still
+    /// editing, and storing it would mean that level silently falling back to its default on every
+    /// notification from then on, with the settings still displaying the broken value. Cleaning it
+    /// here means what is saved is always what will actually be drawn.
+    /// </remarks>
+    private void Save_Click(object? sender, RoutedEventArgs e)
+    {
+        foreach (var level in Enum.GetValues<NotificationLevel>())
+            Notifications.SetColorFor(level,
+                NotificationPalette.Sanitize(Notifications.ColorFor(level), level));
+
+        Close(true);
+    }
 
     /// <summary>
     /// Puts the app on the desktop. The result is reported next to the button rather than in a

@@ -278,7 +278,12 @@ public partial class MainViewModel : ObservableObject
 
         var message = string.Format(Localizer.Get(key), version);
 
-        ToastService.Shared.Notify(Localizer.Get("Notif_UpdateTitle"), message);
+        // The one notification with no NotificationKind behind it: it belongs to the app, not to a
+        // server, so there is no kind to look up and no per-server override to consult. Info and a
+        // download arrow, said here rather than left to the default, so adding a level later cannot
+        // silently move it.
+        ToastService.Shared.Notify(Localizer.Get("Notif_UpdateTitle"), message,
+            NotificationLevel.Info, "\U0001F4E5", NotificationPreferences.Global);
     }
 
     private bool CanUpdateNow => !IsUpdating;
