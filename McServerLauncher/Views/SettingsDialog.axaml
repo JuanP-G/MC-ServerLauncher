@@ -74,35 +74,71 @@
                 <TextBlock Text="{loc:Loc Notif_ColorsIntro}" TextWrapping="Wrap" Opacity="0.7"
                            FontSize="13" Margin="0,4,0,6" />
 
-                <Grid ColumnDefinitions="140,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto"
-                      IsEnabled="{Binding #NotifMaster.IsChecked}">
+                <!-- La etiqueta en la columna elastica y con recorte, la muestra y la casilla
+                     a la derecha en columnas Auto. Antes la etiqueta tenia 140 pixeles fijos y las
+                     etiquetas largas se dibujaban encima de la muestra: un Grid no recorta a sus
+                     hijos, asi que el texto simplemente se salia. Asi no puede volver a pasar ni
+                     con la traduccion mas larga. -->
+                <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
+                      IsEnabled="{Binding #NotifMaster.IsChecked}" Margin="0,2,0,0">
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Notif_LevelSuccess}"
-                               VerticalAlignment="Center" Margin="0,3" />
+                               ToolTip.Tip="{loc:Loc Notif_LevelSuccessTip}" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" Margin="0,3,12,3" />
                     <Border Grid.Row="0" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,3,8,3"
                             Background="{Binding Notifications.ColorSuccess, Converter={x:Static vm:HexBrushConverter.Instance}}" />
-                    <TextBox Grid.Row="0" Grid.Column="2" x:Name="ColorSuccessBox" Width="120" HorizontalAlignment="Left" Margin="0,3"
+                    <TextBox Grid.Row="0" Grid.Column="2" x:Name="ColorSuccessBox" Width="110" Margin="0,3"
                              Text="{Binding Notifications.ColorSuccess, Mode=TwoWay}" />
 
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Loc Notif_LevelInfo}"
-                               VerticalAlignment="Center" Margin="0,3" />
+                               ToolTip.Tip="{loc:Loc Notif_LevelInfoTip}" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" Margin="0,3,12,3" />
                     <Border Grid.Row="1" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,3,8,3"
                             Background="{Binding Notifications.ColorInfo, Converter={x:Static vm:HexBrushConverter.Instance}}" />
-                    <TextBox Grid.Row="1" Grid.Column="2" x:Name="ColorInfoBox" Width="120" HorizontalAlignment="Left" Margin="0,3"
+                    <TextBox Grid.Row="1" Grid.Column="2" x:Name="ColorInfoBox" Width="110" Margin="0,3"
                              Text="{Binding Notifications.ColorInfo, Mode=TwoWay}" />
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Loc Notif_LevelWarning}"
-                               VerticalAlignment="Center" Margin="0,3" />
+                               ToolTip.Tip="{loc:Loc Notif_LevelWarningTip}" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" Margin="0,3,12,3" />
                     <Border Grid.Row="2" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,3,8,3"
                             Background="{Binding Notifications.ColorWarning, Converter={x:Static vm:HexBrushConverter.Instance}}" />
-                    <TextBox Grid.Row="2" Grid.Column="2" x:Name="ColorWarningBox" Width="120" HorizontalAlignment="Left" Margin="0,3"
+                    <TextBox Grid.Row="2" Grid.Column="2" x:Name="ColorWarningBox" Width="110" Margin="0,3"
                              Text="{Binding Notifications.ColorWarning, Mode=TwoWay}" />
 
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="{loc:Loc Notif_LevelError}"
-                               VerticalAlignment="Center" Margin="0,3" />
+                               ToolTip.Tip="{loc:Loc Notif_LevelErrorTip}" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" Margin="0,3,12,3" />
                     <Border Grid.Row="3" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,3,8,3"
                             Background="{Binding Notifications.ColorError, Converter={x:Static vm:HexBrushConverter.Instance}}" />
-                    <TextBox Grid.Row="3" Grid.Column="2" x:Name="ColorErrorBox" Width="120" HorizontalAlignment="Left" Margin="0,3"
+                    <TextBox Grid.Row="3" Grid.Column="2" x:Name="ColorErrorBox" Width="110" Margin="0,3"
                              Text="{Binding Notifications.ColorError, Mode=TwoWay}" />
+                </Grid>
+
+                <TextBlock Text="{loc:Loc Console_Colors}" FontWeight="SemiBold" Margin="0,14,0,0" />
+                <TextBlock Text="{loc:Loc Console_ColorsIntro}" TextWrapping="Wrap" Opacity="0.7"
+                           FontSize="13" Margin="0,4,0,6" />
+                <!-- La etiqueta en la columna elastica y con recorte, la muestra y la casilla
+                     a la derecha en columnas Auto. Antes la etiqueta tenia 140 pixeles fijos y las
+                     etiquetas largas se dibujaban encima de la muestra: un Grid no recorta a sus
+                     hijos, asi que el texto simplemente se salia. Asi no puede volver a pasar ni
+                     con la traduccion mas larga. -->
+                <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto"
+                      Margin="0,2,0,0">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Console_ColorChat}"
+                               ToolTip.Tip="{loc:Loc Console_ColorChatTip}" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" Margin="0,3,12,3" />
+                    <Border Grid.Row="0" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,3,8,3"
+                            Background="{Binding ConsoleChatColor, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                    <TextBox Grid.Row="0" Grid.Column="2" x:Name="ColorChatBox" Width="110" Margin="0,3"
+                             Text="{Binding ConsoleChatColor, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Loc Console_ColorPlayers}"
+                               ToolTip.Tip="{loc:Loc Console_ColorPlayersTip}" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" Margin="0,3,12,3" />
+                    <Border Grid.Row="1" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,3,8,3"
+                            Background="{Binding ConsolePlayersColor, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                    <TextBox Grid.Row="1" Grid.Column="2" x:Name="ColorPlayersBox" Width="110" Margin="0,3"
+                             Text="{Binding ConsolePlayersColor, Mode=TwoWay}" />
                 </Grid>
 
                 <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,12,0,0">

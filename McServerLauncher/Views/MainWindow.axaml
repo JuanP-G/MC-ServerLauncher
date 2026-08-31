@@ -32,6 +32,21 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="0,2,0,0" />
         </Style>
+        <!-- Un interruptor de categoria: pequeno, para que quepan siete sin empujar nada. -->
+        <Style Selector="ToggleButton.kindchip">
+            <Setter Property="Padding" Value="7,2" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Margin" Value="0,0,4,2" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <!-- Apagado se ve claramente apagado: un filtro que no se nota es un filtro que te hace
+             pensar que el servidor no dice nada. -->
+        <Style Selector="ToggleButton.kindchip:not(:checked)">
+            <Setter Property="Opacity" Value="0.45" />
+        </Style>
+
         <!-- Compact rows for the console list -->
         <Style Selector="ListBox.console ListBoxItem">
             <Setter Property="Padding" Value="2,0" />
@@ -403,12 +418,48 @@
                                 <!-- Console -->
                                 <Border Grid.Row="0" Classes="stat" Margin="0" Padding="0">
                                     <Grid RowDefinitions="Auto,*">
-                                        <Grid Grid.Row="0" Margin="12,8" ColumnDefinitions="Auto,*,Auto,Auto">
+                                        <Grid Grid.Row="0" Margin="12,8" ColumnDefinitions="Auto,*,Auto,Auto,Auto">
                                             <TextBlock Grid.Column="0" Text="{loc:Loc Console}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                            <TextBox Grid.Column="2" Width="240" Margin="0,0,8,0" Padding="8,4"
+                                            <!-- Un interruptor por categoria, con su cuenta al lado. La cuenta es lo que
+                                                 los hace servir para vigilar y no solo para buscar: «Errores 3» se ve sin
+                                                 pulsar nada. En un WrapPanel para que al estrechar la ventana bajen de
+                                                 linea en vez de empujar la caja de busqueda fuera de la pantalla. -->
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding ConsoleKinds}" Margin="12,0,8,0"
+                                                          VerticalAlignment="Center">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <ToggleButton Classes="kindchip" IsChecked="{Binding IsOn, Mode=TwoWay}"
+                                                                      ToolTip.Tip="{Binding Tip}">
+                                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                                <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                                                                         Fill="{Binding Brush}" />
+                                                                <TextBlock Text="{Binding Label}" FontSize="11" VerticalAlignment="Center" />
+                                                                <TextBlock Text="{Binding Count}" FontSize="11" Opacity="0.6"
+                                                                           VerticalAlignment="Center" />
+                                                                <!-- Llego algo de este tipo mientras estaba apagado. Sin esto
+                                                                     seria del todo invisible: fuera de la lista y sin nada
+                                                                     en pantalla que cambie. -->
+                                                                <Ellipse Width="6" Height="6" VerticalAlignment="Top" Margin="0,1,0,0"
+                                                                         Fill="{StaticResource SemanticWarn}"
+                                                                         IsVisible="{Binding HasUnseen}" />
+                                                            </StackPanel>
+                                                        </ToggleButton>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <TextBox Grid.Column="2" Width="200" Margin="0,0,8,0" Padding="8,4"
                                                      Text="{Binding ConsoleFilter, Mode=TwoWay}"
                                                      Watermark="{loc:Loc Console_FilterPlaceholder}" />
-                                            <Button Grid.Column="3" Command="{Binding ClearConsoleCommand}" Padding="8,2" VerticalAlignment="Center">
+                                            <Button Grid.Column="3" Margin="0,0,8,0" Padding="8,2" VerticalAlignment="Center"
+                                                    Command="{Binding ShowAllConsoleKindsCommand}"
+                                                    IsVisible="{Binding IsConsoleFiltered}"
+                                                    Content="{loc:Loc Console_ShowAll}" />
+                                            <Button Grid.Column="4" Command="{Binding ClearConsoleCommand}" Padding="8,2" VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                                     <ic:SymbolIcon Symbol="Eraser" />
                                                     <TextBlock Text="{loc:Loc Clear}" />
@@ -431,7 +482,20 @@
                                             </ListBox.ContextMenu>
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#DDDDDD" />
+                                                    <!-- El color sale de la categoria a traves de un converter, no de un
+                                                         pincel guardado en cada linea: hay dos mil, y un color que cambies
+                                                         en Ajustes tiene que llegar a todas sin recorrerlas. Inlines en vez
+                                                         de Text para poder marcar dentro de la linea lo que buscas. -->
+                                                    <TextBlock TextWrapping="Wrap"
+                                                               Foreground="{Binding Kind, Converter={x:Static vm:ConsoleBrushConverter.Instance}}">
+                                                        <TextBlock.Inlines>
+                                                            <MultiBinding Converter="{x:Static vm:ConsoleHighlightConverter.Instance}">
+                                                                <Binding Path="Text" />
+                                                                <Binding Path="DataContext.ConsoleFilter"
+                                                                         RelativeSource="{RelativeSource AncestorType=ListBox}" />
+                                                            </MultiBinding>
+                                                        </TextBlock.Inlines>
+                                                    </TextBlock>
                                                 </DataTemplate>
                                             </ListBox.ItemTemplate>
                                         </ListBox>

@@ -271,12 +271,31 @@
   <data name="Settings_LangRestart" xml:space="preserve"><value>El cambio de idioma se aplica al reiniciar la app.</value></data>
   <data name="Notif_Colors" xml:space="preserve"><value>Colores de los avisos</value></data>
   <data name="Notif_ColorsIntro" xml:space="preserve"><value>Un color por nivel, no por tipo de aviso. Cada aviso lleva además su propio emoji, que se distingue aunque no distingas los colores. Escribe un color en formato #RRGGBB.</value></data>
-  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Va bien (entra alguien, despierta)</value></data>
-  <data name="Notif_LevelInfo" xml:space="preserve"><value>Sin más (alguien sale o muere)</value></data>
-  <data name="Notif_LevelWarning" xml:space="preserve"><value>Parado a propósito (por inactividad)</value></data>
-  <data name="Notif_LevelError" xml:space="preserve"><value>Se ha caído (o se ha rendido)</value></data>
+  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Va bien</value></data>
+  <data name="Notif_LevelInfo" xml:space="preserve"><value>Sin más</value></data>
+  <data name="Notif_LevelWarning" xml:space="preserve"><value>Parado a propósito</value></data>
+  <data name="Notif_LevelError" xml:space="preserve"><value>Se ha caído</value></data>
   <data name="Notif_ResetColors" xml:space="preserve"><value>Colores por defecto</value></data>
   <data name="Notif_ResetColorsTip" xml:space="preserve"><value>Vuelve a los cuatro colores que trae la aplicación.</value></data>
+  <data name="Notif_LevelSuccessTip" xml:space="preserve"><value>Entra un jugador, o el servidor se enciende porque alguien ha intentado entrar.</value></data>
+  <data name="Notif_LevelInfoTip" xml:space="preserve"><value>Alguien sale o muere, y los mensajes de la propia aplicación en la consola.</value></data>
+  <data name="Notif_LevelWarningTip" xml:space="preserve"><value>El servidor se apaga solo por estar vacío, y los avisos del servidor en la consola.</value></data>
+  <data name="Notif_LevelErrorTip" xml:space="preserve"><value>El servidor se cae o el reinicio automático se rinde, y los errores en la consola.</value></data>
+  <data name="Console_ColorChat" xml:space="preserve"><value>Chat de los jugadores</value></data>
+  <data name="Console_ColorChatTip" xml:space="preserve"><value>Los mensajes que los jugadores se escriben entre ellos.</value></data>
+  <data name="Console_ColorPlayers" xml:space="preserve"><value>Entradas y salidas</value></data>
+  <data name="Console_ColorPlayersTip" xml:space="preserve"><value>Quién entra, quién sale y quién muere.</value></data>
+  <data name="Console_Colors" xml:space="preserve"><value>Colores de la consola</value></data>
+  <data name="Console_ColorsIntro" xml:space="preserve"><value>Los errores, los avisos y los mensajes de la aplicación usan los colores de arriba, para que el rojo signifique lo mismo en toda la app. Estos dos son solo de la consola.</value></data>
+  <data name="Console_KindError" xml:space="preserve"><value>Errores</value></data>
+  <data name="Console_KindWarn" xml:space="preserve"><value>Avisos</value></data>
+  <data name="Console_KindChat" xml:space="preserve"><value>Chat</value></data>
+  <data name="Console_KindPlayers" xml:space="preserve"><value>Jugadores</value></data>
+  <data name="Console_KindCommand" xml:space="preserve"><value>Comandos</value></data>
+  <data name="Console_KindLauncher" xml:space="preserve"><value>Aplicación</value></data>
+  <data name="Console_KindInfo" xml:space="preserve"><value>Resto</value></data>
+  <data name="Console_KindTipFmt" xml:space="preserve"><value>{0}: {1} líneas. Pulsa para mostrarlas u ocultarlas.</value></data>
+  <data name="Console_ShowAll" xml:space="preserve"><value>Mostrar todo</value></data>
   <data name="Notif_Test" xml:space="preserve"><value>Probar notificación</value></data>
   <data name="Notif_TestTip" xml:space="preserve"><value>Muestra una notificación de ejemplo para ver cómo se ven en tu pantalla.</value></data>
   <data name="Notif_TestBody" xml:space="preserve"><value>Notificación de ejemplo: así se verán los avisos de tus servidores.</value></data>

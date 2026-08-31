@@ -225,12 +225,31 @@
   <data name="Settings_LangRestart" xml:space="preserve"><value>Die Sprachänderung wird beim Neustart der App wirksam.</value></data>
   <data name="Notif_Colors" xml:space="preserve"><value>Farben der Benachrichtigungen</value></data>
   <data name="Notif_ColorsIntro" xml:space="preserve"><value>Eine Farbe pro Stufe, nicht pro Art. Jede Benachrichtigung trägt zusätzlich ihr Emoji, das sie auch dann unterscheidet, wenn die Farben es nicht tun. Gib eine Farbe als #RRGGBB ein.</value></data>
-  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Läuft gut (jemand tritt bei, es wacht auf)</value></data>
-  <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutral (jemand geht oder stirbt)</value></data>
-  <data name="Notif_LevelWarning" xml:space="preserve"><value>Absichtlich gestoppt (Leerlauf)</value></data>
-  <data name="Notif_LevelError" xml:space="preserve"><value>Abgestürzt (oder aufgegeben)</value></data>
+  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Läuft gut</value></data>
+  <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutral</value></data>
+  <data name="Notif_LevelWarning" xml:space="preserve"><value>Absichtlich gestoppt</value></data>
+  <data name="Notif_LevelError" xml:space="preserve"><value>Abgestürzt</value></data>
   <data name="Notif_ResetColors" xml:space="preserve"><value>Standardfarben</value></data>
   <data name="Notif_ResetColorsTip" xml:space="preserve"><value>Setzt die vier mitgelieferten Farben zurück.</value></data>
+  <data name="Notif_LevelSuccessTip" xml:space="preserve"><value>Ein Spieler tritt bei, oder der Server startet, weil jemand beitreten wollte.</value></data>
+  <data name="Notif_LevelInfoTip" xml:space="preserve"><value>Jemand geht oder stirbt, und die eigenen Meldungen der App in der Konsole.</value></data>
+  <data name="Notif_LevelWarningTip" xml:space="preserve"><value>Der Server beendet sich mangels Spielern, und die Warnungen des Servers in der Konsole.</value></data>
+  <data name="Notif_LevelErrorTip" xml:space="preserve"><value>Der Server stürzt ab oder der Auto-Neustart gibt auf, und die Fehler in der Konsole.</value></data>
+  <data name="Console_ColorChat" xml:space="preserve"><value>Spieler-Chat</value></data>
+  <data name="Console_ColorChatTip" xml:space="preserve"><value>Die Nachrichten, die Spieler einander schreiben.</value></data>
+  <data name="Console_ColorPlayers" xml:space="preserve"><value>Beitritte und Abgänge</value></data>
+  <data name="Console_ColorPlayersTip" xml:space="preserve"><value>Wer beitritt, wer geht und wer stirbt.</value></data>
+  <data name="Console_Colors" xml:space="preserve"><value>Farben der Konsole</value></data>
+  <data name="Console_ColorsIntro" xml:space="preserve"><value>Fehler, Warnungen und die Meldungen der App nutzen die Farben oben, damit Rot überall dasselbe bedeutet. Diese beiden gehören nur zur Konsole.</value></data>
+  <data name="Console_KindError" xml:space="preserve"><value>Fehler</value></data>
+  <data name="Console_KindWarn" xml:space="preserve"><value>Warnungen</value></data>
+  <data name="Console_KindChat" xml:space="preserve"><value>Chat</value></data>
+  <data name="Console_KindPlayers" xml:space="preserve"><value>Spieler</value></data>
+  <data name="Console_KindCommand" xml:space="preserve"><value>Befehle</value></data>
+  <data name="Console_KindLauncher" xml:space="preserve"><value>App</value></data>
+  <data name="Console_KindInfo" xml:space="preserve"><value>Rest</value></data>
+  <data name="Console_KindTipFmt" xml:space="preserve"><value>{0}: {1} Zeilen. Klicken zum Ein- oder Ausblenden.</value></data>
+  <data name="Console_ShowAll" xml:space="preserve"><value>Alles anzeigen</value></data>
   <data name="Notif_Test" xml:space="preserve"><value>Benachrichtigung testen</value></data>
   <data name="Notif_TestTip" xml:space="preserve"><value>Zeigt eine Beispiel-Benachrichtigung, damit du siehst, wie sie auf deinem Bildschirm aussehen.</value></data>
   <data name="Notif_TestBody" xml:space="preserve"><value>Beispiel-Benachrichtigung: So sehen die Hinweise deiner Server aus.</value></data>

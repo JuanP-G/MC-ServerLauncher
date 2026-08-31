@@ -16,8 +16,18 @@ public class ServerProcessManager
     private readonly object _lock = new();
     private DateTime _startedAtUtc;
 
-    /// <summary>Raised for each output line (stdout or stderr) from the server.</summary>
-    public event Action<string>? OutputReceived;
+    /// <summary>
+    /// Raised for each output line, saying where it came from.
+    /// </summary>
+    /// <remarks>
+    /// The source used to be thrown away: standard output and standard error were wired to the same
+    /// handler and re-emitted through one <c>Action&lt;string&gt;</c> that said nothing about which
+    /// was which. Standard error is the cheapest severity signal a server ever gives — no parsing,
+    /// nothing a plugin or a locale can reword — and it was being discarded one line before it could
+    /// be used. <see cref="ConsoleSource.Launcher"/> is here because this class also puts its own
+    /// messages through this event, and those are the app talking rather than the server.
+    /// </remarks>
+    public event Action<string, ConsoleSource>? OutputReceived;
 
     /// <summary>Raised when the server state changes.</summary>
     public event Action<ServerState>? StateChanged;
@@ -93,13 +103,13 @@ public class ServerProcessManager
             };
 
             _process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-            _process.OutputDataReceived += OnOutputData;
-            _process.ErrorDataReceived += OnOutputData;
+            _process.OutputDataReceived += OnStandardOutput;
+            _process.ErrorDataReceived += OnStandardError;
             _process.Exited += OnProcessExited;
 
             State = ServerState.Starting;
             _startedAtUtc = DateTime.UtcNow;
-            OutputReceived?.Invoke(string.Format(Localizer.Get("Msg_LauncherStarting"), config.JavaPath, args));
+            OutputReceived?.Invoke(string.Format(Localizer.Get("Msg_LauncherStarting"), config.JavaPath, args), ConsoleSource.Launcher);
 
             try
             {
@@ -163,14 +173,27 @@ public class ServerProcessManager
         return null;
     }
 
-    private void OnOutputData(object sender, DataReceivedEventArgs e)
+    private void OnStandardOutput(object sender, DataReceivedEventArgs e)
     {
         if (e.Data is null) return;
         // Vanilla/Fabric/Forge/Paper all log a line like
         // `[12:00:00] [Server thread/INFO]: Done (3.2s)! For help, type "help"` when ready.
         if (State == ServerState.Starting && e.Data.Contains("Done (", StringComparison.Ordinal))
             State = ServerState.Running;
-        OutputReceived?.Invoke(e.Data);
+        OutputReceived?.Invoke(e.Data, ConsoleSource.Stdout);
+    }
+
+    /// <summary>
+    /// Standard error, kept separate from standard output.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately does not promote the state to Running: "Done (" belongs on standard output, and
+    /// a server that printed it on the error stream would not be a server that finished starting.
+    /// </remarks>
+    private void OnStandardError(object sender, DataReceivedEventArgs e)
+    {
+        if (e.Data is null) return;
+        OutputReceived?.Invoke(e.Data, ConsoleSource.Stderr);
     }
 
     private void OnProcessExited(object? sender, EventArgs e)
@@ -183,7 +206,7 @@ public class ServerProcessManager
         try { exitCode = (sender as Process)?.ExitCode; }
         catch { /* not always available; best-effort */ }
 
-        OutputReceived?.Invoke(Localizer.Get("Msg_ServerStopped"));
+        OutputReceived?.Invoke(Localizer.Get("Msg_ServerStopped"), ConsoleSource.Launcher);
         lock (_lock)
         {
             _process?.Dispose();
@@ -224,7 +247,7 @@ public class ServerProcessManager
 
         try
         {
-            OutputReceived?.Invoke(Localizer.Get("Msg_StoppingSaving"));
+            OutputReceived?.Invoke(Localizer.Get("Msg_StoppingSaving"), ConsoleSource.Launcher);
             proc.StandardInput.WriteLine("stop");
             proc.StandardInput.Flush();
 
@@ -233,7 +256,7 @@ public class ServerProcessManager
         }
         catch (OperationCanceledException)
         {
-            OutputReceived?.Invoke(Localizer.Get("Msg_NotRespondingKill"));
+            OutputReceived?.Invoke(Localizer.Get("Msg_NotRespondingKill"), ConsoleSource.Launcher);
             await KillAndWaitAsync(proc);
         }
         catch
@@ -278,7 +301,7 @@ public class ServerProcessManager
         {
             // Extremely unlikely (the OS refused to tear down the tree in 5s), but don't hang
             // StopAsync forever over it; OnProcessExited will still fire whenever it does finish.
-            OutputReceived?.Invoke(Localizer.Get("Msg_KillTimedOut"));
+            OutputReceived?.Invoke(Localizer.Get("Msg_KillTimedOut"), ConsoleSource.Launcher);
         }
         catch
         {

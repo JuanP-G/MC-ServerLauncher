@@ -88,6 +88,7 @@ public partial class MainViewModel : ObservableObject
 
         // Make the saved notification preferences the app-wide defaults for this session.
         NotificationPreferences.Global = _appSettings.Notifications;
+        ApplyConsoleColours();
         ApplyWindowBehavior();
 
         var saved = _appSettings.Language;
@@ -158,12 +159,32 @@ public partial class MainViewModel : ObservableObject
         NotificationPreferences.Global = _appSettings.Notifications;
         _appSettings.MinimizeToTray = dialog.MinimizeToTray;
         _appSettings.CloseToTray = dialog.CloseToTray;
+        _appSettings.ConsoleChatColor = dialog.ConsoleChatColor;
+        _appSettings.ConsolePlayersColor = dialog.ConsolePlayersColor;
+        ApplyConsoleColours();
         ApplyWindowBehavior();
         _settings.Save(_appSettings);
 
         // Language: assigning SelectedLanguage reuses the existing handler (persist + restart prompt).
         if (dialog.SelectedLanguage is { } lang && lang.Code != _appSettings.Language)
             SelectedLanguage = lang;
+    }
+
+    /// <summary>
+    /// Pushes the saved console colours to the app-wide state, and repaints every open console.
+    /// </summary>
+    /// <remarks>
+    /// Every server, not just the selected one: the colours are app-wide, and a console that only
+    /// updated when you happened to be looking at it would leave the others showing the old palette
+    /// until something else forced them to redraw.
+    /// </remarks>
+    private void ApplyConsoleColours()
+    {
+        ConsolePreferences.ChatColor = _appSettings.ConsoleChatColor;
+        ConsolePreferences.PlayersColor = _appSettings.ConsolePlayersColor;
+
+        foreach (var server in Servers)
+            server.RefreshConsoleColours();
     }
 
     /// <summary>Pushes the saved minimize/close preferences to the app-wide state the window reads.</summary>

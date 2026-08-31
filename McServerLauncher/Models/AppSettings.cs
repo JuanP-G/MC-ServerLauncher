@@ -33,6 +33,18 @@ public class AppSettings
     /// </summary>
     public NotificationSettings Notifications { get; set; } = new();
 
+    // --- Console colours ---
+    // Only the two the console has that notifications do not. Errors, warnings and the app's own
+    // messages take their colour from Notifications above, so red means the same thing in a toast
+    // and in the console; putting a chat colour inside NotificationSettings would have made that
+    // class mean something it does not, and it is cloned per server, which chat colours are not.
+
+    /// <summary>Colour for player chat in the console.</summary>
+    public string ConsoleChatColor { get; set; } = Services.ConsoleColors.DefaultChat;
+
+    /// <summary>Colour for joins, leaves and deaths in the console.</summary>
+    public string ConsolePlayersColor { get; set; } = Services.ConsoleColors.DefaultPlayers;
+
     /// <summary>
     /// Minimizing sends the window to the tray (it leaves the taskbar) instead of minimizing normally.
     /// </summary>

@@ -225,12 +225,31 @@
   <data name="Settings_LangRestart" xml:space="preserve"><value>The language change takes effect when the app restarts.</value></data>
   <data name="Notif_Colors" xml:space="preserve"><value>Notification colours</value></data>
   <data name="Notif_ColorsIntro" xml:space="preserve"><value>One colour per level, not per kind. Each notification also carries its own emoji, which tells them apart even if the colours do not. Type a colour as #RRGGBB.</value></data>
-  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Going well (somebody joins, it wakes)</value></data>
-  <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutral (somebody leaves or dies)</value></data>
-  <data name="Notif_LevelWarning" xml:space="preserve"><value>Stopped on purpose (idle shutdown)</value></data>
-  <data name="Notif_LevelError" xml:space="preserve"><value>It crashed (or gave up)</value></data>
+  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Going well</value></data>
+  <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutral</value></data>
+  <data name="Notif_LevelWarning" xml:space="preserve"><value>Stopped on purpose</value></data>
+  <data name="Notif_LevelError" xml:space="preserve"><value>It crashed</value></data>
   <data name="Notif_ResetColors" xml:space="preserve"><value>Default colours</value></data>
   <data name="Notif_ResetColorsTip" xml:space="preserve"><value>Puts the four colours the app ships with back.</value></data>
+  <data name="Notif_LevelSuccessTip" xml:space="preserve"><value>A player joins, or the server starts itself because somebody tried to join.</value></data>
+  <data name="Notif_LevelInfoTip" xml:space="preserve"><value>Somebody leaves or dies, and the app's own messages in the console.</value></data>
+  <data name="Notif_LevelWarningTip" xml:space="preserve"><value>The server stops itself for being empty, and the server's warnings in the console.</value></data>
+  <data name="Notif_LevelErrorTip" xml:space="preserve"><value>The server crashes or auto-restart gives up, and errors in the console.</value></data>
+  <data name="Console_ColorChat" xml:space="preserve"><value>Player chat</value></data>
+  <data name="Console_ColorChatTip" xml:space="preserve"><value>The messages players write to each other.</value></data>
+  <data name="Console_ColorPlayers" xml:space="preserve"><value>Joins and leaves</value></data>
+  <data name="Console_ColorPlayersTip" xml:space="preserve"><value>Who joins, who leaves and who dies.</value></data>
+  <data name="Console_Colors" xml:space="preserve"><value>Console colours</value></data>
+  <data name="Console_ColorsIntro" xml:space="preserve"><value>Errors, warnings and the app's own messages use the colours above, so red means the same thing everywhere. These two are the console's own.</value></data>
+  <data name="Console_KindError" xml:space="preserve"><value>Errors</value></data>
+  <data name="Console_KindWarn" xml:space="preserve"><value>Warnings</value></data>
+  <data name="Console_KindChat" xml:space="preserve"><value>Chat</value></data>
+  <data name="Console_KindPlayers" xml:space="preserve"><value>Players</value></data>
+  <data name="Console_KindCommand" xml:space="preserve"><value>Commands</value></data>
+  <data name="Console_KindLauncher" xml:space="preserve"><value>App</value></data>
+  <data name="Console_KindInfo" xml:space="preserve"><value>Rest</value></data>
+  <data name="Console_KindTipFmt" xml:space="preserve"><value>{0}: {1} lines. Click to show or hide them.</value></data>
+  <data name="Console_ShowAll" xml:space="preserve"><value>Show everything</value></data>
   <data name="Notif_Test" xml:space="preserve"><value>Test notification</value></data>
   <data name="Notif_TestTip" xml:space="preserve"><value>Show a sample notification to see how they look on your screen.</value></data>
   <data name="Notif_TestBody" xml:space="preserve"><value>Sample notification: this is how your servers' alerts will look.</value></data>

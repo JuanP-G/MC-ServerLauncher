@@ -225,12 +225,31 @@
   <data name="Settings_LangRestart" xml:space="preserve"><value>Le changement de langue prend effet au redémarrage de l'app.</value></data>
   <data name="Notif_Colors" xml:space="preserve"><value>Couleurs des notifications</value></data>
   <data name="Notif_ColorsIntro" xml:space="preserve"><value>Une couleur par niveau, pas par type. Chaque notification porte aussi son emoji, qui les distingue même si les couleurs n'y suffisent pas. Saisis une couleur au format #RRGGBB.</value></data>
-  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Tout va bien (quelqu'un arrive, il se réveille)</value></data>
-  <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutre (quelqu'un part ou meurt)</value></data>
-  <data name="Notif_LevelWarning" xml:space="preserve"><value>Arrêté volontairement (inactivité)</value></data>
-  <data name="Notif_LevelError" xml:space="preserve"><value>Il a planté (ou a abandonné)</value></data>
+  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Tout va bien</value></data>
+  <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutre</value></data>
+  <data name="Notif_LevelWarning" xml:space="preserve"><value>Arrêté volontairement</value></data>
+  <data name="Notif_LevelError" xml:space="preserve"><value>Il a planté</value></data>
   <data name="Notif_ResetColors" xml:space="preserve"><value>Couleurs par défaut</value></data>
   <data name="Notif_ResetColorsTip" xml:space="preserve"><value>Revient aux quatre couleurs fournies avec l'application.</value></data>
+  <data name="Notif_LevelSuccessTip" xml:space="preserve"><value>Un joueur arrive, ou le serveur démarre parce que quelqu'un a tenté de se connecter.</value></data>
+  <data name="Notif_LevelInfoTip" xml:space="preserve"><value>Quelqu'un part ou meurt, et les messages de l'application dans la console.</value></data>
+  <data name="Notif_LevelWarningTip" xml:space="preserve"><value>Le serveur s'arrête faute de joueurs, et les avertissements du serveur dans la console.</value></data>
+  <data name="Notif_LevelErrorTip" xml:space="preserve"><value>Le serveur plante ou le redémarrage automatique abandonne, et les erreurs dans la console.</value></data>
+  <data name="Console_ColorChat" xml:space="preserve"><value>Chat des joueurs</value></data>
+  <data name="Console_ColorChatTip" xml:space="preserve"><value>Les messages que les joueurs s'écrivent.</value></data>
+  <data name="Console_ColorPlayers" xml:space="preserve"><value>Arrivées et départs</value></data>
+  <data name="Console_ColorPlayersTip" xml:space="preserve"><value>Qui arrive, qui part et qui meurt.</value></data>
+  <data name="Console_Colors" xml:space="preserve"><value>Couleurs de la console</value></data>
+  <data name="Console_ColorsIntro" xml:space="preserve"><value>Les erreurs, les avertissements et les messages de l'application utilisent les couleurs ci-dessus, pour que le rouge veuille dire la même chose partout. Ces deux-là sont propres à la console.</value></data>
+  <data name="Console_KindError" xml:space="preserve"><value>Erreurs</value></data>
+  <data name="Console_KindWarn" xml:space="preserve"><value>Avertissements</value></data>
+  <data name="Console_KindChat" xml:space="preserve"><value>Chat</value></data>
+  <data name="Console_KindPlayers" xml:space="preserve"><value>Joueurs</value></data>
+  <data name="Console_KindCommand" xml:space="preserve"><value>Commandes</value></data>
+  <data name="Console_KindLauncher" xml:space="preserve"><value>Application</value></data>
+  <data name="Console_KindInfo" xml:space="preserve"><value>Reste</value></data>
+  <data name="Console_KindTipFmt" xml:space="preserve"><value>{0} : {1} lignes. Clique pour les afficher ou les masquer.</value></data>
+  <data name="Console_ShowAll" xml:space="preserve"><value>Tout afficher</value></data>
   <data name="Notif_Test" xml:space="preserve"><value>Tester la notification</value></data>
   <data name="Notif_TestTip" xml:space="preserve"><value>Affiche une notification d'exemple pour voir leur apparence sur ton écran.</value></data>
   <data name="Notif_TestBody" xml:space="preserve"><value>Notification d'exemple : voici à quoi ressembleront les alertes de tes serveurs.</value></data>

@@ -225,12 +225,31 @@
   <data name="Settings_LangRestart" xml:space="preserve"><value>A mudança de idioma aplica-se ao reiniciar a app.</value></data>
   <data name="Notif_Colors" xml:space="preserve"><value>Cores dos avisos</value></data>
   <data name="Notif_ColorsIntro" xml:space="preserve"><value>Uma cor por nível, não por tipo de aviso. Cada aviso traz ainda o seu emoji, que os distingue mesmo que as cores não o façam. Escreve uma cor no formato #RRGGBB.</value></data>
-  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Vai bem (entra alguém, acorda)</value></data>
-  <data name="Notif_LevelInfo" xml:space="preserve"><value>Sem mais (alguém sai ou morre)</value></data>
-  <data name="Notif_LevelWarning" xml:space="preserve"><value>Parado de propósito (por inatividade)</value></data>
-  <data name="Notif_LevelError" xml:space="preserve"><value>Caiu (ou desistiu)</value></data>
+  <data name="Notif_LevelSuccess" xml:space="preserve"><value>Vai bem</value></data>
+  <data name="Notif_LevelInfo" xml:space="preserve"><value>Sem mais</value></data>
+  <data name="Notif_LevelWarning" xml:space="preserve"><value>Parado de propósito</value></data>
+  <data name="Notif_LevelError" xml:space="preserve"><value>Caiu</value></data>
   <data name="Notif_ResetColors" xml:space="preserve"><value>Cores por omissão</value></data>
   <data name="Notif_ResetColorsTip" xml:space="preserve"><value>Volta às quatro cores que a aplicação traz.</value></data>
+  <data name="Notif_LevelSuccessTip" xml:space="preserve"><value>Entra um jogador, ou o servidor liga-se porque alguém tentou entrar.</value></data>
+  <data name="Notif_LevelInfoTip" xml:space="preserve"><value>Alguém sai ou morre, e as mensagens da própria aplicação na consola.</value></data>
+  <data name="Notif_LevelWarningTip" xml:space="preserve"><value>O servidor desliga-se sozinho por estar vazio, e os avisos do servidor na consola.</value></data>
+  <data name="Notif_LevelErrorTip" xml:space="preserve"><value>O servidor cai ou o reinício automático desiste, e os erros na consola.</value></data>
+  <data name="Console_ColorChat" xml:space="preserve"><value>Chat dos jogadores</value></data>
+  <data name="Console_ColorChatTip" xml:space="preserve"><value>As mensagens que os jogadores escrevem entre si.</value></data>
+  <data name="Console_ColorPlayers" xml:space="preserve"><value>Entradas e saídas</value></data>
+  <data name="Console_ColorPlayersTip" xml:space="preserve"><value>Quem entra, quem sai e quem morre.</value></data>
+  <data name="Console_Colors" xml:space="preserve"><value>Cores da consola</value></data>
+  <data name="Console_ColorsIntro" xml:space="preserve"><value>Os erros, os avisos e as mensagens da aplicação usam as cores acima, para que o vermelho signifique o mesmo em toda a app. Estas duas são só da consola.</value></data>
+  <data name="Console_KindError" xml:space="preserve"><value>Erros</value></data>
+  <data name="Console_KindWarn" xml:space="preserve"><value>Avisos</value></data>
+  <data name="Console_KindChat" xml:space="preserve"><value>Chat</value></data>
+  <data name="Console_KindPlayers" xml:space="preserve"><value>Jogadores</value></data>
+  <data name="Console_KindCommand" xml:space="preserve"><value>Comandos</value></data>
+  <data name="Console_KindLauncher" xml:space="preserve"><value>Aplicação</value></data>
+  <data name="Console_KindInfo" xml:space="preserve"><value>Resto</value></data>
+  <data name="Console_KindTipFmt" xml:space="preserve"><value>{0}: {1} linhas. Clica para mostrar ou esconder.</value></data>
+  <data name="Console_ShowAll" xml:space="preserve"><value>Mostrar tudo</value></data>
   <data name="Notif_Test" xml:space="preserve"><value>Testar notificação</value></data>
   <data name="Notif_TestTip" xml:space="preserve"><value>Mostra uma notificação de exemplo para veres como aparecem no teu ecrã.</value></data>
   <data name="Notif_TestBody" xml:space="preserve"><value>Notificação de exemplo: é assim que vão aparecer os avisos dos teus servidores.</value></data>
