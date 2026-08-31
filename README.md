@@ -119,6 +119,13 @@ all with buttons.
 - **Notifications** 🔔 — optional pop-ups when a player joins or leaves, someone dies (PvP), the server
   crashes, auto-restart gives up, an **empty server stops itself**, or one **starts itself because somebody
   tried to join**. Configurable per type, globally and **per server**, with a test button.
+- **Every notification tells itself apart at a glance** 🎨 — a colour for what happened (green when somebody
+  joins, amber when the server stops itself, red when it crashes) and **its own emoji per kind**, so they can be
+  told apart without relying on colour. The four colours are editable in Settings, with a preview.
+- **Nothing missing before it starts** ✅ — if a mod or plugin is waiting on a dependency, you are told **when
+  you press Start**, with what is missing and which mod needs it, and the option to install it and start. It is
+  read from the jars themselves, so it works **offline** and does not depend on the store having its dependency
+  list right. Covers Fabric and Forge/NeoForge mods, and Paper and Purpur plugins.
 - **Settings in one place** ⚙️ — language, notifications, tray behaviour, your Playit connection and an
   **Add to desktop** button, all in a single dialog.
 - **Multi-language** — English, Spanish, Portuguese, French and German.
