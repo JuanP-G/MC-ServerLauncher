@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using McServerLauncher.Localization;
 using McServerLauncher.Services;
+using McServerLauncher.Models;
 using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views;
@@ -125,7 +126,12 @@ public partial class MainWindow : Window
             ? ConsoleList.SelectedItems
             : ConsoleList.Items;
 
-        var lines = source.Cast<object?>().Select(o => o?.ToString() ?? string.Empty);
+        // Named explicitly rather than relying on ToString(). A console line is a record now, and a
+        // record's generated ToString prints "ConsoleLine { Text = …, Kind = … }" — which would have
+        // compiled cleanly and quietly filled the clipboard with that instead of the log. The record
+        // overrides ToString for exactly this reason; saying so here means the two can never disagree.
+        var lines = source.Cast<object?>()
+            .Select(o => o is ConsoleLine line ? line.Text : o?.ToString() ?? string.Empty);
         var text = string.Join(Environment.NewLine, lines);
         if (!string.IsNullOrEmpty(text) && Clipboard is not null)
         {

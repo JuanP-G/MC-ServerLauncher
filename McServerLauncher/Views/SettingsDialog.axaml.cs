@@ -33,6 +33,12 @@ public partial class SettingsDialog : Window
     /// <summary>The X button sends the window to the tray instead of quitting (read back on Save).</summary>
     public bool CloseToTray { get; set; }
 
+    /// <summary>Colour for player chat in the console (read back on Save).</summary>
+    public string ConsoleChatColor { get; set; } = ConsoleColors.DefaultChat;
+
+    /// <summary>Colour for joins, leaves and deaths in the console (read back on Save).</summary>
+    public string ConsolePlayersColor { get; set; } = ConsoleColors.DefaultPlayers;
+
     private readonly AppSettings? _appSettings;
     private readonly AppSettingsService? _settingsService;
 
@@ -51,6 +57,8 @@ public partial class SettingsDialog : Window
         _settingsService = settingsService;
         MinimizeToTray = appSettings?.MinimizeToTray ?? true;
         CloseToTray = appSettings?.CloseToTray ?? false;
+        ConsoleChatColor = appSettings?.ConsoleChatColor ?? ConsoleColors.DefaultChat;
+        ConsolePlayersColor = appSettings?.ConsolePlayersColor ?? ConsoleColors.DefaultPlayers;
         DataContext = this;
         UpdatePlayitStatus();
 
@@ -174,6 +182,8 @@ public partial class SettingsDialog : Window
         ColorInfoBox.Text = NotificationPalette.DefaultInfo;
         ColorWarningBox.Text = NotificationPalette.DefaultWarning;
         ColorErrorBox.Text = NotificationPalette.DefaultError;
+        ColorChatBox.Text = ConsoleColors.DefaultChat;
+        ColorPlayersBox.Text = ConsoleColors.DefaultPlayers;
     }
 
     /// <summary>
@@ -190,6 +200,11 @@ public partial class SettingsDialog : Window
         foreach (var level in Enum.GetValues<NotificationLevel>())
             Notifications.SetColorFor(level,
                 NotificationPalette.Sanitize(Notifications.ColorFor(level), level));
+
+        // Same for the console's own two. Sanitize needs a level to fall back to, and these are not
+        // levels — so an unusable value goes back to the console default rather than to a level's.
+        if (!NotificationPalette.IsValid(ConsoleChatColor)) ConsoleChatColor = ConsoleColors.DefaultChat;
+        if (!NotificationPalette.IsValid(ConsolePlayersColor)) ConsolePlayersColor = ConsoleColors.DefaultPlayers;
 
         Close(true);
     }

@@ -117,6 +117,12 @@ are no hard-coded machine paths.
   gets, and what the default colours are. The same split as `ServerTypeCatalog` and `ServerTypeBrushes`: the
   UI-free data here, the Avalonia brushes in `NotificationBrushes`. The colours the user can change live in
   `NotificationSettings`, which is serialized to `settings.json`.
+- **`ConsoleLineClassifier` / `ConsoleColors`** — what each console line is about and what colour it is drawn
+  in. The source outranks the text: the app's own messages are tagged where they are raised, because their text
+  is localized — the `[Launcher]`, `[Error]` and `[Players]` prefixes live *inside* the resx values — so a
+  classifier keyed on them would work in Spanish and quietly stop working in German. `stderr` arrives tagged
+  from `ServerProcessManager`, which used to merge it with standard output in one handler. Only `stdout` is
+  read: vanilla's bracket (level in the **second** one, not the first) and Paper's.
 - **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version
   when the user adds one that already exists.
 - **`ServerIconService`** — generates a server's `server-icon.png`: takes any user image, crops it to

@@ -65,27 +65,85 @@ public partial class ServerViewModel : ObservableObject
 
     public ServerConfig Config { get; }
 
-    /// <summary>Lines of the embedded console (server stdout/stderr + Playit).</summary>
-    public BulkObservableCollection<string> ConsoleLines { get; } = new();
+    /// <summary>Lines of the embedded console (server stdout/stderr + the launcher's own).</summary>
+    public BulkObservableCollection<ConsoleLine> ConsoleLines { get; } = new();
 
     /// <summary>
-    /// The lines currently shown in the console UI: all of <see cref="ConsoleLines"/> when the
-    /// filter box is empty, or the matching subset (kept in order, updated incrementally as new
-    /// lines arrive) while a filter is typed.
+    /// The lines currently shown in the console UI: all of <see cref="ConsoleLines"/> when nothing
+    /// is filtered, or the matching subset (kept in order, updated incrementally as new lines
+    /// arrive) while a search is typed or a category is switched off.
     /// </summary>
-    public BulkObservableCollection<string> VisibleConsoleLines { get; } = new();
+    public BulkObservableCollection<ConsoleLine> VisibleConsoleLines { get; } = new();
 
     [ObservableProperty]
     private string _consoleFilter = string.Empty;
 
     partial void OnConsoleFilterChanged(string value) => RebuildVisibleConsole();
 
-    private bool MatchesConsoleFilter(string line) =>
-        string.IsNullOrWhiteSpace(ConsoleFilter)
-        || line.Contains(ConsoleFilter.Trim(), StringComparison.OrdinalIgnoreCase);
+    /// <summary>
+    /// One switch per kind of line, in the order they appear along the top of the console.
+    /// </summary>
+    /// <remarks>
+    /// Ordered by how much they matter rather than by the enum, so the two that make somebody open
+    /// the console at all come first and are never the ones that wrap out of sight.
+    /// </remarks>
+    public IReadOnlyList<ConsoleKindFilter> ConsoleKinds { get; } = new[]
+    {
+        ConsoleLineKind.Error, ConsoleLineKind.Warn, ConsoleLineKind.Chat, ConsoleLineKind.Players,
+        ConsoleLineKind.Command, ConsoleLineKind.Launcher, ConsoleLineKind.Info
+    }.Select(k => new ConsoleKindFilter(k)).ToList();
 
-    private void RebuildVisibleConsole() =>
+    private readonly Dictionary<ConsoleLineKind, ConsoleKindFilter> _kindFilters;
+
+    /// <summary>True while anything at all is being hidden, so the UI can offer to undo it.</summary>
+    public bool IsConsoleFiltered =>
+        !string.IsNullOrWhiteSpace(ConsoleFilter) || ConsoleKinds.Any(k => !k.IsOn);
+
+    private bool MatchesConsoleFilter(ConsoleLine line) =>
+        ConsoleKindFilter.Matches(line, ConsoleFilter, _kindFilters);
+
+    private void RebuildVisibleConsole()
+    {
         VisibleConsoleLines.ReplaceAll(ConsoleLines.Where(MatchesConsoleFilter));
+        OnPropertyChanged(nameof(IsConsoleFiltered));
+    }
+
+    private void OnConsoleKindChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // Only the switch itself: Count and HasUnseen change constantly while a server runs, and
+        // rebuilding the visible list on every arriving line would undo the whole point of adding
+        // lines incrementally.
+        if (e.PropertyName == nameof(ConsoleKindFilter.IsOn))
+            RebuildVisibleConsole();
+    }
+
+    /// <summary>Switches every category back on and clears the search.</summary>
+    [RelayCommand]
+    private void ShowAllConsoleKinds()
+    {
+        foreach (var filter in ConsoleKinds) filter.IsOn = true;
+        ConsoleFilter = string.Empty;
+        RebuildVisibleConsole();
+    }
+
+    /// <summary>
+    /// Repaints the console and its switches after the colours change in the settings.
+    /// </summary>
+    /// <remarks>
+    /// The lines themselves get their colour through a converter, so nothing here has to hold a
+    /// brush per line. Rebuilding the visible list is what makes them ask again: it is a single
+    /// Reset, the items are re-created, and the converter runs with the new settings.
+    /// </remarks>
+    public void RefreshConsoleColours()
+    {
+        var brushes = ConsolePalette.All(
+            NotificationPreferences.Global, ConsolePreferences.ChatColor, ConsolePreferences.PlayersColor);
+
+        foreach (var filter in ConsoleKinds)
+            filter.Brush = brushes[filter.Kind];
+
+        RebuildVisibleConsole();
+    }
 
     [ObservableProperty]
     private string _name;
@@ -277,7 +335,12 @@ public partial class ServerViewModel : ObservableObject
         _name = config.Name;
         _tunnelAddress = config.TunnelAddress;
 
-        _process.OutputReceived += OnConsoleLine;
+        _kindFilters = ConsoleKinds.ToDictionary(k => k.Kind);
+        foreach (var filter in ConsoleKinds)
+            filter.PropertyChanged += OnConsoleKindChanged;
+        RefreshConsoleColours();
+
+        _process.OutputReceived += OnServerLine;
         _process.StateChanged += OnServerStateChanged;
         _process.UnexpectedExit += OnUnexpectedExit;
         // Keep a reference to the handler: the manager is shared, so it must be unsubscribed
@@ -730,15 +793,41 @@ public partial class ServerViewModel : ObservableObject
         SendCommandCommand.NotifyCanExecuteChanged();
     }
 
-    private void OnConsoleLine(string line)
+    /// <summary>
+    /// A line from the launcher itself.
+    /// </summary>
+    /// <remarks>
+    /// Keeps its signature because some fifty places call it, eight of them by handing it over as an
+    /// <c>IProgress&lt;string&gt;</c> to a service that knows nothing about consoles. Everything that
+    /// reaches it this way is the app talking, which is why the kind can simply be assumed here
+    /// instead of being guessed from text that is translated into five languages.
+    /// </remarks>
+    private void OnConsoleLine(string line) => OnConsoleLine(line, ConsoleLineKind.Launcher);
+
+    /// <summary>A line from the server process, classified by where it came from.</summary>
+    private void OnServerLine(string line, ConsoleSource source) =>
+        OnConsoleLine(line, ConsoleLineClassifier.Classify(line, source));
+
+    private void OnConsoleLine(string text, ConsoleLineKind kind)
     {
-        // Off the UI thread on purpose (OnConsoleLine itself is often called from a background
-        // thread): file I/O shouldn't block RunOnUi's dispatch of the in-memory console update.
-        ConsoleLogService.Shared.Log(Name, line);
+        // Off the UI thread on purpose (this is often called from a background thread): file I/O
+        // shouldn't block RunOnUi's dispatch of the in-memory console update. The file keeps the
+        // plain text — the kind is a way of looking at the console, not part of the record.
+        ConsoleLogService.Shared.Log(Name, text);
+
+        var line = new ConsoleLine(text, kind);
 
         RunOnUi(() =>
         {
             ConsoleLines.Add(line);
+            if (_kindFilters.TryGetValue(kind, out var filter))
+            {
+                filter.Count++;
+                // Arriving while its own switch is off would otherwise be completely invisible:
+                // filtered out of the list, with nothing on screen changing.
+                if (!filter.IsOn) filter.HasUnseen = true;
+            }
+
             if (MatchesConsoleFilter(line))
                 VisibleConsoleLines.Add(line);
 
@@ -749,12 +838,13 @@ public partial class ServerViewModel : ObservableObject
             if (ConsoleLines.Count > MaxConsoleLines + ConsoleTrimBlock)
             {
                 ConsoleLines.RemoveFromStart(ConsoleLines.Count - MaxConsoleLines);
+                ConsoleKindFilter.Recount(ConsoleLines, ConsoleKinds); // lines fell off the top
                 RebuildVisibleConsole(); // the visible list is a subset; rebuild it from what survived
             }
 
-            TrackPlayers(line);
-            WarnAboutModdedKick(line);
-            WarnAboutRejectedPath(line);
+            TrackPlayers(text);
+            WarnAboutModdedKick(text);
+            WarnAboutRejectedPath(text);
         });
     }
 
@@ -809,7 +899,7 @@ public partial class ServerViewModel : ObservableObject
     // Live connected players, read from the join/leave messages in the console.
     private void TrackPlayers(string line)
     {
-        var joined = NameBefore(line, " joined the game");
+        var joined = ConsoleLineClassifier.NameBefore(line, " joined the game");
         if (joined is not null)
         {
             if (!ConnectedPlayers.Contains(joined)) ConnectedPlayers.Add(joined);
@@ -818,7 +908,7 @@ public partial class ServerViewModel : ObservableObject
             return;
         }
 
-        var left = NameBefore(line, " left the game");
+        var left = ConsoleLineClassifier.NameBefore(line, " left the game");
         if (left is not null)
         {
             ConnectedPlayers.Remove(left);
@@ -1315,7 +1405,7 @@ public partial class ServerViewModel : ObservableObject
     {
         var cmd = CommandText.Trim();
         if (cmd.Length == 0) return;
-        OnConsoleLine("> " + cmd);
+        OnConsoleLine("> " + cmd, ConsoleLineKind.Command);
         _process.SendCommand(cmd);
         CommandText = string.Empty;
     }
@@ -1391,6 +1481,7 @@ public partial class ServerViewModel : ObservableObject
     {
         ConsoleLines.Clear();
         VisibleConsoleLines.Clear();
+        foreach (var filter in ConsoleKinds) { filter.Count = 0; filter.HasUnseen = false; }
     }
 
     /// <summary>
@@ -1469,7 +1560,7 @@ public partial class ServerViewModel : ObservableObject
         {
             if (_process.IsRunning)
             {
-                OnConsoleLine($"> whitelist add {name}");
+                OnConsoleLine($"> whitelist add {name}", ConsoleLineKind.Command);
                 _process.SendCommand($"whitelist add {name}");
                 await Task.Delay(500);
             }
@@ -1498,7 +1589,7 @@ public partial class ServerViewModel : ObservableObject
         {
             if (_process.IsRunning)
             {
-                OnConsoleLine($"> whitelist remove {name}");
+                OnConsoleLine($"> whitelist remove {name}", ConsoleLineKind.Command);
                 _process.SendCommand($"whitelist remove {name}");
                 await Task.Delay(500);
             }
@@ -1562,7 +1653,7 @@ public partial class ServerViewModel : ObservableObject
 
     private async Task PlayerCommandAsync(string command)
     {
-        OnConsoleLine("> " + command);
+        OnConsoleLine("> " + command, ConsoleLineKind.Command);
         _process.SendCommand(command);
         await Task.Delay(450);
         RefreshPlayers();
