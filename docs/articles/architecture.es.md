@@ -117,6 +117,12 @@ mundo. No hay rutas fijas del equipo en el código.
   cuáles son los colores por defecto. Misma separación que `ServerTypeCatalog` y `ServerTypeBrushes`: los datos
   sin nada de UI aquí, las brochas de Avalonia en `NotificationBrushes`. Los colores que el usuario cambia
   viven en `NotificationSettings`, que se serializa a `settings.json`.
+- **`ConsoleLineClassifier` / `ConsoleColors`** — de qué va cada línea de consola y de qué color se pinta. El
+  origen manda sobre el texto: los mensajes de la app se etiquetan donde se emiten, porque su texto está
+  traducido —los prefijos `[Launcher]`, `[Error]` y `[Players]` viven *dentro* de los valores del resx— y un
+  clasificador basado en ellos funcionaría en español y dejaría de funcionar en alemán. `stderr` viene marcado
+  desde `ServerProcessManager`, que antes lo mezclaba con la salida normal en el mismo manejador. Solo `stdout`
+  se lee: el corchete de vanilla (nivel en el **segundo**, no en el primero) y el de Paper.
 - **`ServerDetectionService`** — inspecciona una carpeta para averiguar el tipo/versión de un servidor
   existente cuando el usuario añade uno que ya está.
 - **`ServerIconService`** — genera el `server-icon.png` de un servidor: toma cualquier imagen del

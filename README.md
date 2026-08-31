@@ -126,6 +126,10 @@ all with buttons.
   you press Start**, with what is missing and which mod needs it, and the option to install it and start. It is
   read from the jars themselves, so it works **offline** and does not depend on the store having its dependency
   list right. Covers Fabric and Forge/NeoForge mods, and Paper and Purpur plugins.
+- **A console you can read** 🖥️ — every line coloured for what it is (errors, warnings, chat, joins and
+  leaves, commands, and what the app says told apart from what the server says), **a filter per category with
+  its own count** — “Errors 3” is visible without pressing anything — and what you search for **marked inside
+  the line**.
 - **Settings in one place** ⚙️ — language, notifications, tray behaviour, your Playit connection and an
   **Add to desktop** button, all in a single dialog.
 - **Multi-language** — English, Spanish, Portuguese, French and German.

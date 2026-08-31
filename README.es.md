@@ -133,6 +133,9 @@ todo con botones.
   avisa **al darle a Iniciar**, diciendo qué falta y quién lo necesita, con la opción de instalarlo y arrancar.
   Se lee de los propios jars, así que funciona **sin conexión** y no depende de que la tienda tenga las
   dependencias bien puestas. Vale para mods de Fabric y de Forge/NeoForge y para plugins de Paper y Purpur.
+- **Consola legible** 🖥️ — cada línea con su color según lo que es (errores, avisos, chat, entradas y
+  salidas, comandos, y lo que dice la aplicación aparte de lo que dice el servidor), **un filtro por categoría
+  con su contador** — «Errores 3» se ve sin pulsar nada — y lo que buscas **marcado dentro de la línea**.
 - **Ajustes en un solo sitio** ⚙️ — idioma, notificaciones, comportamiento de la bandeja, tu conexión de
   Playit y un botón de **añadir al escritorio**, todo en un único diálogo.
 - **Multi-idioma** — español, inglés, portugués, francés y alemán.
