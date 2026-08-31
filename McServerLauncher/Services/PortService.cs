@@ -81,7 +81,22 @@ public class PortService
     /// First free UDP port from <paramref name="start"/>, skipping <paramref name="alsoAvoid"/>.
     /// Null when everything up to 65535 is taken.
     /// </summary>
-    public int? FindFreeUdpPort(int start, ISet<int> alsoAvoid)
+    public int? FindFreeUdpPort(int start, ISet<int> alsoAvoid) =>
+        FindFreeUdpPort(start, alsoAvoid, out _);
+
+    /// <summary>
+    /// First free UDP port from <paramref name="start"/>, skipping <paramref name="alsoAvoid"/>.
+    /// Null when everything up to 65535 is taken. <paramref name="systemPortsRead"/> says whether
+    /// the system's UDP table could actually be read.
+    /// </summary>
+    /// <remarks>
+    /// The flag exists because the two answers used to be indistinguishable. When the table cannot
+    /// be queried every port looks free, so the search returns <paramref name="start"/> — the same
+    /// value it returns when it has genuinely checked and the port is available. A caller handing
+    /// that port to Geyser could not tell "19132 is free" from "I have no idea what is bound", and
+    /// the difference only surfaced later as a Geyser that silently failed to bind.
+    /// </remarks>
+    public int? FindFreeUdpPort(int start, ISet<int> alsoAvoid, out bool systemPortsRead)
     {
         HashSet<int>? inUse = null;
         try
@@ -92,8 +107,11 @@ public class PortService
         }
         catch
         {
-            // As above: fall back to only avoiding the ports we already know about.
+            // As above: fall back to only avoiding the ports we already know about — but say so
+            // through systemPortsRead rather than passing the guess off as a checked answer.
         }
+
+        systemPortsRead = inUse is not null;
 
         for (var port = start; port <= 65535; port++)
         {

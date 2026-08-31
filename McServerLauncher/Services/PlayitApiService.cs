@@ -229,6 +229,38 @@ public class PlayitApiService
     }
 
     /// <summary>
+    /// Whether deleting a server should also delete its Bedrock tunnel.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately independent of the Java port. Both deletions used to sit behind one condition
+    /// that included reading the Java port out of <c>server.properties</c>, so a server whose file
+    /// was unreadable or already gone lost its Bedrock tunnel deletion too — for a tunnel this app
+    /// can identify perfectly well from <c>Config.BedrockPort</c> in servers.json. What was left
+    /// behind was an orphan UDP tunnel on a port the next crossplay server would be offered as free.
+    /// </remarks>
+    internal static bool ShouldDeleteBedrockTunnel(bool userAskedToDelete, int? bedrockPort) =>
+        userAskedToDelete && bedrockPort is > 0;
+
+    /// <summary>
+    /// Local ports of every UDP tunnel on the account, or null when the account could not be asked.
+    /// </summary>
+    /// <remarks>
+    /// For picking a Bedrock port. The system's UDP table only knows what is bound right now, and
+    /// the app only knows its own servers, so neither sees a tunnel left behind by a deleted
+    /// server, one made by hand on playit's site, or one belonging to another machine on the same
+    /// account. Creating a tunnel on a port one of those already holds does not fail — it silently
+    /// adopts the other tunnel, and two servers end up advertising one address.
+    ///
+    /// Null rather than an empty set on failure, so "the account has no UDP tunnels" cannot be
+    /// confused with "I could not reach playit".
+    /// </remarks>
+    public async Task<IReadOnlyCollection<int>?> GetUdpTunnelPortsAsync(CancellationToken ct = default)
+    {
+        var tunnels = await GetTunnelsSharedAsync(ct);
+        return tunnels?.Where(t => t.IsUdp).Select(t => t.LocalPort).ToHashSet();
+    }
+
+    /// <summary>
     /// Which tunnel a local port and a protocol identify. The one definition of "the same tunnel".
     /// </summary>
     /// <remarks>
