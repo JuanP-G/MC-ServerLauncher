@@ -70,7 +70,7 @@
             <StackPanel>
 
                 <!-- Something went wrong fetching the project -->
-                <Border Classes="section" IsVisible="{Binding HasError}" Background="#22E05561">
+                <Border Classes="section" IsVisible="{Binding HasError}" Background="{StaticResource SemanticDangerFill}">
                     <TextBlock Text="{Binding ErrorText}" TextWrapping="Wrap" />
                 </Border>
 

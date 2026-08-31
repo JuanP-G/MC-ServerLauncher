@@ -228,6 +228,49 @@ public class NotificationLookTests
     }
 
     [Fact]
+    public void TheSemanticColoursAreNotWrittenOutByHandInTheViews()
+    {
+        // They were, 28 times across nine files — the amber alone twelve — with no resource defined
+        // anywhere. Changing one meant finding all twelve and nothing catching the one missed, and
+        // adding a new shade was easier than locating the right existing one. This is what keeps
+        // them from creeping back one attribute at a time.
+        var views = Directory.EnumerateFiles(
+            Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views"), "*.axaml");
+
+        var offenders = new List<string>();
+        foreach (var view in views)
+        {
+            var xaml = File.ReadAllText(view);
+            foreach (Match match in Regex.Matches(xaml, "\"#(?:[0-9A-Fa-f]{2})?(3FB950|E3A82B|E05561|2F6FB0)\""))
+                offenders.Add($"{Path.GetFileName(view)}: {match.Value}");
+        }
+
+        Assert.True(offenders.Count == 0,
+            "usa los recursos de App.axaml en vez del literal: " + string.Join(", ", offenders));
+    }
+
+    [Fact]
+    public void EveryColourResourceTheViewsAskForIsDefined()
+    {
+        var app = File.ReadAllText(Path.Combine(
+            LocalizationTests.RepoRoot(), "McServerLauncher", "App.axaml"));
+
+        var views = Directory.EnumerateFiles(
+            Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views"), "*.axaml");
+
+        foreach (var view in views)
+        foreach (Match match in Regex.Matches(File.ReadAllText(view), @"\{StaticResource (Semantic[A-Za-z]+)\}"))
+        {
+            var key = match.Groups[1].Value;
+
+            // A StaticResource that does not resolve throws when the view loads, which for a dialog
+            // means a button that does nothing at all.
+            Assert.True(app.Contains($"x:Key=\"{key}\"", StringComparison.Ordinal),
+                $"{Path.GetFileName(view)} pide «{key}», que App.axaml no define");
+        }
+    }
+
+    [Fact]
     public void TheFourColoursAreAllEditable()
     {
         var xaml = File.ReadAllText(Path.Combine(

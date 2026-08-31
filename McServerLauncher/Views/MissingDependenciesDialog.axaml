@@ -16,7 +16,7 @@
                  installed, "falta cristallib" alone does not tell you which of them stops working
                  if you decide to start anyway. -->
             <Border Padding="12" CornerRadius="8" MaxHeight="220"
-                    Background="#22E3A82B" BorderBrush="#55E3A82B" BorderThickness="1">
+                    Background="{StaticResource SemanticWarnFill}" BorderBrush="{StaticResource SemanticWarnEdge}" BorderThickness="1">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <ItemsControl x:Name="MissingList">
                         <ItemsControl.ItemTemplate>

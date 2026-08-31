@@ -101,7 +101,7 @@
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <ic:SymbolIcon Symbol="Filter" />
                                 <TextBlock Text="{loc:Loc Filters}" />
-                                <Border CornerRadius="8" Padding="6,0" Background="#2F6FB0"
+                                <Border CornerRadius="8" Padding="6,0" Background="{StaticResource SemanticInfo}"
                                         VerticalAlignment="Center" IsVisible="{Binding HasSelectedTags}">
                                     <TextBlock Text="{Binding SelectedTags.Count}" FontSize="11"
                                                Foreground="White" FontWeight="SemiBold" />
@@ -278,11 +278,11 @@
                                                                    VerticalAlignment="Center" />
                                                         <!-- Client-only content installed on a server does nothing:
                                                              say so before the download, not after. -->
-                                                        <Border CornerRadius="4" Padding="5,1" Background="#33E3A82B"
+                                                        <Border CornerRadius="4" Padding="5,1" Background="{StaticResource SemanticWarnPanel}"
                                                                 VerticalAlignment="Center"
                                                                 IsVisible="{Binding NeedsClient}">
                                                             <TextBlock Text="{loc:Loc Store_NeedsClientBadge}"
-                                                                       FontSize="10" Foreground="#E3A82B" />
+                                                                       FontSize="10" Foreground="{StaticResource SemanticWarn}" />
                                                         </Border>
                                                     </StackPanel>
 
@@ -419,10 +419,10 @@
                          same scan as the updates, and shown here because the alternative place the
                          user learns about it is the loader refusing to start. -->
                     <Border IsVisible="{Binding HasMissingDependencies}" Margin="0,0,0,8" Padding="10,8"
-                            Background="#22E3A82B" BorderBrush="#55E3A82B" BorderThickness="1" CornerRadius="6">
+                            Background="{StaticResource SemanticWarnFill}" BorderBrush="{StaticResource SemanticWarnEdge}" BorderThickness="1" CornerRadius="6">
                         <StackPanel Spacing="8">
                             <TextBlock Text="{Binding MissingDependencyText}" TextWrapping="Wrap"
-                                       FontSize="12" Foreground="#E3A82B" />
+                                       FontSize="12" Foreground="{StaticResource SemanticWarn}" />
                             <Button Content="{loc:Loc Deps_InstallMissing}" HorizontalAlignment="Right"
                                     Padding="10,4" IsEnabled="{Binding !IsInstallingDependencies}"
                                     Command="{Binding InstallMissingDependenciesCommand}" />
@@ -443,7 +443,7 @@
                                         ToolTip.Tip="{Binding UpdateTooltip}"
                                         Command="{Binding DataContext.UpdateModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                         CommandParameter="{Binding}">
-                                    <ic:SymbolIcon Symbol="ArrowUp" Foreground="#3FB950" />
+                                    <ic:SymbolIcon Symbol="ArrowUp" Foreground="{StaticResource SemanticOk}" />
                                 </Button>
                                 <ToggleSwitch Grid.Column="2" Margin="0,0,8,0" MinWidth="0" VerticalAlignment="Center"
                                               OnContent="" OffContent="" ToolTip.Tip="{loc:Loc Tip_ToggleMod}"
@@ -453,7 +453,7 @@
                                 <Button Grid.Column="3" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="4"
                                         Command="{Binding DataContext.DeleteModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                         CommandParameter="{Binding}">
-                                    <ic:SymbolIcon Symbol="Delete" Foreground="#E05561" />
+                                    <ic:SymbolIcon Symbol="Delete" Foreground="{StaticResource SemanticDanger}" />
                                 </Button>
                             </Grid>
                         </DataTemplate>
