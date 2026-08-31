@@ -704,6 +704,18 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_DepUnresolvedFmt" xml:space="preserve"><value>Mod instalado, pero algo que necesita no tiene versión para esta versión de Minecraft: {0}. Es probable que el servidor no arranque.</value></data>
   <data name="Msg_MissingDepsFoundFmt" xml:space="preserve"><value>Faltan {0} dependencias que los mods instalados necesitan: {1}</value></data>
   <data name="Msg_DepsInstalledFmt" xml:space="preserve"><value>Dependencias instaladas: {0}.</value></data>
+  <data name="Deps_StartTitle" xml:space="preserve"><value>Faltan dependencias</value></data>
+  <data name="Deps_StartMessageFmt" xml:space="preserve"><value>«{0}» tiene mods o plugins que necesitan otras {1} cosas que no están instaladas. Si arrancas así, lo más probable es que el servidor no llegue a levantar.</value></data>
+  <data name="Deps_NeededByFmt" xml:space="preserve"><value>lo necesita: {0}</value></data>
+  <data name="Deps_StartHint" xml:space="preserve"><value>Se busca en Modrinth por el nombre que declara cada mod. Algunos se publican con otro nombre y no se encuentran: en ese caso hay que instalarlos a mano.</value></data>
+  <data name="Deps_InstallAndStart" xml:space="preserve"><value>Instalar y arrancar</value></data>
+  <data name="Deps_StartAnyway" xml:space="preserve"><value>Arrancar igualmente</value></data>
+  <data name="Msg_DepsMissingFmt" xml:space="preserve"><value>[Launcher] Faltan {0} dependencias: {1}</value></data>
+  <data name="Msg_DepsMissingAutoStart" xml:space="preserve"><value>[Launcher] Arranque automático: se arranca igualmente y se deja que el loader lo diga.</value></data>
+  <data name="Msg_DepsStartCancelled" xml:space="preserve"><value>[Launcher] Arranque cancelado: faltan dependencias.</value></data>
+  <data name="Msg_DepsStillMissingFmt" xml:space="preserve"><value>[Launcher] Siguen faltando, y hay que instalarlas a mano: {0}</value></data>
+  <data name="Msg_DepsCheckFailedFmt" xml:space="preserve"><value>[Launcher] No se han podido comprobar las dependencias ({0}); se arranca igualmente.</value></data>
+  <data name="Msg_DepsNoneResolved" xml:space="preserve"><value>[Launcher] Modrinth no conoce ninguna de las que faltan; hay que instalarlas a mano.</value></data>
   <data name="Deps_InstallMissing" xml:space="preserve"><value>Instalar las que faltan</value></data>
   <data name="Msg_BadRemoteFileNameFmt" xml:space="preserve"><value>La API devolvió un nombre de archivo que no se puede usar: {0}</value></data>
   <data name="Badge_Bedrock" xml:space="preserve"><value>Bedrock</value></data>

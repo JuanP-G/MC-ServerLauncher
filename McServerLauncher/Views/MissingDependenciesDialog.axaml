@@ -1,0 +1,47 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:views="using:McServerLauncher.Views"
+        x:Class="McServerLauncher.Views.MissingDependenciesDialog"
+        Title="{loc:Loc Deps_StartTitle}"
+        Width="560" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,Auto">
+        <StackPanel Grid.Row="0" Margin="20,20,20,8" Spacing="10">
+            <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontSize="14" />
+
+            <!-- What is missing and who is waiting on it. Naming the mod that needs each one is the
+                 difference between a list to act on and a list to stare at: with twenty mods
+                 installed, "falta cristallib" alone does not tell you which of them stops working
+                 if you decide to start anyway. -->
+            <Border Padding="12" CornerRadius="8" MaxHeight="220"
+                    Background="#22E3A82B" BorderBrush="#55E3A82B" BorderThickness="1">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="MissingList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="views:MissingDependencyRow">
+                                <StackPanel Margin="0,0,0,8">
+                                    <TextBlock Text="{Binding Id}" FontWeight="SemiBold" FontSize="13" />
+                                    <TextBlock Text="{Binding NeededByText}" FontSize="12" Opacity="0.75"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <TextBlock x:Name="HintText" TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
+        </StackPanel>
+
+        <Border Grid.Row="1" Background="#15FFFFFF" Padding="20,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Content="{loc:Loc Cancel}" Click="Cancel_Click" MinWidth="110" />
+                <Button Content="{loc:Loc Deps_StartAnyway}" Click="StartAnyway_Click" MinWidth="110" />
+                <Button Content="{loc:Loc Deps_InstallAndStart}" Click="InstallAndStart_Click"
+                        Classes="accent" MinWidth="140" IsDefault="True" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -658,6 +658,18 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_DepUnresolvedFmt" xml:space="preserve"><value>Mod installed, but something it needs has no build for this Minecraft version: {0}. The server will probably refuse to start.</value></data>
   <data name="Msg_MissingDepsFoundFmt" xml:space="preserve"><value>{0} dependencies the installed mods need are missing: {1}</value></data>
   <data name="Msg_DepsInstalledFmt" xml:space="preserve"><value>Dependencies installed: {0}.</value></data>
+  <data name="Deps_StartTitle" xml:space="preserve"><value>Missing dependencies</value></data>
+  <data name="Deps_StartMessageFmt" xml:space="preserve"><value>“{0}” has mods or plugins waiting on {1} things that are not installed. Starting like this will most likely stop the server from coming up.</value></data>
+  <data name="Deps_NeededByFmt" xml:space="preserve"><value>needed by: {0}</value></data>
+  <data name="Deps_StartHint" xml:space="preserve"><value>They are looked up on Modrinth by the name each mod declares. Some are published under a different name and will not be found: those have to be installed by hand.</value></data>
+  <data name="Deps_InstallAndStart" xml:space="preserve"><value>Install and start</value></data>
+  <data name="Deps_StartAnyway" xml:space="preserve"><value>Start anyway</value></data>
+  <data name="Msg_DepsMissingFmt" xml:space="preserve"><value>[Launcher] {0} dependencies are missing: {1}</value></data>
+  <data name="Msg_DepsMissingAutoStart" xml:space="preserve"><value>[Launcher] Automatic start: starting anyway and letting the loader report it.</value></data>
+  <data name="Msg_DepsStartCancelled" xml:space="preserve"><value>[Launcher] Start cancelled: dependencies are missing.</value></data>
+  <data name="Msg_DepsStillMissingFmt" xml:space="preserve"><value>[Launcher] Still missing, and these have to be installed by hand: {0}</value></data>
+  <data name="Msg_DepsCheckFailedFmt" xml:space="preserve"><value>[Launcher] Dependencies could not be checked ({0}); starting anyway.</value></data>
+  <data name="Msg_DepsNoneResolved" xml:space="preserve"><value>[Launcher] Modrinth does not know any of the missing ones; they have to be installed by hand.</value></data>
   <data name="Deps_InstallMissing" xml:space="preserve"><value>Install the missing ones</value></data>
   <data name="Msg_BadRemoteFileNameFmt" xml:space="preserve"><value>The API returned a file name that cannot be used: {0}</value></data>
   <data name="Badge_Bedrock" xml:space="preserve"><value>Bedrock</value></data>

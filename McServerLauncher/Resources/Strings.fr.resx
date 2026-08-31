@@ -658,6 +658,18 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Msg_DepUnresolvedFmt" xml:space="preserve"><value>Mod installé, mais l'un de ses prérequis n'existe pas pour cette version de Minecraft : {0}. Le serveur refusera probablement de démarrer.</value></data>
   <data name="Msg_MissingDepsFoundFmt" xml:space="preserve"><value>Il manque {0} dépendances dont les mods installés ont besoin : {1}</value></data>
   <data name="Msg_DepsInstalledFmt" xml:space="preserve"><value>Dépendances installées : {0}.</value></data>
+  <data name="Deps_StartTitle" xml:space="preserve"><value>Dépendances manquantes</value></data>
+  <data name="Deps_StartMessageFmt" xml:space="preserve"><value>« {0} » a des mods ou des plugins qui attendent {1} choses non installées. Démarrer ainsi empêchera probablement le serveur de se lancer.</value></data>
+  <data name="Deps_NeededByFmt" xml:space="preserve"><value>requis par : {0}</value></data>
+  <data name="Deps_StartHint" xml:space="preserve"><value>Ils sont cherchés sur Modrinth par le nom que chaque mod déclare. Certains sont publiés sous un autre nom et resteront introuvables : ceux-là doivent être installés à la main.</value></data>
+  <data name="Deps_InstallAndStart" xml:space="preserve"><value>Installer et démarrer</value></data>
+  <data name="Deps_StartAnyway" xml:space="preserve"><value>Démarrer quand même</value></data>
+  <data name="Msg_DepsMissingFmt" xml:space="preserve"><value>[Launcher] Il manque {0} dépendances : {1}</value></data>
+  <data name="Msg_DepsMissingAutoStart" xml:space="preserve"><value>[Launcher] Démarrage automatique : on démarre quand même et on laisse le loader le signaler.</value></data>
+  <data name="Msg_DepsStartCancelled" xml:space="preserve"><value>[Launcher] Démarrage annulé : des dépendances manquent.</value></data>
+  <data name="Msg_DepsStillMissingFmt" xml:space="preserve"><value>[Launcher] Toujours manquantes, à installer à la main : {0}</value></data>
+  <data name="Msg_DepsCheckFailedFmt" xml:space="preserve"><value>[Launcher] Impossible de vérifier les dépendances ({0}) ; on démarre quand même.</value></data>
+  <data name="Msg_DepsNoneResolved" xml:space="preserve"><value>[Launcher] Modrinth ne connaît aucune des manquantes ; il faut les installer à la main.</value></data>
   <data name="Deps_InstallMissing" xml:space="preserve"><value>Installer celles qui manquent</value></data>
   <data name="Msg_BadRemoteFileNameFmt" xml:space="preserve"><value>L’API a renvoyé un nom de fichier inutilisable : {0}</value></data>
   <data name="Badge_Bedrock" xml:space="preserve"><value>Bedrock</value></data>

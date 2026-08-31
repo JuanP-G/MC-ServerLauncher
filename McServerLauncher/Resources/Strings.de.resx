@@ -658,6 +658,18 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_DepUnresolvedFmt" xml:space="preserve"><value>Mod installiert, aber etwas, das sie braucht, gibt es für diese Minecraft-Version nicht: {0}. Der Server wird vermutlich nicht starten.</value></data>
   <data name="Msg_MissingDepsFoundFmt" xml:space="preserve"><value>Es fehlen {0} Abhängigkeiten, die die installierten Mods brauchen: {1}</value></data>
   <data name="Msg_DepsInstalledFmt" xml:space="preserve"><value>Installierte Abhängigkeiten: {0}.</value></data>
+  <data name="Deps_StartTitle" xml:space="preserve"><value>Fehlende Abhängigkeiten</value></data>
+  <data name="Deps_StartMessageFmt" xml:space="preserve"><value>„{0}“ hat Mods oder Plugins, die auf {1} nicht installierte Dinge warten. So zu starten wird den Server höchstwahrscheinlich nicht hochkommen lassen.</value></data>
+  <data name="Deps_NeededByFmt" xml:space="preserve"><value>benötigt von: {0}</value></data>
+  <data name="Deps_StartHint" xml:space="preserve"><value>Sie werden auf Modrinth unter dem Namen gesucht, den jeder Mod angibt. Manche werden unter einem anderen Namen veröffentlicht und sind nicht auffindbar: die müssen von Hand installiert werden.</value></data>
+  <data name="Deps_InstallAndStart" xml:space="preserve"><value>Installieren und starten</value></data>
+  <data name="Deps_StartAnyway" xml:space="preserve"><value>Trotzdem starten</value></data>
+  <data name="Msg_DepsMissingFmt" xml:space="preserve"><value>[Launcher] Es fehlen {0} Abhängigkeiten: {1}</value></data>
+  <data name="Msg_DepsMissingAutoStart" xml:space="preserve"><value>[Launcher] Automatischer Start: es wird trotzdem gestartet und dem Loader überlassen, es zu melden.</value></data>
+  <data name="Msg_DepsStartCancelled" xml:space="preserve"><value>[Launcher] Start abgebrochen: es fehlen Abhängigkeiten.</value></data>
+  <data name="Msg_DepsStillMissingFmt" xml:space="preserve"><value>[Launcher] Fehlen weiterhin und müssen von Hand installiert werden: {0}</value></data>
+  <data name="Msg_DepsCheckFailedFmt" xml:space="preserve"><value>[Launcher] Abhängigkeiten konnten nicht geprüft werden ({0}); es wird trotzdem gestartet.</value></data>
+  <data name="Msg_DepsNoneResolved" xml:space="preserve"><value>[Launcher] Modrinth kennt keine der fehlenden; sie müssen von Hand installiert werden.</value></data>
   <data name="Deps_InstallMissing" xml:space="preserve"><value>Fehlende installieren</value></data>
   <data name="Msg_BadRemoteFileNameFmt" xml:space="preserve"><value>Die API hat einen unbrauchbaren Dateinamen geliefert: {0}</value></data>
   <data name="Badge_Bedrock" xml:space="preserve"><value>Bedrock</value></data>
