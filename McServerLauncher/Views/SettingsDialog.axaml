@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="using:McServerLauncher.Localization"
         xmlns:ic="using:FluentIcons.Avalonia"
+        xmlns:vm="using:McServerLauncher.ViewModels"
         x:Class="McServerLauncher.Views.SettingsDialog"
         x:CompileBindings="False"
         Title="{loc:Loc Settings_Title}"
@@ -63,8 +64,53 @@
                     <CheckBox Content="{loc:Loc Notif_OptWoke}" IsChecked="{Binding Notifications.WokeOnDemand, Mode=TwoWay}" />
                 </StackPanel>
 
-                <Button Content="{loc:Loc Notif_Test}" Margin="0,12,0,0" HorizontalAlignment="Left"
-                        Click="TestNotification_Click" ToolTip.Tip="{loc:Loc Notif_TestTip}" />
+                <!-- Colours, one per level rather than one per kind. Seven boxes would be seven
+                     decisions to make and seven ways to end up with a palette that means nothing;
+                     four answer the only question a glance asks. Typed as hex with a live preview
+                     beside it, and no colour-picker control: the app has no such dependency, and
+                     hand-rolling a full picker to set four values would be a lot of surface for
+                     something a pasted #RRGGBB does better. -->
+                <TextBlock Text="{loc:Loc Notif_Colors}" FontWeight="SemiBold" Margin="0,14,0,0" />
+                <TextBlock Text="{loc:Loc Notif_ColorsIntro}" TextWrapping="Wrap" Opacity="0.7"
+                           FontSize="13" Margin="0,4,0,6" />
+
+                <Grid ColumnDefinitions="140,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                      IsEnabled="{Binding #NotifMaster.IsChecked}">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Notif_LevelSuccess}"
+                               VerticalAlignment="Center" Margin="0,3" />
+                    <Border Grid.Row="0" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,3,8,3"
+                            Background="{Binding Notifications.ColorSuccess, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                    <TextBox Grid.Row="0" Grid.Column="2" x:Name="ColorSuccessBox" Width="120" HorizontalAlignment="Left" Margin="0,3"
+                             Text="{Binding Notifications.ColorSuccess, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Loc Notif_LevelInfo}"
+                               VerticalAlignment="Center" Margin="0,3" />
+                    <Border Grid.Row="1" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,3,8,3"
+                            Background="{Binding Notifications.ColorInfo, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                    <TextBox Grid.Row="1" Grid.Column="2" x:Name="ColorInfoBox" Width="120" HorizontalAlignment="Left" Margin="0,3"
+                             Text="{Binding Notifications.ColorInfo, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Loc Notif_LevelWarning}"
+                               VerticalAlignment="Center" Margin="0,3" />
+                    <Border Grid.Row="2" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,3,8,3"
+                            Background="{Binding Notifications.ColorWarning, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                    <TextBox Grid.Row="2" Grid.Column="2" x:Name="ColorWarningBox" Width="120" HorizontalAlignment="Left" Margin="0,3"
+                             Text="{Binding Notifications.ColorWarning, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="{loc:Loc Notif_LevelError}"
+                               VerticalAlignment="Center" Margin="0,3" />
+                    <Border Grid.Row="3" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,3,8,3"
+                            Background="{Binding Notifications.ColorError, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                    <TextBox Grid.Row="3" Grid.Column="2" x:Name="ColorErrorBox" Width="120" HorizontalAlignment="Left" Margin="0,3"
+                             Text="{Binding Notifications.ColorError, Mode=TwoWay}" />
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,12,0,0">
+                    <Button Content="{loc:Loc Notif_Test}" Click="TestNotification_Click"
+                            ToolTip.Tip="{loc:Loc Notif_TestTip}" />
+                    <Button Content="{loc:Loc Notif_ResetColors}" Click="ResetColors_Click"
+                            ToolTip.Tip="{loc:Loc Notif_ResetColorsTip}" />
+                </StackPanel>
 
                 <Separator Margin="0,16,0,12" />
 

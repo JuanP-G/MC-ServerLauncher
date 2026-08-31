@@ -505,6 +505,57 @@ public partial class ServerModsViewModel : ObservableObject
         OnPropertyChanged(nameof(HasMissingDependencies));
     }
 
+    /// <summary>
+    /// Fetches the mods or plugins named by <paramref name="ids"/>, for the check before a start.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The ids come from the jars, and a mod id is not a store id: <c>cristallib</c> is published on
+    /// Modrinth as <c>cristel-lib</c>, and there is no rule that maps one to the other. So anything
+    /// the store does not recognise is skipped rather than reported as an error — the caller checks
+    /// again afterwards and says what is still missing, which is the honest answer.
+    /// </para>
+    /// <para>
+    /// Progress goes to the caller's log rather than to this tab's status line: the user pressed
+    /// Start and is looking at the server's console, not at the Mods tab.
+    /// </para>
+    /// </remarks>
+    public async Task InstallMissingAsync(IEnumerable<string> ids, IProgress<string>? log = null,
+        CancellationToken ct = default)
+    {
+        var wanted = ids.ToList();
+        if (wanted.Count == 0) return;
+
+        log?.Report(Localizer.Get("Msg_ResolvingDependencies"));
+
+        var plan = await _dependencies.ResolveByModIdAsync(
+            wanted, _config.Type, _config.GameVersion,
+            await InstalledProjectIdsAsync(ct), ct);
+
+        if (plan.Install.Count == 0)
+        {
+            log?.Report(Localizer.Get("Msg_DepsNoneResolved"));
+            return;
+        }
+
+        var folder = Path.Combine(_config.FolderPath, ContentFolder);
+        Directory.CreateDirectory(folder);
+
+        foreach (var needed in plan.Install)
+        {
+            ct.ThrowIfCancellationRequested();
+            log?.Report(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label));
+            await DownloadDependencyAsync(needed, folder, ct);
+        }
+
+        log?.Report(string.Format(Localizer.Get("Msg_DepsInstalledFmt"), plan.Install.Count));
+
+        // The list backs an ItemsControl, so it has to be rebuilt on the UI thread — and this is
+        // called from the start flow, which may be anywhere by the time the downloads finish.
+        if (Dispatcher.UIThread.CheckAccess()) RefreshInstalledMods();
+        else Dispatcher.UIThread.Post(RefreshInstalledMods);
+    }
+
     /// <summary>Downloads the library mods the scan found missing.</summary>
     [RelayCommand]
     private async Task InstallMissingDependencies(CancellationToken ct)

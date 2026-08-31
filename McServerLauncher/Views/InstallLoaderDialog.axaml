@@ -29,7 +29,7 @@
 
                 <!-- Directional warning (color/severity set from code-behind) -->
                 <Border x:Name="WarnBox" Margin="0,14,0,0" Padding="10" CornerRadius="6"
-                        Background="#33E3A82B" BorderBrush="#E3A82B" BorderThickness="1">
+                        Background="{StaticResource SemanticWarnPanel}" BorderBrush="{StaticResource SemanticWarn}" BorderThickness="1">
                     <Grid ColumnDefinitions="Auto,*">
                         <ic:SymbolIcon Grid.Column="0" x:Name="WarnIcon" Symbol="Warning"
                                        VerticalAlignment="Top" Margin="0,0,8,0" />

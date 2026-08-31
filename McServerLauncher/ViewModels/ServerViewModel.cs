@@ -839,8 +839,14 @@ public partial class ServerViewModel : ObservableObject
     /// </summary>
     private void NotifyIf(NotificationKind kind, string message)
     {
-        if (ToastService.MainWindowInactive && NotificationPreferences.ShouldNotify(Config, kind))
-            ToastService.Shared.Notify(Name, message);
+        if (!ToastService.MainWindowInactive || !NotificationPreferences.ShouldNotify(Config, kind))
+            return;
+
+        // The look comes from the kind, through the one table that holds it. Working it out here
+        // would put a second opinion about what "crashed" means next to the first.
+        var entry = NotificationCatalog.For(kind);
+        ToastService.Shared.Notify(Name, message, entry.Level, entry.Emoji,
+            NotificationPreferences.EffectiveFor(Config));
     }
 
     /// <summary>
@@ -913,6 +919,10 @@ public partial class ServerViewModel : ObservableObject
             // only thing that fixes a server already sitting on the wrong authentication.
             if (Config.CrossplayEnabled && _crossplay.RepairConfig(Config) is { } repaired)
                 OnConsoleLine(repaired);
+
+            // Everything the mods and plugins need is there — or the user has decided about it.
+            if (!await CheckContentDependenciesAsync(isAutoRestart))
+                return;
 
             // Make sure the configured Java is compatible with this server's version.
             await EnsureCompatibleJavaAsync();
@@ -1062,6 +1072,99 @@ public partial class ServerViewModel : ObservableObject
     /// is nobody there to answer a dialog.
     /// </para>
     /// </remarks>
+    /// <summary>
+    /// Checks that every installed mod and plugin has what it needs, and asks what to do if not.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Read from the jars, so it costs a handful of zip opens and no network at all. That is not
+    /// only about speed: the store calls that could answer this swallow every error and return
+    /// nothing, so a check built on them would report "all good" whenever the connection was down,
+    /// on the one screen where being wrong means the server does not come up.
+    /// </para>
+    /// <para>
+    /// Never blocks an automatic start. An auto-restart after a crash and a wake-on-demand both
+    /// happen with nobody in front of the app, and a modal waiting for an answer would leave the
+    /// server down until somebody came back — which is precisely what those two features exist to
+    /// prevent. Same guard the other two pre-flight dialogs use.
+    /// </para>
+    /// <para>
+    /// Returns true when the start should go ahead.
+    /// </para>
+    /// </remarks>
+    private async Task<bool> CheckContentDependenciesAsync(bool isAutoRestart)
+    {
+        IReadOnlyList<ContentDependencyCheck.Missing> missing;
+        try
+        {
+            missing = ContentDependencyCheck.CheckServer(Config);
+        }
+        catch (Exception ex)
+        {
+            // A check that cannot run is not a reason to refuse a start: the server may well be
+            // fine, and the loader will say so far better than a guess would. Said out loud, though
+            // — a silent skip here is how the old code came to claim nothing was ever missing.
+            OnConsoleLine(string.Format(Localizer.Get("Msg_DepsCheckFailedFmt"), ex.Message));
+            return true;
+        }
+
+        if (missing.Count == 0) return true;
+
+        var summary = string.Join(", ", missing.Select(m => m.Id));
+        OnConsoleLine(string.Format(Localizer.Get("Msg_DepsMissingFmt"), missing.Count, summary));
+
+        if (!ContentDependencyCheck.ShouldAsk(missing.Count, isAutoRestart))
+        {
+            // Nobody to answer. Start anyway and let the loader report it: refusing here would turn
+            // a server that might still work into one that is definitely down.
+            OnConsoleLine(Localizer.Get("Msg_DepsMissingAutoStart"));
+            return true;
+        }
+
+        var dialog = new MissingDependenciesDialog(Name, missing);
+        var choice = await ShowDialogAsync(dialog);
+
+        switch (choice)
+        {
+            case MissingDependenciesChoice.StartAnyway:
+                return true;
+
+            case MissingDependenciesChoice.InstallAndStart:
+                await Mods.InstallMissingAsync(missing.Select(m => m.Id), new Progress<string>(OnConsoleLine));
+
+                // Checked again rather than assumed: an install can fail, and a store that does not
+                // know a name — cristallib is published as cristel-lib — resolves to nothing at all.
+                // Starting while still claiming it was handled is the one outcome worth avoiding.
+                var left = ContentDependencyCheck.CheckServer(Config);
+                if (left.Count > 0)
+                    OnConsoleLine(string.Format(Localizer.Get("Msg_DepsStillMissingFmt"),
+                        string.Join(", ", left.Select(m => m.Id))));
+                return true;
+
+            default:
+                OnConsoleLine(Localizer.Get("Msg_DepsStartCancelled"));
+                return false;
+        }
+    }
+
+    /// <summary>Shows a dialog owned by the main window, so it cannot open behind it.</summary>
+    private static async Task<MissingDependenciesChoice> ShowDialogAsync(MissingDependenciesDialog dialog)
+    {
+        var owner = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+
+        if (owner is null)
+        {
+            // No window to own it means no way to show it. Treated as "start anyway" rather than
+            // "cancel": the user pressed Start, and swallowing that because of a missing owner
+            // would look exactly like the button not working.
+            return MissingDependenciesChoice.StartAnyway;
+        }
+
+        await dialog.ShowDialog(owner);
+        return dialog.Choice;
+    }
+
     private async Task<bool> TryFixRejectedPathAsync(bool isAutoRestart)
     {
         if (!BukkitPathRule.Rejects(Config.FolderPath, Config.Type)) return true;

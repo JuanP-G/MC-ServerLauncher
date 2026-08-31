@@ -70,7 +70,7 @@
                                     <Button Grid.Column="2" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="6"
                                             Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                             CommandParameter="{Binding}">
-                                        <ic:SymbolIcon Symbol="Delete" Foreground="#E05561" />
+                                        <ic:SymbolIcon Symbol="Delete" Foreground="{StaticResource SemanticDanger}" />
                                     </Button>
                                 </Grid>
                             </Border>

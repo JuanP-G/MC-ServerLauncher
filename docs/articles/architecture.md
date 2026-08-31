@@ -106,6 +106,17 @@ are no hard-coded machine paths.
   so installing it again produces the loader's *duplicate mod* failure. The walk itself (`WalkAsync`) takes its
   lookup as a delegate, so what it decides is tested against a table rather than against Modrinth on the day
   the test runs.
+- **`ContentManifest` / `ContentDependencyCheck`** — read what each jar declares about itself (what it provides
+  and what it needs) and report what is missing. Three formats: `fabric.mod.json`, Bukkit's `plugin.yml` and
+  Forge/NeoForge's `mods.toml`, with no YAML or TOML library — only lists of names are needed, and anything not
+  understood counts as "declares nothing". **No network, deliberately**: this is the check that runs when Start
+  is pressed, and the Modrinth calls that would answer the same question swallow their errors and return empty,
+  so offline they would report nothing missing on the one screen where being wrong stops the server coming up.
+  A test forbids those two files from mentioning `HttpClient` or `ModrinthService`.
+- **`NotificationCatalog` / `NotificationPalette`** — which level and which emoji each kind of notification
+  gets, and what the default colours are. The same split as `ServerTypeCatalog` and `ServerTypeBrushes`: the
+  UI-free data here, the Avalonia brushes in `NotificationBrushes`. The colours the user can change live in
+  `NotificationSettings`, which is serialized to `settings.json`.
 - **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version
   when the user adds one that already exists.
 - **`ServerIconService`** — generates a server's `server-icon.png`: takes any user image, crops it to

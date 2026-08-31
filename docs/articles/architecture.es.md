@@ -106,6 +106,17 @@ mundo. No hay rutas fijas del equipo en el código.
   ya viene dentro del jar, así que instalarla otra vez produce el fallo de *mod duplicado* del cargador. El
   recorrido (`WalkAsync`) recibe la búsqueda como delegado, de modo que lo que decide se prueba contra una tabla
   y no contra Modrinth el día que se ejecuta la prueba.
+- **`ContentManifest` / `ContentDependencyCheck`** — leen lo que cada jar declara de sí mismo (lo que ofrece y
+  lo que necesita) y dicen qué falta. Tres formatos: `fabric.mod.json`, `plugin.yml` de Bukkit y el `mods.toml`
+  de Forge/NeoForge, sin librería de YAML ni de TOML — solo hacen falta unas listas de nombres, y lo que no se
+  entienda cuenta como «no declara nada». **Sin red, a propósito**: es la comprobación que corre al darle a
+  Iniciar, y las llamadas de Modrinth que responderían a lo mismo se tragan los errores y devuelven vacío, así
+  que sin conexión dirían que no falta nada justo donde equivocarse impide arrancar. Una prueba prohíbe que
+  esos dos ficheros mencionen `HttpClient` o `ModrinthService`.
+- **`NotificationCatalog` / `NotificationPalette`** — qué nivel y qué emoji le toca a cada tipo de aviso, y
+  cuáles son los colores por defecto. Misma separación que `ServerTypeCatalog` y `ServerTypeBrushes`: los datos
+  sin nada de UI aquí, las brochas de Avalonia en `NotificationBrushes`. Los colores que el usuario cambia
+  viven en `NotificationSettings`, que se serializa a `settings.json`.
 - **`ServerDetectionService`** — inspecciona una carpeta para averiguar el tipo/versión de un servidor
   existente cuando el usuario añade uno que ya está.
 - **`ServerIconService`** — genera el `server-icon.png` de un servidor: toma cualquier imagen del

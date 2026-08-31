@@ -24,7 +24,7 @@
             <TextBlock Text="{loc:Loc Pk_KeyLabel}" Margin="0,16,0,4" />
             <TextBox x:Name="KeyBox" Watermark="{loc:Loc Pk_KeyPlaceholder}" />
 
-            <TextBlock x:Name="StatusText" Foreground="#E05561" TextWrapping="Wrap"
+            <TextBlock x:Name="StatusText" Foreground="{StaticResource SemanticDanger}" TextWrapping="Wrap"
                        Margin="0,8,0,0" IsVisible="False" />
 
             <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.65" Margin="0,14,0,0"

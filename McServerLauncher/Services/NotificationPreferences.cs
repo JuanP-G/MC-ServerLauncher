@@ -21,7 +21,18 @@ public static class NotificationPreferences
     public static bool ShouldNotify(ServerConfig config, NotificationKind kind)
     {
         if (!Global.Enabled) return false;
-        var effective = config is { UseCustomNotifications: true, Notifications: { } custom } ? custom : Global;
-        return effective.Allows(kind);
+        return EffectiveFor(config).Allows(kind);
     }
+
+    /// <summary>
+    /// The settings that actually apply to a server: its own override, or the global ones.
+    /// </summary>
+    /// <remarks>
+    /// Pulled out of <see cref="ShouldNotify"/> because the colours need exactly the same answer.
+    /// Two copies of "which settings apply here" would drift the first time one of them changed,
+    /// and the symptom would be a server notifying by its own rules and colouring by somebody
+    /// else's — visible, confusing, and very hard to attribute.
+    /// </remarks>
+    public static NotificationSettings EffectiveFor(ServerConfig? config) =>
+        config is { UseCustomNotifications: true, Notifications: { } custom } ? custom : Global;
 }

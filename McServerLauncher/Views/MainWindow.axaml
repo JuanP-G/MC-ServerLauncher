@@ -55,7 +55,7 @@
     <Grid RowDefinitions="Auto,*">
 
         <!-- Update-available banner -->
-        <Border Grid.Row="0" Background="#2F6FB0" Padding="14,8" IsVisible="{Binding UpdateAvailable}">
+        <Border Grid.Row="0" Background="{StaticResource SemanticInfo}" Padding="14,8" IsVisible="{Binding UpdateAvailable}">
             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                 <ic:SymbolIcon Grid.Column="0" Symbol="ArrowDownload" Foreground="White"
                                VerticalAlignment="Center" Margin="0,0,10,0" />
@@ -270,7 +270,7 @@
 
                         <!-- Warning: running but without a Playit tunnel -->
                         <Border Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0" Padding="10,6"
-                                CornerRadius="6" Background="#33E05561" BorderBrush="#E05561" BorderThickness="1"
+                                CornerRadius="6" Background="{StaticResource SemanticDangerPanel}" BorderBrush="{StaticResource SemanticDanger}" BorderThickness="1"
                                 IsVisible="{Binding ShowTunnelWarning}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <ic:SymbolIcon Symbol="Warning" Foreground="#FF8A8A" VerticalAlignment="Center" />
@@ -288,7 +288,7 @@
                                 <TextBlock Text="{Binding CpuText}" Classes="statValue" />
                                 <controls:Sparkline Height="22" Margin="0,4,0,0"
                                                     Values="{Binding CpuSeries}" MaxValue="100"
-                                                    Stroke="#3FB950" />
+                                                    Stroke="{StaticResource SemanticOk}" />
                             </StackPanel>
                         </Border>
                         <Border Classes="stat">

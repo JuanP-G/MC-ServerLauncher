@@ -3,6 +3,35 @@
              x:Class="McServerLauncher.App"
              RequestedThemeVariant="Dark">
 
+    <!-- The four colours the app says things with, in one place.
+
+         They were written out by hand 139 times across 22 files — the amber alone appeared
+         sixteen times — with no resource of any kind defined here. Changing one meant sixteen
+         edits and nothing to catch the one that was forgotten, and adding a fifth shade was
+         easier than finding the right existing one, which is how a palette stops meaning
+         anything.
+
+         Same values as before, to the digit: this is where they live, not a redesign. The
+         translucent variants are the fills and edges of the notice panels; they are named for
+         what they are used for rather than for their alpha, because "the amber panel" is the
+         decision and 0x22 is only how it is spelled.
+
+         The defaults for the notification colours the user can change are NOT here: those are
+         a setting, they live in NotificationPalette, and they happen to start on these. -->
+    <Application.Resources>
+        <SolidColorBrush x:Key="SemanticOk" Color="#3FB950" />
+        <SolidColorBrush x:Key="SemanticInfo" Color="#2F6FB0" />
+        <SolidColorBrush x:Key="SemanticWarn" Color="#E3A82B" />
+        <SolidColorBrush x:Key="SemanticDanger" Color="#E05561" />
+
+        <SolidColorBrush x:Key="SemanticWarnFill" Color="#22E3A82B" />
+        <SolidColorBrush x:Key="SemanticWarnPanel" Color="#33E3A82B" />
+        <SolidColorBrush x:Key="SemanticWarnEdge" Color="#55E3A82B" />
+
+        <SolidColorBrush x:Key="SemanticDangerFill" Color="#22E05561" />
+        <SolidColorBrush x:Key="SemanticDangerPanel" Color="#33E05561" />
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
         <!-- Keep button content (text and icon+text) centered everywhere. -->

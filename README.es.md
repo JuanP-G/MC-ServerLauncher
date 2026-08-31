@@ -126,6 +126,13 @@ todo con botones.
   se cae, el reinicio automático se rinde, un **servidor vacío se apaga solo** o uno **se enciende porque
   alguien ha intentado entrar**. Configurables por tipo, de forma global y **por servidor**, con botón de
   prueba.
+- **Cada aviso se distingue de un vistazo** 🎨 — un color según lo que ha pasado (verde cuando entra alguien,
+  ámbar cuando el servidor se apaga solo, rojo cuando se cae) y **un emoji propio por tipo**, para que se
+  distingan también sin depender del color. Los cuatro colores se cambian en Ajustes, con vista previa.
+- **Antes de arrancar se comprueba que no falte nada** ✅ — si a algún mod o plugin le falta una dependencia, se
+  avisa **al darle a Iniciar**, diciendo qué falta y quién lo necesita, con la opción de instalarlo y arrancar.
+  Se lee de los propios jars, así que funciona **sin conexión** y no depende de que la tienda tenga las
+  dependencias bien puestas. Vale para mods de Fabric y de Forge/NeoForge y para plugins de Paper y Purpur.
 - **Ajustes en un solo sitio** ⚙️ — idioma, notificaciones, comportamiento de la bandeja, tu conexión de
   Playit y un botón de **añadir al escritorio**, todo en un único diálogo.
 - **Multi-idioma** — español, inglés, portugués, francés y alemán.
