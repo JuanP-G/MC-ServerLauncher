@@ -114,30 +114,35 @@ public class GridColumnTests
         // a label that just says "Port" told people the wrong thing — and a Bedrock player has to
         // type their port by hand, so it is the one they most need to see.
         //
-        // Audited rather than rendered: reproducing it needs a server with crossplay actually set
-        // up, which this machine does not have. What can be checked here is that the two rows exist,
-        // bind to different properties, and are switched by the same flag in opposite directions —
-        // which is what stops both showing at once or neither.
-        var xaml = File.ReadAllText(Path.Combine(
+        // Asserted on the RELATIONSHIP and not on how many times a string appears. The first version
+        // counted occurrences and broke the moment the header was restructured, without anything
+        // actually being wrong: a test like that only teaches you to update the number.
+        var doc = XDocument.Load(Path.Combine(
             LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml"));
 
-        Assert.Contains("{loc:Loc Port_Java}", xaml, StringComparison.Ordinal);
-        Assert.Contains("{loc:Loc Port_Bedrock}", xaml, StringComparison.Ordinal);
+        List<XElement> ShownWhen(string binding) => doc.Descendants()
+            .Where(e => e.Attribute("IsVisible")?.Value == "{Binding " + binding + "}")
+            .ToList();
 
-        // The Bedrock number is its own property, not the Java one relabelled.
-        Assert.Contains("{Binding BedrockLocalPortText}", xaml, StringComparison.Ordinal);
+        string Labels(IEnumerable<XElement> group) => string.Concat(group
+            .SelectMany(e => e.DescendantsAndSelf())
+            .Select(e => e.Attribute("Text")?.Value ?? string.Empty));
 
-        // One plain "Port" row for a Java-only server, two for a crossplay one, never both sets.
-        Assert.Equal(2, Occurrences(xaml, "IsVisible=\"{Binding !IsCrossplayOn}\""));
-        Assert.Equal(4, Occurrences(xaml, "IsVisible=\"{Binding IsCrossplayOn}\""));
+        var withoutCrossplay = ShownWhen("!IsCrossplayOn");
+        var withCrossplay = ShownWhen("IsCrossplayOn");
+
+        // Java-only: one plain "Port".
+        Assert.Contains("{loc:Loc Port}", Labels(withoutCrossplay), StringComparison.Ordinal);
+
+        // Crossplay: both, named apart, and each reading its own number. Binding both to PortText
+        // would show the Java port twice under two different labels.
+        var crossplay = Labels(withCrossplay);
+        Assert.Contains("{loc:Loc Port_Java}", crossplay, StringComparison.Ordinal);
+        Assert.Contains("{loc:Loc Port_Bedrock}", crossplay, StringComparison.Ordinal);
+        Assert.Contains("{Binding BedrockLocalPortText}", crossplay, StringComparison.Ordinal);
+
+        // And the plain one is not among them, or a crossplay server would show three.
+        Assert.DoesNotContain("{loc:Loc Port}\"", crossplay, StringComparison.Ordinal);
     }
 
-    private static int Occurrences(string haystack, string needle)
-    {
-        var count = 0;
-        for (var i = haystack.IndexOf(needle, StringComparison.Ordinal); i >= 0;
-             i = haystack.IndexOf(needle, i + needle.Length, StringComparison.Ordinal))
-            count++;
-        return count;
-    }
 }
