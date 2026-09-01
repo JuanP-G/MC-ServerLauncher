@@ -755,4 +755,20 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Tun_OrphanHint" xml:space="preserve"><value>Left over from a server that no longer exists. It uses up a slot on your account and serves nothing.</value></data>
   <data name="Tun_ClashHint" xml:space="preserve"><value>Another tunnel points at the same local port. Only one of them can work.</value></data>
   <data name="Tun_DeleteFmt" xml:space="preserve"><value>Delete the tunnel "{0}"? This does not touch any server.</value></data>
+  <data name="Ping_Direct" xml:space="preserve"><value>Direct</value></data>
+  <data name="Ping_Tunnel" xml:space="preserve"><value>Tunnel</value></data>
+  <data name="Ping_Title" xml:space="preserve"><value>Ping</value></data>
+  <data name="Ping_None" xml:space="preserve"><value>—</value></data>
+  <data name="Ping_Fine" xml:space="preserve"><value>All normal. If it's bad for someone, it's their connection.</value></data>
+  <data name="Ping_ServerSlow" xml:space="preserve"><value>It's your server: it's slow to answer right here.</value></data>
+  <data name="Ping_TunnelSlow" xml:space="preserve"><value>Your server is fine. What's slow is the Playit tunnel.</value></data>
+  <data name="Ping_TunnelDown" xml:space="preserve"><value>Your server answers here, but nothing answers through the tunnel.</value></data>
+  <data name="Ping_Disclaimer" xml:space="preserve"><value>Both start and end at this computer. This is NOT your friends' ping: the stretch between them and Playit never touches this machine and cannot be measured.</value></data>
+  <data name="Tun_ColName" xml:space="preserve"><value>Name</value></data>
+  <data name="Tun_Selected" xml:space="preserve"><value>Selected server</value></data>
+  <data name="Tun_Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="Tun_RenameHint" xml:space="preserve"><value>The name is just for you: you see it here and on playit.gg, and it changes neither the address nor the port.</value></data>
+  <data name="Tun_EditOnWeb" xml:space="preserve"><value>Rename on playit.gg</value></data>
+  <data name="Port_Java" xml:space="preserve"><value>Java port</value></data>
+  <data name="Port_Bedrock" xml:space="preserve"><value>Bedrock port</value></data>
 </root>

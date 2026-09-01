@@ -42,6 +42,11 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Refreshes the idle countdown once a second. Runs only while one is on screen.</summary>
     private readonly DispatcherTimer _idleCountdownTimer;
     private readonly DispatcherTimer _playitTimer;
+    private readonly DispatcherTimer _pingTimer;
+    private readonly ServerPingService _ping = new();
+
+    /// <summary>Set while a measurement is in flight, so a slow one cannot queue up behind itself.</summary>
+    private bool _pinging;
 
     // --- Auto-restart on crash ---
     // If the server exits on its own (not via the Stop button), it's relaunched automatically, up
@@ -363,6 +368,13 @@ public partial class ServerViewModel : ObservableObject
         _playitTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _playitTimer.Tick += OnPlayitTimerTick;
         _playitTimer.Start();
+
+        // Cinco segundos y no dos: cada vuelta abre dos conexiones TCP, una de ellas hasta el borde
+        // de playit. Medir mas a menudo no dice nada nuevo — lo que se busca es la tendencia — y
+        // añade trafico a una API que no es nuestra.
+        _pingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        _pingTimer.Tick += (_, _) => _ = MeasurePingAsync();
+        _pingTimer.Start();
         _playit.RefreshState();
         // Sync directly: the shared manager/agent may already know the state (another view model
         // refreshed it before we subscribed), in which case no change event will fire.
@@ -409,6 +421,120 @@ public partial class ServerViewModel : ObservableObject
         if (MainWindowHidden && ++_hiddenStatsTicks % 10 != 0) return;
         UpdateStats();
     }
+
+    // --- Ping: whose fault the lag is ---
+
+    /// <summary>The port the tunnel is actually reachable on. Zero when it is not known.</summary>
+    [ObservableProperty]
+    private int _tunnelPublicPort;
+
+    /// <summary>Round trip straight to the server on this machine, or "—".</summary>
+    [ObservableProperty]
+    private string _pingDirectText = "—";
+
+    /// <summary>Round trip out to playit and back, or "—".</summary>
+    [ObservableProperty]
+    private string _pingTunnelText = "—";
+
+    /// <summary>What the two legs together say, in a sentence.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPingVerdict))]
+    private string _pingVerdictText = string.Empty;
+
+    /// <summary>
+    /// Whether there is a sentence worth showing.
+    /// </summary>
+    /// <remarks>
+    /// A bool and not a length check in the view: these views are x:CompileBindings="False", so
+    /// binding visibility to something that is not a bool does not fail — it quietly decides.
+    /// </remarks>
+    public bool HasPingVerdict => PingVerdictText.Length > 0;
+
+    [ObservableProperty]
+    private IBrush _pingDirectBrush = BrushGray;
+
+    [ObservableProperty]
+    private IBrush _pingTunnelBrush = BrushGray;
+
+    /// <summary>Whether there is anything to show. False while the server is stopped.</summary>
+    [ObservableProperty]
+    private bool _hasPing;
+
+    /// <summary>
+    /// Measures both legs and works out which of them is the problem.
+    /// </summary>
+    /// <remarks>
+    /// Only while the server is up. A stopped server does not answer, and two dashes plus a verdict
+    /// of "unknown" would be a panel accusing something of being broken when nothing is.
+    /// </remarks>
+    private async Task MeasurePingAsync()
+    {
+        if (_pinging) return;
+        if (!IsRunning)
+        {
+            if (HasPing) ResetPing();
+            return;
+        }
+
+        _pinging = true;
+        try
+        {
+            var port = _properties.GetServerPort(Config.PropertiesPath) ?? 25565;
+
+            // Loopback and not the machine's own LAN address: this leg is meant to measure the
+            // server, and going out to the network card would fold the local network into it.
+            var direct = await _ping.PingAsync(PingLeg.Direct, "127.0.0.1", port);
+
+            // Skipped rather than guessed when the public port is unknown. A tunnel measured on
+            // the wrong port either fails — and reads as "the tunnel is down" when it is not — or
+            // reaches something else and reports its latency as yours.
+            var tunnel = string.IsNullOrWhiteSpace(TunnelAddress) || TunnelPublicPort <= 0
+                ? new PingResult(PingLeg.Tunnel, null, null)
+                : await _ping.PingAsync(PingLeg.Tunnel, TunnelAddress!, TunnelPublicPort);
+
+            PingDirectText = Format(direct);
+            PingTunnelText = Format(tunnel);
+            PingDirectBrush = ColourFor(direct, 120);
+            PingTunnelBrush = ColourFor(tunnel, 260);
+
+            PingVerdictText = Localizer.Get(ServerPingService.Judge(direct, tunnel) switch
+            {
+                PingVerdict.ServerSlow => "Ping_ServerSlow",
+                PingVerdict.TunnelSlow => "Ping_TunnelSlow",
+                PingVerdict.TunnelDown => "Ping_TunnelDown",
+                PingVerdict.Fine => "Ping_Fine",
+                _ => "Ping_None",
+            });
+
+            HasPing = direct.Answered || tunnel.Answered;
+        }
+        catch
+        {
+            // Measuring must never be able to break the panel it feeds.
+            ResetPing();
+        }
+        finally
+        {
+            _pinging = false;
+        }
+    }
+
+    private void ResetPing()
+    {
+        PingDirectText = PingTunnelText = "—";
+        PingDirectBrush = PingTunnelBrush = BrushGray;
+        PingVerdictText = string.Empty;
+        HasPing = false;
+    }
+
+    private static string Format(PingResult r) =>
+        r.Milliseconds is { } ms ? ms + " ms" : "—";
+
+    private static IBrush ColourFor(PingResult r, int budgetMs) =>
+        !r.Answered ? BrushGray
+        : r.Milliseconds <= budgetMs ? BrushSignalGreen
+        : r.Milliseconds <= budgetMs * 2 ? BrushAmber
+        : BrushRed;
 
     // --- Stopping an empty server ---
 
@@ -626,6 +752,12 @@ public partial class ServerViewModel : ObservableObject
     }
 
     /// <summary>Gets the tunnel address from the playit API, matching by port.</summary>
+    /// <remarks>
+    /// The whole tunnel and not just its address, because the ping needs the public port too. What
+    /// players type is only the domain — a Java tunnel publishes an SRV record so the client finds
+    /// the port on its own — but <c>TcpClient</c> does not follow SRV. Assuming 25565 would connect
+    /// somewhere else entirely and report a number that looks like a ping and is not one.
+    /// </remarks>
     private async Task RefreshTunnelAddressAsync()
     {
         try
@@ -633,9 +765,13 @@ public partial class ServerViewModel : ObservableObject
             var port = _properties.GetServerPort(Config.PropertiesPath);
             if (!port.HasValue) return;
 
-            var address = await _playitApi.GetAddressForPortAsync(port.Value);
-            if (!string.IsNullOrEmpty(address))
-                RunOnUi(() => TunnelAddress = address);
+            var tunnel = await _playitApi.GetTunnelAsync(port.Value, udp: false);
+            if (tunnel?.Address is { Length: > 0 } address)
+                RunOnUi(() =>
+                {
+                    TunnelAddress = address;
+                    TunnelPublicPort = tunnel.PublicPort;
+                });
         }
         catch
         {

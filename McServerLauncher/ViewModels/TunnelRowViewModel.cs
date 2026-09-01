@@ -21,6 +21,16 @@ public sealed class TunnelRowViewModel
 
     public string Id => _row.Tunnel.Id;
 
+    /// <summary>
+    /// The name you gave it on playit.gg.
+    /// </summary>
+    /// <remarks>
+    /// Shown because a column of <c>gl.joinmc.link</c> subdomains all look alike, and the name is
+    /// the only thing in the row a person chose. Read-only here: renaming is playit's, and an
+    /// editable box that silently kept its change locally would be worse than no box at all.
+    /// </remarks>
+    public string Name => _row.Tunnel.Name;
+
     /// <summary>The public address, or the tunnel's own name when it has none yet.</summary>
     public string Address => _row.Tunnel.Address ?? _row.Tunnel.Name;
 

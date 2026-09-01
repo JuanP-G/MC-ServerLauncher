@@ -274,7 +274,12 @@ public sealed class WakeOnDemandListener : IDisposable
     // --- protocol plumbing ---------------------------------------------------------------------
 
     /// <summary>Reads one length-prefixed packet, or null if it is absent, truncated or absurd.</summary>
-    private static (int Id, MemoryStream Body)? ReadPacket(Stream stream)
+    /// <remarks>
+    /// Internal rather than private so <see cref="ServerPingService"/> can use it: it speaks the
+    /// same protocol from the other side. A second copy would be one more place for the two halves
+    /// to drift apart, which is exactly how <c>Match</c> came to be written.
+    /// </remarks>
+    internal static (int Id, MemoryStream Body)? ReadPacket(Stream stream)
     {
         var length = TryReadVarInt(stream);
         if (length is null or <= 0 or > MaxPacketBytes) return null;
@@ -292,7 +297,8 @@ public sealed class WakeOnDemandListener : IDisposable
         return (ReadVarInt(body), body);
     }
 
-    private static void Send(Stream stream, int id, Action<Stream> writeBody)
+    /// <inheritdoc cref="ReadPacket" />
+    internal static void Send(Stream stream, int id, Action<Stream> writeBody)
     {
         using var payload = new MemoryStream();
         WriteVarInt(payload, id);

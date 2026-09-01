@@ -755,4 +755,20 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Tun_OrphanHint" xml:space="preserve"><value>Sobrou de um servidor que já não existe. Ocupa um lugar na tua conta sem servir nada.</value></data>
   <data name="Tun_ClashHint" xml:space="preserve"><value>Outro túnel aponta para a mesma porta local. Só um dos dois pode funcionar.</value></data>
   <data name="Tun_DeleteFmt" xml:space="preserve"><value>Apagar o túnel «{0}»? Isto não toca em nenhum servidor.</value></data>
+  <data name="Ping_Direct" xml:space="preserve"><value>Direto</value></data>
+  <data name="Ping_Tunnel" xml:space="preserve"><value>Túnel</value></data>
+  <data name="Ping_Title" xml:space="preserve"><value>Ping</value></data>
+  <data name="Ping_None" xml:space="preserve"><value>—</value></data>
+  <data name="Ping_Fine" xml:space="preserve"><value>Tudo normal. Se alguém tiver problemas, é a ligação dessa pessoa.</value></data>
+  <data name="Ping_ServerSlow" xml:space="preserve"><value>É o teu servidor: demora a responder aqui mesmo.</value></data>
+  <data name="Ping_TunnelSlow" xml:space="preserve"><value>O teu servidor está bem. O que está lento é o túnel do Playit.</value></data>
+  <data name="Ping_TunnelDown" xml:space="preserve"><value>O teu servidor responde aqui, mas pelo túnel não responde nada.</value></data>
+  <data name="Ping_Disclaimer" xml:space="preserve"><value>Ambos partem deste computador e voltam a ele. NÃO é o ping dos teus amigos: o troço entre eles e o Playit não passa por aqui e não se pode medir.</value></data>
+  <data name="Tun_ColName" xml:space="preserve"><value>Nome</value></data>
+  <data name="Tun_Selected" xml:space="preserve"><value>Servidor selecionado</value></data>
+  <data name="Tun_Rename" xml:space="preserve"><value>Mudar o nome</value></data>
+  <data name="Tun_RenameHint" xml:space="preserve"><value>O nome é só teu: vê-lo aqui e em playit.gg, e não muda o endereço nem a porta.</value></data>
+  <data name="Tun_EditOnWeb" xml:space="preserve"><value>Mudar o nome em playit.gg</value></data>
+  <data name="Port_Java" xml:space="preserve"><value>Porta Java</value></data>
+  <data name="Port_Bedrock" xml:space="preserve"><value>Porta Bedrock</value></data>
 </root>

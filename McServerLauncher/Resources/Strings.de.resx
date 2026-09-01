@@ -755,4 +755,20 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Tun_OrphanHint" xml:space="preserve"><value>Übrig von einem Server, den es nicht mehr gibt. Belegt einen Platz im Konto, ohne etwas zu bedienen.</value></data>
   <data name="Tun_ClashHint" xml:space="preserve"><value>Ein anderer Tunnel zeigt auf denselben lokalen Port. Nur einer von beiden kann funktionieren.</value></data>
   <data name="Tun_DeleteFmt" xml:space="preserve"><value>Tunnel „{0}“ löschen? Das rührt keinen Server an.</value></data>
+  <data name="Ping_Direct" xml:space="preserve"><value>Direkt</value></data>
+  <data name="Ping_Tunnel" xml:space="preserve"><value>Tunnel</value></data>
+  <data name="Ping_Title" xml:space="preserve"><value>Ping</value></data>
+  <data name="Ping_None" xml:space="preserve"><value>—</value></data>
+  <data name="Ping_Fine" xml:space="preserve"><value>Alles normal. Wenn es bei jemandem hakt, liegt es an dessen Verbindung.</value></data>
+  <data name="Ping_ServerSlow" xml:space="preserve"><value>Es ist dein Server: er antwortet schon hier langsam.</value></data>
+  <data name="Ping_TunnelSlow" xml:space="preserve"><value>Dein Server ist in Ordnung. Langsam ist der Playit-Tunnel.</value></data>
+  <data name="Ping_TunnelDown" xml:space="preserve"><value>Dein Server antwortet hier, durch den Tunnel aber nichts.</value></data>
+  <data name="Ping_Disclaimer" xml:space="preserve"><value>Beide beginnen und enden an diesem Rechner. Das ist NICHT der Ping deiner Freunde: die Strecke zwischen ihnen und Playit berührt diesen Rechner nie und lässt sich nicht messen.</value></data>
+  <data name="Tun_ColName" xml:space="preserve"><value>Name</value></data>
+  <data name="Tun_Selected" xml:space="preserve"><value>Ausgewählter Server</value></data>
+  <data name="Tun_Rename" xml:space="preserve"><value>Umbenennen</value></data>
+  <data name="Tun_RenameHint" xml:space="preserve"><value>Der Name ist nur für dich: du siehst ihn hier und auf playit.gg, und er ändert weder Adresse noch Port.</value></data>
+  <data name="Tun_EditOnWeb" xml:space="preserve"><value>Auf playit.gg umbenennen</value></data>
+  <data name="Port_Java" xml:space="preserve"><value>Java-Port</value></data>
+  <data name="Port_Bedrock" xml:space="preserve"><value>Bedrock-Port</value></data>
 </root>

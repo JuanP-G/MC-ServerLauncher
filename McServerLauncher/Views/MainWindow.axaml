@@ -55,7 +55,7 @@
             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                 <ic:SymbolIcon Grid.Column="0" Symbol="ArrowDownload" Foreground="White"
                                VerticalAlignment="Center" Margin="0,0,10,0" />
-                <TextBlock Text="{Binding UpdateText}" Foreground="White" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding UpdateText}" Foreground="White" VerticalAlignment="Center" />
                 <Button Grid.Column="2" Content="{loc:Loc Update_Now}" Margin="0,0,8,0" Command="{Binding UpdateNowCommand}" />
                 <Button Grid.Column="3" Background="Transparent" Foreground="White"
                         Command="{Binding DismissUpdateCommand}" ToolTip.Tip="{loc:Loc Tip_Hide}">
@@ -132,23 +132,34 @@
                                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Panel>
 
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" />
-                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
-                                            <Border CornerRadius="4" Padding="5,1" VerticalAlignment="Center"
+                                    <!-- Todo lo de esta columna tiene que poder encogerse.
+                                         Un Grid no recorta a sus hijos: si el nombre y la etiqueta
+                                         piden mas ancho del que hay, no se cortan — se salen, y el
+                                         numero de jugadores de la derecha se dibuja encima. Solo
+                                         pasaba con el servidor encendido, porque es cuando ese
+                                         numero aparece, y por eso no salia en ninguna captura con
+                                         los servidores parados. -->
+                                    <StackPanel Grid.Column="1" ClipToBounds="True">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   ToolTip.Tip="{Binding Name}" />
+                                        <Grid ColumnDefinitions="Auto,*" Margin="0,2,0,0">
+                                            <Border Grid.Column="0" CornerRadius="4" Padding="5,1"
+                                                    VerticalAlignment="Center" Margin="0,0,6,0"
                                                     Background="{Binding ServerTypeBrush}">
                                                 <TextBlock Text="{Binding ServerTypeText}" FontSize="10"
                                                            FontWeight="SemiBold" Foreground="White" />
                                             </Border>
-                                            <TextBlock Text="{Binding StatusText}" FontSize="12"
+                                            <TextBlock Grid.Column="1" Text="{Binding StatusText}" FontSize="12"
+                                                       TextTrimming="CharacterEllipsis"
                                                        Foreground="{Binding StatusBrush}" VerticalAlignment="Center" />
-                                        </StackPanel>
+                                        </Grid>
                                     </StackPanel>
 
                                     <!-- Connected players when running -->
-                                    <TextBlock Text="{Binding PlayerCountText}" FontSize="12"
+                                    <TextBlock Grid.Column="2" Text="{Binding PlayerCountText}" FontSize="12"
                                                Foreground="{Binding SignalBrush}" VerticalAlignment="Center"
-                                               Margin="6,0,2,0" IsVisible="{Binding IsRunning}" />
+                                               Margin="8,0,2,0" IsVisible="{Binding IsRunning}" />
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -309,6 +320,7 @@
                          mal — empezaba a media ventana. La grafica se queda: es lo unico de aqui
                          que dice algo que el numero solo no dice, que es si va subiendo. -->
                     <Border Grid.Row="1" Classes="card" Margin="4,0,4,8" Padding="14,7">
+                      <StackPanel>
                         <!-- WrapPanel y no Grid: a 900 px de ancho una rejilla de columnas fijas empuja
                              "Puerto" fuera de la ventana en vez de bajarlo de linea. -->
                         <WrapPanel>
@@ -332,10 +344,52 @@
                             <TextBlock Text="{Binding UptimeText}" FontSize="15" FontWeight="SemiBold"
                                        Margin="8,0,0,0" VerticalAlignment="Center" />
 
-                            <TextBlock Text="{loc:Loc Port}" Classes="statLabel" VerticalAlignment="Center" Margin="20,0,0,0" />
+                            <!-- Con crossplay hay DOS puertos y son distintos: el de Java es TCP y
+                                 el de Bedrock UDP, y quien entra desde Bedrock tiene que escribir el
+                                 suyo a mano. Enseñar solo uno bajo la etiqueta "Puerto" hacia pensar
+                                 que era el de todos. -->
+                            <TextBlock Text="{loc:Loc Port}" Classes="statLabel" VerticalAlignment="Center"
+                                       Margin="20,0,0,0" IsVisible="{Binding !IsCrossplayOn}" />
                             <TextBlock Text="{Binding PortText}" FontSize="15" FontWeight="SemiBold"
-                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                                       Margin="8,0,0,0" VerticalAlignment="Center"
+                                       IsVisible="{Binding !IsCrossplayOn}" />
+
+                            <TextBlock Text="{loc:Loc Port_Java}" Classes="statLabel" VerticalAlignment="Center"
+                                       Margin="20,0,0,0" IsVisible="{Binding IsCrossplayOn}" />
+                            <TextBlock Text="{Binding PortText}" FontSize="15" FontWeight="SemiBold"
+                                       Margin="8,0,0,0" VerticalAlignment="Center"
+                                       IsVisible="{Binding IsCrossplayOn}" />
+                            <TextBlock Text="{loc:Loc Port_Bedrock}" Classes="statLabel" VerticalAlignment="Center"
+                                       Margin="20,0,0,0" IsVisible="{Binding IsCrossplayOn}" />
+                            <TextBlock Text="{Binding BedrockLocalPortText}" FontSize="15" FontWeight="SemiBold"
+                                       Margin="8,0,0,0" VerticalAlignment="Center"
+                                       IsVisible="{Binding IsCrossplayOn}" />
+
+                            <!-- Los dos tramos, uno al lado del otro y no un numero solo.
+                                 "85 ms" no dice de quien es la culpa; directo contra tunel si, porque
+                                 el segundo contiene al primero. El tooltip dice lo que NO es, que es
+                                 tan importante como lo que es. -->
+                            <StackPanel Orientation="Horizontal" Margin="24,0,0,0"
+                                        VerticalAlignment="Center" IsVisible="{Binding HasPing}"
+                                        ToolTip.Tip="{loc:Loc Ping_Disclaimer}">
+                                <TextBlock Text="{loc:Loc Ping_Direct}" Classes="statLabel"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding PingDirectText}" FontSize="15" FontWeight="SemiBold"
+                                           Foreground="{Binding PingDirectBrush}"
+                                           Margin="8,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{loc:Loc Ping_Tunnel}" Classes="statLabel"
+                                           VerticalAlignment="Center" Margin="20,0,0,0" />
+                                <TextBlock Text="{Binding PingTunnelText}" FontSize="15" FontWeight="SemiBold"
+                                           Foreground="{Binding PingTunnelBrush}"
+                                           Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
                         </WrapPanel>
+
+                        <!-- La frase que dice de quien es la culpa, debajo y no en la misma fila:
+                             es una frase, y en la fila competiria por el ancho con las medidas. -->
+                        <TextBlock Text="{Binding PingVerdictText}" IsVisible="{Binding HasPingVerdict}"
+                                   FontSize="12" TextWrapping="Wrap" Opacity="0.8" Margin="0,7,0,0" />
+                      </StackPanel>
                     </Border>
 
                     <!-- Playit.gg -->
