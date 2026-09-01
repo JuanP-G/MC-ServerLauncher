@@ -15,23 +15,6 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Styles>
-        <Style Selector="Border.stat">
-            <Setter Property="Background" Value="#15FFFFFF" />
-            <Setter Property="BorderBrush" Value="#22FFFFFF" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="14,10" />
-            <Setter Property="Margin" Value="4" />
-        </Style>
-        <Style Selector="TextBlock.statLabel">
-            <Setter Property="Opacity" Value="0.6" />
-            <Setter Property="FontSize" Value="12" />
-        </Style>
-        <Style Selector="TextBlock.statValue">
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="0,2,0,0" />
-        </Style>
         <!-- Un interruptor de categoria: pequeno, para que quepan siete sin empujar nada. -->
         <Style Selector="ToggleButton.kindchip">
             <Setter Property="Padding" Value="7,2" />
@@ -86,7 +69,7 @@
         <Grid Grid.Row="1" ColumnDefinitions="280,*">
 
             <!-- Side panel: server list -->
-            <Border Grid.Column="0" Background="#11000000" Padding="12">
+            <Border Grid.Column="0" Background="{StaticResource GroundSidebar}" Padding="12">
                 <Grid RowDefinitions="Auto,*,Auto,Auto">
                     <TextBlock Grid.Row="0" Text="{loc:Loc Servers}" FontSize="18" FontWeight="SemiBold" Margin="4,0,0,10" />
 
@@ -176,12 +159,12 @@
                     <!-- Header: name + control buttons -->
                     <Grid Grid.Row="0" Margin="0,0,0,12" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
                         <!-- Minecraft server-list style view -->
-                        <Border Grid.Column="0" Background="#FF2B2B2B" BorderBrush="#3A3A3A" BorderThickness="1"
+                        <Border Grid.Column="0" Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}" BorderThickness="1"
                                 CornerRadius="6" Padding="10" Margin="0,0,16,0" VerticalAlignment="Center">
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <!-- Server icon (server-icon.png) or a placeholder if none. Click to change it -->
                                 <Button Grid.Column="0" Classes="iconbtn" Width="64" Height="64" Padding="0" Cursor="Hand"
-                                        Background="#1A1A1A"
+                                        Background="{StaticResource GroundWell}"
                                         ToolTip.Tip="{loc:Loc Tip_ChangeIcon}"
                                         Command="{Binding DataContext.ChangeIconForSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                                     <Panel>
@@ -192,7 +175,7 @@
                                                RenderOptions.BitmapInterpolationMode="None"
                                                IsVisible="{Binding HasIcon}" />
                                         <!-- Hover overlay hinting the icon can be changed -->
-                                        <Border x:Name="HoverOverlay" Background="#99000000">
+                                        <Border x:Name="HoverOverlay" Background="{StaticResource ScrimHover}">
                                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
                                                 <ic:SymbolIcon Symbol="Edit" FontSize="16" Foreground="White" HorizontalAlignment="Center" />
                                                 <TextBlock Text="{loc:Loc Title_ChangeIcon}" Foreground="White" FontSize="9"
@@ -213,7 +196,7 @@
                                                        FontWeight="SemiBold" Foreground="White" />
                                         </Border>
                                         <TextBlock Text="{Binding GameVersionText}" FontSize="12"
-                                                   Foreground="#AAAAAA" VerticalAlignment="Center" />
+                                                   Foreground="{StaticResource McListText}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <TextBlock b:MinecraftMotd.Text="{Binding MotdText}" FontSize="13"
                                                TextWrapping="Wrap" Margin="0,3,0,0"
@@ -223,7 +206,7 @@
                                 <!-- Players + signal bars -->
                                 <StackPanel Grid.Column="2" Orientation="Horizontal"
                                             VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10,2,0,0">
-                                    <TextBlock Text="{Binding PlayerCountText}" Foreground="#AAAAAA" FontSize="13"
+                                    <TextBlock Text="{Binding PlayerCountText}" Foreground="{StaticResource McListText}" FontSize="13"
                                                Margin="0,0,6,0" VerticalAlignment="Center" />
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip.Tip="{Binding SignalHint}">
                                         <Rectangle Width="3" Height="4" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
@@ -237,7 +220,7 @@
                         </Border>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <Border HorizontalAlignment="Right" Margin="0,0,0,8" CornerRadius="10" Padding="10,3" Background="#22FFFFFF">
+                            <Border HorizontalAlignment="Right" Margin="0,0,0,8" CornerRadius="10" Padding="10,3" Background="{StaticResource SurfaceChip}">
                                 <StackPanel Orientation="Horizontal">
                                     <Ellipse Width="10" Height="10" Fill="{Binding StatusBrush}" VerticalAlignment="Center" Margin="0,0,7,0" />
                                     <TextBlock Text="{Binding StatusText}" FontSize="14" FontWeight="SemiBold"
@@ -249,10 +232,10 @@
                             <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right"
                                         Margin="0,-4,2,8" IsVisible="{Binding HasIdleCountdown}"
                                         ToolTip.Tip="{loc:Loc Idle_CountdownHint}">
-                                <ic:SymbolIcon Symbol="Timer" FontSize="13" Foreground="#AAAAAA"
+                                <ic:SymbolIcon Symbol="Timer" FontSize="13" Foreground="{StaticResource McListText}"
                                                VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding IdleCountdownText}" FontSize="12"
-                                           Foreground="#AAAAAA" VerticalAlignment="Center" />
+                                           Foreground="{StaticResource McListText}" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                                 <Button Classes="accent" Command="{Binding StartCommand}">
@@ -288,8 +271,8 @@
                                 CornerRadius="6" Background="{StaticResource SemanticDangerPanel}" BorderBrush="{StaticResource SemanticDanger}" BorderThickness="1"
                                 IsVisible="{Binding ShowTunnelWarning}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <ic:SymbolIcon Symbol="Warning" Foreground="#FF8A8A" VerticalAlignment="Center" />
-                                <TextBlock Foreground="#FFC9C9" TextWrapping="Wrap" VerticalAlignment="Center"
+                                <ic:SymbolIcon Symbol="Warning" Foreground="{StaticResource DangerIcon}" VerticalAlignment="Center" />
+                                <TextBlock Foreground="{StaticResource DangerText}" TextWrapping="Wrap" VerticalAlignment="Center"
                                            Text="{loc:Loc Signal_NoTunnel}" />
                             </StackPanel>
                         </Border>
@@ -297,7 +280,7 @@
 
                     <!-- Status cards -->
                     <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,8">
-                        <Border Classes="stat">
+                        <Border Classes="card stat">
                             <StackPanel>
                                 <TextBlock Text="CPU" Classes="statLabel" />
                                 <TextBlock Text="{Binding CpuText}" Classes="statValue" />
@@ -306,22 +289,22 @@
                                                     Stroke="{StaticResource SemanticOk}" />
                             </StackPanel>
                         </Border>
-                        <Border Classes="stat">
+                        <Border Classes="card stat">
                             <StackPanel>
                                 <TextBlock Text="RAM" Classes="statLabel" />
                                 <TextBlock Text="{Binding RamText}" Classes="statValue" />
                                 <controls:Sparkline Height="22" Margin="0,4,0,0"
                                                     Values="{Binding RamSeries}"
-                                                    Stroke="#5A8AB5" />
+                                                    Stroke="{StaticResource SparklineRam}" />
                             </StackPanel>
                         </Border>
-                        <Border Classes="stat">
+                        <Border Classes="card stat">
                             <StackPanel>
                                 <TextBlock Text="{loc:Loc Uptime}" Classes="statLabel" />
                                 <TextBlock Text="{Binding UptimeText}" Classes="statValue" />
                             </StackPanel>
                         </Border>
-                        <Border Classes="stat">
+                        <Border Classes="card stat">
                             <StackPanel>
                                 <TextBlock Text="{loc:Loc Port}" Classes="statLabel" />
                                 <TextBlock Text="{Binding PortText}" Classes="statValue" />
@@ -330,7 +313,7 @@
                     </UniformGrid>
 
                     <!-- Playit.gg -->
-                    <Border Grid.Row="2" Classes="stat" Margin="4,4,4,12">
+                    <Border Grid.Row="2" Classes="card stat" Margin="4,4,4,12">
                       <StackPanel>
                         <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
@@ -416,7 +399,7 @@
                         <TabItem Header="{loc:Loc Console}">
                             <Grid Margin="0,8,0,0" RowDefinitions="*,Auto">
                                 <!-- Console -->
-                                <Border Grid.Row="0" Classes="stat" Margin="0" Padding="0">
+                                <Border Grid.Row="0" Classes="card stat" Margin="0" Padding="0">
                                     <Grid RowDefinitions="Auto,*">
                                         <Grid Grid.Row="0" Margin="12,8" ColumnDefinitions="Auto,*,Auto,Auto,Auto">
                                             <TextBlock Grid.Column="0" Text="{loc:Loc Console}" FontWeight="SemiBold" VerticalAlignment="Center" />
@@ -470,7 +453,7 @@
                                                  ItemsSource="{Binding VisibleConsoleLines}"
                                                  b:AutoScrollBehavior.AutoScroll="True"
                                                  FontFamily="Cascadia Mono, Consolas, monospace"
-                                                 FontSize="12" Background="#1E1E1E" BorderThickness="0"
+                                                 FontSize="12" Background="{StaticResource GroundPopup}" BorderThickness="0"
                                                  Padding="0,0,0,4" SelectionMode="Multiple"
                                                  KeyDown="ConsoleList_KeyDown"
                                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -524,7 +507,7 @@
                                     <Popup PlacementTarget="{Binding #CommandHelpToggle}" Placement="Top"
                                            IsOpen="{Binding IsCommandHelpOpen, Mode=TwoWay}" IsLightDismissEnabled="True"
                                            HorizontalOffset="0" VerticalOffset="-6">
-                                        <Border Background="#1F1F1F" BorderBrush="#33FFFFFF" BorderThickness="1"
+                                        <Border Background="{StaticResource GroundPopup}" BorderBrush="{StaticResource SurfaceEdgeStrong}" BorderThickness="1"
                                                 CornerRadius="8" Width="460" MaxHeight="380" Padding="6">
                                             <Grid RowDefinitions="Auto,*">
                                                 <TextBlock Grid.Row="0" Margin="8,6,8,8" Opacity="0.8" TextWrapping="Wrap"
@@ -576,7 +559,7 @@
                                     </Grid>
 
                                     <!-- Connected -->
-                                    <Border Classes="stat">
+                                    <Border Classes="card stat">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Connected}" />
@@ -595,7 +578,7 @@
                                                                 <Button Content="{loc:Loc Kick}" Padding="8,2"
                                                                         Command="{Binding DataContext.KickPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                         CommandParameter="{Binding}" />
-                                                                <Button Content="{loc:Loc Ban}" Padding="8,2" Background="#C42B1C" Foreground="White"
+                                                                <Button Content="{loc:Loc Ban}" Padding="8,2" Background="{StaticResource DangerButton}" Foreground="White"
                                                                         Command="{Binding DataContext.BanPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                         CommandParameter="{Binding}" />
                                                             </StackPanel>
@@ -607,7 +590,7 @@
                                     </Border>
 
                                     <!-- Operators -->
-                                    <Border Classes="stat">
+                                    <Border Classes="card stat">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Ops}" />
@@ -629,7 +612,7 @@
                                     </Border>
 
                                     <!-- Whitelist -->
-                                    <Border Classes="stat">
+                                    <Border Classes="card stat">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Whitelist}" />
@@ -666,7 +649,7 @@
                                     </Border>
 
                                     <!-- Banned -->
-                                    <Border Classes="stat">
+                                    <Border Classes="card stat">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Banned}" />
@@ -688,7 +671,7 @@
                                     </Border>
 
                                     <!-- Known -->
-                                    <Border Classes="stat">
+                                    <Border Classes="card stat">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Known}" />

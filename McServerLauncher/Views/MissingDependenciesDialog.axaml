@@ -35,7 +35,7 @@
             <TextBlock x:Name="HintText" TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
         </StackPanel>
 
-        <Border Grid.Row="1" Background="#15FFFFFF" Padding="20,12">
+        <Border Grid.Row="1" Background="{StaticResource SurfaceCard}" Padding="20,12">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                 <Button Content="{loc:Loc Cancel}" Click="Cancel_Click" MinWidth="110" />
                 <Button Content="{loc:Loc Deps_StartAnyway}" Click="StartAnyway_Click" MinWidth="110" />

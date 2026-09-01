@@ -39,9 +39,12 @@
         <Style Selector="ListBox.results ListBoxItem:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
         </Style>
-        <Style Selector="Border.card">
-            <Setter Property="Background" Value="#1A1A1A" />
-            <Setter Property="BorderBrush" Value="#1AFFFFFF" />
+        <!-- Un azulejo de la lista de resultados. Se llamaba Border.card y NO es la tarjeta
+             translucida del resto de la app: es solido y mas pequeno. Compartian nombre sin
+             compartir aspecto, y solo no chocaban porque cada estilo vivia dentro de su vista. -->
+        <Style Selector="Border.tile">
+            <Setter Property="Background" Value="{StaticResource GroundWell}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdgeSoft}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Padding" Value="10" />
@@ -49,8 +52,8 @@
                  content instead of taking space of its own. -->
             <Setter Property="Margin" Value="0,0,10,8" />
         </Style>
-        <Style Selector="Border.card:pointerover">
-            <Setter Property="BorderBrush" Value="#40FFFFFF" />
+        <Style Selector="Border.tile:pointerover">
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdgeHover}" />
         </Style>
         <Style Selector="TextBlock.popupTitle">
             <Setter Property="FontSize" Value="13" />
@@ -70,7 +73,7 @@
     <Grid ColumnDefinitions="*,300" Margin="0,8,0,0">
 
         <!-- Left: the browser, or the details page in its place -->
-        <Border Grid.Column="0" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
+        <Border Grid.Column="0" Background="{StaticResource SurfaceCard}" BorderBrush="{StaticResource SurfaceEdge}" BorderThickness="1"
                 CornerRadius="8" Padding="12" Margin="0,0,8,0">
             <Panel>
                 <!-- The details page replaces the list in place; the list is kept alive underneath
@@ -256,10 +259,10 @@
                                     <DataTemplate>
                                         <!-- Double-click anywhere on the card opens its details; the
                                              ⓘ button is there to make that discoverable. -->
-                                        <Border Classes="card" DoubleTapped="OnCardDoubleTapped">
+                                        <Border Classes="tile" DoubleTapped="OnCardDoubleTapped">
                                             <Grid ColumnDefinitions="Auto,*,Auto">
                                                 <Border Grid.Column="0" Width="48" Height="48" CornerRadius="6"
-                                                        Background="#22FFFFFF" Margin="0,0,10,0"
+                                                        Background="{StaticResource SurfaceChip}" Margin="0,0,10,0"
                                                         ClipToBounds="True" VerticalAlignment="Top">
                                                     <Panel>
                                                         <ic:SymbolIcon Symbol="Box" FontSize="22" Opacity="0.5"
@@ -385,7 +388,7 @@
         </Border>
 
         <!-- Right: installed -->
-        <Border Grid.Column="1" Background="#15FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
+        <Border Grid.Column="1" Background="{StaticResource SurfaceCard}" BorderBrush="{StaticResource SurfaceEdge}" BorderThickness="1"
                 CornerRadius="8" Padding="12">
             <Grid RowDefinitions="Auto,Auto,*">
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,12">
