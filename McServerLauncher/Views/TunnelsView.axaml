@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             x:Class="McServerLauncher.Views.TunnelsView"
+             x:CompileBindings="False">
+
+    <!-- Playit vivia en medio del detalle del servidor, ocupando tres filas hubiera tunel o no, y
+         empujando la consola a media pantalla. Es de tu CUENTA, no de un servidor: por eso tiene
+         seccion propia. De momento ensena el del servidor seleccionado; la tabla de todos los
+         tuneles de la cuenta, con los huerfanos y los que chocan, es la fase siguiente. -->
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="18" Spacing="14">
+            <StackPanel Spacing="3">
+                <TextBlock Text="{loc:Loc Nav_Tunnels}" FontSize="20" FontWeight="Bold" />
+                <TextBlock Text="{loc:Loc Tunnels_Subtitle}" FontSize="12.5" Opacity="0.65"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel DataContext="{Binding SelectedServer}"
+                        IsVisible="{Binding DataContext.HasSelection, RelativeSource={RelativeSource AncestorType=Window}}">
+                <Border Classes="card" Margin="0">
+                  <StackPanel>
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding PlayitStatusText}" FontSize="12" Opacity="0.7" />
+                        </StackPanel>
+                        <TextBox Grid.Column="1" Margin="16,0" Text="{Binding TunnelAddress}"
+                                 Watermark="{loc:Loc Tunnel_Placeholder}" VerticalAlignment="Center" />
+                        <Button Grid.Column="2" Command="{Binding CopyTunnelAddressCommand}" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Copy" />
+                                <TextBlock Text="{loc:Loc Copy}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="3" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Tip_CreateTunnel}"
+                                Command="{Binding DataContext.CreateTunnelForSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="AddCircle" />
+                                <TextBlock Text="{loc:Loc CreateTunnel}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="4" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Tip_Web}"
+                                Command="{Binding OpenPlayitDashboardCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Open" />
+                                <TextBlock Text="Web" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="5" ToolTip.Tip="{loc:Loc Tip_Service}" Command="{Binding TogglePlayitCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Power" />
+                                <TextBlock Text="{loc:Loc Service}" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <!-- Bedrock: host and port in separate boxes, because that is how the
+                         Bedrock client asks for them. There is no SRV record for Bedrock, so
+                         pasting "host:port" into its address field simply fails. -->
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="0,10,0,0"
+                          IsVisible="{Binding HasBedrockAddress}">
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="SemiBold"
+                                   Text="{loc:Loc Crossplay_BedrockAddress}" />
+                        <TextBox Grid.Column="1" Margin="16,0,8,0" IsReadOnly="True"
+                                 Text="{Binding BedrockHost}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="0,0,8,0"
+                                   Opacity="0.7" Text="{loc:Loc Crossplay_BedrockPort}" />
+                        <TextBox Grid.Column="3" Width="90" Margin="0,0,8,0" IsReadOnly="True"
+                                 Text="{Binding BedrockPortText}" VerticalAlignment="Center" />
+                        <Button Grid.Column="4" Command="{Binding CopyBedrockAddressCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Copy" />
+                                <TextBlock Text="{loc:Loc Copy}" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <!-- The local port and the state show whenever crossplay is on, not only
+                         once a tunnel lookup has succeeded. The port is known from the moment
+                         Geyser is set up, and it is what works on this network; the line under
+                         it says why there is no public address yet, instead of leaving the
+                         whole block invisible and the server looking broken. -->
+                    <Grid ColumnDefinitions="Auto,Auto,*" Margin="0,10,0,0"
+                          IsVisible="{Binding IsCrossplayOn}">
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" Opacity="0.7"
+                                   Text="{loc:Loc Crossplay_LocalPort}" />
+                        <TextBox Grid.Column="1" Width="90" Margin="8,0,0,0" IsReadOnly="True"
+                                 Text="{Binding BedrockLocalPortText}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="12,0,0,0"
+                                   FontSize="11" Opacity="0.75" TextWrapping="Wrap"
+                                   Text="{Binding BedrockStateText}" />
+                    </Grid>
+                    <TextBlock IsVisible="{Binding HasBedrockAddress}" FontSize="11" Opacity="0.55"
+                               TextWrapping="Wrap" Margin="4,4,4,0"
+                               Text="{loc:Loc Crossplay_BedrockHint}" />
+
+                    <!-- Third-party integration disclaimer (required by Playit's rules) -->
+                    <TextBlock Text="{loc:Loc Pk_Disclaimer}" FontSize="11" Opacity="0.55"
+                               TextWrapping="Wrap" Margin="4,8,4,2" />
+                  </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <TextBlock Text="{loc:Loc EmptyState}" Opacity="0.6" FontSize="14"
+                       IsVisible="{Binding !HasSelection}" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

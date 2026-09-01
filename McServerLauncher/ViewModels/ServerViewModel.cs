@@ -1463,7 +1463,13 @@ public partial class ServerViewModel : ObservableObject
             await cb.SetTextAsync(TunnelAddress);
     }
 
-    private bool HasTunnelAddress => !string.IsNullOrEmpty(TunnelAddress);
+    /// <summary>Whether there is a public address worth showing (and copying).</summary>
+    /// <remarks>
+    /// Public because the server pane binds its address strip to it, not only because the copy
+    /// command gates on it. The strip hides itself rather than showing an empty box: a box with
+    /// nothing in it reads as "this is broken", when the truth is only "there is no tunnel yet".
+    /// </remarks>
+    public bool HasTunnelAddress => !string.IsNullOrEmpty(TunnelAddress);
 
     partial void OnTunnelAddressChanged(string? value)
     {
@@ -1474,6 +1480,7 @@ public partial class ServerViewModel : ObservableObject
             ConfigChanged?.Invoke();
         }
         CopyTunnelAddressCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(HasTunnelAddress));
     }
 
     [RelayCommand]

@@ -723,4 +723,19 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>„{0}“ ist ein von Windows reservierter Name und taugt nicht als Ordner. Nimm einen anderen.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>Der Name darf nicht auf einen Punkt oder ein Leerzeichen enden: Windows schneidet sie ab, und der Ordner hieße am Ende anders.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper und Purpur starten nicht, wenn der Pfad „{0}“ enthält, und dieses Zeichen steckt in einem übergeordneten Ordner, nicht im Serverordner. Ändere ihn selbst oder wähle einen anderen: Ihn von hier umzubenennen würde alles darin mitbewegen.</value></data>
+  <data name="Nav_Servers" xml:space="preserve"><value>Server</value></data>
+  <data name="Nav_Tunnels" xml:space="preserve"><value>Tunnel</value></data>
+  <data name="About_Title" xml:space="preserve"><value>Über</value></data>
+  <data name="About_VersionFmt" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="About_Tagline" xml:space="preserve"><value>Erstelle und verwalte Minecraft-Server — Java und Bedrock zugleich — ohne Kampf mit Ports, Java-Versionen oder Mod-Abhängigkeiten.</value></data>
+  <data name="About_Repo" xml:space="preserve"><value>Repository ansehen</value></data>
+  <data name="About_ReportBug" xml:space="preserve"><value>Fehler melden</value></data>
+  <data name="About_Whatsnew" xml:space="preserve"><value>Neu in dieser Version</value></data>
+  <data name="About_BuiltOn" xml:space="preserve"><value>GEBAUT AUF</value></data>
+  <data name="About_Legal" xml:space="preserve"><value>MC Server Launcher steht in keiner Verbindung zu Mojang, Microsoft oder Playit.gg. Minecraft ist eine Marke von Mojang AB.</value></data>
+  <data name="Tunnels_Subtitle" xml:space="preserve"><value>Alles, was Playit mit deinem Konto offen hat — ob von dieser App angelegt oder nicht.</value></data>
+  <data name="About_Close" xml:space="preserve"><value>Schließen</value></data>
+  <data name="About_Latest" xml:space="preserve"><value>Nach Updates suchen</value></data>
+  <data name="About_UpToDate" xml:space="preserve"><value>Du hast die neueste Version</value></data>
+  <data name="About_Newer" xml:space="preserve"><value>Eine neuere Version ist verfügbar</value></data>
 </root>

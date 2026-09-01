@@ -42,6 +42,31 @@ public partial class MainViewModel : ObservableObject
 
     public bool HasSelection => SelectedServer is not null;
 
+    /// <summary>Which part of the app the rail is showing.</summary>
+    [ObservableProperty]
+    private AppSection _section = AppSection.Servers;
+
+    /// <summary>
+    /// One flag per section, because a view cannot compare an enum without a converter and adding
+    /// one for two values would be more machinery than it saves.
+    /// </summary>
+    public bool IsServersSection => Section == AppSection.Servers;
+
+    /// <inheritdoc cref="IsServersSection" />
+    public bool IsTunnelsSection => Section == AppSection.Tunnels;
+
+    partial void OnSectionChanged(AppSection value)
+    {
+        OnPropertyChanged(nameof(IsServersSection));
+        OnPropertyChanged(nameof(IsTunnelsSection));
+    }
+
+    [RelayCommand]
+    private void ShowServers() => Section = AppSection.Servers;
+
+    [RelayCommand]
+    private void ShowTunnels() => Section = AppSection.Tunnels;
+
     [ObservableProperty]
     private bool _updateAvailable;
 
@@ -147,6 +172,14 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>Opens the app settings (language, notifications, …).</summary>
+    /// <summary>Version, repositorio, reportar un fallo y los avisos legales.</summary>
+    [RelayCommand]
+    private async Task OpenAbout()
+    {
+        if (Owner is null) return;
+        await new AboutDialog(UpdateAvailable).ShowDialog(Owner);
+    }
+
     [RelayCommand]
     private async Task OpenSettings()
     {

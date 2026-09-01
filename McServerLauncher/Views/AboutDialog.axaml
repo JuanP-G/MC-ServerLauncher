@@ -1,0 +1,96 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        x:Class="McServerLauncher.Views.AboutDialog"
+        x:CompileBindings="False"
+        Title="{loc:Loc About_Title}"
+        Width="560" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="*,Auto">
+        <StackPanel Grid.Row="0" Margin="26,26,26,20" Spacing="18">
+
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <!-- El icono real de la app, el mismo que lleva la ventana principal. -->
+                <Border Width="66" Height="66" CornerRadius="14" ClipToBounds="True"
+                        Background="{StaticResource GroundWell}">
+                    <Image Source="/Resources/app.ico" Width="66" Height="66" />
+                </Border>
+                <StackPanel VerticalAlignment="Center" Spacing="3">
+                    <TextBlock Text="MC Server Launcher" FontSize="21" FontWeight="Bold" />
+                    <TextBlock x:Name="VersionText" FontSize="13" Opacity="0.65"
+                               FontFamily="Cascadia Mono, Consolas, monospace" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,3,0,0">
+                        <Ellipse x:Name="UpdateDot" Width="9" Height="9" VerticalAlignment="Center" />
+                        <TextBlock x:Name="UpdateText" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+
+            <TextBlock Text="{loc:Loc About_Tagline}" FontSize="13" Opacity="0.8" TextWrapping="Wrap" />
+
+            <UniformGrid Columns="2">
+                <Button Margin="0,0,4,4" HorizontalAlignment="Stretch" Click="Repo_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <ic:SymbolIcon Symbol="Code" />
+                        <TextBlock Text="{loc:Loc About_Repo}" />
+                    </StackPanel>
+                </Button>
+                <Button Margin="0,0,4,4" HorizontalAlignment="Stretch" Click="Bug_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <ic:SymbolIcon Symbol="Bug" />
+                        <TextBlock Text="{loc:Loc About_ReportBug}" />
+                    </StackPanel>
+                </Button>
+                <Button Margin="0,0,4,4" HorizontalAlignment="Stretch" Click="Whatsnew_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <ic:SymbolIcon Symbol="Sparkle" />
+                        <TextBlock Text="{loc:Loc About_Whatsnew}" />
+                    </StackPanel>
+                </Button>
+                <Button Margin="0,0,4,4" HorizontalAlignment="Stretch" Click="Releases_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <ic:SymbolIcon Symbol="ArrowDownload" />
+                        <TextBlock Text="{loc:Loc About_Latest}" />
+                    </StackPanel>
+                </Button>
+            </UniformGrid>
+
+            <StackPanel Spacing="9">
+                <Border Height="1" Background="{StaticResource SurfaceEdge}" />
+                <TextBlock Text="{loc:Loc About_BuiltOn}" FontSize="11" Opacity="0.5" />
+                <ItemsControl x:Name="CreditsList">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,0,6,6" Padding="9,3" CornerRadius="4"
+                                    Background="{StaticResource SurfaceChip}">
+                                <TextBlock Text="{Binding}" FontSize="11.5" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <!-- El aviso de Playit es obligatorio por sus normas de integracion, y estaba suelto
+                     en la pantalla del servidor, donde estorbaba a lo que se mira todos los dias.
+                     Aqui esta junto al resto de lo legal, que es donde se va a buscar. -->
+                <TextBlock Text="{loc:Loc About_Legal}" FontSize="11" Opacity="0.5" TextWrapping="Wrap" />
+                <TextBlock Text="{loc:Loc Pk_Disclaimer}" FontSize="11" Opacity="0.5" TextWrapping="Wrap" />
+            </StackPanel>
+        </StackPanel>
+
+        <Border Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="{StaticResource SurfaceEdge}"
+                Padding="26,12">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="MIT" FontSize="11.5" Opacity="0.45"
+                           VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="{loc:Loc About_Close}" Click="Close_Click" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

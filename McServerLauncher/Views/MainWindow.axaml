@@ -15,6 +15,25 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Styles>
+        <!-- Una entrada del rail. Icono arriba y etiqueta debajo: un rail de solo iconos
+             obliga a adivinar, y "Tuneles" no tiene un icono que se entienda solo. -->
+        <Style Selector="Button.rail">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="4,9,4,7" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Opacity" Value="0.62" />
+        </Style>
+        <Style Selector="Button.rail:pointerover">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <!-- La seccion en la que estas se ve encendida, no solo un poco menos apagada. -->
+        <Style Selector="Button.rail.on">
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+
         <!-- "Change icon" overlay: hidden by default, fades in when hovering the icon button -->
         <Style Selector="Button.iconbtn Border#HoverOverlay">
             <Setter Property="Opacity" Value="0" />
@@ -36,7 +55,7 @@
             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                 <ic:SymbolIcon Grid.Column="0" Symbol="ArrowDownload" Foreground="White"
                                VerticalAlignment="Center" Margin="0,0,10,0" />
-                <TextBlock Grid.Column="1" Text="{Binding UpdateText}" Foreground="White" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding UpdateText}" Foreground="White" VerticalAlignment="Center" />
                 <Button Grid.Column="2" Content="{loc:Loc Update_Now}" Margin="0,0,8,0" Command="{Binding UpdateNowCommand}" />
                 <Button Grid.Column="3" Background="Transparent" Foreground="White"
                         Command="{Binding DismissUpdateCommand}" ToolTip.Tip="{loc:Loc Tip_Hide}">
@@ -45,11 +64,56 @@
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" ColumnDefinitions="280,*">
+        <Grid Grid.Row="1" ColumnDefinitions="78,*">
+
+            <!-- Los ambitos de la app. Antes no habia ningun sitio para lo que no es de un
+                 servidor concreto, asi que Playit acababa dentro del servidor y Ajustes colgando
+                 del pie de la lista. Servidores y Tuneles cambian lo que llena la ventana;
+                 Ajustes y Acerca de abren su dialogo, que es lo que ya eran. -->
+            <Border Grid.Column="0" Background="{StaticResource GroundPopup}" Padding="6,10">
+                <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+                    <Button Grid.Row="0" Classes="rail" Classes.on="{Binding IsServersSection}"
+                            Command="{Binding ShowServersCommand}">
+                        <StackPanel Spacing="3">
+                            <ic:SymbolIcon Symbol="Server" FontSize="19" HorizontalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Nav_Servers}" FontSize="10.5" TextAlignment="Center"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="1" Classes="rail" Classes.on="{Binding IsTunnelsSection}"
+                            Command="{Binding ShowTunnelsCommand}">
+                        <StackPanel Spacing="3">
+                            <ic:SymbolIcon Symbol="Globe" FontSize="19" HorizontalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Nav_Tunnels}" FontSize="10.5" TextAlignment="Center"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="3" Classes="rail" Command="{Binding OpenSettingsCommand}">
+                        <StackPanel Spacing="3">
+                            <ic:SymbolIcon Symbol="Settings" FontSize="19" HorizontalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Settings_Title}" FontSize="10.5" TextAlignment="Center"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="4" Classes="rail" Command="{Binding OpenAboutCommand}">
+                        <StackPanel Spacing="3">
+                            <ic:SymbolIcon Symbol="Info" FontSize="19" HorizontalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc About_Title}" FontSize="10.5" TextAlignment="Center"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Tuneles -->
+            <views:TunnelsView Grid.Column="1" IsVisible="{Binding IsTunnelsSection}" />
+
+            <!-- Servidores -->
+            <Grid Grid.Column="1" ColumnDefinitions="236,*" IsVisible="{Binding IsServersSection}">
 
             <!-- Side panel: server list -->
             <Border Grid.Column="0" Background="{StaticResource GroundSidebar}" Padding="12">
-                <Grid RowDefinitions="Auto,*,Auto,Auto">
+                <Grid RowDefinitions="Auto,*,Auto">
                     <TextBlock Grid.Row="0" Text="{loc:Loc Servers}" FontSize="18" FontWeight="SemiBold" Margin="4,0,0,10" />
 
                     <ListBox Grid.Row="1"
@@ -82,7 +146,7 @@
                                     </StackPanel>
 
                                     <!-- Connected players when running -->
-                                    <TextBlock Grid.Column="2" Text="{Binding PlayerCountText}" FontSize="12"
+                                    <TextBlock Text="{Binding PlayerCountText}" FontSize="12"
                                                Foreground="{Binding SignalBrush}" VerticalAlignment="Center"
                                                Margin="6,0,2,0" IsVisible="{Binding IsRunning}" />
                                 </Grid>
@@ -112,15 +176,6 @@
                             </Button>
                         </StackPanel>
                     </StackPanel>
-
-                    <!-- Settings (language, notifications, …) -->
-                    <Button Grid.Row="3" Margin="0,12,0,0" HorizontalAlignment="Stretch"
-                            Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{loc:Loc Settings_Title}">
-                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                            <ic:SymbolIcon Symbol="Settings" />
-                            <TextBlock Text="{loc:Loc Settings_Title}" />
-                        </StackPanel>
-                    </Button>
                 </Grid>
             </Border>
 
@@ -223,24 +278,15 @@
                                         <TextBlock Text="{loc:Loc Start}" />
                                     </StackPanel>
                                 </Button>
-                                <Button Command="{Binding StopCommand}">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ic:SymbolIcon Symbol="Stop" />
-                                        <TextBlock Text="{loc:Loc Stop}" />
-                                    </StackPanel>
+                                <Button Command="{Binding StopCommand}" ToolTip.Tip="{loc:Loc Stop}">
+                                    <ic:SymbolIcon Symbol="Stop" />
                                 </Button>
-                                <Button Command="{Binding RestartCommand}">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ic:SymbolIcon Symbol="ArrowClockwise" />
-                                        <TextBlock Text="{loc:Loc Restart}" />
-                                    </StackPanel>
+                                <Button Command="{Binding RestartCommand}" ToolTip.Tip="{loc:Loc Restart}">
+                                    <ic:SymbolIcon Symbol="ArrowClockwise" />
                                 </Button>
                                 <Button ToolTip.Tip="{loc:Loc Tip_Configure}"
                                         Command="{Binding DataContext.ConfigureServerCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ic:SymbolIcon Symbol="Settings" />
-                                        <TextBlock Text="{loc:Loc Configure}" />
-                                    </StackPanel>
+                                    <ic:SymbolIcon Symbol="Settings" />
                                 </Button>
                             </StackPanel>
                         </StackPanel>
@@ -257,120 +303,63 @@
                         </Border>
                     </Grid>
 
-                    <!-- Status cards -->
-                    <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,8">
-                        <Border Classes="card stat">
-                            <StackPanel>
-                                <TextBlock Text="CPU" Classes="statLabel" />
-                                <TextBlock Text="{Binding CpuText}" Classes="statValue" />
-                                <controls:Sparkline Height="22" Margin="0,4,0,0"
-                                                    Values="{Binding CpuSeries}" MaxValue="100"
-                                                    Stroke="{StaticResource SemanticOk}" />
-                            </StackPanel>
-                        </Border>
-                        <Border Classes="card stat">
-                            <StackPanel>
-                                <TextBlock Text="RAM" Classes="statLabel" />
-                                <TextBlock Text="{Binding RamText}" Classes="statValue" />
-                                <controls:Sparkline Height="22" Margin="0,4,0,0"
-                                                    Values="{Binding RamSeries}"
-                                                    Stroke="{StaticResource SparklineRam}" />
-                            </StackPanel>
-                        </Border>
-                        <Border Classes="card stat">
-                            <StackPanel>
-                                <TextBlock Text="{loc:Loc Uptime}" Classes="statLabel" />
-                                <TextBlock Text="{Binding UptimeText}" Classes="statValue" />
-                            </StackPanel>
-                        </Border>
-                        <Border Classes="card stat">
-                            <StackPanel>
-                                <TextBlock Text="{loc:Loc Port}" Classes="statLabel" />
-                                <TextBlock Text="{Binding PortText}" Classes="statValue" />
-                            </StackPanel>
-                        </Border>
-                    </UniformGrid>
+                    <!-- Las cuatro medidas en una fila.
+                         Eran cuatro tarjetas de 100 px de alto para cuatro numeros cortos, y entre
+                         eso y el bloque de Playit la consola — que es lo que miras cuando algo va
+                         mal — empezaba a media ventana. La grafica se queda: es lo unico de aqui
+                         que dice algo que el numero solo no dice, que es si va subiendo. -->
+                    <Border Grid.Row="1" Classes="card" Margin="4,0,4,8" Padding="14,7">
+                        <!-- WrapPanel y no Grid: a 900 px de ancho una rejilla de columnas fijas empuja
+                             "Puerto" fuera de la ventana en vez de bajarlo de linea. -->
+                        <WrapPanel>
+                            <TextBlock Text="CPU" Classes="statLabel" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding CpuText}" FontSize="15" FontWeight="SemiBold"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                            <controls:Sparkline Width="56" Height="18" Margin="0,0,20,0"
+                                                VerticalAlignment="Center"
+                                                Values="{Binding CpuSeries}" MaxValue="100"
+                                                Stroke="{StaticResource SemanticOk}" />
+
+                            <TextBlock Text="RAM" Classes="statLabel" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding RamText}" FontSize="15" FontWeight="SemiBold"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                            <controls:Sparkline Width="56" Height="18" Margin="0,0,20,0"
+                                                VerticalAlignment="Center"
+                                                Values="{Binding RamSeries}"
+                                                Stroke="{StaticResource SparklineRam}" />
+
+                            <TextBlock Text="{loc:Loc Uptime}" Classes="statLabel" VerticalAlignment="Center" Margin="20,0,0,0" />
+                            <TextBlock Text="{Binding UptimeText}" FontSize="15" FontWeight="SemiBold"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+
+                            <TextBlock Text="{loc:Loc Port}" Classes="statLabel" VerticalAlignment="Center" Margin="20,0,0,0" />
+                            <TextBlock Text="{Binding PortText}" FontSize="15" FontWeight="SemiBold"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </WrapPanel>
+                    </Border>
 
                     <!-- Playit.gg -->
-                    <Border Grid.Row="2" Classes="card stat" Margin="4,4,4,12">
-                      <StackPanel>
-                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding PlayitStatusText}" FontSize="12" Opacity="0.7" />
-                            </StackPanel>
-                            <TextBox Grid.Column="1" Margin="16,0" Text="{Binding TunnelAddress}"
-                                     Watermark="{loc:Loc Tunnel_Placeholder}" VerticalAlignment="Center" />
-                            <Button Grid.Column="2" Command="{Binding CopyTunnelAddressCommand}" Margin="0,0,8,0">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Copy" />
-                                    <TextBlock Text="{loc:Loc Copy}" />
-                                </StackPanel>
+                    <!-- Lo unico de Playit que se mira a diario: la direccion para copiarla. Lo
+                         demas — la cuenta, el agente, crear y borrar tuneles — esta en su seccion. -->
+                    <Border Grid.Row="2" Classes="card" Margin="4,0,4,10" Padding="12,8"
+                            IsVisible="{Binding HasTunnelAddress}">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                            <TextBlock Text="Java" FontSize="11.5" Opacity="0.6"
+                                       VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <TextBox Grid.Column="1" Text="{Binding TunnelAddress}" IsReadOnly="True"
+                                     VerticalAlignment="Center"
+                                     FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12" />
+                            <Button Grid.Column="2" Margin="8,0,0,0"
+                                    Command="{Binding CopyTunnelAddressCommand}"
+                                    ToolTip.Tip="{loc:Loc Copy}">
+                                <ic:SymbolIcon Symbol="Copy" />
                             </Button>
-                            <Button Grid.Column="3" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Tip_CreateTunnel}"
-                                    Command="{Binding DataContext.CreateTunnelForSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="AddCircle" />
-                                    <TextBlock Text="{loc:Loc CreateTunnel}" />
-                                </StackPanel>
-                            </Button>
-                            <Button Grid.Column="4" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Tip_Web}"
-                                    Command="{Binding OpenPlayitDashboardCommand}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Open" />
-                                    <TextBlock Text="Web" />
-                                </StackPanel>
-                            </Button>
-                            <Button Grid.Column="5" ToolTip.Tip="{loc:Loc Tip_Service}" Command="{Binding TogglePlayitCommand}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Power" />
-                                    <TextBlock Text="{loc:Loc Service}" />
-                                </StackPanel>
+                            <Button Grid.Column="3" Margin="6,0,0,0"
+                                    Command="{Binding DataContext.ShowTunnelsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    ToolTip.Tip="{loc:Loc Nav_Tunnels}">
+                                <ic:SymbolIcon Symbol="Open" />
                             </Button>
                         </Grid>
-                        <!-- Bedrock: host and port in separate boxes, because that is how the
-                             Bedrock client asks for them. There is no SRV record for Bedrock, so
-                             pasting "host:port" into its address field simply fails. -->
-                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="0,10,0,0"
-                              IsVisible="{Binding HasBedrockAddress}">
-                            <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="SemiBold"
-                                       Text="{loc:Loc Crossplay_BedrockAddress}" />
-                            <TextBox Grid.Column="1" Margin="16,0,8,0" IsReadOnly="True"
-                                     Text="{Binding BedrockHost}" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="0,0,8,0"
-                                       Opacity="0.7" Text="{loc:Loc Crossplay_BedrockPort}" />
-                            <TextBox Grid.Column="3" Width="90" Margin="0,0,8,0" IsReadOnly="True"
-                                     Text="{Binding BedrockPortText}" VerticalAlignment="Center" />
-                            <Button Grid.Column="4" Command="{Binding CopyBedrockAddressCommand}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Copy" />
-                                    <TextBlock Text="{loc:Loc Copy}" />
-                                </StackPanel>
-                            </Button>
-                        </Grid>
-                        <!-- The local port and the state show whenever crossplay is on, not only
-                             once a tunnel lookup has succeeded. The port is known from the moment
-                             Geyser is set up, and it is what works on this network; the line under
-                             it says why there is no public address yet, instead of leaving the
-                             whole block invisible and the server looking broken. -->
-                        <Grid ColumnDefinitions="Auto,Auto,*" Margin="0,10,0,0"
-                              IsVisible="{Binding IsCrossplayOn}">
-                            <TextBlock Grid.Column="0" VerticalAlignment="Center" Opacity="0.7"
-                                       Text="{loc:Loc Crossplay_LocalPort}" />
-                            <TextBox Grid.Column="1" Width="90" Margin="8,0,0,0" IsReadOnly="True"
-                                     Text="{Binding BedrockLocalPortText}" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="12,0,0,0"
-                                       FontSize="11" Opacity="0.75" TextWrapping="Wrap"
-                                       Text="{Binding BedrockStateText}" />
-                        </Grid>
-                        <TextBlock IsVisible="{Binding HasBedrockAddress}" FontSize="11" Opacity="0.55"
-                                   TextWrapping="Wrap" Margin="4,4,4,0"
-                                   Text="{loc:Loc Crossplay_BedrockHint}" />
-
-                        <!-- Third-party integration disclaimer (required by Playit's rules) -->
-                        <TextBlock Text="{loc:Loc Pk_Disclaimer}" FontSize="11" Opacity="0.55"
-                                   TextWrapping="Wrap" Margin="4,8,4,2" />
-                      </StackPanel>
                     </Border>
 
                     <!-- Tabs: Console / Players / Mods -->
@@ -407,6 +396,7 @@
                     </TabControl>
                 </Grid>
             </Panel>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
