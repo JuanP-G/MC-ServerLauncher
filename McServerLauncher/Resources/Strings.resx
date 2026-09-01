@@ -817,4 +817,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Tun_EditOnWeb" xml:space="preserve"><value>Cambiar el nombre en playit.gg</value></data>
   <data name="Port_Java" xml:space="preserve"><value>Puerto Java</value></data>
   <data name="Port_Bedrock" xml:space="preserve"><value>Puerto Bedrock</value></data>
+  <data name="Addr_Share" xml:space="preserve"><value>Copiar dirección y puerto para enviar</value></data>
+  <data name="Addr_ShareFmt" xml:space="preserve"><value>{0} · puerto {1}</value></data>
+  <data name="Addr_CopyHost" xml:space="preserve"><value>Copiar solo la dirección</value></data>
 </root>

@@ -393,27 +393,65 @@
                     </Border>
 
                     <!-- Playit.gg -->
-                    <!-- Lo unico de Playit que se mira a diario: la direccion para copiarla. Lo
-                         demas — la cuenta, el agente, crear y borrar tuneles — esta en su seccion. -->
+                    <!-- Lo unico de Playit que se mira a diario: las direcciones, para copiarlas y
+                         mandarselas a alguien. Lo demas — la cuenta, el agente, crear y borrar
+                         tuneles — esta en su seccion.
+
+                         Las DOS, no solo la de Java. Un servidor con crossplay tiene dos direcciones
+                         DISTINTAS, y quien entra desde Bedrock necesita la suya; con solo una aqui
+                         habia que irse a otra pantalla a buscar la otra. Y el puerto que se enseña
+                         es el PUBLICO: el local de la fila de arriba es donde escucha Geyser y no le
+                         sirve a nadie de fuera de este equipo. -->
                     <Border Grid.Row="2" Classes="card" Margin="4,0,4,10" Padding="12,8"
                             IsVisible="{Binding HasTunnelAddress}">
-                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                            <TextBlock Text="Java" FontSize="11.5" Opacity="0.6"
-                                       VerticalAlignment="Center" Margin="0,0,10,0" />
-                            <TextBox Grid.Column="1" Text="{Binding TunnelAddress}" IsReadOnly="True"
-                                     VerticalAlignment="Center"
-                                     FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12" />
-                            <Button Grid.Column="2" Margin="8,0,0,0"
-                                    Command="{Binding CopyTunnelAddressCommand}"
-                                    ToolTip.Tip="{loc:Loc Copy}">
-                                <ic:SymbolIcon Symbol="Copy" />
-                            </Button>
-                            <Button Grid.Column="3" Margin="6,0,0,0"
-                                    Command="{Binding DataContext.ShowTunnelsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    ToolTip.Tip="{loc:Loc Nav_Tunnels}">
-                                <ic:SymbolIcon Symbol="Open" />
-                            </Button>
-                        </Grid>
+                        <StackPanel Spacing="7">
+                            <Grid ColumnDefinitions="76,*,Auto,Auto">
+                                <TextBlock Grid.Column="0" Text="Java" FontSize="11.5" Opacity="0.6"
+                                           VerticalAlignment="Center" Margin="0,0,10,0" />
+                                <TextBox Grid.Column="1" Text="{Binding TunnelAddress}" IsReadOnly="True"
+                                         VerticalAlignment="Center"
+                                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12" />
+                                <Button Grid.Column="2" Margin="8,0,0,0"
+                                        Command="{Binding CopyTunnelAddressCommand}"
+                                        ToolTip.Tip="{loc:Loc Copy}">
+                                    <ic:SymbolIcon Symbol="Copy" />
+                                </Button>
+                                <Button Grid.Column="3" Margin="6,0,0,0"
+                                        Command="{Binding DataContext.ShowTunnelsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        ToolTip.Tip="{loc:Loc Nav_Tunnels}">
+                                    <ic:SymbolIcon Symbol="Open" />
+                                </Button>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="76,*,Auto,84,Auto,Auto"
+                                  IsVisible="{Binding HasBedrockAddress}">
+                                <TextBlock Grid.Column="0" Text="Bedrock" FontSize="11.5" Opacity="0.6"
+                                           VerticalAlignment="Center" Margin="0,0,10,0" />
+                                <TextBox Grid.Column="1" Text="{Binding BedrockHost}" IsReadOnly="True"
+                                         VerticalAlignment="Center"
+                                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12" />
+                                <TextBlock Grid.Column="2" Text="{loc:Loc Crossplay_BedrockPort}"
+                                           FontSize="11.5" Opacity="0.6" VerticalAlignment="Center"
+                                           Margin="10,0,8,0" />
+                                <TextBox Grid.Column="3" Text="{Binding BedrockPortText}" IsReadOnly="True"
+                                         VerticalAlignment="Center"
+                                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12" />
+                                <!-- Dos botones porque son dos tareas. El cliente de Bedrock pide la
+                                     direccion y el puerto en casillas separadas y no traga
+                                     "host:puerto", asi que pegar ahi necesita la direccion sola —
+                                     pero lo primero que se hace es mandarle las dos a alguien. -->
+                                <Button Grid.Column="4" Margin="8,0,0,0"
+                                        Command="{Binding CopyBedrockForSharingCommand}"
+                                        ToolTip.Tip="{loc:Loc Addr_Share}">
+                                    <ic:SymbolIcon Symbol="Share" />
+                                </Button>
+                                <Button Grid.Column="5" Margin="6,0,0,0"
+                                        Command="{Binding CopyBedrockAddressCommand}"
+                                        ToolTip.Tip="{loc:Loc Addr_CopyHost}">
+                                    <ic:SymbolIcon Symbol="Copy" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
                     </Border>
 
                     <!-- Tabs: Console / Players / Mods -->

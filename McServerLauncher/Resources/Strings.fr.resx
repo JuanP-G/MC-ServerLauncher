@@ -771,4 +771,7 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Tun_EditOnWeb" xml:space="preserve"><value>Renommer sur playit.gg</value></data>
   <data name="Port_Java" xml:space="preserve"><value>Port Java</value></data>
   <data name="Port_Bedrock" xml:space="preserve"><value>Port Bedrock</value></data>
+  <data name="Addr_Share" xml:space="preserve"><value>Copier l'adresse et le port à envoyer</value></data>
+  <data name="Addr_ShareFmt" xml:space="preserve"><value>{0} · port {1}</value></data>
+  <data name="Addr_CopyHost" xml:space="preserve"><value>Copier l'adresse seule</value></data>
 </root>

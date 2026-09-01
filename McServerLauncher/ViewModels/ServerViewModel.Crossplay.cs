@@ -401,6 +401,26 @@ public partial class ServerViewModel
             await cb.SetTextAsync(BedrockHost!);
     }
 
+    /// <summary>
+    /// Copies the Bedrock address and its port together, ready to send to somebody.
+    /// </summary>
+    /// <remarks>
+    /// Two buttons and not one because they are two different jobs. A Bedrock client asks for the
+    /// address and the port in separate boxes and refuses "host:port", so pasting into it needs the
+    /// host alone — but what people actually do first is send both to a friend, and copying them
+    /// one at a time for that is silly. The port here is the PUBLIC one; the local port beside it
+    /// is what Geyser listens on and would not work for anybody outside this machine.
+    /// </remarks>
+    [RelayCommand]
+    private async Task CopyBedrockForSharing()
+    {
+        if (string.IsNullOrEmpty(BedrockHost)) return;
+        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (top?.Clipboard is { } cb)
+            await cb.SetTextAsync(string.Format(
+                Localizer.Get("Addr_ShareFmt"), BedrockHost, BedrockPortText));
+    }
+
     /// <summary>Opens the Playit.gg tunnels panel in the browser (to create/view tunnels).</summary>
     [RelayCommand]
     private void OpenPlayitDashboard()
