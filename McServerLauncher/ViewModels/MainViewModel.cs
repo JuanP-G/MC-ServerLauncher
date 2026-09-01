@@ -824,40 +824,6 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task ChangeIconForSelected()
-    {
-        if (SelectedServer is null || Owner is null) return;
-
-        var files = await Owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = Localizer.Get("Title_SelectImage"),
-            AllowMultiple = false,
-            FileTypeFilter = new[]
-            {
-                new FilePickerFileType(Localizer.Get("Title_SelectImage"))
-                {
-                    Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif" }
-                }
-            }
-        });
-
-        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
-        if (string.IsNullOrEmpty(path)) return;
-
-        try
-        {
-            new ServerIconService().SetIconFromImage(SelectedServer.Config.FolderPath, path);
-            SelectedServer.RefreshFromDisk();
-        }
-        catch (Exception ex)
-        {
-            await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_IconCreateError"), ex.Message),
-                Localizer.Get("Title_ChangeIcon"));
-        }
-    }
-
-    [RelayCommand(CanExecute = nameof(HasSelection))]
     private async Task ConfigureServer()
     {
         if (SelectedServer is null || Owner is null) return;
@@ -970,6 +936,5 @@ public partial class MainViewModel : ObservableObject
         RemoveServerCommand.NotifyCanExecuteChanged();
         CreateTunnelForSelectedCommand.NotifyCanExecuteChanged();
         ConfigureServerCommand.NotifyCanExecuteChanged();
-        ChangeIconForSelectedCommand.NotifyCanExecuteChanged();
     }
 }

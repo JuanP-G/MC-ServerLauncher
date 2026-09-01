@@ -12,6 +12,16 @@
     <Window.Styles>
         <!-- Una muestra de color de la paleta de Minecraft. Cuadrada y sin texto: el color ES la
              etiqueta, y ponerle el codigo al lado seria volver a enseñar lo que se viene a esconder. -->
+        <!-- Nada de la barra toma el foco.
+             Es lo que hacia que los colores "no funcionaran": al pulsar una muestra, la caja de
+             texto perdia el foco, Avalonia le borraba la seleccion, y para cuando llegaba el clic
+             ya no habia nada marcado sobre lo que pintar. La logica estaba bien; lo que fallaba era
+             que se le pasaba una seleccion vacia. Es el mismo motivo por el que la barra de
+             cualquier editor no roba el foco al texto. -->
+        <Style Selector="Button.swatch, ToggleButton.mark, Button.toolbar">
+            <Setter Property="Focusable" Value="False" />
+        </Style>
+
         <Style Selector="Button.swatch">
             <Setter Property="Width" Value="22" />
             <Setter Property="Height" Value="22" />
@@ -42,17 +52,27 @@
                 <Border Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}"
                         BorderThickness="1" CornerRadius="6" Padding="10">
                     <Grid ColumnDefinitions="Auto,*,Auto">
-                        <Border Grid.Column="0" Width="64" Height="64" ClipToBounds="True"
-                                Background="{StaticResource GroundWell}" CornerRadius="3">
-                            <Panel>
-                                <ic:SymbolIcon Symbol="Server" FontSize="28" Opacity="0.5"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               IsVisible="{Binding !HasIcon}" />
-                                <Image Source="{Binding ServerIcon}" Width="64" Height="64"
-                                       RenderOptions.BitmapInterpolationMode="None"
-                                       IsVisible="{Binding HasIcon}" />
-                            </Panel>
-                        </Border>
+                        <!-- El icono se cambia aqui. Estaba en la cabecera, escondido detras de
+                             pasar el raton por encima de la imagen; el icono y el cartel son el
+                             mismo trabajo — como se ve tu servidor en la lista de alguien — y
+                             estaban en dos sitios distintos. -->
+                        <StackPanel Grid.Column="0" Spacing="6">
+                            <Border Width="64" Height="64" ClipToBounds="True"
+                                    Background="{StaticResource GroundWell}" CornerRadius="3">
+                                <Panel>
+                                    <ic:SymbolIcon Symbol="Server" FontSize="28" Opacity="0.5"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   IsVisible="{Binding !HasIcon}" />
+                                    <Image Source="{Binding ServerIcon}" Width="64" Height="64"
+                                           RenderOptions.BitmapInterpolationMode="None"
+                                           IsVisible="{Binding HasIcon}" />
+                                </Panel>
+                            </Border>
+                            <Button x:Name="IconButton" Classes="toolbar" Click="ChangeIcon_Click"
+                                    HorizontalAlignment="Stretch" Padding="0,3" FontSize="11"
+                                    Content="{loc:Loc Title_ChangeIcon}"
+                                    HorizontalContentAlignment="Center" />
+                        </StackPanel>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                             <TextBlock Text="{Binding ServerName}" Foreground="White" FontWeight="Bold"
                                        FontSize="16" TextTrimming="CharacterEllipsis" />
@@ -86,7 +106,7 @@
                     </ToggleButton>
                 </StackPanel>
                 <Border Width="1" Background="{StaticResource SurfaceEdge}" Margin="2,0" />
-                <Button Content="{loc:Loc Motd_Clear}" Click="ClearFormat_Click" Padding="9,4"
+                <Button Classes="toolbar" Content="{loc:Loc Motd_Clear}" Click="ClearFormat_Click" Padding="9,4"
                         VerticalAlignment="Center" FontSize="12" />
             </StackPanel>
 

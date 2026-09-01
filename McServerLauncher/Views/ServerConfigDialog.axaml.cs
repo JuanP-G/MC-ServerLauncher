@@ -109,16 +109,4 @@ public partial class ServerConfigDialog : Window
         }
         combo.SelectedIndex = 0;
     }
-
-    /// <summary>Opens the visual editor over whatever is in the box right now.</summary>
-    /// <remarks>
-    /// The box is still the original: the dialog is handed its text and hands text back, so opening
-    /// the editor and cancelling leaves the sign untouched, and somebody who types codes by hand is
-    /// never overruled by a dialog they did not open.
-    /// </remarks>
-    private async void EditMotd_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        var editor = new MotdEditorDialog(MotdBox.Text, _config.Name, "0/20", null);
-        if (await editor.ShowDialog<bool>(this)) MotdBox.Text = editor.Result;
-    }
 }

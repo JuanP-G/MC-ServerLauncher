@@ -46,18 +46,6 @@
             <Setter Property="Opacity" Value="1" />
         </Style>
 
-        <!-- "Change icon" overlay: hidden by default, fades in when hovering the icon button -->
-        <Style Selector="Button.iconbtn Border#HoverOverlay">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Button.iconbtn:pointerover Border#HoverOverlay">
-            <Setter Property="Opacity" Value="1" />
-        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto,*">
@@ -223,11 +211,12 @@
                                 CornerRadius="6" Padding="10" Margin="0,0,14,0" VerticalAlignment="Center"
                                 MinWidth="352" MaxWidth="420">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <!-- Server icon (server-icon.png) or a placeholder if none. Click to change it -->
-                                <Button Grid.Column="0" Classes="iconbtn" Width="64" Height="64" Padding="0" Cursor="Hand"
-                                        Background="{StaticResource GroundWell}"
-                                        ToolTip.Tip="{loc:Loc Tip_ChangeIcon}"
-                                        Command="{Binding DataContext.ChangeIconForSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                                <!-- Solo la imagen. Era un boton que cambiaba el icono al pulsarlo,
+                                     con un velo que aparecia al pasar el raton por encima — algo que
+                                     solo encuentras si ya sabes que esta ahi. Cambiar el icono esta
+                                     ahora en "Editar", junto al cartel, que es el mismo trabajo. -->
+                                <Border Grid.Column="0" Width="64" Height="64" ClipToBounds="True"
+                                        Background="{StaticResource GroundWell}" CornerRadius="3">
                                     <Panel>
                                         <ic:SymbolIcon Symbol="Server" FontSize="28" Opacity="0.5"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -235,16 +224,8 @@
                                         <Image Source="{Binding ServerIcon}" Width="64" Height="64"
                                                RenderOptions.BitmapInterpolationMode="None"
                                                IsVisible="{Binding HasIcon}" />
-                                        <!-- Hover overlay hinting the icon can be changed -->
-                                        <Border x:Name="HoverOverlay" Background="{StaticResource ScrimHover}">
-                                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
-                                                <ic:SymbolIcon Symbol="Edit" FontSize="16" Foreground="White" HorizontalAlignment="Center" />
-                                                <TextBlock Text="{loc:Loc Title_ChangeIcon}" Foreground="White" FontSize="9"
-                                                           TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
-                                            </StackPanel>
-                                        </Border>
                                     </Panel>
-                                </Button>
+                                </Border>
 
                                 <!-- Title (name) + colored MOTD -->
                                 <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">

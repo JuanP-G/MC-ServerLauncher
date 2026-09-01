@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
+using McServerLauncher.Services;
 
 namespace McServerLauncher.Views;
 
@@ -201,5 +202,40 @@ public partial class AddEditServerDialog : Window
         _config.BackupRetention = original.BackupRetention;
         _config.UseCustomNotifications = original.UseCustomNotifications;
         _config.Notifications = original.Notifications;
+    }
+
+    /// <summary>
+    /// Opens the sign and icon editor for this server.
+    /// </summary>
+    /// <remarks>
+    /// The MOTD lives in <c>server.properties</c> and not in the config, so it is read and written
+    /// here rather than carried through the dialog: everything else on this screen is a config
+    /// field, and mixing the two would mean Cancel undoing some of what was changed and not the
+    /// rest. The icon is written to disk the moment it is picked, which is why the editor reports
+    /// whether it changed.
+    /// </remarks>
+    private async void EditMotd_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var properties = new ServerPropertiesService();
+        var path = _config.PropertiesPath;
+
+        var current = properties.Read(path).TryGetValue("motd", out var m) ? m : string.Empty;
+
+        Avalonia.Media.Imaging.Bitmap? icon = null;
+        var iconPath = System.IO.Path.Combine(_config.FolderPath, "server-icon.png");
+        try
+        {
+            if (System.IO.File.Exists(iconPath))
+            {
+                using var stream = System.IO.File.OpenRead(iconPath);
+                icon = new Avalonia.Media.Imaging.Bitmap(stream);
+            }
+        }
+        catch { /* a broken icon file is not a reason to refuse to edit the sign */ }
+
+        var editor = new MotdEditorDialog(current, _config.Name, "0/20", icon, _config.FolderPath);
+        if (!await editor.ShowDialog<bool>(this)) return;
+
+        properties.Update(path, new Dictionary<string, string> { ["motd"] = editor.Result });
     }
 }

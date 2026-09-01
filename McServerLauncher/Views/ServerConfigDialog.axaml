@@ -18,20 +18,10 @@
                     <StackPanel>
                         <TextBlock Text="{loc:Loc Cfg_Motd}" Classes="title" />
                         <TextBlock Classes="desc" Text="{loc:Loc Cfg_MotdDesc}" />
-                        <!-- La caja sigue existiendo y sigue siendo editable: quien se sepa los
-                             codigos no tiene por que pasar por un dialogo. El boton es para quien no,
-                             que es casi todo el mundo. -->
-                        <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
-                            <TextBox Grid.Column="0" x:Name="MotdBox"
-                                     FontFamily="Cascadia Mono, Consolas, monospace" />
-                            <Button Grid.Column="1" Margin="8,0,0,0" Click="EditMotd_Click"
-                                    ToolTip.Tip="{loc:Loc Motd_Title}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Edit" />
-                                    <TextBlock Text="{loc:Loc Motd_Title}" />
-                                </StackPanel>
-                            </Button>
-                        </Grid>
+                        <!-- La caja cruda, para quien se sepa los codigos. El editor visual esta en
+                             "Editar", junto al icono: son el mismo trabajo. -->
+                        <TextBox x:Name="MotdBox" Margin="0,8,0,0"
+                                 FontFamily="Cascadia Mono, Consolas, monospace" />
                     </StackPanel>
                 </Border>
 

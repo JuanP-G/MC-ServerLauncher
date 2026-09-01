@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -25,7 +27,7 @@ namespace McServerLauncher.Views;
 /// this cheap and what stops the preview and the code drifting apart.
 /// </para>
 /// </remarks>
-public partial class MotdEditorDialog : Window
+public partial class MotdEditorDialog : Window, INotifyPropertyChanged
 {
     /// <summary>Minecraft's sixteen, in the order the game lists them.</summary>
     private const string Codes = "0123456789abcdef";
@@ -42,19 +44,24 @@ public partial class MotdEditorDialog : Window
     // dialog needs four values and none of them change while it is open.
     public string ServerName { get; }
     public string PlayersText { get; }
-    public Bitmap? ServerIcon { get; }
+    public Bitmap? ServerIcon { get; private set; }
     public bool HasIcon => ServerIcon is not null;
+
+    /// <summary>The server's folder, so the icon can be written into it. Null disables that.</summary>
+    private readonly string? _folder;
 
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public MotdEditorDialog() : this(string.Empty, "Servidor", "0/20", null) { }
 
-    public MotdEditorDialog(string? motd, string serverName, string playersText, Bitmap? icon)
+    public MotdEditorDialog(string? motd, string serverName, string playersText, Bitmap? icon,
+        string? serverFolder = null)
     {
         InitializeComponent();
 
         ServerName = serverName;
         PlayersText = playersText;
         ServerIcon = icon;
+        _folder = serverFolder;
         DataContext = this;
 
         BuildSwatches();
@@ -267,6 +274,58 @@ public partial class MotdEditorDialog : Window
         return result;
     }
 
+    /// <summary>
+    /// Changes the icon players see next to the name.
+    /// </summary>
+    /// <remarks>
+    /// Here and not on the server header, where it used to be a click on the picture itself. The
+    /// icon and the sign are the same job — what the server looks like in somebody's server list —
+    /// and they were in two different places, one of them hidden behind hovering over an image.
+    /// Writing it immediately rather than on Save is deliberate: it is a file on disk, not a field,
+    /// and the preview right here shows the result.
+    /// </remarks>
+    private async void ChangeIcon_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_folder is null) return;
+
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = Localizer.Get("Title_SelectImage"),
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType(Localizer.Get("Title_SelectImage"))
+                {
+                    Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif" }
+                }
+            }
+        });
+
+        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
+        if (string.IsNullOrEmpty(path)) return;
+
+        try
+        {
+            new ServerIconService().SetIconFromImage(_folder, path);
+            IconChanged = true;
+
+            var written = System.IO.Path.Combine(_folder, "server-icon.png");
+            using var stream = System.IO.File.OpenRead(written);
+            ServerIcon = new Bitmap(stream);
+            OnPropertyChanged(nameof(ServerIcon));
+            OnPropertyChanged(nameof(HasIcon));
+        }
+        catch (Exception ex)
+        {
+            await MessageBox.ShowAsync(
+                string.Format(Localizer.Get("Msg_IconCreateError"), ex.Message),
+                Localizer.Get("Title_ChangeIcon"), this);
+        }
+    }
+
+    /// <summary>Whether the icon on disk was replaced, so the caller can reload it.</summary>
+    public bool IconChanged { get; private set; }
+
     private void Save_Click(object? sender, RoutedEventArgs e)
     {
         // Escaped on the way out: server.properties is line-oriented and cannot hold a real newline.
@@ -275,4 +334,10 @@ public partial class MotdEditorDialog : Window
     }
 
     private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
+
+    /// <summary>Only the icon changes after the dialog is built, so this is all the plumbing needed.</summary>
+    public new event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged(string name) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
