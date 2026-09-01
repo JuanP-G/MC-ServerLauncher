@@ -18,6 +18,7 @@
   <data name="Tip_Configure" xml:space="preserve"><value>server.properties visuell bearbeiten</value></data>
   <data name="Uptime" xml:space="preserve"><value>Laufzeit</value></data>
   <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="Ports" xml:space="preserve"><value>Ports</value></data>
   <data name="Tip_ChangeIcon" xml:space="preserve"><value>Klicken, um das Server-Symbol zu ändern (für Spieler sichtbar)</value></data>
   <data name="Tunnel_Placeholder" xml:space="preserve"><value>Wird automatisch erkannt, oder Tunnel-Adresse hier einfügen...</value></data>
   <data name="Copy" xml:space="preserve"><value>Kopieren</value></data>
@@ -213,6 +214,9 @@
   <data name="Win_Intro" xml:space="preserve"><value>Lege fest, was die Schaltflächen zum Minimieren und Schließen tun. Wenn die App im Infobereich liegt, laufen die Server weiter; das Fenster holst du mit einem Klick auf das Symbol neben der Uhr zurück.</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Beim Minimieren in den Infobereich verschieben (verlässt die Taskleiste)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Beim Schließen (X) in den Infobereich verschieben, statt die App zu beenden</value></data>
+  <data name="Motion_Section" xml:space="preserve"><value>Animationen</value></data>
+  <data name="Motion_Intro" xml:space="preserve"><value>Die Bewegung der App: Buttons, die beim Drücken einsinken, überblendende Bereiche und der Punkt, der pulsiert, während ein Server startet.</value></data>
+  <data name="Motion_Enabled" xml:space="preserve"><value>Animationen verwenden</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Benachrichtigungen</value></data>
   <data name="Notif_UseCustom" xml:space="preserve"><value>Eigene Benachrichtigungseinstellungen für diesen Server verwenden</value></data>
   <data name="Notif_Enabled" xml:space="preserve"><value>Benachrichtigungen aktivieren</value></data>

@@ -15,16 +15,94 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Styles>
-        <!-- Una medida de la cabecera: ancho fijo para que se alineen solas al doblar. -->
+        <!-- LA TIRA. Una sola fila a todo lo ancho, y por eso las medidas ya NO llevan ancho fijo:
+             el `Width="146"` de antes existia para que se alinearan al doblar en una columna de 164
+             px, es decir, era un apaño para un sitio demasiado estrecho. Con el ancho entero
+             disponible, cada medida ocupa lo que mide y el espacio sobrante se reparte solo. -->
+        <Style Selector="Border.strip">
+            <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,6" />
+        </Style>
         <Style Selector="StackPanel.metric">
-            <Setter Property="Width" Value="146" />
-            <Setter Property="Margin" Value="0,0,0,3" />
+            <Setter Property="Orientation" Value="Horizontal" />
+            <!-- 18 y no 22: con 22, las cinco medidas sumaban 764 px de contenido pero 874 de
+                 sitio, y la tira doblaba por los margenes y no por el contenido. -->
+            <Setter Property="Margin" Value="0,0,18,0" />
         </Style>
         <Style Selector="TextBlock.metricValue">
             <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="7,0,0,0" />
             <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <!-- La barra entre dos numeros que van juntos (puerto Java / Bedrock, ping directo / tunel).
+             Apagada a proposito: separa, no compite con las cifras. -->
+        <Style Selector="TextBlock.metricSep">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Opacity" Value="0.35" />
+            <Setter Property="Margin" Value="5,0,5,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- LAS DIRECCIONES. Botones y no cajas de texto de solo lectura: lo que se hace con una
+             direccion es copiarla y mandarsela a alguien, asi que el gesto es un clic sobre ella
+             entera, no seleccionar el texto a mano. -->
+        <Style Selector="Button.addrpill">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Margin" Value="0,0,7,0" />
+        </Style>
+        <Style Selector="Button.addrpill:pointerover">
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdgeHover}" />
+        </Style>
+        <Style Selector="Button.addrpill.icon">
+            <Setter Property="Padding" Value="8,5" />
+        </Style>
+        <Style Selector="TextBlock.addrKey">
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.addrValue">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, monospace" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- EL LAPIZ de la tarjeta. Callado hasta que te acercas: es cromo de la app dentro de algo
+             que imita la lista de Minecraft, asi que a plena opacidad ensuciaria la imitacion. -->
+        <Style Selector="Button.pencil">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Padding" Value="5,3" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Opacity" Value="0.35" />
+        </Style>
+        <Style Selector="Border.mccard:pointerover Button.pencil">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+        </Style>
+        <Style Selector="Button.pencil:pointerover">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+
+        <!-- LAS PESTANAS. Nadie estilizaba TabItem en todo el repo, asi que eran ~48 px de cromo
+             Fluent por defecto justo encima de lo mas usado. Se estiliza por CLASE y no con
+             `Selector="TabItem"` a secas, por lo mismo que Border.card tuvo que quedarse con un
+             solo significado: un selector sin clase alcanza a cualquier pestaña que se añada luego. -->
+        <Style Selector="TabControl.slim > TabItem">
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="MinHeight" Value="0" />
         </Style>
 
         <!-- Una entrada del rail. Icono arriba y etiqueta debajo: un rail de solo iconos
@@ -106,10 +184,19 @@
             </Border>
 
             <!-- Tuneles -->
-            <views:TunnelsView Grid.Column="1" IsVisible="{Binding IsTunnelsSection}" />
+            <!-- Opacidad y no IsVisible: false saca el elemento del layout, asi que no queda nada
+                 que fundir. Las dos secciones se quedan montadas y se cruzan.
+                 IsEnabled va atado a lo mismo porque un panel a opacidad cero SIGUE recibiendo
+                 clics y foco de tabulador, y un clic que va a algo que no se ve es peor fallo que
+                 el que veniamos a arreglar. -->
+            <views:TunnelsView Grid.Column="1" Classes="section"
+                               Opacity="{Binding TunnelsOpacity}"
+                               IsEnabled="{Binding IsTunnelsSection}" />
 
             <!-- Servidores -->
-            <Grid Grid.Column="1" ColumnDefinitions="236,*" IsVisible="{Binding IsServersSection}">
+            <Grid Grid.Column="1" ColumnDefinitions="236,*" Classes="section"
+                  Opacity="{Binding ServersOpacity}"
+                  IsEnabled="{Binding IsServersSection}">
 
             <!-- Side panel: server list -->
             <Border Grid.Column="0" Background="{StaticResource GroundSidebar}" Padding="12">
@@ -197,24 +284,30 @@
                            FontSize="16" Opacity="0.6"
                            IsVisible="{Binding !HasSelection}" />
 
+                <!-- Reparto "dos pisos". Antes esto eran tres columnas Auto,*,Auto con las medidas
+                     en la del medio: medido, les quedaban 164 px de ancho y cada una pedia 146
+                     fijos, asi que las siete caian de una en una y la cabecera media 189 px, no los
+                     90 que decia su propio comentario.
+
+                     A 900 px era peor que feo: la columna de las medidas se quedaba en CERO —las
+                     siete desaparecian— y los botones se dibujaban hasta x=640 dentro de un panel
+                     de 554, o sea fuera de la ventana. Por eso la tarjeta de aqui abajo PUEDE
+                     encoger: entre una tarjeta mas estrecha y un boton que no existe, no hay duda. -->
                 <Grid DataContext="{Binding SelectedServer}"
-                      RowDefinitions="Auto,Auto,*"
+                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
                       IsVisible="{Binding DataContext.HasSelection, RelativeSource={RelativeSource AncestorType=Window}}">
 
-                    <!-- Cabecera: quien es el servidor, como va, y los botones. Una fila, no dos.
-                         La tarjeta se estiraba a lo ancho y dejaba un hueco enorme entre ella y los
-                         botones, mientras las medidas ocupaban una fila entera justo debajo. Medido:
-                         eran 90 px de cabecera y 36 de medidas para llenar la mitad de ambos. -->
-                    <Grid Grid.Row="0" Margin="0,0,0,10" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto">
-                        <!-- Minecraft server-list style view -->
-                        <Border Grid.Column="0" Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}" BorderThickness="1"
-                                CornerRadius="6" Padding="10" Margin="0,0,14,0" VerticalAlignment="Center"
-                                MinWidth="352" MaxWidth="420">
+                    <!-- ===== Piso 1: quien es el servidor, como va, y que puedes hacerle ===== -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+
+                        <!-- La tarjeta es EXACTAMENTE lo que vera alguien en su lista de servidores;
+                             por eso no lleva cromo de la app dentro, salvo el lapiz. -->
+                        <Border Grid.Column="0" Classes="mccard" Background="{StaticResource McListCard}"
+                                BorderBrush="{StaticResource McListEdge}" BorderThickness="1"
+                                CornerRadius="6" Padding="10" Margin="0,0,14,0"
+                                VerticalAlignment="Center" HorizontalAlignment="Left"
+                                MinWidth="260" MaxWidth="420">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <!-- Solo la imagen. Era un boton que cambiaba el icono al pulsarlo,
-                                     con un velo que aparecia al pasar el raton por encima — algo que
-                                     solo encuentras si ya sabes que esta ahi. Cambiar el icono esta
-                                     ahora en "Editar", junto al cartel, que es el mismo trabajo. -->
                                 <Border Grid.Column="0" Width="64" Height="64" ClipToBounds="True"
                                         Background="{StaticResource GroundWell}" CornerRadius="3">
                                     <Panel>
@@ -227,7 +320,6 @@
                                     </Panel>
                                 </Border>
 
-                                <!-- Title (name) + colored MOTD -->
                                 <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"
                                                FontSize="16" TextTrimming="CharacterEllipsis" />
@@ -241,97 +333,51 @@
                                                    Foreground="{StaticResource McListText}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <TextBlock b:MinecraftMotd.Text="{Binding MotdText}" FontSize="13"
-                                               TextWrapping="Wrap" Margin="0,3,0,0"
+                                               TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                                               Margin="0,3,0,0"
                                                FontFamily="Cascadia Mono, Consolas, monospace" />
                                 </StackPanel>
 
-                                <!-- Players + signal bars -->
-                                <StackPanel Grid.Column="2" Orientation="Horizontal"
-                                            VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10,2,0,0">
-                                    <TextBlock Text="{Binding PlayerCountText}" Foreground="{StaticResource McListText}" FontSize="13"
-                                               Margin="0,0,6,0" VerticalAlignment="Center" />
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip.Tip="{Binding SignalHint}">
-                                        <Rectangle Width="3" Height="4" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
-                                        <Rectangle Width="3" Height="6" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
-                                        <Rectangle Width="3" Height="8" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
-                                        <Rectangle Width="3" Height="10" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
-                                        <Rectangle Width="3" Height="12" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                <StackPanel Grid.Column="2" VerticalAlignment="Top"
+                                            HorizontalAlignment="Right" Margin="10,0,0,0" Spacing="8">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding PlayerCountText}" Foreground="{StaticResource McListText}"
+                                                   FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                                                    ToolTip.Tip="{Binding SignalHint}">
+                                            <Rectangle Width="3" Height="4" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                            <Rectangle Width="3" Height="6" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                            <Rectangle Width="3" Height="8" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                            <Rectangle Width="3" Height="10" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                            <Rectangle Width="3" Height="12" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                                        </StackPanel>
                                     </StackPanel>
+
+                                    <!-- El lapiz. Unico cromo de la app dentro de la tarjeta, y esta
+                                         callado hasta que te acercas. Editar lo que se ve pinchando
+                                         encima de lo que se ve, en vez de buscar un boton dentro de
+                                         un dialogo que ademas se llamaba otra cosa. -->
+                                    <Button Classes="pencil" HorizontalAlignment="Right"
+                                            ToolTip.Tip="{loc:Loc Motd_Title}"
+                                            Command="{Binding DataContext.EditSignCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                                        <ic:SymbolIcon Symbol="Edit" FontSize="14" />
+                                    </Button>
                                 </StackPanel>
                             </Grid>
                         </Border>
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
-                            <!-- Cada medida es UNA pieza de ancho fijo, no una etiqueta y un valor
-                                 sueltos. Con piezas sueltas el WrapPanel parte entre "RAM" y su
-                                 numero al estrechar, y el ancho fijo ademas las alinea en columnas
-                                 sin necesidad de una rejilla. -->
-                            <WrapPanel>
-                                <StackPanel Classes="metric" Orientation="Horizontal">
-                                    <TextBlock Text="CPU" Classes="statLabel" VerticalAlignment="Center" Width="34" />
-                                    <TextBlock Text="{Binding CpuText}" Classes="metricValue" />
-                                    <controls:Sparkline Width="30" Height="14" Margin="7,0,0,0"
-                                                        VerticalAlignment="Center"
-                                                        Values="{Binding CpuSeries}" MaxValue="100"
-                                                        Stroke="{StaticResource SemanticOk}" />
-                                </StackPanel>
-                                <StackPanel Classes="metric" Orientation="Horizontal">
-                                    <TextBlock Text="RAM" Classes="statLabel" VerticalAlignment="Center" Width="34" />
-                                    <TextBlock Text="{Binding RamText}" Classes="metricValue" />
-                                    <controls:Sparkline Width="30" Height="14" Margin="7,0,0,0"
-                                                        VerticalAlignment="Center"
-                                                        Values="{Binding RamSeries}"
-                                                        Stroke="{StaticResource SparklineRam}" />
-                                </StackPanel>
-                                <StackPanel Classes="metric" Orientation="Horizontal">
-                                    <TextBlock Text="{loc:Loc Uptime}" Classes="statLabel" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding UptimeText}" Classes="metricValue" />
-                                </StackPanel>
-
-                                <StackPanel Classes="metric" Orientation="Horizontal"
-                                            IsVisible="{Binding !IsCrossplayOn}">
-                                    <TextBlock Text="{loc:Loc Port}" Classes="statLabel" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding PortText}" Classes="metricValue" />
-                                </StackPanel>
-                                <StackPanel Classes="metric" Orientation="Horizontal"
-                                            IsVisible="{Binding IsCrossplayOn}">
-                                    <TextBlock Text="{loc:Loc Port_Java}" Classes="statLabel" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding PortText}" Classes="metricValue" />
-                                </StackPanel>
-                                <StackPanel Classes="metric" Orientation="Horizontal"
-                                            IsVisible="{Binding IsCrossplayOn}">
-                                    <TextBlock Text="{loc:Loc Port_Bedrock}" Classes="statLabel" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding BedrockLocalPortText}" Classes="metricValue" />
-                                </StackPanel>
-
-                                <StackPanel Classes="metric" Orientation="Horizontal" IsVisible="{Binding HasPing}"
-                                            ToolTip.Tip="{loc:Loc Ping_Disclaimer}">
-                                    <TextBlock Text="{loc:Loc Ping_Direct}" Classes="statLabel" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding PingDirectText}" Classes="metricValue"
-                                               Foreground="{Binding PingDirectBrush}" />
-                                </StackPanel>
-                                <StackPanel Classes="metric" Orientation="Horizontal" IsVisible="{Binding HasPing}"
-                                            ToolTip.Tip="{loc:Loc Ping_Disclaimer}">
-                                    <TextBlock Text="{loc:Loc Ping_Tunnel}" Classes="statLabel" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding PingTunnelText}" Classes="metricValue"
-                                               Foreground="{Binding PingTunnelBrush}" />
-                                </StackPanel>
-                            </WrapPanel>
-
-                            <TextBlock Text="{Binding PingVerdictText}" IsVisible="{Binding HasPingVerdict}"
-                                       FontSize="11.5" TextWrapping="Wrap" Opacity="0.85" Margin="0,4,0,0" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                            <Border HorizontalAlignment="Right" Margin="0,0,0,8" CornerRadius="10" Padding="10,3" Background="{StaticResource SurfaceChip}">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <Border HorizontalAlignment="Right" Margin="0,0,0,8" CornerRadius="10"
+                                    Padding="10,3" Background="{StaticResource SurfaceChip}">
                                 <StackPanel Orientation="Horizontal">
-                                    <Ellipse Width="10" Height="10" Fill="{Binding StatusBrush}" VerticalAlignment="Center" Margin="0,0,7,0" />
+                                    <Ellipse Classes="statusdot" Classes.busy="{Binding IsBusy}"
+                                             Width="10" Height="10" Fill="{Binding StatusBrush}"
+                                             VerticalAlignment="Center" Margin="0,0,7,0" />
                                     <TextBlock Text="{Binding StatusText}" FontSize="14" FontWeight="SemiBold"
                                                Foreground="{Binding StatusBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Border>
 
-                            <!-- Only while the empty-server clock is actually running (HasIdleCountdown). -->
                             <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right"
                                         Margin="0,-4,2,8" IsVisible="{Binding HasIdleCountdown}"
                                         ToolTip.Tip="{loc:Loc Idle_CountdownHint}">
@@ -340,6 +386,7 @@
                                 <TextBlock Text="{Binding IdleCountdownText}" FontSize="12"
                                            Foreground="{StaticResource McListText}" VerticalAlignment="Center" />
                             </StackPanel>
+
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                                 <Button Classes="accent" Command="{Binding StartCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
@@ -359,86 +406,133 @@
                                 </Button>
                             </StackPanel>
                         </StackPanel>
-
-                        <!-- Warning: running but without a Playit tunnel -->
-                        <Border Grid.Row="1" Grid.ColumnSpan="3" Margin="0,8,0,0" Padding="10,6"
-                                CornerRadius="6" Background="{StaticResource SemanticDangerPanel}" BorderBrush="{StaticResource SemanticDanger}" BorderThickness="1"
-                                IsVisible="{Binding ShowTunnelWarning}">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <ic:SymbolIcon Symbol="Warning" Foreground="{StaticResource DangerIcon}" VerticalAlignment="Center" />
-                                <TextBlock Foreground="{StaticResource DangerText}" TextWrapping="Wrap" VerticalAlignment="Center"
-                                           Text="{loc:Loc Signal_NoTunnel}" />
-                            </StackPanel>
-                        </Border>
                     </Grid>
 
-
-                    <!-- Playit.gg -->
-                    <!-- Lo unico de Playit que se mira a diario: las direcciones, para copiarlas y
-                         mandarselas a alguien. Lo demas — la cuenta, el agente, crear y borrar
-                         tuneles — esta en su seccion.
-
-                         Las DOS, no solo la de Java. Un servidor con crossplay tiene dos direcciones
-                         DISTINTAS, y quien entra desde Bedrock necesita la suya; con solo una aqui
-                         habia que irse a otra pantalla a buscar la otra. Y el puerto que se enseña
-                         es el PUBLICO: el local de la fila de arriba es donde escucha Geyser y no le
-                         sirve a nadie de fuera de este equipo. -->
-                    <!-- Apretada a proposito. Medida, ocupaba 91 px para dos direcciones, y lo que
-                         se queda sin sitio es la consola, que es donde de verdad se mira. -->
-                    <Border Grid.Row="1" Classes="card" Margin="4,0,4,8" Padding="11,6"
-                            IsVisible="{Binding HasTunnelAddress}">
-                        <StackPanel Spacing="5">
-                            <Grid ColumnDefinitions="76,*,Auto,Auto">
-                                <TextBlock Grid.Column="0" Text="Java" FontSize="11.5" Opacity="0.6"
-                                           VerticalAlignment="Center" Margin="0,0,10,0" />
-                                <TextBox Grid.Column="1" Text="{Binding TunnelAddress}" IsReadOnly="True"
-                                         VerticalAlignment="Center" MinHeight="0" Padding="8,3"
-                                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12" />
-                                <Button Grid.Column="2" Margin="8,0,0,0"
-                                        Command="{Binding CopyTunnelAddressCommand}" Padding="9,3" MinHeight="0"
-                                        ToolTip.Tip="{loc:Loc Copy}">
-                                    <ic:SymbolIcon Symbol="Copy" />
-                                </Button>
-                                <Button Grid.Column="3" Margin="6,0,0,0" Padding="9,3" MinHeight="0"
-                                        Command="{Binding DataContext.ShowTunnelsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        ToolTip.Tip="{loc:Loc Nav_Tunnels}">
-                                    <ic:SymbolIcon Symbol="Open" />
-                                </Button>
-                            </Grid>
-
-                            <Grid ColumnDefinitions="76,*,Auto,84,Auto,Auto"
-                                  IsVisible="{Binding HasBedrockAddress}">
-                                <TextBlock Grid.Column="0" Text="Bedrock" FontSize="11.5" Opacity="0.6"
-                                           VerticalAlignment="Center" Margin="0,0,10,0" />
-                                <TextBox Grid.Column="1" Text="{Binding BedrockHost}" IsReadOnly="True"
-                                         VerticalAlignment="Center" MinHeight="0" Padding="8,3"
-                                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12" />
-                                <TextBlock Grid.Column="2" Text="{loc:Loc Crossplay_BedrockPort}"
-                                           FontSize="11.5" Opacity="0.6" VerticalAlignment="Center"
-                                           Margin="10,0,8,0" />
-                                <TextBox Grid.Column="3" Text="{Binding BedrockPortText}" IsReadOnly="True"
-                                         VerticalAlignment="Center" MinHeight="0" Padding="8,3"
-                                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12" />
-                                <!-- Dos botones porque son dos tareas. El cliente de Bedrock pide la
-                                     direccion y el puerto en casillas separadas y no traga
-                                     "host:puerto", asi que pegar ahi necesita la direccion sola —
-                                     pero lo primero que se hace es mandarle las dos a alguien. -->
-                                <Button Grid.Column="4" Margin="8,0,0,0"
-                                        Command="{Binding CopyBedrockForSharingCommand}" Padding="9,3" MinHeight="0"
-                                        ToolTip.Tip="{loc:Loc Addr_Share}">
-                                    <ic:SymbolIcon Symbol="Share" />
-                                </Button>
-                                <Button Grid.Column="5" Margin="6,0,0,0"
-                                        Command="{Binding CopyBedrockAddressCommand}" Padding="9,3" MinHeight="0"
-                                        ToolTip.Tip="{loc:Loc Addr_CopyHost}">
-                                    <ic:SymbolIcon Symbol="Copy" />
-                                </Button>
-                            </Grid>
+                    <!-- Arrancado y sin tunel: nadie de fuera puede entrar. -->
+                    <Border Grid.Row="1" Margin="0,0,0,8" Padding="10,6" CornerRadius="6"
+                            Background="{StaticResource SemanticDangerPanel}"
+                            BorderBrush="{StaticResource SemanticDanger}" BorderThickness="1"
+                            IsVisible="{Binding ShowTunnelWarning}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ic:SymbolIcon Symbol="Warning" Foreground="{StaticResource DangerIcon}" VerticalAlignment="Center" />
+                            <TextBlock Foreground="{StaticResource DangerText}" TextWrapping="Wrap" VerticalAlignment="Center"
+                                       Text="{loc:Loc Signal_NoTunnel}" />
                         </StackPanel>
                     </Border>
 
-                    <!-- Tabs: Console / Players / Mods -->
-                    <TabControl Grid.Row="2" x:Name="ServerTabs" Background="Transparent" Margin="4,0">
+                    <!-- ===== Piso 2: las medidas, a lo ancho =====
+                         Cinco piezas y no siete: los dos puertos son una sola cosa, y las dos patas
+                         del ping solo significan algo comparadas entre si — separarlas era pedirle a
+                         quien mira que las juntase de cabeza. -->
+                    <Border Grid.Row="2" Classes="strip" Margin="0,0,0,8">
+                        <WrapPanel>
+                            <StackPanel Classes="metric">
+                                <TextBlock Text="CPU" Classes="statLabel" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding CpuText}" Classes="metricValue" />
+                                <controls:Sparkline Width="30" Height="14" Margin="7,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Values="{Binding CpuSeries}" MaxValue="100"
+                                                    Stroke="{StaticResource SemanticOk}" />
+                            </StackPanel>
+                            <StackPanel Classes="metric">
+                                <TextBlock Text="RAM" Classes="statLabel" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding RamText}" Classes="metricValue" />
+                                <controls:Sparkline Width="30" Height="14" Margin="7,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Values="{Binding RamSeries}"
+                                                    Stroke="{StaticResource SparklineRam}" />
+                            </StackPanel>
+                            <StackPanel Classes="metric">
+                                <TextBlock Text="{loc:Loc Uptime}" Classes="statLabel" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding UptimeText}" Classes="metricValue" />
+                            </StackPanel>
+
+                            <StackPanel Classes="metric" IsVisible="{Binding !IsCrossplayOn}">
+                                <TextBlock Text="{loc:Loc Port}" Classes="statLabel" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding PortText}" Classes="metricValue" />
+                            </StackPanel>
+                            <StackPanel Classes="metric" IsVisible="{Binding IsCrossplayOn}"
+                                        ToolTip.Tip="{loc:Loc Crossplay_BedrockPort}">
+                                <TextBlock Text="{loc:Loc Ports}" Classes="statLabel" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding PortText}" Classes="metricValue" />
+                                <TextBlock Text="/" Classes="metricSep" />
+                                <TextBlock Text="{Binding BedrockLocalPortText}" Classes="metricValue" Margin="0" />
+                            </StackPanel>
+
+                            <StackPanel Classes="metric" IsVisible="{Binding HasPing}"
+                                        ToolTip.Tip="{loc:Loc Ping_Disclaimer}">
+                                <TextBlock Text="Ping" Classes="statLabel" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding PingDirectText}" Classes="metricValue"
+                                           Foreground="{Binding PingDirectBrush}" />
+                                <TextBlock Text="/" Classes="metricSep" />
+                                <TextBlock Text="{Binding PingTunnelText}" Classes="metricValue" Margin="0"
+                                           Foreground="{Binding PingTunnelBrush}" />
+                            </StackPanel>
+
+                        </WrapPanel>
+                    </Border>
+
+                    <!-- El veredicto del ping, en su propia linea y solo cuando hay algo que decir.
+                         Probe a meterlo en la tira, al lado del ping del que sale: no cabe. Medido,
+                         las cinco medidas con sus margenes son 615 px y el veredicto otros 239, o
+                         sea 854 contra los 782 disponibles — la tira doblaba entera por meterle una
+                         frase. Aqui cuesta 19 px, y solo cuando el ping tiene un veredicto. -->
+                    <TextBlock Grid.Row="3" Text="{Binding PingVerdictText}"
+                               IsVisible="{Binding HasPingVerdict}"
+                               FontSize="11.5" Opacity="0.75" TextWrapping="Wrap"
+                               Margin="2,0,2,8" />
+
+                    <!-- ===== Piso 3: las direcciones =====
+                         Pastillas que copian al pulsarlas, no cajas de texto de solo lectura: lo que
+                         se hace con una direccion es mandarsela a alguien. Las DOS, porque un
+                         servidor con crossplay tiene dos distintas y quien entra desde Bedrock
+                         necesita la suya. -->
+                    <!-- Un WrapPanel a secas y no un Grid: la primera version puso esto en una
+                         columna `Auto`, y una columna Auto mide a lo ancho INFINITO — asi que el
+                         WrapPanel no doblaba nunca y a 900 px las pastillas se salian por la
+                         derecha, con los dos botones fuera de la ventana. Aqui dobla porque tiene
+                         un ancho de verdad contra el que medirse. El veredicto va dentro, como una
+                         pieza mas, para que doble con todo lo demas en vez de aparte. -->
+                    <WrapPanel Grid.Row="4" Margin="0,0,0,8"
+                               IsVisible="{Binding HasTunnelAddress}">
+                        <Button Classes="addrpill" Command="{Binding CopyTunnelAddressCommand}"
+                                    ToolTip.Tip="{loc:Loc Copy}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="Java" Classes="addrKey" />
+                                    <TextBlock Text="{Binding TunnelAddress}" Classes="addrValue" />
+                                    <ic:SymbolIcon Symbol="Copy" FontSize="13" Opacity="0.55" />
+                                </StackPanel>
+                            </Button>
+
+                        <Button Classes="addrpill" IsVisible="{Binding HasBedrockAddress}"
+                                    Command="{Binding CopyBedrockForSharingCommand}"
+                                    ToolTip.Tip="{loc:Loc Addr_Share}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="Bedrock" Classes="addrKey" />
+                                    <TextBlock Text="{Binding BedrockHost}" Classes="addrValue" />
+                                    <TextBlock Text=":" Classes="addrKey" />
+                                    <TextBlock Text="{Binding BedrockPortText}" Classes="addrValue" />
+                                    <ic:SymbolIcon Symbol="Share" FontSize="13" Opacity="0.55" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Dos botones porque son dos tareas: el cliente de Bedrock pide la
+                                 direccion y el puerto en casillas separadas y no traga "host:puerto",
+                                 pero lo primero que se hace es mandarle las dos a alguien. -->
+                        <Button Classes="addrpill icon" IsVisible="{Binding HasBedrockAddress}"
+                                Command="{Binding CopyBedrockAddressCommand}"
+                                ToolTip.Tip="{loc:Loc Addr_CopyHost}">
+                            <ic:SymbolIcon Symbol="Copy" FontSize="13" Width="16" Height="16" />
+                        </Button>
+
+                        <Button Classes="addrpill icon" ToolTip.Tip="{loc:Loc Nav_Tunnels}"
+                                Command="{Binding DataContext.ShowTunnelsCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                            <ic:SymbolIcon Symbol="Open" FontSize="13" Width="16" Height="16" />
+                        </Button>
+                    </WrapPanel>
+
+                    <!-- Tabs: Console / Players / Mods / Backups -->
+                    <TabControl Grid.Row="5" Classes="slim" x:Name="ServerTabs" Background="Transparent" Margin="0">
                         <TabItem Header="{loc:Loc Console}">
                             <!-- El margen superior lo lleva la raiz de la propia vista, no esta etiqueta: ponerlo
                                  aqui tambien lo aplicaria dos veces. -->

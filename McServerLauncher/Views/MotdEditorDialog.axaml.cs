@@ -40,6 +40,17 @@ public partial class MotdEditorDialog : Window, INotifyPropertyChanged
     /// <summary>The sign as it will be written to <c>server.properties</c>, once saved.</summary>
     public string Result { get; private set; } = string.Empty;
 
+    /// <summary>
+    /// The server's name as it was left here, once saved. Empty or unchanged means leave it alone.
+    /// </summary>
+    /// <remarks>
+    /// Separate from <see cref="Result"/> because they are written to different places: the sign
+    /// goes into <c>server.properties</c> and the name into the app's own list. The dialog does not
+    /// write either one — it says what was decided and lets the caller do it, which is why it works
+    /// the same whether it was opened over a server or over nothing.
+    /// </remarks>
+    public string ResultName { get; private set; } = string.Empty;
+
     // What the preview card shows around the sign. Plain properties rather than a view model: the
     // dialog needs four values and none of them change while it is open.
     public string ServerName { get; }
@@ -67,10 +78,15 @@ public partial class MotdEditorDialog : Window, INotifyPropertyChanged
         BuildSwatches();
 
         _runs = MotdDocument.Parse(motd);
+        NameBox.Text = serverName;
+        PreviewName.Text = serverName;
         RefreshAll();
 
         PlainBox.TextChanged += OnPlainChanged;
         CodeBox.TextChanged += OnCodeChanged;
+        // La vista previa es la razon de ser de este dialogo, asi que el nombre tambien se ve
+        // mientras se escribe. Sin enlace: el texto de la tarjeta ES el de la caja.
+        NameBox.TextChanged += (_, _) => PreviewName.Text = NameBox.Text;
     }
 
     /// <summary>The sixteen colours, plus a way back to the default.</summary>
@@ -330,6 +346,8 @@ public partial class MotdEditorDialog : Window, INotifyPropertyChanged
     {
         // Escaped on the way out: server.properties is line-oriented and cannot hold a real newline.
         Result = MotdDocument.Escape(MotdDocument.ToCode(_runs));
+        // Un nombre en blanco no es un renombrado, es un descuido: se deja el que habia.
+        ResultName = string.IsNullOrWhiteSpace(NameBox.Text) ? ServerName : NameBox.Text.Trim();
         Close(true);
     }
 

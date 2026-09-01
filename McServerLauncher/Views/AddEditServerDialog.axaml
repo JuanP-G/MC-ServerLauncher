@@ -15,14 +15,11 @@
                 <TextBlock Text="{loc:Loc Cs_Name}" Margin="0,4" />
                 <TextBox Text="{Binding Name, Mode=TwoWay}" />
 
-                <!-- El cartel y el icono: como se ve el servidor en la lista de alguien. Estaban
-                     repartidos entre Configurar y un clic escondido sobre la imagen de la cabecera. -->
-                <Button Margin="0,10,0,0" HorizontalAlignment="Stretch" Click="EditMotd_Click">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                        <ic:SymbolIcon Symbol="Image" />
-                        <TextBlock Text="{loc:Loc Motd_Title}" />
-                    </StackPanel>
-                </Button>
+                <!-- El cartel, el icono y el nombre se editan desde el lapiz de la propia tarjeta
+                     de vista previa, en la pantalla de servidores. Estuvieron aqui, y antes
+                     repartidos entre Configurar y un clic escondido sobre la imagen: un boton en un
+                     dialogo obliga a saber donde se guardan las cosas; un lapiz encima de lo que
+                     quieres cambiar, no. -->
 
                 <TextBlock Text="{loc:Loc Ae_Folder}" Margin="0,12,0,4" />
                 <Grid ColumnDefinitions="*,Auto">

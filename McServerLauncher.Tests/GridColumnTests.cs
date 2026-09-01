@@ -45,8 +45,14 @@ public class GridColumnTests
 
             foreach (var grid in doc.Descendants(Avalonia + "Grid"))
             {
+                // FILAS tambien, no solo columnas. Esta prueba solo miraba rejillas de varias
+                // columnas, asi que una rejilla de UNA columna y seis filas —que es exactamente la
+                // forma del detalle del servidor desde el reparto de dos pisos— podia perder un
+                // Grid.Row y apilar dos cosas sin que nadie dijera nada. Se descubrio sabotenadola:
+                // quitarle el Grid.Row al aviso de "sin tunel" no rompia ninguna prueba.
                 var columns = ColumnCount(grid);
-                if (columns < 2) continue;
+                var rows = RowCount(grid);
+                if (columns < 2 && rows < 2) continue;
 
                 // Property-element children (<Grid.ColumnDefinitions>, <Grid.Styles>) are not
                 // laid out and must not be counted as things sitting in a column.
@@ -64,12 +70,18 @@ public class GridColumnTests
                              .Where(g => g.Count() > 1)
                              // Sharing a cell on purpose is a real technique: a warning icon and a
                              // tick in the same slot, or two sections swapped by the rail. Every
-                             // child saying when it is visible is what distinguishes that from the
+                             // child saying when it is drawn is what distinguishes that from the
                              // accident — an overlap nobody meant has a child that is always drawn.
-                             .Where(g => g.Any(c => c.Attribute("IsVisible") is null)))
+                             //
+                             // "When it is drawn" is IsVisible or Opacity, not just IsVisible. The
+                             // two sections cross-fade, which means they have to stay mounted and
+                             // overlapping, so they say it with Opacity instead — and reading only
+                             // IsVisible flagged the one overlap in the app that is most deliberate.
+                             .Where(g => g.Any(c => c.Attribute("IsVisible") is null &&
+                                                    c.Attribute("Opacity") is null)))
                     offenders.Add(
                         $"{name}: {cell.Count()} hijos en la celda fila {cell.Key.Row} " +
-                        $"columna {cell.Key.Column} de una rejilla de {columns} columnas — " +
+                        $"columna {cell.Key.Column} de una rejilla de {rows}x{columns} — " +
                         string.Join(", ", cell.Select(Describe)));
             }
         }
@@ -80,6 +92,16 @@ public class GridColumnTests
     }
 
     /// <summary>How many columns a grid declares, however it declares them.</summary>
+    private static int RowCount(XElement grid)
+    {
+        var shorthand = grid.Attribute("RowDefinitions")?.Value;
+        if (!string.IsNullOrWhiteSpace(shorthand))
+            return shorthand.Split(',', StringSplitOptions.RemoveEmptyEntries).Length;
+
+        return grid.Element(Avalonia + "Grid.RowDefinitions")?
+            .Elements(Avalonia + "RowDefinition").Count() ?? 1;
+    }
+
     private static int ColumnCount(XElement grid)
     {
         var shorthand = grid.Attribute("ColumnDefinitions")?.Value;
@@ -131,18 +153,22 @@ public class GridColumnTests
         var withoutCrossplay = ShownWhen("!IsCrossplayOn");
         var withCrossplay = ShownWhen("IsCrossplayOn");
 
-        // Java-only: one plain "Port".
-        Assert.Contains("{loc:Loc Port}", Labels(withoutCrossplay), StringComparison.Ordinal);
+        // Java-only: the single port, and no sign of the Bedrock one.
+        var solo = Labels(withoutCrossplay);
+        Assert.Contains("{Binding PortText}", solo, StringComparison.Ordinal);
+        Assert.DoesNotContain("BedrockLocalPortText", solo, StringComparison.Ordinal);
 
-        // Crossplay: both, named apart, and each reading its own number. Binding both to PortText
-        // would show the Java port twice under two different labels.
+        // Crossplay: BOTH numbers, and each from its own binding. This is the assertion that
+        // matters and the one the original bug needed: binding both to PortText would print the
+        // Java port twice and nobody would notice, because two identical numbers look deliberate.
+        //
+        // It no longer asks for the labels "Port_Java" and "Port_Bedrock". The two ports are now
+        // one piece — "Puertos 20005 / 19133" — because they are one fact and, measured, seven
+        // separate pieces did not fit in a row. Asserting the old labels would have been asserting
+        // a layout decision, which is exactly what broke this test the last time.
         var crossplay = Labels(withCrossplay);
-        Assert.Contains("{loc:Loc Port_Java}", crossplay, StringComparison.Ordinal);
-        Assert.Contains("{loc:Loc Port_Bedrock}", crossplay, StringComparison.Ordinal);
+        Assert.Contains("{Binding PortText}", crossplay, StringComparison.Ordinal);
         Assert.Contains("{Binding BedrockLocalPortText}", crossplay, StringComparison.Ordinal);
-
-        // And the plain one is not among them, or a crossplay server would show three.
-        Assert.DoesNotContain("{loc:Loc Port}\"", crossplay, StringComparison.Ordinal);
     }
 
 }

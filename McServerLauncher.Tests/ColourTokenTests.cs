@@ -74,10 +74,17 @@ public class ColourTokenTests
     {
         // A {StaticResource} naming a key that does not exist throws when the style is applied, not
         // when the project builds — so a typo here ships and only shows up on the screen it breaks.
-        var app = XDocument.Load(Path.Combine(
-            LocalizationTests.RepoRoot(), "McServerLauncher", "App.axaml"));
+        // App.axaml y los diccionarios de Styles/. Las fichas de MOVIMIENTO viven dentro de
+        // Styles/Motion.axaml a proposito y no aqui: son de esa capa, y la capa entera se quita en
+        // caliente cuando se apagan las animaciones. Sacarlas a App.axaml para contentar a esta
+        // prueba habria roto justo lo que hace que el interruptor de Ajustes sea una linea.
+        var diccionarios = new List<string>
+            { Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "App.axaml") };
+        diccionarios.AddRange(Directory.GetFiles(
+            Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Styles"), "*.axaml"));
 
-        var defined = app.Descendants()
+        var defined = diccionarios
+            .SelectMany(f => XDocument.Load(f).Descendants())
             .Select(e => e.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")))
             .Where(a => a is not null)
             .Select(a => a!.Value)

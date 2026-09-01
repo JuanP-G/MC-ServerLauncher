@@ -1,0 +1,264 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ea="using:Avalonia.Animation.Easings">
+
+    <!-- ============================================================================
+         TODO el movimiento de la app, y solo el movimiento.
+
+         La regla es que aqui vive cada transicion y cada animacion, y en ningun otro
+         sitio. Eso compra tres cosas de golpe:
+
+           1. Un unico lugar donde afinar el ritmo de la app entera.
+           2. El interruptor de Ajustes: quitar este StyleInclude de
+              Application.Current.Styles deja la app inmovil, sin un solo "if"
+              repartido por las vistas.
+           3. Una prueba que se escribe sola — MotionTests comprueba que ningun otro
+              .axaml contiene <Transitions> ni <Animation>.
+
+         El criterio, y va escrito porque es lo que separa "pulido" de "recargado":
+         el movimiento esta para decir de DONDE viene algo y que se ha ENTERADO de que
+         lo has tocado. Nada rebota, nada llama la atencion, nada pasa de 260 ms.
+         ============================================================================ -->
+
+    <Styles.Resources>
+
+        <!-- ===================== TIEMPOS =====================
+             Nombrados por el papel, igual que los colores. Cuatro, y ni uno mas: en
+             cuanto hay siete duraciones distintas nadie sabe cual toca y la app deja
+             de tener un ritmo para tener siete. -->
+
+        <!-- Pulsar. Tiene que ir por delante del dedo: cualquier cosa por encima de
+             ~100 ms se siente como retraso, no como respuesta. -->
+        <x:TimeSpan x:Key="MotionPress">0:0:0.09</x:TimeSpan>
+
+        <!-- Color y borde al pasar el raton. -->
+        <x:TimeSpan x:Key="MotionQuick">0:0:0.16</x:TimeSpan>
+
+        <!-- Algo aparece, se va, o cambia de estado. -->
+        <x:TimeSpan x:Key="MotionBase">0:0:0.22</x:TimeSpan>
+
+        <!-- Lo mas lento que hay aqui: cambiar de seccion. -->
+        <x:TimeSpan x:Key="MotionEnter">0:0:0.26</x:TimeSpan>
+
+        <!-- ===================== CURVAS =====================
+             Todo sale disparado y frena al llegar. Nada acelera al final, y nada se
+             pasa de largo para volver: un rebote es simpatico la primera vez y molesto
+             la cuarta, y esta es una app que se abre todos los dias. -->
+
+        <!-- La de siempre. Arranca ya y asienta. -->
+        <ea:SplineEasing x:Key="EaseStandard" X1="0.2" Y1="0" X2="0" Y2="1" />
+
+        <!-- Para lo que ENTRA: frena mas fuerte al final, asi que parece que llega a
+             su sitio en vez de deslizarse hasta el. -->
+        <ea:SplineEasing x:Key="EaseSettle" X1="0.16" Y1="1" X2="0.3" Y2="1" />
+
+        <!-- Para lo que SE VA. Lo que desaparece no merece la misma ceremonia que lo
+             que llega, y ademas irse rapido es lo que evita ver dos cosas a la vez a
+             media opacidad. -->
+        <ea:CubicEaseIn x:Key="EaseLeave" />
+    </Styles.Resources>
+
+    <!-- ============================================================================
+         RESPUESTA AL GESTO
+         Hoy no existe un solo ":pressed" en todo el repo: pulsar un boton no se nota.
+         ============================================================================ -->
+
+    <Style Selector="Button">
+        <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform"
+                                               Duration="{StaticResource MotionPress}"
+                                               Easing="{StaticResource EaseStandard}" />
+                <DoubleTransition Property="Opacity"
+                                  Duration="{StaticResource MotionQuick}"
+                                  Easing="{StaticResource EaseStandard}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- Se hunde. 0.97 y no 0.9: tiene que sentirse, no verse. -->
+    <Style Selector="Button:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+
+    <Style Selector="ToggleButton">
+        <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform"
+                                               Duration="{StaticResource MotionPress}"
+                                               Easing="{StaticResource EaseStandard}" />
+                <DoubleTransition Property="Opacity"
+                                  Duration="{StaticResource MotionQuick}"
+                                  Easing="{StaticResource EaseStandard}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="ToggleButton:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+
+    <!-- Una fila de la lista de servidores. El fondo funde en vez de saltar, y al pasar por encima
+         se adelanta 2 px: dice "esto se puede pulsar" sin necesidad de dibujar nada nuevo. -->
+    <Style Selector="ListBoxItem">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background"
+                                 Duration="{StaticResource MotionQuick}"
+                                 Easing="{StaticResource EaseStandard}" />
+                <TransformOperationsTransition Property="RenderTransform"
+                                               Duration="{StaticResource MotionQuick}"
+                                               Easing="{StaticResource EaseSettle}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="ListBoxItem:pointerover">
+        <Setter Property="RenderTransform" Value="translateX(2px)" />
+    </Style>
+
+    <!-- ============================================================================
+         LOS DETALLES CON FIRMA
+         Tres, y ni uno mas. Cada uno dice algo que sin el habria que adivinar.
+         ============================================================================ -->
+
+    <!-- 1. El raíl. La seccion en la que estas se enciende fundiendo, no parpadeando. -->
+    <Style Selector="Button.rail">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity"
+                                  Duration="{StaticResource MotionQuick}"
+                                  Easing="{StaticResource EaseStandard}" />
+                <BrushTransition Property="Background"
+                                 Duration="{StaticResource MotionBase}"
+                                 Easing="{StaticResource EaseStandard}" />
+                <TransformOperationsTransition Property="RenderTransform"
+                                               Duration="{StaticResource MotionPress}"
+                                               Easing="{StaticResource EaseStandard}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- 2. El punto de estado LATE mientras arranca o para, y solo entonces. Encendido y apagado
+            son estados quietos: un punto que latiera siempre seria decoracion, no informacion.
+            Ademas el color funde, asi que pasar de rojo a verde es un cambio y no un corte. -->
+    <Style Selector="Ellipse.statusdot">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Fill"
+                                 Duration="{StaticResource MotionBase}"
+                                 Easing="{StaticResource EaseStandard}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Ellipse.statusdot.busy">
+        <Style.Animations>
+            <Animation Duration="0:0:1.2" IterationCount="INFINITE"
+                       Easing="{StaticResource EaseStandard}">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="1.0" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="Opacity" Value="0.3" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1.0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- 3. Los numeros que cambian solos — el ping y las medidas — funden de color en vez de dar un
+            salto. Un cambio instantaneo de color se lee como un parpadeo; fundido se lee como una
+            medida que se ha movido. -->
+    <Style Selector="TextBlock.metricValue">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Foreground"
+                                 Duration="{StaticResource MotionBase}"
+                                 Easing="{StaticResource EaseStandard}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================================
+         APARECER Y DESAPARECER
+         ============================================================================ -->
+
+    <!-- El lapiz de la tarjeta: se acerca la mano, aparece. -->
+    <Style Selector="Button.pencil">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity"
+                                  Duration="{StaticResource MotionBase}"
+                                  Easing="{StaticResource EaseStandard}" />
+                <BrushTransition Property="Background"
+                                 Duration="{StaticResource MotionQuick}"
+                                 Easing="{StaticResource EaseStandard}" />
+                <TransformOperationsTransition Property="RenderTransform"
+                                               Duration="{StaticResource MotionPress}"
+                                               Easing="{StaticResource EaseStandard}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- Las pastillas de direccion y las tarjetas: el borde se enciende al acercarse. -->
+    <Style Selector="Button.addrpill">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background"
+                                 Duration="{StaticResource MotionQuick}"
+                                 Easing="{StaticResource EaseStandard}" />
+                <BrushTransition Property="BorderBrush"
+                                 Duration="{StaticResource MotionQuick}"
+                                 Easing="{StaticResource EaseStandard}" />
+                <TransformOperationsTransition Property="RenderTransform"
+                                               Duration="{StaticResource MotionPress}"
+                                               Easing="{StaticResource EaseStandard}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Border.tile">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush"
+                                 Duration="{StaticResource MotionQuick}"
+                                 Easing="{StaticResource EaseStandard}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- Las pestañas. Funden sin deslizar: deslizar una consola llena de texto queda barato, y
+         ademas obligaria a recortar el panel para que no asomara por el borde. -->
+    <Style Selector="TabControl.slim > TabItem">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity"
+                                  Duration="{StaticResource MotionQuick}"
+                                  Easing="{StaticResource EaseStandard}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================================
+         CAMBIAR DE SECCION
+         La que se va tarda 160 ms; la que llega, 260 y ademas empieza 60 mas tarde. No es
+         capricho: cruzandolas a la vez se ven las dos a media opacidad durante un instante
+         y parece un error de dibujo. Saliendo primero, en ningun fotograma hay dos.
+         ============================================================================ -->
+    <Style Selector=":is(Control).section">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity"
+                                  Duration="{StaticResource MotionEnter}"
+                                  Delay="0:0:0.06"
+                                  Easing="{StaticResource EaseSettle}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+</Styles>

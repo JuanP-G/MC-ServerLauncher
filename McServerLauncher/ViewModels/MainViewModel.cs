@@ -55,10 +55,34 @@ public partial class MainViewModel : ObservableObject
     /// <inheritdoc cref="IsServersSection" />
     public bool IsTunnelsSection => Section == AppSection.Tunnels;
 
+    /// <summary>
+    /// Lo mismo, pero como opacidad, para que el cambio de seccion se pueda FUNDIR.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Con <c>IsVisible</c> no hay nada que fundir: false saca el elemento del layout, asi que
+    /// desaparece de golpe antes de que ninguna transicion llegue a empezar. Las dos secciones se
+    /// quedan montadas y lo que cambia es la opacidad.
+    /// </para>
+    /// <para>
+    /// Y por eso existe tambien <see cref="IsServersSection"/> atado a <c>IsEnabled</c> en la vista:
+    /// un panel a opacidad cero <b>sigue recibiendo clics y foco de tabulador</b>. Invisible y
+    /// pulsable es peor que visible, porque el clic va a algo que no se ve. No se usa
+    /// <see cref="ViewModels.BoolOpacityConverter"/> porque ese apaga a 0.45 —esta para atenuar un
+    /// mod desactivado— y aqui hace falta llegar a cero.
+    /// </para>
+    /// </remarks>
+    public double ServersOpacity => IsServersSection ? 1.0 : 0.0;
+
+    /// <inheritdoc cref="ServersOpacity" />
+    public double TunnelsOpacity => IsTunnelsSection ? 1.0 : 0.0;
+
     partial void OnSectionChanged(AppSection value)
     {
         OnPropertyChanged(nameof(IsServersSection));
         OnPropertyChanged(nameof(IsTunnelsSection));
+        OnPropertyChanged(nameof(ServersOpacity));
+        OnPropertyChanged(nameof(TunnelsOpacity));
     }
 
     [RelayCommand]
@@ -300,6 +324,9 @@ public partial class MainViewModel : ObservableObject
         NotificationPreferences.Global = _appSettings.Notifications;
         ApplyConsoleColours();
         ApplyWindowBehavior();
+        // En caliente y sin reiniciar: quitar la capa de estilos apaga las animaciones de todo lo
+        // que ya esta en pantalla, porque no habia ningun "if" repartido que actualizar.
+        if (Application.Current is { } app) MotionSwitch.Apply(app.Styles, _appSettings.Animations);
 
         var saved = _appSettings.Language;
         var code = !string.IsNullOrWhiteSpace(saved) ? saved : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
@@ -377,6 +404,7 @@ public partial class MainViewModel : ObservableObject
         NotificationPreferences.Global = _appSettings.Notifications;
         _appSettings.MinimizeToTray = dialog.MinimizeToTray;
         _appSettings.CloseToTray = dialog.CloseToTray;
+        _appSettings.Animations = dialog.Animations;
         _appSettings.ConsoleChatColor = dialog.ConsoleChatColor;
         _appSettings.ConsolePlayersColor = dialog.ConsolePlayersColor;
         ApplyConsoleColours();
@@ -830,6 +858,48 @@ public partial class MainViewModel : ObservableObject
         var dialog = new ServerConfigDialog(SelectedServer.Config);
         if (await dialog.ShowDialog<bool>(Owner))
             SelectedServer.RefreshFromDisk();
+    }
+
+    /// <summary>
+    /// Opens the sign editor over the selected server: name, icon and MOTD — the three things the
+    /// preview card shows.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// It lives here and not in "Editar" because the way in is now the pencil on the card itself.
+    /// Editing what the card shows by opening a different dialog and looking for a button in it was
+    /// asking people to know where things are kept rather than pointing at the thing they want.
+    /// </para>
+    /// <para>
+    /// <see cref="ServerViewModel.RefreshFromDisk"/> at the end is not tidying up: without it the
+    /// card kept showing the old sign and the old icon until the app was restarted, because nothing
+    /// re-reads <c>server.properties</c> or <c>server-icon.png</c> on its own. It was the same gap
+    /// the configure dialog had already closed for itself, on a path that never got it.
+    /// </para>
+    /// </remarks>
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private async Task EditSign()
+    {
+        if (SelectedServer is null || Owner is null) return;
+
+        var properties = new ServerPropertiesService();
+        var path = SelectedServer.Config.PropertiesPath;
+        var current = properties.Read(path).TryGetValue("motd", out var m) ? m : string.Empty;
+
+        var dialog = new MotdEditorDialog(current, SelectedServer.Name, SelectedServer.PlayerCountText,
+            SelectedServer.ServerIcon, SelectedServer.Config.FolderPath);
+
+        if (!await dialog.ShowDialog<bool>(Owner)) return;
+
+        properties.Update(path, new Dictionary<string, string> { ["motd"] = dialog.Result });
+
+        if (!string.Equals(dialog.ResultName, SelectedServer.Name, StringComparison.Ordinal))
+        {
+            SelectedServer.Name = dialog.ResultName;   // escribe en Config.Name
+            Save();
+        }
+
+        SelectedServer.RefreshFromDisk();
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]

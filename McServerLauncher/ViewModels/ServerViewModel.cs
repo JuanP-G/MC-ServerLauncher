@@ -154,6 +154,8 @@ public partial class ServerViewModel : ObservableObject
     private string _name;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRunning))]
+    [NotifyPropertyChangedFor(nameof(IsBusy))]
     private ServerState _state = ServerState.Stopped;
 
     [ObservableProperty]
@@ -897,6 +899,16 @@ public partial class ServerViewModel : ObservableObject
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
+
+    /// <summary>
+    /// Arrancando o parando: los dos estados que son una espera y no un resultado.
+    /// </summary>
+    /// <remarks>
+    /// Existe para que el punto de estado lata SOLO mientras algo esta pasando. Encendido y apagado
+    /// son estados quietos, y un punto que late siempre no dice nada — deja de ser informacion para
+    /// ser decoracion.
+    /// </remarks>
+    public bool IsBusy => State is ServerState.Starting or ServerState.Stopping;
     public bool CanStart => State == ServerState.Stopped;
     public bool CanStop => State is ServerState.Running or ServerState.Starting;
 

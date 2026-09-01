@@ -18,6 +18,7 @@
   <data name="Tip_Configure" xml:space="preserve"><value>Editar server.properties visualmente</value></data>
   <data name="Uptime" xml:space="preserve"><value>Tempo ativo</value></data>
   <data name="Port" xml:space="preserve"><value>Porta</value></data>
+  <data name="Ports" xml:space="preserve"><value>Portas</value></data>
   <data name="Tip_ChangeIcon" xml:space="preserve"><value>Clica para mudar o ícone do servidor (o que os jogadores veem)</value></data>
   <data name="Tunnel_Placeholder" xml:space="preserve"><value>Detetado automaticamente, ou cola aqui o endereço do túnel...</value></data>
   <data name="Copy" xml:space="preserve"><value>Copiar</value></data>
@@ -213,6 +214,9 @@
   <data name="Win_Intro" xml:space="preserve"><value>Escolhe o que fazem os botões de minimizar e fechar. Com a aplicação na bandeja, os servidores continuam a correr e recuperas a janela clicando no ícone junto ao relógio.</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Ao minimizar, enviar para a bandeja (sai da barra de tarefas)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Ao fechar (X), enviar para a bandeja em vez de sair da aplicação</value></data>
+  <data name="Motion_Section" xml:space="preserve"><value>Animações</value></data>
+  <data name="Motion_Intro" xml:space="preserve"><value>O movimento da app: os botões que afundam ao carregar, as secções que se cruzam e o ponto que pulsa enquanto um servidor arranca.</value></data>
+  <data name="Motion_Enabled" xml:space="preserve"><value>Usar animações</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notificações</value></data>
   <data name="Notif_UseCustom" xml:space="preserve"><value>Usar uma configuração de notificações própria para este servidor</value></data>
   <data name="Notif_Enabled" xml:space="preserve"><value>Ativar notificações</value></data>
