@@ -43,14 +43,14 @@
         </ScrollViewer>
 
         <Border Grid.Row="1" x:Name="ProgressBox" Margin="20,0,20,8" Padding="12"
-                CornerRadius="8" Background="#1E1E1E" IsVisible="False" Height="140">
+                CornerRadius="8" Background="{StaticResource GroundPopup}" IsVisible="False" Height="140">
             <Grid RowDefinitions="Auto,*">
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6" Spacing="8">
                     <ProgressBar x:Name="Spinner" IsIndeterminate="True" Width="120" Height="4" VerticalAlignment="Center" />
                     <TextBlock Text="{loc:Loc Loader_Installing}" FontWeight="SemiBold" VerticalAlignment="Center" />
                 </StackPanel>
                 <TextBox Grid.Row="1" x:Name="ProgressLog" IsReadOnly="True" TextWrapping="Wrap"
-                         Background="Transparent" BorderThickness="0" Foreground="#DDDDDD"
+                         Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextOnPopup}"
                          FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12"
                          AcceptsReturn="True" />
             </Grid>

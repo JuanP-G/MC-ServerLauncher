@@ -12,10 +12,12 @@
              x:CompileBindings="False">
 
     <UserControl.Styles>
-        <!-- Section card: same language as the rest of the app (Border.stat in MainWindow). -->
+        <!-- Section card. El comentario de antes decia "same language as the rest of the app
+             (Border.stat in MainWindow)" y no era verdad: usaba #12FFFFFF/#1AFFFFFF donde el resto
+             usaba #15FFFFFF/#22FFFFFF. Ahora si lo es, porque toma las mismas fichas. -->
         <Style Selector="Border.section">
-            <Setter Property="Background" Value="#12FFFFFF" />
-            <Setter Property="BorderBrush" Value="#1AFFFFFF" />
+            <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="14,12" />
@@ -41,7 +43,7 @@
             <Setter Property="CornerRadius" Value="5" />
         </Style>
         <Style Selector="Border.thumb.selected">
-            <Setter Property="BorderBrush" Value="#58A6FF" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentSelected}" />
         </Style>
     </UserControl.Styles>
 
@@ -78,7 +80,7 @@
                 <Border Classes="section">
                     <Grid ColumnDefinitions="Auto,*">
                         <Border Grid.Column="0" Width="72" Height="72" CornerRadius="8"
-                                Background="#22FFFFFF" Margin="0,0,14,0" ClipToBounds="True"
+                                Background="{StaticResource SurfaceChip}" Margin="0,0,14,0" ClipToBounds="True"
                                 VerticalAlignment="Top">
                             <Panel>
                                 <ic:SymbolIcon Symbol="Box" FontSize="30" Opacity="0.5"
@@ -189,7 +191,7 @@
                              SelectedImage.X path, every project without a gallery logs a binding
                              error for a section that isn't even shown. -->
                         <StackPanel DataContext="{Binding SelectedImage}">
-                            <Border CornerRadius="6" ClipToBounds="True" Background="#22000000"
+                            <Border CornerRadius="6" ClipToBounds="True" Background="{StaticResource GroundImage}"
                                     MinHeight="180">
                                 <Image Source="{Binding Full}" Stretch="Uniform" MaxHeight="340" />
                             </Border>
@@ -246,7 +248,7 @@
                                             Command="{Binding OpenCommand}">
                                         <Grid ColumnDefinitions="Auto,*">
                                             <Border Grid.Column="0" Width="34" Height="34" CornerRadius="5"
-                                                    Background="#22FFFFFF" Margin="0,0,10,0" ClipToBounds="True">
+                                                    Background="{StaticResource SurfaceChip}" Margin="0,0,10,0" ClipToBounds="True">
                                                 <Panel>
                                                     <ic:SymbolIcon Symbol="Box" FontSize="16" Opacity="0.5"
                                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -322,7 +324,7 @@
                                             Command="{Binding OpenCommand}">
                                         <Grid ColumnDefinitions="Auto,*">
                                             <Border Grid.Column="0" Width="34" Height="34" CornerRadius="5"
-                                                    Background="#22FFFFFF" Margin="0,0,10,0" ClipToBounds="True">
+                                                    Background="{StaticResource SurfaceChip}" Margin="0,0,10,0" ClipToBounds="True">
                                                 <Panel>
                                                     <ic:SymbolIcon Symbol="Box" FontSize="16" Opacity="0.5"
                                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
