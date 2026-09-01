@@ -21,6 +21,20 @@ public enum PingLeg
 public record PingResult(PingLeg Leg, int? Milliseconds, string? Error)
 {
     public bool Answered => Milliseconds is not null;
+
+    /// <summary>
+    /// Nothing was measured, as opposed to something being measured and failing.
+    /// </summary>
+    /// <remarks>
+    /// These two were the same thing until a panel said "your server answers here, but nothing
+    /// answers through the tunnel" about a tunnel it had never once tried to reach — the address
+    /// was known and the port was not, so the leg was skipped, and skipping came back looking
+    /// exactly like silence. Accusing something on no evidence is worse than saying nothing.
+    /// </remarks>
+    public bool NotMeasured => Milliseconds is null && Error is null;
+
+    /// <summary>A leg that was deliberately not attempted.</summary>
+    public static PingResult Skipped(PingLeg leg) => new(leg, null, null);
 }
 
 /// <summary>
@@ -161,6 +175,10 @@ public class ServerPingService
     {
         if (!direct.Answered && !tunnel.Answered) return PingVerdict.Unknown;
         if (direct.Answered && direct.Milliseconds > serverBudgetMs) return PingVerdict.ServerSlow;
+
+        // A leg that was never attempted says nothing about the tunnel. Only silence in answer to a
+        // real attempt does.
+        if (tunnel.NotMeasured) return direct.Answered ? PingVerdict.Fine : PingVerdict.Unknown;
 
         // A tunnel that stops answering while the server still does is the tunnel's problem, and it
         // is the case a "no data" verdict would hide behind a blank.

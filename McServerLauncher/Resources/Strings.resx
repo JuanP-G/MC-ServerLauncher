@@ -820,4 +820,19 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Addr_Share" xml:space="preserve"><value>Copiar dirección y puerto para enviar</value></data>
   <data name="Addr_ShareFmt" xml:space="preserve"><value>{0} · puerto {1}</value></data>
   <data name="Addr_CopyHost" xml:space="preserve"><value>Copiar solo la dirección</value></data>
+  <data name="Motd_Title" xml:space="preserve"><value>Cartel y aspecto</value></data>
+  <data name="Motd_Preview" xml:space="preserve"><value>ASÍ LO VERÁN EN LA LISTA DE SERVIDORES</value></data>
+  <data name="Motd_Write" xml:space="preserve"><value>ESCRIBE AQUÍ · SIN CÓDIGOS</value></data>
+  <data name="Motd_Hint" xml:space="preserve"><value>Marca un trozo y pulsa un color. El cartel de arriba es lo que se verá.</value></data>
+  <data name="Motd_Clear" xml:space="preserve"><value>Quitar formato</value></data>
+  <data name="Motd_Code" xml:space="preserve"><value>Código §</value></data>
+  <data name="Motd_CodeHint" xml:space="preserve"><value>Pega aquí el cartel de otro servidor y aparece arriba con sus colores.</value></data>
+  <data name="Motd_LinesFmt" xml:space="preserve"><value>El cartel ocupa dos líneas en el cliente. Vas por {0} de 2.</value></data>
+  <data name="Motd_TooLong" xml:space="preserve"><value>Se pasa de dos líneas: el cliente no enseñará el resto.</value></data>
+  <data name="Motd_Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Motd_Bold" xml:space="preserve"><value>Negrita</value></data>
+  <data name="Motd_Italic" xml:space="preserve"><value>Cursiva</value></data>
+  <data name="Motd_Underline" xml:space="preserve"><value>Subrayado</value></data>
+  <data name="Motd_Strike" xml:space="preserve"><value>Tachado</value></data>
+  <data name="Motd_Default" xml:space="preserve"><value>Color por defecto</value></data>
 </root>

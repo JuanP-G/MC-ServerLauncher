@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:ic="using:FluentIcons.Avalonia"
         x:Class="McServerLauncher.Views.ServerConfigDialog"
         Title="{loc:Loc Cfg_Title}"
         Width="760" Height="780" MinWidth="640"
@@ -17,7 +18,20 @@
                     <StackPanel>
                         <TextBlock Text="{loc:Loc Cfg_Motd}" Classes="title" />
                         <TextBlock Classes="desc" Text="{loc:Loc Cfg_MotdDesc}" />
-                        <TextBox x:Name="MotdBox" Margin="0,8,0,0" />
+                        <!-- La caja sigue existiendo y sigue siendo editable: quien se sepa los
+                             codigos no tiene por que pasar por un dialogo. El boton es para quien no,
+                             que es casi todo el mundo. -->
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                            <TextBox Grid.Column="0" x:Name="MotdBox"
+                                     FontFamily="Cascadia Mono, Consolas, monospace" />
+                            <Button Grid.Column="1" Margin="8,0,0,0" Click="EditMotd_Click"
+                                    ToolTip.Tip="{loc:Loc Motd_Title}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ic:SymbolIcon Symbol="Edit" />
+                                    <TextBlock Text="{loc:Loc Motd_Title}" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
                     </StackPanel>
                 </Border>
 

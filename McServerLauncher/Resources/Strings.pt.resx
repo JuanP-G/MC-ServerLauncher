@@ -774,4 +774,19 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Addr_Share" xml:space="preserve"><value>Copiar endereço e porta para enviar</value></data>
   <data name="Addr_ShareFmt" xml:space="preserve"><value>{0} · porta {1}</value></data>
   <data name="Addr_CopyHost" xml:space="preserve"><value>Copiar só o endereço</value></data>
+  <data name="Motd_Title" xml:space="preserve"><value>Cartaz e aspeto</value></data>
+  <data name="Motd_Preview" xml:space="preserve"><value>ASSIM O VERÃO NA LISTA DE SERVIDORES</value></data>
+  <data name="Motd_Write" xml:space="preserve"><value>ESCREVE AQUI · SEM CÓDIGOS</value></data>
+  <data name="Motd_Hint" xml:space="preserve"><value>Marca um pedaço e escolhe uma cor. O cartaz acima é o que se verá.</value></data>
+  <data name="Motd_Clear" xml:space="preserve"><value>Tirar formatação</value></data>
+  <data name="Motd_Code" xml:space="preserve"><value>Código §</value></data>
+  <data name="Motd_CodeHint" xml:space="preserve"><value>Cola aqui o cartaz de outro servidor e aparece acima com as suas cores.</value></data>
+  <data name="Motd_LinesFmt" xml:space="preserve"><value>O cartaz ocupa duas linhas no cliente. Vais por {0} de 2.</value></data>
+  <data name="Motd_TooLong" xml:space="preserve"><value>Passa das duas linhas: o cliente não mostrará o resto.</value></data>
+  <data name="Motd_Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Motd_Bold" xml:space="preserve"><value>Negrito</value></data>
+  <data name="Motd_Italic" xml:space="preserve"><value>Itálico</value></data>
+  <data name="Motd_Underline" xml:space="preserve"><value>Sublinhado</value></data>
+  <data name="Motd_Strike" xml:space="preserve"><value>Riscado</value></data>
+  <data name="Motd_Default" xml:space="preserve"><value>Cor por omissão</value></data>
 </root>

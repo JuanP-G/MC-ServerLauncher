@@ -138,6 +138,40 @@ public class ServerPingTests
     }
 
     [Fact]
+    public void ALegThatWasNeverTriedDoesNotAccuseTheTunnel()
+    {
+        // The reported bug, exactly. The address was known and the port was not, so the tunnel leg
+        // was skipped — and skipping came back looking identical to silence, so the panel announced
+        // "your server answers here, but nothing answers through the tunnel" about a tunnel it had
+        // never once tried to reach. Accusing something on no evidence is worse than saying nothing.
+        Assert.Equal(PingVerdict.Fine,
+            ServerPingService.Judge(Ok(PingLeg.Direct, 4), PingResult.Skipped(PingLeg.Tunnel)));
+    }
+
+    [Fact]
+    public void NotMeasuredIsNotTheSameThingAsNoAnswer()
+    {
+        Assert.True(PingResult.Skipped(PingLeg.Tunnel).NotMeasured);
+        Assert.False(Dead(PingLeg.Tunnel).NotMeasured);
+        Assert.False(Ok(PingLeg.Tunnel, 30).NotMeasured);
+    }
+
+    [Fact]
+    public void WithNeitherMeasuredNorAnsweringNobodyIsBlamed()
+    {
+        Assert.Equal(PingVerdict.Unknown,
+            ServerPingService.Judge(Dead(PingLeg.Direct), PingResult.Skipped(PingLeg.Tunnel)));
+    }
+
+    [Fact]
+    public void ASlowServerIsStillTheServersFaultWhenTheTunnelWasNotMeasured()
+    {
+        // The skip must not swallow a verdict the direct leg can give on its own.
+        Assert.Equal(PingVerdict.ServerSlow,
+            ServerPingService.Judge(Ok(PingLeg.Direct, 300), PingResult.Skipped(PingLeg.Tunnel)));
+    }
+
+    [Fact]
     public void NeitherAnsweringBlamesNobody()
     {
         // Almost always just a stopped server. Naming a culprit here would be inventing one.

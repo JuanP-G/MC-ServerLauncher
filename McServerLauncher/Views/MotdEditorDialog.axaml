@@ -1,0 +1,123 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        x:Class="McServerLauncher.Views.MotdEditorDialog"
+        x:CompileBindings="False"
+        Title="{loc:Loc Motd_Title}"
+        Width="760" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Styles>
+        <!-- Una muestra de color de la paleta de Minecraft. Cuadrada y sin texto: el color ES la
+             etiqueta, y ponerle el codigo al lado seria volver a enseñar lo que se viene a esconder. -->
+        <Style Selector="Button.swatch">
+            <Setter Property="Width" Value="22" />
+            <Setter Property="Height" Value="22" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,4,4" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
+        </Style>
+        <Style Selector="ToggleButton.mark">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="*,Auto">
+        <StackPanel Grid.Row="0" Margin="22,20,22,16" Spacing="12">
+
+            <!-- La verdad. Es el MISMO renderizador que dibuja el cartel en la cabecera, asi que no
+                 puede mentir sobre lo que se vera. -->
+            <StackPanel Spacing="7">
+                <TextBlock Text="{loc:Loc Motd_Preview}" FontSize="11" Opacity="0.5" />
+                <Border Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}"
+                        BorderThickness="1" CornerRadius="6" Padding="10">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Border Grid.Column="0" Width="64" Height="64" ClipToBounds="True"
+                                Background="{StaticResource GroundWell}" CornerRadius="3">
+                            <Panel>
+                                <ic:SymbolIcon Symbol="Server" FontSize="28" Opacity="0.5"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               IsVisible="{Binding !HasIcon}" />
+                                <Image Source="{Binding ServerIcon}" Width="64" Height="64"
+                                       RenderOptions.BitmapInterpolationMode="None"
+                                       IsVisible="{Binding HasIcon}" />
+                            </Panel>
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ServerName}" Foreground="White" FontWeight="Bold"
+                                       FontSize="16" TextTrimming="CharacterEllipsis" />
+                            <TextBlock x:Name="PreviewText" FontSize="13" TextWrapping="Wrap"
+                                       Margin="0,4,0,0"
+                                       FontFamily="Cascadia Mono, Consolas, monospace" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="{Binding PlayersText}"
+                                   Foreground="{StaticResource McListText}" FontSize="12.5"
+                                   VerticalAlignment="Top" Margin="10,2,0,0" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- La barra. Actua sobre lo que este marcado en la caja de abajo. -->
+            <StackPanel Orientation="Horizontal" Spacing="9">
+                <WrapPanel x:Name="Swatches" Width="216" />
+                <Border Width="1" Background="{StaticResource SurfaceEdge}" Margin="2,0" />
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ToggleButton x:Name="BoldToggle" Classes="mark" Click="Mark_Click" Tag="Bold"
+                                  ToolTip.Tip="{loc:Loc Motd_Bold}" FontWeight="Bold" Content="B" />
+                    <ToggleButton x:Name="ItalicToggle" Classes="mark" Click="Mark_Click" Tag="Italic"
+                                  ToolTip.Tip="{loc:Loc Motd_Italic}" FontStyle="Italic" Content="I" />
+                    <ToggleButton x:Name="UnderlineToggle" Classes="mark" Click="Mark_Click" Tag="Underline"
+                                  ToolTip.Tip="{loc:Loc Motd_Underline}" Content="U" />
+                    <ToggleButton x:Name="StrikeToggle" Classes="mark" Click="Mark_Click" Tag="Strike"
+                                  ToolTip.Tip="{loc:Loc Motd_Strike}" Content="S" />
+                </StackPanel>
+                <Border Width="1" Background="{StaticResource SurfaceEdge}" Margin="2,0" />
+                <Button Content="{loc:Loc Motd_Clear}" Click="ClearFormat_Click" Padding="9,4"
+                        VerticalAlignment="Center" FontSize="12" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="{loc:Loc Motd_Write}" FontSize="11" Opacity="0.5" />
+                <TextBox x:Name="PlainBox" AcceptsReturn="True" Height="62"
+                         TextWrapping="Wrap" VerticalContentAlignment="Top"
+                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="13" />
+                <TextBlock Text="{loc:Loc Motd_Hint}" FontSize="11.5" Opacity="0.55" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!-- Cerrado por defecto: quien no quiera ver un § no lo ve nunca. Abierto, es donde se
+                 pega el cartel de otro servidor — y funciona sin nada especial porque esta caja ES
+                 el original del que salen las otras dos. -->
+            <Expander x:Name="CodeExpander" Header="{loc:Loc Motd_Code}" IsExpanded="False">
+                <StackPanel Spacing="6" Margin="0,6,0,0">
+                    <TextBox x:Name="CodeBox" AcceptsReturn="True" Height="56"
+                             TextWrapping="Wrap" VerticalContentAlignment="Top"
+                             FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12.5" />
+                    <TextBlock Text="{loc:Loc Motd_CodeHint}" FontSize="11.5" Opacity="0.55"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Expander>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock x:Name="LinesText" FontSize="11.5" Opacity="0.6" VerticalAlignment="Center" />
+            </StackPanel>
+        </StackPanel>
+
+        <Border Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="{StaticResource SurfaceEdge}"
+                Padding="22,12">
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Content="{loc:Loc Cancel}" Click="Cancel_Click" />
+                <Button Content="{loc:Loc Motd_Save}" Classes="accent" Click="Save_Click" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

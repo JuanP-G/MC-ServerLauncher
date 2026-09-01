@@ -428,6 +428,9 @@ public partial class ServerViewModel : ObservableObject
     [ObservableProperty]
     private int _tunnelPublicPort;
 
+    /// <summary>The SRV answer for the current address, so it is asked for once and not every tick.</summary>
+    private (string Host, int Port)? _srvPort;
+
     /// <summary>Round trip straight to the server on this machine, or "—".</summary>
     [ObservableProperty]
     private string _pingDirectText = "—";
@@ -485,26 +488,30 @@ public partial class ServerViewModel : ObservableObject
             // server, and going out to the network card would fold the local network into it.
             var direct = await _ping.PingAsync(PingLeg.Direct, "127.0.0.1", port);
 
-            // Skipped rather than guessed when the public port is unknown. A tunnel measured on
-            // the wrong port either fails — and reads as "the tunnel is down" when it is not — or
-            // reaches something else and reports its latency as yours.
-            var tunnel = string.IsNullOrWhiteSpace(TunnelAddress) || TunnelPublicPort <= 0
-                ? new PingResult(PingLeg.Tunnel, null, null)
-                : await _ping.PingAsync(PingLeg.Tunnel, TunnelAddress!, TunnelPublicPort);
+            var tunnelPort = await TunnelPortAsync();
+
+            // Skipped rather than guessed when the port is unknown. A tunnel measured on the wrong
+            // port either fails — and reads as "the tunnel is down" when it is not — or reaches
+            // something else entirely and reports its latency as yours.
+            var tunnel = string.IsNullOrWhiteSpace(TunnelAddress) || tunnelPort <= 0
+                ? PingResult.Skipped(PingLeg.Tunnel)
+                : await _ping.PingAsync(PingLeg.Tunnel, TunnelAddress!, tunnelPort);
 
             PingDirectText = Format(direct);
             PingTunnelText = Format(tunnel);
             PingDirectBrush = ColourFor(direct, 120);
             PingTunnelBrush = ColourFor(tunnel, 260);
 
-            PingVerdictText = Localizer.Get(ServerPingService.Judge(direct, tunnel) switch
+            // Solo cuando hay algo que decir. Una linea permanente que dice "todo normal" deja de
+            // leerse a los dos dias, y ademas ocupa una fila entera que le hace falta a la consola;
+            // los dos numeros en verde ya lo estan diciendo.
+            PingVerdictText = ServerPingService.Judge(direct, tunnel) switch
             {
-                PingVerdict.ServerSlow => "Ping_ServerSlow",
-                PingVerdict.TunnelSlow => "Ping_TunnelSlow",
-                PingVerdict.TunnelDown => "Ping_TunnelDown",
-                PingVerdict.Fine => "Ping_Fine",
-                _ => "Ping_None",
-            });
+                PingVerdict.ServerSlow => Localizer.Get("Ping_ServerSlow"),
+                PingVerdict.TunnelSlow => Localizer.Get("Ping_TunnelSlow"),
+                PingVerdict.TunnelDown => Localizer.Get("Ping_TunnelDown"),
+                _ => string.Empty,
+            };
 
             HasPing = direct.Answered || tunnel.Answered;
         }
@@ -517,6 +524,38 @@ public partial class ServerViewModel : ObservableObject
         {
             _pinging = false;
         }
+    }
+
+    /// <summary>
+    /// The port the tunnel really answers on.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The SRV record first, because that is what a player's client uses. A playit tunnel publishes
+    /// a bare domain and puts the port in <c>_minecraft._tcp.&lt;domain&gt;</c>; asked about a real
+    /// one it answers 14444, and nothing about the address says so. Pinging the domain on 25565
+    /// reached nothing at all, which is how a healthy tunnel came to be reported as dead.
+    /// </para>
+    /// <para>
+    /// The API's public port is the fallback, not the first choice: it is right only while the
+    /// tunnel's local port still matches this server's, and a server whose port has moved since the
+    /// tunnel was made is exactly the case the tunnels panel now exists to show.
+    /// </para>
+    /// </remarks>
+    private async Task<int> TunnelPortAsync()
+    {
+        var host = TunnelAddress;
+        if (string.IsNullOrWhiteSpace(host)) return 0;
+
+        if (_srvPort is { } cached && cached.Host == host) return cached.Port;
+
+        var srv = await MinecraftSrv.LookupPortAsync(host);
+        var port = srv ?? TunnelPublicPort;
+
+        // Remembered either way: a domain with no SRV record does not grow one, and asking again
+        // every five seconds would be a DNS query per tick for nothing.
+        _srvPort = (host!, port);
+        return port;
     }
 
     private void ResetPing()

@@ -774,4 +774,19 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Addr_Share" xml:space="preserve"><value>Copy address and port to share</value></data>
   <data name="Addr_ShareFmt" xml:space="preserve"><value>{0} · port {1}</value></data>
   <data name="Addr_CopyHost" xml:space="preserve"><value>Copy the address only</value></data>
+  <data name="Motd_Title" xml:space="preserve"><value>Sign and looks</value></data>
+  <data name="Motd_Preview" xml:space="preserve"><value>THIS IS HOW THEY'LL SEE IT IN THE SERVER LIST</value></data>
+  <data name="Motd_Write" xml:space="preserve"><value>TYPE HERE · NO CODES</value></data>
+  <data name="Motd_Hint" xml:space="preserve"><value>Select some text and pick a colour. The sign above is what will be seen.</value></data>
+  <data name="Motd_Clear" xml:space="preserve"><value>Clear formatting</value></data>
+  <data name="Motd_Code" xml:space="preserve"><value>§ code</value></data>
+  <data name="Motd_CodeHint" xml:space="preserve"><value>Paste another server's sign here and it appears above with its colours.</value></data>
+  <data name="Motd_LinesFmt" xml:space="preserve"><value>The sign is two lines in the client. You're on {0} of 2.</value></data>
+  <data name="Motd_TooLong" xml:space="preserve"><value>More than two lines: the client won't show the rest.</value></data>
+  <data name="Motd_Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Motd_Bold" xml:space="preserve"><value>Bold</value></data>
+  <data name="Motd_Italic" xml:space="preserve"><value>Italic</value></data>
+  <data name="Motd_Underline" xml:space="preserve"><value>Underline</value></data>
+  <data name="Motd_Strike" xml:space="preserve"><value>Strikethrough</value></data>
+  <data name="Motd_Default" xml:space="preserve"><value>Default colour</value></data>
 </root>

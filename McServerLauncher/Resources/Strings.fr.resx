@@ -774,4 +774,19 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Addr_Share" xml:space="preserve"><value>Copier l'adresse et le port à envoyer</value></data>
   <data name="Addr_ShareFmt" xml:space="preserve"><value>{0} · port {1}</value></data>
   <data name="Addr_CopyHost" xml:space="preserve"><value>Copier l'adresse seule</value></data>
+  <data name="Motd_Title" xml:space="preserve"><value>Panneau et apparence</value></data>
+  <data name="Motd_Preview" xml:space="preserve"><value>VOICI CE QU'ILS VERRONT DANS LA LISTE</value></data>
+  <data name="Motd_Write" xml:space="preserve"><value>ÉCRIVEZ ICI · SANS CODES</value></data>
+  <data name="Motd_Hint" xml:space="preserve"><value>Sélectionnez un morceau et choisissez une couleur. Le panneau ci-dessus est ce qui sera vu.</value></data>
+  <data name="Motd_Clear" xml:space="preserve"><value>Effacer la mise en forme</value></data>
+  <data name="Motd_Code" xml:space="preserve"><value>Code §</value></data>
+  <data name="Motd_CodeHint" xml:space="preserve"><value>Collez ici le panneau d'un autre serveur et il apparaît au-dessus avec ses couleurs.</value></data>
+  <data name="Motd_LinesFmt" xml:space="preserve"><value>Le panneau fait deux lignes dans le client. Vous en êtes à {0} sur 2.</value></data>
+  <data name="Motd_TooLong" xml:space="preserve"><value>Plus de deux lignes : le client n'affichera pas le reste.</value></data>
+  <data name="Motd_Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="Motd_Bold" xml:space="preserve"><value>Gras</value></data>
+  <data name="Motd_Italic" xml:space="preserve"><value>Italique</value></data>
+  <data name="Motd_Underline" xml:space="preserve"><value>Souligné</value></data>
+  <data name="Motd_Strike" xml:space="preserve"><value>Barré</value></data>
+  <data name="Motd_Default" xml:space="preserve"><value>Couleur par défaut</value></data>
 </root>

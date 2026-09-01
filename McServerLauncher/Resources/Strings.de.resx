@@ -774,4 +774,19 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Addr_Share" xml:space="preserve"><value>Adresse und Port zum Teilen kopieren</value></data>
   <data name="Addr_ShareFmt" xml:space="preserve"><value>{0} · Port {1}</value></data>
   <data name="Addr_CopyHost" xml:space="preserve"><value>Nur die Adresse kopieren</value></data>
+  <data name="Motd_Title" xml:space="preserve"><value>Schild und Aussehen</value></data>
+  <data name="Motd_Preview" xml:space="preserve"><value>SO SEHEN SIE ES IN DER SERVERLISTE</value></data>
+  <data name="Motd_Write" xml:space="preserve"><value>HIER SCHREIBEN · OHNE CODES</value></data>
+  <data name="Motd_Hint" xml:space="preserve"><value>Markiere ein Stück und wähle eine Farbe. Das Schild oben ist, was man sehen wird.</value></data>
+  <data name="Motd_Clear" xml:space="preserve"><value>Formatierung entfernen</value></data>
+  <data name="Motd_Code" xml:space="preserve"><value>§-Code</value></data>
+  <data name="Motd_CodeHint" xml:space="preserve"><value>Füge hier das Schild eines anderen Servers ein; es erscheint oben mit seinen Farben.</value></data>
+  <data name="Motd_LinesFmt" xml:space="preserve"><value>Das Schild hat im Client zwei Zeilen. Du bist bei {0} von 2.</value></data>
+  <data name="Motd_TooLong" xml:space="preserve"><value>Mehr als zwei Zeilen: der Client zeigt den Rest nicht.</value></data>
+  <data name="Motd_Save" xml:space="preserve"><value>Speichern</value></data>
+  <data name="Motd_Bold" xml:space="preserve"><value>Fett</value></data>
+  <data name="Motd_Italic" xml:space="preserve"><value>Kursiv</value></data>
+  <data name="Motd_Underline" xml:space="preserve"><value>Unterstrichen</value></data>
+  <data name="Motd_Strike" xml:space="preserve"><value>Durchgestrichen</value></data>
+  <data name="Motd_Default" xml:space="preserve"><value>Standardfarbe</value></data>
 </root>
