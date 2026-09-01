@@ -738,4 +738,21 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="About_Latest" xml:space="preserve"><value>Rechercher une mise à jour</value></data>
   <data name="About_UpToDate" xml:space="preserve"><value>Vous avez la dernière version</value></data>
   <data name="About_Newer" xml:space="preserve"><value>Une version plus récente existe</value></data>
+  <data name="Tun_ColStatus" xml:space="preserve"><value>État</value></data>
+  <data name="Tun_ColAddress" xml:space="preserve"><value>Adresse publique</value></data>
+  <data name="Tun_ColProto" xml:space="preserve"><value>Type</value></data>
+  <data name="Tun_ColLocal" xml:space="preserve"><value>Port local</value></data>
+  <data name="Tun_ColServer" xml:space="preserve"><value>Serveur</value></data>
+  <data name="Tun_InUse" xml:space="preserve"><value>Utilisé</value></data>
+  <data name="Tun_Orphan" xml:space="preserve"><value>Orphelin</value></data>
+  <data name="Tun_Clash" xml:space="preserve"><value>Port en double</value></data>
+  <data name="Tun_NoOwner" xml:space="preserve"><value>Aucun serveur</value></data>
+  <data name="Tun_AllGood" xml:space="preserve"><value>Tout va bien</value></data>
+  <data name="Tun_AttentionFmt" xml:space="preserve"><value>{0} demandent votre attention</value></data>
+  <data name="Tun_Empty" xml:space="preserve"><value>Votre compte Playit n'a aucun tunnel ouvert.</value></data>
+  <data name="Tun_NotConnected" xml:space="preserve"><value>Connectez votre compte Playit dans les Réglages pour voir vos tunnels.</value></data>
+  <data name="Tun_Loading" xml:space="preserve"><value>Consultation de votre compte…</value></data>
+  <data name="Tun_OrphanHint" xml:space="preserve"><value>Reste d'un serveur qui n'existe plus. Il occupe une place sur votre compte sans rien servir.</value></data>
+  <data name="Tun_ClashHint" xml:space="preserve"><value>Un autre tunnel pointe vers le même port local. Un seul des deux peut fonctionner.</value></data>
+  <data name="Tun_DeleteFmt" xml:space="preserve"><value>Supprimer le tunnel « {0} » ? Cela ne touche aucun serveur.</value></data>
 </root>

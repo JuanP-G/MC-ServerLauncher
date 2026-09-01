@@ -738,4 +738,21 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="About_Latest" xml:space="preserve"><value>Check for updates</value></data>
   <data name="About_UpToDate" xml:space="preserve"><value>You're on the latest version</value></data>
   <data name="About_Newer" xml:space="preserve"><value>A newer version is available</value></data>
+  <data name="Tun_ColStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="Tun_ColAddress" xml:space="preserve"><value>Public address</value></data>
+  <data name="Tun_ColProto" xml:space="preserve"><value>Type</value></data>
+  <data name="Tun_ColLocal" xml:space="preserve"><value>Local port</value></data>
+  <data name="Tun_ColServer" xml:space="preserve"><value>Server</value></data>
+  <data name="Tun_InUse" xml:space="preserve"><value>In use</value></data>
+  <data name="Tun_Orphan" xml:space="preserve"><value>Orphan</value></data>
+  <data name="Tun_Clash" xml:space="preserve"><value>Port clash</value></data>
+  <data name="Tun_NoOwner" xml:space="preserve"><value>No server</value></data>
+  <data name="Tun_AllGood" xml:space="preserve"><value>All good</value></data>
+  <data name="Tun_AttentionFmt" xml:space="preserve"><value>{0} need attention</value></data>
+  <data name="Tun_Empty" xml:space="preserve"><value>Your Playit account has no tunnels open.</value></data>
+  <data name="Tun_NotConnected" xml:space="preserve"><value>Connect your Playit account in Settings to see your tunnels.</value></data>
+  <data name="Tun_Loading" xml:space="preserve"><value>Checking your account…</value></data>
+  <data name="Tun_OrphanHint" xml:space="preserve"><value>Left over from a server that no longer exists. It uses up a slot on your account and serves nothing.</value></data>
+  <data name="Tun_ClashHint" xml:space="preserve"><value>Another tunnel points at the same local port. Only one of them can work.</value></data>
+  <data name="Tun_DeleteFmt" xml:space="preserve"><value>Delete the tunnel "{0}"? This does not touch any server.</value></data>
 </root>

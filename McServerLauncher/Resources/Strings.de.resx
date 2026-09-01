@@ -738,4 +738,21 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="About_Latest" xml:space="preserve"><value>Nach Updates suchen</value></data>
   <data name="About_UpToDate" xml:space="preserve"><value>Du hast die neueste Version</value></data>
   <data name="About_Newer" xml:space="preserve"><value>Eine neuere Version ist verfügbar</value></data>
+  <data name="Tun_ColStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="Tun_ColAddress" xml:space="preserve"><value>Öffentliche Adresse</value></data>
+  <data name="Tun_ColProto" xml:space="preserve"><value>Typ</value></data>
+  <data name="Tun_ColLocal" xml:space="preserve"><value>Lokaler Port</value></data>
+  <data name="Tun_ColServer" xml:space="preserve"><value>Server</value></data>
+  <data name="Tun_InUse" xml:space="preserve"><value>In Benutzung</value></data>
+  <data name="Tun_Orphan" xml:space="preserve"><value>Verwaist</value></data>
+  <data name="Tun_Clash" xml:space="preserve"><value>Port doppelt</value></data>
+  <data name="Tun_NoOwner" xml:space="preserve"><value>Kein Server</value></data>
+  <data name="Tun_AllGood" xml:space="preserve"><value>Alles in Ordnung</value></data>
+  <data name="Tun_AttentionFmt" xml:space="preserve"><value>{0} brauchen Aufmerksamkeit</value></data>
+  <data name="Tun_Empty" xml:space="preserve"><value>Dein Playit-Konto hat keine offenen Tunnel.</value></data>
+  <data name="Tun_NotConnected" xml:space="preserve"><value>Verbinde dein Playit-Konto in den Einstellungen, um deine Tunnel zu sehen.</value></data>
+  <data name="Tun_Loading" xml:space="preserve"><value>Konto wird abgefragt…</value></data>
+  <data name="Tun_OrphanHint" xml:space="preserve"><value>Übrig von einem Server, den es nicht mehr gibt. Belegt einen Platz im Konto, ohne etwas zu bedienen.</value></data>
+  <data name="Tun_ClashHint" xml:space="preserve"><value>Ein anderer Tunnel zeigt auf denselben lokalen Port. Nur einer von beiden kann funktionieren.</value></data>
+  <data name="Tun_DeleteFmt" xml:space="preserve"><value>Tunnel „{0}“ löschen? Das rührt keinen Server an.</value></data>
 </root>

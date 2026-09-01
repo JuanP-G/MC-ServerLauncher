@@ -65,7 +65,192 @@ public partial class MainViewModel : ObservableObject
     private void ShowServers() => Section = AppSection.Servers;
 
     [RelayCommand]
-    private void ShowTunnels() => Section = AppSection.Tunnels;
+    private void ShowTunnels()
+    {
+        Section = AppSection.Tunnels;
+        // Asked for when the section is opened, not on a timer and not at startup: it is a network
+        // request to somebody else's API, and nobody is looking at the answer until now.
+        _ = RefreshTunnels();
+    }
+
+    // --- The tunnels table ---
+
+    /// <summary>Every tunnel on the account, with who owns it and what is wrong with it.</summary>
+    public ObservableCollection<TunnelRowViewModel> TunnelRows { get; } = new();
+
+    [ObservableProperty]
+    private bool _tunnelsLoading;
+
+    /// <summary>Null until the account has answered once; then how many rows are flagged.</summary>
+    [ObservableProperty]
+    private int _tunnelsAttention;
+
+    [ObservableProperty]
+    private bool _tunnelsAsked;
+
+    /// <summary>What went wrong asking the account, or null. Shown in the panel.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasTunnelsError))]
+    private string? _tunnelsError;
+
+    public bool HasTunnelsError => !string.IsNullOrEmpty(TunnelsError);
+
+    /// <summary>Whether there is a Playit account to ask in the first place.</summary>
+    public bool PlayitConnected => PlayitConnection.IsConnected(_appSettings);
+
+    /// <summary>What the summary line says: either all is well or how many need looking at.</summary>
+    public string TunnelsSummary => TunnelsAttention == 0
+        ? Localizer.Get("Tun_AllGood")
+        : string.Format(Localizer.Get("Tun_AttentionFmt"), TunnelsAttention);
+
+    /// <summary>Nothing needs doing. A bool, not the count, because the view binds visibility.</summary>
+    /// <remarks>
+    /// The panel used to say <c>IsVisible="{Binding !TunnelsAttention}"</c>, negating an int. These
+    /// views are <c>x:CompileBindings="False"</c>, so that does not fail — it just quietly decides
+    /// something, and a green dot that is always on says "all good" while three rows underneath say
+    /// otherwise. Cheaper to expose the bool than to trust the coercion.
+    /// </remarks>
+    public bool TunnelsAllGood => TunnelsAttention == 0;
+
+    partial void OnTunnelsAttentionChanged(int value)
+    {
+        OnPropertyChanged(nameof(TunnelsSummary));
+        OnPropertyChanged(nameof(TunnelsAllGood));
+        OnPropertyChanged(nameof(TunnelsNeedAttention));
+    }
+
+    /// <inheritdoc cref="TunnelsAllGood" />
+    public bool TunnelsNeedAttention => TunnelsAttention > 0;
+
+    /// <summary>
+    /// "You have no tunnels" — only once the account has actually been asked and answered.
+    /// </summary>
+    /// <remarks>
+    /// The three conditions are one property rather than a MultiBinding in the view because getting
+    /// it wrong is invisible: the views are <c>x:CompileBindings="False"</c>, so a converter that
+    /// does not resolve draws nothing and the message silently never appears. Here it is a bool
+    /// that can be read, and reasoned about, in one place.
+    /// </remarks>
+    public bool ShowNoTunnels => PlayitConnected && TunnelsAsked && TunnelRows.Count == 0;
+
+    private void RefreshTunnelsEmptyState()
+    {
+        OnPropertyChanged(nameof(ShowNoTunnels));
+        OnPropertyChanged(nameof(HasTunnelRows));
+    }
+
+    public bool HasTunnelRows => TunnelRows.Count > 0;
+
+    partial void OnTunnelsAskedChanged(bool value) => RefreshTunnelsEmptyState();
+
+    /// <summary>The playit dashboard for the account, not for one server's tunnel.</summary>
+    [RelayCommand]
+    private void OpenPlayitAccount() => BrowserLauncher.Open("https://playit.gg/account/tunnels");
+
+    /// <summary>Puts a row's public address on the clipboard.</summary>
+    [RelayCommand]
+    private async Task CopyTunnelRow(TunnelRowViewModel? row)
+    {
+        if (row is null || Owner?.Clipboard is not { } clipboard) return;
+        try { await clipboard.SetTextAsync(row.Address); } catch { /* clipboard busy */ }
+    }
+
+    /// <summary>
+    /// Deletes one tunnel from the account, after asking.
+    /// </summary>
+    /// <remarks>
+    /// Asking is not ceremony here: the rows that most want deleting are the orphans, and an orphan
+    /// looks exactly like a tunnel whose server this app has simply not been told about — a server
+    /// added on another machine, or one removed from the list but not from disk. The confirmation
+    /// says the one thing that settles it: no server is touched either way.
+    /// </remarks>
+    [RelayCommand]
+    private async Task DeleteTunnelRow(TunnelRowViewModel? row)
+    {
+        if (row is null || Owner is null) return;
+
+        var ok = await MessageBox.ConfirmAsync(
+            string.Format(Localizer.Get("Tun_DeleteFmt"), row.Address),
+            Localizer.Get("Nav_Tunnels"), Owner);
+        if (!ok) return;
+
+        try
+        {
+            var key = new PlayitApiService().ReadSecretKey() ?? _appSettings.PlayitAgentSecretKey;
+            if (string.IsNullOrWhiteSpace(key)) return;
+
+            await new PlayitApiService().DeleteTunnelForPortAsync(key, row.LocalPortNumber, row.IsBedrock);
+            await RefreshTunnels();
+        }
+        catch (Exception ex)
+        {
+            TunnelsError = ex.Message;
+        }
+    }
+
+    /// <summary>The two ports each server can have a tunnel on.</summary>
+    /// <remarks>
+    /// The Java port lives in <c>server.properties</c> and not in the config, so it is read here
+    /// rather than derived — and read as null when the file cannot be, because "I do not know the
+    /// port" must not quietly become "the port is whatever you asked about".
+    /// </remarks>
+    private IReadOnlyList<TunnelInventory.ServerPorts> ServerPortsSnapshot()
+    {
+        var properties = new ServerPropertiesService();
+        return Servers.Select(s => new TunnelInventory.ServerPorts(
+            s.Config.Name,
+            SafeJavaPort(properties, s.Config.PropertiesPath),
+            s.Config.BedrockPort)).ToList();
+    }
+
+    private static int? SafeJavaPort(ServerPropertiesService properties, string path)
+    {
+        try { return properties.GetServerPort(path); }
+        catch { return null; }   // unreadable or gone: not knowing is an answer, and it is null
+    }
+
+    [RelayCommand]
+    private async Task RefreshTunnels()
+    {
+        OnPropertyChanged(nameof(PlayitConnected));
+        if (!PlayitConnected)
+        {
+            TunnelRows.Clear();
+            RefreshTunnelsEmptyState();
+            TunnelsAsked = true;
+            return;
+        }
+
+        TunnelsLoading = true;
+        TunnelsError = null;
+        try
+        {
+            var key = new PlayitApiService().ReadSecretKey() ?? _appSettings.PlayitAgentSecretKey;
+            if (string.IsNullOrWhiteSpace(key)) { TunnelRows.Clear(); return; }
+
+            var (_, tunnels) = await new PlayitApiService().GetRunDataAsync(key);
+            var rows = TunnelInventory.Build(tunnels, ServerPortsSnapshot());
+
+            TunnelRows.Clear();
+            foreach (var row in rows) TunnelRows.Add(new TunnelRowViewModel(row));
+            TunnelsAttention = TunnelInventory.AttentionCount(rows);
+            RefreshTunnelsEmptyState();
+        }
+        catch (Exception ex)
+        {
+            // Said here and not in a server's console: this is the account failing to answer, and
+            // no server did anything. Clearing the rows matters too — leaving the previous ones up
+            // after a failed request is worse than an empty table, because they would look current.
+            TunnelRows.Clear();
+            RefreshTunnelsEmptyState();
+            TunnelsError = ex.Message;
+        }
+        finally
+        {
+            TunnelsLoading = false;
+            TunnelsAsked = true;
+        }
+    }
 
     [ObservableProperty]
     private bool _updateAvailable;
