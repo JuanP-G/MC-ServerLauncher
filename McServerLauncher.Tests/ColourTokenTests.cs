@@ -20,24 +20,17 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class ColourTokenTests
 {
-    /// <summary>Colours that stay written out, each for a reason that is not "we forgot".</summary>
+    /// <summary>Colours a view is still allowed to write out, with the reason.</summary>
     /// <remarks>
-    /// <para>
-    /// <b>ServerModsView</b> keeps the solid tile of the results list. It is not the translucent
-    /// card the rest of the app uses; it used to be called <c>Border.card</c> too, which is exactly
-    /// why it now has its own name.
-    /// </para>
-    /// <para>
-    /// <b>MainWindow</b> keeps the console chip colours, which come from
-    /// <c>ConsoleColors</c> — a setting the user edits, not a token of the theme.
-    /// </para>
+    /// Empty, and that is the finding: every colour in every view turned out to be a theme
+    /// decision, so none of them needed an exception. The set stays because the next real one will
+    /// want a home and a reason written next to it — but an entry here should have to argue for
+    /// itself. The colours that genuinely are not theme tokens live in code, not in the views:
+    /// Minecraft's own sixteen in <c>MinecraftMotd</c>, the loader brands in
+    /// <c>ServerTypeCatalog</c>, and the defaults of settings the user edits in
+    /// <c>NotificationPalette</c> and <c>ConsoleColors</c>.
     /// </remarks>
-    private static readonly HashSet<string> Allowed = new()
-    {
-        "#1A1A1A",   // ServerModsView: the solid tile of a result row
-        "#1AFFFFFF", // ServerModsView: that tile's border
-        "#40FFFFFF", // ServerModsView: that tile's border while hovered
-    };
+    private static readonly HashSet<string> Allowed = new();
 
     /// <summary>Attributes and setters that carry a colour.</summary>
     private static readonly Regex ColourAttribute = new(
