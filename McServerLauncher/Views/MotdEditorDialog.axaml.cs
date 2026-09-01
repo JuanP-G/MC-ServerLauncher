@@ -166,17 +166,8 @@ public partial class MotdEditorDialog : Window
         var after = PlainBox.Text ?? string.Empty;
         if (before == after) return;
 
-        var head = 0;
-        while (head < before.Length && head < after.Length && before[head] == after[head]) head++;
-
-        var tail = 0;
-        while (tail < before.Length - head && tail < after.Length - head &&
-               before[^(tail + 1)] == after[^(tail + 1)]) tail++;
-
-        var removed = before.Length - head - tail;
-        var inserted = after[head..(after.Length - tail)];
-
-        _runs = MotdDocument.Replace(_runs, head, removed, inserted);
+        var (start, removed, inserted) = MotdDocument.Diff(before, after);
+        _runs = MotdDocument.Replace(_runs, start, removed, inserted);
         RefreshAll(exceptPlain: true, keepSelection: true);
     }
 

@@ -69,7 +69,7 @@
 
             <!-- La barra. Actua sobre lo que este marcado en la caja de abajo. -->
             <StackPanel Orientation="Horizontal" Spacing="9">
-                <WrapPanel x:Name="Swatches" Width="216" />
+                <WrapPanel x:Name="Swatches" Width="238" />
                 <Border Width="1" Background="{StaticResource SurfaceEdge}" Margin="2,0" />
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ToggleButton x:Name="BoldToggle" Classes="mark" Click="Mark_Click" Tag="Bold"
@@ -77,9 +77,13 @@
                     <ToggleButton x:Name="ItalicToggle" Classes="mark" Click="Mark_Click" Tag="Italic"
                                   ToolTip.Tip="{loc:Loc Motd_Italic}" FontStyle="Italic" Content="I" />
                     <ToggleButton x:Name="UnderlineToggle" Classes="mark" Click="Mark_Click" Tag="Underline"
-                                  ToolTip.Tip="{loc:Loc Motd_Underline}" Content="U" />
+                                  ToolTip.Tip="{loc:Loc Motd_Underline}">
+                        <TextBlock Text="U" TextDecorations="Underline" />
+                    </ToggleButton>
                     <ToggleButton x:Name="StrikeToggle" Classes="mark" Click="Mark_Click" Tag="Strike"
-                                  ToolTip.Tip="{loc:Loc Motd_Strike}" Content="S" />
+                                  ToolTip.Tip="{loc:Loc Motd_Strike}">
+                        <TextBlock Text="S" TextDecorations="Strikethrough" />
+                    </ToggleButton>
                 </StackPanel>
                 <Border Width="1" Background="{StaticResource SurfaceEdge}" Margin="2,0" />
                 <Button Content="{loc:Loc Motd_Clear}" Click="ClearFormat_Click" Padding="9,4"

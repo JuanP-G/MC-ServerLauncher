@@ -327,6 +327,32 @@ public static partial class MotdDocument
         return result;
     }
 
+    /// <summary>
+    /// What changed between two versions of the plain text.
+    /// </summary>
+    /// <remarks>
+    /// A text box reports that its text changed and nothing about how. The edit is found by matching
+    /// the common start and the common end, which covers every real one — typing, deleting, pasting,
+    /// replacing a selection — because all of them touch a single contiguous stretch.
+    /// <para>
+    /// Here rather than in the dialog because it is the one piece of real logic in it, and getting
+    /// it wrong does not throw: it silently moves a colour a character to one side.
+    /// </para>
+    /// </remarks>
+    public static (int Start, int Removed, string Inserted) Diff(string? before, string? after)
+    {
+        var a = before ?? string.Empty;
+        var b = after ?? string.Empty;
+
+        var head = 0;
+        while (head < a.Length && head < b.Length && a[head] == b[head]) head++;
+
+        var tail = 0;
+        while (tail < a.Length - head && tail < b.Length - head && a[^(tail + 1)] == b[^(tail + 1)]) tail++;
+
+        return (head, a.Length - head - tail, b[head..(b.Length - tail)]);
+    }
+
     /// <summary>Whether a pasted string carries formatting worth importing.</summary>
     /// <remarks>
     /// Only <c>§</c> counts. <c>&amp;</c> is accepted when <i>reading</i> a sign, but nobody types

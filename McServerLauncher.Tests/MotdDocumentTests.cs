@@ -324,4 +324,61 @@ public class MotdDocumentTests
         // dialog asks about & instead of assuming.
         Assert.False(MotdDocument.LooksCoded("Juan &Mar"));
     }
+
+    // --- Working out what somebody just typed ---
+
+    [Theory]
+    // typing at the end, in the middle, at the start
+    [InlineData("Hola", "Hola!", 4, 0, "!")]
+    [InlineData("Hola", "Hoola", 2, 0, "o")]
+    [InlineData("Hola", "¡Hola", 0, 0, "¡")]
+    // deleting
+    [InlineData("Hola", "Hla", 1, 1, "")]
+    [InlineData("Hola", "", 0, 4, "")]
+    // replacing a selection
+    [InlineData("Hola mundo", "Hola tierra", 5, 5, "tierra")]
+    // pasting
+    [InlineData("", "Un servidor", 0, 0, "Un servidor")]
+    public void TheEditIsFoundByMatchingBothEnds(
+        string before, string after, int start, int removed, string inserted)
+    {
+        // A text box says its text changed and nothing about how. Getting this wrong does not throw
+        // — it silently moves a colour a character to one side, which is the sort of thing nobody
+        // reports and everybody notices.
+        Assert.Equal((start, removed, inserted), MotdDocument.Diff(before, after));
+    }
+
+    [Fact]
+    public void RepeatedLettersDoNotConfuseTheMatch()
+    {
+        // "aaa" -> "aaaa": the new letter could be at any of four places. Any of them rebuilds the
+        // same text, which is what actually matters — so the test pins the invariant, not a guess.
+        var (start, removed, inserted) = MotdDocument.Diff("aaa", "aaaa");
+
+        Assert.Equal("aaaa", "aaa"[..start] + inserted + "aaa"[(start + removed)..]);
+    }
+
+    [Fact]
+    public void DiffAlwaysDescribesAnEditThatRebuildsTheText()
+    {
+        // The invariant the dialog leans on. Checked over every pair of substrings of a real sign,
+        // because the failures here are the awkward ones — a change touching both ends at once.
+        const string text = "Bienvenido al servidor";
+
+        for (var i = 0; i <= text.Length; i++)
+            for (var j = i; j <= text.Length; j++)
+            {
+                var after = text[..i] + "XY" + text[j..];
+                var (start, removed, inserted) = MotdDocument.Diff(text, after);
+
+                Assert.Equal(after, text[..start] + inserted + text[(start + removed)..]);
+            }
+    }
+
+    [Fact]
+    public void NothingChangingIsAnEmptyEdit()
+    {
+        Assert.Equal((4, 0, ""), MotdDocument.Diff("Hola", "Hola"));
+        Assert.Equal((0, 0, ""), MotdDocument.Diff(null, null));
+    }
 }
