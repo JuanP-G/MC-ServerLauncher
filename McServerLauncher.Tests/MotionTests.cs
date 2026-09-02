@@ -95,6 +95,34 @@ public class MotionTests
     }
 
     [Fact]
+    public void OnlyTheServerListMovesUnderThePointer()
+    {
+        // The console is 2000 lines of monospace log with multi-select drag, and it is the one list
+        // in the app whose job is to be READ. It was nudging every line 2 px sideways under the
+        // cursor because this rule was written for the server list and selected `ListBoxItem` with
+        // no scope — which in Avalonia reaches all five ListBoxes, console included.
+        //
+        // The comment above it said "a row of the server list", singular. The comment was right and
+        // the selector was wrong; this is what keeps them agreeing.
+        var loose = new List<string>();
+        var lines = File.ReadAllLines(Layer());
+
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i].Trim();
+            if (!line.StartsWith("<Style Selector=", StringComparison.Ordinal)) continue;
+            if (!line.Contains("ListBoxItem", StringComparison.Ordinal)) continue;
+            if (line.Contains("ListBox.servers", StringComparison.Ordinal)) continue;
+
+            loose.Add($"{MotionSwitch.FileName}:{i + 1}  {line}");
+        }
+
+        Assert.True(loose.Count == 0,
+            "Un selector de fila sin acotar alcanza a las cinco listas, y una de ellas es la " +
+            "consola:\n  " + string.Join("\n  ", loose));
+    }
+
+    [Fact]
     public void AnInvisibleSectionCannotBeClicked()
     {
         // The bug the cross-fade brings with it. Fading a section means keeping it mounted, and a

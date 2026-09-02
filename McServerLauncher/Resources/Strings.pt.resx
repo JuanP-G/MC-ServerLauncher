@@ -16,6 +16,7 @@
   <data name="Restart" xml:space="preserve"><value>Reiniciar</value></data>
   <data name="Configure" xml:space="preserve"><value>Configurar</value></data>
   <data name="Tip_Configure" xml:space="preserve"><value>Editar server.properties visualmente</value></data>
+  <data name="Tip_OpenFolder" xml:space="preserve"><value>Abrir a pasta do servidor</value></data>
   <data name="Uptime" xml:space="preserve"><value>Tempo ativo</value></data>
   <data name="Port" xml:space="preserve"><value>Porta</value></data>
   <data name="Ports" xml:space="preserve"><value>Portas</value></data>
@@ -215,7 +216,7 @@
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Ao minimizar, enviar para a bandeja (sai da barra de tarefas)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Ao fechar (X), enviar para a bandeja em vez de sair da aplicação</value></data>
   <data name="Motion_Section" xml:space="preserve"><value>Animações</value></data>
-  <data name="Motion_Intro" xml:space="preserve"><value>O movimento da app: os botões que afundam ao carregar, as secções que se cruzam e o ponto que pulsa enquanto um servidor arranca.</value></data>
+  <data name="Motion_Intro" xml:space="preserve"><value>Como a app se move ao mudar de ecrã ou carregar em algo.</value></data>
   <data name="Motion_Enabled" xml:space="preserve"><value>Usar animações</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notificações</value></data>
   <data name="Notif_UseCustom" xml:space="preserve"><value>Usar uma configuração de notificações própria para este servidor</value></data>

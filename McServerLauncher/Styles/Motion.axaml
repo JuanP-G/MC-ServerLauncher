@@ -100,14 +100,15 @@
         <Setter Property="RenderTransform" Value="scale(0.97)" />
     </Style>
 
-    <!-- Una fila de la lista de servidores. El fondo funde en vez de saltar, y al pasar por encima
-         se adelanta 2 px: dice "esto se puede pulsar" sin necesidad de dibujar nada nuevo. -->
-    <Style Selector="ListBoxItem">
+    <!-- Una fila de LA LISTA DE SERVIDORES, y de ninguna otra.
+         El selector era `ListBoxItem` a secas, y en Avalonia eso alcanza a las cinco ListBox de la
+         app: la consola (2000 lineas, seleccion multiple), las copias y las dos de mods. Cada linea
+         del log se desplazaba 2 px bajo el cursor — en la unica lista cuyo trabajo es LEERSE, no
+         señalarse. El comentario decia "la lista de servidores" en singular mientras el selector
+         decia otra cosa; el comentario tenia razon. -->
+    <Style Selector="ListBox.servers ListBoxItem">
         <Setter Property="Transitions">
             <Transitions>
-                <BrushTransition Property="Background"
-                                 Duration="{StaticResource MotionQuick}"
-                                 Easing="{StaticResource EaseStandard}" />
                 <TransformOperationsTransition Property="RenderTransform"
                                                Duration="{StaticResource MotionQuick}"
                                                Easing="{StaticResource EaseSettle}" />
@@ -115,8 +116,22 @@
         </Setter>
     </Style>
 
-    <Style Selector="ListBoxItem:pointerover">
+    <Style Selector="ListBox.servers ListBoxItem:pointerover">
         <Setter Property="RenderTransform" Value="translateX(2px)" />
+    </Style>
+
+    <!-- Y el fondo se funde DONDE SE PINTA. Fluent no pinta el hover en el ListBoxItem sino en su
+         ContentPresenter, asi que la transicion anterior estaba puesta sobre una propiedad que nadie
+         cambiaba: no fundia nada, en ninguna lista. Es la misma razon por la que ServerModsView
+         tiene que escribir `/template/ ContentPresenter` para apagar ese relleno. -->
+    <Style Selector="ListBox.servers ListBoxItem /template/ ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background"
+                                 Duration="{StaticResource MotionQuick}"
+                                 Easing="{StaticResource EaseStandard}" />
+            </Transitions>
+        </Setter>
     </Style>
 
     <!-- ============================================================================
@@ -124,16 +139,35 @@
          Tres, y ni uno mas. Cada uno dice algo que sin el habria que adivinar.
          ============================================================================ -->
 
-    <!-- 1. El raíl. La seccion en la que estas se enciende fundiendo, no parpadeando. -->
+    <!-- 1. El raíl. La marca VIAJA de una seccion a otra.
+            Es el detalle que hace que cambiar de seccion se lea como un movimiento y no como dos
+            parpadeos: la barra sale de donde estabas y llega a donde vas, asi que el ojo sigue la
+            misma cosa en vez de perder una y encontrar otra.
+
+            SOLO viaja. El alto NO se anima, y no es un olvido: `Height` empieza en NaN ("auto"), y
+            una DoubleTransition interpolando DESDE NaN devuelve NaN — para siempre, no solo el
+            primer fotograma. Con ella puesta, la barra nunca llegaba a tener alto y sencillamente no
+            se dibujaba. Medido con una sonda: quitarla la devuelve a 32 px al instante.
+
+            Lo que se pierde es minimo: el alto solo cambia si una traduccion parte la etiqueta en dos
+            lineas y desnivela los botones, y entonces la barra cambia de alto de golpe mientras
+            viaja, que no se nota. Una barra que no existe, si. -->
+    <Style Selector="Border.railpip">
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform"
+                                               Duration="{StaticResource MotionBase}"
+                                               Easing="{StaticResource EaseSettle}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
     <Style Selector="Button.rail">
         <Setter Property="Transitions">
             <Transitions>
                 <DoubleTransition Property="Opacity"
                                   Duration="{StaticResource MotionQuick}"
                                   Easing="{StaticResource EaseStandard}" />
-                <BrushTransition Property="Background"
-                                 Duration="{StaticResource MotionBase}"
-                                 Easing="{StaticResource EaseStandard}" />
                 <TransformOperationsTransition Property="RenderTransform"
                                                Duration="{StaticResource MotionPress}"
                                                Easing="{StaticResource EaseStandard}" />
@@ -242,6 +276,57 @@
                                   Easing="{StaticResource EaseStandard}" />
             </Transitions>
         </Setter>
+    </Style>
+
+    <!-- ============================================================================
+         ENTRE PANTALLAS
+         Esto es lo que se pidio: no botones que hacen gracias, sino que pasar de una
+         pantalla a otra se lea como un movimiento.
+
+         Son <Animation> y no <Transitions> porque no hay ninguna propiedad cuyo cambio
+         se pueda seguir: el contenido de una pestaña no "pasa" de uno a otro, se
+         sustituye. Una animacion de Avalonia se dispara cuando el selector EMPIEZA a
+         encajar, asi que el code-behind quita y vuelve a poner la clase para relanzarla.
+         ============================================================================ -->
+
+    <!-- El panel de la pestaña que llega: entra desde 6 px abajo. No al reves —lo que se va
+         no se anima— porque cruzar dos paneles de texto a media opacidad se lee como un
+         fallo de dibujo, no como una transicion. -->
+    <Style Selector="ContentPresenter.tabenter">
+        <Style.Animations>
+            <Animation Duration="{StaticResource MotionBase}" FillMode="Forward"
+                       Easing="{StaticResource EaseSettle}">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="TranslateTransform.Y" Value="6" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="TranslateTransform.Y" Value="0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- Cualquier ventana al abrirse. Apenas se nota, y ese es el punto: da la sensacion de
+         que la ventana viene de algun sitio en vez de aparecer ya hecha. El selector es el
+         hijo directo de la Window porque una Window no se puede escalar, su contenido si. -->
+    <Style Selector="Window > :is(Control)">
+        <Style.Animations>
+            <Animation Duration="{StaticResource MotionQuick}" FillMode="Forward"
+                       Easing="{StaticResource EaseSettle}">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="ScaleTransform.ScaleX" Value="0.985" />
+                    <Setter Property="ScaleTransform.ScaleY" Value="0.985" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="ScaleTransform.ScaleX" Value="1" />
+                    <Setter Property="ScaleTransform.ScaleY" Value="1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
     </Style>
 
     <!-- ============================================================================

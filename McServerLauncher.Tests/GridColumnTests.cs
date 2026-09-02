@@ -142,33 +142,33 @@ public class GridColumnTests
         var doc = XDocument.Load(Path.Combine(
             LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml"));
 
-        List<XElement> ShownWhen(string binding) => doc.Descendants()
-            .Where(e => e.Attribute("IsVisible")?.Value == "{Binding " + binding + "}")
-            .ToList();
-
         string Labels(IEnumerable<XElement> group) => string.Concat(group
             .SelectMany(e => e.DescendantsAndSelf())
             .Select(e => e.Attribute("Text")?.Value ?? string.Empty));
 
-        var withoutCrossplay = ShownWhen("!IsCrossplayOn");
-        var withCrossplay = ShownWhen("IsCrossplayOn");
-
-        // Java-only: the single port, and no sign of the Bedrock one.
-        var solo = Labels(withoutCrossplay);
-        Assert.Contains("{Binding PortText}", solo, StringComparison.Ordinal);
-        Assert.DoesNotContain("BedrockLocalPortText", solo, StringComparison.Ordinal);
-
-        // Crossplay: BOTH numbers, and each from its own binding. This is the assertion that
-        // matters and the one the original bug needed: binding both to PortText would print the
-        // Java port twice and nobody would notice, because two identical numbers look deliberate.
+        // The Java port is always drawn; only the Bedrock half appears with crossplay on. So the
+        // question is not "what is inside each group" — the layout has now been three different
+        // shapes and that phrasing broke every time. It is this:
         //
-        // It no longer asks for the labels "Port_Java" and "Port_Bedrock". The two ports are now
-        // one piece — "Puertos 20005 / 19133" — because they are one fact and, measured, seven
-        // separate pieces did not fit in a row. Asserting the old labels would have been asserting
-        // a layout decision, which is exactly what broke this test the last time.
-        var crossplay = Labels(withCrossplay);
-        Assert.Contains("{Binding PortText}", crossplay, StringComparison.Ordinal);
-        Assert.Contains("{Binding BedrockLocalPortText}", crossplay, StringComparison.Ordinal);
+        //   1. Both numbers exist somewhere, each from its OWN binding. Wiring the Bedrock slot to
+        //      PortText would print the Java port twice under two labels, and two identical numbers
+        //      look deliberate — this is the bug the test was written for.
+        //   2. The Bedrock number NEVER appears outside something gated on IsCrossplayOn, or a
+        //      Java-only server shows a Bedrock port it does not have.
+        var everything = Labels(doc.Descendants());
+        Assert.Contains("{Binding PortText}", everything, StringComparison.Ordinal);
+        Assert.Contains("{Binding BedrockLocalPortText}", everything, StringComparison.Ordinal);
+
+        var bedrockOutsideCrossplay = doc.Descendants()
+            .Where(e => e.Attribute("Text")?.Value == "{Binding BedrockLocalPortText}")
+            .Where(e => !e.AncestorsAndSelf()
+                .Any(a => a.Attribute("IsVisible")?.Value is "{Binding IsCrossplayOn}"
+                                                          or "{Binding HasBedrockAddress}"))
+            .ToList();
+
+        Assert.True(bedrockOutsideCrossplay.Count == 0,
+            "El puerto de Bedrock se dibuja sin comprobar que el crossplay esté encendido: un " +
+            "servidor solo de Java enseñaría un puerto que no tiene.");
     }
 
 }

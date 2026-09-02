@@ -851,6 +851,16 @@ public partial class MainViewModel : ObservableObject
         SelectedServer = vm;
     }
 
+    /// <summary>Opens the selected server's folder in the system file manager.</summary>
+    /// <remarks>
+    /// Un boton y no una pestaña de archivos: lo que se pide al querer "los archivos" del servidor es
+    /// llegar a la carpeta, y para eso ya existe el explorador del sistema. Un navegador de ficheros
+    /// dentro de la app seria una funcion entera que mantener para hacer peor lo que el sistema ya
+    /// hace bien.
+    /// </remarks>
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void OpenServerFolder() => FolderLauncher.Open(SelectedServer?.Config.FolderPath);
+
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private async Task ConfigureServer()
     {
@@ -1007,5 +1017,6 @@ public partial class MainViewModel : ObservableObject
         RemoveServerCommand.NotifyCanExecuteChanged();
         CreateTunnelForSelectedCommand.NotifyCanExecuteChanged();
         ConfigureServerCommand.NotifyCanExecuteChanged();
+        OpenServerFolderCommand.NotifyCanExecuteChanged();
     }
 }
