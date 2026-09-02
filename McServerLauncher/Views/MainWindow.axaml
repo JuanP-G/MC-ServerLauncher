@@ -15,6 +15,39 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Styles>
+        <!-- ARRANCAR, PARAR, REINICIAR. Con nombre y con color, porque son las tres acciones que
+             de verdad hacen algo y estaban indistinguibles: dos iconos grises del mismo tamaño.
+             Los colores salen de las fichas que ya existen; no hay un verde nuevo. -->
+        <Style Selector="Button.run">
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <!-- 10 y no 13: con 13 los tres sumaban 406 px y la tarjeta del servidor se quedaba en
+                 342, con el cartel cortado a "Survival | …". El cartel es lo que la tarjeta viene a
+                 enseñar. -->
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.run.go">
+            <Setter Property="Background" Value="{StaticResource SemanticOk}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticOk}" />
+        </Style>
+        <Style Selector="Button.run.stop">
+            <Setter Property="Background" Value="{StaticResource DangerButton}" />
+            <Setter Property="BorderBrush" Value="{StaticResource DangerEdge}" />
+        </Style>
+        <Style Selector="Button.run.again">
+            <Setter Property="Background" Value="{StaticResource SemanticWarn}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticWarn}" />
+            <Setter Property="Foreground" Value="{StaticResource TextOnWarn}" />
+        </Style>
+        <!-- Deshabilitado tiene que LEERSE como deshabilitado: sin esto, un boton de color plano
+             sigue gritando "pulsame" cuando no se puede pulsar. -->
+        <Style Selector="Button.run:disabled">
+            <Setter Property="Opacity" Value="0.35" />
+        </Style>
+
         <!-- Cada medida es una TARJETA: icono y etiqueta arriba, el numero grande debajo, y el
              minigrafico al pie cuando la medida tiene serie. Antes era una tira de texto a media
              altura; el numero es lo que se viene a mirar y era lo que menos se veia.
@@ -27,8 +60,22 @@
             <!-- Medido: con 12,9 de relleno y el numero a 20, la fila de tarjetas costaba 95 px y
                  la consola bajaba de 493 a 418 — casi todo lo ganado en el reparto. Apretada, cuesta
                  unos 20 menos sin dejar de ser una tarjeta. -->
-            <Setter Property="Padding" Value="11,7" />
-            <Setter Property="MinWidth" Value="122" />
+            <Setter Property="Padding" Value="11,8" />
+            <Setter Property="MinWidth" Value="150" />
+        </Style>
+        <!-- El pozo del icono: un cuadrado apagado a la izquierda, para que el numero mande y el
+             icono solo diga de que medida es. -->
+        <Style Selector="Border.mcardIcon">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.mcardIcon > ic|SymbolIcon">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Opacity" Value="0.75" />
         </Style>
         <Style Selector="TextBlock.mcardLabel">
             <Setter Property="FontSize" Value="11.5" />
@@ -58,12 +105,23 @@
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Padding" Value="9,5" />
             <Setter Property="MinHeight" Value="0" />
             <Setter Property="Margin" Value="0,0,7,0" />
         </Style>
         <Style Selector="Button.addrpill:pointerover">
             <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdgeHover}" />
+        </Style>
+        <!-- Los puertos locales: mismo aspecto que una direccion pero sin ser pulsable, porque no
+             hay nada util que copiar. -->
+        <Style Selector="Border.portpill">
+            <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="9,5" />
+            <Setter Property="Margin" Value="0,0,7,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.addrpill.icon">
             <Setter Property="Padding" Value="8,5" />
@@ -408,17 +466,28 @@
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                <Button Classes="accent" Command="{Binding StartCommand}">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ic:SymbolIcon Symbol="Play" />
+                                <!-- Los tres con su color y su nombre. Antes solo "Iniciar" llevaba
+                                     etiqueta y los otros dos eran iconos sueltos del mismo gris: parar
+                                     un servidor y reiniciarlo son cosas distintas y ninguna de las dos
+                                     se distinguia de un vistazo. Verde, rojo y ambar es el reparto que
+                                     ya usa la app para "va bien", "para" y "atencion". -->
+                                <Button Classes="run go" Command="{Binding StartCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="7">
+                                        <ic:SymbolIcon Symbol="Play" Width="16" Height="16" />
                                         <TextBlock Text="{loc:Loc Start}" />
                                     </StackPanel>
                                 </Button>
-                                <Button Command="{Binding StopCommand}" ToolTip.Tip="{loc:Loc Stop}">
-                                    <ic:SymbolIcon Symbol="Stop" />
+                                <Button Classes="run stop" Command="{Binding StopCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="7">
+                                        <ic:SymbolIcon Symbol="Stop" Width="16" Height="16" />
+                                        <TextBlock Text="{loc:Loc Stop}" />
+                                    </StackPanel>
                                 </Button>
-                                <Button Command="{Binding RestartCommand}" ToolTip.Tip="{loc:Loc Restart}">
-                                    <ic:SymbolIcon Symbol="ArrowClockwise" />
+                                <Button Classes="run again" Command="{Binding RestartCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="7">
+                                        <ic:SymbolIcon Symbol="ArrowClockwise" Width="16" Height="16" />
+                                        <TextBlock Text="{loc:Loc Restart}" />
+                                    </StackPanel>
                                 </Button>
                                 <Button ToolTip.Tip="{loc:Loc Tip_OpenFolder}"
                                         Command="{Binding DataContext.OpenServerFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}">
@@ -448,8 +517,11 @@
                          Cinco piezas y no siete: los dos puertos son una sola cosa, y las dos patas
                          del ping solo significan algo comparadas entre si — separarlas era pedirle a
                          quien mira que las juntase de cabeza. -->
-                    <!-- Cada medida, una TARJETA. Antes eran una tira de texto a media altura y el
-                         numero —que es lo que se viene a mirar— era lo que menos se veia.
+                    <!-- Cada medida, una TARJETA con el icono a la izquierda: la etiqueta pequeña
+                         encima del numero y, cuando la medida tiene serie, su minigrafico a la
+                         derecha. Antes eran una tira de texto a media altura y el numero —que es lo
+                         que se viene a mirar— era lo que menos se veia.
+
                          Sin medias, ni maximos, ni hora de inicio: eso habria que calcularlo y no se
                          pidio. Lo que hay aqui es lo que la app ya sabe.
 
@@ -463,74 +535,66 @@
                         </ItemsControl.ItemsPanel>
 
                         <Border Classes="mcard" Margin="0,0,8,8">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="7">
-                                    <ic:SymbolIcon Symbol="Board" FontSize="14" Opacity="0.65" />
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Classes="mcardIcon">
+                                    <ic:SymbolIcon Symbol="Board" FontSize="17" Width="18" Height="18" />
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                                     <TextBlock Text="CPU" Classes="mcardLabel" />
+                                    <TextBlock Text="{Binding CpuText}" Classes="metricValue" />
                                 </StackPanel>
-                                <TextBlock Text="{Binding CpuText}" Classes="metricValue" />
-                                <controls:Sparkline Height="14" Margin="0,4,0,0"
+                                <controls:Sparkline Grid.Column="2" Width="46" Height="20"
+                                                    VerticalAlignment="Center" Margin="10,0,0,0"
                                                     Values="{Binding CpuSeries}" MaxValue="100"
                                                     Stroke="{StaticResource SemanticOk}" />
-                            </StackPanel>
+                            </Grid>
                         </Border>
 
                         <Border Classes="mcard" Margin="0,0,8,8">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="7">
-                                    <ic:SymbolIcon Symbol="Server" FontSize="14" Opacity="0.65" />
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Classes="mcardIcon">
+                                    <ic:SymbolIcon Symbol="Server" FontSize="17" Width="18" Height="18" />
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                                     <TextBlock Text="RAM" Classes="mcardLabel" />
+                                    <TextBlock Text="{Binding RamText}" Classes="metricValue" />
                                 </StackPanel>
-                                <TextBlock Text="{Binding RamText}" Classes="metricValue" />
-                                <controls:Sparkline Height="14" Margin="0,4,0,0"
+                                <controls:Sparkline Grid.Column="2" Width="46" Height="20"
+                                                    VerticalAlignment="Center" Margin="10,0,0,0"
                                                     Values="{Binding RamSeries}"
                                                     Stroke="{StaticResource SparklineRam}" />
-                            </StackPanel>
+                            </Grid>
                         </Border>
 
                         <Border Classes="mcard" Margin="0,0,8,8">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="7">
-                                    <ic:SymbolIcon Symbol="Timer" FontSize="14" Opacity="0.65" />
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Classes="mcardIcon">
+                                    <ic:SymbolIcon Symbol="Timer" FontSize="17" Width="18" Height="18" />
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                                     <TextBlock Text="{loc:Loc Uptime}" Classes="mcardLabel" />
+                                    <TextBlock Text="{Binding UptimeText}" Classes="metricValue" />
                                 </StackPanel>
-                                <TextBlock Text="{Binding UptimeText}" Classes="metricValue" />
-                            </StackPanel>
+                            </Grid>
                         </Border>
 
-                        <Border Classes="mcard" Margin="0,0,8,8" ToolTip.Tip="{loc:Loc Crossplay_BedrockPort}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="7">
-                                    <ic:SymbolIcon Symbol="Globe" FontSize="14" Opacity="0.65" />
-                                    <TextBlock Classes="mcardLabel" IsVisible="{Binding !IsCrossplayOn}"
-                                               Text="{loc:Loc Port}" />
-                                    <TextBlock Classes="mcardLabel" IsVisible="{Binding IsCrossplayOn}"
-                                               Text="{loc:Loc Ports}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding PortText}" Classes="metricValue" />
-                                    <TextBlock Text="/" Classes="metricSep" IsVisible="{Binding IsCrossplayOn}" />
-                                    <TextBlock Text="{Binding BedrockLocalPortText}" Classes="metricValue"
-                                               IsVisible="{Binding IsCrossplayOn}" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
 
-                        <Border Classes="mcard" Margin="0,0,8,8" IsVisible="{Binding HasPing}"
-                                ToolTip.Tip="{loc:Loc Ping_Disclaimer}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="7">
-                                    <ic:SymbolIcon Symbol="WifiWarning" FontSize="14" Opacity="0.65" />
+                        <Border Classes="mcard" Margin="0,0,8,8" IsVisible="{Binding HasPing}" ToolTip.Tip="{loc:Loc Ping_Disclaimer}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Classes="mcardIcon">
+                                    <ic:SymbolIcon Symbol="WifiWarning" FontSize="17" Width="18" Height="18" />
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                                     <TextBlock Text="Ping" Classes="mcardLabel" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding PingDirectText}" Classes="metricValue"
+                                                   Foreground="{Binding PingDirectBrush}" />
+                                        <TextBlock Text="/" Classes="metricSep" />
+                                        <TextBlock Text="{Binding PingTunnelText}" Classes="metricValue"
+                                                   Foreground="{Binding PingTunnelBrush}" />
+                                    </StackPanel>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding PingDirectText}" Classes="metricValue"
-                                               Foreground="{Binding PingDirectBrush}" />
-                                    <TextBlock Text="/" Classes="metricSep" />
-                                    <TextBlock Text="{Binding PingTunnelText}" Classes="metricValue"
-                                               Foreground="{Binding PingTunnelBrush}" />
-                                </StackPanel>
-                            </StackPanel>
+                            </Grid>
                         </Border>
                     </ItemsControl>
 
@@ -572,7 +636,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock Text="Bedrock" Classes="addrKey" />
                                     <TextBlock Text="{Binding BedrockHost}" Classes="addrValue" />
-                                    <TextBlock Text=":" Classes="addrKey" />
+                                    <TextBlock Text=":" Classes="addrKey" Margin="-4,0,-4,0" />
                                     <TextBlock Text="{Binding BedrockPortText}" Classes="addrValue" />
                                     <ic:SymbolIcon Symbol="Share" FontSize="13" Opacity="0.55" />
                                 </StackPanel>
@@ -587,10 +651,28 @@
                             <ic:SymbolIcon Symbol="Copy" FontSize="13" Width="16" Height="16" />
                         </Button>
 
-                        <Button Classes="addrpill icon" ToolTip.Tip="{loc:Loc Nav_Tunnels}"
-                                Command="{Binding DataContext.ShowTunnelsCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                            <ic:SymbolIcon Symbol="Open" FontSize="13" Width="16" Height="16" />
-                        </Button>
+                        <!-- Los puertos LOCALES viven aqui y no en una tarjeta: hablan de lo mismo
+                             que las direcciones —por donde se entra— y como tarjeta obligaban a las
+                             otras cuatro a doblar de fila. Medido: cinco tarjetas piden ~890 px de
+                             los 804 que hay. No es un boton porque no hay nada que copiar: el puerto
+                             local no le sirve a nadie de fuera de este equipo. -->
+                        <Border Classes="portpill" ToolTip.Tip="{loc:Loc Crossplay_BedrockPort}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Classes="addrKey" IsVisible="{Binding !IsCrossplayOn}"
+                                           Text="{loc:Loc Port}" />
+                                <TextBlock Classes="addrKey" IsVisible="{Binding IsCrossplayOn}"
+                                           Text="{loc:Loc Ports}" />
+                                <TextBlock Text="{Binding PortText}" Classes="addrValue" />
+                                <TextBlock Text="/" Classes="addrKey" IsVisible="{Binding IsCrossplayOn}" />
+                                <TextBlock Text="{Binding BedrockLocalPortText}" Classes="addrValue"
+                                           IsVisible="{Binding IsCrossplayOn}" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Aqui habia un boton de "ir a Tuneles". Sobraba: el rail tiene esa
+                             seccion a un clic y siempre visible, asi que era un segundo camino al
+                             mismo sitio ocupando sitio en la unica fila que no cabia — medido, las
+                             pastillas pedian 824 px de los 804 que hay. -->
                     </WrapPanel>
 
                     <!-- Tabs: Console / Players / Mods / Backups -->

@@ -1011,9 +1011,25 @@ public partial class ServerViewModel : ObservableObject
             // per-line cost amortized O(1), at the price of momentarily holding up to 2200 lines.
             if (ConsoleLines.Count > MaxConsoleLines + ConsoleTrimBlock)
             {
-                ConsoleLines.RemoveFromStart(ConsoleLines.Count - MaxConsoleLines);
+                var drop = ConsoleLines.Count - MaxConsoleLines;
+
+                // Count the visible ones BEFORE they are gone. The visible list holds the same lines
+                // in the same order, so whatever falls off the top of one falls off the top of the
+                // other — it is always a prefix, never a scattered set.
+                var visibleDropped = 0;
+                for (var i = 0; i < drop; i++)
+                    if (MatchesConsoleFilter(ConsoleLines[i]))
+                        visibleDropped++;
+
+                ConsoleLines.RemoveFromStart(drop);
                 ConsoleKindFilter.Recount(ConsoleLines, ConsoleKinds); // lines fell off the top
-                RebuildVisibleConsole(); // the visible list is a subset; rebuild it from what survived
+
+                // NOT RebuildVisibleConsole(). That did a ReplaceAll, which raises a Reset, which
+                // makes the ListBox throw away every realised container and build new ones — for
+                // lines that did not change. Every couple of hundred lines, on its own, while
+                // somebody is reading the log. Removing the prefix says what actually happened and
+                // the survivors keep their containers.
+                VisibleConsoleLines.RemoveFromStartKeepingSelection(visibleDropped);
             }
 
             TrackPlayers(text);
