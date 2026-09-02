@@ -18,7 +18,7 @@
              ya no habia nada marcado sobre lo que pintar. La logica estaba bien; lo que fallaba era
              que se le pasaba una seleccion vacia. Es el mismo motivo por el que la barra de
              cualquier editor no roba el foco al texto. -->
-        <Style Selector="Button.swatch, ToggleButton.mark, Button.toolbar">
+        <Style Selector="Button.swatch, ToggleButton.mark, Button.toolbar, ToggleButton.state">
             <Setter Property="Focusable" Value="False" />
         </Style>
 
@@ -31,6 +31,24 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
         </Style>
+        <!-- Los dos estados de la vista previa. Pastillas y no RadioButton: un RadioButton dibuja
+             su circulo, y aqui no se esta eligiendo un ajuste que se guarda sino conmutando "que
+             estoy mirando". La exclusion se hace a mano en el codigo, que son dos lineas. -->
+        <Style Selector="ToggleButton.state">
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="9,3" />
+            <Setter Property="Margin" Value="4,0,0,0" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Opacity" Value="0.55" />
+        </Style>
+        <Style Selector="ToggleButton.state:checked">
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+
         <Style Selector="ToggleButton.mark">
             <Setter Property="Width" Value="28" />
             <Setter Property="Height" Value="26" />
@@ -48,7 +66,22 @@
             <!-- La verdad. Es el MISMO renderizador que dibuja el cartel en la cabecera, asi que no
                  puede mentir sobre lo que se vera. -->
             <StackPanel Spacing="7">
-                <TextBlock Text="{loc:Loc Motd_Preview}" FontSize="11" Opacity="0.5" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="{loc:Loc Motd_Preview}" FontSize="11" Opacity="0.5"
+                               VerticalAlignment="Center" />
+
+                    <!-- Los dos carteles. Con el arranque por demanda puesto, el servidor apagado
+                         enseña TU primera linea y debajo la del launcher — la segunda tuya no cabe,
+                         porque la lista dibuja dos y no mas. Eso siempre fue asi; lo que faltaba era
+                         poder verlo antes de que te lo contara un amigo. -->
+                    <StackPanel Grid.Column="1" x:Name="StateSwitch" Orientation="Horizontal"
+                                Spacing="0" IsVisible="False">
+                        <ToggleButton x:Name="PreviewOn" Classes="state"
+                                      Content="{loc:Loc Motd_PreviewOn}" Click="PreviewState_Click" />
+                        <ToggleButton x:Name="PreviewOff" Classes="state"
+                                      Content="{loc:Loc Motd_PreviewOff}" Click="PreviewState_Click" />
+                    </StackPanel>
+                </Grid>
                 <Border Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}"
                         BorderThickness="1" CornerRadius="6" Padding="10">
                     <Grid ColumnDefinitions="Auto,*,Auto">
@@ -143,6 +176,8 @@
 
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock x:Name="LinesText" FontSize="11.5" Opacity="0.6" VerticalAlignment="Center" />
+                <TextBlock x:Name="WidthText" FontSize="11.5" Opacity="0.6" VerticalAlignment="Center"
+                           TextWrapping="Wrap" />
             </StackPanel>
         </StackPanel>
 

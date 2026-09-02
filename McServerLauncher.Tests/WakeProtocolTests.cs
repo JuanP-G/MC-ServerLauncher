@@ -88,6 +88,31 @@ public class WakeProtocolTests
     }
 
     [Fact]
+    public void WhatReachesTheClientIsTwoLines_NeverThreeAndNeverAnEscape()
+    {
+        // The end of the road, asserted where it lands rather than halfway along it: a two-line sign
+        // as server.properties actually stores it, all the way to the JSON that goes out over the
+        // socket. Two things have to be true and both used to be false.
+        //
+        // No backslash-n: it was reaching players as visible characters in the middle of their own
+        // message, because nothing unescaped the stored form before sending it.
+        //
+        // Exactly one newline: the notice has to be the SECOND line. With three, the client draws
+        // two and drops the rest — and the one it drops is the line telling people they can wake the
+        // server by joining, which is the entire point of the feature.
+        var sign = WakeSign.For(@"Bienvenido\nAbierto los findes", starting: false);
+        var status = new WakeStatus(sign, "1.21.1", 8, null, "x");
+
+        using var doc = JsonDocument.Parse(WakeOnDemandListener.BuildStatusJson(status, 767, null));
+        var description = doc.RootElement.GetProperty("description").GetProperty("text").GetString()!;
+
+        Assert.DoesNotContain(@"\n", description, StringComparison.Ordinal);
+        Assert.Equal(1, description.Count(c => c == '\n'));
+        Assert.StartsWith("Bienvenido\n", description, StringComparison.Ordinal);
+        Assert.DoesNotContain("Abierto los findes", description, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ColourCodesAndNewlinesReachTheClientIntact()
     {
         // The notice carries § colour codes and sits on the second line; JSON encoding must not

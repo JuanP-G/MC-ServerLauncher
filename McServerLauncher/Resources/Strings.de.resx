@@ -787,6 +787,9 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Motd_CodeHint" xml:space="preserve"><value>Füge hier das Schild eines anderen Servers ein; es erscheint oben mit seinen Farben.</value></data>
   <data name="Motd_LinesFmt" xml:space="preserve"><value>Das Schild hat im Client zwei Zeilen. Du bist bei {0} von 2.</value></data>
   <data name="Motd_TooLong" xml:space="preserve"><value>Mehr als zwei Zeilen: der Client zeigt den Rest nicht.</value></data>
+  <data name="Motd_PreviewOn" xml:space="preserve"><value>An</value></data>
+  <data name="Motd_PreviewOff" xml:space="preserve"><value>Aus</value></data>
+  <data name="Motd_TooWide" xml:space="preserve"><value>Eine Zeile ist lang: In der Liste kann sie rechts abgeschnitten werden.</value></data>
   <data name="Motd_Save" xml:space="preserve"><value>Speichern</value></data>
   <data name="Motd_Bold" xml:space="preserve"><value>Fett</value></data>
   <data name="Motd_Italic" xml:space="preserve"><value>Kursiv</value></data>

@@ -787,6 +787,9 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Motd_CodeHint" xml:space="preserve"><value>Paste another server's sign here and it appears above with its colours.</value></data>
   <data name="Motd_LinesFmt" xml:space="preserve"><value>The sign is two lines in the client. You're on {0} of 2.</value></data>
   <data name="Motd_TooLong" xml:space="preserve"><value>More than two lines: the client won't show the rest.</value></data>
+  <data name="Motd_PreviewOn" xml:space="preserve"><value>Running</value></data>
+  <data name="Motd_PreviewOff" xml:space="preserve"><value>Asleep</value></data>
+  <data name="Motd_TooWide" xml:space="preserve"><value>One line is long: the list may trim it on the right.</value></data>
   <data name="Motd_Save" xml:space="preserve"><value>Save</value></data>
   <data name="Motd_Bold" xml:space="preserve"><value>Bold</value></data>
   <data name="Motd_Italic" xml:space="preserve"><value>Italic</value></data>

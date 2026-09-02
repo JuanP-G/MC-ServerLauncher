@@ -887,7 +887,8 @@ public partial class MainViewModel : ObservableObject
         var current = properties.Read(path).TryGetValue("motd", out var m) ? m : string.Empty;
 
         var dialog = new MotdEditorDialog(current, SelectedServer.Name, SelectedServer.PlayerCountText,
-            SelectedServer.ServerIcon, SelectedServer.Config.FolderPath);
+            SelectedServer.ServerIcon, SelectedServer.Config.FolderPath,
+            SelectedServer.Config.WakeOnDemand);
 
         if (!await dialog.ShowDialog<bool>(Owner)) return;
 

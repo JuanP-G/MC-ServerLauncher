@@ -61,11 +61,14 @@ public partial class MotdEditorDialog : Window, INotifyPropertyChanged
     /// <summary>The server's folder, so the icon can be written into it. Null disables that.</summary>
     private readonly string? _folder;
 
+    /// <summary>Whether the preview is showing the sleeping sign instead of the ordinary one.</summary>
+    private bool _showingSleeping;
+
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public MotdEditorDialog() : this(string.Empty, "Servidor", "0/20", null) { }
 
     public MotdEditorDialog(string? motd, string serverName, string playersText, Bitmap? icon,
-        string? serverFolder = null)
+        string? serverFolder = null, bool wakeOnDemand = false)
     {
         InitializeComponent();
 
@@ -87,6 +90,14 @@ public partial class MotdEditorDialog : Window, INotifyPropertyChanged
         // La vista previa es la razon de ser de este dialogo, asi que el nombre tambien se ve
         // mientras se escribe. Sin enlace: el texto de la tarjeta ES el de la caja.
         NameBox.TextChanged += (_, _) => PreviewName.Text = NameBox.Text;
+
+        // El conmutador solo existe si hay un segundo cartel que ver. Sin arranque por demanda un
+        // servidor apagado no contesta a nadie, asi que no hay nada que previsualizar.
+        StateSwitch.IsVisible = wakeOnDemand;
+        _showingSleeping = wakeOnDemand;
+        PreviewOn.IsChecked = !wakeOnDemand;
+        PreviewOff.IsChecked = wakeOnDemand;
+        if (wakeOnDemand) RefreshAll();
     }
 
     /// <summary>The sixteen colours, plus a way back to the default.</summary>
@@ -213,7 +224,15 @@ public partial class MotdEditorDialog : Window, INotifyPropertyChanged
 
             PreviewText.Inlines?.Clear();
             PreviewText.Inlines ??= new Avalonia.Controls.Documents.InlineCollection();
-            foreach (var inline in MinecraftMotd.Render(_runs)) PreviewText.Inlines.Add(inline);
+
+            // Con "Apagado" se dibuja lo que compone el propio launcher, por el MISMO camino que lo
+            // envia el listener. Si aqui se compusiera aparte, la vista previa podria prometer una
+            // cosa y los jugadores ver otra — que es justo el fallo que se acaba de arreglar.
+            var shown = _showingSleeping
+                ? MotdDocument.Parse(WakeSign.For(MotdDocument.ToCode(_runs), starting: false))
+                : _runs;
+
+            foreach (var inline in MinecraftMotd.Render(shown)) PreviewText.Inlines.Add(inline);
 
             if (!exceptPlain) PlainBox.Text = MotdDocument.PlainText(_runs);
             if (!exceptCode) CodeBox.Text = MotdDocument.ToCode(_runs);
@@ -226,6 +245,7 @@ public partial class MotdEditorDialog : Window, INotifyPropertyChanged
             }
 
             UpdateLineCount();
+            UpdateWidth();
             UpdateMarks();
         }
         finally
@@ -254,6 +274,39 @@ public partial class MotdEditorDialog : Window, INotifyPropertyChanged
             ? new SolidColorBrush(Color.Parse("#E3A82B"))
             : Foreground;
         LinesText.Opacity = over ? 1 : 0.6;
+    }
+
+    /// <summary>Warns when a line is wide enough that the client will trim it.</summary>
+    /// <remarks>
+    /// Measured with the game's own glyph widths (<see cref="MinecraftFont"/>) rather than counted
+    /// as characters, because the font is variable-width: ten l's and ten M's are the same count
+    /// and nothing like the same width. The wording says "se puede cortar" on purpose — a resource
+    /// pack or another GUI scale moves the line, and this is a warning, not a promise.
+    /// </remarks>
+    private void UpdateWidth()
+    {
+        var widest = MinecraftFont.WidestLine(_runs);
+        var over = widest > MinecraftFont.ListWidth;
+
+        WidthText.Text = over ? Localizer.Get("Motd_TooWide") : string.Empty;
+        WidthText.IsVisible = over;
+        WidthText.Foreground = new SolidColorBrush(Color.Parse("#E3A82B"));
+        WidthText.Opacity = 1;
+    }
+
+    /// <summary>Switches the preview between the running sign and the sleeping one.</summary>
+    /// <remarks>
+    /// The two toggles are made exclusive here rather than by using RadioButtons, because a
+    /// RadioButton draws its circle and this is not a setting being chosen — it is a switch for
+    /// which of the two signs you are looking at. Clicking the one already on does nothing, so it
+    /// cannot be left with neither shown.
+    /// </remarks>
+    private void PreviewState_Click(object? sender, RoutedEventArgs e)
+    {
+        _showingSleeping = ReferenceEquals(sender, PreviewOff);
+        PreviewOn.IsChecked = !_showingSleeping;
+        PreviewOff.IsChecked = _showingSleeping;
+        RefreshAll();
     }
 
     /// <summary>Lights the marks that the selected text already has.</summary>

@@ -1,7 +1,9 @@
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using McServerLauncher.Localization;
 using McServerLauncher.Views;
 
 namespace McServerLauncher.Tests;
@@ -35,9 +37,9 @@ public class MotdEditorTests(AvaloniaFixture avalonia)
     /// out, and deliberately nothing is.
     /// </remarks>
     private static (MotdEditorDialog Dialog, TextBox Plain, TextBox Code, List<Button> Swatches)
-        Open(string sign)
+        Open(string sign, bool wakeOnDemand = false)
     {
-        var dialog = new MotdEditorDialog(sign, "Supervivencia", "3/20", null);
+        var dialog = new MotdEditorDialog(sign, "Supervivencia", "3/20", null, null, wakeOnDemand);
         var boxes = dialog.GetLogicalDescendants().OfType<TextBox>().ToList();
 
         return (dialog,
@@ -181,6 +183,65 @@ public class MotdEditorTests(AvaloniaFixture avalonia)
             AvaloniaFixture.Pump();
 
             Assert.Equal("Hola mundo", plain.Text);
+        });
+    }
+
+    /// <summary>The text the preview card is actually showing, whichever sign that is.</summary>
+    private static string PreviewOf(MotdEditorDialog dialog) =>
+        string.Concat(dialog.GetLogicalDescendants().OfType<TextBlock>()
+            .First(t => t.Name == "PreviewText")
+            .Inlines?.OfType<Avalonia.Controls.Documents.Run>().Select(r => r.Text) ?? []);
+
+    [Fact]
+    public void WithoutWakeOnDemandThereIsOnlyOneSignToSee()
+    {
+        // No switch, because there is no second sign: a server that does not answer while stopped
+        // shows nothing at all in the list, so "asleep" is not a state anybody can look at.
+        avalonia.Run(() =>
+        {
+            var (dialog, _, _, _) = Open("Bienvenido");
+
+            var sw = dialog.GetLogicalDescendants().OfType<StackPanel>().First(p => p.Name == "StateSwitch");
+            Assert.False(sw.IsVisible);
+            Assert.Equal("Bienvenido", PreviewOf(dialog));
+        });
+    }
+
+    [Fact]
+    public void WithWakeOnDemandThePreviewOpensOnTheSleepingSign()
+    {
+        // The whole point of the switch. The sign a sleeping server shows is NOT the one you wrote —
+        // your second line gives way to the launcher's notice, because the list draws two lines and
+        // no more. That was always true; what was missing was any way to see it before a friend
+        // told you.
+        avalonia.Run(() =>
+        {
+            var (dialog, _, _, _) = Open("Linea uno" + (char)10 + "Linea dos", wakeOnDemand: true);
+
+            var sw = dialog.GetLogicalDescendants().OfType<StackPanel>().First(p => p.Name == "StateSwitch");
+            Assert.True(sw.IsVisible);
+
+            var shown = PreviewOf(dialog);
+            Assert.Contains("Linea uno", shown, StringComparison.Ordinal);
+            Assert.Contains(Localizer.Get("Wake_MotdSleeping"), shown, StringComparison.Ordinal);
+            Assert.DoesNotContain("Linea dos", shown, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
+    public void SwitchingBackShowsTheSignYouWrote()
+    {
+        avalonia.Run(() =>
+        {
+            var (dialog, _, _, _) = Open("Linea uno" + (char)10 + "Linea dos", wakeOnDemand: true);
+
+            var on = dialog.GetLogicalDescendants().OfType<ToggleButton>().First(t => t.Name == "PreviewOn");
+            on.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            AvaloniaFixture.Pump();
+
+            var shown = PreviewOf(dialog);
+            Assert.Contains("Linea dos", shown, StringComparison.Ordinal);
+            Assert.DoesNotContain(Localizer.Get("Wake_MotdSleeping"), shown, StringComparison.Ordinal);
         });
     }
 
