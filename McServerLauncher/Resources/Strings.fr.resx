@@ -16,8 +16,10 @@
   <data name="Restart" xml:space="preserve"><value>Redémarrer</value></data>
   <data name="Configure" xml:space="preserve"><value>Configurer</value></data>
   <data name="Tip_Configure" xml:space="preserve"><value>Modifier server.properties visuellement</value></data>
+  <data name="Tip_OpenFolder" xml:space="preserve"><value>Ouvrir le dossier du serveur</value></data>
   <data name="Uptime" xml:space="preserve"><value>Temps actif</value></data>
   <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="Ports" xml:space="preserve"><value>Ports</value></data>
   <data name="Tip_ChangeIcon" xml:space="preserve"><value>Cliquez pour changer l'icône du serveur (visible par les joueurs)</value></data>
   <data name="Tunnel_Placeholder" xml:space="preserve"><value>Détecté automatiquement, ou colle l'adresse du tunnel ici...</value></data>
   <data name="Copy" xml:space="preserve"><value>Copier</value></data>
@@ -213,6 +215,9 @@
   <data name="Win_Intro" xml:space="preserve"><value>Choisis ce que font les boutons réduire et fermer. Avec l'application dans la zone de notification, les serveurs continuent de tourner et tu récupères la fenêtre en cliquant sur l'icône près de l'horloge.</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Réduire l'envoie dans la zone de notification (quitte la barre des tâches)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Fermer (X) l'envoie dans la zone de notification au lieu de quitter l'application</value></data>
+  <data name="Motion_Section" xml:space="preserve"><value>Animations</value></data>
+  <data name="Motion_Intro" xml:space="preserve"><value>Comment l'app bouge quand tu changes d'écran ou appuies sur quelque chose.</value></data>
+  <data name="Motion_Enabled" xml:space="preserve"><value>Utiliser les animations</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notifications</value></data>
   <data name="Notif_UseCustom" xml:space="preserve"><value>Utiliser des réglages de notifications propres à ce serveur</value></data>
   <data name="Notif_Enabled" xml:space="preserve"><value>Activer les notifications</value></data>
@@ -723,4 +728,73 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>« {0} » est un nom réservé par Windows et ne peut pas servir de dossier. Choisis-en un autre.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>Le nom ne peut pas se terminer par un point ni un espace : Windows les supprime et le dossier porterait un autre nom.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper et Purpur ne démarrent pas si le chemin contient « {0} », et ce caractère est dans un dossier supérieur, pas celui du serveur. Change-le toi-même ou choisis un autre dossier parent : le renommer d’ici déplacerait tout ce qu’il contient.</value></data>
+  <data name="Nav_Servers" xml:space="preserve"><value>Serveurs</value></data>
+  <data name="Nav_Tunnels" xml:space="preserve"><value>Tunnels</value></data>
+  <data name="About_Title" xml:space="preserve"><value>À propos</value></data>
+  <data name="About_VersionFmt" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="About_Tagline" xml:space="preserve"><value>Créez et gérez des serveurs Minecraft — Java et Bedrock à la fois — sans vous battre avec les ports, les versions de Java ou les dépendances de mods.</value></data>
+  <data name="About_Repo" xml:space="preserve"><value>Voir le dépôt</value></data>
+  <data name="About_ReportBug" xml:space="preserve"><value>Signaler un bug</value></data>
+  <data name="About_Whatsnew" xml:space="preserve"><value>Nouveautés de cette version</value></data>
+  <data name="About_BuiltOn" xml:space="preserve"><value>CONSTRUIT SUR</value></data>
+  <data name="About_Legal" xml:space="preserve"><value>MC Server Launcher n'est affilié ni à Mojang, ni à Microsoft, ni à Playit.gg. Minecraft est une marque de Mojang AB.</value></data>
+  <data name="Tunnels_Subtitle" xml:space="preserve"><value>Tout ce que Playit a d'ouvert sur votre compte, que cette app l'ait créé ou non.</value></data>
+  <data name="About_Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="About_Latest" xml:space="preserve"><value>Rechercher une mise à jour</value></data>
+  <data name="About_UpToDate" xml:space="preserve"><value>Vous avez la dernière version</value></data>
+  <data name="About_Newer" xml:space="preserve"><value>Une version plus récente existe</value></data>
+  <data name="Tun_ColStatus" xml:space="preserve"><value>État</value></data>
+  <data name="Tun_ColAddress" xml:space="preserve"><value>Adresse publique</value></data>
+  <data name="Tun_ColProto" xml:space="preserve"><value>Type</value></data>
+  <data name="Tun_ColLocal" xml:space="preserve"><value>Port local</value></data>
+  <data name="Tun_ColServer" xml:space="preserve"><value>Serveur</value></data>
+  <data name="Tun_InUse" xml:space="preserve"><value>Utilisé</value></data>
+  <data name="Tun_Orphan" xml:space="preserve"><value>Orphelin</value></data>
+  <data name="Tun_Clash" xml:space="preserve"><value>Port en double</value></data>
+  <data name="Tun_NoOwner" xml:space="preserve"><value>Aucun serveur</value></data>
+  <data name="Tun_AllGood" xml:space="preserve"><value>Tout va bien</value></data>
+  <data name="Tun_AttentionFmt" xml:space="preserve"><value>{0} demandent votre attention</value></data>
+  <data name="Tun_Empty" xml:space="preserve"><value>Votre compte Playit n'a aucun tunnel ouvert.</value></data>
+  <data name="Tun_NotConnected" xml:space="preserve"><value>Connectez votre compte Playit dans les Réglages pour voir vos tunnels.</value></data>
+  <data name="Tun_Loading" xml:space="preserve"><value>Consultation de votre compte…</value></data>
+  <data name="Tun_OrphanHint" xml:space="preserve"><value>Reste d'un serveur qui n'existe plus. Il occupe une place sur votre compte sans rien servir.</value></data>
+  <data name="Tun_ClashHint" xml:space="preserve"><value>Un autre tunnel pointe vers le même port local. Un seul des deux peut fonctionner.</value></data>
+  <data name="Tun_DeleteFmt" xml:space="preserve"><value>Supprimer le tunnel « {0} » ? Cela ne touche aucun serveur.</value></data>
+  <data name="Ping_Direct" xml:space="preserve"><value>Direct</value></data>
+  <data name="Ping_Tunnel" xml:space="preserve"><value>Tunnel</value></data>
+  <data name="Ping_Title" xml:space="preserve"><value>Ping</value></data>
+  <data name="Ping_None" xml:space="preserve"><value>—</value></data>
+  <data name="Ping_Fine" xml:space="preserve"><value>Tout est normal. Si quelqu'un a des soucis, c'est sa connexion.</value></data>
+  <data name="Ping_ServerSlow" xml:space="preserve"><value>C'est votre serveur : il tarde à répondre ici même.</value></data>
+  <data name="Ping_TunnelSlow" xml:space="preserve"><value>Votre serveur va bien. C'est le tunnel Playit qui est lent.</value></data>
+  <data name="Ping_TunnelDown" xml:space="preserve"><value>Votre serveur répond ici, mais rien ne répond par le tunnel.</value></data>
+  <data name="Ping_Disclaimer" xml:space="preserve"><value>Les deux partent de cet ordinateur et y reviennent. Ce n'est PAS le ping de vos amis : le trajet entre eux et Playit ne passe pas par ici et ne peut pas être mesuré.</value></data>
+  <data name="Tun_ColName" xml:space="preserve"><value>Nom</value></data>
+  <data name="Tun_Selected" xml:space="preserve"><value>Serveur sélectionné</value></data>
+  <data name="Tun_Rename" xml:space="preserve"><value>Renommer</value></data>
+  <data name="Tun_RenameHint" xml:space="preserve"><value>Le nom n'est que pour vous : vous le voyez ici et sur playit.gg, et il ne change ni l'adresse ni le port.</value></data>
+  <data name="Tun_EditOnWeb" xml:space="preserve"><value>Renommer sur playit.gg</value></data>
+  <data name="Port_Java" xml:space="preserve"><value>Port Java</value></data>
+  <data name="Port_Bedrock" xml:space="preserve"><value>Port Bedrock</value></data>
+  <data name="Addr_Share" xml:space="preserve"><value>Copier l'adresse et le port à envoyer</value></data>
+  <data name="Addr_ShareFmt" xml:space="preserve"><value>{0} · port {1}</value></data>
+  <data name="Addr_CopyHost" xml:space="preserve"><value>Copier l'adresse seule</value></data>
+  <data name="Motd_Title" xml:space="preserve"><value>Panneau et apparence</value></data>
+  <data name="Motd_Preview" xml:space="preserve"><value>VOICI CE QU'ILS VERRONT DANS LA LISTE</value></data>
+  <data name="Motd_Write" xml:space="preserve"><value>ÉCRIVEZ ICI · SANS CODES</value></data>
+  <data name="Motd_Hint" xml:space="preserve"><value>Sélectionnez un morceau et choisissez une couleur. Le panneau ci-dessus est ce qui sera vu.</value></data>
+  <data name="Motd_Clear" xml:space="preserve"><value>Effacer la mise en forme</value></data>
+  <data name="Motd_Code" xml:space="preserve"><value>Code §</value></data>
+  <data name="Motd_CodeHint" xml:space="preserve"><value>Collez ici le panneau d'un autre serveur et il apparaît au-dessus avec ses couleurs.</value></data>
+  <data name="Motd_LinesFmt" xml:space="preserve"><value>Le panneau fait deux lignes dans le client. Vous en êtes à {0} sur 2.</value></data>
+  <data name="Motd_TooLong" xml:space="preserve"><value>Plus de deux lignes : le client n'affichera pas le reste.</value></data>
+  <data name="Motd_PreviewOn" xml:space="preserve"><value>Allumé</value></data>
+  <data name="Motd_PreviewOff" xml:space="preserve"><value>Éteint</value></data>
+  <data name="Motd_TooWide" xml:space="preserve"><value>Une ligne est longue : la liste peut la couper à droite.</value></data>
+  <data name="Motd_Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="Motd_Bold" xml:space="preserve"><value>Gras</value></data>
+  <data name="Motd_Italic" xml:space="preserve"><value>Italique</value></data>
+  <data name="Motd_Underline" xml:space="preserve"><value>Souligné</value></data>
+  <data name="Motd_Strike" xml:space="preserve"><value>Barré</value></data>
+  <data name="Motd_Default" xml:space="preserve"><value>Couleur par défaut</value></data>
 </root>

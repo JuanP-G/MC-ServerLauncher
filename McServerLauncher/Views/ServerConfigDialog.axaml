@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:ic="using:FluentIcons.Avalonia"
         x:Class="McServerLauncher.Views.ServerConfigDialog"
         Title="{loc:Loc Cfg_Title}"
         Width="760" Height="780" MinWidth="640"
@@ -17,7 +18,10 @@
                     <StackPanel>
                         <TextBlock Text="{loc:Loc Cfg_Motd}" Classes="title" />
                         <TextBlock Classes="desc" Text="{loc:Loc Cfg_MotdDesc}" />
-                        <TextBox x:Name="MotdBox" Margin="0,8,0,0" />
+                        <!-- La caja cruda, para quien se sepa los codigos. El editor visual esta en
+                             "Editar", junto al icono: son el mismo trabajo. -->
+                        <TextBox x:Name="MotdBox" Margin="0,8,0,0"
+                                 FontFamily="Cascadia Mono, Consolas, monospace" />
                     </StackPanel>
                 </Border>
 

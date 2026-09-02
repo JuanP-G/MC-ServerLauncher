@@ -1,12 +1,11 @@
-using System.Collections;
-using System.Linq;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
+using Avalonia.Controls.Presenters;
+using Avalonia.VisualTree;
+using Avalonia.Media.Transformation;
 using McServerLauncher.Localization;
 using McServerLauncher.Services;
-using McServerLauncher.Models;
 using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views;
@@ -35,8 +34,89 @@ public partial class MainWindow : Window
         {
             if (e.PropertyName == nameof(MainViewModel.SelectedServer))
                 ServerTabs.SelectedIndex = 0;
+
+            if (e.PropertyName == nameof(MainViewModel.Section))
+                PlaceRailPip();
         };
 
+        // El panel de la pestaña que llega se relanza a mano: una animacion de Avalonia se dispara
+        // cuando el selector empieza a encajar, y la clase ya esta puesta desde la vez anterior.
+        ServerTabs.SelectionChanged += (_, _) => ReplayTabEnter();
+
+        // Tambien al cambiar el tamaño: las filas del rail son Auto, asi que una etiqueta que se
+        // parte en dos lineas mueve el segundo boton y con el, el destino de la marca.
+        RailGrid.LayoutUpdated += (_, _) => PlaceRailPip();
+    }
+
+    /// <summary>
+    /// Replays the "the panel arrived" animation on the tab that just became selected.
+    /// </summary>
+    /// <remarks>
+    /// Removing the class and adding it back is not a trick, it is how Avalonia animations start:
+    /// they run when the selector BEGINS to match. After the first tab change the class is already
+    /// there, so adding it again does nothing at all — it has to stop matching first.
+    ///
+    /// The animation itself lives in <c>Styles/Motion.axaml</c> like every other one, so switching
+    /// animations off leaves this method toggling a class that no style reacts to, and the tab
+    /// simply appears. That is the correct behaviour, not a gap.
+    /// </remarks>
+    private void ReplayTabEnter()
+    {
+        var host = ServerTabs.GetVisualDescendants().OfType<ContentPresenter>()
+            .FirstOrDefault(p => p.Name == "PART_SelectedContentHost");
+
+        if (host is null) return;
+
+        host.Classes.Remove("tabenter");
+        host.Classes.Add("tabenter");
+    }
+
+    /// <summary>
+    /// Puts the rail's "you are here" bar over the section currently showing.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Measured rather than hardcoded, and that is the whole reason this is code and not XAML: the
+    /// rail's rows are <c>Auto</c>, so a longer translation of a label wraps to two lines and makes
+    /// one button taller than the other. Any fixed offset would be right in Spanish and wrong in
+    /// German.
+    /// </para>
+    /// <para>
+    /// This only sets the destination — the travelling is done by the transition on
+    /// <c>Border.railpip</c> in <c>Styles/Motion.axaml</c>, because every animation in the app lives
+    /// there and <c>MotionTests</c> fails the build if one appears anywhere else. It also means
+    /// switching animations off stops the bar sliding and leaves it landing instantly, which is
+    /// exactly what that setting promises.
+    /// </para>
+    /// <para>
+    /// Called from <c>LayoutUpdated</c>, which fires constantly — hence the guard. Writing Height
+    /// unconditionally would invalidate layout, which raises LayoutUpdated, which writes Height: a
+    /// loop that pins a core at 100% and is invisible until somebody notices the fan.
+    /// </para>
+    /// </remarks>
+    private void PlaceRailPip()
+    {
+        var target = _viewModel.IsTunnelsSection ? RailTunnels : RailServers;
+        if (target.Bounds.Height <= 0) return;
+
+        // Inset so it reads as a marker beside the button rather than a bar the same size as it.
+        const double inset = 10;
+        var height = Math.Max(1, target.Bounds.Height - inset * 2);
+        var y = target.Bounds.Y + inset;
+
+        // El NaN va primero, y no es paranoia: Height arranca en NaN ("auto"), y CUALQUIER
+        // comparacion con NaN es falsa — Math.Abs(NaN - 32) > 0.5 da false. Con solo la resta, la
+        // altura no se asignaba nunca y la barra no llegaba a dibujarse. En una captura eso se ve
+        // como "no aparece" y se le echa la culpa al color, al Panel o al selector.
+        if (double.IsNaN(RailPip.Height) || Math.Abs(RailPip.Height - height) > 0.5)
+            RailPip.Height = height;
+
+        var wanted = string.Create(CultureInfo.InvariantCulture, $"translateY({y:0.##}px)");
+        if (RailPip.Tag as string != wanted)
+        {
+            RailPip.Tag = wanted;
+            RailPip.RenderTransform = TransformOperations.Parse(wanted);
+        }
     }
 
     /// <summary>
@@ -107,35 +187,4 @@ public partial class MainWindow : Window
         base.OnClosing(e);
     }
 
-    private void ConsoleCopy_Click(object? sender, RoutedEventArgs e) => _ = CopyConsole(selectedOnly: true);
-
-    private void ConsoleCopyAll_Click(object? sender, RoutedEventArgs e) => _ = CopyConsole(selectedOnly: false);
-
-    private void ConsoleList_KeyDown(object? sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control))
-        {
-            _ = CopyConsole(selectedOnly: true);
-            e.Handled = true;
-        }
-    }
-
-    private async System.Threading.Tasks.Task CopyConsole(bool selectedOnly)
-    {
-        IList source = selectedOnly && ConsoleList.SelectedItems is { Count: > 0 }
-            ? ConsoleList.SelectedItems
-            : ConsoleList.Items;
-
-        // Named explicitly rather than relying on ToString(). A console line is a record now, and a
-        // record's generated ToString prints "ConsoleLine { Text = …, Kind = … }" — which would have
-        // compiled cleanly and quietly filled the clipboard with that instead of the log. The record
-        // overrides ToString for exactly this reason; saying so here means the two can never disagree.
-        var lines = source.Cast<object?>()
-            .Select(o => o is ConsoleLine line ? line.Text : o?.ToString() ?? string.Empty);
-        var text = string.Join(Environment.NewLine, lines);
-        if (!string.IsNullOrEmpty(text) && Clipboard is not null)
-        {
-            try { await Clipboard.SetTextAsync(text); } catch { /* clipboard busy */ }
-        }
-    }
 }

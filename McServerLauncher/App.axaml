@@ -28,6 +28,11 @@
         <SolidColorBrush x:Key="SemanticWarnPanel" Color="#33E3A82B" />
         <SolidColorBrush x:Key="SemanticWarnEdge" Color="#55E3A82B" />
 
+        <!-- Texto escrito ENCIMA del ambar. Blanco sobre #E3A82B no se lee: el ambar es claro, y es
+             el unico de los cuatro colores semanticos que no admite texto blanco. Va aqui y no a
+             mano en la vista porque es una decision de la paleta, no de un boton. -->
+        <SolidColorBrush x:Key="TextOnWarn" Color="#1A1206" />
+
         <SolidColorBrush x:Key="SemanticDangerFill" Color="#22E05561" />
         <SolidColorBrush x:Key="SemanticDangerPanel" Color="#33E05561" />
 
@@ -83,6 +88,9 @@
         <!-- Los estilos que comparten varias vistas. Ver Styles/Shared.axaml para por que
              Border.card tuvo que quedarse con un solo significado. -->
         <StyleInclude Source="/Styles/Shared.axaml" />
+        <!-- Todo el movimiento de la app, en una capa que se quita entera. Ver
+             Styles/Motion.axaml: es lo que hace posible el interruptor de Ajustes. -->
+        <StyleInclude Source="/Styles/Motion.axaml" />
         <!-- Keep button content (text and icon+text) centered everywhere. -->
         <Style Selector="Button">
             <Setter Property="HorizontalContentAlignment" Value="Center" />

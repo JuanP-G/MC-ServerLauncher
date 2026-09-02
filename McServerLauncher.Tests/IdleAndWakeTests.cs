@@ -1,3 +1,4 @@
+using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Tests;
@@ -89,14 +90,14 @@ public class IdleAndWakeTests
     [Fact]
     public void NoticeGoesOnItsOwnLineUnderTheMotd() =>
         Assert.Equal("Mi servidor\nApagado".Replace("Apagado", Notice),
-            ServerViewModel.ComposeWakeMotd("Mi servidor", Notice));
+            WakeSign.Compose("Mi servidor", Notice));
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(null)]
     public void WithoutAMotdTheNoticeStandsAlone(string? motd) =>
-        Assert.Equal(Notice, ServerViewModel.ComposeWakeMotd(motd, Notice));
+        Assert.Equal(Notice, WakeSign.Compose(motd, Notice));
 
     [Theory]
     [InlineData("Linea uno\nLinea dos")]
@@ -105,6 +106,23 @@ public class IdleAndWakeTests
     {
         // The server list shows two lines and no more. A MOTD already using both would push the
         // notice off the bottom — and the notice is the one line that has to be read.
-        Assert.Equal("Linea uno\n" + Notice, ServerViewModel.ComposeWakeMotd(motd, Notice));
+        Assert.Equal("Linea uno\n" + Notice, WakeSign.Compose(motd, Notice));
+    }
+
+    [Fact]
+    public void TheStoredFormIsTrimmedToo()
+    {
+        // The theory above passed for months while the thing it describes was broken for real
+        // players, and this is exactly why: it feeds a real newline, and a real newline is what
+        // never reaches here. server.properties is line-oriented and cannot hold one, so a two-line
+        // sign is stored as the two characters backslash and n — and splitting on char 10 finds
+        // nothing to split.
+        //
+        // What people actually saw: the whole sign survived as "line one", the notice went under
+        // it, and anyone opening their server list while this server slept read a literal
+        // backslash-n in the middle of the message. A test fed data the app never produces is not
+        // a test, it is a comment that runs.
+        Assert.Equal("Linea uno\n" + Notice,
+            WakeSign.Compose(@"Linea uno\nLinea dos", Notice));
     }
 }

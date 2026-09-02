@@ -18,7 +18,13 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         // Apply the saved language BEFORE creating the window.
-        var lang = new AppSettingsService().Load().Language;
+        var saved = new AppSettingsService().Load();
+
+        // Y el movimiento, tambien antes: quitar la capa despues de que la ventana este montada
+        // haria que los controles ya creados se quedaran con las transiciones que ya recibieron.
+        MotionSwitch.Apply(Styles, saved.Animations);
+
+        var lang = saved.Language;
         if (!string.IsNullOrWhiteSpace(lang))
         {
             try

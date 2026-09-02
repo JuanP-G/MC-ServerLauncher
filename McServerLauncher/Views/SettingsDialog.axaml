@@ -36,6 +36,13 @@
 
                 <Separator Margin="0,16,0,12" />
 
+                <!-- Animaciones -->
+                <TextBlock Text="{loc:Loc Motion_Section}" FontWeight="SemiBold" />
+                <TextBlock Text="{loc:Loc Motion_Intro}" TextWrapping="Wrap" Opacity="0.7" FontSize="13" Margin="0,4,0,6" />
+                <CheckBox Content="{loc:Loc Motion_Enabled}" IsChecked="{Binding Animations, Mode=TwoWay}" />
+
+                <Separator Margin="0,16,0,12" />
+
                 <!-- Desktop shortcut -->
                 <TextBlock Text="{loc:Loc Shortcut_Section}" FontWeight="SemiBold" />
                 <TextBlock Text="{loc:Loc Shortcut_Intro}" TextWrapping="Wrap" Opacity="0.7"

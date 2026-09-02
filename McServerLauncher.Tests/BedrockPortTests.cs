@@ -206,8 +206,8 @@ public class BedrockPortTests
     [Fact]
     public void EveryNameTheBedrockPanelBindsToExistsOnTheViewModel()
     {
-        // MainWindow.axaml is x:CompileBindings="False": a mistyped name raises nothing and the
-        // panel simply stays empty, which is indistinguishable from the bug being unfixed.
+        // The view is x:CompileBindings="False": a mistyped name raises nothing and the panel
+        // simply stays empty, which is indistinguishable from the bug being unfixed.
         var names = Regex.Matches(BedrockPanelMarkup(), @"\{Binding ([A-Za-z0-9_]+)\}")
             .Select(m => m.Groups[1].Value)
             .Distinct();
@@ -215,17 +215,19 @@ public class BedrockPortTests
         var vm = typeof(ServerViewModel);
         foreach (var name in names)
             Assert.True(vm.GetProperty(name, BindingFlags.Public | BindingFlags.Instance) is not null,
-                $"ServerViewModel no tiene ninguna propiedad «{name}», que MainWindow.axaml enlaza");
+                $"ServerViewModel no tiene ninguna propiedad «{name}», que TunnelsView.axaml enlaza");
     }
 
     /// <summary>The block of XAML that shows the local port and the state.</summary>
     private static string BedrockPanelMarkup()
     {
-        var view = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml");
+        // Playit vive en su propia seccion desde el rediseno: era de la cuenta y estaba metido en
+        // medio del detalle de un servidor, ocupando tres filas hubiera tunel o no.
+        var view = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "TunnelsView.axaml");
         var xaml = File.ReadAllText(view);
 
         var start = xaml.IndexOf("IsVisible=\"{Binding IsCrossplayOn}\"", StringComparison.Ordinal);
-        Assert.True(start >= 0, "el panel local de Bedrock ya no está en MainWindow.axaml");
+        Assert.True(start >= 0, "el panel local de Bedrock ya no está en TunnelsView.axaml");
 
         // Back to the opening tag, forward to the end of that Grid.
         start = xaml.LastIndexOf("<Grid", start, StringComparison.Ordinal);

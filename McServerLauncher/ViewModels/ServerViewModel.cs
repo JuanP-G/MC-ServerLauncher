@@ -42,6 +42,11 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Refreshes the idle countdown once a second. Runs only while one is on screen.</summary>
     private readonly DispatcherTimer _idleCountdownTimer;
     private readonly DispatcherTimer _playitTimer;
+    private readonly DispatcherTimer _pingTimer;
+    private readonly ServerPingService _ping = new();
+
+    /// <summary>Set while a measurement is in flight, so a slow one cannot queue up behind itself.</summary>
+    private bool _pinging;
 
     // --- Auto-restart on crash ---
     // If the server exits on its own (not via the Stop button), it's relaunched automatically, up
@@ -149,6 +154,8 @@ public partial class ServerViewModel : ObservableObject
     private string _name;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRunning))]
+    [NotifyPropertyChangedFor(nameof(IsBusy))]
     private ServerState _state = ServerState.Stopped;
 
     [ObservableProperty]
@@ -258,8 +265,21 @@ public partial class ServerViewModel : ObservableObject
     public IBrush ServerTypeBrush => ServerTypeBrushes.For(Config.Type);
 
     // --- State properties ---
+    /// <summary>The sign as people read it: real newlines, ready to render.</summary>
     [ObservableProperty]
     private string _motdText = "A Minecraft Server";
+
+    /// <summary>
+    /// The same sign exactly as <c>server.properties</c> holds it, with the newline still written
+    /// as two characters.
+    /// </summary>
+    /// <remarks>
+    /// Kept apart from <see cref="MotdText"/> because the two are for different jobs and mixing
+    /// them is what broke the sleeping sign: what the launcher sends over the socket has to be the
+    /// stored form (<see cref="Services.WakeSign"/> unescapes it itself), while what gets drawn has
+    /// to be the readable one. One property doing both meant one of the two was always wrong.
+    /// </remarks>
+    public string MotdRaw { get; private set; } = "A Minecraft Server";
 
     [ObservableProperty]
     private string _playerCountText = "0/20";
@@ -363,6 +383,13 @@ public partial class ServerViewModel : ObservableObject
         _playitTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _playitTimer.Tick += OnPlayitTimerTick;
         _playitTimer.Start();
+
+        // Cinco segundos y no dos: cada vuelta abre dos conexiones TCP, una de ellas hasta el borde
+        // de playit. Medir mas a menudo no dice nada nuevo — lo que se busca es la tendencia — y
+        // añade trafico a una API que no es nuestra.
+        _pingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        _pingTimer.Tick += (_, _) => _ = MeasurePingAsync();
+        _pingTimer.Start();
         _playit.RefreshState();
         // Sync directly: the shared manager/agent may already know the state (another view model
         // refreshed it before we subscribed), in which case no change event will fire.
@@ -409,6 +436,159 @@ public partial class ServerViewModel : ObservableObject
         if (MainWindowHidden && ++_hiddenStatsTicks % 10 != 0) return;
         UpdateStats();
     }
+
+    // --- Ping: whose fault the lag is ---
+
+    /// <summary>The port the tunnel is actually reachable on. Zero when it is not known.</summary>
+    [ObservableProperty]
+    private int _tunnelPublicPort;
+
+    /// <summary>The SRV answer for the current address, so it is asked for once and not every tick.</summary>
+    private (string Host, int Port)? _srvPort;
+
+    /// <summary>Round trip straight to the server on this machine, or "—".</summary>
+    [ObservableProperty]
+    private string _pingDirectText = "—";
+
+    /// <summary>Round trip out to playit and back, or "—".</summary>
+    [ObservableProperty]
+    private string _pingTunnelText = "—";
+
+    /// <summary>What the two legs together say, in a sentence.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPingVerdict))]
+    private string _pingVerdictText = string.Empty;
+
+    /// <summary>
+    /// Whether there is a sentence worth showing.
+    /// </summary>
+    /// <remarks>
+    /// A bool and not a length check in the view: these views are x:CompileBindings="False", so
+    /// binding visibility to something that is not a bool does not fail — it quietly decides.
+    /// </remarks>
+    public bool HasPingVerdict => PingVerdictText.Length > 0;
+
+    [ObservableProperty]
+    private IBrush _pingDirectBrush = BrushGray;
+
+    [ObservableProperty]
+    private IBrush _pingTunnelBrush = BrushGray;
+
+    /// <summary>Whether there is anything to show. False while the server is stopped.</summary>
+    [ObservableProperty]
+    private bool _hasPing;
+
+    /// <summary>
+    /// Measures both legs and works out which of them is the problem.
+    /// </summary>
+    /// <remarks>
+    /// Only while the server is up. A stopped server does not answer, and two dashes plus a verdict
+    /// of "unknown" would be a panel accusing something of being broken when nothing is.
+    /// </remarks>
+    private async Task MeasurePingAsync()
+    {
+        if (_pinging) return;
+        if (!IsRunning)
+        {
+            if (HasPing) ResetPing();
+            return;
+        }
+
+        _pinging = true;
+        try
+        {
+            var port = _properties.GetServerPort(Config.PropertiesPath) ?? 25565;
+
+            // Loopback and not the machine's own LAN address: this leg is meant to measure the
+            // server, and going out to the network card would fold the local network into it.
+            var direct = await _ping.PingAsync(PingLeg.Direct, "127.0.0.1", port);
+
+            var tunnelPort = await TunnelPortAsync();
+
+            // Skipped rather than guessed when the port is unknown. A tunnel measured on the wrong
+            // port either fails — and reads as "the tunnel is down" when it is not — or reaches
+            // something else entirely and reports its latency as yours.
+            var tunnel = string.IsNullOrWhiteSpace(TunnelAddress) || tunnelPort <= 0
+                ? PingResult.Skipped(PingLeg.Tunnel)
+                : await _ping.PingAsync(PingLeg.Tunnel, TunnelAddress!, tunnelPort);
+
+            PingDirectText = Format(direct);
+            PingTunnelText = Format(tunnel);
+            PingDirectBrush = ColourFor(direct, 120);
+            PingTunnelBrush = ColourFor(tunnel, 260);
+
+            // Solo cuando hay algo que decir. Una linea permanente que dice "todo normal" deja de
+            // leerse a los dos dias, y ademas ocupa una fila entera que le hace falta a la consola;
+            // los dos numeros en verde ya lo estan diciendo.
+            PingVerdictText = ServerPingService.Judge(direct, tunnel) switch
+            {
+                PingVerdict.ServerSlow => Localizer.Get("Ping_ServerSlow"),
+                PingVerdict.TunnelSlow => Localizer.Get("Ping_TunnelSlow"),
+                PingVerdict.TunnelDown => Localizer.Get("Ping_TunnelDown"),
+                _ => string.Empty,
+            };
+
+            HasPing = direct.Answered || tunnel.Answered;
+        }
+        catch
+        {
+            // Measuring must never be able to break the panel it feeds.
+            ResetPing();
+        }
+        finally
+        {
+            _pinging = false;
+        }
+    }
+
+    /// <summary>
+    /// The port the tunnel really answers on.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The SRV record first, because that is what a player's client uses. A playit tunnel publishes
+    /// a bare domain and puts the port in <c>_minecraft._tcp.&lt;domain&gt;</c>; asked about a real
+    /// one it answers 14444, and nothing about the address says so. Pinging the domain on 25565
+    /// reached nothing at all, which is how a healthy tunnel came to be reported as dead.
+    /// </para>
+    /// <para>
+    /// The API's public port is the fallback, not the first choice: it is right only while the
+    /// tunnel's local port still matches this server's, and a server whose port has moved since the
+    /// tunnel was made is exactly the case the tunnels panel now exists to show.
+    /// </para>
+    /// </remarks>
+    private async Task<int> TunnelPortAsync()
+    {
+        var host = TunnelAddress;
+        if (string.IsNullOrWhiteSpace(host)) return 0;
+
+        if (_srvPort is { } cached && cached.Host == host) return cached.Port;
+
+        var srv = await MinecraftSrv.LookupPortAsync(host);
+        var port = srv ?? TunnelPublicPort;
+
+        // Remembered either way: a domain with no SRV record does not grow one, and asking again
+        // every five seconds would be a DNS query per tick for nothing.
+        _srvPort = (host!, port);
+        return port;
+    }
+
+    private void ResetPing()
+    {
+        PingDirectText = PingTunnelText = "—";
+        PingDirectBrush = PingTunnelBrush = BrushGray;
+        PingVerdictText = string.Empty;
+        HasPing = false;
+    }
+
+    private static string Format(PingResult r) =>
+        r.Milliseconds is { } ms ? ms + " ms" : "—";
+
+    private static IBrush ColourFor(PingResult r, int budgetMs) =>
+        !r.Answered ? BrushGray
+        : r.Milliseconds <= budgetMs ? BrushSignalGreen
+        : r.Milliseconds <= budgetMs * 2 ? BrushAmber
+        : BrushRed;
 
     // --- Stopping an empty server ---
 
@@ -540,49 +720,23 @@ public partial class ServerViewModel : ObservableObject
             OnConsoleLine(string.Format(Localizer.Get("Msg_WakePortBusyFmt"), port.Value));
     }
 
-    // --- How the notice looks in the server list ---
-    // The leading reset matters as much as the colour. Minecraft carries formatting across a line
-    // break, so without it the notice inherited whatever colour the owner's MOTD happened to end
-    // on — gold under one server, plain grey under the next — and read as a third line of their own
-    // message instead of as the launcher speaking.
-
-    /// <summary>Bold yellow: off, and waiting for you to do something about it.</summary>
-    private const string SleepingStyle = "§r§e§l";
-
-    /// <summary>Bold green: already on its way up, nothing to do but wait.</summary>
-    private const string StartingStyle = "§r§a§l";
-
-    /// <summary>Yellow, not bold: the disconnect screen is several lines and bold shouts.</summary>
-    private const string KickStyle = "§e";
-
-    /// <summary>Builds the two-line server-list entry: the owner's MOTD, then the notice.</summary>
-    /// <remarks>
-    /// Only the owner's FIRST line is kept. The list shows two lines and no more, so a MOTD that
-    /// already uses both would push the notice off the bottom — and the notice is the one line that
-    /// has to be read for any of this to work.
-    /// </remarks>
-    internal static string ComposeWakeMotd(string? motd, string notice)
-    {
-        if (string.IsNullOrWhiteSpace(motd)) return notice;
-
-        var first = motd.Split((char)10, (char)13)[0].TrimEnd();
-        return first.Length == 0 ? notice : first + (char)10 + notice;
-    }
+    // Como se compone el cartel del servidor dormido vive en Services/WakeSign.cs, porque el editor
+    // necesita dibujar EXACTAMENTE lo mismo en su vista previa. Dos copias de esto se separan, y
+    // entonces la vista previa promete una cosa y los jugadores ven otra.
 
     /// <summary>What a client sees while the server sleeps: its own MOTD plus what is going on.</summary>
     private WakeStatus BuildWakeStatus()
     {
         var starting = State != ServerState.Stopped;
-        var line = (starting ? StartingStyle : SleepingStyle) +
-                   Localizer.Get(starting ? "Wake_MotdStarting" : "Wake_MotdSleeping");
         var icon = Path.Combine(Config.FolderPath, "server-icon.png");
 
         return new WakeStatus(
-            Description: ComposeWakeMotd(MotdText, line),
+            Description: WakeSign.For(MotdRaw, starting),
             VersionName: string.IsNullOrWhiteSpace(Config.GameVersion) ? "?" : Config.GameVersion,
             MaxPlayers: _maxPlayers,
             IconPath: File.Exists(icon) ? icon : null,
-            DisconnectMessage: KickStyle + Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"));
+            DisconnectMessage: WakeSign.KickStyle +
+                               Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"));
     }
 
     /// <summary>Somebody pressed Join on a sleeping server.</summary>
@@ -626,6 +780,12 @@ public partial class ServerViewModel : ObservableObject
     }
 
     /// <summary>Gets the tunnel address from the playit API, matching by port.</summary>
+    /// <remarks>
+    /// The whole tunnel and not just its address, because the ping needs the public port too. What
+    /// players type is only the domain — a Java tunnel publishes an SRV record so the client finds
+    /// the port on its own — but <c>TcpClient</c> does not follow SRV. Assuming 25565 would connect
+    /// somewhere else entirely and report a number that looks like a ping and is not one.
+    /// </remarks>
     private async Task RefreshTunnelAddressAsync()
     {
         try
@@ -633,9 +793,13 @@ public partial class ServerViewModel : ObservableObject
             var port = _properties.GetServerPort(Config.PropertiesPath);
             if (!port.HasValue) return;
 
-            var address = await _playitApi.GetAddressForPortAsync(port.Value);
-            if (!string.IsNullOrEmpty(address))
-                RunOnUi(() => TunnelAddress = address);
+            var tunnel = await _playitApi.GetTunnelAsync(port.Value, udp: false);
+            if (tunnel?.Address is { Length: > 0 } address)
+                RunOnUi(() =>
+                {
+                    TunnelAddress = address;
+                    TunnelPublicPort = tunnel.PublicPort;
+                });
         }
         catch
         {
@@ -722,6 +886,16 @@ public partial class ServerViewModel : ObservableObject
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
+
+    /// <summary>
+    /// Arrancando o parando: los dos estados que son una espera y no un resultado.
+    /// </summary>
+    /// <remarks>
+    /// Existe para que el punto de estado lata SOLO mientras algo esta pasando. Encendido y apagado
+    /// son estados quietos, y un punto que late siempre no dice nada — deja de ser informacion para
+    /// ser decoracion.
+    /// </remarks>
+    public bool IsBusy => State is ServerState.Starting or ServerState.Stopping;
     public bool CanStart => State == ServerState.Stopped;
     public bool CanStop => State is ServerState.Running or ServerState.Starting;
 
@@ -837,9 +1011,25 @@ public partial class ServerViewModel : ObservableObject
             // per-line cost amortized O(1), at the price of momentarily holding up to 2200 lines.
             if (ConsoleLines.Count > MaxConsoleLines + ConsoleTrimBlock)
             {
-                ConsoleLines.RemoveFromStart(ConsoleLines.Count - MaxConsoleLines);
+                var drop = ConsoleLines.Count - MaxConsoleLines;
+
+                // Count the visible ones BEFORE they are gone. The visible list holds the same lines
+                // in the same order, so whatever falls off the top of one falls off the top of the
+                // other — it is always a prefix, never a scattered set.
+                var visibleDropped = 0;
+                for (var i = 0; i < drop; i++)
+                    if (MatchesConsoleFilter(ConsoleLines[i]))
+                        visibleDropped++;
+
+                ConsoleLines.RemoveFromStart(drop);
                 ConsoleKindFilter.Recount(ConsoleLines, ConsoleKinds); // lines fell off the top
-                RebuildVisibleConsole(); // the visible list is a subset; rebuild it from what survived
+
+                // NOT RebuildVisibleConsole(). That did a ReplaceAll, which raises a Reset, which
+                // makes the ListBox throw away every realised container and build new ones — for
+                // lines that did not change. Every couple of hundred lines, on its own, while
+                // somebody is reading the log. Removing the prefix says what actually happened and
+                // the survivors keep their containers.
+                VisibleConsoleLines.RemoveFromStartKeepingSelection(visibleDropped);
             }
 
             TrackPlayers(text);
@@ -1463,7 +1653,13 @@ public partial class ServerViewModel : ObservableObject
             await cb.SetTextAsync(TunnelAddress);
     }
 
-    private bool HasTunnelAddress => !string.IsNullOrEmpty(TunnelAddress);
+    /// <summary>Whether there is a public address worth showing (and copying).</summary>
+    /// <remarks>
+    /// Public because the server pane binds its address strip to it, not only because the copy
+    /// command gates on it. The strip hides itself rather than showing an empty box: a box with
+    /// nothing in it reads as "this is broken", when the truth is only "there is no tunnel yet".
+    /// </remarks>
+    public bool HasTunnelAddress => !string.IsNullOrEmpty(TunnelAddress);
 
     partial void OnTunnelAddressChanged(string? value)
     {
@@ -1474,6 +1670,7 @@ public partial class ServerViewModel : ObservableObject
             ConfigChanged?.Invoke();
         }
         CopyTunnelAddressCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(HasTunnelAddress));
     }
 
     [RelayCommand]
@@ -1532,7 +1729,12 @@ public partial class ServerViewModel : ObservableObject
     private void RefreshInfo()
     {
         var props = _properties.Read(Config.PropertiesPath);
-        MotdText = props.TryGetValue("motd", out var m) && !string.IsNullOrWhiteSpace(m) ? m : "A Minecraft Server";
+        MotdRaw = props.TryGetValue("motd", out var m) && !string.IsNullOrWhiteSpace(m) ? m : "A Minecraft Server";
+        // Desescapado para todo lo que lo LEE. server.properties guarda un cartel de dos lineas
+        // como los dos caracteres "\" y "n", y quien lo consumia sin deshacer eso acababa
+        // enseñandolo tal cual. La tarjeta se salvaba de casualidad porque MinecraftMotd pasa por
+        // MotdDocument.Parse, que desescapa por dentro.
+        MotdText = MotdDocument.Unescape(MotdRaw);
         _maxPlayers = props.TryGetValue("max-players", out var mp) && int.TryParse(mp, out var n) ? n : 20;
         UpdatePlayerCount();
         LoadIcon();

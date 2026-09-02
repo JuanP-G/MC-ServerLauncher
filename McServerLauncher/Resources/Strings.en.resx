@@ -16,8 +16,10 @@
   <data name="Restart" xml:space="preserve"><value>Restart</value></data>
   <data name="Configure" xml:space="preserve"><value>Configure</value></data>
   <data name="Tip_Configure" xml:space="preserve"><value>Edit server.properties visually</value></data>
+  <data name="Tip_OpenFolder" xml:space="preserve"><value>Open the server folder</value></data>
   <data name="Uptime" xml:space="preserve"><value>Uptime</value></data>
   <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="Ports" xml:space="preserve"><value>Ports</value></data>
   <data name="Tip_ChangeIcon" xml:space="preserve"><value>Click to change the server icon (what players see)</value></data>
   <data name="Tunnel_Placeholder" xml:space="preserve"><value>Auto-detected, or paste the tunnel address here...</value></data>
   <data name="Copy" xml:space="preserve"><value>Copy</value></data>
@@ -213,6 +215,9 @@
   <data name="Win_Intro" xml:space="preserve"><value>Choose what the minimize and close buttons do. With the app in the tray, servers keep running and you get the window back by clicking the icon next to the clock.</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Minimizing sends it to the tray (leaves the taskbar)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Closing (X) sends it to the tray instead of quitting the app</value></data>
+  <data name="Motion_Section" xml:space="preserve"><value>Animations</value></data>
+  <data name="Motion_Intro" xml:space="preserve"><value>How the app moves when you change screen or press something.</value></data>
+  <data name="Motion_Enabled" xml:space="preserve"><value>Use animations</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notifications</value></data>
   <data name="Notif_UseCustom" xml:space="preserve"><value>Use custom notification settings for this server</value></data>
   <data name="Notif_Enabled" xml:space="preserve"><value>Enable notifications</value></data>
@@ -723,4 +728,73 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” is a name Windows reserves and cannot be used for a folder. Pick another.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>The name cannot end in a dot or a space: Windows trims them and the folder would end up called something else.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper and Purpur will not start when the path contains “{0}”, and that character is in a folder above, not the server's own. Change it yourself or pick a different parent folder: renaming it from here would move everything else inside it.</value></data>
+  <data name="Nav_Servers" xml:space="preserve"><value>Servers</value></data>
+  <data name="Nav_Tunnels" xml:space="preserve"><value>Tunnels</value></data>
+  <data name="About_Title" xml:space="preserve"><value>About</value></data>
+  <data name="About_VersionFmt" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="About_Tagline" xml:space="preserve"><value>Set up and run Minecraft servers — Java and Bedrock at once — without fighting ports, Java versions or mod dependencies.</value></data>
+  <data name="About_Repo" xml:space="preserve"><value>View the repository</value></data>
+  <data name="About_ReportBug" xml:space="preserve"><value>Report a bug</value></data>
+  <data name="About_Whatsnew" xml:space="preserve"><value>What's new in this version</value></data>
+  <data name="About_BuiltOn" xml:space="preserve"><value>BUILT ON</value></data>
+  <data name="About_Legal" xml:space="preserve"><value>MC Server Launcher is not affiliated with Mojang, Microsoft or Playit.gg. Minecraft is a trademark of Mojang AB.</value></data>
+  <data name="Tunnels_Subtitle" xml:space="preserve"><value>Everything Playit has open on your account, whether this app made it or not.</value></data>
+  <data name="About_Close" xml:space="preserve"><value>Close</value></data>
+  <data name="About_Latest" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="About_UpToDate" xml:space="preserve"><value>You're on the latest version</value></data>
+  <data name="About_Newer" xml:space="preserve"><value>A newer version is available</value></data>
+  <data name="Tun_ColStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="Tun_ColAddress" xml:space="preserve"><value>Public address</value></data>
+  <data name="Tun_ColProto" xml:space="preserve"><value>Type</value></data>
+  <data name="Tun_ColLocal" xml:space="preserve"><value>Local port</value></data>
+  <data name="Tun_ColServer" xml:space="preserve"><value>Server</value></data>
+  <data name="Tun_InUse" xml:space="preserve"><value>In use</value></data>
+  <data name="Tun_Orphan" xml:space="preserve"><value>Orphan</value></data>
+  <data name="Tun_Clash" xml:space="preserve"><value>Port clash</value></data>
+  <data name="Tun_NoOwner" xml:space="preserve"><value>No server</value></data>
+  <data name="Tun_AllGood" xml:space="preserve"><value>All good</value></data>
+  <data name="Tun_AttentionFmt" xml:space="preserve"><value>{0} need attention</value></data>
+  <data name="Tun_Empty" xml:space="preserve"><value>Your Playit account has no tunnels open.</value></data>
+  <data name="Tun_NotConnected" xml:space="preserve"><value>Connect your Playit account in Settings to see your tunnels.</value></data>
+  <data name="Tun_Loading" xml:space="preserve"><value>Checking your account…</value></data>
+  <data name="Tun_OrphanHint" xml:space="preserve"><value>Left over from a server that no longer exists. It uses up a slot on your account and serves nothing.</value></data>
+  <data name="Tun_ClashHint" xml:space="preserve"><value>Another tunnel points at the same local port. Only one of them can work.</value></data>
+  <data name="Tun_DeleteFmt" xml:space="preserve"><value>Delete the tunnel "{0}"? This does not touch any server.</value></data>
+  <data name="Ping_Direct" xml:space="preserve"><value>Direct</value></data>
+  <data name="Ping_Tunnel" xml:space="preserve"><value>Tunnel</value></data>
+  <data name="Ping_Title" xml:space="preserve"><value>Ping</value></data>
+  <data name="Ping_None" xml:space="preserve"><value>—</value></data>
+  <data name="Ping_Fine" xml:space="preserve"><value>All normal. If it's bad for someone, it's their connection.</value></data>
+  <data name="Ping_ServerSlow" xml:space="preserve"><value>It's your server: it's slow to answer right here.</value></data>
+  <data name="Ping_TunnelSlow" xml:space="preserve"><value>Your server is fine. What's slow is the Playit tunnel.</value></data>
+  <data name="Ping_TunnelDown" xml:space="preserve"><value>Your server answers here, but nothing answers through the tunnel.</value></data>
+  <data name="Ping_Disclaimer" xml:space="preserve"><value>Both start and end at this computer. This is NOT your friends' ping: the stretch between them and Playit never touches this machine and cannot be measured.</value></data>
+  <data name="Tun_ColName" xml:space="preserve"><value>Name</value></data>
+  <data name="Tun_Selected" xml:space="preserve"><value>Selected server</value></data>
+  <data name="Tun_Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="Tun_RenameHint" xml:space="preserve"><value>The name is just for you: you see it here and on playit.gg, and it changes neither the address nor the port.</value></data>
+  <data name="Tun_EditOnWeb" xml:space="preserve"><value>Rename on playit.gg</value></data>
+  <data name="Port_Java" xml:space="preserve"><value>Java port</value></data>
+  <data name="Port_Bedrock" xml:space="preserve"><value>Bedrock port</value></data>
+  <data name="Addr_Share" xml:space="preserve"><value>Copy address and port to share</value></data>
+  <data name="Addr_ShareFmt" xml:space="preserve"><value>{0} · port {1}</value></data>
+  <data name="Addr_CopyHost" xml:space="preserve"><value>Copy the address only</value></data>
+  <data name="Motd_Title" xml:space="preserve"><value>Sign and looks</value></data>
+  <data name="Motd_Preview" xml:space="preserve"><value>THIS IS HOW THEY'LL SEE IT IN THE SERVER LIST</value></data>
+  <data name="Motd_Write" xml:space="preserve"><value>TYPE HERE · NO CODES</value></data>
+  <data name="Motd_Hint" xml:space="preserve"><value>Select some text and pick a colour. The sign above is what will be seen.</value></data>
+  <data name="Motd_Clear" xml:space="preserve"><value>Clear formatting</value></data>
+  <data name="Motd_Code" xml:space="preserve"><value>§ code</value></data>
+  <data name="Motd_CodeHint" xml:space="preserve"><value>Paste another server's sign here and it appears above with its colours.</value></data>
+  <data name="Motd_LinesFmt" xml:space="preserve"><value>The sign is two lines in the client. You're on {0} of 2.</value></data>
+  <data name="Motd_TooLong" xml:space="preserve"><value>More than two lines: the client won't show the rest.</value></data>
+  <data name="Motd_PreviewOn" xml:space="preserve"><value>Running</value></data>
+  <data name="Motd_PreviewOff" xml:space="preserve"><value>Asleep</value></data>
+  <data name="Motd_TooWide" xml:space="preserve"><value>One line is long: the list may trim it on the right.</value></data>
+  <data name="Motd_Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Motd_Bold" xml:space="preserve"><value>Bold</value></data>
+  <data name="Motd_Italic" xml:space="preserve"><value>Italic</value></data>
+  <data name="Motd_Underline" xml:space="preserve"><value>Underline</value></data>
+  <data name="Motd_Strike" xml:space="preserve"><value>Strikethrough</value></data>
+  <data name="Motd_Default" xml:space="preserve"><value>Default colour</value></data>
 </root>

@@ -1,0 +1,244 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:vm="using:McServerLauncher.ViewModels"
+             x:Class="McServerLauncher.Views.TunnelsView"
+             x:CompileBindings="False">
+
+    <!-- Playit vivia en medio del detalle del servidor, ocupando tres filas hubiera tunel o no, y
+         empujando la consola a media pantalla. Es de tu CUENTA, no de un servidor: por eso tiene
+         seccion propia. Y con seccion propia cabe lo que antes no se podia ver en ningun sitio —
+         los tuneles que no son de ningun servidor, y los que chocan entre si. -->
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.colhead">
+            <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.trow">
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdgeSoft}" />
+            <Setter Property="Padding" Value="13,9" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="18" Spacing="14">
+
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <StackPanel Grid.Column="0" Spacing="3">
+                    <TextBlock Text="{loc:Loc Nav_Tunnels}" FontSize="20" FontWeight="Bold" />
+                    <TextBlock Text="{loc:Loc Tunnels_Subtitle}" FontSize="12.5" Opacity="0.65"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Top"
+                        Command="{Binding RefreshTunnelsCommand}" ToolTip.Tip="{loc:Loc Refresh}">
+                    <ic:SymbolIcon Symbol="ArrowClockwise" />
+                </Button>
+                <Button Grid.Column="2" VerticalAlignment="Top"
+                        Command="{Binding OpenPlayitAccountCommand}"
+                        ToolTip.Tip="{loc:Loc Tip_Web}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ic:SymbolIcon Symbol="Open" />
+                        <TextBlock Text="Web" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- El resumen dice si hace falta mirar la tabla. Si esta en verde, no hace falta. -->
+            <Border Classes="card" Margin="0" Padding="12,10" IsVisible="{Binding PlayitConnected}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Ellipse Width="10" Height="10" VerticalAlignment="Center"
+                             Fill="{StaticResource SemanticOk}"
+                             IsVisible="{Binding TunnelsAllGood}" />
+                    <Ellipse Width="10" Height="10" VerticalAlignment="Center"
+                             Fill="{StaticResource SemanticWarn}"
+                             IsVisible="{Binding TunnelsNeedAttention}" />
+                    <TextBlock Text="{Binding TunnelsSummary}" FontWeight="SemiBold" FontSize="13"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{loc:Loc Tun_Loading}" FontSize="12" Opacity="0.6"
+                               VerticalAlignment="Center" IsVisible="{Binding TunnelsLoading}" />
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" Margin="0" Padding="12,10"
+                    Background="{StaticResource SemanticDangerPanel}"
+                    BorderBrush="{StaticResource SemanticDanger}"
+                    IsVisible="{Binding HasTunnelsError}">
+                <TextBlock Text="{Binding TunnelsError}" TextWrapping="Wrap" FontSize="12.5"
+                           Foreground="{StaticResource DangerText}" />
+            </Border>
+
+            <TextBlock Text="{loc:Loc Tun_NotConnected}" Opacity="0.65" TextWrapping="Wrap"
+                       IsVisible="{Binding !PlayitConnected}" />
+
+            <!-- La tabla -->
+            <Border Classes="card" Margin="0" Padding="0" IsVisible="{Binding HasTunnelRows}">
+                <StackPanel>
+                    <Border Classes="trow" BorderBrush="{StaticResource SurfaceEdge}">
+                        <Grid ColumnDefinitions="118,1.05*,1.15*,54,86,1.05*,78">
+                            <TextBlock Grid.Column="0" Classes="colhead" Text="{loc:Loc Tun_ColStatus}" />
+                            <TextBlock Grid.Column="1" Classes="colhead" Text="{loc:Loc Tun_ColName}" />
+                            <TextBlock Grid.Column="2" Classes="colhead" Text="{loc:Loc Tun_ColAddress}" />
+                            <TextBlock Grid.Column="3" Classes="colhead" Text="{loc:Loc Tun_ColProto}" />
+                            <TextBlock Grid.Column="4" Classes="colhead" Text="{loc:Loc Tun_ColLocal}" />
+                            <TextBlock Grid.Column="5" Classes="colhead" Text="{loc:Loc Tun_ColServer}" />
+                        </Grid>
+                    </Border>
+
+                    <ItemsControl ItemsSource="{Binding TunnelRows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TunnelRowViewModel">
+                                <Border Classes="trow" Background="{Binding RowBrush}">
+                                    <StackPanel>
+                                        <Grid ColumnDefinitions="118,1.05*,1.15*,54,86,1.05*,78">
+                                            <TextBlock Grid.Column="0" Text="{Binding StatusText}"
+                                                       Foreground="{Binding StatusBrush}"
+                                                       FontSize="11.5" FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                                       FontSize="12.5" FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" Margin="0,0,10,0"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding Name}" />
+                                            <TextBlock Grid.Column="2" Text="{Binding Address}"
+                                                       FontFamily="Cascadia Mono, Consolas, monospace"
+                                                       FontSize="12" VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis" Margin="0,0,10,0"
+                                                       ToolTip.Tip="{Binding Address}" />
+                                            <TextBlock Grid.Column="3" Text="{Binding Proto}"
+                                                       FontFamily="Cascadia Mono, Consolas, monospace"
+                                                       FontSize="11.5" Opacity="0.6" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="4" Text="{Binding LocalPort}"
+                                                       FontFamily="Cascadia Mono, Consolas, monospace"
+                                                       FontSize="12" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="5" Text="{Binding OwnerText}"
+                                                       FontSize="12" VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis" Margin="0,0,10,0"
+                                                       Opacity="{Binding HasOwner, Converter={x:Static vm:BoolOpacityConverter.Instance}}" />
+                                            <StackPanel Grid.Column="6" Orientation="Horizontal"
+                                                        Spacing="5" HorizontalAlignment="Right">
+                                                <Button Padding="6,3" ToolTip.Tip="{loc:Loc Copy}"
+                                                        Command="{Binding DataContext.CopyTunnelRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}">
+                                                    <ic:SymbolIcon Symbol="Copy" FontSize="13" />
+                                                </Button>
+                                                <!-- Renombrar abre playit.gg. El nombre es suyo,
+                                                     y una caja aqui que guardase el cambio solo en
+                                                     local seria peor que no tenerla: diria una cosa
+                                                     y su web otra. -->
+                                                <Button Padding="6,3" ToolTip.Tip="{loc:Loc Tun_EditOnWeb}"
+                                                        Command="{Binding DataContext.OpenPlayitAccountCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                                    <ic:SymbolIcon Symbol="Edit" FontSize="13" />
+                                                </Button>
+                                                <Button Padding="6,3" ToolTip.Tip="{loc:Loc Remove}"
+                                                        Command="{Binding DataContext.DeleteTunnelRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}">
+                                                    <ic:SymbolIcon Symbol="Delete" FontSize="13" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- El motivo, escrito debajo y no escondido en un tooltip.
+                                             «Huerfano» a secas es una etiqueta para mirar; decir de
+                                             donde salio es algo sobre lo que actuar. -->
+                                        <TextBlock Text="{Binding HintText}" IsVisible="{Binding HasHint}"
+                                                   FontSize="11.5" TextWrapping="Wrap"
+                                                   Foreground="{Binding StatusBrush}"
+                                                   Margin="0,5,78,0" Opacity="0.85" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{loc:Loc Tun_Empty}" Opacity="0.6" TextWrapping="Wrap"
+                       IsVisible="{Binding ShowNoTunnels}" />
+
+            <!-- Lo del servidor seleccionado: crear su tunel, y la direccion de Bedrock, que hay
+                 que dar por separado porque el cliente de Bedrock pide host y puerto en dos
+                 casillas y no admite "host:puerto". -->
+            <StackPanel DataContext="{Binding SelectedServer}" Spacing="7"
+                        IsVisible="{Binding DataContext.HasSelection, RelativeSource={RelativeSource AncestorType=Window}}">
+                <!-- Debajo de una tabla con TODOS los tuneles, este bloque es de UNO. Sin decirlo,
+                     se lee como una fila mas de la tabla de arriba. -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{loc:Loc Tun_Selected}" FontSize="11" Opacity="0.5"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+                <Border Classes="card" Margin="0">
+                  <StackPanel>
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding PlayitStatusText}" FontSize="12" Opacity="0.7" />
+                        </StackPanel>
+                        <!-- De solo lectura. Era una caja editable, y lo que se escribiera ahi se
+                             guardaba en la config local sin llegar a playit: la app diria una
+                             direccion y tu cuenta otra. La direccion la asigna playit; lo unico que
+                             se cambia de verdad es el NOMBRE, y eso se hace en su web. -->
+                        <TextBox Grid.Column="1" Margin="16,0" Text="{Binding TunnelAddress}"
+                                 IsReadOnly="True"
+                                 Watermark="{loc:Loc Tunnel_Placeholder}" VerticalAlignment="Center" />
+                        <Button Grid.Column="2" Command="{Binding CopyTunnelAddressCommand}" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Copy" />
+                                <TextBlock Text="{loc:Loc Copy}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="3" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Tip_CreateTunnel}"
+                                Command="{Binding DataContext.CreateTunnelForSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="AddCircle" />
+                                <TextBlock Text="{loc:Loc CreateTunnel}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="5" ToolTip.Tip="{loc:Loc Tip_Service}" Command="{Binding TogglePlayitCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Power" />
+                                <TextBlock Text="{loc:Loc Service}" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="0,10,0,0"
+                          IsVisible="{Binding HasBedrockAddress}">
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="SemiBold"
+                                   Text="{loc:Loc Crossplay_BedrockAddress}" />
+                        <TextBox Grid.Column="1" Margin="16,0,8,0" IsReadOnly="True"
+                                 Text="{Binding BedrockHost}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="0,0,8,0"
+                                   Opacity="0.7" Text="{loc:Loc Crossplay_BedrockPort}" />
+                        <TextBox Grid.Column="3" Width="90" Margin="0,0,8,0" IsReadOnly="True"
+                                 Text="{Binding BedrockPortText}" VerticalAlignment="Center" />
+                        <Button Grid.Column="4" Command="{Binding CopyBedrockAddressCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Copy" />
+                                <TextBlock Text="{loc:Loc Copy}" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,Auto,*" Margin="0,10,0,0"
+                          IsVisible="{Binding IsCrossplayOn}">
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" Opacity="0.7"
+                                   Text="{loc:Loc Crossplay_LocalPort}" />
+                        <TextBox Grid.Column="1" Width="90" Margin="8,0,0,0" IsReadOnly="True"
+                                 Text="{Binding BedrockLocalPortText}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="12,0,0,0"
+                                   FontSize="11" Opacity="0.75" TextWrapping="Wrap"
+                                   Text="{Binding BedrockStateText}" />
+                    </Grid>
+                    <TextBlock IsVisible="{Binding HasBedrockAddress}" FontSize="11" Opacity="0.55"
+                               TextWrapping="Wrap" Margin="4,8,4,0"
+                               Text="{loc:Loc Crossplay_BedrockHint}" />
+                  </StackPanel>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

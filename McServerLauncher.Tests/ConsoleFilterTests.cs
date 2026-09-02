@@ -44,8 +44,10 @@ public class ConsoleFilterTests
     public void TheCopyPathNamesTheTextInsteadOfTrustingToString()
     {
         // Belt as well as braces: the two would have to be broken together to lose the clipboard.
+        // Copying lives with the console now, not in the window: it is console behaviour, and the
+        // window was 717 lines of XAML with every region of the app in it.
         var source = File.ReadAllText(Path.Combine(
-            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml.cs"));
+            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "ServerConsoleView.axaml.cs"));
 
         Assert.Contains("o is ConsoleLine line ? line.Text", source, StringComparison.Ordinal);
     }
@@ -191,13 +193,13 @@ public class ConsoleFilterTests
     [Fact]
     public void EveryNameTheConsoleBindsToExists()
     {
-        // MainWindow.axaml is x:CompileBindings="False": a mistyped name raises nothing at all, and
-        // the console would simply render blank rows.
+        // The view is x:CompileBindings="False": a mistyped name raises nothing at all, and the
+        // console would simply render blank rows.
         var xaml = File.ReadAllText(Path.Combine(
-            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml"));
+            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "ServerConsoleView.axaml"));
 
         var list = xaml.IndexOf("ItemsSource=\"{Binding ConsoleKinds}\"", StringComparison.Ordinal);
-        Assert.True(list >= 0, "los interruptores de la consola ya no están en MainWindow.axaml");
+        Assert.True(list >= 0, "los interruptores de la consola ya no están en ServerConsoleView.axaml");
 
         // From the item template on: the ItemsSource itself binds to the server's view model, and
         // everything inside the template binds to one switch.
@@ -210,7 +212,7 @@ public class ConsoleFilterTests
             var name = m.Groups[1].Value;
             Assert.True(
                 typeof(ConsoleKindFilter).GetProperty(name, BindingFlags.Public | BindingFlags.Instance) is not null,
-                $"ConsoleKindFilter no tiene ninguna propiedad «{name}», que MainWindow.axaml enlaza");
+                $"ConsoleKindFilter no tiene ninguna propiedad «{name}», que ServerConsoleView.axaml enlaza");
         }
     }
 

@@ -27,6 +27,45 @@ public sealed class BulkObservableCollection<T> : ObservableCollection<T>
         RaiseReset();
     }
 
+    /// <summary>
+    /// Removes the first <paramref name="count"/> items raising one <b>Remove</b>, not a Reset.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A Reset tells a bound <c>ListBox</c> "everything you knew is gone", and it responds by
+    /// throwing away every realised container and building new ones — including for the lines that
+    /// did not change. That is the flicker, and it is what makes anything animated per item replay
+    /// on rows nobody touched. In the console it happened every couple of hundred lines, on its own,
+    /// while somebody was reading.
+    /// </para>
+    /// <para>
+    /// A Remove says what actually happened, so the survivors keep their containers. Measured in
+    /// <c>ConsoleTrimTests</c>, which asks the control for the container of a given line before and
+    /// after: same object with Remove, a different one with Reset.
+    /// </para>
+    /// <para>
+    /// The selection is <b>not</b> the difference, and it is worth writing down because it was the
+    /// first thing assumed: Avalonia re-resolves the selected item by value, so it survives a Reset
+    /// too. The cost is the rebuilding, not the selection.
+    /// </para>
+    /// </remarks>
+    public void RemoveFromStartKeepingSelection(int count)
+    {
+        if (count <= 0) return;
+        count = Math.Min(count, Items.Count);
+
+        var removed = new List<T>(count);
+        for (var i = 0; i < count; i++) removed.Add(Items[i]);
+
+        if (Items is List<T> list) list.RemoveRange(0, count);
+        else for (var i = 0; i < count; i++) Items.RemoveAt(0);
+
+        OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+        OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+            NotifyCollectionChangedAction.Remove, removed, 0));
+    }
+
     /// <summary>Replaces the whole content with <paramref name="items"/>, raising one Reset.</summary>
     public void ReplaceAll(IEnumerable<T> items)
     {

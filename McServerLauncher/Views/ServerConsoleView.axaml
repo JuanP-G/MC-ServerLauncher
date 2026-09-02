@@ -1,0 +1,186 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:b="using:McServerLauncher.Behaviors"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:vm="using:McServerLauncher.ViewModels"
+             x:Class="McServerLauncher.Views.ServerConsoleView"
+             x:CompileBindings="False">
+
+    <UserControl.Styles>
+        <!-- Un interruptor de categoria: pequeno, para que quepan siete sin empujar nada. -->
+        <Style Selector="ToggleButton.kindchip">
+            <Setter Property="Padding" Value="7,2" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Margin" Value="0,0,4,2" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <!-- Apagado se ve claramente apagado: un filtro que no se nota es un filtro que te hace
+             pensar que el servidor no dice nada. -->
+        <Style Selector="ToggleButton.kindchip:not(:checked)">
+            <Setter Property="Opacity" Value="0.45" />
+        </Style>
+        <!-- Compact rows for the console list -->
+        <Style Selector="ListBox.console ListBoxItem">
+            <Setter Property="Padding" Value="2,0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid Margin="0,8,0,0" RowDefinitions="*,Auto">
+        <!-- Console -->
+        <Border Grid.Row="0" Classes="card stat" Margin="0" Padding="0">
+            <Grid RowDefinitions="Auto,*">
+                <!-- Dos filas y no una.
+                     Con todo en una sola, el hueco que le quedaba a los interruptores dependia de
+                     lo que sobrara despues de la caja de busqueda: a 900 px de ancho sobraba tan
+                     poco que los siete se apilaban en vertical y estrangulaban la consola, que es
+                     precisamente lo que se venia a leer. Los filtros ocupan su propia fila de lado
+                     a lado, asi que se doblan una vez como mucho y nunca a costa del ancho. -->
+                <Grid Grid.Row="0" Margin="12,8" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto,Auto">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Console}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <!-- Un interruptor por categoria, con su cuenta al lado. La cuenta es lo que
+                         los hace servir para vigilar y no solo para buscar: «Errores 3» se ve sin
+                         pulsar nada. En un WrapPanel para que al estrechar la ventana bajen de
+                         linea en vez de empujar la caja de busqueda fuera de la pantalla. -->
+                    <ItemsControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4"
+                                  ItemsSource="{Binding ConsoleKinds}" Margin="0,7,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton Classes="kindchip" IsChecked="{Binding IsOn, Mode=TwoWay}"
+                                              ToolTip.Tip="{Binding Tip}">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                                                 Fill="{Binding Brush}" />
+                                        <TextBlock Text="{Binding Label}" FontSize="11" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Count}" FontSize="11" Opacity="0.6"
+                                                   VerticalAlignment="Center" />
+                                        <!-- Llego algo de este tipo mientras estaba apagado. Sin esto
+                                             seria del todo invisible: fuera de la lista y sin nada
+                                             en pantalla que cambie. -->
+                                        <Ellipse Width="6" Height="6" VerticalAlignment="Top" Margin="0,1,0,0"
+                                                 Fill="{StaticResource SemanticWarn}"
+                                                 IsVisible="{Binding HasUnseen}" />
+                                    </StackPanel>
+                                </ToggleButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBox Grid.Row="0" Grid.Column="1" MaxWidth="240" MinWidth="110" Margin="12,0,8,0" Padding="8,4"
+                             HorizontalAlignment="Right"
+                             Text="{Binding ConsoleFilter, Mode=TwoWay}"
+                             Watermark="{loc:Loc Console_FilterPlaceholder}" />
+                    <Button Grid.Row="0" Grid.Column="2" Margin="0,0,8,0" Padding="8,2" VerticalAlignment="Center"
+                            Command="{Binding ShowAllConsoleKindsCommand}"
+                            IsVisible="{Binding IsConsoleFiltered}"
+                            Content="{loc:Loc Console_ShowAll}" />
+                    <Button Grid.Row="0" Grid.Column="3" Command="{Binding ClearConsoleCommand}" Padding="8,2" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <ic:SymbolIcon Symbol="Eraser" />
+                            <TextBlock Text="{loc:Loc Clear}" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+                <ListBox Grid.Row="1" x:Name="ConsoleList" Classes="console"
+                         ItemsSource="{Binding VisibleConsoleLines}"
+                         b:AutoScrollBehavior.AutoScroll="True"
+                         FontFamily="Cascadia Mono, Consolas, monospace"
+                         FontSize="12" Background="{StaticResource GroundPopup}" BorderThickness="0"
+                         Padding="0,0,0,4" SelectionMode="Multiple"
+                         KeyDown="ConsoleList_KeyDown"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="{loc:Loc Copy_Selection}" Click="ConsoleCopy_Click" />
+                            <MenuItem Header="{loc:Loc Copy_All}" Click="ConsoleCopyAll_Click" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <!-- El color sale de la categoria a traves de un converter, no de un
+                                 pincel guardado en cada linea: hay dos mil, y un color que cambies
+                                 en Ajustes tiene que llegar a todas sin recorrerlas. Inlines en vez
+                                 de Text para poder marcar dentro de la linea lo que buscas. -->
+                            <TextBlock TextWrapping="Wrap"
+                                       Foreground="{Binding Kind, Converter={x:Static vm:ConsoleBrushConverter.Instance}}">
+                                <TextBlock.Inlines>
+                                    <MultiBinding Converter="{x:Static vm:ConsoleHighlightConverter.Instance}">
+                                        <Binding Path="Text" />
+                                        <Binding Path="DataContext.ConsoleFilter"
+                                                 RelativeSource="{RelativeSource AncestorType=ListBox}" />
+                                    </MultiBinding>
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <!-- Command box -->
+        <Grid Grid.Row="1" Margin="0,12,0,0" ColumnDefinitions="*,Auto,Auto">
+            <TextBox Grid.Column="0" Text="{Binding CommandText}"
+                     Watermark="{loc:Loc Command_Placeholder}" Margin="0,0,8,0">
+                <TextBox.KeyBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding SendCommandCommand}" />
+                </TextBox.KeyBindings>
+            </TextBox>
+
+            <!-- Command help -->
+            <ToggleButton Grid.Column="1" x:Name="CommandHelpToggle" Margin="0,0,8,0"
+                          IsChecked="{Binding IsCommandHelpOpen, Mode=TwoWay}"
+                          ToolTip.Tip="{loc:Loc Tip_Commands}" Padding="10,0">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ic:SymbolIcon Symbol="QuestionCircle" />
+                    <TextBlock Text="{loc:Loc Commands}" VerticalAlignment="Center" />
+                </StackPanel>
+            </ToggleButton>
+
+            <Popup PlacementTarget="{Binding #CommandHelpToggle}" Placement="Top"
+                   IsOpen="{Binding IsCommandHelpOpen, Mode=TwoWay}" IsLightDismissEnabled="True"
+                   HorizontalOffset="0" VerticalOffset="-6">
+                <Border Background="{StaticResource GroundPopup}" BorderBrush="{StaticResource SurfaceEdgeStrong}" BorderThickness="1"
+                        CornerRadius="8" Width="460" MaxHeight="380" Padding="6">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Grid.Row="0" Margin="8,6,8,8" Opacity="0.8" TextWrapping="Wrap"
+                                   Text="{loc:Loc Cmd_HelpIntro}" />
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding CommandHelp}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" Margin="2"
+                                                Background="Transparent" BorderThickness="0" Padding="8,6"
+                                                Command="{Binding DataContext.UseCommandCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold"
+                                                           FontFamily="Cascadia Mono, Consolas, monospace" />
+                                                <TextBlock Text="{Binding Description}" FontSize="12"
+                                                           Opacity="0.7" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Popup>
+
+            <Button Grid.Column="2" Classes="accent" Command="{Binding SendCommandCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ic:SymbolIcon Symbol="Send" />
+                    <TextBlock Text="{loc:Loc Send}" />
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Grid>
+</UserControl>

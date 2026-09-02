@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="using:McServerLauncher.Localization"
+        xmlns:ic="using:FluentIcons.Avalonia"
         xmlns:models="using:McServerLauncher.Models"
         x:Class="McServerLauncher.Views.AddEditServerDialog"
         x:DataType="models:ServerConfig"
@@ -13,6 +14,12 @@
             <StackPanel>
                 <TextBlock Text="{loc:Loc Cs_Name}" Margin="0,4" />
                 <TextBox Text="{Binding Name, Mode=TwoWay}" />
+
+                <!-- El cartel, el icono y el nombre se editan desde el lapiz de la propia tarjeta
+                     de vista previa, en la pantalla de servidores. Estuvieron aqui, y antes
+                     repartidos entre Configurar y un clic escondido sobre la imagen: un boton en un
+                     dialogo obliga a saber donde se guardan las cosas; un lapiz encima de lo que
+                     quieres cambiar, no. -->
 
                 <TextBlock Text="{loc:Loc Ae_Folder}" Margin="0,12,0,4" />
                 <Grid ColumnDefinitions="*,Auto">

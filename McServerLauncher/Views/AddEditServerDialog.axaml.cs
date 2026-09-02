@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
+using McServerLauncher.Services;
 
 namespace McServerLauncher.Views;
 
@@ -202,4 +203,5 @@ public partial class AddEditServerDialog : Window
         _config.UseCustomNotifications = original.UseCustomNotifications;
         _config.Notifications = original.Notifications;
     }
+
 }

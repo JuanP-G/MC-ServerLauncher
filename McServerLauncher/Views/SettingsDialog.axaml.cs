@@ -33,6 +33,9 @@ public partial class SettingsDialog : Window
     /// <summary>The X button sends the window to the tray instead of quitting (read back on Save).</summary>
     public bool CloseToTray { get; set; }
 
+    /// <summary>Whether the app animates. See <see cref="Services.MotionSwitch"/>.</summary>
+    public bool Animations { get; set; } = true;
+
     /// <summary>Colour for player chat in the console (read back on Save).</summary>
     public string ConsoleChatColor { get; set; } = ConsoleColors.DefaultChat;
 
@@ -57,6 +60,7 @@ public partial class SettingsDialog : Window
         _settingsService = settingsService;
         MinimizeToTray = appSettings?.MinimizeToTray ?? true;
         CloseToTray = appSettings?.CloseToTray ?? false;
+        Animations = appSettings?.Animations ?? true;
         ConsoleChatColor = appSettings?.ConsoleChatColor ?? ConsoleColors.DefaultChat;
         ConsolePlayersColor = appSettings?.ConsolePlayersColor ?? ConsoleColors.DefaultPlayers;
         DataContext = this;

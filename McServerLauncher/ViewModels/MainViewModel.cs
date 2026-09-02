@@ -42,6 +42,240 @@ public partial class MainViewModel : ObservableObject
 
     public bool HasSelection => SelectedServer is not null;
 
+    /// <summary>Which part of the app the rail is showing.</summary>
+    [ObservableProperty]
+    private AppSection _section = AppSection.Servers;
+
+    /// <summary>
+    /// One flag per section, because a view cannot compare an enum without a converter and adding
+    /// one for two values would be more machinery than it saves.
+    /// </summary>
+    public bool IsServersSection => Section == AppSection.Servers;
+
+    /// <inheritdoc cref="IsServersSection" />
+    public bool IsTunnelsSection => Section == AppSection.Tunnels;
+
+    /// <summary>
+    /// Lo mismo, pero como opacidad, para que el cambio de seccion se pueda FUNDIR.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Con <c>IsVisible</c> no hay nada que fundir: false saca el elemento del layout, asi que
+    /// desaparece de golpe antes de que ninguna transicion llegue a empezar. Las dos secciones se
+    /// quedan montadas y lo que cambia es la opacidad.
+    /// </para>
+    /// <para>
+    /// Y por eso existe tambien <see cref="IsServersSection"/> atado a <c>IsEnabled</c> en la vista:
+    /// un panel a opacidad cero <b>sigue recibiendo clics y foco de tabulador</b>. Invisible y
+    /// pulsable es peor que visible, porque el clic va a algo que no se ve. No se usa
+    /// <see cref="ViewModels.BoolOpacityConverter"/> porque ese apaga a 0.45 —esta para atenuar un
+    /// mod desactivado— y aqui hace falta llegar a cero.
+    /// </para>
+    /// </remarks>
+    public double ServersOpacity => IsServersSection ? 1.0 : 0.0;
+
+    /// <inheritdoc cref="ServersOpacity" />
+    public double TunnelsOpacity => IsTunnelsSection ? 1.0 : 0.0;
+
+    partial void OnSectionChanged(AppSection value)
+    {
+        OnPropertyChanged(nameof(IsServersSection));
+        OnPropertyChanged(nameof(IsTunnelsSection));
+        OnPropertyChanged(nameof(ServersOpacity));
+        OnPropertyChanged(nameof(TunnelsOpacity));
+    }
+
+    [RelayCommand]
+    private void ShowServers() => Section = AppSection.Servers;
+
+    [RelayCommand]
+    private void ShowTunnels()
+    {
+        Section = AppSection.Tunnels;
+        // Asked for when the section is opened, not on a timer and not at startup: it is a network
+        // request to somebody else's API, and nobody is looking at the answer until now.
+        _ = RefreshTunnels();
+    }
+
+    // --- The tunnels table ---
+
+    /// <summary>Every tunnel on the account, with who owns it and what is wrong with it.</summary>
+    public ObservableCollection<TunnelRowViewModel> TunnelRows { get; } = new();
+
+    [ObservableProperty]
+    private bool _tunnelsLoading;
+
+    /// <summary>Null until the account has answered once; then how many rows are flagged.</summary>
+    [ObservableProperty]
+    private int _tunnelsAttention;
+
+    [ObservableProperty]
+    private bool _tunnelsAsked;
+
+    /// <summary>What went wrong asking the account, or null. Shown in the panel.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasTunnelsError))]
+    private string? _tunnelsError;
+
+    public bool HasTunnelsError => !string.IsNullOrEmpty(TunnelsError);
+
+    /// <summary>Whether there is a Playit account to ask in the first place.</summary>
+    public bool PlayitConnected => PlayitConnection.IsConnected(_appSettings);
+
+    /// <summary>What the summary line says: either all is well or how many need looking at.</summary>
+    public string TunnelsSummary => TunnelsAttention == 0
+        ? Localizer.Get("Tun_AllGood")
+        : string.Format(Localizer.Get("Tun_AttentionFmt"), TunnelsAttention);
+
+    /// <summary>Nothing needs doing. A bool, not the count, because the view binds visibility.</summary>
+    /// <remarks>
+    /// The panel used to say <c>IsVisible="{Binding !TunnelsAttention}"</c>, negating an int. These
+    /// views are <c>x:CompileBindings="False"</c>, so that does not fail — it just quietly decides
+    /// something, and a green dot that is always on says "all good" while three rows underneath say
+    /// otherwise. Cheaper to expose the bool than to trust the coercion.
+    /// </remarks>
+    public bool TunnelsAllGood => TunnelsAttention == 0;
+
+    partial void OnTunnelsAttentionChanged(int value)
+    {
+        OnPropertyChanged(nameof(TunnelsSummary));
+        OnPropertyChanged(nameof(TunnelsAllGood));
+        OnPropertyChanged(nameof(TunnelsNeedAttention));
+    }
+
+    /// <inheritdoc cref="TunnelsAllGood" />
+    public bool TunnelsNeedAttention => TunnelsAttention > 0;
+
+    /// <summary>
+    /// "You have no tunnels" — only once the account has actually been asked and answered.
+    /// </summary>
+    /// <remarks>
+    /// The three conditions are one property rather than a MultiBinding in the view because getting
+    /// it wrong is invisible: the views are <c>x:CompileBindings="False"</c>, so a converter that
+    /// does not resolve draws nothing and the message silently never appears. Here it is a bool
+    /// that can be read, and reasoned about, in one place.
+    /// </remarks>
+    public bool ShowNoTunnels => PlayitConnected && TunnelsAsked && TunnelRows.Count == 0;
+
+    private void RefreshTunnelsEmptyState()
+    {
+        OnPropertyChanged(nameof(ShowNoTunnels));
+        OnPropertyChanged(nameof(HasTunnelRows));
+    }
+
+    public bool HasTunnelRows => TunnelRows.Count > 0;
+
+    partial void OnTunnelsAskedChanged(bool value) => RefreshTunnelsEmptyState();
+
+    /// <summary>The playit dashboard for the account, not for one server's tunnel.</summary>
+    [RelayCommand]
+    private void OpenPlayitAccount() => BrowserLauncher.Open("https://playit.gg/account/tunnels");
+
+    /// <summary>Puts a row's public address on the clipboard.</summary>
+    [RelayCommand]
+    private async Task CopyTunnelRow(TunnelRowViewModel? row)
+    {
+        if (row is null || Owner?.Clipboard is not { } clipboard) return;
+        try { await clipboard.SetTextAsync(row.Address); } catch { /* clipboard busy */ }
+    }
+
+    /// <summary>
+    /// Deletes one tunnel from the account, after asking.
+    /// </summary>
+    /// <remarks>
+    /// Asking is not ceremony here: the rows that most want deleting are the orphans, and an orphan
+    /// looks exactly like a tunnel whose server this app has simply not been told about — a server
+    /// added on another machine, or one removed from the list but not from disk. The confirmation
+    /// says the one thing that settles it: no server is touched either way.
+    /// </remarks>
+    [RelayCommand]
+    private async Task DeleteTunnelRow(TunnelRowViewModel? row)
+    {
+        if (row is null || Owner is null) return;
+
+        var ok = await MessageBox.ConfirmAsync(
+            string.Format(Localizer.Get("Tun_DeleteFmt"), row.Address),
+            Localizer.Get("Nav_Tunnels"), Owner);
+        if (!ok) return;
+
+        try
+        {
+            var key = new PlayitApiService().ReadSecretKey() ?? _appSettings.PlayitAgentSecretKey;
+            if (string.IsNullOrWhiteSpace(key)) return;
+
+            await new PlayitApiService().DeleteTunnelForPortAsync(key, row.LocalPortNumber, row.IsBedrock);
+            await RefreshTunnels();
+        }
+        catch (Exception ex)
+        {
+            TunnelsError = ex.Message;
+        }
+    }
+
+    /// <summary>The two ports each server can have a tunnel on.</summary>
+    /// <remarks>
+    /// The Java port lives in <c>server.properties</c> and not in the config, so it is read here
+    /// rather than derived — and read as null when the file cannot be, because "I do not know the
+    /// port" must not quietly become "the port is whatever you asked about".
+    /// </remarks>
+    private IReadOnlyList<TunnelInventory.ServerPorts> ServerPortsSnapshot()
+    {
+        var properties = new ServerPropertiesService();
+        return Servers.Select(s => new TunnelInventory.ServerPorts(
+            s.Config.Name,
+            SafeJavaPort(properties, s.Config.PropertiesPath),
+            s.Config.BedrockPort)).ToList();
+    }
+
+    private static int? SafeJavaPort(ServerPropertiesService properties, string path)
+    {
+        try { return properties.GetServerPort(path); }
+        catch { return null; }   // unreadable or gone: not knowing is an answer, and it is null
+    }
+
+    [RelayCommand]
+    private async Task RefreshTunnels()
+    {
+        OnPropertyChanged(nameof(PlayitConnected));
+        if (!PlayitConnected)
+        {
+            TunnelRows.Clear();
+            RefreshTunnelsEmptyState();
+            TunnelsAsked = true;
+            return;
+        }
+
+        TunnelsLoading = true;
+        TunnelsError = null;
+        try
+        {
+            var key = new PlayitApiService().ReadSecretKey() ?? _appSettings.PlayitAgentSecretKey;
+            if (string.IsNullOrWhiteSpace(key)) { TunnelRows.Clear(); return; }
+
+            var (_, tunnels) = await new PlayitApiService().GetRunDataAsync(key);
+            var rows = TunnelInventory.Build(tunnels, ServerPortsSnapshot());
+
+            TunnelRows.Clear();
+            foreach (var row in rows) TunnelRows.Add(new TunnelRowViewModel(row));
+            TunnelsAttention = TunnelInventory.AttentionCount(rows);
+            RefreshTunnelsEmptyState();
+        }
+        catch (Exception ex)
+        {
+            // Said here and not in a server's console: this is the account failing to answer, and
+            // no server did anything. Clearing the rows matters too — leaving the previous ones up
+            // after a failed request is worse than an empty table, because they would look current.
+            TunnelRows.Clear();
+            RefreshTunnelsEmptyState();
+            TunnelsError = ex.Message;
+        }
+        finally
+        {
+            TunnelsLoading = false;
+            TunnelsAsked = true;
+        }
+    }
+
     [ObservableProperty]
     private bool _updateAvailable;
 
@@ -90,6 +324,9 @@ public partial class MainViewModel : ObservableObject
         NotificationPreferences.Global = _appSettings.Notifications;
         ApplyConsoleColours();
         ApplyWindowBehavior();
+        // En caliente y sin reiniciar: quitar la capa de estilos apaga las animaciones de todo lo
+        // que ya esta en pantalla, porque no habia ningun "if" repartido que actualizar.
+        if (Application.Current is { } app) MotionSwitch.Apply(app.Styles, _appSettings.Animations);
 
         var saved = _appSettings.Language;
         var code = !string.IsNullOrWhiteSpace(saved) ? saved : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
@@ -147,6 +384,14 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>Opens the app settings (language, notifications, …).</summary>
+    /// <summary>Version, repositorio, reportar un fallo y los avisos legales.</summary>
+    [RelayCommand]
+    private async Task OpenAbout()
+    {
+        if (Owner is null) return;
+        await new AboutDialog(UpdateAvailable).ShowDialog(Owner);
+    }
+
     [RelayCommand]
     private async Task OpenSettings()
     {
@@ -159,6 +404,7 @@ public partial class MainViewModel : ObservableObject
         NotificationPreferences.Global = _appSettings.Notifications;
         _appSettings.MinimizeToTray = dialog.MinimizeToTray;
         _appSettings.CloseToTray = dialog.CloseToTray;
+        _appSettings.Animations = dialog.Animations;
         _appSettings.ConsoleChatColor = dialog.ConsoleChatColor;
         _appSettings.ConsolePlayersColor = dialog.ConsolePlayersColor;
         ApplyConsoleColours();
@@ -605,39 +851,15 @@ public partial class MainViewModel : ObservableObject
         SelectedServer = vm;
     }
 
+    /// <summary>Opens the selected server's folder in the system file manager.</summary>
+    /// <remarks>
+    /// Un boton y no una pestaña de archivos: lo que se pide al querer "los archivos" del servidor es
+    /// llegar a la carpeta, y para eso ya existe el explorador del sistema. Un navegador de ficheros
+    /// dentro de la app seria una funcion entera que mantener para hacer peor lo que el sistema ya
+    /// hace bien.
+    /// </remarks>
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task ChangeIconForSelected()
-    {
-        if (SelectedServer is null || Owner is null) return;
-
-        var files = await Owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = Localizer.Get("Title_SelectImage"),
-            AllowMultiple = false,
-            FileTypeFilter = new[]
-            {
-                new FilePickerFileType(Localizer.Get("Title_SelectImage"))
-                {
-                    Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif" }
-                }
-            }
-        });
-
-        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
-        if (string.IsNullOrEmpty(path)) return;
-
-        try
-        {
-            new ServerIconService().SetIconFromImage(SelectedServer.Config.FolderPath, path);
-            SelectedServer.RefreshFromDisk();
-        }
-        catch (Exception ex)
-        {
-            await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_IconCreateError"), ex.Message),
-                Localizer.Get("Title_ChangeIcon"));
-        }
-    }
+    private void OpenServerFolder() => FolderLauncher.Open(SelectedServer?.Config.FolderPath);
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private async Task ConfigureServer()
@@ -646,6 +868,49 @@ public partial class MainViewModel : ObservableObject
         var dialog = new ServerConfigDialog(SelectedServer.Config);
         if (await dialog.ShowDialog<bool>(Owner))
             SelectedServer.RefreshFromDisk();
+    }
+
+    /// <summary>
+    /// Opens the sign editor over the selected server: name, icon and MOTD — the three things the
+    /// preview card shows.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// It lives here and not in "Editar" because the way in is now the pencil on the card itself.
+    /// Editing what the card shows by opening a different dialog and looking for a button in it was
+    /// asking people to know where things are kept rather than pointing at the thing they want.
+    /// </para>
+    /// <para>
+    /// <see cref="ServerViewModel.RefreshFromDisk"/> at the end is not tidying up: without it the
+    /// card kept showing the old sign and the old icon until the app was restarted, because nothing
+    /// re-reads <c>server.properties</c> or <c>server-icon.png</c> on its own. It was the same gap
+    /// the configure dialog had already closed for itself, on a path that never got it.
+    /// </para>
+    /// </remarks>
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private async Task EditSign()
+    {
+        if (SelectedServer is null || Owner is null) return;
+
+        var properties = new ServerPropertiesService();
+        var path = SelectedServer.Config.PropertiesPath;
+        var current = properties.Read(path).TryGetValue("motd", out var m) ? m : string.Empty;
+
+        var dialog = new MotdEditorDialog(current, SelectedServer.Name, SelectedServer.PlayerCountText,
+            SelectedServer.ServerIcon, SelectedServer.Config.FolderPath,
+            SelectedServer.Config.WakeOnDemand);
+
+        if (!await dialog.ShowDialog<bool>(Owner)) return;
+
+        properties.Update(path, new Dictionary<string, string> { ["motd"] = dialog.Result });
+
+        if (!string.Equals(dialog.ResultName, SelectedServer.Name, StringComparison.Ordinal))
+        {
+            SelectedServer.Name = dialog.ResultName;   // escribe en Config.Name
+            Save();
+        }
+
+        SelectedServer.RefreshFromDisk();
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
@@ -752,6 +1017,6 @@ public partial class MainViewModel : ObservableObject
         RemoveServerCommand.NotifyCanExecuteChanged();
         CreateTunnelForSelectedCommand.NotifyCanExecuteChanged();
         ConfigureServerCommand.NotifyCanExecuteChanged();
-        ChangeIconForSelectedCommand.NotifyCanExecuteChanged();
+        OpenServerFolderCommand.NotifyCanExecuteChanged();
     }
 }

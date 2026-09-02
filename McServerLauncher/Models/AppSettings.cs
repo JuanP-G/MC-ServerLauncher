@@ -23,6 +23,17 @@ public class AppSettings
     /// <summary>UI language (es, en, pt, fr, de). Empty = system language.</summary>
     public string? Language { get; set; }
 
+    /// <summary>
+    /// Whether the app animates. On by default; off removes the whole motion layer.
+    /// </summary>
+    /// <remarks>
+    /// A setting and not a guess: nothing here can tell whether the person at the keyboard finds
+    /// motion helpful or nauseating, and a slow machine is a reason of its own. See
+    /// <see cref="Services.MotionSwitch"/> — it is one line because every animation lives in a
+    /// single style dictionary.
+    /// </remarks>
+    public bool Animations { get; set; } = true;
+
     /// <summary>Last app version the user has already seen (to show the what's-new screen after updating).</summary>
     public string? LastVersionSeen { get; set; }
 
