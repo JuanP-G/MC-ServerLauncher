@@ -1,11 +1,24 @@
 <!--
-Gracias por contribuir / Thanks for contributing.
-Full guide: docs/articles/contributing.md — Guía completa: docs/articles/contributing.es.md
+TÍTULO: la misma forma que un commit — tipo(ámbito): qué cambia, en español y en minúscula.
+  feat(consola): colores por categoría, filtros con contador y resaltado
+  fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban
+Tipos: feat · fix · seg · perf · refactor · docs · test · ci · chore · release
+Guía completa: docs/articles/contributing.md — Full guide: same file, in English below it.
 -->
 
-## What this changes / Qué cambia
+## Qué cambia · What this changes
 
-<!-- One paragraph: what it does and, above all, why. If it fixes an issue, "Closes #123". -->
+<!--
+Tres párrafos como mucho, en el mismo orden que el cuerpo de un commit:
+  1. Qué pasaba antes y por qué era un problema de verdad.
+  2. Qué hace ahora.
+  3. Por qué así — y qué se descartó.
+Si arregla un issue: "Closes #123".
+-->
+
+## Cómo lo has probado · How you tested it
+
+<!-- Qué ejecutaste y en qué plataforma. Si no se puede probar automáticamente, dilo. -->
 
 ## Checklist
 
@@ -16,6 +29,7 @@ Full guide: docs/articles/contributing.md — Guía completa: docs/articles/cont
 - [ ] MVVM split held: no UI types in `Services/`, no logic in `Views/`
 - [ ] Any new user-facing text is a key in **all five** `.resx` files, never hard-coded
 - [ ] Public types carry an XML `///` summary
+- [ ] Commits follow `tipo(ámbito): asunto`, and each one is one idea
 
 ### Documentation moved with the code, in both languages
 
@@ -28,4 +42,6 @@ Full guide: docs/articles/contributing.md — Guía completa: docs/articles/cont
 <!--
 If you ticked nothing in that last block and the change does alter behaviour, it is not ready:
 a page that is quietly a version behind is worse than no page.
+
+¿Es un problema de seguridad? No lo abras aquí: SECURITY.md explica el canal privado.
 -->

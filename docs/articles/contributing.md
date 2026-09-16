@@ -129,7 +129,99 @@ the name's fault the other half — prefer fixing the name.
   worth a paragraph; "// loop over the mods" is worth deleting.
 - Wrap `///` blocks and prose at about **100 columns**, code at about **110**.
 
-### If a change touches behaviour, it touches the docs
+## Commits, pull requests and issues
+
+Everything written about a change follows one shape, so that `git log` reads as a history of
+decisions rather than a list of edits. It is **Conventional Commits, in Spanish**:
+
+```
+tipo(ámbito): qué cambia, contado como se lo contarías a alguien
+
+Qué pasaba antes, y por qué era un problema de verdad. Qué hace ahora. Por qué
+así y no de la otra forma, con lo que se descartó.
+
+Closes #12
+```
+
+Run this once and git will open that shape for you, with the rules as comments:
+
+```powershell
+git config commit.template .gitmessage
+```
+
+### The subject line
+
+In Spanish, lower case, no full stop, about **70 characters** (90 is the ceiling). It describes the
+**problem or the result, not the mechanism** — the diff already says which lines moved:
+
+| | |
+|---|---|
+| ✅ | `fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban` |
+| ❌ | `fix(bedrock): cambiar PickBedrockPort para usar accountTunnels` |
+
+Two related things join with `, y`. If they will not fit in one sentence, they are two commits.
+
+### Types
+
+| Type | For |
+|---|---|
+| `feat` | A new thing the user can do |
+| `fix` | Behaviour that was wrong |
+| `seg` | Security: verifying, sanitising, bounding, encrypting |
+| `perf` | Faster or cheaper, same behaviour |
+| `refactor` | Same behaviour, better shape |
+| `docs` | Documentation — the `.md` files, the `///` comments, the website |
+| `test` | Tests, and only tests |
+| `ci` | GitHub Actions workflows and packaging |
+| `chore` | Dependencies, tooling, tidying |
+| `release` | Always `release: X.Y.Z`, no scope |
+
+`seg` is deliberately its own type rather than a flavour of `fix`. This app downloads and executes
+code on the user's machine, so "what have we changed about that since the last audit?" is a question
+somebody asks periodically — and it has to be answerable from `git log --grep '^seg'` rather than by
+reading four hundred commits.
+
+### Scopes
+
+The feature area, in Spanish, optional. Use one that already exists before inventing one, and use
+**one spelling per concept** — the history has both `notif` and `notificaciones`, which is exactly
+what this list is for:
+
+`consola` · `mods` · `tienda` · `jugadores` · `servidor` · `tipos` · `crossplay` · `bedrock` ·
+`playit` · `java` · `paper` · `forge` · `fabric` · `puertos` · `backups` · `avisos` · `colores` ·
+`actualizaciones` · `ajustes` · `nombres` · `seguridad` · `datos` · `ui` · `web` · `tests` · `ci` ·
+`release`
+
+Adding one that will recur? Add it to this list in the same commit.
+
+### The body
+
+In Spanish, wrapped at **80 columns**, and expected on anything that is not trivial. Write what a
+`git blame` two years from now needs and cannot get from the diff: what the old behaviour was, why
+it was a real problem, and what you rejected on the way. The existing history is the reference —
+`git show bf6453a` is a good one to read before writing your first.
+
+Footers are `Closes #12`, `Refs #12`, or `BREAKING CHANGE:` with what breaks and what to do about it.
+
+### Pull requests
+
+- **The title is a commit subject** — same types, same scopes, same Spanish. `.github/pull_request_template.md`
+  fills in the rest, including the checklist.
+- The description is the body of the commit you would have written for the whole branch.
+- One idea per pull request. The merge commit is
+  `Merge pull request #N: <título corto> (versión si aplica)`.
+
+### Issues
+
+Opening one goes through a form (`.github/ISSUE_TEMPLATE/`), which pre-fills the title in the same
+shape: a bug starts as `fix(ámbito): `, a proposal as `feat(ámbito): `. **Write in English or
+Spanish, whichever you prefer** — both get read.
+
+A **security problem is never a public issue.** [`SECURITY.md`](https://github.com/JuanP-G/MC-ServerLauncher/blob/main/SECURITY.md)
+explains the private channel and lists the trade-offs that are already known, so you can tell a
+finding from a documented decision.
+
+## Documentation is part of the change
 
 This repository treats the documentation as part of the change, not as follow-up work:
 

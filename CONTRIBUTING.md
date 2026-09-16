@@ -36,6 +36,23 @@ Five things a reviewer will always check:
 
 Comments and identifiers are in English; only what the user reads is translated.
 
+## Writing it down
+
+Commits are **Conventional Commits in Spanish** — `tipo(ámbito): asunto`, describing the problem
+rather than the mechanism, with a body that says what happened before and why this way. Turn on the
+template once and it will guide you:
+
+```powershell
+git config commit.template .gitmessage
+```
+
+A pull request title is a commit subject; issue titles come pre-filled in the same shape. Full rules,
+the list of types and the canonical scopes:
+**[Commits, pull requests and issues](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.html#commits-pull-requests-and-issues)**.
+
+🔒 **Found a security problem? Don't open an issue** — [`SECURITY.md`](SECURITY.md) has the private
+channel, and lists the trade-offs that are already known and documented.
+
 ---
 
 # Contribuir a MC Server Launcher
@@ -74,3 +91,20 @@ Cinco cosas que se miran siempre en una revisión:
    función, `architecture.md` para un servicio o un flujo, `contributing.md` para una convención.
 
 Los comentarios y los nombres del código van en inglés; solo se traduce lo que lee el usuario.
+
+## Cómo se escribe
+
+Los commits son **Conventional Commits en español** — `tipo(ámbito): asunto`, describiendo el
+problema y no el mecanismo, con un cuerpo que cuenta qué pasaba antes y por qué se ha hecho así.
+Activa la plantilla una vez y te va guiando:
+
+```powershell
+git config commit.template .gitmessage
+```
+
+El título de un pull request es el asunto de un commit; los títulos de los issues vienen ya con esa
+forma. Las reglas completas, la lista de tipos y los ámbitos canónicos:
+**[Commits, pull requests e issues](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.es.html#commits-pull-requests-e-issues)**.
+
+🔒 **¿Has encontrado un problema de seguridad? No abras un issue** — en [`SECURITY.md`](SECURITY.md)
+está el canal privado, y la lista de compromisos que ya están asumidos y documentados.

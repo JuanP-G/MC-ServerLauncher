@@ -135,7 +135,99 @@ de las veces y del nombre la otra mitad — casi siempre sale mejor arreglar el 
   baste" vale un párrafo; "// recorrer los mods" vale un borrado.
 - Ajusta los bloques `///` y la prosa a unas **100 columnas**, y el código a unas **110**.
 
-### Si un cambio toca el comportamiento, toca la documentación
+## Commits, pull requests e issues
+
+Todo lo que se escribe sobre un cambio sigue una misma forma, para que `git log` se lea como un
+historial de decisiones y no como una lista de ediciones. Es **Conventional Commits, en español**:
+
+```
+tipo(ámbito): qué cambia, contado como se lo contarías a alguien
+
+Qué pasaba antes, y por qué era un problema de verdad. Qué hace ahora. Por qué
+así y no de la otra forma, con lo que se descartó.
+
+Closes #12
+```
+
+Ejecuta esto una vez y git te abrirá esa forma, con las reglas como comentarios:
+
+```powershell
+git config commit.template .gitmessage
+```
+
+### El asunto
+
+En español, en minúscula, sin punto final, unos **70 caracteres** (90 como tope). Describe el
+**problema o el resultado, no el mecanismo** — qué líneas se han movido ya lo dice el diff:
+
+| | |
+|---|---|
+| ✅ | `fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban` |
+| ❌ | `fix(bedrock): cambiar PickBedrockPort para usar accountTunnels` |
+
+Dos cosas relacionadas se unen con `, y`. Si no caben en una frase, son dos commits.
+
+### Tipos
+
+| Tipo | Para |
+|---|---|
+| `feat` | Algo nuevo que puede hacer el usuario |
+| `fix` | Un comportamiento que estaba mal |
+| `seg` | Seguridad: verificar, sanear, acotar, cifrar |
+| `perf` | Más rápido o más barato, sin cambiar lo que hace |
+| `refactor` | Misma conducta, mejor forma |
+| `docs` | Documentación — los `.md`, los comentarios `///`, la web |
+| `test` | Pruebas, y solo pruebas |
+| `ci` | Workflows de GitHub Actions y empaquetado |
+| `chore` | Dependencias, tooling, limpieza |
+| `release` | Siempre `release: X.Y.Z`, sin ámbito |
+
+`seg` es un tipo propio a propósito, y no un sabor de `fix`. Esta app descarga y ejecuta código en la
+máquina del usuario, así que «¿qué hemos cambiado de eso desde la última auditoría?» es una pregunta
+que alguien hace cada cierto tiempo — y tiene que poder responderse con
+`git log --grep '^seg'` en vez de leyendo cuatrocientos commits.
+
+### Ámbitos
+
+El área funcional, en español, opcional. Usa uno que ya exista antes de inventar otro, y usa **una
+sola forma por concepto** — en el historial hay `notif` y `notificaciones`, que es exactamente para
+lo que está esta lista:
+
+`consola` · `mods` · `tienda` · `jugadores` · `servidor` · `tipos` · `crossplay` · `bedrock` ·
+`playit` · `java` · `paper` · `forge` · `fabric` · `puertos` · `backups` · `avisos` · `colores` ·
+`actualizaciones` · `ajustes` · `nombres` · `seguridad` · `datos` · `ui` · `web` · `tests` · `ci` ·
+`release`
+
+¿Añades uno que se va a repetir? Añádelo a esta lista en el mismo commit.
+
+### El cuerpo
+
+En español, a **80 columnas**, y se espera en todo lo que no sea trivial. Escribe lo que un
+`git blame` dentro de dos años necesita y no puede sacar del diff: cuál era el comportamiento
+anterior, por qué era un problema de verdad, y qué descartaste por el camino. El historial que ya
+hay es la referencia — `git show bf6453a` es un buen ejemplo que leer antes de escribir el primero.
+
+Los pies son `Closes #12`, `Refs #12`, o `BREAKING CHANGE:` con qué se rompe y qué hacer al respecto.
+
+### Pull requests
+
+- **El título es el asunto de un commit** — mismos tipos, mismos ámbitos, mismo español.
+  `.github/pull_request_template.md` rellena el resto, la lista de comprobación incluida.
+- La descripción es el cuerpo del commit que habrías escrito para toda la rama.
+- Una idea por pull request. El commit de mezcla es
+  `Merge pull request #N: <título corto> (versión si aplica)`.
+
+### Issues
+
+Abrir uno pasa por un formulario (`.github/ISSUE_TEMPLATE/`), que deja el título con la misma forma:
+un fallo empieza por `fix(ámbito): ` y una propuesta por `feat(ámbito): `. **Escribe en inglés o en
+español, el que prefieras** — los dos se leen.
+
+Un **problema de seguridad nunca es un issue público.** [`SECURITY.md`](https://github.com/JuanP-G/MC-ServerLauncher/blob/main/SECURITY.md)
+explica el canal privado y enumera los compromisos que ya están asumidos, para que puedas distinguir
+un hallazgo de una decisión documentada.
+
+## La documentación es parte del cambio
 
 En este repositorio la documentación es parte del cambio, no trabajo para después:
 

@@ -59,6 +59,29 @@ repeating, plus the ones a tool can't check:
   name (it powers the DocFX API reference).
 - `.gitattributes` settles line endings; never hand-convert a file's line endings in a change.
 
+## Commits, PRs and issues
+**Conventional Commits, written in Spanish.** `tipo(ámbito): asunto` — lower case, no full stop,
+~70 chars. The subject describes the **problem or the result, not the mechanism**: the diff already
+says which lines moved.
+
+- `fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban` ✅
+- `fix(bedrock): cambiar PickBedrockPort para usar accountTunnels` ❌
+
+Types: `feat` · `fix` · `seg` (security — its own type, because "what changed about that since the
+last audit?" has to be answerable from `git log --grep '^seg'`) · `perf` · `refactor` · `docs` ·
+`test` · `ci` · `chore` · `release` (always `release: X.Y.Z`, no scope).
+
+Scopes are the Spanish feature area, one spelling per concept; the canonical list is in
+`docs/articles/contributing.md`. **Reuse one before inventing one.**
+
+Body: Spanish, 80 columns, on anything non-trivial — what happened before and why it was a real
+problem, what it does now, why this way and what was rejected. `.gitmessage` is the template
+(`git config commit.template .gitmessage`).
+
+A **PR title is a commit subject**, and its description is that commit's body. Issue titles come
+pre-filled in the same shape by the forms in `.github/ISSUE_TEMPLATE/`. Security never goes in a
+public issue — see `SECURITY.md`.
+
 ## Documentation is part of the change
 Anything that alters behaviour alters the docs in the same commit, and **both languages every time**:
 - feature → `README.md` + `README.es.md`
