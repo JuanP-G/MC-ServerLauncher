@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -128,19 +129,27 @@ public partial class ServerModsViewModel : ObservableObject
     /// kind of server. Tags that map to a Modrinth facet filter exactly; the rest fall back to a
     /// search term.
     /// </summary>
-    public IReadOnlyList<StoreTagViewModel> BrowseTags { get; }
+    /// <remarks>
+    /// Rebuilt, not fixed at construction: converting a server between the two families changes
+    /// which catalogue it browses, and a Paper server offering "Adventure &amp; RPG" because it used
+    /// to be Fabric would search for something Modrinth has no plugins under.
+    /// </remarks>
+    public IReadOnlyList<StoreTagViewModel> BrowseTags { get; private set; }
 
     /// <summary>
     /// Categories Modrinth can filter on exactly. These stack: each adds its own facet group, and
     /// Modrinth ANDs the groups.
     /// </summary>
-    public IReadOnlyList<StoreTagViewModel> FacetTags { get; }
+    public IReadOnlyList<StoreTagViewModel> FacetTags { get; private set; }
 
     /// <summary>
     /// Categories Modrinth has no facet for, which can only contribute words to the query. Picking
     /// a second one would blur the search instead of narrowing it, so they behave as a radio group.
     /// </summary>
-    public IReadOnlyList<StoreTagViewModel> QueryTags { get; }
+    public IReadOnlyList<StoreTagViewModel> QueryTags { get; private set; }
+
+    /// <summary>The family the chips above were built for, so a conversion knows to rebuild them.</summary>
+    private bool _tagsAreForPlugins;
 
     /// <summary>
     /// The categories currently filtering the browse, in the order the user picked them. Shown as
@@ -281,10 +290,7 @@ public partial class ServerModsViewModel : ObservableObject
     /// </summary>
     public void Shutdown()
     {
-        var open = Details;
-        Details = null;
-        open?.Dispose();
-        _history.Clear();
+        CloseDetails();
 
         try { _reload?.Cancel(); } catch { /* already disposed */ }
         _reload?.Dispose();
@@ -292,6 +298,15 @@ public partial class ServerModsViewModel : ObservableObject
 
         _noticeTimer?.Stop();
         _noticeTimer = null;
+    }
+
+    /// <summary>Closes the details page and forgets the trail back, dropping what it was fetching.</summary>
+    private void CloseDetails()
+    {
+        var open = Details;
+        Details = null;
+        open?.Dispose();
+        _history.Clear();
     }
 
     private void OpenDetails(StoreItem item)
@@ -320,7 +335,7 @@ public partial class ServerModsViewModel : ObservableObject
     private string ProjectTypeName => IsPluginBased ? "plugin" : "mod";
 
     /// <summary>Folder where content is installed: "plugins" for Paper, "mods" otherwise.</summary>
-    private string ContentFolder => IsPluginBased ? "plugins" : "mods";
+    private string ContentFolder => ServerTypeCatalog.ContentFolder(_config.Type);
 
     // Labels shown in the view, adapted to mods vs plugins.
     public string ContentTabTitle => Localizer.Get(IsPluginBased ? "Plugins" : "Mods");
@@ -355,14 +370,80 @@ public partial class ServerModsViewModel : ObservableObject
         _config = config;
         // Shares the HTTP client and the store cache with everything else the panel asks for.
         _dependencies = new ModDependencyService(_modrinthService);
+        BuildTags();
+        RebuildActiveFilters();
+        RefreshInstalledMods();
+    }
+
+    /// <summary>Builds the category chips for the family this server currently belongs to.</summary>
+    [MemberNotNull(nameof(BrowseTags), nameof(FacetTags), nameof(QueryTags))]
+    private void BuildTags()
+    {
+        _tagsAreForPlugins = IsPluginBased;
         BrowseTags = StoreTagService.Shared.BrowseTags(ProjectTypeName)
             .Select(t => new StoreTagViewModel(t))
             .ToList();
         // The two halves behave differently when several are picked, so the panel shows them apart.
         FacetTags = BrowseTags.Where(t => t.Definition.Facets.Count > 0).ToList();
         QueryTags = BrowseTags.Where(t => t.Definition.Facets.Count == 0).ToList();
+    }
+
+    /// <summary>
+    /// Re-reads everything in this panel that comes from the server's type and Minecraft version.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The panel reads both straight off the <see cref="ServerConfig"/> it was handed, and that
+    /// object is mutated in place when a server is converted or moved to another version. None of
+    /// the properties derived from it announce anything on their own, so without this call the tab
+    /// kept the old family's name, the old version's filter chip and the old folder's jars until
+    /// the app was restarted — while every search it ran used the new values. The two disagreeing
+    /// is what made an install fail later: the results on screen had been chosen for a version the
+    /// server no longer runs.
+    /// </para>
+    /// <para>
+    /// Everything here is idempotent, so callers that are not sure whether anything moved can just
+    /// call it.
+    /// </para>
+    /// </remarks>
+    public void RefreshFromConfig()
+    {
+        // The details page resolved its versions against the old type and version, and its install
+        // button would hand the server a file picked for something it no longer is.
+        CloseDetails();
+
+        // Only when the family changed: rebuilding otherwise would drop the user's picked
+        // categories for a conversion that does not affect them (Paper to Purpur, a new version).
+        if (_tagsAreForPlugins != IsPluginBased)
+        {
+            SelectedTags.Clear();
+            BuildTags();
+            OnPropertyChanged(nameof(BrowseTags));
+            OnPropertyChanged(nameof(FacetTags));
+            OnPropertyChanged(nameof(QueryTags));
+            OnPropertyChanged(nameof(HasSelectedTags));
+            ClearFiltersCommand.NotifyCanExecuteChanged();
+        }
+
+        OnPropertyChanged(nameof(IsPluginBased));
+        OnPropertyChanged(nameof(ContentTabTitle));
+        OnPropertyChanged(nameof(BrowseTitle));
+        OnPropertyChanged(nameof(InstalledTitle));
+        OnPropertyChanged(nameof(SearchPlaceholder));
+        OnPropertyChanged(nameof(NoInstalledText));
+        OnPropertyChanged(nameof(FilterTypeText));
+        OnPropertyChanged(nameof(FilterVersionText));
+        OnPropertyChanged(nameof(FilterTypeBrush));
+        OnPropertyChanged(nameof(HowToPlaySteps));
+
         RebuildActiveFilters();
+        // The content folder may have been renamed under us — converting between families archives
+        // the old one — so the installed list is about a directory that is no longer there.
         RefreshInstalledMods();
+
+        // Results already on screen were filtered by the old type and version. Leaving them would
+        // offer mods that do not fit under chips that now say something else.
+        if (_hasLoadedOnce) _ = LoadPageAsync(append: false, CancellationToken.None);
     }
 
     /// <summary>
@@ -383,6 +464,9 @@ public partial class ServerModsViewModel : ObservableObject
         InstalledMods.Clear();
         // The rebuilt items carry no update flag, so drop any stale "N updates available" text.
         UpdateStatus = string.Empty;
+        // Same scan, same staleness: the missing-library offer names jars found last time round,
+        // and after a refresh those may be installed, deleted, or for the family this no longer is.
+        ClearMissingDependencies();
         var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
         if (Directory.Exists(modsFolder))
         {

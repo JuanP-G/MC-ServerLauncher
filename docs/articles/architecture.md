@@ -34,6 +34,16 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > `ServerTypeBrushes` are three instances of the same split — hex strings in `Services/`, brushes in
 > `ViewModels/`.
 
+> **`ServerConfig` is a plain object, and the view models share the instance.** It raises no change
+> notification: it is what gets serialized to `servers.json`, and putting `[ObservableProperty]` on
+> a persisted model would drag an MVVM dependency into `Models/` for the sake of a file format. The
+> dialogs edit the very instance the cards are showing, so everything computed from it — the type
+> badge, the version, whether there is a Mods tab at all — is a plain getter that recomputes only
+> when something asks. Whoever closes the dialog is what asks:
+> `ServerViewModel.RefreshFromConfig()` announces the lot and passes the question down to each
+> panel. **A new property derived from the config belongs in that method**, or it will be correct
+> until the first time somebody edits the server and then wrong until the app is restarted.
+
 Data lives **per user** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux
 and macOS):
 
@@ -143,7 +153,9 @@ are no hard-coded machine paths.
   from `ServerProcessManager`, which used to merge it with standard output in one handler. Only `stdout` is
   read: vanilla's bracket (level in the **second** one, not the first) and Paper's.
 - **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version
-  when the user adds one that already exists.
+  when the user adds one that already exists. It runs twice: on the way in from *Add server*, and
+  again at startup for servers saved before those fields existed. It fills nothing in a config that
+  already names its version, so the second pass is free and neither can overrule the user.
 - **`ServerIconService`** — generates a server's `server-icon.png`: takes any user image, crops it to
   a centered square and scales it to 64×64 with SkiaSharp. (`ServerViewModel.LoadIcon` is what reads
   it back for the Minecraft-style view.)
@@ -371,6 +383,16 @@ missing from the other silently produced a Vanilla server. The warning above the
 the *direction* of the change, because the directions are not equally safe: gaining a loader is
 additive, while dropping to Vanilla or crossing between families is not. Content that the new family
 cannot read is moved aside by `ContentMigrationService` rather than left to fail at load.
+
+The conversion writes into the `ServerConfig` the app is already showing, so closing the dialog ends
+in `ServerViewModel.RefreshFromConfig()`: the badge, the version, the Mods tab and its filter chips
+are re-read, the installed list is scanned again — the old family's folder has just been moved
+aside — the store's category chips are rebuilt when the family changed, and results already on
+screen are searched again for the new type and version. This used to rebuild the whole view model
+instead, and only when the *type* had changed and the server was stopped. Converting Fabric 1.21.1
+to Fabric 1.21.4 therefore changed nothing on screen, and the browser went on offering mods picked
+for a version the server no longer ran — which is what made an install fail minutes later, far from
+the conversion that caused it.
 
 ### Handing the mod list to your players
 `ServerModsViewModel.ExportModpack` zips the server's `mods/` (or `plugins/`) folder together with a

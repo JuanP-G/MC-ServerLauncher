@@ -66,6 +66,17 @@ public partial class ServerBackupsViewModel : ObservableObject
         Refresh();
     }
 
+    /// <summary>Re-reads the list, but only when there is one on screen to be wrong.</summary>
+    /// <remarks>
+    /// The server's folder can be changed from the edit dialog, which leaves this tab listing the
+    /// snapshots of a different server. Loading it here instead would defeat <see cref="EnsureLoaded"/>:
+    /// the list is deliberately not read until somebody opens the tab.
+    /// </remarks>
+    public void RefreshIfLoaded()
+    {
+        if (_hasLoadedOnce) Refresh();
+    }
+
     [RelayCommand]
     private void Refresh()
     {

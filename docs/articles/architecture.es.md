@@ -34,6 +34,16 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > `ServerTypeCatalog` / `ServerTypeBrushes` son tres casos del mismo reparto — los hex en
 > `Services/`, los brushes en `ViewModels/`.
 
+> **`ServerConfig` es un objeto plano, y los view models comparten la instancia.** No avisa de sus
+> cambios: es lo que se serializa a `servers.json`, y poner `[ObservableProperty]` en un modelo que
+> se guarda metería una dependencia de MVVM en `Models/` por culpa de un formato de fichero. Los
+> diálogos editan la misma instancia que están mostrando las tarjetas, así que todo lo que se
+> calcula a partir de ella — la insignia del tipo, la versión, si hay pestaña de Mods siquiera — es
+> un getter normal que solo se recalcula cuando alguien pregunta. Quien cierra el diálogo es quien
+> pregunta: `ServerViewModel.RefreshFromConfig()` anuncia el conjunto y pasa la pregunta hacia abajo
+> a cada panel. **Una propiedad nueva derivada de la config va en ese método**, o será correcta
+> hasta la primera vez que alguien edite el servidor y estará mal hasta que se reinicie la app.
+
 Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`
 (`~/.config/McServerLauncher/` en Linux y macOS):
 
@@ -144,7 +154,10 @@ mundo. No hay rutas fijas del equipo en el código.
   desde `ServerProcessManager`, que antes lo mezclaba con la salida normal en el mismo manejador. Solo `stdout`
   se lee: el corchete de vanilla (nivel en el **segundo**, no en el primero) y el de Paper.
 - **`ServerDetectionService`** — inspecciona una carpeta para averiguar el tipo/versión de un servidor
-  existente cuando el usuario añade uno que ya está.
+  existente cuando el usuario añade uno que ya está. Corre dos veces: al entrar desde *Añadir
+  servidor*, y otra vez al arrancar para los servidores guardados antes de que esos campos
+  existieran. No rellena nada en una config que ya dice su versión, así que la segunda pasada sale
+  gratis y ninguna de las dos puede llevarle la contraria al usuario.
 - **`ServerIconService`** — genera el `server-icon.png` de un servidor: toma cualquier imagen del
   usuario, la recorta al cuadrado centrado y la escala a 64×64 con SkiaSharp. (Quien lo lee de vuelta
   para la vista estilo Minecraft es `ServerViewModel.LoadIcon`.)
@@ -389,6 +402,16 @@ La advertencia sobre el botón depende de la *dirección* del cambio, porque las
 igual de seguras: ganar un cargador es aditivo, y bajar a Vanilla o cruzar de familia no lo es. El
 contenido que la familia nueva no sabe leer lo aparta `ContentMigrationService` en vez de dejar que
 falle al cargar.
+
+La conversión escribe en el `ServerConfig` que la app ya está mostrando, así que cerrar el diálogo
+termina en `ServerViewModel.RefreshFromConfig()`: se releen la insignia, la versión, la pestaña de
+Mods y sus fichas de filtro, se vuelve a escanear la lista de instalados — la carpeta de la familia
+vieja acaba de apartarse —, se reconstruyen las categorías de la tienda si cambió la familia, y los
+resultados que ya estaban en pantalla se vuelven a buscar para el tipo y la versión nuevos. Antes
+esto reconstruía el view model entero, y solo cuando había cambiado el *tipo* y el servidor estaba
+parado. Convertir Fabric 1.21.1 a Fabric 1.21.4 no cambiaba entonces nada en pantalla, y el
+navegador seguía ofreciendo mods elegidos para una versión que el servidor ya no ejecutaba — que es
+lo que hacía fallar una instalación minutos después, lejos de la conversión que lo causó.
 
 ### Darle la lista de mods a tus jugadores
 `ServerModsViewModel.ExportModpack` comprime la carpeta `mods/` (o `plugins/`) del servidor junto con

@@ -101,6 +101,11 @@ de las veces y del nombre la otra mitad — casi siempre sale mejor arreglar el 
   más. Nunca un `OnPropertyChanged` escrito a mano.
 - Lo derivado es una propiedad con cuerpo de expresión:
   `public bool UpdateAvailable => Update is not null;`
+- Si de lo que deriva **no** es observable — `ServerConfig`, que los diálogos editan en el sitio —,
+  la propiedad no avisa de nada por su cuenta, así que tiene que estar nombrada en el
+  `RefreshFromConfig()` de su view model. Dejarse una fuera no es un descuido de estilo: enseña la
+  respuesta correcta hasta que alguien edita ese servidor, y la equivocada desde entonces hasta que
+  se reinicia la app.
 - `var` cuando el tipo ya está en la línea (`var dialog = new SettingsDialog(…)`), y el tipo escrito
   cuando no lo está.
 

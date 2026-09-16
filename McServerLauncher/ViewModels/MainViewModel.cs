@@ -397,7 +397,8 @@ public partial class MainViewModel : ObservableObject
     {
         // The app starts with no servers; the user creates a new one or adds an existing folder.
         // For servers saved before Type/GameVersion existed, detect them from the folder so the
-        // mods browser works (older Fabric/Forge servers).
+        // mods browser works (older Fabric/Forge servers). AddServer does the same on the way in,
+        // so a folder registered today does not have to wait for the next start to be recognised.
         var detector = new ServerDetectionService();
         var changed = false;
         foreach (var cfg in _storage.Load())
@@ -484,6 +485,12 @@ public partial class MainViewModel : ObservableObject
         var dialog = new AddEditServerDialog(config);
         if (await dialog.ShowDialog<bool>(Owner))
         {
+            // The same look at the folder that Load does, and for the same reason: a folder being
+            // registered is almost always one that already holds a server. Without it the card said
+            // Vanilla with no version — so no Mods tab, and no version to resolve a mod against —
+            // until the app was restarted and Load detected it. It fills nothing in a folder whose
+            // type is already known, so it is safe on a config the user filled in by hand.
+            new ServerDetectionService().DetectAndFill(config);
             SelectedServer = Register(config);
             Save();
         }
@@ -546,7 +553,6 @@ public partial class MainViewModel : ObservableObject
     {
         if (SelectedServer is null || Owner is null) return;
         var server = SelectedServer;
-        var oldType = server.Config.Type;
 
         // Read before the dialog: these two checkboxes are requests to install something, not
         // settings that take effect by being remembered. Turning one on and having nothing happen
@@ -565,7 +571,11 @@ public partial class MainViewModel : ObservableObject
         // already Fabric/Forge/Paper. Cancel still reverts the ordinary editable fields.
         if (accepted || dialog.LoaderInstalled)
         {
-            server.Name = server.Config.Name;
+            // The dialog wrote straight into the config this view model is showing, and nothing
+            // derived from it recomputes on its own. Asked for unconditionally rather than after
+            // working out which fields moved: one visit can change the name, the folder, the type
+            // and the version, and a refresh that covered only some of them was the bug.
+            server.RefreshFromConfig();
             Save();
 
             if (!hadCrossplay && server.Config.CrossplayEnabled)
@@ -586,26 +596,7 @@ public partial class MainViewModel : ObservableObject
                 await server.SetUpBedrockModContentAsync();
                 Save();
             }
-
-            // If the loader type changed (e.g. a vanilla server was converted to Fabric), rebuild the
-            // view model so computed state (IsModded, the Mods tab/browser) refreshes.
-            if (server.Config.Type != oldType && !server.IsRunning)
-                ReplaceServer(server);
         }
-    }
-
-    /// <summary>Replaces a server's view model in place (keeping its position) and reselects it.</summary>
-    private void ReplaceServer(ServerViewModel old)
-    {
-        var index = Servers.IndexOf(old);
-        if (index < 0) return;
-
-        _ = old.ShutdownAsync(); // stop its timers (it isn't running)
-        var vm = new ServerViewModel(old.Config);
-        vm.ConfigChanged += Save;
-        vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
-        Servers[index] = vm;
-        SelectedServer = vm;
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
