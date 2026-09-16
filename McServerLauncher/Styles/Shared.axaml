@@ -1,22 +1,22 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Los estilos que más de una vista necesita, en un sitio.
+    <!-- The styles more than one view needs, in one place.
 
-         Antes vivían dentro del <Window.Styles> de cada vista, y eso escondía dos cosas.
+         They used to live inside each view's own <Window.Styles>, and that hid two things.
 
-         La primera: `Border.stat` de MainWindow y `Border.card` de ServerConfigDialog eran el mismo
-         estilo, valor por valor, con dos nombres.
+         The first: MainWindow's `Border.stat` and ServerConfigDialog's `Border.card` were the same
+         style, value for value, under two names.
 
-         La segunda es la que importa, porque es una trampa. `Border.card` significaba DOS cosas
-         distintas: en ServerConfigDialog era esta tarjeta translúcida, y en ServerModsView era un
-         azulejo sólido y oscuro (#1A1A1A, radio 6) de una lista. Mientras cada estilo vivía dentro
-         de su vista, Avalonia los mantenía separados y nadie se enteraba. Al subirlos aquí habrían
-         chocado en silencio y una de las dos vistas habría cambiado de aspecto sin que nada fallara
-         ni avisara. Por eso el azulejo se llama ahora `Border.tile`: es otra cosa, y ya tiene otro
-         nombre. -->
+         The second is the one that matters, because it is a trap. `Border.card` meant TWO different
+         things: in ServerConfigDialog it was this translucent card, and in ServerModsView it was a
+         solid dark tile (#1A1A1A, radius 6) in a list. While each style lived inside its own view
+         Avalonia kept them apart and nobody noticed. Lifted up here they would have collided in
+         silence, and one of the two views would have changed how it looks with nothing failing and
+         nothing warning. That is why the tile is now called `Border.tile`: it is a different thing,
+         and it finally has a different name. -->
 
-    <!-- La tarjeta: el contenedor estándar de la app. -->
+    <!-- The card: the app's standard container. -->
     <Style Selector="Border.card">
         <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
         <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
@@ -26,14 +26,14 @@
         <Setter Property="Margin" Value="0,0,0,8" />
     </Style>
 
-    <!-- Misma tarjeta, con el margen y el relleno que usan las de estadísticas de la ventana
-         principal. Solo cambia el espaciado: el aspecto es el de arriba, no una copia de él. -->
+    <!-- The same card, with the margin and padding the main window's stat cards use. Only the
+         spacing differs: the look is the one above, not a copy of it. -->
     <Style Selector="Border.card.stat">
         <Setter Property="Padding" Value="14,10" />
         <Setter Property="Margin" Value="4" />
     </Style>
 
-    <!-- Texto dentro de una tarjeta: la etiqueta pequeña y apagada, y el número grande. -->
+    <!-- Text inside a card: the small dimmed label, and the big number. -->
     <Style Selector="TextBlock.statLabel">
         <Setter Property="Opacity" Value="0.6" />
         <Setter Property="FontSize" Value="12" />
@@ -44,7 +44,7 @@
         <Setter Property="Margin" Value="0,2,0,0" />
     </Style>
 
-    <!-- El título y la descripción de una fila de ajuste. -->
+    <!-- The title and the description of a settings row. -->
     <Style Selector="TextBlock.title">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="14" />

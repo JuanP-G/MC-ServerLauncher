@@ -1,8 +1,8 @@
 name: Tests
 
 on:
-  # Toda rama, no solo main y release/**: una rama de trabajo sin pruebas es justo donde no te
-  # enteras de que algo se rompio hasta que ya lo has fusionado.
+  # Every branch, not just main and release/**: a working branch with no tests run on it is exactly
+  # where you don't find out something broke until after you have merged it.
   push:
   pull_request:
   workflow_dispatch:
@@ -27,11 +27,11 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Restaurar
+      - name: Restore
         run: dotnet restore McServerLauncher.Tests/McServerLauncher.Tests.csproj
 
-      - name: Compilar
+      - name: Build
         run: dotnet build McServerLauncher.Tests/McServerLauncher.Tests.csproj -c Release --no-restore
 
-      - name: Ejecutar las pruebas
+      - name: Run the tests
         run: dotnet test McServerLauncher.Tests/McServerLauncher.Tests.csproj -c Release --no-build --logger "console;verbosity=normal"

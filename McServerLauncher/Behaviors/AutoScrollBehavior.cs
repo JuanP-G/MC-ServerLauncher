@@ -41,18 +41,18 @@ public static class AutoScrollBehavior
         if (@new is not null)
         {
             @new.CollectionChanged += OnCollectionChanged;
-            _listBoxes.AddOrUpdate(@new, listBox);
+            ListBoxes.AddOrUpdate(@new, listBox);
         }
         ScrollToEnd(listBox);
     }
 
     // Maps a watched collection to its ListBox so the static handler can find it.
-    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<INotifyCollectionChanged, ListBox> _listBoxes = new();
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<INotifyCollectionChanged, ListBox> ListBoxes = new();
 
     private static void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (e.Action is not (NotifyCollectionChangedAction.Add or NotifyCollectionChangedAction.Reset)) return;
-        if (sender is INotifyCollectionChanged c && _listBoxes.TryGetValue(c, out var lb))
+        if (sender is INotifyCollectionChanged c && ListBoxes.TryGetValue(c, out var lb))
             Dispatcher.UIThread.Post(() => ScrollToEnd(lb));
     }
 

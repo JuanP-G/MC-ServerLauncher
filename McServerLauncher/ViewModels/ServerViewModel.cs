@@ -596,7 +596,7 @@ public partial class ServerViewModel : ObservableObject
 
         // isAutoRestart: nobody is sitting in front of the app to answer a dialog, which is exactly
         // what that flag already means everywhere else.
-        _ = StartInternal(isAutoRestart: true);
+        _ = StartInternalAsync(isAutoRestart: true);
     });
 
     private async Task StopBecauseIdleAsync()
@@ -967,10 +967,10 @@ public partial class ServerViewModel : ObservableObject
         _moddedKickWarned = false; // and a fresh chance to explain the kick, in case the mods changed
         _pathRejectionWarned = false;
         _startFailureIsFinal = false;
-        await StartInternal(isAutoRestart: false);
+        await StartInternalAsync(isAutoRestart: false);
     }
 
-    private async Task StartInternal(bool isAutoRestart)
+    private async Task StartInternalAsync(bool isAutoRestart)
     {
         // Judged fresh on every attempt: whether THIS run stays up long enough to "forgive" a
         // previous crash streak must not be based on a stale timestamp from an earlier run/session.
@@ -1074,7 +1074,7 @@ public partial class ServerViewModel : ObservableObject
             // Only proceed if nothing else already started it in the meantime (e.g. the user
             // clicked Start manually right after the crash).
             if (CanStart)
-                await StartInternal(isAutoRestart: true);
+                await StartInternalAsync(isAutoRestart: true);
         }
         catch (Exception ex)
         {
@@ -1395,7 +1395,7 @@ public partial class ServerViewModel : ObservableObject
     {
         await _process.StopAsync(TimeSpan.FromSeconds(30));
         _consecutiveCrashes = 0; // a deliberate Restart gives auto-restart a fresh budget too
-        await StartInternal(isAutoRestart: false);
+        await StartInternalAsync(isAutoRestart: false);
     }
 
     private bool CanSend => IsRunning && !string.IsNullOrWhiteSpace(CommandText);

@@ -1,0 +1,221 @@
+; MC Server Launcher — one code style for the whole repository.
+;
+; This file is not a preference list: it is the project's style, applied automatically by Visual
+; Studio, Rider, VS Code and `dotnet format`. It was written from the code that already exists
+; rather than from a template, so following it is the same as matching what is around you.
+;
+; See docs/articles/contributing.md -> "Code style" for the rules a tool cannot express — the ones
+; about naming things well, not about naming them in PascalCase.
+;
+; Line endings are deliberately not set here: .gitattributes normalises them, so a file is LF in
+; the repository and whatever your platform wants in your working copy.
+
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Prose. Two spaces, and never trim trailing whitespace: two spaces at the end of a line is how
+# Markdown writes a line break, and stripping them silently reflows the paragraph.
+[*.{md,markdown}]
+indent_size = 2
+trim_trailing_whitespace = false
+
+[*.{yml,yaml,json,jsonc}]
+indent_size = 2
+
+[*.{axaml,xaml,csproj,props,targets,resx,iss}]
+indent_size = 4
+
+[*.{ps1,psm1,py,js}]
+indent_size = 4
+
+# ----------------------------------------------------------------------------------------------
+# C#
+# ----------------------------------------------------------------------------------------------
+[*.cs]
+max_line_length = 110
+
+# --- File layout ---
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_using_directive_placement = outside_namespace:warning
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# --- Braces and spacing: Allman ---
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_labels = one_less_than_current
+# A guard clause that fits on one line stays on one line; anything multi-line is braced.
+csharp_prefer_braces = when_multiline:suggestion
+csharp_preserve_single_line_statements = true
+csharp_preserve_single_line_blocks = true
+
+# --- `this.` is never used here: the underscore on a field already says it is one ---
+dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_property = false:warning
+dotnet_style_qualification_for_method = false:warning
+dotnet_style_qualification_for_event = false:warning
+
+# --- Language keywords over BCL type names: string, not String ---
+dotnet_style_predefined_type_for_locals_parameters_members = true:warning
+dotnet_style_predefined_type_for_member_access = true:warning
+
+# --- var where the type is already on the line; spelled out where it is not ---
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:silent
+
+# --- Expression bodies for one-liners; a real block for anything with reasoning in it ---
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors = when_on_single_line:suggestion
+csharp_style_expression_bodied_operators = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_indexers = true:suggestion
+csharp_style_expression_bodied_accessors = true:suggestion
+csharp_style_expression_bodied_lambdas = true:suggestion
+csharp_style_expression_bodied_local_functions = when_on_single_line:suggestion
+
+# --- Modern C# the codebase already leans on ---
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_auto_properties = true:suggestion
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_readonly_field = true:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = true:silent
+dotnet_style_prefer_conditional_expression_over_return = true:silent
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_prefer_pattern_matching = true:suggestion
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_prefer_not_pattern = true:suggestion
+csharp_style_inlined_variable_declaration = true:suggestion
+csharp_style_deconstructed_variable_declaration = true:suggestion
+csharp_style_throw_expression = true:suggestion
+csharp_style_conditional_delegate_call = true:suggestion
+csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
+csharp_style_prefer_index_operator = true:suggestion
+csharp_style_prefer_range_operator = true:suggestion
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_prefer_static_local_function = true:suggestion
+# Primary constructors are deliberately off: a `private readonly X _x;` list is where this project
+# says what a class is made of, and a primary constructor hides that behind a parameter that also
+# happens to be a field.
+csharp_style_prefer_primary_constructors = false:silent
+
+# --- Unused code is a bug report, not a style opinion ---
+dotnet_diagnostic.IDE0005.severity = suggestion
+csharp_style_unused_value_assignment_preference = discard_variable:suggestion
+csharp_style_unused_value_expression_statement_preference = discard_variable:silent
+dotnet_code_quality_unused_parameters = non_public:suggestion
+
+# ----------------------------------------------------------------------------------------------
+# Naming — the repository's actual names, turned into rules.
+#
+# The first rule that matches a symbol is the only one applied, so these go from the most specific
+# kind of field to the most general. Moving one up or down changes what the others mean.
+# ----------------------------------------------------------------------------------------------
+
+# -- Symbols --
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.applicable_accessibilities = *
+dotnet_naming_symbols.constants.required_modifiers = const
+
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private, private_protected
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, private_protected
+
+dotnet_naming_symbols.non_private_fields.applicable_kinds = field
+dotnet_naming_symbols.non_private_fields.applicable_accessibilities = public, internal, protected, protected_internal
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+
+dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
+dotnet_naming_symbols.type_parameters.applicable_accessibilities = *
+
+dotnet_naming_symbols.type_like.applicable_kinds = class, struct, enum, delegate
+dotnet_naming_symbols.type_like.applicable_accessibilities = *
+
+dotnet_naming_symbols.members.applicable_kinds = method, property, event, local_function
+dotnet_naming_symbols.members.applicable_accessibilities = *
+
+dotnet_naming_symbols.locals_and_parameters.applicable_kinds = local, parameter
+dotnet_naming_symbols.locals_and_parameters.applicable_accessibilities = *
+
+# -- Styles --
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+dotnet_naming_style.camel_case.capitalization = camel_case
+
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+
+dotnet_naming_style.i_pascal_case.capitalization = pascal_case
+dotnet_naming_style.i_pascal_case.required_prefix = I
+
+dotnet_naming_style.t_pascal_case.capitalization = pascal_case
+dotnet_naming_style.t_pascal_case.required_prefix = T
+
+# -- Rules, most specific first --
+
+# `private const string ApiBaseUrl = "...";` — never SCREAMING_CASE.
+dotnet_naming_rule.constants_are_pascal.symbols = constants
+dotnet_naming_rule.constants_are_pascal.style = pascal_case
+dotnet_naming_rule.constants_are_pascal.severity = warning
+
+# `private static readonly HttpClient Http = new();` — no underscore: it is not per-instance.
+dotnet_naming_rule.private_static_fields_are_pascal.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_are_pascal.style = pascal_case
+dotnet_naming_rule.private_static_fields_are_pascal.severity = warning
+
+# `private readonly ServerConfig _config;` — and every [ObservableProperty] backing field.
+dotnet_naming_rule.private_fields_are_underscore_camel.symbols = private_fields
+dotnet_naming_rule.private_fields_are_underscore_camel.style = underscore_camel_case
+dotnet_naming_rule.private_fields_are_underscore_camel.severity = warning
+
+dotnet_naming_rule.non_private_fields_are_pascal.symbols = non_private_fields
+dotnet_naming_rule.non_private_fields_are_pascal.style = pascal_case
+dotnet_naming_rule.non_private_fields_are_pascal.severity = warning
+
+dotnet_naming_rule.interfaces_start_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_start_with_i.style = i_pascal_case
+dotnet_naming_rule.interfaces_start_with_i.severity = warning
+
+dotnet_naming_rule.type_parameters_start_with_t.symbols = type_parameters
+dotnet_naming_rule.type_parameters_start_with_t.style = t_pascal_case
+dotnet_naming_rule.type_parameters_start_with_t.severity = warning
+
+dotnet_naming_rule.types_are_pascal.symbols = type_like
+dotnet_naming_rule.types_are_pascal.style = pascal_case
+dotnet_naming_rule.types_are_pascal.severity = warning
+
+dotnet_naming_rule.members_are_pascal.symbols = members
+dotnet_naming_rule.members_are_pascal.style = pascal_case
+dotnet_naming_rule.members_are_pascal.severity = warning
+
+dotnet_naming_rule.locals_and_parameters_are_camel.symbols = locals_and_parameters
+dotnet_naming_rule.locals_and_parameters_are_camel.style = camel_case
+dotnet_naming_rule.locals_and_parameters_are_camel.severity = suggestion
+
+# ----------------------------------------------------------------------------------------------
+# Tests — same style. Only the documentation rule is relaxed: a test's name and its [Fact] are
+# already the sentence a summary would repeat.
+# ----------------------------------------------------------------------------------------------
+[McServerLauncher.Tests/**.cs]
+dotnet_diagnostic.CS1591.severity = none
