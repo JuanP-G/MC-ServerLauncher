@@ -9,6 +9,14 @@ using McServerLauncher.Services;
 
 namespace McServerLauncher.Views;
 
+/// <summary>
+/// Creates a server from nothing: type, version, port and RAM in, a running server out.
+/// </summary>
+/// <remarks>
+/// This is the dialog that orchestrates the create path — <see cref="ServerJarInstaller"/> for the
+/// jar, <see cref="JavaService"/> for the runtime, <see cref="PortService"/> for a free port and
+/// <see cref="ServerCreationService"/> for the initial files — rather than owning any of it.
+/// </remarks>
 public partial class CreateServerDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();

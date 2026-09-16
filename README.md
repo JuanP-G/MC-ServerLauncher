@@ -91,6 +91,9 @@ all with buttons.
   (GeyserMC's own) and Fabric API, so the blocks and items the mods add are converted for Bedrock
   clients. Fabric only: Hydraulic stopped publishing NeoForge builds in February 2026. Its authors
   call it very early development, and the app says so before you tick it.
+- **Hand your mod list to your friends** 📦 — one button zips the server's mods (or plugins) together
+  with a short instructions file in your language, naming the server, its type and its Minecraft
+  version, so joining a modded server stops being something you explain over chat.
 - **Play from other Minecraft versions** — one checkbox installs ViaVersion and ViaBackwards, so clients both newer
   and older than the server can join. Plugin servers only.
 - **Change a server's type** — turn an existing server into Paper/Purpur/Fabric/Forge/NeoForge or back to Vanilla, **keeping the
@@ -162,9 +165,17 @@ dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 Developer documentation (architecture, contributing guide and a full **API reference**) is published with
 **DocFX** at **https://juanp-g.github.io/MC-ServerLauncher/docs/**. Per-user data lives under
 `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux and macOS): `servers.json`,
-`settings.json`, the installed `java\`, the persistent console `logs\` (kept 14 days), the `instance.lock`
-that keeps the app to one running copy, and, on Linux/macOS, `.secret.key`. Each server's own folder also
+`settings.json`, the installed `java\`, the persistent console `logs\` (kept 14 days), the store's
+disposable `cache\` (icons and API answers), the `playit-agent\` binary, the `instance.lock` that keeps
+the app to one running copy, and, on Linux/macOS, `.secret.key`. Each server's own folder also
 keeps a `backups\` directory with the automatic world backups.
+
+## 🤝 Contributing
+
+Pull requests are welcome. Start with **[CONTRIBUTING.md](CONTRIBUTING.md)** — it's the short version
+of the [full guide](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.html): how
+to build and test, the code style (held by `.editorconfig` and applied with `dotnet format`), and the
+rule that documentation moves with the code, in both languages.
 
 ## 📄 License
 

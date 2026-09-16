@@ -25,6 +25,28 @@ using McServerLauncher.Views;
 
 namespace McServerLauncher.ViewModels;
 
+/// <summary>
+/// The Mods (or Plugins) tab of one server: what is installed, and the store it is installed from.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Which of the two it is comes from the server's family, not from its type — Paper and Purpur
+/// browse plugins into <c>plugins/</c>, the loaders browse mods into <c>mods/</c> — and the same
+/// answer picks the folder, the search filter and the wording.
+/// </para>
+/// <para>
+/// Three things run off one scan of the installed jars, which is why they share a
+/// <see cref="FileHashCache"/>: which project each file is, which of them have a newer version, and
+/// which library mods are required but absent. Installing anything resolves its required
+/// dependencies in the same click (<see cref="ModDependencyService"/>), because a Fabric server
+/// refusing to start over a <c>fabric-api</c> nobody was told about is the failure this tab exists
+/// to prevent.
+/// </para>
+/// <para>
+/// Search results and the details page are the store's; nothing here decides whether a version is
+/// compatible or how a file is verified, which stays in <see cref="ModrinthService"/>.
+/// </para>
+/// </remarks>
 public partial class ServerModsViewModel : ObservableObject
 {
     private readonly ServerConfig _config;

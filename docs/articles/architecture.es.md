@@ -13,19 +13,29 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 
 | Carpeta | Responsabilidad |
 |---|---|
-| `Models/` | Datos puros: configuración persistida (`ServerConfig`), ajustes (`AppSettings`), enums (`ServerState`, `PlayitState`). |
+| `Models/` | Datos puros: configuración persistida (`ServerConfig`), ajustes (`AppSettings`), enums (`ServerState`, `PlayitState`). Dos subcarpetas guardan las formas que vienen de fuera: `Modrinth/` (lo que devuelve la API) y `Store/` (lo que enseña la tienda, independientemente de su origen). |
 | `Services/` | Toda la lógica sin interfaz: procesos, archivos, red, Java, Playit, puertos, etc. Cada servicio es una clase pequeña y centrada. |
-| `ViewModels/` | El estado y los comandos a los que se enlaza la interfaz (`MainViewModel`, `ServerViewModel`). Aquí no hay controles de Avalonia, solo `ObservableObject`/`RelayCommand`. |
+| `ViewModels/` | El estado y los comandos a los que se enlaza la interfaz (`MainViewModel`, `ServerViewModel`, y uno por panel: `ServerModsViewModel`, `ServerBackupsViewModel`, `ModDetailsViewModel`). Estado enlazable y `RelayCommand`s, no controles de Avalonia. |
 | `Views/` | Las ventanas/diálogos `.axaml` (XAML de Avalonia) y su code-behind ligero. |
 | `Localization/` | El sistema de traducción (`Localizer` + la extensión de marcado `{loc:Loc}`). |
-| `Behaviors/` | Comportamientos adjuntos (`AutoScrollBehavior`, color del MOTD en `MinecraftMotd`). |
+| `Behaviors/` | Comportamientos adjuntos: `AutoScrollBehavior` (la consola sigue la última línea), `ResetScrollBehavior` (una lista vuelve arriba cuando su contenido se *sustituye*, no cuando se añade), el color del MOTD en `MinecraftMotd` y el Markdown en `MarkdownBody`. |
 | `Controls/` | Controles propios (`Sparkline` para las mini-gráficas de CPU/RAM). |
-| `Resources/` | `Strings*.resx` (traducciones) y `app.ico`. |
+| `Styles/` | `Shared.axaml`: los estilos que necesita más de una vista (`Border.card`, `Border.tile`, el texto de las estadísticas…), incluidos desde `App.axaml`. |
+| `Resources/` | `Strings*.resx` (traducciones), `app.ico` y los dos archivos de datos de la tienda (`store-tags.json`, `store-summaries.json`). |
 
-> El único conversor de valores, `BoolOpacityConverter`, vive en `ViewModels/` — no existe una
-> carpeta `Converters/`.
+> **Los conversores de valores viven en `ViewModels/`** — no existe una carpeta `Converters/`. Son
+> cinco: `BoolOpacityConverter`, `HexBrushConverter` (de un hex de los ajustes a un brush),
+> `ConsoleBrushConverter` y `ConsoleHighlightConverter` (el color de una línea de consola y el
+> resaltado de lo buscado) y `NoticeBrushConverter` (el fondo del aviso de instalación).
+>
+> La mitad sin interfaz de cada decisión de color se deja fuera de `ViewModels/` a propósito, para
+> que un ajuste que se serializa a `settings.json` no tenga que saber que Avalonia existe:
+> `ConsoleColors` / `ConsolePalette`, `NotificationPalette` / `NotificationBrushes` y
+> `ServerTypeCatalog` / `ServerTypeBrushes` son tres casos del mismo reparto — los hex en
+> `Services/`, los brushes en `ViewModels/`.
 
-Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`:
+Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`
+(`~/.config/McServerLauncher/` en Linux y macOS):
 
 - `servers.json` — la lista de servidores y la configuración de cada uno.
 - `settings.json` — ajustes globales (idioma, clave secreta del agente de Playit, última versión vista…).
@@ -34,8 +44,18 @@ Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`:
   posible (avisando al usuario al arrancar en vez de perder la lista en silencio).
 - `java\` — las versiones de Java que instala la app (Temurin/Adoptium).
 - `logs\` — el log de consola persistente (`launcher-yyyy-MM-dd.log`, se poda a los 14 días).
+- `cache\images\` y `cache\store\` — las cachés en disco de la tienda: iconos y capturas de la
+  galería (`ImageCache`, se podan a los 30 días) y las respuestas de la API (`StoreCache`). Ambas son
+  prescindibles; borrarlas cuesta unas cuantas peticiones y nada más.
+- `playit-agent\` — el binario oficial `playitd` de Playit, descargado una vez y fijado a la versión
+  que registra la app (`PlayitAgentRunner`).
+- `instance.lock` — el bloqueo exclusivo de archivo que mantiene la app en una sola copia por usuario
+  (`SingleInstance`).
 - `.secret.key` — la clave AES-GCM que cifra los secretos en Linux/macOS (Windows usa DPAPI, así que
   ahí no hay archivo de clave).
+- *(opcional)* `store-tags.json` / `store-summaries.json` — si existe cualquiera de los dos,
+  sustituye a la copia embebida en la app, así que las etiquetas y los resúmenes en lenguaje llano se
+  pueden cambiar sin compilar nada.
 
 Además, la carpeta de cada servidor contiene un directorio `backups\` con las copias automáticas del
 mundo. No hay rutas fijas del equipo en el código.
@@ -155,10 +175,63 @@ mundo. No hay rutas fijas del equipo en el código.
   Adoptium/Paper SHA-256, Modrinth SHA-512/SHA-1), que borra el archivo si no cuadra.
 - **`Changelog`** — las notas de "novedades" por versión que se muestran tras actualizar (ver el
   flujo más abajo).
-- **`UpdateService`** — comprueba en las Releases de GitHub si hay versión más nueva y descarga el
-  instalador para la actualización dentro de la app. La verificación contra el asset
-  `SHA256SUMS.txt` de la release es **obligatoria**: si el checksum falta o no se puede leer, la
-  instalación silenciosa se rechaza y se abre la página de la release en su lugar.
+- **`UpdateService`** / **`SelfUpdater`** — `UpdateService` pregunta a GitHub si hay una release más
+  nueva y elige el asset para *esta* plataforma y arquitectura (el instalador de Windows, el AppImage
+  de Linux, el `.dmg` de macOS); `SelfUpdater` es quien lo aplica. Lee la **lista** de releases, no
+  `/releases/latest`, porque GitHub deja las pre-releases fuera de esa última y una beta publicada
+  así sería invisible para la app. La verificación contra el asset `SHA256SUMS.txt` de la release es
+  **obligatoria**: si el checksum falta o no se puede leer, la actualización in situ se rechaza y se
+  abre la página de la release en su lugar.
+
+### Servicios de apoyo
+
+- **`AppSettingsService`** / **`ServerStorageService`** — los dos dueños del JSON de la app:
+  `settings.json` y `servers.json`. Ambos pasan por `AtomicJsonFile` y ambos informan de qué pasó al
+  cargar, para que un archivo corrupto salga a la superficie al arrancar en vez de convertirse en una
+  lista de servidores vacía.
+- **`AtomicDownload`** / **`AtomicTextFile`** — la misma garantía para los otros dos tipos de
+  escritura. Una descarga aterriza en `<destino>.part` y se verifica ahí, así que una interrumpida no
+  puede sustituir un archivo que funcionaba por la mitad de otro; un archivo de configuración que es
+  de la app se escribe solo cuando de verdad ha cambiado, y nunca a medias.
+- **`SingleInstance`** — una sola copia en marcha por usuario, y un segundo lanzamiento trae la
+  primera al frente. Es una garantía de corrección, no una cuestión de orden: dos copias arrancan
+  cada una sus procesos de servidor y sus escuchas de wake, y dos JVM sobre la misma carpeta de mundo
+  es como se corrompen los mundos. Un archivo bloqueado responde a "¿hay alguien más?" (el sistema lo
+  suelta incluso si matas el proceso, al contrario que un PID file) y una named pipe lleva el aviso
+  de "ponte delante".
+- **`ServerNameRule`** / **`BukkitPathRule`** — el nombre de la carpeta de un servidor, comprobado
+  antes de que sea un servidor que no arranca: lo que Windows prohíbe de entrada (caracteres
+  ilegales, nombres reservados de dispositivo, un punto o un espacio al final) y, aparte, los dos
+  caracteres desde los que Paper y Purpur se niegan a ejecutarse — incluso cuando están en una
+  carpeta *por encima* de la del servidor, que no es nuestra para renombrarla.
+- **`LoaderPaths`** — dónde deja cada cargador los archivos que hay que volver a encontrar (el
+  directorio de versión y el archivo de argumentos con el que se lanzan Forge y NeoForge). En un solo
+  sitio porque lo necesitan el instalador, el lanzador y el detector, y un cargador que falte en uno
+  de los tres se instala perfectamente y luego no arranca.
+- **`VerifiedJarDownload`** — anunciar el tamaño, descargar de forma atómica, verificar y avisar de
+  que está. Compartido por Paper y Purpur, que solo se diferencian en el algoritmo de hash que
+  publican.
+- **`FileHashCache`** — el SHA-1 de un archivo, recordado mientras el archivo no cambie (la clave es
+  ruta + tamaño + fecha de escritura). Si no, la pestaña de mods hashea cada jar dos veces por clic:
+  una para buscar actualizaciones y otra para ver qué hay ya instalado.
+- **`ContentMigrationService`** — qué pasa con el contenido instalado cuando un servidor cambia de
+  familia: la carpeta `mods/` o `plugins/` anterior se aparta en vez de dejarla para que la cargue
+  algo que no sabe leerla.
+- **`MultiVersionService`** — ViaVersion *y* ViaBackwards, que no son intercambiables: el primero
+  admite clientes más nuevos que el servidor y el segundo más antiguos, e instalar solo uno parece
+  que la función está rota para la mitad de quienes la prueban. Solo servidores de plugins, y
+  deliberadamente independiente del crossplay.
+- **`DesktopShortcutService`** — el botón "Añadir al escritorio". Tres cosas distintas según la
+  plataforma (un `.lnk`, una entrada `.desktop` que tiene que ser ejecutable y estar marcada como de
+  confianza en GNOME, un enlace simbólico al bundle), todas apuntando a desde dónde se está
+  ejecutando de verdad esta copia y no a una ruta de instalación supuesta.
+- **`WindowBehavior`** — qué hacen minimizar y cerrar, según los ajustes. Estado global aplicado sin
+  reiniciar, con la misma forma que `NotificationPreferences.Global` y `ConsolePreferences`.
+- **`BrowserLauncher`** — la única manera de abrir un enlace. Solo pasan URLs http(s) absolutas,
+  porque en la tienda la URL la escribe el autor de un mod, no nosotros.
+- **`MarkdownParser`** / **`MarkdownBody`** — un lector de Markdown deliberadamente parcial para las
+  descripciones largas de Modrinth, y el comportamiento que convierte sus bloques en controles.
+- **`MinecraftRange`** — si una versión de Minecraft cumple el rango que declara un mod.
 
 ## Flujos importantes
 
@@ -194,9 +267,20 @@ sirve todos sus túneles. No disponible en macOS (Playit no publica binario de m
 ejecuta Playit por su cuenta.
 
 ### Actualización in-app + novedades
-Al arrancar, `MainViewModel.CheckForUpdatesAsync` pide a `UpdateService` la última release y su
-instalador. El botón **Actualizar** (`UpdateNowCommand`) descarga el instalador, detiene servidores,
-lo ejecuta en silencio y sale; el instalador reinstala y relanza la app. Tras actualizar,
+Al arrancar, `MainViewModel.CheckForUpdatesAsync` pide a `UpdateService` la release más nueva y el
+asset de esta plataforma. El botón **Actualizar** (`UpdateNowCommand`) lo descarga, lo verifica
+contra el `SHA256SUMS.txt` de la release, detiene los servidores y se lo pasa a `SelfUpdater`.
+
+**Todas las plataformas se actualizan solas; lo que cambia es el mecanismo.** Windows ejecuta el
+instalador en silencio, Linux sustituye el AppImage desde el que está corriendo la app y macOS monta
+el `.dmg` y reemplaza el bundle `.app`. Lo que comparten es la forma: no se toca nada hasta que hay
+en disco un paquete completo y verificado por checksum, y cualquier fallo deja la instalación actual
+funcionando. Hay instalaciones que no pueden sustituirse a sí mismas — un AppImage que root movió a
+`/opt`, un bundle en una ubicación de solo lectura, la app arrancada con `dotnet run` — y
+`SelfUpdater.Blocker` lo dice; esas, y una release que no traiga nada para esta plataforma, caen en
+abrir la página de la release.
+
+Tras actualizar,
 `MainWindow.Loaded` llama a `ShowWhatsNewIfUpdated`, que compara la versión en ejecución con
 `AppSettings.LastVersionSeen` y muestra `WhatsNewDialog` (traducido) con las notas de `Changelog` de
 cada versión que el usuario aún no había visto.
@@ -220,6 +304,105 @@ notificación.
 cerrarla con la **X** la oculta a la bandeja (los servidores siguen corriendo) en vez de salir. El
 menú de la bandeja restaura la ventana (**Mostrar**) o cierra de verdad (**Salir** →
 `MainWindow.RequestExit`, que hace el apagado limpio).
+
+### Jugar desde Bedrock (crossplay)
+Una casilla, y tres cosas que tienen que encajar — que es justo por lo que hacerlo a mano sale mal.
+`CrossplayService.InstallAsync` instala **Geyser** en el servidor (desde Modrinth, por la misma ruta
+de instalación verificada que cualquier otro mod o plugin) para que entienda a los clientes de
+Bedrock, y **Floodgate** para que esos jugadores no tengan que tener cada uno Minecraft: Java.
+Floodgate se parte según el origen: Modrinth lleva las builds de Fabric y NeoForge, y solo la web de
+descargas de GeyserMC (`GeyserDownloadsApi`) lleva la de Spigot que necesitan Paper y Purpur.
+
+Después, el **segundo túnel**: Java es TCP y Bedrock es UDP, y uno no puede llevar al otro, así que
+`MainViewModel` crea un túnel UDP junto al de Java. `CrossplayService.PickBedrockPort` elige el
+puerto local (19132 es solo un punto de partida — se ocupa en cuanto hay dos servidores), evitando
+tanto los puertos de otros servidores registrados como los que ya tiene la cuenta de Playit del
+usuario.
+
+Por último, `GeyserConfigService` escribe lo que Geyser no puede deducir solo: `auth-type` (un
+servidor con Floodgate que se queda en `online` rechaza a todos los jugadores de Bedrock), el puerto
+UDP local y **`broadcast-port`** — detrás de un túnel, el puerto al que se conecta la gente es el
+público del túnel, y el launcher es el único componente que conoce los dos números porque es quien
+creó el túnel. `RepairConfig` vuelve a aplicarlo cuando una reinstalación resetea el archivo.
+
+Lo bien que funcione todo esto es una propiedad del tipo de servidor, no una promesa:
+`ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores y los dos diálogos enseñan la
+advertencia antes de marcar la casilla. En Fabric, otra casilla instala **Hydraulic**
+(`HydraulicService`) para que los bloques y objetos que añaden los mods se conviertan para los
+clientes de Bedrock; es solo para Fabric porque Hydraulic dejó de publicar builds de NeoForge en
+febrero de 2026. El único fallo que no se puede evitar — un servidor NeoForge rechazando la conexión
+sin mods de Geyser — al menos se reconoce en la consola y se explica en el idioma del usuario con
+`CrossplayDiagnostics`.
+
+### Dormirse vacío y despertar cuando alguien entra
+Dos mitades, las dos por servidor y las dos desactivadas por defecto.
+
+**Dormirse** es `ServerViewModel.CheckIdleShutdown`, ejecutado en el mismo tick que refresca la lista
+de jugadores: en cuanto un servidor lleva `ServerConfig.IdleShutdownMinutes` sin nadie dentro, se
+detiene solo, anunciándolo en la consola y como notificación. La ventana enseña una cuenta atrás en
+vivo (`IdleCountdownText`), y un servidor recién despertado tiene un periodo de gracia para que nunca
+se le pare antes de que a nadie le dé tiempo a entrar.
+
+**Despertar** es `WakeOnDemandListener`, que ocupa el puerto del servidor mientras este está parado y
+habla la parte pequeña y estable del protocolo de Minecraft necesaria para ser honesto al respecto:
+el handshake, el estado de la lista de servidores (para que la lista muestre *"Apagado · entra para
+encenderlo"* con su icono y su límite de jugadores reales) y el disconnect de login (para que quien
+pulse Entrar reciba un mensaje mientras arranca). **Lo que lo despierta es pulsar Entrar**, no que le
+hagan ping — el cliente repite el ping cada pocos segundos mientras la pantalla de multijugador está
+abierta, así que despertar con una petición de estado arrancaría el servidor una y otra vez para
+gente que ni siquiera está jugando. Con un túnel de Playit este socket es accesible desde internet,
+así que todo lo que lee se trata como hostil: longitudes acotadas, una fecha límite por conexión y un
+tope de cuántas hay a la vez.
+
+### La tienda: búsqueda, etiquetas y lenguaje llano
+`ServerModsViewModel` pide a `ModrinthService` resultados ya filtrados por el cargador y la versión
+del servidor — un resultado que el servidor no puede ejecutar es peor que ninguno, porque se instala
+y luego el servidor no levanta. Cada resultado se convierte en un `StoreItem`, la forma independiente
+del origen con la que trabaja el resto de la tienda, y entonces se le añaden dos cosas que Modrinth
+no da:
+
+- **`StoreTagService`** lo convierte en las etiquetas propias de la app. Las categorías de Modrinth
+  son gruesas (casi la mitad de los mods de servidor más usados están en "utility") y no responden a
+  lo que más le importa a quien lleva un servidor — si los jugadores tienen que instalarlo también —
+  así que las categorías, unas reglas por palabras clave y el lado cliente/servidor se combinan a
+  través de `Resources/store-tags.json`.
+- **`StoreSummaryService`** responde a "¿qué le hace esto a mi servidor?" en el idioma del usuario,
+  desde un catálogo escrito a mano (`Resources/store-summaries.json`, generado por
+  `tools/generate-store-summaries.py`) con una frase de reserva construida con lo que Modrinth sí
+  dice. Es una consulta local: sin petición, sin clave, y funciona sin conexión.
+
+Los dos archivos se pueden sustituir por una copia en la carpeta de datos del usuario, así que las
+etiquetas y los resúmenes se cambian sin compilar. Abrir un resultado muestra `ModDetailsViewModel` —
+galería, versiones, dependencias, enlaces y proyectos relacionados — pintado en dos pasadas, para que
+lo que ya traía el resultado de búsqueda aparezca al instante y el resto llegue cuando vuelvan sus
+peticiones. `StoreCache` (memoria, luego disco, luego red) e `ImageCache` son lo que hace que volver
+atrás y abrir algo otra vez no cueste nada, y lo que hace que un proyecto ya visto se abra sin
+conexión.
+
+### Cambiar el tipo de un servidor
+`InstallLoaderDialog` convierte un servidor existente en el sitio, **conservando el mundo**: de
+Vanilla a un cargador o a un servidor de plugins, de un cargador a otro, o de cualquiera de ellos de
+vuelta a Vanilla. Ofrece la misma lista que el diálogo de creación (el `ServerTypePicker`
+compartido) e instala por el mismo `ServerJarInstaller`, así que los dos ya no pueden separarse — se
+separaron, y un tipo presente en uno y ausente en el otro producía en silencio un servidor Vanilla.
+La advertencia sobre el botón depende de la *dirección* del cambio, porque las direcciones no son
+igual de seguras: ganar un cargador es aditivo, y bajar a Vanilla o cruzar de familia no lo es. El
+contenido que la familia nueva no sabe leer lo aparta `ContentMigrationService` en vez de dejar que
+falle al cargar.
+
+### Darle la lista de mods a tus jugadores
+`ServerModsViewModel.ExportModpack` comprime la carpeta `mods/` (o `plugins/`) del servidor junto con
+un archivo de instrucciones traducido que nombra el servidor, su tipo y su versión de Minecraft, y
+los pasos para ese tipo. Es la respuesta a "¿qué les mando a mis amigos para que puedan entrar?", que
+si no significa explicar la instalación de un cargador por chat.
+
+### Una sola copia en marcha
+`Program.Main` reclama `SingleInstance` antes que nada. Si otra copia ya tiene el bloqueo, esta le
+avisa por la named pipe para que se ponga delante y sale sin llegar a crear una ventana. Eso es una
+garantía de corrección, no orden: una segunda copia arranca sus propios procesos de servidor,
+escuchas de wake y temporizadores de inactividad, muestra como parado un servidor que la primera
+tiene corriendo, y pulsar Iniciar entonces significa dos JVM escribiendo sobre la misma carpeta de
+mundo.
 
 ### Buscar actualizaciones de mods/plugins
 `ServerModsViewModel` pide a `ModrinthService` identificar cada archivo instalado en Modrinth y marcar

@@ -56,6 +56,9 @@ public partial class MainViewModel : ObservableObject
     private string? _packageName;
     private string? _checksumUrl;
 
+    /// <summary>One entry of the language selector.</summary>
+    /// <param name="Code">The culture code stored in <c>AppSettings.Language</c> (es, en, pt, fr, de).</param>
+    /// <param name="Name">The language's name in itself, never translated — that is how a selector is read.</param>
     public record LanguageOption(string Code, string Name);
 
     public IReadOnlyList<LanguageOption> Languages { get; } = new List<LanguageOption>

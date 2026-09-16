@@ -13,19 +13,29 @@ The project (`McServerLauncher/`) is organized by responsibility:
 
 | Folder | Responsibility |
 |---|---|
-| `Models/` | Plain data: persisted config (`ServerConfig`), settings (`AppSettings`), enums (`ServerState`, `PlayitState`). |
+| `Models/` | Plain data: persisted config (`ServerConfig`), settings (`AppSettings`), enums (`ServerState`, `PlayitState`). Two subfolders hold the shapes that come from elsewhere: `Modrinth/` (what the API returns) and `Store/` (what the store shows, independent of where it came from). |
 | `Services/` | All the logic with no UI: processes, files, network, Java, Playit, ports, etc. Each service is a small, focused class. |
-| `ViewModels/` | The state and commands the UI binds to (`MainViewModel`, `ServerViewModel`). No Avalonia controls here, only `ObservableObject`/`RelayCommand`. |
+| `ViewModels/` | The state and commands the UI binds to (`MainViewModel`, `ServerViewModel`, and one per panel: `ServerModsViewModel`, `ServerBackupsViewModel`, `ModDetailsViewModel`). Bindable state and `RelayCommand`s, not Avalonia controls. |
 | `Views/` | The `.axaml` windows/dialogs (Avalonia XAML) and their thin code-behind. |
 | `Localization/` | The translation system (`Localizer` + `{loc:Loc}` markup extension). |
-| `Behaviors/` | Attached behaviors (`AutoScrollBehavior`, MOTD coloring in `MinecraftMotd`). |
+| `Behaviors/` | Attached behaviors: `AutoScrollBehavior` (the console follows the tail), `ResetScrollBehavior` (a list goes back to the top when its contents are *replaced*, not appended), MOTD coloring in `MinecraftMotd` and Markdown rendering in `MarkdownBody`. |
 | `Controls/` | Custom controls (`Sparkline` for the CPU/RAM mini-charts). |
-| `Resources/` | `Strings*.resx` (translations) and `app.ico`. |
+| `Styles/` | `Shared.axaml`: the styles more than one view needs (`Border.card`, `Border.tile`, the stat text…), included from `App.axaml`. |
+| `Resources/` | `Strings*.resx` (translations), `app.ico`, and the store's two data files (`store-tags.json`, `store-summaries.json`). |
 
-> The single value converter, `BoolOpacityConverter`, lives in `ViewModels/` — there is no
-> `Converters/` folder.
+> **Value converters live in `ViewModels/`** — there is no `Converters/` folder. There are five:
+> `BoolOpacityConverter`, `HexBrushConverter` (a hex string from the settings into a brush),
+> `ConsoleBrushConverter` and `ConsoleHighlightConverter` (the colour of a console line and the
+> marking of what was searched for), and `NoticeBrushConverter` (the install banner's background).
+>
+> The UI-free half of each colour decision is kept out of `ViewModels/` on purpose, so a setting
+> that is serialized to `settings.json` never has to know Avalonia exists: `ConsoleColors` /
+> `ConsolePalette`, `NotificationPalette` / `NotificationBrushes` and `ServerTypeCatalog` /
+> `ServerTypeBrushes` are three instances of the same split — hex strings in `Services/`, brushes in
+> `ViewModels/`.
 
-Data lives **per user** under `%APPDATA%\McServerLauncher\`:
+Data lives **per user** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux
+and macOS):
 
 - `servers.json` — the server list and each server's config.
 - `settings.json` — global settings (language, Playit agent secret key, last-seen version…).
@@ -34,8 +44,17 @@ Data lives **per user** under `%APPDATA%\McServerLauncher\`:
   (the user is warned at startup instead of silently losing the list).
 - `java\` — Java runtimes the app installs (Temurin/Adoptium).
 - `logs\` — the persistent console log (`launcher-yyyy-MM-dd.log`, pruned after 14 days).
+- `cache\images\` and `cache\store\` — the store's disk caches: project icons and gallery
+  screenshots (`ImageCache`, pruned after 30 days) and the API responses (`StoreCache`). Both are
+  disposable; deleting them costs a few requests and nothing else.
+- `playit-agent\` — Playit's official `playitd` binary, downloaded once and pinned to the version
+  the app registers (`PlayitAgentRunner`).
+- `instance.lock` — the exclusive file lock that keeps the app to one running copy per user
+  (`SingleInstance`).
 - `.secret.key` — the AES-GCM key that encrypts secrets on Linux/macOS (Windows uses DPAPI, so no
   key file there).
+- *(optional)* `store-tags.json` / `store-summaries.json` — if either exists it replaces the copy
+  embedded in the app, so tags and plain-language summaries can be changed without a new build.
 
 Each server's own folder also holds a `backups\` directory with the automatic world backups. There
 are no hard-coded machine paths.
@@ -154,10 +173,58 @@ are no hard-coded machine paths.
 - **`DownloadVerifier`** — the shared checksum verifier for downloads (Mojang SHA-1, Adoptium/Paper
   SHA-256, Modrinth SHA-512/SHA-1), deleting the file on mismatch.
 - **`Changelog`** — the per-version "what's new" notes shown after an update (see the flow below).
-- **`UpdateService`** — checks GitHub Releases for a newer version and downloads the installer for
-  the in-app update. Verification against the release's `SHA256SUMS.txt` asset is **mandatory**: if
-  the checksum is missing or unreadable, the silent install is refused and the release page opens
-  instead.
+- **`UpdateService`** / **`SelfUpdater`** — `UpdateService` asks GitHub for a newer release and picks
+  the asset for *this* platform and architecture (the Windows installer, the Linux AppImage, the
+  macOS `.dmg`); `SelfUpdater` is what applies it. It reads the release **list**, not
+  `/releases/latest`, because GitHub leaves pre-releases out of the latter and a beta published that
+  way would be invisible to the app. Verification against the release's `SHA256SUMS.txt` asset is
+  **mandatory**: if the checksum is missing or unreadable, the in-place update is refused and the
+  release page opens instead.
+
+### Supporting services
+
+- **`AppSettingsService`** / **`ServerStorageService`** — the two owners of the app's JSON:
+  `settings.json` and `servers.json`. Both go through `AtomicJsonFile` and both report what happened
+  on load, so a corrupt file is surfaced at startup instead of showing an empty server list.
+- **`AtomicDownload`** / **`AtomicTextFile`** — the same guarantee for the other two kinds of write.
+  A download lands in `<dest>.part` and is verified there, so an interrupted one can never replace a
+  working file with half of one; a config file the app owns is written only when it actually changed,
+  and never half-written.
+- **`SingleInstance`** — one running copy per user, with a second launch bringing the first one to
+  the front. A correctness guard, not a nicety: two copies each start their own server processes and
+  wake listeners, and two JVMs on one world folder is how worlds get corrupted. A lock file answers
+  "is anyone else running?" (the OS releases it even on a hard kill, unlike a PID file) and a named
+  pipe carries the "come to the front" nudge.
+- **`ServerNameRule`** / **`BukkitPathRule`** — a server's folder name, checked before it becomes a
+  server that will not start: what Windows forbids outright (illegal characters, reserved device
+  names, a trailing dot or space) and, separately, the two characters Paper and Purpur refuse to run
+  from — including when they are in a folder *above* the server's own, which is not ours to rename.
+- **`LoaderPaths`** — where each loader leaves the files that have to be found again (the version
+  directory and the args file Forge/NeoForge are launched through). In one place because the
+  installer, the launcher and the detector all need it, and a loader missing from one of them
+  installs perfectly and then cannot be started.
+- **`VerifiedJarDownload`** — announce the size, download atomically, verify, say it is done. Shared
+  by Paper and Purpur, which differ only in the hash algorithm they publish.
+- **`FileHashCache`** — a file's SHA-1, remembered while the file is unchanged (the key is path +
+  size + write time). The Mods tab hashes every jar twice per click otherwise, once for the update
+  check and once to see what is already installed.
+- **`ContentMigrationService`** — what happens to installed content when a server changes family:
+  the old `mods/` or `plugins/` folder is moved aside rather than left to be loaded by something
+  that cannot read it.
+- **`MultiVersionService`** — ViaVersion *and* ViaBackwards, which are not interchangeable: the first
+  admits clients newer than the server, the second older ones, and installing only one looks like the
+  feature is broken for half the people who try it. Plugin servers only, and deliberately independent
+  of crossplay.
+- **`DesktopShortcutService`** — the "Add to desktop" button. Three different things by platform (a
+  `.lnk`, a `.desktop` entry that has to be executable and GNOME-trusted, a symlink to the bundle),
+  all pointing at whatever this copy is really running from rather than a guessed install path.
+- **`WindowBehavior`** — what minimize and close do, as chosen in Settings. App-wide state applied
+  without a restart, the same shape as `NotificationPreferences.Global` and `ConsolePreferences`.
+- **`BrowserLauncher`** — the one way a link is opened. Only absolute http(s) URLs get through,
+  because in the store the URL comes from a mod author rather than from us.
+- **`MarkdownParser`** / **`MarkdownBody`** — a deliberately partial Markdown reader for the long
+  descriptions Modrinth returns, and the behavior that turns its blocks into controls.
+- **`MinecraftRange`** — whether a Minecraft version satisfies the range a mod declares.
 
 ## Important flows
 
@@ -192,11 +259,20 @@ download (`DownloadVerifier`). One agent serves all the user's tunnels. Not avai
 (Playit ships no macOS binary); there the user runs Playit themselves.
 
 ### In-app update + what's-new
-On startup `MainViewModel.CheckForUpdatesAsync` asks `UpdateService` for the latest release and its
-installer asset. The **Update** button (`UpdateNowCommand`) downloads the installer, stops servers,
-runs it silently and exits; the installer reinstalls and relaunches the app. After an update,
-`MainWindow.Loaded` calls `ShowWhatsNewIfUpdated`, which compares the running version with
-`AppSettings.LastVersionSeen` and shows `WhatsNewDialog` (localized) with the notes from
+On startup `MainViewModel.CheckForUpdatesAsync` asks `UpdateService` for the newest release and the
+asset for this platform. The **Update** button (`UpdateNowCommand`) downloads it, verifies it against
+the release's `SHA256SUMS.txt`, stops the servers and hands it to `SelfUpdater`.
+
+**Every platform updates itself; only the mechanism differs.** Windows runs the silent installer,
+Linux swaps the AppImage file the app is running from, and macOS mounts the `.dmg` and replaces the
+`.app` bundle. What they share is the shape: nothing is touched until a complete, checksum-verified
+package is on disk, and any failure leaves the current install working. Some installs cannot replace
+themselves at all — an AppImage moved into `/opt` by root, a bundle in a read-only location, the app
+started from `dotnet run` — and `SelfUpdater.Blocker` says so; those, and a release that ships nothing
+for this platform, fall back to opening the release page.
+
+After an update, `MainWindow.Loaded` calls `ShowWhatsNewIfUpdated`, which compares the running version
+with `AppSettings.LastVersionSeen` and shows `WhatsNewDialog` (localized) with the notes from
 `Changelog` for every version the user hadn't seen yet.
 
 ### World backups
@@ -216,6 +292,98 @@ reads the server's crash report to add a human-readable reason to that notificat
 **X** hides it to the tray (servers keep running) instead of quitting. The tray menu restores the
 window (**Show**) or really quits (**Exit** → `MainWindow.RequestExit`, which runs the clean
 shutdown).
+
+### Playing from Bedrock (crossplay)
+One checkbox, three things that have to line up — which is why doing it by hand goes wrong.
+`CrossplayService.InstallAsync` puts **Geyser** on the server (from Modrinth, through the same
+verified install path as any other mod or plugin) so it understands Bedrock clients at all, and
+**Floodgate** so those players don't each have to own Minecraft: Java. Floodgate is split by source:
+Modrinth carries the Fabric and NeoForge builds, and only GeyserMC's own downloads site
+(`GeyserDownloadsApi`) carries the Spigot one Paper and Purpur need.
+
+Then the **second tunnel**: Java is TCP and Bedrock is UDP, and one cannot carry the other, so
+`MainViewModel` creates a UDP tunnel alongside the Java one. `CrossplayService.PickBedrockPort`
+chooses the local port (19132 is only a starting point — it is taken as soon as there are two
+servers), avoiding both the ports other registered servers hold and the ones the user's Playit
+account already has.
+
+Finally `GeyserConfigService` writes what Geyser cannot work out for itself: `auth-type` (a server
+with Floodgate left on `online` turns every Bedrock player away), the local UDP port, and
+**`broadcast-port`** — behind a tunnel the port players connect to is the tunnel's public one, and
+the launcher is the only component that knows both numbers because it created the tunnel.
+`RepairConfig` re-applies this when a reinstall resets the file.
+
+How well any of it works is a property of the server type, not a promise: `ServerTypeCatalog` carries
+a three-valued `CrossplayLevel` and both dialogs show the caveat before the checkbox is ticked. On
+Fabric, a further checkbox installs **Hydraulic** (`HydraulicService`) so the blocks and items mods
+add are converted for Bedrock clients; it is Fabric-only because Hydraulic stopped publishing
+NeoForge builds in February 2026. The one failure that cannot be prevented — a NeoForge server
+rejecting Geyser's mod-less connection — is at least recognised in the console and explained in the
+user's language by `CrossplayDiagnostics`.
+
+### Sleeping when empty, waking when someone joins
+Two halves, both per server and both off by default.
+
+**Sleeping** is `ServerViewModel.CheckIdleShutdown`, run off the same tick that refreshes the player
+list: once a running server has had nobody on it for `ServerConfig.IdleShutdownMinutes` it stops
+itself, announcing it in the console and as a notification. The window shows a live countdown
+(`IdleCountdownText`), and a server that has just been woken gets a grace period so it can never be
+stopped before anyone has had time to get in.
+
+**Waking** is `WakeOnDemandListener`, which takes over the server's port while the server is stopped
+and speaks the small, stable part of the Minecraft protocol needed to be honest about it: the
+handshake, the server-list status (so the list shows *"Off · join to start it"* with the real icon
+and player cap) and the login disconnect (so whoever presses Join gets a message while it boots).
+**Pressing Join is what wakes it**, not being pinged — the client re-pings every few seconds while
+the multiplayer screen is open, so waking on a status request would start the server over and over
+for people who are not even playing. With a Playit tunnel this socket is reachable from the internet,
+so everything it reads is treated as hostile: bounded lengths, a deadline per connection, and a cap
+on how many there are at once.
+
+### The store: search, tags and plain language
+`ServerModsViewModel` asks `ModrinthService` for results already filtered by the server's loader and
+game version — a result the server cannot run is worse than no result, because it installs and then
+the server does not come up. Each hit is converted to a `StoreItem`, the source-independent shape the
+rest of the store works on, and then two things Modrinth does not provide are added:
+
+- **`StoreTagService`** turns it into the app's own tags. Modrinth's categories are coarse (nearly
+  half the top server mods are filed under "utility") and they don't answer the question a server
+  owner cares most about — whether players have to install it too — so categories, keyword rules and
+  the client/server side are combined through `Resources/store-tags.json`.
+- **`StoreSummaryService`** answers "what does this do to my server?" in the user's language, from a
+  hand-written catalogue (`Resources/store-summaries.json`, generated by
+  `tools/generate-store-summaries.py`) with a fallback sentence built from what Modrinth does say.
+  It is a local lookup: no request, no key, and it works offline.
+
+Both files can be overridden by a copy in the user's data folder, so tags and summaries can change
+without a new build. Opening a result shows `ModDetailsViewModel` — gallery, versions, dependencies,
+links and related projects — painted in two passes, so what the search result already carried appears
+at once and the rest arrives as its requests come back. `StoreCache` (memory, then disk, then the
+network) and `ImageCache` are what make going back and opening something again cost nothing, and what
+make a project already seen open with no connection.
+
+### Changing a server's type
+`InstallLoaderDialog` converts an existing server in place, **keeping the world**: Vanilla into a
+loader or a plugin server, one loader into another, or any of them back to Vanilla. It offers the
+same list as the create dialog (the shared `ServerTypePicker`) and installs through the same
+`ServerJarInstaller`, so the two cannot drift apart — they used to, and a type present in one and
+missing from the other silently produced a Vanilla server. The warning above the button is keyed on
+the *direction* of the change, because the directions are not equally safe: gaining a loader is
+additive, while dropping to Vanilla or crossing between families is not. Content that the new family
+cannot read is moved aside by `ContentMigrationService` rather than left to fail at load.
+
+### Handing the mod list to your players
+`ServerModsViewModel.ExportModpack` zips the server's `mods/` (or `plugins/`) folder together with a
+localized instructions file naming the server, its type and its Minecraft version, and the steps for
+that type. It is the answer to "what do I send my friends so they can join?", which otherwise means
+explaining a loader install over chat.
+
+### One running copy
+`Program.Main` acquires `SingleInstance` before anything else. If another copy already holds the
+lock, this one nudges it to the front through the named pipe and exits without ever creating a
+window. That is a correctness guard rather than tidiness: a second copy starts its own server
+processes, wake listeners and idle timers, shows a server as stopped while the first has it running,
+and pressing Start then means two JVMs writing one world folder.
 
 ### Checking mods/plugins for updates
 `ServerModsViewModel` asks `ModrinthService` to identify each installed file on Modrinth and flag the

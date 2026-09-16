@@ -96,6 +96,9 @@ todo con botones.
   convierten para los clientes de Bedrock. Solo en Fabric: Hydraulic dejó de publicar para NeoForge
   en febrero de 2026. Sus autores lo consideran de desarrollo muy temprano, y la app lo dice antes
   de que marques la casilla.
+- **Pásales la lista de mods a tus amigos** 📦 — un botón comprime los mods (o plugins) del servidor
+  junto con un archivo de instrucciones en tu idioma que dice el nombre del servidor, su tipo y su
+  versión de Minecraft, para que entrar a un servidor con mods deje de ser algo que explicas por chat.
 - **Jugar desde otras versiones de Minecraft** — una casilla instala ViaVersion y ViaBackwards, para que entren
   clientes más nuevos y más antiguos que el servidor. Solo en servidores de plugins.
 - **Cambiar el tipo de un servidor** — convierte uno existente a Paper/Purpur/Fabric/Forge/NeoForge o de vuelta a Vanilla,
@@ -169,8 +172,16 @@ La documentación de desarrollo (arquitectura, guía de contribución y una **re
 publica con **DocFX** en **https://juanp-g.github.io/MC-ServerLauncher/docs/**. Los datos por usuario se guardan en
 `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` en Linux y macOS): `servers.json`,
 `settings.json`, el `java\` que instala la app, los `logs\` de consola persistentes (se guardan 14 días),
+la `cache\` prescindible de la tienda (iconos y respuestas de la API), el binario en `playit-agent\`,
 el `instance.lock` que mantiene una sola copia de la app abierta y, en Linux/macOS, `.secret.key`. Además, la
 carpeta de cada servidor tiene un directorio `backups\` con las copias automáticas del mundo.
+
+## 🤝 Contribuir
+
+Los pull requests son bienvenidos. Empieza por **[CONTRIBUTING.md](CONTRIBUTING.md)**, que es la
+versión corta de la [guía completa](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.es.html):
+cómo compilar y probar, el estilo de código (lo tiene el `.editorconfig` y lo aplica `dotnet format`)
+y la regla de que la documentación se mueve con el código, en los dos idiomas.
 
 ## 📄 Licencia
 

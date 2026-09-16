@@ -6,6 +6,11 @@ using McServerLauncher.Services;
 
 namespace McServerLauncher.Views;
 
+/// <summary>
+/// The visual <c>server.properties</c> editor: every setting with a control and an explanation in
+/// plain language, written back through <see cref="ServerPropertiesService"/> so the rest of the
+/// file, its comments and its order survive.
+/// </summary>
 public partial class ServerConfigDialog : Window
 {
     private readonly ServerPropertiesService _service = new();

@@ -21,6 +21,12 @@ public class WorldBackupService
 {
     private readonly ServerPropertiesService _properties = new();
 
+    /// <summary>One backup zip already on disk, as the backups list shows it.</summary>
+    /// <param name="FilePath">Full path, which is what a restore reads from.</param>
+    /// <param name="FileName">Its name, which is also where the other fields are read from.</param>
+    /// <param name="CreatedAt">The file's write time.</param>
+    /// <param name="SizeBytes">Size of the zip.</param>
+    /// <param name="Trigger">Why it was made ("start", "stop", "manual", "before-restore"), or "?" for a name this app didn't write.</param>
     public record BackupInfo(string FilePath, string FileName, DateTime CreatedAt, long SizeBytes, string Trigger);
 
     private static string BackupsDir(ServerConfig config) => Path.Combine(config.FolderPath, "backups");

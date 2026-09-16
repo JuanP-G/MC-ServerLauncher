@@ -8,6 +8,10 @@ using McServerLauncher.Models;
 
 namespace McServerLauncher.Views;
 
+/// <summary>
+/// Edits a server already on the list, or registers one that exists on disk: its name, folder, RAM,
+/// port, and the per-server switches (notifications, idle shutdown, crossplay).
+/// </summary>
 public partial class AddEditServerDialog : Window
 {
     private readonly ServerConfig _config;

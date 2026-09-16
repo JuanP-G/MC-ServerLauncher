@@ -11,6 +11,25 @@ using McServerLauncher.Localization;
 
 namespace McServerLauncher.Services;
 
+/// <summary>
+/// Installs a mod loader — Fabric, Forge or NeoForge — into a server folder.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The three are not installed the same way and cannot be made to be. Fabric publishes a server jar
+/// that is downloaded and run as-is; Forge and NeoForge publish an <em>installer</em> that has to be
+/// executed with <c>java -jar</c> and leaves behind an args file rather than a runnable jar, which
+/// is what <see cref="ForgeInstallResult"/> reports back and <see cref="LoaderPaths"/> knows how to
+/// find again.
+/// </para>
+/// <para>
+/// What each download is trusted on differs too, and each case is argued where it is enforced:
+/// Fabric's meta endpoint publishes no checksum at all, so its jar is validated structurally
+/// instead; Forge's maven publishes a <c>.sha1</c> and NeoForge's a <c>.sha256</c>, both from the
+/// same server as the artifact, so the check catches corruption rather than a compromised source —
+/// and a missing hash means no install, because what follows is <c>java -jar</c>.
+/// </para>
+/// </remarks>
 public class ModLoaderService
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };

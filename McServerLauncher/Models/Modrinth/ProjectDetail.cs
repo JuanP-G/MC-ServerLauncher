@@ -91,6 +91,7 @@ public class ProjectDetail
     public string? Team { get; set; }
 }
 
+/// <summary>The project's licence, as the project endpoint returns it (search returns a bare id).</summary>
 public class ProjectLicense
 {
     /// <summary>SPDX id, e.g. "MIT". Modrinth uses "LicenseRef-…" for non-SPDX licences.</summary>
@@ -105,6 +106,7 @@ public class ProjectLicense
     public string? Url { get; set; }
 }
 
+/// <summary>A "support the author" link the author filled in (Ko-fi, Patreon, GitHub Sponsors…).</summary>
 public class DonationUrl
 {
     [JsonPropertyName("id")]
@@ -152,6 +154,7 @@ public class TeamMember
     public TeamUser? User { get; set; }
 }
 
+/// <summary>The account behind a <see cref="TeamMember"/>, which is where the author's name comes from.</summary>
 public class TeamUser
 {
     [JsonPropertyName("username")]
