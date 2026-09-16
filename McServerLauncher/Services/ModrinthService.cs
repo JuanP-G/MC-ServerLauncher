@@ -15,6 +15,29 @@ using McServerLauncher.Models.Modrinth;
 
 namespace McServerLauncher.Services;
 
+/// <summary>
+/// The app's whole conversation with Modrinth: searching the store, reading a project, resolving a
+/// version for this server, identifying installed jars by hash, and downloading a file.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Every query is already narrowed by the server's loader and game version, because a result the
+/// server cannot run is worse than no result: it installs, and then the server does not come up.
+/// The loader a type browses under comes from <see cref="ServerTypeCatalog"/>, so Purpur searching
+/// Paper's plugins is a property of the table rather than a branch in here.
+/// </para>
+/// <para>
+/// Reads go through <see cref="StoreCache"/> with a per-endpoint freshness window (see the
+/// constants below), which is what makes opening a mod, going back and opening it again cost one
+/// request — and what makes a project already seen open with no connection at all.
+/// </para>
+/// <para>
+/// The hash endpoints answer two different questions off the same scan, and the difference matters:
+/// <see cref="GetVersionsByHashAsync"/> says what each jar <em>is</em> (its project and its declared
+/// dependencies), while <see cref="GetLatestVersionsByHashAsync"/> says what could replace it. The
+/// update check needs the second; the missing-library check needs the first.
+/// </para>
+/// </remarks>
 public class ModrinthService
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };

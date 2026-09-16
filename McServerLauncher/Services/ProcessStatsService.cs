@@ -11,6 +11,10 @@ public class ProcessStatsService
     private TimeSpan _lastCpuTime;
     private DateTime _lastSample = DateTime.UtcNow;
 
+    /// <summary>One sample of a running server's cost, as the status cards show it.</summary>
+    /// <param name="CpuPercent">CPU since the previous sample, normalised across cores, so 100 means one full core.</param>
+    /// <param name="RamMb">Working set in MB.</param>
+    /// <param name="Uptime">How long this run has lasted.</param>
     public record Stats(double CpuPercent, long RamMb, TimeSpan Uptime);
 
     /// <summary>Resets the sampling (when switching process/server).</summary>

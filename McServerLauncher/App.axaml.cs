@@ -11,6 +11,13 @@ using McServerLauncher.Views;
 
 namespace McServerLauncher;
 
+/// <summary>
+/// The Avalonia application: the language, the tray icon and the main window, in that order.
+/// </summary>
+/// <remarks>
+/// The saved language is applied here, before any window is created, which is why changing it needs
+/// a restart — a window already built has its texts resolved.
+/// </remarks>
 public partial class App : Application
 {
     public override void Initialize() => AvaloniaXamlLoader.Load(this);

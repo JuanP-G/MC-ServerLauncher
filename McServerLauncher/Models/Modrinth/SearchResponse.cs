@@ -3,6 +3,10 @@ using System.Text.Json.Serialization;
 
 namespace McServerLauncher.Models.Modrinth;
 
+/// <summary>
+/// One page of search results (<c>GET /v2/search</c>). <see cref="TotalHits"/> is what tells the
+/// store whether there is more to load, since a full page is not by itself proof that there is.
+/// </summary>
 public class SearchResponse
 {
     [JsonPropertyName("hits")]

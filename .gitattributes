@@ -1,0 +1,37 @@
+# Line endings, settled once so nobody has to think about it again.
+#
+# The repository stores text as LF and hands your working copy whatever your platform expects.
+# Without this, a contributor on Windows and one on Linux produce diffs where every line changed
+# and nothing did — and the tests run on both, so it would happen.
+
+* text=auto
+
+# Windows-only tooling that genuinely wants CRLF.
+*.sln       text eol=crlf
+*.ps1       text eol=crlf
+*.psm1      text eol=crlf
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.iss       text eol=crlf
+
+# Run on Linux in CI, so LF regardless of who last saved them.
+*.sh        text eol=lf
+
+# Binary: never touched, never diffed as text.
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.icns      binary
+*.zip       binary
+*.dmg       binary
+*.exe       binary
+*.dll       binary
+*.jar       binary
+*.woff      binary
+*.woff2     binary
+
+# Generated or vendored: keep them out of the diff view and out of the language stats.
+docs/_site/**               linguist-generated=true
+McServerLauncher/Resources/store-summaries.json  linguist-generated=true

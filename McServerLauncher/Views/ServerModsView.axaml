@@ -39,9 +39,10 @@
         <Style Selector="ListBox.results ListBoxItem:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
         </Style>
-        <!-- Un azulejo de la lista de resultados. Se llamaba Border.card y NO es la tarjeta
-             translucida del resto de la app: es solido y mas pequeno. Compartian nombre sin
-             compartir aspecto, y solo no chocaban porque cada estilo vivia dentro de su vista. -->
+        <!-- A tile in the results list. It used to be called Border.card and it is NOT the
+             translucent card the rest of the app uses: it is solid and smaller. They shared a name
+             without sharing a look, and only avoided colliding because each style lived inside its
+             own view. -->
         <Style Selector="Border.tile">
             <Setter Property="Background" Value="{StaticResource GroundWell}" />
             <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdgeSoft}" />

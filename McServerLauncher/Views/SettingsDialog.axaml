@@ -74,11 +74,11 @@
                 <TextBlock Text="{loc:Loc Notif_ColorsIntro}" TextWrapping="Wrap" Opacity="0.7"
                            FontSize="13" Margin="0,4,0,6" />
 
-                <!-- La etiqueta en la columna elastica y con recorte, la muestra y la casilla
-                     a la derecha en columnas Auto. Antes la etiqueta tenia 140 pixeles fijos y las
-                     etiquetas largas se dibujaban encima de la muestra: un Grid no recorta a sus
-                     hijos, asi que el texto simplemente se salia. Asi no puede volver a pasar ni
-                     con la traduccion mas larga. -->
+                <!-- The label in the elastic column and clipped; the swatch and the box on the
+                     right in Auto columns. The label used to be a fixed 140 pixels, and a long one
+                     drew straight over the swatch: a Grid does not clip its children, so the text
+                     simply ran out of its cell. This way it cannot happen again, not even with the
+                     longest translation. -->
                 <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                       IsEnabled="{Binding #NotifMaster.IsChecked}" Margin="0,2,0,0">
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Notif_LevelSuccess}"
@@ -117,11 +117,11 @@
                 <TextBlock Text="{loc:Loc Console_Colors}" FontWeight="SemiBold" Margin="0,14,0,0" />
                 <TextBlock Text="{loc:Loc Console_ColorsIntro}" TextWrapping="Wrap" Opacity="0.7"
                            FontSize="13" Margin="0,4,0,6" />
-                <!-- La etiqueta en la columna elastica y con recorte, la muestra y la casilla
-                     a la derecha en columnas Auto. Antes la etiqueta tenia 140 pixeles fijos y las
-                     etiquetas largas se dibujaban encima de la muestra: un Grid no recorta a sus
-                     hijos, asi que el texto simplemente se salia. Asi no puede volver a pasar ni
-                     con la traduccion mas larga. -->
+                <!-- The label in the elastic column and clipped; the swatch and the box on the
+                     right in Auto columns. The label used to be a fixed 140 pixels, and a long one
+                     drew straight over the swatch: a Grid does not clip its children, so the text
+                     simply ran out of its cell. This way it cannot happen again, not even with the
+                     longest translation. -->
                 <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto"
                       Margin="0,2,0,0">
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Console_ColorChat}"

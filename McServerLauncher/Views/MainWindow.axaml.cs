@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -11,6 +12,13 @@ using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views;
 
+/// <summary>
+/// The main window: the server list, the selected server's console, its stats and its players.
+/// </summary>
+/// <remarks>
+/// Closing it with the X hides it to the tray instead of quitting, so the servers keep running;
+/// <see cref="RequestExit"/> is the one path that really shuts down.
+/// </remarks>
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
@@ -107,20 +115,20 @@ public partial class MainWindow : Window
         base.OnClosing(e);
     }
 
-    private void ConsoleCopy_Click(object? sender, RoutedEventArgs e) => _ = CopyConsole(selectedOnly: true);
+    private void ConsoleCopy_Click(object? sender, RoutedEventArgs e) => _ = CopyConsoleAsync(selectedOnly: true);
 
-    private void ConsoleCopyAll_Click(object? sender, RoutedEventArgs e) => _ = CopyConsole(selectedOnly: false);
+    private void ConsoleCopyAll_Click(object? sender, RoutedEventArgs e) => _ = CopyConsoleAsync(selectedOnly: false);
 
     private void ConsoleList_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control))
         {
-            _ = CopyConsole(selectedOnly: true);
+            _ = CopyConsoleAsync(selectedOnly: true);
             e.Handled = true;
         }
     }
 
-    private async System.Threading.Tasks.Task CopyConsole(bool selectedOnly)
+    private async Task CopyConsoleAsync(bool selectedOnly)
     {
         IList source = selectedOnly && ConsoleList.SelectedItems is { Count: > 0 }
             ? ConsoleList.SelectedItems

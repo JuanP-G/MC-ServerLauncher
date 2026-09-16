@@ -6,8 +6,17 @@ namespace McServerLauncher.Models;
 /// <summary>Everything needed to update an installed mod to its latest Modrinth version.</summary>
 public record ModUpdateInfo(string VersionNumber, string Url, string FileName, string? Sha512, string? Sha1);
 
+/// <summary>
+/// One mod or plugin file already sitting in a server's content folder, as the Mods tab shows it.
+/// </summary>
+/// <remarks>
+/// A disabled item is the same file with <c>.disabled</c> appended, which is why the name is
+/// mutable and the path is not: enabling and disabling renames it in place, and the row has to
+/// follow that rename rather than be rebuilt.
+/// </remarks>
 public partial class ModItem : ObservableObject
 {
+    /// <summary>Full path to the jar as it is on disk right now.</summary>
     public string FilePath { get; }
 
     [ObservableProperty]
