@@ -19,7 +19,7 @@
   <data name="Uptime" xml:space="preserve"><value>Uptime</value></data>
   <data name="Port" xml:space="preserve"><value>Port</value></data>
   <data name="Tip_ChangeIcon" xml:space="preserve"><value>Click to change the server icon (what players see)</value></data>
-  <data name="Tunnel_Placeholder" xml:space="preserve"><value>Auto-detected, or paste the tunnel address here...</value></data>
+  <data name="Tunnel_Placeholder" xml:space="preserve"><value>Appears on its own once the tunnel exists</value></data>
   <data name="Copy" xml:space="preserve"><value>Copy</value></data>
   <data name="CreateTunnel" xml:space="preserve"><value>Create tunnel</value></data>
   <data name="Tip_CreateTunnel" xml:space="preserve"><value>Create the Playit tunnel for this server (by its port)</value></data>
@@ -648,6 +648,10 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_TunnelForeignFmt" xml:space="preserve"><value>[Crossplay] Port {0} is still taken by the tunnel “{1}”. Delete it on Playit or change the port by hand.</value></data>
   <data name="Msg_JavaTunnelPortUnknown" xml:space="preserve"><value>The server's Java port could not be read, so its tunnel was not deleted. The Bedrock one was.</value></data>
   <data name="Crossplay_LocalPort" xml:space="preserve"><value>Local port:</value></data>
+  <data name="Tunnel_StateWaiting" xml:space="preserve"><value>Waiting for Playit to publish the address…</value></data>
+  <data name="Tunnel_StateNoTunnel" xml:space="preserve"><value>No tunnel for this server: make one with the “Create tunnel” button.</value></data>
+  <data name="Tunnel_StateReady" xml:space="preserve"><value>Ready: anybody can join using this address.</value></data>
+  <data name="Tunnel_StateFailed" xml:space="preserve"><value>The tunnel could not be looked up; it retries on its own.</value></data>
   <data name="Crossplay_StateWaiting" xml:space="preserve"><value>Waiting for Playit to publish the address…</value></data>
   <data name="Crossplay_StateLocalOnly" xml:space="preserve"><value>No tunnel: from your network only, using this computer's local IP.</value></data>
   <data name="Crossplay_StateReady" xml:space="preserve"><value>Ready: anybody can join using the address above.</value></data>

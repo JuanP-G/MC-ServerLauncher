@@ -314,7 +314,11 @@ protocol**: a crossplay server has two tunnels, so every lookup goes through
 servers behind a 25-second cache so that N servers polling do not make N calls; the short burst of
 lookups that follows creating a tunnel passes `fresh: true` to skip it, because playit takes a few
 seconds to publish an address and otherwise the empty first answer would be served back to the
-retries. Compliance
+retries; creating a tunnel starts the same burst on the Java side, which used to wait for the
+30-second timer. The address box is read-only — it shows what playit assigned, not a preference —
+and the line under it is `TunnelAddressState` (`Waiting` / `NoTunnel` / `Ready` / `Failed`), the
+sibling of `BedrockAddressState`: three different situations used to render as one empty box.
+Compliance
 with Playit's third-party rules: the browser only opens on an explicit click, a disclaimer states
 the app is not affiliated with Playit, and the user can always reach their Playit account directly.
 A self-managed agent forwards traffic only while the agent process runs, so `PlayitAgentRunner`

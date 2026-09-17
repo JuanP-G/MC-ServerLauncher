@@ -19,7 +19,7 @@
   <data name="Uptime" xml:space="preserve"><value>Laufzeit</value></data>
   <data name="Port" xml:space="preserve"><value>Port</value></data>
   <data name="Tip_ChangeIcon" xml:space="preserve"><value>Klicken, um das Server-Symbol zu ändern (für Spieler sichtbar)</value></data>
-  <data name="Tunnel_Placeholder" xml:space="preserve"><value>Wird automatisch erkannt, oder Tunnel-Adresse hier einfügen...</value></data>
+  <data name="Tunnel_Placeholder" xml:space="preserve"><value>Erscheint von selbst, sobald der Tunnel besteht</value></data>
   <data name="Copy" xml:space="preserve"><value>Kopieren</value></data>
   <data name="CreateTunnel" xml:space="preserve"><value>Tunnel erstellen</value></data>
   <data name="Tip_CreateTunnel" xml:space="preserve"><value>Playit-Tunnel für diesen Server erstellen (über den Port)</value></data>
@@ -648,6 +648,10 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_TunnelForeignFmt" xml:space="preserve"><value>[Crossplay] Port {0} ist weiterhin vom Tunnel „{1}“ belegt. Lösche ihn bei Playit oder ändere den Port von Hand.</value></data>
   <data name="Msg_JavaTunnelPortUnknown" xml:space="preserve"><value>Der Java-Port des Servers konnte nicht gelesen werden, daher wurde sein Tunnel nicht gelöscht. Der Bedrock-Tunnel schon.</value></data>
   <data name="Crossplay_LocalPort" xml:space="preserve"><value>Lokaler Port:</value></data>
+  <data name="Tunnel_StateWaiting" xml:space="preserve"><value>Warten darauf, dass Playit die Adresse veröffentlicht…</value></data>
+  <data name="Tunnel_StateNoTunnel" xml:space="preserve"><value>Kein Tunnel für diesen Server: mit der Schaltfläche „Tunnel erstellen“ anlegen.</value></data>
+  <data name="Tunnel_StateReady" xml:space="preserve"><value>Bereit: mit dieser Adresse kann jeder beitreten.</value></data>
+  <data name="Tunnel_StateFailed" xml:space="preserve"><value>Der Tunnel konnte nicht abgefragt werden; es wird automatisch erneut versucht.</value></data>
   <data name="Crossplay_StateWaiting" xml:space="preserve"><value>Warte darauf, dass Playit die Adresse veröffentlicht…</value></data>
   <data name="Crossplay_StateLocalOnly" xml:space="preserve"><value>Kein Tunnel: nur aus deinem Netzwerk, über die lokale IP dieses Rechners.</value></data>
   <data name="Crossplay_StateReady" xml:space="preserve"><value>Bereit: Mit der Adresse oben kann jeder beitreten.</value></data>
