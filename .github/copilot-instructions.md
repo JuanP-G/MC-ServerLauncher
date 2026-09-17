@@ -52,6 +52,10 @@ repeating, plus the ones a tool can't check:
   instance the view models are showing, so nothing recomputes on its own. A property left out of that
   method is right until the server is edited and wrong until the app restarts —
   `ServerViewModel.RefreshFromConfig`, `ServerModsViewModel.RefreshFromConfig`.
+- **A constructor assembles; `Activate()` starts.** Timers, sockets, shared-singleton subscriptions
+  and network calls never go in a constructor. They go in `Activate()`, mirrored by
+  `ShutdownAsync()`, both safe to call twice (`ServerViewModel`, `MainViewModel`). It is what makes
+  them testable, and `MainWindow` calls `MainViewModel.Activate()` from `Loaded`.
 - **Comments and identifiers are in English** in `McServerLauncher/` (`.axaml` included),
   `McServerLauncher.Tests/` and `.github/workflows/`. (User-facing text is localized, per above.)
   The maintainer's own scripts — `publish.ps1`, `installer/`, `tools/`, `web/_i18n/` — are the one

@@ -44,6 +44,19 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > panel. **A new property derived from the config belongs in that method**, or it will be correct
 > until the first time somebody edits the server and then wrong until the app is restarted.
 
+> **A constructor assembles; `Activate()` starts.** `ServerViewModel` and `MainViewModel` each split
+> in two. The constructor reads — the config, the console palette, the server's own files — and
+> leaves nothing running behind it. `Activate()` is everything that reaches outside the object: the
+> polling timers, the shared `PlayitManager` / `PlayitAgentRunner` subscriptions, the tunnel
+> lookups, the wake-on-demand socket, the update check. `MainWindow` calls
+> `MainViewModel.Activate()` from `Loaded`, and that reaches every server; a server registered later
+> is activated by `Register` on the spot.
+>
+> `ShutdownAsync()` is the exact mirror, and both are safe to call twice — `Loaded` fires again
+> every time the window comes back from the tray. This is why the two can be built in a test at all:
+> before the split, constructing one started three timers, opened a socket and called the network,
+> so nothing that touched them could be tested except through its pure pieces.
+
 Data lives **per user** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux
 and macOS):
 

@@ -329,6 +329,20 @@ public partial class ServerViewModel : ObservableObject
     /// </remarks>
     public Func<IEnumerable<int>>? BedrockPortsInUse { get; set; }
 
+    /// <summary>
+    /// Assembles the view model. It does not start anything — see <see cref="Activate"/>.
+    /// </summary>
+    /// <remarks>
+    /// The split is the difference between a server that <em>exists</em> and one that is being
+    /// <em>watched</em>. Everything here reads: the config, the console palette, the server's own
+    /// files. Nothing here polls, opens a socket, subscribes to a process-wide singleton or goes to
+    /// the network, so building one costs a few file reads and leaves nothing running behind it.
+    /// <para>
+    /// That is what makes the class reachable from a test at all. It is also the right shape on its
+    /// own: a constructor that started three timers and two background requests had already begun
+    /// doing its job before its caller had the chance to decide whether it wanted it to.
+    /// </para>
+    /// </remarks>
     public ServerViewModel(ServerConfig config)
     {
         Config = config;
@@ -349,9 +363,9 @@ public partial class ServerViewModel : ObservableObject
         // can drive the tunnel; the panel reflects whichever is in play (see EffectivePlayitState).
         _onPlayitStateChanged = _ => RunOnUi(RefreshPlayit);
         _onAgentStateChanged = _ => RunOnUi(RefreshPlayit);
-        _playit.StateChanged += _onPlayitStateChanged;
-        _agent.StateChanged += _onAgentStateChanged;
 
+        // Built here, started in Activate. A timer that exists is inert, and these two are started
+        // and stopped later anyway by the server's own state.
         _idleCountdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _idleCountdownTimer.Tick += (_, _) => UpdateIdleCountdown();
 
@@ -362,16 +376,44 @@ public partial class ServerViewModel : ObservableObject
         // tunnel address (via the playit API) less often.
         _playitTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _playitTimer.Tick += OnPlayitTimerTick;
+
+        RefreshPort();
+        RefreshInfo();
+        Mods = new ServerModsViewModel(config);
+        Backups = new ServerBackupsViewModel(this);
+    }
+
+    /// <summary>True between <see cref="Activate"/> and <see cref="ShutdownAsync"/>.</summary>
+    /// <remarks>
+    /// Kept so that both are safe to call twice, and so that <see cref="ShutdownAsync"/> never
+    /// unsubscribes handlers it did not subscribe.
+    /// </remarks>
+    private bool _active;
+
+    /// <summary>
+    /// Starts watching: the polling timer, the shared Playit state, the tunnel addresses and the
+    /// wake-on-demand listener. <see cref="ShutdownAsync"/> is its mirror.
+    /// </summary>
+    /// <remarks>
+    /// Called by <c>MainViewModel</c> once the window is up, rather than by the constructor, so
+    /// that building a server and switching it on are two decisions instead of one. Everything in
+    /// here reaches outside the object — a shared singleton, a socket, the network — and none of it
+    /// is wanted by code that only needs to look at a server.
+    /// </remarks>
+    public void Activate()
+    {
+        if (_active) return;
+        _active = true;
+
+        _playit.StateChanged += _onPlayitStateChanged;
+        _agent.StateChanged += _onAgentStateChanged;
+
         _playitTimer.Start();
         _playit.RefreshState();
         // Sync directly: the shared manager/agent may already know the state (another view model
         // refreshed it before we subscribed), in which case no change event will fire.
         RefreshPlayit();
 
-        RefreshPort();
-        RefreshInfo();
-        Mods = new ServerModsViewModel(config);
-        Backups = new ServerBackupsViewModel(this);
         _ = RefreshTunnelAddressAsync();
 
         // Crossplay is a remembered setting, so it gets checked rather than assumed: the tunnel's
@@ -1789,14 +1831,27 @@ public partial class ServerViewModel : ObservableObject
             ? $"{(int)t.TotalHours}h {t.Minutes}m {t.Seconds}s"
             : $"{t.Minutes}m {t.Seconds}s";
 
-    /// <summary>Stops the server when the app closes. Does NOT touch the Playit service (keeps running in the background).</summary>
+    /// <summary>
+    /// The mirror of <see cref="Activate"/>: stops watching, and stops the server if it is running.
+    /// Does NOT touch the Playit service, which keeps running in the background.
+    /// </summary>
+    /// <remarks>
+    /// Safe on a view model that was never activated, which is the normal case in a test. Only the
+    /// two unsubscriptions would be wrong to run unpaired, and they are guarded; stopping an inert
+    /// timer and closing a listener that was never opened cost nothing.
+    /// </remarks>
     public async Task ShutdownAsync()
     {
+        if (_active)
+        {
+            _active = false;
+            _playit.StateChanged -= _onPlayitStateChanged; // the manager is shared and outlives us
+            _agent.StateChanged -= _onAgentStateChanged;   // the agent runner is shared too
+        }
+
         _statsTimer.Stop();
         _idleCountdownTimer.Stop();
         _playitTimer.Stop();
-        _playit.StateChanged -= _onPlayitStateChanged; // the manager is shared and outlives us
-        _agent.StateChanged -= _onAgentStateChanged;   // the agent runner is shared too
         Mods.Shutdown();                               // cancels anything the store was fetching
         _wake.Stop();                                  // frees the port we answer on while asleep
         if (_process.IsRunning)

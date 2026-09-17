@@ -32,6 +32,11 @@ public partial class MainWindow : Window
         DataContext = _viewModel;
         Loaded += async (_, _) =>
         {
+            // Switch everything on once there is a window: the Playit agent, the update check and
+            // each server's own watching. The constructor only assembled them, so nothing has
+            // polled, opened a socket or called GitHub before this point.
+            _viewModel.Activate();
+
             // Warn about a corrupt servers.json first (rare), then the what's-new dialog.
             await _viewModel.WarnIfServersFileWasCorruptAsync(this);
             _viewModel.ShowWhatsNewIfUpdated(this);

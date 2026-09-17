@@ -102,6 +102,10 @@ the name's fault the other half — prefer fixing the name.
   that server, and the wrong one from then until the app restarts.
 - `var` when the type is already on the line (`var dialog = new SettingsDialog(…)`), the type spelled
   out when it is not.
+- **A constructor assembles; `Activate()` starts.** Nothing that polls, opens a socket, subscribes to
+  a shared singleton or goes to the network belongs in a constructor — it goes in `Activate()`, whose
+  mirror is `ShutdownAsync()`, and both must be safe to call twice. `ServerViewModel` and
+  `MainViewModel` are split this way, which is the only reason either can be built in a test.
 
 ### Layering
 

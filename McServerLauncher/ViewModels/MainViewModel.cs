@@ -89,15 +89,6 @@ public partial class MainViewModel : ObservableObject
         Load();
         _appSettings = _settings.Load();
 
-        // Make the per-user Playit agent key (if the user already connected) the credential for all
-        // Playit API reads/writes this session.
-        PlayitApiService.SetAgentKey(_appSettings.PlayitAgentSecretKey);
-
-        // If already connected, run the embedded Playit agent so tunnels forward traffic (downloads
-        // it once; nothing for the user to install).
-        if (!string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
-            _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
-
         // Make the saved notification preferences the app-wide defaults for this session.
         NotificationPreferences.Global = _appSettings.Notifications;
         ApplyConsoleColours();
@@ -108,13 +99,44 @@ public partial class MainViewModel : ObservableObject
         SelectedLanguage = Languages.FirstOrDefault(l => l.Code == code) ?? Languages[0];
         _languageReady = true;
 
-        _ = CheckForUpdatesAsync();
-
         // Checking only at startup missed the case this app is designed for: it lives in the tray
         // with the servers running, so on a machine that is never turned off it would simply never
-        // look again.
+        // look again. Built here, started in Activate.
         _updateTimer = new DispatcherTimer { Interval = UpdateCheckInterval };
         _updateTimer.Tick += (_, _) => _ = CheckForUpdatesAsync();
+    }
+
+    /// <summary>True once <see cref="Activate"/> has run, so servers added later start watching.</summary>
+    private bool _activated;
+
+    /// <summary>
+    /// Starts everything that reaches outside the app: the Playit agent, the update check and its
+    /// timer, and each server's own watching.
+    /// </summary>
+    /// <remarks>
+    /// Called from <c>MainWindow</c> once the window is up, not from the constructor. The same
+    /// split as <see cref="ServerViewModel.Activate"/> and for the same reasons: a constructor goes
+    /// back to assembling, the app stops downloading an agent and calling GitHub before anything is
+    /// on screen, and this view model becomes reachable from a test at all.
+    /// </remarks>
+    public void Activate()
+    {
+        if (_activated) return;
+        _activated = true;
+
+        // Make the per-user Playit agent key (if the user already connected) the credential for all
+        // Playit API reads/writes this session.
+        PlayitApiService.SetAgentKey(_appSettings.PlayitAgentSecretKey);
+
+        // If already connected, run the embedded Playit agent so tunnels forward traffic (downloads
+        // it once; nothing for the user to install).
+        if (!string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
+            _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
+
+        foreach (var server in Servers)
+            server.Activate();
+
+        _ = CheckForUpdatesAsync();
         _updateTimer.Start();
     }
 
@@ -483,6 +505,9 @@ public partial class MainViewModel : ObservableObject
         vm.ConfigChanged += Save;
         vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
         Servers.Add(vm);
+        // A server registered while the app is already running has nobody else to switch it on. The
+        // ones Load builds at startup wait for Activate, which reaches all of them at once.
+        if (_activated) vm.Activate();
         return vm;
     }
 

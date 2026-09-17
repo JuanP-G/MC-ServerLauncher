@@ -108,6 +108,10 @@ de las veces y del nombre la otra mitad — casi siempre sale mejor arreglar el 
   se reinicia la app.
 - `var` cuando el tipo ya está en la línea (`var dialog = new SettingsDialog(…)`), y el tipo escrito
   cuando no lo está.
+- **Un constructor monta; `Activate()` arranca.** Nada que sondee, abra un socket, se suscriba a un
+  singleton compartido o vaya a la red va en un constructor: va en `Activate()`, cuyo espejo es
+  `ShutdownAsync()`, y los dos tienen que aguantar que se les llame dos veces. `ServerViewModel` y
+  `MainViewModel` están partidos así, que es la única razón de que se puedan construir en una prueba.
 
 ### Capas
 

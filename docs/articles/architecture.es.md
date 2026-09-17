@@ -44,6 +44,19 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > a cada panel. **Una propiedad nueva derivada de la config va en ese método**, o será correcta
 > hasta la primera vez que alguien edite el servidor y estará mal hasta que se reinicie la app.
 
+> **Un constructor monta; `Activate()` arranca.** `ServerViewModel` y `MainViewModel` se parten en
+> dos. El constructor lee —la config, la paleta de consola, los archivos del propio servidor— y no
+> deja nada en marcha detrás. `Activate()` es todo lo que sale del objeto: los timers de sondeo, las
+> suscripciones al `PlayitManager` / `PlayitAgentRunner` compartidos, la consulta de los túneles, el
+> socket de despertar bajo demanda, la comprobación de actualizaciones. `MainWindow` llama a
+> `MainViewModel.Activate()` desde `Loaded`, y eso llega a todos los servidores; uno registrado más
+> tarde lo activa `Register` en el momento.
+>
+> `ShutdownAsync()` es el espejo exacto, y los dos se pueden llamar dos veces sin daño — `Loaded`
+> vuelve a dispararse cada vez que la ventana regresa de la bandeja. Por eso se pueden construir en
+> una prueba: antes del corte, construir uno arrancaba tres timers, abría un socket y llamaba a la
+> red, así que nada que los tocara se podía probar salvo por sus piezas puras.
+
 Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`
 (`~/.config/McServerLauncher/` en Linux y macOS):
 
