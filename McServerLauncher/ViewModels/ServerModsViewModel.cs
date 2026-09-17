@@ -990,7 +990,10 @@ public partial class ServerModsViewModel : ObservableObject
     /// zip coming out, without a test ever reaching api.modrinth.com — which would make the result
     /// depend on a third party's uptime and on data anyone can edit.
     /// </remarks>
+    /// <param name="destination">Where to write the zip.</param>
     /// <param name="storeSides">Per file name, what the store said. Empty means it was not asked.</param>
+    /// <param name="includeEverything">Skip the reasoning and pack the folder as it stands.</param>
+    /// <param name="ct">Cancels the build.</param>
     internal Task<ModpackResult> BuildModpackWithSidesAsync(
         string destination,
         IReadOnlyDictionary<string, (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)> storeSides,
