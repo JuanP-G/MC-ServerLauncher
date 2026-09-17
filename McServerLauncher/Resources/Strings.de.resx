@@ -459,12 +459,28 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Name_NewServer" xml:space="preserve"><value>Neuer Server</value></data>
   <data name="Export_ScriptsFmt" xml:space="preserve"><value>Damit du es nicht von Hand machen musst: entpacke dieses Zip vollständig und führe unter Windows „{0}“ aus, unter Linux und macOS „bash {1}“. Das kopiert die Mods in deinen Ordner und legt bereits vorhandene in einen separaten Ordner beiseite, ohne etwas zu löschen.</value></data>
   <data name="Script_HeaderFmt" xml:space="preserve"><value>Mods für „{0}“ — Minecraft {1} ({2})</value></data>
+  <data name="Script_LauncherOfficial" xml:space="preserve"><value>Offizielles Minecraft</value></data>
+  <data name="Script_ArrowsHint" xml:space="preserve"><value>Mit den Pfeiltasten ↑ ↓ bewegen, mit Enter bestätigen.</value></data>
+  <data name="Script_OtherPath" xml:space="preserve"><value>Ein anderer Ordner…</value></data>
+  <data name="Script_PickOne" xml:space="preserve"><value>Wähle eine, indem du ihre Nummer drückst:</value></data>
+  <data name="Script_TypePath" xml:space="preserve"><value>Gib den Pfad zu deinem mods-Ordner ein:</value></data>
+  <data name="Script_AskInstall" xml:space="preserve"><value>Soll ich ihn für dich installieren? [J/n]</value></data>
+  <data name="Script_CarryingOn" xml:space="preserve"><value>Gut, es geht ohne weiter. Die Mods werden trotzdem kopiert.</value></data>
+  <data name="Script_Downloading" xml:space="preserve"><value>Offizielles Installationsprogramm wird heruntergeladen…</value></data>
+  <data name="Script_DownloadFailed" xml:space="preserve"><value>Das Installationsprogramm konnte nicht heruntergeladen werden. Es geht ohne weiter.</value></data>
+  <data name="Script_NoDownloader" xml:space="preserve"><value>Ich finde weder curl noch wget, um das Installationsprogramm zu laden.</value></data>
+  <data name="Script_NoJava" xml:space="preserve"><value>Ich finde kein Java, das zum Installieren nötig ist. Es geht ohne weiter.</value></data>
+  <data name="Script_NoHashTool" xml:space="preserve"><value>Ich kann den Download auf diesem System nicht prüfen und führe ihn daher nicht aus.</value></data>
+  <data name="Script_HashMismatch" xml:space="preserve"><value>Der Download stimmt nicht mit dem Erwarteten überein. Er wird nicht ausgeführt und gelöscht.</value></data>
+  <data name="Script_Installing" xml:space="preserve"><value>Wird installiert. Das dauert einen Moment…</value></data>
+  <data name="Script_LoaderInstalled" xml:space="preserve"><value>Installiert. Wenn du Minecraft öffnest, wähle im Launcher das neue Profil.</value></data>
+  <data name="Script_InstallFailed" xml:space="preserve"><value>Das Installationsprogramm ist fehlgeschlagen. Die Mods werden trotzdem kopiert; installiere ihn von Hand.</value></data>
   <data name="Script_CloseGame" xml:space="preserve"><value>Schließe Minecraft, bevor es weitergeht.</value></data>
   <data name="Script_NoSource" xml:space="preserve"><value>Ich finde den Ordner „mods“ nicht neben diesem Skript. Entpacke das ganze Zip und starte es von dort, nicht aus dem Archiv heraus.</value></data>
-  <data name="Script_AskFolder" xml:space="preserve"><value>Wo liegt dein mods-Ordner? Mit Enter wird der untenstehende benutzt.</value></data>
+  <data name="Script_AskFolder" xml:space="preserve"><value>Wohin sollen die Mods?</value></data>
   <data name="Script_DestinationIs" xml:space="preserve"><value>Zielordner:</value></data>
   <data name="Script_NoLoaderFmt" xml:space="preserve"><value>{0} scheint in diesem Minecraft nicht installiert zu sein. Ohne den Loader werden die Mods nicht geladen. Zu finden unter {1}</value></data>
-  <data name="Script_AskContinue" xml:space="preserve"><value>Trotzdem kopieren?</value></data>
+  <data name="Script_AskContinue" xml:space="preserve"><value>Trotzdem kopieren? [J/n]</value></data>
   <data name="Script_YesWords" xml:space="preserve"><value>j,ja</value></data>
   <data name="Script_Cancelled" xml:space="preserve"><value>Es wurde nichts geändert.</value></data>
   <data name="Script_CannotCreate" xml:space="preserve"><value>Der Zielordner konnte nicht angelegt werden.</value></data>

@@ -36,6 +36,13 @@ public class InstallScriptTests
     private static string Unix(ServerType type = ServerType.Fabric) =>
         Scripts(type).Single(f => f.Name == InstallScriptBuilder.UnixName).Text;
 
+    /// <summary>A template's lines with the comments taken out: the logic, without the prose.</summary>
+    private static IEnumerable<string> Logic(string name) =>
+        InstallScriptBuilder.Template(name)
+            .Split('\n')
+            .Select(l => l.Trim())
+            .Where(l => l.Length > 0 && !l.StartsWith("rem ", StringComparison.Ordinal) && !l.StartsWith('#'));
+
     /// <summary>Runs a build under each language, so a check covers all five.</summary>
     private static void InEveryLanguage(Action<string, string> check)
     {
@@ -55,37 +62,73 @@ public class InstallScriptTests
     // --- Nothing is ever deleted ---
 
     [Fact]
-    public void NeitherTemplateCanDeleteAnything()
+    public void TheOnlyThingEitherTemplateDeletesIsItsOwnDownload()
     {
-        // The one promise the whole feature rests on. A player runs this on their own machine, over
-        // a mods folder that may be the only copy of an evening's work.
+        // The promise the whole feature rests on, stated as precisely as it is actually true. A
+        // player runs this over a mods folder that may be the only copy of an evening's work, and
+        // none of that is ever removed — but the scripts do delete one thing: the installer jar
+        // they downloaded to a temp directory. On a hash mismatch they MUST delete it, so a blanket
+        // ban would have been a worse rule pretending to be a stronger one.
         //
-        // Read against the templates rather than the finished scripts, and that distinction was
-        // found the hard way: scanning the output matched the Spanish word «del» in an ordinary
-        // sentence. The templates are the logic and the .resx files are prose, so the logic is
-        // where this belongs — and every translated string ends up inside an echo, where a verb is
-        // a word rather than a command.
+        // Read against the templates rather than the finished scripts, which was found the hard
+        // way: scanning the output matched the Spanish word «del» in an ordinary sentence.
         var deleting = new[] { "del ", "erase ", "rmdir", "rd /", "rm -", "Remove-Item", "unlink " };
 
         foreach (var name in new[] { "install-mods-windows.bat.in", "install-mods-unix.sh.in" })
         {
-            var logic = string.Join("\n", InstallScriptBuilder.Template(name)
-                .Split('\n')
-                .Select(l => l.Trim())
-                .Where(l => !l.StartsWith("rem ", StringComparison.Ordinal) && !l.StartsWith('#')));
+            foreach (var line in Logic(name))
+            {
+                if (!deleting.Any(v => line.Contains(v, StringComparison.OrdinalIgnoreCase))) continue;
 
-            foreach (var verb in deleting)
-                Assert.False(logic.Contains(verb, StringComparison.OrdinalIgnoreCase),
-                    $"«{name}» contiene «{verb}»: estos scripts no borran nunca nada");
+                Assert.True(line.Contains("installer", StringComparison.OrdinalIgnoreCase),
+                    $"«{name}» borra algo que no es el instalador descargado: {line}");
+
+                foreach (var theirs in new[] { "destination", "backup", "mcdir", "source" })
+                    Assert.False(line.Contains(theirs, StringComparison.OrdinalIgnoreCase),
+                        $"«{name}» borra algo del Minecraft del jugador: {line}");
+            }
+        }
+    }
+
+    [Fact]
+    public void TheInstallerIsDeletedWhenItsHashDoesNotMatch()
+    {
+        // The one case where deleting is the right answer: a downloaded jar that is not what it was
+        // supposed to be must not be left sitting on the player's disk for anything to pick up.
+        foreach (var name in new[] { "install-mods-windows.bat.in", "install-mods-unix.sh.in" })
+        {
+            var text = InstallScriptBuilder.Template(name);
+            var mismatch = text.IndexOf("HASH_MISMATCH", StringComparison.Ordinal);
+
+            Assert.True(mismatch > 0, $"«{name}» ya no comprueba el hash de la descarga");
+            Assert.Contains("installer", text[mismatch..(mismatch + 200)], StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Fact]
+    public void TheDownloadIsNeverRunWithoutBeingChecked()
+    {
+        // A jar fetched over the network and handed to java on somebody else's machine is the most
+        // consequential thing in the whole pack. The hash is resolved at export time from the
+        // loader's own maven and compared before the jar is executed, never after.
+        foreach (var name in new[] { "install-mods-windows.bat.in", "install-mods-unix.sh.in" })
+        {
+            var text = InstallScriptBuilder.Template(name);
+
+            var compared = text.IndexOf("INSTALLER_SHA", StringComparison.Ordinal);
+            var executed = text.IndexOf("-jar", StringComparison.Ordinal);
+
+            Assert.True(compared > 0 && executed > 0, name);
+            Assert.True(compared < executed, $"«{name}» ejecuta el instalador antes de comprobarlo");
         }
     }
 
     [Fact]
     public void NoTranslatedWordCanBecomeACommand()
     {
-        // The other half: a message is only ever echoed. Spanish «del» and «rm» in a Portuguese
-        // word are words, and they have to stay words — which they do because nothing ever
-        // interpolates a message anywhere except after echo or say.
+        // The other half: a message is only ever echoed. Spanish «del» and Portuguese words holding
+        // «rm» are words, and they have to stay words — which they do because nothing interpolates
+        // a message anywhere except after echo or say.
         InEveryLanguage((culture, script) =>
         {
             foreach (var line in script.Split('\n').Select(l => l.Trim()))
@@ -93,6 +136,9 @@ public class InstallScriptTests
                 if (line.StartsWith("echo ", StringComparison.Ordinal)) continue;
                 if (line.StartsWith("say ", StringComparison.Ordinal)) continue;
                 if (line.StartsWith("printf ", StringComparison.Ordinal)) continue;
+
+                // The installer the script downloaded itself is the one thing it may remove.
+                if (line.Contains("installer", StringComparison.OrdinalIgnoreCase)) continue;
 
                 Assert.False(line.StartsWith("del ", StringComparison.OrdinalIgnoreCase),
                     $"«{culture}»: una línea que no es un mensaje empieza por «del»: {line}");
@@ -249,7 +295,7 @@ public class InstallScriptTests
             await mods.BuildModpackWithSidesAsync(
                 zipPath,
                 new Dictionary<string, (ExportSelection.StoreSide, ExportSelection.StoreSide)>(),
-                includeEverything: false, CancellationToken.None);
+                includeEverything: false, loader: null, CancellationToken.None);
 
             using var zip = ZipFile.OpenRead(zipPath);
             Assert.NotNull(zip.GetEntry(InstallScriptBuilder.WindowsName));
@@ -286,7 +332,7 @@ public class InstallScriptTests
             await mods.BuildModpackWithSidesAsync(
                 zipPath,
                 new Dictionary<string, (ExportSelection.StoreSide, ExportSelection.StoreSide)>(),
-                includeEverything: false, CancellationToken.None);
+                includeEverything: false, loader: null, CancellationToken.None);
 
             using var zip = ZipFile.OpenRead(zipPath);
 

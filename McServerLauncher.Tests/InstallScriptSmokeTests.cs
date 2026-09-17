@@ -187,6 +187,51 @@ public class InstallScriptSmokeTests : IDisposable
         Assert.False(Directory.Exists(destination), "no debería haber tocado el destino");
     }
 
+    [Fact]
+    public void WithOneLauncherFoundItUsesThatFolderAndNotTheOfficialPath()
+    {
+        if (Bash() is not { } bash) return;
+
+        // Finding .minecraft proves the official launcher was installed once, never that it is the
+        // one being used — Prism, MultiMC, CurseForge and Modrinth App keep mods per instance. Here
+        // the only folder that exists belongs to Prism, and nobody is around to be asked, so the
+        // answer has to be that one rather than a path that is not even there.
+        var script = WriteScript();
+        Directory.CreateDirectory(Path.Combine(_root, "mods"));
+        File.WriteAllText(Path.Combine(_root, "mods", "sodium.jar"), "nuevo");
+
+        var home = Path.Combine(_root, "home");
+        var prism = Path.Combine(home, ".local", "share", "PrismLauncher", "instances", "Survival", "minecraft", "mods");
+        Directory.CreateDirectory(prism);
+
+        var (exit, output) = RunWithoutOverride(bash, script);
+
+        Assert.True(exit == "0", output);
+        Assert.True(File.Exists(Path.Combine(prism, "sodium.jar")),
+            "no ha usado la carpeta de la instancia encontrada. Salida:\n" + output);
+    }
+
+    /// <summary>Runs the script with a fake HOME and no MCSL_MODS_DIR, so detection decides.</summary>
+    private (string Exit, string Output) RunWithoutOverride(string bash, string script)
+    {
+        var info = new ProcessStartInfo(bash)
+        {
+            Arguments = $"\"{Posix(script)}\"",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            WorkingDirectory = _root
+        };
+        info.Environment["HOME"] = Posix(Path.Combine(_root, "home"));
+        info.Environment.Remove("MCSL_MODS_DIR");
+
+        using var process = Process.Start(info)!;
+        var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
+        process.WaitForExit(60_000);
+
+        return (process.ExitCode.ToString(), output);
+    }
+
     public void Dispose()
     {
         try { Directory.Delete(_root, recursive: true); } catch { /* best-effort */ }

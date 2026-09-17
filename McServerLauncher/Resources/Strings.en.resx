@@ -459,12 +459,28 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Name_NewServer" xml:space="preserve"><value>New server</value></data>
   <data name="Export_ScriptsFmt" xml:space="preserve"><value>To avoid doing it by hand: extract this whole zip and run “{0}” on Windows, or “bash {1}” on Linux and macOS. It copies the mods into your folder and, if you already had some, moves them aside into a separate folder without deleting anything.</value></data>
   <data name="Script_HeaderFmt" xml:space="preserve"><value>Mods for “{0}” — Minecraft {1} ({2})</value></data>
+  <data name="Script_LauncherOfficial" xml:space="preserve"><value>Official Minecraft</value></data>
+  <data name="Script_ArrowsHint" xml:space="preserve"><value>Move with the ↑ ↓ arrows and confirm with Enter.</value></data>
+  <data name="Script_OtherPath" xml:space="preserve"><value>Another folder…</value></data>
+  <data name="Script_PickOne" xml:space="preserve"><value>Pick one by pressing its number:</value></data>
+  <data name="Script_TypePath" xml:space="preserve"><value>Type the path to your mods folder:</value></data>
+  <data name="Script_AskInstall" xml:space="preserve"><value>Shall I install it for you? [Y/n]</value></data>
+  <data name="Script_CarryingOn" xml:space="preserve"><value>All right, carrying on without it. The mods are copied anyway.</value></data>
+  <data name="Script_Downloading" xml:space="preserve"><value>Downloading the official installer…</value></data>
+  <data name="Script_DownloadFailed" xml:space="preserve"><value>The installer could not be downloaded. Carrying on without it.</value></data>
+  <data name="Script_NoDownloader" xml:space="preserve"><value>I cannot find curl or wget to download the installer.</value></data>
+  <data name="Script_NoJava" xml:space="preserve"><value>I cannot find Java, which is needed to install it. Carrying on without it.</value></data>
+  <data name="Script_NoHashTool" xml:space="preserve"><value>I cannot verify the download on this system, so I will not run it.</value></data>
+  <data name="Script_HashMismatch" xml:space="preserve"><value>The download does not match what was expected. I will not run it, and it is deleted.</value></data>
+  <data name="Script_Installing" xml:space="preserve"><value>Installing. This takes a moment…</value></data>
+  <data name="Script_LoaderInstalled" xml:space="preserve"><value>Installed. When you open Minecraft, pick the new profile in the launcher.</value></data>
+  <data name="Script_InstallFailed" xml:space="preserve"><value>The installer failed. The mods are copied anyway; install it by hand.</value></data>
   <data name="Script_CloseGame" xml:space="preserve"><value>Close Minecraft before continuing.</value></data>
   <data name="Script_NoSource" xml:space="preserve"><value>I cannot find the “mods” folder next to this script. Extract the whole zip and run it from there, not from inside the archive.</value></data>
-  <data name="Script_AskFolder" xml:space="preserve"><value>Where is your mods folder? Press Enter to use the one below.</value></data>
+  <data name="Script_AskFolder" xml:space="preserve"><value>Where do you want the mods?</value></data>
   <data name="Script_DestinationIs" xml:space="preserve"><value>Destination folder:</value></data>
   <data name="Script_NoLoaderFmt" xml:space="preserve"><value>{0} does not look installed in that Minecraft. Without the loader, mods will not load. You can get it from {1}</value></data>
-  <data name="Script_AskContinue" xml:space="preserve"><value>Copy anyway?</value></data>
+  <data name="Script_AskContinue" xml:space="preserve"><value>Copy anyway? [Y/n]</value></data>
   <data name="Script_YesWords" xml:space="preserve"><value>y,yes</value></data>
   <data name="Script_Cancelled" xml:space="preserve"><value>Nothing was changed.</value></data>
   <data name="Script_CannotCreate" xml:space="preserve"><value>I could not create the destination folder.</value></data>

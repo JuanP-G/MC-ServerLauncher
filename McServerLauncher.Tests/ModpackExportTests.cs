@@ -78,7 +78,7 @@ public class ModpackExportTests : IDisposable
         bool includeEverything = false,
         IReadOnlyDictionary<string, (Store Client, Store Server)>? sides = null) =>
         mods.BuildModpackWithSidesAsync(
-            Destination, sides ?? NoStore, includeEverything, CancellationToken.None);
+            Destination, sides ?? NoStore, includeEverything, loader: null, CancellationToken.None);
 
     private static string[] EntryNames(string zipPath)
     {

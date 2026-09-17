@@ -129,8 +129,11 @@ todo con botones.
   en su idioma. Los mods que solo hacen algo en el servidor —Geyser, Floodgate, un mod de copias— se
   **dejan fuera solos**, y la app te dice cuáles y los vuelve a meter en un clic si se ha equivocado. Lo
   que necesite un mod que se queda viaja siempre con él. El paquete lleva además un **script para
-  Windows, Linux y macOS** que busca la carpeta de mods del jugador, lo copia todo y aparta lo que ya
-  hubiera — a una carpeta aparte, **sin borrar nada**.
+  Windows, Linux y macOS** que lista las carpetas de mods que encuentra —incluida cada instancia de
+  Prism, MultiMC, CurseForge o Modrinth App por su nombre—, lo copia todo y aparta lo que ya hubiera
+  a una carpeta aparte, **sin borrar nada**. Y si falta Fabric, Forge o NeoForge, **se ofrece a
+  instalarlo**, comprobando la descarga contra el hash publicado por el propio cargador antes de
+  ejecutarla.
 - **Notificaciones** 🔔 — avisos opcionales cuando un jugador entra o sale, alguien muere (PvP), el servidor
   se cae, el reinicio automático se rinde, un **servidor vacío se apaga solo** o uno **se enciende porque
   alguien ha intentado entrar**. Configurables por tipo, de forma global y **por servidor**, con botón de

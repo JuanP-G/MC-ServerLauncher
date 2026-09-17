@@ -515,11 +515,28 @@ Los scripts **apartan y no borran nunca**: los jars que ya estaban van a una car
 `mods-backup-<marca>` hermana de la de mods (hermana, para que el cargador no la reescanee), un
 movimiento fallido para en seco en vez de dejar media instalación, y la marca de tiempo se calcula al
 exportar porque `%DATE%` en un `.bat` sale con el formato local — que en media Europa mete barras
-dentro de un nombre de carpeta. Detectan la carpeta y preguntan en cuanto algo la hace ambigua:
+dentro de un nombre de carpeta. **Listan las carpetas que existen de verdad** y dejan elegir:
 encontrar `.minecraft` demuestra que el launcher oficial se instaló alguna vez, nunca que sea el que
-se va a usar, así que un rastro de Prism o de Modrinth App fuerza la pregunta. `MCSL_MODS_DIR` la
-salta, y un script sin terminal no pregunta jamás — que es lo que evita que se cuelgue con una
-tubería, y lo que lo hace probable. `InstallScriptSmokeTests` ejecuta el script de verdad sobre un
+se va a usar, así que cada instancia de Prism, MultiMC, CurseForge o Modrinth App que aparezca se
+ofrece con su propio nombre. El `.sh` dibuja esa lista como un menú que se recorre con las flechas;
+batch no sabe leer teclas de dirección —eso pide PowerShell, que los proveedores de correo bloquean
+igual y que choca con la política de ejecución—, así que el `.bat` usa `choice.exe`: una sola tecla,
+sin Enter, con todas las opciones a la vista. Los dos colorean su salida, y el `.bat` solo en
+consolas lo bastante nuevas como para interpretar los códigos en vez de imprimirlos. Cada `choice`
+lleva tiempo de espera y valor por defecto, porque batch no tiene forma de preguntar si hay alguien
+escuchando y si no se quedaría esperando una tecla que no puede llegar. `MCSL_MODS_DIR` se salta
+todo, y el `.sh` no pregunta nunca sin terminal — que es lo que evita que se cuelgue con una tubería,
+y lo que lo hace probable.
+
+**Instalar el cargador.** Cuando falta el perfil, el script ofrece instalarlo en vez de limitarse a
+nombrar una web. `ClientLoaderInstall` resuelve al exportar el instalador y su hash publicado desde
+el maven del propio cargador, así que el script no tiene ninguna versión que averiguar: Fabric por su
+CLI `client`, Forge y NeoForge por `--installClient`. Busca Java en el `PATH` y, si no está, dentro
+de la carpeta `runtime` del propio Minecraft, que es donde el lanzador oficial guarda un JRE que la
+mayoría de jugadores no sabe que tiene. **La descarga se verifica contra ese hash antes de pasársela
+a Java**, y se borra si no coincide — lo único que estos scripts pueden borrar, y hay una prueba que
+enuncia la regla con esa precisión. Si el instalador no se puede resolver al montar el paquete,
+sencillamente no va, y el script vuelve a limitarse a avisar: un paquete peor, no uno roto. `InstallScriptSmokeTests` ejecuta el script de verdad sobre un
 `old.jar` plantado y comprueba que sigue existiendo después. El bit de ejecución se pone, pero nada
 depende de él: la invocación documentada es `bash install-mods-unix.sh`, que no lo necesita y además
 esquiva la cuarentena de macOS.

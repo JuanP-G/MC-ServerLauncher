@@ -459,12 +459,28 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Name_NewServer" xml:space="preserve"><value>Nouveau serveur</value></data>
   <data name="Export_ScriptsFmt" xml:space="preserve"><value>Pour ne pas le faire à la main : extrais toute cette archive et lance « {0} » sous Windows, ou « bash {1} » sous Linux et macOS. Cela copie les mods dans ton dossier et, si tu en avais déjà, les met de côté dans un dossier séparé sans rien supprimer.</value></data>
   <data name="Script_HeaderFmt" xml:space="preserve"><value>Mods de « {0} » — Minecraft {1} ({2})</value></data>
+  <data name="Script_LauncherOfficial" xml:space="preserve"><value>Minecraft officiel</value></data>
+  <data name="Script_ArrowsHint" xml:space="preserve"><value>Déplace-toi avec les flèches ↑ ↓ et valide avec Entrée.</value></data>
+  <data name="Script_OtherPath" xml:space="preserve"><value>Un autre dossier…</value></data>
+  <data name="Script_PickOne" xml:space="preserve"><value>Choisis-en un en tapant son numéro :</value></data>
+  <data name="Script_TypePath" xml:space="preserve"><value>Saisis le chemin de ton dossier mods :</value></data>
+  <data name="Script_AskInstall" xml:space="preserve"><value>Je l'installe pour toi ? [O/n]</value></data>
+  <data name="Script_CarryingOn" xml:space="preserve"><value>D'accord, je continue sans l'installer. Les mods sont copiés quand même.</value></data>
+  <data name="Script_Downloading" xml:space="preserve"><value>Téléchargement de l'installateur officiel…</value></data>
+  <data name="Script_DownloadFailed" xml:space="preserve"><value>L'installateur n'a pas pu être téléchargé. Je continue sans lui.</value></data>
+  <data name="Script_NoDownloader" xml:space="preserve"><value>Je ne trouve ni curl ni wget pour télécharger l'installateur.</value></data>
+  <data name="Script_NoJava" xml:space="preserve"><value>Je ne trouve pas Java, nécessaire pour l'installer. Je continue sans lui.</value></data>
+  <data name="Script_NoHashTool" xml:space="preserve"><value>Je ne peux pas vérifier le téléchargement sur ce système, je ne l'exécute donc pas.</value></data>
+  <data name="Script_HashMismatch" xml:space="preserve"><value>Le téléchargement ne correspond pas à ce qui était attendu. Je ne l'exécute pas et je le supprime.</value></data>
+  <data name="Script_Installing" xml:space="preserve"><value>Installation en cours. Cela prend un moment…</value></data>
+  <data name="Script_LoaderInstalled" xml:space="preserve"><value>Installé. En ouvrant Minecraft, choisis le nouveau profil dans le lanceur.</value></data>
+  <data name="Script_InstallFailed" xml:space="preserve"><value>L'installateur a échoué. Les mods sont copiés quand même ; installe-le à la main.</value></data>
   <data name="Script_CloseGame" xml:space="preserve"><value>Ferme Minecraft avant de continuer.</value></data>
   <data name="Script_NoSource" xml:space="preserve"><value>Je ne trouve pas le dossier « mods » à côté de ce script. Extrais toute l'archive et lance-le de là, pas depuis l'intérieur du zip.</value></data>
-  <data name="Script_AskFolder" xml:space="preserve"><value>Où se trouve ton dossier mods ? Appuie sur Entrée pour utiliser celui ci-dessous.</value></data>
+  <data name="Script_AskFolder" xml:space="preserve"><value>Où veux-tu les mods ?</value></data>
   <data name="Script_DestinationIs" xml:space="preserve"><value>Dossier de destination :</value></data>
   <data name="Script_NoLoaderFmt" xml:space="preserve"><value>{0} ne semble pas installé dans ce Minecraft. Sans le chargeur, les mods ne se chargeront pas. Tu peux l'obtenir sur {1}</value></data>
-  <data name="Script_AskContinue" xml:space="preserve"><value>Copier quand même ?</value></data>
+  <data name="Script_AskContinue" xml:space="preserve"><value>Copier quand même ? [O/n]</value></data>
   <data name="Script_YesWords" xml:space="preserve"><value>o,oui</value></data>
   <data name="Script_Cancelled" xml:space="preserve"><value>Rien n'a été modifié.</value></data>
   <data name="Script_CannotCreate" xml:space="preserve"><value>Je n'ai pas pu créer le dossier de destination.</value></data>

@@ -74,7 +74,11 @@ internal static class InstallScriptBuilder
     {
         "Script_CloseGame", "Script_NoSource", "Script_AskFolder", "Script_DestinationIs",
         "Script_AskContinue", "Script_Cancelled", "Script_CannotCreate", "Script_MoveFailed",
-        "Script_MovedAside", "Script_CopyFailed", "Script_Done", "Script_HowToUndo"
+        "Script_MovedAside", "Script_CopyFailed", "Script_Done", "Script_HowToUndo",
+        "Script_LauncherOfficial", "Script_ArrowsHint", "Script_OtherPath", "Script_PickOne",
+        "Script_TypePath", "Script_AskInstall", "Script_CarryingOn", "Script_Downloading",
+        "Script_DownloadFailed", "Script_NoDownloader", "Script_NoJava", "Script_NoHashTool",
+        "Script_HashMismatch", "Script_Installing", "Script_LoaderInstalled", "Script_InstallFailed"
     };
 
     /// <summary>The two scripts, ready to go into the pack.</summary>
@@ -86,8 +90,13 @@ internal static class InstallScriptBuilder
     /// script because <c>%DATE%</c> in a .bat comes out in the machine's local format, and in much
     /// of Europe that produces a folder name with slashes in it.
     /// </param>
+    /// <param name="loader">
+    /// The installer to offer, or null to only warn. Null whenever it could not be resolved — see
+    /// <see cref="ClientLoaderInstall"/> — which is a worse pack rather than a broken one.
+    /// </param>
     internal static IReadOnlyList<ModpackWriter.TextFile> Build(
-        string serverName, ServerType type, string gameVersion, DateTime builtAtLocal)
+        string serverName, ServerType type, string gameVersion, DateTime builtAtLocal,
+        ClientLoaderInstall.Plan? loader = null)
     {
         // Composed here, never in the script: every placeholder is resolved by string.Format on this
         // side, so the templates only ever echo a literal and a variable of their own.
@@ -111,23 +120,54 @@ internal static class InstallScriptBuilder
             ["MOVED_ASIDE"] = Localizer.Get("Script_MovedAside"),
             ["COPY_FAILED"] = Localizer.Get("Script_CopyFailed"),
             ["DONE"] = Localizer.Get("Script_Done"),
-            ["HOW_TO_UNDO"] = Localizer.Get("Script_HowToUndo")
+            ["HOW_TO_UNDO"] = Localizer.Get("Script_HowToUndo"),
+            ["LAUNCHER_OFFICIAL"] = Localizer.Get("Script_LauncherOfficial"),
+            ["ARROWS_HINT"] = Localizer.Get("Script_ArrowsHint"),
+            ["OTHER_PATH"] = Localizer.Get("Script_OtherPath"),
+            ["PICK_ONE"] = Localizer.Get("Script_PickOne"),
+            ["TYPE_PATH"] = Localizer.Get("Script_TypePath"),
+            ["ASK_INSTALL"] = Localizer.Get("Script_AskInstall"),
+            ["CARRYING_ON"] = Localizer.Get("Script_CarryingOn"),
+            ["DOWNLOADING"] = Localizer.Get("Script_Downloading"),
+            ["DOWNLOAD_FAILED"] = Localizer.Get("Script_DownloadFailed"),
+            ["NO_DOWNLOADER"] = Localizer.Get("Script_NoDownloader"),
+            ["NO_JAVA"] = Localizer.Get("Script_NoJava"),
+            ["NO_HASH_TOOL"] = Localizer.Get("Script_NoHashTool"),
+            ["HASH_MISMATCH"] = Localizer.Get("Script_HashMismatch"),
+            ["INSTALLING"] = Localizer.Get("Script_Installing"),
+            ["LOADER_INSTALLED"] = Localizer.Get("Script_LoaderInstalled"),
+            ["INSTALL_FAILED"] = Localizer.Get("Script_InstallFailed")
         };
 
         var yes = YesWords();
+
+        // Shell and batch the builder wrote itself, never anything anybody translated. An empty URL
+        // is how the templates are told there is nothing to offer.
+        var wiring = new (string Token, string Raw)[]
+        {
+            ("INSTALLER_URL", loader?.Url ?? string.Empty),
+            ("INSTALLER_SHA", loader?.Sha ?? string.Empty),
+            ("INSTALLER_ARGS", loader?.Arguments ?? string.Empty),
+            ("SHA_BITS", (loader?.Bits ?? 256).ToString()),
+            ("SHA_TOOL", loader?.Bits == 160 ? "sha1sum" : "sha256sum"),
+            ("SHA_ARGS", string.Empty),
+            ("SHA_ALGO_WIN", loader?.Bits == 160 ? "SHA1" : "SHA256"),
+            ("DEFAULT_YES", yes[0]),
+            // choice.exe takes one key per option, in order: yes first, no second.
+            ("YES_NO_KEYS", yes[0] + "n"),
+            ("YES_PATTERN", string.Join("|", yes.SelectMany(w => new[] { w, w.ToUpperInvariant() }).Distinct()))
+        };
 
         return new[]
         {
             new ModpackWriter.TextFile(
                 WindowsName,
-                Fill(Template("install-mods-windows.bat.in"), values, BatchSafe,
-                    ("YES_WORDS", string.Join(" ", yes))),
+                Fill(Template("install-mods-windows.bat.in"), values, BatchSafe, wiring),
                 Newline: "\r\n"),
 
             new ModpackWriter.TextFile(
                 UnixName,
-                Fill(Template("install-mods-unix.sh.in"), values, ShellSafe,
-                    ("YES_PATTERN", string.Join("|", yes.SelectMany(w => new[] { w, w.ToUpperInvariant() }).Distinct()))),
+                Fill(Template("install-mods-unix.sh.in"), values, ShellSafe, wiring),
                 // LF, and it is not a preference: a shell script with CRLF fails on its first line
                 // with «$'\r': command not found», which to the player reads as a broken pack.
                 Newline: "\n",

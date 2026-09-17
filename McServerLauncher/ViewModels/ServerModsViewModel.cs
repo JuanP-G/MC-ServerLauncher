@@ -967,7 +967,15 @@ public partial class ServerModsViewModel : ObservableObject
         var everything = includeEverything || IsPluginBased;
         var sides = everything ? EmptySides : await StoreSidesAsync(JarsInContentFolder(), ct);
 
-        return await BuildModpackWithSidesAsync(destination, sides, includeEverything, ct);
+        // Worked out here so the script the player runs has no version to resolve and no choice to
+        // make. Null on any failure — offline, a slow maven, a loader with no published checksum —
+        // and the pack then only tells them what to install, which is worse but not broken.
+        var loader = IsPluginBased
+            ? null
+            : await ClientLoaderInstall.ResolveAsync(
+                _config.Type, _config.GameVersion, _config.ModLoaderVersion, ct);
+
+        return await BuildModpackWithSidesAsync(destination, sides, includeEverything, loader, ct);
     }
 
     /// <summary>Every enabled jar in this server's content folder, in a stable order.</summary>
@@ -994,10 +1002,12 @@ public partial class ServerModsViewModel : ObservableObject
     /// <param name="storeSides">Per file name, what the store said. Empty means it was not asked.</param>
     /// <param name="includeEverything">Skip the reasoning and pack the folder as it stands.</param>
     /// <param name="ct">Cancels the build.</param>
+    /// <param name="loader">The client installer to offer, or null to only warn about it.</param>
     internal Task<ModpackResult> BuildModpackWithSidesAsync(
         string destination,
         IReadOnlyDictionary<string, (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)> storeSides,
         bool includeEverything,
+        ClientLoaderInstall.Plan? loader,
         CancellationToken ct)
     {
         var contentFolder = ContentFolder;
@@ -1049,7 +1059,7 @@ public partial class ServerModsViewModel : ObservableObject
             // client, so no script — and the export button is not offered on those servers.
             if (!IsPluginBased)
                 texts.AddRange(InstallScriptBuilder.Build(
-                    _config.Name, _config.Type, _config.GameVersion, DateTime.Now));
+                    _config.Name, _config.Type, _config.GameVersion, DateTime.Now, loader));
 
             ModpackWriter.Write(
                 destination, contentFolder,

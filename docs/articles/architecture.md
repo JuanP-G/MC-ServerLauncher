@@ -492,10 +492,28 @@ The scripts **move aside and never delete**: existing jars go to a `mods-backup-
 beside the mods folder (a sibling, so the loader does not rescan it), a failed move stops everything
 rather than leaving a half-install, and the timestamp is worked out at export time because `%DATE%`
 in a .bat comes out in the machine's local format — which in much of Europe puts slashes in a folder
-name. They detect the folder, and ask whenever anything makes it ambiguous: finding `.minecraft`
-proves the official launcher was installed once, never that it is the one about to be used, so a
-Prism or Modrinth App marker forces the question. `MCSL_MODS_DIR` overrides it, and a script with no
-terminal never asks — which is what keeps it from hanging under a pipe, and what makes it testable.
+name. They **list the folders that actually exist** and let the player pick one: finding `.minecraft`
+proves the official launcher was installed once, never that it is the one about to be used, so every
+Prism, MultiMC, CurseForge and Modrinth App instance found is offered by its own name. The `.sh`
+draws that list as an arrow-key menu; batch cannot read arrow keys at all — that needs PowerShell,
+which mail providers block just as hard and which trips over the execution policy — so the `.bat`
+uses `choice.exe`: one keypress, no Enter, every option on screen. Both colour their output, the
+`.bat` only on console builds new enough to act on the escape codes rather than print them. Every
+`choice` carries a timeout and a default, because batch has no way to ask whether anything is
+listening and would otherwise wait for a keypress that cannot come. `MCSL_MODS_DIR` overrides the
+whole thing, and the `.sh` never asks without a terminal — which is what keeps it from hanging under
+a pipe, and what makes it testable.
+
+**Installing the loader.** When the profile is missing, the script offers to install it rather than
+only naming a website. `ClientLoaderInstall` resolves the installer and its published hash at export
+time from the loader's own maven, so the script has no version to work out: Fabric through its
+`client` CLI, Forge and NeoForge through `--installClient`. It finds Java on the `PATH` or, failing
+that, inside Minecraft's own `runtime` folder, which is where the official launcher keeps a JRE that
+most players do not know they have. **The download is verified against that hash before it is ever
+handed to Java**, and deleted on a mismatch — the one thing these scripts are allowed to delete, and
+a test states the rule that precisely. If the installer cannot be resolved when the pack is built,
+the plan is simply absent and the script falls back to warning, which is a worse pack rather than a
+broken one.
 `InstallScriptSmokeTests` runs the real script over a planted `old.jar` and checks it still exists
 afterwards. The execute bit is set but nothing depends on it: the documented invocation is
 `bash install-mods-unix.sh`, which needs no bit and sidesteps macOS quarantine.
