@@ -457,6 +457,12 @@ Type: {1}  ·  Minecraft version: {2}
 
 The files are in the "{4}" folder of this pack.</value></data>
   <data name="Name_NewServer" xml:space="preserve"><value>New server</value></data>
+  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>{0} files exported to the pack.</value></data>
+  <data name="Export_NoticeFmt" xml:space="preserve"><value>{0} files exported. {1} were left out because they are only needed on the server: {2}.</value></data>
+  <data name="Export_NoticeOffline" xml:space="preserve"><value>This ran offline, so only what the files themselves declare was taken into account.</value></data>
+  <data name="Export_DismissNotice" xml:space="preserve"><value>Dismiss this notice</value></data>
+  <data name="Export_IncludeAnyway" xml:space="preserve"><value>Include them anyway</value></data>
+  <data name="Export_LeftOutFmt" xml:space="preserve"><value>Note: {0} files that only work on the server were left out ({1}). You do not need them to play.</value></data>
   <data name="Export_InstructionsFile" xml:space="preserve"><value>INSTRUCTIONS.txt</value></data>
   <data name="Msg_ModDeleteError" xml:space="preserve"><value>Could not delete the file: {0}</value></data>
   <data name="Msg_ExportError" xml:space="preserve"><value>Could not export the modpack: {0}</value></data>

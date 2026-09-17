@@ -470,10 +470,33 @@ refresco general al cerrar el diálogo fue el primer arreglo; también se ha ido
 significaría que la app nunca ejerce el mecanismo que lo sustituyó.
 
 ### Darle la lista de mods a tus jugadores
-`ServerModsViewModel.ExportModpack` comprime la carpeta `mods/` (o `plugins/`) del servidor junto con
-un archivo de instrucciones traducido que nombra el servidor, su tipo y su versión de Minecraft, y
-los pasos para ese tipo. Es la respuesta a "¿qué les mando a mis amigos para que puedan entrar?", que
-si no significa explicar la instalación de un cargador por chat.
+`ServerModsViewModel.ExportModpack` es el selector de archivos y nada más; `BuildModpackAsync` recibe
+una ruta, así que la parte que merece pruebas corre sin ventana. `ModpackWriter` monta el zip entrada
+a entrada, leyendo cada jar de donde ya está —antes montaba una copia del paquete entero bajo
+`%TEMP%`— y escribiendo cada archivo de texto con sus propios finales de línea. El paquete lleva los
+jars y un archivo de instrucciones traducido que nombra el servidor, su tipo y su versión de
+Minecraft, y los pasos para ese tipo. Es la respuesta a "¿qué les mando a mis amigos para que puedan
+entrar?", que si no significa explicar la instalación de un cargador por chat.
+
+**Lo que el paquete deja fuera.** Un servidor con mods suele llevar jars que al jugador no le sirven
+de nada —Geyser y Floodgate para el crossplay de Bedrock, un plugin de permisos, un mod de copias de
+seguridad—, megabytes que descarga y copia a su carpeta de mods para nada. `ExportSelection` lo
+decide con dos fuentes que por separado no bastan: lo que declara el jar
+(`ContentManifest.ContentSide`, leído del `environment` de `fabric.mod.json` o del `side` de
+`mods.toml`) y el `client_side` de Modrinth. La regla es asimétrica y cabe en una frase: **para
+excluir hace falta una afirmación de al menos una fuente y ninguna contradicción.** Dos silencios
+nunca excluyen; silencio junto a afirmación sí; dos afirmaciones que discrepan se quedan. Por encima
+de la tabla hay tres reglas: unos metadatos que digan que el proyecto no funciona en ningún lado se
+ignoran por rotos, lo que necesite un jar que se queda vuelve a entrar de forma transitiva, y un
+paquete nunca se vacía. La tienda tiene cuatro segundos y después el paquete se monta solo con los
+jars, que excluye estrictamente menos; el aviso lo dice. Nada de `ExportSelection` toca la red, y hay
+una prueba que lo comprueba contra el archivo.
+
+Al terminar, un cartel descartable bajo la lista de instalados nombra lo que se ha quedado fuera, con
+un botón que rehace el mismo zip incluyéndolo todo. A propósito después y no un diálogo antes: un
+diálogo le cobra un clic al caso normal para servir al raro, y las instrucciones dentro del paquete
+llevan la misma nota, porque el paquete tiene que explicarse a quien lo recibe. El botón no aparece
+en servidores de plugins, donde el paquete es un zip que el jugador no puede usar para nada.
 
 ### Una sola copia en marcha
 `Program.Main` reclama `SingleInstance` antes que nada. Si otra copia ya tiene el bloqueo, esta le

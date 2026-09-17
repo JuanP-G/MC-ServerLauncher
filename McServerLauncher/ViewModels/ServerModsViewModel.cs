@@ -56,6 +56,16 @@ public partial class ServerModsViewModel : ObservableObject
 
     /// <summary>Identifying a jar means hashing it, and both scans want the same answers.</summary>
     private readonly FileHashCache _hashes = new();
+
+    /// <summary>
+    /// Which Modrinth project each jar's SHA-1 belongs to, remembered for the session.
+    /// </summary>
+    /// <remarks>
+    /// The update check already asks this and throws the answer away. Keeping it means that
+    /// exporting after checking for updates — which is the order anybody does it in — costs the
+    /// store lookup nothing at all.
+    /// </remarks>
+    private readonly Dictionary<string, string> _projectIdByHash = new(StringComparer.OrdinalIgnoreCase);
     
     // --- Local Mods State ---
     
@@ -581,6 +591,9 @@ public partial class ServerModsViewModel : ObservableObject
         var installed = await _modrinthService.GetVersionsByHashAsync(sha1Hashes, ct);
         if (installed.Count == 0) return;
 
+        // Kept for the export, which needs exactly this and would otherwise ask for it again.
+        foreach (var (hash, version) in installed) _projectIdByHash[hash] = version.ProjectId;
+
         var roots = installed.Values.ToList();
         var installedIds = roots.Select(r => r.ProjectId).ToList();
 
@@ -916,7 +929,10 @@ public partial class ServerModsViewModel : ObservableObject
 
         try
         {
-            await BuildModpackAsync(file.Path.LocalPath, CancellationToken.None);
+            var result = await BuildModpackAsync(file.Path.LocalPath, includeEverything: false, CancellationToken.None);
+            _lastExportPath = file.Path.LocalPath;
+            _lastExportLeftSomethingOut = result.Excluded.Count > 0;
+            ExportNotice = NoticeFor(result);
         }
         catch (Exception ex)
         {
@@ -925,9 +941,12 @@ public partial class ServerModsViewModel : ObservableObject
         }
     }
 
-    /// <summary>What one export put into the pack.</summary>
+    /// <summary>What one export put into the pack, and what it left out.</summary>
     /// <param name="Included">File names of the jars written, in the order they were written.</param>
-    internal sealed record ModpackResult(IReadOnlyList<string> Included);
+    /// <param name="Excluded">File names left out as server-only.</param>
+    /// <param name="AskedTheStore">False when the pack was built on the jars alone.</param>
+    internal sealed record ModpackResult(
+        IReadOnlyList<string> Included, IReadOnlyList<string> Excluded, bool AskedTheStore);
 
     /// <summary>
     /// Builds the pack at <paramref name="destination"/>, replacing whatever was there.
@@ -936,32 +955,243 @@ public partial class ServerModsViewModel : ObservableObject
     /// Takes a path rather than opening a picker, which is the whole point: this is the part worth
     /// testing, and until now none of it was reachable without a main window.
     /// </remarks>
-    internal async Task<ModpackResult> BuildModpackAsync(string destination, CancellationToken ct)
+    /// <param name="destination">Where to write the zip.</param>
+    /// <param name="includeEverything">Skip the reasoning and pack the folder as it stands.</param>
+    /// <param name="ct">Cancels the build.</param>
+    internal async Task<ModpackResult> BuildModpackAsync(
+        string destination, bool includeEverything, CancellationToken ct)
     {
-        var contentFolder = ContentFolder;
-        var modsFolder = Path.Combine(_config.FolderPath, contentFolder);
+        // Plugins never go anywhere near a player's machine, so there is nothing to work out: the
+        // pack is the folder. The button is hidden on those servers, and this is the same answer
+        // arrived at without relying on that.
+        var everything = includeEverything || IsPluginBased;
+        var sides = everything ? EmptySides : await StoreSidesAsync(JarsInContentFolder(), ct);
 
-        var jars = Directory.Exists(modsFolder)
+        return await BuildModpackWithSidesAsync(destination, sides, includeEverything, ct);
+    }
+
+    /// <summary>Every enabled jar in this server's content folder, in a stable order.</summary>
+    private List<string> JarsInContentFolder()
+    {
+        var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
+
+        return Directory.Exists(modsFolder)
             ? Directory.EnumerateFiles(modsFolder, "*.jar")
                 .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
                 .ToList()
             : new List<string>();
+    }
 
-        var texts = new List<ModpackWriter.TextFile>
+    /// <summary>
+    /// The half that decides and writes, with whatever the store had to say already in hand.
+    /// </summary>
+    /// <remarks>
+    /// Split from the fetching so the decision can be tested against real jars on disk and a real
+    /// zip coming out, without a test ever reaching api.modrinth.com — which would make the result
+    /// depend on a third party's uptime and on data anyone can edit.
+    /// </remarks>
+    /// <param name="storeSides">Per file name, what the store said. Empty means it was not asked.</param>
+    internal Task<ModpackResult> BuildModpackWithSidesAsync(
+        string destination,
+        IReadOnlyDictionary<string, (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)> storeSides,
+        bool includeEverything,
+        CancellationToken ct)
+    {
+        var contentFolder = ContentFolder;
+        var jars = JarsInContentFolder();
+        var everything = includeEverything || IsPluginBased;
+        var sides = storeSides;
+
+        return Task.Run(() =>
         {
-            new(Localizer.Get("Export_InstructionsFile"),
-                string.Format(Localizer.Get("Export_InstructionsFmt"),
-                    _config.Name, _config.Type, _config.GameVersion, HowToPlaySteps, contentFolder),
+            var candidates = jars
+                .Select(path =>
+                {
+                    var manifest = ContentManifest.Read(path);
+                    return sides.TryGetValue(manifest.FileName, out var side)
+                        ? new ExportSelection.Candidate(manifest, side.Client, side.Server)
+                        : new ExportSelection.Candidate(manifest);
+                })
+                .ToList();
+
+            var plan = ExportSelection.Decide(candidates, everything);
+            var keep = plan.Included.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var instructions = string.Format(Localizer.Get("Export_InstructionsFmt"),
+                _config.Name, _config.Type, _config.GameVersion, HowToPlaySteps, contentFolder);
+
+            // The pack has to explain itself to whoever receives it, not only to whoever made it:
+            // a player who counts the jars and finds three missing deserves to read why here.
+            if (plan.LeftSomethingOut)
+                instructions += "\n\n" + string.Format(Localizer.Get("Export_LeftOutFmt"),
+                    plan.Excluded.Count, string.Join(", ", plan.Excluded));
+
+            var texts = new List<ModpackWriter.TextFile>
+            {
                 // CRLF whatever built the pack: this one is opened in Notepad more often than
                 // anywhere else, and every other editor reads CRLF without complaining.
-                Newline: "\r\n")
-        };
+                new(Localizer.Get("Export_InstructionsFile"), instructions, Newline: "\r\n")
+            };
 
-        // Off the UI thread: a large pack is minutes of reading and deflating, and the window has
-        // to keep answering in the meantime.
-        await Task.Run(() => ModpackWriter.Write(destination, contentFolder, jars, texts), ct);
+            ModpackWriter.Write(
+                destination, contentFolder,
+                jars.Where(j => keep.Contains(Path.GetFileName(j))).ToList(),
+                texts);
 
-        return new ModpackResult(jars.Select(Path.GetFileName).ToList()!);
+            // "Not degraded" rather than "a request went out": packing everything needs no store
+            // answer, so it is not the reduced result the offline note is there to explain.
+            return new ModpackResult(plan.Included, plan.Excluded, everything || sides.Count > 0);
+        }, ct);
+    }
+
+    /// <summary>How long the store gets to answer before the pack is built without it.</summary>
+    /// <remarks>
+    /// A few seconds, because what the store adds is an improvement and not a requirement: without
+    /// it the table falls back to what the jars themselves declare, which excludes strictly less.
+    /// Nobody should watch a progress bar because Modrinth is having a slow afternoon.
+    /// </remarks>
+    private static readonly TimeSpan StoreLookupBudget = TimeSpan.FromSeconds(4);
+
+    private static readonly IReadOnlyDictionary<string, (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)>
+        EmptySides = new Dictionary<string, (ExportSelection.StoreSide, ExportSelection.StoreSide)>();
+
+    /// <summary>
+    /// What the store says about each jar's sides, by file name. Empty when it could not be asked.
+    /// </summary>
+    /// <remarks>
+    /// Two hops, because a hash lookup alone does not carry the side fields: SHA-1 to project id
+    /// (memoised, and usually already known from the update check), then the project itself, which
+    /// the store service caches for six hours with a copy on disk.
+    /// </remarks>
+    private async Task<IReadOnlyDictionary<string, (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)>>
+        StoreSidesAsync(IReadOnlyList<string> jarPaths, CancellationToken ct)
+    {
+        var byName = new Dictionary<string, (ExportSelection.StoreSide, ExportSelection.StoreSide)>(
+            StringComparer.OrdinalIgnoreCase);
+        if (jarPaths.Count == 0) return byName;
+
+        using var budget = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        budget.CancelAfter(StoreLookupBudget);
+
+        try
+        {
+            var hashByName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var path in jarPaths)
+            {
+                try { hashByName[Path.GetFileName(path)] = await _hashes.Sha1Async(path, budget.Token); }
+                catch { /* unreadable or locked: that jar simply gets no store answer */ }
+            }
+
+            var unknown = hashByName.Values.Where(h => !_projectIdByHash.ContainsKey(h)).ToList();
+            if (unknown.Count > 0)
+                foreach (var (hash, version) in await _modrinthService.GetVersionsByHashAsync(unknown, budget.Token))
+                    _projectIdByHash[hash] = version.ProjectId;
+
+            var ids = hashByName.Values
+                .Select(h => _projectIdByHash.TryGetValue(h, out var id) ? id : null)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .Select(id => id!)
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            if (ids.Count == 0) return byName;
+
+            var projects = await _modrinthService.GetProjectsAsync(ids, budget.Token);
+            if (projects is null) return byName;
+
+            // Grouped rather than ToDictionary: a duplicate id in the response would throw, and
+            // taking the store down with an export is not a trade worth making.
+            var byId = projects
+                .Where(project => !string.IsNullOrEmpty(project.Id))
+                .GroupBy(project => project.Id, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+
+            foreach (var (name, hash) in hashByName)
+                if (_projectIdByHash.TryGetValue(hash, out var id) && byId.TryGetValue(id, out var project))
+                    byName[name] = (StoreSideOf(project.ClientSide), StoreSideOf(project.ServerSide));
+        }
+        catch
+        {
+            // Offline, out of time, or Modrinth having a bad day. The table falls back to the jars
+            // alone, which excludes fewer of them, and the notice says the pack was built that way.
+        }
+
+        return byName;
+    }
+
+    /// <summary>Modrinth's word for how well a side is supported, as the table understands it.</summary>
+    private static ExportSelection.StoreSide StoreSideOf(string? value) => value?.ToLowerInvariant() switch
+    {
+        "required" => ExportSelection.StoreSide.Required,
+        "optional" => ExportSelection.StoreSide.Optional,
+        "unsupported" => ExportSelection.StoreSide.Unsupported,
+        _ => ExportSelection.StoreSide.Unknown
+    };
+
+    // --- The notice the export leaves behind ---
+
+    /// <summary>What the last export did, shown under the installed list until dismissed.</summary>
+    /// <remarks>
+    /// Deliberately after the fact and not a dialog beforehand. A dialog charges a click to the
+    /// normal case — the one where the detection is right — in order to serve the rare one, and
+    /// per-mod checkboxes are precision nobody needs when including one jar too many costs a few
+    /// megabytes. Naming the excluded files is what makes this actionable instead of unsettling.
+    /// </remarks>
+    [ObservableProperty]
+    private string? _exportNotice;
+
+    public bool HasExportNotice => !string.IsNullOrEmpty(ExportNotice);
+
+    partial void OnExportNoticeChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasExportNotice));
+        IncludeExcludedAnywayCommand.NotifyCanExecuteChanged();
+    }
+
+    private string? _lastExportPath;
+    private bool _lastExportLeftSomethingOut;
+
+    /// <summary>True while there is something to put back, which is what the button hangs off.</summary>
+    public bool CanIncludeExcludedAnyway => _lastExportLeftSomethingOut && _lastExportPath is not null;
+
+    /// <summary>The sentence the notice shows for one finished export.</summary>
+    internal static string NoticeFor(ModpackResult result)
+    {
+        var text = result.Excluded.Count == 0
+            ? string.Format(Localizer.Get("Export_NoticeAllFmt"), result.Included.Count)
+            : string.Format(Localizer.Get("Export_NoticeFmt"),
+                result.Included.Count, result.Excluded.Count, string.Join(", ", result.Excluded));
+
+        // Said out loud rather than hidden: the pack does come out different without a connection,
+        // and a difference the user can see is one they can decide about.
+        if (!result.AskedTheStore) text += " " + Localizer.Get("Export_NoticeOffline");
+        return text;
+    }
+
+    [RelayCommand]
+    private void DismissExportNotice() => ExportNotice = null;
+
+    /// <summary>Rebuilds the same pack with nothing left out, over the same file.</summary>
+    /// <remarks>
+    /// One click, no picker and no dialog. If a detection is wrong the cost of undoing it has to be
+    /// smaller than the cost of checking it was right.
+    /// </remarks>
+    [RelayCommand(CanExecute = nameof(CanIncludeExcludedAnyway))]
+    private async Task IncludeExcludedAnyway()
+    {
+        if (_lastExportPath is not { } path) return;
+
+        try
+        {
+            var result = await BuildModpackAsync(path, includeEverything: true, CancellationToken.None);
+            _lastExportLeftSomethingOut = false;
+            ExportNotice = NoticeFor(result);
+        }
+        catch (Exception ex)
+        {
+            await MessageBox.ShowAsync(
+                string.Format(Localizer.Get("Msg_ExportError"), ex.Message), Localizer.Get("Export_Modpack"));
+        }
     }
 
     /// <summary>Loads the first page of mods the first time the Mods tab is shown.</summary>

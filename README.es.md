@@ -125,6 +125,10 @@ todo con botones.
   de un solo uso (sin claves ni archivos). La app **crea el túnel y ejecuta el agente de Playit por ti**, así
   tu servidor es accesible desde cualquier sitio y tus amigos entran con la dirección pública — **tú no instalas
   nada**. La app no contiene ningún secreto propio (la credencial vive en un pequeño proxy).
+- **Manda a tus amigos un modpack listo** 📦 — un botón comprime los mods del servidor con instrucciones
+  en su idioma. Los mods que solo hacen algo en el servidor —Geyser, Floodgate, un mod de copias— se
+  **dejan fuera solos**, y la app te dice cuáles y los vuelve a meter en un clic si se ha equivocado. Lo
+  que necesite un mod que se queda viaja siempre con él.
 - **Notificaciones** 🔔 — avisos opcionales cuando un jugador entra o sale, alguien muere (PvP), el servidor
   se cae, el reinicio automático se rinde, un **servidor vacío se apaga solo** o uno **se enciende porque
   alguien ha intentado entrar**. Configurables por tipo, de forma global y **por servidor**, con botón de

@@ -449,10 +449,32 @@ dialog was the first fix; it is gone too, because leaving it would mean the app 
 mechanism that replaced it.
 
 ### Handing the mod list to your players
-`ServerModsViewModel.ExportModpack` zips the server's `mods/` (or `plugins/`) folder together with a
-localized instructions file naming the server, its type and its Minecraft version, and the steps for
-that type. It is the answer to "what do I send my friends so they can join?", which otherwise means
+`ServerModsViewModel.ExportModpack` is the file picker and nothing else; `BuildModpackAsync` takes a
+path, so the part worth testing runs without a window. `ModpackWriter` builds the zip entry by entry,
+reading each jar where it already sits — it used to assemble a copy of the whole pack under `%TEMP%`
+first — and writing each text file with its own line endings. The pack carries the jars and a
+localized instructions file naming the server, its type, its Minecraft version and the steps for that
+type. It is the answer to "what do I send my friends so they can join?", which otherwise means
 explaining a loader install over chat.
+
+**What the pack leaves out.** A modded server usually carries jars a player has no use for — Geyser
+and Floodgate for Bedrock crossplay, a permissions plugin, a world-backup mod — which are megabytes
+downloaded and copied into a mods folder for nothing. `ExportSelection` decides, from two sources
+that are each insufficient alone: what the jar declares (`ContentManifest.ContentSide`, read from
+`fabric.mod.json`'s `environment` or `mods.toml`'s `side`) and Modrinth's `client_side`. The rule is
+asymmetric and fits in a sentence: **to leave a jar out takes an assertion from at least one source
+and a contradiction from neither.** Two silences never exclude; a silence beside an assertion does;
+two assertions that disagree keep the jar. Three rules sit above the table — metadata claiming a
+project runs on neither side is ignored as broken, anything a kept jar depends on is put back
+transitively, and an export is never emptied. The store gets four seconds and then the pack is built
+on the jars alone, which excludes strictly less; the notice says so. Nothing in `ExportSelection`
+touches the network, and a test checks that against the file.
+
+Afterwards a dismissable notice under the installed list names what was left out, with one button
+that rebuilds the same zip including everything. Deliberately after the fact: a dialog beforehand
+would charge a click to the normal case in order to serve the rare one, and the instructions inside
+the pack carry the same note, because the pack has to explain itself to whoever receives it. The
+button is hidden on plugin servers, where a pack is a zip a player can do nothing with.
 
 ### One running copy
 `Program.Main` acquires `SingleInstance` before anything else. If another copy already holds the
