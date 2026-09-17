@@ -462,9 +462,13 @@ and Floodgate for Bedrock crossplay, a permissions plugin, a world-backup mod �
 downloaded and copied into a mods folder for nothing. `ExportSelection` decides, from two sources
 that are each insufficient alone: what the jar declares (`ContentManifest.ContentSide`, read from
 `fabric.mod.json`'s `environment` or `mods.toml`'s `side`) and Modrinth's `client_side`. The rule is
-asymmetric and fits in a sentence: **to leave a jar out takes an assertion from at least one source
-and a contradiction from neither.** Two silences never exclude; a silence beside an assertion does;
-two assertions that disagree keep the jar. Three rules sit above the table — metadata claiming a
+asymmetric and fits in a sentence: **a jar leaves the pack when either source says it is server-only
+and neither says a client needs it.** A jar declaring itself client-side can never be dropped.
+Declaring *both* counts for nothing, and finding that out cost a real modpack: the first folder this
+was tried on had eleven mods and all eleven wrote `environment: "*"`, Floodgate among them — a
+Bedrock authentication plugin with nothing to do on a client. It is what the template writes, so
+reading it as an author's claim left the feature unable to exclude anything at all. Three rules sit
+above the table — metadata claiming a
 project runs on neither side is ignored as broken, anything a kept jar depends on is put back
 transitively, and an export is never emptied. The store gets four seconds and then the pack is built
 on the jars alone, which excludes strictly less; the notice says so. Nothing in `ExportSelection`

@@ -15,11 +15,20 @@ namespace McServerLauncher.Services;
 /// </para>
 /// <para>
 /// Two sources answer the question, and neither on its own is enough. The jar's own manifest is the
-/// author speaking, but most authors never fill the field in. The store knows, but its data is
+/// author speaking, but hardly any author ever changes the field. The store knows, but its data is
 /// community-edited and is sometimes plainly wrong. So the rule is asymmetric, and it is one
-/// sentence: <b>to leave a jar out takes an assertion from at least one source and a contradiction
-/// from neither.</b> Two silences never exclude; a silence beside an assertion does; two assertions
-/// that disagree keep the jar.
+/// sentence: <b>a jar leaves the pack when either source says it is server-only and neither says a
+/// client needs it.</b> A jar that declares itself client-side can never be dropped, whatever the
+/// store says.
+/// </para>
+/// <para>
+/// "Declares itself both" is <em>not</em> in that list, and finding out why cost a real modpack. The
+/// first folder this was tried on had eleven mods and all eleven said <c>environment: "*"</c> —
+/// including Floodgate, which is a Bedrock authentication plugin and does nothing whatsoever on a
+/// client. It is what the Fabric template writes and it means the same as leaving the key out, so
+/// treating it as an assertion strong enough to overrule the store made the whole feature incapable
+/// of excluding anything at all. Only <c>client</c> and <c>server</c> are worth anything in that
+/// field.
 /// </para>
 /// <para>
 /// Nothing here touches the network — see <c>ExportGateTests</c>, which checks that against the
@@ -94,11 +103,11 @@ public static class ExportSelection
     /// <remarks>
     /// <list type="bullet">
     /// <item>Jar says Server, store agrees or says nothing → out.</item>
-    /// <item>Jar says Server, store says the client needs or can use it → kept. They disagree.</item>
-    /// <item>Jar says nothing, store says the client cannot use it → out. A jar's silence is the
-    /// format's default, not a statement, so the store is the only one talking.</item>
-    /// <item>Jar says Both outright, store says unsupported → kept. Two assertions in conflict, and
-    /// the author's own file is not overruled by a page anyone can edit.</item>
+    /// <item>Jar says Server, store says the client needs or can use it → kept. They disagree, and
+    /// the disagreement is resolved in the direction where being wrong is cheap.</item>
+    /// <item>Jar says nothing or "both", store says the client cannot use it → out. Neither of
+    /// those is an author's claim: both formats mean "everywhere" when nothing is said, and both
+    /// templates write the "everywhere" value, so the store is the only one talking.</item>
     /// <item>Jar says Client → kept, always. Nothing here can ever drop a client mod.</item>
     /// </list>
     /// </remarks>
@@ -108,13 +117,16 @@ public static class ExportSelection
 
         return candidate.Manifest.Side switch
         {
+            // The only jar-side claim strong enough to stand alone.
             ContentManifest.ContentSide.Server =>
                 client is not (StoreSide.Required or StoreSide.Optional),
 
-            ContentManifest.ContentSide.Unspecified => client == StoreSide.Unsupported,
+            // The only one strong enough to overrule the store.
+            ContentManifest.ContentSide.Client => false,
 
-            // Both and Client: the jar has spoken, and it has not said "server".
-            _ => false
+            // Unspecified and Both are the same thing wearing different hats: the format's default,
+            // written out or left out. Neither blocks the store from answering.
+            _ => client == StoreSide.Unsupported
         };
     }
 

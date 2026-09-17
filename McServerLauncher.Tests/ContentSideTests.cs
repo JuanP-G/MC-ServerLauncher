@@ -58,12 +58,13 @@ public class ContentSideTests : IDisposable
         Assert.Equal(ContentManifest.ContentSide.Client, SideOfFabric(",\"environment\":\"client\""));
 
     [Fact]
-    public void FabricStarMeansBothAndSayingNothingDoesNot()
+    public void FabricStarIsReadAsBothAndAnAbsentKeyAsSilence()
     {
-        // The distinction the whole decision rests on. A loader treats these two identically, so it
-        // would be easy to fold them together — but "*" is an author who was asked and answered,
-        // and an absent key is an author who never thought about it. Only the first is a claim, and
-        // it is the only one strong enough to overrule the store saying the opposite.
+        // Read faithfully, and worth no more than each other. Measured against a real modpack,
+        // environment:"*" carries no information: eleven jars out of eleven declared it, Floodgate
+        // among them, which is a Bedrock authentication plugin with nothing to do on a client. What
+        // the file says is recorded here; what it is worth is ExportSelection's business, and there
+        // the two are treated identically.
         Assert.Equal(ContentManifest.ContentSide.Both, SideOfFabric(",\"environment\":\"*\""));
         Assert.Equal(ContentManifest.ContentSide.Unspecified, SideOfFabric(""));
     }

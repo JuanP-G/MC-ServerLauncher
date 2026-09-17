@@ -60,11 +60,13 @@ public static class ContentManifest
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <see cref="Unspecified"/> and <see cref="Both"/> are deliberately not the same value, even
-    /// though a loader treats them identically. Both formats default to "everywhere", so the jars
-    /// that say nothing are overwhelmingly the ones whose author never thought about it — while a
-    /// jar that writes <c>environment: "*"</c> has been asked the question and answered it. Only
-    /// the second is a claim, and telling a claim from a silence is the whole of what this is for.
+    /// <see cref="Unspecified"/> and <see cref="Both"/> are kept apart because they are different
+    /// things to have read in a file, not because one is worth more than the other. Measured
+    /// against a real modpack, <c>environment: "*"</c> turned out to carry no information at all:
+    /// eleven jars out of eleven declared it, Floodgate among them, which is a Bedrock
+    /// authentication plugin with nothing to do on a client. It is what the template writes.
+    /// <c>ExportSelection</c> therefore treats the two identically, and only <c>client</c> and
+    /// <c>server</c> count as anybody having said anything.
     /// </para>
     /// <para>
     /// Anything unrecognised reads as <see cref="Unspecified"/>, like every other value this file

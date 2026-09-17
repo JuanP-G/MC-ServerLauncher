@@ -88,14 +88,28 @@ public class ExportSelectionTests
     }
 
     [Fact]
-    public void TheJarSaysBothOutrightAndTheStoreDisagrees()
+    public void SayingBothOutrightCountsForNothing()
     {
-        // Kept. Modrinth's side fields are community-edited and sometimes simply wrong, and an
-        // author who wrote environment:"*" in their own manifest was asked the question and
-        // answered it. A page anyone can edit does not overrule that.
-        var plan = Decide(Jar("discutido.jar", Side.Both, client: Store.Unsupported), Jar("otro.jar"));
+        // This test used to assert the opposite, and a real modpack settled it. The first folder
+        // the feature was pointed at had eleven mods, and all eleven declared environment:"*" —
+        // Floodgate included, which is a Bedrock authentication plugin and does nothing at all on a
+        // client. It is what the Fabric template writes, so reading it as an author's claim strong
+        // enough to overrule the store left the feature unable to exclude anything, ever.
+        var plan = Decide(Jar("floodgate.jar", Side.Both, client: Store.Unsupported), Jar("otro.jar"));
 
-        Assert.Empty(plan.Excluded);
+        Assert.Equal(new[] { "floodgate.jar" }, plan.Excluded);
+    }
+
+    [Fact]
+    public void DeclaringBothAndDeclaringNothingComeToTheSameThing()
+    {
+        // The two are kept apart in the manifest because they are different things to have read in
+        // a file. They must not be different things to act on: in both formats "everywhere" is the
+        // default, so writing it out says no more than leaving it out.
+        var written = Decide(Jar("uno.jar", Side.Both, client: Store.Unsupported), Jar("otro.jar"));
+        var omitted = Decide(Jar("uno.jar", Side.Unspecified, client: Store.Unsupported), Jar("otro.jar"));
+
+        Assert.Equal(written.Excluded, omitted.Excluded);
     }
 
     [Fact]
@@ -109,7 +123,8 @@ public class ExportSelectionTests
     [Fact]
     public void TwoSilencesNeverExcludeAnything()
     {
-        // The rule in one line: excluding takes an assertion. Nothing said by anybody is not one.
+        // With no store answer and no "server" in the jar, there is nothing to act on. This is what
+        // an offline export falls back to, and it is why offline excludes strictly less.
         var plan = Decide(Jar("uno.jar"), Jar("dos.jar"), Jar("tres.jar"));
 
         Assert.Empty(plan.Excluded);

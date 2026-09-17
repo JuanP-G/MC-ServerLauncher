@@ -483,10 +483,14 @@ de nada —Geyser y Floodgate para el crossplay de Bedrock, un plugin de permiso
 seguridad—, megabytes que descarga y copia a su carpeta de mods para nada. `ExportSelection` lo
 decide con dos fuentes que por separado no bastan: lo que declara el jar
 (`ContentManifest.ContentSide`, leído del `environment` de `fabric.mod.json` o del `side` de
-`mods.toml`) y el `client_side` de Modrinth. La regla es asimétrica y cabe en una frase: **para
-excluir hace falta una afirmación de al menos una fuente y ninguna contradicción.** Dos silencios
-nunca excluyen; silencio junto a afirmación sí; dos afirmaciones que discrepan se quedan. Por encima
-de la tabla hay tres reglas: unos metadatos que digan que el proyecto no funciona en ningún lado se
+`mods.toml`) y el `client_side` de Modrinth. La regla es asimétrica y cabe en una frase: **un jar se
+queda fuera cuando alguna de las dos fuentes dice que es solo de servidor y ninguna dice que el
+cliente lo necesita.** Un jar que se declara de cliente no se cae nunca. Declararse de *ambos* lados
+no cuenta para nada, y averiguarlo costó un modpack de verdad: la primera carpeta a la que se apuntó
+tenía once mods y los once escribían `environment: "*"`, Floodgate incluido — un autenticador de
+Bedrock que no hace nada en un cliente. Es lo que escribe la plantilla, así que leerlo como una
+afirmación del autor dejaba la función incapaz de excluir nada. Por encima de la tabla hay tres
+reglas: unos metadatos que digan que el proyecto no funciona en ningún lado se
 ignoran por rotos, lo que necesite un jar que se queda vuelve a entrar de forma transitiva, y un
 paquete nunca se vacía. La tienda tiene cuatro segundos y después el paquete se monta solo con los
 jars, que excluye estrictamente menos; el aviso lo dice. Nada de `ExportSelection` toca la red, y hay
