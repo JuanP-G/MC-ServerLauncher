@@ -888,6 +888,13 @@ public partial class ServerModsViewModel : ObservableObject
         RefreshInstalledMods();
     }
 
+    /// <summary>Asks where to put the pack, and builds it there.</summary>
+    /// <remarks>
+    /// Everything except the file picker lives in <see cref="BuildModpackAsync"/>, which takes a
+    /// path and therefore runs without a window. What is left here is the dozen lines that cannot
+    /// be tested at all, rather than the whole export being untestable because it begins with a
+    /// dialog.
+    /// </remarks>
     [RelayCommand]
     private async Task ExportModpack()
     {
@@ -907,35 +914,54 @@ public partial class ServerModsViewModel : ObservableObject
 
         if (file == null) return;
 
-        var tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
-            var tempMods = Path.Combine(tempFolder, ContentFolder);
-            Directory.CreateDirectory(tempMods);
-
-            foreach (var modFile in Directory.EnumerateFiles(modsFolder, "*.jar"))
-            {
-                File.Copy(modFile, Path.Combine(tempMods, Path.GetFileName(modFile)));
-            }
-
-            var instrPath = Path.Combine(tempFolder, Localizer.Get("Export_InstructionsFile"));
-            var instructions = string.Format(Localizer.Get("Export_InstructionsFmt"),
-                _config.Name, _config.Type, _config.GameVersion, HowToPlaySteps, ContentFolder);
-            File.WriteAllText(instrPath, instructions);
-
-            if (File.Exists(file.Path.LocalPath)) File.Delete(file.Path.LocalPath);
-            System.IO.Compression.ZipFile.CreateFromDirectory(tempFolder, file.Path.LocalPath);
+            await BuildModpackAsync(file.Path.LocalPath, CancellationToken.None);
         }
         catch (Exception ex)
         {
             await MessageBox.ShowAsync(
                 string.Format(Localizer.Get("Msg_ExportError"), ex.Message), Localizer.Get("Export_Modpack"));
         }
-        finally
+    }
+
+    /// <summary>What one export put into the pack.</summary>
+    /// <param name="Included">File names of the jars written, in the order they were written.</param>
+    internal sealed record ModpackResult(IReadOnlyList<string> Included);
+
+    /// <summary>
+    /// Builds the pack at <paramref name="destination"/>, replacing whatever was there.
+    /// </summary>
+    /// <remarks>
+    /// Takes a path rather than opening a picker, which is the whole point: this is the part worth
+    /// testing, and until now none of it was reachable without a main window.
+    /// </remarks>
+    internal async Task<ModpackResult> BuildModpackAsync(string destination, CancellationToken ct)
+    {
+        var contentFolder = ContentFolder;
+        var modsFolder = Path.Combine(_config.FolderPath, contentFolder);
+
+        var jars = Directory.Exists(modsFolder)
+            ? Directory.EnumerateFiles(modsFolder, "*.jar")
+                .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
+                .ToList()
+            : new List<string>();
+
+        var texts = new List<ModpackWriter.TextFile>
         {
-            try { if (Directory.Exists(tempFolder)) Directory.Delete(tempFolder, true); }
-            catch { /* best-effort cleanup */ }
-        }
+            new(Localizer.Get("Export_InstructionsFile"),
+                string.Format(Localizer.Get("Export_InstructionsFmt"),
+                    _config.Name, _config.Type, _config.GameVersion, HowToPlaySteps, contentFolder),
+                // CRLF whatever built the pack: this one is opened in Notepad more often than
+                // anywhere else, and every other editor reads CRLF without complaining.
+                Newline: "\r\n")
+        };
+
+        // Off the UI thread: a large pack is minutes of reading and deflating, and the window has
+        // to keep answering in the meantime.
+        await Task.Run(() => ModpackWriter.Write(destination, contentFolder, jars, texts), ct);
+
+        return new ModpackResult(jars.Select(Path.GetFileName).ToList()!);
     }
 
     /// <summary>Loads the first page of mods the first time the Mods tab is shown.</summary>
