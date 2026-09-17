@@ -51,9 +51,11 @@ repeating, plus the ones a tool can't check:
   dialog edits the very instance the view models are showing. Add properties to them the normal way,
   `[ObservableProperty] private T _foo;`. It does not change `servers.json` —
   `ServerConfigFormatTests` proves it. `AppSettings` stays plain: its dialog edits a copy.
-- **A property derived from `ServerConfig` must be named in its view model's `RefreshFromConfig()`**
-  (`ServerViewModel`, `ServerModsViewModel`). One left out is right until the server is edited and
-  wrong until the app restarts.
+- **A new field on `ServerConfig` needs a row in `ViewModels/ServerConfigEffects.cs`**: the
+  view-model properties it feeds, the work to redo (rescan the content folder, re-search the store,
+  re-read the port…), or a written reason nothing shows it. `ServerViewModel` subscribes to
+  `Config.PropertyChanged` and applies the row; `ServerConfigEffectsTests` fails until the row
+  exists. Do not add another hand-written refresh method — that is what this replaced.
 - **A constructor assembles; `Activate()` starts.** Timers, sockets, shared-singleton subscriptions
   and network calls never go in a constructor. They go in `Activate()`, mirrored by
   `ShutdownAsync()`, both safe to call twice (`ServerViewModel`, `MainViewModel`). It is what makes

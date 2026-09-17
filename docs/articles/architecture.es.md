@@ -56,6 +56,25 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > deja a propósito como objeto plano, porque el diálogo de ajustes edita una copia y la vuelca al
 > aceptar.
 
+> **Una sola tabla dice qué alimenta cada campo de la config.** `ServerConfigEffects` tiene una fila
+> por propiedad de `ServerConfig`: qué propiedades de `ServerViewModel` y `ServerModsViewModel` hay
+> que anunciar, y qué hay que rehacer que una notificación no sabe expresar —releer el puerto,
+> reescanear la carpeta de contenido, cerrar la ficha de la tienda, volver a buscar, reabrir el
+> listener de despertar, recargar los backups—. `ServerViewModel` se suscribe una vez a
+> `Config.PropertyChanged` y aplica la fila, en el hilo de interfaz (el crossplay escribe el puerto
+> Bedrock desde una continuación en segundo plano). Un campo que no enseña nadie también tiene fila,
+> con el motivo escrito.
+>
+> **`ServerConfigEffectsTests` es lo que sujeta esto.** Toda propiedad escribible de `ServerConfig`
+> tiene que aparecer exactamente una vez, y toda propiedad de view model que nombre una fila tiene
+> que seguir existiendo. Un campo añadido sin fila falla el día que se escribe, y un renombrado que
+> se olvide de la tabla falla en vez de anunciar un nombre que no escucha nadie. Ese es todo el
+> asunto: el fallo nunca fue difícil, solo era silencioso.
+>
+> Persistir no es a propósito uno de los efectos. El diálogo de editar escribe en la config viva
+> según se teclea, así que guardar en cada cambio reescribiría `servers.json` en cada tecla; guardar
+> se queda donde está, una vez, cuando se acepta un diálogo.
+
 > **Un constructor monta; `Activate()` arranca.** `ServerViewModel` y `MainViewModel` se parten en
 > dos. El constructor lee —la config, la paleta de consola, los archivos del propio servidor— y no
 > deja nada en marcha detrás. `Activate()` es todo lo que sale del objeto: los timers de sondeo, las

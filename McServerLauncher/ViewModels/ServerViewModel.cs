@@ -381,6 +381,53 @@ public partial class ServerViewModel : ObservableObject
         RefreshInfo();
         Mods = new ServerModsViewModel(config);
         Backups = new ServerBackupsViewModel(this);
+
+        // The dialogs write straight into this instance. Listening is what makes every derived
+        // property correct without anyone having to remember to ask.
+        Config.PropertyChanged += OnConfigPropertyChanged;
+    }
+
+    /// <summary>Applies the row of <see cref="ServerConfigEffects"/> for the field that changed.</summary>
+    /// <remarks>
+    /// <para>
+    /// Marshalled onto the UI thread, because plenty of these changes do not start there: setting
+    /// up crossplay picks a Bedrock port and writes it from a background continuation, and raising
+    /// a bound property from off the UI thread is how a working feature turns into a crash.
+    /// </para>
+    /// <para>
+    /// A field with no row is a field nobody declared, which the tests do not allow — but at run
+    /// time the safe answer is to do nothing rather than to throw inside a property setter.
+    /// </para>
+    /// </remarks>
+    private void OnConfigPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not { } property) return;
+        if (ServerConfigEffects.For(property) is { } row) RunOnUi(() => Apply(row));
+    }
+
+    /// <summary>
+    /// Announces what one row names and does what it asks, here and in the panels below.
+    /// </summary>
+    private void Apply(ServerConfigEffects.Row row)
+    {
+        // Mirrors first: these two are bindable properties of their own that hold a copy of the
+        // config's value, and the rest of the row may depend on them being current.
+        if (row.Effects.HasFlag(ConfigEffect.MirrorName)) Name = Config.Name;
+        if (row.Effects.HasFlag(ConfigEffect.MirrorTunnelAddress)) TunnelAddress = Config.TunnelAddress;
+
+        foreach (var name in row.ServerProperties)
+            OnPropertyChanged(name);
+
+        if (row.Effects.HasFlag(ConfigEffect.RereadPort)) RefreshPort();
+        if (row.Effects.HasFlag(ConfigEffect.RereadInfo)) RefreshInfo();
+        if (row.Effects.HasFlag(ConfigEffect.RefreshSignal)) UpdateSignal();
+        // The listener holds a real socket on the server's port, so switching it on has to open one
+        // now. It used to wait for the next stop, i.e. until the server had been run once.
+        if (row.Effects.HasFlag(ConfigEffect.RestartWakeListener)) StartWakeListener();
+        if (row.Effects.HasFlag(ConfigEffect.ReloadBackups)) Backups.RefreshIfLoaded();
+
+        if (row.ModsProperties.Length > 0 || row.Effects != ConfigEffect.None)
+            Mods.ApplyConfigChange(row.ModsProperties, row.Effects);
     }
 
     /// <summary>True between <see cref="Activate"/> and <see cref="ShutdownAsync"/>.</summary>
@@ -1330,11 +1377,13 @@ public partial class ServerViewModel : ObservableObject
                     Localizer.Get("Msg_BukkitPathRenameExists"), Path.GetFileName(suggestion)));
 
             Directory.Move(Config.FolderPath, suggestion);
+            // Announces on its own now, which is what re-reads the port, the MOTD, the icon, the
+            // content folder and the backup list. Setting it used to refresh only the MOTD, so the
+            // rest went on describing a folder that no longer existed under that name.
             Config.FolderPath = suggestion;
             ConfigChanged?.Invoke();      // persists the new path before anything else runs
 
             OnConsoleLine(string.Format(Localizer.Get("Msg_BukkitPathRenamedFmt"), suggestion));
-            RefreshInfo();
             return true;
         }
         catch (Exception ex)
@@ -1590,23 +1639,7 @@ public partial class ServerViewModel : ObservableObject
     /// idempotent and cheap enough to run on closing a dialog.
     /// </para>
     /// </remarks>
-    public void RefreshFromConfig()
-    {
-        Name = Config.Name;
-
-        OnPropertyChanged(nameof(IsModded));
-        OnPropertyChanged(nameof(ServerTypeText));
-        OnPropertyChanged(nameof(GameVersionText));
-        OnPropertyChanged(nameof(ServerTypeBrush));
-
-        RefreshBedrockPanel();
-        Mods.RefreshFromConfig();
-        Backups.RefreshIfLoaded();
-
-        // The folder itself is editable, so the port, the MOTD and the icon can all belong to a
-        // different server than the one that was on screen a moment ago.
-        RefreshFromDisk();
-    }
+    public void RefreshFromConfig() => Apply(ServerConfigEffects.Everything);
 
     /// <summary>Reads MOTD, max players and the server icon (Minecraft-style view).</summary>
     private void RefreshInfo()
@@ -1849,6 +1882,7 @@ public partial class ServerViewModel : ObservableObject
             _agent.StateChanged -= _onAgentStateChanged;   // the agent runner is shared too
         }
 
+        Config.PropertyChanged -= OnConfigPropertyChanged;
         _statsTimer.Stop();
         _idleCountdownTimer.Stop();
         _playitTimer.Stop();

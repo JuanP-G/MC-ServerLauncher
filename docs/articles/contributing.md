@@ -101,9 +101,11 @@ the name's fault the other half — prefer fixing the name.
   `[ObservableProperty] private T _foo;` like anywhere else. It does not change what is written to
   disk, and `ServerConfigFormatTests` is there to prove that stays true. `AppSettings` is the
   exception and stays plain: its dialog edits a copy and commits it on OK.
-- A property derived from the config still has to be named in its view model's `RefreshFromConfig()`.
-  Leaving one out is not a style slip: it shows the right answer until somebody edits that server,
-  and the wrong one from then until the app restarts.
+- **A new field on `ServerConfig` needs a row in `ServerConfigEffects`** — which view-model
+  properties it feeds and what has to be redone, or a line saying why nothing on screen derives from
+  it. `ServerConfigEffectsTests` fails until it is there, and the failure says what to write. This
+  is not bureaucracy: a field left out shows the right answer until somebody edits that server, and
+  the wrong one from then until the app is restarted.
 - `var` when the type is already on the line (`var dialog = new SettingsDialog(…)`), the type spelled
   out when it is not.
 - **A constructor assembles; `Activate()` starts.** Nothing that polls, opens a socket, subscribes to

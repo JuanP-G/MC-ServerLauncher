@@ -107,9 +107,11 @@ de las veces y del nombre la otra mitad — casi siempre sale mejor arreglar el 
   No cambia lo que se escribe en disco, y `ServerConfigFormatTests` está para demostrar que sigue
   siendo así. `AppSettings` es la excepción y sigue plano: su diálogo edita una copia y la vuelca al
   aceptar.
-- Una propiedad derivada de la config sigue teniendo que estar nombrada en el `RefreshFromConfig()`
-  de su view model. Dejarse una fuera no es un descuido de estilo: enseña la respuesta correcta
-  hasta que alguien edita ese servidor, y la equivocada desde entonces hasta que se reinicia la app.
+- **Un campo nuevo en `ServerConfig` necesita una fila en `ServerConfigEffects`**: qué propiedades
+  de view model alimenta y qué hay que rehacer, o una línea diciendo por qué no lo enseña nadie.
+  `ServerConfigEffectsTests` falla hasta que está, y el fallo dice qué escribir. No es burocracia:
+  un campo que se queda fuera enseña la respuesta correcta hasta que alguien edita ese servidor, y
+  la equivocada desde entonces hasta que se reinicia la app.
 - `var` cuando el tipo ya está en la línea (`var dialog = new SettingsDialog(…)`), y el tipo escrito
   cuando no lo está.
 - **Un constructor monta; `Activate()` arranca.** Nada que sondee, abra un socket, se suscriba a un

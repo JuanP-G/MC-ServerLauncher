@@ -406,15 +406,29 @@ public partial class ServerModsViewModel : ObservableObject
     /// call it.
     /// </para>
     /// </remarks>
-    public void RefreshFromConfig()
-    {
-        // The details page resolved its versions against the old type and version, and its install
-        // button would hand the server a file picked for something it no longer is.
-        CloseDetails();
+    public void RefreshFromConfig() =>
+        ApplyConfigChange(ServerConfigEffects.Everything.ModsProperties,
+                          ServerConfigEffects.Everything.Effects);
 
-        // Only when the family changed: rebuilding otherwise would drop the user's picked
-        // categories for a conversion that does not affect them (Paper to Purpur, a new version).
-        if (_tagsAreForPlugins != IsPluginBased)
+    /// <summary>
+    /// Applies one row of <see cref="ServerConfigEffects"/> to this panel: announces the properties
+    /// it names, then does the work a notification cannot express.
+    /// </summary>
+    /// <remarks>
+    /// The single entry point, so that the targeted path — one field of the config changed — and
+    /// the wholesale one cannot drift: <see cref="RefreshFromConfig"/> is this, called with the
+    /// union of every row.
+    /// </remarks>
+    internal void ApplyConfigChange(IReadOnlyList<string> properties, ConfigEffect effects)
+    {
+        // First, because it is the page that would otherwise install a file chosen for a server
+        // this no longer is: it resolved its versions against the old type and version.
+        if (effects.HasFlag(ConfigEffect.CloseDetails)) CloseDetails();
+
+        // Guarded twice: the flag says a conversion could have changed the family, and the check
+        // says whether it did. Rebuilding for a Paper-to-Purpur move would drop the user's chosen
+        // categories for nothing.
+        if (effects.HasFlag(ConfigEffect.RebuildTags) && _tagsAreForPlugins != IsPluginBased)
         {
             SelectedTags.Clear();
             BuildTags();
@@ -425,25 +439,20 @@ public partial class ServerModsViewModel : ObservableObject
             ClearFiltersCommand.NotifyCanExecuteChanged();
         }
 
-        OnPropertyChanged(nameof(IsPluginBased));
-        OnPropertyChanged(nameof(ContentTabTitle));
-        OnPropertyChanged(nameof(BrowseTitle));
-        OnPropertyChanged(nameof(InstalledTitle));
-        OnPropertyChanged(nameof(SearchPlaceholder));
-        OnPropertyChanged(nameof(NoInstalledText));
-        OnPropertyChanged(nameof(FilterTypeText));
-        OnPropertyChanged(nameof(FilterVersionText));
-        OnPropertyChanged(nameof(FilterTypeBrush));
-        OnPropertyChanged(nameof(HowToPlaySteps));
+        foreach (var name in properties)
+            OnPropertyChanged(name);
 
+        // The chips spell out the type and the version, so they follow both.
         RebuildActiveFilters();
-        // The content folder may have been renamed under us — converting between families archives
-        // the old one — so the installed list is about a directory that is no longer there.
-        RefreshInstalledMods();
+
+        // The content folder is named after the family, and converting between families archives
+        // the old one, so the installed list is about a directory that has moved.
+        if (effects.HasFlag(ConfigEffect.RescanContent)) RefreshInstalledMods();
 
         // Results already on screen were filtered by the old type and version. Leaving them would
-        // offer mods that do not fit under chips that now say something else.
-        if (_hasLoadedOnce) _ = LoadPageAsync(append: false, CancellationToken.None);
+        // offer mods that do not fit, under chips that now say something else.
+        if (effects.HasFlag(ConfigEffect.ReSearchStore) && _hasLoadedOnce)
+            _ = LoadPageAsync(append: false, CancellationToken.None);
     }
 
     /// <summary>

@@ -55,6 +55,24 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > is field-by-field, and `AppSettings` — which does use `MemberwiseClone` — is deliberately left a
 > plain object, because the settings dialog edits a copy and commits it on OK instead.
 
+> **One table says what each field of the config feeds.** `ServerConfigEffects` has a row per
+> `ServerConfig` property: which `ServerViewModel` and `ServerModsViewModel` properties to announce,
+> and what has to be redone that a notification cannot express — re-read the port, rescan the
+> content folder, close the store's details page, search again, reopen the wake listener, reload the
+> backups. `ServerViewModel` subscribes to `Config.PropertyChanged` once and applies the row, on the
+> UI thread (crossplay writes the Bedrock port from a background continuation). A field nothing
+> shows gets a row too, carrying the reason.
+>
+> **`ServerConfigEffectsTests` is what makes this hold.** Every writable property of `ServerConfig`
+> must appear exactly once, and every view-model property a row names must still exist. A field
+> added without a row fails on the day it is written, and a rename that misses the table fails
+> instead of announcing a name nothing listens for. That is the whole point: the bug was never hard,
+> it was just quiet.
+>
+> Persisting is deliberately not one of the effects. The edit dialog writes into the live config as
+> the user types, so saving on every change would rewrite `servers.json` on every keystroke; saving
+> stays where it is, once, when a dialog is accepted.
+
 > **A constructor assembles; `Activate()` starts.** `ServerViewModel` and `MainViewModel` each split
 > in two. The constructor reads — the config, the console palette, the server's own files — and
 > leaves nothing running behind it. `Activate()` is everything that reaches outside the object: the

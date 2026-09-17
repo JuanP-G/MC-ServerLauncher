@@ -58,6 +58,10 @@ public partial class ServerViewModel
     /// to be tied to. Everything the user needs in the first minute — the local port, and the fact
     /// that the app is still waiting on playit — is knowable before any lookup succeeds, and hiding
     /// the whole block until one did is what made a working server look like a broken one.
+    /// <para>
+    /// Announced through <see cref="ServerConfigEffects"/> when the config's own flag changes, which
+    /// is why this panel no longer has a hand-written refresh of its own.
+    /// </para>
     /// </remarks>
     public bool IsCrossplayOn => Config.CrossplayEnabled;
 
@@ -67,13 +71,6 @@ public partial class ServerViewModel
 
     /// <summary>One line saying what is happening, so the panel is never blank without a reason.</summary>
     public string BedrockStateText => Localizer.Get(BedrockAddressStates.KeyFor(BedrockState));
-
-    /// <summary>Re-reads everything about the Bedrock panel that comes from the config.</summary>
-    private void RefreshBedrockPanel()
-    {
-        OnPropertyChanged(nameof(IsCrossplayOn));
-        OnPropertyChanged(nameof(BedrockLocalPortText));
-    }
 
     /// <summary>Installs Hydraulic and Fabric API, so Bedrock players see what the mods add.</summary>
     /// <remarks>
@@ -99,7 +96,10 @@ public partial class ServerViewModel
         }
         catch (Exception ex)
         {
+            // Persisted like the success path. Recording the failure only in memory meant the app
+            // offered to install it again next time while servers.json still claimed it was there.
             Config.BedrockModContentEnabled = false;
+            ConfigChanged?.Invoke();
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
         }
     }
@@ -130,7 +130,9 @@ public partial class ServerViewModel
         }
         catch (Exception ex)
         {
+            // Same as above: the failure has to survive the run that produced it.
             Config.MultiVersionEnabled = false;   // it did not happen; do not claim that it did
+            ConfigChanged?.Invoke();
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
         }
     }
@@ -167,7 +169,6 @@ public partial class ServerViewModel
             // and a port that was chosen but never written down is worse than one never chosen: a
             // tunnel may already exist on it while servers.json still says 0, so the next crossplay
             // server is handed the same port and adopts this one's tunnel.
-            RunOnUi(RefreshBedrockPanel);
             ConfigChanged?.Invoke();
 
             await _crossplay.InstallAsync(Config, log);
@@ -184,7 +185,6 @@ public partial class ServerViewModel
             // that run and every run afterwards, with no way back except switching crossplay off
             // and on again — which is exactly the "it never appears" report.
             Config.CrossplayEnabled = true;
-            RunOnUi(RefreshBedrockPanel);
             ConfigChanged?.Invoke();
 
             int? publicPort = null;
@@ -302,7 +302,6 @@ public partial class ServerViewModel
             OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelForeignMovingFmt"),
                 Config.BedrockPort, existing.Name));
             Config.BedrockPort = await PickBedrockPortAsync(log);
-            RunOnUi(RefreshBedrockPanel);
             ConfigChanged?.Invoke();
         }
 
