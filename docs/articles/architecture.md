@@ -197,7 +197,9 @@ are no hard-coded machine paths.
 
 - **`AppSettingsService`** / **`ServerStorageService`** — the two owners of the app's JSON:
   `settings.json` and `servers.json`. Both go through `AtomicJsonFile` and both report what happened
-  on load, so a corrupt file is surfaced at startup instead of showing an empty server list.
+  on load, so a corrupt file is surfaced at startup instead of showing an empty server list. Both
+  take an optional data folder, and `MainViewModel` takes one too and hands it to both: without it a
+  test that goes near either file reads and rewrites the real one belonging to whoever ran it.
 - **`AtomicDownload`** / **`AtomicTextFile`** — the same guarantee for the other two kinds of write.
   A download lands in `<dest>.part` and is verified there, so an interrupted one can never replace a
   working file with half of one; a config file the app owns is written only when it actually changed,

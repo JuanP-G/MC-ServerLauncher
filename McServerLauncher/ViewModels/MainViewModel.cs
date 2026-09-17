@@ -21,8 +21,8 @@ namespace McServerLauncher.ViewModels;
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
-    private readonly ServerStorageService _storage = new();
-    private readonly AppSettingsService _settings = new();
+    private readonly ServerStorageService _storage;
+    private readonly AppSettingsService _settings;
 
     /// <summary>
     /// The settings, loaded once at startup and kept in memory (EFI-7): every use used to re-read
@@ -75,8 +75,17 @@ public partial class MainViewModel : ObservableObject
 
     private bool _languageReady;
 
-    public MainViewModel()
+    /// <summary>Default constructor uses %APPDATA%; <paramref name="dataDir"/> is for tests.</summary>
+    /// <remarks>
+    /// Both files go in the same folder, so one parameter settles both services. A test that opened
+    /// this view model without it would read the server list of whoever is running the test and
+    /// write its own back over it.
+    /// </remarks>
+    public MainViewModel(string? dataDir = null)
     {
+        _storage = new ServerStorageService(dataDir);
+        _settings = new AppSettingsService(dataDir);
+
         Load();
         _appSettings = _settings.Load();
 

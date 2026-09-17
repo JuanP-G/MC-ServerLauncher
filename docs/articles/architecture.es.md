@@ -201,7 +201,9 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`AppSettingsService`** / **`ServerStorageService`** — los dos dueños del JSON de la app:
   `settings.json` y `servers.json`. Ambos pasan por `AtomicJsonFile` y ambos informan de qué pasó al
   cargar, para que un archivo corrupto salga a la superficie al arrancar en vez de convertirse en una
-  lista de servidores vacía.
+  lista de servidores vacía. Los dos aceptan una carpeta de datos opcional, y `MainViewModel` acepta
+  otra y se la pasa a ambos: sin eso, una prueba que se acerque a cualquiera de los dos archivos lee
+  y reescribe el de verdad de quien la esté ejecutando.
 - **`AtomicDownload`** / **`AtomicTextFile`** — la misma garantía para los otros dos tipos de
   escritura. Una descarga aterriza en `<destino>.part` y se verifica ahí, así que una interrumpida no
   puede sustituir un archivo que funcionaba por la mitad de otro; un archivo de configuración que es
