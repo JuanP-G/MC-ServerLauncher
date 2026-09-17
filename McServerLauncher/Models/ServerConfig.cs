@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json.Serialization;
+using CommunityToolkit.Mvvm.ComponentModel;
 using McServerLauncher.Localization;
 
 namespace McServerLauncher.Models;
@@ -34,28 +35,60 @@ public enum ServerType
 /// Persisted data of a Minecraft server registered in the application.
 /// Stored in %APPDATA%\McServerLauncher\servers.json.
 /// </summary>
-public class ServerConfig
+/// <remarks>
+/// <para>
+/// <strong>It announces its own changes</strong>, which is the whole reason it is not a plain
+/// object. The view models and the edit dialog share one instance: the dialog writes into the very
+/// config the cards are showing. While this was a POCO, nothing derived from it ever recomputed, so
+/// converting a server or moving it to another Minecraft version changed the disk and left the app
+/// describing what the folder used to be until it was restarted. Every attempted fix was a method
+/// somebody had to remember to call.
+/// </para>
+/// <para>
+/// Being observable does not change what is written: reflection-based System.Text.Json serializes
+/// public instance <em>properties</em>, the generated properties keep the exact names the old
+/// auto-properties had, and <see cref="ObservableObject"/> contributes only events. The one thing
+/// that is not promised is the <em>order</em> of the keys in the file, which nothing reads
+/// positionally. See <c>ServerConfigFormatTests</c>, which holds all of that down.
+/// </para>
+/// <para>
+/// Never give this class a <c>Clone</c> built on <c>MemberwiseClone</c>: it would copy the
+/// <c>PropertyChanged</c> delegate too, and the copy would raise changes at the original's
+/// subscribers. <see cref="NotificationSettings.Clone"/> is field-by-field for the same reason.
+/// </para>
+/// </remarks>
+public partial class ServerConfig : ObservableObject
 {
     /// <summary>Stable identifier (so we don't depend on the name, which may change).</summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    [ObservableProperty]
+    private string _id = Guid.NewGuid().ToString("N");
 
     /// <summary>Display name of the server (e.g. "Survival", "Modded").</summary>
-    public string Name { get; set; } = Localizer.Get("Name_NewServer");
+    [ObservableProperty]
+    private string _name = Localizer.Get("Name_NewServer");
 
     /// <summary>Server root folder (where the .jar and server.properties live).</summary>
-    public string FolderPath { get; set; } = string.Empty;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(JarFullPath))]
+    [NotifyPropertyChangedFor(nameof(PropertiesPath))]
+    private string _folderPath = string.Empty;
 
     /// <summary>Server .jar file name (relative to the folder). Defaults to server.jar.</summary>
-    public string JarFile { get; set; } = "server.jar";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(JarFullPath))]
+    private string _jarFile = "server.jar";
 
     /// <summary>Type of the server (Vanilla, Fabric, Forge, Paper, NeoForge).</summary>
-    public ServerType Type { get; set; } = ServerType.Vanilla;
+    [ObservableProperty]
+    private ServerType _type = ServerType.Vanilla;
 
     /// <summary>Minecraft game version (e.g. 1.20.1).</summary>
-    public string GameVersion { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _gameVersion = string.Empty;
 
     /// <summary>Version of the mod loader (e.g. 0.16.2 for Fabric).</summary>
-    public string ModLoaderVersion { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _modLoaderVersion = string.Empty;
 
     /// <summary>
     /// Modern Forge (1.17+) and every NeoForge build have no runnable jar; they are launched via an
@@ -68,38 +101,47 @@ public class ServerConfig
     /// existing servers.json, and renaming it would leave installed Forge servers unable to start.
     /// </para>
     /// </summary>
-    public string ForgeArgs { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _forgeArgs = string.Empty;
 
     /// <summary>Path to the Java executable. "java" uses the one on the PATH.</summary>
-    public string JavaPath { get; set; } = "java";
+    [ObservableProperty]
+    private string _javaPath = "java";
 
     /// <summary>Minimum memory in GB (-Xms). Same default the create dialog suggests.</summary>
-    public int MinRamGb { get; set; } = 2;
+    [ObservableProperty]
+    private int _minRamGb = 2;
 
     /// <summary>Maximum memory in GB (-Xmx). Same default the create dialog suggests.</summary>
-    public int MaxRamGb { get; set; } = 4;
+    [ObservableProperty]
+    private int _maxRamGb = 4;
 
     /// <summary>Extra JVM arguments (optional, e.g. GC flags).</summary>
-    public string ExtraJvmArgs { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _extraJvmArgs = string.Empty;
 
     // --- Playit.gg ---
 
     /// <summary>Whether the Playit.gg integration is enabled for this server.</summary>
-    public bool PlayitEnabled { get; set; }
+    [ObservableProperty]
+    private bool _playitEnabled;
 
     /// <summary>
     /// Public tunnel address for this server. It is detected automatically when running
     /// playit, but it can also be typed/pasted by hand and is kept saved.
     /// </summary>
-    public string? TunnelAddress { get; set; }
+    [ObservableProperty]
+    private string? _tunnelAddress;
 
     // --- World backups ---
 
     /// <summary>Whether a zip backup of the world is made before starting and after an explicit stop.</summary>
-    public bool BackupsEnabled { get; set; } = true;
+    [ObservableProperty]
+    private bool _backupsEnabled = true;
 
     /// <summary>How many backups to keep; older ones are deleted after each new one.</summary>
-    public int BackupRetention { get; set; } = 5;
+    [ObservableProperty]
+    private int _backupRetention = 5;
 
     // --- Sleeping and waking ---
 
@@ -110,7 +152,8 @@ public class ServerConfig
     /// Zero is the default so no existing server changes behaviour on update: a server that used to
     /// stay up forever keeps doing exactly that until its owner asks for something else.
     /// </remarks>
-    public int IdleShutdownMinutes { get; set; }
+    [ObservableProperty]
+    private int _idleShutdownMinutes;
 
     /// <summary>
     /// While stopped, answer on the server's port so that someone trying to join starts it.
@@ -120,7 +163,8 @@ public class ServerConfig
     /// having asked. Pairs with <see cref="IdleShutdownMinutes"/> — sleep when empty, wake on
     /// demand — but each half works on its own.
     /// </remarks>
-    public bool WakeOnDemand { get; set; }
+    [ObservableProperty]
+    private bool _wakeOnDemand;
 
     // --- Crossplay (Java + Bedrock) ---
 
@@ -133,7 +177,8 @@ public class ServerConfig
     /// public port. Both can drift, and only something that knows the server is meant to be
     /// crossplay can put them back.
     /// </remarks>
-    public bool CrossplayEnabled { get; set; }
+    [ObservableProperty]
+    private bool _crossplayEnabled;
 
     /// <summary>Whether Hydraulic is installed, so Bedrock players see what the mods add.</summary>
     /// <remarks>
@@ -141,7 +186,8 @@ public class ServerConfig
     /// gets Bedrock players <em>in</em>; without this they arrive to a world whose modded blocks and
     /// items they cannot see. Fabric only — see <see cref="Services.HydraulicService"/>.
     /// </remarks>
-    public bool BedrockModContentEnabled { get; set; }
+    [ObservableProperty]
+    private bool _bedrockModContentEnabled;
 
     /// <summary>Whether ViaVersion and ViaBackwards are installed, for joining from other versions.</summary>
     /// <remarks>
@@ -149,14 +195,16 @@ public class ServerConfig
     /// and a Java-only server benefits from them just as much: they are about which Minecraft
     /// <em>versions</em> may connect, not which edition.
     /// </remarks>
-    public bool MultiVersionEnabled { get; set; }
+    [ObservableProperty]
+    private bool _multiVersionEnabled;
 
     /// <summary>The local <em>UDP</em> port Geyser listens on. 0 until crossplay is set up.</summary>
     /// <remarks>
     /// UDP, and a different namespace from the Java port: this one can be 19132 while some other
     /// program holds TCP 19132, and vice versa.
     /// </remarks>
-    public int BedrockPort { get; set; }
+    [ObservableProperty]
+    private int _bedrockPort;
 
     // --- Notifications ---
 
@@ -164,10 +212,12 @@ public class ServerConfig
     /// When true, this server uses its own <see cref="Notifications"/> instead of the global
     /// notification settings. When false (default), the global settings apply.
     /// </summary>
-    public bool UseCustomNotifications { get; set; }
+    [ObservableProperty]
+    private bool _useCustomNotifications;
 
     /// <summary>Per-server notification override, used only when <see cref="UseCustomNotifications"/>.</summary>
-    public NotificationSettings? Notifications { get; set; }
+    [ObservableProperty]
+    private NotificationSettings? _notifications;
 
     /// <summary>Full path to the .jar combining folder + jar name.</summary>
     [JsonIgnore]

@@ -34,15 +34,26 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > `ServerTypeBrushes` are three instances of the same split — hex strings in `Services/`, brushes in
 > `ViewModels/`.
 
-> **`ServerConfig` is a plain object, and the view models share the instance.** It raises no change
-> notification: it is what gets serialized to `servers.json`, and putting `[ObservableProperty]` on
-> a persisted model would drag an MVVM dependency into `Models/` for the sake of a file format. The
-> dialogs edit the very instance the cards are showing, so everything computed from it — the type
-> badge, the version, whether there is a Mods tab at all — is a plain getter that recomputes only
-> when something asks. Whoever closes the dialog is what asks:
-> `ServerViewModel.RefreshFromConfig()` announces the lot and passes the question down to each
-> panel. **A new property derived from the config belongs in that method**, or it will be correct
-> until the first time somebody edits the server and then wrong until the app is restarted.
+> **`ServerConfig` announces its own changes, and the view models share the instance.** It and
+> `NotificationSettings` are the two `Models/` types that do — both are edited in place by a dialog
+> while something else is on screen showing them. They were plain objects, on the argument that a
+> persisted model should not depend on MVVM; that argument does not survive contact with the fact
+> that `Models/` and `ViewModels/` are folders in one assembly, so the dependency was already there,
+> and what the rule actually bought was a class of bug. Everything derived from the config simply
+> never recomputed: converting a server changed the disk and left the app describing what the folder
+> used to be until it was restarted.
+>
+> **This does not change `servers.json`.** Reflection-based System.Text.Json writes public
+> properties; the generated ones keep the exact names the auto-properties had; `ObservableObject`
+> contributes only events, which are not serialized. The key *order* is not promised, and nothing
+> reads the file positionally. `ServerConfigFormatTests` holds every part of that down — the exact
+> key set, `Type` still being the integer that is the file format, the two `[JsonIgnore]` computed
+> paths staying out, and a file written by an older version still opening.
+>
+> Never give either class a `Clone` built on `MemberwiseClone`: it copies the `PropertyChanged`
+> delegate, so the copy raises changes at the original's subscribers. `NotificationSettings.Clone`
+> is field-by-field, and `AppSettings` — which does use `MemberwiseClone` — is deliberately left a
+> plain object, because the settings dialog edits a copy and commits it on OK instead.
 
 > **A constructor assembles; `Activate()` starts.** `ServerViewModel` and `MainViewModel` each split
 > in two. The constructor reads — the config, the console palette, the server's own files — and

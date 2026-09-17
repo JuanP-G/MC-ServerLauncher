@@ -47,11 +47,13 @@ repeating, plus the ones a tool can't check:
   `[ObservableProperty] private T _foo;`, never a hand-written `OnPropertyChanged` pair. Derived values
   are expression-bodied properties. **Don't use primary constructors** — that field block is where the
   reader learns what a class is made of.
-- **A property derived from `ServerConfig` must be named in its view model's `RefreshFromConfig()`.**
-  The config is a plain persisted object with no change notification, and the dialogs edit the very
-  instance the view models are showing, so nothing recomputes on its own. A property left out of that
-  method is right until the server is edited and wrong until the app restarts —
-  `ServerViewModel.RefreshFromConfig`, `ServerModsViewModel.RefreshFromConfig`.
+- **`ServerConfig` and `NotificationSettings` are observable** (`ObservableObject`), because a
+  dialog edits the very instance the view models are showing. Add properties to them the normal way,
+  `[ObservableProperty] private T _foo;`. It does not change `servers.json` —
+  `ServerConfigFormatTests` proves it. `AppSettings` stays plain: its dialog edits a copy.
+- **A property derived from `ServerConfig` must be named in its view model's `RefreshFromConfig()`**
+  (`ServerViewModel`, `ServerModsViewModel`). One left out is right until the server is edited and
+  wrong until the app restarts.
 - **A constructor assembles; `Activate()` starts.** Timers, sockets, shared-singleton subscriptions
   and network calls never go in a constructor. They go in `Activate()`, mirrored by
   `ShutdownAsync()`, both safe to call twice (`ServerViewModel`, `MainViewModel`). It is what makes

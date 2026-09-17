@@ -96,10 +96,14 @@ the name's fault the other half — prefer fixing the name.
 - Bindable state is `[ObservableProperty] private string _searchQuery = string.Empty;` and nothing
   else. Never a hand-written `OnPropertyChanged` pair.
 - Anything derived is an expression-bodied property: `public bool UpdateAvailable => Update is not null;`
-- If what it derives from is **not** observable — `ServerConfig`, which the dialogs edit in place —
-  the property announces nothing on its own, so it must be named in the `RefreshFromConfig()` of its
-  view model. Leaving one out is not a style slip: it shows the right answer until somebody edits
-  that server, and the wrong one from then until the app restarts.
+- **A persisted model that a dialog edits while it is on screen is observable.** `ServerConfig` and
+  `NotificationSettings` derive from `ObservableObject`, and a property added to either goes in as
+  `[ObservableProperty] private T _foo;` like anywhere else. It does not change what is written to
+  disk, and `ServerConfigFormatTests` is there to prove that stays true. `AppSettings` is the
+  exception and stays plain: its dialog edits a copy and commits it on OK.
+- A property derived from the config still has to be named in its view model's `RefreshFromConfig()`.
+  Leaving one out is not a style slip: it shows the right answer until somebody edits that server,
+  and the wrong one from then until the app restarts.
 - `var` when the type is already on the line (`var dialog = new SettingsDialog(…)`), the type spelled
   out when it is not.
 - **A constructor assembles; `Activate()` starts.** Nothing that polls, opens a socket, subscribes to

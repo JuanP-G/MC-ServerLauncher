@@ -34,15 +34,27 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > `ServerTypeCatalog` / `ServerTypeBrushes` son tres casos del mismo reparto — los hex en
 > `Services/`, los brushes en `ViewModels/`.
 
-> **`ServerConfig` es un objeto plano, y los view models comparten la instancia.** No avisa de sus
-> cambios: es lo que se serializa a `servers.json`, y poner `[ObservableProperty]` en un modelo que
-> se guarda metería una dependencia de MVVM en `Models/` por culpa de un formato de fichero. Los
-> diálogos editan la misma instancia que están mostrando las tarjetas, así que todo lo que se
-> calcula a partir de ella — la insignia del tipo, la versión, si hay pestaña de Mods siquiera — es
-> un getter normal que solo se recalcula cuando alguien pregunta. Quien cierra el diálogo es quien
-> pregunta: `ServerViewModel.RefreshFromConfig()` anuncia el conjunto y pasa la pregunta hacia abajo
-> a cada panel. **Una propiedad nueva derivada de la config va en ese método**, o será correcta
-> hasta la primera vez que alguien edite el servidor y estará mal hasta que se reinicie la app.
+> **`ServerConfig` avisa de sus cambios, y los view models comparten la instancia.** Él y
+> `NotificationSettings` son los dos tipos de `Models/` que lo hacen: a los dos los edita un diálogo
+> en el sitio mientras otra cosa los está enseñando. Eran objetos planos, con el argumento de que un
+> modelo que se guarda no debería depender de MVVM; ese argumento no sobrevive a mirar que `Models/`
+> y `ViewModels/` son carpetas de un mismo ensamblado, así que la dependencia ya estaba, y lo que la
+> regla compraba de verdad era una familia de fallos. Nada de lo derivado de la config se recalculaba
+> nunca: convertir un servidor cambiaba el disco y dejaba a la app describiendo lo que la carpeta
+> había dejado de ser, hasta reiniciarla.
+>
+> **Esto no cambia `servers.json`.** System.Text.Json por reflexión escribe propiedades públicas;
+> las generadas conservan exactamente los nombres que tenían las auto-propiedades; `ObservableObject`
+> solo aporta eventos, que no se serializan. El *orden* de las claves no se promete, y nadie lee el
+> fichero por posición. `ServerConfigFormatTests` sujeta cada parte de eso: el conjunto exacto de
+> claves, que `Type` siga siendo el entero que es el formato, que las dos rutas calculadas con
+> `[JsonIgnore]` sigan fuera, y que un fichero escrito por una versión anterior siga abriéndose.
+>
+> No le pongas nunca a ninguna de las dos un `Clone` hecho con `MemberwiseClone`: copia el delegado
+> `PropertyChanged`, así que la copia lanza cambios a los suscriptores del original.
+> `NotificationSettings.Clone` es campo a campo, y `AppSettings` —que sí usa `MemberwiseClone`— se
+> deja a propósito como objeto plano, porque el diálogo de ajustes edita una copia y la vuelca al
+> aceptar.
 
 > **Un constructor monta; `Activate()` arranca.** `ServerViewModel` y `MainViewModel` se parten en
 > dos. El constructor lee —la config, la paleta de consola, los archivos del propio servidor— y no

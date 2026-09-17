@@ -101,11 +101,15 @@ de las veces y del nombre la otra mitad — casi siempre sale mejor arreglar el 
   más. Nunca un `OnPropertyChanged` escrito a mano.
 - Lo derivado es una propiedad con cuerpo de expresión:
   `public bool UpdateAvailable => Update is not null;`
-- Si de lo que deriva **no** es observable — `ServerConfig`, que los diálogos editan en el sitio —,
-  la propiedad no avisa de nada por su cuenta, así que tiene que estar nombrada en el
-  `RefreshFromConfig()` de su view model. Dejarse una fuera no es un descuido de estilo: enseña la
-  respuesta correcta hasta que alguien edita ese servidor, y la equivocada desde entonces hasta que
-  se reinicia la app.
+- **Un modelo que se guarda y que un diálogo edita mientras está en pantalla es observable.**
+  `ServerConfig` y `NotificationSettings` derivan de `ObservableObject`, y una propiedad nueva en
+  cualquiera de los dos entra como `[ObservableProperty] private T _foo;` igual que en todas partes.
+  No cambia lo que se escribe en disco, y `ServerConfigFormatTests` está para demostrar que sigue
+  siendo así. `AppSettings` es la excepción y sigue plano: su diálogo edita una copia y la vuelca al
+  aceptar.
+- Una propiedad derivada de la config sigue teniendo que estar nombrada en el `RefreshFromConfig()`
+  de su view model. Dejarse una fuera no es un descuido de estilo: enseña la respuesta correcta
+  hasta que alguien edita ese servidor, y la equivocada desde entonces hasta que se reinicia la app.
 - `var` cuando el tipo ya está en la línea (`var dialog = new SettingsDialog(…)`), y el tipo escrito
   cuando no lo está.
 - **Un constructor monta; `Activate()` arranca.** Nada que sondee, abra un socket, se suscriba a un
