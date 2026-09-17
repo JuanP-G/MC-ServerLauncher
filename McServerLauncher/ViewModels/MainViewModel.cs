@@ -600,16 +600,18 @@ public partial class MainViewModel : ObservableObject
         var accepted = await dialog.ShowDialog<bool>(Owner);
 
         // A loader install mutates the config and the disk in the act (files already downloaded),
-        // so it must be persisted even if the user then cancels the edit dialog — otherwise the
-        // type badge, the Mods tab and servers.json keep showing the old type while the disk is
-        // already Fabric/Forge/Paper. Cancel still reverts the ordinary editable fields.
+        // so it must be persisted even if the user then cancels the edit dialog — otherwise
+        // servers.json keeps naming the old type while the disk is already Fabric/Forge/Paper.
+        // Cancel still reverts the ordinary editable fields.
+        //
+        // Nothing is refreshed here. The dialog writes into the config the view model is showing,
+        // the config announces each change and ServerConfigEffects says what it costs, so the card
+        // and the panels have already followed — including on the Cancel path, where restoring the
+        // snapshot announces its own eighteen assignments. A blanket refresh at this point used to
+        // be the mechanism; leaving it in would mean the app never exercised the one that replaced
+        // it, and would throw away the store page the user had open for an edit they cancelled.
         if (accepted || dialog.LoaderInstalled)
         {
-            // The dialog wrote straight into the config this view model is showing, and nothing
-            // derived from it recomputes on its own. Asked for unconditionally rather than after
-            // working out which fields moved: one visit can change the name, the folder, the type
-            // and the version, and a refresh that covered only some of them was the bug.
-            server.RefreshFromConfig();
             Save();
 
             if (!hadCrossplay && server.Config.CrossplayEnabled)

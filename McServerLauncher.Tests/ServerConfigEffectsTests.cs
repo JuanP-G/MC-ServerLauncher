@@ -89,9 +89,9 @@ public class ServerConfigEffectsTests
     [Fact]
     public void EverythingIsTheUnionOfEveryRow()
     {
-        // RefreshFromConfig is Everything applied in one go. If it drifted from the sum of the rows,
-        // the wholesale path and the one-field-at-a-time path would disagree, and only one of them
-        // would be tested.
+        // Everything is what ServerModsViewModel.RefreshFromConfig applies in one go, for a panel
+        // built on its own. If it drifted from the sum of the rows, the wholesale path and the
+        // one-field-at-a-time path would disagree, and only one of them would be tested.
         var all = ServerConfigEffects.Everything;
 
         Assert.Equal(

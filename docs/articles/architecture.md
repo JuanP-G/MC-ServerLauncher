@@ -434,15 +434,19 @@ the *direction* of the change, because the directions are not equally safe: gain
 additive, while dropping to Vanilla or crossing between families is not. Content that the new family
 cannot read is moved aside by `ContentMigrationService` rather than left to fail at load.
 
-The conversion writes into the `ServerConfig` the app is already showing, so closing the dialog ends
-in `ServerViewModel.RefreshFromConfig()`: the badge, the version, the Mods tab and its filter chips
-are re-read, the installed list is scanned again — the old family's folder has just been moved
-aside — the store's category chips are rebuilt when the family changed, and results already on
-screen are searched again for the new type and version. This used to rebuild the whole view model
-instead, and only when the *type* had changed and the server was stopped. Converting Fabric 1.21.1
-to Fabric 1.21.4 therefore changed nothing on screen, and the browser went on offering mods picked
-for a version the server no longer ran — which is what made an install fail minutes later, far from
-the conversion that caused it.
+The conversion writes into the `ServerConfig` the app is already showing, and **nothing then asks
+for a refresh**. The config announces each field it changed, `ServerConfigEffects` says what that
+field costs, and the badge, the version, the Mods tab, its filter chips, the installed list — the
+old family's folder has just been moved aside — and the store search all follow on their own. Even
+cancelling the edit dialog afterwards is covered, because restoring the snapshot announces its own
+assignments.
+
+It used to rebuild the whole view model instead, and only when the *type* had changed and the server
+was stopped. Converting Fabric 1.21.1 to Fabric 1.21.4 therefore changed nothing on screen, and the
+browser went on offering mods picked for a version the server no longer ran — which is what made an
+install fail minutes later, far from the conversion that caused it. A blanket refresh on closing the
+dialog was the first fix; it is gone too, because leaving it would mean the app never exercised the
+mechanism that replaced it.
 
 ### Handing the mod list to your players
 `ServerModsViewModel.ExportModpack` zips the server's `mods/` (or `plugins/`) folder together with a

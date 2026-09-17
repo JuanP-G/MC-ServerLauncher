@@ -1619,28 +1619,6 @@ public partial class ServerViewModel : ObservableObject
         RefreshInfo();
     }
 
-    /// <summary>
-    /// Re-reads everything shown about this server that is derived from its saved configuration.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <see cref="Config"/> is a plain object with no change notification, and the dialogs edit it
-    /// in place — converting a type or moving to another Minecraft version writes straight into the
-    /// instance this view model is showing. The properties computed from it (the badge, the
-    /// version, whether there is a Mods tab at all) recompute only when something asks them to, so
-    /// until this call the card kept describing the server the folder used to hold. Restarting the
-    /// app was the only way to see the truth, which is what made a finished conversion look like
-    /// one that had not run.
-    /// </para>
-    /// <para>
-    /// It deliberately does not try to work out what changed. The edit dialog can move the folder,
-    /// the type, the version, the name and the crossplay switches in one visit, and a refresh that
-    /// covered some of them would be a new bug every time a field was added. Everything it calls is
-    /// idempotent and cheap enough to run on closing a dialog.
-    /// </para>
-    /// </remarks>
-    public void RefreshFromConfig() => Apply(ServerConfigEffects.Everything);
-
     /// <summary>Reads MOTD, max players and the server icon (Minecraft-style view).</summary>
     private void RefreshInfo()
     {

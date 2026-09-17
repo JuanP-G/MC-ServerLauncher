@@ -455,15 +455,19 @@ igual de seguras: ganar un cargador es aditivo, y bajar a Vanilla o cruzar de fa
 contenido que la familia nueva no sabe leer lo aparta `ContentMigrationService` en vez de dejar que
 falle al cargar.
 
-La conversión escribe en el `ServerConfig` que la app ya está mostrando, así que cerrar el diálogo
-termina en `ServerViewModel.RefreshFromConfig()`: se releen la insignia, la versión, la pestaña de
-Mods y sus fichas de filtro, se vuelve a escanear la lista de instalados — la carpeta de la familia
-vieja acaba de apartarse —, se reconstruyen las categorías de la tienda si cambió la familia, y los
-resultados que ya estaban en pantalla se vuelven a buscar para el tipo y la versión nuevos. Antes
-esto reconstruía el view model entero, y solo cuando había cambiado el *tipo* y el servidor estaba
-parado. Convertir Fabric 1.21.1 a Fabric 1.21.4 no cambiaba entonces nada en pantalla, y el
+La conversión escribe en el `ServerConfig` que la app ya está mostrando, y **nadie pide después
+ningún refresco**. La config avisa de cada campo que ha cambiado, `ServerConfigEffects` dice lo que
+ese campo cuesta, y la insignia, la versión, la pestaña de Mods, sus fichas de filtro, la lista de
+instalados —la carpeta de la familia vieja acaba de apartarse— y la búsqueda de la tienda van
+solos. Incluso cancelar el diálogo después queda cubierto, porque restaurar la copia anuncia sus
+propias asignaciones.
+
+Antes esto reconstruía el view model entero, y solo cuando había cambiado el *tipo* y el servidor
+estaba parado. Convertir Fabric 1.21.1 a Fabric 1.21.4 no cambiaba entonces nada en pantalla, y el
 navegador seguía ofreciendo mods elegidos para una versión que el servidor ya no ejecutaba — que es
-lo que hacía fallar una instalación minutos después, lejos de la conversión que lo causó.
+lo que hacía fallar una instalación minutos después, lejos de la conversión que lo causó. Un
+refresco general al cerrar el diálogo fue el primer arreglo; también se ha ido, porque dejarlo
+significaría que la app nunca ejerce el mecanismo que lo sustituyó.
 
 ### Darle la lista de mods a tus jugadores
 `ServerModsViewModel.ExportModpack` comprime la carpeta `mods/` (o `plugins/`) del servidor junto con
