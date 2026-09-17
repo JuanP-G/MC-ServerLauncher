@@ -74,6 +74,12 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > Persistir no es a propósito uno de los efectos. El diálogo de editar escribe en la config viva
 > según se teclea, así que guardar en cada cambio reescribiría `servers.json` en cada tecla; guardar
 > se queda donde está, una vez, cuando se acepta un diálogo.
+>
+> Por lo mismo, la caja de la carpeta en `AddEditServerDialog` es el único enlace con
+> `UpdateSourceTrigger=LostFocus`. La carpeta es la identidad entera del servidor en disco, y
+> volcarla en cada tecla releería el puerto, el MOTD, el icono, la carpeta de contenido y la lista de
+> backups una vez por letra, contra rutas que todavía no existen. Las demás cajas de ahí vuelcan
+> según se escribe, que es lo que hace que la tarjeta se actualice mientras la editas.
 
 > **Un constructor monta; `Activate()` arranca.** `ServerViewModel` y `MainViewModel` se parten en
 > dos. El constructor lee —la config, la paleta de consola, los archivos del propio servidor— y no

@@ -72,6 +72,12 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > Persisting is deliberately not one of the effects. The edit dialog writes into the live config as
 > the user types, so saving on every change would rewrite `servers.json` on every keystroke; saving
 > stays where it is, once, when a dialog is accepted.
+>
+> For the same reason the folder box in `AddEditServerDialog` is the one binding with
+> `UpdateSourceTrigger=LostFocus`. The folder is the server's whole identity on disk, and committing
+> it per keystroke would re-read the port, the MOTD, the icon, the content folder and the backup
+> list once per letter, against paths that do not exist yet. Every other box there commits as you
+> type, which is what makes the card update while you edit it.
 
 > **A constructor assembles; `Activate()` starts.** `ServerViewModel` and `MainViewModel` each split
 > in two. The constructor reads — the config, the console palette, the server's own files — and
