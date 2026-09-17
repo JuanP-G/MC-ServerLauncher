@@ -49,6 +49,20 @@ the whole run — Avalonia can only be initialized once per process, and its con
 from the thread that initialized it. It exists because a bug shipped twice that nothing else could
 catch: the type picker reporting the *previous* selection inside its own change event.
 
+They come in four layers, and it is worth knowing which one a new test belongs to:
+
+| Layer | Example | What it can see |
+|---|---|---|
+| The models on their own | `ServerConfigFormatTests`, `ModelNotificationTests` | What is written to disk; which properties announce |
+| The table | `ServerConfigEffectsTests` | That no field of the config was left undeclared |
+| View models, built for real | `ServerViewModelRefreshTests`, `MainViewModelFlowTests` | That a change to the config reaches the card, the panels and `servers.json` |
+| Real controls | `AddEditServerDialogTests`, `CreateServerDialogTests` | That it reaches the screen — the half a unit test cannot see |
+
+`ServerViewModel` and `MainViewModel` take a data folder and start nothing until `Activate()`, so a
+test can own one without touching `%APPDATA%`, Playit or the network. Tests never call `Activate()`.
+`ServerModsView` cannot be rendered headless (the icon font), so its bindings are checked by reading
+the `.axaml` and reflecting against the view model — see `MissingDependencyPanelTests`.
+
 ## Code style
 
 The whole repository is written in one style, and most of it is **applied for you**: `.editorconfig`

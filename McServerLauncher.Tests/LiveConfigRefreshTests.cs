@@ -17,10 +17,10 @@ namespace McServerLauncher.Tests;
 /// were already using the new values. These tests are about the two agreeing again.
 /// </para>
 /// <para>
-/// <c>ServerViewModel.RefreshFromConfig</c> is not exercised here on purpose: constructing one
-/// starts timers, the shared Playit manager and the wake listener, which is a live server rather
-/// than a unit under test. Its own body only announces properties and delegates; everything it
-/// delegates to is below.
+/// These stay at the panel's own level, calling <c>RefreshFromConfig</c> directly. The same ground
+/// covered through a real <c>ServerViewModel</c>, with nobody asking for a refresh at all, is in
+/// <c>ServerViewModelRefreshTests</c> — which only became possible once a constructor stopped
+/// starting timers and sockets.
 /// </para>
 /// </remarks>
 public class LiveConfigRefreshTests : IDisposable

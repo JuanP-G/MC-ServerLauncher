@@ -51,6 +51,21 @@ sus controles hay que tocarlos desde el hilo que la inicializó. Existe porque u
 veces y nada más lo pillaba: el selector de tipo informando de la selección *anterior* dentro de su
 propio evento de cambio.
 
+Van en cuatro capas, y conviene saber a cuál pertenece una prueba nueva:
+
+| Capa | Ejemplo | Qué ve |
+|---|---|---|
+| Los modelos solos | `ServerConfigFormatTests`, `ModelNotificationTests` | Qué se escribe en disco; qué propiedades avisan |
+| La tabla | `ServerConfigEffectsTests` | Que no se ha quedado ningún campo de la config sin declarar |
+| View models, construidos de verdad | `ServerViewModelRefreshTests`, `MainViewModelFlowTests` | Que un cambio en la config llega a la tarjeta, a los paneles y a `servers.json` |
+| Controles reales | `AddEditServerDialogTests`, `CreateServerDialogTests` | Que llega a la pantalla — la mitad que una prueba unitaria no ve |
+
+`ServerViewModel` y `MainViewModel` aceptan una carpeta de datos y no arrancan nada hasta
+`Activate()`, así que una prueba puede tener uno sin tocar `%APPDATA%`, Playit ni la red. Las pruebas
+nunca llaman a `Activate()`. `ServerModsView` no se puede renderizar en headless (la fuente de
+iconos), así que sus enlaces se comprueban leyendo el `.axaml` y mirando el view model por reflexión
+— ver `MissingDependencyPanelTests`.
+
 ## Estilo de código
 
 Todo el repositorio está escrito con un mismo estilo, y la mayor parte **se aplica sola**: el
