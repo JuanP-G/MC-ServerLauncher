@@ -12,11 +12,17 @@
         <ScrollViewer Grid.Row="0" Margin="20,20,20,8" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <TextBlock Text="{loc:Loc Cs_Name}" Margin="0,4" />
-                <TextBox Text="{Binding Name, Mode=TwoWay}" />
+                <TextBox x:Name="NameBox" Text="{Binding Name, Mode=TwoWay}" />
 
                 <TextBlock Text="{loc:Loc Ae_Folder}" Margin="0,12,0,4" />
                 <Grid ColumnDefinitions="*,Auto">
-                    <TextBox Grid.Column="0" Text="{Binding FolderPath, Mode=TwoWay}" />
+                    <!-- Committed when the box loses focus, not on every keystroke. The folder is
+                         the server's whole identity on disk: writing it live would make the card
+                         behind this dialog re-read the port, the MOTD, the icon, the mods folder
+                         and the backup list once per letter, against paths that do not exist yet.
+                         Every other box here is free to write as you type. -->
+                    <TextBox Grid.Column="0" x:Name="FolderBox"
+                             Text="{Binding FolderPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                     <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseFolder_Click" />
                 </Grid>
 
@@ -143,7 +149,7 @@
         </ScrollViewer>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,8,20,16" Spacing="8">
-            <Button Content="{loc:Loc Cancel}" Click="Cancel_Click" />
+            <Button x:Name="CancelButton" Content="{loc:Loc Cancel}" Click="Cancel_Click" />
             <Button Classes="accent" Content="{loc:Loc Save}" Click="Save_Click" />
         </StackPanel>
     </Grid>

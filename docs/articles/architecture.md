@@ -34,6 +34,64 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > `ServerTypeBrushes` are three instances of the same split — hex strings in `Services/`, brushes in
 > `ViewModels/`.
 
+> **`ServerConfig` announces its own changes, and the view models share the instance.** It and
+> `NotificationSettings` are the two `Models/` types that do — both are edited in place by a dialog
+> while something else is on screen showing them. They were plain objects, on the argument that a
+> persisted model should not depend on MVVM; that argument does not survive contact with the fact
+> that `Models/` and `ViewModels/` are folders in one assembly, so the dependency was already there,
+> and what the rule actually bought was a class of bug. Everything derived from the config simply
+> never recomputed: converting a server changed the disk and left the app describing what the folder
+> used to be until it was restarted.
+>
+> **This does not change `servers.json`.** Reflection-based System.Text.Json writes public
+> properties; the generated ones keep the exact names the auto-properties had; `ObservableObject`
+> contributes only events, which are not serialized. The key *order* is not promised, and nothing
+> reads the file positionally. `ServerConfigFormatTests` holds every part of that down — the exact
+> key set, `Type` still being the integer that is the file format, the two `[JsonIgnore]` computed
+> paths staying out, and a file written by an older version still opening.
+>
+> Never give either class a `Clone` built on `MemberwiseClone`: it copies the `PropertyChanged`
+> delegate, so the copy raises changes at the original's subscribers. `NotificationSettings.Clone`
+> is field-by-field, and `AppSettings` — which does use `MemberwiseClone` — is deliberately left a
+> plain object, because the settings dialog edits a copy and commits it on OK instead.
+
+> **One table says what each field of the config feeds.** `ServerConfigEffects` has a row per
+> `ServerConfig` property: which `ServerViewModel` and `ServerModsViewModel` properties to announce,
+> and what has to be redone that a notification cannot express — re-read the port, rescan the
+> content folder, close the store's details page, search again, reopen the wake listener, reload the
+> backups. `ServerViewModel` subscribes to `Config.PropertyChanged` once and applies the row, on the
+> UI thread (crossplay writes the Bedrock port from a background continuation). A field nothing
+> shows gets a row too, carrying the reason.
+>
+> **`ServerConfigEffectsTests` is what makes this hold.** Every writable property of `ServerConfig`
+> must appear exactly once, and every view-model property a row names must still exist. A field
+> added without a row fails on the day it is written, and a rename that misses the table fails
+> instead of announcing a name nothing listens for. That is the whole point: the bug was never hard,
+> it was just quiet.
+>
+> Persisting is deliberately not one of the effects. The edit dialog writes into the live config as
+> the user types, so saving on every change would rewrite `servers.json` on every keystroke; saving
+> stays where it is, once, when a dialog is accepted.
+>
+> For the same reason the folder box in `AddEditServerDialog` is the one binding with
+> `UpdateSourceTrigger=LostFocus`. The folder is the server's whole identity on disk, and committing
+> it per keystroke would re-read the port, the MOTD, the icon, the content folder and the backup
+> list once per letter, against paths that do not exist yet. Every other box there commits as you
+> type, which is what makes the card update while you edit it.
+
+> **A constructor assembles; `Activate()` starts.** `ServerViewModel` and `MainViewModel` each split
+> in two. The constructor reads — the config, the console palette, the server's own files — and
+> leaves nothing running behind it. `Activate()` is everything that reaches outside the object: the
+> polling timers, the shared `PlayitManager` / `PlayitAgentRunner` subscriptions, the tunnel
+> lookups, the wake-on-demand socket, the update check. `MainWindow` calls
+> `MainViewModel.Activate()` from `Loaded`, and that reaches every server; a server registered later
+> is activated by `Register` on the spot.
+>
+> `ShutdownAsync()` is the exact mirror, and both are safe to call twice — `Loaded` fires again
+> every time the window comes back from the tray. This is why the two can be built in a test at all:
+> before the split, constructing one started three timers, opened a socket and called the network,
+> so nothing that touched them could be tested except through its pure pieces.
+
 Data lives **per user** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux
 and macOS):
 
@@ -143,7 +201,9 @@ are no hard-coded machine paths.
   from `ServerProcessManager`, which used to merge it with standard output in one handler. Only `stdout` is
   read: vanilla's bracket (level in the **second** one, not the first) and Paper's.
 - **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version
-  when the user adds one that already exists.
+  when the user adds one that already exists. It runs twice: on the way in from *Add server*, and
+  again at startup for servers saved before those fields existed. It fills nothing in a config that
+  already names its version, so the second pass is free and neither can overrule the user.
 - **`ServerIconService`** — generates a server's `server-icon.png`: takes any user image, crops it to
   a centered square and scales it to 64×64 with SkiaSharp. (`ServerViewModel.LoadIcon` is what reads
   it back for the Minecraft-style view.)
@@ -185,7 +245,9 @@ are no hard-coded machine paths.
 
 - **`AppSettingsService`** / **`ServerStorageService`** — the two owners of the app's JSON:
   `settings.json` and `servers.json`. Both go through `AtomicJsonFile` and both report what happened
-  on load, so a corrupt file is surfaced at startup instead of showing an empty server list.
+  on load, so a corrupt file is surfaced at startup instead of showing an empty server list. Both
+  take an optional data folder, and `MainViewModel` takes one too and hands it to both: without it a
+  test that goes near either file reads and rewrites the real one belonging to whoever ran it.
 - **`AtomicDownload`** / **`AtomicTextFile`** — the same guarantee for the other two kinds of write.
   A download lands in `<dest>.part` and is verified there, so an interrupted one can never replace a
   working file with half of one; a config file the app owns is written only when it actually changed,
@@ -371,6 +433,20 @@ missing from the other silently produced a Vanilla server. The warning above the
 the *direction* of the change, because the directions are not equally safe: gaining a loader is
 additive, while dropping to Vanilla or crossing between families is not. Content that the new family
 cannot read is moved aside by `ContentMigrationService` rather than left to fail at load.
+
+The conversion writes into the `ServerConfig` the app is already showing, and **nothing then asks
+for a refresh**. The config announces each field it changed, `ServerConfigEffects` says what that
+field costs, and the badge, the version, the Mods tab, its filter chips, the installed list — the
+old family's folder has just been moved aside — and the store search all follow on their own. Even
+cancelling the edit dialog afterwards is covered, because restoring the snapshot announces its own
+assignments.
+
+It used to rebuild the whole view model instead, and only when the *type* had changed and the server
+was stopped. Converting Fabric 1.21.1 to Fabric 1.21.4 therefore changed nothing on screen, and the
+browser went on offering mods picked for a version the server no longer ran — which is what made an
+install fail minutes later, far from the conversion that caused it. A blanket refresh on closing the
+dialog was the first fix; it is gone too, because leaving it would mean the app never exercised the
+mechanism that replaced it.
 
 ### Handing the mod list to your players
 `ServerModsViewModel.ExportModpack` zips the server's `mods/` (or `plugins/`) folder together with a

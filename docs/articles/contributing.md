@@ -49,6 +49,20 @@ the whole run — Avalonia can only be initialized once per process, and its con
 from the thread that initialized it. It exists because a bug shipped twice that nothing else could
 catch: the type picker reporting the *previous* selection inside its own change event.
 
+They come in four layers, and it is worth knowing which one a new test belongs to:
+
+| Layer | Example | What it can see |
+|---|---|---|
+| The models on their own | `ServerConfigFormatTests`, `ModelNotificationTests` | What is written to disk; which properties announce |
+| The table | `ServerConfigEffectsTests` | That no field of the config was left undeclared |
+| View models, built for real | `ServerViewModelRefreshTests`, `MainViewModelFlowTests` | That a change to the config reaches the card, the panels and `servers.json` |
+| Real controls | `AddEditServerDialogTests`, `CreateServerDialogTests` | That it reaches the screen — the half a unit test cannot see |
+
+`ServerViewModel` and `MainViewModel` take a data folder and start nothing until `Activate()`, so a
+test can own one without touching `%APPDATA%`, Playit or the network. Tests never call `Activate()`.
+`ServerModsView` cannot be rendered headless (the icon font), so its bindings are checked by reading
+the `.axaml` and reflecting against the view model — see `MissingDependencyPanelTests`.
+
 ## Code style
 
 The whole repository is written in one style, and most of it is **applied for you**: `.editorconfig`
@@ -96,8 +110,22 @@ the name's fault the other half — prefer fixing the name.
 - Bindable state is `[ObservableProperty] private string _searchQuery = string.Empty;` and nothing
   else. Never a hand-written `OnPropertyChanged` pair.
 - Anything derived is an expression-bodied property: `public bool UpdateAvailable => Update is not null;`
+- **A persisted model that a dialog edits while it is on screen is observable.** `ServerConfig` and
+  `NotificationSettings` derive from `ObservableObject`, and a property added to either goes in as
+  `[ObservableProperty] private T _foo;` like anywhere else. It does not change what is written to
+  disk, and `ServerConfigFormatTests` is there to prove that stays true. `AppSettings` is the
+  exception and stays plain: its dialog edits a copy and commits it on OK.
+- **A new field on `ServerConfig` needs a row in `ServerConfigEffects`** — which view-model
+  properties it feeds and what has to be redone, or a line saying why nothing on screen derives from
+  it. `ServerConfigEffectsTests` fails until it is there, and the failure says what to write. This
+  is not bureaucracy: a field left out shows the right answer until somebody edits that server, and
+  the wrong one from then until the app is restarted.
 - `var` when the type is already on the line (`var dialog = new SettingsDialog(…)`), the type spelled
   out when it is not.
+- **A constructor assembles; `Activate()` starts.** Nothing that polls, opens a socket, subscribes to
+  a shared singleton or goes to the network belongs in a constructor — it goes in `Activate()`, whose
+  mirror is `ShutdownAsync()`, and both must be safe to call twice. `ServerViewModel` and
+  `MainViewModel` are split this way, which is the only reason either can be built in a test.
 
 ### Layering
 

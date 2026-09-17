@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using McServerLauncher.Services;
 
 namespace McServerLauncher.Models;
@@ -46,18 +47,38 @@ public enum NotificationLevel
 /// <see cref="Enabled"/> is the master switch for the scope; the per-kind flags are only consulted
 /// when it's on.
 /// </summary>
-public class NotificationSettings
+/// <remarks>
+/// Observable for the same reason <see cref="ServerConfig"/> is: the per-server override is reached
+/// through <c>ServerConfig.Notifications</c> and bound straight into the edit dialog by a nested
+/// path, so a plain object here would leave those eight checkboxes unable to show a change that did
+/// not come from the user clicking them.
+/// </remarks>
+public partial class NotificationSettings : ObservableObject
 {
     /// <summary>Master switch for this scope. When false, nothing is shown.</summary>
-    public bool Enabled { get; set; } = true;
+    [ObservableProperty]
+    private bool _enabled = true;
 
-    public bool PlayerJoined { get; set; } = true;
-    public bool PlayerLeft { get; set; } = true;
-    public bool PlayerDeath { get; set; } = true;
-    public bool ServerCrashed { get; set; } = true;
-    public bool AutoRestartGaveUp { get; set; } = true;
-    public bool IdleShutdown { get; set; } = true;
-    public bool WokeOnDemand { get; set; } = true;
+    [ObservableProperty]
+    private bool _playerJoined = true;
+
+    [ObservableProperty]
+    private bool _playerLeft = true;
+
+    [ObservableProperty]
+    private bool _playerDeath = true;
+
+    [ObservableProperty]
+    private bool _serverCrashed = true;
+
+    [ObservableProperty]
+    private bool _autoRestartGaveUp = true;
+
+    [ObservableProperty]
+    private bool _idleShutdown = true;
+
+    [ObservableProperty]
+    private bool _wokeOnDemand = true;
 
     // --- Colours, one per level ---
     // Stored as hex strings rather than a colour type on purpose: this class is serialized straight
@@ -67,16 +88,20 @@ public class NotificationSettings
     // The defaults are the greens, ambers and reds the rest of the app already uses.
 
     /// <summary>Colour for notifications that are neither good nor bad.</summary>
-    public string ColorInfo { get; set; } = NotificationPalette.DefaultInfo;
+    [ObservableProperty]
+    private string _colorInfo = NotificationPalette.DefaultInfo;
 
     /// <summary>Colour for notifications that report something going right.</summary>
-    public string ColorSuccess { get; set; } = NotificationPalette.DefaultSuccess;
+    [ObservableProperty]
+    private string _colorSuccess = NotificationPalette.DefaultSuccess;
 
     /// <summary>Colour for notifications worth knowing about.</summary>
-    public string ColorWarning { get; set; } = NotificationPalette.DefaultWarning;
+    [ObservableProperty]
+    private string _colorWarning = NotificationPalette.DefaultWarning;
 
     /// <summary>Colour for notifications that report something broken.</summary>
-    public string ColorError { get; set; } = NotificationPalette.DefaultError;
+    [ObservableProperty]
+    private string _colorError = NotificationPalette.DefaultError;
 
     /// <summary>The configured colour for a level, as a hex string.</summary>
     public string ColorFor(NotificationLevel level) => level switch

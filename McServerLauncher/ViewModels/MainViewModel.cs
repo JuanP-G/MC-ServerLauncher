@@ -21,8 +21,8 @@ namespace McServerLauncher.ViewModels;
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
-    private readonly ServerStorageService _storage = new();
-    private readonly AppSettingsService _settings = new();
+    private readonly ServerStorageService _storage;
+    private readonly AppSettingsService _settings;
 
     /// <summary>
     /// The settings, loaded once at startup and kept in memory (EFI-7): every use used to re-read
@@ -75,19 +75,19 @@ public partial class MainViewModel : ObservableObject
 
     private bool _languageReady;
 
-    public MainViewModel()
+    /// <summary>Default constructor uses %APPDATA%; <paramref name="dataDir"/> is for tests.</summary>
+    /// <remarks>
+    /// Both files go in the same folder, so one parameter settles both services. A test that opened
+    /// this view model without it would read the server list of whoever is running the test and
+    /// write its own back over it.
+    /// </remarks>
+    public MainViewModel(string? dataDir = null)
     {
+        _storage = new ServerStorageService(dataDir);
+        _settings = new AppSettingsService(dataDir);
+
         Load();
         _appSettings = _settings.Load();
-
-        // Make the per-user Playit agent key (if the user already connected) the credential for all
-        // Playit API reads/writes this session.
-        PlayitApiService.SetAgentKey(_appSettings.PlayitAgentSecretKey);
-
-        // If already connected, run the embedded Playit agent so tunnels forward traffic (downloads
-        // it once; nothing for the user to install).
-        if (!string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
-            _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
 
         // Make the saved notification preferences the app-wide defaults for this session.
         NotificationPreferences.Global = _appSettings.Notifications;
@@ -99,13 +99,44 @@ public partial class MainViewModel : ObservableObject
         SelectedLanguage = Languages.FirstOrDefault(l => l.Code == code) ?? Languages[0];
         _languageReady = true;
 
-        _ = CheckForUpdatesAsync();
-
         // Checking only at startup missed the case this app is designed for: it lives in the tray
         // with the servers running, so on a machine that is never turned off it would simply never
-        // look again.
+        // look again. Built here, started in Activate.
         _updateTimer = new DispatcherTimer { Interval = UpdateCheckInterval };
         _updateTimer.Tick += (_, _) => _ = CheckForUpdatesAsync();
+    }
+
+    /// <summary>True once <see cref="Activate"/> has run, so servers added later start watching.</summary>
+    private bool _activated;
+
+    /// <summary>
+    /// Starts everything that reaches outside the app: the Playit agent, the update check and its
+    /// timer, and each server's own watching.
+    /// </summary>
+    /// <remarks>
+    /// Called from <c>MainWindow</c> once the window is up, not from the constructor. The same
+    /// split as <see cref="ServerViewModel.Activate"/> and for the same reasons: a constructor goes
+    /// back to assembling, the app stops downloading an agent and calling GitHub before anything is
+    /// on screen, and this view model becomes reachable from a test at all.
+    /// </remarks>
+    public void Activate()
+    {
+        if (_activated) return;
+        _activated = true;
+
+        // Make the per-user Playit agent key (if the user already connected) the credential for all
+        // Playit API reads/writes this session.
+        PlayitApiService.SetAgentKey(_appSettings.PlayitAgentSecretKey);
+
+        // If already connected, run the embedded Playit agent so tunnels forward traffic (downloads
+        // it once; nothing for the user to install).
+        if (!string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
+            _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
+
+        foreach (var server in Servers)
+            server.Activate();
+
+        _ = CheckForUpdatesAsync();
         _updateTimer.Start();
     }
 
@@ -397,7 +428,8 @@ public partial class MainViewModel : ObservableObject
     {
         // The app starts with no servers; the user creates a new one or adds an existing folder.
         // For servers saved before Type/GameVersion existed, detect them from the folder so the
-        // mods browser works (older Fabric/Forge servers).
+        // mods browser works (older Fabric/Forge servers). AddServer does the same on the way in,
+        // so a folder registered today does not have to wait for the next start to be recognised.
         var detector = new ServerDetectionService();
         var changed = false;
         foreach (var cfg in _storage.Load())
@@ -473,6 +505,9 @@ public partial class MainViewModel : ObservableObject
         vm.ConfigChanged += Save;
         vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
         Servers.Add(vm);
+        // A server registered while the app is already running has nobody else to switch it on. The
+        // ones Load builds at startup wait for Activate, which reaches all of them at once.
+        if (_activated) vm.Activate();
         return vm;
     }
 
@@ -484,6 +519,12 @@ public partial class MainViewModel : ObservableObject
         var dialog = new AddEditServerDialog(config);
         if (await dialog.ShowDialog<bool>(Owner))
         {
+            // The same look at the folder that Load does, and for the same reason: a folder being
+            // registered is almost always one that already holds a server. Without it the card said
+            // Vanilla with no version — so no Mods tab, and no version to resolve a mod against —
+            // until the app was restarted and Load detected it. It fills nothing in a folder whose
+            // type is already known, so it is safe on a config the user filled in by hand.
+            new ServerDetectionService().DetectAndFill(config);
             SelectedServer = Register(config);
             Save();
         }
@@ -546,7 +587,6 @@ public partial class MainViewModel : ObservableObject
     {
         if (SelectedServer is null || Owner is null) return;
         var server = SelectedServer;
-        var oldType = server.Config.Type;
 
         // Read before the dialog: these two checkboxes are requests to install something, not
         // settings that take effect by being remembered. Turning one on and having nothing happen
@@ -560,12 +600,18 @@ public partial class MainViewModel : ObservableObject
         var accepted = await dialog.ShowDialog<bool>(Owner);
 
         // A loader install mutates the config and the disk in the act (files already downloaded),
-        // so it must be persisted even if the user then cancels the edit dialog — otherwise the
-        // type badge, the Mods tab and servers.json keep showing the old type while the disk is
-        // already Fabric/Forge/Paper. Cancel still reverts the ordinary editable fields.
+        // so it must be persisted even if the user then cancels the edit dialog — otherwise
+        // servers.json keeps naming the old type while the disk is already Fabric/Forge/Paper.
+        // Cancel still reverts the ordinary editable fields.
+        //
+        // Nothing is refreshed here. The dialog writes into the config the view model is showing,
+        // the config announces each change and ServerConfigEffects says what it costs, so the card
+        // and the panels have already followed — including on the Cancel path, where restoring the
+        // snapshot announces its own eighteen assignments. A blanket refresh at this point used to
+        // be the mechanism; leaving it in would mean the app never exercised the one that replaced
+        // it, and would throw away the store page the user had open for an edit they cancelled.
         if (accepted || dialog.LoaderInstalled)
         {
-            server.Name = server.Config.Name;
             Save();
 
             if (!hadCrossplay && server.Config.CrossplayEnabled)
@@ -586,26 +632,7 @@ public partial class MainViewModel : ObservableObject
                 await server.SetUpBedrockModContentAsync();
                 Save();
             }
-
-            // If the loader type changed (e.g. a vanilla server was converted to Fabric), rebuild the
-            // view model so computed state (IsModded, the Mods tab/browser) refreshes.
-            if (server.Config.Type != oldType && !server.IsRunning)
-                ReplaceServer(server);
         }
-    }
-
-    /// <summary>Replaces a server's view model in place (keeping its position) and reselects it.</summary>
-    private void ReplaceServer(ServerViewModel old)
-    {
-        var index = Servers.IndexOf(old);
-        if (index < 0) return;
-
-        _ = old.ShutdownAsync(); // stop its timers (it isn't running)
-        var vm = new ServerViewModel(old.Config);
-        vm.ConfigChanged += Save;
-        vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
-        Servers[index] = vm;
-        SelectedServer = vm;
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]

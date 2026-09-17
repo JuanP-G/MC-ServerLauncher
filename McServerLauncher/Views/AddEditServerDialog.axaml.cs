@@ -12,6 +12,20 @@ namespace McServerLauncher.Views;
 /// Edits a server already on the list, or registers one that exists on disk: its name, folder, RAM,
 /// port, and the per-server switches (notifications, idle shutdown, crossplay).
 /// </summary>
+/// <remarks>
+/// <para>
+/// It binds straight to the live <see cref="ServerConfig"/>, which is the same instance the server
+/// list is showing, so edits appear on the card as they are made. That used to need a
+/// <c>DataContext = null; DataContext = _config;</c> swap after every change made in code, because
+/// the config announced nothing; it announces now, and the swap is gone with it.
+/// </para>
+/// <para>
+/// The consequence worth knowing about is <see cref="UpdateTypeDependentOptions"/>: it switches off
+/// options the current type cannot do, and those writes now reach the checkboxes. Before, they
+/// changed the model and left the box on screen still ticked — the user pressed Save on a server
+/// that had silently agreed to something else.
+/// </para>
+/// </remarks>
 public partial class AddEditServerDialog : Window
 {
     private readonly ServerConfig _config;
@@ -42,12 +56,6 @@ public partial class AddEditServerDialog : Window
         UpdateTypeDependentOptions();
     }
 
-    private void RefreshDataContext()
-    {
-        DataContext = null;
-        DataContext = _config;
-    }
-
     private async void BrowseFolder_Click(object? sender, RoutedEventArgs e)
     {
         var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
@@ -59,7 +67,6 @@ public partial class AddEditServerDialog : Window
         if (string.IsNullOrEmpty(path)) return;
 
         _config.FolderPath = path;
-        RefreshDataContext();
 
         // If the name is still the default, suggest the folder's name.
         // ("Nuevo servidor" is the legacy hardcoded default of configs saved by old versions.)
@@ -68,7 +75,6 @@ public partial class AddEditServerDialog : Window
             || _config.Name == "Nuevo servidor")
         {
             _config.Name = new DirectoryInfo(path).Name;
-            RefreshDataContext();
         }
     }
 
@@ -90,7 +96,6 @@ public partial class AddEditServerDialog : Window
         if (string.IsNullOrEmpty(path)) return;
 
         _config.JavaPath = path;
-        RefreshDataContext();
     }
 
     private async void InstallLoader_Click(object? sender, RoutedEventArgs e)
@@ -105,10 +110,9 @@ public partial class AddEditServerDialog : Window
         if (await dialog.ShowDialog<bool>(this))
         {
             // The loader files are already on disk and _config was updated; refresh the snapshot so
-            // a later Cancel doesn't revert the new loader/jar/java fields, and re-bind to show them.
+            // a later Cancel doesn't revert the new loader/jar/java fields.
             LoaderInstalled = true;
             _snapshot = JsonSerializer.Serialize(_config);
-            RefreshDataContext();
             // The type just changed, and everything below depends on it. Without this the crossplay
             // and version-bridging checkboxes keep the previous type's answer — convert a Vanilla
             // server to Paper and they stay greyed out saying Vanilla takes no plugins, which reads
@@ -150,6 +154,12 @@ public partial class AddEditServerDialog : Window
     /// <remarks>
     /// Runs again after a type conversion, not only once at open: the Install-loader button changes
     /// the type from inside this dialog, and the comment here used to claim it could not.
+    /// <para>
+    /// The three switches it turns off write into the live config, so the checkboxes follow. When
+    /// they did not, this method was quietly disagreeing with the screen: converting a Fabric server
+    /// to Paper cleared <c>BedrockModContentEnabled</c> while its box stayed ticked, and the user
+    /// saved a server that had agreed to something they could still see the opposite of.
+    /// </para>
     /// </remarks>
     private void UpdateTypeDependentOptions()
     {

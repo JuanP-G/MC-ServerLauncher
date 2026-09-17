@@ -34,6 +34,66 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > `ServerTypeCatalog` / `ServerTypeBrushes` son tres casos del mismo reparto — los hex en
 > `Services/`, los brushes en `ViewModels/`.
 
+> **`ServerConfig` avisa de sus cambios, y los view models comparten la instancia.** Él y
+> `NotificationSettings` son los dos tipos de `Models/` que lo hacen: a los dos los edita un diálogo
+> en el sitio mientras otra cosa los está enseñando. Eran objetos planos, con el argumento de que un
+> modelo que se guarda no debería depender de MVVM; ese argumento no sobrevive a mirar que `Models/`
+> y `ViewModels/` son carpetas de un mismo ensamblado, así que la dependencia ya estaba, y lo que la
+> regla compraba de verdad era una familia de fallos. Nada de lo derivado de la config se recalculaba
+> nunca: convertir un servidor cambiaba el disco y dejaba a la app describiendo lo que la carpeta
+> había dejado de ser, hasta reiniciarla.
+>
+> **Esto no cambia `servers.json`.** System.Text.Json por reflexión escribe propiedades públicas;
+> las generadas conservan exactamente los nombres que tenían las auto-propiedades; `ObservableObject`
+> solo aporta eventos, que no se serializan. El *orden* de las claves no se promete, y nadie lee el
+> fichero por posición. `ServerConfigFormatTests` sujeta cada parte de eso: el conjunto exacto de
+> claves, que `Type` siga siendo el entero que es el formato, que las dos rutas calculadas con
+> `[JsonIgnore]` sigan fuera, y que un fichero escrito por una versión anterior siga abriéndose.
+>
+> No le pongas nunca a ninguna de las dos un `Clone` hecho con `MemberwiseClone`: copia el delegado
+> `PropertyChanged`, así que la copia lanza cambios a los suscriptores del original.
+> `NotificationSettings.Clone` es campo a campo, y `AppSettings` —que sí usa `MemberwiseClone`— se
+> deja a propósito como objeto plano, porque el diálogo de ajustes edita una copia y la vuelca al
+> aceptar.
+
+> **Una sola tabla dice qué alimenta cada campo de la config.** `ServerConfigEffects` tiene una fila
+> por propiedad de `ServerConfig`: qué propiedades de `ServerViewModel` y `ServerModsViewModel` hay
+> que anunciar, y qué hay que rehacer que una notificación no sabe expresar —releer el puerto,
+> reescanear la carpeta de contenido, cerrar la ficha de la tienda, volver a buscar, reabrir el
+> listener de despertar, recargar los backups—. `ServerViewModel` se suscribe una vez a
+> `Config.PropertyChanged` y aplica la fila, en el hilo de interfaz (el crossplay escribe el puerto
+> Bedrock desde una continuación en segundo plano). Un campo que no enseña nadie también tiene fila,
+> con el motivo escrito.
+>
+> **`ServerConfigEffectsTests` es lo que sujeta esto.** Toda propiedad escribible de `ServerConfig`
+> tiene que aparecer exactamente una vez, y toda propiedad de view model que nombre una fila tiene
+> que seguir existiendo. Un campo añadido sin fila falla el día que se escribe, y un renombrado que
+> se olvide de la tabla falla en vez de anunciar un nombre que no escucha nadie. Ese es todo el
+> asunto: el fallo nunca fue difícil, solo era silencioso.
+>
+> Persistir no es a propósito uno de los efectos. El diálogo de editar escribe en la config viva
+> según se teclea, así que guardar en cada cambio reescribiría `servers.json` en cada tecla; guardar
+> se queda donde está, una vez, cuando se acepta un diálogo.
+>
+> Por lo mismo, la caja de la carpeta en `AddEditServerDialog` es el único enlace con
+> `UpdateSourceTrigger=LostFocus`. La carpeta es la identidad entera del servidor en disco, y
+> volcarla en cada tecla releería el puerto, el MOTD, el icono, la carpeta de contenido y la lista de
+> backups una vez por letra, contra rutas que todavía no existen. Las demás cajas de ahí vuelcan
+> según se escribe, que es lo que hace que la tarjeta se actualice mientras la editas.
+
+> **Un constructor monta; `Activate()` arranca.** `ServerViewModel` y `MainViewModel` se parten en
+> dos. El constructor lee —la config, la paleta de consola, los archivos del propio servidor— y no
+> deja nada en marcha detrás. `Activate()` es todo lo que sale del objeto: los timers de sondeo, las
+> suscripciones al `PlayitManager` / `PlayitAgentRunner` compartidos, la consulta de los túneles, el
+> socket de despertar bajo demanda, la comprobación de actualizaciones. `MainWindow` llama a
+> `MainViewModel.Activate()` desde `Loaded`, y eso llega a todos los servidores; uno registrado más
+> tarde lo activa `Register` en el momento.
+>
+> `ShutdownAsync()` es el espejo exacto, y los dos se pueden llamar dos veces sin daño — `Loaded`
+> vuelve a dispararse cada vez que la ventana regresa de la bandeja. Por eso se pueden construir en
+> una prueba: antes del corte, construir uno arrancaba tres timers, abría un socket y llamaba a la
+> red, así que nada que los tocara se podía probar salvo por sus piezas puras.
+
 Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`
 (`~/.config/McServerLauncher/` en Linux y macOS):
 
@@ -144,7 +204,10 @@ mundo. No hay rutas fijas del equipo en el código.
   desde `ServerProcessManager`, que antes lo mezclaba con la salida normal en el mismo manejador. Solo `stdout`
   se lee: el corchete de vanilla (nivel en el **segundo**, no en el primero) y el de Paper.
 - **`ServerDetectionService`** — inspecciona una carpeta para averiguar el tipo/versión de un servidor
-  existente cuando el usuario añade uno que ya está.
+  existente cuando el usuario añade uno que ya está. Corre dos veces: al entrar desde *Añadir
+  servidor*, y otra vez al arrancar para los servidores guardados antes de que esos campos
+  existieran. No rellena nada en una config que ya dice su versión, así que la segunda pasada sale
+  gratis y ninguna de las dos puede llevarle la contraria al usuario.
 - **`ServerIconService`** — genera el `server-icon.png` de un servidor: toma cualquier imagen del
   usuario, la recorta al cuadrado centrado y la escala a 64×64 con SkiaSharp. (Quien lo lee de vuelta
   para la vista estilo Minecraft es `ServerViewModel.LoadIcon`.)
@@ -188,7 +251,9 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`AppSettingsService`** / **`ServerStorageService`** — los dos dueños del JSON de la app:
   `settings.json` y `servers.json`. Ambos pasan por `AtomicJsonFile` y ambos informan de qué pasó al
   cargar, para que un archivo corrupto salga a la superficie al arrancar en vez de convertirse en una
-  lista de servidores vacía.
+  lista de servidores vacía. Los dos aceptan una carpeta de datos opcional, y `MainViewModel` acepta
+  otra y se la pasa a ambos: sin eso, una prueba que se acerque a cualquiera de los dos archivos lee
+  y reescribe el de verdad de quien la esté ejecutando.
 - **`AtomicDownload`** / **`AtomicTextFile`** — la misma garantía para los otros dos tipos de
   escritura. Una descarga aterriza en `<destino>.part` y se verifica ahí, así que una interrumpida no
   puede sustituir un archivo que funcionaba por la mitad de otro; un archivo de configuración que es
@@ -389,6 +454,20 @@ La advertencia sobre el botón depende de la *dirección* del cambio, porque las
 igual de seguras: ganar un cargador es aditivo, y bajar a Vanilla o cruzar de familia no lo es. El
 contenido que la familia nueva no sabe leer lo aparta `ContentMigrationService` en vez de dejar que
 falle al cargar.
+
+La conversión escribe en el `ServerConfig` que la app ya está mostrando, y **nadie pide después
+ningún refresco**. La config avisa de cada campo que ha cambiado, `ServerConfigEffects` dice lo que
+ese campo cuesta, y la insignia, la versión, la pestaña de Mods, sus fichas de filtro, la lista de
+instalados —la carpeta de la familia vieja acaba de apartarse— y la búsqueda de la tienda van
+solos. Incluso cancelar el diálogo después queda cubierto, porque restaurar la copia anuncia sus
+propias asignaciones.
+
+Antes esto reconstruía el view model entero, y solo cuando había cambiado el *tipo* y el servidor
+estaba parado. Convertir Fabric 1.21.1 a Fabric 1.21.4 no cambiaba entonces nada en pantalla, y el
+navegador seguía ofreciendo mods elegidos para una versión que el servidor ya no ejecutaba — que es
+lo que hacía fallar una instalación minutos después, lejos de la conversión que lo causó. Un
+refresco general al cerrar el diálogo fue el primer arreglo; también se ha ido, porque dejarlo
+significaría que la app nunca ejerce el mecanismo que lo sustituyó.
 
 ### Darle la lista de mods a tus jugadores
 `ServerModsViewModel.ExportModpack` comprime la carpeta `mods/` (o `plugins/`) del servidor junto con
