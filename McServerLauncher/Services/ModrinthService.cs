@@ -160,6 +160,28 @@ public class ModrinthService
             token => GetJsonAsync<VersionResult>($"{ApiBaseUrl}/version/{Uri.EscapeDataString(versionId)}", token), ct);
 
     /// <summary>
+    /// The hashes as Modrinth expects them: lowercase hex, without repeats.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Modrinth matches hashes literally, and every hash this app computes arrives in upper case —
+    /// <see cref="System.Convert.ToHexString"/> has no other setting. Sent as they were, both hash
+    /// endpoints answer <c>{}</c> with a perfectly healthy 200, so the app read "no updates" and
+    /// "nothing missing" and said exactly that, for every server, for as long as the feature has
+    /// existed. A bug that reports good news is one nobody reports back.
+    /// </para>
+    /// <para>
+    /// Written once, here at the edge where the requirement lives, rather than at each call site —
+    /// there were two, and the third would have been written the same way as the first two.
+    /// </para>
+    /// </remarks>
+    internal static List<string> ApiHashes(IEnumerable<string> sha1Hashes) =>
+        sha1Hashes.Where(h => !string.IsNullOrEmpty(h))
+            .Select(h => h.ToLowerInvariant())
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+    /// <summary>
     /// Which Modrinth version each installed jar actually is, keyed by the SHA-1 that was passed in.
     /// </summary>
     /// <remarks>
@@ -171,7 +193,7 @@ public class ModrinthService
     public async Task<Dictionary<string, VersionResult>> GetVersionsByHashAsync(
         IEnumerable<string> sha1Hashes, CancellationToken ct = default)
     {
-        var hashes = sha1Hashes.Where(h => !string.IsNullOrEmpty(h)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var hashes = ApiHashes(sha1Hashes);
         var result = new Dictionary<string, VersionResult>(StringComparer.OrdinalIgnoreCase);
         if (hashes.Count == 0) return result;
 
@@ -237,7 +259,7 @@ public class ModrinthService
     public async Task<Dictionary<string, VersionResult>> GetLatestVersionsByHashAsync(
         IEnumerable<string> sha1Hashes, ServerType loader, string mcVersion, CancellationToken ct = default)
     {
-        var hashes = sha1Hashes.Where(h => !string.IsNullOrEmpty(h)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var hashes = ApiHashes(sha1Hashes);
         var result = new Dictionary<string, VersionResult>(StringComparer.OrdinalIgnoreCase);
         if (hashes.Count == 0) return result;
 
