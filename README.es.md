@@ -128,7 +128,9 @@ todo con botones.
 - **Manda a tus amigos un modpack listo** 📦 — un botón comprime los mods del servidor con instrucciones
   en su idioma. Los mods que solo hacen algo en el servidor —Geyser, Floodgate, un mod de copias— se
   **dejan fuera solos**, y la app te dice cuáles y los vuelve a meter en un clic si se ha equivocado. Lo
-  que necesite un mod que se queda viaja siempre con él.
+  que necesite un mod que se queda viaja siempre con él. El paquete lleva además un **script para
+  Windows, Linux y macOS** que busca la carpeta de mods del jugador, lo copia todo y aparta lo que ya
+  hubiera — a una carpeta aparte, **sin borrar nada**.
 - **Notificaciones** 🔔 — avisos opcionales cuando un jugador entra o sale, alguien muere (PvP), el servidor
   se cae, el reinicio automático se rinde, un **servidor vacío se apaga solo** o uno **se enciende porque
   alguien ha intentado entrar**. Configurables por tipo, de forma global y **por servidor**, con botón de

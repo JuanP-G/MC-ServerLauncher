@@ -457,6 +457,22 @@ Tipo: {1}  ·  Versão do Minecraft: {2}
 
 Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Name_NewServer" xml:space="preserve"><value>Novo servidor</value></data>
+  <data name="Export_ScriptsFmt" xml:space="preserve"><value>Para não o fazeres à mão: extrai este zip inteiro e executa «{0}» no Windows, ou «bash {1}» no Linux e no macOS. Copia os mods para a tua pasta e, se já tinhas outros, põe-nos de parte numa pasta separada sem apagar nada.</value></data>
+  <data name="Script_HeaderFmt" xml:space="preserve"><value>Mods de «{0}» — Minecraft {1} ({2})</value></data>
+  <data name="Script_CloseGame" xml:space="preserve"><value>Fecha o Minecraft antes de continuar.</value></data>
+  <data name="Script_NoSource" xml:space="preserve"><value>Não encontro a pasta «mods» ao lado deste script. Extrai o zip inteiro e executa-o a partir daí, não de dentro do arquivo.</value></data>
+  <data name="Script_AskFolder" xml:space="preserve"><value>Onde tens a tua pasta de mods? Carrega em Enter para usar a de baixo.</value></data>
+  <data name="Script_DestinationIs" xml:space="preserve"><value>Pasta de destino:</value></data>
+  <data name="Script_NoLoaderFmt" xml:space="preserve"><value>Não parece que tenhas o {0} instalado nesse Minecraft. Sem o carregador, os mods não carregam. Podes obtê-lo em {1}</value></data>
+  <data name="Script_AskContinue" xml:space="preserve"><value>Copiar mesmo assim?</value></data>
+  <data name="Script_YesWords" xml:space="preserve"><value>s,sim</value></data>
+  <data name="Script_Cancelled" xml:space="preserve"><value>Nada foi alterado.</value></data>
+  <data name="Script_CannotCreate" xml:space="preserve"><value>Não consegui criar a pasta de destino.</value></data>
+  <data name="Script_MoveFailed" xml:space="preserve"><value>Não consegui afastar este ficheiro. Tens o Minecraft aberto? Nada foi alterado:</value></data>
+  <data name="Script_MovedAside" xml:space="preserve"><value>Mods que já tinhas, postos de parte (nada foi apagado):</value></data>
+  <data name="Script_CopyFailed" xml:space="preserve"><value>Não consegui copiar este ficheiro:</value></data>
+  <data name="Script_Done" xml:space="preserve"><value>Pronto. Mods copiados:</value></data>
+  <data name="Script_HowToUndo" xml:space="preserve"><value>Para deixar como estava, esvazia a pasta de mods e devolve o que está em:</value></data>
   <data name="Export_NoticeAllFmt" xml:space="preserve"><value>Foram exportados {0} ficheiros para o pacote.</value></data>
   <data name="Export_NoticeFmt" xml:space="preserve"><value>Foram exportados {0} ficheiros. Ficaram de fora {1} que só fazem falta no servidor: {2}.</value></data>
   <data name="Export_NoticeOffline" xml:space="preserve"><value>Isto correu sem ligação, por isso só conta o que os próprios ficheiros declaram.</value></data>

@@ -109,7 +109,12 @@ public class ModpackExportTests : IDisposable
 
         Assert.Equal(new[] { "lithium.jar", "sodium.jar" }, result.Included);
         Assert.Equal(
-            new[] { Localizer.Get("Export_InstructionsFile"), "mods/lithium.jar", "mods/sodium.jar" }
+            new[]
+                {
+                    Localizer.Get("Export_InstructionsFile"),
+                    InstallScriptBuilder.UnixName, InstallScriptBuilder.WindowsName,
+                    "mods/lithium.jar", "mods/sodium.jar"
+                }
                 .OrderBy(n => n, StringComparer.Ordinal),
             EntryNames(Destination));
     }
@@ -156,7 +161,17 @@ public class ModpackExportTests : IDisposable
         var result = await Build(mods);
 
         Assert.Empty(result.Included);
-        Assert.Equal(new[] { Localizer.Get("Export_InstructionsFile") }, EntryNames(Destination));
+
+        // The instructions and the two scripts, and nothing else: an empty pack is still a readable
+        // zip rather than a corrupt file or an exception halfway through writing one.
+        Assert.Equal(
+            new[]
+                {
+                    Localizer.Get("Export_InstructionsFile"),
+                    InstallScriptBuilder.UnixName, InstallScriptBuilder.WindowsName
+                }
+                .OrderBy(n => n, StringComparer.Ordinal),
+            EntryNames(Destination));
     }
 
     [Fact]

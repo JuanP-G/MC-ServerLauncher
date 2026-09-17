@@ -502,6 +502,28 @@ diálogo le cobra un clic al caso normal para servir al raro, y las instruccione
 llevan la misma nota, porque el paquete tiene que explicarse a quien lo recibe. El botón no aparece
 en servidores de plugins, donde el paquete es un zip que el jugador no puede usar para nada.
 
+**Los scripts del paquete.** Junto a los jars van `install-mods-windows.bat` e
+`install-mods-unix.sh`, para que recibir un paquete no sean cuatro pasos a mano cuyo tercero es
+donde se borran los mods de alguien. `InstallScriptBuilder` rellena una plantilla guardada como
+`EmbeddedResource` (`Resources/scripts/*.in`) con los mensajes de los `.resx`: la forma es código y
+el texto está traducido, así que cada frase hereda las comprobaciones de paridad y la lógica no
+hereda ninguna. Cada marcador se sustituye por un mensaje entero y terminado —nunca por una cadena
+de formato—, así que ninguna traducción puede colar un metacarácter de shell, y el escapado de
+`ShellQuote`/`BatchValue` lo respalda.
+
+Los scripts **apartan y no borran nunca**: los jars que ya estaban van a una carpeta
+`mods-backup-<marca>` hermana de la de mods (hermana, para que el cargador no la reescanee), un
+movimiento fallido para en seco en vez de dejar media instalación, y la marca de tiempo se calcula al
+exportar porque `%DATE%` en un `.bat` sale con el formato local — que en media Europa mete barras
+dentro de un nombre de carpeta. Detectan la carpeta y preguntan en cuanto algo la hace ambigua:
+encontrar `.minecraft` demuestra que el launcher oficial se instaló alguna vez, nunca que sea el que
+se va a usar, así que un rastro de Prism o de Modrinth App fuerza la pregunta. `MCSL_MODS_DIR` la
+salta, y un script sin terminal no pregunta jamás — que es lo que evita que se cuelgue con una
+tubería, y lo que lo hace probable. `InstallScriptSmokeTests` ejecuta el script de verdad sobre un
+`old.jar` plantado y comprueba que sigue existiendo después. El bit de ejecución se pone, pero nada
+depende de él: la invocación documentada es `bash install-mods-unix.sh`, que no lo necesita y además
+esquiva la cuarentena de macOS.
+
 ### Una sola copia en marcha
 `Program.Main` reclama `SingleInstance` antes que nada. Si otra copia ya tiene el bloqueo, esta le
 avisa por la named pipe para que se ponga delante y sale sin llegar a crear una ventana. Eso es una

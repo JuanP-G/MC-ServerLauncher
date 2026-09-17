@@ -1029,12 +1029,24 @@ public partial class ServerModsViewModel : ObservableObject
                 instructions += "\n\n" + string.Format(Localizer.Get("Export_LeftOutFmt"),
                     plan.Excluded.Count, string.Join(", ", plan.Excluded));
 
+            // The script names are not translated — see InstallScriptBuilder — so the
+            // instructions, which are, have to be where the player reads what they are for.
+            if (!IsPluginBased)
+                instructions += "\n\n" + string.Format(Localizer.Get("Export_ScriptsFmt"),
+                    InstallScriptBuilder.WindowsName, InstallScriptBuilder.UnixName);
+
             var texts = new List<ModpackWriter.TextFile>
             {
                 // CRLF whatever built the pack: this one is opened in Notepad more often than
                 // anywhere else, and every other editor reads CRLF without complaining.
                 new(Localizer.Get("Export_InstructionsFile"), instructions, Newline: "\r\n")
             };
+
+            // Plugins go on a server, by hand, by whoever runs it. Nothing to install on a
+            // client, so no script — and the export button is not offered on those servers.
+            if (!IsPluginBased)
+                texts.AddRange(InstallScriptBuilder.Build(
+                    _config.Name, _config.Type, _config.GameVersion, DateTime.Now));
 
             ModpackWriter.Write(
                 destination, contentFolder,

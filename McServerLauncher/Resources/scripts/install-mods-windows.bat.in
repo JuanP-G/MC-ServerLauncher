@@ -1,0 +1,114 @@
+@echo off
+chcp 65001 >nul
+rem MC Server Launcher — mod installer for Windows.
+rem
+rem Every line of visible text is a placeholder replaced when the pack is built, so this file
+rem holds the logic and the .resx files hold the wording. A placeholder always becomes a whole
+rem finished message, never a format string.
+rem
+rem Nothing here deletes anything. Mods already in the destination are MOVED aside, never removed.
+setlocal enabledelayedexpansion
+
+set "here=%~dp0"
+set "source=%here%mods"
+
+echo @@HEADER@@
+echo @@CLOSE_GAME@@
+echo.
+
+rem The commonest failure of all: run from inside the zip preview, where nothing sits alongside.
+if not exist "%source%" (
+  echo @@NO_SOURCE@@
+  pause
+  exit /b 1
+)
+
+set "fallback=%APPDATA%\.minecraft\mods"
+set "destination=%fallback%"
+
+rem Finding the official folder proves the official launcher was installed once, never that it is
+rem the one about to be used: Prism, MultiMC, CurseForge and Modrinth App keep mods per instance.
+set "others=0"
+if exist "%APPDATA%\PrismLauncher" set "others=1"
+if exist "%APPDATA%\ModrinthApp" set "others=1"
+if exist "%LOCALAPPDATA%\Programs\PrismLauncher" set "others=1"
+if exist "%USERPROFILE%\curseforge" set "others=1"
+if exist "%APPDATA%\.technic" set "others=1"
+if exist "%APPDATA%\ATLauncher" set "others=1"
+if exist "%APPDATA%\.multimc" set "others=1"
+
+if defined MCSL_MODS_DIR (
+  set "destination=%MCSL_MODS_DIR%"
+  goto :chosen
+)
+if "!others!"=="1" goto :ask
+if not exist "%fallback%" goto :ask
+goto :chosen
+
+:ask
+echo @@ASK_FOLDER@@
+set "typed="
+set /p "typed=[%fallback%] "
+if not "!typed!"=="" set "destination=!typed!"
+
+:chosen
+echo @@DESTINATION_IS@@ !destination!
+
+rem The likeliest way for this to end badly is mods landing beside a Minecraft that cannot load
+rem them. Checked, said plainly, and not refused: the check can be wrong on a sound install.
+for %%I in ("!destination!\..") do set "parent=%%~fI"
+if exist "!parent!\versions" (
+  set "loaderfound=0"
+  for /d %%V in ("!parent!\versions\*@@LOADER_MARK@@*") do set "loaderfound=1"
+  if "!loaderfound!"=="0" (
+    echo.
+    echo @@NO_LOADER@@
+    set "answer="
+    set /p "answer=@@ASK_CONTINUE@@ "
+    set "agreed=0"
+    for %%Y in (@@YES_WORDS@@) do if /i "!answer!"=="%%Y" set "agreed=1"
+    if "!agreed!"=="0" (
+      echo @@CANCELLED@@
+      pause
+      exit /b 1
+    )
+  )
+)
+
+if not exist "!destination!" mkdir "!destination!" 2>nul
+if not exist "!destination!" (
+  echo @@CANNOT_CREATE@@
+  pause
+  exit /b 1
+)
+
+rem Aside, as a sibling rather than a subfolder: visible in Explorer, and never rescanned as mods.
+rem A half-done install is worse than none, so a failed move stops everything there and then.
+set "backup=!parent!\mods-backup-@@STAMP@@"
+set /a moved=0
+for %%F in ("!destination!\*.jar") do (
+  if not exist "!backup!" mkdir "!backup!" 2>nul
+  move "%%~fF" "!backup!\" >nul || (
+    echo @@MOVE_FAILED@@ %%~nxF
+    pause
+    exit /b 1
+  )
+  set /a moved+=1
+)
+if !moved! gtr 0 echo @@MOVED_ASIDE@@ !moved! -^> "!backup!"
+
+set /a copied=0
+for %%F in ("%source%\*.jar") do (
+  copy /y "%%~fF" "!destination!\" >nul || (
+    echo @@COPY_FAILED@@ %%~nxF
+    pause
+    exit /b 1
+  )
+  set /a copied+=1
+)
+
+echo.
+echo @@DONE@@ !copied! -^> "!destination!"
+if !moved! gtr 0 echo @@HOW_TO_UNDO@@ "!backup!"
+rem A .bat opened by double-click closes the instant it ends, so the result would never be read.
+pause

@@ -122,7 +122,9 @@ all with buttons.
 - **Send your friends a ready-made modpack** 📦 — one button zips the server's mods with instructions in
   their language. Mods that only ever do anything on the server — Geyser, Floodgate, a backup mod — are
   **left out automatically**, and the app tells you which ones and puts them back in one click if it got
-  it wrong. Anything a kept mod depends on always travels with it.
+  it wrong. Anything a kept mod depends on always travels with it. The pack also carries a **script for
+  Windows, Linux and macOS** that finds the player's mods folder, copies everything in and moves aside
+  whatever was already there — into a separate folder, **never deleting a thing**.
 - **Notifications** 🔔 — optional pop-ups when a player joins or leaves, someone dies (PvP), the server
   crashes, auto-restart gives up, an **empty server stops itself**, or one **starts itself because somebody
   tried to join**. Configurable per type, globally and **per server**, with a test button.

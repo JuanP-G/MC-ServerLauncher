@@ -457,6 +457,22 @@ Typ: {1}  ·  Minecraft-Version: {2}
 
 Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Name_NewServer" xml:space="preserve"><value>Neuer Server</value></data>
+  <data name="Export_ScriptsFmt" xml:space="preserve"><value>Damit du es nicht von Hand machen musst: entpacke dieses Zip vollständig und führe unter Windows „{0}“ aus, unter Linux und macOS „bash {1}“. Das kopiert die Mods in deinen Ordner und legt bereits vorhandene in einen separaten Ordner beiseite, ohne etwas zu löschen.</value></data>
+  <data name="Script_HeaderFmt" xml:space="preserve"><value>Mods für „{0}“ — Minecraft {1} ({2})</value></data>
+  <data name="Script_CloseGame" xml:space="preserve"><value>Schließe Minecraft, bevor es weitergeht.</value></data>
+  <data name="Script_NoSource" xml:space="preserve"><value>Ich finde den Ordner „mods“ nicht neben diesem Skript. Entpacke das ganze Zip und starte es von dort, nicht aus dem Archiv heraus.</value></data>
+  <data name="Script_AskFolder" xml:space="preserve"><value>Wo liegt dein mods-Ordner? Mit Enter wird der untenstehende benutzt.</value></data>
+  <data name="Script_DestinationIs" xml:space="preserve"><value>Zielordner:</value></data>
+  <data name="Script_NoLoaderFmt" xml:space="preserve"><value>{0} scheint in diesem Minecraft nicht installiert zu sein. Ohne den Loader werden die Mods nicht geladen. Zu finden unter {1}</value></data>
+  <data name="Script_AskContinue" xml:space="preserve"><value>Trotzdem kopieren?</value></data>
+  <data name="Script_YesWords" xml:space="preserve"><value>j,ja</value></data>
+  <data name="Script_Cancelled" xml:space="preserve"><value>Es wurde nichts geändert.</value></data>
+  <data name="Script_CannotCreate" xml:space="preserve"><value>Der Zielordner konnte nicht angelegt werden.</value></data>
+  <data name="Script_MoveFailed" xml:space="preserve"><value>Diese Datei konnte nicht beiseitegelegt werden. Ist Minecraft offen? Es wurde nichts geändert:</value></data>
+  <data name="Script_MovedAside" xml:space="preserve"><value>Bereits vorhandene Mods, beiseitegelegt (nichts wurde gelöscht):</value></data>
+  <data name="Script_CopyFailed" xml:space="preserve"><value>Diese Datei konnte nicht kopiert werden:</value></data>
+  <data name="Script_Done" xml:space="preserve"><value>Fertig. Kopierte Mods:</value></data>
+  <data name="Script_HowToUndo" xml:space="preserve"><value>Um alles zurückzusetzen, leere den mods-Ordner und lege zurück, was hier liegt:</value></data>
   <data name="Export_NoticeAllFmt" xml:space="preserve"><value>{0} Dateien ins Paket exportiert.</value></data>
   <data name="Export_NoticeFmt" xml:space="preserve"><value>{0} Dateien exportiert. {1} wurden weggelassen, weil sie nur auf dem Server gebraucht werden: {2}.</value></data>
   <data name="Export_NoticeOffline" xml:space="preserve"><value>Das lief ohne Verbindung, es zählte also nur, was die Dateien selbst angeben.</value></data>

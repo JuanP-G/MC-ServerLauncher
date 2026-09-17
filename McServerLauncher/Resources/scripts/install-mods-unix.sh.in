@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# MC Server Launcher — mod installer for Linux and macOS.
+#
+# Every line of visible text is a placeholder replaced when the pack is built, so this file holds
+# the logic and the .resx files hold the wording. A placeholder always becomes a whole finished
+# message: nothing here is ever used as a format string, so no translation can smuggle in a shell
+# metacharacter.
+#
+# Nothing here deletes anything. Mods already in the destination are MOVED aside, never removed.
+set -u
+
+say() { printf '%s\n' "$*"; }
+
+here=$(cd "$(dirname "$0")" && pwd)
+source_dir="$here/mods"
+
+say "@@HEADER@@"
+say "@@CLOSE_GAME@@"
+say ""
+
+# The commonest failure of all: run from inside the archive viewer, where nothing sits alongside.
+if [ ! -d "$source_dir" ]; then
+  say "@@NO_SOURCE@@"
+  exit 1
+fi
+
+case "$(uname -s)" in
+  Darwin) fallback="$HOME/Library/Application Support/minecraft/mods" ;;
+  *)      fallback="$HOME/.minecraft/mods" ;;
+esac
+
+# Finding the official folder proves the official launcher was installed once, never that it is the
+# one about to be used: Prism, MultiMC, CurseForge and Modrinth App all keep mods per instance. So
+# ask whenever anything makes the answer ambiguous — and never ask when there is nobody to answer,
+# which is what keeps this from hanging under a pipe or in CI.
+others=0
+for marker in \
+  "$HOME/.local/share/PrismLauncher" "$HOME/.var/app/org.prismlauncher.PrismLauncher" \
+  "$HOME/Library/Application Support/PrismLauncher" \
+  "$HOME/.local/share/ModrinthApp" "$HOME/Library/Application Support/ModrinthApp" \
+  "$HOME/.local/share/multimc" "$HOME/.multimc" \
+  "$HOME/.local/share/curseforge" "$HOME/curseforge" \
+  "$HOME/.technic" "$HOME/.atlauncher" "$HOME/ATLauncher"
+do
+  [ -e "$marker" ] && others=1
+done
+
+destination="$fallback"
+if [ -n "${MCSL_MODS_DIR:-}" ]; then
+  destination="$MCSL_MODS_DIR"
+elif [ "$others" = "1" ] || [ ! -d "$fallback" ]; then
+  if [ -t 0 ]; then
+    say "@@ASK_FOLDER@@"
+    printf '[%s] ' "$fallback"
+    read -r typed || typed=""
+    [ -n "$typed" ] && destination="$typed"
+  fi
+fi
+
+say "@@DESTINATION_IS@@ $destination"
+
+# The likeliest way for this to end badly is mods landing beside a Minecraft that cannot load them.
+# Checked, said plainly, and not refused: the check can be wrong on a perfectly sound install.
+versions_dir="$(dirname "$destination")/versions"
+if [ -d "$versions_dir" ] && ! ls "$versions_dir" 2>/dev/null | grep -qi -- "@@LOADER_MARK@@"; then
+  say ""
+  say "@@NO_LOADER@@"
+  if [ -t 0 ]; then
+    printf '%s ' "@@ASK_CONTINUE@@"
+    read -r answer || answer=""
+    case "$answer" in
+      @@YES_PATTERN@@) ;;
+      *) say "@@CANCELLED@@"; exit 1 ;;
+    esac
+  fi
+fi
+
+mkdir -p "$destination" || { say "@@CANNOT_CREATE@@"; exit 1; }
+
+# Aside, as a sibling rather than a subfolder: visible in the file manager, and never rescanned as
+# mods. A half-done install is worse than none, so a failed move stops everything there and then.
+backup="$(dirname "$destination")/mods-backup-@@STAMP@@"
+moved=0
+for existing in "$destination"/*.jar; do
+  [ -e "$existing" ] || continue
+  mkdir -p "$backup"
+  if ! mv "$existing" "$backup/"; then
+    say "@@MOVE_FAILED@@ $(basename "$existing")"
+    exit 1
+  fi
+  moved=$((moved + 1))
+done
+if [ "$moved" -gt 0 ]; then say "@@MOVED_ASIDE@@ $moved -> $backup"; fi
+
+copied=0
+for jar in "$source_dir"/*.jar; do
+  [ -e "$jar" ] || continue
+  if ! cp "$jar" "$destination/"; then
+    say "@@COPY_FAILED@@ $(basename "$jar")"
+    exit 1
+  fi
+  copied=$((copied + 1))
+done
+
+say ""
+say "@@DONE@@ $copied -> $destination"
+if [ "$moved" -gt 0 ]; then say "@@HOW_TO_UNDO@@ $backup"; fi
+
+# Said outright, because it is not automatic: the exit status of a script is the status of its last
+# command, and the line above is a condition that is false whenever nothing had to be moved aside —
+# so a run that did everything right was reporting failure to anything that checked.
+exit 0

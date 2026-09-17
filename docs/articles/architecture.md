@@ -480,6 +480,26 @@ would charge a click to the normal case in order to serve the rare one, and the 
 the pack carry the same note, because the pack has to explain itself to whoever receives it. The
 button is hidden on plugin servers, where a pack is a zip a player can do nothing with.
 
+**The scripts in the pack.** Beside the jars go `install-mods-windows.bat` and
+`install-mods-unix.sh`, so receiving a pack is not four manual steps, the third of which is where
+somebody's mods get deleted. `InstallScriptBuilder` fills a template held as an `EmbeddedResource`
+(`Resources/scripts/*.in`) with messages from the .resx files: the shape is code and the wording is
+translated, so each sentence inherits the parity checks and the logic inherits none of them. Every
+placeholder becomes a whole finished message — nothing is ever a format string — so no translation
+can smuggle in a shell metacharacter, and `ShellQuote`/`BatchValue` escaping backs that up.
+
+The scripts **move aside and never delete**: existing jars go to a `mods-backup-<stamp>` folder
+beside the mods folder (a sibling, so the loader does not rescan it), a failed move stops everything
+rather than leaving a half-install, and the timestamp is worked out at export time because `%DATE%`
+in a .bat comes out in the machine's local format — which in much of Europe puts slashes in a folder
+name. They detect the folder, and ask whenever anything makes it ambiguous: finding `.minecraft`
+proves the official launcher was installed once, never that it is the one about to be used, so a
+Prism or Modrinth App marker forces the question. `MCSL_MODS_DIR` overrides it, and a script with no
+terminal never asks — which is what keeps it from hanging under a pipe, and what makes it testable.
+`InstallScriptSmokeTests` runs the real script over a planted `old.jar` and checks it still exists
+afterwards. The execute bit is set but nothing depends on it: the documented invocation is
+`bash install-mods-unix.sh`, which needs no bit and sidesteps macOS quarantine.
+
 ### One running copy
 `Program.Main` acquires `SingleInstance` before anything else. If another copy already holds the
 lock, this one nudges it to the front through the named pipe and exits without ever creating a

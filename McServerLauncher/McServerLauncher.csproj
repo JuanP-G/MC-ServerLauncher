@@ -37,6 +37,26 @@
          folder (see StoreTagService / StoreSummaryService). -->
     <EmbeddedResource Include="Resources\store-tags.json" />
     <EmbeddedResource Include="Resources\store-summaries.json" />
+
+    <!-- The install scripts the modpack carries. Shape here, wording in the .resx files: sixty
+         lines of shell inside a resx <value> would be escaped XML, unreviewable in a diff, and
+         subject to the translation-parity checks on logic that must be identical in every
+         language. See InstallScriptBuilder.
+
+         WithCulture=false is not optional here, and the reason is worth writing down: MSBuild
+         infers a culture from the dotted segments of a resource's file name, and "sh" is a real
+         culture code (Serbo-Croatian). Left to itself it decided install-mods-unix.sh.in was a
+         translation, routed it to a satellite assembly and left it out of the main one — so the
+         template was simply missing at run time while the build stayed green. LogicalName pins the
+         name the code looks up, instead of letting it be derived from the path. -->
+    <EmbeddedResource Include="Resources\scripts\install-mods-windows.bat.in">
+      <WithCulture>false</WithCulture>
+      <LogicalName>McServerLauncher.Resources.scripts.install-mods-windows.bat.in</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\scripts\install-mods-unix.sh.in">
+      <WithCulture>false</WithCulture>
+      <LogicalName>McServerLauncher.Resources.scripts.install-mods-unix.sh.in</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
 

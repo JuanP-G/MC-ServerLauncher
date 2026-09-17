@@ -503,6 +503,22 @@ Tipo: {1}  ·  Versión de Minecraft: {2}
 
 Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Name_NewServer" xml:space="preserve"><value>Nuevo servidor</value></data>
+  <data name="Export_ScriptsFmt" xml:space="preserve"><value>Para no hacerlo a mano: descomprime este zip entero y ejecuta «{0}» si usas Windows, o «bash {1}» en Linux y macOS. Copia los mods a tu carpeta y, si ya tenías otros, los aparta a una carpeta aparte sin borrar nada.</value></data>
+  <data name="Script_HeaderFmt" xml:space="preserve"><value>Mods de «{0}» — Minecraft {1} ({2})</value></data>
+  <data name="Script_CloseGame" xml:space="preserve"><value>Cierra Minecraft antes de seguir.</value></data>
+  <data name="Script_NoSource" xml:space="preserve"><value>No encuentro la carpeta «mods» al lado de este script. Descomprime el zip entero y ejecútalo desde ahí, no desde dentro del archivo comprimido.</value></data>
+  <data name="Script_AskFolder" xml:space="preserve"><value>¿Dónde tienes tu carpeta de mods? Pulsa Intro para usar la de abajo.</value></data>
+  <data name="Script_DestinationIs" xml:space="preserve"><value>Carpeta de destino:</value></data>
+  <data name="Script_NoLoaderFmt" xml:space="preserve"><value>No parece que tengas {0} instalado en ese Minecraft. Sin el cargador, los mods no se cargan. Lo tienes en {1}</value></data>
+  <data name="Script_AskContinue" xml:space="preserve"><value>¿Copiar de todas formas?</value></data>
+  <data name="Script_YesWords" xml:space="preserve"><value>s,si</value></data>
+  <data name="Script_Cancelled" xml:space="preserve"><value>No se ha cambiado nada.</value></data>
+  <data name="Script_CannotCreate" xml:space="preserve"><value>No he podido crear la carpeta de destino.</value></data>
+  <data name="Script_MoveFailed" xml:space="preserve"><value>No he podido apartar este archivo. ¿Tienes Minecraft abierto? No se ha cambiado nada:</value></data>
+  <data name="Script_MovedAside" xml:space="preserve"><value>Mods que ya tenías, apartados (no se ha borrado nada):</value></data>
+  <data name="Script_CopyFailed" xml:space="preserve"><value>No he podido copiar este archivo:</value></data>
+  <data name="Script_Done" xml:space="preserve"><value>Listo. Mods copiados:</value></data>
+  <data name="Script_HowToUndo" xml:space="preserve"><value>Para dejarlo como estaba, vacía la carpeta de mods y devuelve lo que hay en:</value></data>
   <data name="Export_NoticeAllFmt" xml:space="preserve"><value>Se han exportado {0} archivos al paquete.</value></data>
   <data name="Export_NoticeFmt" xml:space="preserve"><value>Se han exportado {0} archivos. Se han dejado fuera {1} que solo hacen falta en el servidor: {2}.</value></data>
   <data name="Export_NoticeOffline" xml:space="preserve"><value>Se ha trabajado sin conexión, así que solo cuenta lo que dicen los propios archivos.</value></data>

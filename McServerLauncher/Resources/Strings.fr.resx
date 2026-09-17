@@ -457,6 +457,22 @@ Type : {1}  ·  Version de Minecraft : {2}
 
 Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Name_NewServer" xml:space="preserve"><value>Nouveau serveur</value></data>
+  <data name="Export_ScriptsFmt" xml:space="preserve"><value>Pour ne pas le faire à la main : extrais toute cette archive et lance « {0} » sous Windows, ou « bash {1} » sous Linux et macOS. Cela copie les mods dans ton dossier et, si tu en avais déjà, les met de côté dans un dossier séparé sans rien supprimer.</value></data>
+  <data name="Script_HeaderFmt" xml:space="preserve"><value>Mods de « {0} » — Minecraft {1} ({2})</value></data>
+  <data name="Script_CloseGame" xml:space="preserve"><value>Ferme Minecraft avant de continuer.</value></data>
+  <data name="Script_NoSource" xml:space="preserve"><value>Je ne trouve pas le dossier « mods » à côté de ce script. Extrais toute l'archive et lance-le de là, pas depuis l'intérieur du zip.</value></data>
+  <data name="Script_AskFolder" xml:space="preserve"><value>Où se trouve ton dossier mods ? Appuie sur Entrée pour utiliser celui ci-dessous.</value></data>
+  <data name="Script_DestinationIs" xml:space="preserve"><value>Dossier de destination :</value></data>
+  <data name="Script_NoLoaderFmt" xml:space="preserve"><value>{0} ne semble pas installé dans ce Minecraft. Sans le chargeur, les mods ne se chargeront pas. Tu peux l'obtenir sur {1}</value></data>
+  <data name="Script_AskContinue" xml:space="preserve"><value>Copier quand même ?</value></data>
+  <data name="Script_YesWords" xml:space="preserve"><value>o,oui</value></data>
+  <data name="Script_Cancelled" xml:space="preserve"><value>Rien n'a été modifié.</value></data>
+  <data name="Script_CannotCreate" xml:space="preserve"><value>Je n'ai pas pu créer le dossier de destination.</value></data>
+  <data name="Script_MoveFailed" xml:space="preserve"><value>Je n'ai pas pu mettre ce fichier de côté. Minecraft est-il ouvert ? Rien n'a été modifié :</value></data>
+  <data name="Script_MovedAside" xml:space="preserve"><value>Mods que tu avais déjà, mis de côté (rien n'a été supprimé) :</value></data>
+  <data name="Script_CopyFailed" xml:space="preserve"><value>Je n'ai pas pu copier ce fichier :</value></data>
+  <data name="Script_Done" xml:space="preserve"><value>Terminé. Mods copiés :</value></data>
+  <data name="Script_HowToUndo" xml:space="preserve"><value>Pour tout remettre comme avant, vide le dossier mods et remets ce qui est dans :</value></data>
   <data name="Export_NoticeAllFmt" xml:space="preserve"><value>{0} fichiers exportés dans le pack.</value></data>
   <data name="Export_NoticeFmt" xml:space="preserve"><value>{0} fichiers exportés. {1} ont été laissés de côté car ils ne servent que sur le serveur : {2}.</value></data>
   <data name="Export_NoticeOffline" xml:space="preserve"><value>Cela s'est fait hors connexion, donc seul ce que déclarent les fichiers eux-mêmes a compté.</value></data>
