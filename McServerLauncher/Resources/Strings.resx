@@ -519,8 +519,10 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Script_CopyFailed" xml:space="preserve"><value>No he podido copiar este archivo:</value></data>
   <data name="Script_Done" xml:space="preserve"><value>Listo. Mods copiados:</value></data>
   <data name="Script_HowToUndo" xml:space="preserve"><value>Para dejarlo como estaba, vacía la carpeta de mods y devuelve lo que hay en:</value></data>
-  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>Se han exportado {0} archivos al paquete.</value></data>
-  <data name="Export_NoticeFmt" xml:space="preserve"><value>Se han exportado {0} archivos. Se han dejado fuera {1} que solo hacen falta en el servidor: {2}.</value></data>
+  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>Archivos exportados al paquete: {0}.</value></data>
+  <data name="Export_NoticeFmt" xml:space="preserve"><value>Archivos exportados: {0}. Se han dejado fuera {1} que solo hacen falta en el servidor: {2}.</value></data>
+  <data name="Export_NoticeOneFmt" xml:space="preserve"><value>Archivos exportados: {0}. Se ha dejado fuera «{1}», que solo hace falta en el servidor.</value></data>
+  <data name="Export_LeftOutOneFmt" xml:space="preserve"><value>Nota: se ha dejado fuera «{0}», que solo funciona en el servidor. No hace falta para jugar.</value></data>
   <data name="Export_NoticeOffline" xml:space="preserve"><value>Se ha trabajado sin conexión, así que solo cuenta lo que dicen los propios archivos.</value></data>
   <data name="Export_DismissNotice" xml:space="preserve"><value>Descartar este aviso</value></data>
   <data name="Export_IncludeAnyway" xml:space="preserve"><value>Incluirlos de todas formas</value></data>

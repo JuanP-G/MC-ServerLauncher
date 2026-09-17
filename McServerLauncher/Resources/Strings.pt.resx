@@ -473,8 +473,10 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Script_CopyFailed" xml:space="preserve"><value>Não consegui copiar este ficheiro:</value></data>
   <data name="Script_Done" xml:space="preserve"><value>Pronto. Mods copiados:</value></data>
   <data name="Script_HowToUndo" xml:space="preserve"><value>Para deixar como estava, esvazia a pasta de mods e devolve o que está em:</value></data>
-  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>Foram exportados {0} ficheiros para o pacote.</value></data>
-  <data name="Export_NoticeFmt" xml:space="preserve"><value>Foram exportados {0} ficheiros. Ficaram de fora {1} que só fazem falta no servidor: {2}.</value></data>
+  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>Ficheiros exportados para o pacote: {0}.</value></data>
+  <data name="Export_NoticeFmt" xml:space="preserve"><value>Ficheiros exportados: {0}. Ficaram de fora {1} que só fazem falta no servidor: {2}.</value></data>
+  <data name="Export_NoticeOneFmt" xml:space="preserve"><value>Ficheiros exportados: {0}. Ficou de fora «{1}», que só faz falta no servidor.</value></data>
+  <data name="Export_LeftOutOneFmt" xml:space="preserve"><value>Nota: ficou de fora «{0}», que só funciona no servidor. Não faz falta para jogar.</value></data>
   <data name="Export_NoticeOffline" xml:space="preserve"><value>Isto correu sem ligação, por isso só conta o que os próprios ficheiros declaram.</value></data>
   <data name="Export_DismissNotice" xml:space="preserve"><value>Dispensar este aviso</value></data>
   <data name="Export_IncludeAnyway" xml:space="preserve"><value>Incluí-los à mesma</value></data>

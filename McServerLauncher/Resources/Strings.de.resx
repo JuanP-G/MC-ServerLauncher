@@ -473,8 +473,10 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Script_CopyFailed" xml:space="preserve"><value>Diese Datei konnte nicht kopiert werden:</value></data>
   <data name="Script_Done" xml:space="preserve"><value>Fertig. Kopierte Mods:</value></data>
   <data name="Script_HowToUndo" xml:space="preserve"><value>Um alles zurückzusetzen, leere den mods-Ordner und lege zurück, was hier liegt:</value></data>
-  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>{0} Dateien ins Paket exportiert.</value></data>
-  <data name="Export_NoticeFmt" xml:space="preserve"><value>{0} Dateien exportiert. {1} wurden weggelassen, weil sie nur auf dem Server gebraucht werden: {2}.</value></data>
+  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>Ins Paket exportierte Dateien: {0}.</value></data>
+  <data name="Export_NoticeFmt" xml:space="preserve"><value>Exportierte Dateien: {0}. {1} wurden weggelassen, weil sie nur auf dem Server gebraucht werden: {2}.</value></data>
+  <data name="Export_NoticeOneFmt" xml:space="preserve"><value>Exportierte Dateien: {0}. „{1}“ wurde weggelassen, weil es nur auf dem Server gebraucht wird.</value></data>
+  <data name="Export_LeftOutOneFmt" xml:space="preserve"><value>Hinweis: „{0}“ wurde weggelassen, weil es nur auf dem Server läuft. Zum Spielen wird es nicht gebraucht.</value></data>
   <data name="Export_NoticeOffline" xml:space="preserve"><value>Das lief ohne Verbindung, es zählte also nur, was die Dateien selbst angeben.</value></data>
   <data name="Export_DismissNotice" xml:space="preserve"><value>Diesen Hinweis ausblenden</value></data>
   <data name="Export_IncludeAnyway" xml:space="preserve"><value>Trotzdem mitnehmen</value></data>

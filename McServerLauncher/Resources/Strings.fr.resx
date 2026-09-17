@@ -473,12 +473,14 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Script_CopyFailed" xml:space="preserve"><value>Je n'ai pas pu copier ce fichier :</value></data>
   <data name="Script_Done" xml:space="preserve"><value>Terminé. Mods copiés :</value></data>
   <data name="Script_HowToUndo" xml:space="preserve"><value>Pour tout remettre comme avant, vide le dossier mods et remets ce qui est dans :</value></data>
-  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>{0} fichiers exportés dans le pack.</value></data>
-  <data name="Export_NoticeFmt" xml:space="preserve"><value>{0} fichiers exportés. {1} ont été laissés de côté car ils ne servent que sur le serveur : {2}.</value></data>
+  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>Fichiers exportés dans le pack : {0}.</value></data>
+  <data name="Export_NoticeFmt" xml:space="preserve"><value>Fichiers exportés : {0}. {1} ont été laissés de côté car ils ne servent que sur le serveur : {2}.</value></data>
+  <data name="Export_NoticeOneFmt" xml:space="preserve"><value>Fichiers exportés : {0}. « {1} » a été laissé de côté car il ne sert que sur le serveur.</value></data>
+  <data name="Export_LeftOutOneFmt" xml:space="preserve"><value>Note : « {0} » a été laissé de côté car il ne fonctionne que sur le serveur. Il n'est pas nécessaire pour jouer.</value></data>
   <data name="Export_NoticeOffline" xml:space="preserve"><value>Cela s'est fait hors connexion, donc seul ce que déclarent les fichiers eux-mêmes a compté.</value></data>
   <data name="Export_DismissNotice" xml:space="preserve"><value>Masquer cet avis</value></data>
   <data name="Export_IncludeAnyway" xml:space="preserve"><value>Les inclure quand même</value></data>
-  <data name="Export_LeftOutFmt" xml:space="preserve"><value>Note : {0} fichiers qui ne fonctionnent que sur le serveur ont été laissés de côté ({1}). Ils ne sont pas nécessaires pour jouer.</value></data>
+  <data name="Export_LeftOutFmt" xml:space="preserve"><value>Note : {0} fichiers qui ne fonctionnent que sur le serveur ont été laissés de côté ({1}). Ils ne sont pas nécessaires pour jouer.</value></data>
   <data name="Export_InstructionsFile" xml:space="preserve"><value>INSTRUCTIONS.txt</value></data>
   <data name="Msg_ModDeleteError" xml:space="preserve"><value>Impossible de supprimer le fichier : {0}</value></data>
   <data name="Msg_ExportError" xml:space="preserve"><value>Impossible d'exporter le modpack : {0}</value></data>

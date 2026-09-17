@@ -1025,7 +1025,10 @@ public partial class ServerModsViewModel : ObservableObject
 
             // The pack has to explain itself to whoever receives it, not only to whoever made it:
             // a player who counts the jars and finds three missing deserves to read why here.
-            if (plan.LeftSomethingOut)
+            if (plan.Excluded.Count == 1)
+                instructions += "\n\n" + string.Format(
+                    Localizer.Get("Export_LeftOutOneFmt"), plan.Excluded[0]);
+            else if (plan.LeftSomethingOut)
                 instructions += "\n\n" + string.Format(Localizer.Get("Export_LeftOutFmt"),
                     plan.Excluded.Count, string.Join(", ", plan.Excluded));
 
@@ -1172,10 +1175,17 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>The sentence the notice shows for one finished export.</summary>
     internal static string NoticeFor(ModpackResult result)
     {
-        var text = result.Excluded.Count == 0
-            ? string.Format(Localizer.Get("Export_NoticeAllFmt"), result.Included.Count)
-            : string.Format(Localizer.Get("Export_NoticeFmt"),
-                result.Included.Count, result.Excluded.Count, string.Join(", ", result.Excluded));
+        // One excluded file is the common case — a lone Geyser or Floodgate — and "1 archivos" is
+        // the sort of thing that makes an app look machine-written. Each language gets to say it
+        // its own way instead of the count being pasted into a plural sentence.
+        var text = result.Excluded.Count switch
+        {
+            0 => string.Format(Localizer.Get("Export_NoticeAllFmt"), result.Included.Count),
+            1 => string.Format(Localizer.Get("Export_NoticeOneFmt"),
+                result.Included.Count, result.Excluded[0]),
+            _ => string.Format(Localizer.Get("Export_NoticeFmt"),
+                result.Included.Count, result.Excluded.Count, string.Join(", ", result.Excluded))
+        };
 
         // Said out loud rather than hidden: the pack does come out different without a connection,
         // and a difference the user can see is one they can decide about.

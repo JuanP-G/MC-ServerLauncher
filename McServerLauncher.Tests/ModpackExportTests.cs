@@ -322,6 +322,35 @@ public class ModpackExportTests : IDisposable
     }
 
     [Fact]
+    public void LeavingOneFileOutIsSaidInTheSingular()
+    {
+        // «Se han dejado fuera 1 archivos» is the sort of thing that makes an app look
+        // machine-written, and one excluded file is the common case — a server usually carries a
+        // lone Geyser or Floodgate. Each language says it its own way rather than having the count
+        // pasted into a plural sentence.
+        var one = ServerModsViewModel.NoticeFor(new ServerModsViewModel.ModpackResult(
+            new[] { "sodium.jar" }, new[] { "floodgate.jar" }, AskedTheStore: true));
+
+        Assert.Contains("floodgate.jar", one);
+        Assert.Equal(Localizer.Get("Export_NoticeOneFmt").Replace("{0}", "1").Replace("{1}", "floodgate.jar"), one);
+        Assert.DoesNotContain("{", one);
+    }
+
+    [Fact]
+    public async Task ThePackSaysItInTheSingularToo()
+    {
+        var mods = new ServerModsViewModel(Server(ServerType.Fabric));
+        FabricJar("geyser.jar", "geyser", environment: "server");
+        FabricJar("sodium.jar", "sodium", environment: "client");
+
+        await Build(mods);
+        var text = EntryText(Destination, Localizer.Get("Export_InstructionsFile"));
+
+        Assert.Contains(
+            Localizer.Get("Export_LeftOutOneFmt").Replace("{0}", "geyser.jar"), text, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheNoticeSaysWhenThePackWasBuiltWithoutTheStore()
     {
         // The pack does come out different offline — fewer jars are left out. Said out loud,

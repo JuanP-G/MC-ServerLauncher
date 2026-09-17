@@ -473,8 +473,10 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Script_CopyFailed" xml:space="preserve"><value>I could not copy this file:</value></data>
   <data name="Script_Done" xml:space="preserve"><value>Done. Mods copied:</value></data>
   <data name="Script_HowToUndo" xml:space="preserve"><value>To put it back as it was, empty the mods folder and return what is in:</value></data>
-  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>{0} files exported to the pack.</value></data>
-  <data name="Export_NoticeFmt" xml:space="preserve"><value>{0} files exported. {1} were left out because they are only needed on the server: {2}.</value></data>
+  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>Files exported to the pack: {0}.</value></data>
+  <data name="Export_NoticeFmt" xml:space="preserve"><value>Files exported: {0}. {1} were left out because they are only needed on the server: {2}.</value></data>
+  <data name="Export_NoticeOneFmt" xml:space="preserve"><value>Files exported: {0}. “{1}” was left out because it is only needed on the server.</value></data>
+  <data name="Export_LeftOutOneFmt" xml:space="preserve"><value>Note: “{0}” was left out because it only works on the server. You do not need it to play.</value></data>
   <data name="Export_NoticeOffline" xml:space="preserve"><value>This ran offline, so only what the files themselves declare was taken into account.</value></data>
   <data name="Export_DismissNotice" xml:space="preserve"><value>Dismiss this notice</value></data>
   <data name="Export_IncludeAnyway" xml:space="preserve"><value>Include them anyway</value></data>
