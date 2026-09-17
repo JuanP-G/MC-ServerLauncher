@@ -205,26 +205,50 @@ public class PlayitApiService
     private static readonly object TunnelCacheLock = new();
     private static Task<List<PlayitTunnel>>? _tunnelFetch;
     private static DateTime _tunnelFetchAtUtc = DateTime.MinValue;
-    private static readonly TimeSpan TunnelCacheTtl = TimeSpan.FromSeconds(25);
-
-    /// <summary>Public address of the tunnel whose local port matches <paramref name="port"/>, or null.</summary>
-    public async Task<string?> GetAddressForPortAsync(int port, CancellationToken ct = default)
-    {
-        var tunnels = await GetTunnelsSharedAsync(ct);
-        return tunnels?.FirstOrDefault(t => t.LocalPort == port)?.Address;
-    }
+    internal static readonly TimeSpan TunnelCacheTtl = TimeSpan.FromSeconds(25);
 
     /// <summary>
-    /// The tunnel on a local port for one protocol, or null. Callers that need the public port —
-    /// Bedrock does, since players type it in — need the whole tunnel, not just its address.
+    /// Whether a caller has to ask the API, or can be served the list the last one fetched.
     /// </summary>
     /// <remarks>
-    /// Matched on the protocol as well as the port, because a crossplay server has two tunnels and
-    /// the port alone would return whichever came first.
+    /// Pulled out of <see cref="GetTunnelsSharedAsync"/> so the arithmetic can be tested against
+    /// the retry delays the app actually uses: with a 25-second window and a burst at +2, +5, +10,
+    /// +18 and +31 seconds, three of those five attempts used to be answered out of the cache — and
+    /// what the cache was holding was the empty list the first attempt got back, before playit had
+    /// published anything. That is why an address the API had been serving for twenty seconds could
+    /// still be missing from the panel.
     /// </remarks>
-    public async Task<PlayitTunnel?> GetTunnelAsync(int localPort, bool udp, CancellationToken ct = default)
+    /// <param name="fresh">The caller wants the API asked whatever the window says.</param>
+    /// <param name="lastFetchUtc">When the cached list was fetched. <c>MinValue</c> if never.</param>
+    /// <param name="nowUtc">Now, passed in so the arithmetic can be tested without waiting.</param>
+    internal static bool ShouldFetchTunnels(bool fresh, DateTime lastFetchUtc, DateTime nowUtc) =>
+        fresh || nowUtc - lastFetchUtc >= TunnelCacheTtl;
+
+    /// <summary>
+    /// The tunnel on a local port for one protocol, or null.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Matched on the protocol as well as the port, because a crossplay server has two tunnels and
+    /// the port alone would return whichever came first. There used to be a second lookup beside
+    /// this one that returned an address and nothing else, and it did match on the port alone — so
+    /// the box labelled Java could show the address players are meant to type into Bedrock, which
+    /// is an answer that looks entirely plausible and does not connect.
+    /// </para>
+    /// <para>
+    /// The whole tunnel rather than its address: the callers need to tell a tunnel playit has not
+    /// published an address for yet, which resolves itself in seconds, from no tunnel at all, which
+    /// needs the user to press a button. A null address cannot say which of the two it is.
+    /// </para>
+    /// </remarks>
+    /// <param name="localPort">The port on this machine the tunnel forwards to.</param>
+    /// <param name="udp">True for the Bedrock half of a crossplay server.</param>
+    /// <param name="fresh">Skips the shared cache. See <see cref="GetTunnelsSharedAsync"/>.</param>
+    /// <param name="ct">Cancels the wait, not the shared fetch itself.</param>
+    public async Task<PlayitTunnel?> GetTunnelAsync(
+        int localPort, bool udp, bool fresh = false, CancellationToken ct = default)
     {
-        var tunnels = await GetTunnelsSharedAsync(ct);
+        var tunnels = await GetTunnelsSharedAsync(ct, fresh);
         return tunnels is null ? null : Match(tunnels, localPort, udp);
     }
 
@@ -279,14 +303,23 @@ public class PlayitApiService
         return tunnels;
     });
 
-    private async Task<List<PlayitTunnel>?> GetTunnelsSharedAsync(CancellationToken ct)
+    /// <param name="ct">Cancels this caller's wait; the shared fetch outlives it.</param>
+    /// <param name="fresh">
+    /// Asks the API even inside the cache window. For the handful of lookups that follow the user
+    /// creating a tunnel: the cache exists so that N servers polling every 30 seconds do not make N
+    /// identical calls, and five calls behind one click is not the traffic it was written to
+    /// prevent. Without this the retries were mostly answered by the empty list the first one
+    /// cached, so the burst was a burst in name only.
+    /// </param>
+    private async Task<List<PlayitTunnel>?> GetTunnelsSharedAsync(CancellationToken ct, bool fresh = false)
     {
         Task<List<PlayitTunnel>> fetch;
         lock (TunnelCacheLock)
         {
             // A failed fetch also stays cached until the TTL expires: no point hammering the API
             // when it's down; the next window retries naturally.
-            if (_tunnelFetch is null || DateTime.UtcNow - _tunnelFetchAtUtc >= TunnelCacheTtl)
+            if (_tunnelFetch is null ||
+                ShouldFetchTunnels(fresh, _tunnelFetchAtUtc, DateTime.UtcNow))
             {
                 _tunnelFetchAtUtc = DateTime.UtcNow;
                 _tunnelFetch = StartTunnelFetch(); // detached from any single caller's ct
@@ -345,9 +378,10 @@ public class PlayitApiService
 
         // Matched on protocol too: a crossplay server has two tunnels, and on a machine where the
         // Java and Bedrock local ports happened to coincide, matching on the port alone would see
-        // the Java one and decide the Bedrock one already existed.
-        if (tunnels.Any(t => t.LocalPort == localPort &&
-                             string.Equals(t.Proto, portType, StringComparison.OrdinalIgnoreCase)))
+        // the Java one and decide the Bedrock one already existed. Through Match like every other
+        // lookup, so there is one answer to "is this the same tunnel" and not four of them.
+        if (Match(tunnels, localPort, udp: string.Equals(portType, "udp", StringComparison.OrdinalIgnoreCase))
+            is not null)
             return false;
 
         var body = new JsonObject

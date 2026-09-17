@@ -1,4 +1,5 @@
 using McServerLauncher.Services;
+using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Tests;
 
@@ -98,5 +99,120 @@ public class PlayitTunnelTests
 
         Assert.False(tunnel.IsUdp);
         Assert.Equal("tcp", tunnel.Proto);
+    }
+
+    [Fact]
+    public void TheJavaLookupIgnoresTheUdpTunnel()
+    {
+        // There used to be an address-only lookup beside GetTunnelAsync that took the first tunnel
+        // on the port without looking at the protocol. A crossplay server has two on ports that can
+        // coincide, so the box labelled Java could hand the player the Bedrock address: a
+        // plausible-looking answer that simply does not connect, and nothing on screen to suggest
+        // which of the two you were reading.
+        var tunnels = new List<PlayitApiService.PlayitTunnel>
+        {
+            new("1", "srv (Bedrock)", 25565, "bedrock.example", null, "udp", 51001),
+            new("2", "srv",           25565, "java.example",    null, "tcp", 51000),
+        };
+
+        Assert.Equal("java.example", PlayitApiService.Match(tunnels, 25565, udp: false)!.Address);
+    }
+
+    [Fact]
+    public void EveryTunnelLookupGoesThroughMatch()
+    {
+        // Match calls itself "the one definition of the same tunnel", and it had already drifted
+        // once. Saying so in a comment did not stop the address lookup being written without it,
+        // so the promise is checked against the file instead: any new "LocalPort ==" outside Match
+        // is a second definition, and second definitions are how this bug got here.
+        var source = File.ReadAllText(Path.Combine(
+            LocalizationTests.RepoRoot(), "McServerLauncher", "Services", "PlayitApiService.cs"));
+
+        var occurrences = source.Split("LocalPort ==").Length - 1;
+
+        Assert.True(occurrences == 1,
+            $"«LocalPort ==» aparece {occurrences} veces en PlayitApiService.cs: la comparación " +
+            "vive en Match y los demás la llaman, no la repiten.");
+    }
+
+    [Fact]
+    public void TheRetryDelaysGrowAndStop()
+    {
+        var delays = AddressRetry.DelaysSeconds;
+
+        Assert.NotEmpty(delays);
+        Assert.All(delays, d => Assert.True(d > 0));
+
+        for (var i = 1; i < delays.Length; i++)
+            Assert.True(delays[i] > delays[i - 1],
+                "los reintentos tienen que espaciarse: si no, son una ráfaga de peticiones iguales");
+
+        // Long enough to cover the wait that actually happens, short enough that it ends and hands
+        // over to the ordinary refresh instead of polling the API for the rest of the session.
+        var total = delays.Sum();
+        Assert.InRange(total, 20, 60);
+    }
+
+    [Fact]
+    public void WithoutAskingForFreshDataMostOfTheBurstAnsweredItself()
+    {
+        // The finding this fix exists for, in numbers. The burst fires at +2, +5, +10, +18 and +31
+        // seconds; the shared list is cached for 25. So the first attempt paid for a request and
+        // cached what came back — which, moments after the tunnel was created, is an empty list —
+        // and the next three were handed that same emptiness without a request leaving the machine.
+        var start = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var lastFetch = DateTime.MinValue;
+        var reachedTheApi = 0;
+        var elapsed = 0;
+
+        foreach (var seconds in AddressRetry.DelaysSeconds)
+        {
+            elapsed += seconds;
+            var now = start.AddSeconds(elapsed);
+            if (PlayitApiService.ShouldFetchTunnels(fresh: false, lastFetch, now))
+            {
+                reachedTheApi++;
+                lastFetch = now;
+            }
+        }
+
+        Assert.Equal(2, reachedTheApi);
+    }
+
+    [Fact]
+    public void AskingForFreshDataMakesEveryAttemptCount()
+    {
+        var start = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var lastFetch = DateTime.MinValue;
+        var reachedTheApi = 0;
+        var elapsed = 0;
+
+        foreach (var seconds in AddressRetry.DelaysSeconds)
+        {
+            elapsed += seconds;
+            var now = start.AddSeconds(elapsed);
+            if (PlayitApiService.ShouldFetchTunnels(fresh: true, lastFetch, now))
+            {
+                reachedTheApi++;
+                lastFetch = now;
+            }
+        }
+
+        Assert.Equal(AddressRetry.DelaysSeconds.Length, reachedTheApi);
+    }
+
+    [Fact]
+    public void TheOrdinaryRefreshStillSharesOneFetchBetweenEveryServer()
+    {
+        // What fresh must not cost: the cache is there so that N servers refreshing every 30
+        // seconds make one call between them, not N. Only the burst asks to skip it.
+        var now = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var fetchedAt = now.AddSeconds(-5);
+
+        Assert.False(PlayitApiService.ShouldFetchTunnels(fresh: false, fetchedAt, now));
+
+        // And that it still expires, or a tunnel deleted elsewhere would linger on screen.
+        Assert.True(PlayitApiService.ShouldFetchTunnels(
+            fresh: false, now - PlayitApiService.TunnelCacheTtl, now));
     }
 }

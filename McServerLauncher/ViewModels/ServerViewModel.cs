@@ -722,7 +722,8 @@ public partial class ServerViewModel : ObservableObject
             var port = _properties.GetServerPort(Config.PropertiesPath);
             if (!port.HasValue) return;
 
-            var address = await _playitApi.GetAddressForPortAsync(port.Value);
+            var tunnel = await _playitApi.GetTunnelAsync(port.Value, udp: false);
+            var address = tunnel?.Address;
             if (!string.IsNullOrEmpty(address))
                 RunOnUi(() => TunnelAddress = address);
         }

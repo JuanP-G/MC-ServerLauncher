@@ -308,7 +308,13 @@ dialog (opens `playit.gg/l/setup-third-party` only on a click), exchanges the pa
 `PlayitPartnerService.CreateAgentAsync` for a per-user agent secret key, and stores it encrypted.
 When creating a server (or via the "Create tunnel" button), `MainViewModel` calls
 `PlayitApiService.EnsureMinecraftTunnelAsync` with that key. The public address is detected
-periodically by `ServerViewModel` via `GetAddressForPortAsync`, matching by local port. Compliance
+periodically by `ServerViewModel` via `GetTunnelAsync`, matching by local port **and
+protocol**: a crossplay server has two tunnels, so every lookup goes through
+`PlayitApiService.Match`, the one definition of "the same tunnel". The tunnel list is shared between
+servers behind a 25-second cache so that N servers polling do not make N calls; the short burst of
+lookups that follows creating a tunnel passes `fresh: true` to skip it, because playit takes a few
+seconds to publish an address and otherwise the empty first answer would be served back to the
+retries. Compliance
 with Playit's third-party rules: the browser only opens on an explicit click, a disclaimer states
 the app is not affiliated with Playit, and the user can always reach their Playit account directly.
 A self-managed agent forwards traffic only while the agent process runs, so `PlayitAgentRunner`
