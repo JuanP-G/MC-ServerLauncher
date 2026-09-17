@@ -165,7 +165,7 @@ public class ModrinthService
     /// <remarks>
     /// <para>
     /// Modrinth matches hashes literally, and every hash this app computes arrives in upper case —
-    /// <see cref="System.Convert.ToHexString"/> has no other setting. Sent as they were, both hash
+    /// <c>Convert.ToHexString</c> has no other setting. Sent as they were, both hash
     /// endpoints answer <c>{}</c> with a perfectly healthy 200, so the app read "no updates" and
     /// "nothing missing" and said exactly that, for every server, for as long as the feature has
     /// existed. A bug that reports good news is one nobody reports back.
