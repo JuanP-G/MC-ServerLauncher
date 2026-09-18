@@ -51,7 +51,7 @@ sus controles hay que tocarlos desde el hilo que la inicializó. Existe porque u
 veces y nada más lo pillaba: el selector de tipo informando de la selección *anterior* dentro de su
 propio evento de cambio.
 
-Van en cuatro capas, y conviene saber a cuál pertenece una prueba nueva:
+Van en seis capas, y conviene saber a cuál pertenece una prueba nueva:
 
 | Capa | Ejemplo | Qué ve |
 |---|---|---|
@@ -59,6 +59,8 @@ Van en cuatro capas, y conviene saber a cuál pertenece una prueba nueva:
 | La tabla | `ServerConfigEffectsTests` | Que no se ha quedado ningún campo de la config sin declarar |
 | View models, construidos de verdad | `ServerViewModelRefreshTests`, `MainViewModelFlowTests` | Que un cambio en la config llega a la tarjeta, a los paneles y a `servers.json` |
 | Controles reales | `AddEditServerDialogTests`, `CreateServerDialogTests` | Que llega a la pantalla — la mitad que una prueba unitaria no ve |
+| Puertas sobre el código | `StartDependencyGateTests`, `StoreHashTests`, `ExportSelectionTests` | Que una promesa se cumple en el propio archivo — sin red, una sola definición |
+| El artefacto, ejecutado | `InstallScriptSmokeTests` | Que el script que recibe un jugador funciona de verdad — con bash, en Linux en la CI |
 
 `ServerViewModel` y `MainViewModel` aceptan una carpeta de datos y no arrancan nada hasta
 `Activate()`, así que una prueba puede tener uno sin tocar `%APPDATA%`, Playit ni la red. Las pruebas
@@ -164,6 +166,36 @@ de las veces y del nombre la otra mitad — casi siempre sale mejor arreglar el 
   de una decisión y de qué pasaba sin ella — "Purpur solo publica un MD5, y este es el motivo de que
   baste" vale un párrafo; "// recorrer los mods" vale un borrado.
 - Ajusta los bloques `///` y la prosa a unas **100 columnas**, y el código a unas **110**.
+
+### Reglas de corrección aprendidas a golpes
+
+Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pilló en su momento.
+
+- **Un fallo nunca puede parecer una buena noticia.** Cuando una consulta no se puede hacer, se
+  devuelve `null` o un estado distinto — nunca el resultado vacío que también significa «no hay nada
+  que hacer». La comprobación de actualizaciones decía «todo está actualizado» sin conexión, y
+  Modrinth contestaba a los hashes en mayúsculas con un `200 OK` vacío, así que «Buscar
+  actualizaciones» no encontró nada mientras existió. Nadie reporta buenas noticias.
+  `UpdateCheckTests` sujeta el tipo de retorno por reflexión justo por eso.
+- **Una pregunta, una definición.** Cuando dos sitios responden a lo mismo, se pasan los dos por uno
+  y se añade una prueba que falle si aparece una segunda copia. Se ha separado tres veces: el
+  emparejamiento de túneles (`PlayitApiService.Match`), los hashes que van a la tienda
+  (`ModrinthService.ApiHashes`) y las dependencias que declara un jar (`ContentManifest`). Cada vez
+  solo una de las copias aprendió lo que hacía falta.
+- **La prueba de un arreglo tiene que fallar con el código de antes.** Compruébalo: aparta el
+  arreglo, ejecuta la prueba y mírala ponerse roja. Una prueba que pasa en los dos casos no demuestra
+  nada, y es fácil escribirla.
+- **Lee lo que lee el cargador.** Los mods llevan otros mods dentro (`META-INF/jars/`,
+  `META-INF/jarjar/`), y los cargadores traen librerías propias (`mixinextras`). Todo lo que decida
+  qué hay instalado tiene que ver las dos cosas, o dará por perdido lo que el servidor carga sin
+  problema.
+- **Los recursos incrustados con puntos en el nombre necesitan `WithCulture=false` y un
+  `LogicalName`.** MSBuild deduce una cultura de los segmentos del nombre, `sh` es una de verdad, e
+  `install-mods-unix.sh.in` acabó en silencio en un ensamblado satélite con la compilación en verde.
+- **Scripts escritos para jugadores.** La lógica en una plantilla `.in`, cada línea visible en los
+  .resx, y cada marcador sustituido por un mensaje entero y terminado — nunca una cadena de formato.
+  Finales de línea por archivo (`.sh` LF, `.bat` CRLF), sin BOM en ningún sitio, y todo `choice` de
+  un `.bat` lleva `/t` y `/d`, porque batch no sabe si hay alguien para pulsar una tecla.
 
 ## Commits, pull requests e issues
 

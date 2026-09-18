@@ -7,7 +7,7 @@ using McServerLauncher.Services;
 namespace McServerLauncher.Tests;
 
 /// <summary>
-/// The scripts the modpack carries, and the promise that they never delete anything.
+/// The scripts the modpack carries, and the promise that they never delete anything of the player's.
 /// </summary>
 /// <remarks>
 /// <para>

@@ -49,7 +49,7 @@ the whole run — Avalonia can only be initialized once per process, and its con
 from the thread that initialized it. It exists because a bug shipped twice that nothing else could
 catch: the type picker reporting the *previous* selection inside its own change event.
 
-They come in four layers, and it is worth knowing which one a new test belongs to:
+They come in six layers, and it is worth knowing which one a new test belongs to:
 
 | Layer | Example | What it can see |
 |---|---|---|
@@ -57,6 +57,8 @@ They come in four layers, and it is worth knowing which one a new test belongs t
 | The table | `ServerConfigEffectsTests` | That no field of the config was left undeclared |
 | View models, built for real | `ServerViewModelRefreshTests`, `MainViewModelFlowTests` | That a change to the config reaches the card, the panels and `servers.json` |
 | Real controls | `AddEditServerDialogTests`, `CreateServerDialogTests` | That it reaches the screen — the half a unit test cannot see |
+| Gates on the source | `StartDependencyGateTests`, `StoreHashTests`, `ExportSelectionTests` | That a promise holds in the file itself — no network, one definition |
+| The artefact, run | `InstallScriptSmokeTests` | That the script a player gets actually works — run with bash, on Linux in CI |
 
 `ServerViewModel` and `MainViewModel` take a data folder and start nothing until `Activate()`, so a
 test can own one without touching `%APPDATA%`, Playit or the network. Tests never call `Activate()`.
@@ -156,6 +158,33 @@ the name's fault the other half — prefer fixing the name.
   and what happened without it — "Purpur publishes only an MD5, and here is why that is enough" is
   worth a paragraph; "// loop over the mods" is worth deleting.
 - Wrap `///` blocks and prose at about **100 columns**, code at about **110**.
+
+### Correctness rules learnt the hard way
+
+Each of these is here because breaking it shipped a bug that no test caught at the time.
+
+- **A failure must never read as good news.** When a lookup cannot be made, return `null` or a
+  distinct state — never the empty result that also means "nothing to do". The update check said
+  "everything is up to date" with no connection, and Modrinth answered upper-case hashes with an
+  empty `200 OK`, so "Check for updates" never found anything for as long as it existed. Nobody
+  reports good news. `UpdateCheckTests` pins the return type by reflection for exactly this reason.
+- **One question, one definition.** When two places answer the same question, route both through
+  one and add a test that fails if a second copy appears. It has drifted three times: tunnel
+  matching (`PlayitApiService.Match`), the hashes sent to the store (`ModrinthService.ApiHashes`)
+  and the dependencies a jar declares (`ContentManifest`). Each time only one copy learnt what was
+  needed.
+- **A test for a fix has to fail against the old code.** Check it — stash the fix, run the test,
+  watch it go red. A test that passes either way proves nothing, and it is easy to write one.
+- **Read what the loader reads.** Mods carry other mods inside themselves (`META-INF/jars/`,
+  `META-INF/jarjar/`), and the loaders bundle libraries of their own (`mixinextras`). Anything that
+  decides what is installed has to see both, or it reports as missing what the server loads fine.
+- **Embedded resources with dotted names need `WithCulture=false` and a `LogicalName`.** MSBuild
+  infers a culture from the segments of a file name, `sh` is a real one, and
+  `install-mods-unix.sh.in` silently went to a satellite assembly while the build stayed green.
+- **Scripts written for players.** Logic in a `.in` template, every visible line in the .resx files,
+  and a placeholder always replaced by a whole finished message — never a format string. Line
+  endings are per file (`.sh` LF, `.bat` CRLF), no BOM anywhere, and every `choice` in a `.bat`
+  carries `/t` and `/d`, because batch cannot tell whether anyone is there to press a key.
 
 ## Commits, pull requests and issues
 

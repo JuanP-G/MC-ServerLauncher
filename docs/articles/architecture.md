@@ -501,9 +501,10 @@ somebody's mods get deleted. `InstallScriptBuilder` fills a template held as an 
 (`Resources/scripts/*.in`) with messages from the .resx files: the shape is code and the wording is
 translated, so each sentence inherits the parity checks and the logic inherits none of them. Every
 placeholder becomes a whole finished message — nothing is ever a format string — so no translation
-can smuggle in a shell metacharacter, and `ShellQuote`/`BatchValue` escaping backs that up.
+can smuggle in a shell metacharacter, and `ShellSafe`/`BatchSafe` escaping backs that up.
 
-The scripts **move aside and never delete**: existing jars go to a `mods-backup-<stamp>` folder
+The scripts **move aside and never delete anything of the player's** — the one file they remove is
+the loader installer they downloaded themselves, see below. Existing jars go to a `mods-backup-<stamp>` folder
 beside the mods folder (a sibling, so the loader does not rescan it), a failed move stops everything
 rather than leaving a half-install, and the timestamp is worked out at export time because `%DATE%`
 in a .bat comes out in the machine's local format — which in much of Europe puts slashes in a folder
@@ -550,6 +551,18 @@ The same scan answers a second question off the same hashes: which **library mod
 endpoint, which says what could replace it), `ModDependencyService` works out what is required and absent, and
 the panel offers to install it. Installing a mod resolves its dependencies the same way, in the same click —
 which is the fix for a Fabric loader refusing to start over a `fabric-api` nobody was ever asked to install.
+
+Three details that each hid a bug for a long time, and each has a test now:
+
+- **Hashes go to Modrinth in lower case**, through `ModrinthService.ApiHashes`. The app computes
+  them in upper case and Modrinth matches them literally, answering `{}` with a healthy `200 OK`; until
+  1.12.3 the update check had never found an update and the missing-library panel had never shown.
+- **"Everything is up to date" means the store said so.** `GetLatestVersionsByHashAsync` returns `null`
+  when Modrinth could not be asked, and the tab then says it could not check — instead of passing a
+  failure off as good news, which is what it used to do.
+- **What is already in the folder includes what is inside its jars.** `ModIdsProvidedIn` counts the
+  modules nested in `fabric-api` and the libraries other mods carry, and skips disabled jars, so the
+  scan and the install never offer a second copy of something already loaded.
 
 ## Localization
 

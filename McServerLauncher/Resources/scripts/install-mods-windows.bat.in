@@ -6,7 +6,8 @@ rem Every line of visible text is a placeholder replaced when the pack is built,
 rem holds the logic and the .resx files hold the wording. A placeholder always becomes a whole
 rem finished message, never a format string.
 rem
-rem Nothing here deletes anything. Mods already in the destination are MOVED aside, never removed.
+rem Nothing of the player's is ever deleted. Mods already in the destination are MOVED aside; the
+rem one file this script removes is the loader installer it downloaded itself, into %TEMP%.
 setlocal enabledelayedexpansion
 
 rem Colour. Batch has no arrow-key input — that needs PowerShell, which mail providers block just

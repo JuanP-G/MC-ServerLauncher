@@ -19,7 +19,7 @@ namespace McServerLauncher.Services;
 /// </para>
 /// <para>
 /// The shape of the script lives in an embedded template and every visible line comes from the
-/// .resx files. Sixty lines of shell inside a <c>&lt;value&gt;</c> would be escaped XML — no
+/// .resx files. A couple of hundred lines of shell inside a <c>&lt;value&gt;</c> would be escaped XML — no
 /// highlighting, unreviewable in a diff, and, worst of all, subject to the translation-parity
 /// checks on logic that has to be identical in all five languages. This way each sentence gets
 /// those checks and the logic gets none of them.
