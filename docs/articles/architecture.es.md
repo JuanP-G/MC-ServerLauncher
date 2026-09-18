@@ -189,7 +189,12 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`ContentManifest` / `ContentDependencyCheck`** — leen lo que cada jar declara de sí mismo (lo que ofrece y
   lo que necesita) y dicen qué falta. Tres formatos: `fabric.mod.json`, `plugin.yml` de Bukkit y el `mods.toml`
   de Forge/NeoForge, sin librería de YAML ni de TOML — solo hacen falta unas listas de nombres, y lo que no se
-  entienda cuenta como «no declara nada». **Sin red, a propósito**: es la comprobación que corre al darle a
+  entienda cuenta como «no declara nada». **Los jars dentro de jars cuentan**: los dos cargadores dejan que
+  un mod lleve otros dentro (`META-INF/jars/`, `META-INF/jarjar/`), y `fabric-api` son unos cuarenta módulos
+  así, de modo que lo que ofrece un jar anidado se suma al de fuera —siguiendo unos cuantos niveles— y lo que
+  necesita no, porque un hueco dentro de un paquete es cosa del cargador. El lector de dependencias de la
+  pestaña de Mods pasa por el mismo código en vez de por una copia suya; antes había dos, y solo uno lo sabía.
+  **Sin red, a propósito**: es la comprobación que corre al darle a
   Iniciar, y las llamadas de Modrinth que responderían a lo mismo se tragan los errores y devuelven vacío, así
   que sin conexión dirían que no falta nada justo donde equivocarse impide arrancar. Una prueba prohíbe que
   esos dos ficheros mencionen `HttpClient` o `ModrinthService`.

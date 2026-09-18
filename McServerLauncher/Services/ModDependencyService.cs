@@ -134,24 +134,22 @@ public class ModDependencyService
     /// requirement. The loader itself is dropped: <c>minecraft</c>, <c>java</c> and
     /// <c>fabricloader</c> are provided, and asking Modrinth for them would be nonsense.
     /// Plugins have no such file, so this reads nothing and costs one failed lookup inside the jar.
+    /// <para>
+    /// Answered by <see cref="ContentManifest"/> rather than by a reader of its own. There used to
+    /// be two, and only one was ever taught that a jar can carry other jars inside it: this one went
+    /// on reporting Xaero's minimap as needing <c>xaerolib</c> — which it ships in its own jar — and
+    /// the store was then asked for a copy of something already installed.
+    /// </para>
     /// </remarks>
     internal static IReadOnlyList<string> DeclaredModIds(string jarPath)
     {
         try
         {
-            using var zip = ZipFile.OpenRead(jarPath);
-            var entry = zip.GetEntry("fabric.mod.json");
-            if (entry is null) return Array.Empty<string>();
+            // Fabric only, as before: a plugin's "depend" names plugins, not Modrinth ids.
+            using (var zip = ZipFile.OpenRead(jarPath))
+                if (zip.GetEntry("fabric.mod.json") is null) return Array.Empty<string>();
 
-            using var stream = entry.Open();
-            using var doc = JsonDocument.Parse(stream);
-
-            if (!doc.RootElement.TryGetProperty("depends", out var depends)
-                || depends.ValueKind != JsonValueKind.Object)
-                return Array.Empty<string>();
-
-            return depends.EnumerateObject()
-                .Select(p => p.Name)
+            return ContentManifest.Read(jarPath).Requires
                 .Where(name => !LoaderProvided.Contains(name))
                 .ToList();
         }
