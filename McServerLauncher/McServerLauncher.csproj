@@ -38,8 +38,8 @@
     <EmbeddedResource Include="Resources\store-tags.json" />
     <EmbeddedResource Include="Resources\store-summaries.json" />
 
-    <!-- The install scripts the modpack carries. Shape here, wording in the .resx files: sixty
-         lines of shell inside a resx <value> would be escaped XML, unreviewable in a diff, and
+    <!-- The install scripts the modpack carries. Shape here, wording in the .resx files: a couple
+         of hundred lines of shell inside a resx <value> would be escaped XML, unreviewable in a diff, and
          subject to the translation-parity checks on logic that must be identical in every
          language. See InstallScriptBuilder.
 

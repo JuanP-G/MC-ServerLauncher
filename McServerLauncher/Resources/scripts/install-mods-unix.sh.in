@@ -6,7 +6,8 @@
 # message: nothing here is ever used as a format string, so no translation can smuggle in a shell
 # metacharacter.
 #
-# Nothing here deletes anything. Mods already in the destination are MOVED aside, never removed.
+# Nothing of the player's is ever deleted. Mods already in the destination are MOVED aside; the one
+# file this script removes is the loader installer it downloaded itself, into a temp folder.
 set -u
 
 # --- Colour, only when someone is watching -------------------------------------------------------

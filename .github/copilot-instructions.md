@@ -108,6 +108,17 @@ Anything that alters behaviour alters the docs in the same commit, and **both la
   service that owns them: Fabric's meta endpoint publishes no checksum at all (the jar is validated
   structurally instead), and Purpur publishes only MD5 (HTTPS authenticates the source; the hash is
   there to catch a corrupted download, and nothing relies on it for more).
+- The same goes for the **loader installer the modpack's script downloads on a player's machine**:
+  `ClientLoaderInstall` resolves its URL and official hash at export time, and the script refuses
+  to run anything that does not match.
+- **A failure must never read as good news.** A lookup that could not be made returns `null` or a
+  distinct state, never the empty result that also means "nothing to do" (see
+  `ModrinthService.GetLatestVersionsByHashAsync`).
+- **One question, one definition.** If two places answer the same question, route both through
+  one (`PlayitApiService.Match`, `ModrinthService.ApiHashes`, `ContentManifest`) and add a test
+  that fails when a second copy appears.
+- **Read what the loader reads**: jars inside jars (`META-INF/jars/`, `META-INF/jarjar/`) and
+  libraries the loader bundles (`mixinextras`) count as installed.
 - **Secrets are encrypted at rest** (`SecretProtector`: DPAPI on Windows, AES-GCM elsewhere).
 - **Sanitize external input** before it reaches a process or a config file (CR/LF in player names for
   stdin, values written to `server.properties`).
@@ -120,6 +131,9 @@ Anything that alters behaviour alters the docs in the same commit, and **both la
   named pipes and file locks, which .NET implements differently per platform. A test that is only
   meaningful on one platform skips itself on the other.
 - Tests needing real Avalonia controls go through the shared headless `AvaloniaFixture`.
+- **A test for a fix must fail against the old code** — stash the fix and check it goes red.
+- Embedded resources with dotted names need `WithCulture=false` and a `LogicalName`: MSBuild reads
+  `sh` in `install-mods-unix.sh.in` as a culture and drops the file from the main assembly.
 
 ## Releases
 See `docs/articles/contributing.md` → "Release a new version" for the full checklist (bump the version

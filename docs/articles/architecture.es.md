@@ -524,9 +524,10 @@ donde se borran los mods de alguien. `InstallScriptBuilder` rellena una plantill
 el texto está traducido, así que cada frase hereda las comprobaciones de paridad y la lógica no
 hereda ninguna. Cada marcador se sustituye por un mensaje entero y terminado —nunca por una cadena
 de formato—, así que ninguna traducción puede colar un metacarácter de shell, y el escapado de
-`ShellQuote`/`BatchValue` lo respalda.
+`ShellSafe`/`BatchSafe` lo respalda.
 
-Los scripts **apartan y no borran nunca**: los jars que ya estaban van a una carpeta
+Los scripts **apartan y no borran nunca nada del jugador** —lo único que eliminan es el instalador
+del cargador que ellos mismos se han descargado, ver más abajo—. Los jars que ya estaban van a una carpeta
 `mods-backup-<marca>` hermana de la de mods (hermana, para que el cargador no la reescanee), un
 movimiento fallido para en seco en vez de dejar media instalación, y la marca de tiempo se calcula al
 exportar porque `%DATE%` en un `.bat` sale con el formato local — que en media Europa mete barras
@@ -574,6 +575,19 @@ El mismo barrido responde a una segunda pregunta con los mismos hashes: qué **l
 endpoint de actualizaciones, que dice qué podría sustituirlo), `ModDependencyService` calcula qué hace falta y
 no está, y el panel ofrece instalarlo. Instalar un mod resuelve sus dependencias igual, en el mismo clic — que
 es el arreglo del cargador de Fabric negándose a arrancar por un `fabric-api` que nadie pidió instalar.
+
+Tres detalles que escondieron un fallo mucho tiempo cada uno, y cada uno tiene ya su prueba:
+
+- **Los hashes van a Modrinth en minúsculas**, a través de `ModrinthService.ApiHashes`. La app los
+  calcula en mayúsculas y Modrinth los compara tal cual, respondiendo `{}` con un `200 OK` sano; hasta
+  la 1.12.3 la búsqueda de actualizaciones no había encontrado ninguna y el panel de librerías que
+  faltan no se había enseñado nunca.
+- **«Todo está actualizado» significa que la tienda lo ha dicho.** `GetLatestVersionsByHashAsync`
+  devuelve `null` cuando no ha podido preguntar a Modrinth, y la pestaña dice que no ha podido
+  comprobarlo — en vez de hacer pasar un fallo por una buena noticia, que es lo que hacía antes.
+- **Lo que ya hay en la carpeta incluye lo que va dentro de sus jars.** `ModIdsProvidedIn` cuenta los
+  módulos anidados en `fabric-api` y las librerías que llevan otros mods, y se salta los jars
+  desactivados, así que ni el escaneo ni la instalación ofrecen una segunda copia de algo ya cargado.
 
 ## Localización
 
