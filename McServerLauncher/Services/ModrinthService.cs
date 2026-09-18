@@ -256,7 +256,13 @@ public class ModrinthService
     /// version. Returns a map keyed by the SAME input hash the caller passed. Hashes that Modrinth
     /// doesn't recognise (jars from CurseForge or built by hand) are simply absent from the result.
     /// </summary>
-    public async Task<Dictionary<string, VersionResult>> GetLatestVersionsByHashAsync(
+    /// <returns>
+    /// The map, or <b>null when Modrinth could not be asked</b>. Deliberately not an empty map: that
+    /// is what "every mod is on its newest version" looks like, and a failure that reads as good
+    /// news is one nobody ever reports. The upper-case hashes fixed in 1.12.3 hid for exactly that
+    /// reason, and "no connection" was taking the same way out.
+    /// </returns>
+    public async Task<Dictionary<string, VersionResult>?> GetLatestVersionsByHashAsync(
         IEnumerable<string> sha1Hashes, ServerType loader, string mcVersion, CancellationToken ct = default)
     {
         var hashes = ApiHashes(sha1Hashes);
@@ -285,9 +291,15 @@ public class ModrinthService
                 foreach (var kv in map)
                     result[kv.Key] = kv.Value;
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
         catch
         {
-            // Offline or API error: report no updates rather than failing.
+            // Offline or an API error. Said as such — see the return value — instead of being passed
+            // off as "nothing to update", which is what this used to do.
+            return null;
         }
         return result;
     }

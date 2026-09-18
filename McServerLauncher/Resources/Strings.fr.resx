@@ -501,6 +501,7 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="CheckUpdates" xml:space="preserve"><value>Rechercher des mises à jour</value></data>
   <data name="Msg_CheckingUpdates" xml:space="preserve"><value>Recherche de mises à jour…</value></data>
   <data name="Msg_UpdatesFoundFmt" xml:space="preserve"><value>{0} mise(s) à jour disponible(s)</value></data>
+  <data name="Msg_UpdatesCheckFailed" xml:space="preserve"><value>Impossible de joindre Modrinth, je ne peux donc pas savoir s'il y a des mises à jour. Réessaie une fois connecté.</value></data>
   <data name="Msg_NoUpdates" xml:space="preserve"><value>Tout est à jour</value></data>
   <data name="Msg_ModUpdated" xml:space="preserve"><value>Mis à jour ✔</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Impossible de mettre à jour : {0}</value></data>

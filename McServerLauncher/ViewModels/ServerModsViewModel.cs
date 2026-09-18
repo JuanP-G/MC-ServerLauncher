@@ -526,6 +526,11 @@ public partial class ServerModsViewModel : ObservableObject
             }
 
             var latest = await _modrinthService.GetLatestVersionsByHashAsync(byHash.Keys, _config.Type, _config.GameVersion, ct);
+            if (latest is null)
+            {
+                UpdateStatus = UpdateStatusText(couldAsk: false, updates: 0);
+                return;
+            }
 
             var updates = 0;
             foreach (var (installedHash, version) in latest)
@@ -543,9 +548,7 @@ public partial class ServerModsViewModel : ObservableObject
                 }
             }
 
-            UpdateStatus = updates > 0
-                ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), updates)
-                : Localizer.Get("Msg_NoUpdates");
+            UpdateStatus = UpdateStatusText(couldAsk: true, updates);
 
             await ScanForMissingDependenciesAsync(byHash.Keys, ct);
         }
@@ -560,6 +563,17 @@ public partial class ServerModsViewModel : ObservableObject
     }
 
     private bool CanCheckUpdates => !IsCheckingUpdates;
+
+    /// <summary>The line the update check leaves under the list.</summary>
+    /// <remarks>
+    /// "Everything is up to date" only when the store actually said so. Offline it used to print
+    /// exactly that, which is a claim about every mod on the server made on the strength of no
+    /// answer at all — and the one message nobody thinks to question.
+    /// </remarks>
+    internal static string UpdateStatusText(bool couldAsk, int updates) =>
+        !couldAsk ? Localizer.Get("Msg_UpdatesCheckFailed")
+        : updates > 0 ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), updates)
+        : Localizer.Get("Msg_NoUpdates");
 
     partial void OnIsCheckingUpdatesChanged(bool value) => CheckUpdatesCommand.NotifyCanExecuteChanged();
 
