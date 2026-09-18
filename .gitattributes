@@ -17,6 +17,12 @@
 # Run on Linux in CI, so LF regardless of who last saved them.
 *.sh        text eol=lf
 
+# The modpack's script templates. They end in .in, so the rules above do not reach them, and
+# the endings they are stored with are the ones a reviewer reads in the diff. What actually
+# ships is normalised by ModpackWriter either way — a .sh with CRLF dies on its first line.
+*.sh.in     text eol=lf
+*.bat.in    text eol=crlf
+
 # Binary: never touched, never diffed as text.
 *.png       binary
 *.jpg       binary

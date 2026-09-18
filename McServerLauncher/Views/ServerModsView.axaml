@@ -401,8 +401,10 @@
                         <ic:SymbolIcon Symbol="ArrowSync" />
                     </Button>
 
+                    <!-- Hidden on plugin servers: a plugin runs in the server and never goes near
+                         a player's machine, so a pack of them is a zip nobody can do anything with. -->
                     <Button Grid.Column="2" Command="{Binding ExportModpackCommand}" Padding="6,4" Margin="0,0,8,0"
-                            ToolTip.Tip="{loc:Loc Export_Modpack}">
+                            IsVisible="{Binding !IsPluginBased}" ToolTip.Tip="{loc:Loc Export_Modpack}">
                         <ic:SymbolIcon Symbol="Share" />
                     </Button>
 
@@ -431,6 +433,29 @@
                                     Padding="10,4" IsEnabled="{Binding !IsInstallingDependencies}"
                                     Command="{Binding InstallMissingDependenciesCommand}" />
                         </StackPanel>
+                    </Border>
+
+                    <!-- What the last export did. After the fact and not a dialog beforehand: a
+                         dialog charges a click to the normal case, where the detection is right, in
+                         order to serve the rare one. Naming the files it left out is what makes
+                         this actionable rather than unsettling, and putting them back is one click
+                         over the same zip — no picker, no second dialog. -->
+                    <Border IsVisible="{Binding HasExportNotice}" Margin="0,0,0,8" Padding="10,8"
+                            Background="{StaticResource SemanticWarnFill}" BorderBrush="{StaticResource SemanticWarnEdge}" BorderThickness="1" CornerRadius="6">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding ExportNotice}" TextWrapping="Wrap"
+                                       FontSize="12" Foreground="{StaticResource SemanticWarn}" VerticalAlignment="Center" />
+                            <Button Grid.Row="0" Grid.Column="1" Background="Transparent" Padding="4" Margin="8,0,0,0"
+                                    VerticalAlignment="Top" ToolTip.Tip="{loc:Loc Export_DismissNotice}"
+                                    Command="{Binding DismissExportNoticeCommand}">
+                                <ic:SymbolIcon Symbol="Dismiss" />
+                            </Button>
+                            <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,0"
+                                    HorizontalAlignment="Right" Padding="10,4"
+                                    Content="{loc:Loc Export_IncludeAnyway}"
+                                    IsVisible="{Binding CanIncludeExcludedAnyway}"
+                                    Command="{Binding IncludeExcludedAnywayCommand}" />
+                        </Grid>
                     </Border>
                 </StackPanel>
 

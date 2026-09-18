@@ -1,0 +1,283 @@
+#!/usr/bin/env bash
+# MC Server Launcher — mod installer for Linux and macOS.
+#
+# Every line of visible text is a placeholder replaced when the pack is built, so this file holds
+# the logic and the .resx files hold the wording. A placeholder always becomes a whole finished
+# message: nothing here is ever used as a format string, so no translation can smuggle in a shell
+# metacharacter.
+#
+# Nothing here deletes anything. Mods already in the destination are MOVED aside, never removed.
+set -u
+
+# --- Colour, only when someone is watching -------------------------------------------------------
+# Redirected to a file or a pipe, escape codes are noise in the output rather than colour on a
+# screen, so they are simply not emitted.
+if [ -t 1 ]; then
+  BOLD=$'\033[1m'; DIM=$'\033[2m'; SEL=$'\033[7m'; OK=$'\033[32m'; WARN=$'\033[33m'; OFF=$'\033[0m'
+else
+  BOLD=''; DIM=''; SEL=''; OK=''; WARN=''; OFF=''
+fi
+
+say() { printf '%s\n' "$*"; }
+
+here=$(cd "$(dirname "$0")" && pwd)
+source_dir="$here/mods"
+
+say "${BOLD}@@HEADER@@${OFF}"
+say "@@CLOSE_GAME@@"
+say ""
+
+# The commonest failure of all: run from inside the archive viewer, where nothing sits alongside.
+if [ ! -d "$source_dir" ]; then
+  say "${WARN}@@NO_SOURCE@@${OFF}"
+  exit 1
+fi
+
+# --- Where the mods go ---------------------------------------------------------------------------
+# Finding the official folder proves the official launcher was installed once, never that it is the
+# one about to be used: Prism, MultiMC, CurseForge and Modrinth App all keep mods per instance. So
+# every folder that actually exists is offered, and the list is what the player picks from — typing
+# a path is the last resort rather than the only option.
+case "$(uname -s)" in
+  Darwin) official="$HOME/Library/Application Support/minecraft" ;;
+  *)      official="$HOME/.minecraft" ;;
+esac
+
+candidates=()
+labels=()
+
+offer() {
+  # $1 = mods folder, $2 = what to call it. Only if it is really there, and only once.
+  [ -d "$1" ] || return 0
+  for seen in ${candidates[@]+"${candidates[@]}"}; do
+    [ "$seen" = "$1" ] && return 0
+  done
+  candidates+=("$1")
+  labels+=("$2")
+}
+
+offer "$official/mods" "@@LAUNCHER_OFFICIAL@@"
+
+# Instance-based launchers. The instance's own name is the label, because that is the only thing
+# that tells two of them apart on a machine with six.
+for base in \
+  "$HOME/.local/share/PrismLauncher" "$HOME/.var/app/org.prismlauncher.PrismLauncher/data/PrismLauncher" \
+  "$HOME/Library/Application Support/PrismLauncher" \
+  "$HOME/.local/share/multimc" "$HOME/.multimc"
+do
+  for instance in "$base"/instances/*/; do
+    [ -d "$instance" ] || continue
+    name=$(basename "$instance")
+    offer "${instance}minecraft/mods" "$name"
+    offer "${instance}.minecraft/mods" "$name"
+  done
+done
+
+for base in "$HOME/.local/share/ModrinthApp" "$HOME/Library/Application Support/ModrinthApp"; do
+  for profile in "$base"/profiles/*/; do
+    [ -d "$profile" ] || continue
+    offer "${profile}mods" "$(basename "$profile")"
+  done
+done
+
+for base in "$HOME/curseforge/minecraft" "$HOME/Documents/curseforge/minecraft"; do
+  for instance in "$base"/Instances/*/; do
+    [ -d "$instance" ] || continue
+    offer "${instance}mods" "$(basename "$instance")"
+  done
+done
+
+# --- The menu ------------------------------------------------------------------------------------
+# Arrow keys, because a list you walk with the arrows asks nothing of the reader: no path to type,
+# nothing to spell, and the thing chosen is visible while choosing it.
+pick_from_list() {
+  local count=${#candidates[@]} chosen=0 key rest i
+
+  say ""
+  say "${BOLD}@@ASK_FOLDER@@${OFF}"
+  say "${DIM}@@ARROWS_HINT@@${OFF}"
+  say ""
+
+  while true; do
+    for i in $(seq 0 $((count)) ); do
+      if [ "$i" -eq "$count" ]; then
+        text="@@OTHER_PATH@@"
+      else
+        text="${labels[$i]}  ${DIM}${candidates[$i]}${OFF}"
+      fi
+      if [ "$i" -eq "$chosen" ]; then printf '%s\n' "${SEL} > ${text} ${OFF}"
+      else printf '%s\n' "   ${text}"; fi
+    done
+
+    IFS= read -rsn1 key || break
+    if [ "$key" = $'\033' ]; then IFS= read -rsn2 -t 0.1 rest || rest=""; key="$key$rest"; fi
+
+    case "$key" in
+      $'\033[A') chosen=$(( chosen > 0 ? chosen - 1 : count )) ;;
+      $'\033[B') chosen=$(( chosen < count ? chosen + 1 : 0 )) ;;
+      "")        break ;;
+      *)         ;;
+    esac
+
+    # Back over what was just drawn, so the list is replaced rather than repeated down the screen.
+    printf '\033[%dA' "$((count + 1))"
+  done
+
+  if [ "$chosen" -eq "$count" ]; then
+    say ""
+    printf '%s ' "@@TYPE_PATH@@"
+    IFS= read -r typed || typed=""
+    [ -n "$typed" ] && destination="$typed"
+  else
+    destination="${candidates[$chosen]}"
+  fi
+}
+
+# The default is settled before anyone is asked anything, so that a run with nobody to answer still
+# lands somewhere sensible: the one folder that exists, if there is exactly one, rather than the
+# official path on a machine where the official launcher is not what is being used.
+if [ ${#candidates[@]} -eq 1 ]; then
+  destination="${candidates[0]}"
+else
+  destination="$official/mods"
+fi
+
+if [ -n "${MCSL_MODS_DIR:-}" ]; then
+  destination="$MCSL_MODS_DIR"
+elif [ ! -t 0 ]; then
+  # Nobody to answer: never ask, so a pipe or a CI job cannot hang here.
+  :
+elif [ ${#candidates[@]} -gt 1 ]; then
+  pick_from_list
+elif [ ${#candidates[@]} -eq 0 ] && [ ! -d "$destination" ]; then
+  say ""
+  printf '%s ' "@@TYPE_PATH@@"
+  IFS= read -r typed || typed=""
+  [ -n "$typed" ] && destination="$typed"
+fi
+
+say ""
+say "@@DESTINATION_IS@@ ${BOLD}$destination${OFF}"
+
+# --- The loader ----------------------------------------------------------------------------------
+# The likeliest way for this to end badly is mods landing beside a Minecraft that cannot load them.
+mcdir="$(dirname "$destination")"
+
+loader_present() {
+  [ -d "$mcdir/versions" ] && ls "$mcdir/versions" 2>/dev/null | grep -qi -- "@@LOADER_MARK@@"
+}
+
+# Java, which the installers need and most players have without knowing: the official launcher keeps
+# its own JRE under the Minecraft folder and never puts it on the PATH.
+find_java() {
+  if command -v java >/dev/null 2>&1; then printf '%s' java; return 0; fi
+  for candidate in \
+    "$mcdir"/runtime/*/*/*/bin/java "$mcdir"/runtime/*/*/bin/java \
+    "$mcdir"/runtime/*/*/*/jre.bundle/Contents/Home/bin/java
+  do
+    [ -x "$candidate" ] && { printf '%s' "$candidate"; return 0; }
+  done
+  return 1
+}
+
+install_loader() {
+  java_bin=$(find_java) || { say "${WARN}@@NO_JAVA@@${OFF}"; return 1; }
+
+  installer="${TMPDIR:-/tmp}/mcsl-loader-installer.jar"
+  say "@@DOWNLOADING@@"
+
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "$installer" "@@INSTALLER_URL@@" || { say "${WARN}@@DOWNLOAD_FAILED@@${OFF}"; return 1; }
+  elif command -v wget >/dev/null 2>&1; then
+    wget -qO "$installer" "@@INSTALLER_URL@@" || { say "${WARN}@@DOWNLOAD_FAILED@@${OFF}"; return 1; }
+  else
+    say "${WARN}@@NO_DOWNLOADER@@${OFF}"; return 1
+  fi
+
+  # Verified against the hash the pack was built with, taken from the loader's own maven repository.
+  # This is a jar about to be executed on somebody else's machine: an unverified download would be
+  # the least defensible thing in the whole pack.
+  actual=""
+  if command -v @@SHA_TOOL@@ >/dev/null 2>&1; then
+    actual=$(@@SHA_TOOL@@ @@SHA_ARGS@@ "$installer" | cut -d' ' -f1)
+  elif command -v shasum >/dev/null 2>&1; then
+    actual=$(shasum -a @@SHA_BITS@@ "$installer" | cut -d' ' -f1)
+  fi
+
+  if [ -z "$actual" ]; then
+    say "${WARN}@@NO_HASH_TOOL@@${OFF}"; rm -f "$installer"; return 1
+  fi
+  if [ "$actual" != "@@INSTALLER_SHA@@" ]; then
+    say "${WARN}@@HASH_MISMATCH@@${OFF}"; rm -f "$installer"; return 1
+  fi
+
+  say "@@INSTALLING@@"
+  if "$java_bin" -jar "$installer" @@INSTALLER_ARGS@@ "$mcdir"; then
+    rm -f "$installer"
+    say "${OK}@@LOADER_INSTALLED@@${OFF}"
+    return 0
+  fi
+
+  rm -f "$installer"
+  say "${WARN}@@INSTALL_FAILED@@${OFF}"
+  return 1
+}
+
+if ! loader_present; then
+  say ""
+  say "${WARN}@@NO_LOADER@@${OFF}"
+
+  if [ -n "@@INSTALLER_URL@@" ] && [ -t 0 ]; then
+    printf '%s ' "@@ASK_INSTALL@@"
+    IFS= read -r answer || answer=""
+    case "${answer:-@@DEFAULT_YES@@}" in
+      @@YES_PATTERN@@) install_loader || say "@@CARRYING_ON@@" ;;
+      *) say "@@CARRYING_ON@@" ;;
+    esac
+  elif [ -t 0 ]; then
+    # No installer resolved when the pack was built — offline, most likely. Ask before copying mods
+    # next to a Minecraft that will not load them, but never refuse: the check can be wrong.
+    printf '%s ' "@@ASK_CONTINUE@@"
+    IFS= read -r answer || answer=""
+    case "$answer" in
+      @@YES_PATTERN@@) ;;
+      *) say "@@CANCELLED@@"; exit 1 ;;
+    esac
+  fi
+fi
+
+mkdir -p "$destination" || { say "${WARN}@@CANNOT_CREATE@@${OFF}"; exit 1; }
+
+# Aside, as a sibling rather than a subfolder: visible in the file manager, and never rescanned as
+# mods. A half-done install is worse than none, so a failed move stops everything there and then.
+backup="$(dirname "$destination")/mods-backup-@@STAMP@@"
+moved=0
+for existing in "$destination"/*.jar; do
+  [ -e "$existing" ] || continue
+  mkdir -p "$backup"
+  if ! mv "$existing" "$backup/"; then
+    say "${WARN}@@MOVE_FAILED@@ $(basename "$existing")${OFF}"
+    exit 1
+  fi
+  moved=$((moved + 1))
+done
+if [ "$moved" -gt 0 ]; then say "@@MOVED_ASIDE@@ $moved -> $backup"; fi
+
+copied=0
+for jar in "$source_dir"/*.jar; do
+  [ -e "$jar" ] || continue
+  if ! cp "$jar" "$destination/"; then
+    say "${WARN}@@COPY_FAILED@@ $(basename "$jar")${OFF}"
+    exit 1
+  fi
+  copied=$((copied + 1))
+done
+
+say ""
+say "${OK}@@DONE@@ $copied -> $destination${OFF}"
+if [ "$moved" -gt 0 ]; then say "@@HOW_TO_UNDO@@ $backup"; fi
+
+# Said outright, because it is not automatic: the exit status of a script is the status of its last
+# command, and the line above is a condition that is false whenever nothing had to be moved aside —
+# so a run that did everything right was reporting failure to anything that checked.
+exit 0

@@ -485,10 +485,76 @@ refresco general al cerrar el diálogo fue el primer arreglo; también se ha ido
 significaría que la app nunca ejerce el mecanismo que lo sustituyó.
 
 ### Darle la lista de mods a tus jugadores
-`ServerModsViewModel.ExportModpack` comprime la carpeta `mods/` (o `plugins/`) del servidor junto con
-un archivo de instrucciones traducido que nombra el servidor, su tipo y su versión de Minecraft, y
-los pasos para ese tipo. Es la respuesta a "¿qué les mando a mis amigos para que puedan entrar?", que
-si no significa explicar la instalación de un cargador por chat.
+`ServerModsViewModel.ExportModpack` es el selector de archivos y nada más; `BuildModpackAsync` recibe
+una ruta, así que la parte que merece pruebas corre sin ventana. `ModpackWriter` monta el zip entrada
+a entrada, leyendo cada jar de donde ya está —antes montaba una copia del paquete entero bajo
+`%TEMP%`— y escribiendo cada archivo de texto con sus propios finales de línea. El paquete lleva los
+jars y un archivo de instrucciones traducido que nombra el servidor, su tipo y su versión de
+Minecraft, y los pasos para ese tipo. Es la respuesta a "¿qué les mando a mis amigos para que puedan
+entrar?", que si no significa explicar la instalación de un cargador por chat.
+
+**Lo que el paquete deja fuera.** Un servidor con mods suele llevar jars que al jugador no le sirven
+de nada —Geyser y Floodgate para el crossplay de Bedrock, un plugin de permisos, un mod de copias de
+seguridad—, megabytes que descarga y copia a su carpeta de mods para nada. `ExportSelection` lo
+decide con dos fuentes que por separado no bastan: lo que declara el jar
+(`ContentManifest.ContentSide`, leído del `environment` de `fabric.mod.json` o del `side` de
+`mods.toml`) y el `client_side` de Modrinth. La regla es asimétrica y cabe en una frase: **un jar se
+queda fuera cuando alguna de las dos fuentes dice que es solo de servidor y ninguna dice que el
+cliente lo necesita.** Un jar que se declara de cliente no se cae nunca. Declararse de *ambos* lados
+no cuenta para nada, y averiguarlo costó un modpack de verdad: la primera carpeta a la que se apuntó
+tenía once mods y los once escribían `environment: "*"`, Floodgate incluido — un autenticador de
+Bedrock que no hace nada en un cliente. Es lo que escribe la plantilla, así que leerlo como una
+afirmación del autor dejaba la función incapaz de excluir nada. Por encima de la tabla hay tres
+reglas: unos metadatos que digan que el proyecto no funciona en ningún lado se
+ignoran por rotos, lo que necesite un jar que se queda vuelve a entrar de forma transitiva, y un
+paquete nunca se vacía. La tienda tiene cuatro segundos y después el paquete se monta solo con los
+jars, que excluye estrictamente menos; el aviso lo dice. Nada de `ExportSelection` toca la red, y hay
+una prueba que lo comprueba contra el archivo.
+
+Al terminar, un cartel descartable bajo la lista de instalados nombra lo que se ha quedado fuera, con
+un botón que rehace el mismo zip incluyéndolo todo. A propósito después y no un diálogo antes: un
+diálogo le cobra un clic al caso normal para servir al raro, y las instrucciones dentro del paquete
+llevan la misma nota, porque el paquete tiene que explicarse a quien lo recibe. El botón no aparece
+en servidores de plugins, donde el paquete es un zip que el jugador no puede usar para nada.
+
+**Los scripts del paquete.** Junto a los jars van `install-mods-windows.bat` e
+`install-mods-unix.sh`, para que recibir un paquete no sean cuatro pasos a mano cuyo tercero es
+donde se borran los mods de alguien. `InstallScriptBuilder` rellena una plantilla guardada como
+`EmbeddedResource` (`Resources/scripts/*.in`) con los mensajes de los `.resx`: la forma es código y
+el texto está traducido, así que cada frase hereda las comprobaciones de paridad y la lógica no
+hereda ninguna. Cada marcador se sustituye por un mensaje entero y terminado —nunca por una cadena
+de formato—, así que ninguna traducción puede colar un metacarácter de shell, y el escapado de
+`ShellQuote`/`BatchValue` lo respalda.
+
+Los scripts **apartan y no borran nunca**: los jars que ya estaban van a una carpeta
+`mods-backup-<marca>` hermana de la de mods (hermana, para que el cargador no la reescanee), un
+movimiento fallido para en seco en vez de dejar media instalación, y la marca de tiempo se calcula al
+exportar porque `%DATE%` en un `.bat` sale con el formato local — que en media Europa mete barras
+dentro de un nombre de carpeta. **Listan las carpetas que existen de verdad** y dejan elegir:
+encontrar `.minecraft` demuestra que el launcher oficial se instaló alguna vez, nunca que sea el que
+se va a usar, así que cada instancia de Prism, MultiMC, CurseForge o Modrinth App que aparezca se
+ofrece con su propio nombre. El `.sh` dibuja esa lista como un menú que se recorre con las flechas;
+batch no sabe leer teclas de dirección —eso pide PowerShell, que los proveedores de correo bloquean
+igual y que choca con la política de ejecución—, así que el `.bat` usa `choice.exe`: una sola tecla,
+sin Enter, con todas las opciones a la vista. Los dos colorean su salida, y el `.bat` solo en
+consolas lo bastante nuevas como para interpretar los códigos en vez de imprimirlos. Cada `choice`
+lleva tiempo de espera y valor por defecto, porque batch no tiene forma de preguntar si hay alguien
+escuchando y si no se quedaría esperando una tecla que no puede llegar. `MCSL_MODS_DIR` se salta
+todo, y el `.sh` no pregunta nunca sin terminal — que es lo que evita que se cuelgue con una tubería,
+y lo que lo hace probable.
+
+**Instalar el cargador.** Cuando falta el perfil, el script ofrece instalarlo en vez de limitarse a
+nombrar una web. `ClientLoaderInstall` resuelve al exportar el instalador y su hash publicado desde
+el maven del propio cargador, así que el script no tiene ninguna versión que averiguar: Fabric por su
+CLI `client`, Forge y NeoForge por `--installClient`. Busca Java en el `PATH` y, si no está, dentro
+de la carpeta `runtime` del propio Minecraft, que es donde el lanzador oficial guarda un JRE que la
+mayoría de jugadores no sabe que tiene. **La descarga se verifica contra ese hash antes de pasársela
+a Java**, y se borra si no coincide — lo único que estos scripts pueden borrar, y hay una prueba que
+enuncia la regla con esa precisión. Si el instalador no se puede resolver al montar el paquete,
+sencillamente no va, y el script vuelve a limitarse a avisar: un paquete peor, no uno roto. `InstallScriptSmokeTests` ejecuta el script de verdad sobre un
+`old.jar` plantado y comprueba que sigue existiendo después. El bit de ejecución se pone, pero nada
+depende de él: la invocación documentada es `bash install-mods-unix.sh`, que no lo necesita y además
+esquiva la cuarentena de macOS.
 
 ### Una sola copia en marcha
 `Program.Main` reclama `SingleInstance` antes que nada. Si otra copia ya tiene el bloqueo, esta le

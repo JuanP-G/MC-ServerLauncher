@@ -37,11 +37,55 @@ public static class ContentManifest
     /// <param name="Requires">Ids that must be present for it to load.</param>
     public record Manifest(string FileName, IReadOnlyList<string> Provides, IReadOnlyList<string> Requires)
     {
+        /// <summary>
+        /// Where the jar says it runs, if it says.
+        /// </summary>
+        /// <remarks>
+        /// An <c>init</c> property with a default rather than a fourth positional parameter, so
+        /// that not one existing call site or test has to change to gain it. Everything that does
+        /// not set it keeps reading <see cref="ContentSide.Unspecified"/>, which is what the jars
+        /// that say nothing mean anyway.
+        /// </remarks>
+        public ContentSide Side { get; init; } = ContentSide.Unspecified;
+
         public static Manifest Empty(string fileName) =>
             new(fileName, Array.Empty<string>(), Array.Empty<string>());
 
         /// <summary>True when the jar said nothing this app can act on.</summary>
         public bool IsSilent => Provides.Count == 0 && Requires.Count == 0;
+    }
+
+    /// <summary>
+    /// Where a jar declares it runs, read out of its own manifest.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="Unspecified"/> and <see cref="Both"/> are kept apart because they are different
+    /// things to have read in a file, not because one is worth more than the other. Measured
+    /// against a real modpack, <c>environment: "*"</c> turned out to carry no information at all:
+    /// eleven jars out of eleven declared it, Floodgate among them, which is a Bedrock
+    /// authentication plugin with nothing to do on a client. It is what the template writes.
+    /// <c>ExportSelection</c> therefore treats the two identically, and only <c>client</c> and
+    /// <c>server</c> count as anybody having said anything.
+    /// </para>
+    /// <para>
+    /// Anything unrecognised reads as <see cref="Unspecified"/>, like every other value this file
+    /// does not understand.
+    /// </para>
+    /// </remarks>
+    public enum ContentSide
+    {
+        /// <summary>The jar did not say. Not the same as having said "both".</summary>
+        Unspecified,
+
+        /// <summary>The jar says it runs on both sides.</summary>
+        Both,
+
+        /// <summary>The jar says it is client-side only.</summary>
+        Client,
+
+        /// <summary>The jar says it is server-side only.</summary>
+        Server
     }
 
     /// <summary>
@@ -220,7 +264,20 @@ public static class ContentManifest
         if (root.TryGetProperty("depends", out var depends) && depends.ValueKind == JsonValueKind.Object)
             requires.AddRange(depends.EnumerateObject().Select(p => p.Name));
 
-        return Build(fileName, provides, requires);
+        // "environment" is Fabric's own word for the side. The entrypoints are deliberately not
+        // consulted as well: a jar with both a client and a server entrypoint is a jar that runs on
+        // both, which is what the absence of an "environment" already says.
+        var side = root.TryGetProperty("environment", out var env) && env.ValueKind == JsonValueKind.String
+            ? env.GetString() switch
+            {
+                "*" => ContentSide.Both,
+                "client" => ContentSide.Client,
+                "server" => ContentSide.Server,
+                _ => ContentSide.Unspecified
+            }
+            : ContentSide.Unspecified;
+
+        return Build(fileName, provides, requires) with { Side = side };
     }
 
     // --- Bukkit, Paper, Purpur: plugin.yml ---
@@ -241,7 +298,10 @@ public static class ContentManifest
 
         // "depend" blocks loading; "softdepend" only asks to be loaded later if present, so a
         // missing one is not a failure and must not stop a start.
-        return Build(fileName, provides, ListValue(text, "depend"));
+        //
+        // Server by definition, and the one side that needs no parsing to know: a Bukkit plugin
+        // runs in the server and there is no client half of the platform for it to run in.
+        return Build(fileName, provides, ListValue(text, "depend")) with { Side = ContentSide.Server };
     }
 
     // --- Forge and NeoForge: mods.toml ---
@@ -256,6 +316,7 @@ public static class ContentManifest
 
         var provides = new List<string>();
         var requires = new List<string>();
+        var side = ContentSide.Unspecified;
 
         // A tiny state machine over the two table headers that matter. Everything else is skipped,
         // including values spanning lines, which none of the keys read here ever do.
@@ -286,6 +347,22 @@ public static class ContentManifest
 
             if (inMods && TomlKey(line, "modId") is { } own) provides.Add(own);
 
+            // Only inside [[mods]]. "side" appears in [[dependencies.x]] as well, where it means
+            // which side that dependency is needed on — read there, a mod that merely requires a
+            // server-side library would be filed as server-side itself.
+            //
+            // displayTest is not read, on purpose. It controls the version handshake, not where the
+            // mod loads; it correlates with being server-side without ever asserting it, and acting
+            // on a correlation is the one mistake this function cannot afford to make.
+            if (inMods && TomlKey(line, "side") is { } declared)
+                side = declared.ToUpperInvariant() switch
+                {
+                    "CLIENT" => ContentSide.Client,
+                    "SERVER" => ContentSide.Server,
+                    "BOTH" => ContentSide.Both,
+                    _ => ContentSide.Unspecified
+                };
+
             if (!inDependency) continue;
 
             if (TomlKey(line, "modId") is { } needed) dependencyId = needed;
@@ -299,7 +376,7 @@ public static class ContentManifest
         }
 
         FlushDependency();
-        return Build(fileName, provides, requires);
+        return Build(fileName, provides, requires) with { Side = side };
     }
 
     // --- Shared ---

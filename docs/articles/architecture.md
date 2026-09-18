@@ -464,10 +464,74 @@ dialog was the first fix; it is gone too, because leaving it would mean the app 
 mechanism that replaced it.
 
 ### Handing the mod list to your players
-`ServerModsViewModel.ExportModpack` zips the server's `mods/` (or `plugins/`) folder together with a
-localized instructions file naming the server, its type and its Minecraft version, and the steps for
-that type. It is the answer to "what do I send my friends so they can join?", which otherwise means
+`ServerModsViewModel.ExportModpack` is the file picker and nothing else; `BuildModpackAsync` takes a
+path, so the part worth testing runs without a window. `ModpackWriter` builds the zip entry by entry,
+reading each jar where it already sits — it used to assemble a copy of the whole pack under `%TEMP%`
+first — and writing each text file with its own line endings. The pack carries the jars and a
+localized instructions file naming the server, its type, its Minecraft version and the steps for that
+type. It is the answer to "what do I send my friends so they can join?", which otherwise means
 explaining a loader install over chat.
+
+**What the pack leaves out.** A modded server usually carries jars a player has no use for — Geyser
+and Floodgate for Bedrock crossplay, a permissions plugin, a world-backup mod — which are megabytes
+downloaded and copied into a mods folder for nothing. `ExportSelection` decides, from two sources
+that are each insufficient alone: what the jar declares (`ContentManifest.ContentSide`, read from
+`fabric.mod.json`'s `environment` or `mods.toml`'s `side`) and Modrinth's `client_side`. The rule is
+asymmetric and fits in a sentence: **a jar leaves the pack when either source says it is server-only
+and neither says a client needs it.** A jar declaring itself client-side can never be dropped.
+Declaring *both* counts for nothing, and finding that out cost a real modpack: the first folder this
+was tried on had eleven mods and all eleven wrote `environment: "*"`, Floodgate among them — a
+Bedrock authentication plugin with nothing to do on a client. It is what the template writes, so
+reading it as an author's claim left the feature unable to exclude anything at all. Three rules sit
+above the table — metadata claiming a
+project runs on neither side is ignored as broken, anything a kept jar depends on is put back
+transitively, and an export is never emptied. The store gets four seconds and then the pack is built
+on the jars alone, which excludes strictly less; the notice says so. Nothing in `ExportSelection`
+touches the network, and a test checks that against the file.
+
+Afterwards a dismissable notice under the installed list names what was left out, with one button
+that rebuilds the same zip including everything. Deliberately after the fact: a dialog beforehand
+would charge a click to the normal case in order to serve the rare one, and the instructions inside
+the pack carry the same note, because the pack has to explain itself to whoever receives it. The
+button is hidden on plugin servers, where a pack is a zip a player can do nothing with.
+
+**The scripts in the pack.** Beside the jars go `install-mods-windows.bat` and
+`install-mods-unix.sh`, so receiving a pack is not four manual steps, the third of which is where
+somebody's mods get deleted. `InstallScriptBuilder` fills a template held as an `EmbeddedResource`
+(`Resources/scripts/*.in`) with messages from the .resx files: the shape is code and the wording is
+translated, so each sentence inherits the parity checks and the logic inherits none of them. Every
+placeholder becomes a whole finished message — nothing is ever a format string — so no translation
+can smuggle in a shell metacharacter, and `ShellQuote`/`BatchValue` escaping backs that up.
+
+The scripts **move aside and never delete**: existing jars go to a `mods-backup-<stamp>` folder
+beside the mods folder (a sibling, so the loader does not rescan it), a failed move stops everything
+rather than leaving a half-install, and the timestamp is worked out at export time because `%DATE%`
+in a .bat comes out in the machine's local format — which in much of Europe puts slashes in a folder
+name. They **list the folders that actually exist** and let the player pick one: finding `.minecraft`
+proves the official launcher was installed once, never that it is the one about to be used, so every
+Prism, MultiMC, CurseForge and Modrinth App instance found is offered by its own name. The `.sh`
+draws that list as an arrow-key menu; batch cannot read arrow keys at all — that needs PowerShell,
+which mail providers block just as hard and which trips over the execution policy — so the `.bat`
+uses `choice.exe`: one keypress, no Enter, every option on screen. Both colour their output, the
+`.bat` only on console builds new enough to act on the escape codes rather than print them. Every
+`choice` carries a timeout and a default, because batch has no way to ask whether anything is
+listening and would otherwise wait for a keypress that cannot come. `MCSL_MODS_DIR` overrides the
+whole thing, and the `.sh` never asks without a terminal — which is what keeps it from hanging under
+a pipe, and what makes it testable.
+
+**Installing the loader.** When the profile is missing, the script offers to install it rather than
+only naming a website. `ClientLoaderInstall` resolves the installer and its published hash at export
+time from the loader's own maven, so the script has no version to work out: Fabric through its
+`client` CLI, Forge and NeoForge through `--installClient`. It finds Java on the `PATH` or, failing
+that, inside Minecraft's own `runtime` folder, which is where the official launcher keeps a JRE that
+most players do not know they have. **The download is verified against that hash before it is ever
+handed to Java**, and deleted on a mismatch — the one thing these scripts are allowed to delete, and
+a test states the rule that precisely. If the installer cannot be resolved when the pack is built,
+the plan is simply absent and the script falls back to warning, which is a worse pack rather than a
+broken one.
+`InstallScriptSmokeTests` runs the real script over a planted `old.jar` and checks it still exists
+afterwards. The execute bit is set but nothing depends on it: the documented invocation is
+`bash install-mods-unix.sh`, which needs no bit and sidesteps macOS quarantine.
 
 ### One running copy
 `Program.Main` acquires `SingleInstance` before anything else. If another copy already holds the
