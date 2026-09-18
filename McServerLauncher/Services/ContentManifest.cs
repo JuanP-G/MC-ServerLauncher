@@ -95,10 +95,17 @@ public static class ContentManifest
     /// One set for every loader rather than one per format. A Fabric jar never asks for
     /// <c>neoforge</c>, so the extra names cost nothing, and keeping a single list means a loader
     /// name can never be missed in one reader and handled in another.
+    /// <para>
+    /// <c>mixinextras</c> is here because the loaders ship it inside themselves — Fabric Loader has
+    /// since 0.15, and so do current Forge and NeoForge — so it lives in the server's
+    /// <c>libraries/</c> and never in <c>mods/</c>. Lithium asks for it by name, and the check
+    /// reported it missing on servers where the loader's own startup log lists it as loaded.
+    /// </para>
     /// </remarks>
     private static readonly HashSet<string> LoaderProvided = new(StringComparer.OrdinalIgnoreCase)
     {
         "minecraft", "java", "fabricloader", "fabric",      // Fabric
+        "mixinextras",                                       // bundled by every current loader
         "forge", "neoforge", "fml",                          // Forge and NeoForge
         "bukkit", "spigot", "paper", "purpur", "server"      // Bukkit and its descendants
     };
@@ -110,19 +117,102 @@ public static class ContentManifest
         try
         {
             using var zip = ZipFile.OpenRead(jarPath);
-
-            // In the order they are likely to be found, and stopping at the first that says
-            // anything: a jar shipping two formats is one jar, not two.
-            return FromFabric(zip, name)
-                ?? FromPluginYml(zip, name)
-                ?? FromModsToml(zip, name)
-                ?? Manifest.Empty(name);
+            return FromArchive(zip, name, depth: 0);
         }
         catch
         {
             // A jar that cannot be opened is a problem for the loader to report, not a reason for
             // this app to refuse to start the server.
             return Manifest.Empty(name);
+        }
+    }
+
+    /// <summary>
+    /// How deep to follow jars inside jars. Real mods go one level down, occasionally two.
+    /// </summary>
+    private const int MaxNesting = 3;
+
+    /// <summary>A nested jar bigger than this is not metadata worth reading into memory.</summary>
+    private const long MaxNestedBytes = 64L * 1024 * 1024;
+
+    /// <summary>One archive's manifest, with everything bundled inside it counted as provided.</summary>
+    /// <remarks>
+    /// <para>
+    /// Both loaders let a mod carry other mods inside itself — Fabric under <c>META-INF/jars/</c>,
+    /// Forge and NeoForge under <c>META-INF/jarjar/</c> — and load them as if they had been
+    /// installed separately. <c>fabric-api</c> is forty-odd modules shipped that way, and Xaero's
+    /// minimap carries <c>xaerolib</c> in its own jar. Reading only the outer manifest reported every
+    /// one of those as missing: a server that started perfectly was told, before starting, that six
+    /// dependencies had to be installed by hand, and the store was then asked for ids it could never
+    /// resolve because they are modules, not projects.
+    /// </para>
+    /// <para>
+    /// What a bundled jar <em>provides</em> is added; what it <em>requires</em> is not. The author
+    /// ships the bundle as a unit, and a gap inside it is the loader's to report — pulling nested
+    /// requirements in would invent missing dependencies, which is the very failure this fixes.
+    /// </para>
+    /// </remarks>
+    private static Manifest FromArchive(ZipArchive zip, string name, int depth)
+    {
+        // In the order they are likely to be found, and stopping at the first that says anything:
+        // a jar shipping two formats is one jar, not two.
+        var own = FromFabric(zip, name)
+            ?? FromPluginYml(zip, name)
+            ?? FromModsToml(zip, name)
+            ?? Manifest.Empty(name);
+
+        if (depth >= MaxNesting) return own;
+
+        var bundled = zip.Entries
+            .Where(IsNestedJar)
+            .SelectMany(entry => ProvidedByNested(entry, depth + 1))
+            .ToList();
+
+        if (bundled.Count == 0) return own;
+
+        var provides = own.Provides
+            .Concat(bundled)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        // A jar that needs something it carries itself is not waiting on anything.
+        var requires = own.Requires
+            .Where(r => !provides.Contains(r, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+
+        return own with { Provides = provides, Requires = requires };
+    }
+
+    /// <summary>Where the two loaders put the jars they carry inside another jar.</summary>
+    /// <remarks>
+    /// Matched on the location both loaders use rather than on each one's index file, so a nested
+    /// jar is found whichever format listed it — and one the index forgot is still counted, which
+    /// errs towards reporting less missing, the safe direction for a check that can block a start.
+    /// </remarks>
+    private static bool IsNestedJar(ZipArchiveEntry entry) =>
+        entry.FullName.EndsWith(".jar", StringComparison.OrdinalIgnoreCase) &&
+        (entry.FullName.StartsWith("META-INF/jars/", StringComparison.OrdinalIgnoreCase) ||
+         entry.FullName.StartsWith("META-INF/jarjar/", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>The ids a jar inside a jar answers to. Empty if it cannot be read.</summary>
+    private static IReadOnlyList<string> ProvidedByNested(ZipArchiveEntry entry, int depth)
+    {
+        if (entry.Length > MaxNestedBytes) return Array.Empty<string>();
+
+        try
+        {
+            // ZipArchive needs a seekable stream, and an entry's is not.
+            using var buffer = new MemoryStream();
+            using (var source = entry.Open()) source.CopyTo(buffer);
+            buffer.Position = 0;
+
+            using var inner = new ZipArchive(buffer, ZipArchiveMode.Read);
+            return FromArchive(inner, Path.GetFileName(entry.FullName), depth).Provides;
+        }
+        catch
+        {
+            // Same rule as the outer jar: unreadable means it declares nothing.
+            return Array.Empty<string>();
         }
     }
 

@@ -603,8 +603,17 @@ public partial class ServerModsViewModel : ObservableObject
         // And what the jars ask for themselves, which is how a mod whose Modrinth page lists no
         // dependencies at all still turns out to need fabric-api.
         var known = installedIds.Concat(plan.Install.Select(i => i.ProjectId)).ToList();
+
+        // Minus whatever another installed jar already carries — fabric-api's forty-odd modules,
+        // a library bundled inside the mod next to it. Those are not missing, and asking the store
+        // for them either finds nothing or offers a second copy of something already loaded.
+        var providedHere = InstalledMods
+            .SelectMany(m => ContentManifest.Read(m.FilePath).Provides)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         var fromJars = await _dependencies.ResolveByModIdAsync(
-            InstalledMods.SelectMany(m => ModDependencyService.DeclaredModIds(m.FilePath)),
+            InstalledMods.SelectMany(m => ModDependencyService.DeclaredModIds(m.FilePath))
+                .Where(id => !providedHere.Contains(id)),
             _config.Type, _config.GameVersion, known, ct);
 
         ShowMissingDependencies(new ModDependencyService.Plan(
