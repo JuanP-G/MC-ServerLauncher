@@ -233,23 +233,17 @@ public partial class ServerViewModel
     /// </summary>
     private async Task PollForBedrockAddressAsync()
     {
-        foreach (var seconds in BedrockAddressRetryDelays)
+        foreach (var seconds in AddressRetry.DelaysSeconds)
         {
             if (BedrockState == BedrockAddressState.Ready) return;
             await Task.Delay(TimeSpan.FromSeconds(seconds));
-            await RefreshBedrockAddressAsync();
+
+            // fresh: the shared list is cached for 25 seconds, so without this three of these five
+            // attempts never left the machine — they were handed back the empty list the first one
+            // stored, from before playit had published anything.
+            await RefreshBedrockAddressAsync(fresh: true);
         }
     }
-
-    /// <summary>
-    /// How long to wait between the first few address lookups, in seconds.
-    /// </summary>
-    /// <remarks>
-    /// Growing rather than fixed, and stopping rather than going forever: playit normally publishes
-    /// the address within a few seconds, and if it has not after about half a minute the reason is
-    /// not one more request. The ordinary 30-second refresh takes over from there.
-    /// </remarks>
-    private static readonly int[] BedrockAddressRetryDelays = { 2, 3, 5, 8, 13 };
 
     /// <summary>The name this server's Bedrock tunnel is created under, and recognised by.</summary>
     private string BedrockTunnelName => Name + " (Bedrock)";
@@ -336,8 +330,8 @@ public partial class ServerViewModel
     /// On protocol too, not just the port: a crossplay server has two tunnels, and matching on the
     /// number alone would pick the Java one whenever the two local ports happened to coincide.
     /// </remarks>
-    private Task<PlayitApiService.PlayitTunnel?> FindBedrockTunnelAsync() =>
-        _playitApi.GetTunnelAsync(Config.BedrockPort, udp: true);
+    private Task<PlayitApiService.PlayitTunnel?> FindBedrockTunnelAsync(bool fresh = false) =>
+        _playitApi.GetTunnelAsync(Config.BedrockPort, udp: true, fresh);
 
     /// <summary>
     /// Refreshes the Bedrock address, and re-points Geyser if the tunnel's public port has moved.
@@ -348,7 +342,8 @@ public partial class ServerViewModel
     /// never revisited would keep advertising the old one, and the server would simply stop being
     /// joinable from Bedrock with nothing to explain why.
     /// </remarks>
-    private async Task RefreshBedrockAddressAsync()
+    /// <param name="fresh">Skips the shared tunnel cache; used by the burst after a tunnel is made.</param>
+    private async Task RefreshBedrockAddressAsync(bool fresh = false)
     {
         if (!Config.CrossplayEnabled || Config.BedrockPort <= 0) return;
 
@@ -362,7 +357,7 @@ public partial class ServerViewModel
 
         try
         {
-            var tunnel = await FindBedrockTunnelAsync();
+            var tunnel = await FindBedrockTunnelAsync(fresh);
             if (tunnel?.Address is not { } host || tunnel.PublicPort <= 0)
             {
                 // Two different things, and the panel now says which. A tunnel that exists but has

@@ -318,7 +318,17 @@ diálogo de código de configuración (abre `playit.gg/l/setup-third-party` solo
 código pegado con `PlayitPartnerService.CreateAgentAsync` por una clave secreta de agente por
 usuario y la guarda cifrada. Al crear un servidor (o con el botón "Crear túnel"), `MainViewModel`
 llama a `PlayitApiService.EnsureMinecraftTunnelAsync` con esa clave. La dirección pública la detecta
-periódicamente `ServerViewModel` con `GetAddressForPortAsync`, emparejando por puerto local.
+periódicamente `ServerViewModel` con `GetTunnelAsync`, emparejando por puerto local **y
+protocolo**: un servidor con crossplay tiene dos túneles, así que toda búsqueda pasa por
+`PlayitApiService.Match`, la única definición de «el mismo túnel». La lista de túneles se comparte
+entre servidores tras una caché de 25 segundos para que N servidores no hagan N llamadas; la ráfaga
+corta de consultas posterior a crear un túnel pasa `fresh: true` para saltársela, porque playit tarda
+unos segundos en publicar la dirección y si no la primera respuesta vacía se les serviría a los
+reintentos; crear un túnel lanza esa misma ráfaga en el lado de Java, que antes esperaba al
+temporizador de 30 segundos. La caja de la dirección es de solo lectura — enseña lo que Playit ha
+asignado, no una preferencia — y la línea de debajo es `TunnelAddressState` (`Waiting` / `NoTunnel` /
+`Ready` / `Failed`), la hermana de `BedrockAddressState`: tres situaciones distintas se dibujaban
+como una sola caja vacía.
 Cumplimiento de las reglas de terceros de Playit: el navegador solo se abre al pulsar, un aviso
 indica que la app no está afiliada a Playit y el usuario siempre puede acceder a su cuenta de Playit
 directamente. Un agente autogestionado solo reenvía tráfico mientras su proceso corre, así que
