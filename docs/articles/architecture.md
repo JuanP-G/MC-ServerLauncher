@@ -186,7 +186,12 @@ are no hard-coded machine paths.
 - **`ContentManifest` / `ContentDependencyCheck`** — read what each jar declares about itself (what it provides
   and what it needs) and report what is missing. Three formats: `fabric.mod.json`, Bukkit's `plugin.yml` and
   Forge/NeoForge's `mods.toml`, with no YAML or TOML library — only lists of names are needed, and anything not
-  understood counts as "declares nothing". **No network, deliberately**: this is the check that runs when Start
+  understood counts as "declares nothing". **Jars inside jars count**: both loaders let a mod carry others
+  (`META-INF/jars/`, `META-INF/jarjar/`), and `fabric-api` is forty-odd modules shipped that way, so what a
+  nested jar provides is added to the outer one — followed a few levels down — while what it requires is not,
+  since a gap inside a bundle is the loader's to report. The Mods tab's own dependency reader goes through the
+  same code rather than a second copy of it; there used to be two, and only one had learnt this.
+  **No network, deliberately**: this is the check that runs when Start
   is pressed, and the Modrinth calls that would answer the same question swallow their errors and return empty,
   so offline they would report nothing missing on the one screen where being wrong stops the server coming up.
   A test forbids those two files from mentioning `HttpClient` or `ModrinthService`.
