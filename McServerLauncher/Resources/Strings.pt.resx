@@ -19,7 +19,7 @@
   <data name="Uptime" xml:space="preserve"><value>Tempo ativo</value></data>
   <data name="Port" xml:space="preserve"><value>Porta</value></data>
   <data name="Tip_ChangeIcon" xml:space="preserve"><value>Clica para mudar o ícone do servidor (o que os jogadores veem)</value></data>
-  <data name="Tunnel_Placeholder" xml:space="preserve"><value>Detetado automaticamente, ou cola aqui o endereço do túnel...</value></data>
+  <data name="Tunnel_Placeholder" xml:space="preserve"><value>Aparece sozinho assim que o túnel existir</value></data>
   <data name="Copy" xml:space="preserve"><value>Copiar</value></data>
   <data name="CreateTunnel" xml:space="preserve"><value>Criar túnel</value></data>
   <data name="Tip_CreateTunnel" xml:space="preserve"><value>Criar o túnel Playit para este servidor (pela porta)</value></data>
@@ -690,6 +690,10 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_TunnelForeignFmt" xml:space="preserve"><value>[Crossplay] A porta {0} continua ocupada pelo túnel «{1}». Apaga-o no Playit ou muda a porta à mão.</value></data>
   <data name="Msg_JavaTunnelPortUnknown" xml:space="preserve"><value>Não foi possível ler a porta Java do servidor, por isso o seu túnel não foi apagado. O de Bedrock sim.</value></data>
   <data name="Crossplay_LocalPort" xml:space="preserve"><value>Porta local:</value></data>
+  <data name="Tunnel_StateWaiting" xml:space="preserve"><value>À espera de que o Playit publique o endereço…</value></data>
+  <data name="Tunnel_StateNoTunnel" xml:space="preserve"><value>Sem túnel para este servidor: cria um com o botão «Criar túnel».</value></data>
+  <data name="Tunnel_StateReady" xml:space="preserve"><value>Pronto: qualquer pessoa pode entrar com este endereço.</value></data>
+  <data name="Tunnel_StateFailed" xml:space="preserve"><value>Não foi possível consultar o túnel; tenta-se de novo sozinho.</value></data>
   <data name="Crossplay_StateWaiting" xml:space="preserve"><value>À espera de que o Playit publique o endereço…</value></data>
   <data name="Crossplay_StateLocalOnly" xml:space="preserve"><value>Sem túnel: só a partir da tua rede, com o IP local deste computador.</value></data>
   <data name="Crossplay_StateReady" xml:space="preserve"><value>Pronto: qualquer pessoa pode entrar com o endereço acima.</value></data>

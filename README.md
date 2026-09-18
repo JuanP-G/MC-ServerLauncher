@@ -117,8 +117,9 @@ all with buttons.
   copy over the same servers.
 - **Share to the Internet with Playit.gg** 🌐 — connect your account by pasting a one-time **setup code**
   (no keys, no files). The app **creates the tunnel and runs the Playit agent for you**, so your server is
-  reachable from anywhere and friends join with the public address — **you install nothing**. The app ships
-  no secret of its own (the credential lives in a small proxy).
+  reachable from anywhere and friends join with the public address — **you install nothing**. The address
+  **appears on its own** within seconds of the tunnel being made, with a line underneath saying what it is
+  waiting for. The app ships no secret of its own (the credential lives in a small proxy).
 - **Send your friends a ready-made modpack** 📦 — one button zips the server's mods with instructions in
   their language. Mods that only ever do anything on the server — Geyser, Floodgate, a backup mod — are
   **left out automatically**, and the app tells you which ones and puts them back in one click if it got

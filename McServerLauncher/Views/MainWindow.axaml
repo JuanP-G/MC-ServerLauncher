@@ -320,7 +320,11 @@
                                 <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
                                 <TextBlock Text="{Binding PlayitStatusText}" FontSize="12" Opacity="0.7" />
                             </StackPanel>
-                            <TextBox Grid.Column="1" Margin="16,0" Text="{Binding TunnelAddress}"
+                            <!-- Read-only: this is what playit assigned, not a preference. Typing
+                                 over it used to be allowed and never did anything useful — the
+                                 tunnel keeps its name whatever the box says, and the next refresh
+                                 overwrote whatever had been typed. -->
+                            <TextBox Grid.Column="1" Margin="16,0" Text="{Binding TunnelAddress}" IsReadOnly="True"
                                      Watermark="{loc:Loc Tunnel_Placeholder}" VerticalAlignment="Center" />
                             <Button Grid.Column="2" Command="{Binding CopyTunnelAddressCommand}" Margin="0,0,8,0">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
@@ -349,6 +353,11 @@
                                 </StackPanel>
                             </Button>
                         </Grid>
+                        <!-- Why the box is empty, when it is. Always shown: "ready" is worth
+                             saying too, and a line that only appears when something is wrong is a
+                             line nobody reads until it is too late. -->
+                        <TextBlock FontSize="11" Opacity="0.75" TextWrapping="Wrap" Margin="4,6,4,0"
+                                   Text="{Binding TunnelStateText}" />
                         <!-- Bedrock: host and port in separate boxes, because that is how the
                              Bedrock client asks for them. There is no SRV record for Bedrock, so
                              pasting "host:port" into its address field simply fails. -->

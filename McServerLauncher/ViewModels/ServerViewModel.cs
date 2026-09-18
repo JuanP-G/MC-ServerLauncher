@@ -160,6 +160,16 @@ public partial class ServerViewModel : ObservableObject
     [ObservableProperty]
     private string? _tunnelAddress;
 
+    /// <summary>How far along the public address is. Drives the line under the Playit row.</summary>
+    [ObservableProperty]
+    private TunnelAddressState _tunnelState = TunnelAddressState.Waiting;
+
+    partial void OnTunnelStateChanged(TunnelAddressState value) =>
+        OnPropertyChanged(nameof(TunnelStateText));
+
+    /// <summary>One line saying what is happening, so the box is never blank without a reason.</summary>
+    public string TunnelStateText => Localizer.Get(TunnelAddressStates.KeyFor(TunnelState));
+
     [ObservableProperty]
     private string _commandText = string.Empty;
 
@@ -714,21 +724,72 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
-    /// <summary>Gets the tunnel address from the playit API, matching by port.</summary>
-    private async Task RefreshTunnelAddressAsync()
+    /// <summary>
+    /// Gets the tunnel address from the playit API, matching by port and protocol.
+    /// </summary>
+    /// <remarks>
+    /// Every path out of here sets a state. It used to return empty-handed in three different
+    /// situations and say nothing about any of them, which is the whole of the "the address takes
+    /// for ever to appear" report: most of the time it had appeared on playit's side and the app
+    /// was simply not going to ask again for another half minute.
+    /// </remarks>
+    /// <param name="fresh">Skips the shared tunnel cache. Used by the burst after a tunnel is made.</param>
+    private async Task RefreshTunnelAddressAsync(bool fresh = false)
     {
         try
         {
             var port = _properties.GetServerPort(Config.PropertiesPath);
-            if (!port.HasValue) return;
+            if (!port.HasValue)
+            {
+                // No server.properties yet, so no port to match a tunnel against. There is nothing
+                // to wait for, which is what the user needs told — not another blank box.
+                RunOnUi(() => TunnelState = TunnelAddressState.NoTunnel);
+                return;
+            }
 
-            var address = await _playitApi.GetAddressForPortAsync(port.Value);
-            if (!string.IsNullOrEmpty(address))
-                RunOnUi(() => TunnelAddress = address);
+            var tunnel = await _playitApi.GetTunnelAsync(port.Value, udp: false, fresh);
+            if (tunnel?.Address is not { Length: > 0 } address)
+            {
+                // Two different things, and the line now says which. A tunnel with no address yet
+                // is seconds away; no tunnel at all will stay that way until somebody makes one.
+                RunOnUi(() => TunnelState = tunnel is null
+                    ? TunnelAddressState.NoTunnel
+                    : TunnelAddressState.Waiting);
+                return;
+            }
+
+            RunOnUi(() =>
+            {
+                TunnelAddress = address;
+                TunnelState = TunnelAddressState.Ready;
+            });
         }
         catch
         {
-            // Best-effort: if the API fails, the saved/manual address is kept.
+            // Best-effort: if the API fails, the saved address is kept — but no longer in silence.
+            RunOnUi(() => TunnelState = TunnelAddressState.Failed);
+        }
+    }
+
+    /// <summary>
+    /// Looks the address up a few times with a growing wait, then leaves it to the ordinary refresh.
+    /// </summary>
+    /// <remarks>
+    /// The Bedrock side has had this since crossplay was written; Java never did, and waited for the
+    /// 30-second timer instead. With an arbitrary phase that is anything up to a minute of empty
+    /// box — five with the window in the tray — starting from the moment the console says the
+    /// address is seconds away.
+    /// </remarks>
+    private async Task PollForTunnelAddressAsync()
+    {
+        foreach (var seconds in AddressRetry.DelaysSeconds)
+        {
+            if (TunnelState == TunnelAddressState.Ready) return;
+            await Task.Delay(TimeSpan.FromSeconds(seconds));
+
+            // fresh: the tunnel list is shared behind a 25-second cache, and without this most of
+            // these would be answered by the empty list the first one stored.
+            await RefreshTunnelAddressAsync(fresh: true);
         }
     }
 
@@ -1595,7 +1656,12 @@ public partial class ServerViewModel : ObservableObject
             OnConsoleLine(created
                 ? Localizer.Get("Msg_TunnelCreated")
                 : string.Format(Localizer.Get("Msg_TunnelExists"), port));
-            await RefreshTunnelAddressAsync();
+
+            // The tunnel was made seconds ago, so this first lookup almost always comes back with
+            // no address — which is now shown as "waiting" rather than as nothing at all — and the
+            // burst picks it up as soon as playit publishes it.
+            await RefreshTunnelAddressAsync(fresh: true);
+            _ = PollForTunnelAddressAsync();
         }
         catch (Exception ex)
         {

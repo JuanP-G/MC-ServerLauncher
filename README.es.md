@@ -124,7 +124,8 @@ todo con botones.
 - **Abre tu servidor a Internet con Playit.gg** 🌐 — conecta tu cuenta pegando un **código de configuración**
   de un solo uso (sin claves ni archivos). La app **crea el túnel y ejecuta el agente de Playit por ti**, así
   tu servidor es accesible desde cualquier sitio y tus amigos entran con la dirección pública — **tú no instalas
-  nada**. La app no contiene ningún secreto propio (la credencial vive en un pequeño proxy).
+  nada**. La dirección **aparece sola** a los pocos segundos de crear el túnel, con una línea debajo que
+  dice qué está esperando. La app no contiene ningún secreto propio (la credencial vive en un pequeño proxy).
 - **Manda a tus amigos un modpack listo** 📦 — un botón comprime los mods del servidor con instrucciones
   en su idioma. Los mods que solo hacen algo en el servidor —Geyser, Floodgate, un mod de copias— se
   **dejan fuera solos**, y la app te dice cuáles y los vuelve a meter en un clic si se ha equivocado. Lo
