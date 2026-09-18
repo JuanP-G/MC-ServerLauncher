@@ -541,6 +541,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="CheckUpdates" xml:space="preserve"><value>Procurar atualizações</value></data>
   <data name="Msg_CheckingUpdates" xml:space="preserve"><value>A procurar atualizações…</value></data>
   <data name="Msg_UpdatesFoundFmt" xml:space="preserve"><value>{0} atualização(ões) disponível(is)</value></data>
+  <data name="Msg_UpdatesCheckFailed" xml:space="preserve"><value>Não foi possível contactar o Modrinth, por isso não sei se há atualizações. Tenta de novo com ligação.</value></data>
   <data name="Msg_NoUpdates" xml:space="preserve"><value>Está tudo atualizado</value></data>
   <data name="Msg_ModUpdated" xml:space="preserve"><value>Atualizado ✔</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Não foi possível atualizar: {0}</value></data>

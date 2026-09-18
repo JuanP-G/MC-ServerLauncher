@@ -178,6 +178,31 @@ public class NestedJarTests : IDisposable
     }
 
     [Fact]
+    public void WhatAFolderAlreadyCarriesIncludesTheModulesInsideItsJars()
+    {
+        // The one answer the Mods tab's scan and its install both use now. They used to work it out
+        // separately, and only the scan knew about jars inside jars.
+        Save("fabric-api.jar", FabricJar("fabric-api", nested:
+            ("META-INF/jars/fabric-api-base.jar", FabricJar("fabric-api-base"))));
+
+        var provided = ViewModels.ServerModsViewModel.ModIdsProvidedIn(_folder);
+
+        Assert.Contains("fabric-api", provided);
+        Assert.Contains("fabric-api-base", provided);
+    }
+
+    [Fact]
+    public void ADisabledJarProvidesNothing()
+    {
+        // The scan used to count every jar in the list, disabled ones included, while the start
+        // check rightly did not. A .jar.disabled loads nothing, so it cannot satisfy anything, and
+        // treating it as installed hides a dependency that really is missing.
+        Save("cloth-config.jar.disabled", FabricJar("cloth-config"));
+
+        Assert.DoesNotContain("cloth-config", ViewModels.ServerModsViewModel.ModIdsProvidedIn(_folder));
+    }
+
+    [Fact]
     public void TheModsTabDoesNotAskTheStoreForSomethingTheJarCarries()
     {
         // The second reader that had the same blind spot. It fed the Mods tab's "missing libraries"

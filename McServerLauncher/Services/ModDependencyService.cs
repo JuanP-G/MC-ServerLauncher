@@ -149,9 +149,9 @@ public class ModDependencyService
             using (var zip = ZipFile.OpenRead(jarPath))
                 if (zip.GetEntry("fabric.mod.json") is null) return Array.Empty<string>();
 
-            return ContentManifest.Read(jarPath).Requires
-                .Where(name => !LoaderProvided.Contains(name))
-                .ToList();
+            // Already without the loader's own ids: ContentManifest drops them, from the one list
+            // that knows about mixinextras. This file used to keep a second, shorter list of its own.
+            return ContentManifest.Read(jarPath).Requires;
         }
         catch
         {
@@ -160,10 +160,6 @@ public class ModDependencyService
             return Array.Empty<string>();
         }
     }
-
-    /// <summary>Ids that the loader supplies itself and that no download could satisfy.</summary>
-    private static readonly HashSet<string> LoaderProvided =
-        new(StringComparer.OrdinalIgnoreCase) { "minecraft", "java", "fabricloader", "fabric" };
 
     /// <summary>
     /// The walk itself, with the lookup passed in.

@@ -541,6 +541,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="CheckUpdates" xml:space="preserve"><value>Check for updates</value></data>
   <data name="Msg_CheckingUpdates" xml:space="preserve"><value>Checking for updates…</value></data>
   <data name="Msg_UpdatesFoundFmt" xml:space="preserve"><value>{0} update(s) available</value></data>
+  <data name="Msg_UpdatesCheckFailed" xml:space="preserve"><value>Modrinth could not be reached, so I cannot tell whether there are updates. Try again when you are online.</value></data>
   <data name="Msg_NoUpdates" xml:space="preserve"><value>Everything is up to date</value></data>
   <data name="Msg_ModUpdated" xml:space="preserve"><value>Updated ✔</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Could not update: {0}</value></data>

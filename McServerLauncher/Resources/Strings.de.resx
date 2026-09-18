@@ -541,6 +541,7 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="CheckUpdates" xml:space="preserve"><value>Nach Updates suchen</value></data>
   <data name="Msg_CheckingUpdates" xml:space="preserve"><value>Suche nach Updates…</value></data>
   <data name="Msg_UpdatesFoundFmt" xml:space="preserve"><value>{0} Update(s) verfügbar</value></data>
+  <data name="Msg_UpdatesCheckFailed" xml:space="preserve"><value>Modrinth war nicht erreichbar, daher weiß ich nicht, ob es Updates gibt. Versuche es mit Verbindung erneut.</value></data>
   <data name="Msg_NoUpdates" xml:space="preserve"><value>Alles ist aktuell</value></data>
   <data name="Msg_ModUpdated" xml:space="preserve"><value>Aktualisiert ✔</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Aktualisierung fehlgeschlagen: {0}</value></data>
