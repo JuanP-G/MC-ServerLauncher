@@ -142,7 +142,9 @@ all with buttons.
 - **A console you can read** 🖥️ — every line coloured for what it is (errors, warnings, chat, joins and
   leaves, commands, and what the app says told apart from what the server says), **a filter per category with
   its own count** — “Errors 3” is visible without pressing anything — and what you search for **marked inside
-  the line**.
+  the line**. Multi-line entries keep one colour, so a list of mods is never mistaken for a crash, and the app
+  **answers the start-up warnings that are its to answer**: it enables native access on Java 22+ and asks
+  once whether to accept BlueMap's download, instead of leaving you to edit its config.
 - **Settings in one place** ⚙️ — language, notifications, tray behaviour, your Playit connection and an
   **Add to desktop** button, all in a single dialog.
 - **Multi-language** — English, Spanish, Portuguese, French and German.

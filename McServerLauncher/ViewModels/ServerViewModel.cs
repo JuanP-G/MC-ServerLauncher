@@ -955,8 +955,67 @@ public partial class ServerViewModel : ObservableObject
     private void OnConsoleLine(string line) => OnConsoleLine(line, ConsoleLineKind.Launcher);
 
     /// <summary>A line from the server process, classified by where it came from.</summary>
-    private void OnServerLine(string line, ConsoleSource source) =>
-        OnConsoleLine(line, ConsoleLineClassifier.Classify(line, source));
+    private void OnServerLine(string line, ConsoleSource source)
+    {
+        // Only standard output's own previous line: standard error arrives on another thread, and
+        // a JVM warning landing between two lines of the mod list must not decide what they are.
+        var kind = ConsoleLineClassifier.Classify(line, source,
+            source == ConsoleSource.Stdout ? _lastStdoutKind : null);
+        if (source == ConsoleSource.Stdout) _lastStdoutKind = kind;
+
+        OnConsoleLine(line, kind);
+
+        // Once per run: BlueMap repeats itself on every start, and so would the question.
+        if (!_blueMapAsked && BlueMapConsent.IsAskingForConsent(line))
+        {
+            _blueMapAsked = true;
+            Dispatcher.UIThread.Post(() => _ = OfferBlueMapDownloadAsync());
+        }
+    }
+
+    /// <summary>Whether this run has already asked about BlueMap's download.</summary>
+    private bool _blueMapAsked;
+
+    /// <summary>
+    /// Asks whether to accept BlueMap's download, and if so accepts it and reloads BlueMap.
+    /// </summary>
+    /// <remarks>
+    /// Asks rather than accepts: it is consent to download Mojang's client files, and that belongs to
+    /// the person running the server. Declining is remembered only until the next start, so the
+    /// question comes back rather than the map silently never appearing.
+    /// </remarks>
+    private async Task OfferBlueMapDownloadAsync()
+    {
+        if (BlueMapConsent.FindConfig(Config.FolderPath) is not { } path) return;
+
+        if (!await MessageBox.ConfirmAsync(Localizer.Get("BlueMap_ConsentText"), "BlueMap"))
+        {
+            OnConsoleLine(Localizer.Get("Msg_BlueMapDeclined"));
+            return;
+        }
+
+        try
+        {
+            if (BlueMapConsent.Accept(await File.ReadAllTextAsync(path)) is not { } accepted)
+            {
+                OnConsoleLine(string.Format(Localizer.Get("Msg_BlueMapCouldNotAcceptFmt"), path));
+                return;
+            }
+
+            AtomicTextFile.WriteIfChanged(path, accepted);
+            OnConsoleLine(Localizer.Get("Msg_BlueMapAccepted"));
+
+            // BlueMap re-reads its config on reload, so the map starts without restarting the server.
+            if (IsRunning) _process.SendCommand("bluemap reload");
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
+
+    /// <summary>What the last line on standard output was. See <see cref="ConsoleLineClassifier.Classify"/>.</summary>
+    private ConsoleLineKind? _lastStdoutKind;
 
     private void OnConsoleLine(string text, ConsoleLineKind kind)
     {
@@ -1122,6 +1181,11 @@ public partial class ServerViewModel : ObservableObject
 
     private async Task StartInternalAsync(bool isAutoRestart)
     {
+        // A new run starts a new console story: the first line must not inherit the colour of the
+        // last line of a crash, and a question declined last time is asked again.
+        _lastStdoutKind = null;
+        _blueMapAsked = false;
+
         // Judged fresh on every attempt: whether THIS run stays up long enough to "forgive" a
         // previous crash streak must not be based on a stale timestamp from an earlier run/session.
         _lastRunningAtUtc = null;

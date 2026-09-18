@@ -23,21 +23,40 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public static partial class ConsoleLineClassifier
 {
-    /// <summary>What a line is about, given where it came from.</summary>
-    public static ConsoleLineKind Classify(string text, ConsoleSource source)
+    /// <summary>What a line is about, given where it came from and what came before it.</summary>
+    /// <param name="text">The line, as the server wrote it.</param>
+    /// <param name="source">Which stream it arrived on.</param>
+    /// <param name="previous">
+    /// What the last line on standard output was. A line with no log prefix of its own is the next
+    /// line of that entry — a list, a multi-line warning, an exception message — and it belongs to
+    /// the same entry rather than being judged on its own.
+    /// </param>
+    public static ConsoleLineKind Classify(string text, ConsoleSource source, ConsoleLineKind? previous = null)
     {
         if (source == ConsoleSource.Launcher) return ConsoleLineKind.Launcher;
 
-        // Standard error is the server telling the operating system something went wrong. It is the
-        // one severity signal that needs no parsing and cannot be reworded by a plugin or a locale.
-        if (source == ConsoleSource.Stderr) return ConsoleLineKind.Error;
-
         if (text.Length == 0) return ConsoleLineKind.Info;
 
-        // A stack trace's continuation lines carry no level of their own — they are indented, or
-        // start with "at " or "Caused by:". Left alone they read as ordinary output, so the one
-        // line that says what broke ends up buried in forty that look routine.
-        if (IsStackTrace(text)) return ConsoleLineKind.Error;
+        // Standard error is the server telling the operating system something went wrong. It is the
+        // one severity signal that needs no parsing and cannot be reworded by a plugin or a locale —
+        // with one exception whose format is fixed by the JVM itself: its own "WARNING:" lines,
+        // about restricted or deprecated methods. They are warnings, and painting them red made a
+        // healthy start look like a failing one.
+        if (source == ConsoleSource.Stderr)
+            return text.StartsWith("WARNING:", StringComparison.Ordinal) ? ConsoleLineKind.Warn : ConsoleLineKind.Error;
+
+        // A stack frame is an error wherever it turns up. Recognised by its shape — "at x.y(File:1)",
+        // "Caused by:", "... 12 more" — and not by indentation, which is what it used to go by: the
+        // Fabric loader indents its whole list of mods with tabs, and every mod on the server came
+        // out red as though it had crashed.
+        if (IsStackFrame(text)) return ConsoleLineKind.Error;
+
+        // No log prefix: the next line of the entry above. Fabric's mod list, the lines under
+        // "Warnings were found!", Distant Horizons's five-line warning, the message of an exception.
+        // Judged on its own each one read as plain output, so a warning's explanation came out grey
+        // and an exception's message came out as though nothing had happened.
+        if (!HasLogPrefix(text))
+            return previous is ConsoleLineKind.Warn or ConsoleLineKind.Error ? previous.Value : ConsoleLineKind.Info;
 
         var level = LevelOf(text);
         if (level is ConsoleLineKind.Warn or ConsoleLineKind.Error) return level;
@@ -145,12 +164,20 @@ public static partial class ConsoleLineClassifier
         return i < 0 ? null : text[(i + 3)..].TrimStart();
     }
 
-    private static bool IsStackTrace(string text) =>
-        text.StartsWith('\t')
-        || text.StartsWith("    at ", StringComparison.Ordinal)
-        || text.TrimStart().StartsWith("at ", StringComparison.Ordinal)
-        || text.TrimStart().StartsWith("Caused by:", StringComparison.Ordinal)
-        || text.TrimStart().StartsWith("... ", StringComparison.Ordinal);
+    /// <summary>Whether a line is one frame of a Java stack trace, by its shape.</summary>
+    internal static bool IsStackFrame(string text) => StackFrame().IsMatch(text);
+
+    /// <summary>Whether the line starts with a bracketed log prefix, "[...]: ".</summary>
+    /// <remarks>
+    /// Any bracketed prefix, with or without a level in it: a line like
+    /// <c>[12:34:56] [Render thread]: …</c> is its own entry, not the continuation of the one above.
+    /// </remarks>
+    internal static bool HasLogPrefix(string text) =>
+        text.StartsWith('[') && text.IndexOf("]: ", StringComparison.Ordinal) > 0;
+
+    // "at a.b.C.method(File.java:12)", "Caused by: …", "Suppressed: …", "... 12 more".
+    [GeneratedRegex(@"^\s*(at [^\s(]+\(.*\)\s*$|Caused by: |Suppressed: |\.\.\. \d+ more\s*$)")]
+    private static partial Regex StackFrame();
 
     // [12:34:56] [Server thread/WARN]:  and  [12:34:56 WARN]:  — the two shapes in the wild.
     [GeneratedRegex(@"\[[^\]]*[\s/](INFO|WARN|WARNING|ERROR|SEVERE|FATAL)\]", RegexOptions.IgnoreCase)]

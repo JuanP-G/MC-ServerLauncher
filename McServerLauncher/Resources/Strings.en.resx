@@ -296,6 +296,10 @@
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Could not determine the server port (is server.properties missing?).</value></data>
   <data name="Msg_NeedsJavaPreparing" xml:space="preserve"><value>[Launcher] This server needs Java {0}. Preparing a compatible Java...</value></data>
   <data name="Msg_NeedsJavaCurrentPreparing" xml:space="preserve"><value>[Launcher] This server needs Java {0} (configured one is Java {1}). Preparing a compatible Java...</value></data>
+  <data name="BlueMap_ConsentText" xml:space="preserve"><value>BlueMap needs to download resources from the official Minecraft client — Mojang distributes them — to draw the map, and it will not do so without your permission.&#10;&#10;Do you accept the download? The app will change the setting in its configuration and reload BlueMap.</value></data>
+  <data name="Msg_BlueMapAccepted" xml:space="preserve"><value>[Launcher] BlueMap: download accepted. Reloading BlueMap…</value></data>
+  <data name="Msg_BlueMapDeclined" xml:space="preserve"><value>[Launcher] BlueMap will stay without a map until you accept the download. I will ask again on the next start.</value></data>
+  <data name="Msg_BlueMapCouldNotAcceptFmt" xml:space="preserve"><value>[Launcher] I could not find BlueMap's download setting in {0}. Set “accept-download: true” by hand in that file.</value></data>
   <data name="Msg_JavaConfigured" xml:space="preserve"><value>[Launcher] Java set for this server: {0}</value></data>
   <data name="Msg_JavaPrepareFailStart" xml:space="preserve"><value>[Warning] Could not prepare Java {0}: {1}. Will try to start anyway.</value></data>
   <data name="Msg_PortBusyNotStarted" xml:space="preserve"><value>[Error] Port {0} is busy ({1}). Not started.</value></data>

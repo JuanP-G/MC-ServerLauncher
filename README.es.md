@@ -148,7 +148,10 @@ todo con botones.
   dependencias bien puestas. Vale para mods de Fabric y de Forge/NeoForge y para plugins de Paper y Purpur.
 - **Consola legible** 🖥️ — cada línea con su color según lo que es (errores, avisos, chat, entradas y
   salidas, comandos, y lo que dice la aplicación aparte de lo que dice el servidor), **un filtro por categoría
-  con su contador** — «Errores 3» se ve sin pulsar nada — y lo que buscas **marcado dentro de la línea**.
+  con su contador** — «Errores 3» se ve sin pulsar nada — y lo que buscas **marcado dentro de la línea**. Las
+  entradas de varias líneas mantienen un solo color, así que una lista de mods nunca se confunde con un fallo,
+  y la app **resuelve los avisos de arranque que le tocan**: activa el acceso nativo en Java 22+ y pregunta
+  una vez si aceptas la descarga de BlueMap, en vez de dejarte editar su configuración.
 - **Ajustes en un solo sitio** ⚙️ — idioma, notificaciones, comportamiento de la bandeja, tu conexión de
   Playit y un botón de **añadir al escritorio**, todo en un único diálogo.
 - **Multi-idioma** — español, inglés, portugués, francés y alemán.

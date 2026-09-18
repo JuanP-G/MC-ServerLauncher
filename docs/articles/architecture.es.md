@@ -206,8 +206,24 @@ mundo. No hay rutas fijas del equipo en el código.
   origen manda sobre el texto: los mensajes de la app se etiquetan donde se emiten, porque su texto está
   traducido —los prefijos `[Launcher]`, `[Error]` y `[Players]` viven *dentro* de los valores del resx— y un
   clasificador basado en ellos funcionaría en español y dejaría de funcionar en alemán. `stderr` viene marcado
-  desde `ServerProcessManager`, que antes lo mezclaba con la salida normal en el mismo manejador. Solo `stdout`
-  se lee: el corchete de vanilla (nivel en el **segundo**, no en el primero) y el de Paper.
+  desde `ServerProcessManager`, que antes lo mezclaba con la salida normal en el mismo manejador, y va en rojo
+  salvo las líneas `WARNING:` de la propia JVM, cuyo formato fija Java. Solo `stdout` se lee: el corchete de
+  vanilla (nivel en el **segundo**, no en el primero) y el de Paper. **Una línea sin prefijo de log pertenece a
+  la entrada de encima** —la lista de mods de Fabric, las líneas bajo un aviso de varias líneas, el mensaje de
+  una excepción—, así que toma el nivel de esa entrada en vez de juzgarse sola; el view model le pasa el tipo
+  de la línea anterior de stdout. Las trazas se reconocen por su forma (`at x.y(File:1)`, `Caused by:`,
+  `... 12 more`), nunca por la sangría: el cargador sangra su lista de mods con tabuladores, y un tabulador
+  pintaba de rojo todos los mods.
+- **`BlueMapConsent`** y `ServerProcessManager.ImpliedJvmFlags` — los dos avisos de arranque que la app
+  resuelve ella misma, porque le tocan a ella. Desde Java 22 añade `--enable-native-access=ALL-UNNAMED` a la
+  línea de comandos que construye: los mods que usan JNA provocan un aviso que dice que un Java futuro
+  *bloqueará* la llamada, y una opción desconocida impediría arrancar a una JVM antigua, de ahí el corte por
+  versión. `--sun-misc-unsafe-memory-access` no se añade a propósito: sus valores aceptados cambian de una
+  versión a otra. Y cuando BlueMap avisa de que su descarga no está aceptada, la app **pregunta** —es aceptar
+  bajar ficheros del cliente de Mojang— y si dices que sí cambia ese único valor en `core.conf` y manda
+  `bluemap reload`. El resto de avisos de un arranque con mods (refmaps, mixins dirigidos a mods ausentes, un
+  valor del registro de Windows, Distant Horizons recomendando ZGC para los FPS del cliente) no le toca
+  cambiarlos a la app.
 - **`ServerDetectionService`** — inspecciona una carpeta para averiguar el tipo/versión de un servidor
   existente cuando el usuario añade uno que ya está. Corre dos veces: al entrar desde *Añadir
   servidor*, y otra vez al arrancar para los servidores guardados antes de que esos campos

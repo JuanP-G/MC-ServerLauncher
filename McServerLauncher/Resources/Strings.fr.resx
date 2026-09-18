@@ -296,6 +296,10 @@
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Impossible de déterminer le port du serveur (server.properties manquant ?).</value></data>
   <data name="Msg_NeedsJavaPreparing" xml:space="preserve"><value>[Launcher] Ce serveur nécessite Java {0}. Préparation d'un Java compatible...</value></data>
   <data name="Msg_NeedsJavaCurrentPreparing" xml:space="preserve"><value>[Launcher] Ce serveur nécessite Java {0} (celui configuré est Java {1}). Préparation d'un Java compatible...</value></data>
+  <data name="BlueMap_ConsentText" xml:space="preserve"><value>BlueMap doit télécharger des ressources du client officiel de Minecraft — distribuées par Mojang — pour dessiner la carte, et ne le fera pas sans ton accord.&#10;&#10;Acceptes-tu le téléchargement ? L'application modifiera le réglage dans sa configuration et rechargera BlueMap.</value></data>
+  <data name="Msg_BlueMapAccepted" xml:space="preserve"><value>[Launcher] BlueMap : téléchargement accepté. Rechargement de BlueMap…</value></data>
+  <data name="Msg_BlueMapDeclined" xml:space="preserve"><value>[Launcher] BlueMap restera sans carte tant que tu n'auras pas accepté le téléchargement. Je redemanderai au prochain démarrage.</value></data>
+  <data name="Msg_BlueMapCouldNotAcceptFmt" xml:space="preserve"><value>[Launcher] Je n'ai pas trouvé le réglage de téléchargement de BlueMap dans {0}. Mets « accept-download: true » à la main dans ce fichier.</value></data>
   <data name="Msg_JavaConfigured" xml:space="preserve"><value>[Launcher] Java défini pour ce serveur : {0}</value></data>
   <data name="Msg_JavaPrepareFailStart" xml:space="preserve"><value>[Avertissement] Impossible de préparer Java {0} : {1}. Tentative de démarrage quand même.</value></data>
   <data name="Msg_PortBusyNotStarted" xml:space="preserve"><value>[Erreur] Le port {0} est occupé ({1}). Non démarré.</value></data>
