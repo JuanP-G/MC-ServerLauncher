@@ -589,6 +589,17 @@ Tres detalles que escondieron un fallo mucho tiempo cada uno, y cada uno tiene y
   módulos anidados en `fabric-api` y las librerías que llevan otros mods, y se salta los jars
   desactivados, así que ni el escaneo ni la instalación ofrecen una segunda copia de algo ya cargado.
 
+**Las actualizaciones que encuentra una comprobación las guarda el panel, no las filas.** La lista se
+reconstruye desde el disco después de cada actualización, activación o borrado, y las versiones nuevas
+vivían solo en las filas que se tiraban — así que actualizar un mod de cinco hacía desaparecer los
+otros cuatro hasta la siguiente comprobación. Se guardan por la ruta del jar activado (así desactivar
+un mod conserva su actualización) y con el tamaño y la fecha que vio la comprobación (así un jar
+cambiado a mano no recibe la actualización encontrada para el archivo que era), y se descartan si
+cambian el cargador o la versión de Minecraft del servidor, porque todas las respuestas eran para otra
+cosa. **Actualizar todas** las recorre una detrás de otra por el mismo código que el botón de cada
+fila, con la lista desactivada mientras tanto; un jar en uso para la tanda, porque significa que el
+servidor está en marcha y todos los demás fallarían igual.
+
 ## Localización
 
 Todo el texto visible está en `Resources/Strings.resx` (español, idioma neutral/base) más los

@@ -544,6 +544,12 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Msg_UpdatesCheckFailed" xml:space="preserve"><value>Impossible de joindre Modrinth, je ne peux donc pas savoir s'il y a des mises à jour. Réessaie une fois connecté.</value></data>
   <data name="Msg_NoUpdates" xml:space="preserve"><value>Tout est à jour</value></data>
   <data name="Msg_ModUpdated" xml:space="preserve"><value>Mis à jour ✔</value></data>
+  <data name="Mods_UpdateAllFmt" xml:space="preserve"><value>Tout mettre à jour ({0})</value></data>
+  <data name="Msg_ModUpdatedRemainingFmt" xml:space="preserve"><value>Mis à jour ✔ Il en reste {0} à mettre à jour.</value></data>
+  <data name="Msg_UpdatingNofMFmt" xml:space="preserve"><value>Mise à jour {0} sur {1} : {2}…</value></data>
+  <data name="Msg_UpdateAllDoneFmt" xml:space="preserve"><value>{0} mis à jour ✔</value></data>
+  <data name="Msg_UpdateAllPartialFmt" xml:space="preserve"><value>{0} mis à jour ; {1} n'ont pas pu l'être : {2}. Ils restent dans la liste pour réessayer.</value></data>
+  <data name="Msg_UpdateAllStoppedFmt" xml:space="preserve"><value>{0} mis à jour. Arrête le serveur pour mettre à jour le reste : leurs fichiers sont utilisés.</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Impossible de mettre à jour : {0}</value></data>
   <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Arrête le serveur avant de mettre à jour (l'ancien fichier est utilisé).</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Mettre à jour vers {0}</value></data>
