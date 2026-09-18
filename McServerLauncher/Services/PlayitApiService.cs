@@ -295,13 +295,30 @@ public class PlayitApiService
     internal static PlayitTunnel? Match(IEnumerable<PlayitTunnel> tunnels, int localPort, bool udp) =>
         tunnels.FirstOrDefault(t => t.LocalPort == localPort && t.IsUdp == udp);
 
-    private Task<List<PlayitTunnel>> StartTunnelFetch() => Task.Run(async () =>
+    private Task<List<PlayitTunnel>> StartTunnelFetch() => Task.Run(() =>
+        FetchWithKeyAsync(CurrentReadKey(), async key =>
+        {
+            var (_, tunnels) = await GetRunDataAsync(key, CancellationToken.None);
+            return tunnels;
+        }));
+
+    /// <summary>Asks the account for its tunnels, or fails if there is nothing to ask with.</summary>
+    /// <remarks>
+    /// Fails rather than answering with an empty list, and that difference is the point. Without a
+    /// key this used to return no tunnels — which the shared fetch passed on as "the account has
+    /// none" — and <see cref="GetUdpTunnelPortsAsync"/> promises precisely that those two are never
+    /// confused: picking a Bedrock port on the belief that the account holds no UDP tunnels is how
+    /// a new server silently adopts an existing one. A failure here reaches the callers as null,
+    /// which is what "could not ask" is supposed to look like.
+    /// </remarks>
+    internal static async Task<List<PlayitTunnel>> FetchWithKeyAsync(
+        string? key, Func<string, Task<List<PlayitTunnel>>> fetch)
     {
-        var key = CurrentReadKey();
-        if (string.IsNullOrEmpty(key)) return new List<PlayitTunnel>();
-        var (_, tunnels) = await GetRunDataAsync(key, CancellationToken.None);
-        return tunnels;
-    });
+        if (string.IsNullOrEmpty(key))
+            throw new InvalidOperationException("No playit key to ask the account with.");
+
+        return await fetch(key);
+    }
 
     /// <param name="ct">Cancels this caller's wait; the shared fetch outlives it.</param>
     /// <param name="fresh">

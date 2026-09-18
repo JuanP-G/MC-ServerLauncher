@@ -202,6 +202,41 @@ public class PlayitTunnelTests
     }
 
     [Fact]
+    public async Task HavingNoKeyIsNotTheSameAsHavingNoTunnels()
+    {
+        // GetUdpTunnelPortsAsync promises "the account has no UDP tunnels" is never confused with
+        // "I could not ask". Without a key the fetch used to answer with an empty list, which is
+        // exactly that confusion — and a Bedrock port chosen on it can adopt somebody's tunnel.
+        var asked = false;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            PlayitApiService.FetchWithKeyAsync(null, _ =>
+            {
+                asked = true;
+                return Task.FromResult(new List<PlayitApiService.PlayitTunnel>());
+            }));
+
+        Assert.False(asked);
+    }
+
+    [Fact]
+    public async Task WithAKeyTheAccountIsActuallyAsked()
+    {
+        string? usedKey = null;
+        var tunnels = await PlayitApiService.FetchWithKeyAsync("clave", key =>
+        {
+            usedKey = key;
+            return Task.FromResult(new List<PlayitApiService.PlayitTunnel>
+            {
+                new("1", "srv", 19132, "a.example", null, "udp", 51001)
+            });
+        });
+
+        Assert.Equal("clave", usedKey);
+        Assert.Single(tunnels);
+    }
+
+    [Fact]
     public void TheOrdinaryRefreshStillSharesOneFetchBetweenEveryServer()
     {
         // What fresh must not cost: the cache is there so that N servers refreshing every 30
