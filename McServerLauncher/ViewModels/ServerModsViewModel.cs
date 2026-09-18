@@ -591,12 +591,7 @@ public partial class ServerModsViewModel : ObservableObject
         // dependencies at all still turns out to need fabric-api.
         var known = installedIds.Concat(plan.Install.Select(i => i.ProjectId)).ToList();
 
-        // Minus whatever another installed jar already carries — fabric-api's forty-odd modules,
-        // a library bundled inside the mod next to it. Those are not missing, and asking the store
-        // for them either finds nothing or offers a second copy of something already loaded.
-        var providedHere = InstalledMods
-            .SelectMany(m => ContentManifest.Read(m.FilePath).Provides)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var providedHere = ModIdsProvidedIn(Path.Combine(_config.FolderPath, ContentFolder));
 
         var fromJars = await _dependencies.ResolveByModIdAsync(
             InstalledMods.SelectMany(m => ModDependencyService.DeclaredModIds(m.FilePath))
@@ -741,6 +736,26 @@ public partial class ServerModsViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Every id the enabled jars in a folder answer to, the ones carried inside them included.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Whatever is in here is not missing, and asking the store for it either finds nothing —
+    /// fabric-api's forty-odd modules are not projects — or offers a second copy of a library
+    /// that is already loaded because it ships inside the mod next to it.
+    /// </para>
+    /// <para>
+    /// One answer for both places that ask. The scan and the install used to work it out
+    /// differently, and the scan also counted disabled jars as providing things, which the start
+    /// check rightly does not: a <c>.jar.disabled</c> loads nothing.
+    /// </para>
+    /// </remarks>
+    internal static HashSet<string> ModIdsProvidedIn(string folder) =>
+        ContentManifest.ReadFolder(folder)
+            .SelectMany(m => m.Provides)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
     /// Installs the required dependencies of <paramref name="version"/> that are not there yet.
     /// </summary>
     /// <returns>
@@ -781,6 +796,11 @@ public partial class ServerModsViewModel : ObservableObject
 
         for (var round = 0; round < 3 && pending.Count > 0; round++)
         {
+            // Read again each round: what was just downloaded may carry what the next one needs.
+            var providedHere = ModIdsProvidedIn(folder);
+            pending = pending.Where(id => !providedHere.Contains(id)).ToList();
+            if (pending.Count == 0) break;
+
             var extra = await _dependencies.ResolveByModIdAsync(
                 pending, _config.Type, _config.GameVersion, known, ct);
             if (extra.Install.Count == 0) break;
