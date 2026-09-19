@@ -782,4 +782,16 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>„{0}“ ist ein von Windows reservierter Name und taugt nicht als Ordner. Nimm einen anderen.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>Der Name darf nicht auf einen Punkt oder ein Leerzeichen enden: Windows schneidet sie ab, und der Ordner hieße am Ende anders.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper und Purpur starten nicht, wenn der Pfad „{0}“ enthält, und dieses Zeichen steckt in einem übergeordneten Ordner, nicht im Serverordner. Ändere ihn selbst oder wähle einen anderen: Ihn von hier umzubenennen würde alles darin mitbewegen.</value></data>
+  <data name="Cs_Seed" xml:space="preserve"><value>Seed (optional)</value></data>
+  <data name="Cs_SeedPlaceholder" xml:space="preserve"><value>Leer = zufällig</value></data>
+  <data name="Cs_SeedNote" xml:space="preserve"><value>Wird nur beim Erzeugen der Welt verwendet. Sie kann eine Zahl oder ein Text sein. Ein späterer Wechsel von Typ oder Version behält die Welt, daher wird der Seed nicht erneut abgefragt.</value></data>
+  <data name="Msg_SeedIgnoredWorldExists" xml:space="preserve"><value>Dieser Ordner enthält bereits eine erzeugte Welt, daher wird der eingegebene Seed nicht verwendet.</value></data>
+  <data name="Cfg_World" xml:space="preserve"><value>Welt</value></data>
+  <data name="Cfg_Seed" xml:space="preserve"><value>Seed</value></data>
+  <data name="Cfg_SeedMap" xml:space="preserve"><value>Auf der Karte ansehen</value></data>
+  <data name="Cfg_SeedMapTip" xml:space="preserve"><value>Öffnet die Karte dieses Seeds auf Chunkbase, für die Version dieses Servers.</value></data>
+  <data name="Cfg_SeedFromWorld" xml:space="preserve"><value>Der Seed, mit dem diese Welt erzeugt wurde.</value></data>
+  <data name="Cfg_SeedFromConsole" xml:space="preserve"><value>Die, die der Server zuletzt auf den Befehl seed ausgegeben hat. Aus den Weltdateien ließ sie sich nicht lesen.</value></data>
+  <data name="Cfg_SeedPending" xml:space="preserve"><value>Die Welt existiert noch nicht: Dieser Seed wird beim ersten Start zum Erzeugen verwendet.</value></data>
+  <data name="Cfg_SeedUnknownHint" xml:space="preserve"><value>Noch nicht bekannt. Starte den Server einmal, damit er die Welt erzeugt, oder gib seed in der Konsole ein.</value></data>
 </root>

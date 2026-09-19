@@ -49,6 +49,47 @@ public partial class ServerConfigDialog : Window
         PortBox.Value = GetInt(p, "server-port", 25565);
         OnlineModeToggle.IsChecked = GetBool(p, "online-mode", true);
         WhitelistToggle.IsChecked = GetBool(p, "white-list", false);
+
+        ShowSeed();
+    }
+
+    private SeedInfo _seed = SeedInfo.None;
+
+    /// <summary>
+    /// The world's seed, shown and not edited.
+    /// </summary>
+    /// <remarks>
+    /// Read-only on purpose. <c>level-seed</c> only matters when a world is generated, and a server
+    /// here keeps its world through every change of type or version, so a seed box would promise a
+    /// change that never happens. The seed is chosen once, when the server is created.
+    /// </remarks>
+    private void ShowSeed()
+    {
+        _seed = WorldSeed.Read(_config.FolderPath, _config.LastKnownSeed);
+
+        SeedText.Text = _seed.Seed?.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            ?? "—";
+        SeedNote.Text = Localizer.Get(_seed.Source switch
+        {
+            SeedSource.World => "Cfg_SeedFromWorld",
+            SeedSource.Console => "Cfg_SeedFromConsole",
+            SeedSource.Pending => "Cfg_SeedPending",
+            _ => "Cfg_SeedUnknownHint"
+        });
+
+        CopySeedButton.IsEnabled = SeedMapButton.IsEnabled = _seed.Seed is not null;
+    }
+
+    private async void CopySeed_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_seed.Seed is not { } seed || Clipboard is null) return;
+        try { await Clipboard.SetTextAsync(seed.ToString(System.Globalization.CultureInfo.InvariantCulture)); }
+        catch { /* clipboard busy */ }
+    }
+
+    private void SeedMap_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_seed.Seed is { } seed) BrowserLauncher.Open(SeedMapLink.For(seed, _config.GameVersion));
     }
 
     private async void Save_Click(object? sender, RoutedEventArgs e)

@@ -35,6 +35,10 @@
                 </Grid>
                 <TextBlock x:Name="VersionStatus" Margin="2,4,0,0" FontSize="12" Opacity="0.7" Text="{loc:Loc Cs_LoadingVersions}" />
 
+                <TextBlock Text="{loc:Loc Cs_Seed}" Margin="0,12,0,4" />
+                <TextBox x:Name="SeedBox" Watermark="{loc:Loc Cs_SeedPlaceholder}" MaxLength="256" />
+                <TextBlock Margin="2,4,0,0" FontSize="12" Opacity="0.55" TextWrapping="Wrap" Text="{loc:Loc Cs_SeedNote}" />
+
                 <Grid ColumnDefinitions="*,*,*" Margin="0,12,0,0">
                     <StackPanel Grid.Column="0" Margin="0,0,8,0">
                         <TextBlock Text="{loc:Loc Port}" Margin="0,0,0,4" />

@@ -782,4 +782,16 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>« {0} » est un nom réservé par Windows et ne peut pas servir de dossier. Choisis-en un autre.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>Le nom ne peut pas se terminer par un point ni un espace : Windows les supprime et le dossier porterait un autre nom.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper et Purpur ne démarrent pas si le chemin contient « {0} », et ce caractère est dans un dossier supérieur, pas celui du serveur. Change-le toi-même ou choisis un autre dossier parent : le renommer d’ici déplacerait tout ce qu’il contient.</value></data>
+  <data name="Cs_Seed" xml:space="preserve"><value>Graine (facultative)</value></data>
+  <data name="Cs_SeedPlaceholder" xml:space="preserve"><value>Vide = aléatoire</value></data>
+  <data name="Cs_SeedNote" xml:space="preserve"><value>Utilisée seulement à la génération du monde. Elle peut être un nombre ou un texte. Changer ensuite de type ou de version conserve le monde, donc la graine n'est plus demandée.</value></data>
+  <data name="Msg_SeedIgnoredWorldExists" xml:space="preserve"><value>Ce dossier contient déjà un monde généré, la graine saisie ne sera donc pas utilisée.</value></data>
+  <data name="Cfg_World" xml:space="preserve"><value>Monde</value></data>
+  <data name="Cfg_Seed" xml:space="preserve"><value>Graine</value></data>
+  <data name="Cfg_SeedMap" xml:space="preserve"><value>Voir sur la carte</value></data>
+  <data name="Cfg_SeedMapTip" xml:space="preserve"><value>Ouvre la carte de cette graine sur Chunkbase, pour la version de ce serveur.</value></data>
+  <data name="Cfg_SeedFromWorld" xml:space="preserve"><value>La graine avec laquelle ce monde a été généré.</value></data>
+  <data name="Cfg_SeedFromConsole" xml:space="preserve"><value>Celle que le serveur a donnée la dernière fois que la commande seed a été utilisée. Elle n'a pas pu être lue dans les fichiers du monde.</value></data>
+  <data name="Cfg_SeedPending" xml:space="preserve"><value>Le monde n'existe pas encore : cette graine servira à le générer au premier démarrage.</value></data>
+  <data name="Cfg_SeedUnknownHint" xml:space="preserve"><value>Pas encore connue. Démarre le serveur une fois pour qu'il génère le monde, ou tape seed dans la console.</value></data>
 </root>

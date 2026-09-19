@@ -106,6 +106,8 @@ all with buttons.
 - **Players** 👥 — connected (live), operators, whitelist, banned and known players, with OP / kick / ban /
   whitelist actions.
 - **Visual `server.properties` editor** with plain-language explanations.
+- **Seeds** 🌱 — choose one when creating a server, see the world's real seed in its configuration, and open
+  it on Chunkbase's seed map for that server's version in one click.
 - **Sleeps and wakes on its own** 💤 — a server can **stop itself after N minutes with nobody on**, and
   **start itself again when somebody tries to join**. While it sleeps the app answers on the server's port,
   so the server list shows *"Off · join to start it"* and whoever presses Join gets a message while it boots.

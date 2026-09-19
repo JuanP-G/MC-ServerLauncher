@@ -111,6 +111,8 @@ todo con botones.
 - **Jugadores** 👥 — conectados (en vivo), operadores, lista blanca, baneados y conocidos, con acciones OP /
   expulsar / banear / lista blanca.
 - **Configuración visual de `server.properties`** con explicaciones claras.
+- **Semillas** 🌱 — elígela al crear el servidor, mira la semilla real del mundo en su configuración y ábrela
+  en el mapa de Chunkbase, en la versión de ese servidor, con un clic.
 - **Se apaga y se enciende solo** 💤 — un servidor puede **apagarse solo a los N minutos sin nadie dentro** y
   **volver a encenderse cuando alguien intenta entrar**. Mientras duerme, la app responde en el puerto del
   servidor: en la lista se ve *«Apagado · entra para encenderlo»*, y quien pulse Entrar recibe un mensaje

@@ -146,7 +146,20 @@ are no hard-coded machine paths.
 - **`ServerCreationService`** — writes the initial files of a new server: `eula.txt`,
   `run.bat`/`user_jvm_args.txt` and a minimal `server.properties` with the chosen port. (The jar
   download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is
-  picked by `PortService`, all orchestrated by `CreateServerDialog`.)
+  picked by `PortService`, all orchestrated by `CreateServerDialog`.) The seed typed there, if any, is
+  written as `level-seed`, escaped as a Java properties value — a backslash doubled, anything outside ASCII
+  as `\uXXXX` — and is asked for **only at creation**: converting the type or changing the version keeps
+  the world, so there is no seed left to choose.
+- **`WorldSeed`**, **`NbtReader`**, **`SeedMapLink`** — the seed shown in the configuration dialog.
+  `level-seed` is not it: it is read once, at generation, and empty means random. The world keeps the real
+  one, and has kept it in three places — `data/minecraft/world_gen_settings.dat` → `data.seed` from 26.1
+  (a real 26.2 world had none in `level.dat`), `level.dat` → `Data.WorldGenSettings.seed` from 1.16, and
+  `Data.RandomSeed` before. `NbtReader` reads that one long from the gzipped NBT and never throws: a
+  damaged or half-written save answers "not found", with lengths and nesting bounded. Because Minecraft
+  has moved it once, the server's own answer to `seed` is remembered in `ServerConfig.LastKnownSeed` as a
+  fallback. `SeedMapLink` opens Chunkbase on the version that covers the server's, from a table copied
+  from the site; a version newer than the table, or a snapshot, gets no `platform` and the site picks its
+  newest.
 - **`ServerTypeCatalog`** — one row per server type: display name, family (plugins/mods/neither), badge colour and
   its `CrossplayLevel`. The picker, the badges, the mod store, the content folder and the crossplay rules all
   read from it, so adding a type is a row rather than six `switch` statements found by hand.

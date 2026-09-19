@@ -35,6 +35,7 @@ public class ModelNotificationTests
 
         if (type == typeof(bool)) return !(bool)(current ?? false);
         if (type == typeof(int)) return (int)(current ?? 0) + 1;
+        if (type == typeof(long)) return (long)(current ?? 0L) + 1;
         if (type == typeof(string)) return (current as string ?? string.Empty) + "-otro";
         if (type == typeof(ServerType))
             return (ServerType)current! == ServerType.Purpur ? ServerType.Vanilla : ServerType.Purpur;
