@@ -56,6 +56,13 @@ public class AppSettings
     /// </summary>
     public bool CloseToTray { get; set; }
 
+    /// <summary>What the player history keeps, and for how long.</summary>
+    /// <remarks>
+    /// Shared with the copy <see cref="ShallowCopy"/> makes, which is harmless: the settings dialog
+    /// replaces it with a new instance rather than editing it in place.
+    /// </remarks>
+    public PlayerHistorySettings PlayerHistory { get; set; } = new();
+
     /// <summary>
     /// A field-for-field copy.
     /// </summary>

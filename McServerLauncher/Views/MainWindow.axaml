@@ -556,7 +556,17 @@
                         </TabItem>
 
                         <TabItem Header="{loc:Loc Players}">
-                            <ScrollViewer Margin="0,8,0,0" VerticalScrollBarVisibility="Auto">
+                            <Panel>
+                            <!-- A player's profile replaces the lists while it is open, the way a mod's
+                                 page replaces the store in the Mods tab. -->
+                            <ContentControl Content="{Binding History.Details}" IsVisible="{Binding History.HasDetails}">
+                                <ContentControl.DataTemplates>
+                                    <DataTemplate DataType="vm:PlayerDetailsViewModel">
+                                        <views:PlayerDetailsView />
+                                    </DataTemplate>
+                                </ContentControl.DataTemplates>
+                            </ContentControl>
+                            <ScrollViewer Margin="0,8,0,0" VerticalScrollBarVisibility="Auto" IsVisible="{Binding !History.HasDetails}">
                                 <StackPanel>
                                     <Grid Margin="4,0,4,8">
                                         <TextBlock Text="{loc:Loc Players_Manage}" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
@@ -593,6 +603,42 @@
                                                                         CommandParameter="{Binding}" />
                                                             </StackPanel>
                                                         </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Everyone who has been on the server: last seen, and a click for the profile -->
+                                    <Border Classes="card stat">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc History_Players}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding History.Rows.Count, StringFormat=' ({0})'}" />
+                                            </StackPanel>
+                                            <TextBlock Classes="statLabel" TextWrapping="Wrap" Text="{loc:Loc History_PlayersHint}" />
+                                            <TextBlock Classes="statLabel" TextWrapping="Wrap" Text="{loc:Loc History_Importing}"
+                                                       IsVisible="{Binding History.IsImporting}" />
+                                            <TextBlock Classes="statLabel" TextWrapping="Wrap" Text="{loc:Loc History_DisabledHint}"
+                                                       Foreground="{StaticResource SemanticWarn}" IsVisible="{Binding History.IsDisabled}" />
+                                            <TextBox Margin="0,8,0,4" Text="{Binding History.Search}" Watermark="{loc:Loc History_Search}" />
+                                            <ItemsControl ItemsSource="{Binding History.Rows}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                                Background="Transparent" Padding="6,5" Margin="0,1"
+                                                                ToolTip.Tip="{Binding LastSeenTip}"
+                                                                Command="{Binding DataContext.History.OpenCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                CommandParameter="{Binding}">
+                                                            <Grid ColumnDefinitions="16,*,Auto,Auto">
+                                                                <Ellipse Grid.Column="0" Width="8" Height="8" HorizontalAlignment="Left"
+                                                                         Fill="{StaticResource SemanticOk}" IsVisible="{Binding IsOnline}" />
+                                                                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" />
+                                                                <TextBlock Grid.Column="2" Text="{Binding LastSeenText}" Opacity="0.7"
+                                                                           VerticalAlignment="Center" Margin="12,0,8,0" />
+                                                                <ic:SymbolIcon Grid.Column="3" Symbol="ChevronRight" Opacity="0.5" />
+                                                            </Grid>
+                                                        </Button>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
@@ -680,24 +726,9 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <!-- Known -->
-                                    <Border Classes="card stat">
-                                        <StackPanel>
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock FontWeight="SemiBold" Text="{loc:Loc Players_Known}" />
-                                                <TextBlock FontWeight="SemiBold" Text="{Binding KnownPlayers.Count, StringFormat=' ({0})'}" />
-                                            </StackPanel>
-                                            <ItemsControl ItemsSource="{Binding KnownPlayers}" Margin="0,6,0,0">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding}" Margin="0,3" />
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
-                                    </Border>
                                 </StackPanel>
                             </ScrollViewer>
+                            </Panel>
                         </TabItem>
 
                         <TabItem Header="{Binding Mods.ContentTabTitle}" IsVisible="{Binding IsModded}">

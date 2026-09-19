@@ -145,6 +145,22 @@ mundo. No hay rutas fijas del equipo en el código.
   localiza el PID que escucha en un puerto para liberar un servidor colgado.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — leen/escriben los
   archivos del servidor (`server.properties`, `ops.json`, `banned-players.json`, `whitelist.json`).
+- **`PlayerEventParser`**, **`PlayerHistoryStore`**, **`PlayerLogImporter`**, **`PlayerStatsReader`** — el
+  historial de jugadores. Un único lector convierte una línea del log en algo que hizo un jugador, hecho con
+  los detectores de la propia consola (`NameBefore`, `ChatOf`, `DeathMessageDetector`), y sirve tanto a la
+  consola en directo como a la importación, así que no pueden discrepar. Nunca lee la línea de login, que es
+  la que lleva la IP, así que el historial no puede guardarla — `AnIpAddressNeverReachesTheDisk` lo comprueba
+  en los bytes del disco. Se guarda en `%APPDATA%\McServerLauncher\players\<idServidor>\`, fuera de la
+  carpeta del servidor para no viajar con el mundo ni llenar sus copias: `index.json` con un resumen por
+  jugador, y `events/<nombre>.jsonl`, al que solo se añade y que se compacta de una vez cuando pasa el límite
+  en una cuarta parte. Los límites son `PlayerHistorySettings` (acotados, porque settings.json se puede
+  editar); al arrancar se borran los eventos viejos, los jugadores que hace mucho que no vienen y el historial
+  de servidores quitados. El almacén solo se abre cuando algo lo necesita, nunca al construir un view model,
+  así que las pruebas no pueden escribir en los datos del usuario. La importación va una vez por servidor,
+  fecha cada línea por su archivo (un `.log.gz` por su nombre, `latest.log` por su última escritura menos las
+  medianoches que cruza), no toca `latest.log` con el servidor en marcha, y solo cierra las sesiones que dejan
+  abiertas sus propios archivos. Las estadísticas se leen de `<mundo>/stats/` o, desde la 26.1,
+  `<mundo>/players/stats/`, al abrir una ficha.
 - **`ServerCreationService`** — escribe los archivos iniciales de un servidor nuevo: `eula.txt`,
   `run.bat`/`user_jvm_args.txt` y el `server.properties` mínimo con el puerto elegido. (La descarga
   del jar la hacen `MinecraftVersionService`/`ModLoaderService`/`PaperService` y el puerto lo elige

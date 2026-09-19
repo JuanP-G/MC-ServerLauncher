@@ -256,6 +256,9 @@ public partial class ServerViewModel : ObservableObject
 
     public ServerBackupsViewModel Backups { get; }
 
+    /// <summary>Everyone who has been on this server, and each one's profile.</summary>
+    public PlayerHistoryViewModel History { get; }
+
     public bool IsModded => Config.Type != ServerType.Vanilla;
 
     /// <summary>Server type shown as a badge (Vanilla/Fabric/Forge, and any future type).</summary>
@@ -387,6 +390,9 @@ public partial class ServerViewModel : ObservableObject
         _playitTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _playitTimer.Tick += OnPlayitTimerTick;
 
+        // Before RefreshInfo, which refreshes the player lists and with them this.
+        History = new PlayerHistoryViewModel(this);
+
         RefreshPort();
         RefreshInfo();
         Mods = new ServerModsViewModel(config);
@@ -482,6 +488,9 @@ public partial class ServerViewModel : ObservableObject
         // already stopped and fires no state change, so waiting for one would mean wake-on-demand
         // never starting until you had run and stopped a server by hand first.
         StartWakeListener();
+
+        // Prunes and, the first time ever, imports the server's old logs — in the background.
+        History.Start();
     }
 
     // --- Tray-aware polling (EFI-2) ---
@@ -920,6 +929,7 @@ public partial class ServerViewModel : ObservableObject
             RamSeries = null;
             ConnectedPlayers.Clear();
             SnapshotOnline();
+            History.OnServerStopped();
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
             StartWakeListener();
@@ -975,6 +985,9 @@ public partial class ServerViewModel : ObservableObject
                 Config.LastKnownSeed = seed;
                 ConfigChanged?.Invoke();
             });
+
+        // Here, on the output's own thread, so writing the history to disk never holds up the UI.
+        if (source == ConsoleSource.Stdout) History.OnServerLine(line, _onlineNames);
 
         // Once per run: BlueMap repeats itself on every start, and so would the question.
         if (!_blueMapAsked && BlueMapConsent.IsAskingForConsent(line))
@@ -1137,6 +1150,7 @@ public partial class ServerViewModel : ObservableObject
         {
             if (!ConnectedPlayers.Contains(joined)) ConnectedPlayers.Add(joined);
             SnapshotOnline();
+            History.Refresh();
             UpdatePlayerCount();
             NotifyIf(NotificationKind.PlayerJoined, string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
             return;
@@ -1147,6 +1161,7 @@ public partial class ServerViewModel : ObservableObject
         {
             ConnectedPlayers.Remove(left);
             SnapshotOnline();
+            History.Refresh();
             UpdatePlayerCount();
             NotifyIf(NotificationKind.PlayerLeft, string.Format(Localizer.Get("Notif_PlayerLeftFmt"), left));
             return;
@@ -1865,6 +1880,7 @@ public partial class ServerViewModel : ObservableObject
         ReplaceAll(BannedPlayers, _players.ReadBanned(Config.FolderPath));
         ReplaceAll(KnownPlayers, _players.ReadKnown(Config.FolderPath));
         RefreshWhitelist();
+        History.Refresh();
     }
 
     private static void ReplaceAll(ObservableCollection<string> target, IEnumerable<string> items)
