@@ -192,6 +192,15 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
 - **Los recursos incrustados con puntos en el nombre necesitan `WithCulture=false` y un
   `LogicalName`.** MSBuild deduce una cultura de los segmentos del nombre, `sh` es una de verdad, e
   `install-mods-unix.sh.in` acabó en silencio en un ensamblado satélite con la compilación en verde.
+- **Lo que tiene que sobrevivir a una reconstrucción no puede vivir en lo que se reconstruye.** La
+  pestaña de Mods reconstruye sus filas desde el disco después de cada actualización, activación y
+  borrado, y las actualizaciones que encontraba una comprobación vivían en las filas — así que
+  actualizar un mod hacía desaparecer los botones de todos los demás. Ese estado va en el view model y
+  se le devuelve a cada fila nueva.
+- **Una opción de la JVM que añade la app va condicionada a la versión de Java.** Una opción que la
+  JVM no reconoce le impide arrancar, que es peor que cualquier aviso que se quisiera callar. Ver
+  `ServerProcessManager.ImpliedJvmFlags`, y nunca por encima de lo que el usuario puso en sus
+  argumentos extra.
 - **Scripts escritos para jugadores.** La lógica en una plantilla `.in`, cada línea visible en los
   .resx, y cada marcador sustituido por un mensaje entero y terminado — nunca una cadena de formato.
   Finales de línea por archivo (`.sh` LF, `.bat` CRLF), sin BOM en ningún sitio, y todo `choice` de

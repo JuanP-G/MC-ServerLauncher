@@ -181,6 +181,13 @@ Each of these is here because breaking it shipped a bug that no test caught at t
 - **Embedded resources with dotted names need `WithCulture=false` and a `LogicalName`.** MSBuild
   infers a culture from the segments of a file name, `sh` is a real one, and
   `install-mods-unix.sh.in` silently went to a satellite assembly while the build stayed green.
+- **State that must survive a rebuild cannot live in what gets rebuilt.** The Mods tab rebuilds its
+  rows from disk after every update, toggle and delete, and the updates a check found lived on the
+  rows — so updating one mod made the buttons on all the others vanish. Keep such state in the view
+  model and hand it back to each new row.
+- **A JVM option the app adds is gated by the Java version.** An option the JVM does not recognise
+  stops it from starting at all, which is worse than any warning it was meant to silence. See
+  `ServerProcessManager.ImpliedJvmFlags`, and never override what the user put in their extra arguments.
 - **Scripts written for players.** Logic in a `.in` template, every visible line in the .resx files,
   and a placeholder always replaced by a whole finished message — never a format string. Line
   endings are per file (`.sh` LF, `.bat` CRLF), no BOM anywhere, and every `choice` in a `.bat`
