@@ -919,6 +919,7 @@ public partial class ServerViewModel : ObservableObject
             CpuSeries = null;
             RamSeries = null;
             ConnectedPlayers.Clear();
+            SnapshotOnline();
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
             StartWakeListener();
@@ -926,6 +927,7 @@ public partial class ServerViewModel : ObservableObject
         else if (state == ServerState.Starting)
         {
             ConnectedPlayers.Clear();
+            SnapshotOnline();
             UpdatePlayerCount();
         }
 
@@ -960,7 +962,7 @@ public partial class ServerViewModel : ObservableObject
         // Only standard output's own previous line: standard error arrives on another thread, and
         // a JVM warning landing between two lines of the mod list must not decide what they are.
         var kind = ConsoleLineClassifier.Classify(line, source,
-            source == ConsoleSource.Stdout ? _lastStdoutKind : null);
+            source == ConsoleSource.Stdout ? _lastStdoutKind : null, _onlineNames);
         if (source == ConsoleSource.Stdout) _lastStdoutKind = kind;
 
         OnConsoleLine(line, kind);
@@ -1105,6 +1107,19 @@ public partial class ServerViewModel : ObservableObject
         OnConsoleLine(Localizer.Get("Msg_CrossplayModdedKick"));
     }
 
+    /// <summary>
+    /// Who is connected, as a copy the console classifier can read from the process's thread.
+    /// </summary>
+    /// <remarks>
+    /// The classifier runs where the line arrives, off the UI thread, and <see cref="ConnectedPlayers"/>
+    /// belongs to the UI thread. It only needs the names to tell a player's <c>/say</c> from a plugin
+    /// logging under its own name, so an immutable copy swapped in on every join and leave is enough.
+    /// </remarks>
+    private volatile IReadOnlySet<string> _onlineNames = new HashSet<string>();
+
+    private void SnapshotOnline() =>
+        _onlineNames = new HashSet<string>(ConnectedPlayers, StringComparer.OrdinalIgnoreCase);
+
     // Live connected players, read from the join/leave messages in the console.
     private void TrackPlayers(string line)
     {
@@ -1112,6 +1127,7 @@ public partial class ServerViewModel : ObservableObject
         if (joined is not null)
         {
             if (!ConnectedPlayers.Contains(joined)) ConnectedPlayers.Add(joined);
+            SnapshotOnline();
             UpdatePlayerCount();
             NotifyIf(NotificationKind.PlayerJoined, string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
             return;
@@ -1121,6 +1137,7 @@ public partial class ServerViewModel : ObservableObject
         if (left is not null)
         {
             ConnectedPlayers.Remove(left);
+            SnapshotOnline();
             UpdatePlayerCount();
             NotifyIf(NotificationKind.PlayerLeft, string.Format(Localizer.Get("Notif_PlayerLeftFmt"), left));
             return;
@@ -1146,24 +1163,6 @@ public partial class ServerViewModel : ObservableObject
         var entry = NotificationCatalog.For(kind);
         ToastService.Shared.Notify(Name, message, entry.Level, entry.Emoji,
             NotificationPreferences.EffectiveFor(Config));
-    }
-
-    /// <summary>
-    /// Extracts the player name right before a marker (e.g. " joined the game"), but only from a
-    /// real server log entry: the name must be the ONLY text between the log prefix
-    /// ("[…] [Server thread/INFO]: ", or Paper's "[… INFO]: ") and the marker, and must be a valid
-    /// Minecraft name (letters/digits/underscore, 1-16 chars). A chat line quoting the phrase
-    /// ("&lt;Bob&gt; Alice joined the game") keeps the sender tag in between, so it is rejected
-    /// instead of faking a join/leave.
-    /// </summary>
-    private static string? NameBefore(string line, string marker)
-    {
-        var idx = line.IndexOf(marker, StringComparison.Ordinal);
-        if (idx <= 0) return null;
-        var head = line[..idx];
-        var colon = head.LastIndexOf(": ", StringComparison.Ordinal);
-        var name = colon >= 0 ? head[(colon + 2)..] : head;
-        return PlayerNameRegex().IsMatch(name) ? name : null;
     }
 
     [System.Text.RegularExpressions.GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]

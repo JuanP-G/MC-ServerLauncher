@@ -31,7 +31,13 @@ public static partial class ConsoleLineClassifier
     /// line of that entry — a list, a multi-line warning, an exception message — and it belongs to
     /// the same entry rather than being judged on its own.
     /// </param>
-    public static ConsoleLineKind Classify(string text, ConsoleSource source, ConsoleLineKind? previous = null)
+    /// <param name="online">
+    /// Who is connected right now, when the caller knows. Only needed to tell a player's
+    /// <c>/say</c> (<c>[Alice] …</c>) from a plugin logging under its own name (<c>[LuckPerms] …</c>);
+    /// without it those stay ordinary output. See <see cref="ChatOf"/>.
+    /// </param>
+    public static ConsoleLineKind Classify(string text, ConsoleSource source, ConsoleLineKind? previous = null,
+        IReadOnlySet<string>? online = null)
     {
         if (source == ConsoleSource.Launcher) return ConsoleLineKind.Launcher;
 
@@ -67,7 +73,7 @@ public static partial class ConsoleLineClassifier
         // player check on its own — the name they find is "<Bob> Alice", which is not a name. Said
         // out loud because a comment claiming the order protects it would send the next person
         // looking in the wrong place the day it stops working.
-        if (IsChat(text)) return ConsoleLineKind.Chat;
+        if (ChatOf(text, online) is not null) return ConsoleLineKind.Chat;
         if (IsPlayerEvent(text)) return ConsoleLineKind.Players;
 
         return ConsoleLineKind.Info;
@@ -112,16 +118,72 @@ public static partial class ConsoleLineClassifier
     /// can contain <em>any</em> text at all, including a perfect copy of a join message or a stack
     /// trace, and quoting something must never make it look like that something happened.
     /// </remarks>
-    internal static bool IsChat(string text)
+    internal static bool IsChat(string text) => ChatOf(text, online: null) is not null;
+
+    /// <summary>Who said what, if the line is a message to the other players; null otherwise.</summary>
+    /// <remarks>
+    /// <para>
+    /// Every shape the server logs a message in:
+    /// <c>&lt;Bob&gt; hola</c> (chat), <c>[Not Secure] &lt;Bob&gt; hola</c> (chat without a signature,
+    /// 1.19.1 onwards), <c>[Server] hola</c> and <c>[Rcon] hola</c> (<c>say</c> from the console or
+    /// RCON), <c>[@] hola</c> (a command block), <c>[Alice] hola</c> (a player's <c>/say</c>) and
+    /// <c>* Alice saluda</c> (<c>/me</c>).
+    /// </para>
+    /// <para>
+    /// The last two only when <paramref name="online"/> has that player in it. On Paper every
+    /// plugin logs as <c>[PluginName] …</c>, and a plugin name is a perfectly good player name:
+    /// accepting any bracketed name would paint half of a Paper start as chat.
+    /// </para>
+    /// </remarks>
+    internal static (string Sender, string Message)? ChatOf(string text, IReadOnlySet<string>? online)
     {
         var message = MessageBody(text);
-        if (message is null || message.Length < 3 || message[0] != '<') return false;
+        if (message is null) return null;
 
-        var close = message.IndexOf('>');
-        if (close <= 1) return false;
+        if (message.StartsWith(NotSecure, StringComparison.Ordinal))
+            message = message[NotSecure.Length..];
 
-        return PlayerName().IsMatch(message[1..close]);
+        if (message.Length < 3) return null;
+
+        if (message[0] == '<')
+        {
+            var close = message.IndexOf('>');
+            if (close <= 1) return null;
+            var name = message[1..close];
+            return PlayerName().IsMatch(name) ? (name, message[(close + 1)..].TrimStart()) : null;
+        }
+
+        if (message[0] == '[')
+        {
+            var close = message.IndexOf("] ", StringComparison.Ordinal);
+            if (close <= 1) return null;
+            var name = message[1..close];
+            var said = message[(close + 2)..];
+            if (ServerSenders.Contains(name)) return (name, said);
+            return IsOnline(name, online) ? (name, said) : null;
+        }
+
+        if (message.StartsWith("* ", StringComparison.Ordinal))
+        {
+            var rest = message[2..];
+            var space = rest.IndexOf(' ');
+            if (space <= 0) return null;
+            var name = rest[..space];
+            var action = rest[(space + 1)..];
+            if (ServerSenders.Contains(name)) return (name, action);
+            return IsOnline(name, online) ? (name, action) : null;
+        }
+
+        return null;
     }
+
+    private const string NotSecure = "[Not Secure] ";
+
+    /// <summary>The senders the server itself uses: console, RCON, and a command block.</summary>
+    private static readonly HashSet<string> ServerSenders = new(StringComparer.Ordinal) { "Server", "Rcon", "@" };
+
+    private static bool IsOnline(string name, IReadOnlySet<string>? online) =>
+        online is not null && PlayerName().IsMatch(name) && online.Contains(name);
 
     /// <summary>Whether somebody joined, left or died.</summary>
     internal static bool IsPlayerEvent(string text) =>
