@@ -148,7 +148,20 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`ServerCreationService`** — escribe los archivos iniciales de un servidor nuevo: `eula.txt`,
   `run.bat`/`user_jvm_args.txt` y el `server.properties` mínimo con el puerto elegido. (La descarga
   del jar la hacen `MinecraftVersionService`/`ModLoaderService`/`PaperService` y el puerto lo elige
-  `PortService`, todo orquestado por `CreateServerDialog`.)
+  `PortService`, todo orquestado por `CreateServerDialog`.) La semilla que se escriba ahí, si se escribe, va
+  como `level-seed`, escapada como valor de un properties de Java —la barra invertida duplicada, lo que no es
+  ASCII como `\uXXXX`— y **solo se pide al crear**: convertir el tipo o cambiar la versión conserva el
+  mundo, así que no queda semilla que elegir.
+- **`WorldSeed`**, **`NbtReader`**, **`SeedMapLink`** — la semilla que enseña el diálogo de configuración.
+  `level-seed` no lo es: se lee una vez, al generar, y vacío significa aleatoria. La de verdad la guarda el
+  mundo, y la ha guardado en tres sitios: `data/minecraft/world_gen_settings.dat` → `data.seed` desde la
+  26.1 (un mundo real de la 26.2 no la tenía en `level.dat`), `level.dat` → `Data.WorldGenSettings.seed`
+  desde la 1.16, y `Data.RandomSeed` antes. `NbtReader` lee ese único número del NBT comprimido y no lanza
+  nunca: una partida dañada o a medio escribir responde «no está», con longitudes y anidamiento acotados.
+  Como Minecraft ya la cambió de sitio una vez, la respuesta del servidor al comando `seed` se recuerda en
+  `ServerConfig.LastKnownSeed` como respaldo. `SeedMapLink` abre Chunkbase en la versión que cubre la del
+  servidor, con una tabla copiada de la web; una versión más nueva que la tabla, o una snapshot, va sin
+  `platform` y la web elige la suya más reciente.
 - **`ServerTypeCatalog`** — una fila por tipo de servidor: nombre, familia (plugins/mods/ninguna), color de la
   insignia y su `CrossplayLevel`. El selector, las insignias, la tienda de mods, la carpeta de contenido y las reglas
   de crossplay leen de ahí, así que añadir un tipo es una fila y no seis `switch` repartidos.

@@ -782,4 +782,16 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” is a name Windows reserves and cannot be used for a folder. Pick another.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>The name cannot end in a dot or a space: Windows trims them and the folder would end up called something else.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper and Purpur will not start when the path contains “{0}”, and that character is in a folder above, not the server's own. Change it yourself or pick a different parent folder: renaming it from here would move everything else inside it.</value></data>
+  <data name="Cs_Seed" xml:space="preserve"><value>Seed (optional)</value></data>
+  <data name="Cs_SeedPlaceholder" xml:space="preserve"><value>Empty = random</value></data>
+  <data name="Cs_SeedNote" xml:space="preserve"><value>Only used when the world is generated. It can be a number or text. Changing the type or version later keeps the world, so the seed is not asked for again.</value></data>
+  <data name="Msg_SeedIgnoredWorldExists" xml:space="preserve"><value>This folder already has a generated world, so the seed you typed will not be used.</value></data>
+  <data name="Cfg_World" xml:space="preserve"><value>World</value></data>
+  <data name="Cfg_Seed" xml:space="preserve"><value>Seed</value></data>
+  <data name="Cfg_SeedMap" xml:space="preserve"><value>View on the map</value></data>
+  <data name="Cfg_SeedMapTip" xml:space="preserve"><value>Opens this seed's map on Chunkbase, for this server's version.</value></data>
+  <data name="Cfg_SeedFromWorld" xml:space="preserve"><value>The seed this world was generated with.</value></data>
+  <data name="Cfg_SeedFromConsole" xml:space="preserve"><value>The one the server gave the last time the seed command was used. It could not be read from the world's files.</value></data>
+  <data name="Cfg_SeedPending" xml:space="preserve"><value>The world does not exist yet: this seed will be used to generate it on the first start.</value></data>
+  <data name="Cfg_SeedUnknownHint" xml:space="preserve"><value>Not known yet. Start the server once so it generates the world, or type seed in the console.</value></data>
 </root>

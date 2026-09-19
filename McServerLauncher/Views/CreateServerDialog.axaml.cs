@@ -257,7 +257,10 @@ public partial class CreateServerDialog : Window
             // Modern Forge ships its own run.bat (no single jar); only write ours when there is a jar.
             if (!string.IsNullOrEmpty(jarName))
                 _creation.WriteRunBat(folder, minGb, maxGb, jarName, javaPath);
-            _creation.WriteInitialProperties(folder, port, $"{name} - MC Server Launcher");
+            var seed = SeedBox.Text?.Trim();
+            if (!string.IsNullOrEmpty(seed) && ServerCreationService.WorldExists(folder))
+                AppendLog(Localizer.Get("Msg_SeedIgnoredWorldExists"));
+            _creation.WriteInitialProperties(folder, port, $"{name} - MC Server Launcher", seed);
 
             ResultConfig = new ServerConfig
             {

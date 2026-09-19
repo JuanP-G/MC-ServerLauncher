@@ -37,7 +37,7 @@ public class ServerConfigFormatTests : IDisposable
         "JavaPath", "MinRamGb", "MaxRamGb", "ExtraJvmArgs", "PlayitEnabled", "TunnelAddress",
         "BackupsEnabled", "BackupRetention", "IdleShutdownMinutes", "WakeOnDemand", "CrossplayEnabled",
         "BedrockModContentEnabled", "MultiVersionEnabled", "BedrockPort", "UseCustomNotifications",
-        "Notifications"
+        "Notifications", "LastKnownSeed"
     };
 
     private static readonly string[] ExpectedNotificationKeys =

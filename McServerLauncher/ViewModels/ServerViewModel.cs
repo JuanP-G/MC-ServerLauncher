@@ -967,6 +967,15 @@ public partial class ServerViewModel : ObservableObject
 
         OnConsoleLine(line, kind);
 
+        // The server's own answer to "seed": remembered in case the world's files cannot be read.
+        if (source == ConsoleSource.Stdout && WorldSeed.FromConsoleLine(line) is { } seed)
+            RunOnUi(() =>
+            {
+                if (Config.LastKnownSeed == seed) return;
+                Config.LastKnownSeed = seed;
+                ConfigChanged?.Invoke();
+            });
+
         // Once per run: BlueMap repeats itself on every start, and so would the question.
         if (!_blueMapAsked && BlueMapConsent.IsAskingForConsent(line))
         {

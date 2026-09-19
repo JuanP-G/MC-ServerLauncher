@@ -828,4 +828,16 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>«{0}» es un nombre reservado por Windows y no se puede usar para una carpeta. Elige otro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>El nombre no puede acabar en punto ni en espacio: Windows los recorta y la carpeta acabaría llamándose de otra forma.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper y Purpur no arrancan si la ruta contiene «{0}», y ese carácter está en una carpeta superior, no en la del servidor. Cámbialo tú o elige otra carpeta padre: renombrarla desde aquí movería todo lo demás que hay dentro.</value></data>
+  <data name="Cs_Seed" xml:space="preserve"><value>Semilla (opcional)</value></data>
+  <data name="Cs_SeedPlaceholder" xml:space="preserve"><value>Vacío = aleatoria</value></data>
+  <data name="Cs_SeedNote" xml:space="preserve"><value>Solo se usa al generar el mundo. Puede ser un número o un texto. Cambiar después de tipo o de versión conserva el mundo, así que la semilla no vuelve a pedirse.</value></data>
+  <data name="Msg_SeedIgnoredWorldExists" xml:space="preserve"><value>Esta carpeta ya tiene un mundo generado, así que la semilla escrita no se va a usar.</value></data>
+  <data name="Cfg_World" xml:space="preserve"><value>Mundo</value></data>
+  <data name="Cfg_Seed" xml:space="preserve"><value>Semilla</value></data>
+  <data name="Cfg_SeedMap" xml:space="preserve"><value>Ver en el mapa</value></data>
+  <data name="Cfg_SeedMapTip" xml:space="preserve"><value>Abre el mapa de esta semilla en Chunkbase, en la versión de este servidor.</value></data>
+  <data name="Cfg_SeedFromWorld" xml:space="preserve"><value>La semilla con la que se generó este mundo.</value></data>
+  <data name="Cfg_SeedFromConsole" xml:space="preserve"><value>La que dio el servidor la última vez que se usó el comando seed. No se pudo leer de los archivos del mundo.</value></data>
+  <data name="Cfg_SeedPending" xml:space="preserve"><value>El mundo aún no existe: se usará esta semilla al generarlo en el primer arranque.</value></data>
+  <data name="Cfg_SeedUnknownHint" xml:space="preserve"><value>Todavía no se conoce. Arranca el servidor una vez para que genere el mundo, o escribe seed en la consola.</value></data>
 </root>

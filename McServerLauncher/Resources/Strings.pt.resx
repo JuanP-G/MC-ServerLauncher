@@ -782,4 +782,16 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” é um nome reservado pelo Windows e não pode ser usado numa pasta. Escolhe outro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>O nome não pode acabar em ponto nem em espaço: o Windows corta-os e a pasta acabaria com outro nome.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>O Paper e o Purpur não arrancam se o caminho tiver “{0}”, e esse carácter está numa pasta acima, não na do servidor. Muda-o tu ou escolhe outra pasta: mudar-lhe o nome daqui moveria tudo o resto lá dentro.</value></data>
+  <data name="Cs_Seed" xml:space="preserve"><value>Semente (opcional)</value></data>
+  <data name="Cs_SeedPlaceholder" xml:space="preserve"><value>Vazio = aleatória</value></data>
+  <data name="Cs_SeedNote" xml:space="preserve"><value>Só é usada ao gerar o mundo. Pode ser um número ou um texto. Mudar depois de tipo ou de versão mantém o mundo, por isso a semente não volta a ser pedida.</value></data>
+  <data name="Msg_SeedIgnoredWorldExists" xml:space="preserve"><value>Esta pasta já tem um mundo gerado, por isso a semente escrita não vai ser usada.</value></data>
+  <data name="Cfg_World" xml:space="preserve"><value>Mundo</value></data>
+  <data name="Cfg_Seed" xml:space="preserve"><value>Semente</value></data>
+  <data name="Cfg_SeedMap" xml:space="preserve"><value>Ver no mapa</value></data>
+  <data name="Cfg_SeedMapTip" xml:space="preserve"><value>Abre o mapa desta semente no Chunkbase, na versão deste servidor.</value></data>
+  <data name="Cfg_SeedFromWorld" xml:space="preserve"><value>A semente com que este mundo foi gerado.</value></data>
+  <data name="Cfg_SeedFromConsole" xml:space="preserve"><value>A que o servidor deu da última vez que se usou o comando seed. Não foi possível lê-la dos ficheiros do mundo.</value></data>
+  <data name="Cfg_SeedPending" xml:space="preserve"><value>O mundo ainda não existe: esta semente vai ser usada para o gerar no primeiro arranque.</value></data>
+  <data name="Cfg_SeedUnknownHint" xml:space="preserve"><value>Ainda não se conhece. Arranca o servidor uma vez para gerar o mundo, ou escreve seed na consola.</value></data>
 </root>

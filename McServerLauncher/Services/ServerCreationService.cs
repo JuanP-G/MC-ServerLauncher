@@ -40,16 +40,43 @@ public class ServerCreationService
     /// Writes a minimal server.properties with the port and MOTD if it doesn't exist yet.
     /// Minecraft fills in the rest of the default properties on startup.
     /// </summary>
-    public void WriteInitialProperties(string folder, int port, string motd)
+    /// <param name="folder">The new server's folder.</param>
+    /// <param name="port">The port it listens on.</param>
+    /// <param name="motd">The message the server list shows.</param>
+    /// <param name="seed">
+    /// The seed typed when creating it, or null or blank for a random one. Written as
+    /// <c>level-seed</c>, which the server reads once, when it generates the world.
+    /// </param>
+    public void WriteInitialProperties(string folder, int port, string motd, string? seed = null)
     {
         var path = Path.Combine(folder, "server.properties");
+        var hasSeed = !string.IsNullOrWhiteSpace(seed);
+
         if (File.Exists(path))
+        {
+            // A folder that already had a server keeps its file. The seed is still worth writing
+            // when there is no world yet to have been generated with another one.
+            if (hasSeed && !WorldExists(folder))
+                new ServerPropertiesService().Update(path, new Dictionary<string, string>
+                {
+                    ["level-seed"] = WorldSeed.EscapeForProperties(seed!)
+                });
             return;
+        }
 
         // The MOTD derives from the user-typed server name: sanitize it so a pasted value with
         // line breaks can't inject extra keys into the file (see ServerPropertiesService).
         var safeMotd = ServerPropertiesService.SanitizeValue(motd);
         var content = $"#Minecraft server properties\r\nserver-port={port}\r\nmotd={safeMotd}\r\n";
+        if (hasSeed) content += $"level-seed={WorldSeed.EscapeForProperties(seed!)}\r\n";
         File.WriteAllText(path, content);
+    }
+
+    /// <summary>Whether the folder already holds a generated world, which a seed can no longer change.</summary>
+    public static bool WorldExists(string folder)
+    {
+        var props = new ServerPropertiesService().Read(Path.Combine(folder, "server.properties"));
+        var level = props.TryGetValue("level-name", out var n) && n.Length > 0 ? n : "world";
+        return File.Exists(Path.Combine(folder, level, "level.dat"));
     }
 }

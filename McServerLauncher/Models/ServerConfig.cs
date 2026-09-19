@@ -219,6 +219,19 @@ public partial class ServerConfig : ObservableObject
     [ObservableProperty]
     private NotificationSettings? _notifications;
 
+    // --- World ---
+
+    /// <summary>
+    /// The seed the server last printed when asked with <c>seed</c>. Null until it has been asked.
+    /// </summary>
+    /// <remarks>
+    /// A fallback, not the source: the seed is read from the world's own files. It is kept because
+    /// Minecraft has already moved it once (26.1 took it out of level.dat), and the answer the
+    /// server gives to <c>seed</c> is the one thing that cannot go stale that way.
+    /// </remarks>
+    [ObservableProperty]
+    private long? _lastKnownSeed;
+
     /// <summary>Full path to the .jar combining folder + jar name.</summary>
     [JsonIgnore]
     public string JarFullPath => Path.Combine(FolderPath, JarFile);

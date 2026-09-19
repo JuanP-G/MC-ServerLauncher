@@ -189,7 +189,9 @@ public static class ServerConfigEffects
         Unshown(nameof(ServerConfig.UseCustomNotifications),
             "Read at the moment a notification would be raised."),
         Unshown(nameof(ServerConfig.Notifications),
-            "Read at the moment a notification would be raised.")
+            "Read at the moment a notification would be raised."),
+        Unshown(nameof(ServerConfig.LastKnownSeed),
+            "Read when the configuration dialog opens, which is the only place a seed is shown.")
     };
 
     private static readonly Dictionary<string, Row> ByProperty =
