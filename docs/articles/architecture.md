@@ -203,8 +203,22 @@ are no hard-coded machine paths.
   in. The source outranks the text: the app's own messages are tagged where they are raised, because their text
   is localized — the `[Launcher]`, `[Error]` and `[Players]` prefixes live *inside* the resx values — so a
   classifier keyed on them would work in Spanish and quietly stop working in German. `stderr` arrives tagged
-  from `ServerProcessManager`, which used to merge it with standard output in one handler. Only `stdout` is
-  read: vanilla's bracket (level in the **second** one, not the first) and Paper's.
+  from `ServerProcessManager`, which used to merge it with standard output in one handler, and is red except
+  for the JVM's own `WARNING:` lines, whose format Java fixes. Only `stdout` is read: vanilla's bracket (level
+  in the **second** one, not the first) and Paper's. **A line with no log prefix belongs to the entry above
+  it** — Fabric's list of mods, the lines under a multi-line warning, the message of an exception — so it
+  takes that entry's level rather than being judged alone; the view model passes the previous stdout line's
+  kind in. Stack frames are recognised by their shape (`at x.y(File:1)`, `Caused by:`, `... 12 more`), never
+  by indentation: the loader indents its mod list with tabs, and a tab used to paint every mod red.
+- **`BlueMapConsent`** and `ServerProcessManager.ImpliedJvmFlags` — the two start-up warnings the app
+  answers itself, because they are its to answer. From Java 22 it adds `--enable-native-access=ALL-UNNAMED`
+  to the command line it builds: JNA-based mods trigger a warning that says a future Java will *block* the
+  call, and an unrecognised option would stop an older JVM from starting, hence the version gate.
+  `--sun-misc-unsafe-memory-access` is deliberately not added — its accepted values are changing release by
+  release. And when BlueMap prints that its download has not been accepted, the app **asks** — it is consent
+  to fetch Mojang's client files — and on a yes flips that one value in `core.conf` and sends
+  `bluemap reload`. The other warnings a modded start prints (refmaps, mixins aimed at absent mods, a Windows
+  registry value, Distant Horizons recommending ZGC for client FPS) are not the app's to change.
 - **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version
   when the user adds one that already exists. It runs twice: on the way in from *Add server*, and
   again at startup for servers saved before those fields existed. It fills nothing in a config that
