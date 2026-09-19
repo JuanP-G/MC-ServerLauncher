@@ -213,7 +213,12 @@ mundo. No hay rutas fijas del equipo en el código.
   una excepción—, así que toma el nivel de esa entrada en vez de juzgarse sola; el view model le pasa el tipo
   de la línea anterior de stdout. Las trazas se reconocen por su forma (`at x.y(File:1)`, `Caused by:`,
   `... 12 more`), nunca por la sangría: el cargador sangra su lista de mods con tabuladores, y un tabulador
-  pintaba de rojo todos los mods.
+  pintaba de rojo todos los mods. **El chat es cualquier forma que toma un mensaje** (`ChatOf`), no solo
+  `<nombre>`: `[Not Secure] <nombre>` (chat sin firmar), `[Server]`/`[Rcon]`/`[@]` (`say` desde la consola,
+  RCON o un bloque de comandos), y el `/say` y el `/me` de un jugador (`[Alice] …`, `* Alice …`). Estos dos
+  últimos solo cuentan si ese jugador está conectado —el view model le pasa una copia de quién lo está—,
+  porque en Paper cada plugin escribe como `[NombreDelPlugin] …`, y el nombre de un plugin es un nombre de
+  jugador válido.
 - **`BlueMapConsent`** y `ServerProcessManager.ImpliedJvmFlags` — los dos avisos de arranque que la app
   resuelve ella misma, porque le tocan a ella. Desde Java 22 añade `--enable-native-access=ALL-UNNAMED` a la
   línea de comandos que construye: los mods que usan JNA provocan un aviso que dice que un Java futuro

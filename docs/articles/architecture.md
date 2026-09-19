@@ -210,6 +210,11 @@ are no hard-coded machine paths.
   takes that entry's level rather than being judged alone; the view model passes the previous stdout line's
   kind in. Stack frames are recognised by their shape (`at x.y(File:1)`, `Caused by:`, `... 12 more`), never
   by indentation: the loader indents its mod list with tabs, and a tab used to paint every mod red.
+  **Chat is every shape a message takes** (`ChatOf`), not only `<name>`: `[Not Secure] <name>` (unsigned chat),
+  `[Server]`/`[Rcon]`/`[@]` (`say` from the console, RCON or a command block), and a player's `/say` and `/me`
+  (`[Alice] …`, `* Alice …`). Those last two count only when that player is connected — the view model hands
+  in a copy of who is — because on Paper every plugin logs as `[PluginName] …`, and a plugin name is a valid
+  player name.
 - **`BlueMapConsent`** and `ServerProcessManager.ImpliedJvmFlags` — the two start-up warnings the app
   answers itself, because they are its to answer. From Java 22 it adds `--enable-native-access=ALL-UNNAMED`
   to the command line it builds: JNA-based mods trigger a warning that says a future Java will *block* the
