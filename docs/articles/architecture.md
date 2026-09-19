@@ -564,6 +564,16 @@ Three details that each hid a bug for a long time, and each has a test now:
   modules nested in `fabric-api` and the libraries other mods carry, and skips disabled jars, so the
   scan and the install never offer a second copy of something already loaded.
 
+**The updates a check finds are kept by the panel, not by the rows.** The list is rebuilt from disk
+after every update, toggle and delete, and the newer versions used to live only on the rows being
+thrown away — so updating one mod out of five made the other four disappear until the next check.
+They are kept keyed by the jar's enabled path (so disabling a mod keeps its update) and stamped with
+the size and write time the check saw (so a jar replaced by hand is not offered an update found for
+the file it used to be), and dropped if the server's loader or Minecraft version changes, since every
+answer was for something else. **Update all** walks them one after another through the same code the
+row's button uses, with the list disabled meanwhile; a jar in use stops the batch, because it means
+the server is running and every other one would fail the same way.
+
 ## Localization
 
 All user-facing text lives in `Resources/Strings.resx` (Spanish, the neutral/base language) plus

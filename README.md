@@ -76,6 +76,7 @@ all with buttons.
   complaining about when it refused to start with a list of missing dependencies. Only *required* ones, never
   optional extras, and never a second copy of something already installed. For servers built before this, the
   **check for updates** button now also reports the libraries that are missing and offers to install them.
+  Whatever it finds can be updated one by one or with **Update all**, and updating one leaves the rest on offer.
 - **Play from Bedrock too** 📱 — one checkbox installs Geyser and Floodgate, picks a free UDP port, creates the
   second (UDP) tunnel Bedrock needs and sets the public port Geyser must advertise — the part almost nobody gets
   right by hand. How well it works depends on the server type, and the card for each type says which before you

@@ -79,7 +79,8 @@ todo con botones.
   reclamaba el cargador de Fabric cuando se negaba a arrancar con una lista de dependencias que faltaban. Solo
   las *obligatorias*, nunca los extras opcionales, y nunca una segunda copia de algo que ya está. Para los
   servidores creados antes, el botón de **buscar actualizaciones** ahora dice además qué librerías faltan y
-  ofrece instalarlas.
+  ofrece instalarlas. Lo que encuentre se actualiza de uno en uno o con **Actualizar todas**, y actualizar uno
+  deja los demás a la vista.
 - **Jugar también desde Bedrock** 📱 — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea el
   segundo túnel (UDP) que Bedrock necesita y configura el puerto público que Geyser debe anunciar — la parte que
   casi nadie acierta a mano. Lo bien que funciona depende del tipo de servidor, y la tarjeta de cada tipo lo dice

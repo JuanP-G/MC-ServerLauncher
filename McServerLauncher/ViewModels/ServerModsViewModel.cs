@@ -90,6 +90,101 @@ public partial class ServerModsViewModel : ObservableObject
     [ObservableProperty]
     private string _updateStatus = string.Empty;
 
+    /// <summary>
+    /// The newer versions the last update check found, kept here rather than on the rows.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// They used to live only on each <see cref="ModItem"/>, and the list is rebuilt from disk after
+    /// every update, every enable or disable, every delete. So updating one mod out of five threw
+    /// away the other four, and the only way to get their buttons back was to check again.
+    /// </para>
+    /// <para>
+    /// Keyed by the jar's enabled path, so disabling a mod — which renames it to
+    /// <c>.jar.disabled</c> — keeps its update. Stamped with the size and write time the check saw,
+    /// so a jar replaced by hand is not offered an update found for the file it used to be.
+    /// </para>
+    /// </remarks>
+    private readonly Dictionary<string, PendingUpdate> _pendingUpdates = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The loader and Minecraft version the pending updates were found for.</summary>
+    /// <remarks>
+    /// A check answers "newest compatible with this server as it is now". Convert the server or move
+    /// it to another Minecraft version and every answer is for something else, so they are dropped
+    /// rather than offered — installing them is how a server ends up with mods it cannot load.
+    /// </remarks>
+    private (ServerType Type, string GameVersion) _pendingFor;
+
+    /// <summary>One newer version, and the file it was found for.</summary>
+    private sealed record PendingUpdate(ModUpdateInfo Info, long Length, DateTime WrittenUtc);
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UpdateAllCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CheckUpdatesCommand))]
+    private bool _isUpdatingAll;
+
+    /// <summary>How many rows are offering an update right now.</summary>
+    public int PendingUpdateCount => InstalledMods.Count(m => m.Update is not null);
+
+    public bool HasPendingUpdates => PendingUpdateCount > 0;
+
+    /// <summary>The label of the button that updates them all, with how many there are.</summary>
+    public string UpdateAllText => string.Format(Localizer.Get("Mods_UpdateAllFmt"), PendingUpdateCount);
+
+    private void NotifyPendingUpdatesChanged()
+    {
+        OnPropertyChanged(nameof(PendingUpdateCount));
+        OnPropertyChanged(nameof(HasPendingUpdates));
+        OnPropertyChanged(nameof(UpdateAllText));
+        UpdateAllCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>The key a jar's pending update is kept under: its path with any .disabled removed.</summary>
+    internal static string PendingKey(string filePath) =>
+        filePath.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase)
+            ? filePath[..^".disabled".Length]
+            : filePath;
+
+    /// <summary>Starts a fresh set of pending updates, for the server as it is now.</summary>
+    /// <remarks>A new check replaces whatever the last one found.</remarks>
+    internal void BeginPendingUpdates()
+    {
+        _pendingUpdates.Clear();
+        _pendingFor = (_config.Type, _config.GameVersion);
+    }
+
+    /// <summary>Remembers a newer version for a jar, as the check saw it.</summary>
+    internal void RememberUpdate(string filePath, ModUpdateInfo info)
+    {
+        var file = new FileInfo(filePath);
+        _pendingUpdates[PendingKey(filePath)] = new PendingUpdate(info, file.Length, file.LastWriteTimeUtc);
+    }
+
+    /// <summary>
+    /// The update still waiting for this jar, or null. Drops what no longer applies on the way.
+    /// </summary>
+    internal ModUpdateInfo? PendingUpdateFor(string filePath)
+    {
+        if (_pendingFor != (_config.Type, _config.GameVersion))
+        {
+            _pendingUpdates.Clear();
+            return null;
+        }
+
+        var key = PendingKey(filePath);
+        if (!_pendingUpdates.TryGetValue(key, out var pending)) return null;
+
+        var file = new FileInfo(filePath);
+        if (!file.Exists || file.Length != pending.Length || file.LastWriteTimeUtc != pending.WrittenUtc)
+        {
+            // Not the file the check looked at any more: replaced by hand, or already updated.
+            _pendingUpdates.Remove(key);
+            return null;
+        }
+
+        return pending.Info;
+    }
+
     // --- Missing library mods ---
     //
     // Found by the same scan that looks for updates, because it already knows what every installed
@@ -481,8 +576,6 @@ public partial class ServerModsViewModel : ObservableObject
     private void RefreshInstalledMods()
     {
         InstalledMods.Clear();
-        // The rebuilt items carry no update flag, so drop any stale "N updates available" text.
-        UpdateStatus = string.Empty;
         // Same scan, same staleness: the missing-library offer names jars found last time round,
         // and after a refresh those may be installed, deleted, or for the family this no longer is.
         ClearMissingDependencies();
@@ -500,9 +593,19 @@ public partial class ServerModsViewModel : ObservableObject
                 var name = Path.GetFileName(file);
                 var isEnabled = !name.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase);
                 var display = isEnabled ? name : name[..^".disabled".Length];
-                InstalledMods.Add(new ModItem(file, display, isEnabled));
+
+                // Rebuilt rows get back the update the last check found for them. This is the whole
+                // fix: the list is rebuilt after every update, and used to forget every other one.
+                InstalledMods.Add(new ModItem(file, display, isEnabled) { Update = PendingUpdateFor(file) });
             }
         }
+
+        // The line under the list follows what is actually still pending, instead of being blanked
+        // because the rows had lost track of it.
+        UpdateStatus = PendingUpdateCount > 0
+            ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), PendingUpdateCount)
+            : string.Empty;
+        NotifyPendingUpdatesChanged();
     }
 
     /// <summary>
@@ -523,6 +626,8 @@ public partial class ServerModsViewModel : ObservableObject
         UpdateStatus = Localizer.Get("Msg_CheckingUpdates");
         try
         {
+            BeginPendingUpdates();
+
             // Map each jar's SHA-1 to its ModItem (disabled ones included) and clear any prior flag.
             var byHash = new Dictionary<string, ModItem>(StringComparer.OrdinalIgnoreCase);
             foreach (var mod in InstalledMods)
@@ -554,11 +659,13 @@ public partial class ServerModsViewModel : ObservableObject
                 {
                     mod.Update = new ModUpdateInfo(version.VersionNumber, file.Url,
                         Path.GetFileName(file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1);
+                    RememberUpdate(mod.FilePath, mod.Update);
                     updates++;
                 }
             }
 
             UpdateStatus = UpdateStatusText(couldAsk: true, updates);
+            NotifyPendingUpdatesChanged();
 
             await ScanForMissingDependenciesAsync(byHash.Keys, ct);
         }
@@ -572,7 +679,7 @@ public partial class ServerModsViewModel : ObservableObject
         }
     }
 
-    private bool CanCheckUpdates => !IsCheckingUpdates;
+    private bool CanCheckUpdates => !IsCheckingUpdates && !IsUpdatingAll;
 
     /// <summary>The line the update check leaves under the list.</summary>
     /// <remarks>
@@ -585,7 +692,11 @@ public partial class ServerModsViewModel : ObservableObject
         : updates > 0 ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), updates)
         : Localizer.Get("Msg_NoUpdates");
 
-    partial void OnIsCheckingUpdatesChanged(bool value) => CheckUpdatesCommand.NotifyCanExecuteChanged();
+    partial void OnIsCheckingUpdatesChanged(bool value)
+    {
+        CheckUpdatesCommand.NotifyCanExecuteChanged();
+        UpdateAllCommand.NotifyCanExecuteChanged();
+    }
 
     /// <summary>
     /// Looks for library mods that the installed ones need and that nobody installed.
@@ -857,11 +968,109 @@ public partial class ServerModsViewModel : ObservableObject
             needed.File.Hashes?.Sha512, needed.File.Hashes?.Sha1, ct: ct);
     }
 
+    /// <summary>What happened to one update.</summary>
+    internal enum UpdateOutcome
+    {
+        /// <summary>The new version is in place and the old one is gone.</summary>
+        Updated,
+
+        /// <summary>The old jar is in use — the server is running. Nothing was changed.</summary>
+        NeedsStop,
+
+        /// <summary>Something else went wrong. Nothing was changed.</summary>
+        Failed
+    }
+
     /// <summary>Downloads the newer version flagged by <see cref="CheckUpdates"/> and replaces the old jar.</summary>
     [RelayCommand]
     private async Task UpdateMod(ModItem? mod)
     {
-        if (mod?.Update is null || mod.IsUpdating) return;
+        // While "update all" is running it owns the list: a second update started from a row would
+        // race it for the same folder.
+        if (mod?.Update is null || mod.IsUpdating || IsUpdatingAll) return;
+
+        var (outcome, error) = await UpdateOneAsync(mod);
+        RefreshInstalledMods();
+
+        // Set after the refresh, which rewrites the line with what is still pending — before, the
+        // refresh wiped "updated" the instant it was written, so it was never seen.
+        UpdateStatus = outcome switch
+        {
+            UpdateOutcome.Updated when PendingUpdateCount > 0 =>
+                string.Format(Localizer.Get("Msg_ModUpdatedRemainingFmt"), PendingUpdateCount),
+            UpdateOutcome.Updated => Localizer.Get("Msg_ModUpdated"),
+            UpdateOutcome.NeedsStop => Localizer.Get("Msg_UpdateNeedsStop"),
+            _ => string.Format(Localizer.Get("Msg_UpdateErrorFmt"), error)
+        };
+    }
+
+    /// <summary>Updates every mod the last check found a newer version for, one after another.</summary>
+    /// <remarks>
+    /// One after another rather than all at once: each is a verified download followed by a file
+    /// swap in the same folder, and doing them in parallel buys a few seconds at the cost of a
+    /// progress line nobody could follow. A failure does not stop the rest — except a jar in use,
+    /// which means the server is running and every other one would fail the same way.
+    /// </remarks>
+    [RelayCommand(CanExecute = nameof(CanUpdateAll))]
+    private async Task UpdateAll()
+    {
+        var queue = InstalledMods.Where(m => m.Update is not null && !m.IsUpdating).ToList();
+        if (queue.Count == 0) return;
+
+        IsUpdatingAll = true;
+        var updated = 0;
+        var failed = new List<string>();
+        var stoppedByServer = false;
+
+        try
+        {
+            for (var i = 0; i < queue.Count; i++)
+            {
+                var mod = queue[i];
+                UpdateStatus = string.Format(
+                    Localizer.Get("Msg_UpdatingNofMFmt"), i + 1, queue.Count, mod.FileName);
+
+                var (outcome, _) = await UpdateOneAsync(mod);
+                if (outcome == UpdateOutcome.Updated) { updated++; continue; }
+
+                failed.Add(mod.FileName);
+                if (outcome == UpdateOutcome.NeedsStop) { stoppedByServer = true; break; }
+            }
+        }
+        finally
+        {
+            IsUpdatingAll = false;
+            RefreshInstalledMods();
+        }
+
+        UpdateStatus = UpdateAllSummary(updated, failed, stoppedByServer);
+    }
+
+    private bool CanUpdateAll => HasPendingUpdates && !IsUpdatingAll && !IsCheckingUpdates;
+
+    /// <summary>The line "update all" leaves behind.</summary>
+    internal static string UpdateAllSummary(int updated, IReadOnlyList<string> failed, bool stoppedByServer)
+    {
+        if (stoppedByServer)
+            return string.Format(Localizer.Get("Msg_UpdateAllStoppedFmt"), updated);
+
+        return failed.Count == 0
+            ? string.Format(Localizer.Get("Msg_UpdateAllDoneFmt"), updated)
+            : string.Format(Localizer.Get("Msg_UpdateAllPartialFmt"),
+                updated, failed.Count, string.Join(", ", failed));
+    }
+
+    /// <summary>
+    /// Replaces one jar with its newer version. Never leaves two versions of a mod, or none.
+    /// </summary>
+    /// <remarks>
+    /// Shared by the row's button and by "update all", so there is one way a mod gets updated. It
+    /// does not refresh the list — the callers do, once, when they are finished — because a
+    /// refresh halfway through "update all" would rebuild the very rows it is walking.
+    /// </remarks>
+    private async Task<(UpdateOutcome Outcome, string? Error)> UpdateOneAsync(ModItem mod)
+    {
+        if (mod.Update is not { } update) return (UpdateOutcome.Failed, null);
 
         mod.IsUpdating = true;
         try
@@ -872,8 +1081,8 @@ public partial class ServerModsViewModel : ObservableObject
 
             // Download+verify the new jar under its own (enabled) name first, so a failure never
             // destroys the currently installed one.
-            var enabledPath = Path.Combine(modsFolder, mod.Update.FileName);
-            await _modrinthService.DownloadModAsync(mod.Update.Url, enabledPath, mod.Update.Sha512, mod.Update.Sha1);
+            var enabledPath = Path.Combine(modsFolder, update.FileName);
+            await _modrinthService.DownloadModAsync(update.Url, enabledPath, update.Sha512, update.Sha1);
 
             // Remove the previous jar when the new version has a different file name.
             var sameFile = string.Equals(
@@ -889,8 +1098,7 @@ public partial class ServerModsViewModel : ObservableObject
                     // Old jar in use (server running): keeping both would load two versions of the
                     // mod. Roll the new one back and tell the user to stop the server first.
                     try { File.Delete(enabledPath); } catch { /* best-effort */ }
-                    UpdateStatus = Localizer.Get("Msg_UpdateNeedsStop");
-                    return;
+                    return (UpdateOutcome.NeedsStop, null);
                 }
             }
 
@@ -902,12 +1110,13 @@ public partial class ServerModsViewModel : ObservableObject
                 File.Move(enabledPath, disabledPath);
             }
 
-            UpdateStatus = Localizer.Get("Msg_ModUpdated");
-            RefreshInstalledMods();
+            _pendingUpdates.Remove(PendingKey(mod.FilePath));
+            mod.Update = null;
+            return (UpdateOutcome.Updated, null);
         }
         catch (Exception ex)
         {
-            UpdateStatus = string.Format(Localizer.Get("Msg_UpdateErrorFmt"), ex.Message);
+            return (UpdateOutcome.Failed, ex.Message);
         }
         finally
         {

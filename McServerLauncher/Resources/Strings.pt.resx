@@ -544,6 +544,12 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_UpdatesCheckFailed" xml:space="preserve"><value>Não foi possível contactar o Modrinth, por isso não sei se há atualizações. Tenta de novo com ligação.</value></data>
   <data name="Msg_NoUpdates" xml:space="preserve"><value>Está tudo atualizado</value></data>
   <data name="Msg_ModUpdated" xml:space="preserve"><value>Atualizado ✔</value></data>
+  <data name="Mods_UpdateAllFmt" xml:space="preserve"><value>Atualizar todas ({0})</value></data>
+  <data name="Msg_ModUpdatedRemainingFmt" xml:space="preserve"><value>Atualizado ✔ Faltam {0} por atualizar.</value></data>
+  <data name="Msg_UpdatingNofMFmt" xml:space="preserve"><value>A atualizar {0} de {1}: {2}…</value></data>
+  <data name="Msg_UpdateAllDoneFmt" xml:space="preserve"><value>Atualizados {0} ✔</value></data>
+  <data name="Msg_UpdateAllPartialFmt" xml:space="preserve"><value>Atualizados {0}; {1} não foi possível: {2}. Continuam na lista para tentar de novo.</value></data>
+  <data name="Msg_UpdateAllStoppedFmt" xml:space="preserve"><value>Atualizados {0}. Para o servidor para atualizar o resto: os ficheiros estão em uso.</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Não foi possível atualizar: {0}</value></data>
   <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Pára o servidor antes de atualizar (o ficheiro antigo está em uso).</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Atualizar para {0}</value></data>
