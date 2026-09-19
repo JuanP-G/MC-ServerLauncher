@@ -143,6 +143,20 @@ are no hard-coded machine paths.
   the PID listening on a port so a stuck server can be freed.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — read/write the
   server's files (`server.properties`, `ops.json`, `banned-players.json`, `whitelist.json`).
+- **`PlayerEventParser`**, **`PlayerHistoryStore`**, **`PlayerLogImporter`**, **`PlayerStatsReader`** — the
+  player history. One parser turns a log line into something a player did, built from the console's own
+  detectors (`NameBefore`, `ChatOf`, `DeathMessageDetector`), and serves both the live console and the
+  import, so the two cannot disagree. It never reads the login line, which is the one carrying the IP, so the
+  history cannot keep one — `AnIpAddressNeverReachesTheDisk` checks the bytes on disk. The store lives in
+  `%APPDATA%\McServerLauncher\players\<serverId>\`, outside the server folder so it neither travels with the
+  world nor fills its backups: `index.json` with one summary per player, and `events/<name>.jsonl` appended
+  to and compacted in one go when it passes the limit by a quarter. Limits are `PlayerHistorySettings`
+  (clamped, since settings.json is editable); old events, long-gone players and the history of removed
+  servers are pruned at start-up. The store is opened only when something needs it, never by building a
+  view model, so tests cannot write into the user's app data. The importer runs once per server, dates each
+  line from its file (a `.log.gz` by its name, `latest.log` from its last write minus the midnights it
+  crosses), skips `latest.log` while the server runs, and only closes the sessions its own files left open.
+  Statistics are read from `<world>/stats/` or, from 26.1, `<world>/players/stats/`, when a profile opens.
 - **`ServerCreationService`** — writes the initial files of a new server: `eula.txt`,
   `run.bat`/`user_jvm_args.txt` and a minimal `server.properties` with the chosen port. (The jar
   download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is

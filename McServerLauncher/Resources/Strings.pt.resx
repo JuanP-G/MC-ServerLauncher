@@ -794,4 +794,54 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Cfg_SeedFromConsole" xml:space="preserve"><value>A que o servidor deu da última vez que se usou o comando seed. Não foi possível lê-la dos ficheiros do mundo.</value></data>
   <data name="Cfg_SeedPending" xml:space="preserve"><value>O mundo ainda não existe: esta semente vai ser usada para o gerar no primeiro arranque.</value></data>
   <data name="Cfg_SeedUnknownHint" xml:space="preserve"><value>Ainda não se conhece. Arranca o servidor uma vez para gerar o mundo, ou escreve seed na consola.</value></data>
+  <data name="Time_JustNow" xml:space="preserve"><value>agora mesmo</value></data>
+  <data name="Time_MinutesAgoFmt" xml:space="preserve"><value>há {0} min</value></data>
+  <data name="Time_HoursAgoFmt" xml:space="preserve"><value>há {0} h</value></data>
+  <data name="Time_DaysAgoFmt" xml:space="preserve"><value>há {0} dias</value></data>
+  <data name="Time_HoursMinutesFmt" xml:space="preserve"><value>{0} h {1} min</value></data>
+  <data name="Time_MinutesFmt" xml:space="preserve"><value>{0} min</value></data>
+  <data name="History_OnlineNow" xml:space="preserve"><value>Ligado agora</value></data>
+  <data name="History_NeverRecorded" xml:space="preserve"><value>sem registo</value></data>
+  <data name="History_EventJoin" xml:space="preserve"><value>Entrou no servidor</value></data>
+  <data name="History_EventLeave" xml:space="preserve"><value>Saiu do servidor</value></data>
+  <data name="History_EventAdvancementFmt" xml:space="preserve"><value>Conquista: {0}</value></data>
+  <data name="History_Players" xml:space="preserve"><value>Jogadores</value></data>
+  <data name="History_PlayersHint" xml:space="preserve"><value>Todos os que já entraram alguma vez, com a última ligação. Clica num para ver a ficha: ligações, chat e estatísticas.</value></data>
+  <data name="History_Importing" xml:space="preserve"><value>A ler os logs antigos do servidor para preencher o histórico…</value></data>
+  <data name="History_DisabledHint" xml:space="preserve"><value>O histórico está desativado nas Definições: só se vê a lista do próprio servidor, sem ligações nem chat.</value></data>
+  <data name="History_Search" xml:space="preserve"><value>Procurar jogador…</value></data>
+  <data name="History_Section" xml:space="preserve"><value>Histórico de jogadores</value></data>
+  <data name="History_Intro" xml:space="preserve"><value>Guarda quando cada jogador entra e sai, as mortes, as conquistas e o que diz no chat, para ver na ficha do separador Jogadores.</value></data>
+  <data name="History_Enabled" xml:space="preserve"><value>Guardar histórico de jogadores</value></data>
+  <data name="History_RecordChat" xml:space="preserve"><value>Guardar também o chat</value></data>
+  <data name="History_MaxEvents" xml:space="preserve"><value>Eventos por jogador</value></data>
+  <data name="History_RetentionDays" xml:space="preserve"><value>Dias que se guardam</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>Guarda-se só neste computador. O IP dos jogadores nunca é guardado. O que passa dos limites é apagado sozinho.</value></data>
+  <data name="History_SizeFmt" xml:space="preserve"><value>Ocupa {0}</value></data>
+  <data name="History_ClearAll" xml:space="preserve"><value>Apagar todo o histórico</value></data>
+  <data name="History_ClearAllConfirm" xml:space="preserve"><value>Vai ser apagado o histórico de todos os jogadores de todos os servidores. Não se pode desfazer. Continuar?</value></data>
+  <data name="PlayerDetails_Back" xml:space="preserve"><value>Voltar</value></data>
+  <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banido</value></data>
+  <data name="PlayerDetails_Summary" xml:space="preserve"><value>Resumo</value></data>
+  <data name="PlayerDetails_LastSeen" xml:space="preserve"><value>Última ligação</value></data>
+  <data name="PlayerDetails_FirstSeen" xml:space="preserve"><value>Primeira vez</value></data>
+  <data name="PlayerDetails_Sessions" xml:space="preserve"><value>Sessões</value></data>
+  <data name="PlayerDetails_Played" xml:space="preserve"><value>Tempo jogado</value></data>
+  <data name="PlayerDetails_Messages" xml:space="preserve"><value>Mensagens</value></data>
+  <data name="PlayerDetails_Stats" xml:space="preserve"><value>Estatísticas do servidor</value></data>
+  <data name="PlayerDetails_StatsHint" xml:space="preserve"><value>As que o próprio Minecraft conta desde que o jogador entrou pela primeira vez, mesmo antes do histórico.</value></data>
+  <data name="PlayerDetails_StatPlayTime" xml:space="preserve"><value>Tempo no mundo</value></data>
+  <data name="PlayerDetails_StatDeaths" xml:space="preserve"><value>Mortes</value></data>
+  <data name="PlayerDetails_StatMobKills" xml:space="preserve"><value>Criaturas mortas</value></data>
+  <data name="PlayerDetails_StatPlayerKills" xml:space="preserve"><value>Jogadores mortos</value></data>
+  <data name="PlayerDetails_StatDistance" xml:space="preserve"><value>Distância percorrida</value></data>
+  <data name="PlayerDetails_Activity" xml:space="preserve"><value>Atividade</value></data>
+  <data name="PlayerDetails_FilterAll" xml:space="preserve"><value>Tudo</value></data>
+  <data name="PlayerDetails_FilterConnections" xml:space="preserve"><value>Ligações</value></data>
+  <data name="PlayerDetails_FilterChat" xml:space="preserve"><value>Chat</value></data>
+  <data name="PlayerDetails_NoActivity" xml:space="preserve"><value>Ainda não há nada registado. Vai aparecer aqui da próxima vez que o jogador entrar.</value></data>
+  <data name="PlayerDetails_ShowMore" xml:space="preserve"><value>Ver mais</value></data>
+  <data name="PlayerDetails_Clear" xml:space="preserve"><value>Apagar o histórico deste jogador</value></data>
+  <data name="PlayerDetails_ClearConfirm" xml:space="preserve"><value>Tens a certeza? Não se pode desfazer.</value></data>
+  <data name="PlayerDetails_ClearYes" xml:space="preserve"><value>Sim, apagar</value></data>
 </root>

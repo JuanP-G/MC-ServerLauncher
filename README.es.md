@@ -108,8 +108,13 @@ todo con botones.
   **CPU, RAM, tiempo activo y puerto** en vivo con estado por colores.
 - **Vista estilo Minecraft** — icono del servidor, MOTD con colores, `jugadores/máx` y señal de accesibilidad.
 - **Consola en tiempo real** con texto copiable, caja de comandos y un panel de **ayuda de comandos**.
-- **Jugadores** 👥 — conectados (en vivo), operadores, lista blanca, baneados y conocidos, con acciones OP /
-  expulsar / banear / lista blanca.
+- **Jugadores** 👥 — conectados (en vivo), operadores, lista blanca y baneados, con acciones OP / expulsar /
+  banear / lista blanca.
+- **Historial de jugadores** 📜 — todos los que han entrado alguna vez, con su última conexión. Pulsa uno para
+  ver su ficha: entradas y salidas, lo que dijo por el chat, muertes y logros, tiempo jugado y las
+  estadísticas del propio servidor. La primera vez se rellena con los logs antiguos del servidor; ocupa poco
+  (500 eventos y 90 días por jugador de serie, ambos configurables, o desactívalo) y se queda en tu equipo.
+  La IP no se guarda nunca.
 - **Configuración visual de `server.properties`** con explicaciones claras.
 - **Semillas** 🌱 — elígela al crear el servidor, mira la semilla real del mundo en su configuración y ábrela
   en el mapa de Chunkbase, en la versión de ese servidor, con un clic.

@@ -794,4 +794,54 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Cfg_SeedFromConsole" xml:space="preserve"><value>Celle que le serveur a donnée la dernière fois que la commande seed a été utilisée. Elle n'a pas pu être lue dans les fichiers du monde.</value></data>
   <data name="Cfg_SeedPending" xml:space="preserve"><value>Le monde n'existe pas encore : cette graine servira à le générer au premier démarrage.</value></data>
   <data name="Cfg_SeedUnknownHint" xml:space="preserve"><value>Pas encore connue. Démarre le serveur une fois pour qu'il génère le monde, ou tape seed dans la console.</value></data>
+  <data name="Time_JustNow" xml:space="preserve"><value>à l'instant</value></data>
+  <data name="Time_MinutesAgoFmt" xml:space="preserve"><value>il y a {0} min</value></data>
+  <data name="Time_HoursAgoFmt" xml:space="preserve"><value>il y a {0} h</value></data>
+  <data name="Time_DaysAgoFmt" xml:space="preserve"><value>il y a {0} jours</value></data>
+  <data name="Time_HoursMinutesFmt" xml:space="preserve"><value>{0} h {1} min</value></data>
+  <data name="Time_MinutesFmt" xml:space="preserve"><value>{0} min</value></data>
+  <data name="History_OnlineNow" xml:space="preserve"><value>Connecté maintenant</value></data>
+  <data name="History_NeverRecorded" xml:space="preserve"><value>pas d'historique</value></data>
+  <data name="History_EventJoin" xml:space="preserve"><value>A rejoint le serveur</value></data>
+  <data name="History_EventLeave" xml:space="preserve"><value>A quitté le serveur</value></data>
+  <data name="History_EventAdvancementFmt" xml:space="preserve"><value>Progrès : {0}</value></data>
+  <data name="History_Players" xml:space="preserve"><value>Joueurs</value></data>
+  <data name="History_PlayersHint" xml:space="preserve"><value>Tous ceux qui se sont déjà connectés, avec leur dernière connexion. Clique sur l'un d'eux pour voir sa fiche : connexions, chat et statistiques.</value></data>
+  <data name="History_Importing" xml:space="preserve"><value>Lecture des anciens journaux du serveur pour remplir l'historique…</value></data>
+  <data name="History_DisabledHint" xml:space="preserve"><value>L'historique est désactivé dans les Paramètres : seule la liste du serveur s'affiche, sans connexions ni chat.</value></data>
+  <data name="History_Search" xml:space="preserve"><value>Chercher un joueur…</value></data>
+  <data name="History_Section" xml:space="preserve"><value>Historique des joueurs</value></data>
+  <data name="History_Intro" xml:space="preserve"><value>Garde quand chaque joueur arrive et part, ses morts, ses progrès et ce qu'il dit dans le chat, à voir sur sa fiche dans l'onglet Joueurs.</value></data>
+  <data name="History_Enabled" xml:space="preserve"><value>Garder l'historique des joueurs</value></data>
+  <data name="History_RecordChat" xml:space="preserve"><value>Garder aussi le chat</value></data>
+  <data name="History_MaxEvents" xml:space="preserve"><value>Événements par joueur</value></data>
+  <data name="History_RetentionDays" xml:space="preserve"><value>Jours conservés</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>Gardé sur cet ordinateur uniquement. L'adresse IP des joueurs n'est jamais conservée. Ce qui dépasse les limites est supprimé automatiquement.</value></data>
+  <data name="History_SizeFmt" xml:space="preserve"><value>Occupe {0}</value></data>
+  <data name="History_ClearAll" xml:space="preserve"><value>Effacer tout l'historique</value></data>
+  <data name="History_ClearAllConfirm" xml:space="preserve"><value>L'historique de tous les joueurs de tous les serveurs sera supprimé. C'est irréversible. Continuer ?</value></data>
+  <data name="PlayerDetails_Back" xml:space="preserve"><value>Retour</value></data>
+  <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banni</value></data>
+  <data name="PlayerDetails_Summary" xml:space="preserve"><value>Résumé</value></data>
+  <data name="PlayerDetails_LastSeen" xml:space="preserve"><value>Dernière connexion</value></data>
+  <data name="PlayerDetails_FirstSeen" xml:space="preserve"><value>Première fois</value></data>
+  <data name="PlayerDetails_Sessions" xml:space="preserve"><value>Sessions</value></data>
+  <data name="PlayerDetails_Played" xml:space="preserve"><value>Temps de jeu</value></data>
+  <data name="PlayerDetails_Messages" xml:space="preserve"><value>Messages</value></data>
+  <data name="PlayerDetails_Stats" xml:space="preserve"><value>Statistiques du serveur</value></data>
+  <data name="PlayerDetails_StatsHint" xml:space="preserve"><value>Celles que Minecraft compte lui-même depuis la première connexion du joueur, même avant l'historique.</value></data>
+  <data name="PlayerDetails_StatPlayTime" xml:space="preserve"><value>Temps dans le monde</value></data>
+  <data name="PlayerDetails_StatDeaths" xml:space="preserve"><value>Morts</value></data>
+  <data name="PlayerDetails_StatMobKills" xml:space="preserve"><value>Créatures tuées</value></data>
+  <data name="PlayerDetails_StatPlayerKills" xml:space="preserve"><value>Joueurs tués</value></data>
+  <data name="PlayerDetails_StatDistance" xml:space="preserve"><value>Distance parcourue</value></data>
+  <data name="PlayerDetails_Activity" xml:space="preserve"><value>Activité</value></data>
+  <data name="PlayerDetails_FilterAll" xml:space="preserve"><value>Tout</value></data>
+  <data name="PlayerDetails_FilterConnections" xml:space="preserve"><value>Connexions</value></data>
+  <data name="PlayerDetails_FilterChat" xml:space="preserve"><value>Chat</value></data>
+  <data name="PlayerDetails_NoActivity" xml:space="preserve"><value>Rien d'enregistré pour l'instant. Cela apparaîtra ici la prochaine fois que le joueur se connectera.</value></data>
+  <data name="PlayerDetails_ShowMore" xml:space="preserve"><value>Voir plus</value></data>
+  <data name="PlayerDetails_Clear" xml:space="preserve"><value>Effacer l'historique de ce joueur</value></data>
+  <data name="PlayerDetails_ClearConfirm" xml:space="preserve"><value>Tu es sûr ? C'est irréversible.</value></data>
+  <data name="PlayerDetails_ClearYes" xml:space="preserve"><value>Oui, effacer</value></data>
 </root>

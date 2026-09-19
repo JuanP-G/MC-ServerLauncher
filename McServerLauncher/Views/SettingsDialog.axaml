@@ -150,6 +150,31 @@
 
                 <Separator Margin="0,16,0,12" />
 
+                <!-- Player history -->
+                <TextBlock Text="{loc:Loc History_Section}" FontWeight="SemiBold" />
+                <TextBlock Text="{loc:Loc History_Intro}" TextWrapping="Wrap" Opacity="0.7" FontSize="13" Margin="0,4,0,6" />
+                <CheckBox Content="{loc:Loc History_Enabled}" IsChecked="{Binding HistoryEnabled, Mode=TwoWay}" />
+                <CheckBox Content="{loc:Loc History_RecordChat}" IsChecked="{Binding HistoryRecordChat, Mode=TwoWay}"
+                          IsEnabled="{Binding HistoryEnabled}" />
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Margin="0,4,0,0"
+                      IsEnabled="{Binding HistoryEnabled}">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc History_MaxEvents}"
+                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,3,12,3" />
+                    <NumericUpDown Grid.Row="0" Grid.Column="1" Width="140" Margin="0,3" FormatString="0" Increment="50"
+                                   Minimum="50" Maximum="5000" Value="{Binding HistoryMaxEvents, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Loc History_RetentionDays}"
+                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,3,12,3" />
+                    <NumericUpDown Grid.Row="1" Grid.Column="1" Width="140" Margin="0,3" FormatString="0" Increment="30"
+                                   Minimum="7" Maximum="3650" Value="{Binding HistoryRetentionDays, Mode=TwoWay}" />
+                </Grid>
+                <TextBlock Text="{loc:Loc History_Privacy}" TextWrapping="Wrap" Opacity="0.6" FontSize="12" Margin="0,4,0,0" />
+                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,8,0,0">
+                    <TextBlock x:Name="HistorySizeText" VerticalAlignment="Center" Opacity="0.8" />
+                    <Button Content="{loc:Loc History_ClearAll}" Click="ClearHistory_Click" />
+                </StackPanel>
+
+                <Separator Margin="0,16,0,12" />
+
                 <!-- Playit.gg connection -->
                 <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
                 <TextBlock Text="{loc:Loc Pk_SettingsDesc}" TextWrapping="Wrap" Opacity="0.7" FontSize="13" Margin="0,4,0,6" />

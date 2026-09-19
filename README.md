@@ -103,8 +103,12 @@ all with buttons.
   **CPU, RAM, uptime and port** with colour status.
 - **Minecraft-style view** — server icon, coloured MOTD, `players/max` and a reachability signal.
 - **Real-time console** with copyable text, a command box and a **command-help** panel.
-- **Players** 👥 — connected (live), operators, whitelist, banned and known players, with OP / kick / ban /
-  whitelist actions.
+- **Players** 👥 — connected (live), operators, whitelist and banned, with OP / kick / ban / whitelist actions.
+- **Player history** 📜 — everyone who has ever joined, with their last connection. Click one for their
+  profile: joins and leaves, what they said in chat, deaths and advancements, time played, and the server's
+  own statistics. Filled from the server's old logs the first time; kept small (500 events and 90 days per
+  player by default, both configurable, or switch it off) and on your computer only. IP addresses are never
+  kept.
 - **Visual `server.properties` editor** with plain-language explanations.
 - **Seeds** 🌱 — choose one when creating a server, see the world's real seed in its configuration, and open
   it on Chunkbase's seed map for that server's version in one click.

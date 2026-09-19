@@ -91,6 +91,7 @@ public partial class MainViewModel : ObservableObject
 
         // Make the saved notification preferences the app-wide defaults for this session.
         NotificationPreferences.Global = _appSettings.Notifications;
+        PlayerHistoryPreferences.Current = _appSettings.PlayerHistory.Clamped();
         ApplyConsoleColours();
         ApplyWindowBehavior();
 
@@ -135,6 +136,11 @@ public partial class MainViewModel : ObservableObject
 
         foreach (var server in Servers)
             server.Activate();
+
+        // The history of servers no longer in the list, once it is past the retention period.
+        var liveIds = Servers.Select(s => s.Config.Id).ToList();
+        var days = PlayerHistoryPreferences.Current.RetentionDays;
+        _ = Task.Run(() => PlayerHistoryStore.PruneOrphans(liveIds, DateTime.UtcNow, days));
 
         _ = CheckForUpdatesAsync();
         _updateTimer.Start();
@@ -195,6 +201,9 @@ public partial class MainViewModel : ObservableObject
         _appSettings.CloseToTray = dialog.CloseToTray;
         _appSettings.ConsoleChatColor = dialog.ConsoleChatColor;
         _appSettings.ConsolePlayersColor = dialog.ConsolePlayersColor;
+        _appSettings.PlayerHistory = dialog.PlayerHistory;
+        PlayerHistoryPreferences.Current = _appSettings.PlayerHistory;
+        foreach (var server in Servers) server.History.OnSettingsChanged();
         ApplyConsoleColours();
         ApplyWindowBehavior();
         _settings.Save(_appSettings);
@@ -774,6 +783,7 @@ public partial class MainViewModel : ObservableObject
         // The console log buffers and flushes on a timer (EFI-5); push the tail out before the
         // Environment.Exit that follows every shutdown path.
         ConsoleLogService.Shared.Flush();
+        PlayerHistoryStore.FlushAll();
     }
 
     partial void OnSelectedServerChanged(ServerViewModel? oldValue, ServerViewModel? newValue)

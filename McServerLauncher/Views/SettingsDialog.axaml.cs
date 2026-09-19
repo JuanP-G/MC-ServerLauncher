@@ -1,10 +1,10 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using System.IO;
 using Avalonia.Media;
 using Avalonia.Threading;
-using System.Linq;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
@@ -39,6 +39,22 @@ public partial class SettingsDialog : Window
     /// <summary>Colour for joins, leaves and deaths in the console (read back on Save).</summary>
     public string ConsolePlayersColor { get; set; } = ConsoleColors.DefaultPlayers;
 
+    // --- Player history (read back on Save) ---
+
+    public bool HistoryEnabled { get; set; } = true;
+    public bool HistoryRecordChat { get; set; } = true;
+    public decimal HistoryMaxEvents { get; set; } = PlayerHistorySettings.DefaultEvents;
+    public decimal HistoryRetentionDays { get; set; } = PlayerHistorySettings.DefaultDays;
+
+    /// <summary>The history settings as chosen, inside their allowed ranges.</summary>
+    public PlayerHistorySettings PlayerHistory => new PlayerHistorySettings
+    {
+        Enabled = HistoryEnabled,
+        RecordChat = HistoryRecordChat,
+        MaxEventsPerPlayer = (int)HistoryMaxEvents,
+        RetentionDays = (int)HistoryRetentionDays
+    }.Clamped();
+
     private readonly AppSettings? _appSettings;
     private readonly AppSettingsService? _settingsService;
 
@@ -59,6 +75,12 @@ public partial class SettingsDialog : Window
         CloseToTray = appSettings?.CloseToTray ?? false;
         ConsoleChatColor = appSettings?.ConsoleChatColor ?? ConsoleColors.DefaultChat;
         ConsolePlayersColor = appSettings?.ConsolePlayersColor ?? ConsoleColors.DefaultPlayers;
+        var history = (appSettings?.PlayerHistory ?? new PlayerHistorySettings()).Clamped();
+        HistoryEnabled = history.Enabled;
+        HistoryRecordChat = history.RecordChat;
+        HistoryMaxEvents = history.MaxEventsPerPlayer;
+        HistoryRetentionDays = history.RetentionDays;
+        ShowHistorySize();
         DataContext = this;
         UpdatePlayitStatus();
 
@@ -195,6 +217,31 @@ public partial class SettingsDialog : Window
     /// notification from then on, with the settings still displaying the broken value. Cleaning it
     /// here means what is saved is always what will actually be drawn.
     /// </remarks>
+    /// <summary>How much the history takes now, so the limits above mean something.</summary>
+    private void ShowHistorySize() =>
+        HistorySizeText.Text = string.Format(Localizer.Get("History_SizeFmt"),
+            FormatBytes(PlayerHistoryStore.SizeOnDisk()));
+
+    internal static string FormatBytes(long bytes) => bytes switch
+    {
+        < 1024 => $"{bytes} B",
+        < 1024 * 1024 => $"{bytes / 1024.0:0.#} KB",
+        _ => $"{bytes / (1024.0 * 1024):0.#} MB"
+    };
+
+    /// <summary>
+    /// Forgets every player of every server, at once and after asking: it cannot be undone, and it
+    /// is the one thing here that does not wait for Save.
+    /// </summary>
+    private async void ClearHistory_Click(object? sender, RoutedEventArgs e)
+    {
+        if (!await MessageBox.ConfirmAsync(Localizer.Get("History_ClearAllConfirm"),
+                Localizer.Get("History_Section"), this))
+            return;
+        PlayerHistoryStore.ClearEverything();
+        ShowHistorySize();
+    }
+
     private void Save_Click(object? sender, RoutedEventArgs e)
     {
         foreach (var level in Enum.GetValues<NotificationLevel>())

@@ -794,4 +794,54 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Cfg_SeedFromConsole" xml:space="preserve"><value>The one the server gave the last time the seed command was used. It could not be read from the world's files.</value></data>
   <data name="Cfg_SeedPending" xml:space="preserve"><value>The world does not exist yet: this seed will be used to generate it on the first start.</value></data>
   <data name="Cfg_SeedUnknownHint" xml:space="preserve"><value>Not known yet. Start the server once so it generates the world, or type seed in the console.</value></data>
+  <data name="Time_JustNow" xml:space="preserve"><value>just now</value></data>
+  <data name="Time_MinutesAgoFmt" xml:space="preserve"><value>{0} min ago</value></data>
+  <data name="Time_HoursAgoFmt" xml:space="preserve"><value>{0} h ago</value></data>
+  <data name="Time_DaysAgoFmt" xml:space="preserve"><value>{0} days ago</value></data>
+  <data name="Time_HoursMinutesFmt" xml:space="preserve"><value>{0} h {1} min</value></data>
+  <data name="Time_MinutesFmt" xml:space="preserve"><value>{0} min</value></data>
+  <data name="History_OnlineNow" xml:space="preserve"><value>Online now</value></data>
+  <data name="History_NeverRecorded" xml:space="preserve"><value>not recorded</value></data>
+  <data name="History_EventJoin" xml:space="preserve"><value>Joined the server</value></data>
+  <data name="History_EventLeave" xml:space="preserve"><value>Left the server</value></data>
+  <data name="History_EventAdvancementFmt" xml:space="preserve"><value>Advancement: {0}</value></data>
+  <data name="History_Players" xml:space="preserve"><value>Players</value></data>
+  <data name="History_PlayersHint" xml:space="preserve"><value>Everyone who has ever joined, with their last connection. Click one to see their profile: connections, chat and statistics.</value></data>
+  <data name="History_Importing" xml:space="preserve"><value>Reading the server's old logs to fill in the history…</value></data>
+  <data name="History_DisabledHint" xml:space="preserve"><value>The history is turned off in Settings: only the server's own list is shown, without connections or chat.</value></data>
+  <data name="History_Search" xml:space="preserve"><value>Search player…</value></data>
+  <data name="History_Section" xml:space="preserve"><value>Player history</value></data>
+  <data name="History_Intro" xml:space="preserve"><value>Keeps when each player joins and leaves, their deaths, advancements and what they say in chat, to see on their profile in the Players tab.</value></data>
+  <data name="History_Enabled" xml:space="preserve"><value>Keep player history</value></data>
+  <data name="History_RecordChat" xml:space="preserve"><value>Keep chat too</value></data>
+  <data name="History_MaxEvents" xml:space="preserve"><value>Events per player</value></data>
+  <data name="History_RetentionDays" xml:space="preserve"><value>Days kept</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>Kept on this computer only. Players' IP addresses are never kept. Anything past the limits is removed automatically.</value></data>
+  <data name="History_SizeFmt" xml:space="preserve"><value>Uses {0}</value></data>
+  <data name="History_ClearAll" xml:space="preserve"><value>Clear all history</value></data>
+  <data name="History_ClearAllConfirm" xml:space="preserve"><value>The history of every player on every server will be deleted. This cannot be undone. Continue?</value></data>
+  <data name="PlayerDetails_Back" xml:space="preserve"><value>Back</value></data>
+  <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banned</value></data>
+  <data name="PlayerDetails_Summary" xml:space="preserve"><value>Summary</value></data>
+  <data name="PlayerDetails_LastSeen" xml:space="preserve"><value>Last seen</value></data>
+  <data name="PlayerDetails_FirstSeen" xml:space="preserve"><value>First seen</value></data>
+  <data name="PlayerDetails_Sessions" xml:space="preserve"><value>Sessions</value></data>
+  <data name="PlayerDetails_Played" xml:space="preserve"><value>Time played</value></data>
+  <data name="PlayerDetails_Messages" xml:space="preserve"><value>Messages</value></data>
+  <data name="PlayerDetails_Stats" xml:space="preserve"><value>Server statistics</value></data>
+  <data name="PlayerDetails_StatsHint" xml:space="preserve"><value>The ones Minecraft itself counts since the player first joined, even before the history began.</value></data>
+  <data name="PlayerDetails_StatPlayTime" xml:space="preserve"><value>Time in the world</value></data>
+  <data name="PlayerDetails_StatDeaths" xml:space="preserve"><value>Deaths</value></data>
+  <data name="PlayerDetails_StatMobKills" xml:space="preserve"><value>Mobs killed</value></data>
+  <data name="PlayerDetails_StatPlayerKills" xml:space="preserve"><value>Players killed</value></data>
+  <data name="PlayerDetails_StatDistance" xml:space="preserve"><value>Distance travelled</value></data>
+  <data name="PlayerDetails_Activity" xml:space="preserve"><value>Activity</value></data>
+  <data name="PlayerDetails_FilterAll" xml:space="preserve"><value>All</value></data>
+  <data name="PlayerDetails_FilterConnections" xml:space="preserve"><value>Connections</value></data>
+  <data name="PlayerDetails_FilterChat" xml:space="preserve"><value>Chat</value></data>
+  <data name="PlayerDetails_NoActivity" xml:space="preserve"><value>Nothing recorded yet. It will show up here the next time the player joins.</value></data>
+  <data name="PlayerDetails_ShowMore" xml:space="preserve"><value>Show more</value></data>
+  <data name="PlayerDetails_Clear" xml:space="preserve"><value>Clear this player's history</value></data>
+  <data name="PlayerDetails_ClearConfirm" xml:space="preserve"><value>Are you sure? This cannot be undone.</value></data>
+  <data name="PlayerDetails_ClearYes" xml:space="preserve"><value>Yes, clear</value></data>
 </root>

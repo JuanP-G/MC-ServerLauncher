@@ -182,6 +182,9 @@ public static partial class ConsoleLineClassifier
     /// <summary>The senders the server itself uses: console, RCON, and a command block.</summary>
     private static readonly HashSet<string> ServerSenders = new(StringComparer.Ordinal) { "Server", "Rcon", "@" };
 
+    /// <summary>Whether a chat sender is the server itself (console, RCON, a command block).</summary>
+    internal static bool IsServerSender(string sender) => ServerSenders.Contains(sender);
+
     private static bool IsOnline(string name, IReadOnlySet<string>? online) =>
         online is not null && PlayerName().IsMatch(name) && online.Contains(name);
 

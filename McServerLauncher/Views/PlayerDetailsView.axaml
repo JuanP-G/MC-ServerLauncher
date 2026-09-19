@@ -1,0 +1,152 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:McServerLauncher.ViewModels"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="McServerLauncher.Views.PlayerDetailsView"
+             x:DataType="vm:PlayerDetailsViewModel"
+             x:CompileBindings="False">
+
+    <ScrollViewer Margin="0,8,0,0" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="4,0,4,8" Spacing="8">
+
+            <!-- Back -->
+            <Button HorizontalAlignment="Left" Padding="8,2" Command="{Binding BackCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ic:SymbolIcon Symbol="ArrowLeft" />
+                    <TextBlock Text="{loc:Loc PlayerDetails_Back}" />
+                </StackPanel>
+            </Button>
+
+            <!-- Who -->
+            <Border Classes="card stat">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Border Grid.Column="0" Width="64" Height="64" CornerRadius="6" ClipToBounds="True"
+                            Background="{StaticResource GroundImage}" Margin="0,0,14,0">
+                        <Image Source="{Binding Avatar}" Stretch="UniformToFill"
+                               RenderOptions.BitmapInterpolationMode="None" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Ellipse Width="10" Height="10" Fill="{StaticResource SemanticOk}" IsVisible="{Binding IsOnline}"
+                                     VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <SelectableTextBlock Text="{Binding Uuid}" FontFamily="Consolas,Menlo,monospace" FontSize="12"
+                                             Opacity="0.6" IsVisible="{Binding Uuid, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                        <WrapPanel Orientation="Horizontal">
+                            <Border IsVisible="{Binding IsOp}" Background="{StaticResource SurfaceChipStrong}" CornerRadius="4"
+                                    Padding="6,1" Margin="0,0,6,0">
+                                <TextBlock Text="OP" FontSize="11" />
+                            </Border>
+                            <Border IsVisible="{Binding IsWhitelisted}" Background="{StaticResource SurfaceChipStrong}" CornerRadius="4"
+                                    Padding="6,1" Margin="0,0,6,0">
+                                <TextBlock Text="{loc:Loc Players_Whitelist}" FontSize="11" />
+                            </Border>
+                            <Border IsVisible="{Binding IsBanned}" Background="{StaticResource SemanticDangerPanel}" CornerRadius="4"
+                                    Padding="6,1" Margin="0,0,6,0">
+                                <TextBlock Text="{loc:Loc PlayerDetails_Banned}" FontSize="11" />
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
+                        <Button Content="OP" Padding="8,2" Command="{Binding OpCommand}" CommandParameter="{Binding Name}" />
+                        <Button Content="{loc:Loc Kick}" Padding="8,2" Command="{Binding KickCommand}" CommandParameter="{Binding Name}"
+                                IsVisible="{Binding IsOnline}" />
+                        <Button Content="{loc:Loc Ban}" Padding="8,2" Background="{StaticResource DangerButton}" Foreground="White"
+                                Command="{Binding BanCommand}" CommandParameter="{Binding Name}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- What the history knows -->
+            <Border Classes="card stat">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Text="{loc:Loc PlayerDetails_Summary}" Margin="0,0,0,6" />
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_LastSeen}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding LastSeenText}" Margin="0,2" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_FirstSeen}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FirstSeenText}" Margin="0,2" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_Sessions}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SessionsText}" Margin="0,2" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_Played}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding PlayedText}" Margin="0,2" />
+                        <TextBlock Grid.Row="4" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_Messages}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding MessagesText}" Margin="0,2" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- What the server itself counts -->
+            <Border Classes="card stat" IsVisible="{Binding HasStats}">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Text="{loc:Loc PlayerDetails_Stats}" />
+                    <TextBlock Classes="statLabel" TextWrapping="Wrap" Text="{loc:Loc PlayerDetails_StatsHint}" Margin="0,0,0,6" />
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatPlayTime}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding StatsPlayTime}" Margin="0,2" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatDeaths}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding StatsDeaths}" Margin="0,2" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatMobKills}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding StatsMobKills}" Margin="0,2" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatPlayerKills}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding StatsPlayerKills}" Margin="0,2" />
+                        <TextBlock Grid.Row="4" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatDistance}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding StatsDistance}" Margin="0,2" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Activity -->
+            <Border Classes="card stat">
+                <StackPanel>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock FontWeight="SemiBold" Text="{loc:Loc PlayerDetails_Activity}" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                            <ToggleButton Padding="8,2" Content="{loc:Loc PlayerDetails_FilterAll}"
+                                          IsChecked="{Binding IsFilterAll, Mode=OneWay}" Command="{Binding ShowAllCommand}" />
+                            <ToggleButton Padding="8,2" Content="{loc:Loc PlayerDetails_FilterConnections}"
+                                          IsChecked="{Binding IsFilterConnections, Mode=OneWay}" Command="{Binding ShowConnectionsCommand}" />
+                            <ToggleButton Padding="8,2" Content="{loc:Loc PlayerDetails_FilterChat}"
+                                          IsChecked="{Binding IsFilterChat, Mode=OneWay}" Command="{Binding ShowChatCommand}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Classes="statLabel" Text="{loc:Loc PlayerDetails_NoActivity}" Margin="0,8,0,0"
+                               IsVisible="{Binding IsEmpty}" TextWrapping="Wrap" />
+
+                    <ItemsControl ItemsSource="{Binding Events}" Margin="0,6,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,24,*" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="{Binding TimeText}" Opacity="0.6" FontSize="12"
+                                               VerticalAlignment="Top" Margin="0,1,10,0" MinWidth="110" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Icon}" VerticalAlignment="Top" />
+                                    <SelectableTextBlock Grid.Column="2" Text="{Binding Text}" TextWrapping="Wrap" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Margin="0,8,0,0" Content="{loc:Loc PlayerDetails_ShowMore}" Command="{Binding ShowMoreCommand}"
+                            IsVisible="{Binding HasMore}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Forget -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="{loc:Loc PlayerDetails_Clear}" Command="{Binding ClearHistoryCommand}"
+                        IsVisible="{Binding !ConfirmingClear}" />
+                <TextBlock Text="{loc:Loc PlayerDetails_ClearConfirm}" VerticalAlignment="Center" TextWrapping="Wrap"
+                           IsVisible="{Binding ConfirmingClear}" />
+                <Button Content="{loc:Loc PlayerDetails_ClearYes}" Background="{StaticResource DangerButton}" Foreground="White"
+                        Command="{Binding ClearHistoryCommand}" IsVisible="{Binding ConfirmingClear}" />
+                <Button Content="{loc:Loc Cancel}" Command="{Binding CancelClearCommand}" IsVisible="{Binding ConfirmingClear}" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
