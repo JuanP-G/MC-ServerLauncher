@@ -117,6 +117,10 @@ Anything that alters behaviour alters the docs in the same commit, and **both la
 - **One question, one definition.** If two places answer the same question, route both through
   one (`PlayitApiService.Match`, `ModrinthService.ApiHashes`, `ContentManifest`) and add a test
   that fails when a second copy appears.
+- **State that must survive a rebuild lives outside what gets rebuilt** (pending mod updates are kept
+  by `ServerModsViewModel`, not only on the rows it throws away after every update).
+- **JVM options the app adds are gated by the Java version** (`ServerProcessManager.ImpliedJvmFlags`):
+  an unrecognised option stops the JVM from starting.
 - **Read what the loader reads**: jars inside jars (`META-INF/jars/`, `META-INF/jarjar/`) and
   libraries the loader bundles (`mixinextras`) count as installed.
 - **Secrets are encrypted at rest** (`SecretProtector`: DPAPI on Windows, AES-GCM elsewhere).
