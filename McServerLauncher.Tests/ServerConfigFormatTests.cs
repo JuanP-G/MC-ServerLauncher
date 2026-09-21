@@ -35,7 +35,8 @@ public class ServerConfigFormatTests : IDisposable
     {
         "Id", "Name", "FolderPath", "JarFile", "Type", "GameVersion", "ModLoaderVersion", "ForgeArgs",
         "JavaPath", "MinRamGb", "MaxRamGb", "ExtraJvmArgs", "PlayitEnabled", "TunnelAddress",
-        "BackupsEnabled", "BackupRetention", "IdleShutdownMinutes", "WakeOnDemand", "CrossplayEnabled",
+        "BackupsEnabled", "BackupRetention", "AutoBackupEnabled", "BackupIntervalMinutes",
+        "ManualBackupRetention", "IdleShutdownMinutes", "WakeOnDemand", "CrossplayEnabled",
         "BedrockModContentEnabled", "MultiVersionEnabled", "BedrockPort", "UseCustomNotifications",
         "Notifications", "LastKnownSeed"
     };
@@ -65,6 +66,9 @@ public class ServerConfigFormatTests : IDisposable
         TunnelAddress = "algo.gl.joinmc.link",
         BackupsEnabled = false,
         BackupRetention = 9,
+        AutoBackupEnabled = false,
+        BackupIntervalMinutes = 15,
+        ManualBackupRetention = 12,
         IdleShutdownMinutes = 20,
         WakeOnDemand = true,
         CrossplayEnabled = true,
@@ -146,6 +150,9 @@ public class ServerConfigFormatTests : IDisposable
         Assert.Equal(original.TunnelAddress, loaded.TunnelAddress);
         Assert.Equal(original.BackupsEnabled, loaded.BackupsEnabled);
         Assert.Equal(original.BackupRetention, loaded.BackupRetention);
+        Assert.Equal(original.AutoBackupEnabled, loaded.AutoBackupEnabled);
+        Assert.Equal(original.BackupIntervalMinutes, loaded.BackupIntervalMinutes);
+        Assert.Equal(original.ManualBackupRetention, loaded.ManualBackupRetention);
         Assert.Equal(original.IdleShutdownMinutes, loaded.IdleShutdownMinutes);
         Assert.Equal(original.WakeOnDemand, loaded.WakeOnDemand);
         Assert.Equal(original.CrossplayEnabled, loaded.CrossplayEnabled);
@@ -204,6 +211,13 @@ public class ServerConfigFormatTests : IDisposable
         Assert.Equal("1.20.1-47.2.0", loaded.ForgeArgs);
         Assert.Equal(4, loaded.MaxRamGb);
         Assert.True(loaded.BackupsEnabled);
+
+        // Fields the old file never had: a server saved before this version starts backing itself
+        // up hourly while it is played, which is the default a new one gets too.
+        Assert.True(loaded.AutoBackupEnabled);
+        Assert.Equal(60, loaded.BackupIntervalMinutes);
+        Assert.Equal(5, loaded.ManualBackupRetention);
+
         Assert.Null(loaded.TunnelAddress);
         Assert.Null(loaded.Notifications);
     }

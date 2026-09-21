@@ -42,6 +42,19 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Refreshes the idle countdown once a second. Runs only while one is on screen.</summary>
     private readonly DispatcherTimer _idleCountdownTimer;
     private readonly DispatcherTimer _playitTimer;
+    private readonly DispatcherTimer _autoBackupTimer;
+
+    /// <summary>Only one backup of this server at a time, whoever asked for it.</summary>
+    private readonly SemaphoreSlim _backupGate = new(1, 1);
+
+    /// <summary>When the clock last made — or deliberately skipped — an automatic backup.</summary>
+    private DateTime _lastAutoBackupUtc;
+
+    /// <summary>Whether anybody has been connected since then. See <see cref="BackupSchedule"/>.</summary>
+    private bool _playedSinceBackup;
+
+    /// <summary>Armed while a backup is waiting for the server to confirm it has saved.</summary>
+    private TaskCompletionSource<bool>? _saveConfirmed;
 
     // --- Auto-restart on crash ---
     // If the server exits on its own (not via the Stop button), it's relaunched automatically, up
@@ -389,6 +402,12 @@ public partial class ServerViewModel : ObservableObject
         // tunnel address (via the playit API) less often.
         _playitTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _playitTimer.Tick += OnPlayitTimerTick;
+
+        // Ticks every minute and asks the clock whether the interval has run out, rather than being
+        // rescheduled whenever the interval is changed: one less thing to keep in step with the
+        // config, and changing the interval takes effect without restarting anything.
+        _autoBackupTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
+        _autoBackupTimer.Tick += (_, _) => OnAutoBackupTick();
 
         // Before RefreshInfo, which refreshes the player lists and with them this.
         History = new PlayerHistoryViewModel(this);
@@ -911,10 +930,16 @@ public partial class ServerViewModel : ObservableObject
             _stats.Reset();
             _statsTimer.Start();
             _lastRunningAtUtc = DateTime.UtcNow;
+
+            // The interval starts now: the pre-start backup already covers the world as it is.
+            _lastAutoBackupUtc = DateTime.UtcNow;
+            _playedSinceBackup = false;
+            _autoBackupTimer.Start();
         }
         else if (state == ServerState.Stopped)
         {
             _statsTimer.Stop();
+            _autoBackupTimer.Stop();
 
             // Explicitly, not just by waiting for the next CheckIdleShutdown: that runs off the
             // stats timer, which has just been stopped, so a server that went straight from Running
@@ -985,6 +1010,10 @@ public partial class ServerViewModel : ObservableObject
                 Config.LastKnownSeed = seed;
                 ConfigChanged?.Invoke();
             });
+
+        // The server's answer to "save-all flush", which a backup of a running world waits for.
+        if (source == ConsoleSource.Stdout && SaveConfirmation.IsSaveFinished(line))
+            _saveConfirmed?.TrySetResult(true);
 
         // Here, on the output's own thread, so writing the history to disk never holds up the UI.
         if (source == ConsoleSource.Stdout) History.OnServerLine(line, _onlineNames);
@@ -1263,7 +1292,7 @@ public partial class ServerViewModel : ObservableObject
             // Back up the world right before touching it again: the safety net that matters most,
             // since it covers every start path (manual, Restart, and auto-restart after a crash).
             if (Config.BackupsEnabled)
-                await _backups.CreateBackupAsync(Config, "start", new Progress<string>(OnConsoleLine));
+                await RunBackupAsync("start");
 
             _process.Start(Config);
             // Playit already runs as a background service: we don't launch another agent.
@@ -1625,12 +1654,110 @@ public partial class ServerViewModel : ObservableObject
             // (or, when closing, simply not needing one) already covers those.
             if (Config.BackupsEnabled)
             {
-                await _backups.CreateBackupAsync(Config, "stop", new Progress<string>(OnConsoleLine));
+                await RunBackupAsync("stop");
                 Backups.RefreshCommand.Execute(null);
             }
         }
         catch (Exception ex)
         {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
+
+    /// <summary>
+    /// Makes one backup of this server's world — the only way any of them are made.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Before a start, after a stop, on the clock and from the button all come through here, so
+    /// that two can never overlap and so that "is the server running?" is answered in one place.
+    /// While it is running the copy goes through <see cref="LiveWorldBackup"/>, which asks Minecraft
+    /// to let go of the world first; while it is stopped there is nothing to ask.
+    /// </para>
+    /// <para>
+    /// A second request while one is in progress is refused rather than queued. The reason to ask
+    /// twice is impatience, and answering it with a second copy of a world that is already being
+    /// copied would only make the first one slower.
+    /// </para>
+    /// </remarks>
+    public async Task<string?> RunBackupAsync(string trigger, CancellationToken ct = default)
+    {
+        if (!await _backupGate.WaitAsync(0, ct))
+        {
+            OnConsoleLine(Localizer.Get("Msg_BackupAlreadyRunning"));
+            return null;
+        }
+
+        try
+        {
+            var log = new Progress<string>(OnConsoleLine);
+            return _process.IsRunning
+                ? await LiveWorldBackup.RunAsync(_backups, Config, trigger,
+                    _process.SendCommand, WaitForSaveAsync, log, ct)
+                : await _backups.CreateBackupAsync(Config, trigger, log, ct);
+        }
+        finally
+        {
+            _backupGate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Waits for the server to say it has saved, or gives up after <paramref name="timeout"/>.
+    /// </summary>
+    /// <remarks>
+    /// Arms the listener synchronously, before its first await, so that a caller can start the wait
+    /// and only then send the command it is waiting for — which is the order that cannot miss an
+    /// answer from a world small enough to flush instantly.
+    /// </remarks>
+    private async Task<bool> WaitForSaveAsync(TimeSpan timeout)
+    {
+        var confirmed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _saveConfirmed = confirmed;
+        try
+        {
+            return await Task.WhenAny(confirmed.Task, Task.Delay(timeout)) == confirmed.Task;
+        }
+        finally
+        {
+            _saveConfirmed = null;
+        }
+    }
+
+    /// <summary>Once a minute while the server runs: is it time for an automatic backup?</summary>
+    private void OnAutoBackupTick()
+    {
+        // Asked every tick rather than on join, so a player who came and went between two backups
+        // still counts as somebody having played.
+        if (ConnectedPlayers.Count > 0) _playedSinceBackup = true;
+
+        var enabled = Config.BackupsEnabled && Config.AutoBackupEnabled;
+        switch (BackupSchedule.Due(DateTime.UtcNow, _lastAutoBackupUtc, Config.BackupIntervalMinutes,
+                    _playedSinceBackup, enabled))
+        {
+            case BackupDue.Now:
+                _lastAutoBackupUtc = DateTime.UtcNow;
+                _playedSinceBackup = false;
+                _ = RunAutoBackupAsync();
+                break;
+
+            // Nobody played: don't copy the same world again, but don't ask again in a minute either.
+            case BackupDue.Skip:
+                _lastAutoBackupUtc = DateTime.UtcNow;
+                break;
+        }
+    }
+
+    private async Task RunAutoBackupAsync()
+    {
+        try
+        {
+            await RunBackupAsync("auto");
+            Backups.RefreshIfLoaded();
+        }
+        catch (Exception ex)
+        {
+            // A failed backup must never take the server down with it.
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
         }
     }
@@ -2024,6 +2151,7 @@ public partial class ServerViewModel : ObservableObject
         _statsTimer.Stop();
         _idleCountdownTimer.Stop();
         _playitTimer.Stop();
+        _autoBackupTimer.Stop();
         Mods.Shutdown();                               // cancels anything the store was fetching
         History.Shutdown();                            // drops a rebuild that was waiting its turn
         _wake.Stop();                                  // frees the port we answer on while asleep

@@ -124,8 +124,11 @@ todo con botones.
   mientras arranca. La ventana muestra una **cuenta atrás** hasta el apagado, y un servidor recién despertado
   tiene un margen para que no se apague antes de que dé tiempo a entrar. Las dos mitades son **por servidor y
   vienen desactivadas**.
-- **Copias de seguridad del mundo** 💾 — una copia antes de cada arranque y en cada parada, con el número de
-  copias que quieras conservar, más **copia ahora** y **restaurar** con un clic desde la app.
+- **Copias de seguridad del mundo** 💾 — una copia antes de cada arranque, en cada parada y, si lo dejas
+  puesto, cada hora mientras se juega. Para copiar un servidor arrancado se le pide antes a Minecraft que
+  deje de escribir el mundo y lo vuelque a disco, así que la copia nunca queda a medias; y si nadie se ha
+  conectado desde la anterior, esa se salta. Las copias que haces tú a mano se cuentan aparte, así que el
+  reloj nunca las borra. Además, **copia ahora** y **restaurar** con un clic desde la app.
 - **No estorba** — puedes minimizar y/o cerrar **a la bandeja del sistema** para que tus servidores sigan
   funcionando sin la ventana en medio. Y si vuelves a abrir la app, recupera esa ventana en lugar de abrir una
   segunda copia sobre los mismos servidores.

@@ -34,11 +34,23 @@ public partial class ServerBackupsViewModel : ObservableObject
     private string _statusText = string.Empty;
 
     /// <summary>
-    /// Backups can only be made/restored while the server is stopped: zipping (or replacing) the
-    /// world folder while the JVM has it open and is actively writing risks a torn/inconsistent
-    /// snapshot. Both automatic triggers (pre-start, post-stop) already only run while stopped.
+    /// A backup can be made at any time now, running or not.
     /// </summary>
-    public bool CanBackupNow => !_server.IsRunning && !IsBusy;
+    /// <remarks>
+    /// It used to need the server stopped, because zipping a world the JVM is writing to gives a
+    /// torn copy. That is still true; what changed is that the server is now asked to let go of the
+    /// world first — see <see cref="LiveWorldBackup"/>.
+    /// </remarks>
+    public bool CanBackupNow => !IsBusy;
+
+    /// <summary>
+    /// Restoring still needs the server stopped, and always will.
+    /// </summary>
+    /// <remarks>
+    /// It deletes the world folder and unpacks another one in its place. There is no asking
+    /// Minecraft to tolerate that.
+    /// </remarks>
+    public bool CanRestore => !_server.IsRunning && !IsBusy;
 
     public ServerBackupsViewModel(ServerViewModel server)
     {
@@ -55,6 +67,7 @@ public partial class ServerBackupsViewModel : ObservableObject
     private void RaiseCanBackupNowChanged()
     {
         OnPropertyChanged(nameof(CanBackupNow));
+        OnPropertyChanged(nameof(CanRestore));
         BackupNowCommand.NotifyCanExecuteChanged();
         RestoreCommand.NotifyCanExecuteChanged();
     }
@@ -93,7 +106,10 @@ public partial class ServerBackupsViewModel : ObservableObject
         StatusText = Localizer.Get("Backup_Creating");
         try
         {
-            var path = await _backupService.CreateBackupAsync(Config, "manual", new Progress<string>(s => StatusText = s));
+            // Through the server, not straight to the service: it is the one that knows whether
+            // the world has to be prised out of a running JVM first, and it holds the one gate that
+            // keeps this from overlapping with a backup the clock started a second earlier.
+            var path = await _server.RunBackupAsync("manual");
             StatusText = path is not null ? Localizer.Get("Backup_Done") : Localizer.Get("Backup_NothingToBackUp");
             Refresh();
         }
@@ -107,7 +123,7 @@ public partial class ServerBackupsViewModel : ObservableObject
         }
     }
 
-    [RelayCommand(CanExecute = nameof(CanBackupNow))]
+    [RelayCommand(CanExecute = nameof(CanRestore))]
     private async Task Restore(BackupItemViewModel? item)
     {
         if (item is null) return;
@@ -171,6 +187,7 @@ public partial class BackupItemViewModel : ObservableObject
             "start" => "Backup_TriggerStart",
             "stop" => "Backup_TriggerStop",
             "manual" => "Backup_TriggerManual",
+            "auto" => "Backup_TriggerAuto",
             "before-restore" => "Backup_TriggerBeforeRestore",
             _ => "Backup_TriggerUnknown"
         });

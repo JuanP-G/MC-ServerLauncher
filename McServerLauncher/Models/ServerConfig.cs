@@ -139,9 +139,34 @@ public partial class ServerConfig : ObservableObject
     [ObservableProperty]
     private bool _backupsEnabled = true;
 
-    /// <summary>How many backups to keep; older ones are deleted after each new one.</summary>
+    /// <summary>
+    /// How many automatic backups to keep — the ones made on starting, on stopping, and by the
+    /// clock. Older ones are deleted after each new one.
+    /// </summary>
     [ObservableProperty]
     private int _backupRetention = 5;
+
+    /// <summary>Whether backups are also made at intervals while the server is running.</summary>
+    [ObservableProperty]
+    private bool _autoBackupEnabled = true;
+
+    /// <summary>
+    /// Minutes between automatic backups while the server is running. Clamped when it is read
+    /// (see <c>BackupSchedule</c>), so a hand-edited zero cannot mean "on every tick".
+    /// </summary>
+    [ObservableProperty]
+    private int _backupIntervalMinutes = 60;
+
+    /// <summary>
+    /// How many of the backups the user asked for to keep, counted separately.
+    /// </summary>
+    /// <remarks>
+    /// With a backup every hour, a single shared count would be full of automatic ones by the
+    /// morning, and the copy somebody took by hand before trying something would be gone — which is
+    /// the one backup they were sure they still had.
+    /// </remarks>
+    [ObservableProperty]
+    private int _manualBackupRetention = 5;
 
     // --- Sleeping and waking ---
 

@@ -259,9 +259,19 @@
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Sicherung wird wiederhergestellt...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Sicherung wiederhergestellt.</value></data>
   <data name="Backups" xml:space="preserve"><value>Sicherungen</value></data>
-  <data name="Backup_Hint" xml:space="preserve"><value>Vor jedem Start und beim Stoppen des Servers wird automatisch eine Sicherung der Welt erstellt. Sicherungen können nur erstellt oder wiederhergestellt werden, während der Server gestoppt ist.</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>Vor jedem Start, beim Stoppen des Servers und — wenn eingeschaltet — in Abständen während gespielt wird, wird automatisch eine Sicherung der Welt erstellt. Zum Wiederherstellen muss der Server weiterhin gestoppt sein.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Jetzt sichern</value></data>
-  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Der Server muss gestoppt sein, um eine Sicherung zu erstellen.</value></data>
+  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Die Welt jetzt sichern, ob der Server läuft oder gestoppt ist.</value></data>
+  <data name="Backup_TriggerAuto" xml:space="preserve"><value>Automatisch</value></data>
+  <data name="Backup_AutoWhilePlaying" xml:space="preserve"><value>Auch in Abständen, während gespielt wird</value></data>
+  <data name="Backup_IntervalLabel" xml:space="preserve"><value>Alle (Minuten):</value></data>
+  <data name="Backup_ManualRetentionLabel" xml:space="preserve"><value>Aufzubewahrende manuelle Sicherungen:</value></data>
+  <data name="Backup_AutoHint" xml:space="preserve"><value>Vor dem Kopieren wird der Server gebeten, die Welt nicht mehr zu schreiben und auf die Festplatte zu leeren, damit eine Sicherung nie halb geschrieben ist. Hat seit der letzten niemand gespielt, wird diese übersprungen. Manuelle Sicherungen zählen getrennt, und die Uhr löscht sie nie.</value></data>
+  <data name="Backup_RestoreNeedsStoppedTip" xml:space="preserve"><value>Der Server muss gestoppt sein, um eine Sicherung wiederherzustellen.</value></data>
+  <data name="Msg_BackupPausingSaves" xml:space="preserve"><value>[Sicherung] Speichern der Welt wird pausiert…</value></data>
+  <data name="Msg_BackupSaveNotConfirmed" xml:space="preserve"><value>[Sicherung] Der Server hat das Speichern nicht rechtzeitig bestätigt; es wird trotzdem kopiert.</value></data>
+  <data name="Msg_BackupSavesResumed" xml:space="preserve"><value>[Sicherung] Speichern der Welt fortgesetzt.</value></data>
+  <data name="Msg_BackupAlreadyRunning" xml:space="preserve"><value>[Sicherung] Es läuft bereits eine Sicherung.</value></data>
   <data name="Backup_NoneYet" xml:space="preserve"><value>Noch keine Sicherungen vorhanden.</value></data>
   <data name="Backup_RestoreButton" xml:space="preserve"><value>Wiederherstellen</value></data>
   <data name="Backup_RestoreTitle" xml:space="preserve"><value>Sicherung wiederherstellen</value></data>
@@ -289,8 +299,8 @@
   <data name="Idle_Hint" xml:space="preserve"><value>0 = wird nie gestoppt. Die Zeit läuft ab dem Weggehen des letzten Spielers und wird zurückgesetzt, sobald jemand beitritt.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>{0} Minuten ohne Spieler: Der Server wird gestoppt.</value></data>
   <data name="Backup_Section" xml:space="preserve"><value>Welt-Sicherungen</value></data>
-  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Sicherungen automatisch erstellen (vor dem Start und beim Stoppen)</value></data>
-  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Aufzubewahrende Sicherungen:</value></data>
+  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Sicherungen automatisch erstellen</value></data>
+  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Aufzubewahrende automatische Sicherungen:</value></data>
   <data name="Msg_PlayitServiceNotInstalled" xml:space="preserve"><value>[Playit] Der Playit-Dienst ist auf diesem Computer nicht installiert.</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Der Dienst konnte nicht geändert werden (erfordert meist, die App als Administrator zu starten oder das Tray-Symbol zu verwenden): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Der Server-Port konnte nicht ermittelt werden (fehlt server.properties?).</value></data>

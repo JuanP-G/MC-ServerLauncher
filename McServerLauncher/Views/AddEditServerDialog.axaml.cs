@@ -213,6 +213,9 @@ public partial class AddEditServerDialog : Window
         _config.BedrockPort = original.BedrockPort;
         _config.BackupsEnabled = original.BackupsEnabled;
         _config.BackupRetention = original.BackupRetention;
+        _config.AutoBackupEnabled = original.AutoBackupEnabled;
+        _config.BackupIntervalMinutes = original.BackupIntervalMinutes;
+        _config.ManualBackupRetention = original.ManualBackupRetention;
         _config.UseCustomNotifications = original.UseCustomNotifications;
         _config.Notifications = original.Notifications;
     }

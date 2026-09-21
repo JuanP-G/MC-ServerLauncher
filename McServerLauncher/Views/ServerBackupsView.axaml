@@ -65,7 +65,8 @@
                                             Content="{loc:Loc Backup_RestoreButton}"
                                             Command="{Binding DataContext.RestoreCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                             CommandParameter="{Binding}"
-                                            IsEnabled="{Binding DataContext.CanBackupNow, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                                            IsEnabled="{Binding DataContext.CanRestore, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            ToolTip.Tip="{loc:Loc Backup_RestoreNeedsStoppedTip}" />
 
                                     <Button Grid.Column="2" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="6"
                                             Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"

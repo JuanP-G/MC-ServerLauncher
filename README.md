@@ -117,8 +117,11 @@ all with buttons.
   so the server list shows *"Off · join to start it"* and whoever presses Join gets a message while it boots.
   The window shows a **countdown** to the shutdown, and a freshly woken server gets a grace period so it is
   never stopped before anyone can get in. Both halves are per server and **off by default**.
-- **Automatic world backups** 💾 — a copy before every start and on every stop, a configurable number kept,
-  plus **Back up now** and one-click **restore** from the app.
+- **Automatic world backups** 💾 — a copy before every start, on every stop and, if you leave it on, every
+  hour while people are playing. A backup of a running server asks Minecraft to stop writing the world and
+  flush it to disk first, so it is never half-written, and one that nobody played since is skipped rather
+  than made again. Backups you take by hand are counted separately, so the clock never deletes them. Plus
+  **Back up now** and one-click **restore** from the app.
 - **Stays out of the way** — optionally minimize and/or close **to the system tray** so your servers keep
   running with the window gone. Launching the app again brings that window back instead of opening a second
   copy over the same servers.
