@@ -209,7 +209,7 @@ public class PendingUpdateTests : IDisposable
         // from the list at the same time would race it for the same folder.
         var list = Regex.Matches(Markup(), @"<ListBox\b[\s\S]*?>")
             .Select(m => m.Value)
-            .Single(v => v.Contains("{Binding InstalledMods}", StringComparison.Ordinal));
+            .Single(v => v.Contains("{Binding VisibleInstalledMods}", StringComparison.Ordinal));
 
         Assert.Contains("IsEnabled=\"{Binding !IsUpdatingAll}\"", list);
     }

@@ -396,6 +396,10 @@
   <data name="SearchMods_Placeholder" xml:space="preserve"><value>Rechercher sur Modrinth...</value></data>
   <data name="Search" xml:space="preserve"><value>Rechercher</value></data>
   <data name="Installed_Mods" xml:space="preserve"><value>Mods installés</value></data>
+  <data name="Mods_InstalledFilter" xml:space="preserve"><value>Rechercher dans les mods installés</value></data>
+  <data name="Plugins_InstalledFilter" xml:space="preserve"><value>Rechercher dans les plugins installés</value></data>
+  <data name="Mods_InstalledNoMatch" xml:space="preserve"><value>Rien de ce qui est installé ne correspond à la recherche.</value></data>
+  <data name="Mods_InstalledCountFmt" xml:space="preserve"><value>{0} sur {1}</value></data>
   <data name="No_Installed_Mods" xml:space="preserve"><value>Aucun mod installé pour l'instant.</value></data>
   <data name="Install" xml:space="preserve"><value>Installer</value></data>
   <data name="Mods" xml:space="preserve"><value>Mods</value></data>

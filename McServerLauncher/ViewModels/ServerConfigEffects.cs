@@ -130,6 +130,7 @@ public static class ServerConfigEffects
                 nameof(ServerModsViewModel.BrowseTitle),
                 nameof(ServerModsViewModel.InstalledTitle),
                 nameof(ServerModsViewModel.SearchPlaceholder),
+                nameof(ServerModsViewModel.InstalledFilterPlaceholder),
                 nameof(ServerModsViewModel.NoInstalledText),
                 nameof(ServerModsViewModel.FilterTypeText),
                 nameof(ServerModsViewModel.FilterTypeBrush),

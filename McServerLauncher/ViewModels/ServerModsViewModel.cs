@@ -71,6 +71,41 @@ public partial class ServerModsViewModel : ObservableObject
     
     public ObservableCollection<ModItem> InstalledMods { get; } = new();
 
+    /// <summary>
+    /// What the installed list shows: <see cref="InstalledMods"/> through <see cref="InstalledFilter"/>.
+    /// </summary>
+    /// <remarks>
+    /// A copy rather than a filter on <see cref="InstalledMods"/> itself, because that one is also
+    /// what counts pending updates and what "update all" walks. Filtering it in place would make a
+    /// search box quietly hide updates from both.
+    /// </remarks>
+    public BulkObservableCollection<ModItem> VisibleInstalledMods { get; } = new();
+
+    /// <summary>The words typed in the installed list's search box.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsInstalledFiltered))]
+    private string _installedFilter = string.Empty;
+
+    public bool IsInstalledFiltered => !string.IsNullOrWhiteSpace(InstalledFilter);
+
+    /// <summary>Something is installed, but the search leaves none of it.</summary>
+    public bool HasNoMatches => InstalledMods.Count > 0 && VisibleInstalledMods.Count == 0;
+
+    /// <summary>"12", or "3 of 12" while searching.</summary>
+    public string InstalledCountText => IsInstalledFiltered
+        ? string.Format(Localizer.Get("Mods_InstalledCountFmt"), VisibleInstalledMods.Count, InstalledMods.Count)
+        : InstalledMods.Count.ToString(System.Globalization.CultureInfo.CurrentUICulture);
+
+    partial void OnInstalledFilterChanged(string value) => RebuildVisibleInstalled();
+
+    private void RebuildVisibleInstalled()
+    {
+        var words = InstalledModFilter.Words(InstalledFilter);
+        VisibleInstalledMods.ReplaceAll(InstalledMods.Where(m => InstalledModFilter.Matches(m.FileName, words)));
+        OnPropertyChanged(nameof(HasNoMatches));
+        OnPropertyChanged(nameof(InstalledCountText));
+    }
+
     // --- Marketplace State ---
     
     [ObservableProperty]
@@ -448,6 +483,7 @@ public partial class ServerModsViewModel : ObservableObject
     public string InstalledTitle => Localizer.Get(IsPluginBased ? "Installed_Plugins" : "Installed_Mods");
     public string SearchPlaceholder => Localizer.Get(IsPluginBased ? "SearchPlugins_Placeholder" : "SearchMods_Placeholder");
     public string NoInstalledText => Localizer.Get(IsPluginBased ? "No_Installed_Plugins" : "No_Installed_Mods");
+    public string InstalledFilterPlaceholder => Localizer.Get(IsPluginBased ? "Plugins_InstalledFilter" : "Mods_InstalledFilter");
 
     // Active filter (results are always limited to this server's type + version).
     public string FilterTypeText => _config.Type.ToString();
@@ -606,6 +642,9 @@ public partial class ServerModsViewModel : ObservableObject
             ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), PendingUpdateCount)
             : string.Empty;
         NotifyPendingUpdatesChanged();
+
+        // After the scan, so a search typed before a rescan still applies to what is there now.
+        RebuildVisibleInstalled();
     }
 
     /// <summary>
