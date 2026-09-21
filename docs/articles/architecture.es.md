@@ -269,11 +269,19 @@ mundo. No hay rutas fijas del equipo en el código.
   `bluemap reload`. El resto de avisos de un arranque con mods (refmaps, mixins dirigidos a mods ausentes, un
   valor del registro de Windows, Distant Horizons recomendando ZGC para los FPS del cliente) no le toca
   cambiarlos a la app.
-- **`ServerDetectionService`** — inspecciona una carpeta para averiguar el tipo/versión de un servidor
-  existente cuando el usuario añade uno que ya está. Corre dos veces: al entrar desde *Añadir
-  servidor*, y otra vez al arrancar para los servidores guardados antes de que esos campos
-  existieran. No rellena nada en una config que ya dice su versión, así que la segunda pasada sale
-  gratis y ninguna de las dos puede llevarle la contraria al usuario.
+- **`ServerDetectionService`** / **`ExistingServer`** — averiguan qué hay en una carpeta y la adoptan.
+  `Detect(carpeta)` devuelve un `ServerDetection` sin tocar nada: el tipo, las versiones de Minecraft y
+  del loader, qué arrancar (un jar, o el archivo de argumentos de Forge/NeoForge), el puerto de
+  `server.properties`, la memoria de `user_jvm_args.txt` o de los scripts de arranque (saltándose los
+  comentarios: el de Forge es casi todo un `-Xmx4G` de ejemplo que nadie eligió), si hay mundo, y los
+  jars de la raíz para elegir uno a mano. El *usar una carpeta que ya existe* del diálogo de crear lo
+  enseña, bloquea lo detectado y solo pregunta el resto; sustituyó al botón *Añadir*, cuyo diálogo
+  pedía el nombre del jar a mano y se saltaba el túnel, el crossplay y el arranque. `ExistingServer`
+  construye la config con la detección y el formulario (gana la detección) y nunca escribe en la
+  carpeta, salvo `server-port` si el usuario lo cambió. `DetectAndFill` es una capa fina sobre
+  `Detect` que, al arrancar, rellena los servidores guardados antes de que se guardaran el tipo y la
+  versión; no toca una config que ya dice su versión. Purpur se mira antes que Paper: antes no
+  coincidía con nada, ni siquiera en los servidores que crea esta app.
 - **`ServerIconService`** — genera el `server-icon.png` de un servidor: toma cualquier imagen del
   usuario, la recorta al cuadrado centrado y la escala a 64×64 con SkiaSharp. (Quien lo lee de vuelta
   para la vista estilo Minecraft es `ServerViewModel.LoadIcon`.)

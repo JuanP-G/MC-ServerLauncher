@@ -119,12 +119,6 @@
                             </StackPanel>
                         </Button>
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <Button Command="{Binding AddServerCommand}" ToolTip.Tip="{loc:Loc Tip_Add}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="FolderAdd" />
-                                    <TextBlock Text="{loc:Loc Add}" />
-                                </StackPanel>
-                            </Button>
                             <Button Command="{Binding EditServerCommand}" ToolTip.Tip="{loc:Loc Tip_Edit}">
                                 <ic:SymbolIcon Symbol="Edit" />
                             </Button>

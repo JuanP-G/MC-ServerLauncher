@@ -10,19 +10,47 @@
     <Grid RowDefinitions="*,Auto,Auto">
         <ScrollViewer Grid.Row="0" Margin="20,20,20,8" VerticalScrollBarVisibility="Auto">
             <StackPanel x:Name="FormPanel">
+                <!-- One dialog for both: making a server from nothing, or taking over a folder that
+                     already holds one. The second used to be a separate "Add" button with its own
+                     dialog, which asked for a jar name by hand and ignored the options below. -->
+                <StackPanel Orientation="Horizontal" Spacing="18" Margin="0,0,0,14">
+                    <RadioButton x:Name="NewModeRadio" GroupName="CreateMode" IsChecked="True"
+                                 Content="{loc:Loc Cs_ModeNew}" IsCheckedChanged="Mode_Changed" />
+                    <RadioButton x:Name="ExistingModeRadio" GroupName="CreateMode"
+                                 Content="{loc:Loc Cs_ModeExisting}" IsCheckedChanged="Mode_Changed" />
+                </StackPanel>
+
+                <StackPanel x:Name="ExistingPanel" IsVisible="False" Margin="0,0,0,12">
+                    <TextBlock Text="{loc:Loc Cs_ExistingFolder}" Margin="0,4" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox x:Name="ExistingFolderBox" Grid.Column="0" Watermark="{loc:Loc Cs_ExistingFolderPlaceholder}" />
+                        <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseExisting_Click" />
+                    </Grid>
+                    <TextBlock x:Name="DetectionSummary" Margin="2,6,0,0" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource SemanticOk}" IsVisible="False" />
+                    <TextBlock x:Name="DetectionMissing" Margin="2,4,0,0" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource SemanticWarn}" IsVisible="False" />
+                    <StackPanel x:Name="JarPanel" IsVisible="False" Margin="0,8,0,0">
+                        <TextBlock Text="{loc:Loc Cs_ExistingJar}" Margin="0,0,0,4" />
+                        <ComboBox x:Name="JarCombo" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                </StackPanel>
+
                 <TextBlock Text="{loc:Loc Cs_Name}" Margin="0,4" />
                 <TextBox x:Name="NameBox" Watermark="{loc:Loc Cs_NamePlaceholder}" />
 
-                <TextBlock Text="{loc:Loc Cs_ParentFolder}" Margin="0,12,0,4" />
-                <Grid ColumnDefinitions="*,Auto">
-                    <TextBox x:Name="ParentFolderBox" Grid.Column="0" />
-                    <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseParent_Click" />
-                </Grid>
-                <TextBlock x:Name="FinalPathText" Margin="2,4,0,0" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                <StackPanel x:Name="NewFolderPanel">
+                    <TextBlock Text="{loc:Loc Cs_ParentFolder}" Margin="0,12,0,4" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox x:Name="ParentFolderBox" Grid.Column="0" />
+                        <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseParent_Click" />
+                    </Grid>
+                    <TextBlock x:Name="FinalPathText" Margin="2,4,0,0" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                </StackPanel>
                 <TextBlock x:Name="PathWarning" Margin="2,4,0,0" FontSize="12" TextWrapping="Wrap"
                            IsVisible="False" Foreground="{StaticResource SemanticWarn}" />
 
-                <TextBlock Text="Software" Margin="0,12,0,4" />
+                <TextBlock Text="{loc:Loc Cs_Software}" Margin="0,12,0,4" />
                 <views:ServerTypePicker x:Name="TypePicker" />
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">
@@ -35,9 +63,13 @@
                 </Grid>
                 <TextBlock x:Name="VersionStatus" Margin="2,4,0,0" FontSize="12" Opacity="0.7" Text="{loc:Loc Cs_LoadingVersions}" />
 
-                <TextBlock Text="{loc:Loc Cs_Seed}" Margin="0,12,0,4" />
-                <TextBox x:Name="SeedBox" Watermark="{loc:Loc Cs_SeedPlaceholder}" MaxLength="256" />
-                <TextBlock Margin="2,4,0,0" FontSize="12" Opacity="0.55" TextWrapping="Wrap" Text="{loc:Loc Cs_SeedNote}" />
+                <!-- Only when making one: an existing world already has its seed, and level-seed is
+                     read once, when a world is generated. -->
+                <StackPanel x:Name="SeedPanel">
+                    <TextBlock Text="{loc:Loc Cs_Seed}" Margin="0,12,0,4" />
+                    <TextBox x:Name="SeedBox" Watermark="{loc:Loc Cs_SeedPlaceholder}" MaxLength="256" />
+                    <TextBlock Margin="2,4,0,0" FontSize="12" Opacity="0.55" TextWrapping="Wrap" Text="{loc:Loc Cs_SeedNote}" />
+                </StackPanel>
 
                 <Grid ColumnDefinitions="*,*,*" Margin="0,12,0,0">
                     <StackPanel Grid.Column="0" Margin="0,0,8,0">

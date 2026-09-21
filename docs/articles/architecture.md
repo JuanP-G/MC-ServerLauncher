@@ -263,10 +263,19 @@ are no hard-coded machine paths.
   to fetch Mojang's client files — and on a yes flips that one value in `core.conf` and sends
   `bluemap reload`. The other warnings a modded start prints (refmaps, mixins aimed at absent mods, a Windows
   registry value, Distant Horizons recommending ZGC for client FPS) are not the app's to change.
-- **`ServerDetectionService`** — inspects a folder to figure out an existing server's type/version
-  when the user adds one that already exists. It runs twice: on the way in from *Add server*, and
-  again at startup for servers saved before those fields existed. It fills nothing in a config that
-  already names its version, so the second pass is free and neither can overrule the user.
+- **`ServerDetectionService`** / **`ExistingServer`** — tell what a folder holds and take it over.
+  `Detect(folder)` returns a `ServerDetection` without touching anything: the type, the Minecraft and
+  loader versions, what to launch (a jar, or the Forge/NeoForge args file), the port from
+  `server.properties`, the memory from `user_jvm_args.txt` or the start scripts (skipping comments —
+  Forge's file is mostly an example `-Xmx4G` nobody chose), whether there is a world, and the root
+  jars for picking one by hand. The create dialog's *use a folder that already exists* shows it, locks
+  what was found and asks only for the rest; this replaced the separate *Add* button, whose dialog
+  asked for a jar name by hand and skipped the tunnel, crossplay and start options. `ExistingServer`
+  builds the config from the detection and the form (the detection wins) and never writes to the
+  folder, except `server-port` when the user changed it. `DetectAndFill` is a thin layer over
+  `Detect` that fills in servers saved before the type and version were recorded, at startup; it
+  fills nothing in a config that already names its version. Purpur is checked before Paper — it used
+  to match nothing, even for servers this app created.
 - **`ServerIconService`** — generates a server's `server-icon.png`: takes any user image, crops it to
   a centered square and scales it to 64×64 with SkiaSharp. (`ServerViewModel.LoadIcon` is what reads
   it back for the Minecraft-style view.)

@@ -5,9 +5,8 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="Servers" xml:space="preserve"><value>Server</value></data>
-  <data name="CreateServer" xml:space="preserve"><value>Neuen Server erstellen</value></data>
+  <data name="CreateServer" xml:space="preserve"><value>Server erstellen oder hinzufügen</value></data>
   <data name="Add" xml:space="preserve"><value>Hinzufügen</value></data>
-  <data name="Tip_Add" xml:space="preserve"><value>Einen vorhandenen Server aus einem Ordner hinzufügen</value></data>
   <data name="Tip_Edit" xml:space="preserve"><value>Server bearbeiten</value></data>
   <data name="Tip_Delete" xml:space="preserve"><value>Server löschen</value></data>
   <data name="EmptyState" xml:space="preserve"><value>Wähle oder füge einen Server hinzu, um zu starten.</value></data>
@@ -61,6 +60,27 @@
   <data name="Cancel" xml:space="preserve"><value>Abbrechen</value></data>
   <data name="Save" xml:space="preserve"><value>Speichern</value></data>
   <data name="Browse" xml:space="preserve"><value>Durchsuchen...</value></data>
+  <data name="Cs_ModeNew" xml:space="preserve"><value>Einen neuen erstellen</value></data>
+  <data name="Cs_ModeExisting" xml:space="preserve"><value>Einen vorhandenen Ordner verwenden</value></data>
+  <data name="Cs_ExistingFolder" xml:space="preserve"><value>Serverordner</value></data>
+  <data name="Cs_ExistingFolderPlaceholder" xml:space="preserve"><value>Der Ordner, in dem der Server liegt</value></data>
+  <data name="Cs_ExistingJar" xml:space="preserve"><value>Welche .jar starten</value></data>
+  <data name="Cs_Software" xml:space="preserve"><value>Software</value></data>
+  <data name="Cs_AddButton" xml:space="preserve"><value>Server hinzufügen</value></data>
+  <data name="Cs_DetectedLoaderFmt" xml:space="preserve"><value>Loader {0}</value></data>
+  <data name="Cs_DetectedPortFmt" xml:space="preserve"><value>Port {0}</value></data>
+  <data name="Cs_DetectedWorld" xml:space="preserve"><value>mit Welt</value></data>
+  <data name="Cs_DetectedNoWorld" xml:space="preserve"><value>noch keine Welt</value></data>
+  <data name="Cs_ExistingNotAServer" xml:space="preserve"><value>In diesem Ordner gibt es keine .jar. Ist das der Ordner des Servers?</value></data>
+  <data name="Cs_ExistingPickType" xml:space="preserve"><value>Die Serverart ließ sich nicht erkennen: wähle sie unten, und die Version auch.</value></data>
+  <data name="Cs_ExistingPickVersion" xml:space="preserve"><value>Die Minecraft-Version ließ sich nicht erkennen: wähle sie unten.</value></data>
+  <data name="Cs_ExistingPickJar" xml:space="preserve"><value>Es ließ sich nicht erkennen, welche .jar den Server startet: wähle sie aus der Liste.</value></data>
+  <data name="Cs_ExistingFolderMissing" xml:space="preserve"><value>Dieser Ordner existiert nicht.</value></data>
+  <data name="Cs_ExistingAlreadyAdded" xml:space="preserve"><value>Dieser Server ist schon in der Liste.</value></data>
+  <data name="Cs_ExistingNeedsVersion" xml:space="preserve"><value>Wähle die Minecraft-Version des Servers.</value></data>
+  <data name="Cs_ExistingNeedsJar" xml:space="preserve"><value>Wähle, welche .jar den Server startet.</value></data>
+  <data name="Cs_ExistingAddAnyway" xml:space="preserve"><value>Trotzdem hinzufügen?</value></data>
+  <data name="Cs_ExistingPortWrittenFmt" xml:space="preserve"><value>Port {0} in server.properties gespeichert.</value></data>
   <data name="Cs_Name" xml:space="preserve"><value>Servername</value></data>
   <data name="Cs_NamePlaceholder" xml:space="preserve"><value>z. B. Survival, Kreativ, Events...</value></data>
   <data name="Cs_ParentFolder" xml:space="preserve"><value>Im Ordner erstellen</value></data>
