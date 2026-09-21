@@ -260,6 +260,8 @@ are no hard-coded machine paths.
   it back for the Minecraft-style view.)
 - **`WorldBackupService`** — creates and restores zip backups of a server's world folder
   (`<server>/backups/`), pruning old ones past the retention.
+- **`LiveWorldBackup`** / **`SaveConfirmation`** / **`BackupSchedule`** — backing up a world the
+  server is still playing on: pausing saves, recognising the flush, and deciding when it is due
 - **`CrashReportService`** — reads `crash-reports/*.txt` to pull out the `Description:` line and show
   a human-readable reason for a crash. (The unexpected-exit detection is `ServerProcessManager`'s
   `UnexpectedExit` event; the auto-restart logic lives in `ServerViewModel`.)
@@ -401,8 +403,28 @@ with `AppSettings.LastVersionSeen` and shows `WhatsNewDialog` (localized) with t
 ### World backups
 `WorldBackupService` zips a server's world into `<server>/backups/` on demand and automatically:
 before every start (the main safety net — it also covers Restart and auto-restart after a crash),
-after a manual clean stop, and before a restore. It keeps the most recent ones up to the configured
-retention. `ServerBackupsView` lists them and can restore any backup (taking a safety backup first).
+after a manual clean stop, before a restore, and at intervals while the server is running.
+`ServerBackupsView` lists them and can restore any backup (taking a safety backup first); restoring
+still requires the server to be stopped, because it deletes the world folder and unpacks another one
+in its place.
+
+Backing up a **running** server goes through `LiveWorldBackup`, because zipping a world the JVM is
+writing to gives a torn copy. It asks Minecraft to let go of it first — `save-off`, `save-all flush`,
+wait for the server to say `Saved the game` (recognised by `SaveConfirmation`, anchored after the log
+prefix so a player cannot fake it in chat), zip, `save-on`. The last step is in a `finally`: a failed
+backup is an annoyance, but a server left with saving switched off loses everything played until
+somebody restarts it.
+
+`BackupSchedule` decides when the next automatic one is due, and answers `Skip` when the interval has
+run out but nobody has played since the last one — a server left running overnight barely changes, so
+copying it every hour would only fill the disk. `ServerViewModel.RunBackupAsync` is the single door
+every backup goes through, with a semaphore so two can never overlap.
+
+Retention counts the automatic backups (`start`, `stop`, `auto`) and the user's own (`manual`,
+`before-restore`) **separately**. One shared count stopped working the day backups started happening
+by the clock: overnight the hourly copies would fill the whole allowance, and the backup somebody
+took by hand before trying something would be the first to go. Zips the app did not write are never
+deleted at all.
 
 ### Auto-restart after a crash
 When a server exits unexpectedly, `ServerProcessManager` raises its `UnexpectedExit` event and

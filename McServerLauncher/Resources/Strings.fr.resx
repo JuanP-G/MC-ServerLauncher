@@ -259,9 +259,19 @@
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Restauration de la sauvegarde...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Sauvegarde restaurée.</value></data>
   <data name="Backups" xml:space="preserve"><value>Sauvegardes</value></data>
-  <data name="Backup_Hint" xml:space="preserve"><value>Une sauvegarde du monde est créée automatiquement avant chaque démarrage et à l'arrêt du serveur. Les sauvegardes ne peuvent être créées ou restaurées que lorsque le serveur est arrêté.</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>Une sauvegarde du monde est créée automatiquement avant chaque démarrage, à l'arrêt du serveur et, si vous le laissez activé, à intervalles pendant que l'on joue. La restauration exige toujours que le serveur soit arrêté.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Sauvegarder maintenant</value></data>
-  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Le serveur doit être arrêté pour créer une sauvegarde.</value></data>
+  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Sauvegarder le monde maintenant, que le serveur tourne ou soit arrêté.</value></data>
+  <data name="Backup_TriggerAuto" xml:space="preserve"><value>Automatique</value></data>
+  <data name="Backup_AutoWhilePlaying" xml:space="preserve"><value>Aussi à intervalles pendant que l'on joue</value></data>
+  <data name="Backup_IntervalLabel" xml:space="preserve"><value>Toutes les (minutes) :</value></data>
+  <data name="Backup_ManualRetentionLabel" xml:space="preserve"><value>Sauvegardes manuelles à conserver :</value></data>
+  <data name="Backup_AutoHint" xml:space="preserve"><value>Avant de copier, on demande au serveur d'arrêter d'écrire le monde et de le vider sur le disque, pour qu'une sauvegarde ne soit jamais à moitié écrite. Si personne ne s'est connecté depuis la précédente, celle-ci est sautée. Les sauvegardes manuelles sont comptées à part et l'horloge ne les supprime jamais.</value></data>
+  <data name="Backup_RestoreNeedsStoppedTip" xml:space="preserve"><value>Le serveur doit être arrêté pour restaurer une sauvegarde.</value></data>
+  <data name="Msg_BackupPausingSaves" xml:space="preserve"><value>[Sauvegarde] Mise en pause de l'enregistrement du monde…</value></data>
+  <data name="Msg_BackupSaveNotConfirmed" xml:space="preserve"><value>[Sauvegarde] Le serveur n'a pas confirmé l'enregistrement à temps ; copie quand même.</value></data>
+  <data name="Msg_BackupSavesResumed" xml:space="preserve"><value>[Sauvegarde] Enregistrement du monde repris.</value></data>
+  <data name="Msg_BackupAlreadyRunning" xml:space="preserve"><value>[Sauvegarde] Une sauvegarde est déjà en cours.</value></data>
   <data name="Backup_NoneYet" xml:space="preserve"><value>Aucune sauvegarde pour l'instant.</value></data>
   <data name="Backup_RestoreButton" xml:space="preserve"><value>Restaurer</value></data>
   <data name="Backup_RestoreTitle" xml:space="preserve"><value>Restaurer la sauvegarde</value></data>
@@ -289,8 +299,8 @@
   <data name="Idle_Hint" xml:space="preserve"><value>0 = ne s'arrête jamais. Le compte à rebours démarre au départ du dernier joueur et repart dès que quelqu'un se connecte.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Aucun joueur depuis {0} minutes : arrêt du serveur.</value></data>
   <data name="Backup_Section" xml:space="preserve"><value>Sauvegardes du monde</value></data>
-  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Créer des sauvegardes automatiquement (avant le démarrage et à l'arrêt)</value></data>
-  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Sauvegardes à conserver :</value></data>
+  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Créer des sauvegardes automatiquement</value></data>
+  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Sauvegardes automatiques à conserver :</value></data>
   <data name="Msg_PlayitServiceNotInstalled" xml:space="preserve"><value>[Playit] Le service Playit n'est pas installé sur cet ordinateur.</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Impossible de changer le service (nécessite souvent de lancer l'app en administrateur, ou d'utiliser l'icône de la barre d'état) : {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Impossible de déterminer le port du serveur (server.properties manquant ?).</value></data>

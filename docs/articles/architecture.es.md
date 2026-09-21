@@ -268,6 +268,8 @@ mundo. No hay rutas fijas del equipo en el código.
   para la vista estilo Minecraft es `ServerViewModel.LoadIcon`.)
 - **`WorldBackupService`** — crea y restaura copias zip del mundo del servidor
   (`<servidor>/backups/`), podando las antiguas según la retención.
+- **`LiveWorldBackup`** / **`SaveConfirmation`** / **`BackupSchedule`** — copiar un mundo en el que
+  todavía se está jugando: pausar el guardado, reconocer el volcado y decidir cuándo toca
 - **`CrashReportService`** — lee `crash-reports/*.txt` para extraer la línea `Description:` y mostrar
   un motivo legible del crash. (La detección del cierre inesperado es el evento `UnexpectedExit` de
   `ServerProcessManager`; la lógica de auto-reinicio vive en `ServerViewModel`.)
@@ -418,9 +420,27 @@ cada versión que el usuario aún no había visto.
 ### Copias del mundo (backups)
 `WorldBackupService` zipea el mundo de un servidor en `<servidor>/backups/` a demanda y de forma
 automática: antes de cada arranque (la red de seguridad principal — cubre también Restart y el
-auto-reinicio tras un crash), después de un stop manual limpio, y antes de restaurar. Conserva las
-más recientes hasta la retención configurada. `ServerBackupsView` las lista y puede restaurar
-cualquiera (tomando antes una copia de seguridad por si acaso).
+auto-reinicio tras un crash), después de un stop manual limpio, antes de restaurar, y cada cierto
+tiempo mientras el servidor está en marcha. `ServerBackupsView` las lista y puede restaurar
+cualquiera (tomando antes una copia de seguridad por si acaso); restaurar sigue exigiendo el servidor
+parado, porque borra la carpeta del mundo y desempaqueta otra en su lugar.
+
+Copiar un servidor **arrancado** pasa por `LiveWorldBackup`, porque zipear un mundo mientras la JVM
+escribe en él da una copia rota. Antes se le pide a Minecraft que lo suelte: `save-off`,
+`save-all flush`, esperar a que el servidor diga `Saved the game` (lo reconoce `SaveConfirmation`,
+anclado tras el prefijo del log para que un jugador no pueda falsearlo por el chat), zip, `save-on`.
+El último paso va en un `finally`: una copia que falla es una molestia, pero un servidor al que se le
+queda el guardado apagado pierde todo lo jugado hasta que alguien lo reinicie.
+
+`BackupSchedule` decide cuándo toca la siguiente automática, y responde `Skip` cuando el intervalo ha
+pasado pero nadie ha jugado desde la anterior — un servidor encendido toda la noche casi no cambia,
+así que copiarlo cada hora solo llenaría el disco. `ServerViewModel.RunBackupAsync` es la única
+puerta por la que pasan todas las copias, con un semáforo para que nunca se solapen dos.
+
+La retención cuenta **por separado** las automáticas (`start`, `stop`, `auto`) y las del usuario
+(`manual`, `before-restore`). Una sola cuenta dejó de servir el día que empezaron a hacerse copias
+por reloj: de noche, las copias horarias llenaban todo el cupo y la que alguien había hecho a mano
+antes de probar algo era la primera en irse. Los zips que la app no escribió no se borran nunca.
 
 ### Auto-reinicio tras un crash
 Cuando un servidor se cierra inesperadamente, `ServerProcessManager` emite su evento `UnexpectedExit`

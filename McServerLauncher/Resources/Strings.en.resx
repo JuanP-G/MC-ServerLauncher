@@ -259,9 +259,19 @@
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Restoring the backup...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Backup restored.</value></data>
   <data name="Backups" xml:space="preserve"><value>Backups</value></data>
-  <data name="Backup_Hint" xml:space="preserve"><value>A world backup is created automatically before every start and when you stop the server. Backups can only be created or restored while the server is stopped.</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>A world backup is created automatically before every start, when you stop the server and, if you leave it on, at intervals while people are playing. Restoring still needs the server stopped.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Back up now</value></data>
-  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>The server must be stopped to create a backup.</value></data>
+  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Back the world up now, whether the server is running or stopped.</value></data>
+  <data name="Backup_TriggerAuto" xml:space="preserve"><value>Automatic</value></data>
+  <data name="Backup_AutoWhilePlaying" xml:space="preserve"><value>Also at intervals while people are playing</value></data>
+  <data name="Backup_IntervalLabel" xml:space="preserve"><value>Every (minutes):</value></data>
+  <data name="Backup_ManualRetentionLabel" xml:space="preserve"><value>Manual backups to keep:</value></data>
+  <data name="Backup_AutoHint" xml:space="preserve"><value>Before copying, the server is asked to stop writing the world and flush it to disk, so a backup is never half-written. If nobody has joined since the last one, that backup is skipped. Manual backups are counted separately and the clock never deletes them.</value></data>
+  <data name="Backup_RestoreNeedsStoppedTip" xml:space="preserve"><value>The server must be stopped to restore a backup.</value></data>
+  <data name="Msg_BackupPausingSaves" xml:space="preserve"><value>[Backup] Pausing world saving…</value></data>
+  <data name="Msg_BackupSaveNotConfirmed" xml:space="preserve"><value>[Backup] The server did not confirm the save in time; copying anyway.</value></data>
+  <data name="Msg_BackupSavesResumed" xml:space="preserve"><value>[Backup] World saving resumed.</value></data>
+  <data name="Msg_BackupAlreadyRunning" xml:space="preserve"><value>[Backup] A backup is already in progress.</value></data>
   <data name="Backup_NoneYet" xml:space="preserve"><value>No backups yet.</value></data>
   <data name="Backup_RestoreButton" xml:space="preserve"><value>Restore</value></data>
   <data name="Backup_RestoreTitle" xml:space="preserve"><value>Restore backup</value></data>
@@ -289,8 +299,8 @@
   <data name="Idle_Hint" xml:space="preserve"><value>0 = never stops. The countdown starts when the last player leaves and resets as soon as someone joins.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>No players for {0} minutes: stopping the server.</value></data>
   <data name="Backup_Section" xml:space="preserve"><value>World backups</value></data>
-  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Create backups automatically (before starting and on stop)</value></data>
-  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Backups to keep:</value></data>
+  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Create backups automatically</value></data>
+  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Automatic backups to keep:</value></data>
   <data name="Msg_PlayitServiceNotInstalled" xml:space="preserve"><value>[Playit] The Playit service is not installed on this computer.</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Could not change the service (usually needs running the app as administrator, or using the tray icon): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Could not determine the server port (is server.properties missing?).</value></data>

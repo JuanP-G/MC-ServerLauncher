@@ -168,6 +168,10 @@ public static class ServerConfigEffects
 
         Unshown(nameof(ServerConfig.BackupsEnabled), "Read when a backup would be made."),
         Unshown(nameof(ServerConfig.BackupRetention), "Read when pruning after a new backup."),
+        Unshown(nameof(ServerConfig.AutoBackupEnabled), "Read by the backup timer on its next tick."),
+        Unshown(nameof(ServerConfig.BackupIntervalMinutes),
+            "Read by the backup timer on its next tick, which is why changing it needs no restart."),
+        Unshown(nameof(ServerConfig.ManualBackupRetention), "Read when pruning after a new backup."),
         Unshown(nameof(ServerConfig.IdleShutdownMinutes),
             "The countdown timer re-reads it every second while the server is running."),
 
