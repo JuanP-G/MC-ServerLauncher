@@ -391,10 +391,13 @@
         <!-- Right: installed -->
         <Border Grid.Column="1" Background="{StaticResource SurfaceCard}" BorderBrush="{StaticResource SurfaceEdge}" BorderThickness="1"
                 CornerRadius="8" Padding="12">
-            <Grid RowDefinitions="Auto,Auto,*">
+            <Grid RowDefinitions="Auto,Auto,Auto,*">
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,12">
-                    <TextBlock Grid.Column="0" Text="{Binding InstalledTitle}" FontSize="16"
-                               FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding InstalledTitle}" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding InstalledCountText}" FontSize="16" Opacity="0.55"
+                                   IsVisible="{Binding !!InstalledMods.Count}" />
+                    </StackPanel>
 
                     <Button Grid.Column="1" Command="{Binding CheckUpdatesCommand}" Padding="6,4" Margin="0,0,8,0"
                             IsEnabled="{Binding !IsCheckingUpdates}" ToolTip.Tip="{loc:Loc CheckUpdates}">
@@ -414,10 +417,24 @@
                     </Button>
                 </Grid>
 
-                <StackPanel Grid.Row="1">
+                <!-- Filters what is installed as you type. Only there when there is something to
+                     filter; the store has its own search box on the left. -->
+                <TextBox x:Name="InstalledFilterBox" Grid.Row="1" Margin="0,0,0,8"
+                         Text="{Binding InstalledFilter, Mode=TwoWay}"
+                         Watermark="{Binding InstalledFilterPlaceholder}"
+                         IsVisible="{Binding !!InstalledMods.Count}">
+                    <TextBox.InnerLeftContent>
+                        <ic:SymbolIcon Symbol="Search" Margin="8,0,0,0" Opacity="0.6" />
+                    </TextBox.InnerLeftContent>
+                </TextBox>
+
+                <StackPanel Grid.Row="2">
                     <TextBlock Text="{Binding NoInstalledText}" Opacity="0.7"
                                HorizontalAlignment="Center" Margin="0,20,0,0"
                                IsVisible="{Binding !InstalledMods.Count}" />
+                    <TextBlock Text="{loc:Loc Mods_InstalledNoMatch}" Opacity="0.7" TextWrapping="Wrap"
+                               HorizontalAlignment="Center" Margin="0,12,0,0"
+                               IsVisible="{Binding HasNoMatches}" />
                     <TextBlock Text="{Binding UpdateStatus}" Opacity="0.7" TextWrapping="Wrap"
                                HorizontalAlignment="Center" Margin="0,0,0,8"
                                IsVisible="{Binding UpdateStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
@@ -474,7 +491,7 @@
 
                 <!-- Off while "update all" runs: it walks these rows and swaps their files, and a
                      delete, a toggle or a single update from here would race it for the same folder. -->
-                <ListBox Grid.Row="2" ItemsSource="{Binding InstalledMods}" Background="Transparent" BorderThickness="0"
+                <ListBox Grid.Row="3" ItemsSource="{Binding VisibleInstalledMods}" Background="Transparent" BorderThickness="0"
                          IsEnabled="{Binding !IsUpdatingAll}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
