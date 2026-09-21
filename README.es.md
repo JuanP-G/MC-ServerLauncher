@@ -67,6 +67,8 @@ todo con botones.
 - **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang), **puerto** y
   **RAM**; la app descarga el servidor correcto, acepta el EULA, prepara `run.bat` / `server.properties` e
   instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur usan **plugins**.
+  ¿Ya tienes un servidor? El mismo diálogo puede **usar una carpeta que ya existe**: reconoce el tipo, la
+  versión de Minecraft y del loader, el puerto y la memoria, los rellena, y no cambia nada en la carpeta.
 - **Tienda de mods y plugins** 🧩 — busca en **Modrinth** dentro de la app, ya **filtrado por el tipo y la
   versión de tu servidor** (con chips de tipo y versión para que quede claro). Cada resultado trae un **resumen
   en lenguaje claro y en tu idioma** de para qué sirve, y avisa cuando además hay que instalarlo en el cliente.

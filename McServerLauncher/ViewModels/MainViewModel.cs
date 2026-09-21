@@ -520,25 +520,15 @@ public partial class MainViewModel : ObservableObject
         return vm;
     }
 
-    [RelayCommand]
-    private async Task AddServer()
-    {
-        if (Owner is null) return;
-        var config = new ServerConfig();
-        var dialog = new AddEditServerDialog(config);
-        if (await dialog.ShowDialog<bool>(Owner))
-        {
-            // The same look at the folder that Load does, and for the same reason: a folder being
-            // registered is almost always one that already holds a server. Without it the card said
-            // Vanilla with no version — so no Mods tab, and no version to resolve a mod against —
-            // until the app was restarted and Load detected it. It fills nothing in a folder whose
-            // type is already known, so it is safe on a config the user filled in by hand.
-            new ServerDetectionService().DetectAndFill(config);
-            SelectedServer = Register(config);
-            Save();
-        }
-    }
-
+    /// <summary>
+    /// Makes a server, or takes over a folder that already holds one — the create dialog does both.
+    /// </summary>
+    /// <remarks>
+    /// There used to be a separate "Add" button for the second, with a dialog that asked for the
+    /// jar's name by hand and skipped the tunnel, crossplay and start options. Taking over a folder
+    /// now reads it (<see cref="ServerDetectionService.Detect"/>) and goes through exactly the same
+    /// steps below as a server that was just made.
+    /// </remarks>
     [RelayCommand]
     private async Task CreateServer()
     {
@@ -549,7 +539,7 @@ public partial class MainViewModel : ObservableObject
             .Select(p => p!.Value);
 
         if (Owner is null) return;
-        var dialog = new CreateServerDialog(usedPorts);
+        var dialog = new CreateServerDialog(usedPorts, Servers.Select(s => s.Config.FolderPath));
         if (await dialog.ShowDialog<bool>(Owner) && dialog.ResultConfig is not null)
         {
             var vm = Register(dialog.ResultConfig);
