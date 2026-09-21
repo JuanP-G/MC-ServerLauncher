@@ -26,6 +26,9 @@ public class CreateOrAddDialogTests(AvaloniaFixture ui)
         return dialog;
     }
 
+    /// <summary>A path in this system's own shape: a Windows one is a single file name on Linux.</summary>
+    private static string Folder(string name) => Path.Combine(Path.GetTempPath(), "mcl-servers", name);
+
     private static T Named<T>(Control root, string name) where T : Control =>
         root.GetVisualDescendants().OfType<T>().First(c => c.Name == name);
 
@@ -73,7 +76,7 @@ public class CreateOrAddDialogTests(AvaloniaFixture ui)
             var dialog = Open();
             UseExisting(dialog);
 
-            dialog.ShowDetection(@"C:\servers\survival", AFabricServer);
+            dialog.ShowDetection(Folder("survival"), AFabricServer);
 
             var picker = dialog.GetVisualDescendants().OfType<ServerTypePicker>().Single();
             Assert.Equal(ServerType.Fabric, picker.SelectedType);
@@ -103,7 +106,7 @@ public class CreateOrAddDialogTests(AvaloniaFixture ui)
             var dialog = Open();
             UseExisting(dialog);
 
-            dialog.ShowDetection(@"C:\servers\modpack", new ServerDetection
+            dialog.ShowDetection(Folder("modpack"), new ServerDetection
             {
                 Jars = new[] { "modpack-launcher.jar", "other.jar" }
             });
@@ -128,7 +131,7 @@ public class CreateOrAddDialogTests(AvaloniaFixture ui)
         {
             var dialog = Open();
             UseExisting(dialog);
-            dialog.ShowDetection(@"C:\servers\survival", AFabricServer);
+            dialog.ShowDetection(Folder("survival"), AFabricServer);
 
             Named<RadioButton>(dialog, "NewModeRadio").IsChecked = true;
             AvaloniaFixture.Pump();
