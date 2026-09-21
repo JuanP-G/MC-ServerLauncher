@@ -51,6 +51,7 @@ public partial class ServerConfigDialog : Window
         WhitelistToggle.IsChecked = GetBool(p, "white-list", false);
 
         ShowSeed();
+        ShowHistorySize();
     }
 
     private SeedInfo _seed = SeedInfo.None;
@@ -90,6 +91,41 @@ public partial class ServerConfigDialog : Window
     private void SeedMap_Click(object? sender, RoutedEventArgs e)
     {
         if (_seed.Seed is { } seed) BrowserLauncher.Open(SeedMapLink.For(seed, _config.GameVersion));
+    }
+
+    /// <summary>
+    /// True when this server's player history was forgotten while the dialog was open.
+    /// </summary>
+    /// <remarks>
+    /// Read whether the dialog was accepted or cancelled, because the deletion is not part of what
+    /// Save writes — it has already happened. Without it the Players tab would go on listing people
+    /// whose history is no longer there.
+    /// </remarks>
+    public bool HistoryCleared { get; private set; }
+
+    private void ShowHistorySize() =>
+        HistorySizeText.Text = string.Format(Localizer.Get("Cfg_HistorySizeFmt"),
+            SettingsDialog.FormatBytes(PlayerHistoryStore.SizeOf(_config.Id)));
+
+    /// <summary>
+    /// Forgets everyone this server has seen — only this server.
+    /// </summary>
+    /// <remarks>
+    /// Here rather than in the app's settings because that is where somebody goes looking for it:
+    /// the history belongs to a server, and clearing "all of it" from a screen that has no server
+    /// on it was a blunt instrument for what people actually wanted, which is to forget one.
+    /// It acts at once rather than on Save, which is what the text beside it says.
+    /// </remarks>
+    private async void ClearHistory_Click(object? sender, RoutedEventArgs e)
+    {
+        if (!await MessageBox.ConfirmAsync(
+                string.Format(Localizer.Get("Cfg_HistoryClearConfirmFmt"), _config.Name),
+                Localizer.Get("Cfg_History"), this))
+            return;
+
+        PlayerHistoryStore.For(_config.Id).ClearAll();
+        HistoryCleared = true;
+        ShowHistorySize();
     }
 
     private async void Save_Click(object? sender, RoutedEventArgs e)

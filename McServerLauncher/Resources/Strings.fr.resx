@@ -827,10 +827,31 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="History_RecordChat" xml:space="preserve"><value>Garder aussi le chat</value></data>
   <data name="History_MaxEvents" xml:space="preserve"><value>Événements par joueur</value></data>
   <data name="History_RetentionDays" xml:space="preserve"><value>Jours conservés</value></data>
+  <data name="History_ClearWhere" xml:space="preserve"><value>Pour effacer l'historique d'un serveur, ouvre-le dans Configurer › Historique des joueurs.</value></data>
+  <data name="Cfg_History" xml:space="preserve"><value>Historique des joueurs</value></data>
+  <data name="Cfg_HistoryTitle" xml:space="preserve"><value>Oublier les joueurs de ce serveur</value></data>
+  <data name="Cfg_HistorySizeFmt" xml:space="preserve"><value>Occupe {0}. Cela efface les connexions, le chat et tout ce qui a été conservé sur ce serveur. C'est irréversible et cela se produit au clic, pas à l'enregistrement.</value></data>
+  <data name="Cfg_HistoryClear" xml:space="preserve"><value>Effacer l'historique</value></data>
+  <data name="Cfg_HistoryClearConfirmFmt" xml:space="preserve"><value>Effacer l'historique des joueurs de « {0} » ? C'est irréversible. Les autres serveurs gardent le leur.</value></data>
+  <data name="PlayerDetails_Blocks" xml:space="preserve"><value>Blocs et objets</value></data>
+  <data name="PlayerDetails_BlocksHint" xml:space="preserve"><value>Minecraft compte exactement les blocs que tu casses. Ce qu'il ne compte pas, c'est les poser : ce qu'il garde, c'est « fois où tu as utilisé cet objet », ce qui pour un bloc veut dire le poser, mais pour une pelle un coup et pour du pain un repas.</value></data>
+  <data name="PlayerDetails_Mined" xml:space="preserve"><value>Blocs minés</value></data>
+  <data name="PlayerDetails_Used" xml:space="preserve"><value>Objets utilisés ou posés</value></data>
+  <data name="PlayerDetails_BlocksTotalFmt" xml:space="preserve"><value>{0} au total</value></data>
+  <data name="PlayerDetails_Curiosities" xml:space="preserve"><value>Curiosités</value></data>
+  <data name="PlayerDetails_CuriositiesHint" xml:space="preserve"><value>D'autres choses que le serveur compte de son côté. Ce sont des chiffres isolés, pas un verdict sur qui que ce soit.</value></data>
+  <data name="PlayerDetails_StatJumps" xml:space="preserve"><value>Sauts</value></data>
+  <data name="PlayerDetails_StatDamageDealt" xml:space="preserve"><value>Dégâts infligés (cœurs)</value></data>
+  <data name="PlayerDetails_StatDamageTaken" xml:space="preserve"><value>Dégâts subis (cœurs)</value></data>
+  <data name="PlayerDetails_StatWalked" xml:space="preserve"><value>À pied</value></data>
+  <data name="PlayerDetails_StatFlown" xml:space="preserve"><value>En vol</value></data>
+  <data name="PlayerDetails_StatElytra" xml:space="preserve"><value>En elytra</value></data>
+  <data name="PlayerDetails_StatBlocksPerHour" xml:space="preserve"><value>Blocs par heure</value></data>
+  <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Minerais par heure</value></data>
+  <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Le plus tué</value></data>
+  <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>Ce qui le tue le plus</value></data>
   <data name="History_Privacy" xml:space="preserve"><value>Gardé sur cet ordinateur uniquement. L'adresse IP des joueurs n'est jamais conservée. Ce qui dépasse les limites est supprimé automatiquement.</value></data>
   <data name="History_SizeFmt" xml:space="preserve"><value>Occupe {0}</value></data>
-  <data name="History_ClearAll" xml:space="preserve"><value>Effacer tout l'historique</value></data>
-  <data name="History_ClearAllConfirm" xml:space="preserve"><value>L'historique de tous les joueurs de tous les serveurs sera supprimé. C'est irréversible. Continuer ?</value></data>
   <data name="PlayerDetails_Back" xml:space="preserve"><value>Retour</value></data>
   <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banni</value></data>
   <data name="PlayerDetails_Summary" xml:space="preserve"><value>Résumé</value></data>

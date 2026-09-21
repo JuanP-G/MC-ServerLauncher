@@ -168,10 +168,12 @@
                                    Minimum="7" Maximum="3650" Value="{Binding HistoryRetentionDays, Mode=TwoWay}" />
                 </Grid>
                 <TextBlock Text="{loc:Loc History_Privacy}" TextWrapping="Wrap" Opacity="0.6" FontSize="12" Margin="0,4,0,0" />
-                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,8,0,0">
-                    <TextBlock x:Name="HistorySizeText" VerticalAlignment="Center" Opacity="0.8" />
-                    <Button Content="{loc:Loc History_ClearAll}" Click="ClearHistory_Click" />
-                </StackPanel>
+                <TextBlock x:Name="HistorySizeText" Margin="0,8,0,0" Opacity="0.8" />
+                <!-- Clearing lives in each server's own configuration: the history belongs to a
+                     server, and "forget all of it" from a screen with no server on it was a blunt
+                     instrument for what people actually want, which is to forget one. -->
+                <TextBlock Text="{loc:Loc History_ClearWhere}" TextWrapping="Wrap" Opacity="0.6"
+                           FontSize="12" Margin="0,4,0,0" />
 
                 <Separator Margin="0,16,0,12" />
 

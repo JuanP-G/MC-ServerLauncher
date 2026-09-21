@@ -84,6 +84,14 @@ public sealed partial class PlayerHistoryStore : IDisposable
     public static PlayerHistoryStore For(string serverId) =>
         Open.GetOrAdd(serverId, id => new PlayerHistoryStore(Path.Combine(RootDirectory, id)));
 
+    /// <summary>Whether a store has been opened for this server, which is a thing tests check.</summary>
+    /// <remarks>
+    /// Opening one starts a timer and takes a place in a process-wide table, so the things that
+    /// only want to look at a server — showing how much it takes on disk, say — must not do it.
+    /// Nothing outside a test has any business asking.
+    /// </remarks>
+    internal static bool IsOpen(string serverId) => Open.ContainsKey(serverId);
+
     private readonly object _lock = new();
     private readonly string _directory;
     private readonly Func<PlayerHistorySettings> _settings;
@@ -390,12 +398,28 @@ public sealed partial class PlayerHistoryStore : IDisposable
     }
 
     /// <summary>How much every server's history takes on disk, in bytes.</summary>
-    public static long SizeOnDisk()
+    public static long SizeOnDisk() => BytesIn(RootDirectory);
+
+    /// <summary>
+    /// How much one server's history takes on disk, in bytes, without opening its store.
+    /// </summary>
+    /// <remarks>
+    /// What the server's own configuration shows beside its "forget this server's players" button —
+    /// a total across every server would be the wrong number next to a button that deletes one of
+    /// them. Deliberately static: merely looking at a size must not create a store, and so a folder,
+    /// for a server whose history nobody has ever opened.
+    /// </remarks>
+    public static long SizeOf(string serverId) => BytesIn(Path.Combine(RootDirectory, serverId));
+
+    /// <summary>How much this store's own folder takes on disk, in bytes.</summary>
+    public long DirectorySize() => BytesIn(_directory);
+
+    private static long BytesIn(string directory)
     {
         try
         {
-            return Directory.Exists(RootDirectory)
-                ? new DirectoryInfo(RootDirectory).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length)
+            return Directory.Exists(directory)
+                ? new DirectoryInfo(directory).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length)
                 : 0;
         }
         catch

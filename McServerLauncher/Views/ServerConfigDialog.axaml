@@ -165,6 +165,21 @@
                     </Grid>
                 </Border>
 
+                <!-- ===================== PLAYER HISTORY ===================== -->
+                <TextBlock Text="{loc:Loc Cfg_History}" Classes="section" />
+
+                <Border Classes="card">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{loc:Loc Cfg_HistoryTitle}" Classes="title" />
+                            <TextBlock x:Name="HistorySizeText" Classes="desc" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1" x:Name="ClearHistoryButton" VerticalAlignment="Center"
+                                Content="{loc:Loc Cfg_HistoryClear}" Click="ClearHistory_Click"
+                                Background="{StaticResource DangerButton}" Foreground="White" />
+                    </Grid>
+                </Border>
+
                 <!-- ===================== NETWORK & ACCESS ===================== -->
                 <TextBlock Text="{loc:Loc Cfg_Network}" Classes="section" />
 

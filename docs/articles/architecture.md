@@ -143,6 +143,10 @@ are no hard-coded machine paths.
   the PID listening on a port so a stuck server can be freed.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — read/write the
   server's files (`server.properties`, `ops.json`, `banned-players.json`, `whitelist.json`).
+- **`MinecraftIds`** — turns `minecraft:deepslate_diamond_ore` into "Deepslate diamond ore". Deliberately
+  not translated: there are well over a thousand blocks, more with every version and every mod, and what is
+  translated is the label above the list rather than the game's own vocabulary inside it. A block from a mod
+  keeps its namespace, because "Source gem" on its own is a mystery.
 - **`PlayerEventParser`**, **`PlayerHistoryStore`**, **`PlayerLogImporter`**, **`PlayerStatsReader`** — the
   player history. One parser turns a log line into something a player did, built from the console's own
   detectors (`NameBefore`, `ChatOf`, `DeathMessageDetector`), and serves both the live console and the
@@ -153,10 +157,18 @@ are no hard-coded machine paths.
   to and compacted in one go when it passes the limit by a quarter. Limits are `PlayerHistorySettings`
   (clamped, since settings.json is editable); old events, long-gone players and the history of removed
   servers are pruned at start-up. The store is opened only when something needs it, never by building a
-  view model, so tests cannot write into the user's app data. The importer runs once per server, dates each
-  line from its file (a `.log.gz` by its name, `latest.log` from its last write minus the midnights it
-  crosses), skips `latest.log` while the server runs, and only closes the sessions its own files left open.
-  Statistics are read from `<world>/stats/` or, from 26.1, `<world>/players/stats/`, when a profile opens.
+  view model and not even by asking how much it takes on disk (`SizeOf` reads the folder without opening
+  anything), so tests cannot write into the user's app data. **A server's history is cleared from that
+  server's own configuration**, not from the app's settings: the history belongs to a server, and "forget
+  all of it" from a screen with no server on it was a blunt instrument for what people actually want.
+  The importer runs once per server, dates each line from its file (a `.log.gz` by its name, `latest.log`
+  from its last write minus the midnights it crosses), skips `latest.log` while the server runs, and only
+  closes the sessions its own files left open. Statistics are read from `<world>/stats/` or, from 26.1,
+  `<world>/players/stats/`, when a profile opens — off the UI thread, because the reader now walks every
+  block a player has ever broken. `minecraft:mined` is exact; `minecraft:used` is the closest thing to
+  "blocks placed", since Minecraft counts using an item rather than placing it, and it is shown as it is
+  with a line saying so rather than filtered against a hand-kept list of block ids that would go stale
+  every release.
 - **`ServerCreationService`** — writes the initial files of a new server: `eula.txt`,
   `run.bat`/`user_jvm_args.txt` and a minimal `server.properties` with the chosen port. (The jar
   download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is

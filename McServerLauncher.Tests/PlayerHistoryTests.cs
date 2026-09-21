@@ -469,4 +469,71 @@ public class PlayerHistoryTests : IDisposable
         Assert.Equal(PlayerHistorySettings.MinEvents, clamped.MaxEventsPerPlayer);
         Assert.Equal(PlayerHistorySettings.MinDays, clamped.RetentionDays);
     }
+
+    // --- Forgetting one server without touching the others ---
+
+    /// <summary>
+    /// Clearing belongs to a server, not to the app.
+    /// </summary>
+    /// <remarks>
+    /// The button moved out of the app's settings and into each server's own configuration, because
+    /// "forget all of it" from a screen with no server on it was a blunt instrument for what people
+    /// actually want. What has to hold is that it really is only one: a clear that quietly took a
+    /// second server's history with it would not be noticed until somebody went looking for it.
+    /// </remarks>
+    [Fact]
+    public void ClearingOneServerLeavesTheOthersAlone()
+    {
+        var survival = Store("survival");
+        var creative = Store("creative");
+        survival.Record(Join("Alice"), _now);
+        survival.Record(Chat("Alice", "hola"), _now);
+        creative.Record(Join("Bob"), _now);
+        survival.Flush();
+        creative.Flush();
+
+        survival.ClearAll();
+
+        Assert.Empty(survival.Players());
+        Assert.Empty(survival.Events("Alice"));
+        Assert.Equal("Bob", Assert.Single(creative.Players()).Name);
+    }
+
+    [Fact]
+    public void ASizeIsCountedPerServerAndNotForAllOfThem()
+    {
+        var survival = Store("survival");
+        var creative = Store("creative");
+        for (var i = 0; i < 40; i++) survival.Record(Chat("Alice", "mensaje " + i), _now);
+        creative.Record(Join("Bob"), _now);
+        survival.Flush();
+        creative.Flush();
+
+        // The number beside a button that deletes one server must be that server's.
+        Assert.True(survival.DirectorySize() > creative.DirectorySize());
+        Assert.True(creative.DirectorySize() > 0);
+    }
+
+    [Fact]
+    public void AskingTheSizeOfAServerNeverOpensItsStore()
+    {
+        // Merely showing a size must not create a folder — the whole history is built so that
+        // looking at a server costs nothing until somebody asks it for something.
+        var previous = PlayerHistoryStore.RootDirectory;
+        PlayerHistoryStore.RootDirectory = Path.Combine(_root, "roots");
+        try
+        {
+            Assert.Equal(0, PlayerHistoryStore.SizeOf("un-servidor-que-nadie-ha-abierto"));
+
+            // Not just "no folder": opening a store also starts a timer and takes a place in a
+            // process-wide table, for a server nobody has looked at.
+            Assert.False(PlayerHistoryStore.IsOpen("un-servidor-que-nadie-ha-abierto"));
+            Assert.False(Directory.Exists(Path.Combine(PlayerHistoryStore.RootDirectory,
+                "un-servidor-que-nadie-ha-abierto")));
+        }
+        finally
+        {
+            PlayerHistoryStore.RootDirectory = previous;
+        }
+    }
 }
