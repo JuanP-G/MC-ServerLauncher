@@ -42,6 +42,15 @@ public class PlayersTabBindingTests
         }
     }
 
+    /// <summary>
+    /// The profile has three kinds of item template, and each binds to a different row.
+    /// </summary>
+    /// <remarks>
+    /// Two of them are the "most of what" lists — blocks broken and items used — and the third is a
+    /// line of the player's activity. They are told apart by what they contain rather than by their
+    /// order in the file, so adding a fourth card above them does not quietly start checking the
+    /// wrong type.
+    /// </remarks>
     [Fact]
     public void EveryNameTheProfileBindsToExists()
     {
@@ -51,9 +60,18 @@ public class PlayersTabBindingTests
 
         foreach (var name in BoundNames(Outside(view, templates)))
             AssertResolves(typeof(PlayerDetailsViewModel), name, "PlayerDetailsView");
+
         foreach (var template in templates)
+        {
+            var isBar = template.Contains("Percent", StringComparison.Ordinal);
             foreach (var name in BoundNames(template))
-                AssertResolves(typeof(PlayerEventRowViewModel), name, "a line of a player's activity");
+                AssertResolves(isBar ? typeof(StatBarViewModel) : typeof(PlayerEventRowViewModel), name,
+                    isBar ? "a row of a blocks list" : "a line of a player's activity");
+        }
+
+        // Both kinds are actually present, so neither branch above can be vacuously satisfied.
+        Assert.Contains(templates, t => t.Contains("Percent", StringComparison.Ordinal));
+        Assert.Contains(templates, t => t.Contains("TimeText", StringComparison.Ordinal));
     }
 
     /// <summary>

@@ -91,6 +91,28 @@ public sealed class PlayerEventRowViewModel
     public bool IsChat { get; }
 }
 
+/// <summary>One line of a "most of what" list: a name, a count and its share of the total.</summary>
+public sealed class StatBarViewModel
+{
+    public StatBarViewModel(StatEntry entry, long total)
+    {
+        Label = MinecraftIds.Pretty(entry.Id);
+        CountText = entry.Count.ToString("N0", CultureInfo.CurrentUICulture);
+        Percent = total > 0 ? entry.Count * 100.0 / total : 0;
+        // One decimal, because the tail of a long list is all fractions of a percent and a column
+        // of "0 %" would say nothing at all.
+        PercentText = Percent.ToString("N1", CultureInfo.CurrentUICulture) + " %";
+    }
+
+    public string Label { get; }
+    public string CountText { get; }
+
+    /// <summary>Its share of the list it belongs to, 0 to 100, for the bar beside it.</summary>
+    public double Percent { get; }
+
+    public string PercentText { get; }
+}
+
 /// <summary>Which of a player's events the profile shows.</summary>
 public enum PlayerEventFilter { All, Connections, Chat }
 
@@ -110,6 +132,13 @@ public sealed partial class PlayerDetailsViewModel : ObservableObject
     private readonly Func<bool> _isOnlineNow;
     private IReadOnlyList<StoredEvent> _all = Array.Empty<StoredEvent>();
     private int _shown = PageSize;
+
+    /// <summary>How many rows of each "most of what" list are shown before "show more".</summary>
+    private const int BarsShown = 10;
+
+    private PlayerStats? _stats;
+    private bool _allBars;
+    private int _statsLoading;
 
     public PlayerDetailsViewModel(string name, PlayerHistoryStore store, string serverFolder,
         Func<bool> isOnline, bool isOp, bool isWhitelisted, bool isBanned, string? uuidFromCache,
@@ -131,6 +160,7 @@ public sealed partial class PlayerDetailsViewModel : ObservableObject
 
         Reload();
         _ = LoadAvatarAsync();
+        _ = LoadStatsAsync();
     }
 
     private readonly string? _uuidFromCache;
@@ -161,6 +191,29 @@ public sealed partial class PlayerDetailsViewModel : ObservableObject
     [ObservableProperty] private string _statsMobKills = "";
     [ObservableProperty] private string _statsPlayerKills = "";
     [ObservableProperty] private string _statsDistance = "";
+
+    [ObservableProperty] private bool _hasBlocks;
+    [ObservableProperty] private string _minedTotalText = "";
+    [ObservableProperty] private string _usedTotalText = "";
+    [ObservableProperty] private bool _hasMoreBars;
+
+    [ObservableProperty] private bool _hasCuriosities;
+    [ObservableProperty] private string _statsJumps = "";
+    [ObservableProperty] private string _statsDamageDealt = "";
+    [ObservableProperty] private string _statsDamageTaken = "";
+    [ObservableProperty] private string _statsWalked = "";
+    [ObservableProperty] private string _statsFlown = "";
+    [ObservableProperty] private string _statsElytra = "";
+    [ObservableProperty] private string _statsBlocksPerHour = "";
+    [ObservableProperty] private string _statsOresPerHour = "";
+    [ObservableProperty] private string _statsTopKill = "";
+    [ObservableProperty] private string _statsTopKiller = "";
+
+    /// <summary>Blocks broken, by block. The server counts these exactly.</summary>
+    public ObservableCollection<StatBarViewModel> MinedBlocks { get; } = new();
+
+    /// <summary>Items used, by item — which for a block means placed. See <see cref="PlayerStats.Used"/>.</summary>
+    public ObservableCollection<StatBarViewModel> UsedItems { get; } = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsFilterAll), nameof(IsFilterConnections), nameof(IsFilterChat))]
@@ -194,19 +247,118 @@ public sealed partial class PlayerDetailsViewModel : ObservableObject
         PlayedText = rec is null ? "—" : RelativeTime.Duration(played);
         MessagesText = rec is null ? "—" : rec.Messages.ToString(CultureInfo.CurrentUICulture);
 
-        var stats = PlayerStatsReader.Read(_serverFolder, Uuid);
-        HasStats = stats is not null;
-        if (stats is not null)
-        {
-            StatsPlayTime = RelativeTime.Duration(stats.PlayTime);
-            StatsDeaths = stats.Deaths.ToString("N0", CultureInfo.CurrentUICulture);
-            StatsMobKills = stats.MobKills.ToString("N0", CultureInfo.CurrentUICulture);
-            StatsPlayerKills = stats.PlayerKills.ToString("N0", CultureInfo.CurrentUICulture);
-            StatsDistance = (stats.DistanceCm / 100_000.0).ToString("N1", CultureInfo.CurrentUICulture) + " km";
-        }
-
         _all = _store.Events(Name);
         ShowEvents();
+    }
+
+    /// <summary>
+    /// Reads the server's own statistics for this player, off the UI thread.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This used to happen inside <see cref="Reload"/>, on the UI thread — and <c>Reload</c> runs
+    /// again on every console line about this player. That was tolerable when it read five numbers;
+    /// it is not now that it walks every block the player has ever broken. So it moved here, beside
+    /// the avatar, and a line arriving while a read is already in flight is dropped rather than
+    /// queued: the read that is running will see the newer file anyway.
+    /// </para>
+    /// <para>
+    /// Nothing is cleared while it loads. A profile that blanked its numbers for a moment on every
+    /// chat message would be worse than one that is a second out of date.
+    /// </para>
+    /// </remarks>
+    public async Task LoadStatsAsync()
+    {
+        if (Interlocked.Exchange(ref _statsLoading, 1) == 1) return;
+
+        var folder = _serverFolder;
+        var uuid = Uuid;
+        try
+        {
+            var stats = await Task.Run(() => PlayerStatsReader.Read(folder, uuid));
+            Dispatcher.UIThread.Post(() => ShowStats(stats));
+        }
+        catch
+        {
+            // The file belongs to the server; if it cannot be read, the profile simply has no
+            // statistics card.
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _statsLoading, 0);
+        }
+    }
+
+    private void ShowStats(PlayerStats? stats)
+    {
+        _stats = stats;
+        HasStats = stats is not null;
+        HasBlocks = stats is not null && (stats.Mined.Count > 0 || stats.Used.Count > 0);
+        HasCuriosities = stats is not null;
+        if (stats is null) return;
+
+        string Number(long n) => n.ToString("N0", CultureInfo.CurrentUICulture);
+        string Km(long cm) => (cm / 100_000.0).ToString("N1", CultureInfo.CurrentUICulture) + " km";
+
+        StatsPlayTime = RelativeTime.Duration(stats.PlayTime);
+        StatsDeaths = Number(stats.Deaths);
+        StatsMobKills = Number(stats.MobKills);
+        StatsPlayerKills = Number(stats.PlayerKills);
+        StatsDistance = Km(stats.DistanceCm);
+
+        StatsJumps = Number(stats.Jumps);
+        // Minecraft counts damage in tenths of a heart, so a heart is ten.
+        StatsDamageDealt = (stats.DamageDealt / 10.0).ToString("N0", CultureInfo.CurrentUICulture);
+        StatsDamageTaken = (stats.DamageTaken / 10.0).ToString("N0", CultureInfo.CurrentUICulture);
+        StatsWalked = Km(stats.WalkedCm);
+        StatsFlown = Km(stats.FlownCm);
+        StatsElytra = Km(stats.ElytraCm);
+
+        // Per hour played, which is the only way these compare between two players. They are
+        // curiosities on a profile page, not a verdict about anybody.
+        var hours = stats.PlayTime.TotalHours;
+        StatsBlocksPerHour = hours >= 0.1 ? (stats.BlocksMined / hours).ToString("N0", CultureInfo.CurrentUICulture) : "—";
+        StatsOresPerHour = hours >= 0.1 ? (stats.OresMined / hours).ToString("N1", CultureInfo.CurrentUICulture) : "—";
+
+        StatsTopKill = Top(stats.Killed);
+        StatsTopKiller = Top(stats.KilledBy);
+
+        ShowBars();
+    }
+
+    private static string Top(IReadOnlyList<StatEntry> entries) =>
+        entries.Count == 0
+            ? "—"
+            : MinecraftIds.Pretty(entries[0].Id)
+              + " (" + entries[0].Count.ToString("N0", CultureInfo.CurrentUICulture) + ")";
+
+    private void ShowBars()
+    {
+        if (_stats is not { } stats) return;
+
+        var minedTotal = stats.BlocksMined;
+        var usedTotal = stats.Used.Sum(e => e.Count);
+        var take = _allBars ? int.MaxValue : BarsShown;
+
+        MinedBlocks.Clear();
+        foreach (var e in stats.Mined.Take(take)) MinedBlocks.Add(new StatBarViewModel(e, minedTotal));
+
+        UsedItems.Clear();
+        foreach (var e in stats.Used.Take(take)) UsedItems.Add(new StatBarViewModel(e, usedTotal));
+
+        MinedTotalText = string.Format(Localizer.Get("PlayerDetails_BlocksTotalFmt"),
+            minedTotal.ToString("N0", CultureInfo.CurrentUICulture));
+        UsedTotalText = string.Format(Localizer.Get("PlayerDetails_BlocksTotalFmt"),
+            usedTotal.ToString("N0", CultureInfo.CurrentUICulture));
+        HasMoreBars = !_allBars && (stats.Mined.Count > BarsShown || stats.Used.Count > BarsShown);
+    }
+
+    /// <summary>Shows the whole of both lists instead of the first few.</summary>
+    [RelayCommand]
+    private void ShowAllBlocks()
+    {
+        _allBars = true;
+        ShowBars();
     }
 
     partial void OnFilterChanged(PlayerEventFilter value)
@@ -256,6 +408,7 @@ public sealed partial class PlayerDetailsViewModel : ObservableObject
         _store.Clear(Name);
         _onCleared(Name);
         Reload();
+        _ = LoadStatsAsync();
     }
 
     [RelayCommand] private void CancelClear() => ConfirmingClear = false;

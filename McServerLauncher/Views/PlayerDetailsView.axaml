@@ -101,6 +101,92 @@
                 </StackPanel>
             </Border>
 
+            <!-- Blocks broken and items used, by kind, with each one's share of the total -->
+            <Border Classes="card stat" IsVisible="{Binding HasBlocks}">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Text="{loc:Loc PlayerDetails_Blocks}" />
+                    <TextBlock Classes="statLabel" TextWrapping="Wrap" Text="{loc:Loc PlayerDetails_BlocksHint}" Margin="0,0,0,8" />
+
+                    <Grid ColumnDefinitions="*,*">
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Text="{loc:Loc PlayerDetails_Mined}" FontWeight="SemiBold" FontSize="13" />
+                            <TextBlock Classes="statLabel" Text="{Binding MinedTotalText}" Margin="0,0,0,6" />
+                            <ItemsControl ItemsSource="{Binding MinedBlocks}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,0,0,7">
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <TextBlock Grid.Column="0" Text="{Binding Label}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="1" Classes="statLabel" Text="{Binding CountText}" Margin="8,0,8,0" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="2" Classes="statLabel" Text="{Binding PercentText}" VerticalAlignment="Center" />
+                                            </Grid>
+                                            <ProgressBar Classes="share" Value="{Binding Percent}" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                            <TextBlock Text="{loc:Loc PlayerDetails_Used}" FontWeight="SemiBold" FontSize="13" />
+                            <TextBlock Classes="statLabel" Text="{Binding UsedTotalText}" Margin="0,0,0,6" />
+                            <ItemsControl ItemsSource="{Binding UsedItems}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,0,0,7">
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <TextBlock Grid.Column="0" Text="{Binding Label}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="1" Classes="statLabel" Text="{Binding CountText}" Margin="8,0,8,0" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="2" Classes="statLabel" Text="{Binding PercentText}" VerticalAlignment="Center" />
+                                            </Grid>
+                                            <ProgressBar Classes="share" Value="{Binding Percent}" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
+
+                    <Button HorizontalAlignment="Center" Margin="0,4,0,0" Padding="10,3"
+                            Content="{loc:Loc PlayerDetails_ShowMore}"
+                            Command="{Binding ShowAllBlocksCommand}" IsVisible="{Binding HasMoreBars}" />
+                </StackPanel>
+            </Border>
+
+            <!-- The odds and ends the server also happens to count -->
+            <Border Classes="card stat" IsVisible="{Binding HasCuriosities}">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Text="{loc:Loc PlayerDetails_Curiosities}" />
+                    <TextBlock Classes="statLabel" TextWrapping="Wrap" Text="{loc:Loc PlayerDetails_CuriositiesHint}" Margin="0,0,0,6" />
+                    <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatJumps}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding StatsJumps}" Margin="0,2,24,2" />
+                        <TextBlock Grid.Row="0" Grid.Column="2" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatWalked}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding StatsWalked}" Margin="0,2" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatDamageDealt}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding StatsDamageDealt}" Margin="0,2,24,2" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatFlown}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding StatsFlown}" Margin="0,2" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatDamageTaken}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding StatsDamageTaken}" Margin="0,2,24,2" />
+                        <TextBlock Grid.Row="2" Grid.Column="2" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatElytra}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding StatsElytra}" Margin="0,2" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatBlocksPerHour}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding StatsBlocksPerHour}" Margin="0,2,24,2" />
+                        <TextBlock Grid.Row="3" Grid.Column="2" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatOresPerHour}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="3" Grid.Column="3" Text="{Binding StatsOresPerHour}" Margin="0,2" />
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatTopKill}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding StatsTopKill}" Margin="0,2,24,2" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Row="4" Grid.Column="2" Classes="statLabel" Text="{loc:Loc PlayerDetails_StatTopKiller}" Margin="0,2,16,2" />
+                        <TextBlock Grid.Row="4" Grid.Column="3" Text="{Binding StatsTopKiller}" Margin="0,2" TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
             <!-- Activity -->
             <Border Classes="card stat">
                 <StackPanel>

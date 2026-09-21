@@ -229,18 +229,6 @@ public partial class SettingsDialog : Window
         _ => $"{bytes / (1024.0 * 1024):0.#} MB"
     };
 
-    /// <summary>
-    /// Forgets every player of every server, at once and after asking: it cannot be undone, and it
-    /// is the one thing here that does not wait for Save.
-    /// </summary>
-    private async void ClearHistory_Click(object? sender, RoutedEventArgs e)
-    {
-        if (!await MessageBox.ConfirmAsync(Localizer.Get("History_ClearAllConfirm"),
-                Localizer.Get("History_Section"), this))
-            return;
-        PlayerHistoryStore.ClearEverything();
-        ShowHistorySize();
-    }
 
     private void Save_Click(object? sender, RoutedEventArgs e)
     {

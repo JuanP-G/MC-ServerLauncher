@@ -827,10 +827,31 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="History_RecordChat" xml:space="preserve"><value>Guardar também o chat</value></data>
   <data name="History_MaxEvents" xml:space="preserve"><value>Eventos por jogador</value></data>
   <data name="History_RetentionDays" xml:space="preserve"><value>Dias que se guardam</value></data>
+  <data name="History_ClearWhere" xml:space="preserve"><value>Para limpar o histórico de um servidor, abre-o em Configurar › Histórico de jogadores.</value></data>
+  <data name="Cfg_History" xml:space="preserve"><value>Histórico de jogadores</value></data>
+  <data name="Cfg_HistoryTitle" xml:space="preserve"><value>Esquecer os jogadores deste servidor</value></data>
+  <data name="Cfg_HistorySizeFmt" xml:space="preserve"><value>Ocupa {0}. Apaga as ligações, o chat e tudo o resto que tenha sido guardado sobre este servidor. Não se pode desfazer e acontece ao carregar, não ao guardar.</value></data>
+  <data name="Cfg_HistoryClear" xml:space="preserve"><value>Limpar o histórico</value></data>
+  <data name="Cfg_HistoryClearConfirmFmt" xml:space="preserve"><value>Limpar o histórico de jogadores de «{0}»? Não se pode desfazer. Os outros servidores mantêm o seu.</value></data>
+  <data name="PlayerDetails_Blocks" xml:space="preserve"><value>Blocos e objetos</value></data>
+  <data name="PlayerDetails_BlocksHint" xml:space="preserve"><value>O Minecraft conta exatamente os blocos que partes. O que não conta é colocá-los: o que guarda é «vezes que usaste este objeto», que para um bloco é pô-lo, mas para uma pá é um golpe e para o pão é comê-lo.</value></data>
+  <data name="PlayerDetails_Mined" xml:space="preserve"><value>Blocos partidos</value></data>
+  <data name="PlayerDetails_Used" xml:space="preserve"><value>Objetos usados ou colocados</value></data>
+  <data name="PlayerDetails_BlocksTotalFmt" xml:space="preserve"><value>{0} no total</value></data>
+  <data name="PlayerDetails_Curiosities" xml:space="preserve"><value>Curiosidades</value></data>
+  <data name="PlayerDetails_CuriositiesHint" xml:space="preserve"><value>Outras coisas que o servidor vai contando por sua conta. São números soltos, não um veredicto sobre ninguém.</value></data>
+  <data name="PlayerDetails_StatJumps" xml:space="preserve"><value>Saltos</value></data>
+  <data name="PlayerDetails_StatDamageDealt" xml:space="preserve"><value>Dano causado (corações)</value></data>
+  <data name="PlayerDetails_StatDamageTaken" xml:space="preserve"><value>Dano recebido (corações)</value></data>
+  <data name="PlayerDetails_StatWalked" xml:space="preserve"><value>A pé</value></data>
+  <data name="PlayerDetails_StatFlown" xml:space="preserve"><value>A voar</value></data>
+  <data name="PlayerDetails_StatElytra" xml:space="preserve"><value>De elytra</value></data>
+  <data name="PlayerDetails_StatBlocksPerHour" xml:space="preserve"><value>Blocos por hora</value></data>
+  <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Minérios por hora</value></data>
+  <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Mais matado</value></data>
+  <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>O que mais o mata</value></data>
   <data name="History_Privacy" xml:space="preserve"><value>Guarda-se só neste computador. O IP dos jogadores nunca é guardado. O que passa dos limites é apagado sozinho.</value></data>
   <data name="History_SizeFmt" xml:space="preserve"><value>Ocupa {0}</value></data>
-  <data name="History_ClearAll" xml:space="preserve"><value>Apagar todo o histórico</value></data>
-  <data name="History_ClearAllConfirm" xml:space="preserve"><value>Vai ser apagado o histórico de todos os jogadores de todos os servidores. Não se pode desfazer. Continuar?</value></data>
   <data name="PlayerDetails_Back" xml:space="preserve"><value>Voltar</value></data>
   <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banido</value></data>
   <data name="PlayerDetails_Summary" xml:space="preserve"><value>Resumo</value></data>

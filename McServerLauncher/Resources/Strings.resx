@@ -873,10 +873,31 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="History_RecordChat" xml:space="preserve"><value>Guardar también el chat</value></data>
   <data name="History_MaxEvents" xml:space="preserve"><value>Eventos por jugador</value></data>
   <data name="History_RetentionDays" xml:space="preserve"><value>Días que se conservan</value></data>
+  <data name="History_ClearWhere" xml:space="preserve"><value>Para borrar el historial de un servidor, ábrelo en Configurar › Historial de jugadores.</value></data>
+  <data name="Cfg_History" xml:space="preserve"><value>Historial de jugadores</value></data>
+  <data name="Cfg_HistoryTitle" xml:space="preserve"><value>Olvidar a los jugadores de este servidor</value></data>
+  <data name="Cfg_HistorySizeFmt" xml:space="preserve"><value>Ocupa {0}. Se borran las conexiones, el chat y todo lo demás que se haya guardado de este servidor. No se puede deshacer y ocurre al pulsar, no al guardar.</value></data>
+  <data name="Cfg_HistoryClear" xml:space="preserve"><value>Borrar el historial</value></data>
+  <data name="Cfg_HistoryClearConfirmFmt" xml:space="preserve"><value>¿Borrar el historial de jugadores de «{0}»? No se puede deshacer. Los demás servidores conservan el suyo.</value></data>
+  <data name="PlayerDetails_Blocks" xml:space="preserve"><value>Bloques y objetos</value></data>
+  <data name="PlayerDetails_BlocksHint" xml:space="preserve"><value>Minecraft cuenta exactamente los bloques que rompes. Lo que no cuenta es colocarlos: lo que guarda es «veces que usaste este objeto», que para un bloque es ponerlo, pero para una pala es un golpe y para el pan es comérselo.</value></data>
+  <data name="PlayerDetails_Mined" xml:space="preserve"><value>Bloques minados</value></data>
+  <data name="PlayerDetails_Used" xml:space="preserve"><value>Objetos usados o colocados</value></data>
+  <data name="PlayerDetails_BlocksTotalFmt" xml:space="preserve"><value>{0} en total</value></data>
+  <data name="PlayerDetails_Curiosities" xml:space="preserve"><value>Curiosidades</value></data>
+  <data name="PlayerDetails_CuriositiesHint" xml:space="preserve"><value>Otras cosas que el servidor va contando por su cuenta. Son datos sueltos, no un veredicto sobre nadie.</value></data>
+  <data name="PlayerDetails_StatJumps" xml:space="preserve"><value>Saltos</value></data>
+  <data name="PlayerDetails_StatDamageDealt" xml:space="preserve"><value>Daño hecho (corazones)</value></data>
+  <data name="PlayerDetails_StatDamageTaken" xml:space="preserve"><value>Daño recibido (corazones)</value></data>
+  <data name="PlayerDetails_StatWalked" xml:space="preserve"><value>A pie</value></data>
+  <data name="PlayerDetails_StatFlown" xml:space="preserve"><value>Volando</value></data>
+  <data name="PlayerDetails_StatElytra" xml:space="preserve"><value>Con elytra</value></data>
+  <data name="PlayerDetails_StatBlocksPerHour" xml:space="preserve"><value>Bloques por hora</value></data>
+  <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Minerales por hora</value></data>
+  <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Más matado</value></data>
+  <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>Lo que más le mata</value></data>
   <data name="History_Privacy" xml:space="preserve"><value>Se guarda solo en este equipo. La IP de los jugadores no se guarda nunca. Lo que pasa de los límites se borra solo.</value></data>
   <data name="History_SizeFmt" xml:space="preserve"><value>Ocupa {0}</value></data>
-  <data name="History_ClearAll" xml:space="preserve"><value>Borrar todo el historial</value></data>
-  <data name="History_ClearAllConfirm" xml:space="preserve"><value>Se borrará el historial de todos los jugadores de todos los servidores. No se puede deshacer. ¿Continuar?</value></data>
   <data name="PlayerDetails_Back" xml:space="preserve"><value>Volver</value></data>
   <data name="PlayerDetails_Banned" xml:space="preserve"><value>Baneado</value></data>
   <data name="PlayerDetails_Summary" xml:space="preserve"><value>Resumen</value></data>

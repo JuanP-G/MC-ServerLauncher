@@ -44,6 +44,16 @@
         <Setter Property="Margin" Value="0,2,0,0" />
     </Style>
 
+    <!-- A share of a total, as a thin bar: "stone, 62% of everything you have mined". Determinate,
+         unlike every other ProgressBar in the app, which are spinners. -->
+    <Style Selector="ProgressBar.share">
+        <Setter Property="Height" Value="5" />
+        <Setter Property="Minimum" Value="0" />
+        <Setter Property="Maximum" Value="100" />
+        <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentSelected}" />
+    </Style>
+
     <!-- The title and the description of a settings row. -->
     <Style Selector="TextBlock.title">
         <Setter Property="FontWeight" Value="SemiBold" />

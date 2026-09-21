@@ -683,8 +683,15 @@ public partial class MainViewModel : ObservableObject
     {
         if (SelectedServer is null || Owner is null) return;
         var dialog = new ServerConfigDialog(SelectedServer.Config);
-        if (await dialog.ShowDialog<bool>(Owner))
+        var accepted = await dialog.ShowDialog<bool>(Owner);
+        if (accepted)
             SelectedServer.RefreshFromDisk();
+
+        // Whether it was accepted or cancelled: forgetting a server's players happens the moment
+        // the button is pressed, not when the dialog is saved, so the Players tab would otherwise
+        // go on listing people whose history is no longer there.
+        if (dialog.HistoryCleared)
+            SelectedServer.History.Refresh();
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]

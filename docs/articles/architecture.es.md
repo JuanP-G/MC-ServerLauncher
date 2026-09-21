@@ -145,6 +145,10 @@ mundo. No hay rutas fijas del equipo en el código.
   localiza el PID que escucha en un puerto para liberar un servidor colgado.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — leen/escriben los
   archivos del servidor (`server.properties`, `ops.json`, `banned-players.json`, `whitelist.json`).
+- **`MinecraftIds`** — convierte `minecraft:deepslate_diamond_ore` en «Deepslate diamond ore». A propósito
+  sin traducir: hay más de mil bloques, más con cada versión y cada mod, y lo que se traduce es la etiqueta
+  de la lista, no el vocabulario del propio juego que va dentro. Un bloque de un mod conserva su espacio de
+  nombres, porque «Source gem» a secas no dice nada.
 - **`PlayerEventParser`**, **`PlayerHistoryStore`**, **`PlayerLogImporter`**, **`PlayerStatsReader`** — el
   historial de jugadores. Un único lector convierte una línea del log en algo que hizo un jugador, hecho con
   los detectores de la propia consola (`NameBefore`, `ChatOf`, `DeathMessageDetector`), y sirve tanto a la
@@ -155,12 +159,19 @@ mundo. No hay rutas fijas del equipo en el código.
   jugador, y `events/<nombre>.jsonl`, al que solo se añade y que se compacta de una vez cuando pasa el límite
   en una cuarta parte. Los límites son `PlayerHistorySettings` (acotados, porque settings.json se puede
   editar); al arrancar se borran los eventos viejos, los jugadores que hace mucho que no vienen y el historial
-  de servidores quitados. El almacén solo se abre cuando algo lo necesita, nunca al construir un view model,
-  así que las pruebas no pueden escribir en los datos del usuario. La importación va una vez por servidor,
-  fecha cada línea por su archivo (un `.log.gz` por su nombre, `latest.log` por su última escritura menos las
-  medianoches que cruza), no toca `latest.log` con el servidor en marcha, y solo cierra las sesiones que dejan
-  abiertas sus propios archivos. Las estadísticas se leen de `<mundo>/stats/` o, desde la 26.1,
-  `<mundo>/players/stats/`, al abrir una ficha.
+  de servidores quitados. El almacén solo se abre cuando algo lo necesita, nunca al construir un view model
+  y ni siquiera al preguntar cuánto ocupa (`SizeOf` lee la carpeta sin abrir nada), así que las pruebas no
+  pueden escribir en los datos del usuario. **El historial de un servidor se borra desde la configuración de
+  ese servidor**, no desde los ajustes de la app: el historial pertenece a un servidor, y «borrarlo todo»
+  desde una pantalla sin ningún servidor delante era un instrumento romo para lo que la gente quiere de
+  verdad. La importación va una vez por servidor, fecha cada línea por su archivo (un `.log.gz` por su
+  nombre, `latest.log` por su última escritura menos las medianoches que cruza), no toca `latest.log` con el
+  servidor en marcha, y solo cierra las sesiones que dejan abiertas sus propios archivos. Las estadísticas se
+  leen de `<mundo>/stats/` o, desde la 26.1, `<mundo>/players/stats/`, al abrir una ficha — fuera del hilo de
+  la interfaz, porque el lector ahora recorre todos los bloques que un jugador ha roto. `minecraft:mined` es
+  exacto; `minecraft:used` es lo más parecido a «bloques colocados», porque Minecraft cuenta usar un objeto y
+  no colocarlo, y se enseña tal cual con una línea que lo explica en vez de filtrarlo contra una lista de ids
+  de bloques mantenida a mano que se quedaría vieja cada versión.
 - **`ServerCreationService`** — escribe los archivos iniciales de un servidor nuevo: `eula.txt`,
   `run.bat`/`user_jvm_args.txt` y el `server.properties` mínimo con el puerto elegido. (La descarga
   del jar la hacen `MinecraftVersionService`/`ModLoaderService`/`PaperService` y el puerto lo elige
