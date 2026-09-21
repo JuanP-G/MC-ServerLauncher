@@ -44,7 +44,13 @@ public partial class MainWindow : Window
 
         // When switching servers, go back to the Console tab. Otherwise the previously selected tab
         // (e.g. Mods) could stay shown for a server that doesn't have it (a vanilla server).
-        _viewModel.PropertyChanged += (_, e) =>
+        //
+        // Before the change and not after it, which is the difference between a switch that feels
+        // instant and one that does not. The whole right-hand pane hangs off SelectedServer, so by
+        // the time PropertyChanged runs the heavy tab — Players, with its lists, or Mods — has
+        // already been rebuilt for the server just selected, only to be thrown away a line later.
+        // Switching away first means the work is never done at all.
+        _viewModel.PropertyChanging += (_, e) =>
         {
             if (e.PropertyName == nameof(MainViewModel.SelectedServer))
                 ServerTabs.SelectedIndex = 0;

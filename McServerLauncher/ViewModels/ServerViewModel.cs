@@ -283,23 +283,23 @@ public partial class ServerViewModel : ObservableObject
     private readonly WakeOnDemandListener _wake = new();
 
     /// <summary>Players connected right now (live, read from the console).</summary>
-    public ObservableCollection<string> ConnectedPlayers { get; } = new();
+    public BulkObservableCollection<string> ConnectedPlayers { get; } = new();
 
     /// <summary>Operators (ops.json).</summary>
-    public ObservableCollection<string> OpPlayers { get; } = new();
+    public BulkObservableCollection<string> OpPlayers { get; } = new();
 
     /// <summary>Banned players (banned-players.json).</summary>
-    public ObservableCollection<string> BannedPlayers { get; } = new();
+    public BulkObservableCollection<string> BannedPlayers { get; } = new();
 
     /// <summary>Players who have ever joined (usercache.json).</summary>
-    public ObservableCollection<string> KnownPlayers { get; } = new();
+    public BulkObservableCollection<string> KnownPlayers { get; } = new();
 
     // --- Whitelist ---
 
     private readonly WhitelistService _whitelist = new();
 
     /// <summary>Players currently in the whitelist (names).</summary>
-    public ObservableCollection<string> WhitelistPlayers { get; } = new();
+    public BulkObservableCollection<string> WhitelistPlayers { get; } = new();
 
     [ObservableProperty]
     private bool _whitelistEnabled;
@@ -1070,9 +1070,15 @@ public partial class ServerViewModel : ObservableObject
             // per-line cost amortized O(1), at the price of momentarily holding up to 2200 lines.
             if (ConsoleLines.Count > MaxConsoleLines + ConsoleTrimBlock)
             {
-                ConsoleLines.RemoveFromStart(ConsoleLines.Count - MaxConsoleLines);
+                var excess = ConsoleLines.Count - MaxConsoleLines;
+
+                // Counted before the lines are gone; see VisibleLinesLeaving for why the visible
+                // list is trimmed rather than rebuilt.
+                var leaving = ConsoleKindFilter.VisibleLinesLeaving(ConsoleLines, excess, MatchesConsoleFilter);
+
+                ConsoleLines.RemoveFromStart(excess);
                 ConsoleKindFilter.Recount(ConsoleLines, ConsoleKinds); // lines fell off the top
-                RebuildVisibleConsole(); // the visible list is a subset; rebuild it from what survived
+                VisibleConsoleLines.RemoveFromStart(leaving);
             }
 
             TrackPlayers(text);
@@ -1150,7 +1156,7 @@ public partial class ServerViewModel : ObservableObject
         {
             if (!ConnectedPlayers.Contains(joined)) ConnectedPlayers.Add(joined);
             SnapshotOnline();
-            History.Refresh();
+            History.RequestRefresh();
             UpdatePlayerCount();
             NotifyIf(NotificationKind.PlayerJoined, string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
             return;
@@ -1161,7 +1167,7 @@ public partial class ServerViewModel : ObservableObject
         {
             ConnectedPlayers.Remove(left);
             SnapshotOnline();
-            History.Refresh();
+            History.RequestRefresh();
             UpdatePlayerCount();
             NotifyIf(NotificationKind.PlayerLeft, string.Format(Localizer.Get("Notif_PlayerLeftFmt"), left));
             return;
@@ -1880,14 +1886,14 @@ public partial class ServerViewModel : ObservableObject
         ReplaceAll(BannedPlayers, _players.ReadBanned(Config.FolderPath));
         ReplaceAll(KnownPlayers, _players.ReadKnown(Config.FolderPath));
         RefreshWhitelist();
-        History.Refresh();
+        History.RequestRefresh();
     }
 
-    private static void ReplaceAll(ObservableCollection<string> target, IEnumerable<string> items)
-    {
-        target.Clear();
-        foreach (var i in items) target.Add(i);
-    }
+    /// <summary>
+    /// Refills one of the player lists, announcing the result once instead of once per name.
+    /// </summary>
+    private static void ReplaceAll(BulkObservableCollection<string> target, IEnumerable<string> items) =>
+        target.ReplaceAll(items);
 
     private bool EnsureRunning(string action)
     {
@@ -2019,6 +2025,7 @@ public partial class ServerViewModel : ObservableObject
         _idleCountdownTimer.Stop();
         _playitTimer.Stop();
         Mods.Shutdown();                               // cancels anything the store was fetching
+        History.Shutdown();                            // drops a rebuild that was waiting its turn
         _wake.Stop();                                  // frees the port we answer on while asleep
         if (_process.IsRunning)
             await _process.StopAsync(TimeSpan.FromSeconds(15));

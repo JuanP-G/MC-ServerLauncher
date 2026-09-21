@@ -21,6 +21,16 @@ public class PlayersTabBindingTests
             .Select(m => m.Groups[1].Value)
             .Distinct();
 
+    /// <summary>Every item template in a view, which each bind to a row rather than to the server.</summary>
+    private static IReadOnlyList<string> Templates(string markup) =>
+        Regex.Matches(markup, @"<DataTemplate[^>]*>[\s\S]*?</DataTemplate>").Select(m => m.Value).ToList();
+
+    private static string Outside(string markup, IEnumerable<string> templates)
+    {
+        foreach (var template in templates) markup = markup.Replace(template, "");
+        return markup;
+    }
+
     private static void AssertResolves(Type type, string path, string where)
     {
         var current = type;
@@ -36,42 +46,70 @@ public class PlayersTabBindingTests
     public void EveryNameTheProfileBindsToExists()
     {
         var view = View("PlayerDetailsView.axaml");
-        var template = Regex.Match(view, @"<DataTemplate>[\s\S]*?</DataTemplate>").Value;
-        Assert.NotEmpty(template);
+        var templates = Templates(view);
+        Assert.NotEmpty(templates);
 
-        foreach (var name in BoundNames(view.Replace(template, "")))
+        foreach (var name in BoundNames(Outside(view, templates)))
             AssertResolves(typeof(PlayerDetailsViewModel), name, "PlayerDetailsView");
-        foreach (var name in BoundNames(template))
-            AssertResolves(typeof(PlayerEventRowViewModel), name, "a line of a player's activity");
+        foreach (var template in templates)
+            foreach (var name in BoundNames(template))
+                AssertResolves(typeof(PlayerEventRowViewModel), name, "a line of a player's activity");
     }
 
+    /// <summary>
+    /// The whole tab now, not just the one card it used to be worth checking.
+    /// </summary>
+    /// <remarks>
+    /// It became worth checking all of it when the tab moved out of MainWindow.axaml into its own
+    /// view: there is no longer any need to cut a card out of a nine-hundred-line file to know what
+    /// the context is. Outside an item template the context is the server; inside one it is a row,
+    /// except for the reaches back up through <c>DataContext.</c>, which are the server again.
+    /// </remarks>
     [Fact]
-    public void EveryNameThePlayerListBindsToExists()
+    public void EveryNameThePlayersTabBindsToExists()
     {
-        var main = View("MainWindow.axaml");
-        var start = main.IndexOf("<!-- Everyone who has been on the server", StringComparison.Ordinal);
-        var end = main.IndexOf("<!-- Operators -->", start, StringComparison.Ordinal);
-        Assert.True(start > 0 && end > start, "the player list card was not found in MainWindow.axaml");
-        var card = main[start..end];
+        var view = View("PlayersTabView.axaml");
+        var templates = Templates(view);
+        Assert.NotEmpty(templates);
 
-        // Outside the item template the context is the server; inside it, one row.
-        var template = Regex.Match(card, @"<DataTemplate>[\s\S]*?</DataTemplate>").Value;
-        foreach (var name in BoundNames(card.Replace(template, "")))
+        foreach (var name in BoundNames(Outside(view, templates)))
             AssertResolves(typeof(ServerViewModel), name, "the Players tab");
-        foreach (var name in BoundNames(template).Where(n => !n.StartsWith("DataContext.", StringComparison.Ordinal)))
-            AssertResolves(typeof(PlayerRowViewModel), name, "a row of the player list");
 
-        Assert.Contains("DataContext.History.OpenCommand", template);
-        AssertResolves(typeof(ServerViewModel), "History.OpenCommand", "a row of the player list");
+        foreach (var template in templates)
+            foreach (var name in BoundNames(template))
+            {
+                if (name.StartsWith("DataContext.", StringComparison.Ordinal))
+                    AssertResolves(typeof(ServerViewModel), name["DataContext.".Length..], "a row of the Players tab");
+                else if (template.Contains("History.OpenCommand", StringComparison.Ordinal))
+                    AssertResolves(typeof(PlayerRowViewModel), name, "a row of the player list");
+            }
+
+        Assert.Contains("DataContext.History.OpenCommand", view);
     }
 
     [Fact]
     public void TheProfileAndTheListsTakeTurns()
     {
-        var main = View("MainWindow.axaml");
-        Assert.Contains("IsVisible=\"{Binding History.HasDetails}\"", main);
-        Assert.Contains("IsVisible=\"{Binding !History.HasDetails}\"", main);
+        var view = View("PlayersTabView.axaml");
+        Assert.Contains("IsVisible=\"{Binding History.HasDetails}\"", view);
+        Assert.Contains("IsVisible=\"{Binding !History.HasDetails}\"", view);
         AssertResolves(typeof(ServerViewModel), "History.HasDetails", "the Players tab");
         AssertResolves(typeof(ServerViewModel), "History.Details", "the Players tab");
+    }
+
+    /// <summary>
+    /// The tab is the only thing that builds the player list, and it says when it is on screen.
+    /// </summary>
+    /// <remarks>
+    /// If this view stopped calling <c>EnsureLoaded</c> the list would simply be empty, and a list
+    /// that is empty because nobody asked for it looks exactly like a history that recorded nothing.
+    /// </remarks>
+    [Fact]
+    public void TheTabAsksForItsListWhenItIsShown()
+    {
+        var code = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher",
+            "Views", "PlayersTabView.axaml.cs"));
+        Assert.Contains("EnsureLoaded()", code);
+        Assert.Contains("DataContextChanged", code);
     }
 }

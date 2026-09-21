@@ -286,12 +286,21 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
     private readonly ServerViewModel _server;
     private PlayerHistoryStore? _store;
     private int _started;
+    private bool _hasLoadedOnce;
+    private DispatcherTimer? _coalescer;
+
+    /// <summary>How long requests to rebuild the list are gathered before one of them is obeyed.</summary>
+    private static readonly TimeSpan CoalesceWindow = TimeSpan.FromMilliseconds(250);
 
     public PlayerHistoryViewModel(ServerViewModel server) => _server = server;
 
     private PlayerHistoryStore Store => _store ??= PlayerHistoryStore.For(_server.Config.Id);
 
-    public ObservableCollection<PlayerRowViewModel> Rows { get; } = new();
+    /// <summary>
+    /// One Reset per rebuild instead of one notification per player: the list is emptied and refilled
+    /// whole, and every name in between is a state nobody needs to see.
+    /// </summary>
+    public BulkObservableCollection<PlayerRowViewModel> Rows { get; } = new();
 
     [ObservableProperty] private string _search = "";
     [ObservableProperty] private PlayerDetailsViewModel? _details;
@@ -304,7 +313,53 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
 
     partial void OnDetailsChanged(PlayerDetailsViewModel? value) => OnPropertyChanged(nameof(HasDetails));
 
-    partial void OnSearchChanged(string value) => Refresh();
+    partial void OnSearchChanged(string value) => RequestRefresh();
+
+    /// <summary>
+    /// Builds the list the first time the Players tab is actually shown.
+    /// </summary>
+    /// <remarks>
+    /// Until then nothing here is rebuilt, however much the server talks. Every running server used
+    /// to rebuild its whole list on every join and every leave, selected or not, visible or not —
+    /// a copy of every record, a sort, and a notification per row, for a tab that in most sessions
+    /// is never opened at all.
+    /// </remarks>
+    public void EnsureLoaded()
+    {
+        if (_hasLoadedOnce) return;
+        _hasLoadedOnce = true;
+        Refresh();
+    }
+
+    /// <summary>
+    /// Asks for a rebuild: soon, once, and only if there is a list on screen to be wrong.
+    /// </summary>
+    /// <remarks>
+    /// Ten players joining at once is one rebuild, not ten. If the tab has never been opened there
+    /// is nothing to rebuild: <see cref="EnsureLoaded"/> reads the current state when it is.
+    /// </remarks>
+    public void RequestRefresh()
+    {
+        if (!_hasLoadedOnce) return;
+
+        _coalescer ??= CreateCoalescer();
+        if (_coalescer.IsEnabled) return;
+        _coalescer.Start();
+    }
+
+    private DispatcherTimer CreateCoalescer()
+    {
+        var timer = new DispatcherTimer { Interval = CoalesceWindow };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            Refresh();
+        };
+        return timer;
+    }
+
+    /// <summary>Stops the pending rebuild, if any. Mirrors nothing else: there is nothing to start.</summary>
+    public void Shutdown() => _coalescer?.Stop();
 
     /// <summary>
     /// Once per run of the app: drops what the settings no longer allow, and imports the server's
@@ -333,7 +388,7 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
             Dispatcher.UIThread.Post(() =>
             {
                 IsImporting = false;
-                Refresh();
+                RequestRefresh();
             });
         });
     }
@@ -357,7 +412,7 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
 
         Dispatcher.UIThread.Post(() =>
         {
-            if (e.Kind is PlayerEventKind.Join or PlayerEventKind.Leave) Refresh();
+            if (e.Kind is PlayerEventKind.Join or PlayerEventKind.Leave) RequestRefresh();
             if (Details is { } d && string.Equals(d.Name, e.Player, StringComparison.OrdinalIgnoreCase)) d.Reload();
         });
     }
@@ -379,7 +434,7 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
         _ = Task.Run(() =>
         {
             store.Prune();
-            Dispatcher.UIThread.Post(Refresh);
+            Dispatcher.UIThread.Post(RequestRefresh);
         });
     }
 
@@ -409,8 +464,7 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
             .ThenBy(r => r.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        Rows.Clear();
-        foreach (var r in rows) Rows.Add(r);
+        Rows.ReplaceAll(rows);
     }
 
     [RelayCommand]
@@ -426,7 +480,7 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
             isBanned: _server.BannedPlayers.Contains(name, StringComparer.OrdinalIgnoreCase),
             uuidFromCache: new PlayersService().UuidOf(_server.Config.FolderPath, name),
             op: _server.OpPlayerCommand, kick: _server.KickPlayerCommand, ban: _server.BanPlayerCommand,
-            onCleared: _ => Refresh(),
+            onCleared: _ => RequestRefresh(),
             close: () => Details = null);
     }
 }
