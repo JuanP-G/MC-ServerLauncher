@@ -103,15 +103,13 @@ public class WorldBackupService
     /// <summary>
     /// Zips <paramref name="worldDir"/>, retrying once after a short pause if a file inside it is
     /// still transiently locked (e.g. antivirus scanning a region file the server process just
-    /// closed). The server is expected to already be fully stopped by the time this runs
-    /// (<see cref="ServerProcessManager.StopAsync"/> waits for the real OS exit before returning),
-    /// so this retry is a defense-in-depth net for the rare residual lock, not the primary fix.
+    /// closed).
     /// </summary>
     private static void CreateZipWithRetry(string worldDir, string zipPath)
     {
         try
         {
-            ZipFile.CreateFromDirectory(worldDir, zipPath, CompressionLevel.Fastest, includeBaseDirectory: false);
+            ZipWorld(worldDir, zipPath);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -121,7 +119,7 @@ public class WorldBackupService
             Thread.Sleep(1000);
             try
             {
-                ZipFile.CreateFromDirectory(worldDir, zipPath, CompressionLevel.Fastest, includeBaseDirectory: false);
+                ZipWorld(worldDir, zipPath);
             }
             catch
             {
@@ -129,6 +127,58 @@ public class WorldBackupService
                 TryDeleteZip(zipPath);
                 throw;
             }
+        }
+    }
+
+    /// <summary>The running server's claim on the world folder, never part of a backup.</summary>
+    private const string SessionLock = "session.lock";
+
+    /// <summary>
+    /// Zips the world folder the way <see cref="ZipFile.CreateFromDirectory(string, string)"/> would,
+    /// but readable while the server still has it open.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The backups by the clock run with the server up. <c>save-off</c> stops it writing, but it
+    /// keeps files open for writing all the same — <c>session.lock</c> for as long as it runs, and
+    /// the region files it has touched. <c>CreateFromDirectory</c> opens each file letting others
+    /// only read, which Windows refuses while another process can write to it, so the very first
+    /// file it met failed the whole backup.
+    /// </para>
+    /// <para>
+    /// Each file is opened letting others read, write and delete instead: nothing is written while
+    /// saving is off, so what is read is what was saved. <c>session.lock</c> is skipped altogether —
+    /// the server also locks its bytes, so even that would not read it, and it is not the world:
+    /// the server writes a new one every time it starts, including after a restore.
+    /// </para>
+    /// </remarks>
+    private static void ZipWorld(string worldDir, string zipPath)
+    {
+        using var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create);
+        var root = new DirectoryInfo(worldDir);
+
+        foreach (var entry in root.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+        {
+            var name = Path.GetRelativePath(worldDir, entry.FullName).Replace(Path.DirectorySeparatorChar, '/');
+
+            if (entry is DirectoryInfo dir)
+            {
+                // Kept only when empty, as CreateFromDirectory does: a folder with files in it comes
+                // back with them.
+                if (!dir.EnumerateFileSystemInfos().Any())
+                    zip.CreateEntry(name + "/");
+                continue;
+            }
+
+            if (string.Equals(name, SessionLock, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var zipped = zip.CreateEntry(name, CompressionLevel.Fastest);
+            zipped.LastWriteTime = entry.LastWriteTime;
+            using var source = new FileStream(entry.FullName, FileMode.Open, FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete);
+            using var target = zipped.Open();
+            source.CopyTo(target);
         }
     }
 
