@@ -18,7 +18,6 @@
   <data name="Tip_Configure" xml:space="preserve"><value>Modifier server.properties visuellement</value></data>
   <data name="Uptime" xml:space="preserve"><value>Temps actif</value></data>
   <data name="Port" xml:space="preserve"><value>Port</value></data>
-  <data name="Tip_ChangeIcon" xml:space="preserve"><value>Cliquez pour changer l'icône du serveur (visible par les joueurs)</value></data>
   <data name="Tunnel_Placeholder" xml:space="preserve"><value>Détecté automatiquement, ou colle l'adresse du tunnel ici...</value></data>
   <data name="Copy" xml:space="preserve"><value>Copier</value></data>
   <data name="CreateTunnel" xml:space="preserve"><value>Créer un tunnel</value></data>
@@ -723,4 +722,28 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>« {0} » est un nom réservé par Windows et ne peut pas servir de dossier. Choisis-en un autre.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>Le nom ne peut pas se terminer par un point ni un espace : Windows les supprime et le dossier porterait un autre nom.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper et Purpur ne démarrent pas si le chemin contient « {0} », et ce caractère est dans un dossier supérieur, pas celui du serveur. Change-le toi-même ou choisis un autre dossier parent : le renommer d’ici déplacerait tout ce qu’il contient.</value></data>
+  <data name="Look_Title" xml:space="preserve"><value>Apparence du serveur</value></data>
+  <data name="Look_EditTip" xml:space="preserve"><value>Modifier l'apparence</value></data>
+  <data name="Look_EditShort" xml:space="preserve"><value>Modifier</value></data>
+  <data name="Look_Preview" xml:space="preserve"><value>Aperçu</value></data>
+  <data name="Look_PreviewAsleep" xml:space="preserve"><value>En veille</value></data>
+  <data name="Look_PreviewAwake" xml:space="preserve"><value>Allumé</value></data>
+  <data name="Look_Image" xml:space="preserve"><value>Image</value></data>
+  <data name="Look_ImageDesc" xml:space="preserve"><value>Ce que les joueurs voient dans la liste des serveurs de Minecraft. Elle est recadrée en un carré de 64×64.</value></data>
+  <data name="Look_ChangeImage" xml:space="preserve"><value>Changer l'image</value></data>
+  <data name="Look_RemoveImage" xml:space="preserve"><value>Retirer</value></data>
+  <data name="Look_Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Look_NameDesc" xml:space="preserve"><value>Visible uniquement dans ce launcher ; les joueurs ne le voient pas.</value></data>
+  <data name="Look_Motd" xml:space="preserve"><value>Texte de la liste</value></data>
+  <data name="Look_MotdDesc" xml:space="preserve"><value>Deux lignes. Sélectionnez du texte, puis choisissez une couleur ou un format.</value></data>
+  <data name="Look_Line1" xml:space="preserve"><value>Ligne 1</value></data>
+  <data name="Look_Line2" xml:space="preserve"><value>Ligne 2</value></data>
+  <data name="Look_Line2Locked" xml:space="preserve"><value>Pendant que le serveur dort, l'appli remplit cette ligne avec son avis de démarrage.</value></data>
+  <data name="Look_ClearFormat" xml:space="preserve"><value>Effacer la mise en forme</value></data>
+  <data name="Look_Bold" xml:space="preserve"><value>Gras</value></data>
+  <data name="Look_Italic" xml:space="preserve"><value>Italique</value></data>
+  <data name="Look_Underline" xml:space="preserve"><value>Souligné</value></data>
+  <data name="Look_Strike" xml:space="preserve"><value>Barré</value></data>
+  <data name="Look_ExtraLines" xml:space="preserve"><value>Le MOTD comptait plus de deux lignes ; les autres seront perdues à l'enregistrement.</value></data>
+  <data name="Look_AppliesOnRestart" xml:space="preserve"><value>Le serveur est allumé : le jeu affichera la nouvelle image et le nouveau texte après un redémarrage.</value></data>
 </root>

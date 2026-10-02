@@ -540,49 +540,18 @@ public partial class ServerViewModel : ObservableObject
             OnConsoleLine(string.Format(Localizer.Get("Msg_WakePortBusyFmt"), port.Value));
     }
 
-    // --- How the notice looks in the server list ---
-    // The leading reset matters as much as the colour. Minecraft carries formatting across a line
-    // break, so without it the notice inherited whatever colour the owner's MOTD happened to end
-    // on — gold under one server, plain grey under the next — and read as a third line of their own
-    // message instead of as the launcher speaking.
-
-    /// <summary>Bold yellow: off, and waiting for you to do something about it.</summary>
-    private const string SleepingStyle = "§r§e§l";
-
-    /// <summary>Bold green: already on its way up, nothing to do but wait.</summary>
-    private const string StartingStyle = "§r§a§l";
-
-    /// <summary>Yellow, not bold: the disconnect screen is several lines and bold shouts.</summary>
-    private const string KickStyle = "§e";
-
-    /// <summary>Builds the two-line server-list entry: the owner's MOTD, then the notice.</summary>
-    /// <remarks>
-    /// Only the owner's FIRST line is kept. The list shows two lines and no more, so a MOTD that
-    /// already uses both would push the notice off the bottom — and the notice is the one line that
-    /// has to be read for any of this to work.
-    /// </remarks>
-    internal static string ComposeWakeMotd(string? motd, string notice)
-    {
-        if (string.IsNullOrWhiteSpace(motd)) return notice;
-
-        var first = motd.Split((char)10, (char)13)[0].TrimEnd();
-        return first.Length == 0 ? notice : first + (char)10 + notice;
-    }
-
     /// <summary>What a client sees while the server sleeps: its own MOTD plus what is going on.</summary>
     private WakeStatus BuildWakeStatus()
     {
         var starting = State != ServerState.Stopped;
-        var line = (starting ? StartingStyle : SleepingStyle) +
-                   Localizer.Get(starting ? "Wake_MotdStarting" : "Wake_MotdSleeping");
         var icon = Path.Combine(Config.FolderPath, "server-icon.png");
 
         return new WakeStatus(
-            Description: ComposeWakeMotd(MotdText, line),
+            Description: WakeSign.Compose(MotdText, WakeSign.Notice(starting)),
             VersionName: string.IsNullOrWhiteSpace(Config.GameVersion) ? "?" : Config.GameVersion,
             MaxPlayers: _maxPlayers,
             IconPath: File.Exists(icon) ? icon : null,
-            DisconnectMessage: KickStyle + Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"));
+            DisconnectMessage: WakeSign.KickStyle + Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"));
     }
 
     /// <summary>Somebody pressed Join on a sleeping server.</summary>

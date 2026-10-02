@@ -36,18 +36,6 @@
             <Setter Property="MinHeight" Value="0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
-        <!-- "Change icon" overlay: hidden by default, fades in when hovering the icon button -->
-        <Style Selector="Button.iconbtn Border#HoverOverlay">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Button.iconbtn:pointerover Border#HoverOverlay">
-            <Setter Property="Opacity" Value="1" />
-        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto,*">
@@ -158,66 +146,19 @@
 
                     <!-- Header: name + control buttons -->
                     <Grid Grid.Row="0" Margin="0,0,0,12" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
-                        <!-- Minecraft server-list style view -->
-                        <Border Grid.Column="0" Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}" BorderThickness="1"
-                                CornerRadius="6" Padding="10" Margin="0,0,16,0" VerticalAlignment="Center">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <!-- Server icon (server-icon.png) or a placeholder if none. Click to change it -->
-                                <Button Grid.Column="0" Classes="iconbtn" Width="64" Height="64" Padding="0" Cursor="Hand"
-                                        Background="{StaticResource GroundWell}"
-                                        ToolTip.Tip="{loc:Loc Tip_ChangeIcon}"
-                                        Command="{Binding DataContext.ChangeIconForSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                                    <Panel>
-                                        <ic:SymbolIcon Symbol="Server" FontSize="28" Opacity="0.5"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                       IsVisible="{Binding !HasIcon}" />
-                                        <Image Source="{Binding ServerIcon}" Width="64" Height="64"
-                                               RenderOptions.BitmapInterpolationMode="None"
-                                               IsVisible="{Binding HasIcon}" />
-                                        <!-- Hover overlay hinting the icon can be changed -->
-                                        <Border x:Name="HoverOverlay" Background="{StaticResource ScrimHover}">
-                                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
-                                                <ic:SymbolIcon Symbol="Edit" FontSize="16" Foreground="White" HorizontalAlignment="Center" />
-                                                <TextBlock Text="{loc:Loc Title_ChangeIcon}" Foreground="White" FontSize="9"
-                                                           TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
-                                            </StackPanel>
-                                        </Border>
-                                    </Panel>
-                                </Button>
-
-                                <!-- Title (name) + colored MOTD -->
-                                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"
-                                               FontSize="16" TextTrimming="CharacterEllipsis" />
-                                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,3,0,0">
-                                        <Border CornerRadius="4" Padding="6,1" VerticalAlignment="Center"
-                                                Background="{Binding ServerTypeBrush}">
-                                            <TextBlock Text="{Binding ServerTypeText}" FontSize="11"
-                                                       FontWeight="SemiBold" Foreground="White" />
-                                        </Border>
-                                        <TextBlock Text="{Binding GameVersionText}" FontSize="12"
-                                                   Foreground="{StaticResource McListText}" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock b:MinecraftMotd.Text="{Binding MotdText}" FontSize="13"
-                                               TextWrapping="Wrap" Margin="0,3,0,0"
-                                               FontFamily="Cascadia Mono, Consolas, monospace" />
-                                </StackPanel>
-
-                                <!-- Players + signal bars -->
-                                <StackPanel Grid.Column="2" Orientation="Horizontal"
-                                            VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10,2,0,0">
-                                    <TextBlock Text="{Binding PlayerCountText}" Foreground="{StaticResource McListText}" FontSize="13"
-                                               Margin="0,0,6,0" VerticalAlignment="Center" />
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip.Tip="{Binding SignalHint}">
-                                        <Rectangle Width="3" Height="4" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
-                                        <Rectangle Width="3" Height="6" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
-                                        <Rectangle Width="3" Height="8" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
-                                        <Rectangle Width="3" Height="10" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
-                                        <Rectangle Width="3" Height="12" Fill="{Binding SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
-                                    </StackPanel>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
+                        <!-- Minecraft server-list style view (the same control the appearance editor previews with) -->
+                        <views:ServerCardView Grid.Column="0" Margin="0,0,16,0" VerticalAlignment="Center"
+                                              IsEditable="True"
+                                              EditCommand="{Binding DataContext.EditAppearanceCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              Icon="{Binding ServerIcon}"
+                                              ServerName="{Binding Name}"
+                                              TypeText="{Binding ServerTypeText}"
+                                              TypeBrush="{Binding ServerTypeBrush}"
+                                              Version="{Binding GameVersionText}"
+                                              Motd="{Binding MotdText}"
+                                              PlayerCount="{Binding PlayerCountText}"
+                                              SignalBrush="{Binding SignalBrush}"
+                                              SignalHint="{Binding SignalHint}" />
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <Border HorizontalAlignment="Right" Margin="0,0,0,8" CornerRadius="10" Padding="10,3" Background="{StaticResource SurfaceChip}">

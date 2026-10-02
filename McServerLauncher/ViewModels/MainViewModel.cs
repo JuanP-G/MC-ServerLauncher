@@ -605,38 +605,21 @@ public partial class MainViewModel : ObservableObject
         SelectedServer = vm;
     }
 
+    /// <summary>Opens the editor for the card: icon, name and the two lines of the MOTD.</summary>
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task ChangeIconForSelected()
+    private async Task EditAppearance()
     {
         if (SelectedServer is null || Owner is null) return;
+        var server = SelectedServer;
 
-        var files = await Owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = Localizer.Get("Title_SelectImage"),
-            AllowMultiple = false,
-            FileTypeFilter = new[]
-            {
-                new FilePickerFileType(Localizer.Get("Title_SelectImage"))
-                {
-                    Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif" }
-                }
-            }
-        });
+        var dialog = new ServerAppearanceDialog(server.Config, server.IsRunning);
+        if (!await dialog.ShowDialog<bool>(Owner)) return;
 
-        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
-        if (string.IsNullOrEmpty(path)) return;
-
-        try
-        {
-            new ServerIconService().SetIconFromImage(SelectedServer.Config.FolderPath, path);
-            SelectedServer.RefreshFromDisk();
-        }
-        catch (Exception ex)
-        {
-            await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_IconCreateError"), ex.Message),
-                Localizer.Get("Title_ChangeIcon"));
-        }
+        // The dialog wrote the icon and the MOTD to disk and set the name on the config; what is
+        // left is what the config alone cannot do: tell the view model, persist, re-read the disk.
+        server.Name = server.Config.Name;
+        Save();
+        server.RefreshFromDisk();
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
@@ -752,6 +735,6 @@ public partial class MainViewModel : ObservableObject
         RemoveServerCommand.NotifyCanExecuteChanged();
         CreateTunnelForSelectedCommand.NotifyCanExecuteChanged();
         ConfigureServerCommand.NotifyCanExecuteChanged();
-        ChangeIconForSelectedCommand.NotifyCanExecuteChanged();
+        EditAppearanceCommand.NotifyCanExecuteChanged();
     }
 }

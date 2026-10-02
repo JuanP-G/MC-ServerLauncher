@@ -10,7 +10,18 @@ namespace McServerLauncher.Services;
 /// </summary>
 public class ServerIconService
 {
-    public void SetIconFromImage(string serverFolder, string sourceImagePath)
+    public const string FileName = "server-icon.png";
+
+    public void SetIconFromImage(string serverFolder, string sourceImagePath) =>
+        WriteIcon(serverFolder, RenderIcon(sourceImagePath));
+
+    /// <summary>The 64x64 PNG a server would get from this image, without touching any server.</summary>
+    /// <remarks>
+    /// Separate from writing so the appearance editor can show the result straight away and only
+    /// put it on disk when the user accepts: picking an image and then cancelling must leave the
+    /// server exactly as it was.
+    /// </remarks>
+    public byte[] RenderIcon(string sourceImagePath)
     {
         using var input = File.OpenRead(sourceImagePath);
         using var original = SKBitmap.Decode(input)
@@ -28,9 +39,16 @@ public class ServerIconService
         using var resized = cropped.Resize(new SKImageInfo(64, 64), SKFilterQuality.High);
         using var image = SKImage.FromBitmap(resized);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
+    }
 
-        var dest = Path.Combine(serverFolder, "server-icon.png");
-        using var output = File.Create(dest);
-        data.SaveTo(output);
+    public void WriteIcon(string serverFolder, byte[] png) =>
+        File.WriteAllBytes(Path.Combine(serverFolder, FileName), png);
+
+    /// <summary>Deletes the icon, so the server list falls back to the game's default.</summary>
+    public void RemoveIcon(string serverFolder)
+    {
+        var path = Path.Combine(serverFolder, FileName);
+        if (File.Exists(path)) File.Delete(path);
     }
 }

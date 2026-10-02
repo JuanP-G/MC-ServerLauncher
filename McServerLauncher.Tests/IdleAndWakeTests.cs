@@ -1,3 +1,4 @@
+using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Tests;
@@ -89,14 +90,14 @@ public class IdleAndWakeTests
     [Fact]
     public void NoticeGoesOnItsOwnLineUnderTheMotd() =>
         Assert.Equal("Mi servidor\nApagado".Replace("Apagado", Notice),
-            ServerViewModel.ComposeWakeMotd("Mi servidor", Notice));
+            WakeSign.Compose("Mi servidor", Notice));
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(null)]
     public void WithoutAMotdTheNoticeStandsAlone(string? motd) =>
-        Assert.Equal(Notice, ServerViewModel.ComposeWakeMotd(motd, Notice));
+        Assert.Equal(Notice, WakeSign.Compose(motd, Notice));
 
     [Theory]
     [InlineData("Linea uno\nLinea dos")]
@@ -105,6 +106,21 @@ public class IdleAndWakeTests
     {
         // The server list shows two lines and no more. A MOTD already using both would push the
         // notice off the bottom — and the notice is the one line that has to be read.
-        Assert.Equal("Linea uno\n" + Notice, ServerViewModel.ComposeWakeMotd(motd, Notice));
+        Assert.Equal("Linea uno\n" + Notice, WakeSign.Compose(motd, Notice));
     }
+
+    [Theory]
+    [InlineData(@"Linea uno\nLinea dos")]
+    [InlineData(@"Linea uno\u000aLinea dos")]
+    public void TwoLineMotdAsStoredInServerPropertiesIsTrimmedToo(string raw)
+    {
+        // The file never holds a real line break: a two-line MOTD is stored as the two characters
+        // backslash and n. Splitting the raw text on newlines found none, so the second line went
+        // out and pushed the notice off the bottom of the server list.
+        Assert.Equal("Linea uno\n" + Notice, WakeSign.Compose(raw, Notice));
+    }
+
+    [Fact]
+    public void TheKeptLineKeepsItsColour() =>
+        Assert.Equal("§6Hola\n" + Notice, WakeSign.Compose(@"\u00a76Hola\n\u00a7cadios", Notice));
 }
