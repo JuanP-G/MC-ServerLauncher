@@ -1,0 +1,185 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             x:Class="McServerLauncher.Views.TunnelsView"
+             x:CompileBindings="False">
+
+    <!-- DataContext: TunnelsViewModel. De arriba abajo: la cuenta, lo que se puede arreglar, y la tabla
+         de todos los tunneles de la cuenta. -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16" Spacing="10">
+
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Nav_Tunnels}" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Text="{loc:Loc Tun_Subtitle}" Classes="desc" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding LastReadText}" Classes="desc" VerticalAlignment="Center" />
+                    <Button Command="{Binding RefreshCommand}" IsVisible="{Binding IsConnected}"
+                            ToolTip.Tip="{loc:Loc Tun_Refresh}">
+                        <ic:SymbolIcon Symbol="ArrowSync" />
+                    </Button>
+                    <Button Command="{Binding OpenWebCommand}" ToolTip.Tip="{loc:Loc Tun_OpenWebTip}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <ic:SymbolIcon Symbol="Open" />
+                            <TextBlock Text="playit.gg" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- La cuenta -->
+            <Border Classes="card" Margin="0">
+                <StackPanel Spacing="8">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Ellipse Width="10" Height="10" Fill="{Binding AccountBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="{loc:Loc Tun_Account}" FontWeight="SemiBold" />
+                            <SelectableTextBlock Text="{Binding AccountText}" FontSize="12" Opacity="0.8"
+                                                 TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button Content="{loc:Loc Pk_Agent_Retry}" Command="{Binding RetryAgentCommand}"
+                                    IsVisible="{Binding CanRetryAgent}" />
+                            <Button Content="{Binding ServiceText}" Command="{Binding ToggleServiceCommand}"
+                                    IsVisible="{Binding ShowService}" />
+                            <Button Content="{Binding ConnectText}" Command="{Binding ConnectCommand}" Classes="accent"
+                                    IsVisible="{Binding IsNotConnected}" />
+                            <Button Content="{Binding ConnectText}" Command="{Binding ConnectCommand}"
+                                    IsVisible="{Binding IsConnected}" />
+                            <Button Content="{loc:Loc Pk_Disconnect}" Command="{Binding DisconnectCommand}"
+                                    IsVisible="{Binding IsConnected}" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="{loc:Loc Pk_SettingsDesc}" Classes="desc" IsVisible="{Binding IsNotConnected}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Un fallo al leer o cambiar la cuenta: dicho aqui, no en un cuadro que cerrar. -->
+            <Border Classes="card" Margin="0" Background="{StaticResource SemanticDangerFill}"
+                    BorderBrush="{StaticResource SemanticDanger}" IsVisible="{Binding HasError}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ic:SymbolIcon Symbol="Warning" Foreground="{StaticResource DangerIcon}" VerticalAlignment="Center" />
+                    <SelectableTextBlock Text="{Binding ErrorText}" TextWrapping="Wrap" MaxWidth="640"
+                                         Foreground="{StaticResource DangerText}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- Lo que puedo arreglar -->
+            <Border Classes="card" Margin="0" IsVisible="{Binding HasSuggestions}">
+                <StackPanel>
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                        <TextBlock Text="{loc:Loc Tun_Fix_Title}" FontWeight="SemiBold" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                            <Ellipse Width="8" Height="8" Fill="{Binding SummaryBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding SummaryText}" FontSize="12" Opacity="0.8" />
+                        </StackPanel>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding Suggestions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4">
+                                    <ic:SymbolIcon Symbol="Warning" FontSize="16" Margin="0,0,10,0" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource SemanticWarn}" IsVisible="{Binding IsProblem}" />
+                                    <ic:SymbolIcon Symbol="Edit" FontSize="16" Margin="0,0,10,0" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource AccentSelected}" IsVisible="{Binding !IsProblem}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Text}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                    <Button Grid.Column="2" Margin="12,0,0,0" Content="{Binding ButtonText}"
+                                            Command="{Binding ApplyCommand}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Todos los tuneles de la cuenta -->
+            <Border Classes="card" Margin="0" Padding="8" IsVisible="{Binding IsConnected}">
+                <StackPanel>
+                    <Grid ColumnDefinitions="22,1.3*,1.7*,48,64,1.1*,104" Margin="8,2,8,6">
+                        <TextBlock Grid.Column="1" Text="{loc:Loc Tun_ColName}" Classes="statLabel" />
+                        <TextBlock Grid.Column="2" Text="{loc:Loc Tun_ColAddress}" Classes="statLabel" />
+                        <TextBlock Grid.Column="3" Text="{loc:Loc Tun_ColType}" Classes="statLabel" />
+                        <TextBlock Grid.Column="4" Text="{loc:Loc Tun_ColPort}" Classes="statLabel" />
+                        <TextBlock Grid.Column="5" Text="{loc:Loc Tun_ColServer}" Classes="statLabel" />
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding Rows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="8,6" CornerRadius="6" Margin="0,0,0,2" Background="{Binding RowBackground}">
+                                    <StackPanel>
+                                        <Grid ColumnDefinitions="22,1.3*,1.7*,48,64,1.1*,104">
+                                            <Ellipse Width="8" Height="8" Fill="{Binding DotBrush}" HorizontalAlignment="Left"
+                                                     VerticalAlignment="Center" />
+
+                                            <!-- Nombre: se edita en la propia fila, y la app propone el del servidor -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"
+                                                           IsVisible="{Binding IsNotEditing}" />
+                                                <Grid ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding IsEditing}">
+                                                    <TextBox Text="{Binding EditName}" MaxLength="64" MinHeight="0" Padding="6,3">
+                                                        <TextBox.KeyBindings>
+                                                            <KeyBinding Gesture="Enter" Command="{Binding ConfirmRenameCommand}" />
+                                                            <KeyBinding Gesture="Escape" Command="{Binding CancelRenameCommand}" />
+                                                        </TextBox.KeyBindings>
+                                                    </TextBox>
+                                                    <Button Grid.Column="1" Margin="4,0,0,0" Padding="6,3"
+                                                            Command="{Binding ConfirmRenameCommand}" ToolTip.Tip="{loc:Loc Tun_RenameSave}">
+                                                        <ic:SymbolIcon Symbol="Checkmark" FontSize="14" />
+                                                    </Button>
+                                                    <Button Grid.Column="2" Margin="4,0,0,0" Padding="6,3"
+                                                            Command="{Binding CancelRenameCommand}" ToolTip.Tip="{loc:Loc Cancel}">
+                                                        <ic:SymbolIcon Symbol="Dismiss" FontSize="14" />
+                                                    </Button>
+                                                </Grid>
+                                                <Button Classes="suggest" Padding="6,1" Margin="0,3,0,0" FontSize="11"
+                                                        HorizontalAlignment="Left" IsVisible="{Binding ShowSuggestion}"
+                                                        Command="{Binding UseSuggestedCommand}"
+                                                        Content="{Binding SuggestionText}" />
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="2" Text="{Binding Address}" VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+                                            <TextBlock Grid.Column="3" Text="{Binding ProtoText}" VerticalAlignment="Center" Opacity="0.8" />
+                                            <TextBlock Grid.Column="4" Text="{Binding LocalPort}" VerticalAlignment="Center" Opacity="0.8" />
+                                            <TextBlock Grid.Column="5" Text="{Binding ServerText}" VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis" />
+
+                                            <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center">
+                                                <Button Padding="6,4" Background="Transparent" BorderThickness="0"
+                                                        IsEnabled="{Binding HasAddress}" Command="{Binding CopyCommand}"
+                                                        ToolTip.Tip="{loc:Loc Copy}">
+                                                    <ic:SymbolIcon Symbol="Copy" FontSize="15" />
+                                                </Button>
+                                                <Button Padding="6,4" Background="Transparent" BorderThickness="0"
+                                                        Command="{Binding BeginRenameCommand}" ToolTip.Tip="{loc:Loc Tun_RenameTip}">
+                                                    <ic:SymbolIcon Symbol="Edit" FontSize="15" />
+                                                </Button>
+                                                <Button Padding="6,4" Background="Transparent" BorderThickness="0"
+                                                        Command="{Binding DeleteCommand}" ToolTip.Tip="{loc:Loc Title_DeleteTunnel}">
+                                                    <ic:SymbolIcon Symbol="Delete" FontSize="15" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                        <TextBlock Text="{Binding HintText}" IsVisible="{Binding HasHint}" FontSize="11.5"
+                                                   Margin="22,3,0,0" TextWrapping="Wrap"
+                                                   Foreground="{StaticResource SemanticWarn}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="{loc:Loc Tun_Empty}" Classes="desc" Margin="8,8" IsVisible="{Binding ShowEmpty}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Aviso exigido por Playit para quien se integra con su red -->
+            <TextBlock Text="{loc:Loc Pk_Disclaimer}" FontSize="11" Opacity="0.55" TextWrapping="Wrap" Margin="4,0" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

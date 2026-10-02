@@ -299,7 +299,7 @@ public class PlayitApiService
     }
 
     /// <summary>Drops the shared tunnel cache (called after creating/deleting a tunnel).</summary>
-    private static void InvalidateTunnelCache()
+    internal static void InvalidateTunnelCache()
     {
         lock (TunnelCacheLock)
         {
@@ -399,5 +399,45 @@ public class PlayitApiService
         await PostWithAuthFallbackAsync("/tunnels/delete", key, body, ct);
         InvalidateTunnelCache(); // so the next address refresh stops showing the deleted tunnel
         return true;
+    }
+
+    /// <summary>The body of <c>/tunnels/rename</c>. Internal so a test can pin the field names.</summary>
+    internal static string RenameBody(string tunnelId, string name) =>
+        new JsonObject { ["tunnel_id"] = tunnelId, ["name"] = name }.ToJsonString();
+
+    /// <summary>The body of <c>/tunnels/delete</c> when the tunnel is named by its id.</summary>
+    internal static string DeleteBody(string tunnelId) =>
+        new JsonObject { ["tunnel_id"] = tunnelId }.ToJsonString();
+
+    /// <summary>Gives a tunnel a new name. The name is the only thing about a tunnel that is ours to change.</summary>
+    /// <remarks>
+    /// Named by id, not by port: a rename is harmless, but the id is what the account actually
+    /// keys a tunnel on, and two tunnels can share a port (that is one of the things the tunnels
+    /// screen exists to point out).
+    /// </remarks>
+    public async Task RenameTunnelAsync(string key, string tunnelId, string name, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
+        if (string.IsNullOrWhiteSpace(tunnelId) || string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("A tunnel id and a name are both needed.");
+
+        await PostWithAuthFallbackAsync("/tunnels/rename", key, RenameBody(tunnelId, name.Trim()), ct);
+        InvalidateTunnelCache();
+    }
+
+    /// <summary>
+    /// Deletes one specific tunnel. For duplicates, where "the tunnel on port 25565" is ambiguous and
+    /// <see cref="DeleteTunnelForPortAsync"/> would remove whichever the account lists first.
+    /// </summary>
+    public async Task DeleteTunnelAsync(string key, string tunnelId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
+        if (string.IsNullOrWhiteSpace(tunnelId))
+            throw new ArgumentException("A tunnel id is needed.");
+
+        await PostWithAuthFallbackAsync("/tunnels/delete", key, DeleteBody(tunnelId), ct);
+        InvalidateTunnelCache();
     }
 }

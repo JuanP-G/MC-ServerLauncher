@@ -150,22 +150,9 @@
 
                 <Separator Margin="0,16,0,12" />
 
-                <!-- Playit.gg connection -->
-                <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
-                <TextBlock Text="{loc:Loc Pk_SettingsDesc}" TextWrapping="Wrap" Opacity="0.7" FontSize="13" Margin="0,4,0,6" />
-                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <Ellipse x:Name="PlayitDot" Width="10" Height="10" VerticalAlignment="Center" />
-                    <TextBlock x:Name="PlayitStatus" VerticalAlignment="Center" />
-                    <Button x:Name="ConnectBtn" Content="{loc:Loc Pk_Connect}" Click="ConnectPlayit_Click" />
-                    <Button x:Name="DisconnectBtn" Content="{loc:Loc Pk_Disconnect}" Click="DisconnectPlayit_Click" />
-                </StackPanel>
-                <StackPanel x:Name="AgentRow" Spacing="6" Margin="0,8,0,0">
-                    <SelectableTextBlock x:Name="AgentStatus" FontSize="12" TextWrapping="Wrap" MaxWidth="430"
-                                         HorizontalAlignment="Left" />
-                    <Button x:Name="AgentRetryBtn" Content="{loc:Loc Pk_Agent_Retry}" FontSize="12" Padding="8,2"
-                            HorizontalAlignment="Left" Click="RetryAgent_Click" IsVisible="False" />
-                </StackPanel>
-                <TextBlock Text="{loc:Loc Pk_Disclaimer}" TextWrapping="Wrap" Opacity="0.55" FontSize="11" Margin="0,8,0,0" />
+                <!-- The Playit account moved to the Tunnels section: it is a connection with a live state, not a
+                     preference to be saved or cancelled with the rest of this dialog. -->
+                <TextBlock Text="{loc:Loc Pk_MovedToTunnels}" TextWrapping="Wrap" Opacity="0.7" FontSize="13" />
 
             </StackPanel>
         </ScrollViewer>

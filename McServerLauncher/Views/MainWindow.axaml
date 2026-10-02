@@ -36,6 +36,33 @@
             <Setter Property="MinHeight" Value="0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
+
+        <!-- El rail: icono encima, etiqueta debajo. La seccion activa lleva una barra a la izquierda y
+             la opacidad plena; las demas, apagadas. Nada se mide ni se anima: la barra es un borde
+             que aparece o no, asi no hay posiciones que se desajusten al cambiar el tamano de letra. -->
+        <Style Selector="Button.rail">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="0,9" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Opacity" Value="0.62" />
+        </Style>
+        <Style Selector="Button.rail:pointerover">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.rail:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
+        </Style>
+        <Style Selector="Button.rail.on">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.rail TextBlock">
+            <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto,*">
@@ -54,11 +81,62 @@
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" ColumnDefinitions="280,*">
+        <Grid Grid.Row="1" ColumnDefinitions="72,*">
+
+            <!-- Rail: which part of the app is on screen -->
+            <Border Grid.Column="0" Background="{StaticResource GroundPopup}">
+                <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="0,8">
+                    <Button Grid.Row="0" Classes="rail" Classes.on="{Binding IsServersSection}"
+                            Command="{Binding ShowServersCommand}" ToolTip.Tip="{loc:Loc Servers}">
+                        <Grid>
+                            <Border Width="3" HorizontalAlignment="Left" Background="{StaticResource AccentSelected}"
+                                    Margin="0,2" IsVisible="{Binding IsServersSection}" />
+                            <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                <ic:SymbolIcon Symbol="Server" FontSize="20" HorizontalAlignment="Center" />
+                                <TextBlock Text="{loc:Loc Servers}" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+                    <Button Grid.Row="1" Classes="rail" Classes.on="{Binding IsTunnelsSection}"
+                            Command="{Binding ShowTunnelsCommand}" ToolTip.Tip="{loc:Loc Nav_Tunnels}">
+                        <Grid>
+                            <Border Width="3" HorizontalAlignment="Left" Background="{StaticResource AccentSelected}"
+                                    Margin="0,2" IsVisible="{Binding IsTunnelsSection}" />
+                            <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                <ic:SymbolIcon Symbol="Globe" FontSize="20" HorizontalAlignment="Center" />
+                                <TextBlock Text="{loc:Loc Nav_Tunnels}" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+                    <!-- Settings is a dialog with Cancel and Save, so it has no bar: it never stays selected. -->
+                    <Button Grid.Row="3" Classes="rail" Command="{Binding OpenSettingsCommand}"
+                            ToolTip.Tip="{loc:Loc Settings_Title}">
+                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                            <ic:SymbolIcon Symbol="Settings" FontSize="20" HorizontalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Settings_Title}" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="4" Classes="rail" Classes.on="{Binding IsAboutSection}"
+                            Command="{Binding ShowAboutCommand}" ToolTip.Tip="{loc:Loc Nav_About}">
+                        <Grid>
+                            <Border Width="3" HorizontalAlignment="Left" Background="{StaticResource AccentSelected}"
+                                    Margin="0,2" IsVisible="{Binding IsAboutSection}" />
+                            <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                <ic:SymbolIcon Symbol="Info" FontSize="20" HorizontalAlignment="Center" />
+                                <TextBlock Text="{loc:Loc Nav_About}" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Sections share one cell and stay mounted: switching is IsVisible, so the console keeps
+                 its scroll and its lines instead of being rebuilt every time. -->
+            <Grid Grid.Column="1" ColumnDefinitions="250,*" IsVisible="{Binding IsServersSection}">
 
             <!-- Side panel: server list -->
             <Border Grid.Column="0" Background="{StaticResource GroundSidebar}" Padding="12">
-                <Grid RowDefinitions="Auto,*,Auto,Auto">
+                <Grid RowDefinitions="Auto,*,Auto">
                     <TextBlock Grid.Row="0" Text="{loc:Loc Servers}" FontSize="18" FontWeight="SemiBold" Margin="4,0,0,10" />
 
                     <ListBox Grid.Row="1"
@@ -121,15 +199,6 @@
                             </Button>
                         </StackPanel>
                     </StackPanel>
-
-                    <!-- Settings (language, notifications, …) -->
-                    <Button Grid.Row="3" Margin="0,12,0,0" HorizontalAlignment="Stretch"
-                            Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{loc:Loc Settings_Title}">
-                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                            <ic:SymbolIcon Symbol="Settings" />
-                            <TextBlock Text="{loc:Loc Settings_Title}" />
-                        </StackPanel>
-                    </Button>
                 </Grid>
             </Border>
 
@@ -253,40 +322,28 @@
                         </Border>
                     </UniformGrid>
 
-                    <!-- Playit.gg -->
+                    <!-- Playit.gg: only where players connect. Managing the account and its tunnels
+                         lives in the Tunnels section; this is what you copy and send to a friend. -->
                     <Border Grid.Row="2" Classes="card stat" Margin="4,4,4,12">
                       <StackPanel>
-                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
                                 <TextBlock Text="{Binding PlayitStatusText}" FontSize="12" Opacity="0.7" />
                             </StackPanel>
-                            <TextBox Grid.Column="1" Margin="16,0" Text="{Binding TunnelAddress}"
-                                     Watermark="{loc:Loc Tunnel_Placeholder}" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="1" Margin="16,0" Text="{Binding TunnelAddress}" IsReadOnly="True"
+                                     Watermark="{loc:Loc Tunnel_None}" VerticalAlignment="Center" />
                             <Button Grid.Column="2" Command="{Binding CopyTunnelAddressCommand}" Margin="0,0,8,0">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <ic:SymbolIcon Symbol="Copy" />
                                     <TextBlock Text="{loc:Loc Copy}" />
                                 </StackPanel>
                             </Button>
-                            <Button Grid.Column="3" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Tip_CreateTunnel}"
-                                    Command="{Binding DataContext.CreateTunnelForSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                            <Button Grid.Column="3" ToolTip.Tip="{loc:Loc Tip_ManageTunnels}"
+                                    Command="{Binding DataContext.ShowTunnelsCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="AddCircle" />
-                                    <TextBlock Text="{loc:Loc CreateTunnel}" />
-                                </StackPanel>
-                            </Button>
-                            <Button Grid.Column="4" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Tip_Web}"
-                                    Command="{Binding OpenPlayitDashboardCommand}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Open" />
-                                    <TextBlock Text="Web" />
-                                </StackPanel>
-                            </Button>
-                            <Button Grid.Column="5" ToolTip.Tip="{loc:Loc Tip_Service}" Command="{Binding TogglePlayitCommand}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Power" />
-                                    <TextBlock Text="{loc:Loc Service}" />
+                                    <ic:SymbolIcon Symbol="Globe" />
+                                    <TextBlock Text="{loc:Loc Nav_Tunnels}" />
                                 </StackPanel>
                             </Button>
                         </Grid>
@@ -652,6 +709,15 @@
                         </TabItem>
                     </TabControl>
                 </Grid>
+            </Panel>
+            </Grid>
+
+            <Panel Grid.Column="1" IsVisible="{Binding IsTunnelsSection}">
+                <views:TunnelsView DataContext="{Binding Tunnels}" />
+            </Panel>
+
+            <Panel Grid.Column="1" IsVisible="{Binding IsAboutSection}">
+                <views:AboutView />
             </Panel>
         </Grid>
     </Grid>

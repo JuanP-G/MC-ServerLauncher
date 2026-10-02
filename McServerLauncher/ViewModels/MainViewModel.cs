@@ -46,10 +46,71 @@ public partial class MainViewModel : ObservableObject
     private bool _updateAvailable;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UpdateCheckText))]
     private string _updateText = string.Empty;
 
     [ObservableProperty]
     private bool _isUpdating;
+
+    /// <summary>What the About screen says about updates; the banner keeps its own flag.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCheckingUpdates), nameof(IsUpToDate), nameof(UpdateCheckFailed), nameof(UpdateCheckText))]
+    private UpdateCheckState _updateCheckState = UpdateCheckState.Unknown;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UpdateCheckText))]
+    private DateTime? _lastUpdateCheck;
+
+    public bool IsCheckingUpdates => UpdateCheckState == UpdateCheckState.Checking;
+    public bool IsUpToDate => UpdateCheckState == UpdateCheckState.UpToDate;
+    public bool UpdateCheckFailed => UpdateCheckState == UpdateCheckState.Failed;
+
+    /// <summary>The line under the version in About: what the last look found, and when.</summary>
+    public string UpdateCheckText => UpdateCheckState switch
+    {
+        UpdateCheckState.Checking => Localizer.Get("Upd_Checking"),
+        UpdateCheckState.UpToDate => string.Format(Localizer.Get("Upd_UpToDateFmt"), LastCheckClock()),
+        UpdateCheckState.Available => UpdateText,
+        UpdateCheckState.Failed => Localizer.Get("Upd_Failed"),
+        _ => Localizer.Get("Upd_NotChecked"),
+    };
+
+    private string LastCheckClock() => LastUpdateCheck?.ToString("t", CultureInfo.CurrentCulture) ?? "";
+
+    /// <summary>The version running, as its release calls it.</summary>
+    public string VersionText =>
+        Changelog.Format(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0));
+
+    /// <summary>"Version 1.12.1 · MIT", under the name in About.</summary>
+    public string VersionLineText => string.Format(Localizer.Get("About_VersionFmt"), VersionText);
+
+    // ---- Sections ----
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsAboutSection))]
+    private AppSection _section = AppSection.Servers;
+
+    public bool IsServersSection => Section == AppSection.Servers;
+    public bool IsTunnelsSection => Section == AppSection.Tunnels;
+    public bool IsAboutSection => Section == AppSection.About;
+
+    /// <summary>The tunnels screen: the Playit account, every tunnel on it, and what to do about them.</summary>
+    public TunnelsViewModel Tunnels { get; }
+
+    [RelayCommand]
+    private void ShowServers() => Section = AppSection.Servers;
+
+    [RelayCommand]
+    private void ShowTunnels()
+    {
+        Section = AppSection.Tunnels;
+        // Read when the screen opens, never on a timer: the account is another machine's data, and
+        // asking for it while nobody is looking would spend requests on an answer no one reads.
+        _ = Tunnels.RefreshAsync();
+    }
+
+    [RelayCommand]
+    private void ShowAbout() => Section = AppSection.About;
 
     private string? _releaseUrl;
     private string? _packageUrl;
@@ -76,6 +137,7 @@ public partial class MainViewModel : ObservableObject
     {
         Load();
         _appSettings = _settings.Load();
+        Tunnels = new TunnelsViewModel(Servers, _appSettings, _settings, () => Owner, ConfigureServerAsync);
 
         // Make the per-user Playit agent key (if the user already connected) the credential for all
         // Playit API reads/writes this session.
@@ -250,31 +312,50 @@ public partial class MainViewModel : ObservableObject
         return new Version(v.Major, v.Minor, Math.Max(0, v.Build));
     }
 
-    private async Task CheckForUpdatesAsync()
+    /// <summary>
+    /// Asks GitHub whether a newer version exists. <paramref name="manual"/> is a person pressing the
+    /// button in About, who is owed an answer either way; the startup and six-hourly checks stay
+    /// silent unless there is news, as before.
+    /// </summary>
+    private async Task CheckForUpdatesAsync(bool manual = false)
     {
-        try
+        if (IsCheckingUpdates) return;
+        if (manual) UpdateCheckState = UpdateCheckState.Checking;
+
+        var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0);
+        var (state, info) = await UpdateCheck.RunAsync(() => new UpdateService().CheckAsync(current));
+
+        if (state != UpdateCheckState.Failed || manual)
         {
-            var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0);
-            var info = await new UpdateService().CheckAsync(current);
-            if (info is not null)
-            {
-                _releaseUrl = info.Url;
-                _packageUrl = info.PackageUrl;
-                _packageName = info.PackageName;
-                _checksumUrl = info.ChecksumUrl;
-                // A beta says so before the button, not after installing.
-                UpdateText = string.Format(
-                    Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
-                    info.Version);
-                UpdateAvailable = true;
-                NotifyUpdateOnce(info.Version, info.IsPreRelease);
-            }
+            LastUpdateCheck = DateTime.Now;
+            UpdateCheckState = state;
         }
-        catch
+        else if (UpdateCheckState == UpdateCheckState.Checking)
         {
-            // No connection or GitHub unavailable: it's fine.
+            UpdateCheckState = UpdateCheckState.Unknown;
         }
+
+        if (info is null) return;
+
+        _releaseUrl = info.Url;
+        _packageUrl = info.PackageUrl;
+        _packageName = info.PackageName;
+        _checksumUrl = info.ChecksumUrl;
+        // A beta says so before the button, not after installing.
+        UpdateText = string.Format(
+            Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
+            info.Version);
+        UpdateAvailable = true;
+        OnPropertyChanged(nameof(UpdateCheckText));
+        NotifyUpdateOnce(info.Version, info.IsPreRelease);
     }
+
+    /// <summary>The "Check for updates" button in About.</summary>
+    [RelayCommand]
+    private Task CheckForUpdatesNow() => CheckForUpdatesAsync(manual: true);
+
+    [RelayCommand]
+    private void OpenLink(string? url) => BrowserLauncher.Open(url);
 
     /// <summary>
     /// Raises a desktop notification the first time a given version is seen, and only while the
@@ -445,16 +526,6 @@ public partial class MainViewModel : ObservableObject
         return await PlayitConnection.EnsureAsync(Owner, _appSettings, _settings);
     }
 
-    /// <summary>Creates the Playit tunnel for the selected server (the "Create tunnel" button).</summary>
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task CreateTunnelForSelected()
-    {
-        if (SelectedServer is null) return;
-        var key = await EnsurePlayitAgentAsync();
-        if (key is null) return;
-        await SelectedServer.CreateTunnelAsync(key);
-    }
-
     /// <summary>The Bedrock ports every server except <paramref name="except"/> already holds.</summary>
     /// <remarks>
     /// Read live rather than captured: servers are added and removed while the app runs, and a list
@@ -544,6 +615,7 @@ public partial class MainViewModel : ObservableObject
         if (SelectedServer is null || Owner is null) return;
         var server = SelectedServer;
         var oldType = server.Config.Type;
+        var oldName = server.Name;
 
         // Read before the dialog: these two checkboxes are requests to install something, not
         // settings that take effect by being remembered. Turning one on and having nothing happen
@@ -564,6 +636,7 @@ public partial class MainViewModel : ObservableObject
         {
             server.Name = server.Config.Name;
             Save();
+            _ = Tunnels.RenameTunnelsForServerAsync(server, oldName);
 
             if (!hadCrossplay && server.Config.CrossplayEnabled)
             {
@@ -611,6 +684,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (SelectedServer is null || Owner is null) return;
         var server = SelectedServer;
+        var oldName = server.Name;
 
         var dialog = new ServerAppearanceDialog(server.Config, server.IsRunning);
         if (!await dialog.ShowDialog<bool>(Owner)) return;
@@ -620,15 +694,19 @@ public partial class MainViewModel : ObservableObject
         server.Name = server.Config.Name;
         Save();
         server.RefreshFromDisk();
+        _ = Tunnels.RenameTunnelsForServerAsync(server, oldName);
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task ConfigureServer()
+    private Task ConfigureServer() => SelectedServer is null ? Task.CompletedTask : ConfigureServerAsync(SelectedServer);
+
+    /// <summary>Opens the properties editor for any server; the tunnels screen uses it to change a port.</summary>
+    private async Task ConfigureServerAsync(ServerViewModel server)
     {
-        if (SelectedServer is null || Owner is null) return;
-        var dialog = new ServerConfigDialog(SelectedServer.Config);
+        if (Owner is null) return;
+        var dialog = new ServerConfigDialog(server.Config);
         if (await dialog.ShowDialog<bool>(Owner))
-            SelectedServer.RefreshFromDisk();
+            server.RefreshFromDisk();
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
@@ -733,7 +811,6 @@ public partial class MainViewModel : ObservableObject
     {
         EditServerCommand.NotifyCanExecuteChanged();
         RemoveServerCommand.NotifyCanExecuteChanged();
-        CreateTunnelForSelectedCommand.NotifyCanExecuteChanged();
         ConfigureServerCommand.NotifyCanExecuteChanged();
         EditAppearanceCommand.NotifyCanExecuteChanged();
     }

@@ -401,21 +401,25 @@ public partial class ServerViewModel
             await cb.SetTextAsync(BedrockHost!);
     }
 
-    /// <summary>Opens the Playit.gg tunnels panel in the browser (to create/view tunnels).</summary>
-    [RelayCommand]
-    private void OpenPlayitDashboard()
+    /// <summary>
+    /// Creates the Bedrock tunnel of a crossplay server that has none (the tunnels screen offers it).
+    /// </summary>
+    /// <remarks>
+    /// The port is on record by definition — it comes from this server's own config — so a tunnel
+    /// already sitting on it is taken to be ours, which is what the setup flow assumes too.
+    /// </remarks>
+    public async Task CreateBedrockTunnelAsync(string playitKey)
     {
+        if (!Config.CrossplayEnabled || Config.BedrockPort <= 0) return;
+
         try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "https://playit.gg/account/tunnels",
-                UseShellExecute = true
-            });
+            await EnsureBedrockTunnelAsync(playitKey, portWasAlreadyOurs: true);
+            await RefreshBedrockAddressAsync();
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_BrowserError"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ex.Message));
         }
     }
 }

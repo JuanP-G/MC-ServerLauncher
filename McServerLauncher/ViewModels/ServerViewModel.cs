@@ -1390,37 +1390,18 @@ public partial class ServerViewModel : ObservableObject
         IsCommandHelpOpen = false;
     }
 
-    [RelayCommand]
-    private async Task TogglePlayit()
+    /// <summary>Writes a line the launcher itself says into this server's console.</summary>
+    /// <remarks>
+    /// For the tunnels screen, which acts on a server that is not the one on screen: its messages
+    /// belong in that server's console, not in a dialog nobody asked for.
+    /// </remarks>
+    public void LogLauncher(string line) => RunOnUi(() => OnConsoleLine(line));
+
+    /// <summary>Re-reads this server's tunnel addresses now, instead of waiting for the 30 s timer.</summary>
+    public async Task RefreshTunnelInfoAsync()
     {
-        // Embedded-agent model: there's no system service to toggle — (re)start our own agent so a
-        // failed/stopped tunnel comes back up. The app manages one agent for all the user's tunnels.
-        if (_agent.HasSecret)
-        {
-            if (_agent.State is not (AgentRunState.Running or AgentRunState.Starting or AgentRunState.Downloading))
-                await _agent.RetryAsync();
-            UpdatePlayitStatusText();
-            return;
-        }
-
-        if (!_playit.IsInstalled)
-        {
-            OnConsoleLine(Localizer.Get("Msg_PlayitServiceNotInstalled"));
-            return;
-        }
-
-        try
-        {
-            if (_playit.IsRunning)
-                await _playit.StopServiceAsync();
-            else
-                await _playit.StartServiceAsync();
-            UpdatePlayitStatusText();
-        }
-        catch (Exception ex)
-        {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_PlayitServiceChangeFail"), ex.Message));
-        }
+        await RefreshTunnelAddressAsync();
+        await RefreshBedrockAddressAsync();   // no-op unless this server does crossplay
     }
 
     [RelayCommand(CanExecute = nameof(HasTunnelAddress))]

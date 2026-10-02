@@ -1,0 +1,47 @@
+using CommunityToolkit.Mvvm.Input;
+using McServerLauncher.Localization;
+using McServerLauncher.Services;
+
+namespace McServerLauncher.ViewModels;
+
+/// <summary>One line of the "things I can fix" panel: what is wrong, and the button that fixes it.</summary>
+public sealed partial class TunnelSuggestionViewModel
+{
+    private readonly TunnelsViewModel _owner;
+    private readonly TunnelSuggestion _suggestion;
+
+    public TunnelSuggestionViewModel(TunnelsViewModel owner, TunnelSuggestion suggestion)
+    {
+        _owner = owner;
+        _suggestion = suggestion;
+    }
+
+    public bool IsProblem => _suggestion.IsProblem;
+
+    public string Text => _suggestion.Kind switch
+    {
+        TunnelSuggestionKind.DeleteOrphan =>
+            string.Format(Localizer.Get("Tun_Fix_OrphanFmt"), _suggestion.Subject),
+        TunnelSuggestionKind.DeleteDuplicate =>
+            string.Format(Localizer.Get("Tun_Fix_DuplicateFmt"), _suggestion.Subject, _suggestion.Other),
+        TunnelSuggestionKind.SharedPort =>
+            string.Format(Localizer.Get("Tun_Fix_SharedFmt"), _suggestion.Other, _suggestion.Subject),
+        TunnelSuggestionKind.CreateJava =>
+            string.Format(Localizer.Get("Tun_Fix_CreateJavaFmt"), _suggestion.Subject),
+        TunnelSuggestionKind.CreateBedrock =>
+            string.Format(Localizer.Get("Tun_Fix_CreateBedrockFmt"), _suggestion.Subject),
+        _ => string.Format(Localizer.Get("Tun_Fix_RenameFmt"), _suggestion.Count),
+    };
+
+    public string ButtonText => _suggestion.Kind switch
+    {
+        TunnelSuggestionKind.DeleteOrphan or TunnelSuggestionKind.DeleteDuplicate => Localizer.Get("Tun_Fix_Delete"),
+        TunnelSuggestionKind.SharedPort => string.Format(Localizer.Get("Tun_Fix_ChangePortFmt"), _suggestion.Subject),
+        TunnelSuggestionKind.CreateJava => Localizer.Get("Tun_Fix_Create"),
+        TunnelSuggestionKind.CreateBedrock => Localizer.Get("Tun_Fix_CreateBedrock"),
+        _ => Localizer.Get("Tun_Fix_RenameAll"),
+    };
+
+    [RelayCommand]
+    private Task Apply() => _owner.ApplyAsync(_suggestion);
+}
