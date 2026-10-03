@@ -286,6 +286,20 @@
         </Setter>
     </Style>
 
+    <!-- ===================== THE COLOUR CHOOSER =====================
+         The chevron of "Customise" turns over as the spectrum opens below it. -->
+    <Style Selector="ToggleButton.expander :is(Control).chevron">
+        <Setter Property="RenderTransform" Value="rotate(0deg)" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="ToggleButton.expander:checked :is(Control).chevron">
+        <Setter Property="RenderTransform" Value="rotate(180deg)" />
+    </Style>
+
     <!-- ===================== THE CARD'S ICON =====================
          The "Edit" veil over the icon fades in. -->
     <Style Selector="Button.iconbtn Border#HoverOverlay">
@@ -298,6 +312,22 @@
     </Style>
     <Style Selector="Button.iconbtn:pointerover Border#HoverOverlay">
         <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <!-- ===================== WORKING =====================
+         A ring that turns while something is being looked up. Only while visible: the selector on
+         IsVisible starts and stops it, so a hidden spinner costs nothing. -->
+    <Style Selector="Panel.spinner[IsVisible=True]">
+        <Style.Animations>
+            <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                <KeyFrame Cue="0%">
+                    <Setter Property="RotateTransform.Angle" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="RotateTransform.Angle" Value="360" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
     </Style>
 
     <!-- ===================== ENTRANCES =====================

@@ -4,6 +4,7 @@
              xmlns:ic="using:FluentIcons.Avalonia"
              xmlns:vm="using:McServerLauncher.ViewModels"
              xmlns:controls="using:McServerLauncher.Controls"
+             xmlns:views="using:McServerLauncher.Views"
              x:Class="McServerLauncher.Views.SettingsView"
              x:CompileBindings="False">
 
@@ -178,32 +179,28 @@
                                 <TextBlock Text="{loc:Loc Notif_Colors}" Classes="title" />
                                 <TextBlock Text="{loc:Loc Notif_ColorsIntro}" Classes="desc" />
                             </StackPanel>
-                            <!-- The label in the elastic column, clipped; swatch and box in Auto:
-                                     not even the longest translation can run over the swatch. -->
+                            <!-- The label in the elastic column, clipped; the colour chooser in Auto:
+                                 not even the longest translation can run over the swatch. -->
                             <Grid ColumnDefinitions="*,Auto,Auto,24,*,Auto,Auto" RowDefinitions="Auto,Auto">
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Notif_LevelSuccess}" ToolTip.Tip="{loc:Loc Notif_LevelSuccessTip}"
                                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
-                                <Border Grid.Row="0" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
-                                        Background="{Binding ColorSuccess, Converter={x:Static vm:HexBrushConverter.Instance}}" />
-                                <TextBox Grid.Row="0" Grid.Column="2" Width="110" Margin="0,4" Text="{Binding ColorSuccess, Mode=TwoWay}" />
+                                <views:ColorChooser Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,4"
+                                                    Hex="{Binding ColorSuccess, Mode=TwoWay}" Threshold="3" />
 
                                 <TextBlock Grid.Row="0" Grid.Column="4" Text="{loc:Loc Notif_LevelInfo}" ToolTip.Tip="{loc:Loc Notif_LevelInfoTip}"
                                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
-                                <Border Grid.Row="0" Grid.Column="5" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
-                                        Background="{Binding ColorInfo, Converter={x:Static vm:HexBrushConverter.Instance}}" />
-                                <TextBox Grid.Row="0" Grid.Column="6" Width="110" Margin="0,4" Text="{Binding ColorInfo, Mode=TwoWay}" />
+                                <views:ColorChooser Grid.Row="0" Grid.Column="5" Grid.ColumnSpan="2" Margin="0,4"
+                                                    Hex="{Binding ColorInfo, Mode=TwoWay}" Threshold="3" />
 
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Loc Notif_LevelWarning}" ToolTip.Tip="{loc:Loc Notif_LevelWarningTip}"
                                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
-                                <Border Grid.Row="1" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
-                                        Background="{Binding ColorWarning, Converter={x:Static vm:HexBrushConverter.Instance}}" />
-                                <TextBox Grid.Row="1" Grid.Column="2" Width="110" Margin="0,4" Text="{Binding ColorWarning, Mode=TwoWay}" />
+                                <views:ColorChooser Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,4"
+                                                    Hex="{Binding ColorWarning, Mode=TwoWay}" Threshold="3" />
 
                                 <TextBlock Grid.Row="1" Grid.Column="4" Text="{loc:Loc Notif_LevelError}" ToolTip.Tip="{loc:Loc Notif_LevelErrorTip}"
                                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
-                                <Border Grid.Row="1" Grid.Column="5" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
-                                        Background="{Binding ColorError, Converter={x:Static vm:HexBrushConverter.Instance}}" />
-                                <TextBox Grid.Row="1" Grid.Column="6" Width="110" Margin="0,4" Text="{Binding ColorError, Mode=TwoWay}" />
+                                <views:ColorChooser Grid.Row="1" Grid.Column="5" Grid.ColumnSpan="2" Margin="0,4"
+                                                    Hex="{Binding ColorError, Mode=TwoWay}" Threshold="3" />
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -217,15 +214,13 @@
                             <Grid ColumnDefinitions="*,Auto,Auto,24,*,Auto,Auto">
                                 <TextBlock Grid.Column="0" Text="{loc:Loc Console_ColorChat}" ToolTip.Tip="{loc:Loc Console_ColorChatTip}"
                                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
-                                <Border Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
-                                        Background="{Binding ConsoleChatColor, Converter={x:Static vm:HexBrushConverter.Instance}}" />
-                                <TextBox Grid.Column="2" Width="110" Margin="0,4" Text="{Binding ConsoleChatColor, Mode=TwoWay}" />
+                                <views:ColorChooser Grid.Column="1" Grid.ColumnSpan="2" Margin="0,4"
+                                                    Hex="{Binding ConsoleChatColor, Mode=TwoWay}" Threshold="4.5" />
 
                                 <TextBlock Grid.Column="4" Text="{loc:Loc Console_ColorPlayers}" ToolTip.Tip="{loc:Loc Console_ColorPlayersTip}"
                                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
-                                <Border Grid.Column="5" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
-                                        Background="{Binding ConsolePlayersColor, Converter={x:Static vm:HexBrushConverter.Instance}}" />
-                                <TextBox Grid.Column="6" Width="110" Margin="0,4" Text="{Binding ConsolePlayersColor, Mode=TwoWay}" />
+                                <views:ColorChooser Grid.Column="5" Grid.ColumnSpan="2" Margin="0,4"
+                                                    Hex="{Binding ConsolePlayersColor, Mode=TwoWay}" Threshold="4.5" />
                             </Grid>
                         </StackPanel>
                     </Border>

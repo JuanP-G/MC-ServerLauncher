@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             x:Class="McServerLauncher.Views.ColorChooser">
+
+    <!-- A colour setting: the swatch opens the chooser, the box beside it takes the code typed in.
+         The chooser offers the palette first — colours picked to read on the app's dark surfaces —
+         and the full spectrum below it on request, with the colour it started from next to the one
+         being picked and a line saying whether the new one will be readable. Changes apply as they
+         are made, like the rest of Settings; Esc puts back the colour it started from. -->
+    <UserControl.Styles>
+        <Style Selector="Button.swatch">
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="2" />
+            <!-- Stretched, not the app-wide centring: the colour is the content, with no size of its own. -->
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.swatch.on">
+            <Setter Property="BorderBrush" Value="{StaticResource TextOnPopup}" />
+        </Style>
+        <Style Selector="Button.swatch Border">
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+        <!-- "Customise" opens the spectrum below like a section heading, not like a switch: no
+             accent fill when it is open, a chevron that turns instead. -->
+        <Style Selector="ToggleButton.expander">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="6,4" />
+        </Style>
+        <Style Selector="ToggleButton.expander:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+            <Setter Property="Foreground" Value="{StaticResource TextOnPopup}" />
+        </Style>
+        <Style Selector="Button.opener">
+            <Setter Property="Padding" Value="3" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+        <Style Selector="Button.opener ic|SymbolIcon.pencil">
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+        <Style Selector="Button.opener:pointerover ic|SymbolIcon.pencil">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button x:Name="Opener" Classes="opener" ToolTip.Tip="{loc:Loc Col_Tip}">
+            <Panel>
+                <Border x:Name="OpenerSwatch" Width="30" Height="20" CornerRadius="4" />
+                <ic:SymbolIcon Classes="pencil" Symbol="Edit" FontSize="13" Foreground="{StaticResource TextOnPopup}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Panel>
+            <Button.Flyout>
+                <Flyout Placement="BottomEdgeAlignedLeft">
+                    <StackPanel x:Name="Chooser" Width="248" Spacing="10">
+                        <UniformGrid x:Name="SwatchGrid" Columns="8" />
+
+                        <ToggleButton x:Name="CustomizeToggle" Classes="expander" HorizontalAlignment="Stretch"
+                                      HorizontalContentAlignment="Stretch">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <ic:SymbolIcon Symbol="Color" FontSize="14" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Margin="6,0,0,0" Text="{loc:Loc Col_Customize}" VerticalAlignment="Center" />
+                                <ic:SymbolIcon Grid.Column="2" Classes="chevron" Symbol="ChevronDown" FontSize="12"
+                                               VerticalAlignment="Center" />
+                            </Grid>
+                        </ToggleButton>
+
+                        <StackPanel x:Name="CustomPanel" Spacing="8"
+                                    IsVisible="{Binding #CustomizeToggle.IsChecked}">
+                            <ColorSpectrum x:Name="Spectrum" Height="130" Shape="Box"
+                                           Components="SaturationValue" CornerRadius="6" />
+                            <ColorSlider x:Name="HueSlider" ColorModel="Hsva" ColorComponent="Component1"
+                                         Orientation="Horizontal" Height="14" />
+                        </StackPanel>
+
+                        <!-- Before and after, then the code -->
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border CornerRadius="6" ClipToBounds="True" Width="64" Height="28">
+                                <Grid ColumnDefinitions="*,*">
+                                    <Border x:Name="BeforeSwatch" ToolTip.Tip="{loc:Loc Col_Before}" />
+                                    <Border x:Name="AfterSwatch" Grid.Column="1" ToolTip.Tip="{loc:Loc Col_After}" />
+                                </Grid>
+                            </Border>
+                            <TextBox x:Name="ChooserHexBox" Grid.Column="1" Margin="8,0,0,0" MaxLength="7"
+                                     FontFamily="Cascadia Mono, Consolas, monospace" />
+                        </Grid>
+
+                        <TextBlock x:Name="ContrastText" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Flyout>
+            </Button.Flyout>
+        </Button>
+        <TextBox x:Name="HexBox" Width="110" VerticalAlignment="Center" MaxLength="7" />
+    </StackPanel>
+</UserControl>

@@ -1008,4 +1008,10 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="PlayerDetails_Clear" xml:space="preserve"><value>Apagar o histórico deste jogador</value></data>
   <data name="PlayerDetails_ClearConfirm" xml:space="preserve"><value>Tens a certeza? Não se pode desfazer.</value></data>
   <data name="PlayerDetails_ClearYes" xml:space="preserve"><value>Sim, apagar</value></data>
+  <data name="Col_Tip" xml:space="preserve"><value>Escolher a cor</value></data>
+  <data name="Col_Customize" xml:space="preserve"><value>Personalizar</value></data>
+  <data name="Col_Before" xml:space="preserve"><value>Antes</value></data>
+  <data name="Col_After" xml:space="preserve"><value>Agora</value></data>
+  <data name="Col_ReadsWell" xml:space="preserve"><value>✓ Lê-se bem sobre o fundo escuro</value></data>
+  <data name="Col_TooDark" xml:space="preserve"><value>⚠ Muito escuro: será difícil de ler sobre o fundo escuro</value></data>
 </root>

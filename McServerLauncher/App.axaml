@@ -105,6 +105,8 @@
 
     <Application.Styles>
         <FluentTheme />
+        <!-- The colour spectrum and hue bar of the colour chooser (Views/ColorChooser). -->
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
         <!-- The styles several views share. See Styles/Shared.axaml for why Border.card had to be
              left meaning exactly one thing. -->
         <StyleInclude Source="/Styles/Shared.axaml" />

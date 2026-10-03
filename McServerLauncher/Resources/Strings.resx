@@ -1054,4 +1054,10 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="PlayerDetails_Clear" xml:space="preserve"><value>Borrar historial de este jugador</value></data>
   <data name="PlayerDetails_ClearConfirm" xml:space="preserve"><value>¿Seguro? No se puede deshacer.</value></data>
   <data name="PlayerDetails_ClearYes" xml:space="preserve"><value>Sí, borrar</value></data>
+  <data name="Col_Tip" xml:space="preserve"><value>Elegir el color</value></data>
+  <data name="Col_Customize" xml:space="preserve"><value>Personalizar</value></data>
+  <data name="Col_Before" xml:space="preserve"><value>Antes</value></data>
+  <data name="Col_After" xml:space="preserve"><value>Ahora</value></data>
+  <data name="Col_ReadsWell" xml:space="preserve"><value>✓ Se lee bien sobre el fondo oscuro</value></data>
+  <data name="Col_TooDark" xml:space="preserve"><value>⚠ Muy oscuro: costará leerlo sobre el fondo oscuro</value></data>
 </root>

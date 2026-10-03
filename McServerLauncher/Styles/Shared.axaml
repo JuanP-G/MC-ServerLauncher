@@ -88,4 +88,14 @@
         <Setter Property="BorderBrush" Value="{StaticResource ButtonLiftEdge}" />
     </Style>
 
+    <!-- A thin "working on it" line along an edge, such as the bottom of a card: Fluent's own
+         indeterminate sweep, two pixels high and with nothing behind it. -->
+    <Style Selector="ProgressBar.edgeload">
+        <Setter Property="Height" Value="2" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource AccentSelected}" />
+    </Style>
+
 </Styles>

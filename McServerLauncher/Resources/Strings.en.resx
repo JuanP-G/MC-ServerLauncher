@@ -1008,4 +1008,10 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="PlayerDetails_Clear" xml:space="preserve"><value>Clear this player's history</value></data>
   <data name="PlayerDetails_ClearConfirm" xml:space="preserve"><value>Are you sure? This cannot be undone.</value></data>
   <data name="PlayerDetails_ClearYes" xml:space="preserve"><value>Yes, clear</value></data>
+  <data name="Col_Tip" xml:space="preserve"><value>Choose the colour</value></data>
+  <data name="Col_Customize" xml:space="preserve"><value>Customise</value></data>
+  <data name="Col_Before" xml:space="preserve"><value>Before</value></data>
+  <data name="Col_After" xml:space="preserve"><value>Now</value></data>
+  <data name="Col_ReadsWell" xml:space="preserve"><value>✓ Reads well on the dark background</value></data>
+  <data name="Col_TooDark" xml:space="preserve"><value>⚠ Too dark: it will be hard to read on the dark background</value></data>
 </root>

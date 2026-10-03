@@ -1008,4 +1008,10 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="PlayerDetails_Clear" xml:space="preserve"><value>Verlauf dieses Spielers löschen</value></data>
   <data name="PlayerDetails_ClearConfirm" xml:space="preserve"><value>Sicher? Das kann nicht rückgängig gemacht werden.</value></data>
   <data name="PlayerDetails_ClearYes" xml:space="preserve"><value>Ja, löschen</value></data>
+  <data name="Col_Tip" xml:space="preserve"><value>Farbe wählen</value></data>
+  <data name="Col_Customize" xml:space="preserve"><value>Anpassen</value></data>
+  <data name="Col_Before" xml:space="preserve"><value>Vorher</value></data>
+  <data name="Col_After" xml:space="preserve"><value>Jetzt</value></data>
+  <data name="Col_ReadsWell" xml:space="preserve"><value>✓ Auf dem dunklen Hintergrund gut lesbar</value></data>
+  <data name="Col_TooDark" xml:space="preserve"><value>⚠ Zu dunkel: auf dem dunklen Hintergrund schwer lesbar</value></data>
 </root>

@@ -207,16 +207,16 @@
                         <Border Classes="card">
                             <StackPanel>
                                 <TextBlock Classes="group" Text="{loc:Loc New_GroupResources}" />
-                                <Grid ColumnDefinitions="*,12,*,12,*">
+                                <!-- The port on a row of its own: five digits and two spinner buttons do not
+                                     fit in a third of the column. -->
+                                <TextBlock Classes="field" Text="{loc:Loc Port}" />
+                                <NumericUpDown x:Name="PortBox" Value="25565" Minimum="1" Maximum="65535" Increment="1" FormatString="0" />
+                                <Grid ColumnDefinitions="*,12,*" Margin="0,10,0,0">
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Classes="field" Text="{loc:Loc Port}" />
-                                        <NumericUpDown x:Name="PortBox" Value="25565" Minimum="1" Maximum="65535" Increment="1" FormatString="0" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2">
                                         <TextBlock Classes="field" Text="{loc:Loc Cs_RamMin}" />
                                         <NumericUpDown x:Name="MinRamBox" Value="2" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="4">
+                                    <StackPanel Grid.Column="2">
                                         <TextBlock Classes="field" Text="{loc:Loc Cs_RamMax}" />
                                         <NumericUpDown x:Name="MaxRamBox" Value="4" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
                                     </StackPanel>

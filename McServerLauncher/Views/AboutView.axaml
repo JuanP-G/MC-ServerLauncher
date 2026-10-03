@@ -22,7 +22,11 @@
             <TextBlock Text="{loc:Loc About_Tagline}" TextWrapping="Wrap" Opacity="0.85" />
 
             <!-- Updates: actually look, and say which of the three things happened -->
-            <Border Classes="card" Margin="0">
+            <!-- While it looks: a ring turning where the result's icon will be, and a thin line running
+                 along the bottom edge of the card. (It used to be a 20 px progress bar squeezed into the
+                 icon's slot, which read as a glitch rather than as "working".) -->
+            <Border Classes="card" Margin="0" ClipToBounds="True">
+              <Panel>
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <Panel Width="22" Height="22" Margin="0,0,10,0" VerticalAlignment="Center">
                         <ic:SymbolIcon Symbol="CheckmarkCircle" FontSize="20" Foreground="{StaticResource SemanticOk}"
@@ -31,7 +35,14 @@
                                        IsVisible="{Binding UpdateCheckFailed}" />
                         <ic:SymbolIcon Symbol="ArrowDownload" FontSize="20" Foreground="{StaticResource AccentSelected}"
                                        IsVisible="{Binding UpdateAvailable}" />
-                        <ProgressBar IsIndeterminate="True" Width="20" IsVisible="{Binding IsCheckingUpdates}" />
+                        <Panel Classes="spinner" Width="20" Height="20" IsVisible="{Binding IsCheckingUpdates}">
+                            <Panel.RenderTransform>
+                                <RotateTransform />
+                            </Panel.RenderTransform>
+                            <Ellipse Stroke="{StaticResource SurfaceEdgeStrong}" StrokeThickness="2" />
+                            <Arc StartAngle="0" SweepAngle="270" Stroke="{StaticResource AccentSelected}"
+                                 StrokeThickness="2" StrokeLineCap="Round" />
+                        </Panel>
                     </Panel>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="{loc:Loc Upd_Title}" FontWeight="SemiBold" />
@@ -48,6 +59,9 @@
                         </Button>
                     </StackPanel>
                 </Grid>
+                <ProgressBar Classes="edgeload" IsIndeterminate="True" VerticalAlignment="Bottom"
+                             Margin="-14,0,-14,-12" IsVisible="{Binding IsCheckingUpdates}" />
+              </Panel>
             </Border>
 
             <!-- Repository links -->
