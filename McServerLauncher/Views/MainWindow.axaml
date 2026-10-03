@@ -107,14 +107,14 @@
 
         <Grid Grid.Row="1" ColumnDefinitions="72,*">
 
-            <!-- Rail: which part of the app is on screen -->
+            <!-- Rail: which part of the app is on screen. One accent bar for the whole rail, sliding
+                 to the section on screen (Controls/SelectionMarker, over the buttons in the same cell). -->
             <Border Grid.Column="0" Background="{StaticResource GroundPopup}">
-                <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="0,8">
+                <Panel>
+                <Grid x:Name="RailItems" RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="0,8">
                     <Button Grid.Row="0" Classes="rail" Classes.on="{Binding IsServersSection}"
                             Command="{Binding ShowServersCommand}" ToolTip.Tip="{loc:Loc Servers}">
                         <Grid>
-                            <Border Width="3" HorizontalAlignment="Left" Background="{StaticResource AccentSelected}"
-                                    Margin="0,2" IsVisible="{Binding IsServersSection}" />
                             <StackPanel HorizontalAlignment="Center" Spacing="3">
                                 <ic:SymbolIcon Symbol="Server" FontSize="20" HorizontalAlignment="Center" />
                                 <TextBlock Text="{loc:Loc Servers}" />
@@ -124,8 +124,6 @@
                     <Button Grid.Row="1" Classes="rail" Classes.on="{Binding IsTunnelsSection}"
                             Command="{Binding ShowTunnelsCommand}" ToolTip.Tip="{loc:Loc Nav_Tunnels}">
                         <Grid>
-                            <Border Width="3" HorizontalAlignment="Left" Background="{StaticResource AccentSelected}"
-                                    Margin="0,2" IsVisible="{Binding IsTunnelsSection}" />
                             <StackPanel HorizontalAlignment="Center" Spacing="3">
                                 <ic:SymbolIcon Symbol="Globe" FontSize="20" HorizontalAlignment="Center" />
                                 <TextBlock Text="{loc:Loc Nav_Tunnels}" />
@@ -135,8 +133,6 @@
                     <Button Grid.Row="3" Classes="rail" Classes.on="{Binding IsSettingsSection}"
                             Command="{Binding ShowSettingsCommand}" ToolTip.Tip="{loc:Loc Settings_Title}">
                         <Grid>
-                            <Border Width="3" HorizontalAlignment="Left" Background="{StaticResource AccentSelected}"
-                                    Margin="0,2" IsVisible="{Binding IsSettingsSection}" />
                             <StackPanel HorizontalAlignment="Center" Spacing="3">
                                 <ic:SymbolIcon Symbol="Settings" FontSize="20" HorizontalAlignment="Center" />
                                 <TextBlock Text="{loc:Loc Settings_Title}" />
@@ -146,8 +142,6 @@
                     <Button Grid.Row="4" Classes="rail" Classes.on="{Binding IsAboutSection}"
                             Command="{Binding ShowAboutCommand}" ToolTip.Tip="{loc:Loc Nav_About}">
                         <Grid>
-                            <Border Width="3" HorizontalAlignment="Left" Background="{StaticResource AccentSelected}"
-                                    Margin="0,2" IsVisible="{Binding IsAboutSection}" />
                             <StackPanel HorizontalAlignment="Center" Spacing="3">
                                 <ic:SymbolIcon Symbol="Info" FontSize="20" HorizontalAlignment="Center" />
                                 <TextBlock Text="{loc:Loc Nav_About}" />
@@ -155,6 +149,8 @@
                         </Grid>
                     </Button>
                 </Grid>
+                <controls:SelectionMarker Host="{Binding #RailItems}" Shape="Bar" />
+                </Panel>
             </Border>
 
             <!-- Sections share one cell and stay mounted: switching is IsVisible, so the console keeps
@@ -433,10 +429,6 @@
                         <TextBlock IsVisible="{Binding HasBedrockAddress}" FontSize="11" Opacity="0.55"
                                    TextWrapping="Wrap" Margin="4,4,4,0"
                                    Text="{loc:Loc Crossplay_BedrockHint}" />
-
-                        <!-- Third-party integration disclaimer (required by Playit's rules) -->
-                        <TextBlock Text="{loc:Loc Pk_Disclaimer}" FontSize="11" Opacity="0.55"
-                                   TextWrapping="Wrap" Margin="4,8,4,2" />
                       </StackPanel>
                     </Border>
 

@@ -55,6 +55,23 @@
         <SolidColorBrush x:Key="ScrimHover" Color="#99000000" />
         <SolidColorBrush x:Key="TextOnPopup" Color="#DDDDDD" />
 
+        <!-- ===================== BOTONES SECUNDARIOS =====================
+             Los que no son el azul principal (Atras, Cancelar, Configurar, Copiar...). Blanco
+             translucido, cada estado un poco MAS claro que el anterior: el de Fluent se oscurecia al
+             pasar el raton, y sobre el fondo negro eso es desaparecer. El borde es un degradado que
+             hace de filo de luz arriba; en reposo apenas se ve, y al pasar el raton se enciende. -->
+        <SolidColorBrush x:Key="ButtonRest" Color="#2EFFFFFF" />
+        <SolidColorBrush x:Key="ButtonHover" Color="#40FFFFFF" />
+        <SolidColorBrush x:Key="ButtonPressed" Color="#4AFFFFFF" />
+        <LinearGradientBrush x:Key="ButtonEdge" StartPoint="50%,0%" EndPoint="50%,100%">
+            <GradientStop Color="#24FFFFFF" Offset="0" />
+            <GradientStop Color="#08FFFFFF" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="ButtonLiftEdge" StartPoint="50%,0%" EndPoint="50%,100%">
+            <GradientStop Color="#5CFFFFFF" Offset="0" />
+            <GradientStop Color="#12FFFFFF" Offset="1" />
+        </LinearGradientBrush>
+
         <!-- ===================== ACENTOS =====================  -->
         <SolidColorBrush x:Key="AccentSelected" Color="#58A6FF" />
         <SolidColorBrush x:Key="SparklineRam" Color="#5A8AB5" />

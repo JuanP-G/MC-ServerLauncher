@@ -61,4 +61,21 @@
         <Setter Property="Margin" Value="2,14,0,8" />
     </Style>
 
+    <!-- Los botones secundarios: se aclaran y encienden su filo al pasar el raton, y al pulsar se
+         aclaran un poco mas (el levantarse y el hundirse estan en Styles/Motion.axaml). Fuera los que
+         tienen aspecto propio: el azul principal, el menu lateral, las acciones de una fila, las
+         paginas de Ajustes, el icono de la tarjeta, «+ Nuevo» y las tarjetas de nuevo servidor. -->
+    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.iconbtn):not(.newserver):not(.origin)">
+        <Setter Property="Background" Value="{StaticResource ButtonRest}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ButtonEdge}" />
+    </Style>
+    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.iconbtn):not(.newserver):not(.origin):pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource ButtonHover}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ButtonLiftEdge}" />
+    </Style>
+    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.iconbtn):not(.newserver):not(.origin):pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource ButtonPressed}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ButtonLiftEdge}" />
+    </Style>
+
 </Styles>

@@ -29,6 +29,13 @@
             </Transitions>
         </Setter>
     </Style>
+    <!-- Los botones secundarios se levantan 1 px al pasar el raton (el aspecto, en Styles/Shared.axaml).
+         No los que viven en una lista o en una barra (ahi un salto descoloca la fila entera), ni
+         «+ Nuevo», cuyo destello y halo van pegados a el. -->
+    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.iconbtn):not(.newserver):pointerover">
+        <Setter Property="RenderTransform" Value="translateY(-1px)" />
+    </Style>
+    <!-- Despues del hover a proposito: al pulsar gana este, y el boton baja y se hunde. -->
     <Style Selector="Button:pressed">
         <Setter Property="RenderTransform" Value="scale(0.97)" />
     </Style>
@@ -198,18 +205,21 @@
         </Style.Animations>
     </Style>
 
-    <!-- ===================== PESTAÑAS =====================
-         Una sola linea para toda la tira (Controls/TabUnderline) que viaja hasta la pestaña elegida,
-         en lugar de una por pestaña que se enciende y se apaga. El titulo cambia de color con
-         suavidad, y la pagina que entra lo hace con un fundido. -->
+    <!-- ===================== MENUS =====================
+         Cada menu tiene una sola marca que viaja hasta lo elegido (Controls/SlidingIndicator), en
+         lugar de una por elemento que se enciende y se apaga: el subrayado de las pestañas del
+         servidor, la barra del menu lateral y la tarjeta de las paginas de Ajustes. El mismo tiempo
+         para cualquier salto, asi en los largos la marca simplemente va mas deprisa. En las
+         pestañas, ademas, el titulo cambia de color con suavidad y la pagina entra con un fundido. -->
     <Style Selector="TabControl.sliding TabItem /template/ Border#PART_SelectedPipe">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="controls|TabUnderline Border.underline">
+    <Style Selector=":is(controls|SlidingIndicator) > Border.indicator">
         <Setter Property="Transitions">
             <Transitions>
                 <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
                 <DoubleTransition Property="Width" Duration="0:0:0.18" Easing="CubicEaseOut" />
+                <DoubleTransition Property="Height" Duration="0:0:0.18" Easing="CubicEaseOut" />
             </Transitions>
         </Setter>
     </Style>

@@ -3,6 +3,7 @@
              xmlns:loc="using:McServerLauncher.Localization"
              xmlns:ic="using:FluentIcons.Avalonia"
              xmlns:vm="using:McServerLauncher.ViewModels"
+             xmlns:controls="using:McServerLauncher.Controls"
              x:Class="McServerLauncher.Views.SettingsView"
              x:CompileBindings="False">
 
@@ -18,9 +19,9 @@
             <Setter Property="Padding" Value="10,7" />
             <Setter Property="Opacity" Value="0.7" />
         </Style>
+        <!-- La tarjeta de la pagina elegida no la pinta el boton: es una sola que se desliza por
+             detras de la lista (Controls/SelectionMarker), como la barra del menu lateral. -->
         <Style Selector="Button.page.on">
-            <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
-            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="ToggleSwitch">
@@ -36,6 +37,9 @@
         <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,16,0">
             <TextBlock Text="{loc:Loc Settings_Title}" FontSize="18" FontWeight="SemiBold" />
             <TextBlock Text="{loc:Loc Set_SavedLive}" Classes="desc" Margin="0,0,0,10" />
+            <Panel>
+            <controls:SelectionMarker Host="{Binding #PageItems}" Shape="Fill" />
+            <StackPanel x:Name="PageItems" Spacing="4">
             <Button Classes="page" Classes.on="{Binding IsGeneralPage}" Command="{Binding ShowGeneralCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <ic:SymbolIcon Symbol="Settings" FontSize="16" />
@@ -54,6 +58,8 @@
                     <TextBlock Text="{loc:Loc Set_Colors}" />
                 </StackPanel>
             </Button>
+            </StackPanel>
+            </Panel>
         </StackPanel>
 
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">

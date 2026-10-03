@@ -145,7 +145,9 @@ public partial class MainViewModel : ObservableObject
     {
         Section = AppSection.Tunnels;
         // Read when the screen opens, never on a timer: the account is another machine's data, and
-        // asking for it while nobody is looking would spend requests on an answer no one reads.
+        // asking for it while nobody is looking would spend requests on an answer no one reads. The
+        // one exception is the reading just after start (Tunnels.PrefetchAsync), so the first opening
+        // shows a table straight away; this one then refreshes it without emptying it.
         _ = Tunnels.RefreshAsync();
     }
 
@@ -200,6 +202,7 @@ public partial class MainViewModel : ObservableObject
         _languageReady = true;
 
         _ = CheckForUpdatesAsync();
+        _ = Tunnels.PrefetchAsync();
 
         // Checking only at startup missed the case this app is designed for: it lives in the tray
         // with the servers running, so on a machine that is never turned off it would simply never

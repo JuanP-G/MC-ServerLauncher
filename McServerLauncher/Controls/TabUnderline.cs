@@ -1,8 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Avalonia.Media;
-using Avalonia.Media.Transformation;
 using Avalonia.VisualTree;
 
 namespace McServerLauncher.Controls;
@@ -24,7 +22,7 @@ namespace McServerLauncher.Controls;
 /// every change, not just the first.
 /// </para>
 /// </remarks>
-public class TabUnderline : Panel
+public class TabUnderline : SlidingIndicator
 {
     public static readonly StyledProperty<TabControl?> TabsProperty =
         AvaloniaProperty.Register<TabUnderline, TabControl?>(nameof(Tabs));
@@ -40,50 +38,27 @@ public class TabUnderline : Panel
     internal const double Thickness = 2;
     private const double BottomGap = 2;
 
-    private readonly Border _line = new()
-    {
-        Height = Thickness,
-        CornerRadius = new CornerRadius(3),
-        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
-        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
-        IsVisible = false,
-    };
-
-    private bool _placed;
-    private Rect _target;
     private bool _flip;
 
     public TabUnderline()
     {
-        IsHitTestVisible = false;
-        _line.Classes.Add("underline");
-        _line.Bind(Border.BackgroundProperty, this.GetResourceObservable("TabItemHeaderSelectedPipeFill"));
-        Children.Add(_line);
+        Mark.CornerRadius = new CornerRadius(3);
+        Mark.Bind(Border.BackgroundProperty, this.GetResourceObservable("TabItemHeaderSelectedPipeFill"));
     }
-
-    /// <summary>Where the line is, in this control's coordinates; empty while it is hidden.</summary>
-    internal Rect Target => _line.IsVisible ? _target : default;
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property != TabsProperty) return;
 
-        if (change.OldValue is TabControl old)
-        {
-            old.SelectionChanged -= OnSelectionChanged;
-            old.LayoutUpdated -= OnLayoutUpdated;
-        }
+        if (change.OldValue is TabControl old) old.SelectionChanged -= OnSelectionChanged;
         if (change.NewValue is TabControl tabs)
         {
             tabs.Classes.Add("sliding");
             tabs.SelectionChanged += OnSelectionChanged;
-            tabs.LayoutUpdated += OnLayoutUpdated;
         }
-        Place();
+        Follow(change.OldValue as TabControl, change.NewValue as TabControl);
     }
-
-    private void OnLayoutUpdated(object? sender, EventArgs e) => Place();
 
     private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
@@ -94,33 +69,16 @@ public class TabUnderline : Panel
         FadeInPage();
     }
 
-    /// <summary>Puts the line under the picked tab's title, sliding when it was already somewhere.</summary>
-    internal void Place()
+    /// <summary>Under the picked tab's title, at the bottom of the tab.</summary>
+    protected override Rect? Measure()
     {
         var title = Tabs is { } tabs ? TitleOf(tabs) : null;
         var origin = title?.TranslatePoint(default, this);
         var tab = title?.FindAncestorOfType<TabItem>();
         var bottom = tab?.TranslatePoint(new Point(0, tab.Bounds.Height), this);
 
-        if (title is null || origin is null || bottom is null || title.Bounds.Width <= 0)
-        {
-            _line.IsVisible = false;
-            return;
-        }
-
-        var target = new Rect(origin.Value.X, bottom.Value.Y - BottomGap - Thickness, title.Bounds.Width, Thickness);
-        if (_placed && target == _target && _line.IsVisible) return;
-        _target = target;
-
-        // The first time it appears it goes straight to its tab: sliding in from the corner of the
-        // window would be motion that says nothing.
-        if (!_placed) _line.Transitions = null;
-        _line.Width = target.Width;
-        _line.RenderTransform = TransformOperations.Parse(
-            FormattableString.Invariant($"translate({target.X:0.##}px, {target.Y:0.##}px)"));
-        _line.IsVisible = true;
-        if (!_placed) _line.ClearValue(Avalonia.Animation.Animatable.TransitionsProperty);
-        _placed = true;
+        if (title is null || origin is null || bottom is null) return null;
+        return new Rect(origin.Value.X, bottom.Value.Y - BottomGap - Thickness, title.Bounds.Width, Thickness);
     }
 
     /// <summary>

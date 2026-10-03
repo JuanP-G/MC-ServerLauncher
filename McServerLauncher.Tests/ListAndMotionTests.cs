@@ -316,3 +316,171 @@ public class TabUnderlineTests(AvaloniaFixture ui)
             window.Close();
         });
 }
+
+/// <summary>The one mark of the rail and of the settings pages, which follows the item marked "on".</summary>
+[Collection("avalonia")]
+public class SelectionMarkerTests(AvaloniaFixture ui)
+{
+    private static (Window Window, StackPanel Host, McServerLauncher.Controls.SelectionMarker Marker) Build(McServerLauncher.Controls.MarkerShape shape)
+    {
+        var host = new StackPanel { Spacing = 4 };
+        foreach (var text in new[] { "Servidores", "Túneles", "Ajustes" })
+            host.Children.Add(new Button { Content = text, Height = 40, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch });
+        host.Children[0].Classes.Add("on");
+        var marker = new McServerLauncher.Controls.SelectionMarker { Host = host, Shape = shape };
+        var window = new Window { Width = 300, Height = 300, Content = new Panel { Children = { marker, host } } };
+        window.Show();
+        Settle(window);
+        return (window, host, marker);
+    }
+
+    private static void Settle(Window window)
+    {
+        for (var i = 0; i < 3; i++) { AvaloniaFixture.Pump(); window.UpdateLayout(); }
+    }
+
+    private static void Pick(StackPanel host, int index)
+    {
+        foreach (var child in host.Children) child.Classes.Remove("on");
+        host.Children[index].Classes.Add("on");
+    }
+
+    [Fact]
+    public void TheCardFollowsTheItemMarkedOn() =>
+        ui.Run(() =>
+        {
+            var (window, host, marker) = Build(McServerLauncher.Controls.MarkerShape.Fill);
+
+            foreach (var index in new[] { 0, 2, 1 })
+            {
+                Pick(host, index);
+                Settle(window);
+                var item = host.Children[index];
+                var at = item.TranslatePoint(default, marker)!.Value;
+
+                Assert.Equal(new Rect(at, item.Bounds.Size), marker.Target);
+            }
+            window.Close();
+        });
+
+    [Fact]
+    public void TheBarIsAThinLineDownTheLeftOfTheItem() =>
+        ui.Run(() =>
+        {
+            var (window, host, marker) = Build(McServerLauncher.Controls.MarkerShape.Bar);
+            Pick(host, 2);
+            Settle(window);
+
+            var item = host.Children[2];
+            var at = item.TranslatePoint(default, marker)!.Value;
+            Assert.Equal(McServerLauncher.Controls.SelectionMarker.BarWidth, marker.Target.Width);
+            Assert.Equal(at.X, marker.Target.X, 1);
+            Assert.InRange(marker.Target.Y, at.Y, at.Y + item.Bounds.Height);
+            window.Close();
+        });
+
+    [Fact]
+    public void WithNothingMarkedThereIsNoMark() =>
+        ui.Run(() =>
+        {
+            var (window, host, marker) = Build(McServerLauncher.Controls.MarkerShape.Bar);
+            foreach (var child in host.Children) child.Classes.Remove("on");
+            Settle(window);
+
+            Assert.Equal(default, marker.Target);
+            window.Close();
+        });
+
+    [Fact]
+    public void TheRailAndTheSettingsPagesUseIt()
+    {
+        string Read(string view) => Regex.Replace(File.ReadAllText(Path.Combine(
+            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", view)), @"\s+", " ");
+
+        var main = Read("MainWindow.axaml");
+        Assert.Contains(@"<controls:SelectionMarker Host=""{Binding #RailItems}"" Shape=""Bar"" />", main);
+        // The old bars, one per button, switched on and off by visibility.
+        Assert.DoesNotMatch(@"<Border Width=""3""[^>]*IsVisible=""\{Binding Is\w+Section\}""", main);
+
+        Assert.Contains(@"<controls:SelectionMarker Host=""{Binding #PageItems}"" Shape=""Fill"" />", Read("SettingsView.axaml"));
+    }
+}
+
+/// <summary>The secondary buttons get lighter under the pointer, never darker.</summary>
+public class SecondaryButtonTests
+{
+    private static uint Argb(string key)
+    {
+        var app = System.Xml.Linq.XDocument.Load(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "App.axaml"));
+        var brush = app.Descendants().First(e => (string?)e.Attribute("{http://schemas.microsoft.com/winfx/2006/xaml}Key") == key);
+        return Convert.ToUInt32(((string)brush.Attribute("Color")!).TrimStart('#'), 16);
+    }
+
+    [Fact]
+    public void EachStateIsLighterThanTheOneBefore()
+    {
+        // Fluent's own got darker on hover and press, which on a black window means fading away.
+        // These are translucent white, so more alpha is lighter.
+        var rest = Argb("ButtonRest") >> 24;
+        var hover = Argb("ButtonHover") >> 24;
+        var pressed = Argb("ButtonPressed") >> 24;
+
+        Assert.True(rest < hover && hover < pressed, $"{rest:X2} < {hover:X2} < {pressed:X2}");
+        Assert.Equal(0xFFFFFFu, Argb("ButtonHover") & 0xFFFFFF);
+    }
+
+    [Fact]
+    public void TheServerPlayitStripNoLongerRepeatsTheDisclaimer() =>
+        // It is in About and in the Tunnels section; on every server it was the same line again.
+        Assert.DoesNotContain("Pk_Disclaimer", File.ReadAllText(Path.Combine(
+            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml")));
+}
+
+/// <summary>Reading the account with every key at once still credits each tunnel as before.</summary>
+public class TunnelReadingMergeTests
+{
+    private static PlayitApiService.PlayitTunnel T(string id) => new(id, id, 25565, id + ".ply.gg", null, "tcp", 30000);
+    private static McServerLauncher.Views.PlayitConnection.Source S(McServerLauncher.Views.PlayitConnection.SourceKind kind, string key) => new(kind, key);
+
+    [Fact]
+    public void TheFirstSourceToReportATunnelKeepsIt()
+    {
+        var (ids, keyFor, working, error) = TunnelsViewModel.MergeForTest(
+        [
+            (S(McServerLauncher.Views.PlayitConnection.SourceKind.AppAgent, "app"), [T("a"), T("shared")], null),
+            (S(McServerLauncher.Views.PlayitConnection.SourceKind.InstalledAgent, "installed"), [T("shared"), T("b")], null),
+        ]);
+
+        Assert.Equal(["a", "shared", "b"], ids);
+        Assert.Equal("app", keyFor["shared"]);
+        Assert.Equal("installed", keyFor["b"]);
+        Assert.Equal(["app", "installed"], working);
+        Assert.Null(error);
+    }
+
+    [Fact]
+    public void ARefusedKeyDoesNotHideWhatTheOthersSee()
+    {
+        var (ids, _, working, error) = TunnelsViewModel.MergeForTest(
+        [
+            (S(McServerLauncher.Views.PlayitConnection.SourceKind.SavedKey, "stale"), null, new PlayitApiException("auth", "no")),
+            (S(McServerLauncher.Views.PlayitConnection.SourceKind.InstalledAgent, "installed"), [T("b")], null),
+        ]);
+
+        Assert.Equal(["b"], ids);
+        Assert.Equal(["installed"], working);
+        Assert.Null(error);
+    }
+
+    [Fact]
+    public void WhenNoKeyWorksTheReasonIsKept()
+    {
+        var refusal = new PlayitApiException("auth", "no");
+        var (ids, _, working, error) = TunnelsViewModel.MergeForTest(
+            [(S(McServerLauncher.Views.PlayitConnection.SourceKind.SavedKey, "stale"), null, refusal)]);
+
+        Assert.Empty(ids);
+        Assert.Empty(working);
+        Assert.Same(refusal, error);
+    }
+}

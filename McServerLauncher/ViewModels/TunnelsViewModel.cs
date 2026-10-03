@@ -314,8 +314,32 @@ public partial class TunnelsViewModel : ObservableObject
     /// of the same account, and each is told only about its own tunnels. A key that Playit rejects is
     /// noted and the others carry on — one stale key must not hide tunnels another can see. Each
     /// tunnel remembers which key read it, because that is the one to change it with.
+    /// <para>
+    /// All the ways in are asked at once, not one after the other: each is a round trip to Playit
+    /// (and up to three when a key needs another auth scheme), and waiting for them in turn is what
+    /// made the screen take seconds to fill the first time. The answers are still put together in
+    /// the order of the sources, so which key a tunnel is credited to does not depend on which
+    /// answer happened to come back first.
+    /// </para>
     /// </remarks>
     private async Task<Reading> ReadAsync()
+    {
+        var sources = Sources().ToList();
+        var answers = await Task.WhenAll(sources.Select(async source =>
+        {
+            try { return ((List<PlayitApiService.PlayitTunnel>?)(await _api.GetRunDataAsync(source.Key)).Tunnels, (Exception?)null); }
+            catch (Exception ex) { return (null, ex); }
+        }));
+        return Merge(sources.Zip(answers, (s, a) => (s, a.Item1, a.Item2)).ToList());
+    }
+
+    /// <summary>Puts together what each source answered, in the order of the sources.</summary>
+    /// <remarks>
+    /// The first source to report a tunnel keeps it: seen through two agents is still one tunnel,
+    /// and the key that read it first is the one to change it with.
+    /// </remarks>
+    private static Reading Merge(
+        IReadOnlyList<(PlayitConnection.Source Source, List<PlayitApiService.PlayitTunnel>? Tunnels, Exception? Error)> answers)
     {
         var tunnels = new List<PlayitApiService.PlayitTunnel>();
         var keyFor = new Dictionary<string, string>();
@@ -323,28 +347,33 @@ public partial class TunnelsViewModel : ObservableObject
         var refused = new HashSet<PlayitConnection.SourceKind>();
         Exception? last = null;
 
-        foreach (var source in Sources())
+        foreach (var (source, list, error) in answers)
         {
-            try
+            if (list is null)
             {
-                var (_, list) = await _api.GetRunDataAsync(source.Key);
-                working.Add(source.Key);
-                foreach (var tunnel in list)
-                {
-                    // Seen through two agents is still one tunnel.
-                    if (!string.IsNullOrEmpty(tunnel.Id) && keyFor.ContainsKey(tunnel.Id)) continue;
-                    tunnels.Add(tunnel);
-                    if (!string.IsNullOrEmpty(tunnel.Id)) keyFor[tunnel.Id] = source.Key;
-                }
+                last = error;
+                if (error is PlayitApiException { IsAuthError: true }) refused.Add(source.Kind);
+                continue;
             }
-            catch (Exception ex)
+
+            working.Add(source.Key);
+            foreach (var tunnel in list)
             {
-                last = ex;
-                if (ex is PlayitApiException { IsAuthError: true }) refused.Add(source.Kind);
+                if (!string.IsNullOrEmpty(tunnel.Id) && keyFor.ContainsKey(tunnel.Id)) continue;
+                tunnels.Add(tunnel);
+                if (!string.IsNullOrEmpty(tunnel.Id)) keyFor[tunnel.Id] = source.Key;
             }
         }
 
         return new Reading(tunnels, keyFor, working, refused, working.Count == 0 ? last : null);
+    }
+
+    /// <summary>For tests: <see cref="Merge"/> reduced to what it decides.</summary>
+    internal static (List<string> TunnelIds, Dictionary<string, string> KeyFor, List<string> Working, Exception? Error) MergeForTest(
+        IReadOnlyList<(PlayitConnection.Source Source, List<PlayitApiService.PlayitTunnel>? Tunnels, Exception? Error)> answers)
+    {
+        var r = Merge(answers);
+        return (r.Tunnels.Select(t => t.Id).ToList(), r.KeyFor, r.WorkingKeys, r.Error);
     }
 
     /// <summary>What to tell a person about a failure, rather than what the API said.</summary>
@@ -364,6 +393,25 @@ public partial class TunnelsViewModel : ObservableObject
         _ => true,   // a shared port is fixed on this machine, not in the account
     };
 
+    /// <summary>How long after the app opens the account is read for the first time.</summary>
+    internal static readonly TimeSpan PrefetchDelay = TimeSpan.FromSeconds(3);
+
+    /// <summary>
+    /// Reads the account once, shortly after the app opens, so the screen is already filled the first
+    /// time it is shown.
+    /// </summary>
+    /// <remarks>
+    /// Without it, opening Túneles was the moment the first request left, and the table stayed empty
+    /// for as long as Playit took to answer. A short wait first keeps it out of the way of the start
+    /// itself. It is one reading, not a timer: after this the screen reads again only when opened,
+    /// showing the last reading straight away while the new one comes in.
+    /// </remarks>
+    public async Task PrefetchAsync()
+    {
+        await Task.Delay(PrefetchDelay);
+        if (IsConnected && LastRead is null) await RefreshAsync();
+    }
+
     [RelayCommand]
     public async Task RefreshAsync()
     {
@@ -382,9 +430,10 @@ public partial class TunnelsViewModel : ObservableObject
             _keyFor.Clear();
             foreach (var (id, key) in reading.KeyFor) _keyFor[id] = key;
             _workingKeys = reading.WorkingKeys;
-            foreach (var key in _workingKeys)
-                if (await _api.CanManageTunnelsAsync(key) is { } writable)
-                    _writable[key] = writable;
+            // At once too, for the same reason as the reading (cached after the first time anyway).
+            var probes = await Task.WhenAll(_workingKeys.Select(async key => (key, writable: await _api.CanManageTunnelsAsync(key))));
+            foreach (var (key, writable) in probes)
+                if (writable is { } w) _writable[key] = w;
 
             if (reading.Error is not null)
             {
