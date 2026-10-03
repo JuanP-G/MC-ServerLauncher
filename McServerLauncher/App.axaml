@@ -58,6 +58,13 @@
         <!-- ===================== ACENTOS =====================  -->
         <SolidColorBrush x:Key="AccentSelected" Color="#58A6FF" />
         <SolidColorBrush x:Key="SparklineRam" Color="#5A8AB5" />
+        <!-- El destello que cruza «+ Nuevo» (ver Styles/Motion.axaml): AccentSelected que aparece y
+             se desvanece a lo ancho de una franja estrecha. -->
+        <LinearGradientBrush x:Key="ShimmerSweep" StartPoint="0%,50%" EndPoint="100%,50%">
+            <GradientStop Color="#0058A6FF" Offset="0" />
+            <GradientStop Color="#7058A6FF" Offset="0.5" />
+            <GradientStop Color="#0058A6FF" Offset="1" />
+        </LinearGradientBrush>
 
         <!-- ===================== DESTRUCTIVO =====================
              Separado de los Semantic* de arriba porque no son lo mismo: SemanticDanger es el color

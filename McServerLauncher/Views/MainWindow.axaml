@@ -63,6 +63,30 @@
             <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
+
+        <!-- «+ Nuevo»: el unico boton de la app con borde y texto de acento, para que no se confunda
+             con ningun otro. Se rellena del azul de los botones principales al pasar el raton. -->
+        <Style Selector="Button.newserver">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentSelected}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource AccentSelected}" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.newserver:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentButtonBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentButtonForeground}" />
+        </Style>
+        <Style Selector="Button.newserver:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundPressed}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBackgroundPressed}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundPressed}" />
+        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto,*">
@@ -142,11 +166,32 @@
                 <Grid RowDefinitions="Auto,*">
                     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="4,0,0,10">
                         <TextBlock Text="{loc:Loc Servers}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
-                        <!-- Crear o añadir: un solo boton, que abre el panel de nuevo servidor. -->
-                        <Button Grid.Column="1" Classes="add" Command="{Binding ShowNewServerCommand}"
-                                ToolTip.Tip="{loc:Loc New_Title}">
-                            <ic:SymbolIcon Symbol="Add" FontSize="16" />
-                        </Button>
+                        <!-- Crear o añadir: un solo boton, que abre el panel de nuevo servidor. El halo
+                             de detras y el destello de encima son su aviso periodico (Motion.axaml); el
+                             punto dice que hay uno a medias esperando. -->
+                        <Panel Grid.Column="1" Classes="newserver" Classes.quiet="{Binding IsCreatingServer}"
+                               b:BeaconBehavior.IsEnabled="True"
+                               VerticalAlignment="Center">
+                            <Border Classes="halo" CornerRadius="8" Background="Transparent" IsHitTestVisible="False" />
+                            <Button Classes="newserver" Command="{Binding ShowNewServerCommand}"
+                                    ToolTip.Tip="{Binding NewServerTip}">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <ic:SymbolIcon Symbol="Add" FontSize="14" VerticalAlignment="Center" />
+                                    <TextBlock Text="{loc:Loc New_Button}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Border CornerRadius="8" ClipToBounds="True" IsHitTestVisible="False">
+                                <Border Classes="shine" Width="28" HorizontalAlignment="Left"
+                                        Background="{StaticResource ShimmerSweep}">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform X="-40" />
+                                    </Border.RenderTransform>
+                                </Border>
+                            </Border>
+                            <Ellipse Width="8" Height="8" Fill="{StaticResource AccentSelected}"
+                                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-3,-3,0"
+                                     IsHitTestVisible="False" IsVisible="{Binding HasNewServerDraft}" />
+                        </Panel>
                     </Grid>
 
                     <ListBox Grid.Row="1"
@@ -395,8 +440,11 @@
                       </StackPanel>
                     </Border>
 
-                    <!-- Tabs: Console / Players / Mods -->
-                    <TabControl Grid.Row="3" x:Name="ServerTabs" Background="Transparent" Margin="4,0">
+                    <!-- Tabs: Console / Players / Mods. One underline for the whole strip, sliding
+                         to the picked tab (Controls/TabUnderline), drawn over it in the same cell. -->
+                    <Panel Grid.Row="3">
+                    <controls:TabUnderline Tabs="{Binding #ServerTabs}" ZIndex="1" />
+                    <TabControl x:Name="ServerTabs" Background="Transparent" Margin="4,0">
                         <TabItem Header="{loc:Loc Console}">
                             <Grid Margin="0,8,0,0" RowDefinitions="*,Auto">
                                 <!-- Console -->
@@ -691,7 +739,17 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <TabItem Header="{Binding Mods.ContentTabTitle}" IsVisible="{Binding IsModded}">
+                        <TabItem IsVisible="{Binding IsModded}">
+                            <!-- "Mods" or "Plugins" depending on the server, always as wide as the
+                                 longer of the two: the hidden copies hold the width, so switching
+                                 between a Paper and a Fabric server no longer shifts the tabs after it. -->
+                            <TabItem.Header>
+                                <Panel>
+                                    <TextBlock Text="{loc:Loc Mods}" Opacity="0" />
+                                    <TextBlock Text="{loc:Loc Plugins}" Opacity="0" />
+                                    <TextBlock Text="{Binding Mods.ContentTabTitle}" HorizontalAlignment="Center" />
+                                </Panel>
+                            </TabItem.Header>
                             <ContentControl Content="{Binding Mods}">
                                 <ContentControl.DataTemplates>
                                     <DataTemplate DataType="vm:ServerModsViewModel">
@@ -711,6 +769,7 @@
                             </ContentControl>
                         </TabItem>
                     </TabControl>
+                    </Panel>
                 </Grid>
 
                 <!-- Nuevo servidor: ocupa el detalle mientras se crea o se añade uno. -->

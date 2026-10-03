@@ -22,6 +22,7 @@ public class NewServerCreateFormTests(AvaloniaFixture ui)
         // as the old Create button did, hosted in a window so it can be laid out.
         var view = new NewServerView();
         view.ChooseCreate();
+        AvaloniaFixture.WithoutIcons(view);
         var dialog = new Window { Content = view };
         dialog.Show();
         dialog.Measure(new Avalonia.Size(640, 940));
@@ -172,6 +173,45 @@ public class NewServerStepsTests(AvaloniaFixture ui) : IDisposable
 
     private static T Named<T>(Control root, string name) where T : Control =>
         root.FindControl<T>(name) ?? throw new InvalidOperationException(name);
+
+    [Theory]
+    [InlineData("CreateCard", "CreateStep", "CreateButton")]
+    [InlineData("AddCard", "AddStep", "AddButton")]
+    public void OneClickOnACardIsTheChoiceAndTheStepForward(string card, string step, string finish) =>
+        ui.Run(() =>
+        {
+            // There was a selected state and a Next button, and the mark of the picked card vanished
+            // under the very pointer that had just clicked it.
+            var view = new NewServerView();
+
+            Named<Button>(view, card).RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+
+            Assert.False(Named<Control>(view, "OriginStep").IsVisible);
+            Assert.True(Named<Control>(view, step).IsVisible);
+            Assert.True(Named<Button>(view, finish).IsVisible);
+            Assert.True(Named<Button>(view, "BackButton").IsVisible);
+            Assert.Null(view.FindControl<Button>("NextButton"));
+        });
+
+    [Theory]
+    [InlineData(1300, true)]
+    [InlineData(700, false)]
+    public void TheDetailsSitInTwoColumnsWhenThereIsRoomForThem(double width, bool wide) =>
+        ui.Run(() =>
+        {
+            // The form used to stay a 760 px strip on the left, whatever the size of the window.
+            var view = new NewServerView();
+            view.ChooseCreate();
+            AvaloniaFixture.WithoutIcons(view);
+            var window = new Window { Content = view, Width = width, Height = 800 };
+            window.Show();
+            AvaloniaFixture.Pump();
+            window.UpdateLayout();
+
+            Assert.Equal(wide, Named<Grid>(view, "FormPanel").Classes.Contains("wide"));
+            Assert.Equal(wide, Named<Grid>(view, "AddColumns").Classes.Contains("wide"));
+            window.Close();
+        });
 
     [Fact]
     public void ItStartsOnTheChoiceAndGoesToTheRightForm() =>

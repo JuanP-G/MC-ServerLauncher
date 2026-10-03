@@ -81,6 +81,26 @@ public sealed class AvaloniaFixture : IDisposable
     /// </remarks>
     public static void Pump() => Dispatcher.UIThread.RunJobs();
 
+    /// <summary>Takes the icons out of a view before it is shown.</summary>
+    /// <remarks>
+    /// The headless renderer has no fonts, and an icon is a glyph of the icon font: showing one
+    /// throws "Could not create glyphTypeface" from its Loaded handler, failing whatever test was
+    /// running for a reason that has nothing to do with it. No test here is about the icons.
+    /// </remarks>
+    public static void WithoutIcons(Avalonia.Controls.Control root)
+    {
+        foreach (var icon in Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(root)
+                     .OfType<FluentIcons.Avalonia.SymbolIcon>().ToList())
+        {
+            switch (icon.Parent)
+            {
+                case Avalonia.Controls.Panel panel: panel.Children.Remove(icon); break;
+                case Avalonia.Controls.Decorator decorator: decorator.Child = null; break;
+                case Avalonia.Controls.ContentControl content: content.Content = null; break;
+            }
+        }
+    }
+
     public void Dispose() => _stop.Cancel();
 }
 

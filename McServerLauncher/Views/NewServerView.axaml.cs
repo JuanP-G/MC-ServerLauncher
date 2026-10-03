@@ -92,31 +92,36 @@ public partial class NewServerView : UserControl
 
     // ---------------------------------------------------------------- steps
 
-    private void CreateCard_Click(object? sender, RoutedEventArgs e) => Choose(Origin.Create);
-    private void AddCard_Click(object? sender, RoutedEventArgs e) => Choose(Origin.Add);
+    // One click on a card is the choice and the step forward together. There used to be a selected
+    // state and a Next button, and the selected card's mark disappeared under the pointer that had
+    // just clicked it, so nobody could tell whether the click had taken.
+    private void CreateCard_Click(object? sender, RoutedEventArgs e) => ChooseCreate();
+    private void AddCard_Click(object? sender, RoutedEventArgs e) => ChooseAdd();
 
-    private void Choose(Origin origin)
-    {
-        _origin = origin;
-        CreateCard.Classes.Set("on", origin == Origin.Create);
-        AddCard.Classes.Set("on", origin == Origin.Add);
-    }
-
-    /// <summary>Straight to the create form, as the old Create button did.</summary>
+    /// <summary>On to the create form.</summary>
     internal void ChooseCreate()
     {
-        Choose(Origin.Create);
+        _origin = Origin.Create;
         GoToDetails();
     }
 
-    /// <summary>Straight to picking an existing folder.</summary>
+    /// <summary>On to picking an existing folder.</summary>
     internal void ChooseAdd()
     {
-        Choose(Origin.Add);
+        _origin = Origin.Add;
         GoToDetails();
     }
 
-    private void Next_Click(object? sender, RoutedEventArgs e) => GoToDetails();
+    /// <summary>The width from which the details sit in two columns instead of one.</summary>
+    internal const double TwoColumnWidth = 880;
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        var wide = e.NewSize.Width >= TwoColumnWidth;
+        FormPanel.Classes.Set("wide", wide);
+        AddColumns.Classes.Set("wide", wide);
+    }
 
     private void Back_Click(object? sender, RoutedEventArgs e)
     {
@@ -142,7 +147,6 @@ public partial class NewServerView : UserControl
         StepDetails.Classes.Set("on", _onDetails);
 
         BackButton.IsVisible = _onDetails;
-        NextButton.IsVisible = !_onDetails;
         CreateButton.IsVisible = _onDetails && _origin == Origin.Create;
         AddButton.IsVisible = _onDetails && _origin == Origin.Add;
     }

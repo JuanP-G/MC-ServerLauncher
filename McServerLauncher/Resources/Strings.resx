@@ -868,11 +868,16 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="New_CreateDesc" xml:space="preserve"><value>Eliges el tipo y la versión; la app descarga e instala todo lo que haga falta.</value></data>
   <data name="New_AddTitle" xml:space="preserve"><value>Añadir uno que ya tengo</value></data>
   <data name="New_AddDesc" xml:space="preserve"><value>Eliges su carpeta; la app reconoce el tipo y la versión.</value></data>
-  <data name="New_Next" xml:space="preserve"><value>Siguiente</value></data>
   <data name="New_Back" xml:space="preserve"><value>Atrás</value></data>
   <data name="New_AddButton" xml:space="preserve"><value>Añadir servidor</value></data>
   <data name="New_AddFolder" xml:space="preserve"><value>Carpeta del servidor</value></data>
   <data name="New_AddFolderHint" xml:space="preserve"><value>Elige la carpeta donde está el servidor</value></data>
   <data name="New_DetectedFmt" xml:space="preserve"><value>Reconocido: {0} {1}</value></data>
   <data name="New_NotDetected" xml:space="preserve"><value>No se ha podido reconocer el tipo; se podrá ajustar luego en Editar.</value></data>
+  <data name="New_Button" xml:space="preserve"><value>Nuevo</value></data>
+  <data name="New_ResumeTip" xml:space="preserve"><value>Seguir con el servidor que dejaste a medias</value></data>
+  <data name="New_GroupResources" xml:space="preserve"><value>Puerto y memoria</value></data>
+  <data name="New_GroupPlayers" xml:space="preserve"><value>Quién puede entrar</value></data>
+  <data name="New_GroupAfter" xml:space="preserve"><value>Internet y primer arranque</value></data>
+  <data name="New_GroupAddSettings" xml:space="preserve"><value>Memoria e Internet</value></data>
 </root>

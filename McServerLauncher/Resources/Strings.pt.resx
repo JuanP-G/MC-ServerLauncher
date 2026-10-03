@@ -822,11 +822,16 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="New_CreateDesc" xml:space="preserve"><value>Escolhes o tipo e a versão; a app descarrega e instala tudo o que for preciso.</value></data>
   <data name="New_AddTitle" xml:space="preserve"><value>Adicionar um que já tenho</value></data>
   <data name="New_AddDesc" xml:space="preserve"><value>Escolhes a pasta; a app reconhece o tipo e a versão.</value></data>
-  <data name="New_Next" xml:space="preserve"><value>Seguinte</value></data>
   <data name="New_Back" xml:space="preserve"><value>Voltar</value></data>
   <data name="New_AddButton" xml:space="preserve"><value>Adicionar servidor</value></data>
   <data name="New_AddFolder" xml:space="preserve"><value>Pasta do servidor</value></data>
   <data name="New_AddFolderHint" xml:space="preserve"><value>Escolhe a pasta onde está o servidor</value></data>
   <data name="New_DetectedFmt" xml:space="preserve"><value>Reconhecido: {0} {1}</value></data>
   <data name="New_NotDetected" xml:space="preserve"><value>Não foi possível reconhecer o tipo; podes ajustá-lo depois em Editar.</value></data>
+  <data name="New_Button" xml:space="preserve"><value>Novo</value></data>
+  <data name="New_ResumeTip" xml:space="preserve"><value>Continuar o servidor que deixaste a meio</value></data>
+  <data name="New_GroupResources" xml:space="preserve"><value>Porta e memória</value></data>
+  <data name="New_GroupPlayers" xml:space="preserve"><value>Quem pode entrar</value></data>
+  <data name="New_GroupAfter" xml:space="preserve"><value>Internet e primeiro arranque</value></data>
+  <data name="New_GroupAddSettings" xml:space="preserve"><value>Memória e Internet</value></data>
 </root>

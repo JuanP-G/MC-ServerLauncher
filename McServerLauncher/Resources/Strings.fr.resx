@@ -822,11 +822,16 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="New_CreateDesc" xml:space="preserve"><value>Choisissez le type et la version ; l'appli télécharge et installe tout le nécessaire.</value></data>
   <data name="New_AddTitle" xml:space="preserve"><value>Ajouter un que j'ai déjà</value></data>
   <data name="New_AddDesc" xml:space="preserve"><value>Choisissez son dossier ; l'appli reconnaît le type et la version.</value></data>
-  <data name="New_Next" xml:space="preserve"><value>Suivant</value></data>
   <data name="New_Back" xml:space="preserve"><value>Retour</value></data>
   <data name="New_AddButton" xml:space="preserve"><value>Ajouter le serveur</value></data>
   <data name="New_AddFolder" xml:space="preserve"><value>Dossier du serveur</value></data>
   <data name="New_AddFolderHint" xml:space="preserve"><value>Choisissez le dossier du serveur</value></data>
   <data name="New_DetectedFmt" xml:space="preserve"><value>Reconnu : {0} {1}</value></data>
   <data name="New_NotDetected" xml:space="preserve"><value>Le type n'a pas pu être reconnu ; vous pourrez le régler ensuite dans Modifier.</value></data>
+  <data name="New_Button" xml:space="preserve"><value>Nouveau</value></data>
+  <data name="New_ResumeTip" xml:space="preserve"><value>Reprendre le serveur laissé en cours</value></data>
+  <data name="New_GroupResources" xml:space="preserve"><value>Port et mémoire</value></data>
+  <data name="New_GroupPlayers" xml:space="preserve"><value>Qui peut rejoindre</value></data>
+  <data name="New_GroupAfter" xml:space="preserve"><value>Internet et premier démarrage</value></data>
+  <data name="New_GroupAddSettings" xml:space="preserve"><value>Mémoire et Internet</value></data>
 </root>

@@ -1,10 +1,12 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:McServerLauncher.Controls">
 
     <!-- Todo el movimiento de la app, en un sitio.
 
          Criterio: sutil y corto. Nada rebota, nada pasa de 180 ms, y nada se mueve por moverse:
          cada transicion dice algo (esto se puede pulsar, esto ha cambiado, esto acaba de aparecer).
+         La unica excepcion es el aviso de «+ Nuevo», que se explica en su seccion.
          Que viva solo aqui es lo que permite revisarlo de un vistazo, y un test comprueba que ninguna
          vista declara movimiento por su cuenta. -->
 
@@ -69,17 +71,199 @@
         <Setter Property="Foreground" Value="{StaticResource DangerIcon}" />
     </Style>
 
-    <!-- El "+" de la cabecera de servidores: discreto hasta que se le pasa el raton. -->
-    <Style Selector="Button.add">
-        <Setter Property="Padding" Value="6" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="MinWidth" Value="0" />
-        <Setter Property="MinHeight" Value="0" />
-        <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
-        <Setter Property="BorderThickness" Value="0" />
+    <!-- ===================== «+ NUEVO» =====================
+         Su recordatorio, cada 25 s: un destello cruza el boton (el primer segundo) y, al salir por
+         el otro lado, se convierte en un halo que se abre desde el borde y se apaga (el segundo).
+         Cuando suena lo decide Behaviors/BeaconBehavior, que pone .beacon-a o .beacon-b por turnos y
+         calla con el raton encima o con el panel de nuevo servidor abierto; aqui solo esta como se ve.
+
+         El halo es el azul de AccentSelected (58A6FF) con su opacidad, escrito aqui porque una sombra
+         no admite fichas. Los porcentajes, enteros, y sin KeySpline: Avalonia lee los dos con el
+         idioma del sistema, y en español (coma decimal) no entiende ni "96.4%" ni "0.45,0,0.25,1" y
+         la animacion se queda quieta sin avisar. La curva va dibujada a mano, un fotograma cada 10 %:
+         el destello arranca despacio, cruza deprisa y frena al salir; el halo se abre rapido y se
+         apaga despacio. Un test vigila que no vuelva ningun decimal. -->
+    <Style Selector="Panel.newserver.beacon-a:not(:pointerover) Border.shine">
+        <Style.Animations>
+            <Animation Duration="0:0:2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="TranslateTransform.X" Value="-40" />
+                </KeyFrame>
+                <KeyFrame Cue="10%">
+                    <Setter Property="TranslateTransform.X" Value="-32" />
+                </KeyFrame>
+                <KeyFrame Cue="20%">
+                    <Setter Property="TranslateTransform.X" Value="-8" />
+                </KeyFrame>
+                <KeyFrame Cue="30%">
+                    <Setter Property="TranslateTransform.X" Value="40" />
+                </KeyFrame>
+                <KeyFrame Cue="40%">
+                    <Setter Property="TranslateTransform.X" Value="100" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="TranslateTransform.X" Value="130" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="TranslateTransform.X" Value="130" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
     </Style>
-    <Style Selector="Button.add:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource AccentSelected}" />
+    <Style Selector="Panel.newserver.beacon-a:not(:pointerover) Border.halo">
+        <Style.Animations>
+            <Animation Duration="0:0:2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #0058A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="49%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #0058A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #9958A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="60%">
+                    <Setter Property="BoxShadow" Value="0 0 0 4.5 #6658A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="70%">
+                    <Setter Property="BoxShadow" Value="0 0 0 6.5 #3858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="80%">
+                    <Setter Property="BoxShadow" Value="0 0 0 7.5 #1858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="90%">
+                    <Setter Property="BoxShadow" Value="0 0 0 7.9 #0858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="BoxShadow" Value="0 0 0 8 #0058A6FF" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector="Panel.newserver.beacon-b:not(:pointerover) Border.shine">
+        <Style.Animations>
+            <Animation Duration="0:0:2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="TranslateTransform.X" Value="-40" />
+                </KeyFrame>
+                <KeyFrame Cue="10%">
+                    <Setter Property="TranslateTransform.X" Value="-32" />
+                </KeyFrame>
+                <KeyFrame Cue="20%">
+                    <Setter Property="TranslateTransform.X" Value="-8" />
+                </KeyFrame>
+                <KeyFrame Cue="30%">
+                    <Setter Property="TranslateTransform.X" Value="40" />
+                </KeyFrame>
+                <KeyFrame Cue="40%">
+                    <Setter Property="TranslateTransform.X" Value="100" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="TranslateTransform.X" Value="130" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="TranslateTransform.X" Value="130" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector="Panel.newserver.beacon-b:not(:pointerover) Border.halo">
+        <Style.Animations>
+            <Animation Duration="0:0:2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #0058A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="49%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #0058A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #9958A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="60%">
+                    <Setter Property="BoxShadow" Value="0 0 0 4.5 #6658A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="70%">
+                    <Setter Property="BoxShadow" Value="0 0 0 6.5 #3858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="80%">
+                    <Setter Property="BoxShadow" Value="0 0 0 7.5 #1858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="90%">
+                    <Setter Property="BoxShadow" Value="0 0 0 7.9 #0858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="BoxShadow" Value="0 0 0 8 #0058A6FF" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- ===================== PESTAÑAS =====================
+         Una sola linea para toda la tira (Controls/TabUnderline) que viaja hasta la pestaña elegida,
+         en lugar de una por pestaña que se enciende y se apaga. El titulo cambia de color con
+         suavidad, y la pagina que entra lo hace con un fundido. -->
+    <Style Selector="TabControl.sliding TabItem /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="controls|TabUnderline Border.underline">
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+                <DoubleTransition Property="Width" Duration="0:0:0.18" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="TabItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Foreground" Duration="0:0:0.16" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <!-- Dos clases que se alternan, porque una animacion de estilo solo arranca cuando su selector
+         empieza a coincidir: con una sola, solo se veria la primera vez. -->
+    <Style Selector="ContentPresenter.pagein-a">
+        <Style.Animations>
+            <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector="ContentPresenter.pagein-b">
+        <Style.Animations>
+            <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- ===================== NUEVO SERVIDOR =====================
+         Las tarjetas del primer paso: un clic y adelante. El fondo y el borde ya se funden como en
+         cualquier boton; ademas la flecha se adelanta un poco al pasar el raton, que es lo que dice
+         "esto te lleva a algun sitio". -->
+    <Style Selector="Button.origin :is(Control).go">
+        <Setter Property="RenderTransform" Value="translateX(0px)" />
+        <Setter Property="Opacity" Value="0.55" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" />
+                <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.origin:pointerover :is(Control).go">
+        <Setter Property="RenderTransform" Value="translateX(5px)" />
+        <Setter Property="Opacity" Value="1" />
     </Style>
 
     <!-- ===================== RAIL =====================  -->

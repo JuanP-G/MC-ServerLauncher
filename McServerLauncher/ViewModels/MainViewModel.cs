@@ -42,12 +42,33 @@ public partial class MainViewModel : ObservableObject
 
     public bool HasSelection => SelectedServer is not null;
 
-    /// <summary>The new-server panel while one is being made or added; null otherwise.</summary>
+    /// <summary>The new server being made or added, kept while it is unfinished; null otherwise.</summary>
+    /// <remarks>
+    /// Kept even while it is not on screen: opening a server from the list puts the panel away
+    /// without throwing it out, and "+ Nuevo" brings it back where it was left. A download that
+    /// had already started goes on meanwhile, and the server joins the list when it ends.
+    /// </remarks>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsCreatingServer), nameof(ShowServerDetail), nameof(ShowEmptyState))]
+    [NotifyPropertyChangedFor(nameof(IsCreatingServer), nameof(ShowServerDetail), nameof(ShowEmptyState),
+        nameof(HasNewServerDraft), nameof(NewServerTip))]
     private NewServerView? _newServerPanel;
 
-    public bool IsCreatingServer => NewServerPanel is not null;
+    /// <summary>Whether the new-server panel has the detail area, instead of a server.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCreatingServer), nameof(ShowServerDetail), nameof(ShowEmptyState),
+        nameof(HasNewServerDraft), nameof(NewServerTip))]
+    private bool _isNewServerOpen;
+
+    /// <summary>The new-server panel is on screen.</summary>
+    public bool IsCreatingServer => IsNewServerOpen && NewServerPanel is not null;
+
+    /// <summary>An unfinished new server is waiting, put away while another server is being looked at.</summary>
+    public bool HasNewServerDraft => NewServerPanel is not null && !IsNewServerOpen;
+
+    public string NewServerTip => Localizer.Get(HasNewServerDraft ? "New_ResumeTip" : "New_Title");
+
+    /// <summary>What was selected when the panel opened, to go back to if it is cancelled.</summary>
+    private ServerViewModel? _beforeNewServer;
 
     /// <summary>The selected server's detail, unless the new-server panel has the space.</summary>
     public bool ShowServerDetail => HasSelection && !IsCreatingServer;
@@ -509,6 +530,10 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnSelectedServerChanged(ServerViewModel? value)
     {
+        // Picking a server while the new-server panel is open goes to that server. The unfinished
+        // one is kept (see NewServerPanel), not thrown away.
+        if (value is not null && IsNewServerOpen) IsNewServerOpen = false;
+
         OnPropertyChanged(nameof(HasSelection));
         OnPropertyChanged(nameof(ShowServerDetail));
         OnPropertyChanged(nameof(ShowEmptyState));
@@ -547,15 +572,30 @@ public partial class MainViewModel : ObservableObject
 
     /// <summary>Opens the new-server panel: create one from scratch, or add one that already exists.</summary>
     /// <remarks>
+    /// <para>
     /// One panel for both, in the window, where two buttons used to open two dialogs. An unfinished
     /// one is kept: pressing the button again brings it back rather than throwing it away.
+    /// </para>
+    /// <para>
+    /// The list loses its selection while the panel is open. It used to keep the previous server
+    /// highlighted, as if that server were the one on screen, and picking it again did nothing
+    /// visible because it already counted as picked.
+    /// </para>
     /// </remarks>
     [RelayCommand]
     private void ShowNewServer()
     {
         Section = AppSection.Servers;
-        if (NewServerPanel is not null) return;
+        if (IsCreatingServer) return;
 
+        NewServerPanel ??= CreateNewServerPanel();
+        _beforeNewServer = SelectedServer;
+        IsNewServerOpen = true;
+        SelectedServer = null;
+    }
+
+    private NewServerView CreateNewServerPanel()
+    {
         var propertiesService = new ServerPropertiesService();
         var usedPorts = Servers
             .Select(s => propertiesService.GetServerPort(s.Config.PropertiesPath))
@@ -564,20 +604,33 @@ public partial class MainViewModel : ObservableObject
             .ToList();
 
         var panel = new NewServerView(usedPorts);
-        panel.Cancelled += () => NewServerPanel = null;
+        panel.Cancelled += () => CloseNewServer(select: _beforeNewServer);
         panel.Completed += result =>
         {
+            // Finished while on screen: show it. Finished while put away (a download left running
+            // while looking at another server): it joins the list without taking the screen.
+            var wasOnScreen = IsCreatingServer;
             NewServerPanel = null;
-            _ = FinishNewServerAsync(result);
+            IsNewServerOpen = false;
+            _ = FinishNewServerAsync(result, select: wasOnScreen || SelectedServer is null);
         };
-        NewServerPanel = panel;
+        return panel;
     }
 
+    /// <summary>Throws the panel away and gives the detail area back to a server.</summary>
+    private void CloseNewServer(ServerViewModel? select)
+    {
+        var wasOnScreen = IsCreatingServer;
+        NewServerPanel = null;
+        IsNewServerOpen = false;
+        if (wasOnScreen && SelectedServer is null)
+            SelectedServer = select is not null && Servers.Contains(select) ? select : Servers.FirstOrDefault();
+    }
     /// <summary>Registers what the panel produced and does what was asked for it.</summary>
-    private async Task FinishNewServerAsync(NewServerResult result)
+    private async Task FinishNewServerAsync(NewServerResult result, bool select)
     {
         var vm = Register(result.Config);
-        SelectedServer = vm;
+        if (select) SelectedServer = vm;
         Save();
         if (!result.IsNew) return;
 

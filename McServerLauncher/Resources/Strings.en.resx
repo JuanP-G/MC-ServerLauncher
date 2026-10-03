@@ -822,11 +822,16 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="New_CreateDesc" xml:space="preserve"><value>Pick the type and version; the app downloads and installs everything it needs.</value></data>
   <data name="New_AddTitle" xml:space="preserve"><value>Add one I already have</value></data>
   <data name="New_AddDesc" xml:space="preserve"><value>Pick its folder; the app recognises the type and version.</value></data>
-  <data name="New_Next" xml:space="preserve"><value>Next</value></data>
   <data name="New_Back" xml:space="preserve"><value>Back</value></data>
   <data name="New_AddButton" xml:space="preserve"><value>Add server</value></data>
   <data name="New_AddFolder" xml:space="preserve"><value>Server folder</value></data>
   <data name="New_AddFolderHint" xml:space="preserve"><value>Pick the folder the server is in</value></data>
   <data name="New_DetectedFmt" xml:space="preserve"><value>Recognised: {0} {1}</value></data>
   <data name="New_NotDetected" xml:space="preserve"><value>The type could not be recognised; you can set it later in Edit.</value></data>
+  <data name="New_Button" xml:space="preserve"><value>New</value></data>
+  <data name="New_ResumeTip" xml:space="preserve"><value>Continue the server you left unfinished</value></data>
+  <data name="New_GroupResources" xml:space="preserve"><value>Port and memory</value></data>
+  <data name="New_GroupPlayers" xml:space="preserve"><value>Who can join</value></data>
+  <data name="New_GroupAfter" xml:space="preserve"><value>Internet and first start</value></data>
+  <data name="New_GroupAddSettings" xml:space="preserve"><value>Memory and internet</value></data>
 </root>
