@@ -32,6 +32,20 @@ public class MarqueeText : Panel
     public static readonly StyledProperty<string?> TextProperty =
         AvaloniaProperty.Register<MarqueeText, string?>(nameof(Text));
 
+    /// <summary>
+    /// Marks the element whose hover starts the slide: a card, a table row. Without one, the nearest
+    /// list item is used, and failing that the text itself.
+    /// </summary>
+    /// <remarks>
+    /// The text alone is too small a target. On the server card the name only moved with the pointer
+    /// exactly on top of it, when the natural thing is to point at the card and expect to read it.
+    /// </remarks>
+    public static readonly AttachedProperty<bool> IsHoverScopeProperty =
+        AvaloniaProperty.RegisterAttached<MarqueeText, Control, bool>("IsHoverScope");
+
+    public static bool GetIsHoverScope(Control c) => c.GetValue(IsHoverScopeProperty);
+    public static void SetIsHoverScope(Control c, bool value) => c.SetValue(IsHoverScopeProperty, value);
+
     /// <summary>Pixels per second. Slow enough to follow with the eye.</summary>
     internal const double Speed = 40;
 
@@ -117,8 +131,7 @@ public class MarqueeText : Panel
     {
         base.OnAttachedToVisualTree(e);
 
-        // The whole row, not just the text: pointing at the status dot beside a name should be enough.
-        _scope = this.FindAncestorOfType<ListBoxItem>() ?? (Control)this;
+        _scope = FindScope(this);
         _scope.PointerEntered += OnEnter;
         _scope.PointerExited += OnExit;
     }
@@ -133,6 +146,20 @@ public class MarqueeText : Panel
         }
         StopScroll();
         base.OnDetachedFromVisualTree(e);
+    }
+
+    /// <summary>
+    /// The element whose hover counts: the nearest one marked as a scope, else the nearest list item,
+    /// else the text itself. The whole row or card, not just the letters — pointing at the status dot
+    /// beside a name, or anywhere on its card, should be enough.
+    /// </summary>
+    internal static Control FindScope(MarqueeText text)
+    {
+        foreach (var ancestor in text.GetVisualAncestors())
+        {
+            if (ancestor is Control c && (GetIsHoverScope(c) || c is ListBoxItem)) return c;
+        }
+        return text;
     }
 
     private void OnEnter(object? sender, Avalonia.Input.PointerEventArgs e) => StartScroll();

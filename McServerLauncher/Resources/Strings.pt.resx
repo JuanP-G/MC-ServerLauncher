@@ -802,4 +802,9 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Tun_Src_Refused" xml:space="preserve"><value> O Playit não aceita esta chave.</value></data>
   <data name="Tun_Err_Key" xml:space="preserve"><value>O Playit não aceita a chave com que a conta foi lida. Se foi esta app a guardá-la, carrega em Desligar e volta a ligar.</value></data>
   <data name="Tun_Err_NoPermission" xml:space="preserve"><value>O Playit não permite esta alteração com a chave deste computador.</value></data>
+  <data name="Tun_Src_InstalledReadOnly" xml:space="preserve"><value>Playit instalado neste computador. Com a sua chave o Playit só deixa ler os túneis: mudar-lhes o nome ou apagá-los faz-se em playit.gg.</value></data>
+  <data name="Tun_ReadOnlyTip" xml:space="preserve"><value>Este túnel muda-se em playit.gg: a chave do Playit instalado só deixa ler</value></data>
+  <data name="Tun_Fix_OnWeb" xml:space="preserve"><value>Fazer em playit.gg</value></data>
+  <data name="Tun_Err_ReadOnly" xml:space="preserve"><value>O Playit não deixa alterar túneis com a chave do Playit instalado neste computador, só lê-los. Faz isso em playit.gg.</value></data>
+  <data name="Tun_AutoRenameReadOnlyFmt" xml:space="preserve"><value>[Playit] O túnel «{0}» mantém esse nome: com o Playit instalado só se pode renomear para «{1}» em playit.gg.</value></data>
 </root>

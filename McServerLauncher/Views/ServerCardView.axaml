@@ -29,7 +29,7 @@
     </UserControl.Styles>
 
     <Border Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}" BorderThickness="1"
-            CornerRadius="6" Padding="10">
+            CornerRadius="6" Padding="10" controls:MarqueeText.IsHoverScope="True">
         <Grid ColumnDefinitions="Auto,*,Auto">
 
             <!-- server-icon.png, o un marcador si no hay. Si la tarjeta es editable, pulsarlo abre el editor. -->

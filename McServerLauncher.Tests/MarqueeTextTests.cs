@@ -134,3 +134,44 @@ public class MarqueeTextTests(AvaloniaFixture ui)
     public void NothingToSlideMeansNoMovement() =>
         Assert.Equal(0, MarqueeText.OffsetAt(TimeSpan.FromSeconds(5), 0));
 }
+
+/// <summary>Which element's hover starts the slide.</summary>
+[Collection("avalonia")]
+public class MarqueeScopeTests(AvaloniaFixture ui)
+{
+    [Fact]
+    public void AMarkedCardIsTheScopeNotTheTextAlone() =>
+        ui.Run(() =>
+        {
+            // The server card: the name sits in a grid inside the card's border.
+            var text = new MarqueeText { Text = "Java+Bedrock (paper) para amigos" };
+            var card = new Avalonia.Controls.Border { Child = new Avalonia.Controls.Grid { Children = { text } } };
+            MarqueeText.SetIsHoverScope(card, true);
+            var window = new Avalonia.Controls.Window { Content = card };
+            window.Show();
+
+            Assert.Same(card, MarqueeText.FindScope(text));
+            window.Hide();
+        });
+
+    [Fact]
+    public void WithNothingMarkedTheTextIsItsOwnScope() =>
+        ui.Run(() =>
+        {
+            var text = new MarqueeText { Text = "x" };
+            var window = new Avalonia.Controls.Window { Content = new Avalonia.Controls.StackPanel { Children = { text } } };
+            window.Show();
+
+            Assert.Same(text, MarqueeText.FindScope(text));
+            window.Hide();
+        });
+
+    [Fact]
+    public void TheServerCardAndTheTunnelRowsAreMarked()
+    {
+        var views = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views");
+
+        Assert.Contains("controls:MarqueeText.IsHoverScope=\"True\"", File.ReadAllText(Path.Combine(views, "ServerCardView.axaml")));
+        Assert.Contains("controls:MarqueeText.IsHoverScope=\"True\"", File.ReadAllText(Path.Combine(views, "TunnelsView.axaml")));
+    }
+}

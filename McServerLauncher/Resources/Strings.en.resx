@@ -802,4 +802,9 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Tun_Src_Refused" xml:space="preserve"><value> Playit does not accept this key.</value></data>
   <data name="Tun_Err_Key" xml:space="preserve"><value>Playit does not accept the key the account was read with. If this app saved it, press Disconnect and connect again.</value></data>
   <data name="Tun_Err_NoPermission" xml:space="preserve"><value>Playit does not allow this change with this computer's key.</value></data>
+  <data name="Tun_Src_InstalledReadOnly" xml:space="preserve"><value>Playit installed on this computer. With its key Playit only lets the tunnels be read: renaming or deleting them is done on playit.gg.</value></data>
+  <data name="Tun_ReadOnlyTip" xml:space="preserve"><value>This tunnel is changed on playit.gg: the installed Playit key can only read</value></data>
+  <data name="Tun_Fix_OnWeb" xml:space="preserve"><value>Do it on playit.gg</value></data>
+  <data name="Tun_Err_ReadOnly" xml:space="preserve"><value>Playit does not allow changing tunnels with the key of the Playit installed on this computer, only reading them. Do it on playit.gg.</value></data>
+  <data name="Tun_AutoRenameReadOnlyFmt" xml:space="preserve"><value>[Playit] The tunnel "{0}" keeps that name: with the installed Playit it can only be renamed to "{1}" on playit.gg.</value></data>
 </root>

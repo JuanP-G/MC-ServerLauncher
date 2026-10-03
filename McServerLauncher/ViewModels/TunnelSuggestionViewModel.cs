@@ -10,11 +10,15 @@ public sealed partial class TunnelSuggestionViewModel
     private readonly TunnelsViewModel _owner;
     private readonly TunnelSuggestion _suggestion;
 
-    public TunnelSuggestionViewModel(TunnelsViewModel owner, TunnelSuggestion suggestion)
+    public TunnelSuggestionViewModel(TunnelsViewModel owner, TunnelSuggestion suggestion, bool canFixHere = true)
     {
         _owner = owner;
         _suggestion = suggestion;
+        CanFixHere = canFixHere;
     }
+
+    /// <summary>False when the only key that can see the tunnel is read-only: the fix is then made on playit.gg.</summary>
+    public bool CanFixHere { get; }
 
     public bool IsProblem => _suggestion.IsProblem;
 
@@ -33,7 +37,7 @@ public sealed partial class TunnelSuggestionViewModel
         _ => string.Format(Localizer.Get("Tun_Fix_RenameFmt"), _suggestion.Count),
     };
 
-    public string ButtonText => _suggestion.Kind switch
+    public string ButtonText => !CanFixHere ? Localizer.Get("Tun_Fix_OnWeb") : _suggestion.Kind switch
     {
         TunnelSuggestionKind.DeleteOrphan or TunnelSuggestionKind.DeleteDuplicate => Localizer.Get("Tun_Fix_Delete"),
         TunnelSuggestionKind.SharedPort => string.Format(Localizer.Get("Tun_Fix_ChangePortFmt"), _suggestion.Subject),
@@ -43,5 +47,10 @@ public sealed partial class TunnelSuggestionViewModel
     };
 
     [RelayCommand]
-    private Task Apply() => _owner.ApplyAsync(_suggestion);
+    private Task Apply()
+    {
+        if (CanFixHere) return _owner.ApplyAsync(_suggestion);
+        _owner.OpenWebForChange();
+        return Task.CompletedTask;
+    }
 }

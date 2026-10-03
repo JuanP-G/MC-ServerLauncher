@@ -75,6 +75,24 @@ public partial class TunnelsViewModel : ObservableObject
     private readonly Dictionary<string, string> _keyFor = new();
     private List<string> _workingKeys = new();
 
+    // Which of the keys that answered may also change tunnels. Asked without changing anything; see
+    // PlayitApiService.CanManageTunnelsAsync. A key not asked yet is given the benefit of the doubt.
+    private readonly Dictionary<string, bool> _writable = new();
+
+    private bool CanWrite(string? key) => key is null || !_writable.TryGetValue(key, out var w) || w;
+
+    /// <summary>Whether this tunnel can be changed from here, with the key that read it.</summary>
+    private bool CanChange(string? tunnelId) => CanWrite(KeyFor(tunnelId));
+
+    /// <summary>A key that may create tunnels, or null when every key that answered can only read.</summary>
+    private string? WritableKey() => _workingKeys.FirstOrDefault(k => CanWrite(k));
+
+    /// <summary>Changes Playit will not let this app make go through its website, where the account owner can.</summary>
+    internal void OpenWebForChange() => BrowserLauncher.Open(AppLinks.PlayitTunnels);
+
+    private bool IsReadOnly(PlayitConnection.Source source) =>
+        _writable.TryGetValue(source.Key, out var w) && !w;
+
     /// <summary>True when there is any way into the account: the app's own agent, the installed one, or a saved key.</summary>
     public bool IsConnected => Sources().Count > 0;
     public bool IsNotConnected => !IsConnected;
@@ -134,7 +152,8 @@ public partial class TunnelsViewModel : ObservableObject
                 var line = source.Kind switch
                 {
                     PlayitConnection.SourceKind.AppAgent => AgentText,
-                    PlayitConnection.SourceKind.InstalledAgent => Localizer.Get("Tun_Src_Installed"),
+                    PlayitConnection.SourceKind.InstalledAgent => Localizer.Get(
+                        IsReadOnly(source) ? "Tun_Src_InstalledReadOnly" : "Tun_Src_Installed"),
                     _ => Localizer.Get("Tun_Src_Saved"),
                 };
                 return _refused.Contains(source.Kind) ? line + Localizer.Get("Tun_Src_Refused") : line;
@@ -273,10 +292,10 @@ public partial class TunnelsViewModel : ObservableObject
         Rows.Clear();
         // Trouble first: the rows that need a decision should not be the ones scrolled out of sight.
         foreach (var row in report.Rows.OrderBy(r => r.Health == TunnelHealth.Ok).ThenBy(r => r.Tunnel.Name, StringComparer.OrdinalIgnoreCase))
-            Rows.Add(new TunnelRowViewModel(this, row));
+            Rows.Add(new TunnelRowViewModel(this, row, CanChange(row.Tunnel.Id)));
         Suggestions.Clear();
         foreach (var s in report.Suggestions)
-            Suggestions.Add(new TunnelSuggestionViewModel(this, s));
+            Suggestions.Add(new TunnelSuggestionViewModel(this, s, CanFixHere(s, report)));
 
         LastRead = DateTime.Now;
         RaiseSummary();
@@ -332,8 +351,19 @@ public partial class TunnelsViewModel : ObservableObject
     private static string Describe(Exception? ex, bool write = false) => ex switch
     {
         null => "",
+        PlayitApiException { IsReadOnlyRefusal: true } => Localizer.Get("Tun_Err_ReadOnly"),
         PlayitApiException { IsAuthError: true } => Localizer.Get(write ? "Tun_Err_NoPermission" : "Tun_Err_Key"),
         _ => ex.Message,
+    };
+
+    /// <summary>Whether a suggestion can be carried out from here, or only on playit.gg.</summary>
+    private bool CanFixHere(TunnelSuggestion s, TunnelReport report) => s.Kind switch
+    {
+        TunnelSuggestionKind.DeleteOrphan or TunnelSuggestionKind.DeleteDuplicate => CanChange(s.TunnelId),
+        TunnelSuggestionKind.CreateJava or TunnelSuggestionKind.CreateBedrock => WritableKey() is not null,
+        TunnelSuggestionKind.RenameAll => report.Rows.Where(r => r.Health == TunnelHealth.Ok && r.NameDiffers)
+                                                     .All(r => CanChange(r.Tunnel.Id)),
+        _ => true,   // a shared port is fixed in the server's own settings, not in the account
     };
 
     [RelayCommand]
@@ -354,6 +384,9 @@ public partial class TunnelsViewModel : ObservableObject
             _keyFor.Clear();
             foreach (var (id, key) in reading.KeyFor) _keyFor[id] = key;
             _workingKeys = reading.WorkingKeys;
+            foreach (var key in _workingKeys)
+                if (await _api.CanManageTunnelsAsync(key) is { } writable)
+                    _writable[key] = writable;
 
             if (reading.Error is not null)
             {
@@ -462,13 +495,13 @@ public partial class TunnelsViewModel : ObservableObject
                 break;
 
             case TunnelSuggestionKind.CreateJava:
-                if (server is not null)
-                    await ChangeAsync(key => server.CreateTunnelAsync(key));
+                if (server is not null && WritableKey() is { } javaKey)
+                    await ChangeAsync(_ => server.CreateTunnelAsync(javaKey));
                 break;
 
             case TunnelSuggestionKind.CreateBedrock:
-                if (server is not null)
-                    await ChangeAsync(key => server.CreateBedrockTunnelAsync(key));
+                if (server is not null && WritableKey() is { } bedrockKey)
+                    await ChangeAsync(_ => server.CreateBedrockTunnelAsync(bedrockKey));
                 break;
 
             case TunnelSuggestionKind.RenameAll:
@@ -504,6 +537,11 @@ public partial class TunnelsViewModel : ObservableObject
             foreach (var (tunnelId, newName) in renames)
             {
                 var before = reading.Tunnels.First(t => t.Id == tunnelId).Name;
+                if (await _api.CanManageTunnelsAsync(reading.KeyFor[tunnelId]) == false)
+                {
+                    server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenameReadOnlyFmt"), before, newName));
+                    continue;
+                }
                 try
                 {
                     await _api.RenameTunnelAsync(reading.KeyFor[tunnelId], tunnelId, newName);

@@ -89,3 +89,52 @@ public class PlayitSourcesTests
         Assert.False(new PlayitApiException("other", message).IsAuthError);
     }
 }
+
+/// <summary>
+/// Playit's replies as they actually came back, and what the client makes of them.
+/// </summary>
+/// <remarks>
+/// The two <c>auth</c> bodies were captured on 2026-10-03 from the real API with the key of an
+/// installed agent, renaming and deleting a tunnel id that does not exist (so nothing on the account
+/// changed). The <c>fail</c> body is the shape Playit's own client declares for an endpoint error
+/// (<c>ApiResult::Fail</c> carrying <c>TunnelRenameError::TunnelNotFound</c>).
+/// </remarks>
+public class PlayitRepliesTests
+{
+    private const string ReadOnly = """{"status":"error","data":{"type":"auth","message":"NotAllowedWithReadOnly"}}""";
+    private const string BadKey = """{"status":"error","data":{"type":"auth","message":"InvalidApiKey"}}""";
+    private const string NotFound = """{"status":"fail","data":"TunnelNotFound"}""";
+    private const string Ok = """{"status":"success","data":{"agent_id":"x","tunnels":[]}}""";
+
+    [Fact]
+    public void ASuccessIsNoError() => Assert.Null(PlayitApiService.ErrorFrom(Ok));
+
+    [Fact]
+    public void AReadOnlyKeyIsAnAuthErrorThatSaysSo()
+    {
+        var e = PlayitApiService.ErrorFrom(ReadOnly)!;
+
+        Assert.True(e.IsAuthError);
+        Assert.True(e.IsReadOnlyRefusal);
+    }
+
+    [Fact]
+    public void ARejectedKeyIsNotReadOnly()
+    {
+        var e = PlayitApiService.ErrorFrom(BadKey)!;
+
+        Assert.True(e.IsAuthError);
+        Assert.False(e.IsReadOnlyRefusal);
+    }
+
+    [Fact]
+    public void AFailWithABareStringIsReadInsteadOfCrashing()
+    {
+        // This shape used to throw "requires an element of type Object" from inside the parser.
+        var e = PlayitApiService.ErrorFrom(NotFound)!;
+
+        Assert.Equal("fail", e.ErrorType);
+        Assert.Contains("TunnelNotFound", e.Message);
+        Assert.False(e.IsAuthError);
+    }
+}

@@ -23,12 +23,22 @@ public partial class TunnelRowViewModel : ObservableObject
     private readonly TunnelsViewModel _owner;
     private readonly TunnelRow _row;
 
-    public TunnelRowViewModel(TunnelsViewModel owner, TunnelRow row)
+    public TunnelRowViewModel(TunnelsViewModel owner, TunnelRow row, bool canEdit = true)
     {
         _owner = owner;
         _row = row;
         _editName = row.Tunnel.Name;
+        CanEdit = canEdit;
     }
+
+    /// <summary>
+    /// Whether the key this tunnel was read with may change it. The key of an agent the user installed
+    /// can only read, so its tunnels are renamed and deleted on playit.gg, and the buttons say so.
+    /// </summary>
+    public bool CanEdit { get; }
+
+    public string RenameTip => Localizer.Get(CanEdit ? "Tun_RenameTip" : "Tun_ReadOnlyTip");
+    public string DeleteTip => Localizer.Get(CanEdit ? "Title_DeleteTunnel" : "Tun_ReadOnlyTip");
 
     public string Id => _row.Tunnel.Id;
     public string Name => string.IsNullOrWhiteSpace(_row.Tunnel.Name) ? "—" : _row.Tunnel.Name;
@@ -63,7 +73,7 @@ public partial class TunnelRowViewModel : ObservableObject
     /// <summary>The name it would carry if named after its server, when that is not what it has.</summary>
     public string? SuggestedName => _row.NameDiffers ? _row.SuggestedName : null;
 
-    public bool ShowSuggestion => SuggestedName is not null && !IsEditing;
+    public bool ShowSuggestion => SuggestedName is not null && !IsEditing && CanEdit;
     public string SuggestionText => string.Format(Localizer.Get("Tun_UseNameFmt"), SuggestedName);
 
     [ObservableProperty]
@@ -78,6 +88,7 @@ public partial class TunnelRowViewModel : ObservableObject
     [RelayCommand]
     private void BeginRename()
     {
+        if (!CanEdit) { _owner.OpenWebForChange(); return; }
         EditName = _row.Tunnel.Name;
         IsEditing = true;
     }
@@ -102,5 +113,10 @@ public partial class TunnelRowViewModel : ObservableObject
     private Task Copy() => _owner.CopyAsync(Address);
 
     [RelayCommand]
-    private Task Delete() => _owner.DeleteAsync(Id, Name);
+    private Task Delete()
+    {
+        if (CanEdit) return _owner.DeleteAsync(Id, Name);
+        _owner.OpenWebForChange();
+        return Task.CompletedTask;
+    }
 }
