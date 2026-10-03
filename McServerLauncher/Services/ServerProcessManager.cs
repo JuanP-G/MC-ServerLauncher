@@ -86,7 +86,7 @@ public class ServerProcessManager
                 throw new FileNotFoundException($"Server .jar not found: {config.JarFullPath}");
             }
 
-            var args = BuildJavaArguments(config);
+            var args = BuildJavaArguments(config, new JavaService().GetMajorVersion(config.JavaPath));
 
             var psi = new ProcessStartInfo
             {
@@ -129,17 +129,55 @@ public class ServerProcessManager
         }
     }
 
-    private static string BuildJavaArguments(ServerConfig config)
+    /// <param name="config">The server to start.</param>
+    /// <param name="javaMajor">The Java it starts on. 0 when it could not be read.</param>
+    internal static string BuildJavaArguments(ServerConfig config, int javaMajor)
     {
         var extra = string.IsNullOrWhiteSpace(config.ExtraJvmArgs) ? "" : config.ExtraJvmArgs.Trim() + " ";
         var mem = $"-Xms{config.MinRamGb}G -Xmx{config.MaxRamGb}G ";
+        var implied = string.Concat(ImpliedJvmFlags(javaMajor, config.ExtraJvmArgs).Select(f => f + " "));
 
         // Modern Forge (1.17+) and every NeoForge build have no runnable server jar: they launch via
         // an args file the installer generates (win_args.txt on Windows, unix_args.txt elsewhere).
         if (!string.IsNullOrWhiteSpace(config.ForgeArgs) && ResolveForgeArgsFile(config) is { } argsFile)
-            return $"{mem}{extra}@{argsFile} nogui";
+            return $"{mem}{implied}{extra}@{argsFile} nogui";
 
-        return $"{mem}{extra}-jar \"{config.JarFile}\" nogui";
+        return $"{mem}{implied}{extra}-jar \"{config.JarFile}\" nogui";
+    }
+
+    /// <summary>
+    /// JVM flags the app adds by itself, because the warning they answer is its to fix.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>--enable-native-access=ALL-UNNAMED</c>, from Java 22. Mods that load native code through
+    /// JNA — Distant Horizons, OSHI inside half a dozen others — make the JVM print a block of
+    /// "restricted method" warnings on every start, and that block says outright that a future
+    /// release will <em>block</em> the call instead of warning about it. The server would then stop
+    /// working on a Java update with no change of its own. This is the flag the warning itself asks
+    /// for; the app is the one building the command line, so the app adds it.
+    /// </para>
+    /// <para>
+    /// Only from 22, where the warning exists and the flag is final: an option a JVM does not
+    /// recognise stops it from starting at all, which is a much worse outcome than any warning.
+    /// And never over the user's own: if the extra arguments already set it, theirs stands.
+    /// </para>
+    /// <para>
+    /// Deliberately <em>not</em> here: <c>--sun-misc-unsafe-memory-access=allow</c>, which would
+    /// quieten the "terminally deprecated method" lines. Its accepted values are scheduled to change
+    /// release by release, and a value a later JVM refuses would stop the server starting over what
+    /// is, today, a cosmetic warning about a library's code.
+    /// </para>
+    /// </remarks>
+    internal static IReadOnlyList<string> ImpliedJvmFlags(int javaMajor, string? extraArgs)
+    {
+        var flags = new List<string>();
+
+        if (javaMajor >= 22 &&
+            extraArgs?.Contains("--enable-native-access", StringComparison.OrdinalIgnoreCase) != true)
+            flags.Add("--enable-native-access=ALL-UNNAMED");
+
+        return flags;
     }
 
     /// <summary>

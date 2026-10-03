@@ -1,3 +1,4 @@
+using McServerLauncher.Services;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 using McServerLauncher.Models;
@@ -175,9 +176,9 @@ public class NewServerStepsTests(AvaloniaFixture ui) : IDisposable
         root.FindControl<T>(name) ?? throw new InvalidOperationException(name);
 
     [Theory]
-    [InlineData("CreateCard", "CreateStep", "CreateButton")]
-    [InlineData("AddCard", "AddStep", "AddButton")]
-    public void OneClickOnACardIsTheChoiceAndTheStepForward(string card, string step, string finish) =>
+    [InlineData("CreateCard", "CreateButton")]
+    [InlineData("AddCard", "AddButton")]
+    public void OneClickOnACardIsTheChoiceAndTheStepForward(string card, string finish) =>
         ui.Run(() =>
         {
             // There was a selected state and a Next button, and the mark of the picked card vanished
@@ -187,7 +188,7 @@ public class NewServerStepsTests(AvaloniaFixture ui) : IDisposable
             Named<Button>(view, card).RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
 
             Assert.False(Named<Control>(view, "OriginStep").IsVisible);
-            Assert.True(Named<Control>(view, step).IsVisible);
+            Assert.True(Named<Control>(view, "DetailsStep").IsVisible);
             Assert.True(Named<Button>(view, finish).IsVisible);
             Assert.True(Named<Button>(view, "BackButton").IsVisible);
             Assert.Null(view.FindControl<Button>("NextButton"));
@@ -209,40 +210,40 @@ public class NewServerStepsTests(AvaloniaFixture ui) : IDisposable
             window.UpdateLayout();
 
             Assert.Equal(wide, Named<Grid>(view, "FormPanel").Classes.Contains("wide"));
-            Assert.Equal(wide, Named<Grid>(view, "AddColumns").Classes.Contains("wide"));
             window.Close();
         });
 
     [Fact]
-    public void ItStartsOnTheChoiceAndGoesToTheRightForm() =>
+    public void ItStartsOnTheChoice() =>
         ui.Run(() =>
         {
             var view = new NewServerView();
             Assert.True(Named<Control>(view, "OriginStep").IsVisible);
-            Assert.False(Named<Control>(view, "CreateStep").IsVisible);
-
-            view.ChooseAdd();
-
-            Assert.False(Named<Control>(view, "OriginStep").IsVisible);
-            Assert.True(Named<Control>(view, "AddStep").IsVisible);
-            Assert.True(Named<Button>(view, "AddButton").IsVisible);
-            Assert.False(Named<Button>(view, "CreateButton").IsVisible);
+            Assert.False(Named<Control>(view, "DetailsStep").IsVisible);
+            Assert.False(Named<Button>(view, "BackButton").IsVisible);
         });
 
+    private ServerDetection AServerIn(string folder)
+    {
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "server.jar"), "");
+        return new ServerDetection { Type = ServerType.Paper, GameVersion = "1.21.1", JarFile = "server.jar", Jars = new[] { "server.jar" } };
+    }
+
     [Fact]
-    public void AnExistingFolderIsReadAndNamedAfterItself() =>
+    public void AnExistingFolderIsTakenOverUnderItsOwnName() =>
         ui.Run(() =>
         {
-            Directory.CreateDirectory(_folder);
             var view = new NewServerView();
             view.ChooseAdd();
 
-            view.UseExistingFolder(_folder);
+            view.ShowDetection(_folder, AServerIn(_folder));
 
-            Assert.Equal(new DirectoryInfo(_folder).Name, Named<TextBox>(view, "AddNameBox").Text);
+            Assert.Equal(new DirectoryInfo(_folder).Name, Named<TextBox>(view, "NameBox").Text);
             var config = view.TryBuildExisting(out var error);
             Assert.Null(error);
             Assert.Equal(_folder, config!.FolderPath);
+            Assert.Equal(ServerType.Paper, config.Type);
         });
 
     [Fact]
@@ -251,10 +252,22 @@ public class NewServerStepsTests(AvaloniaFixture ui) : IDisposable
         {
             var view = new NewServerView();
             view.ChooseAdd();
-            Named<TextBox>(view, "AddFolderBox").Text = Path.Combine(_folder, "missing");
-            Named<TextBox>(view, "AddNameBox").Text = "x";
+            Named<TextBox>(view, "ExistingFolderBox").Text = Path.Combine(_folder, "missing");
+            Named<TextBox>(view, "NameBox").Text = "x";
 
             Assert.Null(view.TryBuildExisting(out var error));
             Assert.NotNull(error);
+        });
+
+    [Fact]
+    public void AFolderTheAppAlreadyHasIsRefused() =>
+        ui.Run(() =>
+        {
+            var view = new NewServerView(null, new[] { _folder });
+            view.ChooseAdd();
+            view.ShowDetection(_folder, AServerIn(_folder));
+
+            Assert.Null(view.TryBuildExisting(out var error));
+            Assert.Equal(McServerLauncher.Localization.Localizer.Get("Cs_ExistingAlreadyAdded"), error);
         });
 }

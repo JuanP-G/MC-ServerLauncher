@@ -15,6 +15,29 @@ using McServerLauncher.Models.Modrinth;
 
 namespace McServerLauncher.Services;
 
+/// <summary>
+/// The app's whole conversation with Modrinth: searching the store, reading a project, resolving a
+/// version for this server, identifying installed jars by hash, and downloading a file.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Every query is already narrowed by the server's loader and game version, because a result the
+/// server cannot run is worse than no result: it installs, and then the server does not come up.
+/// The loader a type browses under comes from <see cref="ServerTypeCatalog"/>, so Purpur searching
+/// Paper's plugins is a property of the table rather than a branch in here.
+/// </para>
+/// <para>
+/// Reads go through <see cref="StoreCache"/> with a per-endpoint freshness window (see the
+/// constants below), which is what makes opening a mod, going back and opening it again cost one
+/// request — and what makes a project already seen open with no connection at all.
+/// </para>
+/// <para>
+/// The hash endpoints answer two different questions off the same scan, and the difference matters:
+/// <see cref="GetVersionsByHashAsync"/> says what each jar <em>is</em> (its project and its declared
+/// dependencies), while <see cref="GetLatestVersionsByHashAsync"/> says what could replace it. The
+/// update check needs the second; the missing-library check needs the first.
+/// </para>
+/// </remarks>
 public class ModrinthService
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
@@ -137,6 +160,28 @@ public class ModrinthService
             token => GetJsonAsync<VersionResult>($"{ApiBaseUrl}/version/{Uri.EscapeDataString(versionId)}", token), ct);
 
     /// <summary>
+    /// The hashes as Modrinth expects them: lowercase hex, without repeats.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Modrinth matches hashes literally, and every hash this app computes arrives in upper case —
+    /// <c>Convert.ToHexString</c> has no other setting. Sent as they were, both hash
+    /// endpoints answer <c>{}</c> with a perfectly healthy 200, so the app read "no updates" and
+    /// "nothing missing" and said exactly that, for every server, for as long as the feature has
+    /// existed. A bug that reports good news is one nobody reports back.
+    /// </para>
+    /// <para>
+    /// Written once, here at the edge where the requirement lives, rather than at each call site —
+    /// there were two, and the third would have been written the same way as the first two.
+    /// </para>
+    /// </remarks>
+    internal static List<string> ApiHashes(IEnumerable<string> sha1Hashes) =>
+        sha1Hashes.Where(h => !string.IsNullOrEmpty(h))
+            .Select(h => h.ToLowerInvariant())
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+    /// <summary>
     /// Which Modrinth version each installed jar actually is, keyed by the SHA-1 that was passed in.
     /// </summary>
     /// <remarks>
@@ -148,7 +193,7 @@ public class ModrinthService
     public async Task<Dictionary<string, VersionResult>> GetVersionsByHashAsync(
         IEnumerable<string> sha1Hashes, CancellationToken ct = default)
     {
-        var hashes = sha1Hashes.Where(h => !string.IsNullOrEmpty(h)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var hashes = ApiHashes(sha1Hashes);
         var result = new Dictionary<string, VersionResult>(StringComparer.OrdinalIgnoreCase);
         if (hashes.Count == 0) return result;
 
@@ -211,10 +256,16 @@ public class ModrinthService
     /// version. Returns a map keyed by the SAME input hash the caller passed. Hashes that Modrinth
     /// doesn't recognise (jars from CurseForge or built by hand) are simply absent from the result.
     /// </summary>
-    public async Task<Dictionary<string, VersionResult>> GetLatestVersionsByHashAsync(
+    /// <returns>
+    /// The map, or <b>null when Modrinth could not be asked</b>. Deliberately not an empty map: that
+    /// is what "every mod is on its newest version" looks like, and a failure that reads as good
+    /// news is one nobody ever reports. The upper-case hashes fixed in 1.12.3 hid for exactly that
+    /// reason, and "no connection" was taking the same way out.
+    /// </returns>
+    public async Task<Dictionary<string, VersionResult>?> GetLatestVersionsByHashAsync(
         IEnumerable<string> sha1Hashes, ServerType loader, string mcVersion, CancellationToken ct = default)
     {
-        var hashes = sha1Hashes.Where(h => !string.IsNullOrEmpty(h)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var hashes = ApiHashes(sha1Hashes);
         var result = new Dictionary<string, VersionResult>(StringComparer.OrdinalIgnoreCase);
         if (hashes.Count == 0) return result;
 
@@ -240,9 +291,15 @@ public class ModrinthService
                 foreach (var kv in map)
                     result[kv.Key] = kv.Value;
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
         catch
         {
-            // Offline or API error: report no updates rather than failing.
+            // Offline or an API error. Said as such — see the return value — instead of being passed
+            // off as "nothing to update", which is what this used to do.
+            return null;
         }
         return result;
     }

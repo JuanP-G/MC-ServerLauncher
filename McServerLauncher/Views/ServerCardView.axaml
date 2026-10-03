@@ -8,18 +8,18 @@
              x:Name="Root"
              x:CompileBindings="False">
 
-    <!-- La tarjeta del servidor tal como la verán los jugadores en la lista de Minecraft.
+    <!-- The server's card as players will see it in Minecraft's server list.
 
-         Existe como control propio porque la dibujan dos sitios: la cabecera del detalle y la vista
-         previa del editor de apariencia. Con un solo dibujo no pueden separarse: lo que ves
-         editando es, por construcción, lo que luego ves en la ventana. -->
-    <!-- El velo de "Editar" sobre el icono se anima en Styles/Motion.axaml, con el resto del movimiento. -->
+         A control of its own because two places draw it: the header of the detail and the preview
+         of the appearance editor. Drawn once, the two cannot drift apart: what you see while editing
+         is, by construction, what the window then shows. The "Edit" veil over the icon is animated in
+         Styles/Motion.axaml, with the rest of the motion. -->
 
     <Border Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}" BorderThickness="1"
             CornerRadius="6" Padding="10" controls:MarqueeText.IsHoverScope="True">
         <Grid ColumnDefinitions="Auto,*,Auto">
 
-            <!-- server-icon.png, o un marcador si no hay. Si la tarjeta es editable, pulsarlo abre el editor. -->
+            <!-- server-icon.png, or a placeholder when there is none. On an editable card, pressing it opens the editor. -->
             <Button Grid.Column="0" Classes="iconbtn" Width="64" Height="64" Padding="0" Cursor="Hand"
                     Background="{StaticResource GroundWell}"
                     IsHitTestVisible="{Binding #Root.IsEditable}"
@@ -69,7 +69,7 @@
                            FontFamily="Cascadia Mono, Consolas, monospace" />
             </StackPanel>
 
-            <!-- Jugadores y barras de señal -->
+            <!-- Players and signal bars -->
             <StackPanel Grid.Column="2" Orientation="Horizontal"
                         VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10,2,0,0">
                 <TextBlock Text="{Binding #Root.PlayerCount}" Foreground="{StaticResource McListText}" FontSize="13"

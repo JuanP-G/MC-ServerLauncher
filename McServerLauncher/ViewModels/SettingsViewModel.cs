@@ -10,16 +10,18 @@ using McServerLauncher.Views;
 
 namespace McServerLauncher.ViewModels;
 
-/// <summary>The three pages of the settings screen.</summary>
+/// <summary>The pages of the settings screen.</summary>
 public enum SettingsPage
 {
     General,
     Notifications,
     Colors,
+    Players,
 }
 
 /// <summary>
-/// The settings screen: language, window behaviour, the desktop shortcut, notifications and colours.
+/// The settings screen: language, window behaviour, the desktop shortcut, notifications, colours
+/// and the player history.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -64,6 +66,12 @@ public partial class SettingsViewModel : ObservableObject
         _colorError = settings.Notifications.ColorError;
         _consoleChatColor = settings.ConsoleChatColor;
         _consolePlayersColor = settings.ConsolePlayersColor;
+
+        var history = (settings.PlayerHistory ?? new PlayerHistorySettings()).Clamped();
+        _historyEnabled = history.Enabled;
+        _historyRecordChat = history.RecordChat;
+        _historyMaxEvents = history.MaxEventsPerPlayer;
+        _historyRetentionDays = history.RetentionDays;
     }
 
     /// <summary>Where saving happens. A parameter only so a test can watch it instead of touching the disk.</summary>
@@ -72,16 +80,65 @@ public partial class SettingsViewModel : ObservableObject
     // ---------------------------------------------------------------- pages
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsGeneralPage), nameof(IsNotificationsPage), nameof(IsColorsPage))]
+    [NotifyPropertyChangedFor(nameof(IsGeneralPage), nameof(IsNotificationsPage), nameof(IsColorsPage), nameof(IsPlayersPage))]
     private SettingsPage _page = SettingsPage.General;
 
     public bool IsGeneralPage => Page == SettingsPage.General;
     public bool IsNotificationsPage => Page == SettingsPage.Notifications;
     public bool IsColorsPage => Page == SettingsPage.Colors;
+    public bool IsPlayersPage => Page == SettingsPage.Players;
 
     [RelayCommand] private void ShowGeneral() => Page = SettingsPage.General;
     [RelayCommand] private void ShowNotifications() => Page = SettingsPage.Notifications;
     [RelayCommand] private void ShowColors() => Page = SettingsPage.Colors;
+
+    [RelayCommand]
+    private void ShowPlayers()
+    {
+        Page = SettingsPage.Players;
+        OnPropertyChanged(nameof(HistorySizeText));   // it grows while servers run
+    }
+
+    // ---------------------------------------------------------------- player history
+
+    [ObservableProperty] private bool _historyEnabled;
+    [ObservableProperty] private bool _historyRecordChat;
+    [ObservableProperty] private decimal _historyMaxEvents;
+    [ObservableProperty] private decimal _historyRetentionDays;
+
+    partial void OnHistoryEnabledChanged(bool value) => ApplyHistory();
+    partial void OnHistoryRecordChatChanged(bool value) => ApplyHistory();
+    partial void OnHistoryMaxEventsChanged(decimal value) => ApplyHistory();
+    partial void OnHistoryRetentionDaysChanged(decimal value) => ApplyHistory();
+
+    /// <summary>How much the history takes on disk, for every server together.</summary>
+    public string HistorySizeText => string.Format(Localizer.Get("History_SizeFmt"),
+        FormatBytes(PlayerHistoryStore.SizeOnDisk()));
+
+    /// <summary>
+    /// Puts the history settings to work straight away: the app-wide preferences, every server's
+    /// recorder, and the file.
+    /// </summary>
+    private void ApplyHistory()
+    {
+        _settings.PlayerHistory = new PlayerHistorySettings
+        {
+            Enabled = HistoryEnabled,
+            RecordChat = HistoryRecordChat,
+            MaxEventsPerPlayer = (int)HistoryMaxEvents,
+            RetentionDays = (int)HistoryRetentionDays,
+        }.Clamped();
+        PlayerHistoryPreferences.Current = _settings.PlayerHistory;
+        _main?.OnHistorySettingsChanged();
+        Persist();
+    }
+
+    internal static string FormatBytes(long bytes) => bytes switch
+    {
+        < 1024 => bytes + " B",
+        < 1024 * 1024 => (bytes / 1024.0).ToString("0.#") + " KB",
+        _ => (bytes / (1024.0 * 1024)).ToString("0.#") + " MB",
+    };
 
     // ---------------------------------------------------------------- general
 

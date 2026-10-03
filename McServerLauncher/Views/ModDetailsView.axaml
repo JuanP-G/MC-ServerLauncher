@@ -12,9 +12,9 @@
              x:CompileBindings="False">
 
     <UserControl.Styles>
-        <!-- Section card. El comentario de antes decia "same language as the rest of the app
-             (Border.stat in MainWindow)" y no era verdad: usaba #12FFFFFF/#1AFFFFFF donde el resto
-             usaba #15FFFFFF/#22FFFFFF. Ahora si lo es, porque toma las mismas fichas. -->
+        <!-- Section card. The comment here used to claim "same language as the rest of the app
+             (Border.stat in MainWindow)" and it was not true: it used #12FFFFFF/#1AFFFFFF where the
+             rest used #15FFFFFF/#22FFFFFF. It is true now, because it takes the same tokens. -->
         <Style Selector="Border.section">
             <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
             <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />

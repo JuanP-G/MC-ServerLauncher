@@ -23,6 +23,11 @@ public class PaperService
         Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
     }
 
+    /// <summary>One Paper build, resolved to something downloadable.</summary>
+    /// <param name="Build">Paper's own build number for the Minecraft version.</param>
+    /// <param name="FileName">The jar's name, kept so the server folder ends up with the real one.</param>
+    /// <param name="Url">Direct download.</param>
+    /// <param name="Sha256">Paper's published checksum; null only on a build that carries none.</param>
     public record PaperBuild(int Build, string FileName, string Url, string? Sha256);
 
     /// <summary>

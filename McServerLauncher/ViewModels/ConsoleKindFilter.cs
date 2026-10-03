@@ -102,4 +102,31 @@ public partial class ConsoleKindFilter : ObservableObject
             if (byKind.TryGetValue(line.Kind, out var filter))
                 filter.Count++;
     }
+
+    /// <summary>
+    /// How many lines the visible console loses when the first <paramref name="excess"/> of
+    /// <paramref name="lines"/> are trimmed off the top.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The visible list holds the same lines in the same order, minus the ones the filters hide.
+    /// So trimming it is not a matter of working out which lines it still ought to contain — it is
+    /// just the count of the leaving lines that were on screen, dropped from its front.
+    /// </para>
+    /// <para>
+    /// The difference from rebuilding it matters more than it looks. A rebuilt list announces
+    /// itself as "everything changed", and a virtualized console answers that by discarding every
+    /// row it had drawn and drawing them all again — two hundred lines of output apart, for as long
+    /// as the server is talking. Removing from the front announces what left instead, and the rows
+    /// already on screen stay where they are.
+    /// </para>
+    /// </remarks>
+    public static int VisibleLinesLeaving(IReadOnlyList<ConsoleLine> lines, int excess,
+        Func<ConsoleLine, bool> isVisible)
+    {
+        var leaving = 0;
+        for (var i = 0; i < Math.Min(excess, lines.Count); i++)
+            if (isVisible(lines[i])) leaving++;
+        return leaving;
+    }
 }

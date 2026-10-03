@@ -1,0 +1,48 @@
+
+# tipo(ámbito): qué cambia, contado como se lo contarías a alguien
+#
+# ---------------------------------------------------------------------------
+# ASUNTO (la línea de arriba)
+#   tipo(ámbito): asunto          — el ámbito es opcional; los dos puntos no
+#   En español, en minúscula, sin punto final, unos 70 caracteres (90 como tope).
+#   Describe el PROBLEMA o el resultado, no el mecanismo:
+#     sí   fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban
+#     no   fix(bedrock): cambiar PickBedrockPort para usar accountTunnels
+#   Dos cosas en un commit se unen con ", y" — pero si no encajan en una frase,
+#   son dos commits.
+#
+# TIPOS
+#   feat      función nueva que ve el usuario
+#   fix       corregir un comportamiento que estaba mal
+#   seg       seguridad: verificar, sanear, acotar, cifrar. Lleva su propio tipo
+#             porque es lo que se audita después, y perderlo entre los fix cuesta
+#   perf      va más rápido o gasta menos, sin cambiar lo que hace
+#   refactor  misma conducta, mejor forma
+#   docs      documentación (los .md, los ///, la web)
+#   test      pruebas, y solo pruebas
+#   ci        workflows de GitHub Actions y empaquetado
+#   chore     lo que no entra arriba: dependencias, tooling, limpieza
+#   release   subir la versión y sacarla. Siempre "release: X.Y.Z", sin ámbito
+#
+# ÁMBITOS habituales (en español, singular o plural pero UNO por concepto)
+#   consola, mods, tienda, jugadores, servidor, tipos, crossplay, bedrock,
+#   playit, java, paper, forge, fabric, puertos, backups, avisos, colores,
+#   actualizaciones, ajustes, nombres, seguridad, datos, ui, web, tests, ci
+#   Si tu ámbito no está y va a repetirse, añádelo a la lista de
+#   docs/articles/contributing.md en el mismo commit.
+#
+# CUERPO (separado por una línea en blanco)
+#   En español, a 80 columnas. Obligatorio salvo en cambios triviales.
+#   El orden que funciona aquí:
+#     1. Qué pasaba antes, y por qué era un problema de verdad.
+#     2. Qué hace ahora.
+#     3. Por qué así y no de la otra forma — con lo que se descartó.
+#   Escribe lo que un git blame dentro de dos años necesita saber y no puede
+#   deducir del diff. El diff ya dice qué líneas cambiaron.
+#
+# PIE (opcional)
+#   Closes #12 · Refs #12 · SEG-8
+#   BREAKING CHANGE: qué se rompe y qué hacer al respecto
+#
+# Para activar esta plantilla:  git config commit.template .gitmessage
+# ---------------------------------------------------------------------------

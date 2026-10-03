@@ -1,0 +1,42 @@
+name: ✨ Feature request · Propuesta
+description: Something the app should be able to do · Algo que la app debería poder hacer
+title: "feat(ámbito): "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in **English or Spanish** · Escribe en **inglés o español**.
+
+        Title in the repository's shape — `feat(ámbito): what it would let you do`. The scope list
+        is in
+        [contributing](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.html#commits-pull-requests-and-issues).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you are trying to do · Qué estás intentando hacer
+      description: |
+        The situation, not the solution. What you do today and why it does not work is worth more
+        than a description of the button you have in mind — it usually leads somewhere better.
+      placeholder: |
+        I run three servers for different groups of friends and I can never remember which port
+        belongs to which, so I open the wrong one and it starts a world nobody asked for.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would expect · Qué esperarías
+      description: If you already have an idea of how it should work, this is the place.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you do instead today · Qué haces hoy en su lugar
+      description: Workarounds, other tools, or editing files by hand.
+    validations:
+      required: false

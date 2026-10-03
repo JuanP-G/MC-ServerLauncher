@@ -1,0 +1,86 @@
+name: 🐞 Bug report · Informe de fallo
+description: Something in the app behaves wrongly · Algo de la app se comporta mal
+title: "fix(ámbito): "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in **English or Spanish**, whichever you prefer · Escribe en **inglés o español**, el que prefieras.
+
+        Keep the title in the repository's shape — `fix(ámbito): what goes wrong`, describing the
+        problem rather than the fix. The scope list is in
+        [contributing](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.html#commits-pull-requests-and-issues).
+
+  - type: textarea
+    id: what-happens
+    attributes:
+      label: What happens · Qué pasa
+      description: What you see, and what you expected instead.
+      placeholder: |
+        The server list shows "Off" for a server that is running.
+        I expected it to show it as running, with its CPU and RAM.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce it · Cómo reproducirlo
+      description: Numbered steps, starting from a freshly opened app.
+      placeholder: |
+        1. Open the app with one Paper server registered
+        2. Press Start and wait for "Done"
+        3. Look at the sidebar
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App version · Versión de la app
+      description: Settings → the version is at the bottom, or the installer's file name.
+      placeholder: "1.12.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system · Sistema operativo
+      options:
+        - Windows
+        - Linux
+        - macOS
+    validations:
+      required: true
+
+  - type: dropdown
+    id: server-type
+    attributes:
+      label: Server type · Tipo de servidor
+      description: Only if the problem involves one server in particular.
+      options:
+        - "Not relevant · No aplica"
+        - Vanilla
+        - Paper
+        - Purpur
+        - Fabric
+        - Forge
+        - NeoForge
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output · Salida de la consola
+      description: |
+        The relevant lines from the app's console, or from
+        `%APPDATA%\McServerLauncher\logs\launcher-<date>.log`
+        (`~/.config/McServerLauncher/logs/` on Linux and macOS).
+        **Remove anything private first** — a Playit key, a tunnel address or a player's name is
+        in there, and this is a public issue.
+      render: text
+    validations:
+      required: false

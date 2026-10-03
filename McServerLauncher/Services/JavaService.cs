@@ -19,6 +19,9 @@ public partial class JavaService
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(15) };
 
+    /// <summary>A Java runtime found on the machine: where its executable is, and its major version.</summary>
+    /// <param name="Path">Full path to the <c>java</c> executable, which is what a server is launched with.</param>
+    /// <param name="Major">The feature release (8, 17, 21…) — the only part a Minecraft version cares about.</param>
     public record JavaInstall(string Path, int Major);
 
     private static string ManagedRoot => Path.Combine(

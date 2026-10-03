@@ -58,6 +58,10 @@ public partial class ServerViewModel
     /// to be tied to. Everything the user needs in the first minute — the local port, and the fact
     /// that the app is still waiting on playit — is knowable before any lookup succeeds, and hiding
     /// the whole block until one did is what made a working server look like a broken one.
+    /// <para>
+    /// Announced through <see cref="ServerConfigEffects"/> when the config's own flag changes, which
+    /// is why this panel no longer has a hand-written refresh of its own.
+    /// </para>
     /// </remarks>
     public bool IsCrossplayOn => Config.CrossplayEnabled;
 
@@ -67,13 +71,6 @@ public partial class ServerViewModel
 
     /// <summary>One line saying what is happening, so the panel is never blank without a reason.</summary>
     public string BedrockStateText => Localizer.Get(BedrockAddressStates.KeyFor(BedrockState));
-
-    /// <summary>Re-reads everything about the Bedrock panel that comes from the config.</summary>
-    private void RefreshBedrockPanel()
-    {
-        OnPropertyChanged(nameof(IsCrossplayOn));
-        OnPropertyChanged(nameof(BedrockLocalPortText));
-    }
 
     /// <summary>Installs Hydraulic and Fabric API, so Bedrock players see what the mods add.</summary>
     /// <remarks>
@@ -99,7 +96,10 @@ public partial class ServerViewModel
         }
         catch (Exception ex)
         {
+            // Persisted like the success path. Recording the failure only in memory meant the app
+            // offered to install it again next time while servers.json still claimed it was there.
             Config.BedrockModContentEnabled = false;
+            ConfigChanged?.Invoke();
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
         }
     }
@@ -130,7 +130,9 @@ public partial class ServerViewModel
         }
         catch (Exception ex)
         {
+            // Same as above: the failure has to survive the run that produced it.
             Config.MultiVersionEnabled = false;   // it did not happen; do not claim that it did
+            ConfigChanged?.Invoke();
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
         }
     }
@@ -167,7 +169,6 @@ public partial class ServerViewModel
             // and a port that was chosen but never written down is worse than one never chosen: a
             // tunnel may already exist on it while servers.json still says 0, so the next crossplay
             // server is handed the same port and adopts this one's tunnel.
-            RunOnUi(RefreshBedrockPanel);
             ConfigChanged?.Invoke();
 
             await _crossplay.InstallAsync(Config, log);
@@ -184,7 +185,6 @@ public partial class ServerViewModel
             // that run and every run afterwards, with no way back except switching crossplay off
             // and on again — which is exactly the "it never appears" report.
             Config.CrossplayEnabled = true;
-            RunOnUi(RefreshBedrockPanel);
             ConfigChanged?.Invoke();
 
             int? publicPort = null;
@@ -233,23 +233,17 @@ public partial class ServerViewModel
     /// </summary>
     private async Task PollForBedrockAddressAsync()
     {
-        foreach (var seconds in BedrockAddressRetryDelays)
+        foreach (var seconds in AddressRetry.DelaysSeconds)
         {
             if (BedrockState == BedrockAddressState.Ready) return;
             await Task.Delay(TimeSpan.FromSeconds(seconds));
-            await RefreshBedrockAddressAsync();
+
+            // fresh: the shared list is cached for 25 seconds, so without this three of these five
+            // attempts never left the machine — they were handed back the empty list the first one
+            // stored, from before playit had published anything.
+            await RefreshBedrockAddressAsync(fresh: true);
         }
     }
-
-    /// <summary>
-    /// How long to wait between the first few address lookups, in seconds.
-    /// </summary>
-    /// <remarks>
-    /// Growing rather than fixed, and stopping rather than going forever: playit normally publishes
-    /// the address within a few seconds, and if it has not after about half a minute the reason is
-    /// not one more request. The ordinary 30-second refresh takes over from there.
-    /// </remarks>
-    private static readonly int[] BedrockAddressRetryDelays = { 2, 3, 5, 8, 13 };
 
     /// <summary>The name this server's Bedrock tunnel is created under, and recognised by.</summary>
     private string BedrockTunnelName => Name + " (Bedrock)";
@@ -302,7 +296,6 @@ public partial class ServerViewModel
             OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelForeignMovingFmt"),
                 Config.BedrockPort, existing.Name));
             Config.BedrockPort = await PickBedrockPortAsync(log);
-            RunOnUi(RefreshBedrockPanel);
             ConfigChanged?.Invoke();
         }
 
@@ -337,8 +330,8 @@ public partial class ServerViewModel
     /// On protocol too, not just the port: a crossplay server has two tunnels, and matching on the
     /// number alone would pick the Java one whenever the two local ports happened to coincide.
     /// </remarks>
-    private Task<PlayitApiService.PlayitTunnel?> FindBedrockTunnelAsync() =>
-        _playitApi.GetTunnelAsync(Config.BedrockPort, udp: true);
+    private Task<PlayitApiService.PlayitTunnel?> FindBedrockTunnelAsync(bool fresh = false) =>
+        _playitApi.GetTunnelAsync(Config.BedrockPort, udp: true, fresh);
 
     /// <summary>
     /// Refreshes the Bedrock address, and re-points Geyser if the tunnel's public port has moved.
@@ -349,7 +342,8 @@ public partial class ServerViewModel
     /// never revisited would keep advertising the old one, and the server would simply stop being
     /// joinable from Bedrock with nothing to explain why.
     /// </remarks>
-    private async Task RefreshBedrockAddressAsync()
+    /// <param name="fresh">Skips the shared tunnel cache; used by the burst after a tunnel is made.</param>
+    private async Task RefreshBedrockAddressAsync(bool fresh = false)
     {
         if (!Config.CrossplayEnabled || Config.BedrockPort <= 0) return;
 
@@ -363,7 +357,7 @@ public partial class ServerViewModel
 
         try
         {
-            var tunnels = await _playitApi.TryGetTunnelsAsync();
+            var tunnels = await _playitApi.TryGetTunnelsAsync(fresh);
             if (TunnelAddressSync.Bedrock(tunnels, Config.BedrockPort) is not { } found)
             {
                 // Could not ask: what is on screen stays, but it no longer stays silently.
@@ -454,8 +448,7 @@ public partial class ServerViewModel
 
             // Written down first, as in the setup: a port chosen but not saved is the one the next
             // server would be handed as free.
-            Config.BedrockPort = next;
-            RunOnUi(RefreshBedrockPanel);
+            Config.BedrockPort = next;   // the config announces it; the panel follows
             ConfigChanged?.Invoke();
             _crossplay.WriteConfig(Config, null);
             OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockMovedFmt"), old, next));

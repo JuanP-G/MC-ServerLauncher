@@ -59,11 +59,18 @@ all with buttons.
 
 ## ✨ Features
 
+- **Everything in one window** — a side rail with **Servers**, **Tunnels**, **Settings** and **About**.
+  Making or adding a server happens in the window itself, next to the list, and can be left half-done and
+  picked up again. **Tunnels** lists every Playit tunnel on your account, flags the ones that lead nowhere
+  or that two servers share, and lets you rename or delete them.
 - **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Paper / Purpur / Fabric /
   NeoForge / Forge).
 - **Create a server** automatically: pick the **type**, **version** (official Mojang list), **port** and **RAM**;
   the app downloads the right server, accepts the EULA, prepares `run.bat` / `server.properties`, and installs
   the correct **Java** (Temurin) if needed. Fabric, Forge and NeoForge use **mods**; Paper and Purpur use **plugins**.
+  Already have a server? The same panel can **use a folder that already exists**: it recognises the type,
+  the Minecraft and loader versions, the port and the memory, fills them in, and changes nothing in the
+  folder.
 - **Mods & plugins store** 🧩 — search **Modrinth** inside the app, already **filtered by your server's type
   and version** (with type + version chips so it's obvious). Every result carries a **plain-language summary of
   what it does in your language** and a warning when it also has to be installed on the client. Open a **details
@@ -76,6 +83,7 @@ all with buttons.
   complaining about when it refused to start with a list of missing dependencies. Only *required* ones, never
   optional extras, and never a second copy of something already installed. For servers built before this, the
   **check for updates** button now also reports the libraries that are missing and offers to install them.
+  Whatever it finds can be updated one by one or with **Update all**, and updating one leaves the rest on offer.
 - **Play from Bedrock too** 📱 — one checkbox installs Geyser and Floodgate, picks a free UDP port, creates the
   second (UDP) tunnel Bedrock needs and sets the public port Geyser must advertise — the part almost nobody gets
   right by hand. How well it works depends on the server type, and the card for each type says which before you
@@ -91,6 +99,9 @@ all with buttons.
   (GeyserMC's own) and Fabric API, so the blocks and items the mods add are converted for Bedrock
   clients. Fabric only: Hydraulic stopped publishing NeoForge builds in February 2026. Its authors
   call it very early development, and the app says so before you tick it.
+- **Hand your mod list to your friends** 📦 — one button zips the server's mods (or plugins) together
+  with a short instructions file in your language, naming the server, its type and its Minecraft
+  version, so joining a modded server stops being something you explain over chat.
 - **Play from other Minecraft versions** — one checkbox installs ViaVersion and ViaBackwards, so clients both newer
   and older than the server can join. Plugin servers only.
 - **Change a server's type** — turn an existing server into Paper/Purpur/Fabric/Forge/NeoForge or back to Vanilla, **keeping the
@@ -99,23 +110,44 @@ all with buttons.
   **CPU, RAM, uptime and port** with colour status.
 - **Minecraft-style view** — server icon, coloured MOTD, `players/max` and a reachability signal.
 - **Real-time console** with copyable text, a command box and a **command-help** panel.
-- **Players** 👥 — connected (live), operators, whitelist, banned and known players, with OP / kick / ban /
-  whitelist actions.
+- **Players** 👥 — connected (live), operators, whitelist and banned, with OP / kick / ban / whitelist actions.
+- **Player history** 📜 — everyone who has ever joined, with their last connection. Click one for their
+  profile: joins and leaves, what they said in chat, deaths and advancements, time played, the blocks they
+  have broken and the items they have used — each with its share of the total — and odds and ends like jumps,
+  damage and how far they have travelled on foot, flying and by elytra. Filled from the server's old logs the
+  first time; kept small (500 events and 90 days per player by default, both configurable, or switch it off)
+  and on your computer only. IP addresses are never kept, and each server's history is cleared from that
+  server's own configuration.
 - **Visual `server.properties` editor** with plain-language explanations.
+- **Seeds** 🌱 — choose one when creating a server, see the world's real seed in its configuration, and open
+  it on Chunkbase's seed map for that server's version in one click.
 - **Sleeps and wakes on its own** 💤 — a server can **stop itself after N minutes with nobody on**, and
   **start itself again when somebody tries to join**. While it sleeps the app answers on the server's port,
   so the server list shows *"Off · join to start it"* and whoever presses Join gets a message while it boots.
   The window shows a **countdown** to the shutdown, and a freshly woken server gets a grace period so it is
   never stopped before anyone can get in. Both halves are per server and **off by default**.
-- **Automatic world backups** 💾 — a copy before every start and on every stop, a configurable number kept,
-  plus **Back up now** and one-click **restore** from the app.
+- **Automatic world backups** 💾 — a copy before every start, on every stop and, if you leave it on, every
+  hour while people are playing. A backup of a running server asks Minecraft to stop writing the world and
+  flush it to disk first, so it is never half-written, and one that nobody played since is skipped rather
+  than made again. Backups you take by hand are counted separately, so the clock never deletes them. Plus
+  **Back up now** and one-click **restore** from the app.
 - **Stays out of the way** — optionally minimize and/or close **to the system tray** so your servers keep
   running with the window gone. Launching the app again brings that window back instead of opening a second
   copy over the same servers.
 - **Share to the Internet with Playit.gg** 🌐 — connect your account by pasting a one-time **setup code**
   (no keys, no files). The app **creates the tunnel and runs the Playit agent for you**, so your server is
-  reachable from anywhere and friends join with the public address — **you install nothing**. The app ships
-  no secret of its own (the credential lives in a small proxy).
+  reachable from anywhere and friends join with the public address — **you install nothing**. The address
+  **appears on its own** within seconds of the tunnel being made, with a line underneath saying what it is
+  waiting for. The app ships no secret of its own (the credential lives in a small proxy).
+- **Send your friends a ready-made modpack** 📦 — one button zips the server's mods with instructions in
+  their language. Mods that only ever do anything on the server — Geyser, Floodgate, a backup mod — are
+  **left out automatically**, and the app tells you which ones and puts them back in one click if it got
+  it wrong. Anything a kept mod depends on always travels with it. The pack also carries a **script for
+  Windows, Linux and macOS** that lists the mods folders it finds — including each Prism, MultiMC,
+  CurseForge or Modrinth App instance by name — copies everything in and moves aside whatever was
+  already there, into a separate folder, **never deleting a thing**. If Fabric, Forge or NeoForge is
+  missing it **offers to install it**, checking the download against the loader's own published hash
+  before running it.
 - **Notifications** 🔔 — optional pop-ups when a player joins or leaves, someone dies (PvP), the server
   crashes, auto-restart gives up, an **empty server stops itself**, or one **starts itself because somebody
   tried to join**. Configurable per type, globally and **per server**, with a test button.
@@ -129,7 +161,9 @@ all with buttons.
 - **A console you can read** 🖥️ — every line coloured for what it is (errors, warnings, chat, joins and
   leaves, commands, and what the app says told apart from what the server says), **a filter per category with
   its own count** — “Errors 3” is visible without pressing anything — and what you search for **marked inside
-  the line**.
+  the line**. Multi-line entries keep one colour, so a list of mods is never mistaken for a crash, and the app
+  **answers the start-up warnings that are its to answer**: it enables native access on Java 22+ and asks
+  once whether to accept BlueMap's download, instead of leaving you to edit its config.
 - **Settings in one place** ⚙️ — language, notifications, tray behaviour, your Playit connection and an
   **Add to desktop** button, all in a single dialog.
 - **Multi-language** — English, Spanish, Portuguese, French and German.
@@ -162,9 +196,17 @@ dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 Developer documentation (architecture, contributing guide and a full **API reference**) is published with
 **DocFX** at **https://juanp-g.github.io/MC-ServerLauncher/docs/**. Per-user data lives under
 `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux and macOS): `servers.json`,
-`settings.json`, the installed `java\`, the persistent console `logs\` (kept 14 days), the `instance.lock`
-that keeps the app to one running copy, and, on Linux/macOS, `.secret.key`. Each server's own folder also
+`settings.json`, the installed `java\`, the persistent console `logs\` (kept 14 days), the store's
+disposable `cache\` (icons and API answers), the `playit-agent\` binary, the `instance.lock` that keeps
+the app to one running copy, and, on Linux/macOS, `.secret.key`. Each server's own folder also
 keeps a `backups\` directory with the automatic world backups.
+
+## 🤝 Contributing
+
+Pull requests are welcome. Start with **[CONTRIBUTING.md](CONTRIBUTING.md)** — it's the short version
+of the [full guide](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.html): how
+to build and test, the code style (held by `.editorconfig` and applied with `dotnet format`), and the
+rule that documentation moves with the code, in both languages.
 
 ## 📄 License
 

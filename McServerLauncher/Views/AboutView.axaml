@@ -6,7 +6,7 @@
              x:Class="McServerLauncher.Views.AboutView"
              x:CompileBindings="False">
 
-    <!-- DataContext: MainViewModel (la version y el estado de las actualizaciones viven ahi). -->
+    <!-- DataContext: MainViewModel (the version and the state of the update check live there). -->
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="16" Spacing="12" MaxWidth="720" HorizontalAlignment="Left">
 
@@ -21,7 +21,7 @@
 
             <TextBlock Text="{loc:Loc About_Tagline}" TextWrapping="Wrap" Opacity="0.85" />
 
-            <!-- Actualizaciones: buscar de verdad, y decir cual de las tres cosas paso -->
+            <!-- Updates: actually look, and say which of the three things happened -->
             <Border Classes="card" Margin="0">
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <Panel Width="22" Height="22" Margin="0,0,10,0" VerticalAlignment="Center">
@@ -50,7 +50,7 @@
                 </Grid>
             </Border>
 
-            <!-- Enlaces del repositorio -->
+            <!-- Repository links -->
             <WrapPanel Orientation="Horizontal">
                 <Button Margin="0,0,8,8" Command="{Binding OpenLinkCommand}"
                         CommandParameter="{x:Static svc:AppLinks.Repository}">

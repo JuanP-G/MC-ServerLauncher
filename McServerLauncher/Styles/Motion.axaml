@@ -2,16 +2,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:McServerLauncher.Controls">
 
-    <!-- Todo el movimiento de la app, en un sitio.
+    <!-- All of the app's motion, in one place.
 
-         Criterio: sutil y corto. Nada rebota, nada pasa de 180 ms, y nada se mueve por moverse:
-         cada transicion dice algo (esto se puede pulsar, esto ha cambiado, esto acaba de aparecer).
-         La unica excepcion es el aviso de «+ Nuevo», que se explica en su seccion.
-         Que viva solo aqui es lo que permite revisarlo de un vistazo, y un test comprueba que ninguna
-         vista declara movimiento por su cuenta. -->
+         The rule: subtle and short. Nothing bounces, nothing lasts longer than 180 ms, and nothing
+         moves for the sake of it: each transition says something (this can be pressed, this has
+         changed, this has just appeared). The one exception is the "+ New" reminder, explained in
+         its section. Living only here is what lets it be reviewed at a glance, and a test checks that
+         no view declares motion of its own. -->
 
-    <!-- ===================== BOTONES =====================
-         El fondo cambia con suavidad al pasar el raton, y al pulsar el boton se hunde un poco. -->
+    <!-- ===================== BUTTONS =====================
+         The background changes smoothly under the pointer, and a pressed button sinks a little. -->
     <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Transitions">
             <Transitions>
@@ -29,19 +29,19 @@
             </Transitions>
         </Setter>
     </Style>
-    <!-- Los botones secundarios se levantan 1 px al pasar el raton (el aspecto, en Styles/Shared.axaml).
-         No los que viven en una lista o en una barra (ahi un salto descoloca la fila entera), ni
-         «+ Nuevo», cuyo destello y halo van pegados a el. -->
+    <!-- The secondary buttons rise 1 px under the pointer (their look is in Styles/Shared.axaml).
+         Not the ones living in a list or a bar, where a jump knocks the whole row out of line, nor
+         "+ New", whose shine and halo are fixed to it. -->
     <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.iconbtn):not(.newserver):pointerover">
         <Setter Property="RenderTransform" Value="translateY(-1px)" />
     </Style>
-    <!-- Despues del hover a proposito: al pulsar gana este, y el boton baja y se hunde. -->
+    <!-- After the hover on purpose: pressed wins, and the button comes down and sinks. -->
     <Style Selector="Button:pressed">
         <Setter Property="RenderTransform" Value="scale(0.97)" />
     </Style>
 
-    <!-- ===================== LISTAS =====================
-         Las filas se iluminan al pasar el raton en vez de cambiar de golpe. -->
+    <!-- ===================== LISTS =====================
+         Rows light up under the pointer instead of switching at once. -->
     <Style Selector="ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Transitions">
             <Transitions>
@@ -50,8 +50,8 @@
         </Setter>
     </Style>
 
-    <!-- Las acciones de cada fila de servidor: invisibles hasta que la fila tiene el raton encima o
-         esta seleccionada, y mientras no se ven tampoco se pueden pulsar. -->
+    <!-- Each server row's own actions: invisible until the row is hovered or selected, and not
+         pressable while they cannot be seen. -->
     <Style Selector="StackPanel.rowactions">
         <Setter Property="Opacity" Value="0" />
         <Setter Property="IsHitTestVisible" Value="False" />
@@ -78,18 +78,18 @@
         <Setter Property="Foreground" Value="{StaticResource DangerIcon}" />
     </Style>
 
-    <!-- ===================== «+ NUEVO» =====================
-         Su recordatorio, cada 25 s: un destello cruza el boton (el primer segundo) y, al salir por
-         el otro lado, se convierte en un halo que se abre desde el borde y se apaga (el segundo).
-         Cuando suena lo decide Behaviors/BeaconBehavior, que pone .beacon-a o .beacon-b por turnos y
-         calla con el raton encima o con el panel de nuevo servidor abierto; aqui solo esta como se ve.
+    <!-- ===================== "+ NEW" =====================
+         Its reminder, every 25 s: a shine crosses the button (the first second) and, leaving on the
+         other side, turns into a halo that opens out from the edge and fades (the second). When it
+         plays is Behaviors/BeaconBehavior's business: it sets .beacon-a or .beacon-b in turn, and
+         keeps quiet under the pointer or with the new-server panel open. Here is only how it looks.
 
-         El halo es el azul de AccentSelected (58A6FF) con su opacidad, escrito aqui porque una sombra
-         no admite fichas. Los porcentajes, enteros, y sin KeySpline: Avalonia lee los dos con el
-         idioma del sistema, y en español (coma decimal) no entiende ni "96.4%" ni "0.45,0,0.25,1" y
-         la animacion se queda quieta sin avisar. La curva va dibujada a mano, un fotograma cada 10 %:
-         el destello arranca despacio, cruza deprisa y frena al salir; el halo se abre rapido y se
-         apaga despacio. Un test vigila que no vuelva ningun decimal. -->
+         The halo is AccentSelected's blue (58A6FF) with its alpha, written here because a shadow
+         takes no tokens. Whole-number cues and no KeySpline: Avalonia parses both with the system's
+         culture, and in Spanish (decimal comma) neither "96.4%" nor "0.45,0,0.25,1" parses, and the
+         animation sits on its first frame without a word. The curve is drawn by hand, a keyframe
+         every 10 %: the shine starts slow, crosses fast and slows down on its way out; the halo opens
+         quickly and fades slowly. A test keeps decimals from coming back. -->
     <Style Selector="Panel.newserver.beacon-a:not(:pointerover) Border.shine">
         <Style.Animations>
             <Animation Duration="0:0:2">
@@ -206,11 +206,11 @@
     </Style>
 
     <!-- ===================== MENUS =====================
-         Cada menu tiene una sola marca que viaja hasta lo elegido (Controls/SlidingIndicator), en
-         lugar de una por elemento que se enciende y se apaga: el subrayado de las pestañas del
-         servidor, la barra del menu lateral y la tarjeta de las paginas de Ajustes. El mismo tiempo
-         para cualquier salto, asi en los largos la marca simplemente va mas deprisa. En las
-         pestañas, ademas, el titulo cambia de color con suavidad y la pagina entra con un fundido. -->
+         Each menu has a single mark that travels to what was picked (Controls/SlidingIndicator)
+         instead of one per item switching on and off: the underline of the server tabs, the bar of
+         the side rail and the card behind the Settings pages. The same time for any jump, so on the
+         long ones the mark simply moves faster. On the tabs the title also changes colour smoothly
+         and the page comes in with a fade. -->
     <Style Selector="TabControl.sliding TabItem /template/ Border#PART_SelectedPipe">
         <Setter Property="IsVisible" Value="False" />
     </Style>
@@ -230,8 +230,8 @@
             </Transitions>
         </Setter>
     </Style>
-    <!-- Dos clases que se alternan, porque una animacion de estilo solo arranca cuando su selector
-         empieza a coincidir: con una sola, solo se veria la primera vez. -->
+    <!-- Two classes taking turns, because a style animation only starts when its selector starts to
+         match: with one, it would only be seen the first time. -->
     <Style Selector="ContentPresenter.pagein-a">
         <Style.Animations>
             <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
@@ -257,10 +257,10 @@
         </Style.Animations>
     </Style>
 
-    <!-- ===================== NUEVO SERVIDOR =====================
-         Las tarjetas del primer paso: un clic y adelante. El fondo y el borde ya se funden como en
-         cualquier boton; ademas la flecha se adelanta un poco al pasar el raton, que es lo que dice
-         "esto te lleva a algun sitio". -->
+    <!-- ===================== NEW SERVER =====================
+         The cards of the first step: one click and on. Background and edge already fade like on any
+         button; on top of that the arrow steps forward a little under the pointer, which is what
+         says "this takes you somewhere". -->
     <Style Selector="Button.origin :is(Control).go">
         <Setter Property="RenderTransform" Value="translateX(0px)" />
         <Setter Property="Opacity" Value="0.55" />
@@ -286,8 +286,8 @@
         </Setter>
     </Style>
 
-    <!-- ===================== ICONO DE LA TARJETA =====================
-         El velo de "Editar" sobre el icono aparece con un fundido. -->
+    <!-- ===================== THE CARD'S ICON =====================
+         The "Edit" veil over the icon fades in. -->
     <Style Selector="Button.iconbtn Border#HoverOverlay">
         <Setter Property="Opacity" Value="0" />
         <Setter Property="Transitions">
@@ -300,10 +300,10 @@
         <Setter Property="Opacity" Value="1" />
     </Style>
 
-    <!-- ===================== ENTRADAS =====================
-         Una seccion, una pagina de Ajustes o un paso del asistente entran con un fundido corto cada
-         vez que se hacen visibles. El selector de IsVisible es lo que hace que se repita en cada
-         aparicion y no solo la primera vez. -->
+    <!-- ===================== ENTRANCES =====================
+         A section, a Settings page or a step of the new-server panel comes in with a short fade
+         every time it becomes visible. The IsVisible selector is what makes it play on every
+         appearance and not only the first. -->
     <Style Selector=":is(Control).fadein[IsVisible=True]">
         <Style.Animations>
             <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">

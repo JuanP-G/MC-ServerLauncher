@@ -2,6 +2,9 @@ using Avalonia.Controls;
 
 namespace McServerLauncher.Views;
 
+/// <summary>
+/// The details page of a store item, bound to <see cref="ViewModels.ModDetailsViewModel"/>.
+/// </summary>
 public partial class ModDetailsView : UserControl
 {
     public ModDetailsView()

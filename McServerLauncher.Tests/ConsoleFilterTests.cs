@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using McServerLauncher.Models;
@@ -227,5 +228,76 @@ public class ConsoleFilterTests
             Assert.NotEqual(key, label);   // Localizer.Get returns the key when it is missing
             Assert.False(string.IsNullOrWhiteSpace(label));
         }
+    }
+
+    // --- Trimming the visible list instead of rebuilding it ---
+
+    /// <summary>
+    /// The shortcut agrees with the rebuild it replaced, for every filter and every cut.
+    /// </summary>
+    /// <remarks>
+    /// The visible console used to be rebuilt from scratch whenever the buffer was trimmed, which
+    /// is correct but tells a virtualized list that everything changed — so it redraws all two
+    /// thousand rows, every couple of hundred lines, for as long as the server talks. Now the same
+    /// number of lines is dropped from its front instead. The two must never disagree: if they do,
+    /// the console silently shows the wrong lines, which is worse than being slow.
+    /// </remarks>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(7)]
+    [InlineData(200)]
+    [InlineData(500)]
+    public void TrimmingTheVisibleListMatchesRebuildingIt(int excess)
+    {
+        var kinds = Kinds(ConsoleLineKind.Info, ConsoleLineKind.Chat);
+        var all = Enum.GetValues<ConsoleLineKind>();
+        var lines = Enumerable.Range(0, 300)
+            .Select(i => Line($"line {i}", all[i % all.Length]))
+            .ToList();
+
+        bool Visible(ConsoleLine l) => ConsoleKindFilter.Matches(l, "line", kinds);
+
+        var before = lines.Where(Visible).ToList();
+        var leaving = ConsoleKindFilter.VisibleLinesLeaving(lines, excess, Visible);
+
+        var afterShortcut = before.Skip(leaving).ToList();
+        var afterRebuild = lines.Skip(excess).Where(Visible).ToList();
+
+        Assert.Equal(afterRebuild, afterShortcut);
+    }
+
+    [Fact]
+    public void TrimmingMoreThanThereIsLeavesNothing()
+    {
+        var kinds = Kinds();
+        var lines = new List<ConsoleLine> { Line("a"), Line("b") };
+        Assert.Equal(2, ConsoleKindFilter.VisibleLinesLeaving(lines, 99, l => ConsoleKindFilter.Matches(l, null, kinds)));
+    }
+
+    /// <summary>
+    /// Trimming says which lines left, not that everything changed.
+    /// </summary>
+    /// <remarks>
+    /// This is the notification the console's virtualizer reads. A Reset here would be correct and
+    /// slow in exactly the way this whole change is about, and nothing on screen would look wrong,
+    /// so only a test can hold it.
+    /// </remarks>
+    [Fact]
+    public void RemovingFromTheStartAnnouncesWhatLeft()
+    {
+        var collection = new BulkObservableCollection<string> { "a", "b", "c", "d" };
+        NotifyCollectionChangedEventArgs? seen = null;
+        var notifications = 0;
+        collection.CollectionChanged += (_, e) => { seen = e; notifications++; };
+
+        collection.RemoveFromStart(2);
+
+        Assert.Equal(1, notifications);
+        Assert.NotNull(seen);
+        Assert.Equal(NotifyCollectionChangedAction.Remove, seen!.Action);
+        Assert.Equal(0, seen.OldStartingIndex);
+        Assert.Equal(new[] { "a", "b" }, seen.OldItems!.Cast<string>());
+        Assert.Equal(new[] { "c", "d" }, collection);
     }
 }

@@ -3,6 +3,11 @@ using System.Text.Json.Serialization;
 
 namespace McServerLauncher.Models.Modrinth;
 
+/// <summary>
+/// One published version of a project (<c>GET /v2/version/{id}</c> and the project's version list).
+/// It carries both what the version runs on — <see cref="GameVersions"/> and <see cref="Loaders"/>,
+/// which is how compatibility with a given server is decided — and what has to be downloaded.
+/// </summary>
 public class VersionResult
 {
     [JsonPropertyName("id")]
@@ -42,6 +47,10 @@ public class VersionResult
     public List<VersionDependency> Dependencies { get; set; } = new();
 }
 
+/// <summary>
+/// One downloadable file of a version. A version may ship several (sources, javadoc); the one to
+/// install is the <see cref="Primary"/> one, and <see cref="Hashes"/> is what verifies it.
+/// </summary>
 public class VersionFile
 {
     [JsonPropertyName("url")]

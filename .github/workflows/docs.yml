@@ -3,8 +3,8 @@ name: Website and documentation
 # Publishes two things to GitHub Pages in a single deployment:
 #   /       -> the landing page in web/ (what search engines should index)
 #   /docs/  -> the DocFX site (API reference + articles)
-# La landing va en la raíz a propósito: es la página que debe posicionar, y su
-# etiqueta canónica y el sitemap apuntan a esa dirección.
+# The landing page sits at the root on purpose: it is the page that should rank, and both its
+# canonical tag and the sitemap point at that address.
 # One-time setup: in the repo, go to Settings → Pages → Source: "GitHub Actions".
 
 on:
@@ -40,9 +40,9 @@ jobs:
       - name: Build documentation
         run: docfx docs/docfx.json
 
-      # Regenera las traducciones desde el índice en español. Falla si alguna cadena
-      # del diccionario ya no existe en el HTML, para que no se publique una versión
-      # a medio traducir sin que nadie se entere.
+      # Regenerates the translations from the Spanish index. Fails if a string in the dictionary is
+      # no longer in the HTML, so a half-translated version is never published without anyone
+      # noticing.
       - name: Generate translated pages
         run: python web/_i18n/build.py
 
@@ -53,7 +53,7 @@ jobs:
           Copy-Item web\* _pages\ -Recurse -Force
           New-Item -ItemType Directory -Force _pages\docs | Out-Null
           Copy-Item docs\_site\* _pages\docs\ -Recurse -Force
-          # Sin esto, Pages pasa el sitio por Jekyll y descarta lo que empieza por "_"
+          # Without this, Pages runs the site through Jekyll and drops anything starting with "_"
           New-Item -ItemType File -Force _pages\.nojekyll | Out-Null
           Get-ChildItem _pages | Select-Object Name
 
@@ -61,9 +61,9 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: _pages
-          # Obligatorio desde la v4, que dejó de incluir los ficheros ocultos: sin esto el
-          # .nojekyll de arriba se cae del artefacto en silencio y Pages vuelve a pasar el sitio
-          # por Jekyll, descartando todo lo que empieza por "_".
+          # Required since v4, which stopped including hidden files: without it the .nojekyll above
+          # silently falls out of the artifact and Pages runs the site through Jekyll again,
+          # dropping everything that starts with "_".
           include-hidden-files: true
 
   deploy:

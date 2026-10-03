@@ -7,8 +7,8 @@
              x:Class="McServerLauncher.Views.SettingsView"
              x:CompileBindings="False">
 
-    <!-- DataContext: SettingsViewModel. A la izquierda las tres paginas; a la derecha la que toque,
-         en tarjetas. Todo se guarda al momento: no hay Cancelar ni Guardar. -->
+    <!-- DataContext: SettingsViewModel. The pages on the left; the current one on the right, in
+         cards. Everything is saved as it changes: there is no Cancel and no Save. -->
     <UserControl.Styles>
         <Style Selector="Button.page">
             <Setter Property="Background" Value="Transparent" />
@@ -19,8 +19,8 @@
             <Setter Property="Padding" Value="10,7" />
             <Setter Property="Opacity" Value="0.7" />
         </Style>
-        <!-- La tarjeta de la pagina elegida no la pinta el boton: es una sola que se desliza por
-             detras de la lista (Controls/SelectionMarker), como la barra del menu lateral. -->
+        <!-- The card behind the picked page is not the button's own: it is a single one sliding
+             behind the list (Controls/SelectionMarker), like the side rail's bar. -->
         <Style Selector="Button.page.on">
             <Setter Property="Opacity" Value="1" />
         </Style>
@@ -33,7 +33,7 @@
 
     <Grid ColumnDefinitions="190,*" Margin="16">
 
-        <!-- Paginas -->
+        <!-- Pages -->
         <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,16,0">
             <TextBlock Text="{loc:Loc Settings_Title}" FontSize="18" FontWeight="SemiBold" />
             <TextBlock Text="{loc:Loc Set_SavedLive}" Classes="desc" Margin="0,0,0,10" />
@@ -56,6 +56,12 @@
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <ic:SymbolIcon Symbol="Color" FontSize="16" />
                     <TextBlock Text="{loc:Loc Set_Colors}" />
+                </StackPanel>
+            </Button>
+            <Button Classes="page" Classes.on="{Binding IsPlayersPage}" Command="{Binding ShowPlayersCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ic:SymbolIcon Symbol="People" FontSize="16" />
+                    <TextBlock Text="{loc:Loc Players}" />
                 </StackPanel>
             </Button>
             </StackPanel>
@@ -115,7 +121,7 @@
                     </Border>
                 </StackPanel>
 
-                <!-- ===================== NOTIFICACIONES ===================== -->
+                <!-- ===================== NOTIFICATIONS ===================== -->
                 <StackPanel Spacing="8" IsVisible="{Binding IsNotificationsPage}" Classes="fadein">
                     <Border Classes="card" Margin="0">
                         <Grid ColumnDefinitions="*,Auto">
@@ -128,8 +134,8 @@
                         </Grid>
                     </Border>
 
-                    <!-- Los siete tipos en dos columnas: a lo ancho caben, y en una sola eran una
-                         escalera que habia que recorrer entera para encontrar uno. -->
+                    <!-- The seven kinds in two columns: across they fit, and in one they were a
+                         staircase to walk down in full to find any of them. -->
                     <Border Classes="card" Margin="0" IsEnabled="{Binding #NotifMaster.IsChecked}">
                         <Grid ColumnDefinitions="*,24,*" RowDefinitions="Auto,Auto,Auto,Auto">
                             <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto">
@@ -164,7 +170,7 @@
                     </Border>
                 </StackPanel>
 
-                <!-- ===================== COLORES ===================== -->
+                <!-- ===================== COLOURS ===================== -->
                 <StackPanel Spacing="8" IsVisible="{Binding IsColorsPage}" Classes="fadein">
                     <Border Classes="card" Margin="0">
                         <StackPanel Spacing="8">
@@ -172,8 +178,8 @@
                                 <TextBlock Text="{loc:Loc Notif_Colors}" Classes="title" />
                                 <TextBlock Text="{loc:Loc Notif_ColorsIntro}" Classes="desc" />
                             </StackPanel>
-                            <!-- Etiqueta en la columna elastica con recorte, muestra y casilla en Auto:
-                                 ni la traduccion mas larga puede pisar la muestra. -->
+                            <!-- The label in the elastic column, clipped; swatch and box in Auto:
+                                     not even the longest translation can run over the swatch. -->
                             <Grid ColumnDefinitions="*,Auto,Auto,24,*,Auto,Auto" RowDefinitions="Auto,Auto">
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Notif_LevelSuccess}" ToolTip.Tip="{loc:Loc Notif_LevelSuccessTip}"
                                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
@@ -230,6 +236,50 @@
                         <Button Content="{loc:Loc Notif_ResetColors}" Command="{Binding ResetColorsCommand}"
                                 ToolTip.Tip="{loc:Loc Notif_ResetColorsTip}" />
                     </StackPanel>
+                </StackPanel>
+
+                <!-- ===================== PLAYERS ===================== -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsPlayersPage}" Classes="fadein">
+                    <Border Classes="card" Margin="0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc History_Enabled}" Classes="title" />
+                                <TextBlock Text="{loc:Loc History_Intro}" Classes="desc" />
+                            </StackPanel>
+                            <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                          IsChecked="{Binding HistoryEnabled, Mode=TwoWay}" />
+                        </Grid>
+                    </Border>
+
+                    <Border Classes="card" Margin="0" IsEnabled="{Binding HistoryEnabled}">
+                        <StackPanel Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc History_RecordChat}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding HistoryRecordChat, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc History_MaxEvents}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <NumericUpDown Grid.Column="1" Width="150" FormatString="0" Increment="50"
+                                               Minimum="50" Maximum="5000" Value="{Binding HistoryMaxEvents, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc History_RetentionDays}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <NumericUpDown Grid.Column="1" Width="150" FormatString="0" Increment="30"
+                                               Minimum="7" Maximum="3650" Value="{Binding HistoryRetentionDays, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card" Margin="0">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding HistorySizeText}" Classes="title" />
+                            <TextBlock Text="{loc:Loc History_Privacy}" Classes="desc" />
+                            <!-- Clearing lives in each server's own configuration: the history belongs to
+                                 a server, and "forget all of it" from a screen with no server on it was a
+                                 blunt instrument for what people want, which is to forget one. -->
+                            <TextBlock Text="{loc:Loc History_ClearWhere}" Classes="desc" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Panel>
         </ScrollViewer>

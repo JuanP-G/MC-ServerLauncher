@@ -18,18 +18,25 @@ namespace McServerLauncher.Views;
 public sealed record NewServerResult(ServerConfig Config, bool IsNew, bool AutoStart, bool CreateTunnel);
 
 /// <summary>
-/// Making a server, or bringing in one that already exists, inside the window instead of a dialog.
+/// Makes a server from nothing — type, version, port and RAM in, a running server out — or takes
+/// over a folder that already holds one, inside the window instead of a dialog.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Creating and adding used to be two buttons and two windows that asked for half the same things.
-/// They are one panel now, with the choice as its first step: the list of servers stays in view
-/// beside it, nothing covers the app, and the panel can be left and come back to while a download runs.
+/// The panel orchestrates the create path — <see cref="ServerJarInstaller"/> for the jar,
+/// <see cref="JavaService"/> for the runtime, <see cref="PortService"/> for a free port and
+/// <see cref="ServerCreationService"/> for the initial files — rather than owning any of it.
 /// </para>
 /// <para>
-/// The create step is the old dialog's form, moved whole — the same controls, the same names and
-/// the same rules — so nothing it had learned (free port suggestion, name checks, the options each
-/// type can and cannot take) was lost on the way.
+/// The first step asks where the server comes from; one click on a card goes on to the details.
+/// Taking over a folder uses the same form: the folder is read by
+/// <see cref="ServerDetectionService.Detect"/>, what it says is filled in and locked, only what it
+/// could not say is asked for, and <see cref="ExistingServer"/> builds the result and keeps the
+/// folder untouched beyond the port.
+/// </para>
+/// <para>
+/// A panel rather than a dialog: the list of servers stays in view beside it, nothing covers the
+/// app, and it can be put away and come back to while a download runs.
 /// </para>
 /// </remarks>
 public partial class NewServerView : UserControl
@@ -47,11 +54,17 @@ public partial class NewServerView : UserControl
     /// <summary>Ports already used by other registered servers (to avoid conflicts).</summary>
     private readonly HashSet<int> _usedPorts;
 
+    /// <summary>Folders the app already manages, so the same one cannot be added twice.</summary>
+    private readonly List<string> _registeredFolders;
+
+    /// <summary>What the chosen existing folder turned out to be, and which folder that was.</summary>
+    private ServerDetection? _detected;
+    private string? _detectedFolder;
+    private readonly ServerDetectionService _detection = new();
+
     // Buffered progress log (see LogBatcher: the Forge installer prints thousands of lines).
     private readonly LogBatcher _log;
 
-    private enum Origin { Create, Add }
-    private Origin _origin = Origin.Create;
     private bool _onDetails;
 
     /// <summary>Raised once the server is ready to register.</summary>
@@ -63,10 +76,11 @@ public partial class NewServerView : UserControl
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public NewServerView() : this(null) { }
 
-    public NewServerView(IEnumerable<int>? usedPorts)
+    public NewServerView(IEnumerable<int>? usedPorts, IEnumerable<string>? registeredFolders = null)
     {
         InitializeComponent();
         _usedPorts = new HashSet<int>(usedPorts ?? Enumerable.Empty<int>());
+        _registeredFolders = (registeredFolders ?? Enumerable.Empty<string>()).ToList();
         _log = new LogBatcher(ProgressLog);
 
         ParentFolderBox.Text = Path.Combine(
@@ -84,6 +98,8 @@ public partial class NewServerView : UserControl
             UpdateTypeDependentOptions();
             UpdatePathWarning();     // the rule only applies to some types, so it moves with the pick
         };
+        // Typed or pasted rather than browsed to: read it once the box is left.
+        ExistingFolderBox.LostFocus += (_, _) => _ = DetectFolderAsync(ExistingFolderBox.Text);
         UpdateTypeDependentOptions();
         ShowStep();
     }
@@ -92,35 +108,42 @@ public partial class NewServerView : UserControl
 
     // ---------------------------------------------------------------- steps
 
+    /// <summary>Whether the panel is taking over a folder rather than making a server.</summary>
+    private bool IsExistingMode { get; set; }
+
     // One click on a card is the choice and the step forward together. There used to be a selected
     // state and a Next button, and the selected card's mark disappeared under the pointer that had
     // just clicked it, so nobody could tell whether the click had taken.
     private void CreateCard_Click(object? sender, RoutedEventArgs e) => ChooseCreate();
     private void AddCard_Click(object? sender, RoutedEventArgs e) => ChooseAdd();
 
-    /// <summary>On to the create form.</summary>
-    internal void ChooseCreate()
-    {
-        _origin = Origin.Create;
-        GoToDetails();
-    }
+    /// <summary>On to making a server.</summary>
+    internal void ChooseCreate() => GoToDetails(existing: false);
 
-    /// <summary>On to picking an existing folder.</summary>
-    internal void ChooseAdd()
-    {
-        _origin = Origin.Add;
-        GoToDetails();
-    }
+    /// <summary>On to taking over a folder that already holds one.</summary>
+    internal void ChooseAdd() => GoToDetails(existing: true);
 
-    /// <summary>The width from which the details sit in two columns instead of one.</summary>
-    internal const double TwoColumnWidth = 880;
-
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    private void GoToDetails(bool existing)
     {
-        base.OnSizeChanged(e);
-        var wide = e.NewSize.Width >= TwoColumnWidth;
-        FormPanel.Classes.Set("wide", wide);
-        AddColumns.Classes.Set("wide", wide);
+        IsExistingMode = existing;
+        _onDetails = true;
+
+        ExistingPanel.IsVisible = existing;
+        NewFolderPanel.IsVisible = !existing;
+        SeedPanel.IsVisible = !existing;
+        if (existing)
+        {
+            ApplyDetection();
+        }
+        else
+        {
+            // Back to making one: nothing a folder said still applies.
+            TypePicker.IsEnabled = VersionCombo.IsEnabled = SnapshotsCheck.IsEnabled = true;
+            PopulateVersions();
+        }
+        UpdatePathWarning();
+        ShowStep();
+        _ = LoadVersionsAsync();
     }
 
     private void Back_Click(object? sender, RoutedEventArgs e)
@@ -130,25 +153,26 @@ public partial class NewServerView : UserControl
         ShowStep();
     }
 
-    private void GoToDetails()
-    {
-        _onDetails = true;
-        ShowStep();
-        if (_origin == Origin.Create) _ = LoadVersionsAsync();
-    }
-
     private void ShowStep()
     {
         OriginStep.IsVisible = !_onDetails;
-        CreateStep.IsVisible = _onDetails && _origin == Origin.Create;
-        AddStep.IsVisible = _onDetails && _origin == Origin.Add;
+        DetailsStep.IsVisible = _onDetails;
 
         StepOrigin.Classes.Set("on", !_onDetails);
         StepDetails.Classes.Set("on", _onDetails);
 
         BackButton.IsVisible = _onDetails;
-        CreateButton.IsVisible = _onDetails && _origin == Origin.Create;
-        AddButton.IsVisible = _onDetails && _origin == Origin.Add;
+        CreateButton.IsVisible = _onDetails && !IsExistingMode;
+        AddButton.IsVisible = _onDetails && IsExistingMode;
+    }
+
+    /// <summary>The width from which the details sit in two columns instead of one.</summary>
+    internal const double TwoColumnWidth = 880;
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        FormPanel.Classes.Set("wide", e.NewSize.Width >= TwoColumnWidth);
     }
 
     private void Cancel_Click(object? sender, RoutedEventArgs e)
@@ -157,7 +181,144 @@ public partial class NewServerView : UserControl
         Cancelled?.Invoke();
     }
 
-    // ---------------------------------------------------------------- create
+    // ---------------------------------------------------------------- an existing folder
+
+    private async void BrowseExisting_Click(object? sender, RoutedEventArgs e)
+    {
+        if (Owner?.StorageProvider is not { } storage) return;
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = Localizer.Get("Cs_ExistingFolder"),
+            AllowMultiple = false
+        });
+        var path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+        if (string.IsNullOrEmpty(path)) return;
+
+        ExistingFolderBox.Text = path;
+        await DetectFolderAsync(path);
+    }
+
+    /// <summary>
+    /// Reads the folder off the UI thread — a big modpack has a lot of jars to open — and shows what
+    /// it found.
+    /// </summary>
+    internal async Task DetectFolderAsync(string? folder)
+    {
+        folder = folder?.Trim();
+        if (string.IsNullOrEmpty(folder) || folder == _detectedFolder) return;
+
+        _detectedFolder = folder;
+        var found = await Task.Run(() => _detection.Detect(folder));
+        if (folder != _detectedFolder) return;   // another folder was chosen while this one was read
+
+        ShowDetection(folder, found);
+    }
+
+    /// <summary>Takes what a folder turned out to be and puts it on screen.</summary>
+    /// <remarks>Apart from the reading so that the screen side can be tested without waiting on a thread.</remarks>
+    internal void ShowDetection(string folder, ServerDetection found)
+    {
+        _detectedFolder = folder;
+        _detected = found;
+        ExistingFolderBox.Text = folder;
+        if (string.IsNullOrWhiteSpace(NameBox.Text))
+            NameBox.Text = Path.GetFileName(folder.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        ApplyDetection();
+        UpdatePathWarning();
+    }
+
+    /// <summary>
+    /// Puts what the folder said into the form and locks it, and says what is still missing.
+    /// </summary>
+    /// <remarks>
+    /// Locked because it is not a choice: a folder with Fabric's launcher in it is a Fabric server
+    /// whatever the picker says, and letting the two disagree would produce a config that launches
+    /// the wrong way. Whatever could not be told stays open to pick.
+    /// </remarks>
+    internal void ApplyDetection()
+    {
+        var found = _detected;
+        if (!IsExistingMode || found is null)
+        {
+            DetectionSummary.IsVisible = DetectionMissing.IsVisible = JarPanel.IsVisible = false;
+            return;
+        }
+
+        if (found.Type is { } type)
+        {
+            TypePicker.SelectedType = type;
+            UpdateTypeDependentOptions();
+        }
+        TypePicker.IsEnabled = found.Type is null;
+
+        if (!string.IsNullOrEmpty(found.GameVersion)) SelectVersion(found.GameVersion);
+        VersionCombo.IsEnabled = SnapshotsCheck.IsEnabled = string.IsNullOrEmpty(found.GameVersion);
+
+        if (found.Port is { } port) PortBox.Value = port;
+        if (found.MinRamGb is { } min) MinRamBox.Value = min;
+        if (found.MaxRamGb is { } max) MaxRamBox.Value = max;
+
+        var needsJar = string.IsNullOrEmpty(found.ForgeArgs) && string.IsNullOrEmpty(found.JarFile);
+        JarPanel.IsVisible = needsJar && found.Jars.Count > 0;
+        if (JarPanel.IsVisible)
+        {
+            JarCombo.ItemsSource = found.Jars;
+            JarCombo.SelectedIndex = 0;
+        }
+
+        DetectionSummary.IsVisible = found.Type is not null;
+        DetectionSummary.Text = Summary(found);
+
+        var missing = Missing(found, needsJar);
+        DetectionMissing.IsVisible = missing is not null;
+        DetectionMissing.Text = missing ?? string.Empty;
+    }
+
+    /// <summary>"✔ Fabric 1.21.1 · loader 0.16.2 · port 25565 · 4 GB · with a world".</summary>
+    internal static string Summary(ServerDetection found)
+    {
+        if (found.Type is not { } type) return string.Empty;
+
+        var parts = new List<string> { (ServerTypeCatalog.For(type).DisplayName + " " + found.GameVersion).Trim() };
+        if (!string.IsNullOrEmpty(found.LoaderVersion))
+            parts.Add(string.Format(Localizer.Get("Cs_DetectedLoaderFmt"), found.LoaderVersion));
+        if (found.Port is { } port) parts.Add(string.Format(Localizer.Get("Cs_DetectedPortFmt"), port));
+        if (found.MaxRamGb is { } max) parts.Add(max + " GB");
+        parts.Add(Localizer.Get(found.HasWorld ? "Cs_DetectedWorld" : "Cs_DetectedNoWorld"));
+        return "✔ " + string.Join(" · ", parts);
+    }
+
+    private static string? Missing(ServerDetection found, bool needsJar)
+    {
+        if (found.Type is null && found.Jars.Count == 0) return Localizer.Get("Cs_ExistingNotAServer");
+        if (found.Type is null) return Localizer.Get("Cs_ExistingPickType");
+        if (string.IsNullOrEmpty(found.GameVersion)) return Localizer.Get("Cs_ExistingPickVersion");
+        if (needsJar) return Localizer.Get("Cs_ExistingPickJar");
+        return null;
+    }
+
+    /// <summary>
+    /// Selects a version in the list, adding it if the list does not have it — a snapshot while
+    /// snapshots are hidden, a version older than the list reaches, or the list not loaded yet.
+    /// </summary>
+    private void SelectVersion(string id)
+    {
+        var known = _allVersions.FirstOrDefault(v => v.Id == id);
+        if (known is { IsRelease: false } && SnapshotsCheck.IsChecked != true)
+            SnapshotsCheck.IsChecked = true;   // repopulates, and lands back here
+
+        var items = (VersionCombo.ItemsSource as IEnumerable<MinecraftVersion>)?.ToList() ?? new List<MinecraftVersion>();
+        var match = items.FirstOrDefault(v => v.Id == id);
+        if (match is null)
+        {
+            match = known ?? new MinecraftVersion { Id = id, Type = "release" };
+            items.Insert(0, match);
+            VersionCombo.ItemsSource = items;
+        }
+        VersionCombo.SelectedItem = match;
+    }
+
+    // ---------------------------------------------------------------- the form
 
     /// <summary>
     /// First free port from 25565 that is not used by another registered server NOR any other
@@ -168,7 +329,7 @@ public partial class NewServerView : UserControl
         // Create button's own validation will refuse a busy port before anything is written.
         _ports.FindFreePort(25565, _usedPorts) ?? 25565;
 
-    /// <summary>Loaded once, the first time the create form is shown.</summary>
+    /// <summary>Loaded once, the first time the details are shown.</summary>
     private async Task LoadVersionsAsync()
     {
         UpdateFinalPath();
@@ -203,6 +364,10 @@ public partial class NewServerView : UserControl
         VersionCombo.ItemsSource = filtered;
         var preferred = filtered.FirstOrDefault(v => v.Id == _latestRelease) ?? filtered.FirstOrDefault();
         VersionCombo.SelectedItem = preferred;
+
+        // The list can arrive after the folder was read; the folder's version still wins.
+        if (IsExistingMode && _detected?.GameVersion is { Length: > 0 } detected)
+            SelectVersion(detected);
     }
 
     private void UpdateFinalPath()
@@ -249,7 +414,8 @@ public partial class NewServerView : UserControl
     };
 
     /// <summary>
-    /// The folder the server would get, using the name exactly as typed.
+    /// The folder the server would get: the name exactly as typed under the parent, or the folder
+    /// that is being taken over.
     /// </summary>
     /// <remarks>
     /// No longer stripped behind the user's back. Typing "Mi:Server" used to produce a folder called
@@ -258,6 +424,8 @@ public partial class NewServerView : UserControl
     /// </remarks>
     private string GetTargetFolder()
     {
+        if (IsExistingMode) return ExistingFolderBox.Text?.Trim() ?? string.Empty;
+
         var name = NameBox.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(ParentFolderBox.Text))
             return string.Empty;
@@ -279,6 +447,12 @@ public partial class NewServerView : UserControl
 
     private async void Create_Click(object? sender, RoutedEventArgs e)
     {
+        if (IsExistingMode)
+        {
+            await AddExistingAsync();
+            return;
+        }
+
         var name = NameBox.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(name)) { await Warn(Localizer.Get("Msg_NameRequired")); return; }
         if (!Directory.Exists(ParentFolderBox.Text)) { await Warn(Localizer.Get("Msg_FolderNotExistCreate")); return; }
@@ -349,7 +523,10 @@ public partial class NewServerView : UserControl
             // Modern Forge ships its own run.bat (no single jar); only write ours when there is a jar.
             if (!string.IsNullOrEmpty(jarName))
                 _creation.WriteRunBat(folder, minGb, maxGb, jarName, javaPath);
-            _creation.WriteInitialProperties(folder, port, $"{name} - MC Server Launcher");
+            var seed = SeedBox.Text?.Trim();
+            if (!string.IsNullOrEmpty(seed) && ServerCreationService.WorldExists(folder))
+                AppendLog(Localizer.Get("Msg_SeedIgnoredWorldExists"));
+            _creation.WriteInitialProperties(folder, port, $"{name} - MC Server Launcher", seed);
 
             var config = new ServerConfig
             {
@@ -383,6 +560,109 @@ public partial class NewServerView : UserControl
         {
             AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
             await Warn(string.Format(Localizer.Get("Msg_CreateServerError"), ex.Message));
+            SetBusy(false);
+        }
+    }
+
+    /// <summary>What the form says about the folder being taken over.</summary>
+    private ExistingServerForm ExistingForm(string folder, ServerType type) => new(
+        Name: NameBox.Text?.Trim() ?? string.Empty,
+        Folder: folder,
+        Type: type,
+        GameVersion: (VersionCombo.SelectedItem as MinecraftVersion)?.Id,
+        JarFile: JarCombo.SelectedItem as string,
+        MinRamGb: (int)(MinRamBox.Value ?? 2m),
+        MaxRamGb: (int)(MaxRamBox.Value ?? 4m),
+        JavaPath: "java",
+        Playit: PlayitCheck.IsChecked == true,
+        Crossplay: CrossplayCheck.IsChecked == true,
+        MultiVersion: MultiVersionCheck.IsChecked == true,
+        Hydraulic: HydraulicCheck.IsChecked == true);
+
+    /// <summary>The server the form would take over, or null with the reason it cannot yet.</summary>
+    /// <remarks>Without touching the disk: what the Add button checks before anything is written.</remarks>
+    internal ServerConfig? TryBuildExisting(out string? error)
+    {
+        var folder = ExistingFolderBox.Text?.Trim() ?? string.Empty;
+        var found = folder == _detectedFolder && _detected is { } d ? d : ServerDetection.Nothing;
+        var form = ExistingForm(folder, found.Type ?? SelectedServerType());
+
+        error = ExistingServer.Problem(form, found, _registeredFolders) is { } problem ? Localizer.Get(problem) : null;
+        return error is null ? ExistingServer.ToConfig(form, found) : null;
+    }
+
+    /// <summary>
+    /// Takes over the chosen folder: nothing downloaded, nothing installed, nothing written but the
+    /// port if it was changed.
+    /// </summary>
+    private async Task AddExistingAsync()
+    {
+        var folder = ExistingFolderBox.Text?.Trim() ?? string.Empty;
+        if (folder != _detectedFolder) await DetectFolderAsync(folder);
+        var found = _detected ?? ServerDetection.Nothing;
+
+        var type = found.Type ?? SelectedServerType();
+        var form = ExistingForm(folder, type);
+
+        if (ExistingServer.Problem(form, found, _registeredFolders) is { } problem)
+        {
+            await Warn(Localizer.Get(problem));
+            return;
+        }
+
+        var port = (int)(PortBox.Value ?? 25565m);
+        if (_usedPorts.Contains(port)) { await Warn(string.Format(Localizer.Get("Msg_PortAssigned"), port)); return; }
+        // Only a port the user changed is checked against the system: the one the folder already
+        // uses may well be busy because this very server is running outside the app right now.
+        if (port != found.Port && _ports.IsPortInUse(port))
+        {
+            await Warn(string.Format(Localizer.Get("Msg_PortInUseOther"), port));
+            return;
+        }
+
+        // A warning rather than a refusal, unlike when creating: the folder is already there and
+        // already named, and whether it works is something its owner can see for themselves.
+        if (ServerNameRule.Check(folder, type) is { } issue
+            && !await MessageBox.ConfirmAsync(
+                Describe(issue, folder) + Environment.NewLine + Environment.NewLine + Localizer.Get("Cs_ExistingAddAnyway"),
+                Localizer.Get("New_Title"), Owner))
+            return;
+
+        SetBusy(true);
+        try
+        {
+            // The Java this Minecraft needs, as when creating — when the version is one Mojang's
+            // list knows. Otherwise the start does it: it checks the Java every time anyway.
+            var javaPath = "java";
+            if (VersionCombo.SelectedItem is MinecraftVersion { Url.Length: > 0 } version)
+            {
+                try
+                {
+                    var details = await _versions.GetVersionDetailsAsync(version);
+                    AppendLog(string.Format(Localizer.Get("Msg_CheckingJava"), version.Id, details.JavaMajor));
+                    javaPath = await _java.EnsureJavaAsync(details.JavaMajor, new Progress<string>(AppendLog));
+                }
+                catch (Exception jex)
+                {
+                    AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), jex.Message));
+                    AppendLog(Localizer.Get("Msg_UseSystemJava"));
+                }
+            }
+
+            if (ExistingServer.ApplyPort(folder, found.Port, port))
+                AppendLog(string.Format(Localizer.Get("Cs_ExistingPortWrittenFmt"), port));
+
+            var config = ExistingServer.ToConfig(form with { JavaPath = javaPath }, found);
+            _log.Stop();
+            Completed?.Invoke(new NewServerResult(
+                config, IsNew: false,
+                AutoStart: AutoStartCheck.IsChecked == true,
+                CreateTunnel: config.PlayitEnabled && CreateTunnelCheck.IsChecked == true));
+        }
+        catch (Exception ex)
+        {
+            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            await Warn(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
             SetBusy(false);
         }
     }
@@ -440,7 +720,7 @@ public partial class NewServerView : UserControl
     {
         _busy = busy;
         FormPanel.IsEnabled = !busy;
-        CreateButton.IsEnabled = !busy;
+        CreateButton.IsEnabled = AddButton.IsEnabled = !busy;
         BackButton.IsEnabled = !busy;
         CancelButton.IsEnabled = !busy;
         ProgressBox.IsVisible = busy;
@@ -457,87 +737,4 @@ public partial class NewServerView : UserControl
 
     private Task Warn(string message) =>
         MessageBox.ShowAsync(message, Localizer.Get("New_Title"), Owner);
-
-    // ---------------------------------------------------------------- add an existing one
-
-    private ServerConfig? _detected;
-
-    private async void BrowseExisting_Click(object? sender, RoutedEventArgs e)
-    {
-        if (Owner?.StorageProvider is not { } storage) return;
-        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
-        {
-            Title = Localizer.Get("Title_SelectServerFolder"),
-            AllowMultiple = false
-        });
-        var path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
-        if (!string.IsNullOrEmpty(path)) UseExistingFolder(path);
-    }
-
-    /// <summary>
-    /// Looks at a folder and fills in what can be read from it: type, version, jar, and a name
-    /// taken from the folder unless one was already typed.
-    /// </summary>
-    internal void UseExistingFolder(string path)
-    {
-        AddFolderBox.Text = path;
-
-        var probe = new ServerConfig { FolderPath = path };
-        var found = new ServerDetectionService().DetectAndFill(probe);
-        _detected = probe;
-
-        DetectedText.Text = found
-            ? string.Format(Localizer.Get("New_DetectedFmt"), probe.Type,
-                string.IsNullOrEmpty(probe.GameVersion) ? "?" : probe.GameVersion)
-            : Localizer.Get("New_NotDetected");
-
-        if (string.IsNullOrWhiteSpace(AddNameBox.Text))
-            AddNameBox.Text = new DirectoryInfo(path).Name;
-    }
-
-    private async void Add_Click(object? sender, RoutedEventArgs e)
-    {
-        if (TryBuildExisting(out var error) is { } config)
-        {
-            Completed?.Invoke(new NewServerResult(config, IsNew: false, AutoStart: false, CreateTunnel: false));
-            return;
-        }
-        await Warn(error!);
-    }
-
-    /// <summary>The existing server to register, or null with the reason it cannot be yet.</summary>
-    internal ServerConfig? TryBuildExisting(out string? error)
-    {
-        error = null;
-        var folder = AddFolderBox.Text;
-        if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
-        {
-            error = Localizer.Get("Msg_FolderNotExist");
-            return null;
-        }
-
-        var name = AddNameBox.Text?.Trim();
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            error = Localizer.Get("Msg_NameEmpty");
-            return null;
-        }
-
-        var minGb = (int)(AddMinRamBox.Value ?? 2m);
-        var maxGb = (int)(AddMaxRamBox.Value ?? 4m);
-        if (maxGb < minGb)
-        {
-            error = Localizer.Get("Msg_RamMaxMin");
-            return null;
-        }
-
-        var config = _detected is { } d && d.FolderPath == folder ? d : new ServerConfig { FolderPath = folder };
-        if (!ReferenceEquals(config, _detected)) new ServerDetectionService().DetectAndFill(config);
-
-        config.Name = name;
-        config.MinRamGb = minGb;
-        config.MaxRamGb = maxGb;
-        config.PlayitEnabled = AddPlayitCheck.IsChecked == true;
-        return config;
-    }
 }

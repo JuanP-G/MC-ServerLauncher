@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -11,6 +12,13 @@ using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views;
 
+/// <summary>
+/// The main window: the server list, the selected server's console, its stats and its players.
+/// </summary>
+/// <remarks>
+/// Closing it with the X hides it to the tray instead of quitting, so the servers keep running;
+/// <see cref="RequestExit"/> is the one path that really shuts down.
+/// </remarks>
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
@@ -24,6 +32,11 @@ public partial class MainWindow : Window
         DataContext = _viewModel;
         Loaded += async (_, _) =>
         {
+            // Switch everything on once there is a window: the Playit agent, the update check and
+            // each server's own watching. The constructor only assembled them, so nothing has
+            // polled, opened a socket or called GitHub before this point.
+            _viewModel.Activate();
+
             // Warn about a corrupt servers.json first (rare), then the what's-new dialog.
             await _viewModel.WarnIfServersFileWasCorruptAsync(this);
             _viewModel.ShowWhatsNewIfUpdated(this);
@@ -31,7 +44,13 @@ public partial class MainWindow : Window
 
         // When switching servers, go back to the Console tab. Otherwise the previously selected tab
         // (e.g. Mods) could stay shown for a server that doesn't have it (a vanilla server).
-        _viewModel.PropertyChanged += (_, e) =>
+        //
+        // Before the change and not after it, which is the difference between a switch that feels
+        // instant and one that does not. The whole right-hand pane hangs off SelectedServer, so by
+        // the time PropertyChanged runs the heavy tab — Players, with its lists, or Mods — has
+        // already been rebuilt for the server just selected, only to be thrown away a line later.
+        // Switching away first means the work is never done at all.
+        _viewModel.PropertyChanging += (_, e) =>
         {
             if (e.PropertyName == nameof(MainViewModel.SelectedServer))
                 ServerTabs.SelectedIndex = 0;
@@ -107,20 +126,20 @@ public partial class MainWindow : Window
         base.OnClosing(e);
     }
 
-    private void ConsoleCopy_Click(object? sender, RoutedEventArgs e) => _ = CopyConsole(selectedOnly: true);
+    private void ConsoleCopy_Click(object? sender, RoutedEventArgs e) => _ = CopyConsoleAsync(selectedOnly: true);
 
-    private void ConsoleCopyAll_Click(object? sender, RoutedEventArgs e) => _ = CopyConsole(selectedOnly: false);
+    private void ConsoleCopyAll_Click(object? sender, RoutedEventArgs e) => _ = CopyConsoleAsync(selectedOnly: false);
 
     private void ConsoleList_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control))
         {
-            _ = CopyConsole(selectedOnly: true);
+            _ = CopyConsoleAsync(selectedOnly: true);
             e.Handled = true;
         }
     }
 
-    private async System.Threading.Tasks.Task CopyConsole(bool selectedOnly)
+    private async Task CopyConsoleAsync(bool selectedOnly)
     {
         IList source = selectedOnly && ConsoleList.SelectedItems is { Count: > 0 }
             ? ConsoleList.SelectedItems

@@ -42,6 +42,19 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Refreshes the idle countdown once a second. Runs only while one is on screen.</summary>
     private readonly DispatcherTimer _idleCountdownTimer;
     private readonly DispatcherTimer _playitTimer;
+    private readonly DispatcherTimer _autoBackupTimer;
+
+    /// <summary>Only one backup of this server at a time, whoever asked for it.</summary>
+    private readonly SemaphoreSlim _backupGate = new(1, 1);
+
+    /// <summary>When the clock last made — or deliberately skipped — an automatic backup.</summary>
+    private DateTime _lastAutoBackupUtc;
+
+    /// <summary>Whether anybody has been connected since then. See <see cref="BackupSchedule"/>.</summary>
+    private bool _playedSinceBackup;
+
+    /// <summary>Armed while a backup is waiting for the server to confirm it has saved.</summary>
+    private TaskCompletionSource<bool>? _saveConfirmed;
 
     // --- Auto-restart on crash ---
     // If the server exits on its own (not via the Stop button), it's relaunched automatically, up
@@ -160,6 +173,16 @@ public partial class ServerViewModel : ObservableObject
     [ObservableProperty]
     private string? _tunnelAddress;
 
+    /// <summary>How far along the public address is. Drives the line under the Playit row.</summary>
+    [ObservableProperty]
+    private TunnelAddressState _tunnelState = TunnelAddressState.Waiting;
+
+    partial void OnTunnelStateChanged(TunnelAddressState value) =>
+        OnPropertyChanged(nameof(TunnelStateText));
+
+    /// <summary>One line saying what is happening, so the box is never blank without a reason.</summary>
+    public string TunnelStateText => Localizer.Get(TunnelAddressStates.KeyFor(TunnelState));
+
     [ObservableProperty]
     private string _commandText = string.Empty;
 
@@ -246,6 +269,9 @@ public partial class ServerViewModel : ObservableObject
 
     public ServerBackupsViewModel Backups { get; }
 
+    /// <summary>Everyone who has been on this server, and each one's profile.</summary>
+    public PlayerHistoryViewModel History { get; }
+
     public bool IsModded => Config.Type != ServerType.Vanilla;
 
     /// <summary>Server type shown as a badge (Vanilla/Fabric/Forge, and any future type).</summary>
@@ -270,23 +296,23 @@ public partial class ServerViewModel : ObservableObject
     private readonly WakeOnDemandListener _wake = new();
 
     /// <summary>Players connected right now (live, read from the console).</summary>
-    public ObservableCollection<string> ConnectedPlayers { get; } = new();
+    public BulkObservableCollection<string> ConnectedPlayers { get; } = new();
 
     /// <summary>Operators (ops.json).</summary>
-    public ObservableCollection<string> OpPlayers { get; } = new();
+    public BulkObservableCollection<string> OpPlayers { get; } = new();
 
     /// <summary>Banned players (banned-players.json).</summary>
-    public ObservableCollection<string> BannedPlayers { get; } = new();
+    public BulkObservableCollection<string> BannedPlayers { get; } = new();
 
     /// <summary>Players who have ever joined (usercache.json).</summary>
-    public ObservableCollection<string> KnownPlayers { get; } = new();
+    public BulkObservableCollection<string> KnownPlayers { get; } = new();
 
     // --- Whitelist ---
 
     private readonly WhitelistService _whitelist = new();
 
     /// <summary>Players currently in the whitelist (names).</summary>
-    public ObservableCollection<string> WhitelistPlayers { get; } = new();
+    public BulkObservableCollection<string> WhitelistPlayers { get; } = new();
 
     [ObservableProperty]
     private bool _whitelistEnabled;
@@ -329,6 +355,20 @@ public partial class ServerViewModel : ObservableObject
     /// </remarks>
     public Func<IEnumerable<int>>? BedrockPortsInUse { get; set; }
 
+    /// <summary>
+    /// Assembles the view model. It does not start anything — see <see cref="Activate"/>.
+    /// </summary>
+    /// <remarks>
+    /// The split is the difference between a server that <em>exists</em> and one that is being
+    /// <em>watched</em>. Everything here reads: the config, the console palette, the server's own
+    /// files. Nothing here polls, opens a socket, subscribes to a process-wide singleton or goes to
+    /// the network, so building one costs a few file reads and leaves nothing running behind it.
+    /// <para>
+    /// That is what makes the class reachable from a test at all. It is also the right shape on its
+    /// own: a constructor that started three timers and two background requests had already begun
+    /// doing its job before its caller had the chance to decide whether it wanted it to.
+    /// </para>
+    /// </remarks>
     public ServerViewModel(ServerConfig config)
     {
         Config = config;
@@ -349,9 +389,9 @@ public partial class ServerViewModel : ObservableObject
         // can drive the tunnel; the panel reflects whichever is in play (see EffectivePlayitState).
         _onPlayitStateChanged = _ => RunOnUi(RefreshPlayit);
         _onAgentStateChanged = _ => RunOnUi(RefreshPlayit);
-        _playit.StateChanged += _onPlayitStateChanged;
-        _agent.StateChanged += _onAgentStateChanged;
 
+        // Built here, started in Activate. A timer that exists is inert, and these two are started
+        // and stopped later anyway by the server's own state.
         _idleCountdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _idleCountdownTimer.Tick += (_, _) => UpdateIdleCountdown();
 
@@ -362,16 +402,100 @@ public partial class ServerViewModel : ObservableObject
         // tunnel address (via the playit API) less often.
         _playitTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _playitTimer.Tick += OnPlayitTimerTick;
+
+        // Ticks every minute and asks the clock whether the interval has run out, rather than being
+        // rescheduled whenever the interval is changed: one less thing to keep in step with the
+        // config, and changing the interval takes effect without restarting anything.
+        _autoBackupTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
+        _autoBackupTimer.Tick += (_, _) => OnAutoBackupTick();
+
+        // Before RefreshInfo, which refreshes the player lists and with them this.
+        History = new PlayerHistoryViewModel(this);
+
+        RefreshPort();
+        RefreshInfo();
+        Mods = new ServerModsViewModel(config);
+        Backups = new ServerBackupsViewModel(this);
+
+        // The dialogs write straight into this instance. Listening is what makes every derived
+        // property correct without anyone having to remember to ask.
+        Config.PropertyChanged += OnConfigPropertyChanged;
+    }
+
+    /// <summary>Applies the row of <see cref="ServerConfigEffects"/> for the field that changed.</summary>
+    /// <remarks>
+    /// <para>
+    /// Marshalled onto the UI thread, because plenty of these changes do not start there: setting
+    /// up crossplay picks a Bedrock port and writes it from a background continuation, and raising
+    /// a bound property from off the UI thread is how a working feature turns into a crash.
+    /// </para>
+    /// <para>
+    /// A field with no row is a field nobody declared, which the tests do not allow — but at run
+    /// time the safe answer is to do nothing rather than to throw inside a property setter.
+    /// </para>
+    /// </remarks>
+    private void OnConfigPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not { } property) return;
+        if (ServerConfigEffects.For(property) is { } row) RunOnUi(() => Apply(row));
+    }
+
+    /// <summary>
+    /// Announces what one row names and does what it asks, here and in the panels below.
+    /// </summary>
+    private void Apply(ServerConfigEffects.Row row)
+    {
+        // Mirrors first: these two are bindable properties of their own that hold a copy of the
+        // config's value, and the rest of the row may depend on them being current.
+        if (row.Effects.HasFlag(ConfigEffect.MirrorName)) Name = Config.Name;
+        if (row.Effects.HasFlag(ConfigEffect.MirrorTunnelAddress)) TunnelAddress = Config.TunnelAddress;
+
+        foreach (var name in row.ServerProperties)
+            OnPropertyChanged(name);
+
+        if (row.Effects.HasFlag(ConfigEffect.RereadPort)) RefreshPort();
+        if (row.Effects.HasFlag(ConfigEffect.RereadInfo)) RefreshInfo();
+        if (row.Effects.HasFlag(ConfigEffect.RefreshSignal)) UpdateSignal();
+        // The listener holds a real socket on the server's port, so switching it on has to open one
+        // now. It used to wait for the next stop, i.e. until the server had been run once.
+        if (row.Effects.HasFlag(ConfigEffect.RestartWakeListener)) StartWakeListener();
+        if (row.Effects.HasFlag(ConfigEffect.ReloadBackups)) Backups.RefreshIfLoaded();
+
+        if (row.ModsProperties.Length > 0 || row.Effects != ConfigEffect.None)
+            Mods.ApplyConfigChange(row.ModsProperties, row.Effects);
+    }
+
+    /// <summary>True between <see cref="Activate"/> and <see cref="ShutdownAsync"/>.</summary>
+    /// <remarks>
+    /// Kept so that both are safe to call twice, and so that <see cref="ShutdownAsync"/> never
+    /// unsubscribes handlers it did not subscribe.
+    /// </remarks>
+    private bool _active;
+
+    /// <summary>
+    /// Starts watching: the polling timer, the shared Playit state, the tunnel addresses and the
+    /// wake-on-demand listener. <see cref="ShutdownAsync"/> is its mirror.
+    /// </summary>
+    /// <remarks>
+    /// Called by <c>MainViewModel</c> once the window is up, rather than by the constructor, so
+    /// that building a server and switching it on are two decisions instead of one. Everything in
+    /// here reaches outside the object — a shared singleton, a socket, the network — and none of it
+    /// is wanted by code that only needs to look at a server.
+    /// </remarks>
+    public void Activate()
+    {
+        if (_active) return;
+        _active = true;
+
+        _playit.StateChanged += _onPlayitStateChanged;
+        _agent.StateChanged += _onAgentStateChanged;
+
         _playitTimer.Start();
         _playit.RefreshState();
         // Sync directly: the shared manager/agent may already know the state (another view model
         // refreshed it before we subscribed), in which case no change event will fire.
         RefreshPlayit();
 
-        RefreshPort();
-        RefreshInfo();
-        Mods = new ServerModsViewModel(config);
-        Backups = new ServerBackupsViewModel(this);
         _ = RefreshTunnelAddressAsync();
 
         // Crossplay is a remembered setting, so it gets checked rather than assumed: the tunnel's
@@ -383,6 +507,9 @@ public partial class ServerViewModel : ObservableObject
         // already stopped and fires no state change, so waiting for one would mean wake-on-demand
         // never starting until you had run and stopped a server by hand first.
         StartWakeListener();
+
+        // Prunes and, the first time ever, imports the server's old logs — in the background.
+        History.Start();
     }
 
     // --- Tray-aware polling (EFI-2) ---
@@ -565,7 +692,7 @@ public partial class ServerViewModel : ObservableObject
 
         // isAutoRestart: nobody is sitting in front of the app to answer a dialog, which is exactly
         // what that flag already means everywhere else.
-        _ = StartInternal(isAutoRestart: true);
+        _ = StartInternalAsync(isAutoRestart: true);
     });
 
     private async Task StopBecauseIdleAsync()
@@ -594,24 +721,73 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
-    /// <summary>Gets the tunnel address from the playit API, matching by port.</summary>
-    private async Task RefreshTunnelAddressAsync()
+    /// <summary>
+    /// Gets the tunnel address from the playit API, matching by port and protocol.
+    /// </summary>
+    /// <remarks>
+    /// Every path out of here sets a state. It used to return empty-handed in three different
+    /// situations and say nothing about any of them, which is the whole of the "the address takes
+    /// for ever to appear" report: most of the time it had appeared on playit's side and the app
+    /// was simply not going to ask again for another half minute.
+    /// </remarks>
+    /// <param name="fresh">Skips the shared tunnel cache. Used by the burst after a tunnel is made.</param>
+    private async Task RefreshTunnelAddressAsync(bool fresh = false)
     {
         try
         {
             var port = _properties.GetServerPort(Config.PropertiesPath);
-            if (!port.HasValue || !Config.PlayitEnabled) return;
+            if (!port.HasValue)
+            {
+                // No server.properties yet, so no port to match a tunnel against. There is nothing
+                // to wait for, which is what the user needs told — not another blank box.
+                RunOnUi(() => TunnelState = TunnelAddressState.NoTunnel);
+                return;
+            }
+            if (!Config.PlayitEnabled) return;
 
-            // Believed when the account answered, kept when it could not be asked: an address that
-            // stays on screen after its tunnel is gone is another server's address, as often as not.
-            var tunnels = await _playitApi.TryGetTunnelsAsync();
-            var address = TunnelAddressSync.JavaAddress(TunnelAddress, tunnels, port.Value);
-            if (address != TunnelAddress)
-                RunOnUi(() => TunnelAddress = address ?? string.Empty);
+            // Asked as a list, not for one tunnel, so "could not ask" and "the account has no tunnel
+            // on this port" stay apart. The second clears the address: kept on screen after a port
+            // move, the old one was as often as not another server's tunnel.
+            var tunnels = await _playitApi.TryGetTunnelsAsync(fresh);
+            if (TunnelAddressSync.Java(tunnels, port.Value) is not { } found)
+            {
+                RunOnUi(() => TunnelState = TunnelAddressState.Failed);
+                return;
+            }
+
+            RunOnUi(() =>
+            {
+                // A tunnel still waiting for its address keeps nothing stale either: it is new.
+                TunnelAddress = found.Address;
+                TunnelState = found.State;
+            });
         }
         catch
         {
-            // Best-effort: if the API fails, the saved/manual address is kept.
+            // Best-effort: if the API fails, the saved address is kept — but no longer in silence.
+            RunOnUi(() => TunnelState = TunnelAddressState.Failed);
+        }
+    }
+
+    /// <summary>
+    /// Looks the address up a few times with a growing wait, then leaves it to the ordinary refresh.
+    /// </summary>
+    /// <remarks>
+    /// The Bedrock side has had this since crossplay was written; Java never did, and waited for the
+    /// 30-second timer instead. With an arbitrary phase that is anything up to a minute of empty
+    /// box — five with the window in the tray — starting from the moment the console says the
+    /// address is seconds away.
+    /// </remarks>
+    private async Task PollForTunnelAddressAsync()
+    {
+        foreach (var seconds in AddressRetry.DelaysSeconds)
+        {
+            if (TunnelState == TunnelAddressState.Ready) return;
+            await Task.Delay(TimeSpan.FromSeconds(seconds));
+
+            // fresh: the tunnel list is shared behind a 25-second cache, and without this most of
+            // these would be answered by the empty list the first one stored.
+            await RefreshTunnelAddressAsync(fresh: true);
         }
     }
 
@@ -724,10 +900,16 @@ public partial class ServerViewModel : ObservableObject
             _stats.Reset();
             _statsTimer.Start();
             _lastRunningAtUtc = DateTime.UtcNow;
+
+            // The interval starts now: the pre-start backup already covers the world as it is.
+            _lastAutoBackupUtc = DateTime.UtcNow;
+            _playedSinceBackup = false;
+            _autoBackupTimer.Start();
         }
         else if (state == ServerState.Stopped)
         {
             _statsTimer.Stop();
+            _autoBackupTimer.Stop();
 
             // Explicitly, not just by waiting for the next CheckIdleShutdown: that runs off the
             // stats timer, which has just been stopped, so a server that went straight from Running
@@ -741,6 +923,8 @@ public partial class ServerViewModel : ObservableObject
             CpuSeries = null;
             RamSeries = null;
             ConnectedPlayers.Clear();
+            SnapshotOnline();
+            History.OnServerStopped();
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
             StartWakeListener();
@@ -748,6 +932,7 @@ public partial class ServerViewModel : ObservableObject
         else if (state == ServerState.Starting)
         {
             ConnectedPlayers.Clear();
+            SnapshotOnline();
             UpdatePlayerCount();
         }
 
@@ -777,8 +962,83 @@ public partial class ServerViewModel : ObservableObject
     private void OnConsoleLine(string line) => OnConsoleLine(line, ConsoleLineKind.Launcher);
 
     /// <summary>A line from the server process, classified by where it came from.</summary>
-    private void OnServerLine(string line, ConsoleSource source) =>
-        OnConsoleLine(line, ConsoleLineClassifier.Classify(line, source));
+    private void OnServerLine(string line, ConsoleSource source)
+    {
+        // Only standard output's own previous line: standard error arrives on another thread, and
+        // a JVM warning landing between two lines of the mod list must not decide what they are.
+        var kind = ConsoleLineClassifier.Classify(line, source,
+            source == ConsoleSource.Stdout ? _lastStdoutKind : null, _onlineNames);
+        if (source == ConsoleSource.Stdout) _lastStdoutKind = kind;
+
+        OnConsoleLine(line, kind);
+
+        // The server's own answer to "seed": remembered in case the world's files cannot be read.
+        if (source == ConsoleSource.Stdout && WorldSeed.FromConsoleLine(line) is { } seed)
+            RunOnUi(() =>
+            {
+                if (Config.LastKnownSeed == seed) return;
+                Config.LastKnownSeed = seed;
+                ConfigChanged?.Invoke();
+            });
+
+        // The server's answer to "save-all flush", which a backup of a running world waits for.
+        if (source == ConsoleSource.Stdout && SaveConfirmation.IsSaveFinished(line))
+            _saveConfirmed?.TrySetResult(true);
+
+        // Here, on the output's own thread, so writing the history to disk never holds up the UI.
+        if (source == ConsoleSource.Stdout) History.OnServerLine(line, _onlineNames);
+
+        // Once per run: BlueMap repeats itself on every start, and so would the question.
+        if (!_blueMapAsked && BlueMapConsent.IsAskingForConsent(line))
+        {
+            _blueMapAsked = true;
+            Dispatcher.UIThread.Post(() => _ = OfferBlueMapDownloadAsync());
+        }
+    }
+
+    /// <summary>Whether this run has already asked about BlueMap's download.</summary>
+    private bool _blueMapAsked;
+
+    /// <summary>
+    /// Asks whether to accept BlueMap's download, and if so accepts it and reloads BlueMap.
+    /// </summary>
+    /// <remarks>
+    /// Asks rather than accepts: it is consent to download Mojang's client files, and that belongs to
+    /// the person running the server. Declining is remembered only until the next start, so the
+    /// question comes back rather than the map silently never appearing.
+    /// </remarks>
+    private async Task OfferBlueMapDownloadAsync()
+    {
+        if (BlueMapConsent.FindConfig(Config.FolderPath) is not { } path) return;
+
+        if (!await MessageBox.ConfirmAsync(Localizer.Get("BlueMap_ConsentText"), "BlueMap"))
+        {
+            OnConsoleLine(Localizer.Get("Msg_BlueMapDeclined"));
+            return;
+        }
+
+        try
+        {
+            if (BlueMapConsent.Accept(await File.ReadAllTextAsync(path)) is not { } accepted)
+            {
+                OnConsoleLine(string.Format(Localizer.Get("Msg_BlueMapCouldNotAcceptFmt"), path));
+                return;
+            }
+
+            AtomicTextFile.WriteIfChanged(path, accepted);
+            OnConsoleLine(Localizer.Get("Msg_BlueMapAccepted"));
+
+            // BlueMap re-reads its config on reload, so the map starts without restarting the server.
+            if (IsRunning) _process.SendCommand("bluemap reload");
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
+
+    /// <summary>What the last line on standard output was. See <see cref="ConsoleLineClassifier.Classify"/>.</summary>
+    private ConsoleLineKind? _lastStdoutKind;
 
     private void OnConsoleLine(string text, ConsoleLineKind kind)
     {
@@ -809,9 +1069,15 @@ public partial class ServerViewModel : ObservableObject
             // per-line cost amortized O(1), at the price of momentarily holding up to 2200 lines.
             if (ConsoleLines.Count > MaxConsoleLines + ConsoleTrimBlock)
             {
-                ConsoleLines.RemoveFromStart(ConsoleLines.Count - MaxConsoleLines);
+                var excess = ConsoleLines.Count - MaxConsoleLines;
+
+                // Counted before the lines are gone; see VisibleLinesLeaving for why the visible
+                // list is trimmed rather than rebuilt.
+                var leaving = ConsoleKindFilter.VisibleLinesLeaving(ConsoleLines, excess, MatchesConsoleFilter);
+
+                ConsoleLines.RemoveFromStart(excess);
                 ConsoleKindFilter.Recount(ConsoleLines, ConsoleKinds); // lines fell off the top
-                RebuildVisibleConsole(); // the visible list is a subset; rebuild it from what survived
+                VisibleConsoleLines.RemoveFromStart(leaving);
             }
 
             TrackPlayers(text);
@@ -868,6 +1134,19 @@ public partial class ServerViewModel : ObservableObject
         OnConsoleLine(Localizer.Get("Msg_CrossplayModdedKick"));
     }
 
+    /// <summary>
+    /// Who is connected, as a copy the console classifier can read from the process's thread.
+    /// </summary>
+    /// <remarks>
+    /// The classifier runs where the line arrives, off the UI thread, and <see cref="ConnectedPlayers"/>
+    /// belongs to the UI thread. It only needs the names to tell a player's <c>/say</c> from a plugin
+    /// logging under its own name, so an immutable copy swapped in on every join and leave is enough.
+    /// </remarks>
+    private volatile IReadOnlySet<string> _onlineNames = new HashSet<string>();
+
+    private void SnapshotOnline() =>
+        _onlineNames = new HashSet<string>(ConnectedPlayers, StringComparer.OrdinalIgnoreCase);
+
     // Live connected players, read from the join/leave messages in the console.
     private void TrackPlayers(string line)
     {
@@ -875,6 +1154,8 @@ public partial class ServerViewModel : ObservableObject
         if (joined is not null)
         {
             if (!ConnectedPlayers.Contains(joined)) ConnectedPlayers.Add(joined);
+            SnapshotOnline();
+            History.RequestRefresh();
             UpdatePlayerCount();
             NotifyIf(NotificationKind.PlayerJoined, string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
             return;
@@ -884,6 +1165,8 @@ public partial class ServerViewModel : ObservableObject
         if (left is not null)
         {
             ConnectedPlayers.Remove(left);
+            SnapshotOnline();
+            History.RequestRefresh();
             UpdatePlayerCount();
             NotifyIf(NotificationKind.PlayerLeft, string.Format(Localizer.Get("Notif_PlayerLeftFmt"), left));
             return;
@@ -911,24 +1194,6 @@ public partial class ServerViewModel : ObservableObject
             NotificationPreferences.EffectiveFor(Config));
     }
 
-    /// <summary>
-    /// Extracts the player name right before a marker (e.g. " joined the game"), but only from a
-    /// real server log entry: the name must be the ONLY text between the log prefix
-    /// ("[…] [Server thread/INFO]: ", or Paper's "[… INFO]: ") and the marker, and must be a valid
-    /// Minecraft name (letters/digits/underscore, 1-16 chars). A chat line quoting the phrase
-    /// ("&lt;Bob&gt; Alice joined the game") keeps the sender tag in between, so it is rejected
-    /// instead of faking a join/leave.
-    /// </summary>
-    private static string? NameBefore(string line, string marker)
-    {
-        var idx = line.IndexOf(marker, StringComparison.Ordinal);
-        if (idx <= 0) return null;
-        var head = line[..idx];
-        var colon = head.LastIndexOf(": ", StringComparison.Ordinal);
-        var name = colon >= 0 ? head[(colon + 2)..] : head;
-        return PlayerNameRegex().IsMatch(name) ? name : null;
-    }
-
     [System.Text.RegularExpressions.GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]
     private static partial System.Text.RegularExpressions.Regex PlayerNameRegex();
 
@@ -939,11 +1204,16 @@ public partial class ServerViewModel : ObservableObject
         _moddedKickWarned = false; // and a fresh chance to explain the kick, in case the mods changed
         _pathRejectionWarned = false;
         _startFailureIsFinal = false;
-        await StartInternal(isAutoRestart: false);
+        await StartInternalAsync(isAutoRestart: false);
     }
 
-    private async Task StartInternal(bool isAutoRestart)
+    private async Task StartInternalAsync(bool isAutoRestart)
     {
+        // A new run starts a new console story: the first line must not inherit the colour of the
+        // last line of a crash, and a question declined last time is asked again.
+        _lastStdoutKind = null;
+        _blueMapAsked = false;
+
         // Judged fresh on every attempt: whether THIS run stays up long enough to "forgive" a
         // previous crash streak must not be based on a stale timestamp from an earlier run/session.
         _lastRunningAtUtc = null;
@@ -992,7 +1262,7 @@ public partial class ServerViewModel : ObservableObject
             // Back up the world right before touching it again: the safety net that matters most,
             // since it covers every start path (manual, Restart, and auto-restart after a crash).
             if (Config.BackupsEnabled)
-                await _backups.CreateBackupAsync(Config, "start", new Progress<string>(OnConsoleLine));
+                await RunBackupAsync("start");
 
             _process.Start(Config);
             // Playit already runs as a background service: we don't launch another agent.
@@ -1046,7 +1316,7 @@ public partial class ServerViewModel : ObservableObject
             // Only proceed if nothing else already started it in the meantime (e.g. the user
             // clicked Start manually right after the crash).
             if (CanStart)
-                await StartInternal(isAutoRestart: true);
+                await StartInternalAsync(isAutoRestart: true);
         }
         catch (Exception ex)
         {
@@ -1260,11 +1530,13 @@ public partial class ServerViewModel : ObservableObject
                     Localizer.Get("Msg_BukkitPathRenameExists"), Path.GetFileName(suggestion)));
 
             Directory.Move(Config.FolderPath, suggestion);
+            // Announces on its own now, which is what re-reads the port, the MOTD, the icon, the
+            // content folder and the backup list. Setting it used to refresh only the MOTD, so the
+            // rest went on describing a folder that no longer existed under that name.
             Config.FolderPath = suggestion;
             ConfigChanged?.Invoke();      // persists the new path before anything else runs
 
             OnConsoleLine(string.Format(Localizer.Get("Msg_BukkitPathRenamedFmt"), suggestion));
-            RefreshInfo();
             return true;
         }
         catch (Exception ex)
@@ -1352,7 +1624,7 @@ public partial class ServerViewModel : ObservableObject
             // (or, when closing, simply not needing one) already covers those.
             if (Config.BackupsEnabled)
             {
-                await _backups.CreateBackupAsync(Config, "stop", new Progress<string>(OnConsoleLine));
+                await RunBackupAsync("stop");
                 Backups.RefreshCommand.Execute(null);
             }
         }
@@ -1362,12 +1634,110 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Makes one backup of this server's world — the only way any of them are made.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Before a start, after a stop, on the clock and from the button all come through here, so
+    /// that two can never overlap and so that "is the server running?" is answered in one place.
+    /// While it is running the copy goes through <see cref="LiveWorldBackup"/>, which asks Minecraft
+    /// to let go of the world first; while it is stopped there is nothing to ask.
+    /// </para>
+    /// <para>
+    /// A second request while one is in progress is refused rather than queued. The reason to ask
+    /// twice is impatience, and answering it with a second copy of a world that is already being
+    /// copied would only make the first one slower.
+    /// </para>
+    /// </remarks>
+    public async Task<string?> RunBackupAsync(string trigger, CancellationToken ct = default)
+    {
+        if (!await _backupGate.WaitAsync(0, ct))
+        {
+            OnConsoleLine(Localizer.Get("Msg_BackupAlreadyRunning"));
+            return null;
+        }
+
+        try
+        {
+            var log = new Progress<string>(OnConsoleLine);
+            return _process.IsRunning
+                ? await LiveWorldBackup.RunAsync(_backups, Config, trigger,
+                    _process.SendCommand, WaitForSaveAsync, log, ct)
+                : await _backups.CreateBackupAsync(Config, trigger, log, ct);
+        }
+        finally
+        {
+            _backupGate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Waits for the server to say it has saved, or gives up after <paramref name="timeout"/>.
+    /// </summary>
+    /// <remarks>
+    /// Arms the listener synchronously, before its first await, so that a caller can start the wait
+    /// and only then send the command it is waiting for — which is the order that cannot miss an
+    /// answer from a world small enough to flush instantly.
+    /// </remarks>
+    private async Task<bool> WaitForSaveAsync(TimeSpan timeout)
+    {
+        var confirmed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _saveConfirmed = confirmed;
+        try
+        {
+            return await Task.WhenAny(confirmed.Task, Task.Delay(timeout)) == confirmed.Task;
+        }
+        finally
+        {
+            _saveConfirmed = null;
+        }
+    }
+
+    /// <summary>Once a minute while the server runs: is it time for an automatic backup?</summary>
+    private void OnAutoBackupTick()
+    {
+        // Asked every tick rather than on join, so a player who came and went between two backups
+        // still counts as somebody having played.
+        if (ConnectedPlayers.Count > 0) _playedSinceBackup = true;
+
+        var enabled = Config.BackupsEnabled && Config.AutoBackupEnabled;
+        switch (BackupSchedule.Due(DateTime.UtcNow, _lastAutoBackupUtc, Config.BackupIntervalMinutes,
+                    _playedSinceBackup, enabled))
+        {
+            case BackupDue.Now:
+                _lastAutoBackupUtc = DateTime.UtcNow;
+                _playedSinceBackup = false;
+                _ = RunAutoBackupAsync();
+                break;
+
+            // Nobody played: don't copy the same world again, but don't ask again in a minute either.
+            case BackupDue.Skip:
+                _lastAutoBackupUtc = DateTime.UtcNow;
+                break;
+        }
+    }
+
+    private async Task RunAutoBackupAsync()
+    {
+        try
+        {
+            await RunBackupAsync("auto");
+            Backups.RefreshIfLoaded();
+        }
+        catch (Exception ex)
+        {
+            // A failed backup must never take the server down with it.
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanStop))]
     private async Task Restart()
     {
         await _process.StopAsync(TimeSpan.FromSeconds(30));
         _consecutiveCrashes = 0; // a deliberate Restart gives auto-restart a fresh budget too
-        await StartInternal(isAutoRestart: false);
+        await StartInternalAsync(isAutoRestart: false);
     }
 
     private bool CanSend => IsRunning && !string.IsNullOrWhiteSpace(CommandText);
@@ -1457,7 +1827,12 @@ public partial class ServerViewModel : ObservableObject
             OnConsoleLine(created
                 ? Localizer.Get("Msg_TunnelCreated")
                 : string.Format(Localizer.Get("Msg_TunnelExists"), port));
-            await RefreshTunnelAddressAsync();
+
+            // The tunnel was made seconds ago, so this first lookup almost always comes back with
+            // no address — which is now shown as "waiting" rather than as nothing at all — and the
+            // burst picks it up as soon as playit publishes it.
+            await RefreshTunnelAddressAsync(fresh: true);
+            _ = PollForTunnelAddressAsync();
         }
         catch (Exception ex)
         {
@@ -1589,13 +1964,14 @@ public partial class ServerViewModel : ObservableObject
         ReplaceAll(BannedPlayers, _players.ReadBanned(Config.FolderPath));
         ReplaceAll(KnownPlayers, _players.ReadKnown(Config.FolderPath));
         RefreshWhitelist();
+        History.RequestRefresh();
     }
 
-    private static void ReplaceAll(ObservableCollection<string> target, IEnumerable<string> items)
-    {
-        target.Clear();
-        foreach (var i in items) target.Add(i);
-    }
+    /// <summary>
+    /// Refills one of the player lists, announcing the result once instead of once per name.
+    /// </summary>
+    private static void ReplaceAll(BulkObservableCollection<string> target, IEnumerable<string> items) =>
+        target.ReplaceAll(items);
 
     private bool EnsureRunning(string action)
     {
@@ -1704,15 +2080,31 @@ public partial class ServerViewModel : ObservableObject
             ? $"{(int)t.TotalHours}h {t.Minutes}m {t.Seconds}s"
             : $"{t.Minutes}m {t.Seconds}s";
 
-    /// <summary>Stops the server when the app closes. Does NOT touch the Playit service (keeps running in the background).</summary>
+    /// <summary>
+    /// The mirror of <see cref="Activate"/>: stops watching, and stops the server if it is running.
+    /// Does NOT touch the Playit service, which keeps running in the background.
+    /// </summary>
+    /// <remarks>
+    /// Safe on a view model that was never activated, which is the normal case in a test. Only the
+    /// two unsubscriptions would be wrong to run unpaired, and they are guarded; stopping an inert
+    /// timer and closing a listener that was never opened cost nothing.
+    /// </remarks>
     public async Task ShutdownAsync()
     {
+        if (_active)
+        {
+            _active = false;
+            _playit.StateChanged -= _onPlayitStateChanged; // the manager is shared and outlives us
+            _agent.StateChanged -= _onAgentStateChanged;   // the agent runner is shared too
+        }
+
+        Config.PropertyChanged -= OnConfigPropertyChanged;
         _statsTimer.Stop();
         _idleCountdownTimer.Stop();
         _playitTimer.Stop();
-        _playit.StateChanged -= _onPlayitStateChanged; // the manager is shared and outlives us
-        _agent.StateChanged -= _onAgentStateChanged;   // the agent runner is shared too
+        _autoBackupTimer.Stop();
         Mods.Shutdown();                               // cancels anything the store was fetching
+        History.Shutdown();                            // drops a rebuild that was waiting its turn
         _wake.Stop();                                  // frees the port we answer on while asleep
         if (_process.IsRunning)
             await _process.StopAsync(TimeSpan.FromSeconds(15));

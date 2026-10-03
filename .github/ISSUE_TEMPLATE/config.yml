@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security issue · Problema de seguridad
+    url: https://github.com/JuanP-G/MC-ServerLauncher/security/advisories/new
+    about: >-
+      Report it privately, never as a public issue — the app downloads and runs binaries.
+      Repórtalo en privado, nunca como issue público.
+  - name: 📖 Documentation · Documentación
+    url: https://juanp-g.github.io/MC-ServerLauncher/docs/
+    about: >-
+      Architecture, contributing guide and the API reference.
+      Arquitectura, guía de contribución y referencia de API.
+  - name: 💬 Question · Pregunta
+    url: https://github.com/JuanP-G/MC-ServerLauncher/discussions
+    about: >-
+      Not sure whether it is a bug? Ask here first.
+      ¿No sabes si es un fallo? Pregunta aquí primero.

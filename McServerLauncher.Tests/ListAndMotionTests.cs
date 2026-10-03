@@ -15,20 +15,24 @@ public class TunnelAddressSyncTests
     private static PlayitTunnel Udp(int port, string host, int pub = 51917) => new("u" + port, "x", port, host, null, "udp", pub);
 
     [Fact]
-    public void WhenTheAccountCannotBeAskedTheShownAddressStays() =>
-        Assert.Equal("old.ply.gg", TunnelAddressSync.JavaAddress("old.ply.gg", tunnels: null, 25565));
+    public void WhenTheAccountCannotBeAskedThereIsNoJavaAnswer() =>
+        Assert.Null(TunnelAddressSync.Java(tunnels: null, 25565));
 
     [Fact]
     public void WhenTheAccountSaysThereIsNoTunnelTheAddressGoes() =>
-        Assert.Equal("", TunnelAddressSync.JavaAddress("old.ply.gg", [], 25565));
+        Assert.Equal(("", TunnelAddressState.NoTunnel), TunnelAddressSync.Java([], 25565));
 
     [Fact]
     public void ABedrockTunnelOnTheJavaPortIsNotTheJavaAddress() =>
-        Assert.Equal("", TunnelAddressSync.JavaAddress("old", [Udp(25565, "udp.ply.gg")], 25565));
+        Assert.Equal(("", TunnelAddressState.NoTunnel), TunnelAddressSync.Java([Udp(25565, "udp.ply.gg")], 25565));
 
     [Fact]
     public void TheJavaTunnelOnThePortIsShown() =>
-        Assert.Equal("java.ply.gg", TunnelAddressSync.JavaAddress("old", [Tcp(25565, "java.ply.gg")], 25565));
+        Assert.Equal(("java.ply.gg", TunnelAddressState.Ready), TunnelAddressSync.Java([Tcp(25565, "java.ply.gg")], 25565));
+
+    [Fact]
+    public void AJavaTunnelWithoutItsAddressYetIsWaiting() =>
+        Assert.Equal(("", TunnelAddressState.Waiting), TunnelAddressSync.Java([Tcp(25565, "")], 25565));
 
     [Fact]
     public void AfterTheBedrockPortMovedTheOldAddressIsNotKept()

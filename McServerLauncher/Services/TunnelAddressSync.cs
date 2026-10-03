@@ -21,11 +21,20 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public static class TunnelAddressSync
 {
-    /// <summary>The Java address to show: the TCP tunnel's on this port, nothing, or — when the account could not be asked — what was shown before.</summary>
-    public static string? JavaAddress(string? current, IReadOnlyList<PlayitTunnel>? tunnels, int port)
+    /// <summary>
+    /// The Java address and state to show for a server on <paramref name="port"/>: the TCP tunnel's
+    /// address, or nothing with the reason. Null when the account could not be asked, meaning
+    /// "leave the address as it is, but say it failed".
+    /// </summary>
+    public static (string Address, TunnelAddressState State)? Java(IReadOnlyList<PlayitTunnel>? tunnels, int port)
     {
-        if (tunnels is null) return current;
-        return Match(tunnels, port, udp: false)?.Address ?? string.Empty;
+        if (tunnels is null) return null;
+
+        var tunnel = Match(tunnels, port, udp: false);
+        if (tunnel is null) return ("", TunnelAddressState.NoTunnel);
+        return tunnel.Address is { Length: > 0 } address
+            ? (address, TunnelAddressState.Ready)
+            : ("", TunnelAddressState.Waiting);
     }
 
     /// <summary>

@@ -21,8 +21,8 @@ namespace McServerLauncher.ViewModels;
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
-    private readonly ServerStorageService _storage = new();
-    private readonly AppSettingsService _settings = new();
+    private readonly ServerStorageService _storage;
+    private readonly AppSettingsService _settings;
 
     /// <summary>
     /// The settings, loaded once at startup and kept in memory (EFI-7): every use used to re-read
@@ -131,6 +131,12 @@ public partial class MainViewModel : ObservableObject
     /// <summary>The settings screen, which saves as it goes.</summary>
     public SettingsViewModel Settings { get; }
 
+    /// <summary>The player-history settings changed: every server's recorder follows them now.</summary>
+    internal void OnHistorySettingsChanged()
+    {
+        foreach (var server in Servers) server.History.OnSettingsChanged();
+    }
+
     [RelayCommand]
     private void ShowSettings() => Section = AppSection.Settings;
 
@@ -159,6 +165,9 @@ public partial class MainViewModel : ObservableObject
     private string? _packageName;
     private string? _checksumUrl;
 
+    /// <summary>One entry of the language selector.</summary>
+    /// <param name="Code">The culture code stored in <c>AppSettings.Language</c> (es, en, pt, fr, de).</param>
+    /// <param name="Name">The language's name in itself, never translated — that is how a selector is read.</param>
     public record LanguageOption(string Code, string Name);
 
     public IReadOnlyList<LanguageOption> Languages { get; } = new List<LanguageOption>
@@ -175,12 +184,57 @@ public partial class MainViewModel : ObservableObject
 
     private bool _languageReady;
 
-    public MainViewModel()
+    /// <summary>Default constructor uses %APPDATA%; <paramref name="dataDir"/> is for tests.</summary>
+    /// <remarks>
+    /// Both files go in the same folder, so one parameter settles both services. A test that opened
+    /// this view model without it would read the server list of whoever is running the test and
+    /// write its own back over it.
+    /// </remarks>
+    public MainViewModel(string? dataDir = null)
     {
+        _storage = new ServerStorageService(dataDir);
+        _settings = new AppSettingsService(dataDir);
+
         Load();
         _appSettings = _settings.Load();
         Tunnels = new TunnelsViewModel(Servers, _appSettings, _settings, () => Owner, ConfigureServerAsync);
         Settings = new SettingsViewModel(this, _appSettings, _settings, ApplyConsoleColours, ApplyWindowBehavior);
+
+        // Make the saved notification preferences the app-wide defaults for this session.
+        NotificationPreferences.Global = _appSettings.Notifications;
+        PlayerHistoryPreferences.Current = _appSettings.PlayerHistory.Clamped();
+        ApplyConsoleColours();
+        ApplyWindowBehavior();
+
+        var saved = _appSettings.Language;
+        var code = !string.IsNullOrWhiteSpace(saved) ? saved : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        SelectedLanguage = Languages.FirstOrDefault(l => l.Code == code) ?? Languages[0];
+        _languageReady = true;
+
+        // Checking only at startup missed the case this app is designed for: it lives in the tray
+        // with the servers running, so on a machine that is never turned off it would simply never
+        // look again. Built here, started in Activate.
+        _updateTimer = new DispatcherTimer { Interval = UpdateCheckInterval };
+        _updateTimer.Tick += (_, _) => _ = CheckForUpdatesAsync();
+    }
+
+    /// <summary>True once <see cref="Activate"/> has run, so servers added later start watching.</summary>
+    private bool _activated;
+
+    /// <summary>
+    /// Starts everything that reaches outside the app: the Playit agent, the update check and its
+    /// timer, and each server's own watching.
+    /// </summary>
+    /// <remarks>
+    /// Called from <c>MainWindow</c> once the window is up, not from the constructor. The same
+    /// split as <see cref="ServerViewModel.Activate"/> and for the same reasons: a constructor goes
+    /// back to assembling, the app stops downloading an agent and calling GitHub before anything is
+    /// on screen, and this view model becomes reachable from a test at all.
+    /// </remarks>
+    public void Activate()
+    {
+        if (_activated) return;
+        _activated = true;
 
         // Make the per-user Playit agent key (if the user already connected) the credential for all
         // Playit API reads/writes this session.
@@ -191,24 +245,16 @@ public partial class MainViewModel : ObservableObject
         if (!string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
             _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
 
-        // Make the saved notification preferences the app-wide defaults for this session.
-        NotificationPreferences.Global = _appSettings.Notifications;
-        ApplyConsoleColours();
-        ApplyWindowBehavior();
+        foreach (var server in Servers)
+            server.Activate();
 
-        var saved = _appSettings.Language;
-        var code = !string.IsNullOrWhiteSpace(saved) ? saved : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-        SelectedLanguage = Languages.FirstOrDefault(l => l.Code == code) ?? Languages[0];
-        _languageReady = true;
+        // The history of servers no longer in the list, once it is past the retention period.
+        var liveIds = Servers.Select(s => s.Config.Id).ToList();
+        var days = PlayerHistoryPreferences.Current.RetentionDays;
+        _ = Task.Run(() => PlayerHistoryStore.PruneOrphans(liveIds, DateTime.UtcNow, days));
 
         _ = CheckForUpdatesAsync();
         _ = Tunnels.PrefetchAsync();
-
-        // Checking only at startup missed the case this app is designed for: it lives in the tray
-        // with the servers running, so on a machine that is never turned off it would simply never
-        // look again.
-        _updateTimer = new DispatcherTimer { Interval = UpdateCheckInterval };
-        _updateTimer.Tick += (_, _) => _ = CheckForUpdatesAsync();
         _updateTimer.Start();
     }
 
@@ -495,7 +541,8 @@ public partial class MainViewModel : ObservableObject
     {
         // The app starts with no servers; the user creates a new one or adds an existing folder.
         // For servers saved before Type/GameVersion existed, detect them from the folder so the
-        // mods browser works (older Fabric/Forge servers).
+        // mods browser works (older Fabric/Forge servers). AddServer does the same on the way in,
+        // so a folder registered today does not have to wait for the next start to be recognised.
         var detector = new ServerDetectionService();
         var changed = false;
         foreach (var cfg in _storage.Load())
@@ -570,6 +617,9 @@ public partial class MainViewModel : ObservableObject
         vm.ConfigChanged += Save;
         vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
         Servers.Add(vm);
+        // A server registered while the app is already running has nobody else to switch it on. The
+        // ones Load builds at startup wait for Activate, which reaches all of them at once.
+        if (_activated) vm.Activate();
         return vm;
     }
 
@@ -606,7 +656,7 @@ public partial class MainViewModel : ObservableObject
             .Select(p => p!.Value)
             .ToList();
 
-        var panel = new NewServerView(usedPorts);
+        var panel = new NewServerView(usedPorts, Servers.Select(s => s.Config.FolderPath));
         panel.Cancelled += () => CloseNewServer(select: _beforeNewServer);
         panel.Completed += result =>
         {
@@ -635,8 +685,9 @@ public partial class MainViewModel : ObservableObject
         var vm = Register(result.Config);
         if (select) SelectedServer = vm;
         Save();
-        if (!result.IsNew) return;
 
+        // The same steps for a folder that was taken over as for a server just made: the options
+        // the panel showed apply to both.
         // Create the Playit tunnel (errors are visible in the server's console).
         string? playitKey = null;
         if (result.CreateTunnel)
@@ -685,7 +736,6 @@ public partial class MainViewModel : ObservableObject
     private async Task EditServer(ServerViewModel? target)
     {
         if (Target(target) is not { } server || Owner is null) return;
-        var oldType = server.Config.Type;
         var oldName = server.Name;
 
         // Read before the dialog: these two checkboxes are requests to install something, not
@@ -700,12 +750,18 @@ public partial class MainViewModel : ObservableObject
         var accepted = await dialog.ShowDialog<bool>(Owner);
 
         // A loader install mutates the config and the disk in the act (files already downloaded),
-        // so it must be persisted even if the user then cancels the edit dialog — otherwise the
-        // type badge, the Mods tab and servers.json keep showing the old type while the disk is
-        // already Fabric/Forge/Paper. Cancel still reverts the ordinary editable fields.
+        // so it must be persisted even if the user then cancels the edit dialog — otherwise
+        // servers.json keeps naming the old type while the disk is already Fabric/Forge/Paper.
+        // Cancel still reverts the ordinary editable fields.
+        //
+        // Nothing is refreshed here. The dialog writes into the config the view model is showing,
+        // the config announces each change and ServerConfigEffects says what it costs, so the card
+        // and the panels have already followed — including on the Cancel path, where restoring the
+        // snapshot announces its own eighteen assignments. A blanket refresh at this point used to
+        // be the mechanism; leaving it in would mean the app never exercised the one that replaced
+        // it, and would throw away the store page the user had open for an edit they cancelled.
         if (accepted || dialog.LoaderInstalled)
         {
-            server.Name = server.Config.Name;
             Save();
             _ = Tunnels.RenameTunnelsForServerAsync(server, oldName);
 
@@ -727,26 +783,7 @@ public partial class MainViewModel : ObservableObject
                 await server.SetUpBedrockModContentAsync();
                 Save();
             }
-
-            // If the loader type changed (e.g. a vanilla server was converted to Fabric), rebuild the
-            // view model so computed state (IsModded, the Mods tab/browser) refreshes.
-            if (server.Config.Type != oldType && !server.IsRunning)
-                ReplaceServer(server);
         }
-    }
-
-    /// <summary>Replaces a server's view model in place (keeping its position) and reselects it.</summary>
-    private void ReplaceServer(ServerViewModel old)
-    {
-        var index = Servers.IndexOf(old);
-        if (index < 0) return;
-
-        _ = old.ShutdownAsync(); // stop its timers (it isn't running)
-        var vm = new ServerViewModel(old.Config);
-        vm.ConfigChanged += Save;
-        vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
-        Servers[index] = vm;
-        SelectedServer = vm;
     }
 
     /// <summary>Opens the editor for the card: icon, name and the two lines of the MOTD.</summary>
@@ -778,14 +815,22 @@ public partial class MainViewModel : ObservableObject
         var dialog = new ServerConfigDialog(server.Config, port =>
             Servers.FirstOrDefault(s => !ReferenceEquals(s, server) &&
                                         CrossplayService.EffectiveBedrockPort(s.Config) == port)?.Name);
-        if (!await dialog.ShowDialog<bool>(Owner)) return;
-
-        server.RefreshFromDisk();
-        if (dialog.BedrockPortChanged)
+        var accepted = await dialog.ShowDialog<bool>(Owner);
+        if (accepted)
         {
-            Save();
-            _ = server.RefreshTunnelInfoAsync();
+            server.RefreshFromDisk();
+            if (dialog.BedrockPortChanged)
+            {
+                Save();
+                _ = server.RefreshTunnelInfoAsync();
+            }
         }
+
+        // Whether it was accepted or cancelled: forgetting a server's players happens the moment
+        // the button is pressed, not when the dialog is saved, so the Players tab would otherwise
+        // go on listing people whose history is no longer there.
+        if (dialog.HistoryCleared)
+            server.History.Refresh();
     }
 
     [RelayCommand(CanExecute = nameof(CanActOn))]
@@ -882,6 +927,7 @@ public partial class MainViewModel : ObservableObject
         // The console log buffers and flushes on a timer (EFI-5); push the tail out before the
         // Environment.Exit that follows every shutdown path.
         ConsoleLogService.Shared.Flush();
+        PlayerHistoryStore.FlushAll();
     }
 
     partial void OnSelectedServerChanged(ServerViewModel? oldValue, ServerViewModel? newValue)

@@ -167,9 +167,10 @@ public class ConsoleLineClassifierTests
     // --- The source outranks the text ---
 
     [Fact]
-    public void AnythingOnStandardErrorIsAnError()
+    public void AnythingElseOnStandardErrorIsAnError()
     {
-        // The one severity signal that needs no parsing and that no plugin or locale can reword.
+        // The one severity signal that needs no parsing and that no plugin or locale can reword. The
+        // single exception is the JVM's own "WARNING:" lines — see ConsoleContinuationTests.
         Assert.Equal(ConsoleLineKind.Error,
             ConsoleLineClassifier.Classify("Exception in thread \"main\"", ConsoleSource.Stderr));
 

@@ -18,9 +18,15 @@ public class ServerStorageService
     private readonly string _dataDir;
     private readonly string _filePath;
 
-    public ServerStorageService()
+    /// <summary>Default constructor uses %APPDATA%; <paramref name="dataDir"/> is for tests.</summary>
+    /// <remarks>
+    /// Same shape as <see cref="AppSettingsService"/>, and for the same reason: without it a test
+    /// that goes anywhere near the server list reads and writes the real one on the machine running
+    /// it. The two files live together, so whoever supplies a folder supplies it to both.
+    /// </remarks>
+    public ServerStorageService(string? dataDir = null)
     {
-        _dataDir = Path.Combine(
+        _dataDir = dataDir ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "McServerLauncher");
         _filePath = Path.Combine(_dataDir, "servers.json");

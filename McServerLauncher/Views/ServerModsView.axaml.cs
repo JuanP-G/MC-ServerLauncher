@@ -5,6 +5,10 @@ using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views;
 
+/// <summary>
+/// The Mods (or Plugins) tab of a server, bound to <see cref="ServerModsViewModel"/>: the store on
+/// one side, what is installed on the other.
+/// </summary>
 public partial class ServerModsView : UserControl
 {
     public ServerModsView()

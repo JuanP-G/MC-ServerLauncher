@@ -37,11 +37,55 @@ public static class ContentManifest
     /// <param name="Requires">Ids that must be present for it to load.</param>
     public record Manifest(string FileName, IReadOnlyList<string> Provides, IReadOnlyList<string> Requires)
     {
+        /// <summary>
+        /// Where the jar says it runs, if it says.
+        /// </summary>
+        /// <remarks>
+        /// An <c>init</c> property with a default rather than a fourth positional parameter, so
+        /// that not one existing call site or test has to change to gain it. Everything that does
+        /// not set it keeps reading <see cref="ContentSide.Unspecified"/>, which is what the jars
+        /// that say nothing mean anyway.
+        /// </remarks>
+        public ContentSide Side { get; init; } = ContentSide.Unspecified;
+
         public static Manifest Empty(string fileName) =>
             new(fileName, Array.Empty<string>(), Array.Empty<string>());
 
         /// <summary>True when the jar said nothing this app can act on.</summary>
         public bool IsSilent => Provides.Count == 0 && Requires.Count == 0;
+    }
+
+    /// <summary>
+    /// Where a jar declares it runs, read out of its own manifest.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="Unspecified"/> and <see cref="Both"/> are kept apart because they are different
+    /// things to have read in a file, not because one is worth more than the other. Measured
+    /// against a real modpack, <c>environment: "*"</c> turned out to carry no information at all:
+    /// eleven jars out of eleven declared it, Floodgate among them, which is a Bedrock
+    /// authentication plugin with nothing to do on a client. It is what the template writes.
+    /// <c>ExportSelection</c> therefore treats the two identically, and only <c>client</c> and
+    /// <c>server</c> count as anybody having said anything.
+    /// </para>
+    /// <para>
+    /// Anything unrecognised reads as <see cref="Unspecified"/>, like every other value this file
+    /// does not understand.
+    /// </para>
+    /// </remarks>
+    public enum ContentSide
+    {
+        /// <summary>The jar did not say. Not the same as having said "both".</summary>
+        Unspecified,
+
+        /// <summary>The jar says it runs on both sides.</summary>
+        Both,
+
+        /// <summary>The jar says it is client-side only.</summary>
+        Client,
+
+        /// <summary>The jar says it is server-side only.</summary>
+        Server
     }
 
     /// <summary>
@@ -51,10 +95,17 @@ public static class ContentManifest
     /// One set for every loader rather than one per format. A Fabric jar never asks for
     /// <c>neoforge</c>, so the extra names cost nothing, and keeping a single list means a loader
     /// name can never be missed in one reader and handled in another.
+    /// <para>
+    /// <c>mixinextras</c> is here because the loaders ship it inside themselves — Fabric Loader has
+    /// since 0.15, and so do current Forge and NeoForge — so it lives in the server's
+    /// <c>libraries/</c> and never in <c>mods/</c>. Lithium asks for it by name, and the check
+    /// reported it missing on servers where the loader's own startup log lists it as loaded.
+    /// </para>
     /// </remarks>
     private static readonly HashSet<string> LoaderProvided = new(StringComparer.OrdinalIgnoreCase)
     {
         "minecraft", "java", "fabricloader", "fabric",      // Fabric
+        "mixinextras",                                       // bundled by every current loader
         "forge", "neoforge", "fml",                          // Forge and NeoForge
         "bukkit", "spigot", "paper", "purpur", "server"      // Bukkit and its descendants
     };
@@ -66,19 +117,102 @@ public static class ContentManifest
         try
         {
             using var zip = ZipFile.OpenRead(jarPath);
-
-            // In the order they are likely to be found, and stopping at the first that says
-            // anything: a jar shipping two formats is one jar, not two.
-            return FromFabric(zip, name)
-                ?? FromPluginYml(zip, name)
-                ?? FromModsToml(zip, name)
-                ?? Manifest.Empty(name);
+            return FromArchive(zip, name, depth: 0);
         }
         catch
         {
             // A jar that cannot be opened is a problem for the loader to report, not a reason for
             // this app to refuse to start the server.
             return Manifest.Empty(name);
+        }
+    }
+
+    /// <summary>
+    /// How deep to follow jars inside jars. Real mods go one level down, occasionally two.
+    /// </summary>
+    private const int MaxNesting = 3;
+
+    /// <summary>A nested jar bigger than this is not metadata worth reading into memory.</summary>
+    private const long MaxNestedBytes = 64L * 1024 * 1024;
+
+    /// <summary>One archive's manifest, with everything bundled inside it counted as provided.</summary>
+    /// <remarks>
+    /// <para>
+    /// Both loaders let a mod carry other mods inside itself — Fabric under <c>META-INF/jars/</c>,
+    /// Forge and NeoForge under <c>META-INF/jarjar/</c> — and load them as if they had been
+    /// installed separately. <c>fabric-api</c> is forty-odd modules shipped that way, and Xaero's
+    /// minimap carries <c>xaerolib</c> in its own jar. Reading only the outer manifest reported every
+    /// one of those as missing: a server that started perfectly was told, before starting, that six
+    /// dependencies had to be installed by hand, and the store was then asked for ids it could never
+    /// resolve because they are modules, not projects.
+    /// </para>
+    /// <para>
+    /// What a bundled jar <em>provides</em> is added; what it <em>requires</em> is not. The author
+    /// ships the bundle as a unit, and a gap inside it is the loader's to report — pulling nested
+    /// requirements in would invent missing dependencies, which is the very failure this fixes.
+    /// </para>
+    /// </remarks>
+    private static Manifest FromArchive(ZipArchive zip, string name, int depth)
+    {
+        // In the order they are likely to be found, and stopping at the first that says anything:
+        // a jar shipping two formats is one jar, not two.
+        var own = FromFabric(zip, name)
+            ?? FromPluginYml(zip, name)
+            ?? FromModsToml(zip, name)
+            ?? Manifest.Empty(name);
+
+        if (depth >= MaxNesting) return own;
+
+        var bundled = zip.Entries
+            .Where(IsNestedJar)
+            .SelectMany(entry => ProvidedByNested(entry, depth + 1))
+            .ToList();
+
+        if (bundled.Count == 0) return own;
+
+        var provides = own.Provides
+            .Concat(bundled)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        // A jar that needs something it carries itself is not waiting on anything.
+        var requires = own.Requires
+            .Where(r => !provides.Contains(r, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+
+        return own with { Provides = provides, Requires = requires };
+    }
+
+    /// <summary>Where the two loaders put the jars they carry inside another jar.</summary>
+    /// <remarks>
+    /// Matched on the location both loaders use rather than on each one's index file, so a nested
+    /// jar is found whichever format listed it — and one the index forgot is still counted, which
+    /// errs towards reporting less missing, the safe direction for a check that can block a start.
+    /// </remarks>
+    private static bool IsNestedJar(ZipArchiveEntry entry) =>
+        entry.FullName.EndsWith(".jar", StringComparison.OrdinalIgnoreCase) &&
+        (entry.FullName.StartsWith("META-INF/jars/", StringComparison.OrdinalIgnoreCase) ||
+         entry.FullName.StartsWith("META-INF/jarjar/", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>The ids a jar inside a jar answers to. Empty if it cannot be read.</summary>
+    private static IReadOnlyList<string> ProvidedByNested(ZipArchiveEntry entry, int depth)
+    {
+        if (entry.Length > MaxNestedBytes) return Array.Empty<string>();
+
+        try
+        {
+            // ZipArchive needs a seekable stream, and an entry's is not.
+            using var buffer = new MemoryStream();
+            using (var source = entry.Open()) source.CopyTo(buffer);
+            buffer.Position = 0;
+
+            using var inner = new ZipArchive(buffer, ZipArchiveMode.Read);
+            return FromArchive(inner, Path.GetFileName(entry.FullName), depth).Provides;
+        }
+        catch
+        {
+            // Same rule as the outer jar: unreadable means it declares nothing.
+            return Array.Empty<string>();
         }
     }
 
@@ -130,7 +264,20 @@ public static class ContentManifest
         if (root.TryGetProperty("depends", out var depends) && depends.ValueKind == JsonValueKind.Object)
             requires.AddRange(depends.EnumerateObject().Select(p => p.Name));
 
-        return Build(fileName, provides, requires);
+        // "environment" is Fabric's own word for the side. The entrypoints are deliberately not
+        // consulted as well: a jar with both a client and a server entrypoint is a jar that runs on
+        // both, which is what the absence of an "environment" already says.
+        var side = root.TryGetProperty("environment", out var env) && env.ValueKind == JsonValueKind.String
+            ? env.GetString() switch
+            {
+                "*" => ContentSide.Both,
+                "client" => ContentSide.Client,
+                "server" => ContentSide.Server,
+                _ => ContentSide.Unspecified
+            }
+            : ContentSide.Unspecified;
+
+        return Build(fileName, provides, requires) with { Side = side };
     }
 
     // --- Bukkit, Paper, Purpur: plugin.yml ---
@@ -151,7 +298,10 @@ public static class ContentManifest
 
         // "depend" blocks loading; "softdepend" only asks to be loaded later if present, so a
         // missing one is not a failure and must not stop a start.
-        return Build(fileName, provides, ListValue(text, "depend"));
+        //
+        // Server by definition, and the one side that needs no parsing to know: a Bukkit plugin
+        // runs in the server and there is no client half of the platform for it to run in.
+        return Build(fileName, provides, ListValue(text, "depend")) with { Side = ContentSide.Server };
     }
 
     // --- Forge and NeoForge: mods.toml ---
@@ -166,6 +316,7 @@ public static class ContentManifest
 
         var provides = new List<string>();
         var requires = new List<string>();
+        var side = ContentSide.Unspecified;
 
         // A tiny state machine over the two table headers that matter. Everything else is skipped,
         // including values spanning lines, which none of the keys read here ever do.
@@ -196,6 +347,22 @@ public static class ContentManifest
 
             if (inMods && TomlKey(line, "modId") is { } own) provides.Add(own);
 
+            // Only inside [[mods]]. "side" appears in [[dependencies.x]] as well, where it means
+            // which side that dependency is needed on — read there, a mod that merely requires a
+            // server-side library would be filed as server-side itself.
+            //
+            // displayTest is not read, on purpose. It controls the version handshake, not where the
+            // mod loads; it correlates with being server-side without ever asserting it, and acting
+            // on a correlation is the one mistake this function cannot afford to make.
+            if (inMods && TomlKey(line, "side") is { } declared)
+                side = declared.ToUpperInvariant() switch
+                {
+                    "CLIENT" => ContentSide.Client,
+                    "SERVER" => ContentSide.Server,
+                    "BOTH" => ContentSide.Both,
+                    _ => ContentSide.Unspecified
+                };
+
             if (!inDependency) continue;
 
             if (TomlKey(line, "modId") is { } needed) dependencyId = needed;
@@ -209,7 +376,7 @@ public static class ContentManifest
         }
 
         FlushDependency();
-        return Build(fileName, provides, requires);
+        return Build(fileName, provides, requires) with { Side = side };
     }
 
     // --- Shared ---

@@ -11,10 +11,16 @@ using McServerLauncher.Services;
 namespace McServerLauncher.Views;
 
 /// <summary>
-/// Installs a mod loader (Fabric for now) into an EXISTING server folder, turning a vanilla
-/// server into a moddable one. On success it updates the passed <see cref="ServerConfig"/> in place
-/// and the dialog returns true.
+/// Changes the type of an EXISTING server folder, keeping the world: Vanilla into a moddable or a
+/// plugin server, one loader into another, or any of them back to Vanilla. On success it updates
+/// the passed <see cref="ServerConfig"/> in place and the dialog returns true.
 /// </summary>
+/// <remarks>
+/// It offers the same list as the create dialog (the shared <see cref="ServerTypePicker"/>) and
+/// installs through the same <see cref="ServerJarInstaller"/>, so the two can't drift apart. The
+/// warning above the button is keyed on the direction of the change, because they are not equally
+/// safe: gaining a loader is additive, dropping to Vanilla or crossing between families is not.
+/// </remarks>
 public partial class InstallLoaderDialog : Window
 {
     private readonly MinecraftVersionService _versions = new();

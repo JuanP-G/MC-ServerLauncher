@@ -16,6 +16,7 @@
   <data name="Tip_Configure" xml:space="preserve"><value>server.properties visuell bearbeiten</value></data>
   <data name="Uptime" xml:space="preserve"><value>Laufzeit</value></data>
   <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="Tunnel_Placeholder" xml:space="preserve"><value>Erscheint von selbst, sobald der Tunnel besteht</value></data>
   <data name="Copy" xml:space="preserve"><value>Kopieren</value></data>
   <data name="Console" xml:space="preserve"><value>Konsole</value></data>
   <data name="Players" xml:space="preserve"><value>Spieler</value></data>
@@ -52,6 +53,27 @@
   <data name="Cancel" xml:space="preserve"><value>Abbrechen</value></data>
   <data name="Save" xml:space="preserve"><value>Speichern</value></data>
   <data name="Browse" xml:space="preserve"><value>Durchsuchen...</value></data>
+  <data name="Cs_ModeNew" xml:space="preserve"><value>Einen neuen erstellen</value></data>
+  <data name="Cs_ModeExisting" xml:space="preserve"><value>Einen vorhandenen Ordner verwenden</value></data>
+  <data name="Cs_ExistingFolder" xml:space="preserve"><value>Serverordner</value></data>
+  <data name="Cs_ExistingFolderPlaceholder" xml:space="preserve"><value>Der Ordner, in dem der Server liegt</value></data>
+  <data name="Cs_ExistingJar" xml:space="preserve"><value>Welche .jar starten</value></data>
+  <data name="Cs_Software" xml:space="preserve"><value>Software</value></data>
+  <data name="Cs_AddButton" xml:space="preserve"><value>Server hinzufügen</value></data>
+  <data name="Cs_DetectedLoaderFmt" xml:space="preserve"><value>Loader {0}</value></data>
+  <data name="Cs_DetectedPortFmt" xml:space="preserve"><value>Port {0}</value></data>
+  <data name="Cs_DetectedWorld" xml:space="preserve"><value>mit Welt</value></data>
+  <data name="Cs_DetectedNoWorld" xml:space="preserve"><value>noch keine Welt</value></data>
+  <data name="Cs_ExistingNotAServer" xml:space="preserve"><value>In diesem Ordner gibt es keine .jar. Ist das der Ordner des Servers?</value></data>
+  <data name="Cs_ExistingPickType" xml:space="preserve"><value>Die Serverart ließ sich nicht erkennen: wähle sie unten, und die Version auch.</value></data>
+  <data name="Cs_ExistingPickVersion" xml:space="preserve"><value>Die Minecraft-Version ließ sich nicht erkennen: wähle sie unten.</value></data>
+  <data name="Cs_ExistingPickJar" xml:space="preserve"><value>Es ließ sich nicht erkennen, welche .jar den Server startet: wähle sie aus der Liste.</value></data>
+  <data name="Cs_ExistingFolderMissing" xml:space="preserve"><value>Dieser Ordner existiert nicht.</value></data>
+  <data name="Cs_ExistingAlreadyAdded" xml:space="preserve"><value>Dieser Server ist schon in der Liste.</value></data>
+  <data name="Cs_ExistingNeedsVersion" xml:space="preserve"><value>Wähle die Minecraft-Version des Servers.</value></data>
+  <data name="Cs_ExistingNeedsJar" xml:space="preserve"><value>Wähle, welche .jar den Server startet.</value></data>
+  <data name="Cs_ExistingAddAnyway" xml:space="preserve"><value>Trotzdem hinzufügen?</value></data>
+  <data name="Cs_ExistingPortWrittenFmt" xml:space="preserve"><value>Port {0} in server.properties gespeichert.</value></data>
   <data name="Cs_Name" xml:space="preserve"><value>Servername</value></data>
   <data name="Cs_NamePlaceholder" xml:space="preserve"><value>z. B. Survival, Kreativ, Events...</value></data>
   <data name="Cs_ParentFolder" xml:space="preserve"><value>Im Ordner erstellen</value></data>
@@ -250,9 +272,19 @@
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Sicherung wird wiederhergestellt...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Sicherung wiederhergestellt.</value></data>
   <data name="Backups" xml:space="preserve"><value>Sicherungen</value></data>
-  <data name="Backup_Hint" xml:space="preserve"><value>Vor jedem Start und beim Stoppen des Servers wird automatisch eine Sicherung der Welt erstellt. Sicherungen können nur erstellt oder wiederhergestellt werden, während der Server gestoppt ist.</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>Vor jedem Start, beim Stoppen des Servers und — wenn eingeschaltet — in Abständen während gespielt wird, wird automatisch eine Sicherung der Welt erstellt. Zum Wiederherstellen muss der Server weiterhin gestoppt sein.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Jetzt sichern</value></data>
-  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Der Server muss gestoppt sein, um eine Sicherung zu erstellen.</value></data>
+  <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Die Welt jetzt sichern, ob der Server läuft oder gestoppt ist.</value></data>
+  <data name="Backup_TriggerAuto" xml:space="preserve"><value>Automatisch</value></data>
+  <data name="Backup_AutoWhilePlaying" xml:space="preserve"><value>Auch in Abständen, während gespielt wird</value></data>
+  <data name="Backup_IntervalLabel" xml:space="preserve"><value>Alle (Minuten):</value></data>
+  <data name="Backup_ManualRetentionLabel" xml:space="preserve"><value>Aufzubewahrende manuelle Sicherungen:</value></data>
+  <data name="Backup_AutoHint" xml:space="preserve"><value>Vor dem Kopieren wird der Server gebeten, die Welt nicht mehr zu schreiben und auf die Festplatte zu leeren, damit eine Sicherung nie halb geschrieben ist. Hat seit der letzten niemand gespielt, wird diese übersprungen. Manuelle Sicherungen zählen getrennt, und die Uhr löscht sie nie.</value></data>
+  <data name="Backup_RestoreNeedsStoppedTip" xml:space="preserve"><value>Der Server muss gestoppt sein, um eine Sicherung wiederherzustellen.</value></data>
+  <data name="Msg_BackupPausingSaves" xml:space="preserve"><value>[Sicherung] Speichern der Welt wird pausiert…</value></data>
+  <data name="Msg_BackupSaveNotConfirmed" xml:space="preserve"><value>[Sicherung] Der Server hat das Speichern nicht rechtzeitig bestätigt; es wird trotzdem kopiert.</value></data>
+  <data name="Msg_BackupSavesResumed" xml:space="preserve"><value>[Sicherung] Speichern der Welt fortgesetzt.</value></data>
+  <data name="Msg_BackupAlreadyRunning" xml:space="preserve"><value>[Sicherung] Es läuft bereits eine Sicherung.</value></data>
   <data name="Backup_NoneYet" xml:space="preserve"><value>Noch keine Sicherungen vorhanden.</value></data>
   <data name="Backup_RestoreButton" xml:space="preserve"><value>Wiederherstellen</value></data>
   <data name="Backup_RestoreTitle" xml:space="preserve"><value>Sicherung wiederherstellen</value></data>
@@ -280,12 +312,16 @@
   <data name="Idle_Hint" xml:space="preserve"><value>0 = wird nie gestoppt. Die Zeit läuft ab dem Weggehen des letzten Spielers und wird zurückgesetzt, sobald jemand beitritt.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>{0} Minuten ohne Spieler: Der Server wird gestoppt.</value></data>
   <data name="Backup_Section" xml:space="preserve"><value>Welt-Sicherungen</value></data>
-  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Sicherungen automatisch erstellen (vor dem Start und beim Stoppen)</value></data>
-  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Aufzubewahrende Sicherungen:</value></data>
+  <data name="Backup_EnabledCheck" xml:space="preserve"><value>Sicherungen automatisch erstellen</value></data>
+  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Aufzubewahrende automatische Sicherungen:</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Der Dienst konnte nicht geändert werden (erfordert meist, die App als Administrator zu starten oder das Tray-Symbol zu verwenden): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Der Server-Port konnte nicht ermittelt werden (fehlt server.properties?).</value></data>
   <data name="Msg_NeedsJavaPreparing" xml:space="preserve"><value>[Launcher] Dieser Server benötigt Java {0}. Kompatibles Java wird vorbereitet...</value></data>
   <data name="Msg_NeedsJavaCurrentPreparing" xml:space="preserve"><value>[Launcher] Dieser Server benötigt Java {0} (konfiguriert ist Java {1}). Kompatibles Java wird vorbereitet...</value></data>
+  <data name="BlueMap_ConsentText" xml:space="preserve"><value>BlueMap muss Ressourcen aus dem offiziellen Minecraft-Client herunterladen — Mojang stellt sie bereit —, um die Karte zu zeichnen, und tut das nicht ohne deine Erlaubnis.&#10;&#10;Akzeptierst du den Download? Die App ändert die Einstellung in der Konfiguration und lädt BlueMap neu.</value></data>
+  <data name="Msg_BlueMapAccepted" xml:space="preserve"><value>[Launcher] BlueMap: Download akzeptiert. BlueMap wird neu geladen…</value></data>
+  <data name="Msg_BlueMapDeclined" xml:space="preserve"><value>[Launcher] BlueMap bleibt ohne Karte, bis du den Download akzeptierst. Ich frage beim nächsten Start erneut.</value></data>
+  <data name="Msg_BlueMapCouldNotAcceptFmt" xml:space="preserve"><value>[Launcher] Ich habe die Download-Einstellung von BlueMap in {0} nicht gefunden. Setze „accept-download: true“ in dieser Datei von Hand.</value></data>
   <data name="Msg_JavaConfigured" xml:space="preserve"><value>[Launcher] Java für diesen Server festgelegt: {0}</value></data>
   <data name="Msg_JavaPrepareFailStart" xml:space="preserve"><value>[Hinweis] Java {0} konnte nicht vorbereitet werden: {1}. Es wird trotzdem versucht zu starten.</value></data>
   <data name="Msg_PortBusyNotStarted" xml:space="preserve"><value>[Fehler] Port {0} ist belegt ({1}). Nicht gestartet.</value></data>
@@ -371,6 +407,10 @@
   <data name="SearchMods_Placeholder" xml:space="preserve"><value>Auf Modrinth suchen...</value></data>
   <data name="Search" xml:space="preserve"><value>Suchen</value></data>
   <data name="Installed_Mods" xml:space="preserve"><value>Installierte Mods</value></data>
+  <data name="Mods_InstalledFilter" xml:space="preserve"><value>Installierte Mods durchsuchen</value></data>
+  <data name="Plugins_InstalledFilter" xml:space="preserve"><value>Installierte Plugins durchsuchen</value></data>
+  <data name="Mods_InstalledNoMatch" xml:space="preserve"><value>Nichts Installiertes passt zur Suche.</value></data>
+  <data name="Mods_InstalledCountFmt" xml:space="preserve"><value>{0} von {1}</value></data>
   <data name="No_Installed_Mods" xml:space="preserve"><value>Noch keine Mods installiert.</value></data>
   <data name="Install" xml:space="preserve"><value>Installieren</value></data>
   <data name="Mods" xml:space="preserve"><value>Mods</value></data>
@@ -446,6 +486,46 @@ Typ: {1}  ·  Minecraft-Version: {2}
 
 Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Name_NewServer" xml:space="preserve"><value>Neuer Server</value></data>
+  <data name="Export_ScriptsFmt" xml:space="preserve"><value>Damit du es nicht von Hand machen musst: entpacke dieses Zip vollständig und führe unter Windows „{0}“ aus, unter Linux und macOS „bash {1}“. Das kopiert die Mods in deinen Ordner und legt bereits vorhandene in einen separaten Ordner beiseite, ohne etwas zu löschen.</value></data>
+  <data name="Script_HeaderFmt" xml:space="preserve"><value>Mods für „{0}“ — Minecraft {1} ({2})</value></data>
+  <data name="Script_LauncherOfficial" xml:space="preserve"><value>Offizielles Minecraft</value></data>
+  <data name="Script_ArrowsHint" xml:space="preserve"><value>Mit den Pfeiltasten ↑ ↓ bewegen, mit Enter bestätigen.</value></data>
+  <data name="Script_OtherPath" xml:space="preserve"><value>Ein anderer Ordner…</value></data>
+  <data name="Script_PickOne" xml:space="preserve"><value>Wähle eine, indem du ihre Nummer drückst:</value></data>
+  <data name="Script_TypePath" xml:space="preserve"><value>Gib den Pfad zu deinem mods-Ordner ein:</value></data>
+  <data name="Script_AskInstall" xml:space="preserve"><value>Soll ich ihn für dich installieren? [J/n]</value></data>
+  <data name="Script_CarryingOn" xml:space="preserve"><value>Gut, es geht ohne weiter. Die Mods werden trotzdem kopiert.</value></data>
+  <data name="Script_Downloading" xml:space="preserve"><value>Offizielles Installationsprogramm wird heruntergeladen…</value></data>
+  <data name="Script_DownloadFailed" xml:space="preserve"><value>Das Installationsprogramm konnte nicht heruntergeladen werden. Es geht ohne weiter.</value></data>
+  <data name="Script_NoDownloader" xml:space="preserve"><value>Ich finde weder curl noch wget, um das Installationsprogramm zu laden.</value></data>
+  <data name="Script_NoJava" xml:space="preserve"><value>Ich finde kein Java, das zum Installieren nötig ist. Es geht ohne weiter.</value></data>
+  <data name="Script_NoHashTool" xml:space="preserve"><value>Ich kann den Download auf diesem System nicht prüfen und führe ihn daher nicht aus.</value></data>
+  <data name="Script_HashMismatch" xml:space="preserve"><value>Der Download stimmt nicht mit dem Erwarteten überein. Er wird nicht ausgeführt und gelöscht.</value></data>
+  <data name="Script_Installing" xml:space="preserve"><value>Wird installiert. Das dauert einen Moment…</value></data>
+  <data name="Script_LoaderInstalled" xml:space="preserve"><value>Installiert. Wenn du Minecraft öffnest, wähle im Launcher das neue Profil.</value></data>
+  <data name="Script_InstallFailed" xml:space="preserve"><value>Das Installationsprogramm ist fehlgeschlagen. Die Mods werden trotzdem kopiert; installiere ihn von Hand.</value></data>
+  <data name="Script_CloseGame" xml:space="preserve"><value>Schließe Minecraft, bevor es weitergeht.</value></data>
+  <data name="Script_NoSource" xml:space="preserve"><value>Ich finde den Ordner „mods“ nicht neben diesem Skript. Entpacke das ganze Zip und starte es von dort, nicht aus dem Archiv heraus.</value></data>
+  <data name="Script_AskFolder" xml:space="preserve"><value>Wohin sollen die Mods?</value></data>
+  <data name="Script_DestinationIs" xml:space="preserve"><value>Zielordner:</value></data>
+  <data name="Script_NoLoaderFmt" xml:space="preserve"><value>{0} scheint in diesem Minecraft nicht installiert zu sein. Ohne den Loader werden die Mods nicht geladen. Zu finden unter {1}</value></data>
+  <data name="Script_AskContinue" xml:space="preserve"><value>Trotzdem kopieren? [J/n]</value></data>
+  <data name="Script_YesWords" xml:space="preserve"><value>j,ja</value></data>
+  <data name="Script_Cancelled" xml:space="preserve"><value>Es wurde nichts geändert.</value></data>
+  <data name="Script_CannotCreate" xml:space="preserve"><value>Der Zielordner konnte nicht angelegt werden.</value></data>
+  <data name="Script_MoveFailed" xml:space="preserve"><value>Diese Datei konnte nicht beiseitegelegt werden. Ist Minecraft offen? Es wurde nichts geändert:</value></data>
+  <data name="Script_MovedAside" xml:space="preserve"><value>Bereits vorhandene Mods, beiseitegelegt (nichts wurde gelöscht):</value></data>
+  <data name="Script_CopyFailed" xml:space="preserve"><value>Diese Datei konnte nicht kopiert werden:</value></data>
+  <data name="Script_Done" xml:space="preserve"><value>Fertig. Kopierte Mods:</value></data>
+  <data name="Script_HowToUndo" xml:space="preserve"><value>Um alles zurückzusetzen, leere den mods-Ordner und lege zurück, was hier liegt:</value></data>
+  <data name="Export_NoticeAllFmt" xml:space="preserve"><value>Ins Paket exportierte Dateien: {0}.</value></data>
+  <data name="Export_NoticeFmt" xml:space="preserve"><value>Exportierte Dateien: {0}. {1} wurden weggelassen, weil sie nur auf dem Server gebraucht werden: {2}.</value></data>
+  <data name="Export_NoticeOneFmt" xml:space="preserve"><value>Exportierte Dateien: {0}. „{1}“ wurde weggelassen, weil es nur auf dem Server gebraucht wird.</value></data>
+  <data name="Export_LeftOutOneFmt" xml:space="preserve"><value>Hinweis: „{0}“ wurde weggelassen, weil es nur auf dem Server läuft. Zum Spielen wird es nicht gebraucht.</value></data>
+  <data name="Export_NoticeOffline" xml:space="preserve"><value>Das lief ohne Verbindung, es zählte also nur, was die Dateien selbst angeben.</value></data>
+  <data name="Export_DismissNotice" xml:space="preserve"><value>Diesen Hinweis ausblenden</value></data>
+  <data name="Export_IncludeAnyway" xml:space="preserve"><value>Trotzdem mitnehmen</value></data>
+  <data name="Export_LeftOutFmt" xml:space="preserve"><value>Hinweis: {0} Dateien, die nur auf dem Server laufen, wurden weggelassen ({1}). Zum Spielen werden sie nicht gebraucht.</value></data>
   <data name="Export_InstructionsFile" xml:space="preserve"><value>ANLEITUNG.txt</value></data>
   <data name="Msg_ModDeleteError" xml:space="preserve"><value>Datei konnte nicht gelöscht werden: {0}</value></data>
   <data name="Msg_ExportError" xml:space="preserve"><value>Modpack konnte nicht exportiert werden: {0}</value></data>
@@ -490,8 +570,15 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="CheckUpdates" xml:space="preserve"><value>Nach Updates suchen</value></data>
   <data name="Msg_CheckingUpdates" xml:space="preserve"><value>Suche nach Updates…</value></data>
   <data name="Msg_UpdatesFoundFmt" xml:space="preserve"><value>{0} Update(s) verfügbar</value></data>
+  <data name="Msg_UpdatesCheckFailed" xml:space="preserve"><value>Modrinth war nicht erreichbar, daher weiß ich nicht, ob es Updates gibt. Versuche es mit Verbindung erneut.</value></data>
   <data name="Msg_NoUpdates" xml:space="preserve"><value>Alles ist aktuell</value></data>
   <data name="Msg_ModUpdated" xml:space="preserve"><value>Aktualisiert ✔</value></data>
+  <data name="Mods_UpdateAllFmt" xml:space="preserve"><value>Alle aktualisieren ({0})</value></data>
+  <data name="Msg_ModUpdatedRemainingFmt" xml:space="preserve"><value>Aktualisiert ✔ Noch {0} zu aktualisieren.</value></data>
+  <data name="Msg_UpdatingNofMFmt" xml:space="preserve"><value>Aktualisiere {0} von {1}: {2}…</value></data>
+  <data name="Msg_UpdateAllDoneFmt" xml:space="preserve"><value>{0} aktualisiert ✔</value></data>
+  <data name="Msg_UpdateAllPartialFmt" xml:space="preserve"><value>{0} aktualisiert; {1} ging nicht: {2}. Sie bleiben in der Liste für einen neuen Versuch.</value></data>
+  <data name="Msg_UpdateAllStoppedFmt" xml:space="preserve"><value>{0} aktualisiert. Stoppe den Server, um den Rest zu aktualisieren: die Dateien sind in Benutzung.</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Aktualisierung fehlgeschlagen: {0}</value></data>
   <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Stoppe den Server vor der Aktualisierung (die alte Datei wird verwendet).</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Auf {0} aktualisieren</value></data>
@@ -508,6 +595,13 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_PlayitKeyNotProtected" xml:space="preserve"><value>Der Playit-Schlüssel konnte nicht verschlüsselt werden und wurde aus Sicherheitsgründen NICHT auf der Festplatte gespeichert. Er funktioniert für diese Sitzung weiter und wird beim nächsten Mal erneut abgefragt. Details zum Fehler stehen im logs-Ordner.</value></data>
   <data name="Msg_ForgeNoChecksum" xml:space="preserve"><value>Die Checksumme (.sha1) des Forge-Installers konnte nicht abgerufen werden; er lässt sich daher nicht überprüfen. Aus Sicherheitsgründen wird er nicht ausgeführt; versuche es erneut.</value></data>
   <data name="Msg_ForgeInstallerInvalid" xml:space="preserve"><value>Der heruntergeladene Forge-Installer hat nicht die erwartete Struktur. Er wurde aus Sicherheitsgründen verworfen; versuche es erneut.</value></data>
+  <data name="Whatsnew_1_16_0" xml:space="preserve"><value>• Sicherungen bei laufendem Server funktionieren jetzt: Sie schlugen immer mit „session.lock wird von einem anderen Prozess verwendet“ fehl, weil der Server die Dateien der Welt geöffnet hält, solange er läuft. Das Speichern wurde korrekt fortgesetzt, aber die Sicherung entstand nie.&#10;• Suche in den installierten Mods und Plugins: Tippe einen Teil des Namens und die Liste filtert sofort. Neben dem Titel steht, wie viele es sind („3 von 12“ beim Filtern).&#10;• „Server erstellen oder hinzufügen“ übernimmt jetzt auch einen Server, den du schon hast: Wähle „Einen vorhandenen Ordner verwenden“, und die App erkennt Typ, Version, Port und Speicher, ohne etwas im Ordner zu ändern. Was sie nicht erkennt, wählst du selbst. Die Schaltfläche „Hinzufügen“ entfällt.&#10;• Purpur-Server werden beim Hinzufügen jetzt erkannt.</value></data>
+  <data name="Whatsnew_1_15_0" xml:space="preserve"><value>• Sicherungen, während gespielt wird: zusätzlich zu vor dem Start und beim Stoppen wird die Welt jetzt stündlich kopiert, ohne das Spiel zu unterbrechen. Vor dem Kopieren wird der Server gebeten, die Welt nicht mehr zu schreiben und auf die Festplatte zu leeren, damit eine Sicherung nie halb geschrieben ist. Hat seit der letzten niemand gespielt, wird sie übersprungen. Das Intervall lässt sich pro Server ändern oder abschalten.&#10;• Sicherungen, die du von Hand machst, zählen getrennt von den automatischen, also löscht die Uhr nicht mehr die, die du vor einem Versuch aufgehoben hast. Zum Wiederherstellen muss der Server weiterhin gestoppt sein.&#10;• Spielerprofil: die Blöcke, die er abgebaut hat, und die Gegenstände, die er benutzt oder gesetzt hat, jeweils mit ihrem Anteil, dazu Kurioses wie Sprünge, Schaden und die Strecke zu Fuß, im Flug und mit Elytren. Minecraft zählt das Setzen von Blöcken nicht getrennt vom Benutzen von Gegenständen, und die App sagt das.&#10;• Der Verlauf eines Servers wird jetzt in dessen eigener Konfiguration gelöscht und löscht nur seinen eigenen. Vorher stand das in den Einstellungen und nahm alle Server mit.&#10;• Das Wechseln zwischen Servern kostet bei einem laufenden Server nicht mehr extra: Konsole, Spieler-Tab und Listen bauen sich nicht mehr jedes Mal komplett neu auf.</value></data>
+  <data name="Whatsnew_1_14_0" xml:space="preserve"><value>• Spielerverlauf: Der Tab Spieler zeigt alle, die je beigetreten sind, mit ihrer letzten Verbindung. Klicke auf einen, um sein Profil zu sehen: Beitritte und Abgänge, was er im Chat gesagt hat, Tode, Fortschritte, Spielzeit und die Statistiken des Servers. Beim ersten Mal wird er aus den alten Logs des Servers gefüllt.&#10;• Der Verlauf bleibt klein (standardmäßig 500 Ereignisse und 90 Tage pro Spieler) und lässt sich in den Einstellungen ändern oder abschalten. Er bleibt auf deinem Computer, und IP-Adressen werden nie gespeichert.&#10;• Seeds: Beim Erstellen eines Servers kannst du den Seed der Welt wählen. Die Konfiguration zeigt den echten Seed, mit Knöpfen zum Kopieren und zum Öffnen seiner Karte auf Chunkbase, für die Version deines Servers.&#10;• Die Antwort des Servers auf say, /me und der Chat auf Servern ohne sichere Profile erscheinen jetzt in der Chatfarbe; vorher waren sie grau wie normale Ausgabe.</value></data>
+  <data name="Whatsnew_1_13_1" xml:space="preserve"><value>• Einen Mod zu aktualisieren löscht nicht mehr die Updates der anderen. Früher verschwanden beim Aktualisieren — oder beim Ein- oder Ausschalten eines Mods — alle Knöpfe, und man musste für jeden Mod neu suchen.&#10;• Neuer Knopf „Alle aktualisieren“, der sie nacheinander installiert. Läuft der Server, hält er an und sagt es, weil die Dateien in Benutzung sind.&#10;• Die Mod-Liste, die Fabric beim Start ausgibt, erscheint nicht mehr rot, als wären alle fehlgeschlagen. Mehrzeilige Warnungen bleiben bis zum Ende gelb, und Javas eigene Warnungen erscheinen nicht mehr als Fehler.&#10;• Ab Java 22 aktiviert die App den nativen Zugriff selbst. Java warnte, dass eine künftige Version die Mods blockieren würde, die ihn nutzen; jetzt gibt es weder Warnung noch Risiko.&#10;• Braucht BlueMap deine Zustimmung zum Download, fragt die App und lädt es neu, statt dich die Einstellung in seiner Konfiguration suchen zu lassen.</value></data>
+  <data name="Whatsnew_1_13_0" xml:space="preserve"><value>• Beim Teilen des Modpacks werden jetzt die Mods weggelassen, die nur auf dem Server etwas tun — Geyser, Floodgate, ein Backup-Mod — und du erfährst, welche. Lag es daneben, baut „Trotzdem mitnehmen“ dasselbe Zip mit einem Klick neu. Was ein behaltener Mod braucht, reist immer mit.&#10;• Das Zip enthält ein Skript für Windows, Linux und macOS, das die Mods selbst installiert. Es zeigt die gefundenen mods-Ordner — auch Instanzen von Prism, MultiMC, CurseForge oder Modrinth App, mit Namen — und legt bereits Vorhandenes in einen eigenen Ordner, ohne etwas zu löschen.&#10;• Fehlt dem Spieler Fabric, Forge oder NeoForge, bietet das Skript an, ihn zu installieren, und prüft den Download vor dem Ausführen gegen den offiziellen Hash des Loaders.&#10;• Die Tunnel-Adresse erscheint wenige Sekunden nach dem Anlegen. Früher dauerte es eine halbe bis eine ganze Minute — mehrere mit dem Fenster im Infobereich — und das Feld blieb leer, ohne Erklärung. Eine Zeile darunter sagt jetzt, was passiert, und das Feld lässt sich nicht mehr beschreiben.&#10;• Das Java-Feld kann auf einem Crossplay-Server nicht mehr die Bedrock-Adresse anzeigen.&#10;• Beim Start gibt es keine Warnung mehr vor fehlenden Abhängigkeiten, die in Wahrheit in einem anderen Mod stecken — die Module von Fabric API, die Bibliothek von Xaeros Karten — oder vom Loader selbst mitgebracht werden.&#10;• „Nach Updates suchen“ ohne Verbindung sagt, dass es nicht prüfen konnte, statt „Alles ist aktuell“.&#10;• Der Export-Knopf erscheint auf Plugin-Servern nicht mehr: ein Plugin läuft auf dem Server und kommt nie auf den Rechner eines Spielers, das Zip nützte ihm also nichts.</value></data>
+  <data name="Whatsnew_1_12_3" xml:space="preserve"><value>• „Nach Updates suchen“ funktioniert wieder. Es hatte noch nie ein Update gefunden: die Kennungen, die die App an Modrinth schickte, gingen in Großbuchstaben raus, Modrinth vergleicht sie genau so und erkannte keine einzige — also antwortete es, es gebe nichts, und die App gab das unverändert an dich weiter.&#10;• Aus demselben Grund hat der Hinweis auf fehlende Bibliotheken nie gewarnt. Ein Server, dem eine Abhängigkeit fehlte, sah hier vollständig aus und startete dann nicht, während der Loader in der Konsole ausgab, was dieser Bildschirm vorher hätte sagen sollen.&#10;• Der Fehler war da, solange es beide Funktionen gibt, und fiel nicht auf, weil seine beiden Antworten — „keine Updates“ und „nichts fehlt“ — genau so aussehen wie ein gut gepflegter Server.</value></data>
+  <data name="Whatsnew_1_12_2" xml:space="preserve"><value>• Den Typ eines Servers oder seine Minecraft-Version zu ändern ist jetzt sofort zu sehen. Abzeichen, Version und der Mods-Tab beschrieben weiterhin das, was der Ordner nicht mehr war, und die Wahrheit sah man erst, wenn man die App schloss und neu öffnete.&#10;• Genau deshalb schlug das Installieren eines Mods nach einem Versionswechsel fehl: der Store bot weiter die zur alten Version passenden an, während die Installation gegen die neue auflöste — der Fehler kam also Minuten später und weit entfernt von seiner Ursache.&#10;• Einen Ordner hinzuzufügen, in dem schon ein Server liegt, erkennt ihn auf der Stelle. Vorher wurde er als Vanilla ohne Version eingetragen — ohne Mods-Tab — bis zum nächsten Start.&#10;• Den Ordner eines Servers zu wechseln nimmt jetzt Port, MOTD, Symbol, installierte Mods und die Backup-Liste mit. Vorher wurde nur die MOTD neu gelesen, der Rest beschrieb weiter einen Ordner, den es unter dem Namen nicht mehr gab.&#10;• „Bei Bedarf aufwecken“ öffnet den Port sofort statt erst beim nächsten Stopp des Servers. Und Crossplay auszuschalten blendet sein Feld nun aus.&#10;• Im Bearbeiten-Dialog wird eine Option, die die App abschaltet, weil der neue Typ sie nicht kann, jetzt auch auf dem Bildschirm abgewählt. Vorher wurde das Gegenteil dessen gespeichert, was zu sehen war.</value></data>
   <data name="Whatsnew_1_12_1" xml:space="preserve"><value>• Die Konsole ist keine graue Wand mehr. Jede Zeile wird nach dem gefärbt, was sie ist: Fehler rot, Warnungen bernstein, Spieler-Chat sowie Beitritte und Abgänge in eigenen Farben, und was die App sagt getrennt von dem, was der Server sagt — vorher lief beides vermischt und niemand konnte sehen, wer sprach.&#10;• Und es lässt sich nach Kategorie filtern, mit je einem Schalter. Jeder trägt seine Anzahl, „Fehler 3“ ist also ohne Klick sichtbar; und trifft ein Fehler ein, während seine Kategorie aus ist, sagt der Schalter es.&#10;• Das Gesuchte wird innerhalb der Zeile markiert, nicht nur zum Filtern benutzt. In einem langen Stacktrace ist das der Unterschied zwischen Finden und Sehen.&#10;• Fehler, die der Server auf seinen Fehlerkanal schreibt, zählen jetzt als Fehler. Vorher wurden sie eine Zeile zu früh mit der übrigen Ausgabe vermischt.&#10;• Die beiden neuen Farben — Chat und Spieler — lassen sich in den Einstellungen ändern. Fehler, Warnung und App übernehmen die für Benachrichtigungen gewählten, damit Rot überall dasselbe bedeutet.&#10;• Behoben, dass in den Einstellungen die Farbbeschriftungen über den Farbfeldern gezeichnet wurden.</value></data>
   <data name="Whatsnew_1_12_0" xml:space="preserve"><value>• Benachrichtigungen lassen sich jetzt unterscheiden, ohne sie zu lesen: jede trägt eine Farbe für das Geschehene und ihr eigenes Emoji. Grün, wenn jemand beitritt, Bernstein, wenn der Server sich mangels Spielern selbst beendet, Rot, wenn er abstürzt.&#10;• Das Emoji ist keine Zierde: Farbe allein erreicht niemanden, der Rot nicht von Grün trennen kann — Form schon.&#10;• Die vier Farben lassen sich in den Einstellungen ändern, und die Testschaltfläche zeigt jetzt alle vier auf einmal zum Vergleich.&#10;• Vor dem Start wird geprüft, ob jedem Mod und Plugin fehlt, was es braucht. Fehlt etwas, wird es beim Druck auf Starten gesagt — nicht auf einem Tab, den niemand öffnet — mit dem, was fehlt, und wer es braucht; installieren und starten, trotzdem starten oder abbrechen.&#10;• Die Prüfung liest die Jars selbst, funktioniert also offline und hängt nicht davon ab, dass der Store seine Abhängigkeiten richtig gepflegt hat. Sie versteht nun auch Paper- und Purpur-Plugins sowie Forge- und NeoForge-Mods, die vorher unsichtbar waren.&#10;• Ein automatischer Neustart oder ein Start auf Anfrage hält nie zum Nachfragen an: es ist niemand da, der antworten könnte.</value></data>
   <data name="Whatsnew_1_11_2" xml:space="preserve"><value>• Der Bedrock-Port erscheint jetzt vom ersten Moment an. Vorher blieb das ganze Feld verborgen, bis eine Tunnel-Abfrage gelang — drei verschiedene Situationen sahen also gleich aus: eine leere Lücke.&#10;• Und es sagt jetzt, in welchem Zustand es ist: Warten darauf, dass Playit die Adresse veröffentlicht, kein Tunnel (nur lokales Netzwerk), bereit, oder nicht abfragbar.&#10;• Behoben, dass das Einschalten von Crossplay für immer halb fertig blieb: Schlug ein Download fehl, blieb die Einstellung intern aus und die Adresse erschien nie wieder, auch nicht nach einem Neustart der App.&#10;• Neue Server bekommen keinen Port mehr, den ein Tunnel deines Playit-Kontos bereits nutzte. Die Suche sah nur deinen eigenen Rechner, und ein dort erstellter Tunnel übernahm den fremden stillschweigend: zwei Server mit einer einzigen Adresse.&#10;• Liegt dort trotzdem ein Tunnel, der nicht zu diesem Server gehört, wird ein anderer Port gewählt und es in der Konsole gesagt, statt den fremden zu behalten.&#10;• Außerdem: Beim Löschen eines Servers wird sein Bedrock-Tunnel auch dann gelöscht, wenn seine server.properties nicht lesbar ist — vorher blieb er verwaist und sein Port wurde dem nächsten Server als frei angeboten.</value></data>
@@ -636,6 +730,10 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_TunnelForeignFmt" xml:space="preserve"><value>[Crossplay] Port {0} ist weiterhin vom Tunnel „{1}“ belegt. Lösche ihn bei Playit oder ändere den Port von Hand.</value></data>
   <data name="Msg_JavaTunnelPortUnknown" xml:space="preserve"><value>Der Java-Port des Servers konnte nicht gelesen werden, daher wurde sein Tunnel nicht gelöscht. Der Bedrock-Tunnel schon.</value></data>
   <data name="Crossplay_LocalPort" xml:space="preserve"><value>Lokaler Port:</value></data>
+  <data name="Tunnel_StateWaiting" xml:space="preserve"><value>Warten darauf, dass Playit die Adresse veröffentlicht…</value></data>
+  <data name="Tunnel_StateNoTunnel" xml:space="preserve"><value>Kein Tunnel für diesen Server: mit der Schaltfläche „Tunnel erstellen“ anlegen.</value></data>
+  <data name="Tunnel_StateReady" xml:space="preserve"><value>Bereit: mit dieser Adresse kann jeder beitreten.</value></data>
+  <data name="Tunnel_StateFailed" xml:space="preserve"><value>Der Tunnel konnte nicht abgefragt werden; es wird automatisch erneut versucht.</value></data>
   <data name="Crossplay_StateWaiting" xml:space="preserve"><value>Warte darauf, dass Playit die Adresse veröffentlicht…</value></data>
   <data name="Crossplay_StateLocalOnly" xml:space="preserve"><value>Kein Tunnel: nur aus deinem Netzwerk, über die lokale IP dieses Rechners.</value></data>
   <data name="Crossplay_StateReady" xml:space="preserve"><value>Bereit: Mit der Adresse oben kann jeder beitreten.</value></data>
@@ -774,7 +872,6 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Tun_AutoRenamedFmt" xml:space="preserve"><value>[Playit] Tunnel „{0}“ in „{1}“ umbenannt.</value></data>
   <data name="Tun_AutoRenameFailFmt" xml:space="preserve"><value>[Playit] Der Tunnel „{0}“ konnte nicht umbenannt werden: {1}</value></data>
   <data name="Tun_ServiceFmt" xml:space="preserve"><value>Playit-Dienst: {0}</value></data>
-  <data name="Tunnel_None" xml:space="preserve"><value>Noch kein Tunnel</value></data>
   <data name="Tip_ManageTunnels" xml:space="preserve"><value>Die Tunnel des Kontos ansehen und verwalten</value></data>
   <data name="About_Tagline" xml:space="preserve"><value>Minecraft-Server erstellen und verwalten, ohne die Konsole anzufassen.</value></data>
   <data name="About_VersionFmt" xml:space="preserve"><value>Version {0} · MIT-Lizenz</value></data>
@@ -823,15 +920,92 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="New_AddTitle" xml:space="preserve"><value>Einen vorhandenen hinzufügen</value></data>
   <data name="New_AddDesc" xml:space="preserve"><value>Wähle seinen Ordner; die App erkennt Typ und Version.</value></data>
   <data name="New_Back" xml:space="preserve"><value>Zurück</value></data>
-  <data name="New_AddButton" xml:space="preserve"><value>Server hinzufügen</value></data>
-  <data name="New_AddFolder" xml:space="preserve"><value>Serverordner</value></data>
-  <data name="New_AddFolderHint" xml:space="preserve"><value>Wähle den Ordner, in dem der Server liegt</value></data>
-  <data name="New_DetectedFmt" xml:space="preserve"><value>Erkannt: {0} {1}</value></data>
-  <data name="New_NotDetected" xml:space="preserve"><value>Der Typ wurde nicht erkannt; du kannst ihn später unter Bearbeiten einstellen.</value></data>
   <data name="New_Button" xml:space="preserve"><value>Neu</value></data>
   <data name="New_ResumeTip" xml:space="preserve"><value>Mit dem angefangenen Server weitermachen</value></data>
   <data name="New_GroupResources" xml:space="preserve"><value>Port und Arbeitsspeicher</value></data>
   <data name="New_GroupPlayers" xml:space="preserve"><value>Wer beitreten kann</value></data>
   <data name="New_GroupAfter" xml:space="preserve"><value>Internet und erster Start</value></data>
-  <data name="New_GroupAddSettings" xml:space="preserve"><value>Arbeitsspeicher und Internet</value></data>
+  <data name="Cs_Seed" xml:space="preserve"><value>Seed (optional)</value></data>
+  <data name="Cs_SeedPlaceholder" xml:space="preserve"><value>Leer = zufällig</value></data>
+  <data name="Cs_SeedNote" xml:space="preserve"><value>Wird nur beim Erzeugen der Welt verwendet. Sie kann eine Zahl oder ein Text sein. Ein späterer Wechsel von Typ oder Version behält die Welt, daher wird der Seed nicht erneut abgefragt.</value></data>
+  <data name="Msg_SeedIgnoredWorldExists" xml:space="preserve"><value>Dieser Ordner enthält bereits eine erzeugte Welt, daher wird der eingegebene Seed nicht verwendet.</value></data>
+  <data name="Cfg_World" xml:space="preserve"><value>Welt</value></data>
+  <data name="Cfg_Seed" xml:space="preserve"><value>Seed</value></data>
+  <data name="Cfg_SeedMap" xml:space="preserve"><value>Auf der Karte ansehen</value></data>
+  <data name="Cfg_SeedMapTip" xml:space="preserve"><value>Öffnet die Karte dieses Seeds auf Chunkbase, für die Version dieses Servers.</value></data>
+  <data name="Cfg_SeedFromWorld" xml:space="preserve"><value>Der Seed, mit dem diese Welt erzeugt wurde.</value></data>
+  <data name="Cfg_SeedFromConsole" xml:space="preserve"><value>Die, die der Server zuletzt auf den Befehl seed ausgegeben hat. Aus den Weltdateien ließ sie sich nicht lesen.</value></data>
+  <data name="Cfg_SeedPending" xml:space="preserve"><value>Die Welt existiert noch nicht: Dieser Seed wird beim ersten Start zum Erzeugen verwendet.</value></data>
+  <data name="Cfg_SeedUnknownHint" xml:space="preserve"><value>Noch nicht bekannt. Starte den Server einmal, damit er die Welt erzeugt, oder gib seed in der Konsole ein.</value></data>
+  <data name="Time_JustNow" xml:space="preserve"><value>gerade eben</value></data>
+  <data name="Time_MinutesAgoFmt" xml:space="preserve"><value>vor {0} Min.</value></data>
+  <data name="Time_HoursAgoFmt" xml:space="preserve"><value>vor {0} Std.</value></data>
+  <data name="Time_DaysAgoFmt" xml:space="preserve"><value>vor {0} Tagen</value></data>
+  <data name="Time_HoursMinutesFmt" xml:space="preserve"><value>{0} Std. {1} Min.</value></data>
+  <data name="Time_MinutesFmt" xml:space="preserve"><value>{0} Min.</value></data>
+  <data name="History_OnlineNow" xml:space="preserve"><value>Gerade online</value></data>
+  <data name="History_NeverRecorded" xml:space="preserve"><value>nicht erfasst</value></data>
+  <data name="History_EventJoin" xml:space="preserve"><value>Hat den Server betreten</value></data>
+  <data name="History_EventLeave" xml:space="preserve"><value>Hat den Server verlassen</value></data>
+  <data name="History_EventAdvancementFmt" xml:space="preserve"><value>Fortschritt: {0}</value></data>
+  <data name="History_Players" xml:space="preserve"><value>Spieler</value></data>
+  <data name="History_PlayersHint" xml:space="preserve"><value>Alle, die je beigetreten sind, mit ihrer letzten Verbindung. Klicke auf einen, um sein Profil zu sehen: Verbindungen, Chat und Statistiken.</value></data>
+  <data name="History_Importing" xml:space="preserve"><value>Die alten Logs des Servers werden gelesen, um den Verlauf zu füllen…</value></data>
+  <data name="History_DisabledHint" xml:space="preserve"><value>Der Verlauf ist in den Einstellungen ausgeschaltet: Es wird nur die eigene Liste des Servers gezeigt, ohne Verbindungen und Chat.</value></data>
+  <data name="History_Search" xml:space="preserve"><value>Spieler suchen…</value></data>
+  <data name="History_Section" xml:space="preserve"><value>Spielerverlauf</value></data>
+  <data name="History_Intro" xml:space="preserve"><value>Speichert, wann jeder Spieler kommt und geht, seine Tode, Fortschritte und was er im Chat sagt, sichtbar in seinem Profil im Tab Spieler.</value></data>
+  <data name="History_Enabled" xml:space="preserve"><value>Spielerverlauf speichern</value></data>
+  <data name="History_RecordChat" xml:space="preserve"><value>Auch den Chat speichern</value></data>
+  <data name="History_MaxEvents" xml:space="preserve"><value>Ereignisse pro Spieler</value></data>
+  <data name="History_RetentionDays" xml:space="preserve"><value>Aufbewahrte Tage</value></data>
+  <data name="History_ClearWhere" xml:space="preserve"><value>Um den Verlauf eines Servers zu löschen, öffne ihn unter Konfigurieren › Spielerverlauf.</value></data>
+  <data name="Cfg_History" xml:space="preserve"><value>Spielerverlauf</value></data>
+  <data name="Cfg_HistoryTitle" xml:space="preserve"><value>Die Spieler dieses Servers vergessen</value></data>
+  <data name="Cfg_HistorySizeFmt" xml:space="preserve"><value>Belegt {0}. Das löscht die Verbindungen, den Chat und alles andere, was über diesen Server gespeichert wurde. Es lässt sich nicht rückgängig machen und geschieht beim Klick, nicht beim Speichern.</value></data>
+  <data name="Cfg_HistoryClear" xml:space="preserve"><value>Verlauf löschen</value></data>
+  <data name="Cfg_HistoryClearConfirmFmt" xml:space="preserve"><value>Den Spielerverlauf von „{0}“ löschen? Das lässt sich nicht rückgängig machen. Deine anderen Server behalten ihren.</value></data>
+  <data name="PlayerDetails_Blocks" xml:space="preserve"><value>Blöcke und Gegenstände</value></data>
+  <data name="PlayerDetails_BlocksHint" xml:space="preserve"><value>Minecraft zählt die Blöcke, die du abbaust, genau. Was es nicht zählt, ist das Setzen: gespeichert wird „wie oft du diesen Gegenstand benutzt hast“, was bei einem Block das Setzen ist, bei einer Schaufel ein Schlag und bei Brot eine Mahlzeit.</value></data>
+  <data name="PlayerDetails_Mined" xml:space="preserve"><value>Abgebaute Blöcke</value></data>
+  <data name="PlayerDetails_Used" xml:space="preserve"><value>Benutzte oder gesetzte Gegenstände</value></data>
+  <data name="PlayerDetails_BlocksTotalFmt" xml:space="preserve"><value>{0} insgesamt</value></data>
+  <data name="PlayerDetails_Curiosities" xml:space="preserve"><value>Kurioses</value></data>
+  <data name="PlayerDetails_CuriositiesHint" xml:space="preserve"><value>Anderes, was der Server nebenbei zählt. Lose Zahlen, kein Urteil über irgendjemanden.</value></data>
+  <data name="PlayerDetails_StatJumps" xml:space="preserve"><value>Sprünge</value></data>
+  <data name="PlayerDetails_StatDamageDealt" xml:space="preserve"><value>Verursachter Schaden (Herzen)</value></data>
+  <data name="PlayerDetails_StatDamageTaken" xml:space="preserve"><value>Erlittener Schaden (Herzen)</value></data>
+  <data name="PlayerDetails_StatWalked" xml:space="preserve"><value>Zu Fuß</value></data>
+  <data name="PlayerDetails_StatFlown" xml:space="preserve"><value>Im Flug</value></data>
+  <data name="PlayerDetails_StatElytra" xml:space="preserve"><value>Mit Elytren</value></data>
+  <data name="PlayerDetails_StatBlocksPerHour" xml:space="preserve"><value>Blöcke pro Stunde</value></data>
+  <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Erze pro Stunde</value></data>
+  <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Am meisten getötet</value></data>
+  <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>Tötet ihn am häufigsten</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>Nur auf diesem Computer gespeichert. Die IP-Adressen der Spieler werden nie gespeichert. Was über die Grenzen hinausgeht, wird automatisch entfernt.</value></data>
+  <data name="History_SizeFmt" xml:space="preserve"><value>Belegt {0}</value></data>
+  <data name="PlayerDetails_Back" xml:space="preserve"><value>Zurück</value></data>
+  <data name="PlayerDetails_Banned" xml:space="preserve"><value>Gebannt</value></data>
+  <data name="PlayerDetails_Summary" xml:space="preserve"><value>Übersicht</value></data>
+  <data name="PlayerDetails_LastSeen" xml:space="preserve"><value>Zuletzt gesehen</value></data>
+  <data name="PlayerDetails_FirstSeen" xml:space="preserve"><value>Zuerst gesehen</value></data>
+  <data name="PlayerDetails_Sessions" xml:space="preserve"><value>Sitzungen</value></data>
+  <data name="PlayerDetails_Played" xml:space="preserve"><value>Spielzeit</value></data>
+  <data name="PlayerDetails_Messages" xml:space="preserve"><value>Nachrichten</value></data>
+  <data name="PlayerDetails_Stats" xml:space="preserve"><value>Serverstatistiken</value></data>
+  <data name="PlayerDetails_StatsHint" xml:space="preserve"><value>Die, die Minecraft selbst seit dem ersten Beitritt des Spielers zählt, auch vor Beginn des Verlaufs.</value></data>
+  <data name="PlayerDetails_StatPlayTime" xml:space="preserve"><value>Zeit in der Welt</value></data>
+  <data name="PlayerDetails_StatDeaths" xml:space="preserve"><value>Tode</value></data>
+  <data name="PlayerDetails_StatMobKills" xml:space="preserve"><value>Getötete Kreaturen</value></data>
+  <data name="PlayerDetails_StatPlayerKills" xml:space="preserve"><value>Getötete Spieler</value></data>
+  <data name="PlayerDetails_StatDistance" xml:space="preserve"><value>Zurückgelegte Strecke</value></data>
+  <data name="PlayerDetails_Activity" xml:space="preserve"><value>Aktivität</value></data>
+  <data name="PlayerDetails_FilterAll" xml:space="preserve"><value>Alles</value></data>
+  <data name="PlayerDetails_FilterConnections" xml:space="preserve"><value>Verbindungen</value></data>
+  <data name="PlayerDetails_FilterChat" xml:space="preserve"><value>Chat</value></data>
+  <data name="PlayerDetails_NoActivity" xml:space="preserve"><value>Noch nichts erfasst. Es erscheint hier, wenn der Spieler das nächste Mal beitritt.</value></data>
+  <data name="PlayerDetails_ShowMore" xml:space="preserve"><value>Mehr anzeigen</value></data>
+  <data name="PlayerDetails_Clear" xml:space="preserve"><value>Verlauf dieses Spielers löschen</value></data>
+  <data name="PlayerDetails_ClearConfirm" xml:space="preserve"><value>Sicher? Das kann nicht rückgängig gemacht werden.</value></data>
+  <data name="PlayerDetails_ClearYes" xml:space="preserve"><value>Ja, löschen</value></data>
 </root>

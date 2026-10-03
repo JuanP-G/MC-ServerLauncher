@@ -36,6 +36,30 @@ public class PlayersService
         return list.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(x => x).ToList();
     }
 
+    /// <summary>The UUID usercache.json has for <paramref name="name"/>, or null.</summary>
+    public string? UuidOf(string folder, string name)
+    {
+        var path = Path.Combine(folder, "usercache.json");
+        if (!File.Exists(path)) return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            if (doc.RootElement.ValueKind != JsonValueKind.Array) return null;
+            foreach (var e in doc.RootElement.EnumerateArray())
+            {
+                if (e.TryGetProperty("name", out var n)
+                    && string.Equals(n.GetString(), name, StringComparison.OrdinalIgnoreCase)
+                    && e.TryGetProperty("uuid", out var u))
+                    return u.GetString();
+            }
+        }
+        catch
+        {
+            // corrupt or in-use file: no UUID, and so no statistics
+        }
+        return null;
+    }
+
     /// <summary>Removes a player (by name) from banned-players.json. Returns true if any was removed.</summary>
     public bool Unban(string folder, string name)
     {

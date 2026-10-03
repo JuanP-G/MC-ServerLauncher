@@ -4,6 +4,10 @@ using McServerLauncher.Localization;
 
 namespace McServerLauncher.Views;
 
+/// <summary>
+/// Asks what "delete" means for this server: only the entry on the list, its files on disk as well,
+/// and whether to take its Playit tunnel with it.
+/// </summary>
 public partial class DeleteServerDialog : Window
 {
     /// <summary>True if the user checked "also delete the files on disk".</summary>

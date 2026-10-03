@@ -147,6 +147,39 @@
                     </Grid>
                 </Border>
 
+                <!-- ===================== WORLD ===================== -->
+                <TextBlock Text="{loc:Loc Cfg_World}" Classes="section" />
+
+                <Border Classes="card">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{loc:Loc Cfg_Seed}" Classes="title" />
+                            <SelectableTextBlock x:Name="SeedText" FontFamily="Consolas,Menlo,monospace" FontSize="14" Margin="0,2,0,2" />
+                            <TextBlock x:Name="SeedNote" Classes="desc" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button x:Name="CopySeedButton" Content="{loc:Loc Copy}" Click="CopySeed_Click" />
+                            <Button x:Name="SeedMapButton" Content="{loc:Loc Cfg_SeedMap}" Click="SeedMap_Click"
+                                    ToolTip.Tip="{loc:Loc Cfg_SeedMapTip}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- ===================== PLAYER HISTORY ===================== -->
+                <TextBlock Text="{loc:Loc Cfg_History}" Classes="section" />
+
+                <Border Classes="card">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{loc:Loc Cfg_HistoryTitle}" Classes="title" />
+                            <TextBlock x:Name="HistorySizeText" Classes="desc" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1" x:Name="ClearHistoryButton" VerticalAlignment="Center"
+                                Content="{loc:Loc Cfg_HistoryClear}" Click="ClearHistory_Click"
+                                Background="{StaticResource DangerButton}" Foreground="White" />
+                    </Grid>
+                </Border>
+
                 <!-- ===================== NETWORK & ACCESS ===================== -->
                 <TextBlock Text="{loc:Loc Cfg_Network}" Classes="section" />
 
@@ -160,8 +193,8 @@
                     </Grid>
                 </Border>
 
-                <!-- El puerto de Bedrock no esta en server.properties: es de Geyser. Solo se ve con
-                     crossplay activo, que es cuando existe. -->
+                <!-- The Bedrock port is not in server.properties: it is Geyser's. Only shown with
+                     crossplay on, which is when it exists. -->
                 <Border x:Name="BedrockPortCard" Classes="card" IsVisible="False">
                     <StackPanel>
                         <Grid ColumnDefinitions="*,140">

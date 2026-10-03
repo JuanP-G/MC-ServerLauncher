@@ -39,9 +39,10 @@
         <Style Selector="ListBox.results ListBoxItem:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
         </Style>
-        <!-- Un azulejo de la lista de resultados. Se llamaba Border.card y NO es la tarjeta
-             translucida del resto de la app: es solido y mas pequeno. Compartian nombre sin
-             compartir aspecto, y solo no chocaban porque cada estilo vivia dentro de su vista. -->
+        <!-- A tile in the results list. It used to be called Border.card and it is NOT the
+             translucent card the rest of the app uses: it is solid and smaller. They shared a name
+             without sharing a look, and only avoided colliding because each style lived inside its
+             own view. -->
         <Style Selector="Border.tile">
             <Setter Property="Background" Value="{StaticResource GroundWell}" />
             <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdgeSoft}" />
@@ -390,33 +391,65 @@
         <!-- Right: installed -->
         <Border Grid.Column="1" Background="{StaticResource SurfaceCard}" BorderBrush="{StaticResource SurfaceEdge}" BorderThickness="1"
                 CornerRadius="8" Padding="12">
-            <Grid RowDefinitions="Auto,Auto,*">
+            <Grid RowDefinitions="Auto,Auto,Auto,*">
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,12">
-                    <TextBlock Grid.Column="0" Text="{Binding InstalledTitle}" FontSize="16"
-                               FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding InstalledTitle}" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding InstalledCountText}" FontSize="16" Opacity="0.55"
+                                   IsVisible="{Binding !!InstalledMods.Count}" />
+                    </StackPanel>
 
                     <Button Grid.Column="1" Command="{Binding CheckUpdatesCommand}" Padding="6,4" Margin="0,0,8,0"
                             IsEnabled="{Binding !IsCheckingUpdates}" ToolTip.Tip="{loc:Loc CheckUpdates}">
                         <ic:SymbolIcon Symbol="ArrowSync" />
                     </Button>
 
+                    <!-- Hidden on plugin servers: a plugin runs in the server and never goes near
+                         a player's machine, so a pack of them is a zip nobody can do anything with. -->
                     <Button Grid.Column="2" Command="{Binding ExportModpackCommand}" Padding="6,4" Margin="0,0,8,0"
-                            ToolTip.Tip="{loc:Loc Export_Modpack}">
+                            IsVisible="{Binding !IsPluginBased}" ToolTip.Tip="{loc:Loc Export_Modpack}">
                         <ic:SymbolIcon Symbol="Share" />
                     </Button>
 
-                    <Button Grid.Column="3" Command="{Binding RefreshInstalledModsCommand}" Padding="6,4">
+                    <Button Grid.Column="3" Command="{Binding RefreshInstalledModsCommand}" Padding="6,4"
+                            IsEnabled="{Binding !IsUpdatingAll}">
                         <ic:SymbolIcon Symbol="ArrowClockwise" />
                     </Button>
                 </Grid>
 
-                <StackPanel Grid.Row="1">
+                <!-- Filters what is installed as you type. Only there when there is something to
+                     filter; the store has its own search box on the left. -->
+                <TextBox x:Name="InstalledFilterBox" Grid.Row="1" Margin="0,0,0,8"
+                         Text="{Binding InstalledFilter, Mode=TwoWay}"
+                         Watermark="{Binding InstalledFilterPlaceholder}"
+                         IsVisible="{Binding !!InstalledMods.Count}">
+                    <TextBox.InnerLeftContent>
+                        <ic:SymbolIcon Symbol="Search" Margin="8,0,0,0" Opacity="0.6" />
+                    </TextBox.InnerLeftContent>
+                </TextBox>
+
+                <StackPanel Grid.Row="2">
                     <TextBlock Text="{Binding NoInstalledText}" Opacity="0.7"
                                HorizontalAlignment="Center" Margin="0,20,0,0"
                                IsVisible="{Binding !InstalledMods.Count}" />
+                    <TextBlock Text="{loc:Loc Mods_InstalledNoMatch}" Opacity="0.7" TextWrapping="Wrap"
+                               HorizontalAlignment="Center" Margin="0,12,0,0"
+                               IsVisible="{Binding HasNoMatches}" />
                     <TextBlock Text="{Binding UpdateStatus}" Opacity="0.7" TextWrapping="Wrap"
                                HorizontalAlignment="Center" Margin="0,0,0,8"
                                IsVisible="{Binding UpdateStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                    <!-- Every pending update in one click, instead of one row at a time. Shown only
+                         while there is something to update, with how many, so it never offers a
+                         button that would do nothing. -->
+                    <Button x:Name="UpdateAllButton" HorizontalAlignment="Center" Margin="0,0,0,8" Padding="12,5"
+                            IsVisible="{Binding HasPendingUpdates}"
+                            Command="{Binding UpdateAllCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <ic:SymbolIcon Symbol="ArrowUp" Foreground="{StaticResource SemanticOk}" />
+                            <TextBlock Text="{Binding UpdateAllText}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
 
                     <!-- The library mods the installed ones need and nobody installed. Found by the
                          same scan as the updates, and shown here because the alternative place the
@@ -431,9 +464,35 @@
                                     Command="{Binding InstallMissingDependenciesCommand}" />
                         </StackPanel>
                     </Border>
+
+                    <!-- What the last export did. After the fact and not a dialog beforehand: a
+                         dialog charges a click to the normal case, where the detection is right, in
+                         order to serve the rare one. Naming the files it left out is what makes
+                         this actionable rather than unsettling, and putting them back is one click
+                         over the same zip — no picker, no second dialog. -->
+                    <Border IsVisible="{Binding HasExportNotice}" Margin="0,0,0,8" Padding="10,8"
+                            Background="{StaticResource SemanticWarnFill}" BorderBrush="{StaticResource SemanticWarnEdge}" BorderThickness="1" CornerRadius="6">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding ExportNotice}" TextWrapping="Wrap"
+                                       FontSize="12" Foreground="{StaticResource SemanticWarn}" VerticalAlignment="Center" />
+                            <Button Grid.Row="0" Grid.Column="1" Background="Transparent" Padding="4" Margin="8,0,0,0"
+                                    VerticalAlignment="Top" ToolTip.Tip="{loc:Loc Export_DismissNotice}"
+                                    Command="{Binding DismissExportNoticeCommand}">
+                                <ic:SymbolIcon Symbol="Dismiss" />
+                            </Button>
+                            <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,0"
+                                    HorizontalAlignment="Right" Padding="10,4"
+                                    Content="{loc:Loc Export_IncludeAnyway}"
+                                    IsVisible="{Binding CanIncludeExcludedAnyway}"
+                                    Command="{Binding IncludeExcludedAnywayCommand}" />
+                        </Grid>
+                    </Border>
                 </StackPanel>
 
-                <ListBox Grid.Row="2" ItemsSource="{Binding InstalledMods}" Background="Transparent" BorderThickness="0">
+                <!-- Off while "update all" runs: it walks these rows and swaps their files, and a
+                     delete, a toggle or a single update from here would race it for the same folder. -->
+                <ListBox Grid.Row="3" ItemsSource="{Binding VisibleInstalledMods}" Background="Transparent" BorderThickness="0"
+                         IsEnabled="{Binding !IsUpdatingAll}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,4">
