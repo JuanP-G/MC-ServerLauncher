@@ -15,8 +15,8 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 |---|---|
 | `Models/` | Datos puros: configuración persistida (`ServerConfig`), ajustes (`AppSettings`), enums (`ServerState`, `PlayitState`). Dos subcarpetas guardan las formas que vienen de fuera: `Modrinth/` (lo que devuelve la API) y `Store/` (lo que enseña la tienda, independientemente de su origen). |
 | `Services/` | Toda la lógica sin interfaz: procesos, archivos, red, Java, Playit, puertos, etc. Cada servicio es una clase pequeña y centrada. |
-| `ViewModels/` | El estado y los comandos a los que se enlaza la interfaz (`MainViewModel`, `ServerViewModel`, y uno por panel: `ServerModsViewModel`, `ServerBackupsViewModel`, `ModDetailsViewModel`). Estado enlazable y `RelayCommand`s, no controles de Avalonia. |
-| `Views/` | Las ventanas/diálogos `.axaml` (XAML de Avalonia) y su code-behind ligero. |
+| `ViewModels/` | El estado y los comandos a los que se enlaza la interfaz (`MainViewModel`, `ServerViewModel`, uno por panel: `ServerModsViewModel`, `ServerBackupsViewModel`, `ModDetailsViewModel`, y uno por sección de la ventana: `TunnelsViewModel`, `SettingsViewModel`). Estado enlazable y `RelayCommand`s, no controles de Avalonia. |
+| `Views/` | Las ventanas, los diálogos y las secciones de la ventana principal en `.axaml` (XAML de Avalonia), y su code-behind ligero. |
 | `Localization/` | El sistema de traducción (`Localizer` + la extensión de marcado `{loc:Loc}`). |
 | `Behaviors/` | Comportamientos adjuntos: `AutoScrollBehavior` (la consola sigue la última línea), `ResetScrollBehavior` (una lista vuelve arriba cuando su contenido se *sustituye*, no cuando se añade), el color del MOTD en `MinecraftMotd` y el Markdown en `MarkdownBody`. |
 | `Controls/` | Controles propios: `Sparkline` para las mini-gráficas de CPU/RAM, `MarqueeText` para los nombres que se deslizan cuando no caben, y las marcas que viajan por los menús (`SlidingIndicator`, `TabUnderline`, `SelectionMarker`). |
@@ -53,8 +53,9 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > No le pongas nunca a ninguna de las dos un `Clone` hecho con `MemberwiseClone`: copia el delegado
 > `PropertyChanged`, así que la copia lanza cambios a los suscriptores del original.
 > `NotificationSettings.Clone` es campo a campo, y `AppSettings` —que sí usa `MemberwiseClone`— se
-> deja a propósito como objeto plano, porque el diálogo de ajustes edita una copia y la vuelca al
-> aceptar.
+> deja a propósito como objeto plano —ese `MemberwiseClone` guarda una copia con los secretos
+> cifrados—: nada se enlaza a él, porque `SettingsViewModel` envuelve los campos que enseña y avisa
+> él mismo de sus cambios.
 
 > **Una sola tabla dice qué alimenta cada campo de la config.** `ServerConfigEffects` tiene una fila
 > por propiedad de `ServerConfig`: qué propiedades de `ServerViewModel` y `ServerModsViewModel` hay
@@ -140,7 +141,7 @@ mundo. No hay rutas fijas del equipo en el código.
   por usuario devuelta (como `agent-key`, fijada con `SetAgentKey`) para listar/crear/eliminar
   túneles — con reserva al `playit.toml` heredado o a una clave de escritura pegada. `PlayitManager`
   consulta/arranca/detiene el servicio de fondo (Windows/systemd). `PlayitConnection` es el flujo
-  compartido de conectar/desconectar que usan los botones de túnel y el diálogo de Ajustes.
+  compartido de conectar/desconectar que usan los botones de túnel y la sección Túneles.
 - **`PortService`** — comprueba qué puertos TCP están en uso, encuentra uno libre y (vía P/Invoke)
   localiza el PID que escucha en un puerto para liberar un servidor colgado.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — leen/escriben los
@@ -195,9 +196,10 @@ mundo. No hay rutas fijas del equipo en el código.
   El nivel tiene tres valores en vez de sí/no, porque «Geyser publica una versión» y «tu amigo con el móvil puede
   jugar» no son la misma afirmación: `Full` en Paper, Purpur y Fabric; `Partial` en NeoForge — conecta y autentica,
   y a partir de ahí cualquier mod que el cliente necesite tener deja fuera a Bedrock —; y `None` en Vanilla y
-  Forge. `CrossplayService.CaveatKey` convierte el nivel en el aviso que muestran los dos diálogos.
-- **`ServerJarInstaller`** — el único sitio que sabe cómo se obtiene cada tipo. Lo llaman el diálogo de creación y el
-  de cambiar el tipo; antes la cadena estaba escrita en los dos, y un tipo presente en uno y ausente en el otro
+  Forge. `CrossplayService.CaveatKey` convierte el nivel en el aviso que muestran el panel de nuevo servidor
+  y el diálogo de editar.
+- **`ServerJarInstaller`** — el único sitio que sabe cómo se obtiene cada tipo. Lo llaman el panel de nuevo servidor y
+  el diálogo de cambiar el tipo; antes la cadena estaba escrita en los dos, y un tipo presente en uno y ausente en el otro
   producía un servidor Vanilla sin decir nada.
 - **`ModLoaderService`** / **`PaperService`** / **`PurpurService`** — instalan un mod loader (Fabric/Forge/NeoForge) o un
   build de Paper/Purpur. Purpur solo publica MD5 de sus builds, no SHA-256: HTTPS autentica el origen y el hash está
@@ -274,7 +276,7 @@ mundo. No hay rutas fijas del equipo en el código.
   del loader, qué arrancar (un jar, o el archivo de argumentos de Forge/NeoForge), el puerto de
   `server.properties`, la memoria de `user_jvm_args.txt` o de los scripts de arranque (saltándose los
   comentarios: el de Forge es casi todo un `-Xmx4G` de ejemplo que nadie eligió), si hay mundo, y los
-  jars de la raíz para elegir uno a mano. El *usar una carpeta que ya existe* del diálogo de crear lo
+  jars de la raíz para elegir uno a mano. El *añadir uno que ya tengo* del panel de nuevo servidor lo
   enseña, bloquea lo detectado y solo pregunta el resto; sustituyó al botón *Añadir*, cuyo diálogo
   pedía el nombre del jar a mano y se saltaba el túnel, el crossplay y el arranque. `ExistingServer`
   construye la config con la detección y el formulario (gana la detección) y nunca escribe en la
@@ -394,14 +396,26 @@ está en pantalla.
   `Completed(NewServerResult)` o `Cancelled`, y `MainViewModel.FinishNewServerAsync` hace los mismos
   pasos tras cualquiera de los dos orígenes. Elegir un servidor con el panel abierto enseña ese
   servidor y guarda el panel como borrador (`HasNewServerDraft`); una descarga ya empezada sigue y el
-  servidor entra en la lista al terminar.
+  servidor entra en la lista al terminar. La tarjeta de arriba de cada servidor (`ServerCardView`) es
+  también la vista previa de **Apariencia del servidor** (`ServerAppearanceDialog`), que edita la
+  imagen, el nombre y el MOTD como dos líneas con estilo letra a letra (`MotdDocument`); `WakeSign`
+  escribe el «entra para encenderlo» que enseñan tanto el listener del servidor dormido como esa
+  vista previa.
 - **Túneles** (`TunnelsViewModel`/`TunnelsView`) lee a la vez todas las claves de Playit que la app
   encuentra —el agente de la app, el `playit.toml` de un agente instalado, una clave guardada—, junta
   lo que ve cada una (`TunnelInventory`) y ofrece los arreglos que puede hacer. La cuenta se lee una
   vez poco después de arrancar (`PrefetchAsync`), para que la pantalla salga llena la primera vez, y
   de nuevo cada vez que se abre.
-- **Ajustes** (`SettingsViewModel`/`SettingsView`) guarda al cambiar; no hay diálogo.
+- **Ajustes** (`SettingsViewModel`/`SettingsView`) guarda al cambiar; no hay diálogo. Sus páginas
+  son General, Notificaciones, Colores y Jugadores (el historial). Un color se edita con
+  `Views/ColorChooser`: una paleta elegida para leerse bien sobre las superficies oscuras
+  (`Services/ColorPalette`), el espectro y la barra de tono de `Avalonia.Controls.ColorPicker` si se
+  piden, y una línea que dice si el color se va a leer —contraste WCAG contra el fondo de la consola,
+  4,5 para el texto de la consola y 3 para los colores de las notificaciones—. La caja `#RRGGBB` se
+  queda, y un código a medio escribir nunca llega al ajuste.
 - **Acerca de** (`AboutView`) enseña la versión, la búsqueda de actualizaciones y los enlaces.
+  `UpdateCheck` separa las respuestas que puede tener *Buscar actualizaciones* —al día, hay una
+  nueva, no se pudo preguntar—, que antes se veían igual.
 
 El **movimiento** vive en un solo archivo, `Styles/Motion.axaml`, y un test impide que una vista
 declare el suyo. Los menús tienen una sola marca que se desliza hasta lo elegido en lugar de una por
@@ -438,7 +452,14 @@ reintentos; crear un túnel lanza esa misma ráfaga en el lado de Java, que ante
 temporizador de 30 segundos. La caja de la dirección es de solo lectura — enseña lo que Playit ha
 asignado, no una preferencia — y la línea de debajo es `TunnelAddressState` (`Waiting` / `NoTunnel` /
 `Ready` / `Failed`), la hermana de `BedrockAddressState`: tres situaciones distintas se dibujaban
-como una sola caja vacía.
+como una sola caja vacía. Cuando la cuenta responde y el túnel no está, la dirección se vacía en vez
+de conservarse (`TunnelAddressSync`): un servidor con crossplay cuyo puerto Bedrock se había movido
+seguía enseñando la dirección del túnel que había dejado, que para entonces llevaba a otro servidor.
+Solo una petición que falla conserva la última dirección. Una clave leída del `playit.toml` de un
+agente instalado puede leer la cuenta pero no cambiarla —renombrar y borrar responden
+`NotAllowedWithReadOnly` con cualquier esquema de autenticación—, así que
+`PlayitApiService.CanManageTunnelsAsync` lo averigua sin cambiar nada (renombra un id que no
+existe), y Túneles manda esos cambios a playit.gg en vez de fallar al hacerlos.
 Cumplimiento de las reglas de terceros de Playit: el navegador solo se abre al pulsar, un aviso
 indica que la app no está afiliada a Playit y el usuario siempre puede acceder a su cuenta de Playit
 directamente. Un agente autogestionado solo reenvía tráfico mientras su proceso corre, así que
@@ -520,7 +541,11 @@ Después, el **segundo túnel**: Java es TCP y Bedrock es UDP, y uno no puede ll
 `MainViewModel` crea un túnel UDP junto al de Java. `CrossplayService.PickBedrockPort` elige el
 puerto local (19132 es solo un punto de partida — se ocupa en cuanto hay dos servidores), evitando
 tanto los puertos de otros servidores registrados como los que ya tiene la cuenta de Playit del
-usuario.
+usuario. Un servidor con crossplay que se queda en el puerto 0 usa de verdad el 19132, y
+`CrossplayService.EffectiveBedrockPort` lo cuenta así: contarlo como libre es como dos servidores
+acabaron detrás de un solo túnel Bedrock. El puerto se cambia en *Configurar*, que rechaza uno que
+ya tenga otro servidor y reescribe a la vez `servers.json` y la configuración de Geyser, y Túneles
+ofrece mover un servidor fuera de un túnel Bedrock que comparte.
 
 Por último, `GeyserConfigService` escribe lo que Geyser no puede deducir solo: `auth-type` (un
 servidor con Floodgate que se queda en `online` rechaza a todos los jugadores de Bedrock), el puerto
@@ -529,8 +554,8 @@ público del túnel, y el launcher es el único componente que conoce los dos n�
 creó el túnel. `RepairConfig` vuelve a aplicarlo cuando una reinstalación resetea el archivo.
 
 Lo bien que funcione todo esto es una propiedad del tipo de servidor, no una promesa:
-`ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores y los dos diálogos enseñan la
-advertencia antes de marcar la casilla. En Fabric, otra casilla instala **Hydraulic**
+`ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores, y el panel de nuevo servidor y el
+diálogo de editar enseñan la advertencia antes de marcar la casilla. En Fabric, otra casilla instala **Hydraulic**
 (`HydraulicService`) para que los bloques y objetos que añaden los mods se conviertan para los
 clientes de Bedrock; es solo para Fabric porque Hydraulic dejó de publicar builds de NeoForge en
 febrero de 2026. El único fallo que no se puede evitar — un servidor NeoForge rechazando la conexión
@@ -585,7 +610,7 @@ conexión.
 ### Cambiar el tipo de un servidor
 `InstallLoaderDialog` convierte un servidor existente en el sitio, **conservando el mundo**: de
 Vanilla a un cargador o a un servidor de plugins, de un cargador a otro, o de cualquiera de ellos de
-vuelta a Vanilla. Ofrece la misma lista que el diálogo de creación (el `ServerTypePicker`
+vuelta a Vanilla. Ofrece la misma lista que el panel de nuevo servidor (el `ServerTypePicker`
 compartido) e instala por el mismo `ServerJarInstaller`, así que los dos ya no pueden separarse — se
 separaron, y un tipo presente en uno y ausente en el otro producía en silencio un servidor Vanilla.
 La advertencia sobre el botón depende de la *dirección* del cambio, porque las direcciones no son

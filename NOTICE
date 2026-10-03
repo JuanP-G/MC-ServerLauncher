@@ -10,7 +10,10 @@ The application downloads, at the user's request, software that belongs to
 third parties and keeps its own licences and terms of use:
 
   * Minecraft server files      Mojang Studios / Microsoft (Minecraft EULA)
-  * Paper, Forge, Fabric        their respective projects
+  * Paper, Purpur, Fabric,      their respective projects
+    Forge, NeoForge
+  * Geyser, Floodgate,          GeyserMC (through Modrinth, and GeyserMC's own
+    Hydraulic                   downloads site for the Spigot build of Floodgate)
   * Java runtimes (Adoptium)    Eclipse Foundation (GPLv2 with Classpath Exception)
   * Mods and plugins            their respective authors, via Modrinth
   * Playit.gg agent             Playit.gg

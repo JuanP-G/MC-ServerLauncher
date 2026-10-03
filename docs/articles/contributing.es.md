@@ -122,8 +122,8 @@ de las veces y del nombre la otra mitad — casi siempre sale mejor arreglar el 
   `ServerConfig` y `NotificationSettings` derivan de `ObservableObject`, y una propiedad nueva en
   cualquiera de los dos entra como `[ObservableProperty] private T _foo;` igual que en todas partes.
   No cambia lo que se escribe en disco, y `ServerConfigFormatTests` está para demostrar que sigue
-  siendo así. `AppSettings` es la excepción y sigue plano: su diálogo edita una copia y la vuelca al
-  aceptar.
+  siendo así. `AppSettings` es la excepción y sigue plano: nada se enlaza a él, porque `SettingsViewModel`
+  envuelve los campos que enseña y avisa él mismo de sus cambios.
 - **Un campo nuevo en `ServerConfig` necesita una fila en `ServerConfigEffects`**: qué propiedades
   de view model alimenta y qué hay que rehacer, o una línea diciendo por qué no lo enseña nadie.
   `ServerConfigEffectsTests` falla hasta que está, y el fallo dice qué escribir. No es burocracia:
@@ -336,7 +336,7 @@ justo como alguien acaba fiándose de una página que va una versión por detrá
    color de la insignia y su `CrossplayLevel`. El selector, las insignias, la tienda, la carpeta de
    contenido y las reglas de crossplay leen todos de esa tabla.
 2. Una rama en `Services/ServerJarInstaller.cs`, que es el único sitio que sabe cómo se obtiene cada
-   tipo. El diálogo de creación y el de cambio de tipo llaman los dos ahí.
+   tipo. El panel de nuevo servidor y el diálogo de cambio de tipo llaman los dos ahí.
 3. Añade la clave de descripción del tipo a los cinco `.resx` (la línea bajo su nombre en el
    selector).
 4. **Nunca renumeres el enum `ServerType`.** `servers.json` lo guarda como entero, así que mover un

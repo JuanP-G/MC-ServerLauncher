@@ -116,7 +116,8 @@ the name's fault the other half — prefer fixing the name.
   `NotificationSettings` derive from `ObservableObject`, and a property added to either goes in as
   `[ObservableProperty] private T _foo;` like anywhere else. It does not change what is written to
   disk, and `ServerConfigFormatTests` is there to prove that stays true. `AppSettings` is the
-  exception and stays plain: its dialog edits a copy and commits it on OK.
+  exception and stays plain: nothing binds to it, because `SettingsViewModel` wraps the fields it
+  shows and raises their changes itself.
 - **A new field on `ServerConfig` needs a row in `ServerConfigEffects`** — which view-model
   properties it feeds and what has to be redone, or a line saying why nothing on screen derives from
   it. `ServerConfigEffectsTests` fails until it is there, and the failure says what to write. This
@@ -322,7 +323,7 @@ reader ends up trusting a page that is quietly a version behind.
    colour and its `CrossplayLevel`. The picker, the badges, the store, the content folder and the
    crossplay rules all read from that table.
 2. One branch in `Services/ServerJarInstaller.cs`, which is the single place that knows how each type
-   is obtained. The create dialog and the change-type dialog both call it.
+   is obtained. The new-server panel and the change-type dialog both call it.
 3. Add the type's description key to the five `.resx` files (the line under its name in the picker).
 4. **Never renumber the `ServerType` enum.** `servers.json` stores it as an integer, so moving a
    member reinterprets every server already saved on every machine. New types go on the end.

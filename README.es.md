@@ -66,8 +66,8 @@ todo con botones.
   Crear o añadir un servidor se hace en la propia ventana, junto a la lista, y se puede dejar a medias y
   retomar. **Túneles** muestra todos los túneles de Playit de tu cuenta, marca los que no llevan a nada o
   los que comparten dos servidores, y deja renombrarlos o borrarlos.
-- **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Fabric /
-  Paper / Purpur / Fabric / NeoForge / Forge).
+- **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Paper /
+  Purpur / Fabric / NeoForge / Forge).
 - **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang), **puerto** y
   **RAM**; la app descarga el servidor correcto, acepta el EULA, prepara `run.bat` / `server.properties` e
   instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur usan **plugins**.
@@ -89,7 +89,8 @@ todo con botones.
   deja los demás a la vista.
 - **Jugar también desde Bedrock** 📱 — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea el
   segundo túnel (UDP) que Bedrock necesita y configura el puerto público que Geyser debe anunciar — la parte que
-  casi nadie acierta a mano. Lo bien que funciona depende del tipo de servidor, y la tarjeta de cada tipo lo dice
+  casi nadie acierta a mano. El puerto de Bedrock se puede cambiar en la configuración de cada servidor, y nunca
+  se le da el mismo a dos. Lo bien que funciona depende del tipo de servidor, y la tarjeta de cada tipo lo dice
   antes de que elijas:
 
   | Tipo | Desde Bedrock | Por qué |
@@ -112,7 +113,9 @@ todo con botones.
   **conservando el mundo**, con avisos por colores de lo que puede afectar cada cambio.
 - **Iniciar / Detener / Reiniciar** con parada limpia que guarda el mundo; detecta y libera un **puerto ocupado**;
   **CPU, RAM, tiempo activo y puerto** en vivo con estado por colores.
-- **Vista estilo Minecraft** — icono del servidor, MOTD con colores, `jugadores/máx` y señal de accesibilidad.
+- **Tarjeta estilo Minecraft** — icono del servidor, MOTD con colores, `jugadores/máx` y señal de accesibilidad.
+  Pulsa la imagen o el lápiz para abrir **Apariencia del servidor**: la imagen, el nombre y las dos líneas del
+  MOTD —colores, negrita, cursiva, subrayado y tachado— con la vista previa de la propia tarjeta.
 - **Consola en tiempo real** con texto copiable, caja de comandos y un panel de **ayuda de comandos**.
 - **Jugadores** 👥 — conectados (en vivo), operadores, lista blanca y baneados, con acciones OP / expulsar /
   banear / lista blanca.
@@ -140,8 +143,8 @@ todo con botones.
 - **No estorba** — puedes minimizar y/o cerrar **a la bandeja del sistema** para que tus servidores sigan
   funcionando sin la ventana en medio. Y si vuelves a abrir la app, recupera esa ventana en lugar de abrir una
   segunda copia sobre los mismos servidores.
-- **Abre tu servidor a Internet con Playit.gg** 🌐 — conecta tu cuenta pegando un **código de configuración**
-  de un solo uso (sin claves ni archivos). La app **crea el túnel y ejecuta el agente de Playit por ti**, así
+- **Abre tu servidor a Internet con Playit.gg** 🌐 — conecta tu cuenta desde **Túneles** pegando un
+  **código de configuración** de un solo uso (sin claves ni archivos). La app **crea el túnel y ejecuta el agente de Playit por ti**, así
   tu servidor es accesible desde cualquier sitio y tus amigos entran con la dirección pública — **tú no instalas
   nada**. La dirección **aparece sola** a los pocos segundos de crear el túnel, con una línea debajo que
   dice qué está esperando. La app no contiene ningún secreto propio (la credencial vive en un pequeño proxy).
@@ -160,7 +163,9 @@ todo con botones.
   prueba.
 - **Cada aviso se distingue de un vistazo** 🎨 — un color según lo que ha pasado (verde cuando entra alguien,
   ámbar cuando el servidor se apaga solo, rojo cuando se cae) y **un emoji propio por tipo**, para que se
-  distingan también sin depender del color. Los cuatro colores se cambian en Ajustes, con vista previa.
+  distingan también sin depender del color. Los cuatro colores se cambian en Ajustes: de
+  una paleta pensada para leerse bien sobre el fondo oscuro, o cualquiera con el selector completo, que avisa
+  si va a costar leerlo.
 - **Antes de arrancar se comprueba que no falte nada** ✅ — si a algún mod o plugin le falta una dependencia, se
   avisa **al darle a Iniciar**, diciendo qué falta y quién lo necesita, con la opción de instalarlo y arrancar.
   Se lee de los propios jars, así que funciona **sin conexión** y no depende de que la tienda tenga las
@@ -171,8 +176,9 @@ todo con botones.
   entradas de varias líneas mantienen un solo color, así que una lista de mods nunca se confunde con un fallo,
   y la app **resuelve los avisos de arranque que le tocan**: activa el acceso nativo en Java 22+ y pregunta
   una vez si aceptas la descarga de BlueMap, en vez de dejarte editar su configuración.
-- **Ajustes en un solo sitio** ⚙️ — idioma, notificaciones, comportamiento de la bandeja, tu conexión de
-  Playit y un botón de **añadir al escritorio**, todo en un único diálogo.
+- **Ajustes dentro de la ventana** ⚙️ — idioma, comportamiento de la bandeja, un botón de **añadir al
+  escritorio**, notificaciones, colores y el historial de jugadores, cada cosa en su página. Los cambios se
+  guardan al momento: no hay botón de Guardar que olvidar.
 - **Multi-idioma** — español, inglés, portugués, francés y alemán.
 
 ## 🛠️ Compilar desde el código
