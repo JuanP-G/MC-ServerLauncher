@@ -11,7 +11,28 @@ namespace McServerLauncher.Services;
 public class PlayitApiException : Exception
 {
     public string? ErrorType { get; }
-    public bool IsAuthError => ErrorType == "auth";
+
+    /// <summary>
+    /// Whether Playit refused the key, as opposed to failing for some other reason.
+    /// </summary>
+    /// <remarks>
+    /// Only the first spelling used to count. Playit answers a rejected key as <c>auth</c> in some
+    /// places and as a named error such as <c>InvalidAgentKey</c> in others, and the second kind was
+    /// treated as "something else went wrong" — which stopped the client from trying the next way
+    /// of presenting the same key, the one that would have worked.
+    /// </remarks>
+    public bool IsAuthError => ErrorType == "auth" || LooksLikeKeyProblem(ErrorType) || LooksLikeKeyProblem(Message);
+
+    private static readonly string[] KeyProblems =
+    {
+        "InvalidAgentKey", "InvalidApiKey", "InvalidKey", "Unauthorized", "NotAuthorized",
+        "AuthRequired", "MissingAuth", "InvalidAuth",
+    };
+
+    /// <summary>True when the text names a rejected or missing key.</summary>
+    internal static bool LooksLikeKeyProblem(string? text) =>
+        !string.IsNullOrEmpty(text) &&
+        KeyProblems.Any(k => text.Contains(k, StringComparison.OrdinalIgnoreCase));
 
     public PlayitApiException(string? type, string message) : base(message) => ErrorType = type;
 }

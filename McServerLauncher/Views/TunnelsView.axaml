@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:loc="using:McServerLauncher.Localization"
              xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:controls="using:McServerLauncher.Controls"
              x:Class="McServerLauncher.Views.TunnelsView"
              x:CompileBindings="False">
 
@@ -50,7 +51,7 @@
                             <Button Content="{Binding ConnectText}" Command="{Binding ConnectCommand}"
                                     IsVisible="{Binding IsConnected}" />
                             <Button Content="{loc:Loc Pk_Disconnect}" Command="{Binding DisconnectCommand}"
-                                    IsVisible="{Binding IsConnected}" />
+                                    IsVisible="{Binding HasStoredConnection}" />
                         </StackPanel>
                     </Grid>
                     <TextBlock Text="{loc:Loc Pk_SettingsDesc}" Classes="desc" IsVisible="{Binding IsNotConnected}" />
@@ -117,8 +118,7 @@
 
                                             <!-- Nombre: se edita en la propia fila, y la app propone el del servidor -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
-                                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"
-                                                           IsVisible="{Binding IsNotEditing}" />
+                                                <controls:MarqueeText Text="{Binding Name}" IsVisible="{Binding IsNotEditing}" />
                                                 <Grid ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding IsEditing}">
                                                     <TextBox Text="{Binding EditName}" MaxLength="64" MinHeight="0" Padding="6,3">
                                                         <TextBox.KeyBindings>
@@ -145,8 +145,7 @@
                                                        TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
                                             <TextBlock Grid.Column="3" Text="{Binding ProtoText}" VerticalAlignment="Center" Opacity="0.8" />
                                             <TextBlock Grid.Column="4" Text="{Binding LocalPort}" VerticalAlignment="Center" Opacity="0.8" />
-                                            <TextBlock Grid.Column="5" Text="{Binding ServerText}" VerticalAlignment="Center"
-                                                       TextTrimming="CharacterEllipsis" />
+                                            <controls:MarqueeText Grid.Column="5" Text="{Binding ServerText}" VerticalAlignment="Center" />
 
                                             <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right"
                                                         VerticalAlignment="Center">

@@ -156,7 +156,7 @@
                                     </Panel>
 
                                     <StackPanel Grid.Column="1">
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" />
+                                        <controls:MarqueeText Text="{Binding Name}" TextElement.FontWeight="SemiBold" TextElement.FontSize="14" />
                                         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
                                             <Border CornerRadius="4" Padding="5,1" VerticalAlignment="Center"
                                                     Background="{Binding ServerTypeBrush}">

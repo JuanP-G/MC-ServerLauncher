@@ -797,4 +797,9 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Upd_UpToDateFmt" xml:space="preserve"><value>Tens a versão mais recente · verificado às {0}</value></data>
   <data name="Upd_Failed" xml:space="preserve"><value>Não foi possível verificar. Verifica a ligação e tenta de novo.</value></data>
   <data name="Upd_NotChecked" xml:space="preserve"><value>Ainda não foi verificado.</value></data>
+  <data name="Tun_Src_Installed" xml:space="preserve"><value>Playit instalado neste computador: usa-se a sua chave.</value></data>
+  <data name="Tun_Src_Saved" xml:space="preserve"><value>Chave do Playit guardada.</value></data>
+  <data name="Tun_Src_Refused" xml:space="preserve"><value> O Playit não aceita esta chave.</value></data>
+  <data name="Tun_Err_Key" xml:space="preserve"><value>O Playit não aceita a chave com que a conta foi lida. Se foi esta app a guardá-la, carrega em Desligar e volta a ligar.</value></data>
+  <data name="Tun_Err_NoPermission" xml:space="preserve"><value>O Playit não permite esta alteração com a chave deste computador.</value></data>
 </root>

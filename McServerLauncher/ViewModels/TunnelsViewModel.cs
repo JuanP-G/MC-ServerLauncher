@@ -65,11 +65,26 @@ public partial class TunnelsViewModel : ObservableObject
 
     // ---------------------------------------------------------------- the account
 
-    public bool IsConnected => PlayitConnection.IsConnected(_appSettings);
-    public bool IsNotConnected => !IsConnected;
-    public string ConnectText => Localizer.Get(IsConnected ? "Pk_Reconnect" : "Pk_Connect");
+    // Every way this machine has into the account. Read each time rather than kept: the installed
+    // agent can appear or go while the app runs, and the key it holds is cached for a few seconds
+    // by the service that reads it, so asking again is cheap.
+    private IReadOnlyList<PlayitConnection.Source> Sources() => PlayitConnection.Sources(_appSettings);
 
-    private bool UsesAgent => IsConnected && !string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey);
+    // What the last reading found out about each way in.
+    private readonly HashSet<PlayitConnection.SourceKind> _refused = new();
+    private readonly Dictionary<string, string> _keyFor = new();
+    private List<string> _workingKeys = new();
+
+    /// <summary>True when there is any way into the account: the app's own agent, the installed one, or a saved key.</summary>
+    public bool IsConnected => Sources().Count > 0;
+    public bool IsNotConnected => !IsConnected;
+
+    /// <summary>True when the connect flow has saved something — which is what Disconnect forgets.</summary>
+    public bool HasStoredConnection => PlayitConnection.IsConnected(_appSettings);
+
+    public string ConnectText => Localizer.Get(HasStoredConnection ? "Pk_Reconnect" : "Pk_Connect");
+
+    private bool UsesAgent => !string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey);
 
     public bool ShowAgent => UsesAgent;
 
@@ -91,16 +106,45 @@ public partial class TunnelsViewModel : ObservableObject
         _ => Grey,
     };
 
-    /// <summary>The account line's dot: green only when connected <em>and</em> the agent is carrying traffic.</summary>
-    public IBrush AccountBrush => !IsConnected ? Grey : UsesAgent ? AgentBrush : Green;
+    /// <summary>
+    /// The account line's dot: grey with no way in, red when Playit refused every one, green otherwise
+    /// — except that the app's own agent being down is shown, since it is the one carrying the traffic.
+    /// </summary>
+    public IBrush AccountBrush
+    {
+        get
+        {
+            var sources = Sources();
+            if (sources.Count == 0) return Grey;
+            if (_refused.Count == sources.Count) return Red;
+            return UsesAgent && PlayitAgentRunner.Shared.State != AgentRunState.Running ? AgentBrush : Green;
+        }
+    }
 
-    public string AccountText => !IsConnected
-        ? Localizer.Get("Pk_NotConnected")
-        : UsesAgent ? AgentText : Localizer.Get("Pk_Connected");
+    /// <summary>One line for each way in, so it is clear which one the tunnels below were read with.</summary>
+    public string AccountText
+    {
+        get
+        {
+            var sources = Sources();
+            if (sources.Count == 0) return Localizer.Get("Pk_NotConnected");
+
+            return string.Join("\n", sources.Select(source =>
+            {
+                var line = source.Kind switch
+                {
+                    PlayitConnection.SourceKind.AppAgent => AgentText,
+                    PlayitConnection.SourceKind.InstalledAgent => Localizer.Get("Tun_Src_Installed"),
+                    _ => Localizer.Get("Tun_Src_Saved"),
+                };
+                return _refused.Contains(source.Kind) ? line + Localizer.Get("Tun_Src_Refused") : line;
+            }));
+        }
+    }
 
     public bool CanRetryAgent => UsesAgent && PlayitAgentRunner.Shared.State is AgentRunState.Failed or AgentRunState.Stopped;
 
-    /// <summary>The old system service, for people who connected with a key instead of the agent.</summary>
+    /// <summary>The system service of an agent the user installed, to start and stop it from here.</summary>
     public bool ShowService => IsConnected && !UsesAgent && PlayitManager.Shared.IsInstalled;
 
     public string ServiceText => string.Format(Localizer.Get("Tun_ServiceFmt"),
@@ -110,6 +154,7 @@ public partial class TunnelsViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsConnected));
         OnPropertyChanged(nameof(IsNotConnected));
+        OnPropertyChanged(nameof(HasStoredConnection));
         OnPropertyChanged(nameof(ConnectText));
         OnPropertyChanged(nameof(ShowAgent));
         OnPropertyChanged(nameof(AgentText));
@@ -237,6 +282,60 @@ public partial class TunnelsViewModel : ObservableObject
         RaiseSummary();
     }
 
+    /// <summary>What reading the account with every way in came back with.</summary>
+    private sealed record Reading(
+        List<PlayitApiService.PlayitTunnel> Tunnels, Dictionary<string, string> KeyFor,
+        List<string> WorkingKeys, HashSet<PlayitConnection.SourceKind> Refused, Exception? Error);
+
+    /// <summary>
+    /// Asks the account with <em>each</em> way in and puts the answers together.
+    /// </summary>
+    /// <remarks>
+    /// Not just the first that works: the app's agent and one the user installed are different agents
+    /// of the same account, and each is told only about its own tunnels. A key that Playit rejects is
+    /// noted and the others carry on — one stale key must not hide tunnels another can see. Each
+    /// tunnel remembers which key read it, because that is the one to change it with.
+    /// </remarks>
+    private async Task<Reading> ReadAsync()
+    {
+        var tunnels = new List<PlayitApiService.PlayitTunnel>();
+        var keyFor = new Dictionary<string, string>();
+        var working = new List<string>();
+        var refused = new HashSet<PlayitConnection.SourceKind>();
+        Exception? last = null;
+
+        foreach (var source in Sources())
+        {
+            try
+            {
+                var (_, list) = await _api.GetRunDataAsync(source.Key);
+                working.Add(source.Key);
+                foreach (var tunnel in list)
+                {
+                    // Seen through two agents is still one tunnel.
+                    if (!string.IsNullOrEmpty(tunnel.Id) && keyFor.ContainsKey(tunnel.Id)) continue;
+                    tunnels.Add(tunnel);
+                    if (!string.IsNullOrEmpty(tunnel.Id)) keyFor[tunnel.Id] = source.Key;
+                }
+            }
+            catch (Exception ex)
+            {
+                last = ex;
+                if (ex is PlayitApiException { IsAuthError: true }) refused.Add(source.Kind);
+            }
+        }
+
+        return new Reading(tunnels, keyFor, working, refused, working.Count == 0 ? last : null);
+    }
+
+    /// <summary>What to tell a person about a failure, rather than what the API said.</summary>
+    private static string Describe(Exception? ex, bool write = false) => ex switch
+    {
+        null => "",
+        PlayitApiException { IsAuthError: true } => Localizer.Get(write ? "Tun_Err_NoPermission" : "Tun_Err_Key"),
+        _ => ex.Message,
+    };
+
     [RelayCommand]
     public async Task RefreshAsync()
     {
@@ -248,10 +347,23 @@ public partial class TunnelsViewModel : ObservableObject
         ErrorText = null;
         try
         {
-            var key = PlayitConnection.Credential(_appSettings)!;
-            var (_, tunnels) = await _api.GetRunDataAsync(key);
+            var reading = await ReadAsync();
 
-            ShowReport(TunnelInventory.Build(tunnels, Snapshot()));
+            _refused.Clear();
+            foreach (var kind in reading.Refused) _refused.Add(kind);
+            _keyFor.Clear();
+            foreach (var (id, key) in reading.KeyFor) _keyFor[id] = key;
+            _workingKeys = reading.WorkingKeys;
+
+            if (reading.Error is not null)
+            {
+                // Nothing could be read: say why, and leave the table as it was rather than empty,
+                // which would read as "you have no tunnels".
+                ErrorText = Describe(reading.Error);
+                return;
+            }
+
+            ShowReport(TunnelInventory.Build(reading.Tunnels, Snapshot()));
 
             // The one thing synced without asking: each server's remembered address follows what the
             // account says. The servers already do this every 30 s; doing it now means a change made
@@ -261,22 +373,29 @@ public partial class TunnelsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorText = ex.Message;
+            ErrorText = Describe(ex);
         }
         finally
         {
             IsLoading = false;
             _busy = false;
+            RaiseAccount();
             RaiseSummary();
         }
     }
 
     // ---------------------------------------------------------------- what the person asks for
 
+    /// <summary>The key that can change this tunnel: the one that read it, else the first that works.</summary>
+    private string? KeyFor(string? tunnelId) =>
+        tunnelId is not null && _keyFor.TryGetValue(tunnelId, out var key)
+            ? key
+            : _workingKeys.FirstOrDefault() ?? Sources().FirstOrDefault()?.Key;
+
     /// <summary>Runs a change against the account and reads the result back, reporting a failure on screen.</summary>
-    private async Task ChangeAsync(Func<string, Task> change)
+    private async Task ChangeAsync(Func<string, Task> change, string? tunnelId = null)
     {
-        if (PlayitConnection.Credential(_appSettings) is not { } key) return;
+        if (KeyFor(tunnelId) is not { } key) return;
 
         try
         {
@@ -285,7 +404,7 @@ public partial class TunnelsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorText = ex.Message;
+            ErrorText = Describe(ex, write: true);
         }
         await RefreshAsync();
     }
@@ -296,11 +415,12 @@ public partial class TunnelsViewModel : ObservableObject
             try { await _api.RenameTunnelAsync(key, tunnelId, name); }
             catch (PlayitApiException ex)
             {
-                // The one change this app makes that Playit's own client documents but this key was
-                // never promised: say what to do instead of leaving a bare API error.
-                throw new InvalidOperationException(string.Format(Localizer.Get("Tun_RenameFailFmt"), ex.Message), ex);
+                // Said as what to do next, not as what the API said: renaming is the one change here
+                // that a key may be refused for even though it can read, and playit.gg can always do it.
+                throw new InvalidOperationException(
+                    string.Format(Localizer.Get("Tun_RenameFailFmt"), Describe(ex, write: true)), ex);
             }
-        });
+        }, tunnelId);
 
     internal async Task DeleteAsync(string tunnelId, string name)
     {
@@ -310,7 +430,7 @@ public partial class TunnelsViewModel : ObservableObject
                 Localizer.Get("Title_DeleteTunnel"), owner))
             return;
 
-        await ChangeAsync(key => _api.DeleteTunnelAsync(key, tunnelId));
+        await ChangeAsync(key => _api.DeleteTunnelAsync(key, tunnelId), tunnelId);
     }
 
     internal async Task CopyAsync(string text)
@@ -353,10 +473,10 @@ public partial class TunnelsViewModel : ObservableObject
 
             case TunnelSuggestionKind.RenameAll:
                 var renames = Rows.Where(r => r.SuggestedName is not null && !r.IsProblem).ToList();
-                await ChangeAsync(async key =>
+                await ChangeAsync(async _ =>
                 {
                     foreach (var row in renames)
-                        await _api.RenameTunnelAsync(key, row.Id, row.SuggestedName!);
+                        await _api.RenameTunnelAsync(KeyFor(row.Id)!, row.Id, row.SuggestedName!);
                 });
                 break;
         }
@@ -371,27 +491,27 @@ public partial class TunnelsViewModel : ObservableObject
     public async Task RenameTunnelsForServerAsync(ServerViewModel server, string oldName)
     {
         if (string.Equals(oldName, server.Name, StringComparison.Ordinal)) return;
-        if (PlayitConnection.Credential(_appSettings) is not { } key) return;
+        if (!IsConnected) return;
 
         try
         {
-            var (_, tunnels) = await _api.GetRunDataAsync(key);
+            var reading = await ReadAsync();
             var all = Snapshot();
             var me = all.FirstOrDefault(s => s.Id == server.Config.Id);
             if (me is null) return;
 
-            var renames = TunnelInventory.RenamesFor(me, oldName, tunnels, all);
+            var renames = TunnelInventory.RenamesFor(me, oldName, reading.Tunnels, all);
             foreach (var (tunnelId, newName) in renames)
             {
-                var before = tunnels.First(t => t.Id == tunnelId).Name;
+                var before = reading.Tunnels.First(t => t.Id == tunnelId).Name;
                 try
                 {
-                    await _api.RenameTunnelAsync(key, tunnelId, newName);
+                    await _api.RenameTunnelAsync(reading.KeyFor[tunnelId], tunnelId, newName);
                     server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenamedFmt"), before, newName));
                 }
                 catch (Exception ex)
                 {
-                    server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenameFailFmt"), before, ex.Message));
+                    server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenameFailFmt"), before, Describe(ex, write: true)));
                 }
             }
 

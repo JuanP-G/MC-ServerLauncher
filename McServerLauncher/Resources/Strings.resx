@@ -843,4 +843,9 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Upd_UpToDateFmt" xml:space="preserve"><value>Estás en la última versión · comprobado a las {0}</value></data>
   <data name="Upd_Failed" xml:space="preserve"><value>No se pudo comprobar. Revisa tu conexión e inténtalo de nuevo.</value></data>
   <data name="Upd_NotChecked" xml:space="preserve"><value>Todavía no se ha comprobado.</value></data>
+  <data name="Tun_Src_Installed" xml:space="preserve"><value>Playit instalado en este equipo: se usa su clave.</value></data>
+  <data name="Tun_Src_Saved" xml:space="preserve"><value>Clave de Playit guardada.</value></data>
+  <data name="Tun_Src_Refused" xml:space="preserve"><value> Playit no acepta esta clave.</value></data>
+  <data name="Tun_Err_Key" xml:space="preserve"><value>Playit no acepta la clave con la que se leyó la cuenta. Si la guardó esta app, pulsa Desconectar y vuelve a conectar.</value></data>
+  <data name="Tun_Err_NoPermission" xml:space="preserve"><value>Playit no deja hacer este cambio con la clave de este equipo.</value></data>
 </root>

@@ -797,4 +797,9 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Upd_UpToDateFmt" xml:space="preserve"><value>Vous avez la dernière version · vérifié à {0}</value></data>
   <data name="Upd_Failed" xml:space="preserve"><value>Vérification impossible. Vérifiez votre connexion et réessayez.</value></data>
   <data name="Upd_NotChecked" xml:space="preserve"><value>Pas encore vérifié.</value></data>
+  <data name="Tun_Src_Installed" xml:space="preserve"><value>Playit installé sur cet ordinateur : sa clé est utilisée.</value></data>
+  <data name="Tun_Src_Saved" xml:space="preserve"><value>Clé Playit enregistrée.</value></data>
+  <data name="Tun_Src_Refused" xml:space="preserve"><value> Playit n'accepte pas cette clé.</value></data>
+  <data name="Tun_Err_Key" xml:space="preserve"><value>Playit n'accepte pas la clé avec laquelle le compte a été lu. Si cette appli l'a enregistrée, appuyez sur Déconnecter puis reconnectez-vous.</value></data>
+  <data name="Tun_Err_NoPermission" xml:space="preserve"><value>Playit n'autorise pas ce changement avec la clé de cet ordinateur.</value></data>
 </root>

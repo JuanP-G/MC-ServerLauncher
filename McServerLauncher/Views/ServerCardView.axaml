@@ -3,6 +3,7 @@
              xmlns:b="using:McServerLauncher.Behaviors"
              xmlns:loc="using:McServerLauncher.Localization"
              xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:controls="using:McServerLauncher.Controls"
              x:Class="McServerLauncher.Views.ServerCardView"
              x:Name="Root"
              x:CompileBindings="False">
@@ -56,16 +57,17 @@
             </Button>
 
             <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="{Binding #Root.ServerName}" Foreground="White" FontWeight="Bold"
-                               FontSize="16" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                    <Button Padding="4" Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
+                <Grid ColumnDefinitions="*,Auto">
+                    <controls:MarqueeText Text="{Binding #Root.ServerName}" TextElement.Foreground="White"
+                                          TextElement.FontWeight="Bold" TextElement.FontSize="16"
+                                          VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Margin="6,0,0,0" Padding="4" Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
                             IsVisible="{Binding #Root.IsEditable}"
                             ToolTip.Tip="{loc:Loc Look_EditTip}"
                             Command="{Binding #Root.EditCommand}">
                         <ic:SymbolIcon Symbol="Edit" FontSize="14" Foreground="{StaticResource McListText}" />
                     </Button>
-                </StackPanel>
+                </Grid>
                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,3,0,0">
                     <Border CornerRadius="4" Padding="6,1" VerticalAlignment="Center"
                             Background="{Binding #Root.TypeBrush}">

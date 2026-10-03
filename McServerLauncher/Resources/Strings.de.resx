@@ -797,4 +797,9 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Upd_UpToDateFmt" xml:space="preserve"><value>Du hast die neueste Version · geprüft um {0}</value></data>
   <data name="Upd_Failed" xml:space="preserve"><value>Prüfung nicht möglich. Prüfe deine Verbindung und versuche es erneut.</value></data>
   <data name="Upd_NotChecked" xml:space="preserve"><value>Noch nicht geprüft.</value></data>
+  <data name="Tun_Src_Installed" xml:space="preserve"><value>Auf diesem Computer installiertes Playit: Sein Schlüssel wird verwendet.</value></data>
+  <data name="Tun_Src_Saved" xml:space="preserve"><value>Gespeicherter Playit-Schlüssel.</value></data>
+  <data name="Tun_Src_Refused" xml:space="preserve"><value> Playit akzeptiert diesen Schlüssel nicht.</value></data>
+  <data name="Tun_Err_Key" xml:space="preserve"><value>Playit akzeptiert den Schlüssel nicht, mit dem das Konto gelesen wurde. Falls diese App ihn gespeichert hat, klicke auf Trennen und verbinde dich neu.</value></data>
+  <data name="Tun_Err_NoPermission" xml:space="preserve"><value>Playit erlaubt diese Änderung mit dem Schlüssel dieses Computers nicht.</value></data>
 </root>
