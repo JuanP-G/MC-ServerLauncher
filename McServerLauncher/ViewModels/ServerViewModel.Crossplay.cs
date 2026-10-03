@@ -363,25 +363,25 @@ public partial class ServerViewModel
 
         try
         {
-            var tunnel = await FindBedrockTunnelAsync();
-            if (tunnel?.Address is not { } host || tunnel.PublicPort <= 0)
+            var tunnels = await _playitApi.TryGetTunnelsAsync();
+            if (TunnelAddressSync.Bedrock(tunnels, Config.BedrockPort) is not { } found)
             {
-                // Two different things, and the panel now says which. A tunnel that exists but has
-                // no address yet is a few seconds away; no tunnel at all needs the user to act.
-                RunOnUi(() => BedrockState = tunnel is null
-                    ? BedrockAddressState.LocalOnly
-                    : BedrockAddressState.Waiting);
+                // Could not ask: what is on screen stays, but it no longer stays silently.
+                RunOnUi(() => BedrockState = BedrockAddressState.Failed);
                 return;
             }
 
+            // Cleared when there is no tunnel, not left as it was. After the port moved, what was left
+            // was the old port's address — another server's tunnel — and the two cards showed one address.
             RunOnUi(() =>
             {
-                BedrockHost = host;
-                BedrockPortText = tunnel.PublicPort.ToString();
-                BedrockState = BedrockAddressState.Ready;
+                BedrockHost = found.Host;
+                BedrockPortText = found.PublicPort;
+                BedrockState = found.State;
             });
 
-            _crossplay.WriteConfig(Config, tunnel.PublicPort);
+            if (found.State == BedrockAddressState.Ready)
+                _crossplay.WriteConfig(Config, int.Parse(found.PublicPort));
         }
         catch
         {

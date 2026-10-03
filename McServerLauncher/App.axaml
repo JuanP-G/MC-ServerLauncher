@@ -83,6 +83,8 @@
         <!-- Los estilos que comparten varias vistas. Ver Styles/Shared.axaml para por que
              Border.card tuvo que quedarse con un solo significado. -->
         <StyleInclude Source="/Styles/Shared.axaml" />
+        <!-- Todo el movimiento de la app: ver Styles/Motion.axaml. -->
+        <StyleInclude Source="/Styles/Motion.axaml" />
         <!-- Keep button content (text and icon+text) centered everywhere. -->
         <Style Selector="Button">
             <Setter Property="HorizontalContentAlignment" Value="Center" />

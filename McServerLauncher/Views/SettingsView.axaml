@@ -60,7 +60,7 @@
             <Panel MaxWidth="820" HorizontalAlignment="Left">
 
                 <!-- ===================== GENERAL ===================== -->
-                <StackPanel Spacing="8" IsVisible="{Binding IsGeneralPage}">
+                <StackPanel Spacing="8" IsVisible="{Binding IsGeneralPage}" Classes="fadein">
                     <Border Classes="card" Margin="0">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel>
@@ -110,7 +110,7 @@
                 </StackPanel>
 
                 <!-- ===================== NOTIFICACIONES ===================== -->
-                <StackPanel Spacing="8" IsVisible="{Binding IsNotificationsPage}">
+                <StackPanel Spacing="8" IsVisible="{Binding IsNotificationsPage}" Classes="fadein">
                     <Border Classes="card" Margin="0">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel>
@@ -159,7 +159,7 @@
                 </StackPanel>
 
                 <!-- ===================== COLORES ===================== -->
-                <StackPanel Spacing="8" IsVisible="{Binding IsColorsPage}">
+                <StackPanel Spacing="8" IsVisible="{Binding IsColorsPage}" Classes="fadein">
                     <Border Classes="card" Margin="0">
                         <StackPanel Spacing="8">
                             <StackPanel>

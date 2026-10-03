@@ -5,9 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="Servers" xml:space="preserve"><value>Serveurs</value></data>
-  <data name="CreateServer" xml:space="preserve"><value>Créer un serveur</value></data>
   <data name="Add" xml:space="preserve"><value>Ajouter</value></data>
-  <data name="Tip_Add" xml:space="preserve"><value>Ajouter un serveur déjà présent dans un dossier</value></data>
   <data name="Tip_Edit" xml:space="preserve"><value>Modifier le serveur</value></data>
   <data name="Tip_Delete" xml:space="preserve"><value>Supprimer le serveur</value></data>
   <data name="EmptyState" xml:space="preserve"><value>Sélectionne ou ajoute un serveur pour commencer.</value></data>
@@ -817,4 +815,18 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Msg_BedrockNeedTunnelFmt" xml:space="preserve"><value>[Playit] Créez sur playit.gg un tunnel « Minecraft Bedrock » (UDP) vers le port local {0} : la clé du Playit installé ne peut pas le créer d'ici.</value></data>
   <data name="Msg_BedrockRestartToApply" xml:space="preserve"><value>[Crossplay] Le serveur est allumé : le nouveau port sera utilisé au redémarrage.</value></data>
   <data name="Msg_BedrockMoveFailedFmt" xml:space="preserve"><value>[Crossplay] Impossible de changer le port Bedrock : {0}</value></data>
+  <data name="New_Title" xml:space="preserve"><value>Nouveau serveur</value></data>
+  <data name="New_StepOrigin" xml:space="preserve"><value>1 · Origine</value></data>
+  <data name="New_StepDetails" xml:space="preserve"><value>2 · Détails</value></data>
+  <data name="New_CreateTitle" xml:space="preserve"><value>En créer un nouveau</value></data>
+  <data name="New_CreateDesc" xml:space="preserve"><value>Choisissez le type et la version ; l'appli télécharge et installe tout le nécessaire.</value></data>
+  <data name="New_AddTitle" xml:space="preserve"><value>Ajouter un que j'ai déjà</value></data>
+  <data name="New_AddDesc" xml:space="preserve"><value>Choisissez son dossier ; l'appli reconnaît le type et la version.</value></data>
+  <data name="New_Next" xml:space="preserve"><value>Suivant</value></data>
+  <data name="New_Back" xml:space="preserve"><value>Retour</value></data>
+  <data name="New_AddButton" xml:space="preserve"><value>Ajouter le serveur</value></data>
+  <data name="New_AddFolder" xml:space="preserve"><value>Dossier du serveur</value></data>
+  <data name="New_AddFolderHint" xml:space="preserve"><value>Choisissez le dossier du serveur</value></data>
+  <data name="New_DetectedFmt" xml:space="preserve"><value>Reconnu : {0} {1}</value></data>
+  <data name="New_NotDetected" xml:space="preserve"><value>Le type n'a pas pu être reconnu ; vous pourrez le régler ensuite dans Modifier.</value></data>
 </root>

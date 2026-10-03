@@ -1,0 +1,125 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Todo el movimiento de la app, en un sitio.
+
+         Criterio: sutil y corto. Nada rebota, nada pasa de 180 ms, y nada se mueve por moverse:
+         cada transicion dice algo (esto se puede pulsar, esto ha cambiado, esto acaba de aparecer).
+         Que viva solo aqui es lo que permite revisarlo de un vistazo, y un test comprueba que ninguna
+         vista declara movimiento por su cuenta. -->
+
+    <!-- ===================== BOTONES =====================
+         El fondo cambia con suavidad al pasar el raton, y al pulsar el boton se hunde un poco. -->
+    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button">
+        <Setter Property="RenderTransform" Value="none" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.09" />
+                <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+
+    <!-- ===================== LISTAS =====================
+         Las filas se iluminan al pasar el raton en vez de cambiar de golpe. -->
+    <Style Selector="ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.14" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- Las acciones de cada fila de servidor: invisibles hasta que la fila tiene el raton encima o
+         esta seleccionada, y mientras no se ven tampoco se pueden pulsar. -->
+    <Style Selector="StackPanel.rowactions">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="ListBoxItem:pointerover StackPanel.rowactions, ListBoxItem:selected StackPanel.rowactions">
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="IsHitTestVisible" Value="True" />
+    </Style>
+
+    <Style Selector="Button.rowaction">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="5" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="Button.rowaction.danger:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource DangerIcon}" />
+    </Style>
+
+    <!-- El "+" de la cabecera de servidores: discreto hasta que se le pasa el raton. -->
+    <Style Selector="Button.add">
+        <Setter Property="Padding" Value="6" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Button.add:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource AccentSelected}" />
+    </Style>
+
+    <!-- ===================== RAIL =====================  -->
+    <Style Selector="Button.rail">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.09" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ===================== ICONO DE LA TARJETA =====================
+         El velo de "Editar" sobre el icono aparece con un fundido. -->
+    <Style Selector="Button.iconbtn Border#HoverOverlay">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.iconbtn:pointerover Border#HoverOverlay">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <!-- ===================== ENTRADAS =====================
+         Una seccion, una pagina de Ajustes o un paso del asistente entran con un fundido corto cada
+         vez que se hacen visibles. El selector de IsVisible es lo que hace que se repita en cada
+         aparicion y no solo la primera vez. -->
+    <Style Selector=":is(Control).fadein[IsVisible=True]">
+        <Style.Animations>
+            <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+</Styles>

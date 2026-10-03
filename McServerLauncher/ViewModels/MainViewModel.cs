@@ -42,6 +42,18 @@ public partial class MainViewModel : ObservableObject
 
     public bool HasSelection => SelectedServer is not null;
 
+    /// <summary>The new-server panel while one is being made or added; null otherwise.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCreatingServer), nameof(ShowServerDetail), nameof(ShowEmptyState))]
+    private NewServerView? _newServerPanel;
+
+    public bool IsCreatingServer => NewServerPanel is not null;
+
+    /// <summary>The selected server's detail, unless the new-server panel has the space.</summary>
+    public bool ShowServerDetail => HasSelection && !IsCreatingServer;
+
+    public bool ShowEmptyState => !HasSelection && !IsCreatingServer;
+
     [ObservableProperty]
     private bool _updateAvailable;
 
@@ -495,7 +507,12 @@ public partial class MainViewModel : ObservableObject
             Localizer.Get("Title_ServersDamaged"), owner);
     }
 
-    partial void OnSelectedServerChanged(ServerViewModel? value) => OnPropertyChanged(nameof(HasSelection));
+    partial void OnSelectedServerChanged(ServerViewModel? value)
+    {
+        OnPropertyChanged(nameof(HasSelection));
+        OnPropertyChanged(nameof(ShowServerDetail));
+        OnPropertyChanged(nameof(ShowEmptyState));
+    }
 
     /// <summary>
     /// Returns the Playit credential used for tunnel management (the per-user agent secret key from
@@ -528,76 +545,90 @@ public partial class MainViewModel : ObservableObject
         return vm;
     }
 
+    /// <summary>Opens the new-server panel: create one from scratch, or add one that already exists.</summary>
+    /// <remarks>
+    /// One panel for both, in the window, where two buttons used to open two dialogs. An unfinished
+    /// one is kept: pressing the button again brings it back rather than throwing it away.
+    /// </remarks>
     [RelayCommand]
-    private async Task AddServer()
+    private void ShowNewServer()
     {
-        if (Owner is null) return;
-        var config = new ServerConfig();
-        var dialog = new AddEditServerDialog(config);
-        if (await dialog.ShowDialog<bool>(Owner))
-        {
-            SelectedServer = Register(config);
-            Save();
-        }
-    }
+        Section = AppSection.Servers;
+        if (NewServerPanel is not null) return;
 
-    [RelayCommand]
-    private async Task CreateServer()
-    {
         var propertiesService = new ServerPropertiesService();
         var usedPorts = Servers
             .Select(s => propertiesService.GetServerPort(s.Config.PropertiesPath))
             .Where(p => p.HasValue)
-            .Select(p => p!.Value);
+            .Select(p => p!.Value)
+            .ToList();
 
-        if (Owner is null) return;
-        var dialog = new CreateServerDialog(usedPorts);
-        if (await dialog.ShowDialog<bool>(Owner) && dialog.ResultConfig is not null)
+        var panel = new NewServerView(usedPorts);
+        panel.Cancelled += () => NewServerPanel = null;
+        panel.Completed += result =>
         {
-            var vm = Register(dialog.ResultConfig);
-            SelectedServer = vm;
-            Save();
-
-            // Create the Playit tunnel (errors are visible in the server's console).
-            string? playitKey = null;
-            if (dialog.CreateTunnel)
-            {
-                playitKey = await EnsurePlayitAgentAsync();
-                if (playitKey is not null)
-                    await vm.CreateTunnelAsync(playitKey);
-            }
-
-            // Crossplay after the Java tunnel, not before: setting it up needs the Playit key that
-            // step obtains, and the Bedrock tunnel is a second one alongside the Java one.
-            if (dialog.ResultConfig.CrossplayEnabled)
-            {
-                await vm.SetUpCrossplayAsync(playitKey);
-                Save();
-            }
-
-            if (dialog.ResultConfig.MultiVersionEnabled)
-            {
-                await vm.SetUpMultiVersionAsync();
-                Save();
-            }
-
-            if (dialog.ResultConfig.BedrockModContentEnabled)
-            {
-                await vm.SetUpBedrockModContentAsync();
-                Save();
-            }
-
-            // First launch to generate the world and files.
-            if (dialog.AutoStart)
-                vm.StartCommand.Execute(null);
-        }
+            NewServerPanel = null;
+            _ = FinishNewServerAsync(result);
+        };
+        NewServerPanel = panel;
     }
 
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task EditServer()
+    /// <summary>Registers what the panel produced and does what was asked for it.</summary>
+    private async Task FinishNewServerAsync(NewServerResult result)
     {
-        if (SelectedServer is null || Owner is null) return;
-        var server = SelectedServer;
+        var vm = Register(result.Config);
+        SelectedServer = vm;
+        Save();
+        if (!result.IsNew) return;
+
+        // Create the Playit tunnel (errors are visible in the server's console).
+        string? playitKey = null;
+        if (result.CreateTunnel)
+        {
+            playitKey = await EnsurePlayitAgentAsync();
+            if (playitKey is not null)
+                await vm.CreateTunnelAsync(playitKey);
+        }
+
+        // Crossplay after the Java tunnel, not before: setting it up needs the Playit key that
+        // step obtains, and the Bedrock tunnel is a second one alongside the Java one.
+        if (result.Config.CrossplayEnabled)
+        {
+            await vm.SetUpCrossplayAsync(playitKey);
+            Save();
+        }
+
+        if (result.Config.MultiVersionEnabled)
+        {
+            await vm.SetUpMultiVersionAsync();
+            Save();
+        }
+
+        if (result.Config.BedrockModContentEnabled)
+        {
+            await vm.SetUpBedrockModContentAsync();
+            Save();
+        }
+
+        // First launch to generate the world and files.
+        if (result.AutoStart)
+            vm.StartCommand.Execute(null);
+    }
+
+    /// <summary>Whether a row's own button, or the selection, names a server to act on.</summary>
+    private bool CanActOn(ServerViewModel? target) => target is not null || HasSelection;
+
+    /// <summary>A row's button acts on its row: it selects it first, so what happens is on screen.</summary>
+    private ServerViewModel? Target(ServerViewModel? target)
+    {
+        if (target is not null && !ReferenceEquals(target, SelectedServer)) SelectedServer = target;
+        return SelectedServer;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanActOn))]
+    private async Task EditServer(ServerViewModel? target)
+    {
+        if (Target(target) is not { } server || Owner is null) return;
         var oldType = server.Config.Type;
         var oldName = server.Name;
 
@@ -701,10 +732,10 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task RemoveServer()
+    [RelayCommand(CanExecute = nameof(CanActOn))]
+    private async Task RemoveServer(ServerViewModel? target)
     {
-        if (SelectedServer is null) return;
+        if (Target(target) is null || SelectedServer is null) return;
 
         var folder = SelectedServer.Config.FolderPath;
         // Read the ports BEFORE deleting anything (we need them to locate the tunnels).
@@ -712,9 +743,7 @@ public partial class MainViewModel : ObservableObject
 
         // A crossplay server has two: the Java one and the Bedrock one. Forgetting the second
         // leaves an orphan tunnel on the account that nothing will ever clean up.
-        var bedrockPort = SelectedServer.Config.CrossplayEnabled && SelectedServer.Config.BedrockPort > 0
-            ? SelectedServer.Config.BedrockPort
-            : (int?)null;
+        var bedrockPort = CrossplayService.EffectiveBedrockPort(SelectedServer.Config);
 
         if (Owner is null) return;
         var dialog = new DeleteServerDialog(SelectedServer.Name, folder);

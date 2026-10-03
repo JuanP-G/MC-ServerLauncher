@@ -135,12 +135,19 @@
 
             <!-- Sections share one cell and stay mounted: switching is IsVisible, so the console keeps
                  its scroll and its lines instead of being rebuilt every time. -->
-            <Grid Grid.Column="1" ColumnDefinitions="250,*" IsVisible="{Binding IsServersSection}">
+            <Grid Grid.Column="1" ColumnDefinitions="290,*" IsVisible="{Binding IsServersSection}" Classes="fadein">
 
             <!-- Side panel: server list -->
             <Border Grid.Column="0" Background="{StaticResource GroundSidebar}" Padding="12">
-                <Grid RowDefinitions="Auto,*,Auto">
-                    <TextBlock Grid.Row="0" Text="{loc:Loc Servers}" FontSize="18" FontWeight="SemiBold" Margin="4,0,0,10" />
+                <Grid RowDefinitions="Auto,*">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="4,0,0,10">
+                        <TextBlock Text="{loc:Loc Servers}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <!-- Crear o añadir: un solo boton, que abre el panel de nuevo servidor. -->
+                        <Button Grid.Column="1" Classes="add" Command="{Binding ShowNewServerCommand}"
+                                ToolTip.Tip="{loc:Loc New_Title}">
+                            <ic:SymbolIcon Symbol="Add" FontSize="16" />
+                        </Button>
+                    </Grid>
 
                     <ListBox Grid.Row="1"
                              ItemsSource="{Binding Servers}"
@@ -171,37 +178,30 @@
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <!-- Connected players when running -->
-                                    <TextBlock Grid.Column="2" Text="{Binding PlayerCountText}" FontSize="12"
-                                               Foreground="{Binding SignalBrush}" VerticalAlignment="Center"
-                                               Margin="6,0,2,0" IsVisible="{Binding IsRunning}" />
+                                    <!-- Connected players when running, and the row's own actions: they
+                                         fade in with the pointer over the row or with it selected. -->
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="{Binding PlayerCountText}" FontSize="12"
+                                                   Foreground="{Binding SignalBrush}" VerticalAlignment="Center"
+                                                   Margin="6,0,4,0" IsVisible="{Binding IsRunning}" />
+                                        <StackPanel Classes="rowactions" Orientation="Horizontal" Spacing="2">
+                                            <Button Classes="rowaction"
+                                                    Command="{Binding DataContext.EditServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" ToolTip.Tip="{loc:Loc Tip_Edit}">
+                                                <ic:SymbolIcon Symbol="Edit" FontSize="15" />
+                                            </Button>
+                                            <Button Classes="rowaction danger"
+                                                    Command="{Binding DataContext.RemoveServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" ToolTip.Tip="{loc:Loc Tip_Delete}">
+                                                <ic:SymbolIcon Symbol="Delete" FontSize="15" />
+                                            </Button>
+                                        </StackPanel>
+                                    </StackPanel>
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <StackPanel Grid.Row="2" Margin="0,10,0,0" Spacing="8">
-                        <Button Classes="accent" HorizontalAlignment="Stretch" Command="{Binding CreateServerCommand}">
-                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                                <ic:SymbolIcon Symbol="Sparkle" />
-                                <TextBlock Text="{loc:Loc CreateServer}" />
-                            </StackPanel>
-                        </Button>
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <Button Command="{Binding AddServerCommand}" ToolTip.Tip="{loc:Loc Tip_Add}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="FolderAdd" />
-                                    <TextBlock Text="{loc:Loc Add}" />
-                                </StackPanel>
-                            </Button>
-                            <Button Command="{Binding EditServerCommand}" ToolTip.Tip="{loc:Loc Tip_Edit}">
-                                <ic:SymbolIcon Symbol="Edit" />
-                            </Button>
-                            <Button Command="{Binding RemoveServerCommand}" ToolTip.Tip="{loc:Loc Tip_Delete}">
-                                <ic:SymbolIcon Symbol="Delete" />
-                            </Button>
-                        </StackPanel>
-                    </StackPanel>
                 </Grid>
             </Border>
 
@@ -210,11 +210,11 @@
                 <TextBlock Text="{loc:Loc EmptyState}"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            FontSize="16" Opacity="0.6"
-                           IsVisible="{Binding !HasSelection}" />
+                           IsVisible="{Binding ShowEmptyState}" />
 
                 <Grid DataContext="{Binding SelectedServer}"
                       RowDefinitions="Auto,Auto,Auto,*"
-                      IsVisible="{Binding DataContext.HasSelection, RelativeSource={RelativeSource AncestorType=Window}}">
+                      IsVisible="{Binding DataContext.ShowServerDetail, RelativeSource={RelativeSource AncestorType=Window}}">
 
                     <!-- Header: name + control buttons -->
                     <Grid Grid.Row="0" Margin="0,0,0,12" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
@@ -712,18 +712,21 @@
                         </TabItem>
                     </TabControl>
                 </Grid>
+
+                <!-- Nuevo servidor: ocupa el detalle mientras se crea o se añade uno. -->
+                <ContentControl Content="{Binding NewServerPanel}" IsVisible="{Binding IsCreatingServer}" Classes="fadein" />
             </Panel>
             </Grid>
 
-            <Panel Grid.Column="1" IsVisible="{Binding IsTunnelsSection}">
+            <Panel Grid.Column="1" IsVisible="{Binding IsTunnelsSection}" Classes="fadein">
                 <views:TunnelsView DataContext="{Binding Tunnels}" />
             </Panel>
 
-            <Panel Grid.Column="1" IsVisible="{Binding IsSettingsSection}">
+            <Panel Grid.Column="1" IsVisible="{Binding IsSettingsSection}" Classes="fadein">
                 <views:SettingsView DataContext="{Binding Settings}" />
             </Panel>
 
-            <Panel Grid.Column="1" IsVisible="{Binding IsAboutSection}">
+            <Panel Grid.Column="1" IsVisible="{Binding IsAboutSection}" Classes="fadein">
                 <views:AboutView />
             </Panel>
         </Grid>

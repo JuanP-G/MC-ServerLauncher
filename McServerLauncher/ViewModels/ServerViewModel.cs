@@ -600,11 +600,14 @@ public partial class ServerViewModel : ObservableObject
         try
         {
             var port = _properties.GetServerPort(Config.PropertiesPath);
-            if (!port.HasValue) return;
+            if (!port.HasValue || !Config.PlayitEnabled) return;
 
-            var address = await _playitApi.GetAddressForPortAsync(port.Value);
-            if (!string.IsNullOrEmpty(address))
-                RunOnUi(() => TunnelAddress = address);
+            // Believed when the account answered, kept when it could not be asked: an address that
+            // stays on screen after its tunnel is gone is another server's address, as often as not.
+            var tunnels = await _playitApi.TryGetTunnelsAsync();
+            var address = TunnelAddressSync.JavaAddress(TunnelAddress, tunnels, port.Value);
+            if (address != TunnelAddress)
+                RunOnUi(() => TunnelAddress = address ?? string.Empty);
         }
         catch
         {

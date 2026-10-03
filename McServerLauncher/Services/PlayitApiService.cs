@@ -270,12 +270,22 @@ public class PlayitApiService
     private static DateTime _tunnelFetchAtUtc = DateTime.MinValue;
     private static readonly TimeSpan TunnelCacheTtl = TimeSpan.FromSeconds(25);
 
-    /// <summary>Public address of the tunnel whose local port matches <paramref name="port"/>, or null.</summary>
+    /// <summary>Public address of the Java (TCP) tunnel on <paramref name="port"/>, or null.</summary>
+    /// <remarks>
+    /// TCP only. Matching on the port alone handed a Java server the address of a Bedrock tunnel
+    /// whenever the two numbers coincided.
+    /// </remarks>
     public async Task<string?> GetAddressForPortAsync(int port, CancellationToken ct = default)
     {
         var tunnels = await GetTunnelsSharedAsync(ct);
-        return tunnels?.FirstOrDefault(t => t.LocalPort == port)?.Address;
+        return tunnels is null ? null : Match(tunnels, port, udp: false)?.Address;
     }
+
+    /// <summary>
+    /// The account's tunnels from the shared cache, or null when the account could not be asked.
+    /// An empty list is an answer: "there are none".
+    /// </summary>
+    public Task<List<PlayitTunnel>?> TryGetTunnelsAsync(CancellationToken ct = default) => GetTunnelsSharedAsync(ct);
 
     /// <summary>
     /// The tunnel on a local port for one protocol, or null. Callers that need the public port —

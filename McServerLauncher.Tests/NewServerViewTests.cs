@@ -6,7 +6,7 @@ using McServerLauncher.Views;
 namespace McServerLauncher.Tests;
 
 /// <summary>
-/// The create-server dialog reacting to the type that was picked.
+/// The create form of the new-server panel reacting to the type that was picked.
 /// </summary>
 /// <remarks>
 /// Everything here failed at some point in one afternoon, and all of it for the same reason: the
@@ -14,11 +14,15 @@ namespace McServerLauncher.Tests;
 /// it — the wiring between the picker and the checkboxes only exists once the controls are real.
 /// </remarks>
 [Collection("avalonia")]
-public class CreateServerDialogTests(AvaloniaFixture ui)
+public class NewServerCreateFormTests(AvaloniaFixture ui)
 {
-    private static (CreateServerDialog Dialog, Dictionary<ServerType, RadioButton> Cards) Open()
+    private static (Window Dialog, Dictionary<ServerType, RadioButton> Cards) Open()
     {
-        var dialog = new CreateServerDialog();
+        // The create form now lives in the in-app new-server panel; straight to its create step,
+        // as the old Create button did, hosted in a window so it can be laid out.
+        var view = new NewServerView();
+        view.ChooseCreate();
+        var dialog = new Window { Content = view };
         dialog.Show();
         dialog.Measure(new Avalonia.Size(640, 940));
         dialog.Arrange(new Avalonia.Rect(0, 0, 640, 940));
@@ -153,4 +157,64 @@ public class CreateServerDialogTests(AvaloniaFixture ui)
             Assert.False(warning.IsVisible);
         });
     }
+}
+
+/// <summary>The steps of the new-server panel, and what it hands back.</summary>
+[Collection("avalonia")]
+public class NewServerStepsTests(AvaloniaFixture ui) : IDisposable
+{
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-new-" + Guid.NewGuid().ToString("N"));
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_folder)) Directory.Delete(_folder, recursive: true);
+    }
+
+    private static T Named<T>(Control root, string name) where T : Control =>
+        root.FindControl<T>(name) ?? throw new InvalidOperationException(name);
+
+    [Fact]
+    public void ItStartsOnTheChoiceAndGoesToTheRightForm() =>
+        ui.Run(() =>
+        {
+            var view = new NewServerView();
+            Assert.True(Named<Control>(view, "OriginStep").IsVisible);
+            Assert.False(Named<Control>(view, "CreateStep").IsVisible);
+
+            view.ChooseAdd();
+
+            Assert.False(Named<Control>(view, "OriginStep").IsVisible);
+            Assert.True(Named<Control>(view, "AddStep").IsVisible);
+            Assert.True(Named<Button>(view, "AddButton").IsVisible);
+            Assert.False(Named<Button>(view, "CreateButton").IsVisible);
+        });
+
+    [Fact]
+    public void AnExistingFolderIsReadAndNamedAfterItself() =>
+        ui.Run(() =>
+        {
+            Directory.CreateDirectory(_folder);
+            var view = new NewServerView();
+            view.ChooseAdd();
+
+            view.UseExistingFolder(_folder);
+
+            Assert.Equal(new DirectoryInfo(_folder).Name, Named<TextBox>(view, "AddNameBox").Text);
+            var config = view.TryBuildExisting(out var error);
+            Assert.Null(error);
+            Assert.Equal(_folder, config!.FolderPath);
+        });
+
+    [Fact]
+    public void AFolderThatDoesNotExistIsRefused() =>
+        ui.Run(() =>
+        {
+            var view = new NewServerView();
+            view.ChooseAdd();
+            Named<TextBox>(view, "AddFolderBox").Text = Path.Combine(_folder, "missing");
+            Named<TextBox>(view, "AddNameBox").Text = "x";
+
+            Assert.Null(view.TryBuildExisting(out var error));
+            Assert.NotNull(error);
+        });
 }

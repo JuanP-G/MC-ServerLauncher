@@ -13,20 +13,7 @@
          Existe como control propio porque la dibujan dos sitios: la cabecera del detalle y la vista
          previa del editor de apariencia. Con un solo dibujo no pueden separarse: lo que ves
          editando es, por construcción, lo que luego ves en la ventana. -->
-    <UserControl.Styles>
-        <!-- "Editar" sobre el icono: oculto por defecto, aparece al pasar el ratón. -->
-        <Style Selector="Button.iconbtn Border#HoverOverlay">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Button.iconbtn:pointerover Border#HoverOverlay">
-            <Setter Property="Opacity" Value="1" />
-        </Style>
-    </UserControl.Styles>
+    <!-- El velo de "Editar" sobre el icono se anima en Styles/Motion.axaml, con el resto del movimiento. -->
 
     <Border Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}" BorderThickness="1"
             CornerRadius="6" Padding="10" controls:MarqueeText.IsHoverScope="True">
