@@ -765,14 +765,12 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Tun_Fix_OrphanFmt" xml:space="preserve"><value>Le tunnel « {0} » ne mène à aucun serveur.</value></data>
   <data name="Tun_Fix_DuplicateFmt" xml:space="preserve"><value>{1} a deux tunnels pour le même port : {0} est en trop.</value></data>
   <data name="Tun_Fix_SharedFmt" xml:space="preserve"><value>{0} et {1} utilisent le même port : le tunnel ne joindra que celui qui est allumé.</value></data>
-  <data name="Tun_Fix_CreateJavaFmt" xml:space="preserve"><value>{0} utilise Playit mais n'a pas de tunnel.</value></data>
-  <data name="Tun_Fix_CreateBedrockFmt" xml:space="preserve"><value>{0} a le crossplay mais pas de tunnel pour Bedrock.</value></data>
-  <data name="Tun_Fix_RenameFmt" xml:space="preserve"><value>{0} tunnels fonctionnent mais ne portent pas le nom de leur serveur.</value></data>
+  <data name="Tun_Fix_CreateJavaFmt" xml:space="preserve"><value>{0} utilise Playit mais n'a pas de tunnel (TCP, port {1}).</value></data>
+  <data name="Tun_Fix_CreateBedrockFmt" xml:space="preserve"><value>{0} a le crossplay mais pas de tunnel pour Bedrock (UDP, port {1}).</value></data>
   <data name="Tun_Fix_Delete" xml:space="preserve"><value>Supprimer le tunnel</value></data>
   <data name="Tun_Fix_ChangePortFmt" xml:space="preserve"><value>Changer le port de {0}</value></data>
   <data name="Tun_Fix_Create" xml:space="preserve"><value>Créer le tunnel</value></data>
   <data name="Tun_Fix_CreateBedrock" xml:space="preserve"><value>Créer le tunnel Bedrock</value></data>
-  <data name="Tun_Fix_RenameAll" xml:space="preserve"><value>Renommer</value></data>
   <data name="Tun_Summary_Ok" xml:space="preserve"><value>Tout est en ordre</value></data>
   <data name="Tun_Summary_ProblemsFmt" xml:space="preserve"><value>{0} demandent votre attention</value></data>
   <data name="Tun_AutoRenamedFmt" xml:space="preserve"><value>[Playit] Tunnel « {0} » renommé en « {1} ».</value></data>
@@ -780,7 +778,6 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Tun_ServiceFmt" xml:space="preserve"><value>Service Playit : {0}</value></data>
   <data name="Tunnel_None" xml:space="preserve"><value>Pas encore de tunnel</value></data>
   <data name="Tip_ManageTunnels" xml:space="preserve"><value>Voir et gérer les tunnels du compte</value></data>
-  <data name="Pk_MovedToTunnels" xml:space="preserve"><value>Le compte Playit se gère désormais dans la section Tunnels.</value></data>
   <data name="About_Tagline" xml:space="preserve"><value>Créez et gérez des serveurs Minecraft sans toucher à la console.</value></data>
   <data name="About_VersionFmt" xml:space="preserve"><value>Version {0} · Licence MIT</value></data>
   <data name="About_Repo" xml:space="preserve"><value>Dépôt</value></data>
@@ -807,4 +804,17 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Tun_Fix_OnWeb" xml:space="preserve"><value>Le faire sur playit.gg</value></data>
   <data name="Tun_Err_ReadOnly" xml:space="preserve"><value>Playit ne permet pas de modifier les tunnels avec la clé du Playit installé sur cet ordinateur, seulement de les lire. Faites-le sur playit.gg.</value></data>
   <data name="Tun_AutoRenameReadOnlyFmt" xml:space="preserve"><value>[Playit] Le tunnel « {0} » garde ce nom : avec le Playit installé, il ne peut être renommé en « {1} » que sur playit.gg.</value></data>
+  <data name="Set_SavedLive" xml:space="preserve"><value>Les modifications sont enregistrées immédiatement.</value></data>
+  <data name="Set_General" xml:space="preserve"><value>Général</value></data>
+  <data name="Set_Colors" xml:space="preserve"><value>Couleurs</value></data>
+  <data name="Cfg_BedrockPort" xml:space="preserve"><value>Port Bedrock (crossplay)</value></data>
+  <data name="Cfg_BedrockPortDesc" xml:space="preserve"><value>Port UDP sur lequel Geyser reçoit les joueurs Bedrock. Si vous le changez, le tunnel Bedrock de Playit doit pointer vers ce même port.</value></data>
+  <data name="Cfg_BedrockPortRange" xml:space="preserve"><value>Choisissez un port entre 1024 et 65535.</value></data>
+  <data name="Cfg_BedrockPortTakenFmt" xml:space="preserve"><value>Ce port est déjà utilisé par {0}. Choisissez-en un autre.</value></data>
+  <data name="Tun_Fix_MoveBedrockFmt" xml:space="preserve"><value>Déplacer {0} vers un port Bedrock libre</value></data>
+  <data name="Msg_BedrockAlreadyFreeFmt" xml:space="preserve"><value>[Crossplay] Le port Bedrock {0} n'est plus partagé ; il reste tel quel.</value></data>
+  <data name="Msg_BedrockMovedFmt" xml:space="preserve"><value>[Crossplay] Port Bedrock changé de {0} à {1}.</value></data>
+  <data name="Msg_BedrockNeedTunnelFmt" xml:space="preserve"><value>[Playit] Créez sur playit.gg un tunnel « Minecraft Bedrock » (UDP) vers le port local {0} : la clé du Playit installé ne peut pas le créer d'ici.</value></data>
+  <data name="Msg_BedrockRestartToApply" xml:space="preserve"><value>[Crossplay] Le serveur est allumé : le nouveau port sera utilisé au redémarrage.</value></data>
+  <data name="Msg_BedrockMoveFailedFmt" xml:space="preserve"><value>[Crossplay] Impossible de changer le port Bedrock : {0}</value></data>
 </root>

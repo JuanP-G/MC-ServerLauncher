@@ -109,6 +109,27 @@ public class BedrockPortTests
     }
 
     [Fact]
+    public void ACrossplayServerWithNoPortWrittenHoldsTheDefault()
+    {
+        // The hole two servers fell through: Geyser is given 19132 when nothing is written down, so
+        // that server really is on 19132, and the next crossplay server must not be handed it.
+        var mine = new ServerConfig();
+        var implicitDefault = new ServerConfig { CrossplayEnabled = true, BedrockPort = 0 };
+
+        Assert.Equal(new[] { CrossplayService.DefaultBedrockPort },
+            CrossplayService.PortsHeldBy(new[] { mine, implicitDefault }, mine).ToArray());
+    }
+
+    [Theory]
+    [InlineData(false, 0, null)]
+    [InlineData(false, 19140, null)]
+    [InlineData(true, 0, 19132)]
+    [InlineData(true, 19140, 19140)]
+    public void TheEffectivePortIsTheOneGeyserIsGiven(bool crossplay, int written, int? expected) =>
+        Assert.Equal(expected, CrossplayService.EffectiveBedrockPort(
+            new ServerConfig { CrossplayEnabled = crossplay, BedrockPort = written }));
+
+    [Fact]
     public void TheSamePortTwiceIsListedOnce()
     {
         var mine = new ServerConfig();

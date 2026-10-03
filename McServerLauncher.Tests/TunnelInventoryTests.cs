@@ -158,8 +158,10 @@ public class TunnelInventoryTests
     }
 
     [Fact]
-    public void AWorkingTunnelWithAnotherNameIsSuggestedARenameButIsNotAProblem()
+    public void AWorkingTunnelWithAnotherNameIsNotNaggedAbout()
     {
+        // The row still knows the name it would have, for its own one-click chip; the panel says
+        // nothing, because a name is a label and not a fault.
         var report = Report([Tcp("a", "mc-25565-tcp", 25565), Udp("b", "mc-19132", 19132)],
             Server("Survival", 25565, 19132));
 
@@ -167,11 +169,30 @@ public class TunnelInventoryTests
         Assert.Equal("Survival", report.Rows[0].SuggestedName);
         Assert.Equal("Survival (Bedrock)", report.Rows[1].SuggestedName);
         Assert.True(report.Rows.All(r => r.NameDiffers));
+        Assert.Empty(report.Suggestions);
+    }
 
-        var s = Assert.Single(report.Suggestions);
-        Assert.Equal(TunnelSuggestionKind.RenameAll, s.Kind);
-        Assert.Equal(2, s.Count);
-        Assert.False(s.IsProblem);
+    [Fact]
+    public void ASharedBedrockPortSaysItIsUdpAndWhichPort()
+    {
+        // A shared Java port is fixed in the server's properties; a shared Bedrock one is not there
+        // at all, so the screen needs to know which kind it is looking at.
+        var report = Report([Udp("u", "Java+Bedrock (Bedrock)", 19132)],
+            Server("Java+Bedrock", 25565, 19132), Server("Paper", 25566, 19132));
+
+        var s = report.Suggestions.Single(x => x.Kind == TunnelSuggestionKind.SharedPort);
+        Assert.True(s.Udp);
+        Assert.Equal(19132, s.Port);
+        Assert.Equal("Paper", s.Subject);    // the one the tunnel is not named after moves
+    }
+
+    [Fact]
+    public void AMissingTunnelSuggestionCarriesThePortToCreateItOn()
+    {
+        var report = Report([], Server("Survival", 25570, 19140));
+
+        Assert.Contains(report.Suggestions, s => s.Kind == TunnelSuggestionKind.CreateJava && s.Port == 25570 && !s.Udp);
+        Assert.Contains(report.Suggestions, s => s.Kind == TunnelSuggestionKind.CreateBedrock && s.Port == 19140 && s.Udp);
     }
 
     [Fact]

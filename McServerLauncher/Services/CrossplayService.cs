@@ -153,9 +153,21 @@ public class CrossplayService
     /// </remarks>
     public static IEnumerable<int> PortsHeldBy(IEnumerable<ServerConfig> all, ServerConfig except) =>
         all.Where(c => !ReferenceEquals(c, except))
-           .Select(c => c.BedrockPort)
+           .Select(c => c.BedrockPort > 0 ? c.BedrockPort : EffectiveBedrockPort(c) ?? 0)
            .Where(p => p > 0)
            .Distinct();
+
+    /// <summary>
+    /// The Bedrock port a server really listens on, or null when crossplay is off.
+    /// </summary>
+    /// <remarks>
+    /// A crossplay server with no port written down still has one: <see cref="WriteConfig"/> gives
+    /// Geyser <see cref="DefaultBedrockPort"/>. Counting that zero as "no port" let the next
+    /// crossplay server be handed 19132 as free, and two servers ended up behind one Bedrock tunnel
+    /// — which is how a tunnel came to be shared with no way to change it.
+    /// </remarks>
+    public static int? EffectiveBedrockPort(ServerConfig config) =>
+        !config.CrossplayEnabled ? null : config.BedrockPort > 0 ? config.BedrockPort : DefaultBedrockPort;
 
     /// <summary>Whether Floodgate for this server comes from Modrinth or GeyserMC's own site.</summary>
     /// <remarks>

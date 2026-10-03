@@ -108,13 +108,16 @@
                             </StackPanel>
                         </Grid>
                     </Button>
-                    <!-- Settings is a dialog with Cancel and Save, so it has no bar: it never stays selected. -->
-                    <Button Grid.Row="3" Classes="rail" Command="{Binding OpenSettingsCommand}"
-                            ToolTip.Tip="{loc:Loc Settings_Title}">
-                        <StackPanel HorizontalAlignment="Center" Spacing="3">
-                            <ic:SymbolIcon Symbol="Settings" FontSize="20" HorizontalAlignment="Center" />
-                            <TextBlock Text="{loc:Loc Settings_Title}" />
-                        </StackPanel>
+                    <Button Grid.Row="3" Classes="rail" Classes.on="{Binding IsSettingsSection}"
+                            Command="{Binding ShowSettingsCommand}" ToolTip.Tip="{loc:Loc Settings_Title}">
+                        <Grid>
+                            <Border Width="3" HorizontalAlignment="Left" Background="{StaticResource AccentSelected}"
+                                    Margin="0,2" IsVisible="{Binding IsSettingsSection}" />
+                            <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                <ic:SymbolIcon Symbol="Settings" FontSize="20" HorizontalAlignment="Center" />
+                                <TextBlock Text="{loc:Loc Settings_Title}" />
+                            </StackPanel>
+                        </Grid>
                     </Button>
                     <Button Grid.Row="4" Classes="rail" Classes.on="{Binding IsAboutSection}"
                             Command="{Binding ShowAboutCommand}" ToolTip.Tip="{loc:Loc Nav_About}">
@@ -714,6 +717,10 @@
 
             <Panel Grid.Column="1" IsVisible="{Binding IsTunnelsSection}">
                 <views:TunnelsView DataContext="{Binding Tunnels}" />
+            </Panel>
+
+            <Panel Grid.Column="1" IsVisible="{Binding IsSettingsSection}">
+                <views:SettingsView DataContext="{Binding Settings}" />
             </Panel>
 
             <Panel Grid.Column="1" IsVisible="{Binding IsAboutSection}">

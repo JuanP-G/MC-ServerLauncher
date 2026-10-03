@@ -1,0 +1,231 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:vm="using:McServerLauncher.ViewModels"
+             x:Class="McServerLauncher.Views.SettingsView"
+             x:CompileBindings="False">
+
+    <!-- DataContext: SettingsViewModel. A la izquierda las tres paginas; a la derecha la que toque,
+         en tarjetas. Todo se guarda al momento: no hay Cancelar ni Guardar. -->
+    <UserControl.Styles>
+        <Style Selector="Button.page">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="Opacity" Value="0.7" />
+        </Style>
+        <Style Selector="Button.page.on">
+            <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="ToggleSwitch">
+            <Setter Property="OnContent" Value="" />
+            <Setter Property="OffContent" Value="" />
+            <Setter Property="MinWidth" Value="0" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="190,*" Margin="16">
+
+        <!-- Paginas -->
+        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,16,0">
+            <TextBlock Text="{loc:Loc Settings_Title}" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="{loc:Loc Set_SavedLive}" Classes="desc" Margin="0,0,0,10" />
+            <Button Classes="page" Classes.on="{Binding IsGeneralPage}" Command="{Binding ShowGeneralCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ic:SymbolIcon Symbol="Settings" FontSize="16" />
+                    <TextBlock Text="{loc:Loc Set_General}" />
+                </StackPanel>
+            </Button>
+            <Button Classes="page" Classes.on="{Binding IsNotificationsPage}" Command="{Binding ShowNotificationsCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ic:SymbolIcon Symbol="Alert" FontSize="16" />
+                    <TextBlock Text="{loc:Loc Notif_Section}" />
+                </StackPanel>
+            </Button>
+            <Button Classes="page" Classes.on="{Binding IsColorsPage}" Command="{Binding ShowColorsCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ic:SymbolIcon Symbol="Color" FontSize="16" />
+                    <TextBlock Text="{loc:Loc Set_Colors}" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <Panel MaxWidth="820" HorizontalAlignment="Left">
+
+                <!-- ===================== GENERAL ===================== -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsGeneralPage}">
+                    <Border Classes="card" Margin="0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Language}" Classes="title" />
+                                <TextBlock Text="{loc:Loc Settings_LangRestart}" Classes="desc" />
+                            </StackPanel>
+                            <ComboBox Grid.Column="1" Width="200" VerticalAlignment="Center"
+                                      ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Border>
+
+                    <Border Classes="card" Margin="0">
+                        <StackPanel Spacing="6">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Win_Section}" Classes="title" />
+                                <TextBlock Text="{loc:Loc Win_Intro}" Classes="desc" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Win_MinimizeToTray}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding MinimizeToTray, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Win_CloseToTray}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding CloseToTray, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card" Margin="0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Shortcut_Section}" Classes="title" />
+                                <TextBlock Text="{loc:Loc Shortcut_Intro}" Classes="desc" />
+                                <TextBlock Text="{Binding ShortcutStatus}" Foreground="{Binding ShortcutStatusBrush}"
+                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <Button Grid.Column="1" VerticalAlignment="Center" Content="{loc:Loc Shortcut_Create}"
+                                    Command="{Binding CreateShortcutCommand}" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- ===================== NOTIFICACIONES ===================== -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsNotificationsPage}">
+                    <Border Classes="card" Margin="0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Notif_Enabled}" Classes="title" />
+                                <TextBlock Text="{loc:Loc Notif_Intro}" Classes="desc" />
+                            </StackPanel>
+                            <ToggleSwitch x:Name="NotifMaster" Grid.Column="1"
+                                          IsChecked="{Binding Notifications.Enabled, Mode=TwoWay}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Los siete tipos en dos columnas: a lo ancho caben, y en una sola eran una
+                         escalera que habia que recorrer entera para encontrar uno. -->
+                    <Border Classes="card" Margin="0" IsEnabled="{Binding #NotifMaster.IsChecked}">
+                        <Grid ColumnDefinitions="*,24,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                            <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Notif_Join}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding Notifications.PlayerJoined, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid Grid.Row="0" Grid.Column="2" ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Notif_Leave}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding Notifications.PlayerLeft, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid Grid.Row="1" Grid.Column="0" ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Notif_Death}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding Notifications.PlayerDeath, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid Grid.Row="1" Grid.Column="2" ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Notif_Crash}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding Notifications.ServerCrashed, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid Grid.Row="2" Grid.Column="0" ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Notif_OptGaveUp}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding Notifications.AutoRestartGaveUp, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid Grid.Row="2" Grid.Column="2" ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Notif_OptIdleStop}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding Notifications.IdleShutdown, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid Grid.Row="3" Grid.Column="0" ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Notif_OptWoke}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding Notifications.WokeOnDemand, Mode=TwoWay}" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- ===================== COLORES ===================== -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsColorsPage}">
+                    <Border Classes="card" Margin="0">
+                        <StackPanel Spacing="8">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Notif_Colors}" Classes="title" />
+                                <TextBlock Text="{loc:Loc Notif_ColorsIntro}" Classes="desc" />
+                            </StackPanel>
+                            <!-- Etiqueta en la columna elastica con recorte, muestra y casilla en Auto:
+                                 ni la traduccion mas larga puede pisar la muestra. -->
+                            <Grid ColumnDefinitions="*,Auto,Auto,24,*,Auto,Auto" RowDefinitions="Auto,Auto">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Notif_LevelSuccess}" ToolTip.Tip="{loc:Loc Notif_LevelSuccessTip}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
+                                <Border Grid.Row="0" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
+                                        Background="{Binding ColorSuccess, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                                <TextBox Grid.Row="0" Grid.Column="2" Width="110" Margin="0,4" Text="{Binding ColorSuccess, Mode=TwoWay}" />
+
+                                <TextBlock Grid.Row="0" Grid.Column="4" Text="{loc:Loc Notif_LevelInfo}" ToolTip.Tip="{loc:Loc Notif_LevelInfoTip}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
+                                <Border Grid.Row="0" Grid.Column="5" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
+                                        Background="{Binding ColorInfo, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                                <TextBox Grid.Row="0" Grid.Column="6" Width="110" Margin="0,4" Text="{Binding ColorInfo, Mode=TwoWay}" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Loc Notif_LevelWarning}" ToolTip.Tip="{loc:Loc Notif_LevelWarningTip}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
+                                <Border Grid.Row="1" Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
+                                        Background="{Binding ColorWarning, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                                <TextBox Grid.Row="1" Grid.Column="2" Width="110" Margin="0,4" Text="{Binding ColorWarning, Mode=TwoWay}" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="4" Text="{loc:Loc Notif_LevelError}" ToolTip.Tip="{loc:Loc Notif_LevelErrorTip}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
+                                <Border Grid.Row="1" Grid.Column="5" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
+                                        Background="{Binding ColorError, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                                <TextBox Grid.Row="1" Grid.Column="6" Width="110" Margin="0,4" Text="{Binding ColorError, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card" Margin="0">
+                        <StackPanel Spacing="8">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Console_Colors}" Classes="title" />
+                                <TextBlock Text="{loc:Loc Console_ColorsIntro}" Classes="desc" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,Auto,Auto,24,*,Auto,Auto">
+                                <TextBlock Grid.Column="0" Text="{loc:Loc Console_ColorChat}" ToolTip.Tip="{loc:Loc Console_ColorChatTip}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
+                                <Border Grid.Column="1" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
+                                        Background="{Binding ConsoleChatColor, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                                <TextBox Grid.Column="2" Width="110" Margin="0,4" Text="{Binding ConsoleChatColor, Mode=TwoWay}" />
+
+                                <TextBlock Grid.Column="4" Text="{loc:Loc Console_ColorPlayers}" ToolTip.Tip="{loc:Loc Console_ColorPlayersTip}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,4,10,4" />
+                                <Border Grid.Column="5" Width="26" Height="20" CornerRadius="3" Margin="0,4,8,4"
+                                        Background="{Binding ConsolePlayersColor, Converter={x:Static vm:HexBrushConverter.Instance}}" />
+                                <TextBox Grid.Column="6" Width="110" Margin="0,4" Text="{Binding ConsolePlayersColor, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="{loc:Loc Notif_Test}" Command="{Binding TestNotificationCommand}"
+                                ToolTip.Tip="{loc:Loc Notif_TestTip}" />
+                        <Button Content="{loc:Loc Notif_ResetColors}" Command="{Binding ResetColorsCommand}"
+                                ToolTip.Tip="{loc:Loc Notif_ResetColorsTip}" />
+                    </StackPanel>
+                </StackPanel>
+            </Panel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

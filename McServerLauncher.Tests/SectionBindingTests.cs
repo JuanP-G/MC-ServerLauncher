@@ -90,10 +90,27 @@ public class SectionBindingTests
     public void SettingsNoLongerCarriesThePlayitAccount()
     {
         // The account moved to the tunnels screen; left in both, the two would show different states.
-        var xaml = View("SettingsDialog.axaml");
+        var xaml = View("SettingsView.axaml");
 
-        Assert.DoesNotContain("PlayitDot", xaml);
-        Assert.DoesNotContain("ConnectPlayit_Click", xaml);
+        Assert.DoesNotContain("Playit", xaml);
+    }
+
+    [Fact]
+    public void SettingsViewBindsToNamesThatExistOnTheSettingsViewModel()
+    {
+        // Names under Notifications. belong to the model and are checked in NotificationLookTests.
+        var names = Bound(View("SettingsView.axaml").Replace("{Binding Name}", ""));
+        AssertAllExist(typeof(SettingsViewModel), names);
+    }
+
+    [Fact]
+    public void SettingsIsAScreenAndTheDialogIsGone()
+    {
+        var xaml = View("MainWindow.axaml");
+
+        Assert.Contains("<views:SettingsView DataContext=\"{Binding Settings}\"", xaml);
+        Assert.Contains("Command=\"{Binding ShowSettingsCommand}\"", xaml);
+        Assert.False(File.Exists(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "SettingsDialog.axaml")));
     }
 
     // --- the update check ---

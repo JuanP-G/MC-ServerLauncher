@@ -42,22 +42,21 @@ public enum TunnelSuggestionKind
 
     /// <summary>A crossplay server has no Bedrock tunnel.</summary>
     CreateBedrock,
-
-    /// <summary>Tunnels that work but are not named after their server.</summary>
-    RenameAll,
 }
 
 /// <summary>
 /// One thing the screen can offer to put right. <c>TunnelId</c> and <c>ServerId</c> name what it
 /// concerns, when it concerns one; <c>Subject</c> is the name to show (the tunnel's or the server's);
-/// <c>Other</c> is a second name where one is needed (the other server sharing a port); <c>Count</c>
-/// is how many things a grouped suggestion covers.
+/// <c>Other</c> is a second name where one is needed (the other server sharing a port); <c>Udp</c>
+/// and <c>Port</c> say which local port it is about — a shared Bedrock port is fixed differently
+/// from a shared Java one, and "create a tunnel" is only actionable on playit.gg with the port in hand.
 /// </summary>
 public sealed record TunnelSuggestion(
-    TunnelSuggestionKind Kind, string? TunnelId, string? ServerId, string Subject, string? Other = null, int Count = 1)
+    TunnelSuggestionKind Kind, string? TunnelId, string? ServerId, string Subject, string? Other = null,
+    bool Udp = false, int Port = 0)
 {
-    /// <summary>A suggestion the screen shows but that does not count as something being wrong.</summary>
-    public bool IsProblem => Kind != TunnelSuggestionKind.RenameAll;
+    /// <summary>Every suggestion left is something wrong; the tidy-up of names went (it was noise).</summary>
+    public bool IsProblem => true;
 }
 
 /// <summary>
@@ -141,21 +140,21 @@ public static class TunnelInventory
                               row.Tunnel.Name, NameFor(o.Name, row.Tunnel.IsUdp), StringComparison.Ordinal))
                         ?? row.Owners[^1];
             var other = row.Owners.First(o => o.Id != mover.Id);
-            suggestions.Add(new(TunnelSuggestionKind.SharedPort, row.Tunnel.Id, mover.Id, mover.Name, other.Name));
+            suggestions.Add(new(TunnelSuggestionKind.SharedPort, row.Tunnel.Id, mover.Id, mover.Name, other.Name,
+                Udp: row.Tunnel.IsUdp, Port: row.Tunnel.LocalPort));
         }
 
         foreach (var server in servers.Where(s => s.PlayitEnabled))
         {
             if (server.JavaPort is { } java && !tunnels.Any(t => !t.IsUdp && t.LocalPort == java))
-                suggestions.Add(new(TunnelSuggestionKind.CreateJava, null, server.Id, server.Name));
+                suggestions.Add(new(TunnelSuggestionKind.CreateJava, null, server.Id, server.Name, Port: java));
 
             if (server.BedrockPort is { } bedrock && !tunnels.Any(t => t.IsUdp && t.LocalPort == bedrock))
-                suggestions.Add(new(TunnelSuggestionKind.CreateBedrock, null, server.Id, server.Name));
+                suggestions.Add(new(TunnelSuggestionKind.CreateBedrock, null, server.Id, server.Name, Udp: true, Port: bedrock));
         }
 
-        var tidy = rows.Count(r => r.Health == TunnelHealth.Ok && r.NameDiffers);
-        if (tidy > 0)
-            suggestions.Add(new(TunnelSuggestionKind.RenameAll, null, null, "", Count: tidy));
+        // No suggestion for tunnels that work but carry another name. It was offered once and was
+        // noise: a name is a label, not a fault, and the row's own "use this name" chip covers it.
 
         return new TunnelReport(rows, suggestions);
     }

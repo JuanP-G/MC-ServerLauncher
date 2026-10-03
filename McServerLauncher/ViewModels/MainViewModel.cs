@@ -87,12 +87,19 @@ public partial class MainViewModel : ObservableObject
     // ---- Sections ----
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsAboutSection))]
+    [NotifyPropertyChangedFor(nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsSettingsSection), nameof(IsAboutSection))]
     private AppSection _section = AppSection.Servers;
 
     public bool IsServersSection => Section == AppSection.Servers;
     public bool IsTunnelsSection => Section == AppSection.Tunnels;
+    public bool IsSettingsSection => Section == AppSection.Settings;
     public bool IsAboutSection => Section == AppSection.About;
+
+    /// <summary>The settings screen, which saves as it goes.</summary>
+    public SettingsViewModel Settings { get; }
+
+    [RelayCommand]
+    private void ShowSettings() => Section = AppSection.Settings;
 
     /// <summary>The tunnels screen: the Playit account, every tunnel on it, and what to do about them.</summary>
     public TunnelsViewModel Tunnels { get; }
@@ -138,6 +145,7 @@ public partial class MainViewModel : ObservableObject
         Load();
         _appSettings = _settings.Load();
         Tunnels = new TunnelsViewModel(Servers, _appSettings, _settings, () => Owner, ConfigureServerAsync);
+        Settings = new SettingsViewModel(this, _appSettings, _settings, ApplyConsoleColours, ApplyWindowBehavior);
 
         // Make the per-user Playit agent key (if the user already connected) the credential for all
         // Playit API reads/writes this session.
@@ -206,30 +214,6 @@ public partial class MainViewModel : ObservableObject
     {
         if (await MessageBox.ConfirmAsync(Localizer.Get("RestartNeeded"), Localizer.Get("Language")))
             await RestartAppAsync();
-    }
-
-    /// <summary>Opens the app settings (language, notifications, …).</summary>
-    [RelayCommand]
-    private async Task OpenSettings()
-    {
-        if (Owner is null) return;
-        var dialog = new SettingsDialog(Languages, SelectedLanguage, _appSettings.Notifications, _appSettings, _settings);
-        if (!await dialog.ShowDialog<bool>(Owner)) return;
-
-        // Notifications and window behavior: apply + persist immediately (no restart needed).
-        _appSettings.Notifications = dialog.Notifications;
-        NotificationPreferences.Global = _appSettings.Notifications;
-        _appSettings.MinimizeToTray = dialog.MinimizeToTray;
-        _appSettings.CloseToTray = dialog.CloseToTray;
-        _appSettings.ConsoleChatColor = dialog.ConsoleChatColor;
-        _appSettings.ConsolePlayersColor = dialog.ConsolePlayersColor;
-        ApplyConsoleColours();
-        ApplyWindowBehavior();
-        _settings.Save(_appSettings);
-
-        // Language: assigning SelectedLanguage reuses the existing handler (persist + restart prompt).
-        if (dialog.SelectedLanguage is { } lang && lang.Code != _appSettings.Language)
-            SelectedLanguage = lang;
     }
 
     /// <summary>
@@ -704,9 +688,17 @@ public partial class MainViewModel : ObservableObject
     private async Task ConfigureServerAsync(ServerViewModel server)
     {
         if (Owner is null) return;
-        var dialog = new ServerConfigDialog(server.Config);
-        if (await dialog.ShowDialog<bool>(Owner))
-            server.RefreshFromDisk();
+        var dialog = new ServerConfigDialog(server.Config, port =>
+            Servers.FirstOrDefault(s => !ReferenceEquals(s, server) &&
+                                        CrossplayService.EffectiveBedrockPort(s.Config) == port)?.Name);
+        if (!await dialog.ShowDialog<bool>(Owner)) return;
+
+        server.RefreshFromDisk();
+        if (dialog.BedrockPortChanged)
+        {
+            Save();
+            _ = server.RefreshTunnelInfoAsync();
+        }
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]

@@ -282,7 +282,7 @@ public partial class TunnelsViewModel : ObservableObject
         s.Config.Id,
         s.Name,
         _props.GetServerPort(s.Config.PropertiesPath),
-        s.Config.CrossplayEnabled && s.Config.BedrockPort > 0 ? s.Config.BedrockPort : null,
+        CrossplayService.EffectiveBedrockPort(s.Config),
         s.Config.PlayitEnabled)).ToList();
 
     /// <summary>Puts a reading of the account on screen: the table, the suggestions and the summary.</summary>
@@ -361,9 +361,7 @@ public partial class TunnelsViewModel : ObservableObject
     {
         TunnelSuggestionKind.DeleteOrphan or TunnelSuggestionKind.DeleteDuplicate => CanChange(s.TunnelId),
         TunnelSuggestionKind.CreateJava or TunnelSuggestionKind.CreateBedrock => WritableKey() is not null,
-        TunnelSuggestionKind.RenameAll => report.Rows.Where(r => r.Health == TunnelHealth.Ok && r.NameDiffers)
-                                                     .All(r => CanChange(r.Tunnel.Id)),
-        _ => true,   // a shared port is fixed in the server's own settings, not in the account
+        _ => true,   // a shared port is fixed on this machine, not in the account
     };
 
     [RelayCommand]
@@ -484,9 +482,16 @@ public partial class TunnelsViewModel : ObservableObject
                 if (suggestion.TunnelId is { } id) await DeleteAsync(id, suggestion.Subject);
                 break;
 
+            case TunnelSuggestionKind.SharedPort when suggestion.Udp:
+                // The Bedrock port lives in servers.json and Geyser's config, not in server.properties,
+                // and any free port will do: nothing about it is the owner's choice to make here.
+                if (server is not null)
+                    await ChangeAsync(_ => server.MoveBedrockPortAsync(WritableKey()));
+                break;
+
             case TunnelSuggestionKind.SharedPort:
-                // Changing a port is the one fix that is not ours to make: it is the server's own
-                // setting, and only its owner knows what to change it to.
+                // A Java port is the server's own setting, and the owner may care which number it is:
+                // open the server's configuration instead of picking one for them.
                 if (server is not null)
                 {
                     await _configure(server);
@@ -504,14 +509,6 @@ public partial class TunnelsViewModel : ObservableObject
                     await ChangeAsync(_ => server.CreateBedrockTunnelAsync(bedrockKey));
                 break;
 
-            case TunnelSuggestionKind.RenameAll:
-                var renames = Rows.Where(r => r.SuggestedName is not null && !r.IsProblem).ToList();
-                await ChangeAsync(async _ =>
-                {
-                    foreach (var row in renames)
-                        await _api.RenameTunnelAsync(KeyFor(row.Id)!, row.Id, row.SuggestedName!);
-                });
-                break;
         }
     }
 
