@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
+using SkiaSharp;
 
 namespace McServerLauncher.Services;
 
@@ -37,6 +38,21 @@ public static class ImageCache
     /// <summary>Bitmaps kept in memory. Bounded, because a browsing session sees a lot of icons.</summary>
     private const int MaxMemoryEntries = 256;
 
+    /// <summary>
+    /// And bounded by size as well as by count: 256 full-size screenshots is gigabytes, while 256
+    /// icons is a few megabytes. What a decoded bitmap costs is width x height x 4.
+    /// </summary>
+    internal const long MemoryBudgetBytes = 96L * 1024 * 1024;
+
+    /// <summary>The widest an icon or a thumbnail is decoded. They are drawn 112 px wide at most.</summary>
+    internal const int IconDecodeWidth = 256;
+
+    /// <summary>The widest a gallery screenshot is decoded. It is drawn 340 px high at most.</summary>
+    internal const int GalleryDecodeWidth = 1600;
+
+    /// <summary>More pixels than any store image has: past this it is a decompression bomb.</summary>
+    internal const long MaxPixels = 40_000_000;
+
     private static readonly ConcurrentDictionary<string, Entry> Memory = new();
     private static readonly ConcurrentDictionary<string, Task<Bitmap?>> InFlight = new();
 
@@ -49,7 +65,7 @@ public static class ImageCache
 
     private static int _pruned;
 
-    private sealed record Entry(Bitmap Bitmap, DateTime StoredUtc);
+    private sealed record Entry(Bitmap Bitmap, DateTime StoredUtc, long Bytes);
 
     static ImageCache()
     {
@@ -71,26 +87,30 @@ public static class ImageCache
     {
         if (string.IsNullOrWhiteSpace(url)) return null;
 
-        if (Memory.TryGetValue(url, out var cached)) return cached.Bitmap;
+        // Only the gallery's big cap asks for a big image; everything else is drawn small.
+        var maxWidth = maxBytes > MaxIconBytes ? GalleryDecodeWidth : IconDecodeWidth;
+        var key = maxWidth + "|" + url;
+
+        if (Memory.TryGetValue(key, out var cached)) return cached.Bitmap;
 
         // One download per URL, however many callers ask at once. The shared task deliberately
         // carries no cancellation token: a second caller waiting on it must not be cancelled
         // because the first one walked away.
         var tcs = new TaskCompletionSource<Bitmap?>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var task = InFlight.GetOrAdd(url, tcs.Task);
+        var task = InFlight.GetOrAdd(key, tcs.Task);
 
         if (ReferenceEquals(task, tcs.Task))
         {
-            try { tcs.TrySetResult(await LoadAsync(url, maxBytes)); }
+            try { tcs.TrySetResult(await LoadAsync(url, key, maxBytes, maxWidth)); }
             catch { tcs.TrySetResult(null); }
-            finally { InFlight.TryRemove(url, out _); }
+            finally { InFlight.TryRemove(key, out _); }
         }
 
         try { return await task.WaitAsync(ct); }
         catch { return null; }
     }
 
-    private static async Task<Bitmap?> LoadAsync(string url, int maxBytes)
+    private static async Task<Bitmap?> LoadAsync(string url, string key, int maxBytes, int maxWidth)
     {
         var path = PathFor(url);
 
@@ -103,7 +123,7 @@ public static class ImageCache
             WriteDisk(path, bytes);
         }
 
-        var bitmap = Decode(bytes);
+        var bitmap = Decode(bytes, maxWidth);
         if (bitmap is null)
         {
             // Undecodable content (an SVG, or a truncated cache entry): drop the cached copy so a
@@ -112,22 +132,52 @@ public static class ImageCache
             return null;
         }
 
-        Memory[url] = new Entry(bitmap, DateTime.UtcNow);
+        var size = bitmap.PixelSize;
+        Memory[key] = new Entry(bitmap, DateTime.UtcNow, (long)size.Width * size.Height * 4);
         TrimMemory();
         return bitmap;
     }
 
-    private static Bitmap? Decode(byte[] bytes)
+    /// <summary>
+    /// Decodes at the size it will be drawn at, not the size it was uploaded at.
+    /// </summary>
+    /// <remarks>
+    /// The byte caps bound what is downloaded, not what it becomes: an 8 MB PNG of a flat colour
+    /// can declare tens of thousands of pixels a side and decode to gigabytes. The header says how
+    /// big it is before anything is decoded, so absurd sizes are refused and large ones are scaled
+    /// down while decoding, which is also what keeps the memory cache small.
+    /// </remarks>
+    internal static Bitmap? Decode(byte[] bytes, int maxWidth)
     {
         try
         {
+            int width, height;
+            using (var codec = SKCodec.Create(new SKMemoryStream(bytes)))
+            {
+                if (codec is null) return null;   // not a format Skia reads, an SVG for instance
+                width = codec.Info.Width;
+                height = codec.Info.Height;
+            }
+
+            if (DecodeWidth(width, height, maxWidth) is not { } target) return null;
+
             using var ms = new MemoryStream(bytes);
-            return new Bitmap(ms);
+            return target < width
+                ? Bitmap.DecodeToWidth(ms, target, BitmapInterpolationMode.HighQuality)
+                : new Bitmap(ms);
         }
         catch
         {
             return null;
         }
+    }
+
+    /// <summary>The width to decode an image of these dimensions at, or null to refuse it.</summary>
+    internal static int? DecodeWidth(int width, int height, int maxWidth)
+    {
+        if (width <= 0 || height <= 0) return null;
+        if ((long)width * height > MaxPixels) return null;
+        return Math.Min(width, maxWidth);
     }
 
     private static async Task<byte[]?> DownloadAsync(string url, int maxBytes)
@@ -199,13 +249,34 @@ public static class ImageCache
 
     private static void TrimMemory()
     {
-        if (Memory.Count <= MaxMemoryEntries) return;
         // Evicted bitmaps are not disposed on purpose: a view may still be drawing one.
-        foreach (var key in Memory.OrderBy(kv => kv.Value.StoredUtc)
-                                  .Take(Memory.Count - MaxMemoryEntries / 2)
-                                  .Select(kv => kv.Key)
-                                  .ToList())
+        var entries = Memory.Select(kv => (kv.Key, kv.Value.StoredUtc, kv.Value.Bytes)).ToList();
+        foreach (var key in Evict(entries, MaxMemoryEntries, MemoryBudgetBytes).ToList())
             Memory.TryRemove(key, out _);
+    }
+
+    /// <summary>
+    /// The keys to drop, oldest first, so that what is left fits both the count and the byte budget.
+    /// </summary>
+    /// <remarks>
+    /// Over the count it drops down to half, as before, so a session full of small icons does not
+    /// evict one per new image. Over the budget it drops just enough.
+    /// </remarks>
+    internal static IEnumerable<string> Evict(IReadOnlyList<(string Key, DateTime Stored, long Bytes)> entries,
+        int maxEntries, long budgetBytes)
+    {
+        var total = entries.Sum(e => e.Bytes);
+        if (entries.Count <= maxEntries && total <= budgetBytes) yield break;
+
+        var keepAtMost = entries.Count > maxEntries ? maxEntries / 2 : entries.Count;
+        var left = entries.Count;
+        foreach (var entry in entries.OrderBy(e => e.Stored))
+        {
+            if (left <= keepAtMost && total <= budgetBytes) yield break;
+            yield return entry.Key;
+            left--;
+            total -= entry.Bytes;
+        }
     }
 
     private static void PruneOnce()
