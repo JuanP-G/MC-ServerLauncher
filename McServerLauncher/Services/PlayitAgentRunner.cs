@@ -86,12 +86,21 @@ public class PlayitAgentRunner
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "playit-agent");
 
     /// <summary>The release asset for this OS/arch, or null if Playit ships no binary for it (e.g. macOS).</summary>
-    private static string? AssetName => RuntimeInformation.OSArchitecture switch
+    private static string? AssetName =>
+        AssetFor(OperatingSystem.IsWindows(), OperatingSystem.IsLinux(), RuntimeInformation.OSArchitecture);
+
+    /// <summary>The asset for a platform, taken as arguments so every platform can be checked from any.</summary>
+    /// <remarks>
+    /// Windows on ARM gets the x64 build. Playit publishes no ARM build for Windows, and the app
+    /// itself already runs there as x64 under emulation — which is what the README promises — so the
+    /// agent can too. It used to be "unsupported", which left those machines with no tunnels at all.
+    /// </remarks>
+    internal static string? AssetFor(bool windows, bool linux, Architecture arch) => arch switch
     {
-        _ when OperatingSystem.IsWindows() && RuntimeInformation.OSArchitecture == Architecture.X64 => "playit-windows-x86_64-signed.exe",
-        _ when OperatingSystem.IsWindows() && RuntimeInformation.OSArchitecture == Architecture.X86 => "playit-windows-x86-signed.exe",
-        Architecture.X64 when OperatingSystem.IsLinux() => "playit-linux-amd64",
-        Architecture.Arm64 when OperatingSystem.IsLinux() => "playit-linux-aarch64",
+        Architecture.X64 or Architecture.Arm64 when windows => "playit-windows-x86_64-signed.exe",
+        Architecture.X86 when windows => "playit-windows-x86-signed.exe",
+        Architecture.X64 when linux => "playit-linux-amd64",
+        Architecture.Arm64 when linux => "playit-linux-aarch64",
         _ => null // macOS (no official binary) and other combos: not auto-runnable
     };
 

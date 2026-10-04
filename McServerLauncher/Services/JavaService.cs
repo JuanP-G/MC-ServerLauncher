@@ -271,6 +271,44 @@ public partial class JavaService
         return await DownloadAdoptiumAsync(download, log, ct);
     }
 
+    /// <summary>The Adoptium architectures to ask for, in order, on a machine of <paramref name="arch"/>.</summary>
+    /// <remarks>
+    /// <para>
+    /// ARM machines get a native build where there is one, and an x64 one where there is not — but
+    /// only where the system can run it. Adoptium has no ARM JRE for Java 8 on macOS, nor for 8,
+    /// 16 or 17 on Windows (checked against its API), so asking for aarch64 alone left every server
+    /// older than 1.20.5 on Windows ARM, and older than 1.17 on Apple Silicon, without a Java. Both
+    /// systems run x64 code (Windows 11 by emulation, macOS through Rosetta); Linux does not, so an
+    /// ARM Linux machine only ever gets an ARM build.
+    /// </para>
+    /// <para>
+    /// The OS architecture, not the process's: an x64 build of this app on a Windows ARM machine
+    /// still wants a native Java if one exists.
+    /// </para>
+    /// </remarks>
+    internal static IReadOnlyList<string> AdoptiumArchitectures(Architecture arch, bool emulatesX64) => arch switch
+    {
+        Architecture.Arm64 => emulatesX64 ? new[] { "aarch64", "x64" } : new[] { "aarch64" },
+        Architecture.X86 => new[] { "x86" },
+        _ => new[] { "x64" }
+    };
+
+    /// <summary>The download link and checksum of the first package in an Adoptium answer.</summary>
+    private static (string? Link, string? Checksum) FirstPackage(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        foreach (var asset in doc.RootElement.EnumerateArray())
+        {
+            if (asset.TryGetProperty("binary", out var b) &&
+                b.TryGetProperty("package", out var pkg) &&
+                pkg.TryGetProperty("link", out var lk))
+            {
+                return (lk.GetString(), pkg.TryGetProperty("checksum", out var cs) ? cs.GetString() : null);
+            }
+        }
+        return (null, null);
+    }
+
     private async Task<string> DownloadAdoptiumAsync(int major, IProgress<string>? log, CancellationToken ct)
     {
         var target = Path.Combine(ManagedRoot, $"jre-{major}");
@@ -279,35 +317,22 @@ public partial class JavaService
         var existing = FindJavaExe(target);
         if (existing is not null) return existing;
 
-        var arch = RuntimeInformation.OSArchitecture switch
-        {
-            Architecture.Arm64 => "aarch64",
-            Architecture.X86 => "x86",
-            _ => "x64"
-        };
         var os = OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsMacOS() ? "mac" : "linux";
-        var apiUrl = $"https://api.adoptium.net/v3/assets/latest/{major}/hotspot" +
-                     $"?architecture={arch}&image_type=jre&os={os}&vendor=eclipse";
-        var json = await Http.GetStringAsync(apiUrl, ct);
+        var archs = AdoptiumArchitectures(RuntimeInformation.OSArchitecture,
+            emulatesX64: OperatingSystem.IsWindows() || OperatingSystem.IsMacOS());
 
         string? link = null;
         string? checksum = null;
-        using (var doc = JsonDocument.Parse(json))
+        foreach (var arch in archs)
         {
-            foreach (var asset in doc.RootElement.EnumerateArray())
-            {
-                if (asset.TryGetProperty("binary", out var b) &&
-                    b.TryGetProperty("package", out var pkg) &&
-                    pkg.TryGetProperty("link", out var lk))
-                {
-                    link = lk.GetString();
-                    checksum = pkg.TryGetProperty("checksum", out var cs) ? cs.GetString() : null;
-                    break;
-                }
-            }
+            var apiUrl = $"https://api.adoptium.net/v3/assets/latest/{major}/hotspot" +
+                         $"?architecture={arch}&image_type=jre&os={os}&vendor=eclipse";
+            (link, checksum) = FirstPackage(await Http.GetStringAsync(apiUrl, ct));
+            if (!string.IsNullOrEmpty(link)) break;
         }
         if (string.IsNullOrEmpty(link))
-            throw new InvalidOperationException($"No Java {major} download was found for {os}/{arch}.");
+            throw new InvalidOperationException(
+                $"No Java {major} download was found for {os}/{string.Join(" or ", archs)}.");
 
         Directory.CreateDirectory(ManagedRoot);
         var isZip = OperatingSystem.IsWindows();

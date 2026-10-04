@@ -446,6 +446,13 @@ Al **crear**, `NewServerView` pide a `MinecraftVersionService` el Java necesario
 `server.jar` (`version.json`) e instala/usa un runtime compatible, guardando la ruta en
 `ServerConfig.JavaPath`.
 
+Dos huecos en lo que publica Adoptium marcan las reglas (`JavaCompatibilityTests`, `ArmPlatformTests`).
+**No hay Java 16**, que es lo que declaran Minecraft 1.17 y 1.17.1, así que 17 cuenta como compatible
+con 16 y es lo que se descarga. Y **no hay JRE ARM** de Java 8, 16 ni 17 para Windows, ni de 8 para
+macOS: en esos dos sistemas un equipo ARM pide primero `aarch64` y, si no hay, `x64`, que Windows 11
+emula y macOS ejecuta con Rosetta; Linux no tiene ese recurso. El agente de Playit sigue el mismo
+razonamiento en Windows ARM y usa la build x64.
+
 ### Túnel de Playit
 La primera vez que el usuario conecta Playit, `MainViewModel.EnsurePlayitAgentAsync` muestra el
 diálogo de código de configuración (abre `playit.gg/l/setup-third-party` solo al pulsar), canjea el

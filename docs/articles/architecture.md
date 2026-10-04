@@ -429,6 +429,13 @@ and calls `JavaService.EnsureJavaAsync`. At **start** time, `ServerViewModel` re
 embedded in `server.jar` (`version.json`) and installs/uses a compatible runtime, saving the path in
 `ServerConfig.JavaPath`.
 
+Two gaps in what Adoptium publishes shape the rules (`JavaCompatibilityTests`, `ArmPlatformTests`).
+There is **no Java 16**, which is what Minecraft 1.17 and 1.17.1 declare, so 17 counts as compatible
+with 16 and is what gets downloaded. And there is **no ARM JRE** for Java 8, 16 or 17 on Windows, nor
+for 8 on macOS: on those two systems an ARM machine asks for `aarch64` first and falls back to `x64`,
+which Windows 11 emulates and macOS runs through Rosetta; Linux has no such fallback. The Playit
+agent follows the same reasoning on Windows ARM and uses the x64 build.
+
 ### Playit tunnel
 First time the user connects Playit, `MainViewModel.EnsurePlayitAgentAsync` shows the setup-code
 dialog (opens `playit.gg/l/setup-third-party` only on a click), exchanges the pasted code via
