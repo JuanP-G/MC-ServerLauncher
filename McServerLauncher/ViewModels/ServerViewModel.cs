@@ -1386,8 +1386,15 @@ public partial class ServerViewModel : ObservableObject
 
             // Back up the world right before touching it again: the safety net that matters most,
             // since it covers every start path (manual, Restart, and auto-restart after a crash).
+            //
+            // And whatever happens, never while another copy is still reading the world — the one
+            // made on Stop, a moment ago, or one asked for by hand. The start's own used to be
+            // refused as "already running" and the server started anyway, writing to the world the
+            // other copy was still zipping.
             if (Config.BackupsEnabled)
-                await RunBackupAsync("start");
+                await RunBackupAsync("start", waitForOthers: true);
+            else
+                await WaitForBackupsAsync();
 
             // Asked here, in the background, so the one Start asks for the JVM flags is answered
             // from memory instead of starting a JVM on the UI thread.
@@ -1802,12 +1809,20 @@ public partial class ServerViewModel : ObservableObject
     /// copied would only make the first one slower.
     /// </para>
     /// </remarks>
-    public async Task<string?> RunBackupAsync(string trigger, CancellationToken ct = default)
+    /// <param name="trigger">Why it is made; it ends up in the file's name.</param>
+    /// <param name="ct">Cancels the copy.</param>
+    /// <param name="waitForOthers">
+    /// Wait for a backup already in progress instead of giving up — for the start, which must not
+    /// begin while another copy is reading the world.
+    /// </param>
+    public async Task<string?> RunBackupAsync(string trigger, CancellationToken ct = default,
+        bool waitForOthers = false)
     {
         if (!await _backupGate.WaitAsync(0, ct))
         {
             OnConsoleLine(Localizer.Get("Msg_BackupAlreadyRunning"));
-            return null;
+            if (!waitForOthers) return null;
+            await _backupGate.WaitAsync(ct);
         }
 
         try
@@ -1822,6 +1837,16 @@ public partial class ServerViewModel : ObservableObject
         {
             _backupGate.Release();
         }
+    }
+
+    /// <summary>Waits until no backup is reading the world. Takes nothing and makes nothing.</summary>
+    private async Task WaitForBackupsAsync()
+    {
+        if (await _backupGate.WaitAsync(0)) { _backupGate.Release(); return; }
+
+        OnConsoleLine(Localizer.Get("Msg_BackupAlreadyRunning"));
+        await _backupGate.WaitAsync();
+        _backupGate.Release();
     }
 
     /// <summary>
