@@ -34,7 +34,7 @@ public partial class App : Application
         };
 
         // Apply the saved language BEFORE creating the window.
-        var lang = new AppSettingsService().Load().Language;
+        var lang = new AppSettingsService().LoadLanguage();
         if (!string.IsNullOrWhiteSpace(lang))
         {
             try
