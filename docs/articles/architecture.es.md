@@ -495,8 +495,11 @@ Cumplimiento de las reglas de terceros de Playit: el navegador solo se abre al p
 indica que la app no está afiliada a Playit y el usuario siempre puede acceder a su cuenta de Playit
 directamente. Un agente autogestionado solo reenvía tráfico mientras su proceso corre, así que
 `PlayitAgentRunner` descarga el binario oficial `playitd` de Playit (una vez, fijado a la versión
-registrada) y lo ejecuta como proceso hijo oculto con `--secret <la clave por usuario>` mientras la
-app está abierta y conectada — el usuario no instala nada. Como ese binario nativo es el código de
+registrada) y lo ejecuta como proceso hijo oculto mientras la app está abierta y conectada — el usuario
+no instala nada. La clave va en un archivo que se le pasa con `--secret-path`, nunca en la línea de
+comandos (donde otros procesos y herramientas de registro la pueden leer); el archivo nace legible solo
+por su dueño (0600 en Unix, desde que se crea y no restringido después) y se borra en cuanto el agente
+se para, tanto si se le paró como si se cayó solo. Como ese binario nativo es el código de
 más privilegio que descarga la app, se **verifica contra un SHA-256 fijado en el código** (el de la
 versión pinneada) antes de ejecutarse — al descargar y también al reutilizar una copia en caché — y
 se borra/falla si no coincide, igual que el resto de descargas (`DownloadVerifier`). Un solo agente

@@ -477,8 +477,10 @@ with Playit's third-party rules: the browser only opens on an explicit click, a 
 the app is not affiliated with Playit, and the user can always reach their Playit account directly.
 A self-managed agent forwards traffic only while the agent process runs, so `PlayitAgentRunner`
 downloads Playit's official `playitd` binary (once, pinned to the registered version) and runs it as
-a hidden child process with `--secret <the per-user key>` while the app is open and connected — the
-user installs nothing. Since that native binary is the highest-privilege code the app fetches, it is
+a hidden child process while the app is open and connected — the user installs nothing. The key goes
+in a file passed as `--secret-path`, never on the command line (where other processes and logging tools
+can read it); the file is created readable by its owner only (0600 on Unix, from birth rather than
+narrowed afterwards) and deleted as soon as the agent stops, whether it was stopped or died on its own. Since that native binary is the highest-privilege code the app fetches, it is
 **verified against a hard-coded SHA-256** (of the exact pinned version) before it ever runs — on
 download and when reusing a cached copy — and deleted/failed on mismatch, just like every other
 download (`DownloadVerifier`). One agent serves all the user's tunnels. Not available on macOS
