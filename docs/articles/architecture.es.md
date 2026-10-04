@@ -509,6 +509,13 @@ tiempo mientras el servidor está en marcha. `ServerBackupsView` las lista y pue
 cualquiera (tomando antes una copia de seguridad por si acaso); restaurar sigue exigiendo el servidor
 parado, porque borra la carpeta del mundo y desempaqueta otra en su lugar.
 
+Qué carpeta es esa lo dice `level-name`, un valor de un archivo que la app no escribió, así que
+`WorldBackupService.WorldFolderFor` solo acepta una que quede **estrictamente dentro de la carpeta del
+servidor y fuera de `backups/`** (`worlds/survival` vale). Con `level-name=.` restaurar borraba el
+servidor entero, incluido el zip que iba a leer; `..` o una ruta absoluta llegaban fuera de él. Con un
+valor así, restaurar se niega antes de tocar nada, y la copia lo dice en la consola y se salta en vez de
+impedir que el servidor arranque (`BackupLevelNameTests`).
+
 Copiar un servidor **arrancado** pasa por `LiveWorldBackup`, porque zipear un mundo mientras la JVM
 escribe en él da una copia rota. Antes se le pide a Minecraft que lo suelte: `save-off`,
 `save-all flush`, esperar a que el servidor diga `Saved the game` (lo reconoce `SaveConfirmation`,

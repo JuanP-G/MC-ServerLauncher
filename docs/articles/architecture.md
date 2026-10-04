@@ -489,6 +489,13 @@ after a manual clean stop, before a restore, and at intervals while the server i
 still requires the server to be stopped, because it deletes the world folder and unpacks another one
 in its place.
 
+Which folder that is comes from `level-name`, a value in a file the app did not write, so
+`WorldBackupService.WorldFolderFor` only accepts one that resolves **strictly inside the server's
+folder and outside `backups/`** (`worlds/survival` is fine). With `level-name=.` a restore used to
+delete the whole server, the zip it was about to read included; `..` or an absolute path reached
+outside it. A restore with such a value refuses before touching anything, and a backup says why in
+the console and is skipped rather than keeping the server from starting (`BackupLevelNameTests`).
+
 Backing up a **running** server goes through `LiveWorldBackup`, because zipping a world the JVM is
 writing to gives a torn copy. It asks Minecraft to let go of it first — `save-off`, `save-all flush`,
 wait for the server to say `Saved the game` (recognised by `SaveConfirmation`, anchored after the log

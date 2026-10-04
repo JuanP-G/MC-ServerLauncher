@@ -271,6 +271,7 @@
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] A guardar uma cópia do estado atual antes de restaurar (caso queiras desfazer)...</value></data>
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] A restaurar a cópia de segurança...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Cópia de segurança restaurada.</value></data>
+  <data name="Msg_BackupBadLevelNameFmt" xml:space="preserve"><value>level-name = "{0}" em server.properties não indica uma pasta própria dentro do servidor, por isso a cópia de segurança não mexeu em nada. Muda-o para um nome de pasta como "world".</value></data>
   <data name="Backups" xml:space="preserve"><value>Cópias de segurança</value></data>
   <data name="Backup_Hint" xml:space="preserve"><value>É criada automaticamente uma cópia de segurança do mundo antes de cada arranque, ao parar o servidor e, se deixares ligado, de tempos a tempos enquanto se joga. Restaurar continua a exigir o servidor parado.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Fazer cópia agora</value></data>
