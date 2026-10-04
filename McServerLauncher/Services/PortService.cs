@@ -154,18 +154,7 @@ public class PortService
     {
         try
         {
-            using var p = Process.Start(new ProcessStartInfo
-            {
-                FileName = "ss",
-                Arguments = "-ltnpH",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            });
-            if (p is null) return null;
-            var output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit(4000);
+            var output = ProcessRunner.Run("ss", new[] { "-ltnpH" }, TimeSpan.FromSeconds(4)).Output;
 
             foreach (var line in output.Split('\n'))
             {

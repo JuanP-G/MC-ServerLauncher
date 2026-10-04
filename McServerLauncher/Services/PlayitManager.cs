@@ -224,34 +224,22 @@ public class PlayitManager
 
     private static void Systemctl(string action, string unit)
     {
-        var r = Run("systemctl", $"{action} {unit}");
+        // A minute, not five seconds: starting or stopping a unit can wait on a polkit prompt.
+        var r = Run("systemctl", $"{action} {unit}", seconds: 60);
         if (r.ExitCode != 0)
             throw new InvalidOperationException(string.IsNullOrWhiteSpace(r.Error) ? r.Output : r.Error);
     }
 
     /// <summary>Runs a command and returns its exit code and captured output. Never throws.</summary>
-    private static (int ExitCode, string Output, string Error) Run(string file, string args)
+    /// <remarks>
+    /// Through <see cref="ProcessRunner"/>, whose deadline holds: this used to read the output to
+    /// its end before waiting, so the five seconds never applied and a hung systemctl held the probe
+    /// for as long as it liked.
+    /// </remarks>
+    private static (int ExitCode, string Output, string Error) Run(string file, string args, int seconds = 5)
     {
-        try
-        {
-            using var p = Process.Start(new ProcessStartInfo
-            {
-                FileName = file,
-                Arguments = args,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            });
-            if (p is null) return (-1, string.Empty, string.Empty);
-            var output = p.StandardOutput.ReadToEnd();
-            var error = p.StandardError.ReadToEnd();
-            p.WaitForExit(5000);
-            return (p.HasExited ? p.ExitCode : -1, output, error);
-        }
-        catch
-        {
-            return (-1, string.Empty, string.Empty);
-        }
+        var r = ProcessRunner.Run(file, args.Split(' ', StringSplitOptions.RemoveEmptyEntries),
+            TimeSpan.FromSeconds(seconds));
+        return (r.ExitCode, r.Output, r.Error);
     }
 }

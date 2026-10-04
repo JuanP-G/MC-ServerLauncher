@@ -764,7 +764,10 @@ public partial class ServerViewModel : ObservableObject
     {
         if (MainWindowHidden && ++_hiddenPlayitTicks % 10 != 0) return;
 
-        _playit.RefreshState();
+        // The system's own Playit service only matters when the app's agent is not the one in use:
+        // asking it otherwise meant a systemctl every three seconds, per server, for an answer the
+        // panel then ignored.
+        if (!_agent.HasSecret) _playit.RefreshState();
         // Every ~30 s (10 ticks of 3 s; ~5 min while in the tray) refresh the tunnel address.
         if (++_playitTickCounter % 10 == 0)
         {
