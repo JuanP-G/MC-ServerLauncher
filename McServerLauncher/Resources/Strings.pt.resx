@@ -539,6 +539,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Export_LeftOutFmt" xml:space="preserve"><value>Nota: ficaram de fora {0} ficheiros que só funcionam no servidor ({1}). Não fazem falta para jogar.</value></data>
   <data name="Export_InstructionsFile" xml:space="preserve"><value>INSTRUÇÕES.txt</value></data>
   <data name="Msg_ModDeleteError" xml:space="preserve"><value>Não foi possível eliminar o ficheiro: {0}</value></data>
+  <data name="Mods_ConfirmDeleteFmt" xml:space="preserve"><value>Eliminar "{0}"? O ficheiro é apagado da pasta do servidor e não vai para a reciclagem. Se só queres que não seja carregado, desativa-o com o interruptor.</value></data>
   <data name="Msg_ExportError" xml:space="preserve"><value>Não foi possível exportar o modpack: {0}</value></data>
   <data name="Cmd_Say_Title" xml:space="preserve"><value>say &lt;mensagem&gt;</value></data>
   <data name="Cmd_Say_Desc" xml:space="preserve"><value>Envia uma mensagem no chat para todos os jogadores.</value></data>

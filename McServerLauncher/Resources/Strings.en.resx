@@ -539,6 +539,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Export_LeftOutFmt" xml:space="preserve"><value>Note: {0} files that only work on the server were left out ({1}). You do not need them to play.</value></data>
   <data name="Export_InstructionsFile" xml:space="preserve"><value>INSTRUCTIONS.txt</value></data>
   <data name="Msg_ModDeleteError" xml:space="preserve"><value>Could not delete the file: {0}</value></data>
+  <data name="Mods_ConfirmDeleteFmt" xml:space="preserve"><value>Delete "{0}"? The file is removed from the server folder and does not go to the recycle bin. If you only want it not to load, turn it off with the switch.</value></data>
   <data name="Msg_ExportError" xml:space="preserve"><value>Could not export the modpack: {0}</value></data>
   <data name="Cmd_Say_Title" xml:space="preserve"><value>say &lt;message&gt;</value></data>
   <data name="Cmd_Say_Desc" xml:space="preserve"><value>Sends a chat message to all players.</value></data>

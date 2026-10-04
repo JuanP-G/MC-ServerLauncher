@@ -539,6 +539,7 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Export_LeftOutFmt" xml:space="preserve"><value>Note : {0} fichiers qui ne fonctionnent que sur le serveur ont été laissés de côté ({1}). Ils ne sont pas nécessaires pour jouer.</value></data>
   <data name="Export_InstructionsFile" xml:space="preserve"><value>INSTRUCTIONS.txt</value></data>
   <data name="Msg_ModDeleteError" xml:space="preserve"><value>Impossible de supprimer le fichier : {0}</value></data>
+  <data name="Mods_ConfirmDeleteFmt" xml:space="preserve"><value>Supprimer "{0}" ? Le fichier est retiré du dossier du serveur et ne va pas dans la corbeille. Si tu veux seulement qu'il ne soit pas chargé, désactive-le avec l'interrupteur.</value></data>
   <data name="Msg_ExportError" xml:space="preserve"><value>Impossible d'exporter le modpack : {0}</value></data>
   <data name="Cmd_Say_Title" xml:space="preserve"><value>say &lt;message&gt;</value></data>
   <data name="Cmd_Say_Desc" xml:space="preserve"><value>Envoie un message dans le chat à tous les joueurs.</value></data>

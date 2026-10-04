@@ -539,6 +539,7 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Export_LeftOutFmt" xml:space="preserve"><value>Hinweis: {0} Dateien, die nur auf dem Server laufen, wurden weggelassen ({1}). Zum Spielen werden sie nicht gebraucht.</value></data>
   <data name="Export_InstructionsFile" xml:space="preserve"><value>ANLEITUNG.txt</value></data>
   <data name="Msg_ModDeleteError" xml:space="preserve"><value>Datei konnte nicht gelöscht werden: {0}</value></data>
+  <data name="Mods_ConfirmDeleteFmt" xml:space="preserve"><value>"{0}" löschen? Die Datei wird aus dem Serverordner entfernt und landet nicht im Papierkorb. Wenn sie nur nicht geladen werden soll, schalte sie mit dem Schalter aus.</value></data>
   <data name="Msg_ExportError" xml:space="preserve"><value>Modpack konnte nicht exportiert werden: {0}</value></data>
   <data name="Cmd_Say_Title" xml:space="preserve"><value>say &lt;Nachricht&gt;</value></data>
   <data name="Cmd_Say_Desc" xml:space="preserve"><value>Sendet eine Chat-Nachricht an alle Spieler.</value></data>

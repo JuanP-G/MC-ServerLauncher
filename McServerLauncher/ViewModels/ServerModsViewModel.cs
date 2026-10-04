@@ -1179,6 +1179,13 @@ public partial class ServerModsViewModel : ObservableObject
     private async Task DeleteMod(ModItem? mod)
     {
         if (mod is null) return;
+
+        // Asked first, like deleting a backup: the file is gone for good, not to the recycle bin,
+        // and the button sits one row from the switch that only disables a mod.
+        if (!await MessageBox.ConfirmAsync(
+                string.Format(Localizer.Get("Mods_ConfirmDeleteFmt"), mod.FileName), ContentTabTitle))
+            return;
+
         try
         {
             File.Delete(mod.FilePath);
