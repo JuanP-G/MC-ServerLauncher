@@ -153,8 +153,20 @@ public partial class JavaService
     }
 
     /// <summary>An installed Java version is valid for the required one (exact, or newer if 17+).</summary>
+    /// <remarks>
+    /// One exception, for Java 16 — what Mojang declares for Minecraft 1.17 and 1.17.1. Adoptium
+    /// publishes no Java 16 at all, so if 17 did not count, a 1.17 server could neither use the Java
+    /// 17 already on the machine nor download a 16, and would not start without a Java installed by
+    /// hand. 17 runs those versions; anything later is not promised to.
+    /// </remarks>
     public static bool IsCompatible(int installed, int required)
-        => installed == required || (required >= 17 && installed >= required);
+        => installed == required
+           || (required == 16 && installed == 17)
+           || (required >= 17 && installed >= required);
+
+    /// <summary>The Java to download when nothing installed fits <paramref name="required"/>.</summary>
+    /// <remarks>Java 16 does not exist on Adoptium; 17 is the one that runs what asks for it.</remarks>
+    internal static int DownloadableMajor(int required) => required == 16 ? 17 : required;
 
     /// <summary>
     /// Reads the Java a server.jar needs (modern versions include it in version.json).
@@ -254,8 +266,9 @@ public partial class JavaService
             return match.Path;
         }
 
-        log?.Report(string.Format(Localizer.Get("Msg_JavaNotCompatibleDownloading"), requiredMajor));
-        return await DownloadAdoptiumAsync(requiredMajor, log, ct);
+        var download = DownloadableMajor(requiredMajor);
+        log?.Report(string.Format(Localizer.Get("Msg_JavaNotCompatibleDownloading"), download));
+        return await DownloadAdoptiumAsync(download, log, ct);
     }
 
     private async Task<string> DownloadAdoptiumAsync(int major, IProgress<string>? log, CancellationToken ct)
