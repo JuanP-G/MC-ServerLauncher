@@ -1341,6 +1341,15 @@ public partial class ServerViewModel : ObservableObject
         {
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
         }
+        finally
+        {
+            // The listener was let go of at the top, and only the transition to Stopped took it back
+            // up — which never happens when the process never started. So a start abandoned here (a
+            // busy port, a path Paper refuses, a dependency check cancelled) left a server with
+            // wake-on-demand asleep and deaf until the app was restarted. Starting it twice is
+            // harmless: Start lets go of the old socket first.
+            if (!_process.IsRunning) StartWakeListener();
+        }
     }
 
     /// <summary>
