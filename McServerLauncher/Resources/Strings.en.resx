@@ -224,6 +224,9 @@
   <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>The shortcut could not be created. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Window</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Choose what the minimize and close buttons do. With the app in the tray, servers keep running and you get the window back by clicking the icon next to the clock.</value></data>
+  <data name="Upd_SettingsSection" xml:space="preserve"><value>Updates</value></data>
+  <data name="Upd_BetasIntro" xml:space="preserve"><value>Betas bring new things before the stable versions, but they can have bugs. If you switch them off while on one, you keep it until the next stable version.</value></data>
+  <data name="Upd_ReceiveBetas" xml:space="preserve"><value>Receive beta versions</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Minimizing sends it to the tray (leaves the taskbar)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Closing (X) sends it to the tray instead of quitting the app</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notifications</value></data>

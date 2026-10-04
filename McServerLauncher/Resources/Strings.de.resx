@@ -224,6 +224,9 @@
   <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>Die Verknüpfung konnte nicht erstellt werden. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Fenster</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Lege fest, was die Schaltflächen zum Minimieren und Schließen tun. Wenn die App im Infobereich liegt, laufen die Server weiter; das Fenster holst du mit einem Klick auf das Symbol neben der Uhr zurück.</value></data>
+  <data name="Upd_SettingsSection" xml:space="preserve"><value>Updates</value></data>
+  <data name="Upd_BetasIntro" xml:space="preserve"><value>Betas bringen Neues vor den stabilen Versionen, können aber Fehler haben. Schaltest du sie aus, während du eine nutzt, behältst du sie bis zur nächsten stabilen Version.</value></data>
+  <data name="Upd_ReceiveBetas" xml:space="preserve"><value>Beta-Versionen erhalten</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Beim Minimieren in den Infobereich verschieben (verlässt die Taskleiste)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Beim Schließen (X) in den Infobereich verschieben, statt die App zu beenden</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Benachrichtigungen</value></data>

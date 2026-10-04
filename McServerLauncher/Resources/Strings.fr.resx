@@ -224,6 +224,9 @@
   <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>Le raccourci n'a pas pu être créé. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Fenêtre</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Choisis ce que font les boutons réduire et fermer. Avec l'application dans la zone de notification, les serveurs continuent de tourner et tu récupères la fenêtre en cliquant sur l'icône près de l'horloge.</value></data>
+  <data name="Upd_SettingsSection" xml:space="preserve"><value>Mises à jour</value></data>
+  <data name="Upd_BetasIntro" xml:space="preserve"><value>Les bêtas apportent les nouveautés avant les versions stables, mais elles peuvent contenir des bugs. Si tu les désactives pendant que tu en utilises une, tu la gardes jusqu'à la prochaine version stable.</value></data>
+  <data name="Upd_ReceiveBetas" xml:space="preserve"><value>Recevoir les versions bêta</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Réduire l'envoie dans la zone de notification (quitte la barre des tâches)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Fermer (X) l'envoie dans la zone de notification au lieu de quitter l'application</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notifications</value></data>

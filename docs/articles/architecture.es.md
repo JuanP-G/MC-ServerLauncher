@@ -332,7 +332,10 @@ mundo. No hay rutas fijas del equipo en el código.
   nueva y elige el asset para *esta* plataforma y arquitectura (el instalador de Windows, el AppImage
   de Linux, el `.dmg` de macOS); `SelfUpdater` es quien lo aplica. Lee la **lista** de releases, no
   `/releases/latest`, porque GitHub deja las pre-releases fuera de esa última y una beta publicada
-  así sería invisible para la app. La verificación contra el asset `SHA256SUMS.txt` de la release es
+  así sería invisible para la app. Las betas solo se ofrecen con **Ajustes → General → Recibir versiones
+  beta** activado (`AppSettings.ReceiveBetas`, desactivado de serie); con él apagado, quien ya esté en una
+  beta la conserva hasta la siguiente estable, que la supera. Cambiarlo vuelve a comprobar en el acto, y
+  una comprobación que no encuentra nada más nuevo retira lo que ya ofrecía el banner. La verificación contra el asset `SHA256SUMS.txt` de la release es
   **obligatoria**: si el checksum falta o no se puede leer, la actualización in situ se rechaza y se
   abre la página de la release en su lugar.
 

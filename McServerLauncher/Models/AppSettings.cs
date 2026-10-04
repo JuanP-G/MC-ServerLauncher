@@ -56,6 +56,15 @@ public class AppSettings
     /// </summary>
     public bool CloseToTray { get; set; }
 
+    /// <summary>
+    /// The update check offers betas as well as stable versions. Off by default.
+    /// </summary>
+    /// <remarks>
+    /// Betas used to be offered to everybody, labelled as such. A beta is something to opt into,
+    /// not something to decline every time it appears.
+    /// </remarks>
+    public bool ReceiveBetas { get; set; }
+
     /// <summary>What the player history keeps, and for how long.</summary>
     /// <remarks>
     /// Shared with the copy <see cref="ShallowCopy"/> makes, which is harmless: Settings replaces it

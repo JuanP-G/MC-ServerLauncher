@@ -270,6 +270,9 @@
   <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>No se ha podido crear el acceso directo. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Ventana</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Decide qué hacen los botones de minimizar y cerrar. Con la app en la bandeja, los servidores siguen corriendo y la recuperas haciendo clic en el icono junto al reloj.</value></data>
+  <data name="Upd_SettingsSection" xml:space="preserve"><value>Actualizaciones</value></data>
+  <data name="Upd_BetasIntro" xml:space="preserve"><value>Las betas traen lo nuevo antes que las versiones estables, pero pueden tener fallos. Si las desactivas mientras usas una, seguirás con ella hasta la siguiente estable.</value></data>
+  <data name="Upd_ReceiveBetas" xml:space="preserve"><value>Recibir versiones beta</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Al minimizar, enviar a la bandeja (sale de la barra de tareas)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Al cerrar (X), enviar a la bandeja en vez de salir de la aplicación</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notificaciones</value></data>

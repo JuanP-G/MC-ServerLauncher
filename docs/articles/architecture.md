@@ -324,7 +324,10 @@ are no hard-coded machine paths.
   the asset for *this* platform and architecture (the Windows installer, the Linux AppImage, the
   macOS `.dmg`); `SelfUpdater` is what applies it. It reads the release **list**, not
   `/releases/latest`, because GitHub leaves pre-releases out of the latter and a beta published that
-  way would be invisible to the app. Verification against the release's `SHA256SUMS.txt` asset is
+  way would be invisible to the app. Betas are only offered with **Settings → General → Receive beta
+  versions** on (`AppSettings.ReceiveBetas`, off by default); with it off, somebody already on a beta
+  keeps it until the next stable, which outranks it. Switching it re-checks at once, and a check that
+  finds nothing newer takes back an offer already in the banner. Verification against the release's `SHA256SUMS.txt` asset is
   **mandatory**: if the checksum is missing or unreadable, the in-place update is refused and the
   release page opens instead.
 

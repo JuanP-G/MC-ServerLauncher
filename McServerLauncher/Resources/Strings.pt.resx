@@ -224,6 +224,9 @@
   <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>Não foi possível criar o atalho. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Janela</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Escolhe o que fazem os botões de minimizar e fechar. Com a aplicação na bandeja, os servidores continuam a correr e recuperas a janela clicando no ícone junto ao relógio.</value></data>
+  <data name="Upd_SettingsSection" xml:space="preserve"><value>Atualizações</value></data>
+  <data name="Upd_BetasIntro" xml:space="preserve"><value>As betas trazem as novidades antes das versões estáveis, mas podem ter erros. Se as desativares enquanto usas uma, ficas com ela até à próxima versão estável.</value></data>
+  <data name="Upd_ReceiveBetas" xml:space="preserve"><value>Receber versões beta</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Ao minimizar, enviar para a bandeja (sai da barra de tarefas)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Ao fechar (X), enviar para a bandeja em vez de sair da aplicação</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notificações</value></data>

@@ -389,7 +389,8 @@ public partial class MainViewModel : ObservableObject
         if (manual) UpdateCheckState = UpdateCheckState.Checking;
 
         var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0);
-        var (state, info) = await UpdateCheck.RunAsync(() => new UpdateService().CheckAsync(current));
+        var (state, info) = await UpdateCheck.RunAsync(
+            () => new UpdateService().CheckAsync(current, _appSettings.ReceiveBetas));
 
         if (state != UpdateCheckState.Failed || manual)
         {
@@ -399,6 +400,15 @@ public partial class MainViewModel : ObservableObject
         else if (UpdateCheckState == UpdateCheckState.Checking)
         {
             UpdateCheckState = UpdateCheckState.Unknown;
+        }
+
+        // A clear "nothing newer" takes back whatever was being offered: a beta, after betas were
+        // switched off, would otherwise stay in the banner until the app was restarted. A failed
+        // check says nothing about it either way, so it leaves the offer alone.
+        if (state == UpdateCheckState.UpToDate && UpdateAvailable)
+        {
+            UpdateAvailable = false;
+            _packageUrl = _packageName = _checksumUrl = null;
         }
 
         if (info is null) return;
@@ -419,6 +429,13 @@ public partial class MainViewModel : ObservableObject
     /// <summary>The "Check for updates" button in About.</summary>
     [RelayCommand]
     private Task CheckForUpdatesNow() => CheckForUpdatesAsync(manual: true);
+
+    /// <summary>The betas switch in Settings moved: ask again, so what is offered follows it.</summary>
+    /// <remarks>Not before <see cref="Activate"/>: nothing here calls GitHub until the app is up.</remarks>
+    internal void OnReceiveBetasChanged()
+    {
+        if (_activated) _ = CheckForUpdatesAsync();
+    }
 
     [RelayCommand]
     private void OpenLink(string? url) => BrowserLauncher.Open(url);
