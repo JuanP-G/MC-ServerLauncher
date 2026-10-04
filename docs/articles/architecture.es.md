@@ -400,7 +400,11 @@ mundo. No hay rutas fijas del equipo en el código.
 `ServerViewModel.Start` → refresca puerto/info → si el puerto está ocupado, ofrece liberarlo
 (`PortService` + `TryFreePortAsync`) → `EnsureCompatibleJavaAsync` (usa `JavaService` para leer el
 Java requerido del jar e instalarlo si hace falta) → `ServerProcessManager.Start`. La salida de la
-consola llega de vuelta por el evento `OutputReceived` hacia `ConsoleLines`.
+consola llega de vuelta por el evento `OutputReceived` hacia `ConsoleLines`, **por lotes**: las líneas de
+los hilos del proceso se encolan y una sola tarea del dispatcher se lleva todas las que llegaron antes de
+ejecutarse, con un único `AddRange` (un modpack cargando imprime miles, y una tarea por línea hacía que la
+ventana fuera a tirones). Las líneas de la propia app se escriben en el hilo de la interfaz y aparecen al
+instante (`ConsoleBatchingTests`).
 
 ### La ventana: secciones, el panel de nuevo servidor y el movimiento
 La ventana principal es un **menú lateral** de cuatro secciones —Servidores, Túneles, Ajustes, Acerca

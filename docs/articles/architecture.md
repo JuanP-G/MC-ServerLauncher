@@ -387,7 +387,10 @@ are no hard-coded machine paths.
 `ServerViewModel.Start` → refresh port/info → if the port is busy, offer to free it
 (`PortService` + `TryFreePortAsync`) → `EnsureCompatibleJavaAsync` (uses `JavaService` to read the
 required Java from the jar and install it if needed) → `ServerProcessManager.Start`. Console output
-streams back through the `OutputReceived` event into `ConsoleLines`.
+streams back through the `OutputReceived` event into `ConsoleLines`, **in batches**: lines from the
+process's threads are queued and one dispatcher job takes all that arrived before it ran, appending them
+with a single `AddRange` (a loading modpack prints thousands, and one job per line made the window
+stutter). The app's own lines are written on the UI thread and appear at once (`ConsoleBatchingTests`).
 
 ### The window: sections, the new-server panel and motion
 The main window is a **rail** of four sections — Servers, Tunnels, Settings, About — sharing one cell
