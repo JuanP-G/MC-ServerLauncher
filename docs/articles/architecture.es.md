@@ -175,7 +175,9 @@ mundo. No hay rutas fijas del equipo en el código.
   exacto; `minecraft:used` es lo más parecido a «bloques colocados», porque Minecraft cuenta usar un objeto y
   no colocarlo, y se enseña tal cual con una línea que lo explica en vez de filtrarlo contra una lista de ids
   de bloques mantenida a mano que se quedaría vieja cada versión.
-- **`ServerCreationService`** — escribe los archivos iniciales de un servidor nuevo: `eula.txt`,
+- **`ServerCreationService`** — escribe los archivos iniciales de un servidor nuevo: `eula.txt` (solo cuando
+  el usuario marca *Acepto el EULA de Minecraft* junto al botón Crear, que no se activa hasta entonces; antes la
+  app lo aceptaba en su nombre),
   `run.bat`/`user_jvm_args.txt` y el `server.properties` mínimo con el puerto elegido. (La descarga
   del jar la hacen `MinecraftVersionService`/`ModLoaderService`/`PaperService` y el puerto lo elige
   `PortService`, todo orquestado por `NewServerView`.) La semilla que se escriba ahí, si se escribe, va
@@ -292,7 +294,8 @@ mundo. No hay rutas fijas del equipo en el código.
   enseña, bloquea lo detectado y solo pregunta el resto; sustituyó al botón *Añadir*, cuyo diálogo
   pedía el nombre del jar a mano y se saltaba el túnel, el crossplay y el arranque. `ExistingServer`
   construye la config con la detección y el formulario (gana la detección) y nunca escribe en la
-  carpeta, salvo `server-port` si el usuario lo cambió. `DetectAndFill` es una capa fina sobre
+  carpeta, salvo `server-port` si el usuario lo cambió y `eula.txt` si la carpeta no había aceptado el
+  EULA y el usuario marca la casilla que el panel muestra para ello. `DetectAndFill` es una capa fina sobre
   `Detect` que, al arrancar, rellena los servidores guardados antes de que se guardaran el tipo y la
   versión; no toca una config que ya dice su versión. Purpur se mira antes que Paper: antes no
   coincidía con nada, ni siquiera en los servidores que crea esta app.

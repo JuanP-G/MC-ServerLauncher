@@ -58,8 +58,8 @@ Pulsa cada apartado para verlo en marcha.
 
 <br>
 
-**«+ Nuevo»** → **Crear uno nuevo** → un nombre, el tipo y la versión → **Crear servidor**. La app descarga el
-servidor oficial, comprueba su huella, acepta el EULA, prepara el puerto y lo arranca.
+**«+ Nuevo»** → **Crear uno nuevo** → un nombre, el tipo y la versión → marca **Acepto el EULA de Minecraft** →
+**Crear servidor**. La app descarga el servidor oficial, comprueba su huella, prepara el puerto y lo arranca.
 
 <img src="docs/media/es/create.gif" width="900" alt="Crear un servidor Paper desde el panel de nuevo servidor">
 
@@ -128,7 +128,7 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 - **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Paper /
   Purpur / Fabric / NeoForge / Forge).
 - **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang), **puerto** y
-  **RAM**; la app descarga el servidor correcto, acepta el EULA, prepara `run.bat` / `server.properties` e
+  **RAM**, y aceptas el EULA de Minecraft; la app descarga el servidor correcto, prepara `run.bat` / `server.properties` e
   instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur
   usan **plugins**. El mismo panel puede **usar una carpeta que ya existe**: reconoce el tipo, la versión de
   Minecraft y del loader, el puerto y la memoria, y no cambia nada en la carpeta.

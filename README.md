@@ -57,8 +57,8 @@ Open each one to see it in action.
 
 <br>
 
-**"+ New"** → **Create a new one** → a name, the type and the version → **Create server**. The app downloads
-the official server, checks its checksum, accepts the EULA, sets up the port and starts it.
+**"+ New"** → **Create a new one** → a name, the type and the version → tick **I accept the Minecraft EULA** →
+**Create server**. The app downloads the official server, checks its checksum, sets up the port and starts it.
 
 <img src="docs/media/en/create.gif" width="900" alt="Creating a Paper server from the new-server panel">
 
@@ -127,7 +127,7 @@ When it opens again, **What's new** tells you what changed. It works the same on
 - **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Paper / Purpur /
   Fabric / NeoForge / Forge).
 - **Create a server** automatically: pick the **type**, **version** (official Mojang list), **port** and
-  **RAM**; the app downloads the right server, accepts the EULA, prepares `run.bat` / `server.properties`, and
+  **RAM**, and accept the Minecraft EULA; the app downloads the right server, prepares `run.bat` / `server.properties`, and
   installs the correct **Java** (Temurin) if needed. Fabric, Forge and NeoForge use **mods**; Paper and Purpur
   use **plugins**. The same panel can **use a folder that already exists**: it recognises the type, the
   Minecraft and loader versions, the port and the memory, and changes nothing in the folder.

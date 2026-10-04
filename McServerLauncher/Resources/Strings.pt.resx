@@ -74,6 +74,9 @@
   <data name="Cs_ExistingNeedsJar" xml:space="preserve"><value>Escolhe que .jar arranca o servidor.</value></data>
   <data name="Cs_ExistingAddAnyway" xml:space="preserve"><value>Adicioná-lo mesmo assim?</value></data>
   <data name="Cs_ExistingPortWrittenFmt" xml:space="preserve"><value>Porta {0} guardada em server.properties.</value></data>
+  <data name="Eula_Accept" xml:space="preserve"><value>Aceito o EULA do Minecraft</value></data>
+  <data name="Eula_ReadTip" xml:space="preserve"><value>Ler o EULA do Minecraft (abre o navegador)</value></data>
+  <data name="Cs_ExistingEulaWritten" xml:space="preserve"><value>EULA aceite: guardado em eula.txt na pasta do servidor.</value></data>
   <data name="Cs_Name" xml:space="preserve"><value>Nome do servidor</value></data>
   <data name="Cs_NamePlaceholder" xml:space="preserve"><value>ex.: Survival, Criativo, Eventos...</value></data>
   <data name="Cs_ParentFolder" xml:space="preserve"><value>Criar dentro da pasta</value></data>

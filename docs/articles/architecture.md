@@ -172,7 +172,9 @@ are no hard-coded machine paths.
   "blocks placed", since Minecraft counts using an item rather than placing it, and it is shown as it is
   with a line saying so rather than filtered against a hand-kept list of block ids that would go stale
   every release.
-- **`ServerCreationService`** — writes the initial files of a new server: `eula.txt`,
+- **`ServerCreationService`** — writes the initial files of a new server: `eula.txt` (only once the user has
+  ticked *I accept the Minecraft EULA* beside the Create button, which stays shut until then; the app used to
+  accept it on their behalf),
   `run.bat`/`user_jvm_args.txt` and a minimal `server.properties` with the chosen port. (The jar
   download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is
   picked by `PortService`, all orchestrated by `NewServerView`.) The seed typed there, if any, is
@@ -285,7 +287,8 @@ are no hard-coded machine paths.
   what was found and asks only for the rest; this replaced the separate *Add* button, whose dialog
   asked for a jar name by hand and skipped the tunnel, crossplay and start options. `ExistingServer`
   builds the config from the detection and the form (the detection wins) and never writes to the
-  folder, except `server-port` when the user changed it. `DetectAndFill` is a thin layer over
+  folder, except `server-port` when the user changed it and `eula.txt` when the folder had not accepted
+  the EULA and the user ticks the box the panel shows for it. `DetectAndFill` is a thin layer over
   `Detect` that fills in servers saved before the type and version were recorded, at startup; it
   fills nothing in a config that already names its version. Purpur is checked before Paper — it used
   to match nothing, even for servers this app created.
