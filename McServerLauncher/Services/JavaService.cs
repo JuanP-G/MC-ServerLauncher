@@ -405,12 +405,19 @@ public partial class JavaService
         }
 
         log?.Report(Localizer.Get("Msg_JavaInstalling"));
-        if (Directory.Exists(target)) Directory.Delete(target, true);
-        Directory.CreateDirectory(target);
+        // Unpacked beside the target and moved into place whole. Unpacking straight into it left a
+        // half-extracted runtime after an interruption, and since an existing jre-N folder with a
+        // java in it counts as installed (above), that broken runtime was used from then on.
+        var partial = target + ".partial";
+        if (Directory.Exists(partial)) Directory.Delete(partial, true);
+        Directory.CreateDirectory(partial);
         if (isZip)
-            ZipFile.ExtractToDirectory(archivePath, target);
+            ZipFile.ExtractToDirectory(archivePath, partial);
         else
-            await ExtractTarGzAsync(archivePath, target, ct);
+            await ExtractTarGzAsync(archivePath, partial, ct);
+
+        if (Directory.Exists(target)) Directory.Delete(target, true);
+        Directory.Move(partial, target);
         try { File.Delete(archivePath); } catch { /* doesn't matter */ }
 
         var javaExe = FindJavaExe(target)
