@@ -26,9 +26,13 @@ all with buttons.
 
 ## 📸 A look inside
 
-**Server list, live console and stats — each server tagged with its type**
+**The side rail, the server list with its type badges, and a running server: live stats, its Playit address and a console coloured by what each line is**
 
 ![Main view](docs/screenshots/main.png)
+
+**New server, inside the window — every option of a new server on one screen, in two columns**
+
+![New server panel](docs/screenshots/new-server.png)
 
 **Mods & plugins browser — searches Modrinth, already filtered by your server's type and version**
 
@@ -59,12 +63,16 @@ all with buttons.
 
 ## ✨ Features
 
+- **Everything in one window** — a side rail with **Servers**, **Tunnels**, **Settings** and **About**.
+  Making or adding a server happens in the window itself, next to the list, and can be left half-done and
+  picked up again. **Tunnels** lists every Playit tunnel on your account, flags the ones that lead nowhere
+  or that two servers share, and lets you rename or delete them.
 - **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Paper / Purpur / Fabric /
   NeoForge / Forge).
 - **Create a server** automatically: pick the **type**, **version** (official Mojang list), **port** and **RAM**;
   the app downloads the right server, accepts the EULA, prepares `run.bat` / `server.properties`, and installs
   the correct **Java** (Temurin) if needed. Fabric, Forge and NeoForge use **mods**; Paper and Purpur use **plugins**.
-  Already have a server? The same dialog can **use a folder that already exists**: it recognises the type,
+  Already have a server? The same panel can **use a folder that already exists**: it recognises the type,
   the Minecraft and loader versions, the port and the memory, fills them in, and changes nothing in the
   folder.
 - **Mods & plugins store** 🧩 — search **Modrinth** inside the app, already **filtered by your server's type
@@ -82,8 +90,9 @@ all with buttons.
   Whatever it finds can be updated one by one or with **Update all**, and updating one leaves the rest on offer.
 - **Play from Bedrock too** 📱 — one checkbox installs Geyser and Floodgate, picks a free UDP port, creates the
   second (UDP) tunnel Bedrock needs and sets the public port Geyser must advertise — the part almost nobody gets
-  right by hand. How well it works depends on the server type, and the card for each type says which before you
-  choose:
+  right by hand. The Bedrock port can be changed in each server's configuration, and two servers are never
+  given the same one. How well it works depends on the server type, and the card for each type says which
+  before you choose:
 
   | Type | From Bedrock | Why |
   |---|---|---|
@@ -104,7 +113,9 @@ all with buttons.
   world**, with clear colour-coded warnings about what each change can affect.
 - **Start / Stop / Restart** with a clean stop that saves the world; detects and frees a **busy port**; live
   **CPU, RAM, uptime and port** with colour status.
-- **Minecraft-style view** — server icon, coloured MOTD, `players/max` and a reachability signal.
+- **Minecraft-style card** — server icon, coloured MOTD, `players/max` and a reachability signal. Click the
+  image or the pencil for **Server appearance**: the image, the name and both lines of the MOTD — colours,
+  bold, italics, underline and strikethrough — with a preview of the card itself.
 - **Real-time console** with copyable text, a command box and a **command-help** panel.
 - **Players** 👥 — connected (live), operators, whitelist and banned, with OP / kick / ban / whitelist actions.
 - **Player history** 📜 — everyone who has ever joined, with their last connection. Click one for their
@@ -130,8 +141,8 @@ all with buttons.
 - **Stays out of the way** — optionally minimize and/or close **to the system tray** so your servers keep
   running with the window gone. Launching the app again brings that window back instead of opening a second
   copy over the same servers.
-- **Share to the Internet with Playit.gg** 🌐 — connect your account by pasting a one-time **setup code**
-  (no keys, no files). The app **creates the tunnel and runs the Playit agent for you**, so your server is
+- **Share to the Internet with Playit.gg** 🌐 — connect your account from **Tunnels** by pasting a one-time
+  **setup code** (no keys, no files). The app **creates the tunnel and runs the Playit agent for you**, so your server is
   reachable from anywhere and friends join with the public address — **you install nothing**. The address
   **appears on its own** within seconds of the tunnel being made, with a line underneath saying what it is
   waiting for. The app ships no secret of its own (the credential lives in a small proxy).
@@ -149,7 +160,9 @@ all with buttons.
   tried to join**. Configurable per type, globally and **per server**, with a test button.
 - **Every notification tells itself apart at a glance** 🎨 — a colour for what happened (green when somebody
   joins, amber when the server stops itself, red when it crashes) and **its own emoji per kind**, so they can be
-  told apart without relying on colour. The four colours are editable in Settings, with a preview.
+  told apart without relying on colour. The four colours are editable in Settings: pick one from
+  a palette made to read well on the dark background, or any colour from the full picker, which warns you
+  when one would be hard to read.
 - **Nothing missing before it starts** ✅ — if a mod or plugin is waiting on a dependency, you are told **when
   you press Start**, with what is missing and which mod needs it, and the option to install it and start. It is
   read from the jars themselves, so it works **offline** and does not depend on the store having its dependency
@@ -160,8 +173,9 @@ all with buttons.
   the line**. Multi-line entries keep one colour, so a list of mods is never mistaken for a crash, and the app
   **answers the start-up warnings that are its to answer**: it enables native access on Java 22+ and asks
   once whether to accept BlueMap's download, instead of leaving you to edit its config.
-- **Settings in one place** ⚙️ — language, notifications, tray behaviour, your Playit connection and an
-  **Add to desktop** button, all in a single dialog.
+- **Settings, part of the window** ⚙️ — language, tray behaviour, an **Add to desktop** button,
+  notifications, colours and the player history, each on a page of its own. Changes are saved as you make
+  them: there is no Save button to forget.
 - **Multi-language** — English, Spanish, Portuguese, French and German.
 
 ## 🛠️ Build from source

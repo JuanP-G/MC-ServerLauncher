@@ -11,7 +11,39 @@ namespace McServerLauncher.Services;
 public class PlayitApiException : Exception
 {
     public string? ErrorType { get; }
-    public bool IsAuthError => ErrorType == "auth";
+
+    /// <summary>
+    /// Whether Playit refused the key, as opposed to failing for some other reason.
+    /// </summary>
+    /// <remarks>
+    /// Only the first spelling used to count. Playit answers a rejected key as <c>auth</c> in some
+    /// places and as a named error such as <c>InvalidAgentKey</c> in others, and the second kind was
+    /// treated as "something else went wrong" — which stopped the client from trying the next way
+    /// of presenting the same key, the one that would have worked.
+    /// </remarks>
+    public bool IsAuthError => ErrorType == "auth" || LooksLikeKeyProblem(ErrorType) || LooksLikeKeyProblem(Message);
+
+    private static readonly string[] KeyProblems =
+    {
+        "InvalidAgentKey", "InvalidApiKey", "InvalidKey", "Unauthorized", "NotAuthorized",
+        "AuthRequired", "MissingAuth", "InvalidAuth",
+    };
+
+    /// <summary>
+    /// The key is valid, but it can only read: Playit's answer to a change made with the key of an
+    /// agent the user installed themselves.
+    /// </summary>
+    /// <remarks>
+    /// Measured, not assumed: with the <c>secret_key</c> from <c>playit.toml</c>, <c>/agents/rundata</c>
+    /// answers and both <c>/tunnels/rename</c> and <c>/tunnels/delete</c> come back
+    /// <c>{"type":"auth","message":"NotAllowedWithReadOnly"}</c> under every way of sending the key.
+    /// </remarks>
+    public bool IsReadOnlyRefusal => Message.Contains("NotAllowedWithReadOnly", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>True when the text names a rejected or missing key.</summary>
+    internal static bool LooksLikeKeyProblem(string? text) =>
+        !string.IsNullOrEmpty(text) &&
+        KeyProblems.Any(k => text.Contains(k, StringComparison.OrdinalIgnoreCase));
 
     public PlayitApiException(string? type, string message) : base(message) => ErrorType = type;
 }
@@ -137,19 +169,46 @@ public class PlayitApiService
         using var resp = await Http.SendAsync(req, ct);
         var json = await resp.Content.ReadAsStringAsync(ct);
 
+        if (ErrorFrom(json) is { } error) throw error;
+
+        using var doc = JsonDocument.Parse(json);
+        return doc.RootElement.GetProperty("data").Clone();
+    }
+
+    /// <summary>The error a reply stands for, or null when it is a success.</summary>
+    /// <remarks>
+    /// Playit fails in two shapes. An <c>"error"</c> carries an object, <c>{"type":"auth","message":…}</c>.
+    /// A <c>"fail"</c> carries the endpoint's own error as a bare string — <c>"TunnelNotFound"</c>,
+    /// <c>"NameTooLong"</c>. Only the first was handled: asking a string for its properties threw, and
+    /// the person saw a .NET message about JSON element types instead of what Playit said.
+    /// </remarks>
+    internal static PlayitApiException? ErrorFrom(string json)
+    {
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
-        if ((root.TryGetProperty("status", out var s) ? s.GetString() : null) != "success")
+        var status = root.TryGetProperty("status", out var s) && s.ValueKind == JsonValueKind.String ? s.GetString() : null;
+        if (status == "success") return null;
+
+        string? type = status, msg = json;
+        if (root.TryGetProperty("data", out var d))
         {
-            string? type = null, msg = json;
-            if (root.TryGetProperty("data", out var d))
+            switch (d.ValueKind)
             {
-                type = d.TryGetProperty("type", out var ty) ? ty.GetString() : null;
-                msg = d.TryGetProperty("message", out var m) ? m.GetString() ?? d.ToString() : d.ToString();
+                case JsonValueKind.Object:
+                    type = d.TryGetProperty("type", out var ty) && ty.ValueKind == JsonValueKind.String ? ty.GetString() : status;
+                    msg = d.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String
+                        ? m.GetString() ?? d.ToString()
+                        : d.ToString();
+                    break;
+                case JsonValueKind.String:
+                    msg = d.GetString() ?? json;
+                    break;
+                default:
+                    msg = d.ToString();
+                    break;
             }
-            throw new PlayitApiException(type, $"Playit API: {msg ?? json}");
         }
-        return root.GetProperty("data").Clone();
+        return new PlayitApiException(type, $"Playit API: {msg}");
     }
 
     /// <summary>
@@ -158,13 +217,17 @@ public class PlayitApiService
     /// </summary>
     private async Task<JsonElement> PostWithAuthFallbackAsync(string path, string key, string body, CancellationToken ct)
     {
-        PlayitApiException? lastAuthError = null;
+        PlayitApiException? firstAuthError = null;
         foreach (var scheme in AuthSchemes)
         {
+            // A read-only refusal means the key was understood and is simply not allowed to change
+            // anything: presenting it another way cannot help. Every other refusal tries the next.
             try { return await PostAsync(path, $"{scheme} {key}", body, ct); }
-            catch (PlayitApiException ex) when (ex.IsAuthError) { lastAuthError = ex; }
+            catch (PlayitApiException ex) when (ex.IsAuthError && !ex.IsReadOnlyRefusal) { firstAuthError ??= ex; }
         }
-        throw lastAuthError ?? new PlayitApiException("auth", Localizer.Get("Msg_PlayitAuthFail"));
+        // The first refusal, not the last: the later schemes are fallbacks for other kinds of key, and
+        // what they say ("InvalidHeader") is about how the key was sent, not about the key.
+        throw firstAuthError ?? new PlayitApiException("auth", Localizer.Get("Msg_PlayitAuthFail"));
     }
 
     /// <summary>Reads agent_id and tunnels using <paramref name="key"/> (agent secret or write key).</summary>
@@ -206,6 +269,13 @@ public class PlayitApiService
     private static Task<List<PlayitTunnel>>? _tunnelFetch;
     private static DateTime _tunnelFetchAtUtc = DateTime.MinValue;
     internal static readonly TimeSpan TunnelCacheTtl = TimeSpan.FromSeconds(25);
+
+    /// <summary>
+    /// The account's tunnels from the shared cache, or null when the account could not be asked.
+    /// An empty list is an answer: "there are none". <paramref name="fresh"/> skips the cache.
+    /// </summary>
+    public Task<List<PlayitTunnel>?> TryGetTunnelsAsync(bool fresh = false, CancellationToken ct = default) =>
+        GetTunnelsSharedAsync(ct, fresh);
 
     /// <summary>
     /// Whether a caller has to ask the API, or can be served the list the last one fetched.
@@ -349,7 +419,7 @@ public class PlayitApiService
     }
 
     /// <summary>Drops the shared tunnel cache (called after creating/deleting a tunnel).</summary>
-    private static void InvalidateTunnelCache()
+    internal static void InvalidateTunnelCache()
     {
         lock (TunnelCacheLock)
         {
@@ -450,5 +520,80 @@ public class PlayitApiService
         await PostWithAuthFallbackAsync("/tunnels/delete", key, body, ct);
         InvalidateTunnelCache(); // so the next address refresh stops showing the deleted tunnel
         return true;
+    }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> Writable = new();
+
+    /// <summary>
+    /// Whether this key may change tunnels, found out without changing any: a rename of a tunnel id
+    /// that does not exist. Null when Playit could not be asked.
+    /// </summary>
+    /// <remarks>
+    /// A key that can write is told the tunnel does not exist; a read-only one is refused before
+    /// Playit looks. Asked once per key and remembered — the answer does not change while the app runs.
+    /// </remarks>
+    public async Task<bool?> CanManageTunnelsAsync(string key, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return false;
+        if (Writable.TryGetValue(key, out var known)) return known;
+
+        try
+        {
+            await PostWithAuthFallbackAsync("/tunnels/rename", key, RenameBody(Guid.NewGuid().ToString(), "probe"), ct);
+            Writable[key] = true;                      // a success would be surprising; it still means yes
+        }
+        catch (PlayitApiException ex) when (ex.IsReadOnlyRefusal)
+        {
+            Writable[key] = false;
+        }
+        catch (PlayitApiException ex) when (!ex.IsAuthError)
+        {
+            Writable[key] = true;                      // "TunnelNotFound": allowed, and nothing touched
+        }
+        catch
+        {
+            return null;                               // offline, or the key is not valid at all
+        }
+        return Writable[key];
+    }
+
+    /// <summary>The body of <c>/tunnels/rename</c>. Internal so a test can pin the field names.</summary>
+    internal static string RenameBody(string tunnelId, string name) =>
+        new JsonObject { ["tunnel_id"] = tunnelId, ["name"] = name }.ToJsonString();
+
+    /// <summary>The body of <c>/tunnels/delete</c> when the tunnel is named by its id.</summary>
+    internal static string DeleteBody(string tunnelId) =>
+        new JsonObject { ["tunnel_id"] = tunnelId }.ToJsonString();
+
+    /// <summary>Gives a tunnel a new name. The name is the only thing about a tunnel that is ours to change.</summary>
+    /// <remarks>
+    /// Named by id, not by port: a rename is harmless, but the id is what the account actually
+    /// keys a tunnel on, and two tunnels can share a port (that is one of the things the tunnels
+    /// screen exists to point out).
+    /// </remarks>
+    public async Task RenameTunnelAsync(string key, string tunnelId, string name, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
+        if (string.IsNullOrWhiteSpace(tunnelId) || string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("A tunnel id and a name are both needed.");
+
+        await PostWithAuthFallbackAsync("/tunnels/rename", key, RenameBody(tunnelId, name.Trim()), ct);
+        InvalidateTunnelCache();
+    }
+
+    /// <summary>
+    /// Deletes one specific tunnel. For duplicates, where "the tunnel on port 25565" is ambiguous and
+    /// <see cref="DeleteTunnelForPortAsync"/> would remove whichever the account lists first.
+    /// </summary>
+    public async Task DeleteTunnelAsync(string key, string tunnelId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
+        if (string.IsNullOrWhiteSpace(tunnelId))
+            throw new ArgumentException("A tunnel id is needed.");
+
+        await PostWithAuthFallbackAsync("/tunnels/delete", key, DeleteBody(tunnelId), ct);
+        InvalidateTunnelCache();
     }
 }

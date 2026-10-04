@@ -1,33 +1,45 @@
 using System.IO;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using Avalonia.Threading;
+using Avalonia.VisualTree;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 
 namespace McServerLauncher.Views;
 
+/// <summary>What the new-server panel produced: the server, and what to do with it next.</summary>
+/// <param name="Config">The server to register.</param>
+/// <param name="IsNew">True when it was created here; false for a folder that already held a server.</param>
+/// <param name="AutoStart">Start it once registered, to generate the world.</param>
+/// <param name="CreateTunnel">Create its Playit tunnel once registered.</param>
+public sealed record NewServerResult(ServerConfig Config, bool IsNew, bool AutoStart, bool CreateTunnel);
+
 /// <summary>
-/// Creates a server from nothing — type, version, port and RAM in, a running server out — or takes
-/// over a folder that already holds one.
+/// Makes a server from nothing — type, version, port and RAM in, a running server out — or takes
+/// over a folder that already holds one, inside the window instead of a dialog.
 /// </summary>
 /// <remarks>
 /// <para>
-/// This is the dialog that orchestrates the create path — <see cref="ServerJarInstaller"/> for the
-/// jar, <see cref="JavaService"/> for the runtime, <see cref="PortService"/> for a free port and
+/// The panel orchestrates the create path — <see cref="ServerJarInstaller"/> for the jar,
+/// <see cref="JavaService"/> for the runtime, <see cref="PortService"/> for a free port and
 /// <see cref="ServerCreationService"/> for the initial files — rather than owning any of it.
 /// </para>
 /// <para>
-/// The second mode replaced a separate "Add" button whose dialog asked for a jar name by hand and
-/// ignored the crossplay, tunnel and start options. Here the folder is read by
-/// <see cref="ServerDetectionService.Detect"/>, what it says is filled in and locked, and only what
-/// it could not say is asked for. <see cref="ExistingServer"/> builds the result and keeps the
+/// The first step asks where the server comes from; one click on a card goes on to the details.
+/// Taking over a folder uses the same form: the folder is read by
+/// <see cref="ServerDetectionService.Detect"/>, what it says is filled in and locked, only what it
+/// could not say is asked for, and <see cref="ExistingServer"/> builds the result and keeps the
 /// folder untouched beyond the port.
 /// </para>
+/// <para>
+/// A panel rather than a dialog: the list of servers stays in view beside it, nothing covers the
+/// app, and it can be put away and come back to while a download runs.
+/// </para>
 /// </remarks>
-public partial class CreateServerDialog : Window
+public partial class NewServerView : UserControl
 {
     private readonly MinecraftVersionService _versions = new();
     private readonly ServerJarInstaller _installer = new();
@@ -36,15 +48,8 @@ public partial class CreateServerDialog : Window
     private readonly JavaService _java = new();
     private List<MinecraftVersion> _allVersions = new();
     private string _latestRelease = string.Empty;
-
-    /// <summary>Configuration of the created server (valid if the dialog returned true).</summary>
-    public ServerConfig? ResultConfig { get; private set; }
-
-    /// <summary>Whether to start the server at the end to generate the world.</summary>
-    public bool AutoStart { get; private set; }
-
-    /// <summary>Whether to create the Playit tunnel for this server.</summary>
-    public bool CreateTunnel { get; private set; }
+    private bool _versionsRequested;
+    private bool _busy;
 
     /// <summary>Ports already used by other registered servers (to avoid conflicts).</summary>
     private readonly HashSet<int> _usedPorts;
@@ -57,18 +62,25 @@ public partial class CreateServerDialog : Window
     private string? _detectedFolder;
     private readonly ServerDetectionService _detection = new();
 
-    // Parameterless constructor for the Avalonia XAML loader / designer only.
-    public CreateServerDialog() : this(null) { }
-
     // Buffered progress log (see LogBatcher: the Forge installer prints thousands of lines).
     private readonly LogBatcher _log;
 
-    public CreateServerDialog(IEnumerable<int>? usedPorts = null, IEnumerable<string>? registeredFolders = null)
+    private bool _onDetails;
+
+    /// <summary>Raised once the server is ready to register.</summary>
+    public event Action<NewServerResult>? Completed;
+
+    /// <summary>Raised when the person gives up; nothing was created.</summary>
+    public event Action? Cancelled;
+
+    // Parameterless constructor for the Avalonia XAML loader / designer only.
+    public NewServerView() : this(null) { }
+
+    public NewServerView(IEnumerable<int>? usedPorts, IEnumerable<string>? registeredFolders = null)
     {
         InitializeComponent();
         _usedPorts = new HashSet<int>(usedPorts ?? Enumerable.Empty<int>());
         _registeredFolders = (registeredFolders ?? Enumerable.Empty<string>()).ToList();
-
         _log = new LogBatcher(ProgressLog);
 
         ParentFolderBox.Text = Path.Combine(
@@ -89,29 +101,36 @@ public partial class CreateServerDialog : Window
         // Typed or pasted rather than browsed to: read it once the box is left.
         ExistingFolderBox.LostFocus += (_, _) => _ = DetectFolderAsync(ExistingFolderBox.Text);
         UpdateTypeDependentOptions();
-        Loaded += OnLoaded;
+        ShowStep();
     }
 
-    /// <summary>Whether the dialog is taking over a folder rather than making a server.</summary>
-    /// <remarks>
-    /// Kept in a field, not read off the radio buttons: a RadioButton announces that it was checked
-    /// before its sibling has been cleared, so during that event both say yes — the same trap the
-    /// type picker documents. Taken from whichever button just became checked, it cannot be stale.
-    /// </remarks>
-    private bool IsExistingMode => _existingMode;
-    private bool _existingMode;
+    private Window? Owner => this.GetVisualRoot() as Window;
 
-    private void Mode_Changed(object? sender, RoutedEventArgs e)
+    // ---------------------------------------------------------------- steps
+
+    /// <summary>Whether the panel is taking over a folder rather than making a server.</summary>
+    private bool IsExistingMode { get; set; }
+
+    // One click on a card is the choice and the step forward together. There used to be a selected
+    // state and a Next button, and the selected card's mark disappeared under the pointer that had
+    // just clicked it, so nobody could tell whether the click had taken.
+    private void CreateCard_Click(object? sender, RoutedEventArgs e) => ChooseCreate();
+    private void AddCard_Click(object? sender, RoutedEventArgs e) => ChooseAdd();
+
+    /// <summary>On to making a server.</summary>
+    internal void ChooseCreate() => GoToDetails(existing: false);
+
+    /// <summary>On to taking over a folder that already holds one.</summary>
+    internal void ChooseAdd() => GoToDetails(existing: true);
+
+    private void GoToDetails(bool existing)
     {
-        // Both radios raise this; only the one that became checked says which mode it is now.
-        if (sender is not RadioButton { IsChecked: true } radio) return;
+        IsExistingMode = existing;
+        _onDetails = true;
 
-        var existing = _existingMode = radio == ExistingModeRadio;
         ExistingPanel.IsVisible = existing;
         NewFolderPanel.IsVisible = !existing;
         SeedPanel.IsVisible = !existing;
-        CreateButton.Content = Localizer.Get(existing ? "Cs_AddButton" : "Cs_CreateButton");
-
         if (existing)
         {
             ApplyDetection();
@@ -123,11 +142,51 @@ public partial class CreateServerDialog : Window
             PopulateVersions();
         }
         UpdatePathWarning();
+        ShowStep();
+        _ = LoadVersionsAsync();
     }
+
+    private void Back_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_busy) return;
+        _onDetails = false;
+        ShowStep();
+    }
+
+    private void ShowStep()
+    {
+        OriginStep.IsVisible = !_onDetails;
+        DetailsStep.IsVisible = _onDetails;
+
+        StepOrigin.Classes.Set("on", !_onDetails);
+        StepDetails.Classes.Set("on", _onDetails);
+
+        BackButton.IsVisible = _onDetails;
+        CreateButton.IsVisible = _onDetails && !IsExistingMode;
+        AddButton.IsVisible = _onDetails && IsExistingMode;
+    }
+
+    /// <summary>The width from which the details sit in two columns instead of one.</summary>
+    internal const double TwoColumnWidth = 880;
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        FormPanel.Classes.Set("wide", e.NewSize.Width >= TwoColumnWidth);
+    }
+
+    private void Cancel_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_busy) return;
+        Cancelled?.Invoke();
+    }
+
+    // ---------------------------------------------------------------- an existing folder
 
     private async void BrowseExisting_Click(object? sender, RoutedEventArgs e)
     {
-        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        if (Owner?.StorageProvider is not { } storage) return;
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = Localizer.Get("Cs_ExistingFolder"),
             AllowMultiple = false
@@ -161,6 +220,7 @@ public partial class CreateServerDialog : Window
     {
         _detectedFolder = folder;
         _detected = found;
+        ExistingFolderBox.Text = folder;
         if (string.IsNullOrWhiteSpace(NameBox.Text))
             NameBox.Text = Path.GetFileName(folder.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         ApplyDetection();
@@ -258,6 +318,8 @@ public partial class CreateServerDialog : Window
         VersionCombo.SelectedItem = match;
     }
 
+    // ---------------------------------------------------------------- the form
+
     /// <summary>
     /// First free port from 25565 that is not used by another registered server NOR any other
     /// application on the system.
@@ -267,9 +329,12 @@ public partial class CreateServerDialog : Window
         // Create button's own validation will refuse a busy port before anything is written.
         _ports.FindFreePort(25565, _usedPorts) ?? 25565;
 
-    private async void OnLoaded(object? sender, RoutedEventArgs e)
+    /// <summary>Loaded once, the first time the details are shown.</summary>
+    private async Task LoadVersionsAsync()
     {
         UpdateFinalPath();
+        if (_versionsRequested) return;
+        _versionsRequested = true;
         try
         {
             var (latest, list) = await _versions.GetVersionsAsync();
@@ -349,7 +414,8 @@ public partial class CreateServerDialog : Window
     };
 
     /// <summary>
-    /// The folder the server would get, using the name exactly as typed.
+    /// The folder the server would get: the name exactly as typed under the parent, or the folder
+    /// that is being taken over.
     /// </summary>
     /// <remarks>
     /// No longer stripped behind the user's back. Typing "Mi:Server" used to produce a folder called
@@ -368,7 +434,8 @@ public partial class CreateServerDialog : Window
 
     private async void BrowseParent_Click(object? sender, RoutedEventArgs e)
     {
-        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        if (Owner?.StorageProvider is not { } storage) return;
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = Localizer.Get("Title_SelectFolderCreate"),
             AllowMultiple = false
@@ -414,7 +481,7 @@ public partial class CreateServerDialog : Window
         {
             var ok = await MessageBox.ConfirmAsync(
                 string.Format(Localizer.Get("Msg_FolderExists"), folder),
-                Localizer.Get("Title_FolderExists"), this);
+                Localizer.Get("Title_FolderExists"), Owner);
             if (!ok) return;
         }
 
@@ -461,7 +528,7 @@ public partial class CreateServerDialog : Window
                 AppendLog(Localizer.Get("Msg_SeedIgnoredWorldExists"));
             _creation.WriteInitialProperties(folder, port, $"{name} - MC Server Launcher", seed);
 
-            ResultConfig = new ServerConfig
+            var config = new ServerConfig
             {
                 Name = name,
                 FolderPath = folder,
@@ -478,13 +545,16 @@ public partial class CreateServerDialog : Window
                 PlayitEnabled = PlayitCheck.IsChecked == true,
                 CrossplayEnabled = CrossplayCheck.IsChecked == true && CrossplayService.CanEnable(serverType)
             };
-            AutoStart = AutoStartCheck.IsChecked == true;
-            // The tunnel creation is done by MainViewModel on the already-added server, so the
-            // result/errors appear in the server's console (which doesn't disappear).
-            CreateTunnel = ResultConfig.PlayitEnabled && CreateTunnelCheck.IsChecked == true;
 
             AppendLog(Localizer.Get("Msg_ServerCreated"));
-            Close(true);
+            _log.Stop();
+
+            // The tunnel creation is done by MainViewModel on the already-added server, so the
+            // result/errors appear in the server's console (which doesn't disappear).
+            Completed?.Invoke(new NewServerResult(
+                config, IsNew: true,
+                AutoStart: AutoStartCheck.IsChecked == true,
+                CreateTunnel: config.PlayitEnabled && CreateTunnelCheck.IsChecked == true));
         }
         catch (Exception ex)
         {
@@ -492,6 +562,33 @@ public partial class CreateServerDialog : Window
             await Warn(string.Format(Localizer.Get("Msg_CreateServerError"), ex.Message));
             SetBusy(false);
         }
+    }
+
+    /// <summary>What the form says about the folder being taken over.</summary>
+    private ExistingServerForm ExistingForm(string folder, ServerType type) => new(
+        Name: NameBox.Text?.Trim() ?? string.Empty,
+        Folder: folder,
+        Type: type,
+        GameVersion: (VersionCombo.SelectedItem as MinecraftVersion)?.Id,
+        JarFile: JarCombo.SelectedItem as string,
+        MinRamGb: (int)(MinRamBox.Value ?? 2m),
+        MaxRamGb: (int)(MaxRamBox.Value ?? 4m),
+        JavaPath: "java",
+        Playit: PlayitCheck.IsChecked == true,
+        Crossplay: CrossplayCheck.IsChecked == true,
+        MultiVersion: MultiVersionCheck.IsChecked == true,
+        Hydraulic: HydraulicCheck.IsChecked == true);
+
+    /// <summary>The server the form would take over, or null with the reason it cannot yet.</summary>
+    /// <remarks>Without touching the disk: what the Add button checks before anything is written.</remarks>
+    internal ServerConfig? TryBuildExisting(out string? error)
+    {
+        var folder = ExistingFolderBox.Text?.Trim() ?? string.Empty;
+        var found = folder == _detectedFolder && _detected is { } d ? d : ServerDetection.Nothing;
+        var form = ExistingForm(folder, found.Type ?? SelectedServerType());
+
+        error = ExistingServer.Problem(form, found, _registeredFolders) is { } problem ? Localizer.Get(problem) : null;
+        return error is null ? ExistingServer.ToConfig(form, found) : null;
     }
 
     /// <summary>
@@ -505,19 +602,7 @@ public partial class CreateServerDialog : Window
         var found = _detected ?? ServerDetection.Nothing;
 
         var type = found.Type ?? SelectedServerType();
-        var form = new ExistingServerForm(
-            Name: NameBox.Text?.Trim() ?? string.Empty,
-            Folder: folder,
-            Type: type,
-            GameVersion: (VersionCombo.SelectedItem as MinecraftVersion)?.Id,
-            JarFile: JarCombo.SelectedItem as string,
-            MinRamGb: (int)(MinRamBox.Value ?? 2m),
-            MaxRamGb: (int)(MaxRamBox.Value ?? 4m),
-            JavaPath: "java",
-            Playit: PlayitCheck.IsChecked == true,
-            Crossplay: CrossplayCheck.IsChecked == true,
-            MultiVersion: MultiVersionCheck.IsChecked == true,
-            Hydraulic: HydraulicCheck.IsChecked == true);
+        var form = ExistingForm(folder, type);
 
         if (ExistingServer.Problem(form, found, _registeredFolders) is { } problem)
         {
@@ -540,7 +625,7 @@ public partial class CreateServerDialog : Window
         if (ServerNameRule.Check(folder, type) is { } issue
             && !await MessageBox.ConfirmAsync(
                 Describe(issue, folder) + Environment.NewLine + Environment.NewLine + Localizer.Get("Cs_ExistingAddAnyway"),
-                Localizer.Get("CreateServer"), this))
+                Localizer.Get("New_Title"), Owner))
             return;
 
         SetBusy(true);
@@ -567,10 +652,12 @@ public partial class CreateServerDialog : Window
             if (ExistingServer.ApplyPort(folder, found.Port, port))
                 AppendLog(string.Format(Localizer.Get("Cs_ExistingPortWrittenFmt"), port));
 
-            ResultConfig = ExistingServer.ToConfig(form with { JavaPath = javaPath }, found);
-            AutoStart = AutoStartCheck.IsChecked == true;
-            CreateTunnel = ResultConfig.PlayitEnabled && CreateTunnelCheck.IsChecked == true;
-            Close(true);
+            var config = ExistingServer.ToConfig(form with { JavaPath = javaPath }, found);
+            _log.Stop();
+            Completed?.Invoke(new NewServerResult(
+                config, IsNew: false,
+                AutoStart: AutoStartCheck.IsChecked == true,
+                CreateTunnel: config.PlayitEnabled && CreateTunnelCheck.IsChecked == true));
         }
         catch (Exception ex)
         {
@@ -629,24 +716,25 @@ public partial class CreateServerDialog : Window
     /// </remarks>
     private ServerType SelectedServerType() => TypePicker.SelectedType;
 
-    private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
-
     private void SetBusy(bool busy)
     {
+        _busy = busy;
         FormPanel.IsEnabled = !busy;
-        CreateButton.IsEnabled = !busy;
+        CreateButton.IsEnabled = AddButton.IsEnabled = !busy;
+        BackButton.IsEnabled = !busy;
+        CancelButton.IsEnabled = !busy;
         ProgressBox.IsVisible = busy;
         Spinner.IsIndeterminate = busy;
     }
 
     private void AppendLog(string line) => _log.Append(line);
 
-    protected override void OnClosed(EventArgs e)
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _log.Stop();
-        base.OnClosed(e);
+        base.OnDetachedFromVisualTree(e);
     }
 
     private Task Warn(string message) =>
-        MessageBox.ShowAsync(message, Localizer.Get("CreateServer"), this);
+        MessageBox.ShowAsync(message, Localizer.Get("New_Title"), Owner);
 }

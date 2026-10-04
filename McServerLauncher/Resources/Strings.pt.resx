@@ -5,7 +5,6 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="Servers" xml:space="preserve"><value>Servidores</value></data>
-  <data name="CreateServer" xml:space="preserve"><value>Criar ou adicionar servidor</value></data>
   <data name="Add" xml:space="preserve"><value>Adicionar</value></data>
   <data name="Tip_Edit" xml:space="preserve"><value>Editar servidor</value></data>
   <data name="Tip_Delete" xml:space="preserve"><value>Eliminar servidor</value></data>
@@ -17,14 +16,8 @@
   <data name="Tip_Configure" xml:space="preserve"><value>Editar server.properties visualmente</value></data>
   <data name="Uptime" xml:space="preserve"><value>Tempo ativo</value></data>
   <data name="Port" xml:space="preserve"><value>Porta</value></data>
-  <data name="Tip_ChangeIcon" xml:space="preserve"><value>Clica para mudar o ícone do servidor (o que os jogadores veem)</value></data>
   <data name="Tunnel_Placeholder" xml:space="preserve"><value>Aparece sozinho assim que o túnel existir</value></data>
   <data name="Copy" xml:space="preserve"><value>Copiar</value></data>
-  <data name="CreateTunnel" xml:space="preserve"><value>Criar túnel</value></data>
-  <data name="Tip_CreateTunnel" xml:space="preserve"><value>Criar o túnel Playit para este servidor (pela porta)</value></data>
-  <data name="Tip_Web" xml:space="preserve"><value>Abrir o painel do Playit.gg para criar ou ver túneis</value></data>
-  <data name="Service" xml:space="preserve"><value>Serviço</value></data>
-  <data name="Tip_Service" xml:space="preserve"><value>Iniciar/parar o serviço Playit (pode exigir administrador)</value></data>
   <data name="Console" xml:space="preserve"><value>Consola</value></data>
   <data name="Players" xml:space="preserve"><value>Jogadores</value></data>
   <data name="Clear" xml:space="preserve"><value>Limpar</value></data>
@@ -176,7 +169,7 @@
   <data name="Playit_Active" xml:space="preserve"><value>Ativo</value></data>
   <data name="Playit_Stopped" xml:space="preserve"><value>Parado</value></data>
   <data name="Playit_NotInstalled" xml:space="preserve"><value>Serviço não instalado</value></data>
-  <data name="Playit_AgentFailed" xml:space="preserve"><value>Túnel desligado (falha do agente — vê as Definições)</value></data>
+  <data name="Playit_AgentFailed" xml:space="preserve"><value>Túnel desligado (falha do agente — vê os Túneis)</value></data>
   <data name="Playit_AgentStopped" xml:space="preserve"><value>Túnel desligado (agente parado)</value></data>
   <data name="Playit_Checking" xml:space="preserve"><value>A verificar...</value></data>
   <data name="Signal_Off" xml:space="preserve"><value>Servidor desligado</value></data>
@@ -321,7 +314,6 @@
   <data name="Backup_Section" xml:space="preserve"><value>Cópias de segurança do mundo</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Criar cópias de segurança automaticamente</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Cópias automáticas a manter:</value></data>
-  <data name="Msg_PlayitServiceNotInstalled" xml:space="preserve"><value>[Playit] O serviço Playit não está instalado neste computador.</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Não foi possível mudar o serviço (costuma exigir executar a app como administrador, ou usar o ícone da bandeja): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Não foi possível determinar a porta do servidor (falta o server.properties?).</value></data>
   <data name="Msg_NeedsJavaPreparing" xml:space="preserve"><value>[Launcher] Este servidor precisa de Java {0}. A preparar um Java compatível...</value></data>
@@ -342,7 +334,6 @@
   <data name="Msg_TunnelCreated" xml:space="preserve"><value>[Playit] Túnel criado com sucesso. O endereço aparecerá em breve.</value></data>
   <data name="Msg_TunnelExists" xml:space="preserve"><value>[Playit] Já existia um túnel para a porta {0}; a reutilizar.</value></data>
   <data name="Msg_TunnelCreateError" xml:space="preserve"><value>[Playit] Erro ao criar o túnel: {0}</value></data>
-  <data name="Msg_BrowserError" xml:space="preserve"><value>[Erro] Não foi possível abrir o navegador: {0}</value></data>
   <data name="Msg_WhitelistError" xml:space="preserve"><value>[Whitelist] {0}</value></data>
   <data name="Msg_NeedRunningFor" xml:space="preserve"><value>[Jogadores] O servidor deve estar ligado para {0}.</value></data>
   <data name="Action_Op" xml:space="preserve"><value>dar OP</value></data>
@@ -819,6 +810,121 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” é um nome reservado pelo Windows e não pode ser usado numa pasta. Escolhe outro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>O nome não pode acabar em ponto nem em espaço: o Windows corta-os e a pasta acabaria com outro nome.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>O Paper e o Purpur não arrancam se o caminho tiver “{0}”, e esse carácter está numa pasta acima, não na do servidor. Muda-o tu ou escolhe outra pasta: mudar-lhe o nome daqui moveria tudo o resto lá dentro.</value></data>
+  <data name="Look_Title" xml:space="preserve"><value>Aparência do servidor</value></data>
+  <data name="Look_EditTip" xml:space="preserve"><value>Editar aparência</value></data>
+  <data name="Look_EditShort" xml:space="preserve"><value>Editar</value></data>
+  <data name="Look_Preview" xml:space="preserve"><value>Pré-visualização</value></data>
+  <data name="Look_PreviewAsleep" xml:space="preserve"><value>Dormindo</value></data>
+  <data name="Look_PreviewAwake" xml:space="preserve"><value>Ligado</value></data>
+  <data name="Look_Image" xml:space="preserve"><value>Imagem</value></data>
+  <data name="Look_ImageDesc" xml:space="preserve"><value>O que os jogadores veem na lista de servidores do Minecraft. É cortada num quadrado de 64×64.</value></data>
+  <data name="Look_ChangeImage" xml:space="preserve"><value>Alterar imagem</value></data>
+  <data name="Look_RemoveImage" xml:space="preserve"><value>Remover</value></data>
+  <data name="Look_Name" xml:space="preserve"><value>Nome</value></data>
+  <data name="Look_NameDesc" xml:space="preserve"><value>Só aparece neste launcher; os jogadores não o veem.</value></data>
+  <data name="Look_Motd" xml:space="preserve"><value>Texto da lista</value></data>
+  <data name="Look_MotdDesc" xml:space="preserve"><value>Duas linhas. Selecione texto e escolha uma cor ou um formato.</value></data>
+  <data name="Look_Line1" xml:space="preserve"><value>Linha 1</value></data>
+  <data name="Look_Line2" xml:space="preserve"><value>Linha 2</value></data>
+  <data name="Look_Line2Locked" xml:space="preserve"><value>Enquanto o servidor dorme, esta linha é preenchida pela app com o aviso de arranque.</value></data>
+  <data name="Look_ClearFormat" xml:space="preserve"><value>Remover formatação</value></data>
+  <data name="Look_Bold" xml:space="preserve"><value>Negrito</value></data>
+  <data name="Look_Italic" xml:space="preserve"><value>Itálico</value></data>
+  <data name="Look_Underline" xml:space="preserve"><value>Sublinhado</value></data>
+  <data name="Look_Strike" xml:space="preserve"><value>Rasurado</value></data>
+  <data name="Look_ExtraLines" xml:space="preserve"><value>O MOTD tinha mais de duas linhas; as restantes perdem-se ao guardar.</value></data>
+  <data name="Look_AppliesOnRestart" xml:space="preserve"><value>O servidor está ligado: o jogo mostrará a nova imagem e o novo texto depois de reiniciar.</value></data>
+  <data name="Nav_Tunnels" xml:space="preserve"><value>Túneis</value></data>
+  <data name="Nav_About" xml:space="preserve"><value>Acerca</value></data>
+  <data name="Tun_Subtitle" xml:space="preserve"><value>A tua conta Playit.gg e todos os seus túneis.</value></data>
+  <data name="Tun_Refresh" xml:space="preserve"><value>Ler a conta de novo</value></data>
+  <data name="Tun_OpenWebTip" xml:space="preserve"><value>Abrir os teus túneis em playit.gg</value></data>
+  <data name="Tun_Account" xml:space="preserve"><value>Conta Playit</value></data>
+  <data name="Tun_Loading" xml:space="preserve"><value>A ler a conta…</value></data>
+  <data name="Tun_LastReadFmt" xml:space="preserve"><value>Lido às {0}</value></data>
+  <data name="Tun_ColName" xml:space="preserve"><value>Nome</value></data>
+  <data name="Tun_ColAddress" xml:space="preserve"><value>Endereço público</value></data>
+  <data name="Tun_ColType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="Tun_ColPort" xml:space="preserve"><value>Porta</value></data>
+  <data name="Tun_ColServer" xml:space="preserve"><value>Servidor</value></data>
+  <data name="Tun_Empty" xml:space="preserve"><value>A tua conta ainda não tem túneis. São criados a partir de um servidor com o Playit ativado.</value></data>
+  <data name="Tun_NoServer" xml:space="preserve"><value>Nenhum</value></data>
+  <data name="Tun_Hint_Orphan" xml:space="preserve"><value>Nenhum servidor usa esta porta: o túnel não leva a lado nenhum.</value></data>
+  <data name="Tun_Hint_Duplicate" xml:space="preserve"><value>Há outro túnel para esta mesma porta.</value></data>
+  <data name="Tun_Hint_Shared" xml:space="preserve"><value>Vários servidores usam esta porta: só chegará ao que estiver ligado.</value></data>
+  <data name="Tun_UseNameFmt" xml:space="preserve"><value>Usar «{0}»</value></data>
+  <data name="Tun_RenameTip" xml:space="preserve"><value>Mudar o nome</value></data>
+  <data name="Tun_RenameSave" xml:space="preserve"><value>Guardar o nome</value></data>
+  <data name="Tun_RenameFailFmt" xml:space="preserve"><value>Não foi possível mudar o nome do túnel: {0} Podes mudá-lo em playit.gg.</value></data>
+  <data name="Tun_DeleteConfirmFmt" xml:space="preserve"><value>Apagar o túnel «{0}»? Deixará de funcionar e não se pode desfazer.</value></data>
+  <data name="Tun_Fix_Title" xml:space="preserve"><value>Coisas que posso resolver</value></data>
+  <data name="Tun_Fix_OrphanFmt" xml:space="preserve"><value>O túnel «{0}» não leva a nenhum servidor.</value></data>
+  <data name="Tun_Fix_DuplicateFmt" xml:space="preserve"><value>{1} tem dois túneis para a mesma porta: {0} é a mais.</value></data>
+  <data name="Tun_Fix_SharedFmt" xml:space="preserve"><value>{0} e {1} usam a mesma porta: o túnel só chegará ao que estiver ligado.</value></data>
+  <data name="Tun_Fix_CreateJavaFmt" xml:space="preserve"><value>{0} usa o Playit mas não tem túnel (TCP, porta {1}).</value></data>
+  <data name="Tun_Fix_CreateBedrockFmt" xml:space="preserve"><value>{0} tem crossplay mas não tem túnel para Bedrock (UDP, porta {1}).</value></data>
+  <data name="Tun_Fix_Delete" xml:space="preserve"><value>Apagar túnel</value></data>
+  <data name="Tun_Fix_ChangePortFmt" xml:space="preserve"><value>Mudar a porta de {0}</value></data>
+  <data name="Tun_Fix_Create" xml:space="preserve"><value>Criar túnel</value></data>
+  <data name="Tun_Fix_CreateBedrock" xml:space="preserve"><value>Criar túnel Bedrock</value></data>
+  <data name="Tun_Summary_Ok" xml:space="preserve"><value>Tudo em ordem</value></data>
+  <data name="Tun_Summary_ProblemsFmt" xml:space="preserve"><value>{0} precisam de atenção</value></data>
+  <data name="Tun_AutoRenamedFmt" xml:space="preserve"><value>[Playit] Túnel «{0}» renomeado para «{1}».</value></data>
+  <data name="Tun_AutoRenameFailFmt" xml:space="preserve"><value>[Playit] Não foi possível renomear o túnel «{0}»: {1}</value></data>
+  <data name="Tun_ServiceFmt" xml:space="preserve"><value>Serviço Playit: {0}</value></data>
+  <data name="Tip_ManageTunnels" xml:space="preserve"><value>Ver e gerir os túneis da conta</value></data>
+  <data name="About_Tagline" xml:space="preserve"><value>Cria e gere servidores de Minecraft sem tocar na consola.</value></data>
+  <data name="About_VersionFmt" xml:space="preserve"><value>Versão {0} · Licença MIT</value></data>
+  <data name="About_Repo" xml:space="preserve"><value>Repositório</value></data>
+  <data name="About_Issue" xml:space="preserve"><value>Reportar uma falha</value></data>
+  <data name="About_Releases" xml:space="preserve"><value>Versões</value></data>
+  <data name="About_Web" xml:space="preserve"><value>Site</value></data>
+  <data name="About_BuiltOn" xml:space="preserve"><value>Construído sobre</value></data>
+  <data name="About_Legal" xml:space="preserve"><value>Minecraft é uma marca da Mojang Studios. Este projeto não é afiliado à Mojang nem à Microsoft.</value></data>
+  <data name="About_License" xml:space="preserve"><value>Licença</value></data>
+  <data name="About_Notice" xml:space="preserve"><value>Avisos de terceiros</value></data>
+  <data name="Upd_Title" xml:space="preserve"><value>Atualizações</value></data>
+  <data name="Upd_Check" xml:space="preserve"><value>Procurar atualizações</value></data>
+  <data name="Upd_Checking" xml:space="preserve"><value>A procurar…</value></data>
+  <data name="Upd_UpToDateFmt" xml:space="preserve"><value>Tens a versão mais recente · verificado às {0}</value></data>
+  <data name="Upd_Failed" xml:space="preserve"><value>Não foi possível verificar. Verifica a ligação e tenta de novo.</value></data>
+  <data name="Upd_NotChecked" xml:space="preserve"><value>Ainda não foi verificado.</value></data>
+  <data name="Tun_Src_Installed" xml:space="preserve"><value>Playit instalado neste computador: usa-se a sua chave.</value></data>
+  <data name="Tun_Src_Saved" xml:space="preserve"><value>Chave do Playit guardada.</value></data>
+  <data name="Tun_Src_Refused" xml:space="preserve"><value> O Playit não aceita esta chave.</value></data>
+  <data name="Tun_Err_Key" xml:space="preserve"><value>O Playit não aceita a chave com que a conta foi lida. Se foi esta app a guardá-la, carrega em Desligar e volta a ligar.</value></data>
+  <data name="Tun_Err_NoPermission" xml:space="preserve"><value>O Playit não permite esta alteração com a chave deste computador.</value></data>
+  <data name="Tun_Src_InstalledReadOnly" xml:space="preserve"><value>Playit instalado neste computador. Com a sua chave o Playit só deixa ler os túneis: mudar-lhes o nome ou apagá-los faz-se em playit.gg.</value></data>
+  <data name="Tun_ReadOnlyTip" xml:space="preserve"><value>Este túnel muda-se em playit.gg: a chave do Playit instalado só deixa ler</value></data>
+  <data name="Tun_Fix_OnWeb" xml:space="preserve"><value>Fazer em playit.gg</value></data>
+  <data name="Tun_Err_ReadOnly" xml:space="preserve"><value>O Playit não deixa alterar túneis com a chave do Playit instalado neste computador, só lê-los. Faz isso em playit.gg.</value></data>
+  <data name="Tun_AutoRenameReadOnlyFmt" xml:space="preserve"><value>[Playit] O túnel «{0}» mantém esse nome: com o Playit instalado só se pode renomear para «{1}» em playit.gg.</value></data>
+  <data name="Set_SavedLive" xml:space="preserve"><value>As alterações são guardadas de imediato.</value></data>
+  <data name="Set_General" xml:space="preserve"><value>Geral</value></data>
+  <data name="Set_Colors" xml:space="preserve"><value>Cores</value></data>
+  <data name="Cfg_BedrockPort" xml:space="preserve"><value>Porta Bedrock (crossplay)</value></data>
+  <data name="Cfg_BedrockPortDesc" xml:space="preserve"><value>Porta UDP em que o Geyser recebe os jogadores de Bedrock. Se a mudares, o túnel Bedrock do Playit tem de apontar para esta mesma porta.</value></data>
+  <data name="Cfg_BedrockPortRange" xml:space="preserve"><value>Escolhe uma porta entre 1024 e 65535.</value></data>
+  <data name="Cfg_BedrockPortTakenFmt" xml:space="preserve"><value>Essa porta já é usada por {0}. Escolhe outra.</value></data>
+  <data name="Tun_Fix_MoveBedrockFmt" xml:space="preserve"><value>Mover {0} para uma porta Bedrock livre</value></data>
+  <data name="Msg_BedrockAlreadyFreeFmt" xml:space="preserve"><value>[Crossplay] A porta Bedrock {0} já não é partilhada; fica como está.</value></data>
+  <data name="Msg_BedrockMovedFmt" xml:space="preserve"><value>[Crossplay] Porta Bedrock alterada de {0} para {1}.</value></data>
+  <data name="Msg_BedrockNeedTunnelFmt" xml:space="preserve"><value>[Playit] Cria em playit.gg um túnel «Minecraft Bedrock» (UDP) para a porta local {0}: a chave do Playit instalado não o pode criar daqui.</value></data>
+  <data name="Msg_BedrockRestartToApply" xml:space="preserve"><value>[Crossplay] O servidor está ligado: a porta nova será usada ao reiniciá-lo.</value></data>
+  <data name="Msg_BedrockMoveFailedFmt" xml:space="preserve"><value>[Crossplay] Não foi possível mudar a porta Bedrock: {0}</value></data>
+  <data name="New_Title" xml:space="preserve"><value>Novo servidor</value></data>
+  <data name="New_StepOrigin" xml:space="preserve"><value>1 · Origem</value></data>
+  <data name="New_StepDetails" xml:space="preserve"><value>2 · Detalhes</value></data>
+  <data name="New_CreateTitle" xml:space="preserve"><value>Criar um novo</value></data>
+  <data name="New_CreateDesc" xml:space="preserve"><value>Escolhes o tipo e a versão; a app descarrega e instala tudo o que for preciso.</value></data>
+  <data name="New_AddTitle" xml:space="preserve"><value>Adicionar um que já tenho</value></data>
+  <data name="New_AddDesc" xml:space="preserve"><value>Escolhes a pasta; a app reconhece o tipo e a versão.</value></data>
+  <data name="New_Back" xml:space="preserve"><value>Voltar</value></data>
+  <data name="New_Button" xml:space="preserve"><value>Novo</value></data>
+  <data name="New_ResumeTip" xml:space="preserve"><value>Continuar o servidor que deixaste a meio</value></data>
+  <data name="New_GroupResources" xml:space="preserve"><value>Porta e memória</value></data>
+  <data name="New_GroupPlayers" xml:space="preserve"><value>Quem pode entrar</value></data>
+  <data name="New_GroupAfter" xml:space="preserve"><value>Internet e primeiro arranque</value></data>
   <data name="Cs_Seed" xml:space="preserve"><value>Semente (opcional)</value></data>
   <data name="Cs_SeedPlaceholder" xml:space="preserve"><value>Vazio = aleatória</value></data>
   <data name="Cs_SeedNote" xml:space="preserve"><value>Só é usada ao gerar o mundo. Pode ser um número ou um texto. Mudar depois de tipo ou de versão mantém o mundo, por isso a semente não volta a ser pedida.</value></data>
@@ -902,4 +1008,10 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="PlayerDetails_Clear" xml:space="preserve"><value>Apagar o histórico deste jogador</value></data>
   <data name="PlayerDetails_ClearConfirm" xml:space="preserve"><value>Tens a certeza? Não se pode desfazer.</value></data>
   <data name="PlayerDetails_ClearYes" xml:space="preserve"><value>Sim, apagar</value></data>
+  <data name="Col_Tip" xml:space="preserve"><value>Escolher a cor</value></data>
+  <data name="Col_Customize" xml:space="preserve"><value>Personalizar</value></data>
+  <data name="Col_Before" xml:space="preserve"><value>Antes</value></data>
+  <data name="Col_After" xml:space="preserve"><value>Agora</value></data>
+  <data name="Col_ReadsWell" xml:space="preserve"><value>✓ Lê-se bem sobre o fundo escuro</value></data>
+  <data name="Col_TooDark" xml:space="preserve"><value>⚠ Muito escuro: será difícil de ler sobre o fundo escuro</value></data>
 </root>

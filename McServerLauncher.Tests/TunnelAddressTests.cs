@@ -176,7 +176,7 @@ public class TunnelAddressTests(AvaloniaFixture ui)
             LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml");
         var xaml = File.ReadAllText(view);
 
-        var start = xaml.IndexOf("<!-- Playit.gg -->", StringComparison.Ordinal);
+        var start = xaml.IndexOf("<!-- Playit.gg", StringComparison.Ordinal);
         Assert.True(start >= 0, "la tarjeta de Playit ya no está en MainWindow.axaml");
 
         var end = xaml.IndexOf("<!-- Bedrock:", start, StringComparison.Ordinal);

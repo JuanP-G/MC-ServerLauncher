@@ -56,7 +56,7 @@ They come in six layers, and it is worth knowing which one a new test belongs to
 | The models on their own | `ServerConfigFormatTests`, `ModelNotificationTests` | What is written to disk; which properties announce |
 | The table | `ServerConfigEffectsTests` | That no field of the config was left undeclared |
 | View models, built for real | `ServerViewModelRefreshTests`, `MainViewModelFlowTests` | That a change to the config reaches the card, the panels and `servers.json` |
-| Real controls | `AddEditServerDialogTests`, `CreateServerDialogTests` | That it reaches the screen — the half a unit test cannot see |
+| Real controls | `AddEditServerDialogTests`, `NewServerViewTests` | That it reaches the screen — the half a unit test cannot see |
 | Gates on the source | `StartDependencyGateTests`, `StoreHashTests`, `ExportSelectionTests` | That a promise holds in the file itself — no network, one definition |
 | The artefact, run | `InstallScriptSmokeTests` | That the script a player gets actually works — run with bash, on Linux in CI |
 
@@ -116,13 +116,14 @@ the name's fault the other half — prefer fixing the name.
   `NotificationSettings` derive from `ObservableObject`, and a property added to either goes in as
   `[ObservableProperty] private T _foo;` like anywhere else. It does not change what is written to
   disk, and `ServerConfigFormatTests` is there to prove that stays true. `AppSettings` is the
-  exception and stays plain: its dialog edits a copy and commits it on OK.
+  exception and stays plain: nothing binds to it, because `SettingsViewModel` wraps the fields it
+  shows and raises their changes itself.
 - **A new field on `ServerConfig` needs a row in `ServerConfigEffects`** — which view-model
   properties it feeds and what has to be redone, or a line saying why nothing on screen derives from
   it. `ServerConfigEffectsTests` fails until it is there, and the failure says what to write. This
   is not bureaucracy: a field left out shows the right answer until somebody edits that server, and
   the wrong one from then until the app is restarted.
-- `var` when the type is already on the line (`var dialog = new SettingsDialog(…)`), the type spelled
+- `var` when the type is already on the line (`var dialog = new ServerConfigDialog(…)`), the type spelled
   out when it is not.
 - **A constructor assembles; `Activate()` starts.** Nothing that polls, opens a socket, subscribes to
   a shared singleton or goes to the network belongs in a constructor — it goes in `Activate()`, whose
@@ -322,7 +323,7 @@ reader ends up trusting a page that is quietly a version behind.
    colour and its `CrossplayLevel`. The picker, the badges, the store, the content folder and the
    crossplay rules all read from that table.
 2. One branch in `Services/ServerJarInstaller.cs`, which is the single place that knows how each type
-   is obtained. The create dialog and the change-type dialog both call it.
+   is obtained. The new-server panel and the change-type dialog both call it.
 3. Add the type's description key to the five `.resx` files (the line under its name in the picker).
 4. **Never renumber the `ServerType` enum.** `servers.json` stores it as an integer, so moving a
    member reinterprets every server already saved on every machine. New types go on the end.

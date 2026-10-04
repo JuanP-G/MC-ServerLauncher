@@ -357,25 +357,25 @@ public partial class ServerViewModel
 
         try
         {
-            var tunnel = await FindBedrockTunnelAsync(fresh);
-            if (tunnel?.Address is not { } host || tunnel.PublicPort <= 0)
+            var tunnels = await _playitApi.TryGetTunnelsAsync(fresh);
+            if (TunnelAddressSync.Bedrock(tunnels, Config.BedrockPort) is not { } found)
             {
-                // Two different things, and the panel now says which. A tunnel that exists but has
-                // no address yet is a few seconds away; no tunnel at all needs the user to act.
-                RunOnUi(() => BedrockState = tunnel is null
-                    ? BedrockAddressState.LocalOnly
-                    : BedrockAddressState.Waiting);
+                // Could not ask: what is on screen stays, but it no longer stays silently.
+                RunOnUi(() => BedrockState = BedrockAddressState.Failed);
                 return;
             }
 
+            // Cleared when there is no tunnel, not left as it was. After the port moved, what was left
+            // was the old port's address — another server's tunnel — and the two cards showed one address.
             RunOnUi(() =>
             {
-                BedrockHost = host;
-                BedrockPortText = tunnel.PublicPort.ToString();
-                BedrockState = BedrockAddressState.Ready;
+                BedrockHost = found.Host;
+                BedrockPortText = found.PublicPort;
+                BedrockState = found.State;
             });
 
-            _crossplay.WriteConfig(Config, tunnel.PublicPort);
+            if (found.State == BedrockAddressState.Ready)
+                _crossplay.WriteConfig(Config, int.Parse(found.PublicPort));
         }
         catch
         {
@@ -395,21 +395,82 @@ public partial class ServerViewModel
             await cb.SetTextAsync(BedrockHost!);
     }
 
-    /// <summary>Opens the Playit.gg tunnels panel in the browser (to create/view tunnels).</summary>
-    [RelayCommand]
-    private void OpenPlayitDashboard()
+    /// <summary>
+    /// Creates the Bedrock tunnel of a crossplay server that has none (the tunnels screen offers it).
+    /// </summary>
+    /// <remarks>
+    /// The port is on record by definition — it comes from this server's own config — so a tunnel
+    /// already sitting on it is taken to be ours, which is what the setup flow assumes too.
+    /// </remarks>
+    public async Task CreateBedrockTunnelAsync(string playitKey)
     {
+        if (!Config.CrossplayEnabled || Config.BedrockPort <= 0) return;
+
         try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "https://playit.gg/account/tunnels",
-                UseShellExecute = true
-            });
+            await EnsureBedrockTunnelAsync(playitKey, portWasAlreadyOurs: true);
+            await RefreshBedrockAddressAsync();
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_BrowserError"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ex.Message));
+        }
+    }
+
+    /// <summary>
+    /// Moves this server's Bedrock port to a free one: when it shares its port with another server,
+    /// only one of the two can be reached and the other looks broken for no visible reason.
+    /// </summary>
+    /// <param name="playitKey">
+    /// A key that may create tunnels, or null when the only one available can only read. Then the
+    /// console says exactly which tunnel to make on playit.gg instead of failing quietly.
+    /// </param>
+    /// <remarks>
+    /// The port picked avoids the other servers' Bedrock ports, the UDP tunnels already on the
+    /// account and whatever is bound right now — the same search a new crossplay server gets — so
+    /// moving cannot land on another collision.
+    /// </remarks>
+    public async Task MoveBedrockPortAsync(string? playitKey)
+    {
+        if (!Config.CrossplayEnabled) return;
+
+        var log = new Progress<string>(OnConsoleLine);
+        var old = CrossplayService.EffectiveBedrockPort(Config) ?? CrossplayService.DefaultBedrockPort;
+
+        try
+        {
+            var next = await PickBedrockPortAsync(log);
+            if (next == old)
+            {
+                OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockAlreadyFreeFmt"), old));
+                return;
+            }
+
+            // Written down first, as in the setup: a port chosen but not saved is the one the next
+            // server would be handed as free.
+            Config.BedrockPort = next;   // the config announces it; the panel follows
+            ConfigChanged?.Invoke();
+            _crossplay.WriteConfig(Config, null);
+            OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockMovedFmt"), old, next));
+
+            if (Config.PlayitEnabled && !string.IsNullOrEmpty(playitKey))
+            {
+                var publicPort = await EnsureBedrockTunnelAsync(playitKey, portWasAlreadyOurs: false);
+                _crossplay.WriteConfig(Config, publicPort);
+            }
+            else if (Config.PlayitEnabled)
+            {
+                OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockNeedTunnelFmt"), next));
+            }
+
+            // Geyser reads its port when it starts; a running server keeps the old one until then.
+            if (IsRunning) OnConsoleLine(Localizer.Get("Msg_BedrockRestartToApply"));
+
+            await RefreshBedrockAddressAsync();
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockMoveFailedFmt"), ex.Message));
         }
     }
 }

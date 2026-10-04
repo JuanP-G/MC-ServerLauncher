@@ -1,0 +1,320 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:views="using:McServerLauncher.Views"
+             x:Class="McServerLauncher.Views.NewServerView">
+
+    <!-- A new server, inside the app: first where it comes from (made here, or a folder that already
+         holds one), then its details. It takes the detail area; the server list stays in view. -->
+    <UserControl.Styles>
+        <!-- The two cards of the first step. One click goes on to the next step, so they have no
+             "picked" state for the pointer to hide: they only react to being hovered. -->
+        <Style Selector="Button.origin">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="20,18" />
+            <Setter Property="MinHeight" Value="150" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
+        </Style>
+        <Style Selector="Button.origin:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentSelected}" />
+        </Style>
+        <Style Selector="Button.origin Border.well">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="44" />
+            <Setter Property="CornerRadius" Value="22" />
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+
+        <Style Selector="Border.step">
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="10,3" />
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+            <Setter Property="Opacity" Value="0.6" />
+        </Style>
+        <Style Selector="Border.step.on">
+            <Setter Property="Background" Value="{StaticResource AccentSelected}" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+
+        <!-- The two columns of the details. Narrow, one under the other; wide (the class "wide",
+             set by the code from the room there is), the basics on the left and the settings on the
+             right. The form uses the window it has instead of staying a strip down one side. -->
+        <Style Selector="Grid.cols > StackPanel.main">
+            <Setter Property="Grid.ColumnSpan" Value="3" />
+        </Style>
+        <Style Selector="Grid.cols > StackPanel.side">
+            <Setter Property="Grid.Row" Value="1" />
+            <Setter Property="Grid.ColumnSpan" Value="3" />
+            <Setter Property="Margin" Value="0,16,0,0" />
+        </Style>
+        <Style Selector="Grid.cols.wide > StackPanel.main">
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+        </Style>
+        <Style Selector="Grid.cols.wide > StackPanel.side">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="2" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+        <Style Selector="TextBlock.group">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Opacity" Value="0.85" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="TextBlock.field">
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+
+        <!-- The buttons of the bar at the bottom: large, since that is where each step ends. -->
+        <Style Selector="Button.bar">
+            <Setter Property="MinHeight" Value="40" />
+            <Setter Property="MinWidth" Value="120" />
+            <Setter Property="Padding" Value="18,0" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style Selector="Button.bar.accent">
+            <Setter Property="MinWidth" Value="170" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+
+        <!-- Header: the title and which step this is -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+            <TextBlock Text="{loc:Loc New_Title}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <Border x:Name="StepOrigin" Classes="step on">
+                    <TextBlock Text="{loc:Loc New_StepOrigin}" FontSize="12" />
+                </Border>
+                <Border x:Name="StepDetails" Classes="step">
+                    <TextBlock Text="{loc:Loc New_StepDetails}" FontSize="12" />
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <Panel Grid.Row="1">
+
+            <!-- ===================== STEP 1: WHERE IT COMES FROM ===================== -->
+            <Grid x:Name="OriginStep" Classes="fadein" ColumnDefinitions="*,16,*" VerticalAlignment="Top">
+                <Button x:Name="CreateCard" Grid.Column="0" Classes="origin" Click="CreateCard_Click">
+                    <Grid RowDefinitions="Auto,*,Auto">
+                        <Border Classes="well">
+                            <ic:SymbolIcon Symbol="Sparkle" FontSize="22" Foreground="{StaticResource AccentSelected}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Grid.Row="1" Spacing="4" Margin="0,14,0,0">
+                            <TextBlock Text="{loc:Loc New_CreateTitle}" FontSize="16" FontWeight="SemiBold" />
+                            <TextBlock Text="{loc:Loc New_CreateDesc}" Classes="desc" />
+                        </StackPanel>
+                        <ic:SymbolIcon Grid.Row="2" Classes="go" Symbol="ArrowRight" FontSize="20"
+                                       Foreground="{StaticResource AccentSelected}"
+                                       HorizontalAlignment="Right" Margin="0,8,0,0" />
+                    </Grid>
+                </Button>
+                <Button x:Name="AddCard" Grid.Column="2" Classes="origin" Click="AddCard_Click">
+                    <Grid RowDefinitions="Auto,*,Auto">
+                        <Border Classes="well">
+                            <ic:SymbolIcon Symbol="FolderOpen" FontSize="22" Foreground="{StaticResource AccentSelected}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Grid.Row="1" Spacing="4" Margin="0,14,0,0">
+                            <TextBlock Text="{loc:Loc New_AddTitle}" FontSize="16" FontWeight="SemiBold" />
+                            <TextBlock Text="{loc:Loc New_AddDesc}" Classes="desc" />
+                        </StackPanel>
+                        <ic:SymbolIcon Grid.Row="2" Classes="go" Symbol="ArrowRight" FontSize="20"
+                                       Foreground="{StaticResource AccentSelected}"
+                                       HorizontalAlignment="Right" Margin="0,8,0,0" />
+                    </Grid>
+                </Button>
+            </Grid>
+
+            <!-- ===================== STEP 2: DETAILS =====================
+                 One form for both origins. Taking over a folder shows the folder and what was read
+                 from it instead of where to make one, hides the seed (the world already exists) and
+                 keeps every option on the right: the same steps run after it as after a new server. -->
+            <ScrollViewer x:Name="DetailsStep" Classes="fadein" IsVisible="False" VerticalScrollBarVisibility="Auto">
+                <Grid x:Name="FormPanel" Classes="cols" ColumnDefinitions="3*,24,2*" RowDefinitions="Auto,Auto"
+                      MaxWidth="1600" HorizontalAlignment="Stretch" Margin="0,0,14,12">
+
+                    <!-- The basics: where it is, what it is called and what it runs -->
+                    <StackPanel Classes="main">
+                        <StackPanel x:Name="ExistingPanel" IsVisible="False" Margin="0,0,0,14">
+                            <TextBlock Classes="field" Text="{loc:Loc Cs_ExistingFolder}" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox x:Name="ExistingFolderBox" Grid.Column="0" Watermark="{loc:Loc Cs_ExistingFolderPlaceholder}" />
+                                <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseExisting_Click" />
+                            </Grid>
+                            <TextBlock x:Name="DetectionSummary" Margin="2,6,0,0" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource SemanticOk}" IsVisible="False" />
+                            <TextBlock x:Name="DetectionMissing" Margin="2,4,0,0" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource SemanticWarn}" IsVisible="False" />
+                            <StackPanel x:Name="JarPanel" IsVisible="False" Margin="0,8,0,0">
+                                <TextBlock Classes="field" Text="{loc:Loc Cs_ExistingJar}" />
+                                <ComboBox x:Name="JarCombo" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <TextBlock Classes="field" Text="{loc:Loc Cs_Name}" />
+                        <TextBox x:Name="NameBox" Watermark="{loc:Loc Cs_NamePlaceholder}" />
+
+                        <StackPanel x:Name="NewFolderPanel">
+                            <TextBlock Classes="field" Text="{loc:Loc Cs_ParentFolder}" Margin="0,14,0,6" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox x:Name="ParentFolderBox" Grid.Column="0" />
+                                <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseParent_Click" />
+                            </Grid>
+                            <TextBlock x:Name="FinalPathText" Margin="2,4,0,0" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock x:Name="PathWarning" Margin="2,4,0,0" FontSize="12" TextWrapping="Wrap"
+                                   IsVisible="False" Foreground="{StaticResource SemanticWarn}" />
+
+                        <TextBlock Classes="field" Text="{loc:Loc Cs_Software}" Margin="0,14,0,6" />
+                        <views:ServerTypePicker x:Name="TypePicker" />
+
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Classes="field" Text="{loc:Loc Cs_Version}" />
+                                <ComboBox x:Name="VersionCombo" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                            <CheckBox Grid.Column="1" x:Name="SnapshotsCheck" Content="{loc:Loc Cs_Snapshots}"
+                                      VerticalAlignment="Bottom" Margin="12,0,0,4" IsCheckedChanged="Snapshots_Changed" />
+                        </Grid>
+                        <TextBlock x:Name="VersionStatus" Margin="2,4,0,0" FontSize="12" Opacity="0.7" Text="{loc:Loc Cs_LoadingVersions}" />
+
+                        <!-- Only when making one: an existing world already has its seed, and level-seed is
+                             read once, when a world is generated. -->
+                        <StackPanel x:Name="SeedPanel">
+                            <TextBlock Classes="field" Text="{loc:Loc Cs_Seed}" Margin="0,14,0,6" />
+                            <TextBox x:Name="SeedBox" Watermark="{loc:Loc Cs_SeedPlaceholder}" MaxLength="256" />
+                            <TextBlock Margin="2,4,0,0" FontSize="12" Opacity="0.55" TextWrapping="Wrap" Text="{loc:Loc Cs_SeedNote}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- The settings: with what resources, who can join and what to do once it is there -->
+                    <StackPanel Classes="side" Spacing="0">
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="group" Text="{loc:Loc New_GroupResources}" />
+                                <!-- The port on a row of its own: five digits and two spinner buttons do not
+                                     fit in a third of the column. -->
+                                <TextBlock Classes="field" Text="{loc:Loc Port}" />
+                                <NumericUpDown x:Name="PortBox" Value="25565" Minimum="1" Maximum="65535" Increment="1" FormatString="0" />
+                                <Grid ColumnDefinitions="*,12,*" Margin="0,10,0,0">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Classes="field" Text="{loc:Loc Cs_RamMin}" />
+                                        <NumericUpDown x:Name="MinRamBox" Value="2" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Classes="field" Text="{loc:Loc Cs_RamMax}" />
+                                        <NumericUpDown x:Name="MaxRamBox" Value="4" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock x:Name="PortStatus" Margin="2,8,0,0" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                                <TextBlock Margin="2,2,0,0" FontSize="12" Opacity="0.55" TextWrapping="Wrap" Text="{loc:Loc Cs_PortNote}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="group" Text="{loc:Loc New_GroupPlayers}" />
+                                <CheckBox x:Name="CrossplayCheck" Content="{loc:Loc Crossplay_Check}" />
+                                <TextBlock x:Name="CrossplayHint" Margin="28,2,0,0" FontSize="12" Opacity="0.6"
+                                           TextWrapping="Wrap" Text="{loc:Loc Crossplay_Hint}" />
+                                <TextBlock x:Name="CrossplayWhyNot" Margin="28,2,0,0" FontSize="12" Opacity="0.75"
+                                           TextWrapping="Wrap" IsVisible="False" Foreground="{StaticResource SemanticWarn}" />
+                                <!-- Shown on the mod loaders only, and with different text for each: on Fabric the
+                                     content checkbox below is the answer, on NeoForge there is none. The text comes
+                                     from CrossplayService.CaveatKey so both dialogs say the same thing. -->
+                                <TextBlock x:Name="CrossplayModdedNote" Margin="28,2,0,0" FontSize="12" Opacity="0.75"
+                                           TextWrapping="Wrap" IsVisible="False" Foreground="{StaticResource SemanticWarn}" />
+
+                                <CheckBox x:Name="MultiVersionCheck" Margin="0,10,0,0"
+                                          Content="{loc:Loc MultiVersion_Check}" />
+                                <TextBlock x:Name="MultiVersionHint" Margin="28,2,0,0" FontSize="12" Opacity="0.6"
+                                           TextWrapping="Wrap" Text="{loc:Loc MultiVersion_Hint}" />
+                                <TextBlock x:Name="MultiVersionWhyNot" Margin="28,2,0,0" FontSize="12" Opacity="0.75"
+                                           TextWrapping="Wrap" IsVisible="False" Foreground="{StaticResource SemanticWarn}"
+                                           Text="{loc:Loc MultiVersion_Unsupported}" />
+
+                                <CheckBox x:Name="HydraulicCheck" Margin="0,10,0,0"
+                                          Content="{loc:Loc Hydraulic_Check}" />
+                                <TextBlock x:Name="HydraulicHint" Margin="28,2,0,0" FontSize="12" Opacity="0.6"
+                                           TextWrapping="Wrap" Text="{loc:Loc Hydraulic_Hint}" />
+                                <TextBlock x:Name="HydraulicWhyNot" Margin="28,2,0,0" FontSize="12" Opacity="0.75"
+                                           TextWrapping="Wrap" IsVisible="False" Foreground="{StaticResource SemanticWarn}"
+                                           Text="{loc:Loc Hydraulic_Unsupported}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="group" Text="{loc:Loc New_GroupAfter}" />
+                                <CheckBox x:Name="PlayitCheck" Content="{loc:Loc Cs_UsePlayit}" IsChecked="True" />
+                                <CheckBox x:Name="CreateTunnelCheck" Margin="0,8,0,0" IsChecked="True"
+                                          IsEnabled="{Binding #PlayitCheck.IsChecked}"
+                                          Content="{loc:Loc Cs_AutoCreateTunnel}" />
+                                <CheckBox x:Name="AutoStartCheck" Margin="0,8,0,0" IsChecked="True"
+                                          Content="{loc:Loc Cs_AutoStart}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Panel>
+
+        <!-- Progress of the creation -->
+        <Border Grid.Row="2" x:Name="ProgressBox" Margin="0,8,0,0" Padding="12"
+                CornerRadius="8" Background="{StaticResource GroundPopup}" IsVisible="False" Height="140">
+            <Grid RowDefinitions="Auto,*">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6" Spacing="8">
+                    <ProgressBar x:Name="Spinner" IsIndeterminate="True" Width="120" Height="4" VerticalAlignment="Center" />
+                    <TextBlock Text="{loc:Loc Cs_Creating}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBox Grid.Row="1" x:Name="ProgressLog" IsReadOnly="True" TextWrapping="Wrap"
+                         Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextOnPopup}"
+                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12"
+                         AcceptsReturn="True" />
+            </Grid>
+        </Border>
+
+        <!-- The button bar: fixed at the bottom, set off by a line, with large buttons -->
+        <Border Grid.Row="3" Margin="0,12,0,0" Padding="0,14,0,0" BorderThickness="0,1,0,0"
+                BorderBrush="{StaticResource SurfaceEdge}">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button x:Name="BackButton" Classes="bar" IsVisible="False" Click="Back_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ic:SymbolIcon Symbol="ArrowLeft" FontSize="16" VerticalAlignment="Center" />
+                        <TextBlock Text="{loc:Loc New_Back}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
+                    <Button x:Name="CancelButton" Classes="bar" Content="{loc:Loc Cancel}" Click="Cancel_Click" />
+                    <Button x:Name="CreateButton" Classes="bar accent" IsVisible="False" Click="Create_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ic:SymbolIcon Symbol="Add" FontSize="16" VerticalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Cs_CreateButton}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="AddButton" Classes="bar accent" IsVisible="False" Click="Create_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ic:SymbolIcon Symbol="FolderAdd" FontSize="16" VerticalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Cs_AddButton}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

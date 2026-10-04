@@ -193,6 +193,23 @@
                     </Grid>
                 </Border>
 
+                <!-- The Bedrock port is not in server.properties: it is Geyser's. Only shown with
+                     crossplay on, which is when it exists. -->
+                <Border x:Name="BedrockPortCard" Classes="card" IsVisible="False">
+                    <StackPanel>
+                        <Grid ColumnDefinitions="*,140">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{loc:Loc Cfg_BedrockPort}" Classes="title" />
+                                <TextBlock Classes="desc" Text="{loc:Loc Cfg_BedrockPortDesc}" />
+                            </StackPanel>
+                            <NumericUpDown x:Name="BedrockPortBox" Grid.Column="1" Minimum="1024" Maximum="65535" Increment="1"
+                                           FormatString="0" VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock x:Name="BedrockPortWarning" Classes="desc" Foreground="{StaticResource SemanticWarn}"
+                                   IsVisible="False" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
                 <Border Classes="card">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0">

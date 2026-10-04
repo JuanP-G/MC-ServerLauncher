@@ -15,16 +15,70 @@ public partial class ServerConfigDialog : Window
 {
     private readonly ServerPropertiesService _service = new();
     private readonly ServerConfig _config;
+    private readonly Func<int, string?> _bedrockPortOwner;
+
+    /// <summary>True once Save changed the Bedrock port, so the caller persists servers.json.</summary>
+    public bool BedrockPortChanged { get; private set; }
 
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public ServerConfigDialog() : this(new ServerConfig()) { }
 
-    public ServerConfigDialog(ServerConfig config)
+    /// <param name="config">The server being configured.</param>
+    /// <param name="bedrockPortOwner">
+    /// The name of the other server already on a Bedrock port, or null when none is. Lets the dialog
+    /// refuse a port by saying whose it is, instead of letting two servers end up behind one tunnel.
+    /// </param>
+    public ServerConfigDialog(ServerConfig config, Func<int, string?>? bedrockPortOwner = null)
     {
         InitializeComponent();
         _config = config;
+        _bedrockPortOwner = bedrockPortOwner ?? (_ => null);
         HeaderText.Text = string.Format(Localizer.Get("Cfg_HeaderFmt"), config.Name);
         Load();
+
+        // Only with crossplay: without Geyser there is no Bedrock port to change.
+        var bedrock = CrossplayService.EffectiveBedrockPort(config);
+        BedrockPortCard.IsVisible = bedrock is not null;
+        BedrockPortBox.Value = bedrock ?? CrossplayService.DefaultBedrockPort;
+        BedrockPortBox.ValueChanged += (_, _) => BedrockPortWarning.IsVisible = false;
+    }
+
+    /// <summary>
+    /// Applies a new Bedrock port, or says why not. Returns false when the port was refused.
+    /// </summary>
+    /// <remarks>
+    /// Written to servers.json and to Geyser's own config together: the port Geyser binds and the
+    /// one the app thinks the server has must never disagree. The public port in Geyser's config is
+    /// left for the next tunnel refresh to fill in, because the tunnel for the new port may not
+    /// exist yet.
+    /// </remarks>
+    internal bool TryApplyBedrockPort()
+    {
+        if (!BedrockPortCard.IsVisible) return true;
+
+        var wanted = (int)(BedrockPortBox.Value ?? CrossplayService.DefaultBedrockPort);
+        if (wanted == CrossplayService.EffectiveBedrockPort(_config)) return true;
+
+        if (wanted < 1024 || wanted > 65535)
+        {
+            BedrockPortWarning.Text = Localizer.Get("Cfg_BedrockPortRange");
+            BedrockPortWarning.IsVisible = true;
+            BedrockPortCard.BringIntoView();
+            return false;
+        }
+
+        if (_bedrockPortOwner(wanted) is { } owner)
+        {
+            BedrockPortWarning.Text = string.Format(Localizer.Get("Cfg_BedrockPortTakenFmt"), owner);
+            BedrockPortWarning.IsVisible = true;
+            BedrockPortCard.BringIntoView();
+            return false;
+        }
+
+        _config.BedrockPort = wanted;
+        new CrossplayService().WriteConfig(_config, null);
+        BedrockPortChanged = true;
+        return true;
     }
 
     private void Load()
@@ -105,7 +159,7 @@ public partial class ServerConfigDialog : Window
 
     private void ShowHistorySize() =>
         HistorySizeText.Text = string.Format(Localizer.Get("Cfg_HistorySizeFmt"),
-            SettingsDialog.FormatBytes(PlayerHistoryStore.SizeOf(_config.Id)));
+            McServerLauncher.ViewModels.SettingsViewModel.FormatBytes(PlayerHistoryStore.SizeOf(_config.Id)));
 
     /// <summary>
     /// Forgets everyone this server has seen — only this server.
@@ -151,6 +205,7 @@ public partial class ServerConfigDialog : Window
 
         try
         {
+            if (!TryApplyBedrockPort()) return;
             _service.Update(_config.PropertiesPath, changes);
             Close(true);
         }

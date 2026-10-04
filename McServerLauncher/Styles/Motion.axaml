@@ -1,0 +1,349 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:McServerLauncher.Controls">
+
+    <!-- All of the app's motion, in one place.
+
+         The rule: subtle and short. Nothing bounces, nothing lasts longer than 180 ms, and nothing
+         moves for the sake of it: each transition says something (this can be pressed, this has
+         changed, this has just appeared). The one exception is the "+ New" reminder, explained in
+         its section. Living only here is what lets it be reviewed at a glance, and a test checks that
+         no view declares motion of its own. -->
+
+    <!-- ===================== BUTTONS =====================
+         The background changes smoothly under the pointer, and a pressed button sinks a little. -->
+    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button">
+        <Setter Property="RenderTransform" Value="none" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.09" />
+                <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <!-- The secondary buttons rise 1 px under the pointer (their look is in Styles/Shared.axaml).
+         Not the ones living in a list or a bar, where a jump knocks the whole row out of line, nor
+         "+ New", whose shine and halo are fixed to it. -->
+    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.iconbtn):not(.newserver):pointerover">
+        <Setter Property="RenderTransform" Value="translateY(-1px)" />
+    </Style>
+    <!-- After the hover on purpose: pressed wins, and the button comes down and sinks. -->
+    <Style Selector="Button:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+
+    <!-- ===================== LISTS =====================
+         Rows light up under the pointer instead of switching at once. -->
+    <Style Selector="ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.14" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- Each server row's own actions: invisible until the row is hovered or selected, and not
+         pressable while they cannot be seen. -->
+    <Style Selector="StackPanel.rowactions">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="ListBoxItem:pointerover StackPanel.rowactions, ListBoxItem:selected StackPanel.rowactions">
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="IsHitTestVisible" Value="True" />
+    </Style>
+
+    <Style Selector="Button.rowaction">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="5" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="Button.rowaction.danger:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource DangerIcon}" />
+    </Style>
+
+    <!-- ===================== "+ NEW" =====================
+         Its reminder, every 25 s: a shine crosses the button (the first second) and, leaving on the
+         other side, turns into a halo that opens out from the edge and fades (the second). When it
+         plays is Behaviors/BeaconBehavior's business: it sets .beacon-a or .beacon-b in turn, and
+         keeps quiet under the pointer or with the new-server panel open. Here is only how it looks.
+
+         The halo is AccentSelected's blue (58A6FF) with its alpha, written here because a shadow
+         takes no tokens. Whole-number cues and no KeySpline: Avalonia parses both with the system's
+         culture, and in Spanish (decimal comma) neither "96.4%" nor "0.45,0,0.25,1" parses, and the
+         animation sits on its first frame without a word. The curve is drawn by hand, a keyframe
+         every 10 %: the shine starts slow, crosses fast and slows down on its way out; the halo opens
+         quickly and fades slowly. A test keeps decimals from coming back. -->
+    <Style Selector="Panel.newserver.beacon-a:not(:pointerover) Border.shine">
+        <Style.Animations>
+            <Animation Duration="0:0:2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="TranslateTransform.X" Value="-40" />
+                </KeyFrame>
+                <KeyFrame Cue="10%">
+                    <Setter Property="TranslateTransform.X" Value="-32" />
+                </KeyFrame>
+                <KeyFrame Cue="20%">
+                    <Setter Property="TranslateTransform.X" Value="-8" />
+                </KeyFrame>
+                <KeyFrame Cue="30%">
+                    <Setter Property="TranslateTransform.X" Value="40" />
+                </KeyFrame>
+                <KeyFrame Cue="40%">
+                    <Setter Property="TranslateTransform.X" Value="100" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="TranslateTransform.X" Value="130" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="TranslateTransform.X" Value="130" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector="Panel.newserver.beacon-a:not(:pointerover) Border.halo">
+        <Style.Animations>
+            <Animation Duration="0:0:2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #0058A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="49%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #0058A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #9958A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="60%">
+                    <Setter Property="BoxShadow" Value="0 0 0 4.5 #6658A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="70%">
+                    <Setter Property="BoxShadow" Value="0 0 0 6.5 #3858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="80%">
+                    <Setter Property="BoxShadow" Value="0 0 0 7.5 #1858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="90%">
+                    <Setter Property="BoxShadow" Value="0 0 0 7.9 #0858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="BoxShadow" Value="0 0 0 8 #0058A6FF" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector="Panel.newserver.beacon-b:not(:pointerover) Border.shine">
+        <Style.Animations>
+            <Animation Duration="0:0:2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="TranslateTransform.X" Value="-40" />
+                </KeyFrame>
+                <KeyFrame Cue="10%">
+                    <Setter Property="TranslateTransform.X" Value="-32" />
+                </KeyFrame>
+                <KeyFrame Cue="20%">
+                    <Setter Property="TranslateTransform.X" Value="-8" />
+                </KeyFrame>
+                <KeyFrame Cue="30%">
+                    <Setter Property="TranslateTransform.X" Value="40" />
+                </KeyFrame>
+                <KeyFrame Cue="40%">
+                    <Setter Property="TranslateTransform.X" Value="100" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="TranslateTransform.X" Value="130" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="TranslateTransform.X" Value="130" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector="Panel.newserver.beacon-b:not(:pointerover) Border.halo">
+        <Style.Animations>
+            <Animation Duration="0:0:2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #0058A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="49%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #0058A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #9958A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="60%">
+                    <Setter Property="BoxShadow" Value="0 0 0 4.5 #6658A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="70%">
+                    <Setter Property="BoxShadow" Value="0 0 0 6.5 #3858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="80%">
+                    <Setter Property="BoxShadow" Value="0 0 0 7.5 #1858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="90%">
+                    <Setter Property="BoxShadow" Value="0 0 0 7.9 #0858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="BoxShadow" Value="0 0 0 8 #0058A6FF" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- ===================== MENUS =====================
+         Each menu has a single mark that travels to what was picked (Controls/SlidingIndicator)
+         instead of one per item switching on and off: the underline of the server tabs, the bar of
+         the side rail and the card behind the Settings pages. The same time for any jump, so on the
+         long ones the mark simply moves faster. On the tabs the title also changes colour smoothly
+         and the page comes in with a fade. -->
+    <Style Selector="TabControl.sliding TabItem /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector=":is(controls|SlidingIndicator) > Border.indicator">
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+                <DoubleTransition Property="Width" Duration="0:0:0.18" Easing="CubicEaseOut" />
+                <DoubleTransition Property="Height" Duration="0:0:0.18" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="TabItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Foreground" Duration="0:0:0.16" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <!-- Two classes taking turns, because a style animation only starts when its selector starts to
+         match: with one, it would only be seen the first time. -->
+    <Style Selector="ContentPresenter.pagein-a">
+        <Style.Animations>
+            <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector="ContentPresenter.pagein-b">
+        <Style.Animations>
+            <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- ===================== NEW SERVER =====================
+         The cards of the first step: one click and on. Background and edge already fade like on any
+         button; on top of that the arrow steps forward a little under the pointer, which is what
+         says "this takes you somewhere". -->
+    <Style Selector="Button.origin :is(Control).go">
+        <Setter Property="RenderTransform" Value="translateX(0px)" />
+        <Setter Property="Opacity" Value="0.55" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" />
+                <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.origin:pointerover :is(Control).go">
+        <Setter Property="RenderTransform" Value="translateX(5px)" />
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <!-- ===================== RAIL =====================  -->
+    <Style Selector="Button.rail">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.09" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ===================== THE COLOUR CHOOSER =====================
+         The chevron of "Customise" turns over as the spectrum opens below it. -->
+    <Style Selector="ToggleButton.expander :is(Control).chevron">
+        <Setter Property="RenderTransform" Value="rotate(0deg)" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="ToggleButton.expander:checked :is(Control).chevron">
+        <Setter Property="RenderTransform" Value="rotate(180deg)" />
+    </Style>
+
+    <!-- ===================== THE CARD'S ICON =====================
+         The "Edit" veil over the icon fades in. -->
+    <Style Selector="Button.iconbtn Border#HoverOverlay">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.iconbtn:pointerover Border#HoverOverlay">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <!-- ===================== WORKING =====================
+         A ring that turns while something is being looked up. Only while visible: the selector on
+         IsVisible starts and stops it, so a hidden spinner costs nothing. -->
+    <Style Selector="Panel.spinner[IsVisible=True]">
+        <Style.Animations>
+            <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                <KeyFrame Cue="0%">
+                    <Setter Property="RotateTransform.Angle" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="RotateTransform.Angle" Value="360" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- ===================== ENTRANCES =====================
+         A section, a Settings page or a step of the new-server panel comes in with a short fade
+         every time it becomes visible. The IsVisible selector is what makes it play on every
+         appearance and not only the first. -->
+    <Style Selector=":is(Control).fadein[IsVisible=True]">
+        <Style.Animations>
+            <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+</Styles>

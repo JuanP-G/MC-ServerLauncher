@@ -42,14 +42,123 @@ public partial class MainViewModel : ObservableObject
 
     public bool HasSelection => SelectedServer is not null;
 
+    /// <summary>The new server being made or added, kept while it is unfinished; null otherwise.</summary>
+    /// <remarks>
+    /// Kept even while it is not on screen: opening a server from the list puts the panel away
+    /// without throwing it out, and "+ Nuevo" brings it back where it was left. A download that
+    /// had already started goes on meanwhile, and the server joins the list when it ends.
+    /// </remarks>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCreatingServer), nameof(ShowServerDetail), nameof(ShowEmptyState),
+        nameof(HasNewServerDraft), nameof(NewServerTip))]
+    private NewServerView? _newServerPanel;
+
+    /// <summary>Whether the new-server panel has the detail area, instead of a server.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCreatingServer), nameof(ShowServerDetail), nameof(ShowEmptyState),
+        nameof(HasNewServerDraft), nameof(NewServerTip))]
+    private bool _isNewServerOpen;
+
+    /// <summary>The new-server panel is on screen.</summary>
+    public bool IsCreatingServer => IsNewServerOpen && NewServerPanel is not null;
+
+    /// <summary>An unfinished new server is waiting, put away while another server is being looked at.</summary>
+    public bool HasNewServerDraft => NewServerPanel is not null && !IsNewServerOpen;
+
+    public string NewServerTip => Localizer.Get(HasNewServerDraft ? "New_ResumeTip" : "New_Title");
+
+    /// <summary>What was selected when the panel opened, to go back to if it is cancelled.</summary>
+    private ServerViewModel? _beforeNewServer;
+
+    /// <summary>The selected server's detail, unless the new-server panel has the space.</summary>
+    public bool ShowServerDetail => HasSelection && !IsCreatingServer;
+
+    public bool ShowEmptyState => !HasSelection && !IsCreatingServer;
+
     [ObservableProperty]
     private bool _updateAvailable;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UpdateCheckText))]
     private string _updateText = string.Empty;
 
     [ObservableProperty]
     private bool _isUpdating;
+
+    /// <summary>What the About screen says about updates; the banner keeps its own flag.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCheckingUpdates), nameof(IsUpToDate), nameof(UpdateCheckFailed), nameof(UpdateCheckText))]
+    private UpdateCheckState _updateCheckState = UpdateCheckState.Unknown;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UpdateCheckText))]
+    private DateTime? _lastUpdateCheck;
+
+    public bool IsCheckingUpdates => UpdateCheckState == UpdateCheckState.Checking;
+    public bool IsUpToDate => UpdateCheckState == UpdateCheckState.UpToDate;
+    public bool UpdateCheckFailed => UpdateCheckState == UpdateCheckState.Failed;
+
+    /// <summary>The line under the version in About: what the last look found, and when.</summary>
+    public string UpdateCheckText => UpdateCheckState switch
+    {
+        UpdateCheckState.Checking => Localizer.Get("Upd_Checking"),
+        UpdateCheckState.UpToDate => string.Format(Localizer.Get("Upd_UpToDateFmt"), LastCheckClock()),
+        UpdateCheckState.Available => UpdateText,
+        UpdateCheckState.Failed => Localizer.Get("Upd_Failed"),
+        _ => Localizer.Get("Upd_NotChecked"),
+    };
+
+    private string LastCheckClock() => LastUpdateCheck?.ToString("t", CultureInfo.CurrentCulture) ?? "";
+
+    /// <summary>The version running, as its release calls it.</summary>
+    public string VersionText =>
+        Changelog.Format(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0));
+
+    /// <summary>"Version 1.12.1 · MIT", under the name in About.</summary>
+    public string VersionLineText => string.Format(Localizer.Get("About_VersionFmt"), VersionText);
+
+    // ---- Sections ----
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsSettingsSection), nameof(IsAboutSection))]
+    private AppSection _section = AppSection.Servers;
+
+    public bool IsServersSection => Section == AppSection.Servers;
+    public bool IsTunnelsSection => Section == AppSection.Tunnels;
+    public bool IsSettingsSection => Section == AppSection.Settings;
+    public bool IsAboutSection => Section == AppSection.About;
+
+    /// <summary>The settings screen, which saves as it goes.</summary>
+    public SettingsViewModel Settings { get; }
+
+    /// <summary>The player-history settings changed: every server's recorder follows them now.</summary>
+    internal void OnHistorySettingsChanged()
+    {
+        foreach (var server in Servers) server.History.OnSettingsChanged();
+    }
+
+    [RelayCommand]
+    private void ShowSettings() => Section = AppSection.Settings;
+
+    /// <summary>The tunnels screen: the Playit account, every tunnel on it, and what to do about them.</summary>
+    public TunnelsViewModel Tunnels { get; }
+
+    [RelayCommand]
+    private void ShowServers() => Section = AppSection.Servers;
+
+    [RelayCommand]
+    private void ShowTunnels()
+    {
+        Section = AppSection.Tunnels;
+        // Read when the screen opens, never on a timer: the account is another machine's data, and
+        // asking for it while nobody is looking would spend requests on an answer no one reads. The
+        // one exception is the reading just after start (Tunnels.PrefetchAsync), so the first opening
+        // shows a table straight away; this one then refreshes it without emptying it.
+        _ = Tunnels.RefreshAsync();
+    }
+
+    [RelayCommand]
+    private void ShowAbout() => Section = AppSection.About;
 
     private string? _releaseUrl;
     private string? _packageUrl;
@@ -88,6 +197,8 @@ public partial class MainViewModel : ObservableObject
 
         Load();
         _appSettings = _settings.Load();
+        Tunnels = new TunnelsViewModel(Servers, _appSettings, _settings, () => Owner, ConfigureServerAsync);
+        Settings = new SettingsViewModel(this, _appSettings, _settings, ApplyConsoleColours, ApplyWindowBehavior);
 
         // Make the saved notification preferences the app-wide defaults for this session.
         NotificationPreferences.Global = _appSettings.Notifications;
@@ -143,6 +254,7 @@ public partial class MainViewModel : ObservableObject
         _ = Task.Run(() => PlayerHistoryStore.PruneOrphans(liveIds, DateTime.UtcNow, days));
 
         _ = CheckForUpdatesAsync();
+        _ = Tunnels.PrefetchAsync();
         _updateTimer.Start();
     }
 
@@ -184,33 +296,6 @@ public partial class MainViewModel : ObservableObject
     {
         if (await MessageBox.ConfirmAsync(Localizer.Get("RestartNeeded"), Localizer.Get("Language")))
             await RestartAppAsync();
-    }
-
-    /// <summary>Opens the app settings (language, notifications, …).</summary>
-    [RelayCommand]
-    private async Task OpenSettings()
-    {
-        if (Owner is null) return;
-        var dialog = new SettingsDialog(Languages, SelectedLanguage, _appSettings.Notifications, _appSettings, _settings);
-        if (!await dialog.ShowDialog<bool>(Owner)) return;
-
-        // Notifications and window behavior: apply + persist immediately (no restart needed).
-        _appSettings.Notifications = dialog.Notifications;
-        NotificationPreferences.Global = _appSettings.Notifications;
-        _appSettings.MinimizeToTray = dialog.MinimizeToTray;
-        _appSettings.CloseToTray = dialog.CloseToTray;
-        _appSettings.ConsoleChatColor = dialog.ConsoleChatColor;
-        _appSettings.ConsolePlayersColor = dialog.ConsolePlayersColor;
-        _appSettings.PlayerHistory = dialog.PlayerHistory;
-        PlayerHistoryPreferences.Current = _appSettings.PlayerHistory;
-        foreach (var server in Servers) server.History.OnSettingsChanged();
-        ApplyConsoleColours();
-        ApplyWindowBehavior();
-        _settings.Save(_appSettings);
-
-        // Language: assigning SelectedLanguage reuses the existing handler (persist + restart prompt).
-        if (dialog.SelectedLanguage is { } lang && lang.Code != _appSettings.Language)
-            SelectedLanguage = lang;
     }
 
     /// <summary>
@@ -293,31 +378,50 @@ public partial class MainViewModel : ObservableObject
         return new Version(v.Major, v.Minor, Math.Max(0, v.Build));
     }
 
-    private async Task CheckForUpdatesAsync()
+    /// <summary>
+    /// Asks GitHub whether a newer version exists. <paramref name="manual"/> is a person pressing the
+    /// button in About, who is owed an answer either way; the startup and six-hourly checks stay
+    /// silent unless there is news, as before.
+    /// </summary>
+    private async Task CheckForUpdatesAsync(bool manual = false)
     {
-        try
+        if (IsCheckingUpdates) return;
+        if (manual) UpdateCheckState = UpdateCheckState.Checking;
+
+        var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0);
+        var (state, info) = await UpdateCheck.RunAsync(() => new UpdateService().CheckAsync(current));
+
+        if (state != UpdateCheckState.Failed || manual)
         {
-            var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0);
-            var info = await new UpdateService().CheckAsync(current);
-            if (info is not null)
-            {
-                _releaseUrl = info.Url;
-                _packageUrl = info.PackageUrl;
-                _packageName = info.PackageName;
-                _checksumUrl = info.ChecksumUrl;
-                // A beta says so before the button, not after installing.
-                UpdateText = string.Format(
-                    Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
-                    info.Version);
-                UpdateAvailable = true;
-                NotifyUpdateOnce(info.Version, info.IsPreRelease);
-            }
+            LastUpdateCheck = DateTime.Now;
+            UpdateCheckState = state;
         }
-        catch
+        else if (UpdateCheckState == UpdateCheckState.Checking)
         {
-            // No connection or GitHub unavailable: it's fine.
+            UpdateCheckState = UpdateCheckState.Unknown;
         }
+
+        if (info is null) return;
+
+        _releaseUrl = info.Url;
+        _packageUrl = info.PackageUrl;
+        _packageName = info.PackageName;
+        _checksumUrl = info.ChecksumUrl;
+        // A beta says so before the button, not after installing.
+        UpdateText = string.Format(
+            Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
+            info.Version);
+        UpdateAvailable = true;
+        OnPropertyChanged(nameof(UpdateCheckText));
+        NotifyUpdateOnce(info.Version, info.IsPreRelease);
     }
+
+    /// <summary>The "Check for updates" button in About.</summary>
+    [RelayCommand]
+    private Task CheckForUpdatesNow() => CheckForUpdatesAsync(manual: true);
+
+    [RelayCommand]
+    private void OpenLink(string? url) => BrowserLauncher.Open(url);
 
     /// <summary>
     /// Raises a desktop notification the first time a given version is seen, and only while the
@@ -474,7 +578,16 @@ public partial class MainViewModel : ObservableObject
             Localizer.Get("Title_ServersDamaged"), owner);
     }
 
-    partial void OnSelectedServerChanged(ServerViewModel? value) => OnPropertyChanged(nameof(HasSelection));
+    partial void OnSelectedServerChanged(ServerViewModel? value)
+    {
+        // Picking a server while the new-server panel is open goes to that server. The unfinished
+        // one is kept (see NewServerPanel), not thrown away.
+        if (value is not null && IsNewServerOpen) IsNewServerOpen = false;
+
+        OnPropertyChanged(nameof(HasSelection));
+        OnPropertyChanged(nameof(ShowServerDetail));
+        OnPropertyChanged(nameof(ShowEmptyState));
+    }
 
     /// <summary>
     /// Returns the Playit credential used for tunnel management (the per-user agent secret key from
@@ -487,16 +600,6 @@ public partial class MainViewModel : ObservableObject
         // Returns the stored connection if there is one, or runs the "Connect to Playit" flow (paste
         // a setup code) right here — so clicking "Create tunnel" while not connected just works.
         return await PlayitConnection.EnsureAsync(Owner, _appSettings, _settings);
-    }
-
-    /// <summary>Creates the Playit tunnel for the selected server (the "Create tunnel" button).</summary>
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task CreateTunnelForSelected()
-    {
-        if (SelectedServer is null) return;
-        var key = await EnsurePlayitAgentAsync();
-        if (key is null) return;
-        await SelectedServer.CreateTunnelAsync(key);
     }
 
     /// <summary>The Bedrock ports every server except <paramref name="except"/> already holds.</summary>
@@ -520,72 +623,120 @@ public partial class MainViewModel : ObservableObject
         return vm;
     }
 
-    /// <summary>
-    /// Makes a server, or takes over a folder that already holds one — the create dialog does both.
-    /// </summary>
+    /// <summary>Opens the new-server panel: create one from scratch, or add one that already exists.</summary>
     /// <remarks>
-    /// There used to be a separate "Add" button for the second, with a dialog that asked for the
-    /// jar's name by hand and skipped the tunnel, crossplay and start options. Taking over a folder
-    /// now reads it (<see cref="ServerDetectionService.Detect"/>) and goes through exactly the same
-    /// steps below as a server that was just made.
+    /// <para>
+    /// One panel for both, in the window, where two buttons used to open two dialogs. An unfinished
+    /// one is kept: pressing the button again brings it back rather than throwing it away.
+    /// </para>
+    /// <para>
+    /// The list loses its selection while the panel is open. It used to keep the previous server
+    /// highlighted, as if that server were the one on screen, and picking it again did nothing
+    /// visible because it already counted as picked.
+    /// </para>
     /// </remarks>
     [RelayCommand]
-    private async Task CreateServer()
+    private void ShowNewServer()
+    {
+        Section = AppSection.Servers;
+        if (IsCreatingServer) return;
+
+        NewServerPanel ??= CreateNewServerPanel();
+        _beforeNewServer = SelectedServer;
+        IsNewServerOpen = true;
+        SelectedServer = null;
+    }
+
+    private NewServerView CreateNewServerPanel()
     {
         var propertiesService = new ServerPropertiesService();
         var usedPorts = Servers
             .Select(s => propertiesService.GetServerPort(s.Config.PropertiesPath))
             .Where(p => p.HasValue)
-            .Select(p => p!.Value);
+            .Select(p => p!.Value)
+            .ToList();
 
-        if (Owner is null) return;
-        var dialog = new CreateServerDialog(usedPorts, Servers.Select(s => s.Config.FolderPath));
-        if (await dialog.ShowDialog<bool>(Owner) && dialog.ResultConfig is not null)
+        var panel = new NewServerView(usedPorts, Servers.Select(s => s.Config.FolderPath));
+        panel.Cancelled += () => CloseNewServer(select: _beforeNewServer);
+        panel.Completed += result =>
         {
-            var vm = Register(dialog.ResultConfig);
-            SelectedServer = vm;
-            Save();
-
-            // Create the Playit tunnel (errors are visible in the server's console).
-            string? playitKey = null;
-            if (dialog.CreateTunnel)
-            {
-                playitKey = await EnsurePlayitAgentAsync();
-                if (playitKey is not null)
-                    await vm.CreateTunnelAsync(playitKey);
-            }
-
-            // Crossplay after the Java tunnel, not before: setting it up needs the Playit key that
-            // step obtains, and the Bedrock tunnel is a second one alongside the Java one.
-            if (dialog.ResultConfig.CrossplayEnabled)
-            {
-                await vm.SetUpCrossplayAsync(playitKey);
-                Save();
-            }
-
-            if (dialog.ResultConfig.MultiVersionEnabled)
-            {
-                await vm.SetUpMultiVersionAsync();
-                Save();
-            }
-
-            if (dialog.ResultConfig.BedrockModContentEnabled)
-            {
-                await vm.SetUpBedrockModContentAsync();
-                Save();
-            }
-
-            // First launch to generate the world and files.
-            if (dialog.AutoStart)
-                vm.StartCommand.Execute(null);
-        }
+            // Finished while on screen: show it. Finished while put away (a download left running
+            // while looking at another server): it joins the list without taking the screen.
+            var wasOnScreen = IsCreatingServer;
+            NewServerPanel = null;
+            IsNewServerOpen = false;
+            _ = FinishNewServerAsync(result, select: wasOnScreen || SelectedServer is null);
+        };
+        return panel;
     }
 
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task EditServer()
+    /// <summary>Throws the panel away and gives the detail area back to a server.</summary>
+    private void CloseNewServer(ServerViewModel? select)
     {
-        if (SelectedServer is null || Owner is null) return;
-        var server = SelectedServer;
+        var wasOnScreen = IsCreatingServer;
+        NewServerPanel = null;
+        IsNewServerOpen = false;
+        if (wasOnScreen && SelectedServer is null)
+            SelectedServer = select is not null && Servers.Contains(select) ? select : Servers.FirstOrDefault();
+    }
+    /// <summary>Registers what the panel produced and does what was asked for it.</summary>
+    private async Task FinishNewServerAsync(NewServerResult result, bool select)
+    {
+        var vm = Register(result.Config);
+        if (select) SelectedServer = vm;
+        Save();
+
+        // The same steps for a folder that was taken over as for a server just made: the options
+        // the panel showed apply to both.
+        // Create the Playit tunnel (errors are visible in the server's console).
+        string? playitKey = null;
+        if (result.CreateTunnel)
+        {
+            playitKey = await EnsurePlayitAgentAsync();
+            if (playitKey is not null)
+                await vm.CreateTunnelAsync(playitKey);
+        }
+
+        // Crossplay after the Java tunnel, not before: setting it up needs the Playit key that
+        // step obtains, and the Bedrock tunnel is a second one alongside the Java one.
+        if (result.Config.CrossplayEnabled)
+        {
+            await vm.SetUpCrossplayAsync(playitKey);
+            Save();
+        }
+
+        if (result.Config.MultiVersionEnabled)
+        {
+            await vm.SetUpMultiVersionAsync();
+            Save();
+        }
+
+        if (result.Config.BedrockModContentEnabled)
+        {
+            await vm.SetUpBedrockModContentAsync();
+            Save();
+        }
+
+        // First launch to generate the world and files.
+        if (result.AutoStart)
+            vm.StartCommand.Execute(null);
+    }
+
+    /// <summary>Whether a row's own button, or the selection, names a server to act on.</summary>
+    private bool CanActOn(ServerViewModel? target) => target is not null || HasSelection;
+
+    /// <summary>A row's button acts on its row: it selects it first, so what happens is on screen.</summary>
+    private ServerViewModel? Target(ServerViewModel? target)
+    {
+        if (target is not null && !ReferenceEquals(target, SelectedServer)) SelectedServer = target;
+        return SelectedServer;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanActOn))]
+    private async Task EditServer(ServerViewModel? target)
+    {
+        if (Target(target) is not { } server || Owner is null) return;
+        var oldName = server.Name;
 
         // Read before the dialog: these two checkboxes are requests to install something, not
         // settings that take effect by being remembered. Turning one on and having nothing happen
@@ -612,6 +763,7 @@ public partial class MainViewModel : ObservableObject
         if (accepted || dialog.LoaderInstalled)
         {
             Save();
+            _ = Tunnels.RenameTunnelsForServerAsync(server, oldName);
 
             if (!hadCrossplay && server.Config.CrossplayEnabled)
             {
@@ -634,60 +786,57 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>Opens the editor for the card: icon, name and the two lines of the MOTD.</summary>
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task ChangeIconForSelected()
+    private async Task EditAppearance()
     {
         if (SelectedServer is null || Owner is null) return;
+        var server = SelectedServer;
+        var oldName = server.Name;
 
-        var files = await Owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = Localizer.Get("Title_SelectImage"),
-            AllowMultiple = false,
-            FileTypeFilter = new[]
-            {
-                new FilePickerFileType(Localizer.Get("Title_SelectImage"))
-                {
-                    Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif" }
-                }
-            }
-        });
+        var dialog = new ServerAppearanceDialog(server.Config, server.IsRunning);
+        if (!await dialog.ShowDialog<bool>(Owner)) return;
 
-        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
-        if (string.IsNullOrEmpty(path)) return;
-
-        try
-        {
-            new ServerIconService().SetIconFromImage(SelectedServer.Config.FolderPath, path);
-            SelectedServer.RefreshFromDisk();
-        }
-        catch (Exception ex)
-        {
-            await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_IconCreateError"), ex.Message),
-                Localizer.Get("Title_ChangeIcon"));
-        }
+        // The dialog wrote the icon and the MOTD to disk and set the name on the config; what is
+        // left is what the config alone cannot do: tell the view model, persist, re-read the disk.
+        server.Name = server.Config.Name;
+        Save();
+        server.RefreshFromDisk();
+        _ = Tunnels.RenameTunnelsForServerAsync(server, oldName);
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task ConfigureServer()
+    private Task ConfigureServer() => SelectedServer is null ? Task.CompletedTask : ConfigureServerAsync(SelectedServer);
+
+    /// <summary>Opens the properties editor for any server; the tunnels screen uses it to change a port.</summary>
+    private async Task ConfigureServerAsync(ServerViewModel server)
     {
-        if (SelectedServer is null || Owner is null) return;
-        var dialog = new ServerConfigDialog(SelectedServer.Config);
+        if (Owner is null) return;
+        var dialog = new ServerConfigDialog(server.Config, port =>
+            Servers.FirstOrDefault(s => !ReferenceEquals(s, server) &&
+                                        CrossplayService.EffectiveBedrockPort(s.Config) == port)?.Name);
         var accepted = await dialog.ShowDialog<bool>(Owner);
         if (accepted)
-            SelectedServer.RefreshFromDisk();
+        {
+            server.RefreshFromDisk();
+            if (dialog.BedrockPortChanged)
+            {
+                Save();
+                _ = server.RefreshTunnelInfoAsync();
+            }
+        }
 
         // Whether it was accepted or cancelled: forgetting a server's players happens the moment
         // the button is pressed, not when the dialog is saved, so the Players tab would otherwise
         // go on listing people whose history is no longer there.
         if (dialog.HistoryCleared)
-            SelectedServer.History.Refresh();
+            server.History.Refresh();
     }
 
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task RemoveServer()
+    [RelayCommand(CanExecute = nameof(CanActOn))]
+    private async Task RemoveServer(ServerViewModel? target)
     {
-        if (SelectedServer is null) return;
+        if (Target(target) is null || SelectedServer is null) return;
 
         var folder = SelectedServer.Config.FolderPath;
         // Read the ports BEFORE deleting anything (we need them to locate the tunnels).
@@ -695,9 +844,7 @@ public partial class MainViewModel : ObservableObject
 
         // A crossplay server has two: the Java one and the Bedrock one. Forgetting the second
         // leaves an orphan tunnel on the account that nothing will ever clean up.
-        var bedrockPort = SelectedServer.Config.CrossplayEnabled && SelectedServer.Config.BedrockPort > 0
-            ? SelectedServer.Config.BedrockPort
-            : (int?)null;
+        var bedrockPort = CrossplayService.EffectiveBedrockPort(SelectedServer.Config);
 
         if (Owner is null) return;
         var dialog = new DeleteServerDialog(SelectedServer.Name, folder);
@@ -787,8 +934,7 @@ public partial class MainViewModel : ObservableObject
     {
         EditServerCommand.NotifyCanExecuteChanged();
         RemoveServerCommand.NotifyCanExecuteChanged();
-        CreateTunnelForSelectedCommand.NotifyCanExecuteChanged();
         ConfigureServerCommand.NotifyCanExecuteChanged();
-        ChangeIconForSelectedCommand.NotifyCanExecuteChanged();
+        EditAppearanceCommand.NotifyCanExecuteChanged();
     }
 }

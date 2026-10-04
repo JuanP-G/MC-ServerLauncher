@@ -94,7 +94,7 @@ public static class Changelog
     /// The fourth number is only shown when there is one. Printing "1.10.4.0" for a stable release
     /// would not match its own tag, its installer filename, or anything the user has seen.
     /// </remarks>
-    private static string Format(Version v) =>
+    internal static string Format(Version v) =>
         v.Revision > 0
             ? $"{v.Major}.{v.Minor}.{v.Build}.{v.Revision}"
             : $"{v.Major}.{v.Minor}.{v.Build}";

@@ -1,0 +1,490 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.VisualTree;
+using System.Text.RegularExpressions;
+using McServerLauncher.Services;
+using McServerLauncher.ViewModels;
+using static McServerLauncher.Services.PlayitApiService;
+
+namespace McServerLauncher.Tests;
+
+/// <summary>What a server card shows after the account is asked about its tunnels.</summary>
+public class TunnelAddressSyncTests
+{
+    private static PlayitTunnel Tcp(int port, string host) => new("t" + port, "x", port, host, null, "tcp", 30000);
+    private static PlayitTunnel Udp(int port, string host, int pub = 51917) => new("u" + port, "x", port, host, null, "udp", pub);
+
+    [Fact]
+    public void WhenTheAccountCannotBeAskedThereIsNoJavaAnswer() =>
+        Assert.Null(TunnelAddressSync.Java(tunnels: null, 25565));
+
+    [Fact]
+    public void WhenTheAccountSaysThereIsNoTunnelTheAddressGoes() =>
+        Assert.Equal(("", TunnelAddressState.NoTunnel), TunnelAddressSync.Java([], 25565));
+
+    [Fact]
+    public void ABedrockTunnelOnTheJavaPortIsNotTheJavaAddress() =>
+        Assert.Equal(("", TunnelAddressState.NoTunnel), TunnelAddressSync.Java([Udp(25565, "udp.ply.gg")], 25565));
+
+    [Fact]
+    public void TheJavaTunnelOnThePortIsShown() =>
+        Assert.Equal(("java.ply.gg", TunnelAddressState.Ready), TunnelAddressSync.Java([Tcp(25565, "java.ply.gg")], 25565));
+
+    [Fact]
+    public void AJavaTunnelWithoutItsAddressYetIsWaiting() =>
+        Assert.Equal(("", TunnelAddressState.Waiting), TunnelAddressSync.Java([Tcp(25565, "")], 25565));
+
+    [Fact]
+    public void AfterTheBedrockPortMovedTheOldAddressIsNotKept()
+    {
+        // The reported case: moved from 19132 to 19134, and the card went on showing 19132's tunnel,
+        // which belonged to another server.
+        var found = TunnelAddressSync.Bedrock([Udp(19132, "irvine-serenity.tun.ply.gg")], 19134);
+
+        Assert.Equal(("", "", BedrockAddressState.LocalOnly), found);
+    }
+
+    [Fact]
+    public void TheBedrockTunnelOnTheNewPortIsFound() =>
+        Assert.Equal(("new.ply.gg", "40000", BedrockAddressState.Ready),
+            TunnelAddressSync.Bedrock([Udp(19134, "new.ply.gg", 40000)], 19134));
+
+    [Fact]
+    public void ABedrockTunnelWithoutItsAddressYetIsWaiting() =>
+        Assert.Equal(BedrockAddressState.Waiting, TunnelAddressSync.Bedrock([Udp(19134, "", 0)], 19134)!.Value.State);
+
+    [Fact]
+    public void WhenTheAccountCannotBeAskedThereIsNoBedrockAnswer() =>
+        Assert.Null(TunnelAddressSync.Bedrock(null, 19134));
+}
+
+/// <summary>The server list's header and rows bind to names that exist.</summary>
+public class ServerListBindingTests
+{
+    private static string MainWindow() =>
+        File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml"));
+
+    [Theory]
+    [InlineData("ShowNewServerCommand")]
+    [InlineData("EditServerCommand")]
+    [InlineData("RemoveServerCommand")]
+    [InlineData("ShowServerDetail")]
+    [InlineData("ShowEmptyState")]
+    [InlineData("NewServerPanel")]
+    [InlineData("IsCreatingServer")]
+    [InlineData("HasNewServerDraft")]
+    [InlineData("NewServerTip")]
+    public void TheListAndTheDetailUseNamesTheMainViewModelHas(string name)
+    {
+        Assert.Contains(name, MainWindow());
+        Assert.NotNull(typeof(MainViewModel).GetProperty(name));
+    }
+
+    [Fact]
+    public void TheNewServerButtonRemindsAndKeepsQuietWhileThePanelIsOpen()
+    {
+        var xaml = Regex.Replace(MainWindow(), @"\s+", " ");
+
+        Assert.Matches(@"<Panel [^>]*Classes=""newserver""[^>]*Classes\.quiet=""\{Binding IsCreatingServer\}""[^>]*b:BeaconBehavior\.IsEnabled=""True""", xaml);
+    }
+
+    [Fact]
+    public void TheOldFooterButtonsAreGone()
+    {
+        var xaml = MainWindow();
+
+        Assert.DoesNotContain("AddServerCommand", xaml);
+        Assert.DoesNotContain("CreateServerCommand", xaml);
+    }
+
+    [Fact]
+    public void TheRowActionsActOnTheirOwnRow()
+    {
+        var xaml = MainWindow();
+
+        Assert.Matches(@"EditServerCommand[^>]*\s+CommandParameter=""\{Binding\}""", Regex.Replace(xaml, @"\s+", " "));
+        Assert.Matches(@"RemoveServerCommand[^>]*\s+CommandParameter=""\{Binding\}""", Regex.Replace(xaml, @"\s+", " "));
+    }
+}
+
+/// <summary>All the motion lives in one file.</summary>
+public class MotionTests
+{
+    [Fact]
+    public void NoViewDeclaresMotionOfItsOwn()
+    {
+        // One place to review it, and one place to tone it down.
+        var root = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher");
+        var offenders = Directory.EnumerateFiles(root, "*.axaml", SearchOption.AllDirectories)
+            .Where(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) &&
+                        !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
+            .Where(f => Path.GetFileName(f) != "Motion.axaml")
+            .Where(f =>
+            {
+                var xaml = File.ReadAllText(f);
+                return xaml.Contains("<Transitions>") || xaml.Contains("<Animation ") || xaml.Contains("<Animation>");
+            })
+            .Select(Path.GetFileName)
+            .ToList();
+
+        Assert.Empty(offenders);
+    }
+
+    [Fact]
+    public void TheMotionStylesAreLoadedByTheApp() =>
+        Assert.Contains("/Styles/Motion.axaml",
+            File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "App.axaml")));
+
+    [Fact]
+    public void NoKeyframeDependsOnTheLanguageOfTheSystem()
+    {
+        // Avalonia parses a cue and a key spline with the system's culture. In Spanish (decimal
+        // comma) "96.4%" and "0.45,0,0.25,1" are both invalid, and the animation simply stays on its
+        // first frame with nothing said: the "+ Nuevo" reminder never played on this machine.
+        var root = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher");
+        var risky = new Regex(@"Cue=""\d+[.,]\d+%""|KeySpline=", RegexOptions.Compiled);
+        var offenders = Directory.EnumerateFiles(root, "*.axaml", SearchOption.AllDirectories)
+            .SelectMany(f => File.ReadAllLines(f).Select((line, i) => (f, line, i)))
+            .Where(x => risky.IsMatch(x.line))
+            .Select(x => $"{Path.GetFileName(x.f)}:{x.i + 1}")
+            .ToList();
+
+        Assert.Empty(offenders);
+    }
+}
+
+/// <summary>The "+ Nuevo" reminder: when it plays, and when it keeps quiet.</summary>
+[Collection("avalonia")]
+public class BeaconTests(AvaloniaFixture ui)
+{
+    private static Panel Beacon()
+    {
+        var panel = new Panel { Width = 40, Height = 20 };
+        panel.Classes.Add("newserver");
+        McServerLauncher.Behaviors.BeaconBehavior.SetIsEnabled(panel, true);
+        return panel;
+    }
+
+    [Fact]
+    public void EachReminderPlaysAgainByTakingTurnsWithTwoClasses() =>
+        ui.Run(() =>
+        {
+            // One class would only animate the first time: a style animation starts when its
+            // selector starts to match, and a class that is already there matches already.
+            var panel = Beacon();
+            var window = new Window { Content = panel };
+            window.Show();
+
+            McServerLauncher.Behaviors.BeaconBehavior.Fire(panel);
+            Assert.Contains("beacon-a", panel.Classes);
+
+            McServerLauncher.Behaviors.BeaconBehavior.Fire(panel);
+            Assert.Contains("beacon-b", panel.Classes);
+            Assert.DoesNotContain("beacon-a", panel.Classes);
+
+            McServerLauncher.Behaviors.BeaconBehavior.Fire(panel);
+            Assert.Contains("beacon-a", panel.Classes);
+            window.Close();
+        });
+
+    [Fact]
+    public void WhileWhatItPointsToIsOpenItKeepsQuiet() =>
+        ui.Run(() =>
+        {
+            var panel = Beacon();
+            var window = new Window { Content = panel };
+            window.Show();
+            panel.Classes.Add("quiet");
+
+            McServerLauncher.Behaviors.BeaconBehavior.Fire(panel);
+
+            Assert.DoesNotContain("beacon-a", panel.Classes);
+            Assert.DoesNotContain("beacon-b", panel.Classes);
+            window.Close();
+        });
+
+    [Fact]
+    public void TheAnimationsItTakesTurnsWithExist()
+    {
+        var motion = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Styles", "Motion.axaml"));
+
+        foreach (var cls in new[] { "beacon-a", "beacon-b" })
+        foreach (var part in new[] { "shine", "halo" })
+            Assert.Contains($"Panel.newserver.{cls}:not(:pointerover) Border.{part}", motion);
+    }
+}
+
+/// <summary>The one underline of the server tabs, which slides to the picked tab.</summary>
+[Collection("avalonia")]
+public class TabUnderlineTests(AvaloniaFixture ui)
+{
+    private static (Window Window, TabControl Tabs, McServerLauncher.Controls.TabUnderline Line, ListBox Inner) Build(object? thirdHeader = null)
+    {
+        var inner = new ListBox { ItemsSource = new[] { "a", "b", "c" } };
+        var tabs = new TabControl
+        {
+            Items =
+            {
+                new TabItem { Header = "Consola", Content = inner },
+                new TabItem { Header = "Jugadores", Content = new TextBlock { Text = "2" } },
+                new TabItem { Header = thirdHeader ?? "Copias", Content = new TextBlock { Text = "3" } },
+            }
+        };
+        var line = new McServerLauncher.Controls.TabUnderline { Tabs = tabs };
+        var window = new Window { Width = 800, Height = 400, Content = new Panel { Children = { tabs, line } } };
+        window.Show();
+        Settle(window);
+        return (window, tabs, line, inner);
+    }
+
+    private static void Settle(Window window)
+    {
+        for (var i = 0; i < 3; i++) { AvaloniaFixture.Pump(); window.UpdateLayout(); }
+    }
+
+    private static TextBlock TitleOf(TabControl tabs, int index) =>
+        ((TabItem)tabs.ContainerFromIndex(index)!).GetVisualDescendants().OfType<TextBlock>()
+            .First(t => t.Opacity > 0);
+
+    [Fact]
+    public void TheLineSitsUnderThePickedTabsTitleAndFollowsIt() =>
+        ui.Run(() =>
+        {
+            var (window, tabs, line, _) = Build();
+
+            foreach (var index in new[] { 0, 1, 2, 0 })
+            {
+                tabs.SelectedIndex = index;
+                Settle(window);
+                var title = TitleOf(tabs, index);
+                var at = title.TranslatePoint(default, line)!.Value;
+
+                Assert.Equal(at.X, line.Target.X, 1);
+                Assert.Equal(title.Bounds.Width, line.Target.Width, 1);
+            }
+            window.Close();
+        });
+
+    [Fact]
+    public void TheThemesOwnLinePerTabIsHidden() =>
+        ui.Run(() =>
+        {
+            var (window, tabs, _, _) = Build();
+
+            Assert.DoesNotContain(tabs.GetVisualDescendants().OfType<Border>(),
+                b => b.Name == "PART_SelectedPipe" && b.IsEffectivelyVisible);
+            window.Close();
+        });
+
+    [Fact]
+    public void AListChangingItsSelectionInsideAPageDoesNotCountAsChangingTab() =>
+        ui.Run(() =>
+        {
+            // Selection events bubble: the console list picking a line arrives at the tab strip too.
+            var (window, tabs, line, inner) = Build();
+            var host = tabs.GetVisualDescendants().OfType<Avalonia.Controls.Presenters.ContentPresenter>()
+                .First(p => p.Name == "PART_SelectedContentHost");
+            var before = line.Target;
+            var classes = string.Join(",", host.Classes);
+
+            inner.SelectedIndex = 2;
+            Settle(window);
+
+            Assert.Equal(before, line.Target);
+            Assert.Equal(classes, string.Join(",", host.Classes));
+            window.Close();
+        });
+
+    [Fact]
+    public void ATitleThatHoldsItsWidthIsUnderlinedByTheWordOnShow() =>
+        ui.Run(() =>
+        {
+            // The Mods / Plugins tab keeps the width of the longer word so the tabs after it never
+            // shift; the line still only goes under the word that is actually showing.
+            var title = new Panel
+            {
+                Children =
+                {
+                    new TextBlock { Text = "Plugins", Opacity = 0 },
+                    new TextBlock { Text = "Mods", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center },
+                }
+            };
+            var (window, tabs, line, _) = Build(title);
+
+            tabs.SelectedIndex = 2;
+            Settle(window);
+
+            var shown = (TextBlock)title.Children[1];
+            Assert.Equal(shown.Bounds.Width, line.Target.Width, 1);
+            Assert.True(line.Target.Width < title.Bounds.Width);
+            window.Close();
+        });
+}
+
+/// <summary>The one mark of the rail and of the settings pages, which follows the item marked "on".</summary>
+[Collection("avalonia")]
+public class SelectionMarkerTests(AvaloniaFixture ui)
+{
+    private static (Window Window, StackPanel Host, McServerLauncher.Controls.SelectionMarker Marker) Build(McServerLauncher.Controls.MarkerShape shape)
+    {
+        var host = new StackPanel { Spacing = 4 };
+        foreach (var text in new[] { "Servidores", "Túneles", "Ajustes" })
+            host.Children.Add(new Button { Content = text, Height = 40, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch });
+        host.Children[0].Classes.Add("on");
+        var marker = new McServerLauncher.Controls.SelectionMarker { Host = host, Shape = shape };
+        var window = new Window { Width = 300, Height = 300, Content = new Panel { Children = { marker, host } } };
+        window.Show();
+        Settle(window);
+        return (window, host, marker);
+    }
+
+    private static void Settle(Window window)
+    {
+        for (var i = 0; i < 3; i++) { AvaloniaFixture.Pump(); window.UpdateLayout(); }
+    }
+
+    private static void Pick(StackPanel host, int index)
+    {
+        foreach (var child in host.Children) child.Classes.Remove("on");
+        host.Children[index].Classes.Add("on");
+    }
+
+    [Fact]
+    public void TheCardFollowsTheItemMarkedOn() =>
+        ui.Run(() =>
+        {
+            var (window, host, marker) = Build(McServerLauncher.Controls.MarkerShape.Fill);
+
+            foreach (var index in new[] { 0, 2, 1 })
+            {
+                Pick(host, index);
+                Settle(window);
+                var item = host.Children[index];
+                var at = item.TranslatePoint(default, marker)!.Value;
+
+                Assert.Equal(new Rect(at, item.Bounds.Size), marker.Target);
+            }
+            window.Close();
+        });
+
+    [Fact]
+    public void TheBarIsAThinLineDownTheLeftOfTheItem() =>
+        ui.Run(() =>
+        {
+            var (window, host, marker) = Build(McServerLauncher.Controls.MarkerShape.Bar);
+            Pick(host, 2);
+            Settle(window);
+
+            var item = host.Children[2];
+            var at = item.TranslatePoint(default, marker)!.Value;
+            Assert.Equal(McServerLauncher.Controls.SelectionMarker.BarWidth, marker.Target.Width);
+            Assert.Equal(at.X, marker.Target.X, 1);
+            Assert.InRange(marker.Target.Y, at.Y, at.Y + item.Bounds.Height);
+            window.Close();
+        });
+
+    [Fact]
+    public void WithNothingMarkedThereIsNoMark() =>
+        ui.Run(() =>
+        {
+            var (window, host, marker) = Build(McServerLauncher.Controls.MarkerShape.Bar);
+            foreach (var child in host.Children) child.Classes.Remove("on");
+            Settle(window);
+
+            Assert.Equal(default, marker.Target);
+            window.Close();
+        });
+
+    [Fact]
+    public void TheRailAndTheSettingsPagesUseIt()
+    {
+        string Read(string view) => Regex.Replace(File.ReadAllText(Path.Combine(
+            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", view)), @"\s+", " ");
+
+        var main = Read("MainWindow.axaml");
+        Assert.Contains(@"<controls:SelectionMarker Host=""{Binding #RailItems}"" Shape=""Bar"" />", main);
+        // The old bars, one per button, switched on and off by visibility.
+        Assert.DoesNotMatch(@"<Border Width=""3""[^>]*IsVisible=""\{Binding Is\w+Section\}""", main);
+
+        Assert.Contains(@"<controls:SelectionMarker Host=""{Binding #PageItems}"" Shape=""Fill"" />", Read("SettingsView.axaml"));
+    }
+}
+
+/// <summary>The secondary buttons get lighter under the pointer, never darker.</summary>
+public class SecondaryButtonTests
+{
+    private static uint Argb(string key)
+    {
+        var app = System.Xml.Linq.XDocument.Load(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "App.axaml"));
+        var brush = app.Descendants().First(e => (string?)e.Attribute("{http://schemas.microsoft.com/winfx/2006/xaml}Key") == key);
+        return Convert.ToUInt32(((string)brush.Attribute("Color")!).TrimStart('#'), 16);
+    }
+
+    [Fact]
+    public void EachStateIsLighterThanTheOneBefore()
+    {
+        // Fluent's own got darker on hover and press, which on a black window means fading away.
+        // These are translucent white, so more alpha is lighter.
+        var rest = Argb("ButtonRest") >> 24;
+        var hover = Argb("ButtonHover") >> 24;
+        var pressed = Argb("ButtonPressed") >> 24;
+
+        Assert.True(rest < hover && hover < pressed, $"{rest:X2} < {hover:X2} < {pressed:X2}");
+        Assert.Equal(0xFFFFFFu, Argb("ButtonHover") & 0xFFFFFF);
+    }
+
+    [Fact]
+    public void TheServerPlayitStripNoLongerRepeatsTheDisclaimer() =>
+        // It is in About and in the Tunnels section; on every server it was the same line again.
+        Assert.DoesNotContain("Pk_Disclaimer", File.ReadAllText(Path.Combine(
+            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml")));
+}
+
+/// <summary>Reading the account with every key at once still credits each tunnel as before.</summary>
+public class TunnelReadingMergeTests
+{
+    private static PlayitApiService.PlayitTunnel T(string id) => new(id, id, 25565, id + ".ply.gg", null, "tcp", 30000);
+    private static McServerLauncher.Views.PlayitConnection.Source S(McServerLauncher.Views.PlayitConnection.SourceKind kind, string key) => new(kind, key);
+
+    [Fact]
+    public void TheFirstSourceToReportATunnelKeepsIt()
+    {
+        var (ids, keyFor, working, error) = TunnelsViewModel.MergeForTest(
+        [
+            (S(McServerLauncher.Views.PlayitConnection.SourceKind.AppAgent, "app"), [T("a"), T("shared")], null),
+            (S(McServerLauncher.Views.PlayitConnection.SourceKind.InstalledAgent, "installed"), [T("shared"), T("b")], null),
+        ]);
+
+        Assert.Equal(["a", "shared", "b"], ids);
+        Assert.Equal("app", keyFor["shared"]);
+        Assert.Equal("installed", keyFor["b"]);
+        Assert.Equal(["app", "installed"], working);
+        Assert.Null(error);
+    }
+
+    [Fact]
+    public void ARefusedKeyDoesNotHideWhatTheOthersSee()
+    {
+        var (ids, _, working, error) = TunnelsViewModel.MergeForTest(
+        [
+            (S(McServerLauncher.Views.PlayitConnection.SourceKind.SavedKey, "stale"), null, new PlayitApiException("auth", "no")),
+            (S(McServerLauncher.Views.PlayitConnection.SourceKind.InstalledAgent, "installed"), [T("b")], null),
+        ]);
+
+        Assert.Equal(["b"], ids);
+        Assert.Equal(["installed"], working);
+        Assert.Null(error);
+    }
+
+    [Fact]
+    public void WhenNoKeyWorksTheReasonIsKept()
+    {
+        var refusal = new PlayitApiException("auth", "no");
+        var (ids, _, working, error) = TunnelsViewModel.MergeForTest(
+            [(S(McServerLauncher.Views.PlayitConnection.SourceKind.SavedKey, "stale"), null, refusal)]);
+
+        Assert.Empty(ids);
+        Assert.Empty(working);
+        Assert.Same(refusal, error);
+    }
+}

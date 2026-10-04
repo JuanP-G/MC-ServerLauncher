@@ -15,12 +15,12 @@ The project (`McServerLauncher/`) is organized by responsibility:
 |---|---|
 | `Models/` | Plain data: persisted config (`ServerConfig`), settings (`AppSettings`), enums (`ServerState`, `PlayitState`). Two subfolders hold the shapes that come from elsewhere: `Modrinth/` (what the API returns) and `Store/` (what the store shows, independent of where it came from). |
 | `Services/` | All the logic with no UI: processes, files, network, Java, Playit, ports, etc. Each service is a small, focused class. |
-| `ViewModels/` | The state and commands the UI binds to (`MainViewModel`, `ServerViewModel`, and one per panel: `ServerModsViewModel`, `ServerBackupsViewModel`, `ModDetailsViewModel`). Bindable state and `RelayCommand`s, not Avalonia controls. |
-| `Views/` | The `.axaml` windows/dialogs (Avalonia XAML) and their thin code-behind. |
+| `ViewModels/` | The state and commands the UI binds to (`MainViewModel`, `ServerViewModel`, one per panel: `ServerModsViewModel`, `ServerBackupsViewModel`, `ModDetailsViewModel`, and one per section of the window: `TunnelsViewModel`, `SettingsViewModel`). Bindable state and `RelayCommand`s, not Avalonia controls. |
+| `Views/` | The `.axaml` windows, dialogs and sections of the main window (Avalonia XAML) and their thin code-behind. |
 | `Localization/` | The translation system (`Localizer` + `{loc:Loc}` markup extension). |
 | `Behaviors/` | Attached behaviors: `AutoScrollBehavior` (the console follows the tail), `ResetScrollBehavior` (a list goes back to the top when its contents are *replaced*, not appended), MOTD coloring in `MinecraftMotd` and Markdown rendering in `MarkdownBody`. |
-| `Controls/` | Custom controls (`Sparkline` for the CPU/RAM mini-charts). |
-| `Styles/` | `Shared.axaml`: the styles more than one view needs (`Border.card`, `Border.tile`, the stat text…), included from `App.axaml`. |
+| `Controls/` | Custom controls: `Sparkline` for the CPU/RAM mini-charts, `MarqueeText` for names that slide when they do not fit, and the sliding menu marks (`SlidingIndicator`, `TabUnderline`, `SelectionMarker`). |
+| `Styles/` | `Shared.axaml`: the styles more than one view needs (`Border.card`, `Border.tile`, the stat text, the secondary buttons…), and `Motion.axaml`: all of the app's motion. Both included from `App.axaml`. |
 | `Resources/` | `Strings*.resx` (translations), `app.ico`, and the store's two data files (`store-tags.json`, `store-summaries.json`). |
 
 > **Value converters live in `ViewModels/`** — there is no `Converters/` folder. There are five:
@@ -52,8 +52,9 @@ The project (`McServerLauncher/`) is organized by responsibility:
 >
 > Never give either class a `Clone` built on `MemberwiseClone`: it copies the `PropertyChanged`
 > delegate, so the copy raises changes at the original's subscribers. `NotificationSettings.Clone`
-> is field-by-field, and `AppSettings` — which does use `MemberwiseClone` — is deliberately left a
-> plain object, because the settings dialog edits a copy and commits it on OK instead.
+> is field-by-field, and `AppSettings` — which does use `MemberwiseClone`, to save a copy with the
+> secrets encrypted — is deliberately left a plain object: nothing binds to it, because
+> `SettingsViewModel` wraps the fields it shows and raises their changes itself.
 
 > **One table says what each field of the config feeds.** `ServerConfigEffects` has a row per
 > `ServerConfig` property: which `ServerViewModel` and `ServerModsViewModel` properties to announce,
@@ -138,7 +139,7 @@ are no hard-coded machine paths.
   falling back to a legacy `playit.toml` secret
   or pasted write key otherwise. `PlayitManager` queries/starts/stops the background Windows/systemd
   service. `PlayitConnection` is the shared connect/disconnect flow used by the tunnel buttons and
-  the Settings dialog.
+  the Tunnels section.
 - **`PortService`** — checks which TCP ports are in use, finds a free one, and (via P/Invoke) finds
   the PID listening on a port so a stuck server can be freed.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — read/write the
@@ -172,7 +173,7 @@ are no hard-coded machine paths.
 - **`ServerCreationService`** — writes the initial files of a new server: `eula.txt`,
   `run.bat`/`user_jvm_args.txt` and a minimal `server.properties` with the chosen port. (The jar
   download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is
-  picked by `PortService`, all orchestrated by `CreateServerDialog`.) The seed typed there, if any, is
+  picked by `PortService`, all orchestrated by `NewServerView`.) The seed typed there, if any, is
   written as `level-seed`, escaped as a Java properties value — a backslash doubled, anything outside ASCII
   as `\uXXXX` — and is asked for **only at creation**: converting the type or changing the version keeps
   the world, so there is no seed left to choose.
@@ -192,8 +193,9 @@ are no hard-coded machine paths.
   The level is three-valued rather than a yes/no, because "Geyser publishes a build" and "your friend on a phone
   can play" are different claims: `Full` for Paper, Purpur and Fabric, `Partial` for NeoForge — it connects and
   authenticates, and then any mod the client is required to have shuts Bedrock out — and `None` for Vanilla and
-  Forge. `CrossplayService.CaveatKey` turns the level into the note both dialogs show.
-- **`ServerJarInstaller`** — the one place that knows how each type is obtained. The create dialog and the
+  Forge. `CrossplayService.CaveatKey` turns the level into the note the new-server panel and the edit
+  dialog show.
+- **`ServerJarInstaller`** — the one place that knows how each type is obtained. The new-server panel and the
   change-type dialog both call it; the chain used to be written out inline in both, and a type present in one and
   missing from the other silently produced a Vanilla server.
 - **`ModLoaderService`** / **`PaperService`** / **`PurpurService`** — install a mod loader (Fabric/Forge/NeoForge) or a
@@ -268,7 +270,7 @@ are no hard-coded machine paths.
   loader versions, what to launch (a jar, or the Forge/NeoForge args file), the port from
   `server.properties`, the memory from `user_jvm_args.txt` or the start scripts (skipping comments —
   Forge's file is mostly an example `-Xmx4G` nobody chose), whether there is a world, and the root
-  jars for picking one by hand. The create dialog's *use a folder that already exists* shows it, locks
+  jars for picking one by hand. The new-server panel's *add one I already have* shows it, locks
   what was found and asks only for the rest; this replaced the separate *Add* button, whose dialog
   asked for a jar name by hand and skipped the tunnel, crossplay and start options. `ExistingServer`
   builds the config from the detection and the form (the detection wins) and never writes to the
@@ -370,8 +372,50 @@ are no hard-coded machine paths.
 required Java from the jar and install it if needed) → `ServerProcessManager.Start`. Console output
 streams back through the `OutputReceived` event into `ConsoleLines`.
 
+### The window: sections, the new-server panel and motion
+The main window is a **rail** of four sections — Servers, Tunnels, Settings, About — sharing one cell
+of `MainWindow` and switched by `IsVisible` (`MainViewModel.Section`), so a section keeps its state
+(the console its scroll, a half-typed form its text) while another is on screen.
+
+- **Servers** is the list and the selected server's detail. **"+ New"** opens `NewServerView` in the
+  detail area instead of a dialog: one click on a card picks where the server comes from (made here, or
+  a folder that already holds one) and goes on to a single form in two columns. It raises
+  `Completed(NewServerResult)` or `Cancelled`, and `MainViewModel.FinishNewServerAsync` runs the same
+  steps after either origin. Picking a server while the panel is open shows that server and keeps the
+  panel as a draft (`HasNewServerDraft`); a download already started goes on and the server joins the
+  list when it ends. The card at the top of a server (`ServerCardView`) is also the preview in
+  **Server appearance** (`ServerAppearanceDialog`), which edits the image, the name and the MOTD as
+  two lines styled character by character (`MotdDocument`); `WakeSign` writes the "join to start it"
+  line that both the sleeping listener and that preview show.
+- **Tunnels** (`TunnelsViewModel`/`TunnelsView`) reads every Playit key the app can find at once —
+  the app's agent, an installed agent's `playit.toml`, a saved key — merges what each sees
+  (`TunnelInventory`) and offers the fixes it can make. The account is read once shortly after start
+  (`PrefetchAsync`) so the screen is filled the first time it opens, and again each time it is opened.
+- **Settings** (`SettingsViewModel`/`SettingsView`) saves as it changes; there is no dialog. Its pages
+  are General, Notifications, Colours and Players (the player history). A colour is edited with
+  `Views/ColorChooser`: a palette picked to read well on the dark surfaces (`Services/ColorPalette`),
+  the spectrum and hue bar of `Avalonia.Controls.ColorPicker` on request, and a line saying whether
+  the colour will be readable — WCAG contrast against the console's background, 4.5 for console text
+  and 3 for the notification colours. The `#RRGGBB` box stays, and a half-typed code never reaches
+  the setting.
+- **About** (`AboutView`) shows the version, the update check and the links. `UpdateCheck` keeps
+  apart the answers a press of *Check for updates* can get — up to date, a newer version, could not
+  ask — which used to read the same.
+
+**Motion** lives in one file, `Styles/Motion.axaml`, and a test keeps views from declaring any of
+their own. Menus have a single mark that slides to what was picked instead of one per item:
+`Controls/SlidingIndicator` places a `Border` and lets a transition move it, and its two subclasses
+say where — `TabUnderline` under the picked tab's title, `SelectionMarker` beside or behind the child
+of a panel carrying the class `on` (the rail, the Settings pages). `Behaviors/BeaconBehavior` gives
+"+ New" its periodic reminder by toggling two classes that start a short style animation.
+
+> **Keyframes must not depend on the culture.** Avalonia parses `Cue` and `KeySpline` with the system's
+> culture: on a Spanish system `Cue="96.4%"` and `KeySpline="0.45,0,0.25,1"` do not parse and the
+> animation silently stays on its first frame. Whole-number cues only, no `KeySpline` (draw the curve
+> with more keyframes); `MotionTests` checks it.
+
 ### Java auto-install
-At **create** time, `CreateServerDialog` asks `MinecraftVersionService` for the required Java major
+At **create** time, `NewServerView` asks `MinecraftVersionService` for the required Java major
 and calls `JavaService.EnsureJavaAsync`. At **start** time, `ServerViewModel` reads the Java version
 embedded in `server.jar` (`version.json`) and installs/uses a compatible runtime, saving the path in
 `ServerConfig.JavaPath`.
@@ -392,6 +436,13 @@ retries; creating a tunnel starts the same burst on the Java side, which used to
 30-second timer. The address box is read-only — it shows what playit assigned, not a preference —
 and the line under it is `TunnelAddressState` (`Waiting` / `NoTunnel` / `Ready` / `Failed`), the
 sibling of `BedrockAddressState`: three different situations used to render as one empty box.
+When the account answers and the tunnel is not in it, the address is cleared rather than kept
+(`TunnelAddressSync`): a crossplay server whose Bedrock port had moved went on showing the address
+of the tunnel it had left, which by then led to another server. Only a request that failed keeps the
+last address. A key read from an installed agent's `playit.toml` can read the account but not change
+it — rename and delete answer `NotAllowedWithReadOnly` whatever the authentication scheme — so
+`PlayitApiService.CanManageTunnelsAsync` finds out without changing anything (it renames an id that
+does not exist), and Tunnels sends those changes to playit.gg instead of failing at them.
 Compliance
 with Playit's third-party rules: the browser only opens on an explicit click, a disclaimer states
 the app is not affiliated with Playit, and the user can always reach their Playit account directly.
@@ -471,7 +522,11 @@ Then the **second tunnel**: Java is TCP and Bedrock is UDP, and one cannot carry
 `MainViewModel` creates a UDP tunnel alongside the Java one. `CrossplayService.PickBedrockPort`
 chooses the local port (19132 is only a starting point — it is taken as soon as there are two
 servers), avoiding both the ports other registered servers hold and the ones the user's Playit
-account already has.
+account already has. A crossplay server left on port 0 really uses 19132, and
+`CrossplayService.EffectiveBedrockPort` counts it that way: counting it as free is how two servers
+ended up behind one Bedrock tunnel. The port can be changed in *Configure*, which refuses one another
+server holds and rewrites `servers.json` and Geyser's config together, and Tunnels offers to move a
+server off a Bedrock tunnel it shares.
 
 Finally `GeyserConfigService` writes what Geyser cannot work out for itself: `auth-type` (a server
 with Floodgate left on `online` turns every Bedrock player away), the local UDP port, and
@@ -480,7 +535,8 @@ the launcher is the only component that knows both numbers because it created th
 `RepairConfig` re-applies this when a reinstall resets the file.
 
 How well any of it works is a property of the server type, not a promise: `ServerTypeCatalog` carries
-a three-valued `CrossplayLevel` and both dialogs show the caveat before the checkbox is ticked. On
+a three-valued `CrossplayLevel` and the new-server panel and the edit dialog show the caveat before the
+checkbox is ticked. On
 Fabric, a further checkbox installs **Hydraulic** (`HydraulicService`) so the blocks and items mods
 add are converted for Bedrock clients; it is Fabric-only because Hydraulic stopped publishing
 NeoForge builds in February 2026. The one failure that cannot be prevented — a NeoForge server
@@ -531,7 +587,7 @@ make a project already seen open with no connection.
 ### Changing a server's type
 `InstallLoaderDialog` converts an existing server in place, **keeping the world**: Vanilla into a
 loader or a plugin server, one loader into another, or any of them back to Vanilla. It offers the
-same list as the create dialog (the shared `ServerTypePicker`) and installs through the same
+same list as the new-server panel (the shared `ServerTypePicker`) and installs through the same
 `ServerJarInstaller`, so the two cannot drift apart — they used to, and a type present in one and
 missing from the other silently produced a Vanilla server. The warning above the button is keyed on
 the *direction* of the change, because the directions are not equally safe: gaining a loader is

@@ -1,0 +1,87 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:b="using:McServerLauncher.Behaviors"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:controls="using:McServerLauncher.Controls"
+             x:Class="McServerLauncher.Views.ServerCardView"
+             x:Name="Root"
+             x:CompileBindings="False">
+
+    <!-- The server's card as players will see it in Minecraft's server list.
+
+         A control of its own because two places draw it: the header of the detail and the preview
+         of the appearance editor. Drawn once, the two cannot drift apart: what you see while editing
+         is, by construction, what the window then shows. The "Edit" veil over the icon is animated in
+         Styles/Motion.axaml, with the rest of the motion. -->
+
+    <Border Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}" BorderThickness="1"
+            CornerRadius="6" Padding="10" controls:MarqueeText.IsHoverScope="True">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+
+            <!-- server-icon.png, or a placeholder when there is none. On an editable card, pressing it opens the editor. -->
+            <Button Grid.Column="0" Classes="iconbtn" Width="64" Height="64" Padding="0" Cursor="Hand"
+                    Background="{StaticResource GroundWell}"
+                    IsHitTestVisible="{Binding #Root.IsEditable}"
+                    Focusable="{Binding #Root.IsEditable}"
+                    ToolTip.Tip="{loc:Loc Look_EditTip}"
+                    Command="{Binding #Root.EditCommand}">
+                <Panel>
+                    <ic:SymbolIcon Symbol="Server" FontSize="28" Opacity="0.5"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   IsVisible="{Binding #Root.Icon, Converter={x:Static ObjectConverters.IsNull}}" />
+                    <Image Source="{Binding #Root.Icon}" Width="64" Height="64"
+                           RenderOptions.BitmapInterpolationMode="None"
+                           IsVisible="{Binding #Root.Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <Border x:Name="HoverOverlay" Background="{StaticResource ScrimHover}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
+                            <ic:SymbolIcon Symbol="Edit" FontSize="16" Foreground="White" HorizontalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Look_EditShort}" Foreground="White" FontSize="9"
+                                       TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Panel>
+            </Button>
+
+            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                <Grid ColumnDefinitions="*,Auto">
+                    <controls:MarqueeText Text="{Binding #Root.ServerName}" TextElement.Foreground="White"
+                                          TextElement.FontWeight="Bold" TextElement.FontSize="16"
+                                          VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Margin="6,0,0,0" Padding="4" Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
+                            IsVisible="{Binding #Root.IsEditable}"
+                            ToolTip.Tip="{loc:Loc Look_EditTip}"
+                            Command="{Binding #Root.EditCommand}">
+                        <ic:SymbolIcon Symbol="Edit" FontSize="14" Foreground="{StaticResource McListText}" />
+                    </Button>
+                </Grid>
+                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,3,0,0">
+                    <Border CornerRadius="4" Padding="6,1" VerticalAlignment="Center"
+                            Background="{Binding #Root.TypeBrush}">
+                        <TextBlock Text="{Binding #Root.TypeText}" FontSize="11"
+                                   FontWeight="SemiBold" Foreground="White" />
+                    </Border>
+                    <TextBlock Text="{Binding #Root.Version}" FontSize="12"
+                               Foreground="{StaticResource McListText}" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock b:MinecraftMotd.Text="{Binding #Root.Motd}" FontSize="13"
+                           TextWrapping="Wrap" Margin="0,3,0,0"
+                           FontFamily="Cascadia Mono, Consolas, monospace" />
+            </StackPanel>
+
+            <!-- Players and signal bars -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal"
+                        VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10,2,0,0">
+                <TextBlock Text="{Binding #Root.PlayerCount}" Foreground="{StaticResource McListText}" FontSize="13"
+                           Margin="0,0,6,0" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip.Tip="{Binding #Root.SignalHint}">
+                    <Rectangle Width="3" Height="4" Fill="{Binding #Root.SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                    <Rectangle Width="3" Height="6" Fill="{Binding #Root.SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                    <Rectangle Width="3" Height="8" Fill="{Binding #Root.SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                    <Rectangle Width="3" Height="10" Fill="{Binding #Root.SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                    <Rectangle Width="3" Height="12" Fill="{Binding #Root.SignalBrush}" Margin="1,0,0,0" VerticalAlignment="Bottom" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

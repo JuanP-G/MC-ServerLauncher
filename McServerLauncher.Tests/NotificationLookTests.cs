@@ -210,10 +210,10 @@ public class NotificationLookTests
     [Fact]
     public void EveryNameTheColourRowsBindToExistsOnTheDialog()
     {
-        // SettingsDialog.axaml is x:CompileBindings="False": a mistyped name raises nothing and the
+        // SettingsView.axaml is x:CompileBindings="False": a mistyped name raises nothing and the
         // box simply never fills in.
         var xaml = File.ReadAllText(Path.Combine(
-            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "SettingsDialog.axaml"));
+            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "SettingsView.axaml"));
 
         var names = Regex.Matches(xaml, @"\{Binding Notifications\.([A-Za-z0-9_]+)[,}]")
             .Select(m => m.Groups[1].Value)
@@ -224,7 +224,7 @@ public class NotificationLookTests
         foreach (var name in names)
             Assert.True(
                 typeof(NotificationSettings).GetProperty(name, BindingFlags.Public | BindingFlags.Instance) is not null,
-                $"NotificationSettings no tiene ninguna propiedad «{name}», que SettingsDialog.axaml enlaza");
+                $"NotificationSettings no tiene ninguna propiedad «{name}», que SettingsView.axaml enlaza");
     }
 
     [Fact]
@@ -274,10 +274,11 @@ public class NotificationLookTests
     public void TheFourColoursAreAllEditable()
     {
         var xaml = File.ReadAllText(Path.Combine(
-            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "SettingsDialog.axaml"));
+            LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "SettingsView.axaml"));
 
-        // One box per level, or a level the user cannot reach.
+        // One box per level, or a level the user cannot reach. Through the view model, which only
+        // saves a colour once it is one.
         foreach (var level in Enum.GetValues<NotificationLevel>())
-            Assert.Contains($"{{Binding Notifications.Color{level}, Mode=TwoWay}}", xaml);
+            Assert.Contains($"{{Binding Color{level}, Mode=TwoWay}}", xaml);
     }
 }

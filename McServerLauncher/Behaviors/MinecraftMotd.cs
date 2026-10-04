@@ -25,7 +25,7 @@ public static partial class MinecraftMotd
     }
 
     // Official Minecraft color palette (§0-§9, §a-§f).
-    private static readonly Dictionary<char, Color> Palette = new()
+    internal static readonly Dictionary<char, Color> Palette = new()
     {
         ['0'] = Color.Parse("#000000"), ['1'] = Color.Parse("#0000AA"), ['2'] = Color.Parse("#00AA00"),
         ['3'] = Color.Parse("#00AAAA"), ['4'] = Color.Parse("#AA0000"), ['5'] = Color.Parse("#AA00AA"),
