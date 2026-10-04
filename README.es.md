@@ -7,185 +7,286 @@
 [![Descargar](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?style=for-the-badge&label=Descargar&color=5CE07B)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-8B949E?style=for-the-badge)](LICENSE)
 
-🌐 **[Página web](https://mc-server-launcher.vercel.app)** (también en
-[English](https://mc-server-launcher.vercel.app/en/) ·
-[Deutsch](https://mc-server-launcher.vercel.app/de/) ·
-[Français](https://mc-server-launcher.vercel.app/fr/) ·
-[Português](https://mc-server-launcher.vercel.app/pt/)) —
-📖 **[Documentación](https://juanp-g.github.io/MC-ServerLauncher/docs/)**
+Crea, configura y comparte **servidores de Minecraft** en **Windows, Linux y macOS** desde una app — **sin
+archivos `.bat`, ventanas de consola ni configuraciones a mano**.
 
-Aplicación de escritorio para **Windows, Linux y macOS** para gestionar uno o varios servidores de
-**Minecraft** desde una interfaz gráfica moderna — **sin archivos `.bat`, ventanas de consola negras ni editar
-configuraciones a mano**.
+<p align="center">
+  <img src="docs/media/es/tour.gif" width="900" alt="Un paseo por la app: la consola de un servidor encendido, sus jugadores, la tienda de plugins, Túneles y Ajustes">
+</p>
 
-Crea un servidor, elige el **tipo** en una rejilla de tarjetas que dice cuáles llevan plugins, cuáles mods y a cuáles
-se puede entrar desde Bedrock (Vanilla, Paper, Purpur, Fabric, NeoForge, Forge), elige la versión, añade **mods o plugins**
-con un par de clics, ábrelo a Internet con Playit.gg, gestiona jugadores y ajusta la configuración…
-todo con botones.
+<p align="center">
+  <a href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest"><b>⬇️ Descargar</b></a> ·
+  <a href="https://mc-server-launcher.vercel.app"><b>🌐 Página web</b></a> ·
+  <a href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><b>📖 Documentación</b></a>
+</p>
 
-> Hecha con **Avalonia / .NET 9** — multiplataforma, diseño Fluent, tema oscuro.
+## ✨ Qué puedes hacer
 
-## 📸 Un vistazo por dentro
+<table>
+<tr><td width="33%">🧱 <b>Crear un servidor en 2 minutos</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge o Forge. La app pone hasta el Java.</td><td width="33%">🧩 <b>Mods y plugins de Modrinth</b><br>Ya filtrados por tu versión, y cada uno con lo que necesita.</td><td width="33%">🌐 <b>Jugar con amigos por Internet</b><br>Túnel de Playit.gg: una dirección, sin abrir puertos.</td></tr>
+<tr><td width="33%">📱 <b>Desde Bedrock también</b><br>Móvil, consola y Windows 10/11, con una casilla.</td><td width="33%">👥 <b>Jugadores con ficha</b><br>OPs, baneos, lista blanca e historial de cada jugador.</td><td width="33%">💾 <b>Copias del mundo</b><br>Al arrancar, al parar y cada hora mientras se juega.</td></tr>
+<tr><td width="33%">💤 <b>Se duerme y se despierta</b><br>Se apaga sin nadie dentro y arranca cuando alguien entra.</td><td width="33%">🖥️ <b>Una consola que se lee</b><br>Colores por tipo de línea, filtros con contador y buscador.</td><td width="33%">🔄 <b>Se actualiza sola</b><br>Cada descarga, comprobada con su SHA-256.</td></tr>
+</table>
 
-**El menú lateral, la lista de servidores con su tipo y uno arrancado: estadísticas en vivo, su dirección de Playit y la consola coloreada según lo que es cada línea**
+Todo en **una sola ventana**, en español, inglés, portugués, francés y alemán.
 
-![Vista principal](docs/screenshots/main.png)
+## 🎬 Cómo se hace
 
-**Nuevo servidor, dentro de la ventana — todas las opciones de un servidor nuevo en una pantalla, a dos columnas**
+Pulsa cada apartado para verlo en marcha.
 
-![Panel de nuevo servidor](docs/screenshots/new-server.png)
+<details>
+<summary><b>⬇️ Instalar la app</b></summary>
 
-**Buscador de mods y plugins — busca en Modrinth ya filtrado por el tipo y la versión de tu servidor**
+<br>
 
-![Buscador de mods y plugins](docs/screenshots/mods-plugins.png)
+1. Descarga **`MC-ServerLauncher-Setup-x.y.z.exe`** de la **[última versión](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)**.
+2. Ábrelo y pulsa **Siguiente** hasta **Finalizar**. Crea el acceso directo del escritorio y del menú Inicio.
+3. Abre la app. **No necesitas instalar .NET ni Java**: la app se encarga.
 
-**Gestión de jugadores (lista blanca, operadores, baneos…)**
-
-![Gestión de jugadores](docs/screenshots/players.png)
-
-**Editor visual de `server.properties` — cada ajuste explicado con palabras claras**
-
-![Editor visual de configuración](docs/screenshots/settings.png)
-
-## ⬇️ Descargar e instalar
-
-1. Ve a la **[última versión (Releases)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)**.
-2. Descarga **`MC-ServerLauncher-Setup-x.y.z.exe`** y ejecútalo (crea acceso directo en Escritorio y menú Inicio).
-3. Abre la app y crea o añade tu servidor. **No necesitas instalar .NET ni Java** — la app se encarga.
-4. Las actualizaciones se hacen **dentro de la app, en las tres plataformas**: cuando hay una versión nueva,
-   un aviso muestra un botón **Actualizar**, y la app la descarga, **la verifica contra su SHA-256 publicado**
-   y la instala sola — ejecutando el instalador en Windows, reemplazando el AppImage en Linux y el paquete de
-   la app en macOS. Después, una ventana de **Novedades** te cuenta qué ha cambiado.
+<img src="docs/media/es/install.gif" width="612" alt="El instalador: carpeta de destino, acceso directo, listo para instalar y terminado">
 
 > La primera vez, Windows puede mostrar un aviso de SmartScreen (app nueva sin firma): pulsa
 > *Más información → Ejecutar de todas formas*.
 >
-> **macOS / Linux:** descarga el `.dmg` (macOS) o el `.AppImage` (Linux) de la misma release. En macOS la app
-> aún no está firmada por Apple, así que la primera vez **haz clic derecho en la app → Abrir** para pasar
-> Gatekeeper.
+> **Linux:** descarga el `.AppImage` de la misma versión. **macOS:** el `.dmg`; como aún no está firmada por
+> Apple, la primera vez **clic derecho en la app → Abrir**.
 
-## ✨ Funcionalidades
+</details>
 
-- **Todo en una ventana**: un menú lateral con **Servidores**, **Túneles**, **Ajustes** y **Acerca de**.
-  Crear o añadir un servidor se hace en la propia ventana, junto a la lista, y se puede dejar a medias y
-  retomar. **Túneles** muestra todos los túneles de Playit de tu cuenta, marca los que no llevan a nada o
-  los que comparten dos servidores, y deja renombrarlos o borrarlos.
+<details>
+<summary><b>🧱 Crear un servidor</b></summary>
+
+<br>
+
+**«+ Nuevo»** → **Crear uno nuevo** → un nombre, el tipo y la versión → **Crear servidor**. La app descarga el
+servidor oficial, comprueba su huella, acepta el EULA, prepara el puerto y lo arranca.
+
+<img src="docs/media/es/create.gif" width="900" alt="Crear un servidor Paper desde el panel de nuevo servidor">
+
+¿Ya tienes uno? **Añadir uno que ya tengo** reconoce la carpeta (tipo, versión, puerto y memoria) y no cambia
+nada en ella.
+
+</details>
+
+<details>
+<summary><b>🧩 Instalar mods o plugins</b></summary>
+
+<br>
+
+En la pestaña **Mods** (o **Plugins**), busca, pulsa **Instalar** y ya está: se descarga la versión que encaja
+con tu servidor, con las librerías que necesite.
+
+<img src="docs/media/es/mods.gif" width="900" alt="Buscar Lithium en Modrinth e instalarlo">
+
+</details>
+
+<details>
+<summary><b>🌐 Jugar con amigos por Internet</b></summary>
+
+<br>
+
+Con Playit.gg activado, la dirección pública **aparece sola** a los pocos segundos; pulsa **Copiar** y pásasela a
+tus amigos. **Túneles** enseña todos los túneles de tu cuenta y arregla los que sobran.
+
+<img src="docs/media/es/internet.gif" width="900" alt="La dirección de Playit aparece, se copia, y la sección Túneles con sus arreglos">
+
+</details>
+
+<details>
+<summary><b>💾 Hacer y restaurar copias</b></summary>
+
+<br>
+
+Las copias automáticas se hacen solas. Para una a mano, **Copia de seguridad ahora** en la pestaña **Copias de
+seguridad**; **Restaurar** devuelve el mundo a ese momento (con el servidor detenido).
+
+<img src="docs/media/es/backups.gif" width="900" alt="Hacer una copia del mundo y el botón Restaurar">
+
+</details>
+
+<details>
+<summary><b>🔄 Actualizar la app</b></summary>
+
+<br>
+
+Cuando hay una versión nueva sale un aviso arriba: **Actualizar** la descarga, la comprueba y la instala. Al
+volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Windows, Linux y macOS.
+
+<img src="docs/media/es/update.gif" width="900" alt="El aviso de actualización, la descarga y la ventana de Novedades">
+
+</details>
+
+## 📋 Todas las funciones
+
+<details>
+<summary><b>🧱 Servidores</b> — crear, añadir, tipos, arrancar, apariencia, semillas, dormir</summary>
+
+<br>
+
+- **Todo en una ventana**: un menú lateral con **Servidores**, **Túneles**, **Ajustes** y **Acerca de**. Crear o
+  añadir un servidor se hace junto a la lista, y se puede dejar a medias y retomar.
 - **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Paper /
   Purpur / Fabric / NeoForge / Forge).
 - **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang), **puerto** y
   **RAM**; la app descarga el servidor correcto, acepta el EULA, prepara `run.bat` / `server.properties` e
-  instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur usan **plugins**.
-  ¿Ya tienes un servidor? El mismo panel puede **usar una carpeta que ya existe**: reconoce el tipo, la
-  versión de Minecraft y del loader, el puerto y la memoria, los rellena, y no cambia nada en la carpeta.
-- **Tienda de mods y plugins** 🧩 — busca en **Modrinth** dentro de la app, ya **filtrado por el tipo y la
-  versión de tu servidor** (con chips de tipo y versión para que quede claro). Cada resultado trae un **resumen
-  en lenguaje claro y en tu idioma** de para qué sirve, y avisa cuando además hay que instalarlo en el cliente.
-  Abre la **ficha completa** con galería, versiones, dependencias, enlaces y mods relacionados sin salir de la
-  app. Un **panel de Filtros** combina varias categorías a la vez y muestra las aplicadas como chips que puedes
-  quitar de una en una. **Instala** con un clic y **activa/desactiva** o borra lo instalado. Paper y Purpur
-  ven plugins; los cargadores de mods ven mods.
-- **Instalar un mod trae lo que necesita** — las librerías de las que depende (Fabric API, cristallib y
-  compañía) se resuelven en Modrinth y se instalan con él, también las de sus dependencias. Es lo que
-  reclamaba el cargador de Fabric cuando se negaba a arrancar con una lista de dependencias que faltaban. Solo
-  las *obligatorias*, nunca los extras opcionales, y nunca una segunda copia de algo que ya está. Para los
-  servidores creados antes, el botón de **buscar actualizaciones** ahora dice además qué librerías faltan y
-  ofrece instalarlas. Lo que encuentre se actualiza de uno en uno o con **Actualizar todas**, y actualizar uno
-  deja los demás a la vista.
-- **Jugar también desde Bedrock** 📱 — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea el
-  segundo túnel (UDP) que Bedrock necesita y configura el puerto público que Geyser debe anunciar — la parte que
-  casi nadie acierta a mano. El puerto de Bedrock se puede cambiar en la configuración de cada servidor, y nunca
-  se le da el mismo a dos. Lo bien que funciona depende del tipo de servidor, y la tarjeta de cada tipo lo dice
-  antes de que elijas:
+  instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur
+  usan **plugins**. El mismo panel puede **usar una carpeta que ya existe**: reconoce el tipo, la versión de
+  Minecraft y del loader, el puerto y la memoria, y no cambia nada en la carpeta.
+- **Cambiar el tipo de un servidor** — a Paper/Purpur/Fabric/Forge/NeoForge o de vuelta a Vanilla,
+  **conservando el mundo**, con avisos por colores de lo que puede afectar cada cambio.
+- **Iniciar / Detener / Reiniciar** con parada limpia que guarda el mundo; detecta y libera un **puerto
+  ocupado**; **CPU, RAM, tiempo activo y puerto** en vivo.
+- **Tarjeta estilo Minecraft** — icono, MOTD con colores, `jugadores/máx` y señal. Pulsa la imagen o el lápiz
+  para abrir **Apariencia del servidor**: la imagen, el nombre y las dos líneas del MOTD —colores, negrita,
+  cursiva, subrayado y tachado— con la propia tarjeta como vista previa.
+- **Configuración visual de `server.properties`** con explicaciones claras.
+- **Semillas** 🌱 — elígela al crear el servidor, mira la real en su configuración y ábrela en el mapa de
+  Chunkbase, en la versión de ese servidor, con un clic.
+- **Se apaga y se enciende solo** 💤 — un servidor puede **apagarse a los N minutos sin nadie dentro** y
+  **volver a encenderse cuando alguien intenta entrar**. Mientras duerme, la lista dice *«Apagado · entra para
+  encenderlo»* y quien pulse Entrar recibe un mensaje mientras arranca. Hay **cuenta atrás** hasta el apagado y
+  un margen tras despertar. Por servidor y **desactivado de serie**.
+- **Antes de arrancar se comprueba que no falte nada** ✅ — si a un mod o plugin le falta una dependencia, se
+  avisa **al darle a Iniciar**, con la opción de instalarla y arrancar. Se lee de los propios jars, así que
+  funciona **sin conexión**. Para mods de Fabric y Forge/NeoForge y plugins de Paper y Purpur.
+
+</details>
+
+<details>
+<summary><b>🧩 Mods y plugins</b> — tienda, dependencias, actualizaciones, modpack para tus amigos</summary>
+
+<br>
+
+- **Tienda de mods y plugins** — busca en **Modrinth** dentro de la app, ya **filtrado por el tipo y la
+  versión de tu servidor**. Cada resultado trae un **resumen en lenguaje claro y en tu idioma**, y avisa cuando
+  además hay que instalarlo en el cliente. La **ficha completa** (galería, versiones, dependencias, enlaces y
+  mods relacionados) se abre sin salir de la app, y el **panel de Filtros** combina varias categorías.
+  **Instala** con un clic y **activa/desactiva** o borra lo instalado; lo instalado tiene su propio buscador.
+- **Instalar un mod trae lo que necesita** — las librerías de las que depende (Fabric API y compañía) se
+  instalan con él, también las de sus dependencias. Solo las *obligatorias*, y nunca una segunda copia.
+- **Actualizaciones** — **buscar actualizaciones** dice qué hay nuevo y qué librerías faltan; se actualiza de
+  uno en uno o con **Actualizar todas**.
+- **Manda a tus amigos un modpack listo** 📦 — un botón comprime los mods con instrucciones en su idioma. Los
+  que solo hacen algo en el servidor (Geyser, Floodgate, un mod de copias) **se dejan fuera solos**, y la app
+  te dice cuáles. El paquete lleva un **script para Windows, Linux y macOS** que encuentra las carpetas de
+  mods —incluida cada instancia de Prism, MultiMC, CurseForge o Modrinth App—, lo copia todo y aparta lo que
+  hubiera, **sin borrar nada**. Si falta Fabric, Forge o NeoForge, **se ofrece a instalarlo**, comprobando la
+  descarga contra el hash publicado por el propio cargador.
+
+</details>
+
+<details>
+<summary><b>🌐 Internet, Bedrock y otras versiones</b> — Playit.gg, Túneles, Geyser, ViaVersion</summary>
+
+<br>
+
+- **Abre tu servidor a Internet con Playit.gg** — conecta tu cuenta desde **Túneles** pegando un **código de
+  configuración** de un solo uso. La app **crea el túnel y ejecuta el agente de Playit por ti** — **tú no
+  instalas nada** — y la dirección **aparece sola** en segundos. La app no contiene ningún secreto propio (la
+  credencial vive en un pequeño proxy).
+- **Túneles** — todos los túneles de tu cuenta en una tabla: marca los que no llevan a nada, los repetidos y
+  los puertos compartidos, con un botón para arreglar cada uno, y deja renombrarlos o borrarlos.
+- **Jugar también desde Bedrock** 📱 — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea
+  el segundo túnel (UDP) y configura el puerto público que Geyser debe anunciar. El puerto de Bedrock se cambia
+  en la configuración de cada servidor, y nunca se le da el mismo a dos. Depende del tipo de servidor:
 
   | Tipo | Desde Bedrock | Por qué |
   |---|---|---|
   | **Paper**, **Purpur** | ✅ Funciona | Los plugins solo corren en el servidor: el cliente de Bedrock no necesita nada. |
   | **Fabric** | ✅ Funciona | Con la casilla de contenido de mods: Hydraulic convierte lo que añaden los mods. |
-  | **NeoForge** | ⚠️ A veces | Conecta y autentica, y a partir de ahí depende de los mods: cualquiera que el cliente necesite tener deja fuera a Bedrock, y Hydraulic ya no publica para NeoForge. |
+  | **NeoForge** | ⚠️ A veces | Conecta, pero cualquier mod que el cliente necesite tener deja fuera a Bedrock, y Hydraulic ya no publica para NeoForge. |
   | **Vanilla**, **Forge** | ❌ No | Geyser no publica ninguna versión para ellos. |
-- **Que los de Bedrock vean el contenido de los mods** — en **Fabric**, otra casilla instala
-  Hydraulic (de los propios GeyserMC) y Fabric API, y los bloques y objetos que añaden los mods se
-  convierten para los clientes de Bedrock. Solo en Fabric: Hydraulic dejó de publicar para NeoForge
-  en febrero de 2026. Sus autores lo consideran de desarrollo muy temprano, y la app lo dice antes
-  de que marques la casilla.
-- **Pásales la lista de mods a tus amigos** 📦 — un botón comprime los mods (o plugins) del servidor
-  junto con un archivo de instrucciones en tu idioma que dice el nombre del servidor, su tipo y su
-  versión de Minecraft, para que entrar a un servidor con mods deje de ser algo que explicas por chat.
-- **Jugar desde otras versiones de Minecraft** — una casilla instala ViaVersion y ViaBackwards, para que entren
-  clientes más nuevos y más antiguos que el servidor. Solo en servidores de plugins.
-- **Cambiar el tipo de un servidor** — convierte uno existente a Paper/Purpur/Fabric/Forge/NeoForge o de vuelta a Vanilla,
-  **conservando el mundo**, con avisos por colores de lo que puede afectar cada cambio.
-- **Iniciar / Detener / Reiniciar** con parada limpia que guarda el mundo; detecta y libera un **puerto ocupado**;
-  **CPU, RAM, tiempo activo y puerto** en vivo con estado por colores.
-- **Tarjeta estilo Minecraft** — icono del servidor, MOTD con colores, `jugadores/máx` y señal de accesibilidad.
-  Pulsa la imagen o el lápiz para abrir **Apariencia del servidor**: la imagen, el nombre y las dos líneas del
-  MOTD —colores, negrita, cursiva, subrayado y tachado— con la vista previa de la propia tarjeta.
-- **Consola en tiempo real** con texto copiable, caja de comandos y un panel de **ayuda de comandos**.
-- **Jugadores** 👥 — conectados (en vivo), operadores, lista blanca y baneados, con acciones OP / expulsar /
-  banear / lista blanca.
-- **Historial de jugadores** 📜 — todos los que han entrado alguna vez, con su última conexión. Pulsa uno para
-  ver su ficha: entradas y salidas, lo que dijo por el chat, muertes y logros, tiempo jugado, los bloques que
-  ha minado y los objetos que ha usado —cada uno con su porcentaje— y curiosidades como los saltos, el daño y
-  lo que ha recorrido a pie, volando y con elytra. La primera vez se rellena con los logs antiguos del
-  servidor; ocupa poco (500 eventos y 90 días por jugador de serie, ambos configurables, o desactívalo) y se
-  queda en tu equipo. La IP no se guarda nunca, y el historial de cada servidor se borra desde la
-  configuración de ese servidor.
-- **Configuración visual de `server.properties`** con explicaciones claras.
-- **Semillas** 🌱 — elígela al crear el servidor, mira la semilla real del mundo en su configuración y ábrela
-  en el mapa de Chunkbase, en la versión de ese servidor, con un clic.
-- **Se apaga y se enciende solo** 💤 — un servidor puede **apagarse solo a los N minutos sin nadie dentro** y
-  **volver a encenderse cuando alguien intenta entrar**. Mientras duerme, la app responde en el puerto del
-  servidor: en la lista se ve *«Apagado · entra para encenderlo»*, y quien pulse Entrar recibe un mensaje
-  mientras arranca. La ventana muestra una **cuenta atrás** hasta el apagado, y un servidor recién despertado
-  tiene un margen para que no se apague antes de que dé tiempo a entrar. Las dos mitades son **por servidor y
-  vienen desactivadas**.
-- **Copias de seguridad del mundo** 💾 — una copia antes de cada arranque, en cada parada y, si lo dejas
-  puesto, cada hora mientras se juega. Para copiar un servidor arrancado se le pide antes a Minecraft que
-  deje de escribir el mundo y lo vuelque a disco, así que la copia nunca queda a medias; y si nadie se ha
-  conectado desde la anterior, esa se salta. Las copias que haces tú a mano se cuentan aparte, así que el
-  reloj nunca las borra. Además, **copia ahora** y **restaurar** con un clic desde la app.
-- **No estorba** — puedes minimizar y/o cerrar **a la bandeja del sistema** para que tus servidores sigan
-  funcionando sin la ventana en medio. Y si vuelves a abrir la app, recupera esa ventana en lugar de abrir una
-  segunda copia sobre los mismos servidores.
-- **Abre tu servidor a Internet con Playit.gg** 🌐 — conecta tu cuenta desde **Túneles** pegando un
-  **código de configuración** de un solo uso (sin claves ni archivos). La app **crea el túnel y ejecuta el agente de Playit por ti**, así
-  tu servidor es accesible desde cualquier sitio y tus amigos entran con la dirección pública — **tú no instalas
-  nada**. La dirección **aparece sola** a los pocos segundos de crear el túnel, con una línea debajo que
-  dice qué está esperando. La app no contiene ningún secreto propio (la credencial vive en un pequeño proxy).
-- **Manda a tus amigos un modpack listo** 📦 — un botón comprime los mods del servidor con instrucciones
-  en su idioma. Los mods que solo hacen algo en el servidor —Geyser, Floodgate, un mod de copias— se
-  **dejan fuera solos**, y la app te dice cuáles y los vuelve a meter en un clic si se ha equivocado. Lo
-  que necesite un mod que se queda viaja siempre con él. El paquete lleva además un **script para
-  Windows, Linux y macOS** que lista las carpetas de mods que encuentra —incluida cada instancia de
-  Prism, MultiMC, CurseForge o Modrinth App por su nombre—, lo copia todo y aparta lo que ya hubiera
-  a una carpeta aparte, **sin borrar nada**. Y si falta Fabric, Forge o NeoForge, **se ofrece a
-  instalarlo**, comprobando la descarga contra el hash publicado por el propio cargador antes de
-  ejecutarla.
-- **Notificaciones** 🔔 — avisos opcionales cuando un jugador entra o sale, alguien muere (PvP), el servidor
-  se cae, el reinicio automático se rinde, un **servidor vacío se apaga solo** o uno **se enciende porque
-  alguien ha intentado entrar**. Configurables por tipo, de forma global y **por servidor**, con botón de
-  prueba.
-- **Cada aviso se distingue de un vistazo** 🎨 — un color según lo que ha pasado (verde cuando entra alguien,
-  ámbar cuando el servidor se apaga solo, rojo cuando se cae) y **un emoji propio por tipo**, para que se
-  distingan también sin depender del color. Los cuatro colores se cambian en Ajustes: de
-  una paleta pensada para leerse bien sobre el fondo oscuro, o cualquiera con el selector completo, que avisa
-  si va a costar leerlo.
-- **Antes de arrancar se comprueba que no falte nada** ✅ — si a algún mod o plugin le falta una dependencia, se
-  avisa **al darle a Iniciar**, diciendo qué falta y quién lo necesita, con la opción de instalarlo y arrancar.
-  Se lee de los propios jars, así que funciona **sin conexión** y no depende de que la tienda tenga las
-  dependencias bien puestas. Vale para mods de Fabric y de Forge/NeoForge y para plugins de Paper y Purpur.
-- **Consola legible** 🖥️ — cada línea con su color según lo que es (errores, avisos, chat, entradas y
-  salidas, comandos, y lo que dice la aplicación aparte de lo que dice el servidor), **un filtro por categoría
-  con su contador** — «Errores 3» se ve sin pulsar nada — y lo que buscas **marcado dentro de la línea**. Las
-  entradas de varias líneas mantienen un solo color, así que una lista de mods nunca se confunde con un fallo,
-  y la app **resuelve los avisos de arranque que le tocan**: activa el acceso nativo en Java 22+ y pregunta
-  una vez si aceptas la descarga de BlueMap, en vez de dejarte editar su configuración.
-- **Ajustes dentro de la ventana** ⚙️ — idioma, comportamiento de la bandeja, un botón de **añadir al
-  escritorio**, notificaciones, colores y el historial de jugadores, cada cosa en su página. Los cambios se
-  guardan al momento: no hay botón de Guardar que olvidar.
+
+- **Que los de Bedrock vean el contenido de los mods** — en **Fabric**, otra casilla instala Hydraulic (de
+  GeyserMC) y Fabric API. Sus autores lo consideran de desarrollo muy temprano, y la app lo dice.
+- **Jugar desde otras versiones de Minecraft** — una casilla instala ViaVersion y ViaBackwards (solo en
+  servidores de plugins).
+
+</details>
+
+<details>
+<summary><b>👥 Jugadores, consola y avisos</b> — historial, consola de colores, notificaciones</summary>
+
+<br>
+
+- **Jugadores** — conectados en vivo, operadores, lista blanca y baneados, con botones en vez de comandos.
+- **Historial de jugadores** 📜 — todos los que han entrado alguna vez, con su última conexión. Su ficha:
+  entradas y salidas, chat, muertes y logros, tiempo jugado, bloques minados y objetos usados —con su
+  porcentaje— y curiosidades (saltos, daño, lo recorrido a pie, volando y con elytra). Se rellena la primera vez
+  con los logs antiguos, ocupa poco (500 eventos y 90 días por jugador de serie) y se queda en tu equipo. **La IP
+  no se guarda nunca.**
+- **Consola legible** 🖥️ — cada línea con su color (errores, avisos, chat, entradas y salidas, comandos, y lo
+  que dice la app aparte de lo que dice el servidor), **un filtro por categoría con su contador** y lo que
+  buscas **marcado dentro de la línea**. La app **resuelve los avisos de arranque que le tocan**: activa el
+  acceso nativo en Java 22+ y pregunta una vez si aceptas la descarga de BlueMap. Con caja de comandos y un
+  panel de **ayuda de comandos**.
+- **Notificaciones** 🔔 — cuando un jugador entra o sale, alguien muere (PvP), el servidor se cae, el reinicio
+  automático se rinde, o un servidor se apaga o se enciende solo. Por tipo, de forma global y **por servidor**.
+- **Cada aviso se distingue de un vistazo** 🎨 — un color y un emoji por tipo. Los colores se cambian en
+  Ajustes, de una paleta pensada para el fondo oscuro o con el selector completo, que avisa si van a costar leerse.
+
+</details>
+
+<details>
+<summary><b>💾 Copias, ajustes y comodidad</b></summary>
+
+<br>
+
+- **Copias de seguridad del mundo** — antes de cada arranque, en cada parada y, si lo dejas puesto, cada hora
+  mientras se juega. Para copiar un servidor arrancado se le pide antes a Minecraft que vuelque el mundo a
+  disco, así que la copia nunca queda a medias; y si nadie se ha conectado desde la anterior, se salta. Las que
+  haces a mano se cuentan aparte, así que el reloj nunca las borra. **Copia ahora** y **Restaurar** con un clic.
+- **Ajustes dentro de la ventana** ⚙️ — idioma, bandeja del sistema, **añadir al escritorio**, notificaciones,
+  colores e historial de jugadores, cada cosa en su página. Se guarda al momento.
+- **No estorba** — minimiza o cierra **a la bandeja** y tus servidores siguen; abrir la app otra vez recupera
+  esa ventana en vez de abrir una segunda copia.
+- **Se actualiza sola en las tres plataformas** — la descarga se **verifica contra su SHA-256 publicado** antes
+  de instalarla, y después **Novedades** cuenta qué ha cambiado.
 - **Multi-idioma** — español, inglés, portugués, francés y alemán.
 
-## 🛠️ Compilar desde el código
+</details>
+
+## 📸 Capturas
+
+<details>
+<summary><b>Ver las capturas</b></summary>
+
+<br>
+
+**La ventana: menú lateral, lista de servidores y uno arrancado**
+
+![Vista principal](docs/screenshots/main.png)
+
+**Nuevo servidor, dentro de la ventana**
+
+![Panel de nuevo servidor](docs/screenshots/new-server.png)
+
+**Buscador de mods y plugins**
+
+![Buscador de mods y plugins](docs/screenshots/mods-plugins.png)
+
+**Gestión de jugadores**
+
+![Gestión de jugadores](docs/screenshots/players.png)
+
+**Editor visual de `server.properties`**
+
+![Editor visual de configuración](docs/screenshots/settings.png)
+
+</details>
+
+## 💻 Compatibilidad
+
+| Windows x64 | Windows ARM64 | Linux x64 | macOS (Apple Silicon e Intel) |
+|---|---|---|---|
+| ✅ Instalador `.exe` | ✅ Por emulación x64 | ✅ AppImage | ✅ DMG |
+
+## 🛠️ Para desarrolladores
+
+<details>
+<summary><b>Compilar, documentación, datos y contribuir</b></summary>
+
+<br>
 
 ```powershell
 git clone https://github.com/JuanP-G/MC-ServerLauncher.git
@@ -196,42 +297,29 @@ dotnet run --project McServerLauncher
 dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 ```
 
-## 💻 Compatibilidad
+Hecha con **Avalonia / .NET 9**. El instalador de Windows es **solo x64** (Inno Setup
+`ArchitecturesAllowed=x64compatible`); no hay build aparte x86 ni ARM64 nativo.
 
-| Plataforma | ¿Funciona? |
-|---|---|
-| Windows x64 | ✅ Sí (instalador `.exe`) |
-| Windows ARM64 | ✅ Sí, por emulación x64 (aún sin build nativo) |
-| Linux x64 | ✅ Sí (AppImage) |
-| macOS (Apple Silicon e Intel) | ✅ Sí (DMG) |
+**Documentación:** arquitectura, guía de contribución y la **referencia de API**, publicadas con DocFX en
+**https://juanp-g.github.io/MC-ServerLauncher/docs/**.
 
-> El instalador de Windows que se publica es **solo x64** (Inno Setup
-> `ArchitecturesAllowed=x64compatible`); no hay un build aparte x86 ni ARM64 nativo.
+**Datos:** en `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` en Linux y macOS): `servers.json`,
+`settings.json`, el `java\` que instala la app, los `logs\` de consola (14 días), la `cache\` de la tienda, el
+agente en `playit-agent\`, el `instance.lock` que mantiene una sola copia abierta y, en Linux/macOS,
+`.secret.key`. Cada servidor guarda sus copias en su carpeta `backups\`.
 
-## 📖 Documentación y datos
-
-La documentación de desarrollo (arquitectura, guía de contribución y una **referencia de API** completa) se
-publica con **DocFX** en **https://juanp-g.github.io/MC-ServerLauncher/docs/**. Los datos por usuario se guardan en
-`%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` en Linux y macOS): `servers.json`,
-`settings.json`, el `java\` que instala la app, los `logs\` de consola persistentes (se guardan 14 días),
-la `cache\` prescindible de la tienda (iconos y respuestas de la API), el binario en `playit-agent\`,
-el `instance.lock` que mantiene una sola copia de la app abierta y, en Linux/macOS, `.secret.key`. Además, la
-carpeta de cada servidor tiene un directorio `backups\` con las copias automáticas del mundo.
-
-## 🤝 Contribuir
-
-Los pull requests son bienvenidos. Empieza por **[CONTRIBUTING.md](CONTRIBUTING.md)**, que es la
+**Contribuir:** los pull requests son bienvenidos. Empieza por **[CONTRIBUTING.md](CONTRIBUTING.md)**, la
 versión corta de la [guía completa](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.es.html):
-cómo compilar y probar, el estilo de código (lo tiene el `.editorconfig` y lo aplica `dotnet format`)
-y la regla de que la documentación se mueve con el código, en los dos idiomas.
+cómo compilar y probar, el estilo de código y la regla de que la documentación se mueve con el código, en los
+dos idiomas.
+
+</details>
 
 ## 📄 Licencia
 
-Publicado bajo la **[licencia MIT](LICENSE)**: puedes usarlo, modificarlo y redistribuirlo, incluso
-con fines comerciales, siempre que mantengas el aviso de copyright. Se ofrece tal cual, sin garantías.
+**[MIT](LICENSE)**: úsalo, modifícalo y redistribúyelo, incluso con fines comerciales, manteniendo el aviso de
+copyright. Se ofrece tal cual, sin garantías. El software de terceros está en [NOTICE](NOTICE).
 
-La licencia cubre el código de este proyecto; en [NOTICE](NOTICE) están las notas del software de terceros.
-*Minecraft* es una marca de Mojang Studios / Microsoft,
-y este proyecto no está afiliado a ellos ni cuenta con su respaldo. Los archivos del servidor de
-Minecraft, los entornos de Java, los mods y el agente de Playit.gg que descarga la aplicación
-pertenecen a sus respectivos dueños y mantienen sus propias licencias.
+*Minecraft* es una marca de Mojang Studios / Microsoft; este proyecto no está afiliado a ellos ni cuenta con su
+respaldo. Los archivos del servidor, los entornos de Java, los mods y el agente de Playit.gg que descarga la
+app pertenecen a sus dueños y mantienen sus propias licencias.
