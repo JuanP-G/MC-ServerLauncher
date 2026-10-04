@@ -9,9 +9,9 @@ compatibility_date = "2025-01-01"
 # Per-IP rate limit for create_agent (abuse protection). The Worker calls env.SETUP_LIMITER.limit();
 # if this binding is absent the Worker still runs (the limit is simply skipped), so configuring it is
 # strongly recommended. namespace_id is any number unique within your account; period must be 10 or 60.
-[[unsafe.bindings]]
+# Needs Wrangler 4.36.0 or later (older versions only knew the [[unsafe.bindings]] form of this).
+[[ratelimits]]
 name = "SETUP_LIMITER"
-type = "ratelimit"
 namespace_id = "1001"
 simple = { limit = 20, period = 60 }   # max 20 create_agent attempts per IP per minute
 

@@ -28,7 +28,8 @@ Worker secret.
 
 6. **Add the rate-limit binding** (recommended — see *Abuse protection* below). Dashboard:
    **Settings → Bindings → Add → Rate limiting**, name `SETUP_LIMITER`, e.g. **20 requests / 60 s**.
-   With the CLI, it's already in [`wrangler.toml`](wrangler.toml), so `wrangler deploy` sets it up.
+   With the CLI, it's already in [`wrangler.toml`](wrangler.toml), so `wrangler deploy` sets it up
+   (Wrangler 4.36.0 or later).
 
 ## Abuse protection
 
@@ -44,6 +45,8 @@ guards against that:
   create_agent request (a non-empty `account_setup_code` and the expected `agent_name`).
 - **Per-IP rate limit**: `SETUP_LIMITER` caps create_agent attempts per client IP (default 20/min).
   If the binding isn't configured the Worker still runs but the limit is skipped — so configure it.
+- **No internal errors echoed**: if the request to Playit fails, the client gets a generic 502 and
+  the reason goes only to the Worker's log.
 - **Optional client header**: set an `APP_TOKEN` var to require the app's `X-MCSL-Client` header to
   match it (extra noise filter). Leave it unset to stay compatible with older app builds.
 
