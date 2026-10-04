@@ -836,25 +836,26 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanActOn))]
     private async Task RemoveServer(ServerViewModel? target)
     {
-        if (Target(target) is null || SelectedServer is null) return;
+        // Captured once, and only this from here on. Stopping a running server takes up to fifteen
+        // seconds with the window still usable, and reading SelectedServer again after that removed
+        // whichever server had been clicked in the meantime — taking it out of servers.json and
+        // leaving it running with nobody watching it.
+        if (Target(target) is not { } server) return;
 
-        var folder = SelectedServer.Config.FolderPath;
+        var folder = server.Config.FolderPath;
         // Read the ports BEFORE deleting anything (we need them to locate the tunnels).
-        var port = new ServerPropertiesService().GetServerPort(SelectedServer.Config.PropertiesPath);
+        var port = new ServerPropertiesService().GetServerPort(server.Config.PropertiesPath);
 
         // A crossplay server has two: the Java one and the Bedrock one. Forgetting the second
         // leaves an orphan tunnel on the account that nothing will ever clean up.
-        var bedrockPort = CrossplayService.EffectiveBedrockPort(SelectedServer.Config);
+        var bedrockPort = CrossplayService.EffectiveBedrockPort(server.Config);
 
         if (Owner is null) return;
-        var dialog = new DeleteServerDialog(SelectedServer.Name, folder);
+        var dialog = new DeleteServerDialog(server.Name, folder);
         if (!await dialog.ShowDialog<bool>(Owner))
             return;
 
-        await SelectedServer.ShutdownAsync();
-        Servers.Remove(SelectedServer);
-        SelectedServer = Servers.FirstOrDefault();
-        Save();
+        await ForgetServerAsync(server);
 
         // Not "&& port.HasValue". The Java port comes from server.properties, which can be
         // unreadable or already gone, and hanging the whole block on it took the Bedrock tunnel
@@ -910,6 +911,20 @@ public partial class MainViewModel : ObservableObject
                     Localizer.Get("Title_DeleteFiles"));
             }
         }
+    }
+
+    /// <summary>Stops <paramref name="server"/>, takes it off the list and saves the list.</summary>
+    /// <remarks>
+    /// The selection only moves if it was on the server being removed: whatever the user picked
+    /// while this one was stopping is theirs to keep looking at.
+    /// </remarks>
+    internal async Task ForgetServerAsync(ServerViewModel server)
+    {
+        await server.ShutdownAsync();
+        Servers.Remove(server);
+        if (SelectedServer is null || ReferenceEquals(SelectedServer, server))
+            SelectedServer = Servers.FirstOrDefault();
+        Save();
     }
 
     [RelayCommand]

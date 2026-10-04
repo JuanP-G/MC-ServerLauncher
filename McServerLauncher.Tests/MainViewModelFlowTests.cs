@@ -170,6 +170,52 @@ public class MainViewModelFlowTests : IDisposable
         });
     }
 
+    [Fact]
+    public void RemovingAServerRemovesThatOneEvenIfAnotherIsNowSelected()
+    {
+        // Stopping the server being removed takes up to fifteen seconds with the window still
+        // usable. Clicking another one meanwhile used to make *that* one the one removed: gone from
+        // servers.json, still running, with nobody watching it.
+        WriteServersJson(
+            new ServerConfig { Id = "leaving", Name = "leaving", FolderPath = Folder("leaving") },
+            new ServerConfig { Id = "staying", Name = "staying", FolderPath = Folder("staying") });
+
+        _ui.Run(() =>
+        {
+            var main = new MainViewModel(_dataDir);
+            var leaving = main.Servers.Single(s => s.Config.Id == "leaving");
+            var staying = main.Servers.Single(s => s.Config.Id == "staying");
+
+            main.SelectedServer = staying;           // what the user clicked while it stopped
+            main.ForgetServerAsync(leaving).GetAwaiter().GetResult();
+
+            Assert.Same(staying, Assert.Single(main.Servers));
+            Assert.Same(staying, main.SelectedServer);
+        });
+
+        var ids = ReadServersJson().EnumerateArray().Select(s => s.GetProperty("Id").GetString()).ToList();
+        Assert.Equal(new[] { "staying" }, ids);
+    }
+
+    [Fact]
+    public void RemovingTheSelectedServerSelectsAnother()
+    {
+        WriteServersJson(
+            new ServerConfig { Id = "a", Name = "a", FolderPath = Folder("a") },
+            new ServerConfig { Id = "b", Name = "b", FolderPath = Folder("b") });
+
+        _ui.Run(() =>
+        {
+            var main = new MainViewModel(_dataDir);
+            var a = main.Servers.Single(s => s.Config.Id == "a");
+            main.SelectedServer = a;
+
+            main.ForgetServerAsync(a).GetAwaiter().GetResult();
+
+            Assert.Equal("b", main.SelectedServer?.Config.Id);
+        });
+    }
+
     public void Dispose()
     {
         try { Directory.Delete(_dataDir, recursive: true); } catch { /* best-effort */ }
