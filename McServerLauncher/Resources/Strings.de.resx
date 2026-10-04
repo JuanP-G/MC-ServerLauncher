@@ -997,7 +997,7 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Erze pro Stunde</value></data>
   <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Am meisten getötet</value></data>
   <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>Tötet ihn am häufigsten</value></data>
-  <data name="History_Privacy" xml:space="preserve"><value>Nur auf diesem Computer gespeichert. Die IP-Adressen der Spieler werden nie gespeichert. Was über die Grenzen hinausgeht, wird automatisch entfernt.</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>Der Verlauf wird nur auf diesem Computer gespeichert, ohne die IP-Adressen der Spieler, und was über die Grenzen hinausgeht, wird automatisch entfernt. Unabhängig davon speichert das Konsolenprotokoll (Ordner logs, 14 Tage) jede Zeile, einschließlich Chat und IPs, auch wenn der Chat hier ausgeschaltet ist. Avatare werden über den Namen jedes Spielers von mc-heads.net geladen.</value></data>
   <data name="History_SizeFmt" xml:space="preserve"><value>Belegt {0}</value></data>
   <data name="PlayerDetails_Back" xml:space="preserve"><value>Zurück</value></data>
   <data name="PlayerDetails_Banned" xml:space="preserve"><value>Gebannt</value></data>

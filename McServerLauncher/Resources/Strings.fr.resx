@@ -997,7 +997,7 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Minerais par heure</value></data>
   <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Le plus tué</value></data>
   <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>Ce qui le tue le plus</value></data>
-  <data name="History_Privacy" xml:space="preserve"><value>Gardé sur cet ordinateur uniquement. L'adresse IP des joueurs n'est jamais conservée. Ce qui dépasse les limites est supprimé automatiquement.</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>L'historique est gardé sur cet ordinateur uniquement, sans l'adresse IP des joueurs, et ce qui dépasse les limites est supprimé automatiquement. À part, le journal de la console (dossier logs, 14 jours) garde toutes les lignes, chat et IP compris, même si le chat est désactivé ici. Les avatars sont demandés à mc-heads.net avec le nom de chaque joueur.</value></data>
   <data name="History_SizeFmt" xml:space="preserve"><value>Occupe {0}</value></data>
   <data name="PlayerDetails_Back" xml:space="preserve"><value>Retour</value></data>
   <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banni</value></data>

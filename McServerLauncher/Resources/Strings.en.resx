@@ -997,7 +997,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Ores per hour</value></data>
   <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Killed most</value></data>
   <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>Killed by most</value></data>
-  <data name="History_Privacy" xml:space="preserve"><value>Kept on this computer only. Players' IP addresses are never kept. Anything past the limits is removed automatically.</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>The history is kept on this computer only, without players' IP addresses, and anything past the limits is removed automatically. Separately, the console log (logs folder, 14 days) keeps every line, chat and IPs included, even with chat turned off here. Avatars are fetched from mc-heads.net by each player's name.</value></data>
   <data name="History_SizeFmt" xml:space="preserve"><value>Uses {0}</value></data>
   <data name="PlayerDetails_Back" xml:space="preserve"><value>Back</value></data>
   <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banned</value></data>

@@ -997,7 +997,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Minérios por hora</value></data>
   <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Mais matado</value></data>
   <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>O que mais o mata</value></data>
-  <data name="History_Privacy" xml:space="preserve"><value>Guarda-se só neste computador. O IP dos jogadores nunca é guardado. O que passa dos limites é apagado sozinho.</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>O histórico guarda-se só neste computador, sem o IP dos jogadores, e o que passa dos limites é apagado sozinho. À parte, o log da consola (pasta logs, 14 dias) guarda todas as linhas, chat e IPs incluídos, mesmo com o chat desativado aqui. Os avatares são pedidos ao mc-heads.net com o nome de cada jogador.</value></data>
   <data name="History_SizeFmt" xml:space="preserve"><value>Ocupa {0}</value></data>
   <data name="PlayerDetails_Back" xml:space="preserve"><value>Voltar</value></data>
   <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banido</value></data>

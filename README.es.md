@@ -309,6 +309,15 @@ Hecha con **Avalonia / .NET 9**. El instalador de Windows es **solo x64** (Inno 
 agente en `playit-agent\`, el `instance.lock` que mantiene una sola copia abierta y, en Linux/macOS,
 `.secret.key`. Cada servidor guarda sus copias en su carpeta `backups\`.
 
+**Privacidad:** no se envía nada a ningún sitio para recogerlo — no hay telemetría. Lo que queda en este
+equipo: el historial de jugadores (entradas, salidas, muertes, logros y, salvo que lo desactives en Ajustes →
+Jugadores, el chat; 90 días por defecto, nunca IPs) y los logs de consola de arriba, que guardan **todas** las
+líneas —el chat y las IPs de las líneas de conexión incluidos— digan lo que digan los ajustes del historial.
+A qué servicios pide cosas la app, y qué ven además de tu IP: Mojang, Paper, Purpur, Fabric, Forge y NeoForge
+(descargas del servidor, y Mojang el nombre de un jugador cuando lo añades a la whitelist), Modrinth y GeyserMC
+(mods y plugins), Adoptium (Java), GitHub (actualizaciones), Playit (túneles, a través del proxy de la app al
+vincular una cuenta) y **mc-heads.net** (el avatar de cada jugador, por su nombre, en el historial).
+
 **Flags de Java extra:** la app no tiene un campo para ellos, pero cada servidor de `servers.json` tiene
 una entrada `ExtraJvmArgs` (vacía por defecto) que se añade a la línea de comandos de Java tras
 `-Xms`/`-Xmx`, para flags como los de Aikar. Edítala con la app cerrada, porque la app reescribe el

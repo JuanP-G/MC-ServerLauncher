@@ -309,6 +309,15 @@ Built with **Avalonia / .NET 9**. The Windows installer is **x64 only** (Inno Se
 `cache\`, the `playit-agent\` binary, the `instance.lock` that keeps the app to one running copy, and, on
 Linux/macOS, `.secret.key`. Each server keeps its backups in its own `backups\` folder.
 
+**Privacy:** nothing is sent anywhere to be collected — there is no telemetry. What stays on this computer:
+the player history (joins, leaves, deaths, advancements and, unless you turn it off in Settings → Players,
+chat; 90 days by default, never IP addresses) and the console logs above, which keep **every** line —
+chat and the IPs in login lines included — whatever the history settings say. What the app asks other
+services for, and what they see besides your IP: Mojang, Paper, Purpur, Fabric, Forge and NeoForge (server
+downloads, and Mojang a player's name when you add them to the whitelist), Modrinth and GeyserMC (mods and
+plugins), Adoptium (Java), GitHub (updates), Playit (tunnels, through the app's proxy when linking an
+account) and **mc-heads.net** (each player's avatar, by name, in the player history).
+
 **Extra Java flags:** there is no field for them in the app, but each server in `servers.json` has an
 `ExtraJvmArgs` entry (empty by default) that is added to the Java command line after `-Xms`/`-Xmx`, for
 flags such as Aikar's. Edit it with the app closed, since the app rewrites the file as it runs.
