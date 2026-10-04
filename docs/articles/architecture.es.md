@@ -402,9 +402,28 @@ mundo. No hay rutas fijas del equipo en el código.
 ## Flujos importantes
 
 ### Arrancar un servidor
-`ServerViewModel.Start` → refresca puerto/info → si el puerto está ocupado, ofrece liberarlo
-(`PortService` + `TryFreePortAsync`) → `EnsureCompatibleJavaAsync` (usa `JavaService` para leer el
-Java requerido del jar e instalarlo si hace falta) → `ServerProcessManager.Start`. La salida de la
+`ServerViewModel.Start` → `StartInternalAsync`, que se niega mientras se restaura una copia y, si no,
+primero suelta el listener del encendido bajo demanda (tiene el puerto del servidor) y después:
+
+1. **Puerto** — refresca puerto/info; si el puerto está ocupado, ofrece liberarlo (`PortService` +
+   `TryFreePortAsync`). Un auto-reinicio no pregunta: se rinde y lo dice en la consola.
+2. **Ruta** — `TryFixRejectedPathAsync`: Paper y Purpur se niegan a arrancar desde una carpeta cuya
+   ruta tiene un carácter que no saben manejar (`BukkitPathRule`), y la app ofrece renombrar la
+   carpeta en vez de dejar que falle.
+3. **Geyser** — con el crossplay activado, `CrossplayService.RepairConfig` corrige una configuración de
+   Geyser que escribió una versión anterior de la app.
+4. **Dependencias** — `CheckContentDependenciesAsync`: los mods o plugins a los que les falta algo se
+   avisan antes de arrancar, no como un crash después.
+5. **Java** — `EnsureCompatibleJavaAsync` (usa `JavaService` para leer el Java requerido del jar e
+   instalarlo si hace falta).
+6. **Copia** — la copia de arranque si las copias están activadas (espera a cualquier otra que siga
+   leyendo el mundo); con ellas desactivadas, igualmente espera a una hecha a mano.
+7. `ServerProcessManager.Start`, con la versión de Java leída antes fuera del hilo de la interfaz. La
+   línea de comandos es `-Xms`/`-Xmx`, los flags que añade la propia app (`ImpliedJvmFlags`), los
+   `ExtraJvmArgs` del servidor y el jar (o el fichero de argumentos de Forge/NeoForge modernos).
+
+Si algún paso para el arranque, el listener del encendido bajo demanda se vuelve a levantar
+(`finally`). La salida de la
 consola llega de vuelta por el evento `OutputReceived` hacia `ConsoleLines`, **por lotes**: las líneas de
 los hilos del proceso se encolan y una sola tarea del dispatcher se lleva todas las que llegaron antes de
 ejecutarse, con un único `AddRange` (un modpack cargando imprime miles, y una tarea por línea hacía que la
@@ -570,15 +589,23 @@ antes de probar algo era la primera en irse. Los zips que la app no escribió no
 ### Auto-reinicio tras un crash
 Cuando un servidor se cierra inesperadamente, `ServerProcessManager` emite su evento `UnexpectedExit`
 y `ServerViewModel` lo reinicia con un presupuesto (unos pocos intentos dentro de una ventana de
-estabilidad) para evitar bucles de crash, avisando al usuario con `ToastService` si el presupuesto se
-agota. `CrashReportService` lee el crash report del servidor para añadir un motivo legible a esa
-notificación.
+estabilidad) para evitar bucles de crash. `CrashReportService` lee el crash report del servidor para
+sacar un motivo legible, que va a la **consola** junto al código de salida; las notificaciones
+(`ToastService`, una por el crash y otra si el presupuesto se agota) son genéricas y solo salen cuando
+la ventana no está delante.
 
 ### Bandeja del sistema
-`App` instala un `TrayIcon`. Minimizar mantiene la ventana en la barra de tareas como siempre;
-cerrarla con la **X** la oculta a la bandeja (los servidores siguen corriendo) en vez de salir. El
-menú de la bandeja restaura la ventana (**Mostrar**) o cierra de verdad (**Salir** →
-`MainWindow.RequestExit`, que hace el apagado limpio).
+`App` instala un `TrayIcon`. Dos ajustes (Ajustes → General) deciden qué hace la ventana, y los dos se
+leen a través de `WindowBehavior`:
+
+- **Minimizar a la bandeja** (`MinimizeToTray`, **activado** por defecto): minimizar oculta la ventana
+  en la bandeja en vez de dejarla en la barra de tareas.
+- **Cerrar a la bandeja** (`CloseToTray`, **desactivado** por defecto): la **X** oculta la ventana en
+  vez de salir. Desactivado, la X sale tras parar los servidores limpiamente.
+
+En ambos casos los servidores siguen corriendo con la ventana oculta. Donde no hay bandeja desde la que
+volver (`App.TrayAvailable` es falso), los dos se ignoran. El menú de la bandeja restaura la ventana
+(**Mostrar**) o cierra de verdad (**Salir** → `MainWindow.RequestExit`, que hace el apagado limpio).
 
 ### Jugar desde Bedrock (crossplay)
 Una casilla, y tres cosas que tienen que encajar — que es justo por lo que hacerlo a mano sale mal.

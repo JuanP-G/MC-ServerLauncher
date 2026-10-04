@@ -389,9 +389,27 @@ are no hard-coded machine paths.
 ## Important flows
 
 ### Starting a server
-`ServerViewModel.Start` → refresh port/info → if the port is busy, offer to free it
-(`PortService` + `TryFreePortAsync`) → `EnsureCompatibleJavaAsync` (uses `JavaService` to read the
-required Java from the jar and install it if needed) → `ServerProcessManager.Start`. Console output
+`ServerViewModel.Start` → `StartInternalAsync`, which refuses while a backup is being restored and
+otherwise lets go of the wake-on-demand listener first (it holds the server's port), then:
+
+1. **Port** — refresh port/info; if the port is busy, offer to free it (`PortService` +
+   `TryFreePortAsync`). An auto-restart does not ask: it gives up and says so in the console.
+2. **Path** — `TryFixRejectedPathAsync`: Paper and Purpur refuse to start from a folder whose path
+   has a character they cannot handle (`BukkitPathRule`), and the app offers to rename the folder
+   rather than let it fail.
+3. **Geyser** — with crossplay on, `CrossplayService.RepairConfig` corrects a Geyser config written by
+   an older version of the app.
+4. **Dependencies** — `CheckContentDependenciesAsync`: mods or plugins missing something they need are
+   reported before the server starts, not as a crash afterwards.
+5. **Java** — `EnsureCompatibleJavaAsync` (uses `JavaService` to read the required Java from the jar
+   and install it if needed).
+6. **Backup** — the start backup when backups are on (it waits for any other copy still reading the
+   world); with them off it still waits for one made by hand.
+7. `ServerProcessManager.Start`, with the Java version read off the UI thread beforehand. The command
+   line is `-Xms`/`-Xmx`, the flags the app adds itself (`ImpliedJvmFlags`), the server's
+   `ExtraJvmArgs` and the jar (or a modern Forge/NeoForge args file).
+
+If any step stops the start, the wake-on-demand listener is put back up (`finally`). Console output
 streams back through the `OutputReceived` event into `ConsoleLines`, **in batches**: lines from the
 process's threads are queued and one dispatcher job takes all that arrived before it ran, appending them
 with a single `AddRange` (a loading modpack prints thousands, and one job per line made the window
@@ -549,14 +567,22 @@ deleted at all.
 ### Auto-restart after a crash
 When a server exits unexpectedly, `ServerProcessManager` raises its `UnexpectedExit` event and
 `ServerViewModel` restarts it within a budget (a few attempts inside a stability window) to avoid
-crash loops, notifying the user via `ToastService` if the budget is exhausted. `CrashReportService`
-reads the server's crash report to add a human-readable reason to that notification.
+crash loops. `CrashReportService` reads the server's crash report for a human-readable reason, which
+goes to the **console** with the exit code; the notifications (`ToastService`, one for the crash and one
+if the budget is exhausted) are generic and only show when the window is not in front.
 
 ### System tray
-`App` installs a `TrayIcon`. Minimizing keeps the window on the taskbar as usual; closing it with the
-**X** hides it to the tray (servers keep running) instead of quitting. The tray menu restores the
-window (**Show**) or really quits (**Exit** → `MainWindow.RequestExit`, which runs the clean
-shutdown).
+`App` installs a `TrayIcon`. Two settings (Settings → General) decide what the window does, both read
+through `WindowBehavior`:
+
+- **Minimize to tray** (`MinimizeToTray`, **on** by default): minimizing hides the window to the tray
+  instead of leaving it on the taskbar.
+- **Close to tray** (`CloseToTray`, **off** by default): the **X** hides the window instead of
+  quitting. Off, the X quits after stopping the servers cleanly.
+
+Either way the servers keep running while the window is hidden. Where there is no tray to come back
+from (`App.TrayAvailable` is false), both are ignored. The tray menu restores the window (**Show**) or
+really quits (**Exit** → `MainWindow.RequestExit`, which runs the clean shutdown).
 
 ### Playing from Bedrock (crossplay)
 One checkbox, three things that have to line up — which is why doing it by hand goes wrong.

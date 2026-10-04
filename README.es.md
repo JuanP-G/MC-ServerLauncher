@@ -309,6 +309,11 @@ Hecha con **Avalonia / .NET 9**. El instalador de Windows es **solo x64** (Inno 
 agente en `playit-agent\`, el `instance.lock` que mantiene una sola copia abierta y, en Linux/macOS,
 `.secret.key`. Cada servidor guarda sus copias en su carpeta `backups\`.
 
+**Flags de Java extra:** la app no tiene un campo para ellos, pero cada servidor de `servers.json` tiene
+una entrada `ExtraJvmArgs` (vacía por defecto) que se añade a la línea de comandos de Java tras
+`-Xms`/`-Xmx`, para flags como los de Aikar. Edítala con la app cerrada, porque la app reescribe el
+fichero mientras funciona.
+
 **Contribuir:** los pull requests son bienvenidos. Empieza por **[CONTRIBUTING.md](CONTRIBUTING.md)**, la
 versión corta de la [guía completa](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.es.html):
 cómo compilar y probar, el estilo de código y la regla de que la documentación se mueve con el código, en los
