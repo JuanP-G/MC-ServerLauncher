@@ -71,21 +71,22 @@ public static partial class PlayerEventParser
     /// <summary>The player and UUID in <c>UUID of player Bob is …</c>, or null.</summary>
     public static (string Player, string Uuid)? UuidOf(string line)
     {
-        var m = UuidLine().Match(line);
+        if (Body(line) is not { } body) return null;
+
+        var m = UuidLine().Match(body);
         return m.Success ? (m.Groups[1].Value, m.Groups[2].Value.ToLowerInvariant()) : null;
     }
 
-    private static string? Body(string line)
-    {
-        var i = line.IndexOf("]: ", StringComparison.Ordinal);
-        return i < 0 ? null : line[(i + 3)..];
-    }
+    private static string? Body(string line) => ConsoleLineClassifier.MessageBody(line);
 
     // Anchored to the start of the message, like every other detector: a chat line quoting it has
     // "<Bob> " in front and does not match.
     [GeneratedRegex(@"^([A-Za-z0-9_]{1,16}) has (?:made the advancement|completed the challenge|reached the goal) \[(.+)\]\s*$")]
     private static partial Regex Advancement();
 
-    [GeneratedRegex(@"\]: UUID of player ([A-Za-z0-9_]{1,16}) is ([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\s*$")]
+    // Anchored like the rest. It used to look for "]: UUID of player" anywhere in the line, and a
+    // player typing "x]: UUID of player Alice is …" in chat could tie Alice's history — and the
+    // statistics read for her — to any UUID they liked.
+    [GeneratedRegex(@"^UUID of player ([A-Za-z0-9_]{1,16}) is ([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\s*$")]
     private static partial Regex UuidLine();
 }

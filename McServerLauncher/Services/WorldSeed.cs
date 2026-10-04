@@ -135,13 +135,16 @@ public static partial class WorldSeed
     /// </summary>
     public static long? FromConsoleLine(string line)
     {
-        var m = SeedLine().Match(line);
+        if (ConsoleLineClassifier.MessageBody(line) is not { } body) return null;
+
+        var m = SeedLine().Match(body);
         return m.Success && long.TryParse(m.Groups[1].Value, NumberStyles.AllowLeadingSign,
             CultureInfo.InvariantCulture, out var seed) ? seed : null;
     }
 
-    // After the log prefix, so a player typing "Seed: [1]" in chat does not count.
-    [GeneratedRegex(@"\]: Seed: \[(-?\d{1,20})\]\s*$")]
+    // The whole message, from where the log prefix ends: a player typing "Seed: [1]" — or
+    // "x]: Seed: [1]", which carries a prefix-shaped tail of its own — in chat does not count.
+    [GeneratedRegex(@"^Seed: \[(-?\d{1,20})\]\s*$")]
     private static partial Regex SeedLine();
 
     [GeneratedRegex(@"\\(?:u([0-9a-fA-F]{4})|(.))")]

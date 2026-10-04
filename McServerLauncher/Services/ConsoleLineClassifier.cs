@@ -69,8 +69,9 @@ public static partial class ConsoleLineClassifier
 
         // From here it is ordinary output, and worth splitting further. The order reads as though it
         // were what stops a quoted join message from counting as a join, and it is not: both
-        // detectors anchor on the start of the message, so "<Bob> Alice joined the game" fails the
-        // player check on its own — the name they find is "<Bob> Alice", which is not a name. Said
+        // detectors anchor on the start of the message (MessageBody), so "<Bob> Alice joined the
+        // game" fails the player check on its own — what comes before the marker is "<Bob> Alice",
+        // which is not a name. Said
         // out loud because a comment claiming the order protects it would send the next person
         // looking in the wrong place the day it stops working.
         if (ChatOf(text, online) is not null) return ConsoleLineKind.Chat;
@@ -204,6 +205,12 @@ public static partial class ConsoleLineClassifier
     /// sentence in chat — from counting as Alice joining.
     /// </para>
     /// <para>
+    /// "Between the log prefix and the marker" is measured from the <em>first</em> <c>]: </c>, which
+    /// is where the server's own prefix ends. It used to be the last <c>": "</c> before the marker,
+    /// which a player controls: <c>&lt;Bob&gt; x: Bob left the game</c> took Bob off the player list,
+    /// and with nobody left on it the idle timer stopped a server people were playing on.
+    /// </para>
+    /// <para>
     /// Lives here rather than in the view model that used to own it, because two things now need it
     /// and both were carrying their own copy of the same regex: the player list, and this. Fixing a
     /// misread name in one of them and not the other is exactly the kind of drift that is invisible
@@ -212,18 +219,22 @@ public static partial class ConsoleLineClassifier
     /// </remarks>
     public static string? NameBefore(string line, string marker)
     {
-        var idx = line.IndexOf(marker, StringComparison.Ordinal);
+        var body = MessageBody(line) ?? line;
+
+        var idx = body.IndexOf(marker, StringComparison.Ordinal);
         if (idx <= 0) return null;
 
-        var head = line[..idx];
-        var colon = head.LastIndexOf(": ", StringComparison.Ordinal);
-        var name = colon >= 0 ? head[(colon + 2)..] : head;
-
+        var name = body[..idx];
         return PlayerName().IsMatch(name) ? name : null;
     }
 
     /// <summary>The message after the log prefix, or null when there is no prefix.</summary>
-    private static string? MessageBody(string text)
+    /// <remarks>
+    /// The one place that says where the server stops talking and the message begins. Every detector
+    /// that reads a server event anchors on the start of what this returns, because everything after
+    /// it can be typed by a player.
+    /// </remarks>
+    internal static string? MessageBody(string text)
     {
         var i = text.IndexOf("]: ", StringComparison.Ordinal);
         return i < 0 ? null : text[(i + 3)..].TrimStart();

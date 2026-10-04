@@ -261,6 +261,16 @@ mundo. No hay rutas fijas del equipo en el código.
   últimos solo cuentan si ese jugador está conectado —el view model le pasa una copia de quién lo está—,
   porque en Paper cada plugin escribe como `[NombreDelPlugin] …`, y el nombre de un plugin es un nombre de
   jugador válido.
+  **Nada que escriba un jugador se toma por un suceso.** Cada detector que lee uno —una entrada o una
+  salida, el `Saved the game` que espera una copia en caliente, la respuesta a `seed`, el UUID de un
+  jugador— compara el mensaje *entero* que da `MessageBody`: el texto tras el **primer** `]: `, que es donde
+  acaba el prefijo del propio servidor; todo lo que viene detrás se puede teclear. Buscar la frase en la
+  línea no bastaba: un chat como `<Bob> x: Bob left the game` o `<Bob> x]: Saved the game` lleva un trozo
+  con forma de prefijo, y sacaba a Bob de la lista de jugadores (y el temporizador de inactividad paraba
+  un servidor con gente dentro) o cortaba una copia antes de tiempo. Además, `ServerViewModel` no reacciona
+  a nada de una línea clasificada como chat salvo para guardarla en el historial, y solo escucha el rechazo
+  de ruta de Paper mientras el servidor aún no está en marcha. `ConsoleSpoofingTests` fija cada una de esas
+  líneas.
 - **`BlueMapConsent`** y `ServerProcessManager.ImpliedJvmFlags` — los dos avisos de arranque que la app
   resuelve ella misma, porque le tocan a ella. Desde Java 22 añade `--enable-native-access=ALL-UNNAMED` a la
   línea de comandos que construye: los mods que usan JNA provocan un aviso que dice que un Java futuro

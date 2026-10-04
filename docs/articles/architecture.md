@@ -256,6 +256,15 @@ are no hard-coded machine paths.
   (`[Alice] …`, `* Alice …`). Those last two count only when that player is connected — the view model hands
   in a copy of who is — because on Paper every plugin logs as `[PluginName] …`, and a plugin name is a valid
   player name.
+  **Nothing a player types is taken for an event.** Every detector that reads one — a join or a leave, the
+  `Saved the game` a live backup waits for, the answer to `seed`, a player's UUID — matches the *whole*
+  message from `MessageBody`, the text after the **first** `]: `, which is where the server's own prefix
+  ends; everything after it can be typed. Searching the line for the sentence was not enough: chat such as
+  `<Bob> x: Bob left the game` or `<Bob> x]: Saved the game` carries a prefix-shaped piece of its own, and
+  was taken off the player list (and the idle timer then stopped a server with people on it) or cut a
+  backup short. On top of that, `ServerViewModel` reacts to nothing in a line classified as chat except
+  recording it in the history, and only listens for Paper's path refusal before the server is running.
+  `ConsoleSpoofingTests` holds each of those lines down.
 - **`BlueMapConsent`** and `ServerProcessManager.ImpliedJvmFlags` — the two start-up warnings the app
   answers itself, because they are its to answer. From Java 22 it adds `--enable-native-access=ALL-UNNAMED`
   to the command line it builds: JNA-based mods trigger a warning that says a future Java will *block* the

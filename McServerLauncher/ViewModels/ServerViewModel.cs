@@ -972,6 +972,15 @@ public partial class ServerViewModel : ObservableObject
 
         OnConsoleLine(line, kind);
 
+        // Here, on the output's own thread, so writing the history to disk never holds up the UI.
+        // Before the chat guard below: chat is something the history records on purpose.
+        if (source == ConsoleSource.Stdout) History.OnServerLine(line, _onlineNames);
+
+        // Chat is the one part of the console a player writes, so nothing below may react to it:
+        // each detector is anchored on its own, and this keeps one that is not — or a future one —
+        // from being driven by whatever somebody types.
+        if (kind == ConsoleLineKind.Chat) return;
+
         // The server's own answer to "seed": remembered in case the world's files cannot be read.
         if (source == ConsoleSource.Stdout && WorldSeed.FromConsoleLine(line) is { } seed)
             RunOnUi(() =>
@@ -984,9 +993,6 @@ public partial class ServerViewModel : ObservableObject
         // The server's answer to "save-all flush", which a backup of a running world waits for.
         if (source == ConsoleSource.Stdout && SaveConfirmation.IsSaveFinished(line))
             _saveConfirmed?.TrySetResult(true);
-
-        // Here, on the output's own thread, so writing the history to disk never holds up the UI.
-        if (source == ConsoleSource.Stdout) History.OnServerLine(line, _onlineNames);
 
         // Once per run: BlueMap repeats itself on every start, and so would the question.
         if (!_blueMapAsked && BlueMapConsent.IsAskingForConsent(line))
@@ -1080,6 +1086,13 @@ public partial class ServerViewModel : ObservableObject
                 VisibleConsoleLines.RemoveFromStart(leaving);
             }
 
+            // Only what the server says about itself. Chat is typed by players, and the app's own
+            // lines and the echoed commands are not events at all: "x: Bob left the game" in chat
+            // used to take Bob off the list, and with the list empty the idle timer stopped a
+            // server that people were still playing on.
+            if (kind is ConsoleLineKind.Chat or ConsoleLineKind.Launcher or ConsoleLineKind.Command)
+                return;
+
             TrackPlayers(text);
             WarnAboutModdedKick(text);
             WarnAboutRejectedPath(text);
@@ -1097,6 +1110,10 @@ public partial class ServerViewModel : ObservableObject
     /// </remarks>
     private void WarnAboutRejectedPath(string line)
     {
+        // The refusal comes before the server is up — Paperclip prints it before the server even
+        // exists. Once it is running the path has been accepted, and a line saying otherwise can
+        // only be somebody typing the sentence; believing it would switch auto-restart off.
+        if (State == ServerState.Running) return;
         if (_pathRejectionWarned || !BukkitPathRule.IsPathRejection(line)) return;
 
         _pathRejectionWarned = true;
