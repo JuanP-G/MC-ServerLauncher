@@ -184,15 +184,19 @@ find_java() {
 install_loader() {
   java_bin=$(find_java) || { say "${WARN}@@NO_JAVA@@${OFF}"; return 1; }
 
-  installer="${TMPDIR:-/tmp}/mcsl-loader-installer.jar"
+  # A folder of its own, made by mktemp: /tmp is shared by every user of the machine, and a fixed name
+  # there let another one plant a symlink for curl to write through, or swap the jar between the hash
+  # check and java running it.
+  installer_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcsl-installer.XXXXXX") || { say "${WARN}@@DOWNLOAD_FAILED@@${OFF}"; return 1; }
+  installer="$installer_dir/loader-installer.jar"
   say "@@DOWNLOADING@@"
 
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL -o "$installer" "@@INSTALLER_URL@@" || { say "${WARN}@@DOWNLOAD_FAILED@@${OFF}"; return 1; }
+    curl -fsSL -o "$installer" "@@INSTALLER_URL@@" || { say "${WARN}@@DOWNLOAD_FAILED@@${OFF}"; rm -rf "$installer_dir"; return 1; }
   elif command -v wget >/dev/null 2>&1; then
-    wget -qO "$installer" "@@INSTALLER_URL@@" || { say "${WARN}@@DOWNLOAD_FAILED@@${OFF}"; return 1; }
+    wget -qO "$installer" "@@INSTALLER_URL@@" || { say "${WARN}@@DOWNLOAD_FAILED@@${OFF}"; rm -rf "$installer_dir"; return 1; }
   else
-    say "${WARN}@@NO_DOWNLOADER@@${OFF}"; return 1
+    say "${WARN}@@NO_DOWNLOADER@@${OFF}"; rm -rf "$installer_dir"; return 1
   fi
 
   # Verified against the hash the pack was built with, taken from the loader's own maven repository.
@@ -206,20 +210,20 @@ install_loader() {
   fi
 
   if [ -z "$actual" ]; then
-    say "${WARN}@@NO_HASH_TOOL@@${OFF}"; rm -f "$installer"; return 1
+    say "${WARN}@@NO_HASH_TOOL@@${OFF}"; rm -rf "$installer_dir"; return 1
   fi
   if [ "$actual" != "@@INSTALLER_SHA@@" ]; then
-    say "${WARN}@@HASH_MISMATCH@@${OFF}"; rm -f "$installer"; return 1
+    say "${WARN}@@HASH_MISMATCH@@${OFF}"; rm -rf "$installer_dir"; return 1
   fi
 
   say "@@INSTALLING@@"
   if "$java_bin" -jar "$installer" @@INSTALLER_ARGS@@ "$mcdir"; then
-    rm -f "$installer"
+    rm -rf "$installer_dir"
     say "${OK}@@LOADER_INSTALLED@@${OFF}"
     return 0
   fi
 
-  rm -f "$installer"
+  rm -rf "$installer_dir"
   say "${WARN}@@INSTALL_FAILED@@${OFF}"
   return 1
 }
