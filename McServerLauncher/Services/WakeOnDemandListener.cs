@@ -152,7 +152,12 @@ public sealed class WakeOnDemandListener : IDisposable
                 continue;
             }
 
-            _ = Task.Run(() =>
+            // A thread of its own, not one from the pool. Serve blocks on its reads for up to the
+            // deadline, and sixteen slow clients used to hold sixteen pool threads for fifteen
+            // seconds each — the pool grows slowly, so everything else in the app that awaits
+            // (requests, backups, the other servers' listeners) queued behind them. The cap above
+            // is what keeps the number of these threads bounded.
+            _ = Task.Factory.StartNew(() =>
             {
                 try { Serve(client); }
                 catch { /* malformed client: it just gets no answer */ }
@@ -161,7 +166,7 @@ public sealed class WakeOnDemandListener : IDisposable
                     Interlocked.Decrement(ref _open);
                     try { client.Close(); } catch { /* already gone */ }
                 }
-            }, CancellationToken.None);
+            }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
     }
 
