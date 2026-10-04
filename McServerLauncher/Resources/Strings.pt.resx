@@ -354,6 +354,7 @@
   <data name="Msg_OtherApp" xml:space="preserve"><value>outra aplicação</value></data>
   <data name="Msg_PortBusyTitle" xml:space="preserve"><value>Porta ocupada</value></data>
   <data name="Msg_PortBusyConfirm" xml:space="preserve"><value>A porta {0} já está em uso por {1}. Isto costuma acontecer se um servidor anterior ficou preso. Queres fechar esse processo e iniciar o servidor?</value></data>
+  <data name="Msg_PortBusyJavaNote" xml:space="preserve"><value>Parece um servidor de Minecraft que ficou ligado. Fechá-lo assim não guarda o mundo: o progresso mais recente pode perder-se. Se puderes, entra nele e escreve /stop antes.</value></data>
   <data name="Msg_UpdateAvailableFmt" xml:space="preserve"><value>Há uma atualização disponível: versão {0}.</value></data>
   <data name="Msg_IconCreateError" xml:space="preserve"><value>Não foi possível criar o ícone: {0}</value></data>
   <data name="Title_ChangeIcon" xml:space="preserve"><value>Mudar ícone</value></data>

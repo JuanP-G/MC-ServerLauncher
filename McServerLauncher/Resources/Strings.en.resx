@@ -354,6 +354,7 @@
   <data name="Msg_OtherApp" xml:space="preserve"><value>another application</value></data>
   <data name="Msg_PortBusyTitle" xml:space="preserve"><value>Port in use</value></data>
   <data name="Msg_PortBusyConfirm" xml:space="preserve"><value>Port {0} is already in use by {1}. This usually happens if a previous server got stuck. Do you want to close that process and start the server?</value></data>
+  <data name="Msg_PortBusyJavaNote" xml:space="preserve"><value>It looks like a Minecraft server that was left running. Closing it this way does not save the world: the latest progress can be lost. If you can, join it and type /stop first.</value></data>
   <data name="Msg_UpdateAvailableFmt" xml:space="preserve"><value>An update is available: version {0}.</value></data>
   <data name="Msg_IconCreateError" xml:space="preserve"><value>Could not create the icon: {0}</value></data>
   <data name="Title_ChangeIcon" xml:space="preserve"><value>Change icon</value></data>

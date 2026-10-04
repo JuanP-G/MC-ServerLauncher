@@ -354,6 +354,7 @@
   <data name="Msg_OtherApp" xml:space="preserve"><value>eine andere Anwendung</value></data>
   <data name="Msg_PortBusyTitle" xml:space="preserve"><value>Port belegt</value></data>
   <data name="Msg_PortBusyConfirm" xml:space="preserve"><value>Port {0} wird bereits von {1} verwendet. Das passiert oft, wenn ein vorheriger Server hängen geblieben ist. Möchtest du diesen Prozess schließen und den Server starten?</value></data>
+  <data name="Msg_PortBusyJavaNote" xml:space="preserve"><value>Es sieht nach einem Minecraft-Server aus, der weiterläuft. Ihn so zu schließen speichert die Welt nicht: Der letzte Spielstand kann verloren gehen. Wenn möglich, tritt ihm bei und gib vorher /stop ein.</value></data>
   <data name="Msg_UpdateAvailableFmt" xml:space="preserve"><value>Eine Aktualisierung ist verfügbar: Version {0}.</value></data>
   <data name="Msg_IconCreateError" xml:space="preserve"><value>Symbol konnte nicht erstellt werden: {0}</value></data>
   <data name="Title_ChangeIcon" xml:space="preserve"><value>Symbol ändern</value></data>

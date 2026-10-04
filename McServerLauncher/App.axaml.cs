@@ -24,6 +24,15 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // An exception that reaches the dispatcher is written down and the app carries on. Closing
+        // would leave every server it started running with nothing to stop them, which is the worse
+        // of the two outcomes for whoever is playing.
+        Dispatcher.UIThread.UnhandledException += (_, e) =>
+        {
+            CrashLog.Write("UI", e.Exception);
+            e.Handled = true;
+        };
+
         // Apply the saved language BEFORE creating the window.
         var lang = new AppSettingsService().Load().Language;
         if (!string.IsNullOrWhiteSpace(lang))

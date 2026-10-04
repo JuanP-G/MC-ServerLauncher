@@ -400,6 +400,7 @@
   <data name="Msg_OtherApp" xml:space="preserve"><value>otra aplicación</value></data>
   <data name="Msg_PortBusyTitle" xml:space="preserve"><value>Puerto ocupado</value></data>
   <data name="Msg_PortBusyConfirm" xml:space="preserve"><value>El puerto {0} ya está en uso por {1}. Esto suele pasar si un servidor anterior se quedó colgado. ¿Quieres cerrar ese proceso e iniciar el servidor?</value></data>
+  <data name="Msg_PortBusyJavaNote" xml:space="preserve"><value>Parece un servidor de Minecraft que se quedó encendido. Cerrarlo así no guarda el mundo: se puede perder lo último que se jugó. Si puedes, entra en él y escribe /stop antes.</value></data>
   <data name="Msg_UpdateAvailableFmt" xml:space="preserve"><value>Hay una actualización disponible: versión {0}.</value></data>
   <data name="Msg_IconCreateError" xml:space="preserve"><value>No se pudo crear el icono: {0}</value></data>
   <data name="Title_ChangeIcon" xml:space="preserve"><value>Cambiar icono</value></data>

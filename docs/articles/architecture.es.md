@@ -104,7 +104,10 @@ Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`
   como `.bak`, y un archivo corrupto se aparta como `.bad` y se recupera desde el `.bak` cuando es
   posible (avisando al usuario al arrancar en vez de perder la lista en silencio).
 - `java\` — las versiones de Java que instala la app (Temurin/Adoptium).
-- `logs\` — el log de consola persistente (`launcher-yyyy-MM-dd.log`, se poda a los 14 días, 50 MB al día como mucho).
+- `logs\` — el log de consola persistente (`launcher-yyyy-MM-dd.log`, se poda a los 14 días, 50 MB al día como mucho), y
+  `crash-*.log` de `CrashLog` cuando una excepción se escapa de todo manejador (se guardan las 20 más
+  recientes). Está enganchado al AppDomain, a las tareas no observadas y al dispatcher de la interfaz; en
+  el dispatcher la app lo apunta y sigue, porque cerrarse dejaría sin vigilar los servidores que arrancó.
 - `cache\images\` y `cache\store\` — las cachés en disco de la tienda: iconos y capturas de la
   galería (`ImageCache`, se podan a los 30 días) y las respuestas de la API (`StoreCache`). Ambas son
   prescindibles; borrarlas cuesta unas cuantas peticiones y nada más.

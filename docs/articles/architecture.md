@@ -102,7 +102,10 @@ and macOS):
   `.bak`, and a corrupt file is quarantined as `.bad` and recovered from the `.bak` when possible
   (the user is warned at startup instead of silently losing the list).
 - `java\` — Java runtimes the app installs (Temurin/Adoptium).
-- `logs\` — the persistent console log (`launcher-yyyy-MM-dd.log`, pruned after 14 days, at most 50 MB a day).
+- `logs\` — the persistent console log (`launcher-yyyy-MM-dd.log`, pruned after 14 days, at most 50 MB a day), and
+  `crash-*.log` from `CrashLog` when an exception escapes every handler (the newest 20 are kept). It is
+  hooked to the AppDomain, to unobserved tasks and to the UI dispatcher; on the dispatcher the app
+  writes it down and carries on, since closing would leave every server it started running unwatched.
 - `cache\images\` and `cache\store\` — the store's disk caches: project icons and gallery
   screenshots (`ImageCache`, pruned after 30 days) and the API responses (`StoreCache`). Both are
   disposable; deleting them costs a few requests and nothing else.

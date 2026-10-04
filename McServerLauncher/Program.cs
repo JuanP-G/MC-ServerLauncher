@@ -50,6 +50,19 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // First of all, so nothing that fails from here on can do it without leaving a trace.
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            if (e.ExceptionObject is Exception ex) CrashLog.Write("AppDomain", ex);
+            ConsoleLogService.Shared.Flush();
+        };
+        // A task nobody awaited that failed: recorded and marked seen, rather than lost.
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            CrashLog.Write("Task", e.Exception);
+            e.SetObserved();
+        };
+
         // Before Avalonia, on purpose: a second launch must not build a window, a tray icon or a
         // set of ViewModels — each of which would start timers and wake listeners of its own —
         // only to tear them all down again.

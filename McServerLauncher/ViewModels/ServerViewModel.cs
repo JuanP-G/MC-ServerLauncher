@@ -1692,15 +1692,25 @@ public partial class ServerViewModel : ObservableObject
     {
         var pid = _ports.GetListeningPid(port);
         string procDesc = Localizer.Get("Msg_OtherApp");
+        var isJava = false;
         if (pid.HasValue)
         {
-            try { procDesc = $"\"{System.Diagnostics.Process.GetProcessById(pid.Value).ProcessName}\" (PID {pid})"; }
+            try
+            {
+                var name = System.Diagnostics.Process.GetProcessById(pid.Value).ProcessName;
+                procDesc = $"\"{name}\" (PID {pid})";
+                isJava = name.StartsWith("java", StringComparison.OrdinalIgnoreCase);
+            }
             catch { procDesc = $"PID {pid}"; }
         }
 
-        var accepted = await MessageBox.ConfirmAsync(
-            string.Format(Localizer.Get("Msg_PortBusyConfirm"), port, procDesc),
-            Localizer.Get("Msg_PortBusyTitle"));
+        // A Java holding the port is most likely a server left running when the app closed badly,
+        // with players' progress not yet saved. Killing it is still offered — it may be the only
+        // way — but not without saying what it costs.
+        var question = string.Format(Localizer.Get("Msg_PortBusyConfirm"), port, procDesc);
+        if (isJava) question += Environment.NewLine + Environment.NewLine + Localizer.Get("Msg_PortBusyJavaNote");
+
+        var accepted = await MessageBox.ConfirmAsync(question, Localizer.Get("Msg_PortBusyTitle"));
 
         if (!accepted)
         {
