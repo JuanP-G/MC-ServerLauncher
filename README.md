@@ -26,9 +26,13 @@ all with buttons.
 
 ## 📸 A look inside
 
-**Server list, live console and stats — each server tagged with its type**
+**The side rail, the server list with its type badges, and a running server: live stats, its Playit address and a console coloured by what each line is**
 
 ![Main view](docs/screenshots/main.png)
+
+**New server, inside the window — every option of a new server on one screen, in two columns**
+
+![New server panel](docs/screenshots/new-server.png)
 
 **Mods & plugins browser — searches Modrinth, already filtered by your server's type and version**
 

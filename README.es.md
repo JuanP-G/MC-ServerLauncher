@@ -27,9 +27,13 @@ todo con botones.
 
 ## 📸 Un vistazo por dentro
 
-**Lista de servidores, consola en vivo y estadísticas — cada servidor etiquetado con su tipo**
+**El menú lateral, la lista de servidores con su tipo y uno arrancado: estadísticas en vivo, su dirección de Playit y la consola coloreada según lo que es cada línea**
 
 ![Vista principal](docs/screenshots/main.png)
+
+**Nuevo servidor, dentro de la ventana — todas las opciones de un servidor nuevo en una pantalla, a dos columnas**
+
+![Panel de nuevo servidor](docs/screenshots/new-server.png)
 
 **Buscador de mods y plugins — busca en Modrinth ya filtrado por el tipo y la versión de tu servidor**
 
