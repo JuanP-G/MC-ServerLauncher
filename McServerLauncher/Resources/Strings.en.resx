@@ -301,6 +301,9 @@
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Start it when someone tries to join</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>While it is off, the server list shows it as asleep. Anyone pressing Join gets a message and the server begins starting up.</value></data>
+  <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>If the whitelist is on, only start it for players on the list</value></data>
+  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>So nobody outside the list can start it from the internet. Operators count too.</value></data>
+  <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>This server is off and only starts for players on its whitelist.</value></data>
   <data name="Wake_MotdSleeping" xml:space="preserve"><value>Asleep · join to wake it up</value></data>
   <data name="Wake_MotdStarting" xml:space="preserve"><value>Starting up… come back in a few seconds</value></data>
   <data name="Wake_KickWaking" xml:space="preserve"><value>The server was off and is starting up now.&#10;&#10;Try joining again in a few seconds.</value></data>

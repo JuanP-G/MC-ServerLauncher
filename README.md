@@ -144,7 +144,8 @@ When it opens again, **What's new** tells you what changed. It works the same on
 - **Sleeps and wakes on its own** 💤 — a server can **stop itself after N minutes with nobody on** and **start
   again when somebody tries to join**. While it sleeps the list shows *"Off · join to start it"* and whoever
   presses Join gets a message while it boots. There's a **countdown** to the shutdown and a grace period after
-  waking. Per server and **off by default**.
+  waking. If the server has a whitelist, only players on it (or ops) can wake it — an internet scanner can't. Per
+  server and **off by default**.
 - **Nothing missing before it starts** ✅ — if a mod or plugin is waiting on a dependency, you're told **when
   you press Start**, with the option to install it and start. It's read from the jars themselves, so it works
   **offline**. Covers Fabric and Forge/NeoForge mods, and Paper and Purpur plugins.

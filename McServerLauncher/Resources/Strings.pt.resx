@@ -301,6 +301,9 @@
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Ligá-lo quando alguém tentar entrar</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>Enquanto estiver desligado, a lista de servidores mostra-o adormecido. Quem carregar em Entrar recebe uma mensagem e o servidor começa a arrancar.</value></data>
+  <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>Se a lista branca estiver ativada, ligá-lo só para jogadores da lista</value></data>
+  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>Assim ninguém fora da lista o pode ligar pela Internet. Os operadores também contam.</value></data>
+  <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>Este servidor está desligado e só liga para os jogadores da sua lista branca.</value></data>
   <data name="Wake_MotdSleeping" xml:space="preserve"><value>Desligado · entra para o acordar</value></data>
   <data name="Wake_MotdStarting" xml:space="preserve"><value>A arrancar… volta daqui a uns segundos</value></data>
   <data name="Wake_KickWaking" xml:space="preserve"><value>O servidor estava desligado e está a arrancar.&#10;&#10;Tenta entrar outra vez daqui a uns segundos.</value></data>

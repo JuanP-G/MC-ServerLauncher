@@ -599,6 +599,14 @@ gente que ni siquiera está jugando. Con un túnel de Playit este socket es acce
 así que todo lo que lee se trata como hostil: longitudes acotadas, una fecha límite por conexión y un
 tope de cuántas hay a la vez.
 
+**Quién puede despertarlo** lo decide `WakePolicy`. El listener lee el nombre del Login Start del
+cliente y pregunta; con la lista blanca del servidor activada, solo lo despierta alguien que esté en
+ella o en `ops.json`, y a cualquier otro se le dice que el servidor solo se enciende para su lista
+blanca. Los escáneres que buscan servidores de Minecraft entran por rutina, y cada uno arrancaba el
+servidor y la copia que va delante del arranque. Sin lista blanca no cambia nada, y
+`ServerConfig.WakeOnlyForWhitelist` (activado de serie, una casilla bajo *Encenderlo cuando alguien
+intente entrar*) deja al dueño abrirlo a cualquiera igualmente.
+
 ### La tienda: búsqueda, etiquetas y lenguaje llano
 `ServerModsViewModel` pide a `ModrinthService` resultados ya filtrados por el cargador y la versión
 del servidor — un resultado que el servidor no puede ejecutar es peor que ninguno, porque se instala

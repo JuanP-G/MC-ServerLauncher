@@ -145,7 +145,8 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 - **Se apaga y se enciende solo** 💤 — un servidor puede **apagarse a los N minutos sin nadie dentro** y
   **volver a encenderse cuando alguien intenta entrar**. Mientras duerme, la lista dice *«Apagado · entra para
   encenderlo»* y quien pulse Entrar recibe un mensaje mientras arranca. Hay **cuenta atrás** hasta el apagado y
-  un margen tras despertar. Por servidor y **desactivado de serie**.
+  un margen tras despertar. Si el servidor tiene lista blanca, solo la despiertan sus jugadores (u ops), no un
+  escáner de Internet. Por servidor y **desactivado de serie**.
 - **Antes de arrancar se comprueba que no falte nada** ✅ — si a un mod o plugin le falta una dependencia, se
   avisa **al darle a Iniciar**, con la opción de instalarla y arrancar. Se lee de los propios jars, así que
   funciona **sin conexión**. Para mods de Fabric y Forge/NeoForge y plugins de Paper y Purpur.

@@ -13,13 +13,18 @@ namespace McServerLauncher.Services;
 /// <param name="VersionName">Shown next to the player count, e.g. "1.21.1".</param>
 /// <param name="MaxPlayers">The "0/max" the client draws.</param>
 /// <param name="IconPath">The server's <c>server-icon.png</c>, or null for the default icon.</param>
-/// <param name="DisconnectMessage">Shown full-screen to whoever presses Join.</param>
+/// <param name="DisconnectMessage">Shown full-screen to whoever presses Join and wakes it.</param>
+/// <param name="RefusedMessage">
+/// Shown instead to somebody who may not wake it (see <see cref="WakePolicy"/>). Null falls back to
+/// <paramref name="DisconnectMessage"/>.
+/// </param>
 public record WakeStatus(
     string Description,
     string VersionName,
     int MaxPlayers,
     string? IconPath,
-    string DisconnectMessage);
+    string DisconnectMessage,
+    string? RefusedMessage = null);
 
 /// <summary>
 /// Answers Minecraft clients on the server's port while the real server is stopped, so a stopped
@@ -68,7 +73,7 @@ public sealed class WakeOnDemandListener : IDisposable
     private TcpListener? _listener;
     private CancellationTokenSource? _cts;
     private Func<WakeStatus>? _status;
-    private Action? _onJoinAttempt;
+    private Func<string?, bool>? _onJoinAttempt;
     private int _open;
 
     /// <summary>Cached data URI of the server icon, so it isn't re-read on every ping.</summary>
@@ -81,7 +86,14 @@ public sealed class WakeOnDemandListener : IDisposable
     /// Starts answering on <paramref name="port"/>. Returns false when the port can't be bound —
     /// the caller keeps working, it just means no wake-on-demand for now.
     /// </summary>
-    public bool Start(int port, Func<WakeStatus> status, Action onJoinAttempt)
+    /// <param name="port">The server's own port.</param>
+    /// <param name="status">What the server list shows, asked for on every ping.</param>
+    /// <param name="onJoinAttempt">
+    /// Somebody pressed Join, with the name they logged in as (null if the client sent none).
+    /// Returns whether the server is being woken for them, which decides what they are told.
+    /// Called on the connection's thread.
+    /// </param>
+    public bool Start(int port, Func<WakeStatus> status, Func<string?, bool> onJoinAttempt)
     {
         Stop();
 
@@ -191,7 +203,7 @@ public sealed class WakeOnDemandListener : IDisposable
         if (status is null) return;
 
         if (nextState == 1) ServeStatus(stream, protocol, status);
-        else if (nextState == 2) ServeLogin(stream, status);
+        else if (nextState == 2) ServeLogin(stream, status, ReadLoginName(stream));
     }
 
     private void ServeStatus(NetworkStream stream, int protocol, WakeStatus status)
@@ -215,15 +227,41 @@ public sealed class WakeOnDemandListener : IDisposable
         }
     }
 
-    private void ServeLogin(NetworkStream stream, WakeStatus status)
+    private void ServeLogin(NetworkStream stream, WakeStatus status, string? player)
     {
         // Waking first: the disconnect below closes the connection, and the point of the whole
         // exercise is that the server is already coming up by the time they read the message.
-        _onJoinAttempt?.Invoke();
+        var waking = _onJoinAttempt?.Invoke(player) ?? false;
 
+        var message = waking ? status.DisconnectMessage : status.RefusedMessage ?? status.DisconnectMessage;
         Send(stream, 0x00, w => WriteString(w, JsonSerializer.Serialize(
-            new Dictionary<string, object> { ["text"] = status.DisconnectMessage })));
+            new Dictionary<string, object> { ["text"] = message })));
         stream.Flush();
+    }
+
+    /// <summary>
+    /// The name in the client's Login Start, which follows the handshake; null if it did not send one.
+    /// </summary>
+    /// <remarks>
+    /// The name has been the first field of Login Start in every version: what came after it (a
+    /// signature, a UUID) changed, and none of it is needed here. A client that sends nothing, or
+    /// something else, simply has no name — which only matters to a server that wakes for its
+    /// whitelist alone.
+    /// </remarks>
+    internal static string? ReadLoginName(Stream stream)
+    {
+        try
+        {
+            var packet = ReadPacket(stream);
+            if (packet is not { Id: 0x00 } login) return null;
+
+            var name = ReadString(login.Body);
+            return name.Length > 0 ? name : null;
+        }
+        catch
+        {
+            return null;   // a deadline or a dropped connection: no name to go on
+        }
     }
 
     /// <summary>The server-list answer. Public shape so it can be checked without a Minecraft client.</summary>

@@ -191,6 +191,19 @@ public partial class ServerConfig : ObservableObject
     [ObservableProperty]
     private bool _wakeOnDemand;
 
+    /// <summary>
+    /// When the server's whitelist is on, only somebody on it (or an operator) can wake it.
+    /// </summary>
+    /// <remarks>
+    /// On by default. Behind a Playit tunnel the sleeping port is on the internet, and scanners that
+    /// look for Minecraft servers try to log in as a matter of routine: without this, each of them
+    /// started the server — and a pre-start backup with it. A server with a whitelist has already
+    /// said who it is for, so that is who gets to wake it. Without a whitelist this changes nothing,
+    /// and the owner can switch it off to let anyone wake it regardless.
+    /// </remarks>
+    [ObservableProperty]
+    private bool _wakeOnlyForWhitelist = true;
+
     // --- Crossplay (Java + Bedrock) ---
 
     /// <summary>

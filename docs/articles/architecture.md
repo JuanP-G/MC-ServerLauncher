@@ -578,6 +578,13 @@ for people who are not even playing. With a Playit tunnel this socket is reachab
 so everything it reads is treated as hostile: bounded lengths, a deadline per connection, and a cap
 on how many there are at once.
 
+**Who may wake it** is `WakePolicy`. The listener reads the name from the client's Login Start and
+asks; with the server's whitelist on, only somebody on it or in `ops.json` wakes it, and anybody else
+is told the server only starts for its whitelist. Scanners that look for Minecraft servers log in as a
+matter of routine, and each of them used to start the server and the backup in front of the start.
+Without a whitelist nothing changes, and `ServerConfig.WakeOnlyForWhitelist` (on by default, a box
+under *Start it when someone tries to join*) lets the owner open it to anyone anyway.
+
 ### The store: search, tags and plain language
 `ServerModsViewModel` asks `ModrinthService` for results already filtered by the server's loader and
 game version — a result the server cannot run is worse than no result, because it installs and then

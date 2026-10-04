@@ -678,22 +678,62 @@ public partial class ServerViewModel : ObservableObject
             VersionName: string.IsNullOrWhiteSpace(Config.GameVersion) ? "?" : Config.GameVersion,
             MaxPlayers: _maxPlayers,
             IconPath: File.Exists(icon) ? icon : null,
-            DisconnectMessage: WakeSign.KickStyle + Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"));
+            DisconnectMessage: WakeSign.KickStyle + Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"),
+            RefusedMessage: WakeSign.KickStyle + Localizer.Get("Wake_KickNotWhitelisted"));
     }
 
-    /// <summary>Somebody pressed Join on a sleeping server.</summary>
-    private void OnJoinAttempt() => RunOnUi(() =>
+    /// <summary>
+    /// Somebody pressed Join on a sleeping server. Returns whether it is being woken for them.
+    /// </summary>
+    /// <remarks>
+    /// Runs on the listener's thread, so reading the server's files here never holds up the UI;
+    /// only the start itself goes to the UI thread.
+    /// </remarks>
+    private bool OnJoinAttempt(string? player)
     {
-        if (State != ServerState.Stopped) return;   // already coming up from an earlier knock
+        if (!MayWake(player)) return false;
 
-        _wokeAtUtc = DateTime.UtcNow;
-        OnConsoleLine(Localizer.Get("Msg_WakeStarting"));
-        NotifyIf(NotificationKind.WokeOnDemand, Localizer.Get("Notif_Woke"));
+        RunOnUi(() =>
+        {
+            if (State != ServerState.Stopped) return;   // already coming up from an earlier knock
 
-        // isAutoRestart: nobody is sitting in front of the app to answer a dialog, which is exactly
-        // what that flag already means everywhere else.
-        _ = StartInternalAsync(isAutoRestart: true);
-    });
+            _wokeAtUtc = DateTime.UtcNow;
+            OnConsoleLine(Localizer.Get("Msg_WakeStarting"));
+            NotifyIf(NotificationKind.WokeOnDemand, Localizer.Get("Notif_Woke"));
+
+            // isAutoRestart: nobody is sitting in front of the app to answer a dialog, which is
+            // exactly what that flag already means everywhere else.
+            _ = StartInternalAsync(isAutoRestart: true);
+        });
+        return true;
+    }
+
+    /// <summary>Whether <paramref name="player"/> may wake this server. See <see cref="WakePolicy"/>.</summary>
+    /// <remarks>
+    /// Nothing is said in the console about a refusal: the ones worth refusing are scanners, and
+    /// they come by the hundred.
+    /// </remarks>
+    private bool MayWake(string? player)
+    {
+        try
+        {
+            var props = _properties.Read(Config.PropertiesPath);
+            var whitelistOn = props.TryGetValue("white-list", out var w)
+                              && w.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
+
+            // The two lists are only read when they can change the answer.
+            if (!whitelistOn || !Config.WakeOnlyForWhitelist) return true;
+
+            return WakePolicy.Allows(player, whitelistOn, Config.WakeOnlyForWhitelist,
+                _whitelist.ReadNames(Config.FolderPath), _players.ReadOps(Config.FolderPath));
+        }
+        catch
+        {
+            // The files could not be read this instant: behave as before this rule existed rather
+            // than lock everybody out of their own server.
+            return true;
+        }
+    }
 
     private async Task StopBecauseIdleAsync()
     {

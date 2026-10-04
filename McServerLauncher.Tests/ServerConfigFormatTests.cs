@@ -36,7 +36,7 @@ public class ServerConfigFormatTests : IDisposable
         "Id", "Name", "FolderPath", "JarFile", "Type", "GameVersion", "ModLoaderVersion", "ForgeArgs",
         "JavaPath", "MinRamGb", "MaxRamGb", "ExtraJvmArgs", "PlayitEnabled", "TunnelAddress",
         "BackupsEnabled", "BackupRetention", "AutoBackupEnabled", "BackupIntervalMinutes",
-        "ManualBackupRetention", "IdleShutdownMinutes", "WakeOnDemand", "CrossplayEnabled",
+        "ManualBackupRetention", "IdleShutdownMinutes", "WakeOnDemand", "WakeOnlyForWhitelist", "CrossplayEnabled",
         "BedrockModContentEnabled", "MultiVersionEnabled", "BedrockPort", "UseCustomNotifications",
         "Notifications", "LastKnownSeed"
     };
@@ -71,6 +71,7 @@ public class ServerConfigFormatTests : IDisposable
         ManualBackupRetention = 12,
         IdleShutdownMinutes = 20,
         WakeOnDemand = true,
+        WakeOnlyForWhitelist = false,   // its default is true
         CrossplayEnabled = true,
         BedrockModContentEnabled = true,
         MultiVersionEnabled = true,
@@ -155,6 +156,7 @@ public class ServerConfigFormatTests : IDisposable
         Assert.Equal(original.ManualBackupRetention, loaded.ManualBackupRetention);
         Assert.Equal(original.IdleShutdownMinutes, loaded.IdleShutdownMinutes);
         Assert.Equal(original.WakeOnDemand, loaded.WakeOnDemand);
+        Assert.Equal(original.WakeOnlyForWhitelist, loaded.WakeOnlyForWhitelist);
         Assert.Equal(original.CrossplayEnabled, loaded.CrossplayEnabled);
         Assert.Equal(original.BedrockModContentEnabled, loaded.BedrockModContentEnabled);
         Assert.Equal(original.MultiVersionEnabled, loaded.MultiVersionEnabled);
