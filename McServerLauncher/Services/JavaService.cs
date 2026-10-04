@@ -120,8 +120,41 @@ public partial class JavaService
         return result;
     }
 
-    /// <summary>Runs "java -version" and returns the major version (8, 17, 21, 25...). 0 on failure.</summary>
+    /// <summary>What each Java executable answered, keyed by its path and stamped with its file.</summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (long Length, DateTime Written, int Major)>
+        Versions = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The major version (8, 17, 21, 25...) of a Java executable. 0 on failure.</summary>
+    /// <remarks>
+    /// <para>
+    /// Asking means starting a JVM, a fraction of a second to more than one on a slow disk, and it
+    /// was asked twice on every start — once to check the Java and again to build the command line —
+    /// on the UI thread, and once per JDK found when a server was created. The answer only changes
+    /// when the file does, so it is remembered against the file's size and write time; a Java
+    /// updated in place is asked again.
+    /// </para>
+    /// <para>
+    /// A bare "java" resolved through the PATH has no file to stamp and is not remembered.
+    /// </para>
+    /// </remarks>
     public int GetMajorVersion(string javaExe)
+    {
+        FileInfo? file = null;
+        try { file = File.Exists(javaExe) ? new FileInfo(javaExe) : null; }
+        catch { /* an unusable path: asked, not remembered */ }
+
+        if (file is not null && Versions.TryGetValue(file.FullName, out var known)
+            && known.Length == file.Length && known.Written == file.LastWriteTimeUtc)
+            return known.Major;
+
+        var major = AskMajorVersion(javaExe);
+        if (file is not null && major > 0)
+            Versions[file.FullName] = (file.Length, file.LastWriteTimeUtc, major);
+        return major;
+    }
+
+    /// <summary>Runs "java -version" and reads the major version out of what it prints.</summary>
+    private static int AskMajorVersion(string javaExe)
     {
         try
         {
@@ -136,8 +169,18 @@ public partial class JavaService
             };
             using var p = Process.Start(psi);
             if (p is null) return 0;
-            var output = p.StandardError.ReadToEnd() + p.StandardOutput.ReadToEnd();
-            p.WaitForExit(5000);
+
+            // Both streams at once, then a deadline that actually applies: reading one to the end
+            // before the other could wait forever on a process blocked writing the second, and
+            // WaitForExit after ReadToEnd never got the chance to time anything out.
+            var error = p.StandardError.ReadToEndAsync();
+            var standard = p.StandardOutput.ReadToEndAsync();
+            if (!p.WaitForExit(5000))
+            {
+                try { p.Kill(entireProcessTree: true); } catch { /* already gone */ }
+                return 0;
+            }
+            var output = error.GetAwaiter().GetResult() + standard.GetAwaiter().GetResult();
 
             var m = VersionRegex().Match(output);
             if (!m.Success) return 0;
@@ -259,7 +302,9 @@ public partial class JavaService
     /// </summary>
     public async Task<string> EnsureJavaAsync(int requiredMajor, IProgress<string>? log, CancellationToken ct = default)
     {
-        var match = DetectInstalled().FirstOrDefault(i => IsCompatible(i.Major, requiredMajor));
+        // Off the caller's thread: it starts a JVM per installation found, and the caller is the UI.
+        var installed = await Task.Run(DetectInstalled, ct);
+        var match = installed.FirstOrDefault(i => IsCompatible(i.Major, requiredMajor));
         if (match is not null)
         {
             log?.Report(string.Format(Localizer.Get("Msg_JavaCompatibleFound"), match.Major));

@@ -1350,6 +1350,11 @@ public partial class ServerViewModel : ObservableObject
             if (Config.BackupsEnabled)
                 await RunBackupAsync("start");
 
+            // Asked here, in the background, so the one Start asks for the JVM flags is answered
+            // from memory instead of starting a JVM on the UI thread.
+            var javaPath = Config.JavaPath;
+            await Task.Run(() => _java.GetMajorVersion(javaPath));
+
             _process.Start(Config);
             // Playit already runs as a background service: we don't launch another agent.
             Backups.RefreshCommand.Execute(null);
@@ -1438,7 +1443,10 @@ public partial class ServerViewModel : ObservableObject
 
         if (required is null) return; // cannot be determined (old jar): don't block the start
 
-        var current = _java.GetMajorVersion(Config.JavaPath);
+        // Off the UI thread: the first time for each Java it starts a JVM. The answer is remembered,
+        // so the start that follows (ServerProcessManager reads it again for the JVM flags) is free.
+        var javaPath = Config.JavaPath;
+        var current = await Task.Run(() => _java.GetMajorVersion(javaPath));
         if (current > 0 && JavaService.IsCompatible(current, required.Value))
             return;
 
