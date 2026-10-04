@@ -922,7 +922,18 @@ public partial class ServerViewModel : ObservableObject
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
-    public bool CanStart => State == ServerState.Stopped;
+    public bool CanStart => State == ServerState.Stopped && !IsRestoring;
+
+    /// <summary>True while a backup is being put back in place of the world.</summary>
+    /// <remarks>
+    /// Nothing may start the server meanwhile: it would open a world that is being swapped out from
+    /// under it. The button follows this, and so does every start that has no button — waking on
+    /// demand, restarting after a crash.
+    /// </remarks>
+    [ObservableProperty]
+    private bool _isRestoring;
+
+    partial void OnIsRestoringChanged(bool value) => NotifyCommandStates();
     public bool CanStop => State is ServerState.Running or ServerState.Starting;
 
     partial void OnNameChanged(string value) => Config.Name = value;
@@ -1278,6 +1289,12 @@ public partial class ServerViewModel : ObservableObject
 
     private async Task StartInternalAsync(bool isAutoRestart)
     {
+        if (IsRestoring)
+        {
+            OnConsoleLine(Localizer.Get("Msg_StartWaitsForRestore"));
+            return;
+        }
+
         // A new run starts a new console story: the first line must not inherit the colour of the
         // last line of a crash, and a question declined last time is asked again.
         _lastStdoutKind = null;
@@ -1747,6 +1764,34 @@ public partial class ServerViewModel : ObservableObject
         finally
         {
             _backupGate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Replaces the world with a backup. False when another backup was already running.
+    /// </summary>
+    /// <remarks>
+    /// Through here rather than straight to the service, for the same reason backups are: this is
+    /// where the gate lives that keeps two of them apart, and where the wake listener is — which has
+    /// to be closed while the world is swapped, or somebody pressing Join would start the server on
+    /// half of it. The caller has already made sure the server is stopped.
+    /// </remarks>
+    public async Task<bool> RestoreBackupAsync(string zipPath, IProgress<string>? log = null)
+    {
+        if (!await _backupGate.WaitAsync(0)) return false;
+
+        IsRestoring = true;
+        _wake.Stop();
+        try
+        {
+            await _backups.RestoreBackupAsync(Config, zipPath, log);
+            return true;
+        }
+        finally
+        {
+            IsRestoring = false;
+            _backupGate.Release();
+            if (!_process.IsRunning) StartWakeListener();
         }
     }
 

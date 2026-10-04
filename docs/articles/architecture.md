@@ -505,6 +505,13 @@ delete the whole server, the zip it was about to read included; `..` or an absol
 outside it. A restore with such a value refuses before touching anything, and a backup says why in
 the console and is skipped rather than keeping the server from starting (`BackupLevelNameTests`).
 
+The swap itself is all or nothing (`WorldBackupService.ReplaceWorld`): the zip is unpacked beside the
+world as `<world>.restoring`, and only a complete copy takes its place, by renaming. It used to delete
+the world first and unpack into the empty folder, so a damaged zip or a full disk left half a world.
+And a restore goes through `ServerViewModel.RestoreBackupAsync`, which takes the same gate as every
+backup, closes the wake listener and sets `IsRestoring`, which keeps every start out — the button, a
+wake, an auto-restart (`RestoreSafetyTests`).
+
 Backing up a **running** server goes through `LiveWorldBackup`, because zipping a world the JVM is
 writing to gives a torn copy. It asks Minecraft to let go of it first — `save-off`, `save-all flush`,
 wait for the server to say `Saved the game` (recognised by `SaveConfirmation`, anchored after the log

@@ -525,6 +525,13 @@ servidor entero, incluido el zip que iba a leer; `..` o una ruta absoluta llegab
 valor así, restaurar se niega antes de tocar nada, y la copia lo dice en la consola y se salta en vez de
 impedir que el servidor arranque (`BackupLevelNameTests`).
 
+El cambio en sí es todo o nada (`WorldBackupService.ReplaceWorld`): el zip se desempaqueta junto al
+mundo como `<mundo>.restoring`, y solo una copia completa ocupa su lugar, renombrando. Antes se borraba
+el mundo primero y se desempaquetaba en la carpeta vacía, así que un zip dañado o un disco lleno dejaban
+medio mundo. Y restaurar pasa por `ServerViewModel.RestoreBackupAsync`, que toma el mismo semáforo que
+cualquier copia, cierra el listener de despertar y activa `IsRestoring`, que impide cualquier arranque:
+el botón, un despertar o un reinicio automático (`RestoreSafetyTests`).
+
 Copiar un servidor **arrancado** pasa por `LiveWorldBackup`, porque zipear un mundo mientras la JVM
 escribe en él da una copia rota. Antes se le pide a Minecraft que lo suelte: `save-off`,
 `save-all flush`, esperar a que el servidor diga `Saved the game` (lo reconoce `SaveConfirmation`,

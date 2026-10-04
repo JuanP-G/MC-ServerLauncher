@@ -271,6 +271,7 @@
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Aktueller Zustand wird vor der Wiederherstellung gesichert (falls du es rückgängig machen möchtest)...</value></data>
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Sicherung wird wiederhergestellt...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Sicherung wiederhergestellt.</value></data>
+  <data name="Msg_StartWaitsForRestore" xml:space="preserve"><value>[Launcher] Nicht gestartet: Eine Weltsicherung wird gerade wiederhergestellt. Versuche es erneut, wenn sie fertig ist.</value></data>
   <data name="Msg_BackupBadLevelNameFmt" xml:space="preserve"><value>level-name = "{0}" in server.properties bezeichnet keinen eigenen Ordner innerhalb des Servers, daher hat die Sicherung nichts angefasst. Ändere es auf einen Ordnernamen wie "world".</value></data>
   <data name="Backups" xml:space="preserve"><value>Sicherungen</value></data>
   <data name="Backup_Hint" xml:space="preserve"><value>Vor jedem Start, beim Stoppen des Servers und — wenn eingeschaltet — in Abständen während gespielt wird, wird automatisch eine Sicherung der Welt erstellt. Zum Wiederherstellen muss der Server weiterhin gestoppt sein.</value></data>

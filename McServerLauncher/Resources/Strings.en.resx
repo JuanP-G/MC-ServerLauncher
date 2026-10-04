@@ -271,6 +271,7 @@
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Saving a copy of the current state before restoring (in case you want to undo it)...</value></data>
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Restoring the backup...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Backup restored.</value></data>
+  <data name="Msg_StartWaitsForRestore" xml:space="preserve"><value>[Launcher] Not started: a world backup is being restored. Try again when it finishes.</value></data>
   <data name="Msg_BackupBadLevelNameFmt" xml:space="preserve"><value>level-name = "{0}" in server.properties does not name a folder of its own inside the server, so the backup left everything alone. Change it to a folder name such as "world".</value></data>
   <data name="Backups" xml:space="preserve"><value>Backups</value></data>
   <data name="Backup_Hint" xml:space="preserve"><value>A world backup is created automatically before every start, when you stop the server and, if you leave it on, at intervals while people are playing. Restoring still needs the server stopped.</value></data>

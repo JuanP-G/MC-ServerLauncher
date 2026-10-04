@@ -307,14 +307,60 @@ public class WorldBackupService
         }
 
         log?.Report(Localizer.Get("Msg_BackupRestoring"));
-        await Task.Run(() =>
-        {
-            if (Directory.Exists(worldDir))
-                Directory.Delete(worldDir, recursive: true);
-            Directory.CreateDirectory(worldDir);
-            ZipFile.ExtractToDirectory(zipPath, worldDir, overwriteFiles: true);
-        }, ct);
+        await Task.Run(() => ReplaceWorld(worldDir, zipPath), ct);
 
         log?.Report(Localizer.Get("Msg_BackupRestored"));
+    }
+
+    /// <summary>Puts the contents of <paramref name="zipPath"/> where <paramref name="worldDir"/> is.</summary>
+    /// <remarks>
+    /// <para>
+    /// The zip is unpacked beside the world first, and only a complete copy takes its place, by
+    /// renaming. This used to delete the world and then unpack into the empty folder, so a damaged
+    /// zip or a full disk left half a world behind; the safety backup was there, but nothing said it
+    /// was needed. Now a failed unpack leaves the world exactly as it was.
+    /// </para>
+    /// <para>
+    /// Both temporary folders are siblings of the world, so the renames stay on one volume, and
+    /// leftovers of a restore interrupted by a crash are cleared before starting.
+    /// </para>
+    /// </remarks>
+    internal static void ReplaceWorld(string worldDir, string zipPath)
+    {
+        var incoming = worldDir + ".restoring";
+        var outgoing = worldDir + ".replaced";
+        DeleteFolder(incoming);
+        DeleteFolder(outgoing);
+
+        try
+        {
+            Directory.CreateDirectory(incoming);
+            ZipFile.ExtractToDirectory(zipPath, incoming, overwriteFiles: true);
+        }
+        catch
+        {
+            DeleteFolder(incoming);
+            throw;   // the world was never touched
+        }
+
+        if (Directory.Exists(worldDir)) Directory.Move(worldDir, outgoing);
+        try
+        {
+            Directory.Move(incoming, worldDir);
+        }
+        catch
+        {
+            // Put the old world back rather than leave none at all.
+            if (!Directory.Exists(worldDir) && Directory.Exists(outgoing)) Directory.Move(outgoing, worldDir);
+            throw;
+        }
+
+        // Best-effort: a file held open by an antivirus can keep this one around until next time.
+        try { DeleteFolder(outgoing); } catch { /* cleared by the next restore */ }
+    }
+
+    private static void DeleteFolder(string path)
+    {
+        if (Directory.Exists(path)) Directory.Delete(path, recursive: true);
     }
 }

@@ -271,6 +271,7 @@
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Enregistrement d'une copie de l'état actuel avant la restauration (au cas où tu voudrais l'annuler)...</value></data>
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Restauration de la sauvegarde...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Sauvegarde restaurée.</value></data>
+  <data name="Msg_StartWaitsForRestore" xml:space="preserve"><value>[Launcher] Non démarré : une sauvegarde du monde est en cours de restauration. Réessaie quand elle sera terminée.</value></data>
   <data name="Msg_BackupBadLevelNameFmt" xml:space="preserve"><value>level-name = "{0}" dans server.properties ne désigne pas un dossier à part à l'intérieur du serveur, la sauvegarde n'a donc rien touché. Remplace-le par un nom de dossier comme "world".</value></data>
   <data name="Backups" xml:space="preserve"><value>Sauvegardes</value></data>
   <data name="Backup_Hint" xml:space="preserve"><value>Une sauvegarde du monde est créée automatiquement avant chaque démarrage, à l'arrêt du serveur et, si vous le laissez activé, à intervalles pendant que l'on joue. La restauration exige toujours que le serveur soit arrêté.</value></data>
