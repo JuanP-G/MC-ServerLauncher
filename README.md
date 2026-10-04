@@ -22,11 +22,11 @@ files, black console windows or editing config files by hand**.
 
 ## ✨ What you can do
 
-| | | |
-|---|---|---|
-| 🧱 **A server in 2 minutes**<br>Vanilla, Paper, Purpur, Fabric, NeoForge or Forge. The app even brings Java. | 🧩 **Mods and plugins from Modrinth**<br>Already filtered by your version, each with what it needs. | 🌐 **Play with friends online**<br>A Playit.gg tunnel: one address, no port forwarding. |
-| 📱 **From Bedrock too**<br>Phone, console and Windows 10/11, with one checkbox. | 👥 **Players with a profile**<br>Ops, bans, whitelist and every player's history. | 💾 **World backups**<br>On start, on stop and every hour while people play. |
-| 💤 **Sleeps and wakes**<br>Stops with nobody on and starts when someone joins. | 🖥️ **A console you can read**<br>Coloured by kind of line, with counted filters and search. | 🔄 **Updates itself**<br>Every download checked against its SHA-256. |
+<table>
+<tr><td width="33%">🧱 <b>A server in 2 minutes</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge or Forge. The app even brings Java.</td><td width="33%">🧩 <b>Mods and plugins from Modrinth</b><br>Already filtered by your version, each with what it needs.</td><td width="33%">🌐 <b>Play with friends online</b><br>A Playit.gg tunnel: one address, no port forwarding.</td></tr>
+<tr><td width="33%">📱 <b>From Bedrock too</b><br>Phone, console and Windows 10/11, with one checkbox.</td><td width="33%">👥 <b>Players with a profile</b><br>Ops, bans, whitelist and every player's history.</td><td width="33%">💾 <b>World backups</b><br>On start, on stop and every hour while people play.</td></tr>
+<tr><td width="33%">💤 <b>Sleeps and wakes</b><br>Stops with nobody on and starts when someone joins.</td><td width="33%">🖥️ <b>A console you can read</b><br>Coloured by kind of line, with counted filters and search.</td><td width="33%">🔄 <b>Updates itself</b><br>Every download checked against its SHA-256.</td></tr>
+</table>
 
 All in **one window**, in English, Spanish, Portuguese, French and German.
 

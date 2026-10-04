@@ -22,11 +22,11 @@ archivos `.bat`, ventanas de consola ni configuraciones a mano**.
 
 ## ✨ Qué puedes hacer
 
-| | | |
-|---|---|---|
-| 🧱 **Crear un servidor en 2 minutos**<br>Vanilla, Paper, Purpur, Fabric, NeoForge o Forge. La app pone hasta el Java. | 🧩 **Mods y plugins de Modrinth**<br>Ya filtrados por tu versión, y cada uno con lo que necesita. | 🌐 **Jugar con amigos por Internet**<br>Túnel de Playit.gg: una dirección, sin abrir puertos. |
-| 📱 **Desde Bedrock también**<br>Móvil, consola y Windows 10/11, con una casilla. | 👥 **Jugadores con ficha**<br>OPs, baneos, lista blanca e historial de cada jugador. | 💾 **Copias del mundo**<br>Al arrancar, al parar y cada hora mientras se juega. |
-| 💤 **Se duerme y se despierta**<br>Se apaga sin nadie dentro y arranca cuando alguien entra. | 🖥️ **Una consola que se lee**<br>Colores por tipo de línea, filtros con contador y buscador. | 🔄 **Se actualiza sola**<br>Cada descarga, comprobada con su SHA-256. |
+<table>
+<tr><td width="33%">🧱 <b>Crear un servidor en 2 minutos</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge o Forge. La app pone hasta el Java.</td><td width="33%">🧩 <b>Mods y plugins de Modrinth</b><br>Ya filtrados por tu versión, y cada uno con lo que necesita.</td><td width="33%">🌐 <b>Jugar con amigos por Internet</b><br>Túnel de Playit.gg: una dirección, sin abrir puertos.</td></tr>
+<tr><td width="33%">📱 <b>Desde Bedrock también</b><br>Móvil, consola y Windows 10/11, con una casilla.</td><td width="33%">👥 <b>Jugadores con ficha</b><br>OPs, baneos, lista blanca e historial de cada jugador.</td><td width="33%">💾 <b>Copias del mundo</b><br>Al arrancar, al parar y cada hora mientras se juega.</td></tr>
+<tr><td width="33%">💤 <b>Se duerme y se despierta</b><br>Se apaga sin nadie dentro y arranca cuando alguien entra.</td><td width="33%">🖥️ <b>Una consola que se lee</b><br>Colores por tipo de línea, filtros con contador y buscador.</td><td width="33%">🔄 <b>Se actualiza sola</b><br>Cada descarga, comprobada con su SHA-256.</td></tr>
+</table>
 
 Todo en **una sola ventana**, en español, inglés, portugués, francés y alemán.
 
