@@ -39,6 +39,44 @@ public static class SelfUpdater
 
     public static bool CanUpdateInPlace => Blocker is null;
 
+    /// <summary>The start of the name of every folder a package is downloaded into.</summary>
+    internal const string PackageFolderPrefix = "mcsl-";
+
+    /// <summary>
+    /// Deletes the folders earlier updates downloaded into, once they are a day old.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The installer has to stay where it is while it runs — it is what replaces this app — so its
+    /// folder cannot be removed by the copy that started it. Nothing removed it later either, and
+    /// each update left one behind in the temporary folder, a few dozen megabytes apiece.
+    /// </para>
+    /// <para>
+    /// Only folders named exactly as <see cref="Path.GetRandomFileName"/> names them after the
+    /// prefix, and only a day old: a folder of another program's, or an update running right now,
+    /// is never touched.
+    /// </para>
+    /// </remarks>
+    internal static void DeleteOldPackages(string tempRoot, DateTime nowUtc)
+    {
+        try
+        {
+            foreach (var dir in Directory.EnumerateDirectories(tempRoot, PackageFolderPrefix + "*"))
+            {
+                var rest = Path.GetFileName(dir)[PackageFolderPrefix.Length..];
+                if (!System.Text.RegularExpressions.Regex.IsMatch(rest, "^[a-z0-9]{8}\\.[a-z0-9]{3}$")) continue;
+                if (nowUtc - Directory.GetLastWriteTimeUtc(dir) < TimeSpan.FromDays(1)) continue;
+
+                try { Directory.Delete(dir, recursive: true); }
+                catch { /* in use, or not ours to delete after all */ }
+            }
+        }
+        catch
+        {
+            // A temporary folder that cannot be listed is not worth failing a start over.
+        }
+    }
+
     /// <summary>What to call the downloaded package on disk.</summary>
     public static string PackageFileName(string? assetName) =>
         string.IsNullOrWhiteSpace(assetName)

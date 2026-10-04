@@ -255,6 +255,7 @@ public partial class MainViewModel : ObservableObject
 
         _ = CheckForUpdatesAsync();
         _ = Tunnels.PrefetchAsync();
+        _ = Task.Run(() => SelfUpdater.DeleteOldPackages(Path.GetTempPath(), DateTime.UtcNow));
         _updateTimer.Start();
     }
 
@@ -500,12 +501,15 @@ public partial class MainViewModel : ObservableObject
         }
 
         IsUpdating = true;
+        var offer = UpdateText;
         UpdateText = Localizer.Get("Update_Downloading");
+
+        // Random per-run folder: fixed names in %TEMP% could be pre-planted/replaced by
+        // another local process between download and execution.
+        var updateDir = Path.Combine(Path.GetTempPath(), SelfUpdater.PackageFolderPrefix + Path.GetRandomFileName());
+        var stoppedEverything = false;
         try
         {
-            // Random per-run folder: fixed names in %TEMP% could be pre-planted/replaced by
-            // another local process between download and execution.
-            var updateDir = Path.Combine(Path.GetTempPath(), "mcsl-" + Path.GetRandomFileName());
             var dest = Path.Combine(updateDir, SelfUpdater.PackageFileName(_packageName));
             var updateService = new UpdateService();
 
@@ -526,6 +530,7 @@ public partial class MainViewModel : ObservableObject
 
             UpdateText = Localizer.Get("Update_Installing");
             await ShutdownAllAsync();
+            stoppedEverything = true;
 
             // From here the platform decides: run the silent installer, swap the AppImage, or
             // hand the .dmg to a script that replaces the bundle once we are gone. The claim on
@@ -536,24 +541,41 @@ public partial class MainViewModel : ObservableObject
         }
         catch (InvalidOperationException ex)
         {
-            McServerLauncher.Program.ReacquireInstance();   // still the running copy after all
+            RecoverFromFailedUpdate(offer, updateDir, stoppedEverything);
             // Security-relevant refusals land here: either DownloadVerifier's mismatch (the
             // downloaded installer doesn't match the release's checksum) or the release publishing
             // no usable SHA256SUMS.txt at all. Tell the user explicitly instead of silently
             // falling back to the browser.
-            IsUpdating = false;
-            UpdateText = string.Empty;
             await MessageBox.ShowAsync(ex.Message, Localizer.Get("Update_Now"), Owner);
             OpenRelease();
         }
         catch
         {
-            McServerLauncher.Program.ReacquireInstance();
+            RecoverFromFailedUpdate(offer, updateDir, stoppedEverything);
             // If the download/install fails, let the user open the page manually.
-            IsUpdating = false;
-            UpdateText = string.Empty;
             OpenRelease();
         }
+    }
+
+    /// <summary>Puts the app back the way it was when an update could not be applied.</summary>
+    /// <remarks>
+    /// It used to empty the banner — which went on showing, with nothing in it — leave the Playit
+    /// agent stopped after a failure on Linux or macOS, where everything had already been shut down
+    /// for the swap, and leave the downloaded package in a temporary folder for good.
+    /// </remarks>
+    private void RecoverFromFailedUpdate(string offer, string updateDir, bool stoppedEverything)
+    {
+        McServerLauncher.Program.ReacquireInstance();   // still the running copy after all
+        IsUpdating = false;
+        UpdateText = offer;
+
+        // The servers stay stopped: starting them is the user's call. The tunnels are not a
+        // decision anybody made, and without the agent every one of them is down.
+        if (stoppedEverything && !string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
+            _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
+
+        try { if (Directory.Exists(updateDir)) Directory.Delete(updateDir, recursive: true); }
+        catch { /* cleared at a later start, see SelfUpdater.DeleteOldPackages */ }
     }
 
     // Through BrowserLauncher, not Process.Start directly: _releaseUrl is the html_url the GitHub
