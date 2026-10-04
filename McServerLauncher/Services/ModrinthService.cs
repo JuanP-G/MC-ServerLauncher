@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Models.Modrinth;
 
@@ -306,13 +307,23 @@ public class ModrinthService
 
     /// <summary>
     /// Downloads a mod/plugin file from Modrinth. Mods are third-party jars chosen by the user, so
-    /// whenever Modrinth provides a hash for the file (it always does), the download is verified
-    /// against it; a mismatch deletes the file and throws instead of installing it. Sha512 is
-    /// preferred (stronger); Sha1 is used only if Modrinth didn't provide a Sha512 for this file.
+    /// the download is verified against the hash Modrinth publishes for it; a mismatch deletes the
+    /// file and throws instead of installing it. Sha512 is preferred (stronger); Sha1 is used only if
+    /// Modrinth didn't provide a Sha512 for this file.
     /// </summary>
+    /// <remarks>
+    /// Neither hash means no install. Modrinth always publishes one, so its absence is an answer
+    /// the app does not understand rather than a normal case — and the rule written down for mods
+    /// (see <see cref="VerifiedJarDownload"/>) was "no checksum, no install", while this went ahead
+    /// and installed the jar unverified.
+    /// </remarks>
     public async Task DownloadModAsync(string downloadUrl, string destinationPath, string? expectedSha512 = null,
         string? expectedSha1 = null, IProgress<double>? progress = null, CancellationToken ct = default)
     {
+        if (string.IsNullOrEmpty(expectedSha512) && string.IsNullOrEmpty(expectedSha1))
+            throw new InvalidOperationException(string.Format(
+                Localizer.Get("Msg_ModNoChecksumFmt"), AtomicDownload.DisplayName(destinationPath)));
+
         using var response = await Http.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, ct);
         response.EnsureSuccessStatusCode();
 

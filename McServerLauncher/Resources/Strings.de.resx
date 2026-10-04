@@ -185,6 +185,7 @@
   <data name="Msg_JavaCompatibleFound" xml:space="preserve"><value>Kompatibles Java {0} gefunden. Nichts zu installieren.</value></data>
   <data name="Msg_JavaNotCompatibleDownloading" xml:space="preserve"><value>Kein kompatibles Java. Java {0} (Temurin) wird heruntergeladen...</value></data>
   <data name="Msg_JavaNoChecksum" xml:space="preserve"><value>Adoptium hat für dieses Java keine Prüfsumme geliefert, es kann also nicht überprüft werden. Es wird aus Sicherheitsgründen nicht installiert; bitte später erneut versuchen.</value></data>
+  <data name="Msg_ModNoChecksumFmt" xml:space="preserve"><value>Modrinth hat für &quot;{0}&quot; keine Prüfsumme geliefert, daher kann sie nicht geprüft werden. Sicherheitshalber wird sie nicht installiert; versuche es später erneut.</value></data>
   <data name="Msg_JavaDownloading" xml:space="preserve"><value>Java wird heruntergeladen (kann etwas dauern)...</value></data>
   <data name="Msg_JavaInstalling" xml:space="preserve"><value>Java wird installiert...</value></data>
   <data name="Msg_JavaInstalled" xml:space="preserve"><value>Java {0} erfolgreich installiert.</value></data>
