@@ -325,10 +325,17 @@ public partial class MainViewModel : ObservableObject
     private async Task RestartAppAsync()
     {
         await ShutdownAllAsync();
-        var exe = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
-        if (!string.IsNullOrEmpty(exe))
+
+        // What this copy is really running from: the AppImage, the .app bundle or the .exe. The
+        // process's own file is inside the AppImage's temporary mount, which goes away with this
+        // process, so relaunching that started a copy whose files were about to disappear.
+        var target = DesktopShortcutService.LaunchTarget;
+        if (!string.IsNullOrEmpty(target))
         {
-            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = exe, UseShellExecute = true }); }
+            // Before starting it, so the new copy can claim the app instead of handing itself over
+            // to this one, which is on its way out.
+            McServerLauncher.Program.ReleaseInstance();
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = target, UseShellExecute = true }); }
             catch { /* if it can't be relaunched, at least exit */ }
         }
         Environment.Exit(0);
@@ -521,12 +528,15 @@ public partial class MainViewModel : ObservableObject
             await ShutdownAllAsync();
 
             // From here the platform decides: run the silent installer, swap the AppImage, or
-            // hand the .dmg to a script that replaces the bundle once we are gone.
+            // hand the .dmg to a script that replaces the bundle once we are gone. The claim on
+            // being the running copy goes first, so the new one does not hand itself over to this.
+            McServerLauncher.Program.ReleaseInstance();
             SelfUpdater.Apply(dest);
             Environment.Exit(0);
         }
         catch (InvalidOperationException ex)
         {
+            McServerLauncher.Program.ReacquireInstance();   // still the running copy after all
             // Security-relevant refusals land here: either DownloadVerifier's mismatch (the
             // downloaded installer doesn't match the release's checksum) or the release publishing
             // no usable SHA256SUMS.txt at all. Tell the user explicitly instead of silently
@@ -538,6 +548,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
+            McServerLauncher.Program.ReacquireInstance();
             // If the download/install fails, let the user open the page manually.
             IsUpdating = false;
             UpdateText = string.Empty;

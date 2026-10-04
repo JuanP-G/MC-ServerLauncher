@@ -37,8 +37,14 @@ public sealed class SingleInstance : IDisposable
 
     private SingleInstance(FileStream held) => _lock = held;
 
-    private static string Dir => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher");
+    /// <summary>Where the lock file lives: the app's data folder, or a temporary one for tests.</summary>
+    /// <remarks>
+    /// A scope used to change only the file's name, so every test run left its own
+    /// <c>instance-tests-*.lock</c> in the real data folder of whoever ran it — hundreds of them.
+    /// </remarks>
+    private static string Dir => Scope is null
+        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher")
+        : Path.Combine(Path.GetTempPath(), "mcsl-instance-tests");
 
     /// <summary>
     /// Which single-instance namespace this is. Null in production, where there is exactly one.
@@ -97,8 +103,10 @@ public sealed class SingleInstance : IDisposable
             // FileShare.None is the whole mechanism: the second process's open fails, and the OS
             // drops the lock when this process ends however it ends — including a hard kill, which
             // is why this is a lock and not a PID file.
+            // A test's lock goes when it is let go of; the app's own stays, as it always has.
             var held = new FileStream(LockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite,
-                                      FileShare.None, 1);
+                                      FileShare.None, 1,
+                                      Scope is null ? FileOptions.None : FileOptions.DeleteOnClose);
             var instance = new SingleInstance(held);
             instance.Listen();
             return instance;
@@ -137,7 +145,9 @@ public sealed class SingleInstance : IDisposable
             if (OperatingSystem.IsWindows())
                 try { AllowSetForegroundWindow(AsfwAny); } catch { /* older or locked-down Windows */ }
 
-            using var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
+            // CurrentUserOnly here and on the listener: the pipe's name can be worked out by anyone,
+            // and it is only ever this user's own copies that have anything to say to each other.
+            using var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.CurrentUserOnly);
 
             // Short: if the other process is wedged, the user is better served by this launch
             // failing visibly than by a window that never appears and never says why.
@@ -170,7 +180,8 @@ public sealed class SingleInstance : IDisposable
             try
             {
                 using var server = new NamedPipeServerStream(
-                    PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                    PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte,
+                    PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
 
                 await server.WaitForConnectionAsync(_cts.Token);
 

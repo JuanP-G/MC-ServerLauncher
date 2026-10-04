@@ -48,8 +48,7 @@ public partial class App : Application
             // Launching the app again brings this window back rather than opening a second copy.
             // The event arrives on a pipe-listener thread, so it has to hop to the UI thread before
             // touching the window.
-            if (Program.Instance is { } instance)
-                instance.ActivationRequested += () => Dispatcher.UIThread.Post(() => RestoreMainWindow(desktop));
+            Program.ActivationRequested += () => Dispatcher.UIThread.Post(() => RestoreMainWindow(desktop));
 
             // On Linux the desktop shortcut points at a copy of the icon, and updating replaces
             // only the AppImage — so without this, changing the app icon would never reach anyone
