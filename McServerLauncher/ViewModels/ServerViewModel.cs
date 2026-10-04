@@ -61,6 +61,18 @@ public partial class ServerViewModel : ObservableObject
     // to a limited number of consecutive attempts so a persistently-crashing server doesn't loop
     // forever. The streak resets whenever a run has been stable (Running) for a while, or the user
     // starts the server manually.
+    /// <summary>
+    /// How long a server gets to save and exit after "stop" before it is killed.
+    /// </summary>
+    /// <remarks>
+    /// One value for every way a server is stopped. Closing the app (and updating it, and deleting a
+    /// server) used to allow fifteen seconds where the Stop button allowed thirty, so the most common
+    /// way of stopping a server was the one most likely to kill it halfway through writing its world —
+    /// and a large modpack can easily take longer than either to save. Killing is the last resort,
+    /// so the wait errs long: a server that has finished saving exits on its own long before this.
+    /// </remarks>
+    internal static readonly TimeSpan StopTimeout = TimeSpan.FromSeconds(60);
+
     private const int MaxAutoRestarts = 3;
     private static readonly TimeSpan StabilityWindow = TimeSpan.FromMinutes(2);
     private static readonly TimeSpan AutoRestartDelay = TimeSpan.FromSeconds(5);
@@ -1674,7 +1686,7 @@ public partial class ServerViewModel : ObservableObject
     {
         try
         {
-            await _process.StopAsync(TimeSpan.FromSeconds(30));
+            await _process.StopAsync(StopTimeout);
 
             // A snapshot of the good state just reached by stopping cleanly. Not done for Restart's
             // internal stop or for the app-closing ShutdownAsync: the next Start's own pre-backup
@@ -1792,7 +1804,7 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanStop))]
     private async Task Restart()
     {
-        await _process.StopAsync(TimeSpan.FromSeconds(30));
+        await _process.StopAsync(StopTimeout);
         _consecutiveCrashes = 0; // a deliberate Restart gives auto-restart a fresh budget too
         await StartInternalAsync(isAutoRestart: false);
     }
@@ -2164,7 +2176,7 @@ public partial class ServerViewModel : ObservableObject
         History.Shutdown();                            // drops a rebuild that was waiting its turn
         _wake.Stop();                                  // frees the port we answer on while asleep
         if (_process.IsRunning)
-            await _process.StopAsync(TimeSpan.FromSeconds(15));
+            await _process.StopAsync(StopTimeout);
     }
 
     private static void RunOnUi(Action action)

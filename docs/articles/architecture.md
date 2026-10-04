@@ -122,7 +122,9 @@ are no hard-coded machine paths.
 
 - **`ServerProcessManager`** — owns the `java` process lifecycle: starts it (no console window),
   redirects stdin/stdout/stderr, re-emits each output line via an event, and stops it cleanly by
-  sending `stop` (with a kill fallback).
+  sending `stop` (with a kill fallback). The kill waits `ServerViewModel.StopTimeout` (60 s), one
+  value for the Stop button, Restart and closing or updating the app — closing used to allow fifteen
+  seconds, less than a large modpack needs to save.
 - **`JavaService`** — detects installed Java versions and, if none is compatible, downloads the
   right Temurin (Adoptium) JRE for the architecture. Used both when creating and when starting a
   server.

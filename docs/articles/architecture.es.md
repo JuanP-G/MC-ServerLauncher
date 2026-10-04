@@ -125,7 +125,9 @@ mundo. No hay rutas fijas del equipo en el código.
 
 - **`ServerProcessManager`** — gestiona el ciclo de vida del proceso `java`: lo arranca (sin ventana
   de consola), redirige stdin/stdout/stderr, reemite cada línea por un evento y lo detiene de forma
-  limpia enviando `stop` (con kill de respaldo).
+  limpia enviando `stop` (con kill de respaldo). El kill espera `ServerViewModel.StopTimeout` (60 s),
+  el mismo valor para el botón Parar, Reiniciar y cerrar o actualizar la app; al cerrar se daban
+  quince segundos, menos de lo que un modpack grande necesita para guardar.
 - **`JavaService`** — detecta los Java instalados y, si ninguno es compatible, descarga el JRE
   Temurin (Adoptium) adecuado para la arquitectura. Se usa al crear y al iniciar un servidor.
 - **`MinecraftVersionService`** — lee el manifiesto de versiones de Mojang, resuelve la URL del
