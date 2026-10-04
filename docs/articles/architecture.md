@@ -102,7 +102,7 @@ and macOS):
   `.bak`, and a corrupt file is quarantined as `.bad` and recovered from the `.bak` when possible
   (the user is warned at startup instead of silently losing the list).
 - `java\` — Java runtimes the app installs (Temurin/Adoptium).
-- `logs\` — the persistent console log (`launcher-yyyy-MM-dd.log`, pruned after 14 days).
+- `logs\` — the persistent console log (`launcher-yyyy-MM-dd.log`, pruned after 14 days, at most 50 MB a day).
 - `cache\images\` and `cache\store\` — the store's disk caches: project icons and gallery
   screenshots (`ImageCache`, pruned after 30 days) and the API responses (`StoreCache`). Both are
   disposable; deleting them costs a few requests and nothing else.
@@ -303,7 +303,9 @@ are no hard-coded machine paths.
   a human-readable reason for a crash. (The unexpected-exit detection is `ServerProcessManager`'s
   `UnexpectedExit` event; the auto-restart logic lives in `ServerViewModel`.)
 - **`ConsoleLogService`** — mirrors every console line to `%APPDATA%\McServerLauncher\logs\` so the
-  history survives restarts (14-day retention).
+  history survives restarts (14-day retention, checked each time the day changes and not only at
+  start-up, since the app can live in the tray for weeks; and a 50 MB ceiling per day, past which one
+  line says so and nothing more is written until the next — `ConsoleLogLimitsTests`).
 - **`ProcessStatsService`** — samples CPU/RAM of the running `java` process for the live stats and the
   `Sparkline` mini-charts.
 - **`ToastService`** — shows the app's own pop-up notifications — always-on-top Avalonia windows in

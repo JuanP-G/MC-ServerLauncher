@@ -104,7 +104,7 @@ Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`
   como `.bak`, y un archivo corrupto se aparta como `.bad` y se recupera desde el `.bak` cuando es
   posible (avisando al usuario al arrancar en vez de perder la lista en silencio).
 - `java\` — las versiones de Java que instala la app (Temurin/Adoptium).
-- `logs\` — el log de consola persistente (`launcher-yyyy-MM-dd.log`, se poda a los 14 días).
+- `logs\` — el log de consola persistente (`launcher-yyyy-MM-dd.log`, se poda a los 14 días, 50 MB al día como mucho).
 - `cache\images\` y `cache\store\` — las cachés en disco de la tienda: iconos y capturas de la
   galería (`ImageCache`, se podan a los 30 días) y las respuestas de la API (`StoreCache`). Ambas son
   prescindibles; borrarlas cuesta unas cuantas peticiones y nada más.
@@ -310,7 +310,9 @@ mundo. No hay rutas fijas del equipo en el código.
   un motivo legible del crash. (La detección del cierre inesperado es el evento `UnexpectedExit` de
   `ServerProcessManager`; la lógica de auto-reinicio vive en `ServerViewModel`.)
 - **`ConsoleLogService`** — copia cada línea de consola a `%APPDATA%\McServerLauncher\logs\` para que
-  el historial sobreviva a los reinicios (retención de 14 días).
+  el historial sobreviva a los reinicios (retención de 14 días, comprobada cada vez que cambia el día y no
+  solo al arrancar, porque la app puede vivir semanas en la bandeja; y un tope de 50 MB al día, pasado el
+  cual una línea lo dice y no se escribe nada más hasta el siguiente — `ConsoleLogLimitsTests`).
 - **`ProcessStatsService`** — muestrea CPU/RAM del proceso `java` en marcha para las estadísticas en
   vivo y las mini-gráficas `Sparkline`.
 - **`ToastService`** — muestra notificaciones emergentes propias — ventanas de Avalonia siempre

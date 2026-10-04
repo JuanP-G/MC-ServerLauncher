@@ -305,7 +305,7 @@ Hecha con **Avalonia / .NET 9**. El instalador de Windows es **solo x64** (Inno 
 **https://juanp-g.github.io/MC-ServerLauncher/docs/**.
 
 **Datos:** en `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` en Linux y macOS): `servers.json`,
-`settings.json`, el `java\` que instala la app, los `logs\` de consola (14 días), la `cache\` de la tienda, el
+`settings.json`, el `java\` que instala la app, los `logs\` de consola (14 días, 50 MB al día como mucho), la `cache\` de la tienda, el
 agente en `playit-agent\`, el `instance.lock` que mantiene una sola copia abierta y, en Linux/macOS,
 `.secret.key`. Cada servidor guarda sus copias en su carpeta `backups\`.
 
