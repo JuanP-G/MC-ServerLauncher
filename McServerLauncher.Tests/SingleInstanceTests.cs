@@ -24,6 +24,28 @@ public class SingleInstanceTests : IDisposable
     public void Dispose() => SingleInstance.Scope = null;
 
     [Fact]
+    public void ATestsLockIsNeverInTheRealDataFolderAndGoesAwayAfterwards()
+    {
+        // A scope used to change only the lock file's name, not its folder: every run of these
+        // tests left its own instance-tests-*.lock in the data folder of whoever ran them — more
+        // than eight hundred on one machine. Here, in this class, because Scope is static and a
+        // second class setting it in parallel would pull the other onto the real lock.
+        var name = $"instance-{SingleInstance.Scope}.lock";
+        var real = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher");
+        var tests = Path.Combine(Path.GetTempPath(), "mcsl-instance-tests");
+
+        using (var instance = SingleInstance.TryAcquire(out _))
+        {
+            Assert.NotNull(instance);
+            Assert.False(File.Exists(Path.Combine(real, name)));
+            Assert.True(File.Exists(Path.Combine(tests, name)));
+        }
+
+        Assert.False(File.Exists(Path.Combine(tests, name)));
+    }
+
+    [Fact]
     public void SecondClaimIsRefusedWhileTheFirstHoldsIt()
     {
         using var first = SingleInstance.TryAcquire(out var alreadyRunning);
