@@ -1,5 +1,4 @@
 using System.IO;
-using System.Text;
 
 namespace McServerLauncher.Services;
 
@@ -90,6 +89,9 @@ public class ServerPropertiesService
         foreach (var kv in remaining)
             lines.Add($"{kv.Key}={kv.Value}");
 
-        File.WriteAllLines(propertiesPath, lines, new UTF8Encoding(false));
+        // Through a temporary file, like every other file the app writes: cut the power halfway
+        // through a direct write and the server is left with a truncated server.properties.
+        AtomicTextFile.WriteIfChanged(propertiesPath,
+            string.Concat(lines.Select(line => line + Environment.NewLine)));
     }
 }
