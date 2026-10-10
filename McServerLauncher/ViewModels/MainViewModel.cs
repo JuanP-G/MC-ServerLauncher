@@ -13,6 +13,7 @@ using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 using McServerLauncher.Views;
+using McServerLauncher.Views.ServerSettings;
 
 namespace McServerLauncher.ViewModels;
 
@@ -70,8 +71,25 @@ public partial class MainViewModel : ObservableObject
     /// <summary>What was selected when the panel opened, to go back to if it is cancelled.</summary>
     private ServerViewModel? _beforeNewServer;
 
-    /// <summary>The selected server's detail, unless the new-server panel has the space.</summary>
-    public bool ShowServerDetail => HasSelection && !IsCreatingServer;
+    /// <summary>The selected server's settings, while they have the detail area; null otherwise.</summary>
+    /// <remarks>
+    /// Kept while another section of the app is looked at, like the new-server panel: going to the
+    /// tunnels and back finds the page where it was left. It goes when another server is picked,
+    /// and nothing that would lose an unsaved change is allowed to make it go — see
+    /// <see cref="ServerSettingsView.TryLeave"/>.
+    /// </remarks>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEditingServer), nameof(ShowServerDetail))]
+    private ServerSettingsView? _serverSettingsPanel;
+
+    /// <summary>The selected server's settings are on screen.</summary>
+    public bool IsEditingServer => ServerSettingsPanel is not null;
+
+    /// <summary>The page the settings last showed, to open on next time.</summary>
+    private ServerSettingsPage _lastSettingsPage = ServerSettingsPage.Game;
+
+    /// <summary>The selected server's detail, unless the new-server panel or its settings have the space.</summary>
+    public bool ShowServerDetail => HasSelection && !IsCreatingServer && !IsEditingServer;
 
     public bool ShowEmptyState => !HasSelection && !IsCreatingServer;
 
@@ -138,7 +156,11 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ShowSettings() => Section = AppSection.Settings;
+    private void ShowSettings()
+    {
+        if (!SettingsLetGo()) return;
+        Section = AppSection.Settings;
+    }
 
     /// <summary>The tunnels screen: the Playit account, every tunnel on it, and what to do about them.</summary>
     public TunnelsViewModel Tunnels { get; }
@@ -149,6 +171,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ShowTunnels()
     {
+        if (!SettingsLetGo()) return;
         Section = AppSection.Tunnels;
         // Read when the screen opens, never on a timer: the account is another machine's data, and
         // asking for it while nobody is looking would spend requests on an answer no one reads. The
@@ -158,7 +181,11 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ShowAbout() => Section = AppSection.About;
+    private void ShowAbout()
+    {
+        if (!SettingsLetGo()) return;
+        Section = AppSection.About;
+    }
 
     private string? _releaseUrl;
     private string? _packageUrl;
@@ -708,6 +735,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ShowNewServer()
     {
+        if (!LeaveSettings()) return;
         Section = AppSection.Servers;
         if (IsCreatingServer) return;
 
@@ -802,105 +830,138 @@ public partial class MainViewModel : ObservableObject
         return SelectedServer;
     }
 
-    [RelayCommand(CanExecute = nameof(CanActOn))]
-    private async Task EditServer(ServerViewModel? target)
+    /// <summary>Opens the selected server's settings, on the page they were last left on.</summary>
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void ConfigureServer()
     {
-        if (Target(target) is not { } server || Owner is null) return;
-        var oldName = server.Name;
-
-        // Read before the dialog: these two checkboxes are requests to install something, not
-        // settings that take effect by being remembered. Turning one on and having nothing happen
-        // is worse than not offering it, because the app then claims a server can do something it
-        // cannot.
-        var hadCrossplay = server.Config.CrossplayEnabled;
-        var hadMultiVersion = server.Config.MultiVersionEnabled;
-        var hadModContent = server.Config.BedrockModContentEnabled;
-
-        var dialog = new AddEditServerDialog(server.Config);
-        var accepted = await dialog.ShowDialog<bool>(Owner);
-
-        // A loader install mutates the config and the disk in the act (files already downloaded),
-        // so it must be persisted even if the user then cancels the edit dialog — otherwise
-        // servers.json keeps naming the old type while the disk is already Fabric/Forge/Paper.
-        // Cancel still reverts the ordinary editable fields.
-        //
-        // Nothing is refreshed here. The dialog writes into the config the view model is showing,
-        // the config announces each change and ServerConfigEffects says what it costs, so the card
-        // and the panels have already followed — including on the Cancel path, where restoring the
-        // snapshot announces its own eighteen assignments. A blanket refresh at this point used to
-        // be the mechanism; leaving it in would mean the app never exercised the one that replaced
-        // it, and would throw away the store page the user had open for an edit they cancelled.
-        if (accepted || dialog.LoaderInstalled)
-        {
-            Save();
-            _ = Tunnels.RenameTunnelsForServerAsync(server, oldName);
-
-            if (!hadCrossplay && server.Config.CrossplayEnabled)
-            {
-                var key = server.Config.PlayitEnabled ? await EnsurePlayitAgentAsync() : null;
-                await server.SetUpCrossplayAsync(key);
-                Save();
-            }
-
-            if (!hadMultiVersion && server.Config.MultiVersionEnabled)
-            {
-                await server.SetUpMultiVersionAsync();
-                Save();
-            }
-
-            if (!hadModContent && server.Config.BedrockModContentEnabled)
-            {
-                await server.SetUpBedrockModContentAsync();
-                Save();
-            }
-        }
+        if (SelectedServer is { } server) OpenSettings(server, _lastSettingsPage);
     }
 
-    /// <summary>Opens the editor for the card: icon, name and the two lines of the MOTD.</summary>
+    /// <summary>Opens the selected server's settings on its card: icon, name and the MOTD.</summary>
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task EditAppearance()
+    private void EditAppearance()
     {
-        if (SelectedServer is null || Owner is null) return;
-        var server = SelectedServer;
-        var oldName = server.Name;
+        if (SelectedServer is { } server) OpenSettings(server, ServerSettingsPage.Appearance);
+    }
 
-        var dialog = new ServerAppearanceDialog(server.Config, server.IsRunning);
-        if (!await dialog.ShowDialog<bool>(Owner)) return;
+    /// <summary>Opens a server's network settings; the tunnels screen uses it to change a port.</summary>
+    private Task ConfigureServerAsync(ServerViewModel server)
+    {
+        OpenSettings(server, ServerSettingsPage.Network);
+        return Task.CompletedTask;
+    }
 
-        // The dialog wrote the icon and the MOTD to disk and set the name on the config; what is
-        // left is what the config alone cannot do: tell the view model, persist, re-read the disk.
+    /// <summary>Puts <paramref name="server"/>'s settings in the detail area, on <paramref name="page"/>.</summary>
+    private void OpenSettings(ServerViewModel server, ServerSettingsPage page)
+    {
+        if (ServerSettingsPanel is { } open && ReferenceEquals(open.Server, server))
+        {
+            Section = AppSection.Servers;
+            open.Show(page);
+            return;
+        }
+        if (!LeaveSettings()) return;
+
+        // The new-server panel, if it is on screen, is put away rather than thrown out.
+        if (NewServerPanel is not null) IsNewServerOpen = false;
+        Section = AppSection.Servers;
+        SelectedServer = server;
+        ServerSettingsPanel = CreateSettingsPanel(server, page);
+    }
+
+    private ServerSettingsView CreateSettingsPanel(ServerViewModel server, ServerSettingsPage page)
+    {
+        var panel = new ServerSettingsView(server, page, port =>
+            Servers.FirstOrDefault(s => !ReferenceEquals(s, server) &&
+                                        CrossplayService.EffectiveBedrockPort(s.Config) == port)?.Name);
+        panel.Closed += CloseSettings;
+        panel.Saved += saved => _ = AfterSettingsSavedAsync(server, saved);
+
+        // A loader install changes the config and the disk in the act (files already downloaded),
+        // so it is persisted at once, whatever then happens to the rest of the page.
+        panel.LoaderInstalled += Save;
+
+        // Forgetting a server's players happens the moment it is confirmed, not on Save, so the
+        // Players tab would otherwise go on listing people whose history is no longer there.
+        panel.HistoryCleared += () => server.History.Refresh();
+        return panel;
+    }
+
+    /// <summary>
+    /// What a save of the settings leaves for the main window: persisting servers.json, reading the
+    /// disk again, and the steps that install or move something.
+    /// </summary>
+    /// <remarks>
+    /// The page wrote into the config the view model is showing, the config announced each change
+    /// and ServerConfigEffects said what it costs, so the card and the panels have already followed.
+    /// What is left is what the config alone cannot do.
+    /// </remarks>
+    private async Task AfterSettingsSavedAsync(ServerViewModel server, ServerSettingsSaved saved)
+    {
         server.Name = server.Config.Name;
         Save();
         server.RefreshFromDisk();
-        _ = Tunnels.RenameTunnelsForServerAsync(server, oldName);
-    }
+        if (server.Name != saved.OldName) _ = Tunnels.RenameTunnelsForServerAsync(server, saved.OldName);
+        if (saved.BedrockPortChanged) _ = server.RefreshTunnelInfoAsync();
+        if (saved.JavaPortChanged) _ = Tunnels.RefreshAsync();
 
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private Task ConfigureServer() => SelectedServer is null ? Task.CompletedTask : ConfigureServerAsync(SelectedServer);
-
-    /// <summary>Opens the properties editor for any server; the tunnels screen uses it to change a port.</summary>
-    private async Task ConfigureServerAsync(ServerViewModel server)
-    {
-        if (Owner is null) return;
-        var dialog = new ServerConfigDialog(server.Config, port =>
-            Servers.FirstOrDefault(s => !ReferenceEquals(s, server) &&
-                                        CrossplayService.EffectiveBedrockPort(s.Config) == port)?.Name);
-        var accepted = await dialog.ShowDialog<bool>(Owner);
-        if (accepted)
+        // These three are requests to install something, not settings that take effect by being
+        // remembered. Turning one on and having nothing happen is worse than not offering it,
+        // because the app then claims a server can do something it cannot.
+        if (saved.CrossplayTurnedOn)
         {
-            server.RefreshFromDisk();
-            if (dialog.BedrockPortChanged)
-            {
-                Save();
-                _ = server.RefreshTunnelInfoAsync();
-            }
+            var key = server.Config.PlayitEnabled ? await EnsurePlayitAgentAsync() : null;
+            await server.SetUpCrossplayAsync(key);
+            Save();
         }
 
-        // Whether it was accepted or cancelled: forgetting a server's players happens the moment
-        // the button is pressed, not when the dialog is saved, so the Players tab would otherwise
-        // go on listing people whose history is no longer there.
-        if (dialog.HistoryCleared)
-            server.History.Refresh();
+        if (saved.MultiVersionTurnedOn)
+        {
+            await server.SetUpMultiVersionAsync();
+            Save();
+        }
+
+        if (saved.ModContentTurnedOn)
+        {
+            await server.SetUpBedrockModContentAsync();
+            Save();
+        }
+    }
+
+    /// <summary>
+    /// Closes the settings if nothing on them is unsaved. False when they stay, and say why.
+    /// </summary>
+    private bool LeaveSettings()
+    {
+        if (ServerSettingsPanel is not { } panel) return true;
+        if (!panel.TryLeave()) return false;
+        CloseSettings();
+        return true;
+    }
+
+    /// <summary>
+    /// Whether another section of the app can be shown. The settings stay open behind it when they
+    /// let go — nothing is lost by looking at the tunnels — and refuse when something is unsaved.
+    /// </summary>
+    private bool SettingsLetGo() => ServerSettingsPanel?.TryLeave() ?? true;
+
+    /// <summary>Throws the settings away, saved or not, and gives the detail area back to the server.</summary>
+    private void CloseSettings()
+    {
+        if (ServerSettingsPanel is { } panel) _lastSettingsPage = panel.Page;
+        ServerSettingsPanel = null;
+    }
+
+    /// <summary>
+    /// True when the window should not close yet, because the settings have something unsaved: they
+    /// are put on screen saying so. Asked once; closing again closes.
+    /// </summary>
+    internal bool HoldCloseForUnsavedSettings()
+    {
+        if (ServerSettingsPanel is not { IsDirty: true } panel) return false;
+        Section = AppSection.Servers;
+        panel.Nudge();
+        return true;
     }
 
     [RelayCommand(CanExecute = nameof(CanActOn))]
@@ -910,6 +971,10 @@ public partial class MainViewModel : ObservableObject
         // seconds with the window still usable, and reading SelectedServer again after that removed
         // whichever server had been clicked in the meantime — taking it out of servers.json and
         // leaving it running with nobody watching it.
+        // Another server's unsaved settings are not given up for this one.
+        if (target is not null && ServerSettingsPanel is { } open && !ReferenceEquals(open.Server, target)
+            && !open.TryLeave())
+            return;
         if (Target(target) is not { } server) return;
 
         var folder = server.Config.FolderPath;
@@ -991,6 +1056,8 @@ public partial class MainViewModel : ObservableObject
     internal async Task ForgetServerAsync(ServerViewModel server)
     {
         await server.ShutdownAsync();
+        // Its settings go with it, saved or not: there is nothing left to save them into.
+        if (ReferenceEquals(ServerSettingsPanel?.Server, server)) CloseSettings();
         Servers.Remove(server);
         if (SelectedServer is null || ReferenceEquals(SelectedServer, server))
             SelectedServer = Servers.FirstOrDefault();
@@ -1017,7 +1084,15 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnSelectedServerChanged(ServerViewModel? oldValue, ServerViewModel? newValue)
     {
-        EditServerCommand.NotifyCanExecuteChanged();
+        // Picking another server leaves the settings that are open — unless something on them is
+        // unsaved, and then the list goes back to the server they belong to. Posted, because the
+        // list is still in the middle of changing its selection when this runs.
+        if (ServerSettingsPanel is { } panel && !ReferenceEquals(panel.Server, newValue))
+        {
+            if (panel.TryLeave()) CloseSettings();
+            else Dispatcher.UIThread.Post(() => SelectedServer = panel.Server);
+        }
+
         RemoveServerCommand.NotifyCanExecuteChanged();
         ConfigureServerCommand.NotifyCanExecuteChanged();
         EditAppearanceCommand.NotifyCanExecuteChanged();

@@ -99,7 +99,7 @@ public class ServerViewModelRefreshTests : IDisposable
             var card = Watch(server);
             var tab = Watch(server.Mods);
 
-            // Exactly what InstallLoaderDialog does, and nothing else.
+            // Exactly what LoaderSection does, and nothing else.
             config.Type = ServerType.Paper;
 
             Assert.Equal("Paper", server.ServerTypeText);

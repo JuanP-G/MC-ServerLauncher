@@ -6,14 +6,13 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="Servers" xml:space="preserve"><value>Server</value></data>
   <data name="Add" xml:space="preserve"><value>Hinzufügen</value></data>
-  <data name="Tip_Edit" xml:space="preserve"><value>Server bearbeiten</value></data>
   <data name="Tip_Delete" xml:space="preserve"><value>Server löschen</value></data>
   <data name="EmptyState" xml:space="preserve"><value>Wähle oder füge einen Server hinzu, um zu starten.</value></data>
   <data name="Start" xml:space="preserve"><value>Starten</value></data>
   <data name="Stop" xml:space="preserve"><value>Stoppen</value></data>
   <data name="Restart" xml:space="preserve"><value>Neu starten</value></data>
   <data name="Configure" xml:space="preserve"><value>Konfigurieren</value></data>
-  <data name="Tip_Configure" xml:space="preserve"><value>server.properties visuell bearbeiten</value></data>
+  <data name="Tip_Configure" xml:space="preserve"><value>Alle Einstellungen des Servers: Spielweise, Welt, Netzwerk, Sicherungen und mehr</value></data>
   <data name="Uptime" xml:space="preserve"><value>Laufzeit</value></data>
   <data name="Port" xml:space="preserve"><value>Port</value></data>
   <data name="Tunnel_Placeholder" xml:space="preserve"><value>Erscheint von selbst, sobald der Tunnel besteht</value></data>
@@ -90,13 +89,6 @@
   <data name="Cs_AutoStart" xml:space="preserve"><value>Server am Ende starten, um Welt und Dateien zu erzeugen</value></data>
   <data name="Cs_CreateButton" xml:space="preserve"><value>Server erstellen</value></data>
   <data name="Cfg_Title" xml:space="preserve"><value>Server-Einstellungen</value></data>
-  <data name="Cfg_HeaderFmt" xml:space="preserve"><value>Einstellungen für "{0}". Änderungen werden beim (Neu-)Start des Servers wirksam.</value></data>
-  <data name="Cfg_General" xml:space="preserve"><value>Allgemein</value></data>
-  <data name="Cfg_Gameplay" xml:space="preserve"><value>Spielablauf</value></data>
-  <data name="Cfg_Performance" xml:space="preserve"><value>Leistung und Welt</value></data>
-  <data name="Cfg_Network" xml:space="preserve"><value>Netzwerk und Zugriff</value></data>
-  <data name="Cfg_Motd" xml:space="preserve"><value>MOTD (Servernachricht)</value></data>
-  <data name="Cfg_MotdDesc" xml:space="preserve"><value>Der Text, den Spieler unter dem Servernamen in der Minecraft-Liste sehen. Unterstützt Farbcodes mit § (z. B. §a grün, §6 gold, §l fett).</value></data>
   <data name="Cfg_Gamemode" xml:space="preserve"><value>Spielmodus</value></data>
   <data name="Cfg_GamemodeDesc" xml:space="preserve"><value>Standardmodus beim Beitreten: Überleben (Leben/Hunger), Kreativ (unbegrenzte Ressourcen und Fliegen), Abenteuer (keine Blöcke abbauen) oder Zuschauer.</value></data>
   <data name="Cfg_Difficulty" xml:space="preserve"><value>Schwierigkeit</value></data>
@@ -319,12 +311,10 @@
   <data name="Wake_KickStarting" xml:space="preserve"><value>Der Server startet gerade.&#10;&#10;Versuch es in ein paar Sekunden noch einmal.</value></data>
   <data name="Msg_WakeStarting" xml:space="preserve"><value>Jemand wollte beitreten: Der Server wird gestartet.</value></data>
   <data name="Msg_WakePortBusyFmt" xml:space="preserve"><value>Auf Port {0} kann nicht auf Beitrittsversuche gewartet werden: schon belegt.</value></data>
-  <data name="Idle_Section" xml:space="preserve"><value>Automatisches Starten und Stoppen</value></data>
   <data name="Idle_Intro" xml:space="preserve"><value>Der Server kann sich selbst stoppen, wenn niemand mehr da ist, und wieder starten, sobald jemand beitreten will.</value></data>
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minuten ohne Spieler:</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = wird nie gestoppt. Die Zeit läuft ab dem Weggehen des letzten Spielers und wird zurückgesetzt, sobald jemand beitritt.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>{0} Minuten ohne Spieler: Der Server wird gestoppt.</value></data>
-  <data name="Backup_Section" xml:space="preserve"><value>Welt-Sicherungen</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Sicherungen automatisch erstellen</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Aufzubewahrende automatische Sicherungen:</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Der Dienst konnte nicht geändert werden (erfordert meist, die App als Administrator zu starten oder das Tray-Symbol zu verwenden): {0}</value></data>
@@ -359,7 +349,6 @@
   <data name="Msg_PortBusyJavaNote" xml:space="preserve"><value>Es sieht nach einem Minecraft-Server aus, der weiterläuft. Ihn so zu schließen speichert die Welt nicht: Der letzte Spielstand kann verloren gehen. Wenn möglich, tritt ihm bei und gib vorher /stop ein.</value></data>
   <data name="Msg_UpdateAvailableFmt" xml:space="preserve"><value>Eine Aktualisierung ist verfügbar: Version {0}.</value></data>
   <data name="Msg_IconCreateError" xml:space="preserve"><value>Symbol konnte nicht erstellt werden: {0}</value></data>
-  <data name="Title_ChangeIcon" xml:space="preserve"><value>Symbol ändern</value></data>
   <data name="Title_DeleteTunnel" xml:space="preserve"><value>Tunnel löschen</value></data>
   <data name="Msg_NoTunnelForPort" xml:space="preserve"><value>Für Port {0} wurde kein Playit-Tunnel gefunden. Es wurde kein Tunnel gelöscht.</value></data>
   <data name="Msg_TunnelDeleteError" xml:space="preserve"><value>Playit-Tunnel konnte nicht gelöscht werden: {0}</value></data>
@@ -385,7 +374,6 @@
   <data name="Msg_VersionsLoadError" xml:space="preserve"><value>Versionen konnten nicht geladen werden: {0}</value></data>
   <data name="Msg_NameEmpty" xml:space="preserve"><value>Der Name darf nicht leer sein.</value></data>
   <data name="Msg_FolderNotExist" xml:space="preserve"><value>Der Server-Ordner existiert nicht.</value></data>
-  <data name="Title_Validation" xml:space="preserve"><value>Validierung</value></data>
   <data name="Title_SelectServerFolder" xml:space="preserve"><value>Wähle den Server-Ordner</value></data>
   <data name="Title_SelectJava" xml:space="preserve"><value>java.exe auswählen</value></data>
   <data name="Filter_Java" xml:space="preserve"><value>Java-Programm (java.exe)|java.exe|Alle Programme (*.exe)|*.exe</value></data>
@@ -437,7 +425,6 @@
   <data name="Loader_Title" xml:space="preserve"><value>Servertyp ändern</value></data>
   <data name="Loader_Section" xml:space="preserve"><value>Servertyp</value></data>
   <data name="Loader_Current" xml:space="preserve"><value>Aktueller Loader: </value></data>
-  <data name="Loader_ChangeButton" xml:space="preserve"><value>Servertyp ändern…</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Ändere den Typ dieses Servers. Jede Karte sagt, ob er Plugins oder Mods nimmt und ob Bedrock beitreten kann. Deine Welt bleibt erhalten.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (ohne Mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Aktuelle Startdatei (run.bat) behalten</value></data>
@@ -826,7 +813,6 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>„{0}“ ist ein von Windows reservierter Name und taugt nicht als Ordner. Nimm einen anderen.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>Der Name darf nicht auf einen Punkt oder ein Leerzeichen enden: Windows schneidet sie ab, und der Ordner hieße am Ende anders.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper und Purpur starten nicht, wenn der Pfad „{0}“ enthält, und dieses Zeichen steckt in einem übergeordneten Ordner, nicht im Serverordner. Ändere ihn selbst oder wähle einen anderen: Ihn von hier umzubenennen würde alles darin mitbewegen.</value></data>
-  <data name="Look_Title" xml:space="preserve"><value>Server-Aussehen</value></data>
   <data name="Look_EditTip" xml:space="preserve"><value>Aussehen bearbeiten</value></data>
   <data name="Look_Preview" xml:space="preserve"><value>Vorschau</value></data>
   <data name="Look_PreviewAsleep" xml:space="preserve"><value>Schläft</value></data>
@@ -944,7 +930,6 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Cs_SeedPlaceholder" xml:space="preserve"><value>Leer = zufällig</value></data>
   <data name="Cs_SeedNote" xml:space="preserve"><value>Wird nur beim Erzeugen der Welt verwendet. Sie kann eine Zahl oder ein Text sein. Ein späterer Wechsel von Typ oder Version behält die Welt, daher wird der Seed nicht erneut abgefragt.</value></data>
   <data name="Msg_SeedIgnoredWorldExists" xml:space="preserve"><value>Dieser Ordner enthält bereits eine erzeugte Welt, daher wird der eingegebene Seed nicht verwendet.</value></data>
-  <data name="Cfg_World" xml:space="preserve"><value>Welt</value></data>
   <data name="Cfg_Seed" xml:space="preserve"><value>Seed</value></data>
   <data name="Cfg_SeedMap" xml:space="preserve"><value>Auf der Karte ansehen</value></data>
   <data name="Cfg_SeedMapTip" xml:space="preserve"><value>Öffnet die Karte dieses Seeds auf Chunkbase, für die Version dieses Servers.</value></data>
@@ -975,7 +960,6 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="History_MaxEvents" xml:space="preserve"><value>Ereignisse pro Spieler</value></data>
   <data name="History_RetentionDays" xml:space="preserve"><value>Aufbewahrte Tage</value></data>
   <data name="History_ClearWhere" xml:space="preserve"><value>Um den Verlauf eines Servers zu löschen, öffne ihn unter Konfigurieren › Spielerverlauf.</value></data>
-  <data name="Cfg_History" xml:space="preserve"><value>Spielerverlauf</value></data>
   <data name="Cfg_HistoryTitle" xml:space="preserve"><value>Die Spieler dieses Servers vergessen</value></data>
   <data name="Cfg_HistorySizeFmt" xml:space="preserve"><value>Belegt {0}. Das löscht die Verbindungen, den Chat und alles andere, was über diesen Server gespeichert wurde. Es lässt sich nicht rückgängig machen und geschieht beim Klick, nicht beim Speichern.</value></data>
   <data name="Cfg_HistoryClear" xml:space="preserve"><value>Verlauf löschen</value></data>
@@ -1029,4 +1013,42 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Col_After" xml:space="preserve"><value>Jetzt</value></data>
   <data name="Col_ReadsWell" xml:space="preserve"><value>✓ Auf dem dunklen Hintergrund gut lesbar</value></data>
   <data name="Col_TooDark" xml:space="preserve"><value>⚠ Zu dunkel: auf dem dunklen Hintergrund schwer lesbar</value></data>
+  <data name="Sset_Back" xml:space="preserve"><value>Zurück zum Server</value></data>
+  <data name="Sset_Discard" xml:space="preserve"><value>Verwerfen</value></data>
+  <data name="Sset_Unsaved" xml:space="preserve"><value>Du hast ungespeicherte Änderungen</value></data>
+  <data name="Sset_UnsavedRestart" xml:space="preserve"><value>Der Server läuft: Was du speicherst, gilt nach dem Neustart.</value></data>
+  <data name="Sset_LeaveBlocked" xml:space="preserve"><value>Speichere oder verwirf die Änderungen, bevor du gehst</value></data>
+  <data name="Sset_FixErrors" xml:space="preserve"><value>Vor dem Speichern muss etwas korrigiert werden.</value></data>
+  <data name="Sset_LoaderNeedsSave" xml:space="preserve"><value>Speichere oder verwirf die anderen Änderungen, bevor du den Typ änderst.</value></data>
+  <data name="Sset_GroupGame" xml:space="preserve"><value>Spiel</value></data>
+  <data name="Sset_GroupServer" xml:space="preserve"><value>Server</value></data>
+  <data name="Sset_GroupAuto" xml:space="preserve"><value>Automatisch</value></data>
+  <data name="Sset_Appearance" xml:space="preserve"><value>Aussehen</value></data>
+  <data name="Sset_AppearanceHint" xml:space="preserve"><value>Wie der Server in der Serverliste von Minecraft erscheint.</value></data>
+  <data name="Sset_Game" xml:space="preserve"><value>Spielweise</value></data>
+  <data name="Sset_GameHint" xml:space="preserve"><value>Wie auf diesem Server gespielt wird.</value></data>
+  <data name="Sset_World" xml:space="preserve"><value>Welt</value></data>
+  <data name="Sset_WorldHint" xml:space="preserve"><value>Der Seed und wie viel von der Welt aktiv bleibt.</value></data>
+  <data name="Sset_Loader" xml:space="preserve"><value>Typ und Version</value></data>
+  <data name="Sset_LoaderHint" xml:space="preserve"><value>Welche Art von Server es ist und mit welcher Minecraft-Version.</value></data>
+  <data name="Sset_Performance" xml:space="preserve"><value>Leistung</value></data>
+  <data name="Sset_PerformanceHint" xml:space="preserve"><value>Der Arbeitsspeicher und das Java, mit dem er startet.</value></data>
+  <data name="Sset_Network" xml:space="preserve"><value>Netzwerk und Zugang</value></data>
+  <data name="Sset_NetworkHint" xml:space="preserve"><value>Wie man hineinkommt und wer es darf.</value></data>
+  <data name="Sset_Crossplay" xml:space="preserve"><value>Crossplay</value></data>
+  <data name="Sset_CrossplayHint" xml:space="preserve"><value>Bedrock-Spieler und Spieler mit anderen Java-Versionen.</value></data>
+  <data name="Sset_Power" xml:space="preserve"><value>Ein- und Ausschalten</value></data>
+  <data name="Sset_PowerHint" xml:space="preserve"><value>Starten, wenn jemand beitritt, stoppen, wenn niemand mehr da ist.</value></data>
+  <data name="Sset_Backups" xml:space="preserve"><value>Sicherungen</value></data>
+  <data name="Sset_BackupsHint" xml:space="preserve"><value>Wann die Welt gesichert wird und wie viele Kopien bleiben.</value></data>
+  <data name="Sset_Notifications" xml:space="preserve"><value>Benachrichtigungen</value></data>
+  <data name="Sset_NotificationsHint" xml:space="preserve"><value>Die Benachrichtigungen dieses Servers.</value></data>
+  <data name="Sset_Advanced" xml:space="preserve"><value>Erweitert</value></data>
+  <data name="Sset_AdvancedHint" xml:space="preserve"><value>Ordner, Startdatei, Java-Argumente und Spielerverlauf.</value></data>
+  <data name="Sset_PlayitTitle" xml:space="preserve"><value>Internet-Tunnel (Playit.gg)</value></data>
+  <data name="Sset_PlayitDesc" xml:space="preserve"><value>Damit Freunde von außerhalb deines Netzwerks beitreten können, ohne Ports am Router zu öffnen.</value></data>
+  <data name="Sset_RamTitle" xml:space="preserve"><value>Arbeitsspeicher (RAM)</value></data>
+  <data name="Sset_RamDesc" xml:space="preserve"><value>Wie viel Arbeitsspeicher der Server nutzen darf. Mehr Spieler oder Mods brauchen mehr.</value></data>
+  <data name="Sset_JavaDesc" xml:space="preserve"><value>Das Java, mit dem er startet. „java“ nimmt das des Systems.</value></data>
+  <data name="Sset_FolderDesc" xml:space="preserve"><value>Wo die Dateien des Servers liegen. Eine Änderung zeigt auf einen anderen Ordner; es wird nichts verschoben.</value></data>
 </root>

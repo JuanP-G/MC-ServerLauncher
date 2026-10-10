@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             x:Class="McServerLauncher.Views.ServerSettings.GameSection"
+             x:CompileBindings="False">
+
+    <!-- How a game on this server plays: server.properties, through PropertyBindings. Each setting
+         is a DockPanel.setting, with its control docked right (or under it when the page is narrow:
+         see ServerSettingsView's styles). -->
+    <StackPanel>
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ComboBox x:Name="GamemodeBox" Classes="ctl" Width="180">
+                    <ComboBoxItem Content="{loc:Loc Gm_Survival}" Tag="survival" />
+                    <ComboBoxItem Content="{loc:Loc Gm_Creative}" Tag="creative" />
+                    <ComboBoxItem Content="{loc:Loc Gm_Adventure}" Tag="adventure" />
+                    <ComboBoxItem Content="{loc:Loc Gm_Spectator}" Tag="spectator" />
+                </ComboBox>
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_Gamemode}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_GamemodeDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ComboBox x:Name="DifficultyBox" Classes="ctl" Width="180">
+                    <ComboBoxItem Content="{loc:Loc Diff_Peaceful}" Tag="peaceful" />
+                    <ComboBoxItem Content="{loc:Loc Diff_Easy}" Tag="easy" />
+                    <ComboBoxItem Content="{loc:Loc Diff_Normal}" Tag="normal" />
+                    <ComboBoxItem Content="{loc:Loc Diff_Hard}" Tag="hard" />
+                </ComboBox>
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_Difficulty}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_DifficultyDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <NumericUpDown x:Name="MaxPlayersBox" Classes="ctl" Width="140"
+                               Minimum="1" Maximum="1000" Increment="1" FormatString="0" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_MaxPlayers}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_MaxPlayersDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch x:Name="PvpToggle" Classes="ctl" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_Pvp}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_PvpDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch x:Name="HardcoreToggle" Classes="ctl" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_Hardcore}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_HardcoreDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch x:Name="AllowFlightToggle" Classes="ctl" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_Flight}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_FlightDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch x:Name="CommandBlockToggle" Classes="ctl" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_CmdBlocks}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_CmdBlocksDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <NumericUpDown x:Name="SpawnProtectionBox" Classes="ctl" Width="140"
+                               Minimum="0" Maximum="10000" Increment="1" FormatString="0" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_SpawnProt}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_SpawnProtDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

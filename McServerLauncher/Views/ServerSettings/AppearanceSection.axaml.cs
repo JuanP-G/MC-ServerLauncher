@@ -11,16 +11,17 @@ using McServerLauncher.Models;
 using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 
-namespace McServerLauncher.Views;
+namespace McServerLauncher.Views.ServerSettings;
 
 /// <summary>
-/// Everything the server card shows, in one window: the image, the name and the two lines of the
-/// MOTD with colours and formatting, next to a preview made by the same control the main window uses.
+/// Everything the server card shows: the image, the name and the two lines of the MOTD with colours
+/// and formatting, next to a preview made by the same control the server's header uses.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Nothing is written until Save. The image the user picks is rendered into memory and previewed
-/// from there, so choosing one and then cancelling leaves the server exactly as it was.
+/// Nothing is written here. The image the user picks is rendered into memory and handed to the
+/// draft, the name and the MOTD go into it as they are typed, and the page writes all of it on Save
+/// — so choosing an image and then discarding leaves the server exactly as it was.
 /// </para>
 /// <para>
 /// The two text boxes hold plain text; the colours live in a <see cref="MotdDocument"/> that is kept
@@ -28,16 +29,17 @@ namespace McServerLauncher.Views;
 /// focused, and with nothing selected it sets the style the next typed characters take.
 /// </para>
 /// </remarks>
-public partial class ServerAppearanceDialog : Window
+public partial class AppearanceSection : UserControl, IServerSettingsSection
 {
-    private readonly ServerConfig _config;
-    private readonly ServerPropertiesService _props = new();
+    private const string DefaultMotd = "A Minecraft Server";
+
+    private readonly ServerSettingsDraft _draft;
     private readonly ServerIconService _icons = new();
-    private readonly MotdDocument _doc;
-    private readonly string _originalMotd;
     private readonly bool _wake;
     private readonly string _maxPlayers;
     private readonly TextBox[] _boxes;
+
+    private MotdDocument _doc = MotdDocument.FromProperties(DefaultMotd);
 
     // Style chosen from the toolbar with nothing selected: used by the next characters typed in that
     // line, then forgotten.
@@ -46,35 +48,33 @@ public partial class ServerAppearanceDialog : Window
     private bool _loading = true;
 
     private Bitmap? _icon;
-    private byte[]? _newIcon;
-    private bool _removeIcon;
+
+    /// <summary>The draft this page writes into. For tests.</summary>
+    internal ServerSettingsDraft Draft => _draft;
 
     // Parameterless constructor for the Avalonia XAML loader / designer only.
-    public ServerAppearanceDialog() : this(new ServerConfig(), false) { }
+    public AppearanceSection() : this(new ServerSettingsDraft(new ServerConfig()), false) { }
 
-    public ServerAppearanceDialog(ServerConfig config, bool isRunning)
+    public AppearanceSection(ServerSettingsDraft draft, bool isRunning)
     {
         InitializeComponent();
-        _config = config;
+        _draft = draft;
         _boxes = [Line1Box, Line2Box];
 
-        var props = _props.Read(config.PropertiesPath);
-        var raw = props.TryGetValue("motd", out var m) && !string.IsNullOrWhiteSpace(m) ? m : "A Minecraft Server";
-        _maxPlayers = props.TryGetValue("max-players", out var mp) && int.TryParse(mp, out var n) ? n.ToString() : "20";
+        var maxPlayers = draft.FileValue("max-players");
+        _maxPlayers = int.TryParse(maxPlayers, out var n) ? n.ToString() : "20";
 
-        _doc = MotdDocument.FromProperties(raw);
-        _originalMotd = _doc.ToProperties();
-
-        Line1Box.Text = _doc.GetText(0);
-        Line2Box.Text = _doc.GetText(1);
-        NameBox.Text = config.Name;
+        // What the file says, normalised through the document: that is what Save would write back
+        // untouched, so it is what counts as unchanged.
+        var raw = draft.FileValue("motd");
+        _doc = MotdDocument.FromProperties(string.IsNullOrWhiteSpace(raw) ? DefaultMotd : raw);
+        draft.Track("motd", _doc.ToProperties());
         ExtraLinesNote.IsVisible = _doc.HadExtraLines;
         RestartNote.IsVisible = isRunning;
 
-        _icon = LoadCurrentIcon();
         BuildSwatches();
 
-        _wake = config.WakeOnDemand;
+        _wake = draft.Live.WakeOnDemand;
         PreviewModeRow.IsVisible = _wake;
         PreviewAsleep.IsChecked = _wake && !isRunning;
         PreviewAwake.IsChecked = _wake && isRunning;
@@ -86,10 +86,36 @@ public partial class ServerAppearanceDialog : Window
             _boxes[l].TextChanged += (_, _) => OnTextChanged(l);
             _boxes[l].GotFocus += (_, _) => _active = l;
         }
-        NameBox.TextChanged += (_, _) => { if (!_loading) Refresh(); };
+        NameBox.TextChanged += (_, _) =>
+        {
+            if (_loading) return;
+            _draft.Config.Name = NameBox.Text ?? string.Empty;
+            Refresh();
+        };
 
+        Reload();
+    }
+
+    /// <inheritdoc />
+    public void Reload()
+    {
+        _loading = true;
+        _doc = MotdDocument.FromProperties(_draft.Get("motd"));
+        _pending[0] = _pending[1] = null;
+        Line1Box.Text = _doc.GetText(0);
+        Line2Box.Text = _doc.GetText(1);
+        NameBox.Text = _draft.Config.Name;
+        _icon = _draft.NewIcon is { } png ? Decode(png) : _draft.RemoveIcon ? null : LoadCurrentIcon();
+        ImageError.IsVisible = false;
         _loading = false;
         Refresh();
+    }
+
+    /// <inheritdoc />
+    public void ShowError(string? message)
+    {
+        Error.Text = message;
+        Error.IsVisible = message is not null;
     }
 
     // ---------------------------------------------------------------- preview
@@ -97,6 +123,7 @@ public partial class ServerAppearanceDialog : Window
     private void Refresh()
     {
         var asleep = _wake && PreviewAsleep.IsChecked == true;
+        var config = _draft.Live;
 
         // The sleeping preview goes through the same code the listener uses to answer the game, so
         // what is shown here cannot differ from what a player is sent.
@@ -108,9 +135,9 @@ public partial class ServerAppearanceDialog : Window
         Line2Note.IsVisible = asleep;
 
         Preview.ServerName = NameBox.Text;
-        Preview.TypeText = _config.Type.ToString();
-        Preview.TypeBrush = ServerTypeBrushes.For(_config.Type);
-        Preview.Version = _config.GameVersion;
+        Preview.TypeText = config.Type.ToString();
+        Preview.TypeBrush = ServerTypeBrushes.For(config.Type);
+        Preview.Version = config.GameVersion;
         Preview.PlayerCount = "0/" + _maxPlayers;
         Preview.SignalBrush = new SolidColorBrush(Color.Parse("#55FF55"));
         Preview.Icon = _icon;
@@ -122,15 +149,21 @@ public partial class ServerAppearanceDialog : Window
 
     private Bitmap? LoadCurrentIcon()
     {
-        var path = Path.Combine(_config.FolderPath, ServerIconService.FileName);
+        var path = Path.Combine(_draft.Live.FolderPath, ServerIconService.FileName);
         if (!File.Exists(path)) return null;
         try
         {
-            // Read fully into memory so the file is not locked while the dialog is open.
+            // Read fully into memory so the file is not locked while the page is open.
             using var fs = File.OpenRead(path);
             return new Bitmap(fs);
         }
         catch { return null; }
+    }
+
+    private static Bitmap Decode(byte[] png)
+    {
+        using var ms = new MemoryStream(png);
+        return new Bitmap(ms);
     }
 
     // ---------------------------------------------------------------- text
@@ -155,6 +188,12 @@ public partial class ServerAppearanceDialog : Window
             _loading = false;
         }
 
+        MotdChanged();
+    }
+
+    private void MotdChanged()
+    {
+        _draft.Set("motd", _doc.ToProperties());
         Refresh();
     }
 
@@ -162,8 +201,6 @@ public partial class ServerAppearanceDialog : Window
 
     private void BuildSwatches()
     {
-        var edge = (IBrush?)this.FindResource("SurfaceEdgeStrong");
-
         foreach (var code in MotdDocument.ColorCodes)
         {
             // A Border inside a transparent Button: a Background set on the Button itself is
@@ -172,12 +209,15 @@ public partial class ServerAppearanceDialog : Window
             {
                 Width = 18, Height = 18, CornerRadius = new CornerRadius(3),
                 Background = new SolidColorBrush(MinecraftMotd.Palette[code]),
-                BorderBrush = edge, BorderThickness = new Thickness(1),
+                BorderThickness = new Thickness(1),
             };
+            // Bound rather than looked up: the page is made before it is in the window, and a
+            // resource looked up then is not found.
+            swatch.Bind(Border.BorderBrushProperty, this.GetResourceObservable("SurfaceEdgeStrong"));
             var button = new Button
             {
-                Content = swatch, Padding = new Thickness(2), Background = Brushes.Transparent,
-                Focusable = false, Tag = code,
+                Content = swatch, Padding = new Thickness(2), Margin = new Thickness(0, 0, 3, 0),
+                Background = Brushes.Transparent, Focusable = false, Tag = code,
                 [ToolTip.TipProperty] = "§" + code,
             };
             button.Click += Color_Click;
@@ -208,7 +248,7 @@ public partial class ServerAppearanceDialog : Window
         if (length > 0) _doc.SetColor(line, start, length, color);
         else _pending[line] = StyleAtCaret(line) with { Color = color };
 
-        Refresh();
+        MotdChanged();
     }
 
     private void Format_Click(object? sender, RoutedEventArgs e)
@@ -227,7 +267,7 @@ public partial class ServerAppearanceDialog : Window
             _pending[line] = now with { Format = now.Format ^ flag };
         }
 
-        Refresh();
+        MotdChanged();
     }
 
     private void Clear_Click(object? sender, RoutedEventArgs e)
@@ -237,14 +277,15 @@ public partial class ServerAppearanceDialog : Window
         if (length > 0) _doc.ClearStyle(line, start, length);
         else _pending[line] = MotdStyle.Plain;
 
-        Refresh();
+        MotdChanged();
     }
 
     // ---------------------------------------------------------------- image
 
     private async void ChangeImage_Click(object? sender, RoutedEventArgs e)
     {
-        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        if (TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage) return;
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = Localizer.Get("Title_SelectImage"),
             AllowMultiple = false,
@@ -263,9 +304,8 @@ public partial class ServerAppearanceDialog : Window
         try { UseImage(path); }
         catch (Exception ex)
         {
-            await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_IconCreateError"), ex.Message),
-                Localizer.Get("Title_ChangeIcon"), this);
+            ImageError.Text = string.Format(Localizer.Get("Msg_IconCreateError"), ex.Message);
+            ImageError.IsVisible = true;
         }
     }
 
@@ -273,56 +313,16 @@ public partial class ServerAppearanceDialog : Window
     internal void UseImage(string path)
     {
         var png = _icons.RenderIcon(path);
-        using var ms = new MemoryStream(png);
-        _icon = new Bitmap(ms);
-        _newIcon = png;
-        _removeIcon = false;
+        _icon = Decode(png);
+        ImageError.IsVisible = false;
+        _draft.UseIcon(png);
         Refresh();
     }
 
     private void RemoveImage_Click(object? sender, RoutedEventArgs e)
     {
         _icon = null;
-        _newIcon = null;
-        _removeIcon = true;
+        _draft.ClearIcon();
         Refresh();
     }
-
-    // ---------------------------------------------------------------- save
-
-    /// <summary>Writes what changed: the MOTD, the icon, and the name on the config. Returns the error text on failure.</summary>
-    internal string? TrySave()
-    {
-        try
-        {
-            // Only when it actually changed: rewriting an untouched value would reformat a MOTD the
-            // user wrote by hand, and would create server.properties on a server that never ran.
-            var motd = _doc.ToProperties();
-            if (motd != _originalMotd)
-                _props.Update(_config.PropertiesPath, new Dictionary<string, string> { ["motd"] = motd });
-
-            if (_newIcon is not null) _icons.WriteIcon(_config.FolderPath, _newIcon);
-            else if (_removeIcon) _icons.RemoveIcon(_config.FolderPath);
-
-            var name = NameBox.Text?.Trim();
-            if (!string.IsNullOrEmpty(name)) _config.Name = name;
-            return null;
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
-    }
-
-    private async void Save_Click(object? sender, RoutedEventArgs e)
-    {
-        var error = TrySave();
-        if (error is null) { Close(true); return; }
-
-        await MessageBox.ShowAsync(
-            string.Format(Localizer.Get("Msg_ConfigSaveError"), error),
-            Localizer.Get("Look_Title"), this);
-    }
-
-    private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
 }

@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:models="using:McServerLauncher.Models"
+             x:Class="McServerLauncher.Views.ServerSettings.PerformanceSection"
+             x:DataType="models:ServerConfig">
+
+    <!-- What the server runs on: its memory and its Java. DataContext: the draft's copy of the config. -->
+    <StackPanel>
+        <Border Classes="card">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc Sset_RamTitle}" Classes="title" />
+                <TextBlock Classes="desc" Text="{loc:Loc Sset_RamDesc}" />
+                <WrapPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <StackPanel Margin="0,0,16,4">
+                        <TextBlock Text="{loc:Loc Cs_RamMin}" Classes="desc" Margin="0,0,0,4" />
+                        <NumericUpDown x:Name="MinRamBox" Width="140" Value="{Binding MinRamGb}"
+                                       Minimum="1" Maximum="64" Increment="1" FormatString="0" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,0,4">
+                        <TextBlock Text="{loc:Loc Cs_RamMax}" Classes="desc" Margin="0,0,0,4" />
+                        <NumericUpDown x:Name="MaxRamBox" Width="140" Value="{Binding MaxRamGb}"
+                                       Minimum="1" Maximum="64" Increment="1" FormatString="0" />
+                    </StackPanel>
+                </WrapPanel>
+                <TextBlock x:Name="Error" Classes="desc error" IsVisible="False" />
+            </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc Ae_Java}" Classes="title" />
+                <TextBlock Classes="desc" Text="{loc:Loc Sset_JavaDesc}" />
+                <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                    <TextBox Grid.Column="0" x:Name="JavaBox" Text="{Binding JavaPath, Mode=TwoWay}"
+                             Watermark="{loc:Loc Ae_JavaPlaceholder}" />
+                    <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseJava_Click" />
+                </Grid>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

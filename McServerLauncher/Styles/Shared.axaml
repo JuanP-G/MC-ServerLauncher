@@ -5,11 +5,11 @@
 
          They used to live inside each view's own <Window.Styles>, and that hid two things.
 
-         The first: MainWindow's `Border.stat` and ServerConfigDialog's `Border.card` were the same
+         The first: MainWindow's `Border.stat` and the old server.properties dialog's `Border.card` were the same
          style, value for value, under two names.
 
          The second is the one that matters, because it is a trap. `Border.card` meant TWO different
-         things: in ServerConfigDialog it was this translucent card, and in ServerModsView it was a
+         things: in that dialog it was this translucent card, and in ServerModsView it was a
          solid dark tile (#1A1A1A, radius 6) in a list. While each style lived inside its own view
          Avalonia kept them apart and nobody noticed. Lifted up here they would have collided in
          silence, and one of the two views would have changed how it looks with nothing failing and

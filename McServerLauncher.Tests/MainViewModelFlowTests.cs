@@ -16,8 +16,8 @@ namespace McServerLauncher.Tests;
 /// </para>
 /// <para>
 /// <c>Activate()</c> is never called, so nothing here starts the Playit agent, calls GitHub or opens
-/// a socket. The dialogs are not opened either — they need an owner window — so a conversion is
-/// performed the way <c>InstallLoaderDialog</c> performs it: by writing into the live config.
+/// a socket. Nothing is installed either — that downloads a server — so a conversion is
+/// performed the way <c>LoaderSection</c> performs it: by writing into the live config.
 /// </para>
 /// </remarks>
 [Collection("avalonia")]
@@ -57,7 +57,7 @@ public class MainViewModelFlowTests : IDisposable
     [Fact]
     public void ConvertingAServerChangesTheCardAndTheFile()
     {
-        // The reported bug, end to end. Everything below is what InstallLoaderDialog does to the
+        // The reported bug, end to end. Everything below is what LoaderSection does to the
         // config after the download succeeds, plus the Save the edit flow does on the way out.
         var folder = Folder("survival");
         Directory.CreateDirectory(Path.Combine(folder, "mods"));

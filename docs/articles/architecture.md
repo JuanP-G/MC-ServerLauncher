@@ -70,15 +70,16 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > instead of announcing a name nothing listens for. That is the whole point: the bug was never hard,
 > it was just quiet.
 >
-> Persisting is deliberately not one of the effects. The edit dialog writes into the live config as
-> the user types, so saving on every change would rewrite `servers.json` on every keystroke; saving
-> stays where it is, once, when a dialog is accepted.
+> Persisting is deliberately not one of the effects; saving stays where it is, once, when the
+> server's settings are saved.
 >
-> For the same reason the folder box in `AddEditServerDialog` is the one binding with
-> `UpdateSourceTrigger=LostFocus`. The folder is the server's whole identity on disk, and committing
-> it per keystroke would re-read the port, the MOTD, the icon, the content folder and the backup
-> list once per letter, against paths that do not exist yet. Every other box there commits as you
-> type, which is what makes the card update while you edit it.
+> Those settings are a page in the window (`ServerSettingsView`, its pages under
+> `Views/ServerSettings`), not a dialog, so they cannot edit the live config the way the old edit
+> dialog did: nothing modal stops the rest of the app from looking at it half edited. The controls
+> edit a copy (`ServerSettingsDraft`), and Save copies back only the fields that changed — the live
+> config goes on being written meanwhile by a loader install or the seed read from the console, and
+> copying the whole copy back would undo that. Leaving the page with something unsaved is refused by
+> the save bar itself, not asked about in a window.
 
 > **A constructor assembles; `Activate()` starts.** `ServerViewModel` and `MainViewModel` each split
 > in two. The constructor reads — the config, the console palette, the server's own files — and
@@ -430,10 +431,12 @@ of `MainWindow` and switched by `IsVisible` (`MainViewModel.Section`), so a sect
   `Completed(NewServerResult)` or `Cancelled`, and `MainViewModel.FinishNewServerAsync` runs the same
   steps after either origin. Picking a server while the panel is open shows that server and keeps the
   panel as a draft (`HasNewServerDraft`); a download already started goes on and the server joins the
-  list when it ends. The card at the top of a server (`ServerCardView`) is also the preview in
-  **Server appearance** (`ServerAppearanceDialog`), which edits the image, the name and the MOTD as
-  two lines styled character by character (`MotdDocument`); `WakeSign` writes the "join to start it"
-  line that both the sleeping listener and that preview show.
+  list when it ends. The card at the top of a server (`ServerCardView`) is also the preview on
+  the **Appearance** page of its settings (`AppearanceSection`), which edits the image, the name and
+  the MOTD as two lines styled character by character (`MotdDocument`); `WakeSign` writes the "join
+  to start it" line that both the sleeping listener and that preview show. The card's pencil opens
+  that page and the detail's **Configure** opens the settings where they were last left: one page
+  for what used to be three dialogs.
 - **Tunnels** (`TunnelsViewModel`/`TunnelsView`) reads every Playit key the app can find at once —
   the app's agent, an installed agent's `playit.toml`, a saved key — merges what each sees
   (`TunnelInventory`) and offers the fixes it can make. The account is read once shortly after start
@@ -676,7 +679,7 @@ header first, so an image claiming tens of thousands of pixels a side is refused
 its memory cache has a 96 MB budget as well as a count (`ImageCacheBudgetTests`).
 
 ### Changing a server's type
-`InstallLoaderDialog` converts an existing server in place, **keeping the world**: Vanilla into a
+The **Type and version** page of a server's settings (`LoaderSection`) converts it in place, **keeping the world**: Vanilla into a
 loader or a plugin server, one loader into another, or any of them back to Vanilla. It offers the
 same list as the new-server panel (the shared `ServerTypePicker`) and installs through the same
 `ServerJarInstaller`, so the two cannot drift apart — they used to, and a type present in one and

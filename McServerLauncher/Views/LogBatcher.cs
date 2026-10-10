@@ -7,8 +7,8 @@ namespace McServerLauncher.Views;
 /// Buffered progress logger for dialog TextBoxes (EFI-6): the Forge installer prints thousands of
 /// lines, and appending each one directly (Text += line) froze the UI. Lines are buffered and
 /// flushed a few times per second, keeping only the most recent <see cref="MaxLines"/>. Extracted
-/// from the old create dialog and InstallLoaderDialog, which kept two identical copies of this logic.
-/// Call <see cref="Stop"/> from the dialog's OnClosed.
+/// from the old create dialog and the old loader dialog, which kept two identical copies of this logic.
+/// A view that comes and goes stops it while it is off screen and starts it again when it is back.
 /// </summary>
 public sealed class LogBatcher
 {
@@ -42,6 +42,8 @@ public sealed class LogBatcher
         _target.Text = string.Join(Environment.NewLine, _lines) + Environment.NewLine;
         _target.CaretIndex = _target.Text.Length;
     }
+
+    public void Start() => _timer.Start();
 
     public void Stop() => _timer.Stop();
 }

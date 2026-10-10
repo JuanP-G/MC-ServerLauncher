@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:models="using:McServerLauncher.Models"
+             x:Class="McServerLauncher.Views.ServerSettings.PowerSection"
+             x:DataType="models:ServerConfig">
+
+    <!-- Starting when someone joins and stopping when nobody is left. DataContext: the draft's copy
+         of the config. -->
+    <StackPanel>
+        <TextBlock Text="{loc:Loc Idle_Intro}" Classes="desc" Margin="2,0,0,10" />
+
+        <Border Classes="card">
+            <StackPanel>
+                <DockPanel Classes="setting">
+                    <ToggleSwitch x:Name="WakeToggle" Classes="ctl" IsChecked="{Binding WakeOnDemand, Mode=TwoWay}" />
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Wake_EnabledCheck}" Classes="title" TextWrapping="Wrap" />
+                        <TextBlock Text="{loc:Loc Wake_Hint}" Classes="desc" />
+                    </StackPanel>
+                </DockPanel>
+                <DockPanel Classes="setting" Margin="0,12,0,0" IsEnabled="{Binding WakeOnDemand}">
+                    <ToggleSwitch Classes="ctl" IsChecked="{Binding WakeOnlyForWhitelist, Mode=TwoWay}" />
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Wake_WhitelistOnlyCheck}" Classes="title" TextWrapping="Wrap" />
+                        <TextBlock Text="{loc:Loc Wake_WhitelistOnlyHint}" Classes="desc" />
+                    </StackPanel>
+                </DockPanel>
+            </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <NumericUpDown Classes="ctl" Width="140" Value="{Binding IdleShutdownMinutes}"
+                               Minimum="0" Maximum="1440" Increment="5" FormatString="0" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Idle_MinutesLabel}" Classes="title" TextWrapping="Wrap" />
+                    <TextBlock Text="{loc:Loc Idle_Hint}" Classes="desc" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

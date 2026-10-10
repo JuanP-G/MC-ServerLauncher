@@ -1,0 +1,162 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:controls="using:McServerLauncher.Controls"
+             x:Class="McServerLauncher.Views.ServerSettingsView"
+             x:CompileBindings="False">
+
+    <!-- A server's settings, inside the window: what used to be three dialogs (edit, server.properties
+         and the card's look). DataContext: the ServerViewModel, for the header. The index of pages on
+         the left — a strip of chips over the page when there is no room for it (the class "narrow",
+         set from the code by the room there is) — the page in cards on the right, and a bar at the
+         bottom that only exists while something is unsaved. -->
+    <UserControl.Styles>
+        <!-- The index: the same look as the app's Settings pages. -->
+        <Style Selector="Button.page">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="Opacity" Value="0.7" />
+        </Style>
+        <Style Selector="Button.page.on">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="TextBlock.group">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Opacity" Value="0.55" />
+            <Setter Property="Margin" Value="10,10,0,2" />
+        </Style>
+
+        <!-- The same pages as chips, for a narrow window. -->
+        <Style Selector="ToggleButton.chip">
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="10,3" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+
+        <Style Selector="ToggleSwitch">
+            <Setter Property="OnContent" Value="" />
+            <Setter Property="OffContent" Value="" />
+            <Setter Property="MinWidth" Value="0" />
+        </Style>
+
+        <!-- A setting: what it is on the left, its control docked on the right — or under it when
+             the page is narrow, so the text keeps a readable width instead of a column of words. -->
+        <Style Selector="DockPanel.setting > :is(Control).ctl">
+            <Setter Property="DockPanel.Dock" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="16,0,0,0" />
+        </Style>
+        <Style Selector=":is(UserControl).narrow DockPanel.setting > :is(Control).ctl">
+            <Setter Property="DockPanel.Dock" Value="Bottom" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Margin" Value="0,8,0,0" />
+        </Style>
+
+        <Style Selector="TextBlock.error">
+            <Setter Property="Foreground" Value="{StaticResource SemanticDanger}" />
+            <Setter Property="Margin" Value="0,6,0,0" />
+        </Style>
+        <Style Selector="TextBlock.warn">
+            <Setter Property="Foreground" Value="{StaticResource SemanticWarn}" />
+            <Setter Property="Margin" Value="0,4,0,0" />
+        </Style>
+
+        <!-- Leaving was refused because something is unsaved: the bar says so, louder. -->
+        <Style Selector="Border#SaveBar">
+            <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
+        </Style>
+        <Style Selector="Border#SaveBar.nudged">
+            <Setter Property="Background" Value="{StaticResource SemanticWarnPanel}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticWarn}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Header: back, which server, and how it is. -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto" Margin="0,0,0,12">
+            <Button x:Name="BackButton" Grid.Column="0" Padding="8" Margin="0,0,10,0" VerticalAlignment="Center"
+                    ToolTip.Tip="{loc:Loc Sset_Back}" Click="Back_Click">
+                <ic:SymbolIcon Symbol="ArrowLeft" FontSize="16" />
+            </Button>
+            <Border Grid.Column="1" Width="36" Height="36" CornerRadius="4" ClipToBounds="True" Margin="0,0,10,0"
+                    Background="{StaticResource GroundWell}" VerticalAlignment="Center">
+                <Panel>
+                    <ic:SymbolIcon Symbol="Server" FontSize="18" Opacity="0.5"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   IsVisible="{Binding ServerIcon, Converter={x:Static ObjectConverters.IsNull}}" />
+                    <Image Source="{Binding ServerIcon}" Width="36" Height="36"
+                           RenderOptions.BitmapInterpolationMode="None"
+                           IsVisible="{Binding ServerIcon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                </Panel>
+            </Border>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                <TextBlock Text="{loc:Loc Cfg_Title}" FontSize="12" Opacity="0.65" />
+                <controls:MarqueeText Text="{Binding Name}" TextElement.FontSize="17" TextElement.FontWeight="SemiBold" />
+            </StackPanel>
+            <Border Grid.Column="3" CornerRadius="10" Padding="10,3" Margin="12,0,0,0" VerticalAlignment="Center"
+                    Background="{StaticResource SurfaceChip}">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="9" Height="9" Fill="{Binding StatusBrush}" VerticalAlignment="Center" Margin="0,0,7,0" />
+                    <TextBlock Text="{Binding StatusText}" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{Binding StatusBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+
+            <!-- The index. -->
+            <ScrollViewer x:Name="Index" Grid.Column="0" Width="196" Margin="0,0,16,0"
+                          VerticalScrollBarVisibility="Auto">
+                <Panel>
+                    <controls:SelectionMarker x:Name="Marker" Shape="Fill" />
+                    <StackPanel x:Name="PageItems" Spacing="2" />
+                </Panel>
+            </ScrollViewer>
+
+            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*">
+                <!-- The index again, as chips: only when narrow. -->
+                <ScrollViewer x:Name="ChipStrip" Grid.Row="0" IsVisible="False" Margin="0,0,0,10"
+                              HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                    <StackPanel x:Name="ChipItems" Orientation="Horizontal" Margin="0,0,0,6" />
+                </ScrollViewer>
+
+                <StackPanel Grid.Row="1" Margin="2,0,0,10">
+                    <TextBlock x:Name="PageTitle" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock x:Name="PageHint" Classes="desc" />
+                </StackPanel>
+
+                <ScrollViewer x:Name="PageScroller" Grid.Row="2" VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <ContentControl x:Name="SectionHost" MaxWidth="820" HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch" Margin="0,0,12,8" />
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <!-- Only while something is unsaved. -->
+        <Border x:Name="SaveBar" Grid.Row="2" IsVisible="False" Margin="0,10,0,0" Padding="12,8"
+                CornerRadius="8" BorderThickness="1">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <ic:SymbolIcon Grid.Column="0" Symbol="Edit" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="SaveBarText" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock x:Name="SaveBarHint" Classes="desc" IsVisible="False" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <Button x:Name="DiscardButton" Content="{loc:Loc Sset_Discard}" Click="Discard_Click" />
+                    <Button x:Name="SaveButton" Classes="accent" Content="{loc:Loc Save}" Click="Save_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

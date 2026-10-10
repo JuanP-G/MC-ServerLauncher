@@ -55,7 +55,7 @@ public class LiveConfigRefreshTests : IDisposable
         var mods = new ServerModsViewModel(config);
         Assert.Equal("lithium.jar", Assert.Single(mods.InstalledMods).FileName);
 
-        // What InstallLoaderDialog does: the same object, new values.
+        // What the loader install (LoaderSection) does: the same object, new values.
         Jar("plugins", "essentials.jar");
         config.Type = ServerType.Paper;
         var seen = Watch(mods);

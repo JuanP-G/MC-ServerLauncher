@@ -24,6 +24,7 @@ public partial class MainWindow : Window
     private readonly MainViewModel _viewModel;
     private bool _shuttingDown;
     private bool _exitRequested;
+    private bool _closeHeld;
 
     public MainWindow()
     {
@@ -104,6 +105,15 @@ public partial class MainWindow : Window
         {
             e.Cancel = true;
             Hide();
+            return;
+        }
+
+        // Unsaved server settings: the first close puts them on screen saying so, a second one
+        // closes anyway. Not while the window is in the tray — there is nobody looking to be told.
+        if (!_shuttingDown && !_closeHeld && IsVisible && _viewModel.HoldCloseForUnsavedSettings())
+        {
+            e.Cancel = true;
+            _closeHeld = true;
             return;
         }
 

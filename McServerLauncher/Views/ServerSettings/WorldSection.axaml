@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             x:Class="McServerLauncher.Views.ServerSettings.WorldSection"
+             x:CompileBindings="False">
+
+    <!-- The world: its seed, which is shown and not edited, and how much of it is kept alive. -->
+    <StackPanel>
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <WrapPanel Classes="ctl" Orientation="Horizontal">
+                    <Button x:Name="CopySeedButton" Content="{loc:Loc Copy}" Click="CopySeed_Click" Margin="0,0,8,0" />
+                    <Button x:Name="SeedMapButton" Content="{loc:Loc Cfg_SeedMap}" Click="SeedMap_Click"
+                            ToolTip.Tip="{loc:Loc Cfg_SeedMapTip}" />
+                </WrapPanel>
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_Seed}" Classes="title" />
+                    <SelectableTextBlock x:Name="SeedText" FontFamily="Consolas,Menlo,monospace" FontSize="14" Margin="0,2,0,2" />
+                    <TextBlock x:Name="SeedNote" Classes="desc" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <NumericUpDown x:Name="ViewDistanceBox" Classes="ctl" Width="140"
+                               Minimum="2" Maximum="32" Increment="1" FormatString="0" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_ViewDist}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_ViewDistDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <NumericUpDown x:Name="SimulationDistanceBox" Classes="ctl" Width="140"
+                               Minimum="2" Maximum="32" Increment="1" FormatString="0" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_SimDist}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_SimDistDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch x:Name="GenerateStructuresToggle" Classes="ctl" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_GenStructures}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_GenStructuresDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

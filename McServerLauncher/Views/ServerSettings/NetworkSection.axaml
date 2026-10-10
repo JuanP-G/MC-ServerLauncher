@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:models="using:McServerLauncher.Models"
+             x:Class="McServerLauncher.Views.ServerSettings.NetworkSection"
+             x:DataType="models:ServerConfig">
+
+    <!-- Who can reach the server and how: its port, Geyser's, the account checks, and the tunnel.
+         DataContext: the draft's copy of the config, for the Playit switch; the rest is
+         server.properties, through PropertyBindings. -->
+    <StackPanel>
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <NumericUpDown x:Name="PortBox" Classes="ctl" Width="140"
+                               Minimum="1" Maximum="65535" Increment="1" FormatString="0" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Port}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_PortDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- The Bedrock port is not in server.properties: it is Geyser's. Only shown with
+             crossplay already set up, which is when it exists. -->
+        <Border x:Name="BedrockPortCard" Classes="card" IsVisible="False">
+            <StackPanel>
+                <DockPanel Classes="setting">
+                    <NumericUpDown x:Name="BedrockPortBox" Classes="ctl" Width="140" Minimum="1024" Maximum="65535"
+                                   Increment="1" FormatString="0" />
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Cfg_BedrockPort}" Classes="title" />
+                        <TextBlock Classes="desc" Text="{loc:Loc Cfg_BedrockPortDesc}" />
+                    </StackPanel>
+                </DockPanel>
+                <TextBlock x:Name="BedrockPortWarning" Classes="desc error" IsVisible="False" />
+            </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch x:Name="PlayitToggle" Classes="ctl" IsChecked="{Binding PlayitEnabled, Mode=TwoWay}" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Sset_PlayitTitle}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Sset_PlayitDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch x:Name="OnlineModeToggle" Classes="ctl" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Cfg_OnlineMode}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_OnlineModeDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch x:Name="WhitelistToggle" Classes="ctl" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Players_Whitelist}" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_WhitelistDesc}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

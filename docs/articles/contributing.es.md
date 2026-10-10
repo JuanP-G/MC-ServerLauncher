@@ -58,7 +58,7 @@ Van en seis capas, y conviene saber a cuál pertenece una prueba nueva:
 | Los modelos solos | `ServerConfigFormatTests`, `ModelNotificationTests` | Qué se escribe en disco; qué propiedades avisan |
 | La tabla | `ServerConfigEffectsTests` | Que no se ha quedado ningún campo de la config sin declarar |
 | View models, construidos de verdad | `ServerViewModelRefreshTests`, `MainViewModelFlowTests` | Que un cambio en la config llega a la tarjeta, a los paneles y a `servers.json` |
-| Controles reales | `AddEditServerDialogTests`, `NewServerViewTests` | Que llega a la pantalla — la mitad que una prueba unitaria no ve |
+| Controles reales | `ServerSettingsViewTests`, `NewServerViewTests` | Que llega a la pantalla — la mitad que una prueba unitaria no ve |
 | Puertas sobre el código | `StartDependencyGateTests`, `StoreHashTests`, `ExportSelectionTests` | Que una promesa se cumple en el propio archivo — sin red, una sola definición |
 | El artefacto, ejecutado | `InstallScriptSmokeTests` | Que el script que recibe un jugador funciona de verdad — con bash, en Linux en la CI |
 
@@ -129,7 +129,7 @@ de las veces y del nombre la otra mitad — casi siempre sale mejor arreglar el 
   `ServerConfigEffectsTests` falla hasta que está, y el fallo dice qué escribir. No es burocracia:
   un campo que se queda fuera enseña la respuesta correcta hasta que alguien edita ese servidor, y
   la equivocada desde entonces hasta que se reinicia la app.
-- `var` cuando el tipo ya está en la línea (`var dialog = new ServerConfigDialog(…)`), y el tipo escrito
+- `var` cuando el tipo ya está en la línea (`var view = new ServerSettingsView(…)`), y el tipo escrito
   cuando no lo está.
 - **Un constructor monta; `Activate()` arranca.** Nada que sondee, abra un socket, se suscriba a un
   singleton compartido o vaya a la red va en un constructor: va en `Activate()`, cuyo espejo es
@@ -326,10 +326,13 @@ justo como alguien acaba fiándose de una página que va una versión por detrá
    (usa `string.Format(Localizer.Get("MiClave"), arg)` si tiene huecos `{0}`).
 
 ### Añadir un ajuste de `server.properties` al editor visual
-1. Añade el control + etiqueta/descripción en `Views/ServerConfigDialog.axaml` (y enlázalo en su
-   code-behind).
-2. Lee/escribe la clave con `ServerPropertiesService.Read` / `Update`, que conserva el resto del
-   archivo, los comentarios y el orden.
+1. Añade el control + etiqueta/descripción en la página que le toca dentro de `Views/ServerSettings`
+   (`GameSection`, `WorldSection`, `NetworkSection`…), como un `DockPanel.setting` con el control en
+   la clase `ctl`.
+2. Átalo a su clave en el constructor de la página con `PropertyBindings` (`Toggle`, `Number`,
+   `Choice`) y añade la clave a la fila de esa página en `ServerSettingsDraft.Owned`. Guardar la
+   escribe con `ServerPropertiesService.Update`, que conserva el resto del archivo, los comentarios y
+   el orden.
 
 ### Añadir un tipo de servidor
 1. Una fila en `Services/ServerTypeCatalog.cs`: nombre visible, familia (plugins / mods / ninguna),

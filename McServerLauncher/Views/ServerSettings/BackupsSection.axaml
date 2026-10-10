@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:models="using:McServerLauncher.Models"
+             x:Class="McServerLauncher.Views.ServerSettings.BackupsSection"
+             x:DataType="models:ServerConfig">
+
+    <!-- When copies of the world are made and how many are kept. Making, restoring and deleting
+         them is the Backups tab's; this is only the policy. DataContext: the draft's copy of the
+         config. -->
+    <StackPanel>
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch x:Name="BackupsCheck" Classes="ctl" IsChecked="{Binding BackupsEnabled, Mode=TwoWay}" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Backup_EnabledCheck}" Classes="title" TextWrapping="Wrap" />
+                    <TextBlock Text="{loc:Loc Backup_Hint}" Classes="desc" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <StackPanel IsEnabled="{Binding BackupsEnabled}">
+            <Border Classes="card">
+                <StackPanel Spacing="10">
+                    <DockPanel Classes="setting">
+                        <NumericUpDown Classes="ctl" Width="140" Value="{Binding BackupRetention}"
+                                       Minimum="1" Maximum="50" Increment="1" FormatString="0" />
+                        <TextBlock Text="{loc:Loc Backup_RetentionLabel}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <DockPanel Classes="setting">
+                        <NumericUpDown Classes="ctl" Width="140" Value="{Binding ManualBackupRetention}"
+                                       Minimum="1" Maximum="50" Increment="1" FormatString="0" />
+                        <TextBlock Text="{loc:Loc Backup_ManualRetentionLabel}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel>
+                    <DockPanel Classes="setting">
+                        <ToggleSwitch x:Name="AutoBackupCheck" Classes="ctl" IsChecked="{Binding AutoBackupEnabled, Mode=TwoWay}" />
+                        <TextBlock Text="{loc:Loc Backup_AutoWhilePlaying}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <DockPanel Classes="setting" Margin="0,10,0,0" IsEnabled="{Binding AutoBackupEnabled}">
+                        <NumericUpDown Classes="ctl" Width="140" Value="{Binding BackupIntervalMinutes}"
+                                       Minimum="5" Maximum="1440" Increment="5" FormatString="0" />
+                        <TextBlock Text="{loc:Loc Backup_IntervalLabel}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock Text="{loc:Loc Backup_AutoHint}" Classes="desc" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

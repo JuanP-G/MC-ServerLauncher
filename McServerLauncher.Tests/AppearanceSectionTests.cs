@@ -4,11 +4,12 @@ using Avalonia.Input;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 using McServerLauncher.Views;
+using McServerLauncher.Views.ServerSettings;
 
 namespace McServerLauncher.Tests;
 
 /// <summary>
-/// The appearance editor reacting to what the user does, with real controls.
+/// The Appearance page of a server's settings reacting to what the user does, with real controls.
 /// </summary>
 /// <remarks>
 /// The risky part is not any one piece: it is the text boxes, the document behind them and the
@@ -16,7 +17,7 @@ namespace McServerLauncher.Tests;
 /// exists once the controls are real, and a binding typo in these views fails silently.
 /// </remarks>
 [Collection("avalonia")]
-public class ServerAppearanceDialogTests(AvaloniaFixture ui) : IDisposable
+public class AppearanceSectionTests(AvaloniaFixture ui) : IDisposable
 {
     private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-look-" + Guid.NewGuid().ToString("N"));
 
@@ -33,16 +34,16 @@ public class ServerAppearanceDialogTests(AvaloniaFixture ui) : IDisposable
     }
 
     /// <summary>
-    /// Builds the dialog without showing it. Showing it would lay out the icon font, which the
+    /// Builds the page without showing it. Showing it would lay out the icon font, which the
     /// headless font manager cannot create (the same reason <c>MissingDependencyPanelTests</c> does
     /// not render its view); the controls and their wiring exist from the constructor on, which is
     /// all these tests need. How it looks is checked with a real renderer instead.
     /// </summary>
-    private static ServerAppearanceDialog Open(ServerConfig config, bool running = false)
+    private static AppearanceSection Open(ServerConfig config, bool running = false)
     {
-        var dialog = new ServerAppearanceDialog(config, running);
+        var section = new AppearanceSection(new ServerSettingsDraft(config), running);
         AvaloniaFixture.Pump();
-        return dialog;
+        return section;
     }
 
     private static T Named<T>(Control root, string name) where T : Control =>
@@ -95,7 +96,7 @@ public class ServerAppearanceDialogTests(AvaloniaFixture ui) : IDisposable
             line1.SelectionStart = 1;
             line1.SelectionEnd = 3;
 
-            var gold = Named<StackPanel>(dialog, "ColorPanel").Children.OfType<Button>().First(b => (char)b.Tag! == '6');
+            var gold = Named<Panel>(dialog, "ColorPanel").Children.OfType<Button>().First(b => (char)b.Tag! == '6');
             gold.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
             AvaloniaFixture.Pump();
 
@@ -139,7 +140,7 @@ public class ServerAppearanceDialogTests(AvaloniaFixture ui) : IDisposable
             var line1 = Named<TextBox>(dialog, "Line1Box");
             line1.Focus();
             line1.CaretIndex = 2;
-            var red = Named<StackPanel>(dialog, "ColorPanel").Children.OfType<Button>().First(b => (char)b.Tag! == 'c');
+            var red = Named<Panel>(dialog, "ColorPanel").Children.OfType<Button>().First(b => (char)b.Tag! == 'c');
             red.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
 
             line1.Text = "abc";
@@ -203,7 +204,7 @@ public class ServerAppearanceDialogTests(AvaloniaFixture ui) : IDisposable
             Named<TextBox>(cancelled, "Line1Box").Text = "nuevo";
             Named<TextBox>(cancelled, "NameBox").Text = "Otro";
             AvaloniaFixture.Pump();
-            cancelled.Close(false);
+            // Discarded: the page is left without Save, and nothing is applied.
 
             Assert.Contains("motd=viejo", File.ReadAllText(path));
             Assert.Equal("ServerMC", config.Name);
@@ -214,7 +215,7 @@ public class ServerAppearanceDialogTests(AvaloniaFixture ui) : IDisposable
             Named<TextBox>(saved, "NameBox").Text = "  Otro  ";
             AvaloniaFixture.Pump();
 
-            Assert.Null(saved.TrySave());
+            saved.Draft.Apply();
 
             var text = File.ReadAllText(path);
             Assert.Contains(@"motd=nuevo\nabajo", text);
@@ -234,7 +235,7 @@ public class ServerAppearanceDialogTests(AvaloniaFixture ui) : IDisposable
             var before = File.ReadAllText(path);
 
             var dialog = Open(config);
-            Assert.Null(dialog.TrySave());
+            dialog.Draft.Apply();
 
             Assert.Equal(before, File.ReadAllText(path));
         });
@@ -248,7 +249,7 @@ public class ServerAppearanceDialogTests(AvaloniaFixture ui) : IDisposable
             var config = Server(motd: null);
 
             var dialog = Open(config);
-            Assert.Null(dialog.TrySave());
+            dialog.Draft.Apply();
 
             Assert.False(File.Exists(Path.Combine(_folder, "server.properties")));
         });
@@ -274,12 +275,12 @@ public class ServerAppearanceDialogTests(AvaloniaFixture ui) : IDisposable
             Assert.False(File.Exists(icon));                       // previewed, not written
             Assert.NotNull(Named<ServerCardView>(dialog, "Preview").Icon);
 
-            Assert.Null(dialog.TrySave());
+            dialog.Draft.Apply();
             Assert.True(File.Exists(icon));
 
             var again = Open(config);
             Named<Button>(again, "RemoveImageButton").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
-            Assert.Null(again.TrySave());
+            again.Draft.Apply();
             Assert.False(File.Exists(icon));
         });
     }

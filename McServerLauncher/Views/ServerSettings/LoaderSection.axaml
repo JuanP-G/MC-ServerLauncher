@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:views="using:McServerLauncher.Views"
+             x:Class="McServerLauncher.Views.ServerSettings.LoaderSection"
+             x:CompileBindings="False">
+
+    <!-- What kind of server this is, and changing it. Not part of Save: installing downloads and
+         writes at once, so it has its own button, and it waits for the rest of the page to be saved
+         or discarded first. -->
+    <StackPanel>
+        <Border Classes="card">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc Loader_Section}" Classes="title" />
+                <TextBlock x:Name="CurrentText" Classes="desc" />
+            </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+            <StackPanel>
+                <StackPanel x:Name="FormPanel">
+                    <TextBlock Text="{loc:Loc Loader_Title}" Classes="title" />
+                    <TextBlock Text="{loc:Loc Loader_Intro}" Classes="desc" Margin="0,0,0,10" />
+
+                    <views:ServerTypePicker x:Name="TypePicker" />
+
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{loc:Loc Cs_Version}" Classes="desc" Margin="0,0,0,4" />
+                            <ComboBox x:Name="VersionCombo" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" x:Name="SnapshotsCheck" Content="{loc:Loc Cs_Snapshots}"
+                                  VerticalAlignment="Bottom" Margin="12,0,0,4" IsCheckedChanged="Snapshots_Changed" />
+                    </Grid>
+                    <TextBlock x:Name="VersionStatus" Classes="desc" Margin="2,4,0,0"
+                               Text="{loc:Loc Cs_LoadingVersions}" />
+
+                    <!-- Directional warning (color/severity set from code-behind) -->
+                    <Border x:Name="WarnBox" Margin="0,14,0,0" Padding="10" CornerRadius="6"
+                            Background="{StaticResource SemanticWarnPanel}" BorderBrush="{StaticResource SemanticWarn}" BorderThickness="1">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <ic:SymbolIcon Grid.Column="0" x:Name="WarnIcon" Symbol="Warning"
+                                           VerticalAlignment="Top" Margin="0,0,8,0" />
+                            <TextBlock Grid.Column="1" x:Name="WarnText" TextWrapping="Wrap" FontSize="12" />
+                        </Grid>
+                    </Border>
+
+                    <CheckBox x:Name="KeepRunBatCheck" Margin="0,14,0,0" Content="{loc:Loc Loader_KeepConfig}" />
+                    <TextBlock Text="{loc:Loc Loader_Kept}" Classes="desc" Margin="0,4,0,0" />
+                </StackPanel>
+
+                <Border x:Name="ProgressBox" Margin="0,12,0,0" Padding="12"
+                        CornerRadius="8" Background="{StaticResource GroundPopup}" IsVisible="False" Height="160">
+                    <Grid RowDefinitions="Auto,*">
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6" Spacing="8">
+                            <ProgressBar x:Name="Spinner" IsIndeterminate="True" Width="120" Height="4" VerticalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Loader_Installing}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBox Grid.Row="1" x:Name="ProgressLog" IsReadOnly="True" TextWrapping="Wrap"
+                                 Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextOnPopup}"
+                                 FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12"
+                                 AcceptsReturn="True" />
+                    </Grid>
+                </Border>
+
+                <TextBlock x:Name="Error" Classes="desc error" IsVisible="False" />
+                <TextBlock x:Name="NeedsSaveNote" Classes="desc warn" Text="{loc:Loc Sset_LoaderNeedsSave}" IsVisible="False" />
+
+                <Button x:Name="InstallButton" Classes="accent" HorizontalAlignment="Right" Margin="0,12,0,0"
+                        Content="{loc:Loc Loader_InstallButton}" Click="Install_Click" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>
