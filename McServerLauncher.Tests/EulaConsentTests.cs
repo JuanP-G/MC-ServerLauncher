@@ -88,6 +88,60 @@ public class EulaConsentTests(AvaloniaFixture ui) : IDisposable
         });
     }
 
+    /// <summary>
+    /// A folder typed in after one that had accepted it, and Add pressed at once, is asked about.
+    /// </summary>
+    /// <remarks>
+    /// The box is judged on the folder last detected, and a typed path is only detected when the
+    /// field loses focus — which pressing Add does, but the detection finishes after the click has
+    /// started. Add used to go ahead with the box still hidden, take the server over, and leave it
+    /// with no eula.txt and nobody having agreed to anything.
+    /// </remarks>
+    [Fact]
+    public async Task AFolderTypedInJustBeforeAddIsAskedAbout()
+    {
+        var accepted = Path.Combine(_folder, "accepted");
+        var typed = Path.Combine(_folder, "typed");
+        Directory.CreateDirectory(accepted);
+        Directory.CreateDirectory(typed);
+        File.WriteAllText(Path.Combine(accepted, "eula.txt"), "eula=true\n");
+        // An old Forge jar is a server the detection recognises from its name alone, version included.
+        File.WriteAllText(Path.Combine(typed, "forge-1.12.2-14.23.5.2860.jar"), string.Empty);
+
+        Window? window = null;
+        NewServerView? panel = null;
+        var completed = false;
+        ui.Run(() =>
+        {
+            (window, panel) = Open();
+            panel.Completed += _ => completed = true;
+            panel.ChooseAdd();
+            panel.ShowDetection(accepted, ServerDetection.Nothing);
+            AvaloniaFixture.Pump();
+            Assert.True(Named<Button>(panel, "AddButton").IsEnabled);
+
+            Named<TextBox>(panel, "ExistingFolderBox").Text = typed;
+            Named<Button>(panel, "AddButton").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        });
+
+        // The whole three seconds, not until the box shows: it showed before as well, just too late
+        // to stop the takeover that came a moment after it.
+        var asked = false;
+        for (var i = 0; i < 30 && !completed; i++)
+        {
+            await Task.Delay(100);
+            ui.Run(() =>
+            {
+                AvaloniaFixture.Pump();
+                asked = Named<StackPanel>(panel!, "EulaPanel").IsVisible;
+            });
+        }
+
+        Assert.False(completed, "the server was taken over before the EULA was accepted");
+        Assert.True(asked, "the box never appeared for the folder that had not accepted the EULA");
+        ui.Run(() => window!.Hide());
+    }
+
     [Fact]
     public void WhatIsWrittenIsWhatIsRead()
     {
