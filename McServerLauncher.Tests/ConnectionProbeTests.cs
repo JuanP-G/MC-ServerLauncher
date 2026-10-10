@@ -98,6 +98,23 @@ public class ConnectionProbeTests
     }
 
     [Fact]
+    public async Task AnEdgeThatRefusesTheMinusOneProtocolIsStillAnswered()
+    {
+        // What Playit's Minecraft edge does: it reads the handshake and resets the connection when
+        // the protocol is -1, the number status tools usually send. The tunnel step read "no
+        // answer" on a tunnel that players were joining through.
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        var serving = ServeOneStatusAsync(listener, refuseMinusOne: true);
+
+        var reply = await ConnectionProbe.PingJavaAsync("127.0.0.1", port, TimeSpan.FromSeconds(5));
+        await serving;
+
+        Assert.NotNull(reply);
+    }
+
+    [Fact]
     public async Task NobodyListeningIsNoAnswer()
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0);
@@ -129,12 +146,18 @@ public class ConnectionProbeTests
     }
 
     /// <summary>Answers one status ping the way a Minecraft server does.</summary>
-    private static async Task ServeOneStatusAsync(TcpListener listener)
+    private static async Task ServeOneStatusAsync(TcpListener listener, bool refuseMinusOne = false)
     {
         using var client = await listener.AcceptTcpClientAsync();
         var stream = client.GetStream();
 
-        await ReadPacketAsync(stream);           // handshake
+        var handshake = new MemoryStream(await ReadPacketAsync(stream));
+        ConnectionProbe.ReadVarInt(handshake);                       // packet id
+        if (refuseMinusOne && ConnectionProbe.ReadVarInt(handshake) == -1)
+        {
+            client.Client.LingerState = new LingerOption(true, 0);   // a reset, as the edge sends
+            return;
+        }
         await ReadPacketAsync(stream);           // status request
 
         var json = Encoding.UTF8.GetBytes(

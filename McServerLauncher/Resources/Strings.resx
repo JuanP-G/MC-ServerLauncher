@@ -1230,7 +1230,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Net_Peak" xml:space="preserve"><value>Pico de subida</value></data>
   <data name="Net_SamplesTunnelFmt" xml:space="preserve"><value>Latencia del túnel, {0} muestras</value></data>
   <data name="Net_SamplesLocalFmt" xml:space="preserve"><value>Latencia del servidor, {0} muestras</value></data>
-  <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Servidor: {0} (protocolo {1}) · {2}/{3} jugadores</value></data>
+  <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Servidor: {0} · {1}/{2} jugadores</value></data>
   <data name="Net_CopyReport" xml:space="preserve"><value>Copiar informe</value></data>
   <data name="Net_Copied" xml:space="preserve"><value>Copiado</value></data>
 </root>

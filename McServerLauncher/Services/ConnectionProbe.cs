@@ -91,8 +91,27 @@ public static class ConnectionProbe
 
     // ---------------------------------------------------------------- Java
 
+    /// <summary>
+    /// A protocol number to put in the handshake when the server's own is not known: a real one,
+    /// recent (1.21.1). See <see cref="PingJavaAsync"/> for why -1 will not do.
+    /// </summary>
+    public const int FallbackProtocol = 767;
+
     /// <summary>A server-list ping. Null when nothing answered in time.</summary>
-    public static async Task<SlpReply?> PingJavaAsync(string host, int port, TimeSpan timeout, CancellationToken ct = default)
+    /// <param name="host">
+    /// Where to connect, and what the handshake says it connected to. A name, not an IP, when going
+    /// through Playit: its edge routes by it, and an IP there gets the connection reset.
+    /// </param>
+    /// <param name="protocol">
+    /// The protocol number in the handshake. Never -1, the "whatever you speak" that status tools
+    /// send: Playit's Minecraft edge reads the handshake before passing it on and resets a connection
+    /// whose protocol is not a real one (found on 2026-10-10 against a live tunnel: -1 was reset every
+    /// time within a few milliseconds, 776 and 767 answered every time), and a server asked with -1
+    /// may report -1 as its own protocol, which is no use either. Asked with a real number, a server
+    /// answers with its own, so the local ping finds out what the tunnel ping then sends.
+    /// </param>
+    public static async Task<SlpReply?> PingJavaAsync(string host, int port, TimeSpan timeout,
+        CancellationToken ct = default, int protocol = FallbackProtocol)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(timeout);
@@ -102,11 +121,11 @@ public static class ConnectionProbe
             await client.ConnectAsync(host, port, cts.Token);
             var stream = client.GetStream();
 
-            // Handshake: protocol -1 ("whatever you speak", as status pings send), the address and
-            // port as typed, next state 1 (status). Then the status request.
+            // Handshake: the protocol (see above), the address and port as typed, next state 1
+            // (status). Then the status request.
             var handshake = new MemoryStream();
             WriteVarInt(handshake, 0x00);
-            WriteVarInt(handshake, -1);
+            WriteVarInt(handshake, protocol);
             WriteString(handshake, host);
             var portBytes = new byte[2];
             BinaryPrimitives.WriteUInt16BigEndian(portBytes, (ushort)port);
@@ -128,8 +147,8 @@ public static class ConnectionProbe
             await ReadPacketAsync(stream, cts.Token);
             var ms = watch.Elapsed.TotalMilliseconds;
 
-            var (protocol, version, online, max) = ReadStatus(json);
-            return new SlpReply(ms, protocol, version, online, max);
+            var (spoken, version, online, max) = ReadStatus(json);
+            return new SlpReply(ms, spoken, version, online, max);
         }
         catch (Exception) when (!ct.IsCancellationRequested)
         {

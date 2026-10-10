@@ -69,9 +69,13 @@ public static class StepStateConverters
 /// <summary>One row of the technical table: the round trips to one place.</summary>
 public sealed record ProbeRow(string Name, string Min, string Average, string Max, string Jitter, string Loss)
 {
+    /// <summary>Milliseconds with a decimal under ten: on a LAN "0" says nothing, "0.3" does.</summary>
+    internal static string Number(double ms) =>
+        ms.ToString(ms < 10 ? "0.0" : "0", CultureInfo.CurrentCulture);
+
     internal static ProbeRow From(string name, LatencyStats stats)
     {
-        static string Ms(double v) => v.ToString("0", CultureInfo.CurrentCulture);
+        static string Ms(double v) => Number(v);
         return stats.AnyReply
             ? new(name, Ms(stats.Min), Ms(stats.Average), Ms(stats.Max), Ms(stats.Jitter),
                 (stats.Loss * 100).ToString("0", CultureInfo.CurrentCulture) + " %")
@@ -311,8 +315,10 @@ public partial class ConnectionTestViewModel : ObservableObject
                 TunnelStep.Set(StepState.Running, Localizer.Get("Net_StepTunnel"), Localizer.Get("Net_Measuring"));
                 var (host, publicPort) = await ConnectionProbe.ResolveJavaAsync(address, ct);
                 addresses.Add($"{Localizer.Get("Net_RowTunnel")}: {address} → {host}:{publicPort}");
+                // The server's own protocol number: Playit's edge refuses the -1 status tools send.
+                var protocol = status?.Protocol is > 0 and var known ? known : ConnectionProbe.FallbackProtocol;
                 tunnel = await ConnectionProbe.SampleAsync(async c =>
-                    (await ConnectionProbe.PingJavaAsync(host, publicPort, Wait, c))?.LatencyMs,
+                    (await ConnectionProbe.PingJavaAsync(host, publicPort, Wait, c, protocol))?.LatencyMs,
                     Samples, Gap, Live(TunnelStep), ct);
                 Judge(TunnelStep, tunnel, good: 80, fair: 180, "Net_Tunnel");
                 Rows.Add(ProbeRow.From(Localizer.Get("Net_RowTunnel"), tunnel));
@@ -344,7 +350,8 @@ public partial class ConnectionTestViewModel : ObservableObject
                 series.Received);
 
             if (status is not null)
-                addresses.Add(string.Format(Localizer.Get("Net_ServerInfoFmt"), status.Version, status.Protocol,
+                // Not its protocol number: some servers report back whatever the ping asked with.
+                addresses.Add(string.Format(Localizer.Get("Net_ServerInfoFmt"), status.Version,
                     status.Online, status.Max));
             AddressesText = string.Join("   ·   ", addresses);
 
@@ -368,8 +375,15 @@ public partial class ConnectionTestViewModel : ObservableObject
     // ---------------------------------------------------------------- judging
 
     /// <summary>Shows each round trip in the badge as it arrives, so the step visibly works.</summary>
+    /// <remarks>
+    /// Only while the step is still running: Progress posts, so the last sample can arrive after the
+    /// step has been judged, and it used to overwrite the average with "1 ms…".
+    /// </remarks>
     private static IProgress<double> Live(ConnectionStepViewModel step) =>
-        new Progress<double>(ms => step.Badge = Ms(ms) + "…");
+        new Progress<double>(ms =>
+        {
+            if (step.State == StepState.Running) step.Badge = Ms(ms) + "…";
+        });
 
     /// <summary>Good, fair or bad by the average round trip; loss makes it worse.</summary>
     internal static StepState Grade(LatencyStats stats, double good, double fair)
@@ -462,7 +476,7 @@ public partial class ConnectionTestViewModel : ObservableObject
 
     // ---------------------------------------------------------------- formats
 
-    private static string Ms(double ms) => ms.ToString("0", CultureInfo.CurrentCulture) + " ms";
+    private static string Ms(double ms) => ProbeRow.Number(ms) + " ms";
 
     private static string Mbps(Throughput t) =>
         t.Mbps <= 0 ? "—" : t.Mbps.ToString(t.Mbps < 10 ? "0.0" : "0", CultureInfo.CurrentCulture) + " Mb/s";

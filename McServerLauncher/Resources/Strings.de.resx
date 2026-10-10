@@ -1184,7 +1184,7 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Net_Peak" xml:space="preserve"><value>Spitzen-Upload</value></data>
   <data name="Net_SamplesTunnelFmt" xml:space="preserve"><value>Tunnel-Latenz, {0} Proben</value></data>
   <data name="Net_SamplesLocalFmt" xml:space="preserve"><value>Server-Latenz, {0} Proben</value></data>
-  <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Server: {0} (Protokoll {1}) · {2}/{3} Spieler</value></data>
+  <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Server: {0} · {1}/{2} Spieler</value></data>
   <data name="Net_CopyReport" xml:space="preserve"><value>Bericht kopieren</value></data>
   <data name="Net_Copied" xml:space="preserve"><value>Kopiert</value></data>
 </root>

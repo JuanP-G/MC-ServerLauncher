@@ -1184,7 +1184,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Net_Peak" xml:space="preserve"><value>Peak upload</value></data>
   <data name="Net_SamplesTunnelFmt" xml:space="preserve"><value>Tunnel latency, {0} samples</value></data>
   <data name="Net_SamplesLocalFmt" xml:space="preserve"><value>Server latency, {0} samples</value></data>
-  <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Server: {0} (protocol {1}) · {2}/{3} players</value></data>
+  <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Server: {0} · {1}/{2} players</value></data>
   <data name="Net_CopyReport" xml:space="preserve"><value>Copy report</value></data>
   <data name="Net_Copied" xml:space="preserve"><value>Copied</value></data>
 </root>
