@@ -336,10 +336,30 @@ public partial class MainViewModel : ObservableObject
             // Before starting it, so the new copy can claim the app instead of handing itself over
             // to this one, which is on its way out.
             McServerLauncher.Program.ReleaseInstance();
-            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = target, UseShellExecute = true }); }
+            try { System.Diagnostics.Process.Start(RelaunchStartInfo(target, OperatingSystem.IsMacOS())); }
             catch { /* if it can't be relaunched, at least exit */ }
         }
         Environment.Exit(0);
+    }
+
+    /// <summary>How to start a new copy of the app from <paramref name="target"/>.</summary>
+    /// <remarks>
+    /// A .app bundle goes through <c>open -n</c>. Opening it the plain way (which is what shell
+    /// execute does on macOS) asks macOS for the app, and the app is still running — this copy,
+    /// a moment before it exits — so macOS brings it to the front instead of starting another, and
+    /// then it exits: changing the language closed the app. <c>-n</c> asks for a new copy even so.
+    /// </remarks>
+    internal static System.Diagnostics.ProcessStartInfo RelaunchStartInfo(string target, bool macOS)
+    {
+        if (macOS && target.EndsWith(".app", StringComparison.OrdinalIgnoreCase))
+        {
+            var open = new System.Diagnostics.ProcessStartInfo("open") { UseShellExecute = false };
+            open.ArgumentList.Add("-n");
+            open.ArgumentList.Add(target);
+            return open;
+        }
+
+        return new System.Diagnostics.ProcessStartInfo { FileName = target, UseShellExecute = true };
     }
 
     /// <summary>
