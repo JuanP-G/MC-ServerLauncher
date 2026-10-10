@@ -45,6 +45,7 @@
   <data name="Language" xml:space="preserve"><value>Idioma</value></data>
   <data name="Status_Stopped" xml:space="preserve"><value>Desligado</value></data>
   <data name="Status_Starting" xml:space="preserve"><value>A iniciar...</value></data>
+  <data name="Status_Preparing" xml:space="preserve"><value>A preparar...</value></data>
   <data name="Status_Running" xml:space="preserve"><value>Ligado</value></data>
   <data name="Status_Stopping" xml:space="preserve"><value>A parar...</value></data>
   <data name="Copy_Selection" xml:space="preserve"><value>Copiar seleção</value></data>
@@ -310,7 +311,7 @@
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Ligá-lo quando alguém tentar entrar</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>Enquanto estiver desligado, a lista de servidores mostra-o adormecido. Quem carregar em Entrar recebe uma mensagem e o servidor começa a arrancar.</value></data>
   <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>Se a lista branca estiver ativada, ligá-lo só para jogadores da lista</value></data>
-  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>Assim ninguém fora da lista o pode ligar pela Internet. Os operadores também contam.</value></data>
+  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>Assim os bots que vasculham a Internet não o ligam. Os operadores também contam. O nome ainda não está verificado nesse momento: quem usar um nome da lista liga-o, mesmo que depois o servidor não o deixe entrar.</value></data>
   <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>Este servidor está desligado e só liga para os jogadores da sua lista branca.</value></data>
   <data name="Wake_MotdSleeping" xml:space="preserve"><value>Desligado · entra para o acordar</value></data>
   <data name="Wake_MotdStarting" xml:space="preserve"><value>A arrancar… volta daqui a uns segundos</value></data>

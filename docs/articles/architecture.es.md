@@ -422,7 +422,12 @@ primero suelta el listener del encendido bajo demanda (tiene el puerto del servi
    línea de comandos es `-Xms`/`-Xmx`, los flags que añade la propia app (`ImpliedJvmFlags`), los
    `ExtraJvmArgs` del servidor y el jar (o el fichero de argumentos de Forge/NeoForge modernos).
 
-Si algún paso para el arranque, el listener del encendido bajo demanda se vuelve a levantar
+Todo ello puede durar minutos con un mundo grande que copiar, y el estado sigue siendo Detenido mientras
+tanto, así que `IsPreparing` está activo del primer paso al último: la lista y la cabecera dicen
+*Preparando…* en ámbar, Iniciar y Restaurar no están
+disponibles, y un segundo arranque (otro intento de entrar con el servidor dormido, un auto-reinicio)
+no hace nada (`StartPreparationTests`). Si algún paso para el arranque, el listener del encendido bajo
+demanda se vuelve a levantar
 (`finally`). La salida de la
 consola llega de vuelta por el evento `OutputReceived` hacia `ConsoleLines`, **por lotes**: las líneas de
 los hilos del proceso se encolan y una sola tarea del dispatcher se lleva todas las que llegaron antes de
@@ -664,7 +669,10 @@ tope de cuántas hay a la vez.
 cliente y pregunta; con la lista blanca del servidor activada, solo lo despierta alguien que esté en
 ella o en `ops.json`, y a cualquier otro se le dice que el servidor solo se enciende para su lista
 blanca. Los escáneres que buscan servidores de Minecraft entran por rutina, y cada uno arrancaba el
-servidor y la copia que va delante del arranque. Sin lista blanca no cambia nada, y
+servidor y la copia que va delante del arranque. El nombre es el que dice el cliente: Mojang solo lo
+verifica cuando el servidor de verdad atiende la conexión, así que quien conozca un nombre de la lista
+puede despertarlo igualmente, y luego el servidor lo echa. La regla frena a los escáneres, que es para
+lo que está; no es un control de acceso. Sin lista blanca no cambia nada, y
 `ServerConfig.WakeOnlyForWhitelist` (activado de serie, una casilla bajo *Encenderlo cuando alguien
 intente entrar*) deja al dueño abrirlo a cualquiera igualmente.
 
@@ -691,8 +699,8 @@ galería, versiones, dependencias, enlaces y proyectos relacionados — pintado 
 lo que ya traía el resultado de búsqueda aparezca al instante y el resto llegue cuando vuelvan sus
 peticiones. `StoreCache` (memoria, luego disco, luego red) e `ImageCache` son lo que hace que volver
 atrás y abrir algo otra vez no cueste nada, y lo que hace que un proyecto ya visto se abra sin
-conexión. `ImageCache` decodifica cada imagen al tamaño al que se dibuja —iconos y miniaturas a 256 px de
-ancho como mucho, capturas a 1600— leyendo antes las dimensiones de la cabecera, así que una imagen que
+conexión. `ImageCache` decodifica cada imagen al tamaño al que se dibuja —iconos y miniaturas a 256 px en
+su lado más largo como mucho, capturas a 1600— leyendo antes las dimensiones de la cabecera, así que una imagen que
 dice tener decenas de miles de píxeles de lado se rechaza en vez de decodificarse, y su caché en memoria
 tiene un presupuesto de 96 MB además del tope de entradas (`ImageCacheBudgetTests`).
 

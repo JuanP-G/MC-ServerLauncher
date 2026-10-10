@@ -56,11 +56,6 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Armed while a backup is waiting for the server to confirm it has saved.</summary>
     private TaskCompletionSource<bool>? _saveConfirmed;
 
-    // --- Auto-restart on crash ---
-    // If the server exits on its own (not via the Stop button), it's relaunched automatically, up
-    // to a limited number of consecutive attempts so a persistently-crashing server doesn't loop
-    // forever. The streak resets whenever a run has been stable (Running) for a while, or the user
-    // starts the server manually.
     /// <summary>
     /// How long a server gets to save and exit after "stop" before it is killed.
     /// </summary>
@@ -73,6 +68,11 @@ public partial class ServerViewModel : ObservableObject
     /// </remarks>
     internal static readonly TimeSpan StopTimeout = TimeSpan.FromSeconds(60);
 
+    // --- Auto-restart on crash ---
+    // If the server exits on its own (not via the Stop button), it's relaunched automatically, up
+    // to a limited number of consecutive attempts so a persistently-crashing server doesn't loop
+    // forever. The streak resets whenever a run has been stable (Running) for a while, or the user
+    // starts the server manually.
     private const int MaxAutoRestarts = 3;
     private static readonly TimeSpan StabilityWindow = TimeSpan.FromMinutes(2);
     private static readonly TimeSpan AutoRestartDelay = TimeSpan.FromSeconds(5);
@@ -707,7 +707,7 @@ public partial class ServerViewModel : ObservableObject
 
         RunOnUi(() =>
         {
-            if (State != ServerState.Stopped) return;   // already coming up from an earlier knock
+            if (!CanStart) return;   // already coming up from an earlier knock, or being restored
 
             _wokeAtUtc = DateTime.UtcNow;
             OnConsoleLine(Localizer.Get("Msg_WakeStarting"));
@@ -925,7 +925,25 @@ public partial class ServerViewModel : ObservableObject
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
-    public bool CanStart => State == ServerState.Stopped && !IsRestoring;
+    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing;
+
+    /// <summary>True from the moment a start begins until the process is up or the start gives up.</summary>
+    /// <remarks>
+    /// Before the process exists a start spends seconds — minutes, with a big world to back up —
+    /// checking the port, the path, the dependencies and the Java, and making the backup, and all
+    /// that time the state is still Stopped. Without this, anything that starts a server without
+    /// the button (a second knock while waking on demand, an auto-restart, the button itself once
+    /// it had finished its own run) began a second start beside the first: a second backup of the
+    /// same world, and an error when it found the first one's process already there.
+    /// </remarks>
+    [ObservableProperty]
+    private bool _isPreparing;
+
+    partial void OnIsPreparingChanged(bool value)
+    {
+        NotifyCommandStates();
+        ShowStatus();
+    }
 
     /// <summary>True while a backup is being put back in place of the world.</summary>
     /// <remarks>
@@ -941,10 +959,17 @@ public partial class ServerViewModel : ObservableObject
 
     partial void OnNameChanged(string value) => Config.Name = value;
 
-    private void OnServerStateChanged(ServerState state) => RunOnUi(() =>
+    /// <summary>Puts the state into words and a colour, for the list and the detail's header.</summary>
+    /// <remarks>
+    /// A stopped server that is getting ready to start says so, in the same amber as Starting:
+    /// otherwise it read "Stopped" in red for as long as the backup took, with the Start button
+    /// greyed out and nothing on screen to say why.
+    /// </remarks>
+    private void ShowStatus()
     {
-        State = state;
-        StatusText = state switch
+        var preparing = State == ServerState.Stopped && IsPreparing;
+
+        StatusText = preparing ? Localizer.Get("Status_Preparing") : State switch
         {
             ServerState.Stopped => Localizer.Get("Status_Stopped"),
             ServerState.Starting => Localizer.Get("Status_Starting"),
@@ -953,12 +978,18 @@ public partial class ServerViewModel : ObservableObject
             _ => "?"
         };
 
-        StatusBrush = state switch
+        StatusBrush = preparing ? BrushAmber : State switch
         {
             ServerState.Running => BrushGreen,
             ServerState.Starting or ServerState.Stopping => BrushAmber,
             _ => BrushRed
         };
+    }
+
+    private void OnServerStateChanged(ServerState state) => RunOnUi(() =>
+    {
+        State = state;
+        ShowStatus();
         UpdateSignal();
 
         if (state == ServerState.Running)
@@ -1326,13 +1357,18 @@ public partial class ServerViewModel : ObservableObject
         await StartInternalAsync(isAutoRestart: false);
     }
 
-    private async Task StartInternalAsync(bool isAutoRestart)
+    internal async Task StartInternalAsync(bool isAutoRestart)
     {
         if (IsRestoring)
         {
             OnConsoleLine(Localizer.Get("Msg_StartWaitsForRestore"));
             return;
         }
+
+        // One start at a time (see IsPreparing). Said nowhere: the one already under way is the
+        // answer to this one too.
+        if (IsPreparing) return;
+        IsPreparing = true;
 
         // A new run starts a new console story: the first line must not inherit the colour of the
         // last line of a crash, and a question declined last time is asked again.
@@ -1417,6 +1453,8 @@ public partial class ServerViewModel : ObservableObject
             // wake-on-demand asleep and deaf until the app was restarted. Starting it twice is
             // harmless: Start lets go of the old socket first.
             if (!_process.IsRunning) StartWakeListener();
+
+            IsPreparing = false;
         }
     }
 

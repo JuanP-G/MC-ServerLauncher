@@ -635,6 +635,12 @@ public partial class NewServerView : UserControl
         if (folder != _detectedFolder) await DetectFolderAsync(folder);
         var found = _detected ?? ServerDetection.Nothing;
 
+        // Judged again on this folder. The box was judged on the last one detected, and a path
+        // typed in and Add pressed at once is detected only now: one that has not accepted the
+        // EULA has just shown the box, and it has to be ticked before anything goes on.
+        UpdateEula();
+        if (!EulaAllowsGoingOn) return;
+
         var type = found.Type ?? SelectedServerType();
         var form = ExistingForm(folder, type);
 

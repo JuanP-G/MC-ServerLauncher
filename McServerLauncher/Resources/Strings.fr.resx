@@ -45,6 +45,7 @@
   <data name="Language" xml:space="preserve"><value>Langue</value></data>
   <data name="Status_Stopped" xml:space="preserve"><value>Éteint</value></data>
   <data name="Status_Starting" xml:space="preserve"><value>Démarrage...</value></data>
+  <data name="Status_Preparing" xml:space="preserve"><value>Préparation...</value></data>
   <data name="Status_Running" xml:space="preserve"><value>Allumé</value></data>
   <data name="Status_Stopping" xml:space="preserve"><value>Arrêt...</value></data>
   <data name="Copy_Selection" xml:space="preserve"><value>Copier la sélection</value></data>
@@ -310,7 +311,7 @@
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Le démarrer quand quelqu'un essaie de se connecter</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>Tant qu'il est éteint, la liste des serveurs le montre endormi. Qui appuie sur Rejoindre reçoit un message et le serveur commence à démarrer.</value></data>
   <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>Si la liste blanche est activée, ne le démarrer que pour les joueurs de la liste</value></data>
-  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>Ainsi, personne en dehors de la liste ne peut le démarrer depuis Internet. Les opérateurs comptent aussi.</value></data>
+  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>Ainsi, les robots qui parcourent Internet ne le démarrent pas. Les opérateurs comptent aussi. Le nom n'est pas encore vérifié à ce moment-là : quelqu'un qui utilise un nom de la liste le démarre, même si le serveur ne le laisse pas entrer ensuite.</value></data>
   <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>Ce serveur est éteint et ne démarre que pour les joueurs de sa liste blanche.</value></data>
   <data name="Wake_MotdSleeping" xml:space="preserve"><value>Éteint · rejoins pour le réveiller</value></data>
   <data name="Wake_MotdStarting" xml:space="preserve"><value>Démarrage… reviens dans quelques secondes</value></data>

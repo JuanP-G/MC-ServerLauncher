@@ -28,6 +28,11 @@ owns it (see [Architecture](https://juanp-g.github.io/MC-ServerLauncher/docs/art
   hash is there to catch a truncated download.
 - **Forge** publishes a `.sha1` from the same server as the artifact, so the check protects against
   corruption, not against that server being compromised. Same for NeoForge with a `.sha256`.
+- **The app's own updates** are checked against `SHA256SUMS.txt` (`<package>.sha256` on Linux and
+  macOS), which comes from the same GitHub release as the package. That catches a corrupted
+  download, not a compromised account or release: whoever can publish the package can publish its
+  hash too. Signing the packages with a key that does not live on GitHub is planned in
+  [#33](https://github.com/JuanP-G/MC-ServerLauncher/issues/33).
 
 A report that one of these is not a cryptographic guarantee is already known. A report that one of
 them is *not being enforced at all* is a real finding.
@@ -68,6 +73,11 @@ servicio que lo aplica (ver [Arquitectura](https://juanp-g.github.io/MC-ServerLa
 - **Forge** publica un `.sha1` desde el mismo servidor que el artefacto, así que la comprobación
   protege de una corrupción, no de que ese servidor esté comprometido. Lo mismo con NeoForge y su
   `.sha256`.
+- **Las actualizaciones de la propia app** se comprueban contra `SHA256SUMS.txt` (`<paquete>.sha256`
+  en Linux y macOS), que viene de la misma release de GitHub que el paquete. Eso detecta una
+  descarga dañada, no una cuenta o una release comprometidas: quien pueda publicar el paquete puede
+  publicar también su hash. Firmar los paquetes con una clave que no viva en GitHub está previsto en
+  [#33](https://github.com/JuanP-G/MC-ServerLauncher/issues/33).
 
 Un informe que diga que esto no es una garantía criptográfica ya se sabe. Un informe que diga que
 alguno de ellos **no se está comprobando** sí es un hallazgo.

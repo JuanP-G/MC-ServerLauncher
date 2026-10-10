@@ -14,8 +14,8 @@ namespace McServerLauncher.Services;
 /// <para>
 /// Paper, Purpur and the vanilla server.jar had a copy each, identical apart from the record type and
 /// the hash algorithm — and the algorithm is the one part that genuinely differs: Purpur publishes
-/// only an MD5, Paper a SHA-256 and Mojang a SHA-1. Everything around it, including the three progress messages, was
-/// the same text twice.
+/// only an MD5, Paper a SHA-256 and Mojang a SHA-1. Everything around it, including the three
+/// progress messages, was the same text three times.
 /// </para>
 /// <para>
 /// The hash being optional is deliberate and unchanged: a build with no published checksum is

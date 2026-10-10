@@ -409,6 +409,10 @@ otherwise lets go of the wake-on-demand listener first (it holds the server's po
    line is `-Xms`/`-Xmx`, the flags the app adds itself (`ImpliedJvmFlags`), the server's
    `ExtraJvmArgs` and the jar (or a modern Forge/NeoForge args file).
 
+All of it can take minutes with a big world to back up, and the state is still Stopped meanwhile, so
+`IsPreparing` is on from the first step to the last: the list and the header say *Preparing…* in
+amber, Start and Restore are unavailable, and a second
+start (another knock while waking on demand, an auto-restart) does nothing (`StartPreparationTests`).
 If any step stops the start, the wake-on-demand listener is put back up (`finally`). Console output
 streams back through the `OutputReceived` event into `ConsoleLines`, **in batches**: lines from the
 process's threads are queued and one dispatcher job takes all that arrived before it ran, appending them
@@ -640,7 +644,10 @@ on how many there are at once.
 asks; with the server's whitelist on, only somebody on it or in `ops.json` wakes it, and anybody else
 is told the server only starts for its whitelist. Scanners that look for Minecraft servers log in as a
 matter of routine, and each of them used to start the server and the backup in front of the start.
-Without a whitelist nothing changes, and `ServerConfig.WakeOnlyForWhitelist` (on by default, a box
+The name is the one the client claims: Mojang only verifies it once the real server handles the
+login, so somebody who knows a listed name can still wake the server, and is then turned away by it.
+The rule stops the scanners, which is what it is for; it is not access control. Without a whitelist
+nothing changes, and `ServerConfig.WakeOnlyForWhitelist` (on by default, a box
 under *Start it when someone tries to join*) lets the owner open it to anyone anyway.
 
 ### The store: search, tags and plain language
@@ -664,7 +671,7 @@ links and related projects — painted in two passes, so what the search result 
 at once and the rest arrives as its requests come back. `StoreCache` (memory, then disk, then the
 network) and `ImageCache` are what make going back and opening something again cost nothing, and what
 make a project already seen open with no connection. `ImageCache` decodes each image at the size it is
-drawn — icons and thumbnails 256 px wide at most, screenshots 1600 — reading the dimensions from the
+drawn — icons and thumbnails 256 px on their longest side at most, screenshots 1600 — reading the dimensions from the
 header first, so an image claiming tens of thousands of pixels a side is refused instead of decoded, and
 its memory cache has a 96 MB budget as well as a count (`ImageCacheBudgetTests`).
 

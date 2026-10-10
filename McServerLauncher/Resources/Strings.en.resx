@@ -45,6 +45,7 @@
   <data name="Language" xml:space="preserve"><value>Language</value></data>
   <data name="Status_Stopped" xml:space="preserve"><value>Off</value></data>
   <data name="Status_Starting" xml:space="preserve"><value>Starting...</value></data>
+  <data name="Status_Preparing" xml:space="preserve"><value>Preparing...</value></data>
   <data name="Status_Running" xml:space="preserve"><value>On</value></data>
   <data name="Status_Stopping" xml:space="preserve"><value>Stopping...</value></data>
   <data name="Copy_Selection" xml:space="preserve"><value>Copy selection</value></data>
@@ -310,7 +311,7 @@
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Start it when someone tries to join</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>While it is off, the server list shows it as asleep. Anyone pressing Join gets a message and the server begins starting up.</value></data>
   <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>If the whitelist is on, only start it for players on the list</value></data>
-  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>So nobody outside the list can start it from the internet. Operators count too.</value></data>
+  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>So the bots that scan the internet don't start it. Operators count too. The name is not verified yet at that point: someone using a name on the list starts it, even though the server then won't let them in.</value></data>
   <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>This server is off and only starts for players on its whitelist.</value></data>
   <data name="Wake_MotdSleeping" xml:space="preserve"><value>Asleep · join to wake it up</value></data>
   <data name="Wake_MotdStarting" xml:space="preserve"><value>Starting up… come back in a few seconds</value></data>

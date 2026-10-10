@@ -48,9 +48,11 @@ public partial class ServerBackupsViewModel : ObservableObject
     /// </summary>
     /// <remarks>
     /// It deletes the world folder and unpacks another one in its place. There is no asking
-    /// Minecraft to tolerate that.
+    /// Minecraft to tolerate that. Nor while a start is getting ready: it would open whatever the
+    /// restore had left half done. (Changes to that arrive with <c>IsRunning</c>, which
+    /// <c>NotifyCommandStates</c> raises for both.)
     /// </remarks>
-    public bool CanRestore => !_server.IsRunning && !IsBusy;
+    public bool CanRestore => !_server.IsRunning && !_server.IsPreparing && !IsBusy;
 
     public ServerBackupsViewModel(ServerViewModel server)
     {
