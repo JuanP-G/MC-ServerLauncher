@@ -664,7 +664,10 @@ tope de cuántas hay a la vez.
 cliente y pregunta; con la lista blanca del servidor activada, solo lo despierta alguien que esté en
 ella o en `ops.json`, y a cualquier otro se le dice que el servidor solo se enciende para su lista
 blanca. Los escáneres que buscan servidores de Minecraft entran por rutina, y cada uno arrancaba el
-servidor y la copia que va delante del arranque. Sin lista blanca no cambia nada, y
+servidor y la copia que va delante del arranque. El nombre es el que dice el cliente: Mojang solo lo
+verifica cuando el servidor de verdad atiende la conexión, así que quien conozca un nombre de la lista
+puede despertarlo igualmente, y luego el servidor lo echa. La regla frena a los escáneres, que es para
+lo que está; no es un control de acceso. Sin lista blanca no cambia nada, y
 `ServerConfig.WakeOnlyForWhitelist` (activado de serie, una casilla bajo *Encenderlo cuando alguien
 intente entrar*) deja al dueño abrirlo a cualquiera igualmente.
 

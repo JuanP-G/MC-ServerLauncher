@@ -310,7 +310,7 @@
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Starten, wenn jemand beitreten will</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>Solange er aus ist, zeigt die Serverliste ihn als schlafend an. Wer auf Beitreten klickt, bekommt eine Nachricht und der Server fährt hoch.</value></data>
   <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>Wenn die Whitelist aktiv ist, nur für Spieler auf der Liste starten</value></data>
-  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>So kann niemand außerhalb der Liste ihn über das Internet starten. Operatoren zählen auch.</value></data>
+  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>So starten ihn keine Bots, die das Internet absuchen. Operatoren zählen auch. Der Name ist in diesem Moment noch nicht geprüft: Wer einen Namen von der Liste benutzt, startet ihn, auch wenn der Server ihn danach nicht hineinlässt.</value></data>
   <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>Dieser Server ist aus und startet nur für Spieler auf seiner Whitelist.</value></data>
   <data name="Wake_MotdSleeping" xml:space="preserve"><value>Aus · beitreten zum Aufwecken</value></data>
   <data name="Wake_MotdStarting" xml:space="preserve"><value>Startet… komm in ein paar Sekunden wieder</value></data>

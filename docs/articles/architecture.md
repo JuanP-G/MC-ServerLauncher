@@ -640,7 +640,10 @@ on how many there are at once.
 asks; with the server's whitelist on, only somebody on it or in `ops.json` wakes it, and anybody else
 is told the server only starts for its whitelist. Scanners that look for Minecraft servers log in as a
 matter of routine, and each of them used to start the server and the backup in front of the start.
-Without a whitelist nothing changes, and `ServerConfig.WakeOnlyForWhitelist` (on by default, a box
+The name is the one the client claims: Mojang only verifies it once the real server handles the
+login, so somebody who knows a listed name can still wake the server, and is then turned away by it.
+The rule stops the scanners, which is what it is for; it is not access control. Without a whitelist
+nothing changes, and `ServerConfig.WakeOnlyForWhitelist` (on by default, a box
 under *Start it when someone tries to join*) lets the owner open it to anyone anyway.
 
 ### The store: search, tags and plain language

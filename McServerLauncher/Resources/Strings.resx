@@ -356,7 +356,7 @@
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Encenderlo cuando alguien intente entrar</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>Mientras esté apagado, en la lista de servidores se verá que está dormido. Quien pulse Entrar recibe un mensaje y el servidor empieza a arrancar.</value></data>
   <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>Si la lista blanca está activada, encenderlo solo para jugadores de la lista</value></data>
-  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>Así nadie de fuera de la lista puede encenderlo desde Internet. Los operadores también cuentan.</value></data>
+  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>Así no lo encienden los bots que rastrean Internet. Los operadores también cuentan. El nombre aún no está verificado en ese momento: quien use uno de la lista lo enciende, aunque luego el servidor no le deje entrar.</value></data>
   <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>Este servidor está apagado y solo se enciende para los jugadores de su lista blanca.</value></data>
   <data name="Wake_MotdSleeping" xml:space="preserve"><value>Apagado · entra para encenderlo</value></data>
   <data name="Wake_MotdStarting" xml:space="preserve"><value>Arrancando… vuelve en unos segundos</value></data>
