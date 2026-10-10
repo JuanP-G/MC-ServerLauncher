@@ -290,6 +290,11 @@ public partial class ServerViewModel : ObservableObject
 
     public ServerBackupsViewModel Backups { get; }
 
+    /// <summary>The connection test on the network page, kept with its last result.</summary>
+    public ConnectionTestViewModel ConnectionTest => _connectionTest ??= new ConnectionTestViewModel(this);
+
+    private ConnectionTestViewModel? _connectionTest;
+
     /// <summary>Everyone who has been on this server, and each one's profile.</summary>
     public PlayerHistoryViewModel History { get; }
 

@@ -851,11 +851,14 @@ public partial class MainViewModel : ObservableObject
         if (SelectedServer is { } server) OpenSettings(server, ServerSettingsPage.Backups);
     }
 
-    /// <summary>Opens the selected server's network page, where the connection test is.</summary>
+    /// <summary>Opens the selected server's network page and runs the connection test there.</summary>
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private void TestConnection()
     {
-        if (SelectedServer is { } server) OpenSettings(server, ServerSettingsPage.Network);
+        if (SelectedServer is not { } server) return;
+        OpenSettings(server, ServerSettingsPage.Network);
+        // Asked for from the server's card, so it starts at once: that is what the button promises.
+        if (ReferenceEquals(ServerSettingsPanel?.Server, server)) _ = server.ConnectionTest.RunAsync();
     }
 
     /// <summary>Opens a server's network settings; the tunnels screen uses it to change a port.</summary>

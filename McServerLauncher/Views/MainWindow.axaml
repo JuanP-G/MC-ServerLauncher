@@ -365,7 +365,7 @@
                          lives in the Tunnels section; this is what you copy and send to a friend. -->
                     <Border Grid.Row="2" Classes="card stat" Margin="4,4,4,12">
                       <StackPanel>
-                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
                                 <TextBlock Text="{Binding PlayitStatusText}" FontSize="12" Opacity="0.7" />
@@ -387,6 +387,14 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <ic:SymbolIcon Symbol="Globe" />
                                     <TextBlock Text="{loc:Loc Nav_Tunnels}" />
+                                </StackPanel>
+                            </Button>
+                            <!-- Where a slow game is coming from: opens the network settings and runs it. -->
+                            <Button Grid.Column="4" Margin="8,0,0,0" ToolTip.Tip="{loc:Loc Net_TestTip}"
+                                    Command="{Binding DataContext.TestConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ic:SymbolIcon Symbol="Pulse" />
+                                    <TextBlock Text="{loc:Loc Net_TestButton}" />
                                 </StackPanel>
                             </Button>
                         </Grid>

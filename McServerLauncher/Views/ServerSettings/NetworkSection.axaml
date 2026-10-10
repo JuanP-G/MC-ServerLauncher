@@ -2,13 +2,202 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:loc="using:McServerLauncher.Localization"
              xmlns:models="using:McServerLauncher.Models"
+             xmlns:vm="using:McServerLauncher.ViewModels"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:controls="using:McServerLauncher.Controls"
              x:Class="McServerLauncher.Views.ServerSettings.NetworkSection"
              x:DataType="models:ServerConfig">
+
+    <UserControl.Styles>
+        <!-- A step's mark: a circle with its icon, coloured by how the step did. -->
+        <Style Selector="Border.mark">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="15" />
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+        </Style>
+        <Style Selector="Border.mark ic|SymbolIcon">
+            <Setter Property="Opacity" Value="0.55" />
+        </Style>
+        <Style Selector="Border.mark.good ic|SymbolIcon">
+            <Setter Property="Foreground" Value="{StaticResource SemanticOk}" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Border.mark.fair">
+            <Setter Property="Background" Value="{StaticResource SemanticWarnPanel}" />
+        </Style>
+        <Style Selector="Border.mark.fair ic|SymbolIcon">
+            <Setter Property="Foreground" Value="{StaticResource SemanticWarn}" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Border.mark.bad">
+            <Setter Property="Background" Value="{StaticResource SemanticDangerPanel}" />
+        </Style>
+        <Style Selector="Border.mark.bad ic|SymbolIcon">
+            <Setter Property="Foreground" Value="{StaticResource SemanticDanger}" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Border.verdict">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="{StaticResource SurfaceCard}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticOk}" />
+        </Style>
+        <Style Selector="Border.verdict.fair">
+            <Setter Property="Background" Value="{StaticResource SemanticWarnFill}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticWarnEdge}" />
+        </Style>
+        <Style Selector="Border.verdict.bad">
+            <Setter Property="Background" Value="{StaticResource SemanticDangerFill}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticDanger}" />
+        </Style>
+        <Style Selector="TextBlock.th">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="TextAlignment" Value="Right" />
+        </Style>
+        <Style Selector="TextBlock.td">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, monospace" />
+        </Style>
+    </UserControl.Styles>
 
     <!-- Who can reach the server and how: its port, Geyser's, the account checks, and the tunnel.
          DataContext: the draft's copy of the config, for the Playit switch; the rest is
          server.properties, through PropertyBindings. -->
     <StackPanel>
+        <!-- ===================== CONNECTION TEST =====================
+             DataContext: the server's ConnectionTestViewModel. The steps light up one by one with a
+             sentence each; the numbers behind them are in the details, closed by default. -->
+        <Border x:Name="TestCard" Classes="card" x:DataType="vm:ConnectionTestViewModel" DataContext="{x:Null}">
+            <StackPanel>
+                <DockPanel Classes="setting">
+                    <Button Classes="ctl accent" Command="{Binding RunCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <ic:SymbolIcon Symbol="Play" FontSize="14" />
+                            <TextBlock Text="{Binding RunButtonText}" />
+                        </StackPanel>
+                    </Button>
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Net_Title}" Classes="title" />
+                        <TextBlock Text="{loc:Loc Net_Intro}" Classes="desc" />
+                    </StackPanel>
+                </DockPanel>
+
+                <ItemsControl ItemsSource="{Binding Steps}" Margin="0,10,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ConnectionStepViewModel">
+                            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,5">
+                                <Panel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <Border Classes="mark" Classes.good="{Binding IsGood}" Classes.fair="{Binding IsFair}"
+                                            Classes.bad="{Binding IsBad}" IsVisible="{Binding !IsRunning}">
+                                        <ic:SymbolIcon Symbol="{Binding Icon}" FontSize="15"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <Panel Classes="spinner" Width="24" Height="24" IsVisible="{Binding IsRunning}">
+                                        <Panel.RenderTransform>
+                                            <RotateTransform />
+                                        </Panel.RenderTransform>
+                                        <Ellipse Stroke="{StaticResource SurfaceEdgeStrong}" StrokeThickness="2" />
+                                        <Arc StartAngle="0" SweepAngle="270" Stroke="{StaticResource AccentSelected}"
+                                             StrokeThickness="2" StrokeLineCap="Round" />
+                                    </Panel>
+                                </Panel>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Detail}" Classes="desc" />
+                                </StackPanel>
+                                <Border Grid.Column="2" CornerRadius="10" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center"
+                                        Background="{StaticResource SurfaceChip}" IsVisible="{Binding Badge, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                    <TextBlock Text="{Binding Badge}" FontSize="12" FontFamily="Cascadia Mono, Consolas, monospace" />
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- The server is off: say what could not be tested, and offer to start it. -->
+                <Border Margin="0,8,0,0" Padding="10,8" CornerRadius="8" IsVisible="{Binding ServerWasOff}"
+                        Background="{StaticResource SemanticWarnFill}" BorderBrush="{StaticResource SemanticWarnEdge}" BorderThickness="1">
+                    <DockPanel Classes="setting">
+                        <Button Classes="ctl" Command="{Binding StartServerAndRunCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Play" FontSize="14" />
+                                <TextBlock Text="{loc:Loc Net_StartAndTest}" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Text="{loc:Loc Net_ServerOffBanner}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    </DockPanel>
+                </Border>
+
+                <Border Classes="verdict" Margin="0,8,0,0" IsVisible="{Binding HasVerdict}"
+                        Classes.fair="{Binding VerdictState, Converter={x:Static vm:StepStateConverters.IsFair}}"
+                        Classes.bad="{Binding VerdictState, Converter={x:Static vm:StepStateConverters.IsBad}}">
+                    <TextBlock Text="{Binding Verdict}" TextWrapping="Wrap" />
+                </Border>
+
+                <Expander Margin="0,10,0,0" HorizontalAlignment="Stretch" IsVisible="{Binding HasRun}"
+                          IsExpanded="{Binding DetailsOpen, Mode=TwoWay}" Header="{loc:Loc Net_Details}">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="2*,*,*,*,*,*">
+                            <TextBlock Grid.Column="0" Classes="th" Text="{loc:Loc Net_ColStretch}" TextAlignment="Left" />
+                            <TextBlock Grid.Column="1" Classes="th" Text="{loc:Loc Net_ColMin}" />
+                            <TextBlock Grid.Column="2" Classes="th" Text="{loc:Loc Net_ColAvg}" />
+                            <TextBlock Grid.Column="3" Classes="th" Text="{loc:Loc Net_ColMax}" />
+                            <TextBlock Grid.Column="4" Classes="th" Text="{loc:Loc Net_ColJitter}" />
+                            <TextBlock Grid.Column="5" Classes="th" Text="{loc:Loc Net_ColLoss}" />
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Rows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ProbeRow">
+                                    <Grid ColumnDefinitions="2*,*,*,*,*,*" Margin="0,2">
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Classes="td" Text="{Binding Min}" />
+                                        <TextBlock Grid.Column="2" Classes="td" Text="{Binding Average}" />
+                                        <TextBlock Grid.Column="3" Classes="td" Text="{Binding Max}" />
+                                        <TextBlock Grid.Column="4" Classes="td" Text="{Binding Jitter}" />
+                                        <TextBlock Grid.Column="5" Classes="td" Text="{Binding Loss}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{loc:Loc Net_MsNote}" Classes="desc" />
+
+                        <UniformGrid Columns="3">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Net_Download}" Classes="desc" />
+                                <TextBlock Text="{Binding DownloadText}" FontWeight="SemiBold" />
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Net_Upload}" Classes="desc" />
+                                <TextBlock Text="{Binding UploadText}" FontWeight="SemiBold" />
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Net_Peak}" Classes="desc" />
+                                <TextBlock Text="{Binding PeakText}" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </UniformGrid>
+
+                        <StackPanel IsVisible="{Binding HasSamples}">
+                            <TextBlock Text="{Binding SamplesTitle}" Classes="desc" />
+                            <controls:Sparkline Height="28" Margin="0,4,0,0" Values="{Binding SamplesSeries}"
+                                                Stroke="{StaticResource AccentSelected}" />
+                        </StackPanel>
+
+                        <SelectableTextBlock Text="{Binding AddressesText}" FontSize="11" Opacity="0.7" TextWrapping="Wrap" />
+                        <Button HorizontalAlignment="Left" Command="{Binding CopyReportCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <ic:SymbolIcon Symbol="Copy" FontSize="14" />
+                                <TextBlock Text="{Binding CopyText}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </Border>
+
         <Border Classes="card">
             <DockPanel Classes="setting">
                 <NumericUpDown x:Name="PortBox" Classes="ctl" Width="140"

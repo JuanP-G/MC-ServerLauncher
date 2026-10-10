@@ -1104,4 +1104,87 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Look_HexInvalid" xml:space="preserve"><value>Gib eine Farbe wie #FF7A00 ein.</value></data>
   <data name="Look_HexOnlyPaper" xml:space="preserve"><value>Freie Farben (Hex) gibt es nur auf Paper- und Purpur-Servern ab 1.16; sonst die 16 von Minecraft.</value></data>
   <data name="Look_HexWarnType" xml:space="preserve"><value>Dieser Text hat freie Farben (Hex), die dieser Servertyp nicht zeigt: Sie erscheinen als einzelne Buchstaben.</value></data>
+  <data name="Net_Title" xml:space="preserve"><value>Verbindungstest</value></data>
+  <data name="Net_Intro" xml:space="preserve"><value>Misst jeden Abschnitt einzeln, um zu sehen, ob Verzögerung vom PC, vom Internet oder vom Tunnel kommt.</value></data>
+  <data name="Net_Run" xml:space="preserve"><value>Testen</value></data>
+  <data name="Net_Repeat" xml:space="preserve"><value>Wiederholen</value></data>
+  <data name="Net_Testing" xml:space="preserve"><value>Wird getestet…</value></data>
+  <data name="Net_TestButton" xml:space="preserve"><value>Verbindung testen</value></data>
+  <data name="Net_TestTip" xml:space="preserve"><value>Zeigt, wo die Zeit verloren geht: Server, Internet oder Tunnel.</value></data>
+  <data name="Net_Waiting" xml:space="preserve"><value>Wartet.</value></data>
+  <data name="Net_Measuring" xml:space="preserve"><value>Wird gemessen…</value></data>
+  <data name="Net_MeasuringDown" xml:space="preserve"><value>Download-Geschwindigkeit wird gemessen…</value></data>
+  <data name="Net_MeasuringUp" xml:space="preserve"><value>Upload-Geschwindigkeit wird gemessen…</value></data>
+  <data name="Net_Starting" xml:space="preserve"><value>Server wird gestartet…</value></data>
+  <data name="Net_StartingDetail" xml:space="preserve"><value>Der Test beginnt, sobald er antwortet.</value></data>
+  <data name="Net_NoAnswer" xml:space="preserve"><value>keine Antwort</value></data>
+  <data name="Net_StepLocal" xml:space="preserve"><value>Dein Server</value></data>
+  <data name="Net_StepInternet" xml:space="preserve"><value>Dein Internet</value></data>
+  <data name="Net_StepTunnel" xml:space="preserve"><value>Playit-Tunnel (Java)</value></data>
+  <data name="Net_StepBedrock" xml:space="preserve"><value>Playit-Tunnel (Bedrock)</value></data>
+  <data name="Net_LocalOff" xml:space="preserve"><value>Der Server ist aus</value></data>
+  <data name="Net_LocalOffDetail" xml:space="preserve"><value>Starte ihn, um ihn zu testen.</value></data>
+  <data name="Net_NeedsServer" xml:space="preserve"><value>Braucht einen laufenden Server.</value></data>
+  <data name="Net_NoTunnel" xml:space="preserve"><value>Kein Playit-Tunnel</value></data>
+  <data name="Net_NoTunnelDetail" xml:space="preserve"><value>Dieser Server hat keine Playit-Adresse: Man kommt nur aus deinem Netzwerk hinein.</value></data>
+  <data name="Net_NoBedrock" xml:space="preserve"><value>Kein Bedrock-Tunnel</value></data>
+  <data name="Net_NoBedrockDetail" xml:space="preserve"><value>Für diesen Server gibt es noch keine öffentliche Bedrock-Adresse.</value></data>
+  <data name="Net_LocalGood" xml:space="preserve"><value>Der Server antwortet</value></data>
+  <data name="Net_LocalGoodDetail" xml:space="preserve"><value>Dein PC antwortet Minecraft sofort.</value></data>
+  <data name="Net_LocalFair" xml:space="preserve"><value>Der Server antwortet langsam</value></data>
+  <data name="Net_LocalFairDetail" xml:space="preserve"><value>CPU oder RAM werden knapp: Prüfe die Auslastung oben oder senke die Sichtweite.</value></data>
+  <data name="Net_LocalBad" xml:space="preserve"><value>Der Server ist sehr langsam</value></data>
+  <data name="Net_LocalBadDetail" xml:space="preserve"><value>Es fehlt an CPU oder RAM: Gib ihm unter Leistung mehr Speicher oder senke die Sichtweite.</value></data>
+  <data name="Net_LocalNoReply" xml:space="preserve"><value>Der Server antwortet nicht</value></data>
+  <data name="Net_LocalNoReplyDetail" xml:space="preserve"><value>Er läuft, antwortet aber nicht: Er startet vielleicht noch oder hängt.</value></data>
+  <data name="Net_InternetGood" xml:space="preserve"><value>Dein Internet ist gut</value></data>
+  <data name="Net_InternetGoodDetailFmt" xml:space="preserve"><value>Genug Upload für etwa {0} Spieler.</value></data>
+  <data name="Net_InternetFair" xml:space="preserve"><value>Dein Internet ist knapp</value></data>
+  <data name="Net_InternetSlowUpFmt" xml:space="preserve"><value>Der Upload ist knapp: reicht für etwa {0} Spieler, bevor man es merkt.</value></data>
+  <data name="Net_InternetLaggyDetail" xml:space="preserve"><value>Deine Verbindung hat Verzögerung oder verliert Pakete; Kabel ist meist besser als WLAN.</value></data>
+  <data name="Net_InternetBad" xml:space="preserve"><value>Dein Internet ist schlecht</value></data>
+  <data name="Net_InternetBadDetail" xml:space="preserve"><value>Mit dieser Verbindung spüren Spieler Verzögerung: Versuche Kabel oder starte den Router neu.</value></data>
+  <data name="Net_InternetNone" xml:space="preserve"><value>Keine Internetverbindung</value></data>
+  <data name="Net_InternetNoneDetail" xml:space="preserve"><value>Dieser PC erreicht das Internet nicht.</value></data>
+  <data name="Net_TunnelGood" xml:space="preserve"><value>Der Tunnel ist gut</value></data>
+  <data name="Net_TunnelGoodDetail" xml:space="preserve"><value>Spieler kommen schnell über Playit herein.</value></data>
+  <data name="Net_TunnelFair" xml:space="preserve"><value>Der Tunnel ist etwas langsam</value></data>
+  <data name="Net_TunnelFairDetail" xml:space="preserve"><value>Er fügt die meiste Verzögerung hinzu. Versuche in Playit eine andere Region.</value></data>
+  <data name="Net_TunnelBad" xml:space="preserve"><value>Der Tunnel ist langsam</value></data>
+  <data name="Net_TunnelBadDetail" xml:space="preserve"><value>Die Verzögerung kommt vom Tunnel, nicht vom PC. Versuche eine andere Region in Playit oder später erneut.</value></data>
+  <data name="Net_TunnelNoReply" xml:space="preserve"><value>Der Tunnel antwortet nicht</value></data>
+  <data name="Net_TunnelNoReplyDetail" xml:space="preserve"><value>Von außen ist der Server nicht erreichbar: Prüfe, ob der Playit-Agent verbunden ist (Bereich Tunnel).</value></data>
+  <data name="Net_BedrockGood" xml:space="preserve"><value>Bedrock ist gut</value></data>
+  <data name="Net_BedrockGoodDetail" xml:space="preserve"><value>Handy- und Konsolenspieler kommen schnell herein.</value></data>
+  <data name="Net_BedrockFair" xml:space="preserve"><value>Bedrock ist etwas langsam</value></data>
+  <data name="Net_BedrockFairDetail" xml:space="preserve"><value>Der Bedrock-Tunnel fügt Verzögerung hinzu. Versuche eine andere Region in Playit.</value></data>
+  <data name="Net_BedrockBad" xml:space="preserve"><value>Bedrock ist langsam</value></data>
+  <data name="Net_BedrockBadDetail" xml:space="preserve"><value>Der Bedrock-Tunnel ist langsam oder verliert Pakete. Versuche eine andere Region in Playit.</value></data>
+  <data name="Net_BedrockNoReply" xml:space="preserve"><value>Bedrock antwortet nicht</value></data>
+  <data name="Net_BedrockNoReplyDetail" xml:space="preserve"><value>Bedrock kommt nicht herein: Prüfe, ob Geyser gestartet ist und der UDP-Tunnel existiert.</value></data>
+  <data name="Net_VerdictGood" xml:space="preserve"><value>Alles gut. Wenn es bei jemandem langsam ist, liegt es an seiner Verbindung.</value></data>
+  <data name="Net_VerdictPartial" xml:space="preserve"><value>Was getestet werden konnte, ist gut.</value></data>
+  <data name="Net_VerdictFmt" xml:space="preserve"><value>{0}. {1}</value></data>
+  <data name="Net_ServerOffBanner" xml:space="preserve"><value>Bei ausgeschaltetem Server konnte nur dein Internet getestet werden.</value></data>
+  <data name="Net_StartAndTest" xml:space="preserve"><value>Starten und alles testen</value></data>
+  <data name="Net_Details" xml:space="preserve"><value>Technische Details</value></data>
+  <data name="Net_ColStretch" xml:space="preserve"><value>Abschnitt</value></data>
+  <data name="Net_ColMin" xml:space="preserve"><value>min</value></data>
+  <data name="Net_ColAvg" xml:space="preserve"><value>Mittel</value></data>
+  <data name="Net_ColMax" xml:space="preserve"><value>max</value></data>
+  <data name="Net_ColJitter" xml:space="preserve"><value>Jitter</value></data>
+  <data name="Net_ColLoss" xml:space="preserve"><value>Verlust</value></data>
+  <data name="Net_MsNote" xml:space="preserve"><value>Hin- und Rückwege in Millisekunden, 8 Proben pro Abschnitt. Der Tunnel wird von diesem PC zu Playit und zurück gemessen: der Weg der Spieler.</value></data>
+  <data name="Net_RowLocal" xml:space="preserve"><value>Lokaler Server (SLP)</value></data>
+  <data name="Net_RowInternet" xml:space="preserve"><value>Internet (Cloudflare)</value></data>
+  <data name="Net_RowTunnel" xml:space="preserve"><value>Java-Tunnel (SLP)</value></data>
+  <data name="Net_RowBedrock" xml:space="preserve"><value>Bedrock-Tunnel (RakNet)</value></data>
+  <data name="Net_Download" xml:space="preserve"><value>Download</value></data>
+  <data name="Net_Upload" xml:space="preserve"><value>Upload</value></data>
+  <data name="Net_Peak" xml:space="preserve"><value>Spitzen-Upload</value></data>
+  <data name="Net_SamplesTunnelFmt" xml:space="preserve"><value>Tunnel-Latenz, {0} Proben</value></data>
+  <data name="Net_SamplesLocalFmt" xml:space="preserve"><value>Server-Latenz, {0} Proben</value></data>
+  <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Server: {0} (Protokoll {1}) · {2}/{3} Spieler</value></data>
+  <data name="Net_CopyReport" xml:space="preserve"><value>Bericht kopieren</value></data>
+  <data name="Net_Copied" xml:space="preserve"><value>Kopiert</value></data>
 </root>

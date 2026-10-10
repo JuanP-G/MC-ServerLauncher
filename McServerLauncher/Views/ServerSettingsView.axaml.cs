@@ -125,7 +125,7 @@ public partial class ServerSettingsView : UserControl
             ServerSettingsPage.World => new WorldSection(_draft),
             ServerSettingsPage.Loader => Loader(),
             ServerSettingsPage.Performance => new PerformanceSection(_draft),
-            ServerSettingsPage.Network => new NetworkSection(_draft),
+            ServerSettingsPage.Network => new NetworkSection(_draft, Server.ConnectionTest),
             ServerSettingsPage.Crossplay => new CrossplaySection(_draft),
             ServerSettingsPage.Power => new PowerSection(_draft),
             ServerSettingsPage.Backups => new BackupsSection(_draft),

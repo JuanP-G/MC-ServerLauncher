@@ -1,10 +1,14 @@
 using Avalonia.Controls;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
+using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views.ServerSettings;
 
-/// <summary>Who can reach the server: its port, the Bedrock port, the account checks and the tunnel.</summary>
+/// <summary>
+/// Who can reach the server: its port, the Bedrock port, the account checks and the tunnel — and
+/// the connection test that says where a slow game is coming from.
+/// </summary>
 public partial class NetworkSection : UserControl, IServerSettingsSection
 {
     private readonly ServerSettingsDraft _draft;
@@ -14,10 +18,15 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public NetworkSection() : this(new ServerSettingsDraft(new ServerConfig())) { }
 
-    public NetworkSection(ServerSettingsDraft draft)
+    /// <param name="draft">What the page edits.</param>
+    /// <param name="test">The server's connection test; the card is left out without one.</param>
+    public NetworkSection(ServerSettingsDraft draft, ConnectionTestViewModel? test = null)
     {
         InitializeComponent();
         _draft = draft;
+        // The card first: it must never inherit the config, which it does not bind to.
+        TestCard.DataContext = test;
+        TestCard.IsVisible = test is not null;
         DataContext = draft.Config;
 
         _bindings = new PropertyBindings(draft);
