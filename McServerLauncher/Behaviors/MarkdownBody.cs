@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
@@ -30,7 +31,7 @@ public static class MarkdownBody
 
     static MarkdownBody()
     {
-        SourceProperty.Changed.AddClassHandler<Panel>((panel, e) => Render(panel, e.NewValue as string));
+        SourceProperty.Changed.AddClassHandler<Panel>((panel, e) => _ = RenderAsync(panel, e.NewValue as string));
     }
 
     private static readonly IBrush LinkBrush = new ImmutableSolidColorBrush(Color.Parse("#58A6FF"));
@@ -38,10 +39,38 @@ public static class MarkdownBody
     private static readonly IBrush CodeBackground = new ImmutableSolidColorBrush(Color.Parse("#1A1A1A"));
     private static readonly IBrush RuleBrush = new ImmutableSolidColorBrush(Color.Parse("#22FFFFFF"));
 
-    private static void Render(Panel panel, string? markdown)
+    /// <summary>Parses off the UI thread, then builds the controls on it.</summary>
+    /// <remarks>
+    /// <para>
+    /// The description is written by whoever published the mod, and some inputs make the parser's
+    /// regular expressions backtrack: measured, a crafted 20 000-character body took about half a
+    /// second. Parsing on the UI thread froze the window for all of it. The parser is pure and
+    /// returns plain records, so it can run anywhere; only the controls need the UI thread.
+    /// </para>
+    /// <para>
+    /// If the source changes again while a parse is running (the user opens another mod), the
+    /// older result is dropped instead of overwriting the newer page.
+    /// </para>
+    /// </remarks>
+    private static async Task RenderAsync(Panel panel, string? markdown)
     {
         panel.Children.Clear();
-        foreach (var block in MarkdownParser.Parse(markdown))
+        if (string.IsNullOrWhiteSpace(markdown)) return;
+
+        IReadOnlyList<MarkdownBlock> blocks;
+        try
+        {
+            blocks = await Task.Run(() => MarkdownParser.Parse(markdown));
+        }
+        catch
+        {
+            return;   // an unparseable description leaves the panel empty rather than crashing the page
+        }
+
+        if (!ReferenceEquals(GetSource(panel), markdown)) return;
+
+        panel.Children.Clear();
+        foreach (var block in blocks)
         {
             var control = Build(block);
             if (control is not null) panel.Children.Add(control);
