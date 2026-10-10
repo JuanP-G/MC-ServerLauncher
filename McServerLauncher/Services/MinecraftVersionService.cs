@@ -81,26 +81,12 @@ public class MinecraftVersionService
     /// Downloads a file to disk. If <paramref name="expectedSha1"/> is given (Mojang returns one for
     /// every server.jar), the download is verified against it; a mismatch deletes the file and throws.
     /// </summary>
-    public async Task DownloadFileAsync(string url, string destPath, IProgress<string>? log,
-        string? expectedSha1 = null, CancellationToken ct = default)
-    {
-        using var resp = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
-        resp.EnsureSuccessStatusCode();
-
-        var totalMb = (resp.Content.Headers.ContentLength ?? 0) / (1024.0 * 1024.0);
-        log?.Report(totalMb > 0
-            ? string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#"))
-            : Localizer.Get("Msg_DownloadingJar"));
-
-        await AtomicDownload.ToFileAsync(resp.Content, destPath,
-            verifyAsync: async (part, token) =>
-            {
-                if (string.IsNullOrEmpty(expectedSha1)) return;
-                log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
-                await DownloadVerifier.VerifyAsync(part, expectedSha1, HashAlgorithmName.SHA1, token);
-            },
-            ct: ct);
-
-        log?.Report(Localizer.Get("Msg_DownloadComplete"));
-    }
+    /// <remarks>
+    /// Delegates to <see cref="VerifiedJarDownload"/>, the same path Paper and Purpur take. This was
+    /// a third copy of that method line for line, with SHA-1 fixed instead of passed in, and the
+    /// three would have drifted the first time one of them was changed.
+    /// </remarks>
+    public Task DownloadFileAsync(string url, string destPath, IProgress<string>? log,
+        string? expectedSha1 = null, CancellationToken ct = default) =>
+        VerifiedJarDownload.ToFileAsync(Http, url, destPath, expectedSha1, HashAlgorithmName.SHA1, log, ct);
 }
