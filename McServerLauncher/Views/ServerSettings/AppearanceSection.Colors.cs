@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using McServerLauncher.Localization;
 using McServerLauncher.Services;
 
@@ -71,7 +72,7 @@ public partial class AppearanceSection
                     && e.Property != TextBox.CaretIndexProperty) return;
                 // Back in the text: whatever was taken for the hex box is over.
                 if (_boxes[l].IsFocused) _hexSelection = null;
-                if (!_loading) UpdateToolbar();
+                if (!_loading) QueueToolbarUpdate();
             };
         }
 
@@ -81,6 +82,27 @@ public partial class AppearanceSection
     }
 
     // ---------------------------------------------------------------- reading the text back
+
+    private bool _toolbarQueued;
+
+    /// <summary>Updates the bar once the text box has finished with the key that moved the caret.</summary>
+    /// <remarks>
+    /// Not at once. While a key is being handled the box moves its caret first and only then says its
+    /// text changed, so for a moment the caret is past the end of the document this page keeps. Reading
+    /// the style there threw from inside the box's own input handling, and the box was left half way
+    /// through the keystroke: letters went missing, others appeared. Posted, the update runs after the
+    /// box is done and the document has caught up — and several caret moves in one key make one update.
+    /// </remarks>
+    private void QueueToolbarUpdate()
+    {
+        if (_toolbarQueued) return;
+        _toolbarQueued = true;
+        Dispatcher.UIThread.Post(() =>
+        {
+            _toolbarQueued = false;
+            UpdateToolbar();
+        });
+    }
 
     /// <summary>The line being edited and the selected range in it; length 0 means nothing is selected.</summary>
     private (int Line, int Start, int Length) Selection()
@@ -93,15 +115,16 @@ public partial class AppearanceSection
     /// <summary>The style new text would take at the caret if nothing had been chosen.</summary>
     private MotdStyle StyleAtCaret(int line)
     {
-        var caret = Math.Min(_boxes[line].CaretIndex, _doc.Length(line));
+        var caret = Math.Clamp(_boxes[line].CaretIndex, 0, _doc.Length(line));
         return _pending[line] ?? (caret > 0 ? _doc.StyleAt(line, caret - 1) : MotdStyle.Plain);
     }
 
     /// <summary>What the bar describes: the selection's first character, or the caret's style.</summary>
+    /// <remarks>Never past the document's end, whatever the box says: see <see cref="QueueToolbarUpdate"/>.</remarks>
     private MotdStyle CurrentStyle()
     {
         var (line, start, length) = Selection();
-        return length > 0 ? _doc.StyleAt(line, start) : StyleAtCaret(line);
+        return length > 0 && start < _doc.Length(line) ? _doc.StyleAt(line, start) : StyleAtCaret(line);
     }
 
     private void UpdateToolbar()

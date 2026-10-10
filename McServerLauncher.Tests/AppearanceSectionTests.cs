@@ -286,6 +286,35 @@ public class AppearanceSectionTests(AvaloniaFixture ui) : IDisposable
     }
 
     [Fact]
+    public void TypingKeyByKeyGivesExactlyWhatWasTyped()
+    {
+        // The bug this exists for: the format bar read the style under the caret while the box was
+        // still in the middle of a keystroke — caret already moved, document not yet — and the throw
+        // from inside the box's own input handling left letters lost and others doubled. Only real
+        // key-by-key input shows it; setting Text does not.
+        ui.Run(() =>
+        {
+            var section = Open(Server("ab"));
+            var window = new Window { Content = section, Width = 700, Height = 900 };
+            window.Show();
+            var line1 = Named<TextBox>(section, "Line1Box");
+            line1.Focus();
+            line1.CaretIndex = 2;
+            AvaloniaFixture.Pump();
+
+            foreach (var ch in "cdefg")
+            {
+                line1.RaiseEvent(new TextInputEventArgs { RoutedEvent = InputElement.TextInputEvent, Text = ch.ToString() });
+                AvaloniaFixture.Pump();
+            }
+
+            Assert.Equal("abcdefg", line1.Text);
+            Assert.Equal("abcdefg", PreviewMotd(section));
+            window.Hide();
+        });
+    }
+
+    [Fact]
     public void AStrayCodeTypedInABoxIsDroppedFromTheBoxToo()
     {
         ui.Run(() =>
