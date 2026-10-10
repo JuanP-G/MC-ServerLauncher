@@ -385,6 +385,11 @@ public sealed class MotdDocument
     /// Spreads a colour ramp from <paramref name="fromRgb"/> to <paramref name="toRgb"/> across a
     /// range, one step per character, keeping the formatting.
     /// </summary>
+    /// <param name="line">0 or 1.</param>
+    /// <param name="start">The first character of the range.</param>
+    /// <param name="length">How many characters it covers.</param>
+    /// <param name="fromRgb">The colour of the first character, as 0xRRGGBB.</param>
+    /// <param name="toRgb">The colour of the last one.</param>
     /// <param name="hex">
     /// Each character its own RGB colour. Otherwise each takes the nearest of the 16 codes, which
     /// gives bands rather than a smooth ramp — what a server without RGB text can show.

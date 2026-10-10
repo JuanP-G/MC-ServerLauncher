@@ -33,6 +33,8 @@ public sealed record SlpReply(double LatencyMs, int Protocol, string? Version, i
 /// <summary>How fast bytes went one way.</summary>
 /// <param name="Mbps">Megabits per second, over the whole transfer.</param>
 /// <param name="PeakBytesPerSecond">The best quarter of a second, in bytes per second.</param>
+/// <param name="Bytes">How many bytes went, in all.</param>
+/// <param name="Elapsed">How long they took.</param>
 public sealed record Throughput(double Mbps, double PeakBytesPerSecond, long Bytes, TimeSpan Elapsed)
 {
     public static readonly Throughput None = new(0, 0, 0, TimeSpan.Zero);
@@ -102,6 +104,9 @@ public static class ConnectionProbe
     /// Where to connect, and what the handshake says it connected to. A name, not an IP, when going
     /// through Playit: its edge routes by it, and an IP there gets the connection reset.
     /// </param>
+    /// <param name="port">The port to connect to, also written into the handshake.</param>
+    /// <param name="timeout">For the whole exchange: connecting, the status and the ping.</param>
+    /// <param name="ct">Stops it early; a cancellation is not reported as "no answer".</param>
     /// <param name="protocol">
     /// The protocol number in the handshake. Never -1, the "whatever you speak" that status tools
     /// send: Playit's Minecraft edge reads the handshake before passing it on and resets a connection
