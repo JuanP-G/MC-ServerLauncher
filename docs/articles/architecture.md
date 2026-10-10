@@ -410,7 +410,8 @@ otherwise lets go of the wake-on-demand listener first (it holds the server's po
    `ExtraJvmArgs` and the jar (or a modern Forge/NeoForge args file).
 
 All of it can take minutes with a big world to back up, and the state is still Stopped meanwhile, so
-`IsPreparing` is on from the first step to the last: Start and Restore are unavailable, and a second
+`IsPreparing` is on from the first step to the last: the list and the header say *Preparing…* in
+amber, Start and Restore are unavailable, and a second
 start (another knock while waking on demand, an auto-restart) does nothing (`StartPreparationTests`).
 If any step stops the start, the wake-on-demand listener is put back up (`finally`). Console output
 streams back through the `OutputReceived` event into `ConsoleLines`, **in batches**: lines from the

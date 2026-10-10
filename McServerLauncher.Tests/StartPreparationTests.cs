@@ -39,29 +39,36 @@ public class StartPreparationTests : IDisposable
         ServerViewModel? server = null;
         Task? first = null, second = null;
         var couldStartMeanwhile = true;
+        string? shownMeanwhile = null;
 
         _ui.Run(() =>
         {
             server = new ServerViewModel(config);
             first = server.StartInternalAsync(isAutoRestart: true);
             couldStartMeanwhile = server.CanStart;
+            shownMeanwhile = server.StatusText;
             second = server.StartInternalAsync(isAutoRestart: true);
         });
 
         await Task.WhenAll(first!, second!).WaitAsync(TimeSpan.FromSeconds(20));
 
         Assert.False(couldStartMeanwhile, "Start stayed available while the first start was getting ready");
+        // And it says so, rather than "Stopped" for as long as the backup takes.
+        Assert.Equal(Localizer.Get("Status_Preparing"), shownMeanwhile);
         Assert.Single(Directory.GetFiles(Path.Combine(_folder, "backups"), "*.zip"));
 
         var errors = 0;
         var canStartAfter = false;
+        string? shownAfter = null;
         _ui.Run(() =>
         {
             errors = server!.ConsoleLines.Count(l => l.Text.StartsWith(ErrorPrefix, StringComparison.Ordinal));
             canStartAfter = server.CanStart;
+            shownAfter = server.StatusText;
         });
         Assert.Equal(1, errors);
         Assert.True(canStartAfter, "the server stayed unstartable after the start gave up");
+        Assert.Equal(Localizer.Get("Status_Stopped"), shownAfter);
 
         _ui.Run(() => server!.ShutdownAsync().GetAwaiter().GetResult());
     }

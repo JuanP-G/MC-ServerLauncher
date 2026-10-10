@@ -939,7 +939,11 @@ public partial class ServerViewModel : ObservableObject
     [ObservableProperty]
     private bool _isPreparing;
 
-    partial void OnIsPreparingChanged(bool value) => NotifyCommandStates();
+    partial void OnIsPreparingChanged(bool value)
+    {
+        NotifyCommandStates();
+        ShowStatus();
+    }
 
     /// <summary>True while a backup is being put back in place of the world.</summary>
     /// <remarks>
@@ -955,10 +959,17 @@ public partial class ServerViewModel : ObservableObject
 
     partial void OnNameChanged(string value) => Config.Name = value;
 
-    private void OnServerStateChanged(ServerState state) => RunOnUi(() =>
+    /// <summary>Puts the state into words and a colour, for the list and the detail's header.</summary>
+    /// <remarks>
+    /// A stopped server that is getting ready to start says so, in the same amber as Starting:
+    /// otherwise it read "Stopped" in red for as long as the backup took, with the Start button
+    /// greyed out and nothing on screen to say why.
+    /// </remarks>
+    private void ShowStatus()
     {
-        State = state;
-        StatusText = state switch
+        var preparing = State == ServerState.Stopped && IsPreparing;
+
+        StatusText = preparing ? Localizer.Get("Status_Preparing") : State switch
         {
             ServerState.Stopped => Localizer.Get("Status_Stopped"),
             ServerState.Starting => Localizer.Get("Status_Starting"),
@@ -967,12 +978,18 @@ public partial class ServerViewModel : ObservableObject
             _ => "?"
         };
 
-        StatusBrush = state switch
+        StatusBrush = preparing ? BrushAmber : State switch
         {
             ServerState.Running => BrushGreen,
             ServerState.Starting or ServerState.Stopping => BrushAmber,
             _ => BrushRed
         };
+    }
+
+    private void OnServerStateChanged(ServerState state) => RunOnUi(() =>
+    {
+        State = state;
+        ShowStatus();
         UpdateSignal();
 
         if (state == ServerState.Running)

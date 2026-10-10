@@ -423,7 +423,8 @@ primero suelta el listener del encendido bajo demanda (tiene el puerto del servi
    `ExtraJvmArgs` del servidor y el jar (o el fichero de argumentos de Forge/NeoForge modernos).
 
 Todo ello puede durar minutos con un mundo grande que copiar, y el estado sigue siendo Detenido mientras
-tanto, así que `IsPreparing` está activo del primer paso al último: Iniciar y Restaurar no están
+tanto, así que `IsPreparing` está activo del primer paso al último: la lista y la cabecera dicen
+*Preparando…* en ámbar, Iniciar y Restaurar no están
 disponibles, y un segundo arranque (otro intento de entrar con el servidor dormido, un auto-reinicio)
 no hace nada (`StartPreparationTests`). Si algún paso para el arranque, el listener del encendido bajo
 demanda se vuelve a levantar

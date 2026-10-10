@@ -45,6 +45,7 @@
   <data name="Language" xml:space="preserve"><value>Langue</value></data>
   <data name="Status_Stopped" xml:space="preserve"><value>Éteint</value></data>
   <data name="Status_Starting" xml:space="preserve"><value>Démarrage...</value></data>
+  <data name="Status_Preparing" xml:space="preserve"><value>Préparation...</value></data>
   <data name="Status_Running" xml:space="preserve"><value>Allumé</value></data>
   <data name="Status_Stopping" xml:space="preserve"><value>Arrêt...</value></data>
   <data name="Copy_Selection" xml:space="preserve"><value>Copier la sélection</value></data>

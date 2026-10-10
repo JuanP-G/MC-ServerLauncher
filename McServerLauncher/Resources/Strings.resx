@@ -91,6 +91,7 @@
   <data name="Language" xml:space="preserve"><value>Idioma</value></data>
   <data name="Status_Stopped" xml:space="preserve"><value>Apagado</value></data>
   <data name="Status_Starting" xml:space="preserve"><value>Iniciando...</value></data>
+  <data name="Status_Preparing" xml:space="preserve"><value>Preparando...</value></data>
   <data name="Status_Running" xml:space="preserve"><value>Encendido</value></data>
   <data name="Status_Stopping" xml:space="preserve"><value>Deteniéndose...</value></data>
   <data name="Copy_Selection" xml:space="preserve"><value>Copiar selección</value></data>
