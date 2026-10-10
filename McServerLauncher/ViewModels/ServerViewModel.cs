@@ -1540,20 +1540,6 @@ public partial class ServerViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Stops a start that would fail on the path, offering to rename the folder when it can.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Renaming is offered only when the offending character is in the server's own folder name.
-    /// When it sits in a parent, renaming that folder would move everything else under it as well,
-    /// which is not the app's to decide — so it says which character and where, and stops.
-    /// </para>
-    /// <para>
-    /// Skipped during an unattended auto-restart for the same reason the busy-port check is: there
-    /// is nobody there to answer a dialog.
-    /// </para>
-    /// </remarks>
-    /// <summary>
     /// Checks that every installed mod and plugin has what it needs, and asks what to do if not.
     /// </summary>
     /// <remarks>
@@ -1646,6 +1632,20 @@ public partial class ServerViewModel : ObservableObject
         return dialog.Choice;
     }
 
+    /// <summary>
+    /// Stops a start that would fail on the path, offering to rename the folder when it can.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Renaming is offered only when the offending character is in the server's own folder name.
+    /// When it sits in a parent, renaming that folder would move everything else under it as well,
+    /// which is not the app's to decide — so it says which character and where, and stops.
+    /// </para>
+    /// <para>
+    /// Skipped during an unattended auto-restart for the same reason the busy-port check is: there
+    /// is nobody there to answer a dialog.
+    /// </para>
+    /// </remarks>
     private async Task<bool> TryFixRejectedPathAsync(bool isAutoRestart)
     {
         if (!BukkitPathRule.Rejects(Config.FolderPath, Config.Type)) return true;
