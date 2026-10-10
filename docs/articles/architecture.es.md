@@ -35,8 +35,9 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > `Services/`, los brushes en `ViewModels/`.
 
 > **`ServerConfig` avisa de sus cambios, y los view models comparten la instancia.** Él y
-> `NotificationSettings` son los dos tipos de `Models/` que lo hacen: a los dos los edita un diálogo
-> en el sitio mientras otra cosa los está enseñando. Eran objetos planos, con el argumento de que un
+> `NotificationSettings` son los dos tipos de `Models/` que lo hacen: a los dos se les escribe
+> mientras otra cosa los está enseñando —una instalación de loader, la semilla leída de la consola,
+> la configuración de un servidor al guardarse—. Eran objetos planos, con el argumento de que un
 > modelo que se guarda no debería depender de MVVM; ese argumento no sobrevive a mirar que `Models/`
 > y `ViewModels/` son carpetas de un mismo ensamblado, así que la dependencia ya estaba, y lo que la
 > regla compraba de verdad era una familia de fallos. Nada de lo derivado de la config se recalculaba
@@ -188,7 +189,7 @@ mundo. No hay rutas fijas del equipo en el código.
   como `level-seed`, escapada como valor de un properties de Java —la barra invertida duplicada, lo que no es
   ASCII como `\uXXXX`— y **solo se pide al crear**: convertir el tipo o cambiar la versión conserva el
   mundo, así que no queda semilla que elegir.
-- **`WorldSeed`**, **`NbtReader`**, **`SeedMapLink`** — la semilla que enseña el diálogo de configuración.
+- **`WorldSeed`**, **`NbtReader`**, **`SeedMapLink`** — la semilla que enseña la página Mundo de la configuración del servidor.
   `level-seed` no lo es: se lee una vez, al generar, y vacío significa aleatoria. La de verdad la guarda el
   mundo, y la ha guardado en tres sitios: `data/minecraft/world_gen_settings.dat` → `data.seed` desde la
   26.1 (un mundo real de la 26.2 no la tenía en `level.dat`), `level.dat` → `Data.WorldGenSettings.seed`
@@ -207,7 +208,7 @@ mundo. No hay rutas fijas del equipo en el código.
   Forge. `CrossplayService.CaveatKey` convierte el nivel en el aviso que muestran el panel de nuevo servidor
   y la página Crossplay de la configuración del servidor.
 - **`ServerJarInstaller`** — el único sitio que sabe cómo se obtiene cada tipo. Lo llaman el panel de nuevo servidor y
-  el diálogo de cambiar el tipo; antes la cadena estaba escrita en los dos, y un tipo presente en uno y ausente en el otro
+  la página Tipo y versión de la configuración; antes la cadena estaba escrita en los dos, y un tipo presente en uno y ausente en el otro
   producía un servidor Vanilla sin decir nada.
 - **`ModLoaderService`** / **`PaperService`** / **`PurpurService`** — instalan un mod loader (Fabric/Forge/NeoForge) o un
   build de Paper/Purpur. Purpur solo publica MD5 de sus builds, no SHA-256: HTTPS autentica el origen y el hash está
@@ -350,6 +351,9 @@ mundo. No hay rutas fijas del equipo en el código.
 
 ### Servicios de apoyo
 
+- **`ConnectionProbe`** — las mediciones de la prueba de conexión: un ping de estado de Minecraft, un
+  ping RakNet, una ida y vuelta TCP, una bajada y una subida cronometradas y la consulta SRV por DNS
+  sobre HTTPS. Ver *Prueba de conexión* más abajo.
 - **`AppSettingsService`** / **`ServerStorageService`** — los dos dueños del JSON de la app:
   `settings.json` y `servers.json`. Ambos pasan por `AtomicJsonFile` y ambos informan de qué pasó al
   cargar, para que un archivo corrupto salga a la superficie al arrancar en vez de convertirse en una
@@ -454,6 +458,16 @@ está en pantalla.
   `WakeSign` escribe el «entra para encenderlo» que enseñan tanto el listener del servidor dormido
   como esa vista previa. El lápiz del cartel abre esa página y **Configurar** abre la configuración
   donde se dejó: una sola página para lo que antes eran tres diálogos.
+  - **Los colores del MOTD** (`AppearanceSection.Colors.cs`). La barra de formato lee lo que tiene el
+    texto donde está el cursor —su color con nombre, sus formatos pulsados— y abre, dentro de la
+    tarjeta, los 16 códigos, los recientes, un degradado entre dos colores repartido letra a letra
+    (`MotdDocument.SetGradient`) y, donde `MotdDocument.HexWorksOn` dice que el servidor lo muestra
+    (Paper y Purpur desde la 1.16), un color RGB libre escrito en la forma larga `§x§R§R§G§G§B§B`; en
+    los demás, el degradado cae al más cercano de los 16. La barra se actualiza con
+    `Dispatcher.UIThread.Post`, nunca desde los eventos de la propia caja: mientras se maneja una
+    tecla la caja mueve el cursor antes de avisar del texto nuevo, y leer el documento en ese momento
+    —con el cursor pasado de su final— lanzaba desde dentro de la tecla y dejaba letras perdidas o
+    repetidas.
 - **Túneles** (`TunnelsViewModel`/`TunnelsView`) lee a la vez todas las claves de Playit que la app
   encuentra —el agente de la app, el `playit.toml` de un agente instalado, una clave guardada—, junta
   lo que ve cada una (`TunnelInventory`) y ofrece los arreglos que puede hacer. La cuenta se lee una
@@ -535,6 +549,27 @@ se borra/falla si no coincide, igual que el resto de descargas (`DownloadVerifie
 sirve todos sus túneles. No disponible en macOS (Playit no publica binario de macOS); ahí el usuario
 ejecuta Playit por su cuenta.
 
+### Prueba de conexión
+La página de red de la configuración (y **Probar conexión** en la tarjeta de Playit del detalle, que
+la abre y la lanza) mide por separado cada tramo que cruzan los paquetes de un jugador, con
+`ConnectionProbe`, y `ConnectionTestViewModel` convierte los números en una frase por paso y un
+veredicto:
+
+- **el servidor solo** — un ping de lista de servidores (SLP) a `127.0.0.1`;
+- **el internet de este equipo** — una ida y vuelta TCP a Cloudflare, y luego una bajada y una
+  subida cronometradas contra `speed.cloudflare.com` (sin cuenta; lo que sube son bytes al azar);
+- **el túnel de Java** — SLP a la dirección pública, con el puerto del registro SRV
+  `_minecraft._tcp` preguntado al DNS sobre HTTPS de Cloudflare, porque .NET no resuelve SRV;
+- **el túnel de Bedrock** — un ping RakNet sin conexión, si hay crossplay.
+
+Solo se cronometra el eco del ping, como hace el juego: el JSON de estado lleva el icono y a través de
+un túnel mide transferencia, no latencia. **Todo saludo lleva un número de protocolo real, nunca el
+`-1` que mandan las herramientas de estado**: medido contra un túnel de verdad, el borde de Playit
+para Minecraft lee el saludo y corta la conexión en milisegundos si el protocolo es `-1` o el host es
+una IP. Un servidor preguntado con el protocolo N puede devolver N como el suyo, así que el informe no
+lo enseña. Con el servidor apagado solo se mide el internet; la prueba lo dice y ofrece encenderlo y
+repetir, y nunca lo enciende sola.
+
 ### Actualización in-app + novedades
 Al arrancar, `MainViewModel.CheckForUpdatesAsync` pide a `UpdateService` la release más nueva y el
 asset de esta plataforma. El botón **Actualizar** (`UpdateNowCommand`) lo descarga, lo verifica
@@ -592,6 +627,12 @@ La retención cuenta **por separado** las automáticas (`start`, `stop`, `auto`)
 (`manual`, `before-restore`). Una sola cuenta dejó de servir el día que empezaron a hacerse copias
 por reloj: de noche, las copias horarias llenaban todo el cupo y la que alguien había hecho a mano
 antes de probar algo era la primera en irse. Los zips que la app no escribió no se borran nunca.
+
+La pestaña de copias lo dice, porque una lista plana no lo decía: se leía como «cinco de cada tipo» y
+faltando la mitad, cuando era el montón automático lleno. `ServerBackupsViewModel` enseña cada montón
+frente a su cupo, el espacio que ocupan y cuándo toca la próxima (`ServerViewModel.NextAutoBackupUtc`),
+las ordena por días con un filtro y marca la más antigua de un montón lleno como la que su próxima copia
+borrará. Los campos de retención y del reloj le llegan por `ConfigEffect.ReloadBackups`.
 
 ### Auto-reinicio tras un crash
 Cuando un servidor se cierra inesperadamente, `ServerProcessManager` emite su evento `UnexpectedExit`
@@ -728,7 +769,7 @@ Antes esto reconstruía el view model entero, y solo cuando había cambiado el *
 estaba parado. Convertir Fabric 1.21.1 a Fabric 1.21.4 no cambiaba entonces nada en pantalla, y el
 navegador seguía ofreciendo mods elegidos para una versión que el servidor ya no ejecutaba — que es
 lo que hacía fallar una instalación minutos después, lejos de la conversión que lo causó. Un
-refresco general al cerrar el diálogo fue el primer arreglo; también se ha ido, porque dejarlo
+refresco general al cerrar el antiguo diálogo de editar fue el primer arreglo; también se ha ido, porque dejarlo
 significaría que la app nunca ejerce el mecanismo que lo sustituyó.
 
 ### Darle la lista de mods a tus jugadores

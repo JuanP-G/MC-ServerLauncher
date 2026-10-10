@@ -35,8 +35,9 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > `ViewModels/`.
 
 > **`ServerConfig` announces its own changes, and the view models share the instance.** It and
-> `NotificationSettings` are the two `Models/` types that do — both are edited in place by a dialog
-> while something else is on screen showing them. They were plain objects, on the argument that a
+> `NotificationSettings` are the two `Models/` types that do — both are written while something else
+> is on screen showing them: a loader install, the seed read from the console, a server's settings
+> being saved. They were plain objects, on the argument that a
 > persisted model should not depend on MVVM; that argument does not survive contact with the fact
 > that `Models/` and `ViewModels/` are folders in one assembly, so the dependency was already there,
 > and what the rule actually bought was a class of bug. Everything derived from the config simply
@@ -185,7 +186,7 @@ are no hard-coded machine paths.
   written as `level-seed`, escaped as a Java properties value — a backslash doubled, anything outside ASCII
   as `\uXXXX` — and is asked for **only at creation**: converting the type or changing the version keeps
   the world, so there is no seed left to choose.
-- **`WorldSeed`**, **`NbtReader`**, **`SeedMapLink`** — the seed shown in the configuration dialog.
+- **`WorldSeed`**, **`NbtReader`**, **`SeedMapLink`** — the seed shown on the World page of a server's settings.
   `level-seed` is not it: it is read once, at generation, and empty means random. The world keeps the real
   one, and has kept it in three places — `data/minecraft/world_gen_settings.dat` → `data.seed` from 26.1
   (a real 26.2 world had none in `level.dat`), `level.dat` → `Data.WorldGenSettings.seed` from 1.16, and
@@ -204,7 +205,7 @@ are no hard-coded machine paths.
   Forge. `CrossplayService.CaveatKey` turns the level into the note the new-server panel and the
   Crossplay page of a server's settings show.
 - **`ServerJarInstaller`** — the one place that knows how each type is obtained. The new-server panel and the
-  change-type dialog both call it; the chain used to be written out inline in both, and a type present in one and
+  Type and version page of a server's settings both call it; the chain used to be written out inline in both, and a type present in one and
   missing from the other silently produced a Vanilla server.
 - **`ModLoaderService`** / **`PaperService`** / **`PurpurService`** — install a mod loader (Fabric/Forge/NeoForge) or a
   Paper/Purpur build. Purpur publishes only an MD5 for its builds, not a SHA-256; HTTPS authenticates the source and
@@ -342,6 +343,9 @@ are no hard-coded machine paths.
 
 ### Supporting services
 
+- **`ConnectionProbe`** — the measurements behind the connection test: a Minecraft status ping, a
+  RakNet ping, a TCP round trip, a timed download and upload, and the SRV lookup over DNS over
+  HTTPS. See *Connection test* below.
 - **`AppSettingsService`** / **`ServerStorageService`** — the two owners of the app's JSON:
   `settings.json` and `servers.json`. Both go through `AtomicJsonFile` and both report what happened
   on load, so a corrupt file is surfaced at startup instead of showing an empty server list. Both
@@ -437,6 +441,15 @@ of `MainWindow` and switched by `IsVisible` (`MainViewModel.Section`), so a sect
   to start it" line that both the sleeping listener and that preview show. The card's pencil opens
   that page and the detail's **Configure** opens the settings where they were last left: one page
   for what used to be three dialogs.
+  - **The MOTD's colours** (`AppearanceSection.Colors.cs`). The format bar reads back what the text
+    at the caret has — its colour by name, its formats pressed — and opens, inside the card, the 16
+    codes, the recent ones, a two-colour ramp spread letter by letter (`MotdDocument.SetGradient`)
+    and, where `MotdDocument.HexWorksOn` says the server shows it (Paper and Purpur from 1.16), a free
+    RGB colour written in the long `§x§R§R§G§G§B§B` form; elsewhere the ramp falls back to the
+    nearest of the 16. The bar is updated with `Dispatcher.UIThread.Post`, never from inside the text
+    box's own events: while a key is handled the box moves its caret before it reports the new text,
+    and reading the document then — caret past its end — threw from inside the keystroke and left
+    letters lost or doubled.
 - **Tunnels** (`TunnelsViewModel`/`TunnelsView`) reads every Playit key the app can find at once —
   the app's agent, an installed agent's `playit.toml`, a saved key — merges what each sees
   (`TunnelInventory`) and offers the fixes it can make. The account is read once shortly after start
@@ -514,6 +527,27 @@ download and when reusing a cached copy — and deleted/failed on mismatch, just
 download (`DownloadVerifier`). One agent serves all the user's tunnels. Not available on macOS
 (Playit ships no macOS binary); there the user runs Playit themselves.
 
+### Connection test
+The network page of a server's settings (and **Test connection** on the detail's Playit card, which
+opens it and runs it) measures each stretch a player's packets cross on its own, through
+`ConnectionProbe`, and `ConnectionTestViewModel` turns the numbers into a sentence per step and a
+verdict:
+
+- **the server alone** — a server-list ping (SLP) to `127.0.0.1`;
+- **this machine's internet** — a bare TCP round trip to Cloudflare, then a download and an upload
+  timed against `speed.cloudflare.com` (no account, random bytes up);
+- **the Java tunnel** — SLP to the public address, its port taken from the `_minecraft._tcp` SRV
+  record asked of Cloudflare's DNS over HTTPS, since .NET has no SRV lookup;
+- **the Bedrock tunnel** — a RakNet unconnected ping, with crossplay on.
+
+Only the ping's echo is timed, as the game does: the status JSON carries the favicon and through a
+tunnel it measures transfer, not latency. **Every handshake carries a real protocol number, never
+the `-1` status tools send**: measured against a live tunnel, Playit's Minecraft edge reads the
+handshake and resets the connection within milliseconds when the protocol is `-1` or the host is an
+IP. A server asked with protocol N may report N back as its own, so the report does not show it.
+With the server off only the internet is measured; the test says so and offers to start the server
+and run again, and never starts it by itself.
+
 ### In-app update + what's-new
 On startup `MainViewModel.CheckForUpdatesAsync` asks `UpdateService` for the newest release and the
 asset for this platform. The **Update** button (`UpdateNowCommand`) downloads it, verifies it against
@@ -570,6 +604,12 @@ Retention counts the automatic backups (`start`, `stop`, `auto`) and the user's 
 by the clock: overnight the hourly copies would fill the whole allowance, and the backup somebody
 took by hand before trying something would be the first to go. Zips the app did not write are never
 deleted at all.
+
+The backups tab says so, because a flat list did not: it read as "five of each kind" half missing
+when it was the automatic pile, full. `ServerBackupsViewModel` shows each pile against its limit, the
+space they take and when the next one is due (`ServerViewModel.NextAutoBackupUtc`), lists them by day
+under a filter, and marks the oldest of a full pile as the one its next backup will delete. The
+retention and timer fields feed it through `ConfigEffect.ReloadBackups`.
 
 ### Auto-restart after a crash
 When a server exits unexpectedly, `ServerProcessManager` raises its `UnexpectedExit` event and
@@ -699,7 +739,7 @@ It used to rebuild the whole view model instead, and only when the *type* had ch
 was stopped. Converting Fabric 1.21.1 to Fabric 1.21.4 therefore changed nothing on screen, and the
 browser went on offering mods picked for a version the server no longer ran — which is what made an
 install fail minutes later, far from the conversion that caused it. A blanket refresh on closing the
-dialog was the first fix; it is gone too, because leaving it would mean the app never exercised the
+old edit dialog was the first fix; it is gone too, because leaving it would mean the app never exercised the
 mechanism that replaced it.
 
 ### Handing the mod list to your players

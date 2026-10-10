@@ -118,7 +118,7 @@ de las veces y del nombre la otra mitad — casi siempre sale mejor arreglar el 
   más. Nunca un `OnPropertyChanged` escrito a mano.
 - Lo derivado es una propiedad con cuerpo de expresión:
   `public bool UpdateAvailable => Update is not null;`
-- **Un modelo que se guarda y que un diálogo edita mientras está en pantalla es observable.**
+- **Un modelo que se guarda y al que se le escribe mientras está en pantalla es observable.**
   `ServerConfig` y `NotificationSettings` derivan de `ObservableObject`, y una propiedad nueva en
   cualquiera de los dos entra como `[ObservableProperty] private T _foo;` igual que en todas partes.
   No cambia lo que se escribe en disco, y `ServerConfigFormatTests` está para demostrar que sigue
@@ -325,7 +325,7 @@ justo como alguien acaba fiándose de una página que va una versión por detrá
 2. Úsalo desde XAML como `{loc:Loc MiClave}`, o desde código como `Localizer.Get("MiClave")`
    (usa `string.Format(Localizer.Get("MiClave"), arg)` si tiene huecos `{0}`).
 
-### Añadir un ajuste de `server.properties` al editor visual
+### Añadir un ajuste de `server.properties` a la configuración del servidor
 1. Añade el control + etiqueta/descripción en la página que le toca dentro de `Views/ServerSettings`
    (`GameSection`, `WorldSection`, `NetworkSection`…), como un `DockPanel.setting` con el control en
    la clase `ctl`.
@@ -339,7 +339,7 @@ justo como alguien acaba fiándose de una página que va una versión por detrá
    color de la insignia y su `CrossplayLevel`. El selector, las insignias, la tienda, la carpeta de
    contenido y las reglas de crossplay leen todos de esa tabla.
 2. Una rama en `Services/ServerJarInstaller.cs`, que es el único sitio que sabe cómo se obtiene cada
-   tipo. El panel de nuevo servidor y el diálogo de cambio de tipo llaman los dos ahí.
+   tipo. El panel de nuevo servidor y la página Tipo y versión de la configuración llaman los dos ahí.
 3. Añade la clave de descripción del tipo a los cinco `.resx` (la línea bajo su nombre en el
    selector).
 4. **Nunca renumeres el enum `ServerType`.** `servers.json` lo guarda como entero, así que mover un
@@ -350,10 +350,14 @@ justo como alguien acaba fiándose de una página que va una versión por detrá
 > es lo que sustituyó el catálogo, y un tipo presente en cinco de los seis parecía correcto y se
 > comportaba como otra cosa.
 
-### Añadir un diálogo o servicio nuevo
-- **Diálogo:** crea `Views/MiDialogo.axaml` + `.axaml.cs` como una `Window` normal de Avalonia,
-  localiza sus textos con `{loc:Loc ...}` y ábrelo desde un comando del ViewModel (mira
-  `WhatsNewDialog` o `PlayitApiKeyDialog` como ejemplos pequeños).
+### Añadir una pantalla, una página o un servicio nuevo
+- **La interfaz va dentro de la ventana, nunca en una `Window` nueva.** Una parte de la configuración
+  de un servidor es una página en `Views/ServerSettings` que implementa `IServerSettingsSection` y
+  edita el `ServerSettingsDraft`; un flujo más grande es un panel que aloja el detalle, como
+  `NewServerView` y `ServerSettingsView`. Las confirmaciones se piden en el sitio (el botón de borrar
+  el historial en `AdvancedSection` se convierte en la pregunta), no con `MessageBox`. Localiza cada
+  texto con `{loc:Loc ...}`. Quedan algunas ventanas de antes (`WhatsNewDialog`, `PlayitApiKeyDialog`,
+  `DeleteServerDialog`, `MessageBox`) que se están pasando dentro; no añadas más.
 - **Servicio:** añade una clase centrada en `Services/`, sin interfaz, e instánciala desde el
   ViewModel correspondiente (mira cómo `ServerViewModel` compone sus servicios).
 
