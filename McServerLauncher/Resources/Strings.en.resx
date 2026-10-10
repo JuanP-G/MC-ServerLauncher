@@ -828,7 +828,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper and Purpur will not start when the path contains “{0}”, and that character is in a folder above, not the server's own. Change it yourself or pick a different parent folder: renaming it from here would move everything else inside it.</value></data>
   <data name="Look_Title" xml:space="preserve"><value>Server appearance</value></data>
   <data name="Look_EditTip" xml:space="preserve"><value>Edit appearance</value></data>
-  <data name="Look_EditShort" xml:space="preserve"><value>Edit</value></data>
   <data name="Look_Preview" xml:space="preserve"><value>Preview</value></data>
   <data name="Look_PreviewAsleep" xml:space="preserve"><value>Asleep</value></data>
   <data name="Look_PreviewAwake" xml:space="preserve"><value>Running</value></data>

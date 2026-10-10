@@ -828,7 +828,6 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>O Paper e o Purpur não arrancam se o caminho tiver “{0}”, e esse carácter está numa pasta acima, não na do servidor. Muda-o tu ou escolhe outra pasta: mudar-lhe o nome daqui moveria tudo o resto lá dentro.</value></data>
   <data name="Look_Title" xml:space="preserve"><value>Aparência do servidor</value></data>
   <data name="Look_EditTip" xml:space="preserve"><value>Editar aparência</value></data>
-  <data name="Look_EditShort" xml:space="preserve"><value>Editar</value></data>
   <data name="Look_Preview" xml:space="preserve"><value>Pré-visualização</value></data>
   <data name="Look_PreviewAsleep" xml:space="preserve"><value>Dormindo</value></data>
   <data name="Look_PreviewAwake" xml:space="preserve"><value>Ligado</value></data>

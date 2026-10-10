@@ -12,7 +12,7 @@ namespace McServerLauncher.Views;
 /// </summary>
 /// <remarks>
 /// Plain styled properties and nothing else, so the same control can show a live server (bound to
-/// its view model) or the half-edited one in the appearance dialog (set from code). It deliberately
+/// its view model) or the half-edited one on the Appearance settings page (set from code). It deliberately
 /// knows nothing about either.
 /// </remarks>
 public partial class ServerCardView : UserControl
@@ -45,7 +45,7 @@ public partial class ServerCardView : UserControl
     public static readonly StyledProperty<string?> SignalHintProperty =
         AvaloniaProperty.Register<ServerCardView, string?>(nameof(SignalHint));
 
-    /// <summary>Shows the pencil and makes the icon clickable. Off in the preview, which is not a button.</summary>
+    /// <summary>Shows the pencil that opens the editor. Off in the preview, which is the editor.</summary>
     public static readonly StyledProperty<bool> IsEditableProperty =
         AvaloniaProperty.Register<ServerCardView, bool>(nameof(IsEditable));
 

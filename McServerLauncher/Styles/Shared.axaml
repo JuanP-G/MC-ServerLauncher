@@ -73,17 +73,17 @@
 
     <!-- The secondary buttons: lighter with their rim lit under the pointer, and a little lighter
          still when pressed (rising and sinking are in Styles/Motion.axaml). Left out, the ones with a
-         look of their own: the blue primary, the side rail, a row's actions, the Settings pages, the
-         card's icon, "+ New" and the new-server cards. -->
-    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.iconbtn):not(.newserver):not(.origin)">
+         look of their own: the blue primary, the side rail, a row's actions, the Settings pages,
+         "+ New" and the new-server cards. -->
+    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.newserver):not(.origin)">
         <Setter Property="Background" Value="{StaticResource ButtonRest}" />
         <Setter Property="BorderBrush" Value="{StaticResource ButtonEdge}" />
     </Style>
-    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.iconbtn):not(.newserver):not(.origin):pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.newserver):not(.origin):pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{StaticResource ButtonHover}" />
         <Setter Property="BorderBrush" Value="{StaticResource ButtonLiftEdge}" />
     </Style>
-    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.iconbtn):not(.newserver):not(.origin):pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.newserver):not(.origin):pressed /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{StaticResource ButtonPressed}" />
         <Setter Property="BorderBrush" Value="{StaticResource ButtonLiftEdge}" />
     </Style>

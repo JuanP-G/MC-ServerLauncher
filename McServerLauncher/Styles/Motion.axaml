@@ -32,7 +32,7 @@
     <!-- The secondary buttons rise 1 px under the pointer (their look is in Styles/Shared.axaml).
          Not the ones living in a list or a bar, where a jump knocks the whole row out of line, nor
          "+ New", whose shine and halo are fixed to it. -->
-    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.iconbtn):not(.newserver):pointerover">
+    <Style Selector="Button:not(.accent):not(.rail):not(.rowaction):not(.page):not(.newserver):pointerover">
         <Setter Property="RenderTransform" Value="translateY(-1px)" />
     </Style>
     <!-- After the hover on purpose: pressed wins, and the button comes down and sinks. -->
@@ -298,20 +298,6 @@
     </Style>
     <Style Selector="ToggleButton.expander:checked :is(Control).chevron">
         <Setter Property="RenderTransform" Value="rotate(180deg)" />
-    </Style>
-
-    <!-- ===================== THE CARD'S ICON =====================
-         The "Edit" veil over the icon fades in. -->
-    <Style Selector="Button.iconbtn Border#HoverOverlay">
-        <Setter Property="Opacity" Value="0" />
-        <Setter Property="Transitions">
-            <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
-            </Transitions>
-        </Setter>
-    </Style>
-    <Style Selector="Button.iconbtn:pointerover Border#HoverOverlay">
-        <Setter Property="Opacity" Value="1" />
     </Style>
 
     <!-- ===================== WORKING =====================

@@ -828,7 +828,6 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper et Purpur ne démarrent pas si le chemin contient « {0} », et ce caractère est dans un dossier supérieur, pas celui du serveur. Change-le toi-même ou choisis un autre dossier parent : le renommer d’ici déplacerait tout ce qu’il contient.</value></data>
   <data name="Look_Title" xml:space="preserve"><value>Apparence du serveur</value></data>
   <data name="Look_EditTip" xml:space="preserve"><value>Modifier l'apparence</value></data>
-  <data name="Look_EditShort" xml:space="preserve"><value>Modifier</value></data>
   <data name="Look_Preview" xml:space="preserve"><value>Aperçu</value></data>
   <data name="Look_PreviewAsleep" xml:space="preserve"><value>En veille</value></data>
   <data name="Look_PreviewAwake" xml:space="preserve"><value>Allumé</value></data>

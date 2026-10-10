@@ -11,21 +11,18 @@
     <!-- The server's card as players will see it in Minecraft's server list.
 
          A control of its own because two places draw it: the header of the detail and the preview
-         of the appearance editor. Drawn once, the two cannot drift apart: what you see while editing
-         is, by construction, what the window then shows. The "Edit" veil over the icon is animated in
-         Styles/Motion.axaml, with the rest of the motion. -->
+         in the server settings' Appearance page. Drawn once, the two cannot drift apart: what you
+         see while editing is, by construction, what the window then shows. -->
 
     <Border Background="{StaticResource McListCard}" BorderBrush="{StaticResource McListEdge}" BorderThickness="1"
             CornerRadius="6" Padding="10" controls:MarqueeText.IsHoverScope="True">
         <Grid ColumnDefinitions="Auto,*,Auto">
 
-            <!-- server-icon.png, or a placeholder when there is none. On an editable card, pressing it opens the editor. -->
-            <Button Grid.Column="0" Classes="iconbtn" Width="64" Height="64" Padding="0" Cursor="Hand"
-                    Background="{StaticResource GroundWell}"
-                    IsHitTestVisible="{Binding #Root.IsEditable}"
-                    Focusable="{Binding #Root.IsEditable}"
-                    ToolTip.Tip="{loc:Loc Look_EditTip}"
-                    Command="{Binding #Root.EditCommand}">
+            <!-- server-icon.png, or a placeholder when there is none. Only a picture: the pencil
+                 beside the name is the one way into the editor, so there are not two buttons that
+                 do the same thing on one card. -->
+            <Border Grid.Column="0" Width="64" Height="64" CornerRadius="4" ClipToBounds="True"
+                    Background="{StaticResource GroundWell}">
                 <Panel>
                     <ic:SymbolIcon Symbol="Server" FontSize="28" Opacity="0.5"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -33,15 +30,8 @@
                     <Image Source="{Binding #Root.Icon}" Width="64" Height="64"
                            RenderOptions.BitmapInterpolationMode="None"
                            IsVisible="{Binding #Root.Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                    <Border x:Name="HoverOverlay" Background="{StaticResource ScrimHover}">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
-                            <ic:SymbolIcon Symbol="Edit" FontSize="16" Foreground="White" HorizontalAlignment="Center" />
-                            <TextBlock Text="{loc:Loc Look_EditShort}" Foreground="White" FontSize="9"
-                                       TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
-                        </StackPanel>
-                    </Border>
                 </Panel>
-            </Button>
+            </Border>
 
             <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                 <Grid ColumnDefinitions="*,Auto">

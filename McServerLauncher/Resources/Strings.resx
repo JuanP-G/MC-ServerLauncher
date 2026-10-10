@@ -874,7 +874,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper y Purpur no arrancan si la ruta contiene «{0}», y ese carácter está en una carpeta superior, no en la del servidor. Cámbialo tú o elige otra carpeta padre: renombrarla desde aquí movería todo lo demás que hay dentro.</value></data>
   <data name="Look_Title" xml:space="preserve"><value>Apariencia del servidor</value></data>
   <data name="Look_EditTip" xml:space="preserve"><value>Editar apariencia</value></data>
-  <data name="Look_EditShort" xml:space="preserve"><value>Editar</value></data>
   <data name="Look_Preview" xml:space="preserve"><value>Vista previa</value></data>
   <data name="Look_PreviewAsleep" xml:space="preserve"><value>Dormido</value></data>
   <data name="Look_PreviewAwake" xml:space="preserve"><value>Encendido</value></data>

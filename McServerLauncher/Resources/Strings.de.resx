@@ -828,7 +828,6 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>Paper und Purpur starten nicht, wenn der Pfad „{0}“ enthält, und dieses Zeichen steckt in einem übergeordneten Ordner, nicht im Serverordner. Ändere ihn selbst oder wähle einen anderen: Ihn von hier umzubenennen würde alles darin mitbewegen.</value></data>
   <data name="Look_Title" xml:space="preserve"><value>Server-Aussehen</value></data>
   <data name="Look_EditTip" xml:space="preserve"><value>Aussehen bearbeiten</value></data>
-  <data name="Look_EditShort" xml:space="preserve"><value>Ändern</value></data>
   <data name="Look_Preview" xml:space="preserve"><value>Vorschau</value></data>
   <data name="Look_PreviewAsleep" xml:space="preserve"><value>Schläft</value></data>
   <data name="Look_PreviewAwake" xml:space="preserve"><value>Läuft</value></data>
