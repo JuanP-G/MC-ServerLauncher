@@ -698,8 +698,8 @@ galería, versiones, dependencias, enlaces y proyectos relacionados — pintado 
 lo que ya traía el resultado de búsqueda aparezca al instante y el resto llegue cuando vuelvan sus
 peticiones. `StoreCache` (memoria, luego disco, luego red) e `ImageCache` son lo que hace que volver
 atrás y abrir algo otra vez no cueste nada, y lo que hace que un proyecto ya visto se abra sin
-conexión. `ImageCache` decodifica cada imagen al tamaño al que se dibuja —iconos y miniaturas a 256 px de
-ancho como mucho, capturas a 1600— leyendo antes las dimensiones de la cabecera, así que una imagen que
+conexión. `ImageCache` decodifica cada imagen al tamaño al que se dibuja —iconos y miniaturas a 256 px en
+su lado más largo como mucho, capturas a 1600— leyendo antes las dimensiones de la cabecera, así que una imagen que
 dice tener decenas de miles de píxeles de lado se rechaza en vez de decodificarse, y su caché en memoria
 tiene un presupuesto de 96 MB además del tope de entradas (`ImageCacheBudgetTests`).
 

@@ -17,7 +17,9 @@ public class ImageCacheBudgetTests
     [InlineData(64, 64, 256, 64)]          // small stays as it is
     [InlineData(1024, 1024, 256, 256)]     // an icon uploaded big is drawn small
     [InlineData(3840, 2160, 1600, 1600)]   // a 4K screenshot
-    public void ImagesAreDecodedNoWiderThanTheyAreDrawn(int width, int height, int max, int decoded) =>
+    [InlineData(1080, 2400, 1600, 720)]    // a phone screenshot: its height is the long side
+    [InlineData(1000, 39000, 1600, 41)]    // a strip under the pixel cap that used to decode at 156 MB
+    public void ImagesAreDecodedNoBiggerThanTheyAreDrawn(int width, int height, int max, int decoded) =>
         Assert.Equal(decoded, ImageCache.DecodeWidth(width, height, max));
 
     [Theory]

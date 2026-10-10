@@ -670,7 +670,7 @@ links and related projects — painted in two passes, so what the search result 
 at once and the rest arrives as its requests come back. `StoreCache` (memory, then disk, then the
 network) and `ImageCache` are what make going back and opening something again cost nothing, and what
 make a project already seen open with no connection. `ImageCache` decodes each image at the size it is
-drawn — icons and thumbnails 256 px wide at most, screenshots 1600 — reading the dimensions from the
+drawn — icons and thumbnails 256 px on their longest side at most, screenshots 1600 — reading the dimensions from the
 header first, so an image claiming tens of thousands of pixels a side is refused instead of decoded, and
 its memory cache has a 96 MB budget as well as a count (`ImageCacheBudgetTests`).
 
