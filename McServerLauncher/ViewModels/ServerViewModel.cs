@@ -56,11 +56,6 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Armed while a backup is waiting for the server to confirm it has saved.</summary>
     private TaskCompletionSource<bool>? _saveConfirmed;
 
-    // --- Auto-restart on crash ---
-    // If the server exits on its own (not via the Stop button), it's relaunched automatically, up
-    // to a limited number of consecutive attempts so a persistently-crashing server doesn't loop
-    // forever. The streak resets whenever a run has been stable (Running) for a while, or the user
-    // starts the server manually.
     /// <summary>
     /// How long a server gets to save and exit after "stop" before it is killed.
     /// </summary>
@@ -73,6 +68,11 @@ public partial class ServerViewModel : ObservableObject
     /// </remarks>
     internal static readonly TimeSpan StopTimeout = TimeSpan.FromSeconds(60);
 
+    // --- Auto-restart on crash ---
+    // If the server exits on its own (not via the Stop button), it's relaunched automatically, up
+    // to a limited number of consecutive attempts so a persistently-crashing server doesn't loop
+    // forever. The streak resets whenever a run has been stable (Running) for a while, or the user
+    // starts the server manually.
     private const int MaxAutoRestarts = 3;
     private static readonly TimeSpan StabilityWindow = TimeSpan.FromMinutes(2);
     private static readonly TimeSpan AutoRestartDelay = TimeSpan.FromSeconds(5);
