@@ -69,9 +69,8 @@ public enum ConfigEffect
 /// fails the build's tests on the day it is written.
 /// </para>
 /// <para>
-/// Persisting is deliberately <em>not</em> one of the effects. The edit dialog writes into the live
-/// config as the user types, so saving on every change would write servers.json on every keystroke.
-/// Saving stays where it already is: once, when a dialog is accepted.
+/// Persisting is deliberately <em>not</em> one of the effects. Saving stays where it already is:
+/// once, when a server's settings are saved.
 /// </para>
 /// </remarks>
 public static class ServerConfigEffects
@@ -167,12 +166,14 @@ public static class ServerConfigEffects
 
         new(nameof(ServerConfig.TunnelAddress), None, None, ConfigEffect.MirrorTunnelAddress),
 
-        Unshown(nameof(ServerConfig.BackupsEnabled), "Read when a backup would be made."),
-        Unshown(nameof(ServerConfig.BackupRetention), "Read when pruning after a new backup."),
-        Unshown(nameof(ServerConfig.AutoBackupEnabled), "Read by the backup timer on its next tick."),
-        Unshown(nameof(ServerConfig.BackupIntervalMinutes),
-            "Read by the backup timer on its next tick, which is why changing it needs no restart."),
-        Unshown(nameof(ServerConfig.ManualBackupRetention), "Read when pruning after a new backup."),
+        // The backups tab shows each limit against what is there, and when the next one is due.
+        // Read when a backup is made or pruned, and by the timer on its next tick, so none of them
+        // needs a restart.
+        new(nameof(ServerConfig.BackupsEnabled), None, None, ConfigEffect.ReloadBackups),
+        new(nameof(ServerConfig.BackupRetention), None, None, ConfigEffect.ReloadBackups),
+        new(nameof(ServerConfig.AutoBackupEnabled), None, None, ConfigEffect.ReloadBackups),
+        new(nameof(ServerConfig.BackupIntervalMinutes), None, None, ConfigEffect.ReloadBackups),
+        new(nameof(ServerConfig.ManualBackupRetention), None, None, ConfigEffect.ReloadBackups),
         Unshown(nameof(ServerConfig.IdleShutdownMinutes),
             "The countdown timer re-reads it every second while the server is running."),
 

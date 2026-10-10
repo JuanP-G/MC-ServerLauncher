@@ -277,10 +277,10 @@
   <data name="Backup_Hint" xml:space="preserve"><value>A world backup is created automatically before every start, when you stop the server and, if you leave it on, at intervals while people are playing. Restoring still needs the server stopped.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Back up now</value></data>
   <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Back the world up now, whether the server is running or stopped.</value></data>
-  <data name="Backup_TriggerAuto" xml:space="preserve"><value>Automatic</value></data>
+  <data name="Backup_TriggerAuto" xml:space="preserve"><value>while playing</value></data>
   <data name="Backup_AutoWhilePlaying" xml:space="preserve"><value>Also at intervals while people are playing</value></data>
-  <data name="Backup_IntervalLabel" xml:space="preserve"><value>Every (minutes):</value></data>
-  <data name="Backup_ManualRetentionLabel" xml:space="preserve"><value>Manual backups to keep:</value></data>
+  <data name="Backup_IntervalLabel" xml:space="preserve"><value>How many minutes apart</value></data>
+  <data name="Backup_ManualRetentionLabel" xml:space="preserve"><value>Manual backups to keep</value></data>
   <data name="Backup_AutoHint" xml:space="preserve"><value>Before copying, the server is asked to stop writing the world and flush it to disk, so a backup is never half-written. If nobody has joined since the last one, that backup is skipped. Manual backups are counted separately and the clock never deletes them.</value></data>
   <data name="Backup_RestoreNeedsStoppedTip" xml:space="preserve"><value>The server must be stopped to restore a backup.</value></data>
   <data name="Msg_BackupPausingSaves" xml:space="preserve"><value>[Backup] Pausing world saving…</value></data>
@@ -312,11 +312,11 @@
   <data name="Msg_WakeStarting" xml:space="preserve"><value>Someone tried to join: starting the server.</value></data>
   <data name="Msg_WakePortBusyFmt" xml:space="preserve"><value>Can't listen for join attempts on port {0}: it is already in use.</value></data>
   <data name="Idle_Intro" xml:space="preserve"><value>The server can stop itself when nobody is left, and start again when someone tries to join.</value></data>
-  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutes with no players:</value></data>
+  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutes with no players</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = never stops. The countdown starts when the last player leaves and resets as soon as someone joins.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>No players for {0} minutes: stopping the server.</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Create backups automatically</value></data>
-  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Automatic backups to keep:</value></data>
+  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Automatic backups to keep</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Could not change the service (usually needs running the app as administrator, or using the tray icon): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Could not determine the server port (is server.properties missing?).</value></data>
   <data name="Msg_NeedsJavaPreparing" xml:space="preserve"><value>[Launcher] This server needs Java {0}. Preparing a compatible Java...</value></data>
@@ -1051,4 +1051,23 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Sset_RamDesc" xml:space="preserve"><value>How much memory the server may use. More players or more mods need more.</value></data>
   <data name="Sset_JavaDesc" xml:space="preserve"><value>The Java it starts with. "java" uses the system's.</value></data>
   <data name="Sset_FolderDesc" xml:space="preserve"><value>Where the server's files are. Changing it points the app at another folder; nothing is moved.</value></data>
+  <data name="Backup_RetentionDesc" xml:space="preserve"><value>All of them together: on start, on stop and while playing. Past the limit, the oldest one is deleted.</value></data>
+  <data name="Backup_ManualRetentionDesc" xml:space="preserve"><value>The ones you make and the ones saved before a restore. The clock never deletes them.</value></data>
+  <data name="Backup_Automatic" xml:space="preserve"><value>Automatic</value></data>
+  <data name="Backup_Manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="Backup_All" xml:space="preserve"><value>All</value></data>
+  <data name="Backup_AutomaticWhat" xml:space="preserve"><value>On start, on stop and while playing</value></data>
+  <data name="Backup_ManualWhat" xml:space="preserve"><value>Yours, and the ones made before a restore</value></data>
+  <data name="Backup_Space" xml:space="preserve"><value>Space</value></data>
+  <data name="Backup_NextFmt" xml:space="preserve"><value>Next: around {0}, if anyone plays</value></data>
+  <data name="Backup_NextOnStop" xml:space="preserve"><value>Next: when the server stops</value></data>
+  <data name="Backup_NextOnStart" xml:space="preserve"><value>Next: when the server starts</value></data>
+  <data name="Backup_NextOff" xml:space="preserve"><value>Automatic backups are off</value></data>
+  <data name="Backup_NextToGo" xml:space="preserve"><value>The next automatic one replaces it</value></data>
+  <data name="Backup_NextManualToGo" xml:space="preserve"><value>The next manual one replaces it</value></data>
+  <data name="Backup_Today" xml:space="preserve"><value>Today</value></data>
+  <data name="Backup_Yesterday" xml:space="preserve"><value>Yesterday</value></data>
+  <data name="Backup_AdjustLimits" xml:space="preserve"><value>Adjust limits</value></data>
+  <data name="Backup_Foreign" xml:space="preserve"><value>added to the folder by hand</value></data>
+  <data name="Backup_NoneInFilter" xml:space="preserve"><value>No backups of this kind.</value></data>
 </root>

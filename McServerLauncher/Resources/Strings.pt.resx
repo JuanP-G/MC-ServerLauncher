@@ -277,10 +277,10 @@
   <data name="Backup_Hint" xml:space="preserve"><value>É criada automaticamente uma cópia de segurança do mundo antes de cada arranque, ao parar o servidor e, se deixares ligado, de tempos a tempos enquanto se joga. Restaurar continua a exigir o servidor parado.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Fazer cópia agora</value></data>
   <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Faz já uma cópia de segurança do mundo, esteja o servidor a correr ou parado.</value></data>
-  <data name="Backup_TriggerAuto" xml:space="preserve"><value>Automática</value></data>
+  <data name="Backup_TriggerAuto" xml:space="preserve"><value>durante o jogo</value></data>
   <data name="Backup_AutoWhilePlaying" xml:space="preserve"><value>Também de tempos a tempos enquanto se joga</value></data>
-  <data name="Backup_IntervalLabel" xml:space="preserve"><value>A cada (minutos):</value></data>
-  <data name="Backup_ManualRetentionLabel" xml:space="preserve"><value>Cópias manuais a manter:</value></data>
+  <data name="Backup_IntervalLabel" xml:space="preserve"><value>De quantos em quantos minutos</value></data>
+  <data name="Backup_ManualRetentionLabel" xml:space="preserve"><value>Cópias manuais a manter</value></data>
   <data name="Backup_AutoHint" xml:space="preserve"><value>Antes de copiar, pede-se ao servidor que pare de escrever o mundo e o despeje no disco, para que a cópia nunca fique a meio. Se ninguém entrou desde a cópia anterior, essa é ignorada. As manuais contam-se à parte e o relógio nunca as apaga.</value></data>
   <data name="Backup_RestoreNeedsStoppedTip" xml:space="preserve"><value>O servidor tem de estar parado para restaurar uma cópia de segurança.</value></data>
   <data name="Msg_BackupPausingSaves" xml:space="preserve"><value>[Cópia] A pausar a gravação do mundo…</value></data>
@@ -312,11 +312,11 @@
   <data name="Msg_WakeStarting" xml:space="preserve"><value>Alguém tentou entrar: a ligar o servidor.</value></data>
   <data name="Msg_WakePortBusyFmt" xml:space="preserve"><value>Não é possível esperar ligações na porta {0}: já está ocupada.</value></data>
   <data name="Idle_Intro" xml:space="preserve"><value>O servidor pode desligar-se sozinho quando não fica ninguém e voltar a ligar quando alguém tenta entrar.</value></data>
-  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutos sem jogadores:</value></data>
+  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutos sem jogadores</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = nunca se desliga. A contagem começa quando sai o último jogador e reinicia assim que alguém entra.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Sem jogadores durante {0} minutos: a desligar o servidor.</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Criar cópias de segurança automaticamente</value></data>
-  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Cópias automáticas a manter:</value></data>
+  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Cópias automáticas a manter</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Não foi possível mudar o serviço (costuma exigir executar a app como administrador, ou usar o ícone da bandeja): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Não foi possível determinar a porta do servidor (falta o server.properties?).</value></data>
   <data name="Msg_NeedsJavaPreparing" xml:space="preserve"><value>[Launcher] Este servidor precisa de Java {0}. A preparar um Java compatível...</value></data>
@@ -1051,4 +1051,23 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Sset_RamDesc" xml:space="preserve"><value>Quanta memória o servidor pode usar. Mais jogadores ou mods precisam de mais.</value></data>
   <data name="Sset_JavaDesc" xml:space="preserve"><value>O Java com que arranca. «java» usa o do sistema.</value></data>
   <data name="Sset_FolderDesc" xml:space="preserve"><value>Onde estão os ficheiros do servidor. Mudá-la aponta a app para outra pasta; nada é movido.</value></data>
+  <data name="Backup_RetentionDesc" xml:space="preserve"><value>Todas juntas: ao arrancar, ao parar e durante o jogo. Acima do limite, apaga-se a mais antiga.</value></data>
+  <data name="Backup_ManualRetentionDesc" xml:space="preserve"><value>As que fazes tu e as guardadas antes de restaurar. O relógio nunca as apaga.</value></data>
+  <data name="Backup_Automatic" xml:space="preserve"><value>Automáticas</value></data>
+  <data name="Backup_Manual" xml:space="preserve"><value>Manuais</value></data>
+  <data name="Backup_All" xml:space="preserve"><value>Todas</value></data>
+  <data name="Backup_AutomaticWhat" xml:space="preserve"><value>Ao arrancar, ao parar e durante o jogo</value></data>
+  <data name="Backup_ManualWhat" xml:space="preserve"><value>As tuas e as de antes de restaurar</value></data>
+  <data name="Backup_Space" xml:space="preserve"><value>Espaço</value></data>
+  <data name="Backup_NextFmt" xml:space="preserve"><value>Próxima: por volta das {0}, se alguém jogar</value></data>
+  <data name="Backup_NextOnStop" xml:space="preserve"><value>Próxima: quando o servidor parar</value></data>
+  <data name="Backup_NextOnStart" xml:space="preserve"><value>Próxima: quando o servidor arrancar</value></data>
+  <data name="Backup_NextOff" xml:space="preserve"><value>As cópias automáticas estão desligadas</value></data>
+  <data name="Backup_NextToGo" xml:space="preserve"><value>A próxima automática substitui-a</value></data>
+  <data name="Backup_NextManualToGo" xml:space="preserve"><value>A próxima manual substitui-a</value></data>
+  <data name="Backup_Today" xml:space="preserve"><value>Hoje</value></data>
+  <data name="Backup_Yesterday" xml:space="preserve"><value>Ontem</value></data>
+  <data name="Backup_AdjustLimits" xml:space="preserve"><value>Ajustar limites</value></data>
+  <data name="Backup_Foreign" xml:space="preserve"><value>adicionada à pasta à mão</value></data>
+  <data name="Backup_NoneInFilter" xml:space="preserve"><value>Não há cópias deste tipo.</value></data>
 </root>

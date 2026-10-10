@@ -25,12 +25,18 @@
                     <DockPanel Classes="setting">
                         <NumericUpDown Classes="ctl" Width="140" Value="{Binding BackupRetention}"
                                        Minimum="1" Maximum="50" Increment="1" FormatString="0" />
-                        <TextBlock Text="{loc:Loc Backup_RetentionLabel}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Backup_RetentionLabel}" Classes="title" TextWrapping="Wrap" />
+                            <TextBlock Text="{loc:Loc Backup_RetentionDesc}" Classes="desc" />
+                        </StackPanel>
                     </DockPanel>
                     <DockPanel Classes="setting">
                         <NumericUpDown Classes="ctl" Width="140" Value="{Binding ManualBackupRetention}"
                                        Minimum="1" Maximum="50" Increment="1" FormatString="0" />
-                        <TextBlock Text="{loc:Loc Backup_ManualRetentionLabel}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Backup_ManualRetentionLabel}" Classes="title" TextWrapping="Wrap" />
+                            <TextBlock Text="{loc:Loc Backup_ManualRetentionDesc}" Classes="desc" />
+                        </StackPanel>
                     </DockPanel>
                 </StackPanel>
             </Border>

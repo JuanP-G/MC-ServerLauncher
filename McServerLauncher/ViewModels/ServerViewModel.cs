@@ -53,6 +53,15 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Whether anybody has been connected since then. See <see cref="BackupSchedule"/>.</summary>
     private bool _playedSinceBackup;
 
+    /// <summary>
+    /// When the clock will next consider an automatic backup, while the server runs and they are on;
+    /// null otherwise. "Consider": if nobody has played by then, it skips and waits another interval.
+    /// </summary>
+    internal DateTime? NextAutoBackupUtc =>
+        IsRunning && Config.BackupsEnabled && Config.AutoBackupEnabled
+            ? _lastAutoBackupUtc + TimeSpan.FromMinutes(BackupSchedule.Clamp(Config.BackupIntervalMinutes))
+            : null;
+
     /// <summary>Armed while a backup is waiting for the server to confirm it has saved.</summary>
     private TaskCompletionSource<bool>? _saveConfirmed;
 
@@ -1957,6 +1966,7 @@ public partial class ServerViewModel : ObservableObject
             // Nobody played: don't copy the same world again, but don't ask again in a minute either.
             case BackupDue.Skip:
                 _lastAutoBackupUtc = DateTime.UtcNow;
+                Backups.RefreshSummary();
                 break;
         }
     }

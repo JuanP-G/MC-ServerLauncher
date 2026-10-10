@@ -844,6 +844,20 @@ public partial class MainViewModel : ObservableObject
         if (SelectedServer is { } server) OpenSettings(server, ServerSettingsPage.Appearance);
     }
 
+    /// <summary>Opens the selected server's backup limits, from its backups tab.</summary>
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void OpenBackupSettings()
+    {
+        if (SelectedServer is { } server) OpenSettings(server, ServerSettingsPage.Backups);
+    }
+
+    /// <summary>Opens the selected server's network page, where the connection test is.</summary>
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void TestConnection()
+    {
+        if (SelectedServer is { } server) OpenSettings(server, ServerSettingsPage.Network);
+    }
+
     /// <summary>Opens a server's network settings; the tunnels screen uses it to change a port.</summary>
     private Task ConfigureServerAsync(ServerViewModel server)
     {
@@ -1096,5 +1110,7 @@ public partial class MainViewModel : ObservableObject
         RemoveServerCommand.NotifyCanExecuteChanged();
         ConfigureServerCommand.NotifyCanExecuteChanged();
         EditAppearanceCommand.NotifyCanExecuteChanged();
+        OpenBackupSettingsCommand.NotifyCanExecuteChanged();
+        TestConnectionCommand.NotifyCanExecuteChanged();
     }
 }
