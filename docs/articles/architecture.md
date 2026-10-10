@@ -409,6 +409,9 @@ otherwise lets go of the wake-on-demand listener first (it holds the server's po
    line is `-Xms`/`-Xmx`, the flags the app adds itself (`ImpliedJvmFlags`), the server's
    `ExtraJvmArgs` and the jar (or a modern Forge/NeoForge args file).
 
+All of it can take minutes with a big world to back up, and the state is still Stopped meanwhile, so
+`IsPreparing` is on from the first step to the last: Start and Restore are unavailable, and a second
+start (another knock while waking on demand, an auto-restart) does nothing (`StartPreparationTests`).
 If any step stops the start, the wake-on-demand listener is put back up (`finally`). Console output
 streams back through the `OutputReceived` event into `ConsoleLines`, **in batches**: lines from the
 process's threads are queued and one dispatcher job takes all that arrived before it ran, appending them

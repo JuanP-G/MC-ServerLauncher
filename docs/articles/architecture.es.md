@@ -422,7 +422,11 @@ primero suelta el listener del encendido bajo demanda (tiene el puerto del servi
    línea de comandos es `-Xms`/`-Xmx`, los flags que añade la propia app (`ImpliedJvmFlags`), los
    `ExtraJvmArgs` del servidor y el jar (o el fichero de argumentos de Forge/NeoForge modernos).
 
-Si algún paso para el arranque, el listener del encendido bajo demanda se vuelve a levantar
+Todo ello puede durar minutos con un mundo grande que copiar, y el estado sigue siendo Detenido mientras
+tanto, así que `IsPreparing` está activo del primer paso al último: Iniciar y Restaurar no están
+disponibles, y un segundo arranque (otro intento de entrar con el servidor dormido, un auto-reinicio)
+no hace nada (`StartPreparationTests`). Si algún paso para el arranque, el listener del encendido bajo
+demanda se vuelve a levantar
 (`finally`). La salida de la
 consola llega de vuelta por el evento `OutputReceived` hacia `ConsoleLines`, **por lotes**: las líneas de
 los hilos del proceso se encolan y una sola tarea del dispatcher se lleva todas las que llegaron antes de
