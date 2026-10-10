@@ -205,7 +205,7 @@ mundo. No hay rutas fijas del equipo en el código.
   jugar» no son la misma afirmación: `Full` en Paper, Purpur y Fabric; `Partial` en NeoForge — conecta y autentica,
   y a partir de ahí cualquier mod que el cliente necesite tener deja fuera a Bedrock —; y `None` en Vanilla y
   Forge. `CrossplayService.CaveatKey` convierte el nivel en el aviso que muestran el panel de nuevo servidor
-  y el diálogo de editar.
+  y la página Crossplay de la configuración del servidor.
 - **`ServerJarInstaller`** — el único sitio que sabe cómo se obtiene cada tipo. Lo llaman el panel de nuevo servidor y
   el diálogo de cambiar el tipo; antes la cadena estaba escrita en los dos, y un tipo presente en uno y ausente en el otro
   producía un servidor Vanilla sin decir nada.
@@ -639,8 +639,8 @@ público del túnel, y el launcher es el único componente que conoce los dos n�
 creó el túnel. `RepairConfig` vuelve a aplicarlo cuando una reinstalación resetea el archivo.
 
 Lo bien que funcione todo esto es una propiedad del tipo de servidor, no una promesa:
-`ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores, y el panel de nuevo servidor y el
-diálogo de editar enseñan la advertencia antes de marcar la casilla. En Fabric, otra casilla instala **Hydraulic**
+`ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores, y el panel de nuevo servidor y la
+página Crossplay de la configuración enseñan la advertencia antes de marcar la casilla. En Fabric, otra casilla instala **Hydraulic**
 (`HydraulicService`) para que los bloques y objetos que añaden los mods se conviertan para los
 clientes de Bedrock; es solo para Fabric porque Hydraulic dejó de publicar builds de NeoForge en
 febrero de 2026. El único fallo que no se puede evitar — un servidor NeoForge rechazando la conexión
@@ -721,8 +721,8 @@ La conversión escribe en el `ServerConfig` que la app ya está mostrando, y **n
 ningún refresco**. La config avisa de cada campo que ha cambiado, `ServerConfigEffects` dice lo que
 ese campo cuesta, y la insignia, la versión, la pestaña de Mods, sus fichas de filtro, la lista de
 instalados —la carpeta de la familia vieja acaba de apartarse— y la búsqueda de la tienda van
-solos. Incluso cancelar el diálogo después queda cubierto, porque restaurar la copia anuncia sus
-propias asignaciones.
+solos. La página de configuración da por guardados los campos instalados
+(`ServerSettingsDraft.Adopt`), así que un Descartar posterior no puede devolver el jar viejo.
 
 Antes esto reconstruía el view model entero, y solo cuando había cambiado el *tipo* y el servidor
 estaba parado. Convertir Fabric 1.21.1 a Fabric 1.21.4 no cambiaba entonces nada en pantalla, y el

@@ -201,8 +201,8 @@ are no hard-coded machine paths.
   The level is three-valued rather than a yes/no, because "Geyser publishes a build" and "your friend on a phone
   can play" are different claims: `Full` for Paper, Purpur and Fabric, `Partial` for NeoForge — it connects and
   authenticates, and then any mod the client is required to have shuts Bedrock out — and `None` for Vanilla and
-  Forge. `CrossplayService.CaveatKey` turns the level into the note the new-server panel and the edit
-  dialog show.
+  Forge. `CrossplayService.CaveatKey` turns the level into the note the new-server panel and the
+  Crossplay page of a server's settings show.
 - **`ServerJarInstaller`** — the one place that knows how each type is obtained. The new-server panel and the
   change-type dialog both call it; the chain used to be written out inline in both, and a type present in one and
   missing from the other silently produced a Vanilla server.
@@ -616,7 +616,7 @@ the launcher is the only component that knows both numbers because it created th
 `RepairConfig` re-applies this when a reinstall resets the file.
 
 How well any of it works is a property of the server type, not a promise: `ServerTypeCatalog` carries
-a three-valued `CrossplayLevel` and the new-server panel and the edit dialog show the caveat before the
+a three-valued `CrossplayLevel` and the new-server panel and the Crossplay settings page show the caveat before the
 checkbox is ticked. On
 Fabric, a further checkbox installs **Hydraulic** (`HydraulicService`) so the blocks and items mods
 add are converted for Bedrock clients; it is Fabric-only because Hydraulic stopped publishing
@@ -691,9 +691,9 @@ cannot read is moved aside by `ContentMigrationService` rather than left to fail
 The conversion writes into the `ServerConfig` the app is already showing, and **nothing then asks
 for a refresh**. The config announces each field it changed, `ServerConfigEffects` says what that
 field costs, and the badge, the version, the Mods tab, its filter chips, the installed list — the
-old family's folder has just been moved aside — and the store search all follow on their own. Even
-cancelling the edit dialog afterwards is covered, because restoring the snapshot announces its own
-assignments.
+old family's folder has just been moved aside — and the store search all follow on their own. The
+settings page takes the installed fields as saved (`ServerSettingsDraft.Adopt`), so a later Discard
+cannot put the old jar back.
 
 It used to rebuild the whole view model instead, and only when the *type* had changed and the server
 was stopped. Converting Fabric 1.21.1 to Fabric 1.21.4 therefore changed nothing on screen, and the
