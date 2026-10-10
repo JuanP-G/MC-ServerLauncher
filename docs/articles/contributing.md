@@ -112,7 +112,7 @@ the name's fault the other half — prefer fixing the name.
 - Bindable state is `[ObservableProperty] private string _searchQuery = string.Empty;` and nothing
   else. Never a hand-written `OnPropertyChanged` pair.
 - Anything derived is an expression-bodied property: `public bool UpdateAvailable => Update is not null;`
-- **A persisted model that a dialog edits while it is on screen is observable.** `ServerConfig` and
+- **A persisted model that is written while it is on screen is observable.** `ServerConfig` and
   `NotificationSettings` derive from `ObservableObject`, and a property added to either goes in as
   `[ObservableProperty] private T _foo;` like anywhere else. It does not change what is written to
   disk, and `ServerConfigFormatTests` is there to prove that stays true. `AppSettings` is the
@@ -312,7 +312,7 @@ reader ends up trusting a page that is quietly a version behind.
 2. Use it from XAML as `{loc:Loc MyKey}`, or from code as `Localizer.Get("MyKey")`
    (use `string.Format(Localizer.Get("MyKey"), arg)` when it has `{0}` placeholders).
 
-### Add a `server.properties` setting to the visual editor
+### Add a `server.properties` setting to a server's settings
 1. Add the control + label/description to the page it belongs to under `Views/ServerSettings`
    (`GameSection`, `WorldSection`, `NetworkSection`…), as a `DockPanel.setting` with the control in
    the `ctl` class.
@@ -325,7 +325,7 @@ reader ends up trusting a page that is quietly a version behind.
    colour and its `CrossplayLevel`. The picker, the badges, the store, the content folder and the
    crossplay rules all read from that table.
 2. One branch in `Services/ServerJarInstaller.cs`, which is the single place that knows how each type
-   is obtained. The new-server panel and the change-type dialog both call it.
+   is obtained. The new-server panel and the Type and version page of a server's settings both call it.
 3. Add the type's description key to the five `.resx` files (the line under its name in the picker).
 4. **Never renumber the `ServerType` enum.** `servers.json` stores it as an integer, so moving a
    member reinterprets every server already saved on every machine. New types go on the end.
@@ -333,10 +333,14 @@ reader ends up trusting a page that is quietly a version behind.
 > Resist adding a `switch` on `ServerType` anywhere else. Six of them is what the catalogue replaced,
 > and a type present in five of the six looked right and behaved as something else.
 
-### Add a new dialog or service
-- **Dialog:** create `Views/MyDialog.axaml` + `.axaml.cs` as a plain Avalonia `Window`, localize its
-  texts with `{loc:Loc ...}`, and open it from a ViewModel command (see `WhatsNewDialog` or
-  `PlayitApiKeyDialog` as small examples).
+### Add a new screen, page or service
+- **UI goes inside the window, never in a new `Window`.** A part of a server's settings is a page
+  under `Views/ServerSettings` implementing `IServerSettingsSection`, editing the
+  `ServerSettingsDraft`; a bigger flow is a panel the detail area hosts, like `NewServerView` and
+  `ServerSettingsView`. Ask for confirmation in place (the player-history button in
+  `AdvancedSection` turns into the question) rather than with `MessageBox`. Localize every text with
+  `{loc:Loc ...}`. A few windows remain from before (`WhatsNewDialog`, `PlayitApiKeyDialog`,
+  `DeleteServerDialog`, `MessageBox`) and are being moved in; do not add to them.
 - **Service:** add a focused class in `Services/`, keep it UI-free, and inject/instantiate it from
   the relevant ViewModel (see how `ServerViewModel` composes its services).
 
