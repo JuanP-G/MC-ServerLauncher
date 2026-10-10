@@ -218,18 +218,14 @@
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <!-- Connected players when running, and the row's own actions: they
-                                         fade in with the pointer over the row or with it selected. -->
+                                    <!-- Connected players when running, and the row's own action: it fades in
+                                         with the pointer over the row or with it selected. Settings are not
+                                         here: they are the detail's "Configure", one way in for all of them. -->
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="2">
                                         <TextBlock Text="{Binding PlayerCountText}" FontSize="12"
                                                    Foreground="{Binding SignalBrush}" VerticalAlignment="Center"
                                                    Margin="6,0,4,0" IsVisible="{Binding IsRunning}" />
                                         <StackPanel Classes="rowactions" Orientation="Horizontal" Spacing="2">
-                                            <Button Classes="rowaction"
-                                                    Command="{Binding DataContext.EditServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}" ToolTip.Tip="{loc:Loc Tip_Edit}">
-                                                <ic:SymbolIcon Symbol="Edit" FontSize="15" />
-                                            </Button>
                                             <Button Classes="rowaction danger"
                                                     Command="{Binding DataContext.RemoveServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                     CommandParameter="{Binding}" ToolTip.Tip="{loc:Loc Tip_Delete}">
@@ -369,7 +365,7 @@
                          lives in the Tunnels section; this is what you copy and send to a friend. -->
                     <Border Grid.Row="2" Classes="card stat" Margin="4,4,4,12">
                       <StackPanel>
-                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="Playit.gg" FontWeight="SemiBold" />
                                 <TextBlock Text="{Binding PlayitStatusText}" FontSize="12" Opacity="0.7" />
@@ -391,6 +387,14 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <ic:SymbolIcon Symbol="Globe" />
                                     <TextBlock Text="{loc:Loc Nav_Tunnels}" />
+                                </StackPanel>
+                            </Button>
+                            <!-- Where a slow game is coming from: opens the network settings and runs it. -->
+                            <Button Grid.Column="4" Margin="8,0,0,0" ToolTip.Tip="{loc:Loc Net_TestTip}"
+                                    Command="{Binding DataContext.TestConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ic:SymbolIcon Symbol="Pulse" />
+                                    <TextBlock Text="{loc:Loc Net_TestButton}" />
                                 </StackPanel>
                             </Button>
                         </Grid>
@@ -634,6 +638,9 @@
 
                 <!-- New server: takes the detail area while one is being made or added. -->
                 <ContentControl Content="{Binding NewServerPanel}" IsVisible="{Binding IsCreatingServer}" Classes="fadein" />
+
+                <!-- The selected server's settings: take the detail area while they are open. -->
+                <ContentControl Content="{Binding ServerSettingsPanel}" IsVisible="{Binding IsEditingServer}" Classes="fadein" />
             </Panel>
             </Grid>
 

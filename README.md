@@ -123,7 +123,8 @@ When it opens again, **What's new** tells you what changed. It works the same on
 <br>
 
 - **Everything in one window** — a side rail with **Servers**, **Tunnels**, **Settings** and **About**. Making
-  or adding a server happens next to the list, and can be left half-done and picked up again.
+  or adding a server happens next to the list, and can be left half-done and picked up again; a server's
+  settings open in the same place, never in a dialog.
 - **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Paper / Purpur /
   Fabric / NeoForge / Forge).
 - **Create a server** automatically: pick the **type**, **version** (official Mojang list), **port** and
@@ -135,10 +136,15 @@ When it opens again, **What's new** tells you what changed. It works the same on
   with colour-coded warnings about what each change can affect.
 - **Start / Stop / Restart** with a clean stop that saves the world; detects and frees a **busy port**; live
   **CPU, RAM, uptime and port**.
-- **Minecraft-style card** — icon, coloured MOTD, `players/max` and a reachability signal. Click the image or
-  the pencil for **Server appearance**: the image, the name and both lines of the MOTD — colours, bold,
-  italics, underline and strikethrough — with the card itself as the preview.
-- **Visual `server.properties` editor** with plain-language explanations.
+- **Minecraft-style card** — icon, coloured MOTD, `players/max` and a reachability signal. Its pencil opens
+  **Appearance**: the image, the name and both lines of the MOTD — the 16 colours by name, recent ones,
+  **gradients**, bold, italics, underline and strikethrough, and **any hex colour** on Paper and Purpur — with
+  the card itself as the preview. The format bar shows what the text under the cursor already has.
+- **All of a server's settings on one page** ⚙️ — **Configure** opens them inside the window, sorted into
+  Appearance · Game (gameplay, world) · Server (type and version, performance, network, crossplay) ·
+  Automatic (power, backups, notifications) · Advanced, every `server.properties` setting explained in plain
+  words. Changes wait in a save bar that only appears when there is something to save, and leaving with
+  unsaved changes is stopped right there. On a narrow window the index becomes a strip of chips.
 - **Seeds** 🌱 — choose one when creating a server, see the real one in its configuration, and open it on
   Chunkbase's seed map for that server's version in one click.
 - **Sleeps and wakes on its own** 💤 — a server can **stop itself after N minutes with nobody on** and **start
@@ -187,9 +193,13 @@ When it opens again, **What's new** tells you what changed. It works the same on
   lives in a small proxy).
 - **Tunnels** — every tunnel on your account in one table: it flags the ones that lead nowhere, the duplicates
   and the shared ports, with a button to fix each one, and lets you rename or delete them.
+- **Connection test** 📶 — **Test connection** on the Playit card measures each stretch on its own — your
+  server, your internet (latency, download and upload, via Cloudflare), the Java tunnel and the Bedrock one —
+  and says in one sentence whether lag comes from your PC, your line or the tunnel. The technical details
+  (min/avg/max, jitter, loss, peak throughput, samples) are one click away, with a report to copy.
 - **Play from Bedrock too** 📱 — one checkbox installs Geyser and Floodgate, picks a free UDP port, creates the
   second (UDP) tunnel and sets the public port Geyser must advertise. The Bedrock port is changed in each
-  server's configuration, and two servers are never given the same one. It depends on the server type:
+  server's settings, and two servers are never given the same one. It depends on the server type:
 
   | Type | From Bedrock | Why |
   |---|---|---|
@@ -237,7 +247,9 @@ When it opens again, **What's new** tells you what changed. It works the same on
 - **Automatic world backups** — before every start, on every stop and, if you leave it on, every hour while
   people are playing. A backup of a running server asks Minecraft to flush the world to disk first, so it is
   never half-written, and one nobody played since is skipped. Backups you take by hand are counted separately,
-  so the clock never deletes them. **Back up now** and one-click **Restore**.
+  so the clock never deletes them. The **Backups** tab shows each pile against its limit, the space they take
+  and when the next one is due, lists them by day and marks the one the next backup will replace.
+  **Back up now** and one-click **Restore**.
 - **Settings, part of the window** ⚙️ — language, tray behaviour, **Add to desktop**, notifications, colours
   and the player history, each on its own page. Saved as you go.
 - **Stays out of the way** — minimize or close **to the system tray** and your servers keep running; launching
@@ -271,9 +283,9 @@ When it opens again, **What's new** tells you what changed. It works the same on
 
 ![Player management](docs/screenshots/players.png)
 
-**Visual `server.properties` editor**
+**Server settings**
 
-![Visual settings editor](docs/screenshots/settings.png)
+![A server's settings, inside the window](docs/screenshots/settings.png)
 
 </details>
 

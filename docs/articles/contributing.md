@@ -56,7 +56,7 @@ They come in six layers, and it is worth knowing which one a new test belongs to
 | The models on their own | `ServerConfigFormatTests`, `ModelNotificationTests` | What is written to disk; which properties announce |
 | The table | `ServerConfigEffectsTests` | That no field of the config was left undeclared |
 | View models, built for real | `ServerViewModelRefreshTests`, `MainViewModelFlowTests` | That a change to the config reaches the card, the panels and `servers.json` |
-| Real controls | `AddEditServerDialogTests`, `NewServerViewTests` | That it reaches the screen — the half a unit test cannot see |
+| Real controls | `ServerSettingsViewTests`, `NewServerViewTests` | That it reaches the screen — the half a unit test cannot see |
 | Gates on the source | `StartDependencyGateTests`, `StoreHashTests`, `ExportSelectionTests` | That a promise holds in the file itself — no network, one definition |
 | The artefact, run | `InstallScriptSmokeTests` | That the script a player gets actually works — run with bash, on Linux in CI |
 
@@ -123,7 +123,7 @@ the name's fault the other half — prefer fixing the name.
   it. `ServerConfigEffectsTests` fails until it is there, and the failure says what to write. This
   is not bureaucracy: a field left out shows the right answer until somebody edits that server, and
   the wrong one from then until the app is restarted.
-- `var` when the type is already on the line (`var dialog = new ServerConfigDialog(…)`), the type spelled
+- `var` when the type is already on the line (`var view = new ServerSettingsView(…)`), the type spelled
   out when it is not.
 - **A constructor assembles; `Activate()` starts.** Nothing that polls, opens a socket, subscribes to
   a shared singleton or goes to the network belongs in a constructor — it goes in `Activate()`, whose
@@ -313,10 +313,12 @@ reader ends up trusting a page that is quietly a version behind.
    (use `string.Format(Localizer.Get("MyKey"), arg)` when it has `{0}` placeholders).
 
 ### Add a `server.properties` setting to the visual editor
-1. Add the control + label/description in `Views/ServerConfigDialog.axaml` (and bind it in its
-   code-behind).
-2. Read/write the key through `ServerPropertiesService.Read` / `Update`, which preserves the rest of
-   the file, comments and order.
+1. Add the control + label/description to the page it belongs to under `Views/ServerSettings`
+   (`GameSection`, `WorldSection`, `NetworkSection`…), as a `DockPanel.setting` with the control in
+   the `ctl` class.
+2. Tie it to its key in the page's constructor with `PropertyBindings` (`Toggle`, `Number`,
+   `Choice`) and add the key to that page's row in `ServerSettingsDraft.Owned`. Save writes it through
+   `ServerPropertiesService.Update`, which preserves the rest of the file, comments and order.
 
 ### Add a server type
 1. One row in `Services/ServerTypeCatalog.cs`: display name, family (plugins / mods / neither), badge

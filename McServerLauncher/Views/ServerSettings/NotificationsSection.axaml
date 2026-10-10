@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:models="using:McServerLauncher.Models"
+             x:Class="McServerLauncher.Views.ServerSettings.NotificationsSection"
+             x:DataType="models:ServerConfig">
+
+    <!-- This server's own notifications, instead of the app's. DataContext: the draft's copy of the
+         config, whose Notifications is never null on this page (ServerSettingsDraft seeds it). -->
+    <StackPanel>
+        <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch x:Name="UseCustomNotifCheck" Classes="ctl" IsChecked="{Binding UseCustomNotifications, Mode=TwoWay}" />
+                <TextBlock Text="{loc:Loc Notif_UseCustom}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card" IsEnabled="{Binding UseCustomNotifications}">
+            <StackPanel Spacing="4">
+                <DockPanel Classes="setting">
+                    <ToggleSwitch x:Name="NotifEnabledCheck" Classes="ctl" IsChecked="{Binding Notifications.Enabled, Mode=TwoWay}" />
+                    <TextBlock Text="{loc:Loc Notif_Enabled}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </DockPanel>
+                <StackPanel Margin="0,6,0,0" Spacing="4" IsEnabled="{Binding Notifications.Enabled}">
+                    <CheckBox Content="{loc:Loc Notif_Join}" IsChecked="{Binding Notifications.PlayerJoined, Mode=TwoWay}" />
+                    <CheckBox Content="{loc:Loc Notif_Leave}" IsChecked="{Binding Notifications.PlayerLeft, Mode=TwoWay}" />
+                    <CheckBox Content="{loc:Loc Notif_Death}" IsChecked="{Binding Notifications.PlayerDeath, Mode=TwoWay}" />
+                    <CheckBox Content="{loc:Loc Notif_Crash}" IsChecked="{Binding Notifications.ServerCrashed, Mode=TwoWay}" />
+                    <CheckBox Content="{loc:Loc Notif_OptGaveUp}" IsChecked="{Binding Notifications.AutoRestartGaveUp, Mode=TwoWay}" />
+                    <CheckBox Content="{loc:Loc Notif_OptIdleStop}" IsChecked="{Binding Notifications.IdleShutdown, Mode=TwoWay}" />
+                    <CheckBox Content="{loc:Loc Notif_OptWoke}" IsChecked="{Binding Notifications.WokeOnDemand, Mode=TwoWay}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

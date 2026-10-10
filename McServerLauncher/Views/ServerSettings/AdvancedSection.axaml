@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:models="using:McServerLauncher.Models"
+             x:Class="McServerLauncher.Views.ServerSettings.AdvancedSection"
+             x:DataType="models:ServerConfig">
+
+    <!-- What only matters when something is wrong or unusual: where the server lives, what is run,
+         the JVM's extra arguments, and forgetting its players. DataContext: the draft's copy of the
+         config. -->
+    <StackPanel>
+        <Border Classes="card">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc Ae_Folder}" Classes="title" />
+                <TextBlock Classes="desc" Text="{loc:Loc Sset_FolderDesc}" />
+                <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                    <TextBox Grid.Column="0" x:Name="FolderBox" Text="{Binding FolderPath, Mode=TwoWay}" />
+                    <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseFolder_Click" />
+                </Grid>
+                <TextBlock x:Name="Error" Classes="desc error" IsVisible="False" />
+            </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc Ae_Jar}" Classes="title" />
+                <TextBox Text="{Binding JarFile, Mode=TwoWay}" Margin="0,8,0,0" />
+            </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc Ae_ExtraArgs}" Classes="title" />
+                <TextBox Text="{Binding ExtraJvmArgs, Mode=TwoWay}" Watermark="-XX:+UseG1GC" Margin="0,8,0,0" />
+            </StackPanel>
+        </Border>
+
+        <!-- Acts at once, not on Save: what the text says. Asked a second time in place rather than
+             in a window. -->
+        <Border Classes="card">
+            <StackPanel>
+                <DockPanel Classes="setting">
+                    <Button x:Name="ClearHistoryButton" Classes="ctl" Content="{loc:Loc Cfg_HistoryClear}"
+                            Background="{StaticResource DangerButton}" Foreground="White"
+                            Click="ClearHistory_Click" />
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Cfg_HistoryTitle}" Classes="title" />
+                        <TextBlock x:Name="HistorySizeText" Classes="desc" />
+                    </StackPanel>
+                </DockPanel>
+                <Border x:Name="ClearHistoryConfirm" IsVisible="False" Margin="0,10,0,0" Padding="10,8" CornerRadius="6"
+                        Background="{StaticResource SemanticDangerFill}" BorderBrush="{StaticResource SemanticDanger}" BorderThickness="1">
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Name="ClearHistoryQuestion" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                            <Button Content="{loc:Loc Cancel}" Click="ClearHistoryCancel_Click" />
+                            <Button x:Name="ClearHistoryYes" Content="{loc:Loc Cfg_HistoryClear}"
+                                    Background="{StaticResource DangerButton}" Foreground="White"
+                                    Click="ClearHistoryYes_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

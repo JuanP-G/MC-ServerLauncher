@@ -242,10 +242,10 @@ public class WorldBackupService
     }
 
     /// <summary>A backup the app made on its own: before a start, after a stop, or by the clock.</summary>
-    private static bool IsAutomatic(string trigger) => trigger is "start" or "stop" or "auto";
+    internal static bool IsAutomatic(string trigger) => trigger is "start" or "stop" or "auto";
 
     /// <summary>A backup somebody asked for, directly or by restoring another one.</summary>
-    private static bool IsTheUsers(string trigger) => trigger is "manual" or "before-restore";
+    internal static bool IsTheUsers(string trigger) => trigger is "manual" or "before-restore";
 
     /// <summary>
     /// Deletes what is past the retention, counting the automatic backups and the user's own

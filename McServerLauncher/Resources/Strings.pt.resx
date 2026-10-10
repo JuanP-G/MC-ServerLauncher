@@ -6,14 +6,13 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="Servers" xml:space="preserve"><value>Servidores</value></data>
   <data name="Add" xml:space="preserve"><value>Adicionar</value></data>
-  <data name="Tip_Edit" xml:space="preserve"><value>Editar servidor</value></data>
   <data name="Tip_Delete" xml:space="preserve"><value>Eliminar servidor</value></data>
   <data name="EmptyState" xml:space="preserve"><value>Seleciona ou adiciona um servidor para começar.</value></data>
   <data name="Start" xml:space="preserve"><value>Iniciar</value></data>
   <data name="Stop" xml:space="preserve"><value>Parar</value></data>
   <data name="Restart" xml:space="preserve"><value>Reiniciar</value></data>
   <data name="Configure" xml:space="preserve"><value>Configurar</value></data>
-  <data name="Tip_Configure" xml:space="preserve"><value>Editar server.properties visualmente</value></data>
+  <data name="Tip_Configure" xml:space="preserve"><value>Todas as definições do servidor: partida, mundo, rede, cópias e mais</value></data>
   <data name="Uptime" xml:space="preserve"><value>Tempo ativo</value></data>
   <data name="Port" xml:space="preserve"><value>Porta</value></data>
   <data name="Tunnel_Placeholder" xml:space="preserve"><value>Aparece sozinho assim que o túnel existir</value></data>
@@ -90,13 +89,6 @@
   <data name="Cs_AutoStart" xml:space="preserve"><value>Iniciar o servidor ao terminar para gerar o mundo e os ficheiros</value></data>
   <data name="Cs_CreateButton" xml:space="preserve"><value>Criar servidor</value></data>
   <data name="Cfg_Title" xml:space="preserve"><value>Configuração do servidor</value></data>
-  <data name="Cfg_HeaderFmt" xml:space="preserve"><value>Definições de "{0}". As alterações aplicam-se ao (re)iniciar o servidor.</value></data>
-  <data name="Cfg_General" xml:space="preserve"><value>Geral</value></data>
-  <data name="Cfg_Gameplay" xml:space="preserve"><value>Jogabilidade</value></data>
-  <data name="Cfg_Performance" xml:space="preserve"><value>Desempenho e mundo</value></data>
-  <data name="Cfg_Network" xml:space="preserve"><value>Rede e acesso</value></data>
-  <data name="Cfg_Motd" xml:space="preserve"><value>MOTD (mensagem do servidor)</value></data>
-  <data name="Cfg_MotdDesc" xml:space="preserve"><value>O texto que os jogadores veem sob o nome do servidor na lista do Minecraft. Aceita códigos de cor com § (ex.: §a verde, §6 dourado, §l negrito).</value></data>
   <data name="Cfg_Gamemode" xml:space="preserve"><value>Modo de jogo</value></data>
   <data name="Cfg_GamemodeDesc" xml:space="preserve"><value>Modo predefinido para quem entra: Sobrevivência (vida/fome), Criativo (recursos infinitos e voo), Aventura (não partir blocos) ou Espetador.</value></data>
   <data name="Cfg_Difficulty" xml:space="preserve"><value>Dificuldade</value></data>
@@ -285,10 +277,10 @@
   <data name="Backup_Hint" xml:space="preserve"><value>É criada automaticamente uma cópia de segurança do mundo antes de cada arranque, ao parar o servidor e, se deixares ligado, de tempos a tempos enquanto se joga. Restaurar continua a exigir o servidor parado.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Fazer cópia agora</value></data>
   <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Faz já uma cópia de segurança do mundo, esteja o servidor a correr ou parado.</value></data>
-  <data name="Backup_TriggerAuto" xml:space="preserve"><value>Automática</value></data>
+  <data name="Backup_TriggerAuto" xml:space="preserve"><value>durante o jogo</value></data>
   <data name="Backup_AutoWhilePlaying" xml:space="preserve"><value>Também de tempos a tempos enquanto se joga</value></data>
-  <data name="Backup_IntervalLabel" xml:space="preserve"><value>A cada (minutos):</value></data>
-  <data name="Backup_ManualRetentionLabel" xml:space="preserve"><value>Cópias manuais a manter:</value></data>
+  <data name="Backup_IntervalLabel" xml:space="preserve"><value>De quantos em quantos minutos</value></data>
+  <data name="Backup_ManualRetentionLabel" xml:space="preserve"><value>Cópias manuais a manter</value></data>
   <data name="Backup_AutoHint" xml:space="preserve"><value>Antes de copiar, pede-se ao servidor que pare de escrever o mundo e o despeje no disco, para que a cópia nunca fique a meio. Se ninguém entrou desde a cópia anterior, essa é ignorada. As manuais contam-se à parte e o relógio nunca as apaga.</value></data>
   <data name="Backup_RestoreNeedsStoppedTip" xml:space="preserve"><value>O servidor tem de estar parado para restaurar uma cópia de segurança.</value></data>
   <data name="Msg_BackupPausingSaves" xml:space="preserve"><value>[Cópia] A pausar a gravação do mundo…</value></data>
@@ -319,14 +311,12 @@
   <data name="Wake_KickStarting" xml:space="preserve"><value>O servidor está a arrancar.&#10;&#10;Tenta entrar outra vez daqui a uns segundos.</value></data>
   <data name="Msg_WakeStarting" xml:space="preserve"><value>Alguém tentou entrar: a ligar o servidor.</value></data>
   <data name="Msg_WakePortBusyFmt" xml:space="preserve"><value>Não é possível esperar ligações na porta {0}: já está ocupada.</value></data>
-  <data name="Idle_Section" xml:space="preserve"><value>Ligar e desligar automáticos</value></data>
   <data name="Idle_Intro" xml:space="preserve"><value>O servidor pode desligar-se sozinho quando não fica ninguém e voltar a ligar quando alguém tenta entrar.</value></data>
-  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutos sem jogadores:</value></data>
+  <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutos sem jogadores</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = nunca se desliga. A contagem começa quando sai o último jogador e reinicia assim que alguém entra.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Sem jogadores durante {0} minutos: a desligar o servidor.</value></data>
-  <data name="Backup_Section" xml:space="preserve"><value>Cópias de segurança do mundo</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Criar cópias de segurança automaticamente</value></data>
-  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Cópias automáticas a manter:</value></data>
+  <data name="Backup_RetentionLabel" xml:space="preserve"><value>Cópias automáticas a manter</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Não foi possível mudar o serviço (costuma exigir executar a app como administrador, ou usar o ícone da bandeja): {0}</value></data>
   <data name="Msg_PortUnknown" xml:space="preserve"><value>[Playit] Não foi possível determinar a porta do servidor (falta o server.properties?).</value></data>
   <data name="Msg_NeedsJavaPreparing" xml:space="preserve"><value>[Launcher] Este servidor precisa de Java {0}. A preparar um Java compatível...</value></data>
@@ -359,7 +349,6 @@
   <data name="Msg_PortBusyJavaNote" xml:space="preserve"><value>Parece um servidor de Minecraft que ficou ligado. Fechá-lo assim não guarda o mundo: o progresso mais recente pode perder-se. Se puderes, entra nele e escreve /stop antes.</value></data>
   <data name="Msg_UpdateAvailableFmt" xml:space="preserve"><value>Há uma atualização disponível: versão {0}.</value></data>
   <data name="Msg_IconCreateError" xml:space="preserve"><value>Não foi possível criar o ícone: {0}</value></data>
-  <data name="Title_ChangeIcon" xml:space="preserve"><value>Mudar ícone</value></data>
   <data name="Title_DeleteTunnel" xml:space="preserve"><value>Eliminar túnel</value></data>
   <data name="Msg_NoTunnelForPort" xml:space="preserve"><value>Não se encontrou nenhum túnel Playit para a porta {0}. Nenhum túnel foi eliminado.</value></data>
   <data name="Msg_TunnelDeleteError" xml:space="preserve"><value>Não foi possível eliminar o túnel Playit: {0}</value></data>
@@ -385,7 +374,6 @@
   <data name="Msg_VersionsLoadError" xml:space="preserve"><value>Não foi possível carregar as versões: {0}</value></data>
   <data name="Msg_NameEmpty" xml:space="preserve"><value>O nome não pode estar vazio.</value></data>
   <data name="Msg_FolderNotExist" xml:space="preserve"><value>A pasta do servidor não existe.</value></data>
-  <data name="Title_Validation" xml:space="preserve"><value>Validação</value></data>
   <data name="Title_SelectServerFolder" xml:space="preserve"><value>Seleciona a pasta do servidor</value></data>
   <data name="Title_SelectJava" xml:space="preserve"><value>Seleciona o java.exe</value></data>
   <data name="Filter_Java" xml:space="preserve"><value>Executável Java (java.exe)|java.exe|Todos os executáveis (*.exe)|*.exe</value></data>
@@ -437,7 +425,6 @@
   <data name="Loader_Title" xml:space="preserve"><value>Mudar o tipo de servidor</value></data>
   <data name="Loader_Section" xml:space="preserve"><value>Tipo de servidor</value></data>
   <data name="Loader_Current" xml:space="preserve"><value>Loader atual: </value></data>
-  <data name="Loader_ChangeButton" xml:space="preserve"><value>Mudar o tipo de servidor…</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Muda o tipo deste servidor. Cada cartão diz se leva plugins ou mods, e se dá para entrar pelo Bedrock. O teu mundo é mantido.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sem mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Manter o ficheiro de arranque atual (run.bat)</value></data>
@@ -826,9 +813,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” é um nome reservado pelo Windows e não pode ser usado numa pasta. Escolhe outro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>O nome não pode acabar em ponto nem em espaço: o Windows corta-os e a pasta acabaria com outro nome.</value></data>
   <data name="Msg_BukkitPathParentFmt" xml:space="preserve"><value>O Paper e o Purpur não arrancam se o caminho tiver “{0}”, e esse carácter está numa pasta acima, não na do servidor. Muda-o tu ou escolhe outra pasta: mudar-lhe o nome daqui moveria tudo o resto lá dentro.</value></data>
-  <data name="Look_Title" xml:space="preserve"><value>Aparência do servidor</value></data>
   <data name="Look_EditTip" xml:space="preserve"><value>Editar aparência</value></data>
-  <data name="Look_EditShort" xml:space="preserve"><value>Editar</value></data>
   <data name="Look_Preview" xml:space="preserve"><value>Pré-visualização</value></data>
   <data name="Look_PreviewAsleep" xml:space="preserve"><value>Dormindo</value></data>
   <data name="Look_PreviewAwake" xml:space="preserve"><value>Ligado</value></data>
@@ -945,7 +930,6 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Cs_SeedPlaceholder" xml:space="preserve"><value>Vazio = aleatória</value></data>
   <data name="Cs_SeedNote" xml:space="preserve"><value>Só é usada ao gerar o mundo. Pode ser um número ou um texto. Mudar depois de tipo ou de versão mantém o mundo, por isso a semente não volta a ser pedida.</value></data>
   <data name="Msg_SeedIgnoredWorldExists" xml:space="preserve"><value>Esta pasta já tem um mundo gerado, por isso a semente escrita não vai ser usada.</value></data>
-  <data name="Cfg_World" xml:space="preserve"><value>Mundo</value></data>
   <data name="Cfg_Seed" xml:space="preserve"><value>Semente</value></data>
   <data name="Cfg_SeedMap" xml:space="preserve"><value>Ver no mapa</value></data>
   <data name="Cfg_SeedMapTip" xml:space="preserve"><value>Abre o mapa desta semente no Chunkbase, na versão deste servidor.</value></data>
@@ -976,7 +960,6 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="History_MaxEvents" xml:space="preserve"><value>Eventos por jogador</value></data>
   <data name="History_RetentionDays" xml:space="preserve"><value>Dias que se guardam</value></data>
   <data name="History_ClearWhere" xml:space="preserve"><value>Para limpar o histórico de um servidor, abre-o em Configurar › Histórico de jogadores.</value></data>
-  <data name="Cfg_History" xml:space="preserve"><value>Histórico de jogadores</value></data>
   <data name="Cfg_HistoryTitle" xml:space="preserve"><value>Esquecer os jogadores deste servidor</value></data>
   <data name="Cfg_HistorySizeFmt" xml:space="preserve"><value>Ocupa {0}. Apaga as ligações, o chat e tudo o resto que tenha sido guardado sobre este servidor. Não se pode desfazer e acontece ao carregar, não ao guardar.</value></data>
   <data name="Cfg_HistoryClear" xml:space="preserve"><value>Limpar o histórico</value></data>
@@ -1030,4 +1013,178 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Col_After" xml:space="preserve"><value>Agora</value></data>
   <data name="Col_ReadsWell" xml:space="preserve"><value>✓ Lê-se bem sobre o fundo escuro</value></data>
   <data name="Col_TooDark" xml:space="preserve"><value>⚠ Muito escuro: será difícil de ler sobre o fundo escuro</value></data>
+  <data name="Sset_Back" xml:space="preserve"><value>Voltar ao servidor</value></data>
+  <data name="Sset_Discard" xml:space="preserve"><value>Descartar</value></data>
+  <data name="Sset_Unsaved" xml:space="preserve"><value>Tens alterações por guardar</value></data>
+  <data name="Sset_UnsavedRestart" xml:space="preserve"><value>O servidor está ligado: o que guardares aplica-se quando reiniciar.</value></data>
+  <data name="Sset_LeaveBlocked" xml:space="preserve"><value>Guarda ou descarta as alterações antes de sair</value></data>
+  <data name="Sset_FixErrors" xml:space="preserve"><value>Há algo a corrigir antes de guardar.</value></data>
+  <data name="Sset_LoaderNeedsSave" xml:space="preserve"><value>Guarda ou descarta as outras alterações antes de mudar o tipo.</value></data>
+  <data name="Sset_GroupGame" xml:space="preserve"><value>Jogo</value></data>
+  <data name="Sset_GroupServer" xml:space="preserve"><value>Servidor</value></data>
+  <data name="Sset_GroupAuto" xml:space="preserve"><value>Automático</value></data>
+  <data name="Sset_Appearance" xml:space="preserve"><value>Aparência</value></data>
+  <data name="Sset_AppearanceHint" xml:space="preserve"><value>Como o servidor aparece na lista de servidores do Minecraft.</value></data>
+  <data name="Sset_Game" xml:space="preserve"><value>Partida</value></data>
+  <data name="Sset_GameHint" xml:space="preserve"><value>Como se joga neste servidor.</value></data>
+  <data name="Sset_World" xml:space="preserve"><value>Mundo</value></data>
+  <data name="Sset_WorldHint" xml:space="preserve"><value>A semente e quanto do mundo se mantém ativo.</value></data>
+  <data name="Sset_Loader" xml:space="preserve"><value>Tipo e versão</value></data>
+  <data name="Sset_LoaderHint" xml:space="preserve"><value>Que tipo de servidor é e em que versão do Minecraft.</value></data>
+  <data name="Sset_Performance" xml:space="preserve"><value>Desempenho</value></data>
+  <data name="Sset_PerformanceHint" xml:space="preserve"><value>A memória e o Java com que arranca.</value></data>
+  <data name="Sset_Network" xml:space="preserve"><value>Rede e acesso</value></data>
+  <data name="Sset_NetworkHint" xml:space="preserve"><value>Por onde se entra e quem pode entrar.</value></data>
+  <data name="Sset_Crossplay" xml:space="preserve"><value>Crossplay</value></data>
+  <data name="Sset_CrossplayHint" xml:space="preserve"><value>Jogadores de Bedrock e de outras versões de Java.</value></data>
+  <data name="Sset_Power" xml:space="preserve"><value>Ligar e desligar</value></data>
+  <data name="Sset_PowerHint" xml:space="preserve"><value>Arrancar quando alguém entra e desligar quando não fica ninguém.</value></data>
+  <data name="Sset_Backups" xml:space="preserve"><value>Cópias</value></data>
+  <data name="Sset_BackupsHint" xml:space="preserve"><value>Quando o mundo é copiado e quantas cópias se guardam.</value></data>
+  <data name="Sset_Notifications" xml:space="preserve"><value>Avisos</value></data>
+  <data name="Sset_NotificationsHint" xml:space="preserve"><value>As notificações deste servidor.</value></data>
+  <data name="Sset_Advanced" xml:space="preserve"><value>Avançado</value></data>
+  <data name="Sset_AdvancedHint" xml:space="preserve"><value>Pasta, ficheiro de arranque, argumentos de Java e histórico de jogadores.</value></data>
+  <data name="Sset_PlayitTitle" xml:space="preserve"><value>Túnel para a Internet (Playit.gg)</value></data>
+  <data name="Sset_PlayitDesc" xml:space="preserve"><value>Para que os teus amigos entrem de fora da tua rede sem abrir portas no router.</value></data>
+  <data name="Sset_RamTitle" xml:space="preserve"><value>Memória (RAM)</value></data>
+  <data name="Sset_RamDesc" xml:space="preserve"><value>Quanta memória o servidor pode usar. Mais jogadores ou mods precisam de mais.</value></data>
+  <data name="Sset_JavaDesc" xml:space="preserve"><value>O Java com que arranca. «java» usa o do sistema.</value></data>
+  <data name="Sset_FolderDesc" xml:space="preserve"><value>Onde estão os ficheiros do servidor. Mudá-la aponta a app para outra pasta; nada é movido.</value></data>
+  <data name="Backup_RetentionDesc" xml:space="preserve"><value>Todas juntas: ao arrancar, ao parar e durante o jogo. Acima do limite, apaga-se a mais antiga.</value></data>
+  <data name="Backup_ManualRetentionDesc" xml:space="preserve"><value>As que fazes tu e as guardadas antes de restaurar. O relógio nunca as apaga.</value></data>
+  <data name="Backup_Automatic" xml:space="preserve"><value>Automáticas</value></data>
+  <data name="Backup_Manual" xml:space="preserve"><value>Manuais</value></data>
+  <data name="Backup_All" xml:space="preserve"><value>Todas</value></data>
+  <data name="Backup_AutomaticWhat" xml:space="preserve"><value>Ao arrancar, ao parar e durante o jogo</value></data>
+  <data name="Backup_ManualWhat" xml:space="preserve"><value>As tuas e as de antes de restaurar</value></data>
+  <data name="Backup_Space" xml:space="preserve"><value>Espaço</value></data>
+  <data name="Backup_NextFmt" xml:space="preserve"><value>Próxima: por volta das {0}, se alguém jogar</value></data>
+  <data name="Backup_NextOnStop" xml:space="preserve"><value>Próxima: quando o servidor parar</value></data>
+  <data name="Backup_NextOnStart" xml:space="preserve"><value>Próxima: quando o servidor arrancar</value></data>
+  <data name="Backup_NextOff" xml:space="preserve"><value>As cópias automáticas estão desligadas</value></data>
+  <data name="Backup_NextToGo" xml:space="preserve"><value>A próxima automática substitui-a</value></data>
+  <data name="Backup_NextManualToGo" xml:space="preserve"><value>A próxima manual substitui-a</value></data>
+  <data name="Backup_Today" xml:space="preserve"><value>Hoje</value></data>
+  <data name="Backup_Yesterday" xml:space="preserve"><value>Ontem</value></data>
+  <data name="Backup_AdjustLimits" xml:space="preserve"><value>Ajustar limites</value></data>
+  <data name="Backup_Foreign" xml:space="preserve"><value>adicionada à pasta à mão</value></data>
+  <data name="Backup_NoneInFilter" xml:space="preserve"><value>Não há cópias deste tipo.</value></data>
+  <data name="MotdColor_0" xml:space="preserve"><value>Preto</value></data>
+  <data name="MotdColor_1" xml:space="preserve"><value>Azul-escuro</value></data>
+  <data name="MotdColor_2" xml:space="preserve"><value>Verde-escuro</value></data>
+  <data name="MotdColor_3" xml:space="preserve"><value>Ciano-escuro</value></data>
+  <data name="MotdColor_4" xml:space="preserve"><value>Vermelho-escuro</value></data>
+  <data name="MotdColor_5" xml:space="preserve"><value>Roxo-escuro</value></data>
+  <data name="MotdColor_6" xml:space="preserve"><value>Dourado</value></data>
+  <data name="MotdColor_7" xml:space="preserve"><value>Cinzento</value></data>
+  <data name="MotdColor_8" xml:space="preserve"><value>Cinzento-escuro</value></data>
+  <data name="MotdColor_9" xml:space="preserve"><value>Azul</value></data>
+  <data name="MotdColor_a" xml:space="preserve"><value>Verde</value></data>
+  <data name="MotdColor_b" xml:space="preserve"><value>Ciano</value></data>
+  <data name="MotdColor_c" xml:space="preserve"><value>Vermelho</value></data>
+  <data name="MotdColor_d" xml:space="preserve"><value>Roxo-claro</value></data>
+  <data name="MotdColor_e" xml:space="preserve"><value>Amarelo</value></data>
+  <data name="MotdColor_f" xml:space="preserve"><value>Branco</value></data>
+  <data name="MotdColor_Default" xml:space="preserve"><value>Predefinido</value></data>
+  <data name="Look_Color" xml:space="preserve"><value>Cor do texto</value></data>
+  <data name="Look_ColorHintFmt" xml:space="preserve"><value>{0} · aplica-se ao selecionado ou ao que escreveres a seguir.</value></data>
+  <data name="Look_Recent" xml:space="preserve"><value>Recentes</value></data>
+  <data name="Look_Solid" xml:space="preserve"><value>Cor</value></data>
+  <data name="Look_Gradient" xml:space="preserve"><value>Gradiente</value></data>
+  <data name="Look_GradientFrom" xml:space="preserve"><value>Cor inicial</value></data>
+  <data name="Look_GradientTo" xml:space="preserve"><value>Cor final</value></data>
+  <data name="Look_GradientPickFrom" xml:space="preserve"><value>Escolhe a cor inicial.</value></data>
+  <data name="Look_GradientPickTo" xml:space="preserve"><value>Agora a cor final.</value></data>
+  <data name="Look_GradientApply" xml:space="preserve"><value>Aplicar gradiente</value></data>
+  <data name="Look_GradientHint" xml:space="preserve"><value>Aplica-se ao selecionado ou, sem nada selecionado, à linha inteira.</value></data>
+  <data name="Look_GradientBanded" xml:space="preserve"><value>Este servidor só mostra as 16 cores, por isso o gradiente vai por faixas. Aplica-se ao selecionado ou à linha inteira.</value></data>
+  <data name="Look_Hex" xml:space="preserve"><value>Cor livre</value></data>
+  <data name="Look_HexApply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="Look_HexInvalid" xml:space="preserve"><value>Escreve uma cor como #FF7A00.</value></data>
+  <data name="Look_HexOnlyPaper" xml:space="preserve"><value>As cores livres (hex) só aparecem em servidores Paper e Purpur desde a 1.16; nos outros, as 16 do Minecraft.</value></data>
+  <data name="Look_HexWarnType" xml:space="preserve"><value>Este texto tem cores livres (hex) que este tipo de servidor não mostra: vão aparecer como letras soltas.</value></data>
+  <data name="Net_Title" xml:space="preserve"><value>Teste de ligação</value></data>
+  <data name="Net_Intro" xml:space="preserve"><value>Mede cada troço em separado para saber se o atraso vem do teu PC, da tua internet ou do túnel.</value></data>
+  <data name="Net_Run" xml:space="preserve"><value>Testar</value></data>
+  <data name="Net_Repeat" xml:space="preserve"><value>Repetir</value></data>
+  <data name="Net_Testing" xml:space="preserve"><value>A testar…</value></data>
+  <data name="Net_TestButton" xml:space="preserve"><value>Testar ligação</value></data>
+  <data name="Net_TestTip" xml:space="preserve"><value>Mostra onde se perde o tempo: servidor, internet ou túnel.</value></data>
+  <data name="Net_Waiting" xml:space="preserve"><value>À espera.</value></data>
+  <data name="Net_Measuring" xml:space="preserve"><value>A medir…</value></data>
+  <data name="Net_MeasuringDown" xml:space="preserve"><value>A medir a velocidade de download…</value></data>
+  <data name="Net_MeasuringUp" xml:space="preserve"><value>A medir a velocidade de upload…</value></data>
+  <data name="Net_Starting" xml:space="preserve"><value>A ligar o servidor…</value></data>
+  <data name="Net_StartingDetail" xml:space="preserve"><value>O teste começa assim que responder.</value></data>
+  <data name="Net_NoAnswer" xml:space="preserve"><value>sem resposta</value></data>
+  <data name="Net_StepLocal" xml:space="preserve"><value>O teu servidor</value></data>
+  <data name="Net_StepInternet" xml:space="preserve"><value>A tua internet</value></data>
+  <data name="Net_StepTunnel" xml:space="preserve"><value>Túnel do Playit (Java)</value></data>
+  <data name="Net_StepBedrock" xml:space="preserve"><value>Túnel do Playit (Bedrock)</value></data>
+  <data name="Net_LocalOff" xml:space="preserve"><value>O servidor está desligado</value></data>
+  <data name="Net_LocalOffDetail" xml:space="preserve"><value>Liga-o para o testar.</value></data>
+  <data name="Net_NeedsServer" xml:space="preserve"><value>Precisa do servidor ligado.</value></data>
+  <data name="Net_NoTunnel" xml:space="preserve"><value>Sem túnel do Playit</value></data>
+  <data name="Net_NoTunnelDetail" xml:space="preserve"><value>Este servidor não tem endereço do Playit: só se entra a partir da tua rede.</value></data>
+  <data name="Net_NoBedrock" xml:space="preserve"><value>Sem túnel Bedrock</value></data>
+  <data name="Net_NoBedrockDetail" xml:space="preserve"><value>Ainda não há endereço público Bedrock para este servidor.</value></data>
+  <data name="Net_LocalGood" xml:space="preserve"><value>O servidor responde</value></data>
+  <data name="Net_LocalGoodDetail" xml:space="preserve"><value>O teu PC responde ao Minecraft de imediato.</value></data>
+  <data name="Net_LocalFair" xml:space="preserve"><value>O servidor demora a responder</value></data>
+  <data name="Net_LocalFairDetail" xml:space="preserve"><value>Está no limite de CPU ou RAM: vê o uso acima ou baixa a distância de visão.</value></data>
+  <data name="Net_LocalBad" xml:space="preserve"><value>O servidor está muito lento</value></data>
+  <data name="Net_LocalBadDetail" xml:space="preserve"><value>Falta-lhe CPU ou RAM: dá-lhe mais memória em Desempenho ou baixa a distância de visão.</value></data>
+  <data name="Net_LocalNoReply" xml:space="preserve"><value>O servidor não responde</value></data>
+  <data name="Net_LocalNoReplyDetail" xml:space="preserve"><value>Está ligado mas não responde: pode ainda estar a arrancar ou ter bloqueado.</value></data>
+  <data name="Net_InternetGood" xml:space="preserve"><value>A tua internet está bem</value></data>
+  <data name="Net_InternetGoodDetailFmt" xml:space="preserve"><value>Upload suficiente para cerca de {0} jogadores.</value></data>
+  <data name="Net_InternetFair" xml:space="preserve"><value>A tua internet está no limite</value></data>
+  <data name="Net_InternetSlowUpFmt" xml:space="preserve"><value>O upload é curto: dá para cerca de {0} jogadores sem se notar.</value></data>
+  <data name="Net_InternetLaggyDetail" xml:space="preserve"><value>A tua ligação tem atraso ou perde pacotes; por cabo costuma ir melhor do que por Wi-Fi.</value></data>
+  <data name="Net_InternetBad" xml:space="preserve"><value>A tua internet está mal</value></data>
+  <data name="Net_InternetBadDetail" xml:space="preserve"><value>Com esta ligação os jogadores vão sentir atraso: experimenta por cabo ou reinicia o router.</value></data>
+  <data name="Net_InternetNone" xml:space="preserve"><value>Sem ligação à internet</value></data>
+  <data name="Net_InternetNoneDetail" xml:space="preserve"><value>Este PC não conseguiu chegar à internet.</value></data>
+  <data name="Net_TunnelGood" xml:space="preserve"><value>O túnel está bem</value></data>
+  <data name="Net_TunnelGoodDetail" xml:space="preserve"><value>Os jogadores chegam depressa através do Playit.</value></data>
+  <data name="Net_TunnelFair" xml:space="preserve"><value>O túnel está um pouco lento</value></data>
+  <data name="Net_TunnelFairDetail" xml:space="preserve"><value>É o que mais atraso acrescenta. Experimenta outra região do túnel no Playit.</value></data>
+  <data name="Net_TunnelBad" xml:space="preserve"><value>O túnel está lento</value></data>
+  <data name="Net_TunnelBadDetail" xml:space="preserve"><value>O atraso vem do túnel, não do teu PC. Experimenta outra região no Playit ou tenta mais tarde.</value></data>
+  <data name="Net_TunnelNoReply" xml:space="preserve"><value>O túnel não responde</value></data>
+  <data name="Net_TunnelNoReplyDetail" xml:space="preserve"><value>Não se chega ao servidor de fora: verifica se o agente do Playit está ligado (secção Túneis).</value></data>
+  <data name="Net_BedrockGood" xml:space="preserve"><value>Bedrock está bem</value></data>
+  <data name="Net_BedrockGoodDetail" xml:space="preserve"><value>Os jogadores de telemóvel e consola chegam depressa.</value></data>
+  <data name="Net_BedrockFair" xml:space="preserve"><value>Bedrock está um pouco lento</value></data>
+  <data name="Net_BedrockFairDetail" xml:space="preserve"><value>O túnel Bedrock acrescenta atraso. Experimenta outra região no Playit.</value></data>
+  <data name="Net_BedrockBad" xml:space="preserve"><value>Bedrock está lento</value></data>
+  <data name="Net_BedrockBadDetail" xml:space="preserve"><value>O túnel Bedrock está lento ou perde pacotes. Experimenta outra região no Playit.</value></data>
+  <data name="Net_BedrockNoReply" xml:space="preserve"><value>Bedrock não responde</value></data>
+  <data name="Net_BedrockNoReplyDetail" xml:space="preserve"><value>O Bedrock não entra: verifica se o Geyser arrancou e se o túnel UDP existe.</value></data>
+  <data name="Net_VerdictGood" xml:space="preserve"><value>Está tudo bem. Se a alguém lhe for lento, o problema é da ligação dele.</value></data>
+  <data name="Net_VerdictPartial" xml:space="preserve"><value>O que foi possível testar está bem.</value></data>
+  <data name="Net_VerdictFmt" xml:space="preserve"><value>{0}. {1}</value></data>
+  <data name="Net_ServerOffBanner" xml:space="preserve"><value>Com o servidor desligado só foi possível testar a tua internet.</value></data>
+  <data name="Net_StartAndTest" xml:space="preserve"><value>Ligar e testar tudo</value></data>
+  <data name="Net_Details" xml:space="preserve"><value>Detalhes técnicos</value></data>
+  <data name="Net_ColStretch" xml:space="preserve"><value>Troço</value></data>
+  <data name="Net_ColMin" xml:space="preserve"><value>mín</value></data>
+  <data name="Net_ColAvg" xml:space="preserve"><value>média</value></data>
+  <data name="Net_ColMax" xml:space="preserve"><value>máx</value></data>
+  <data name="Net_ColJitter" xml:space="preserve"><value>jitter</value></data>
+  <data name="Net_ColLoss" xml:space="preserve"><value>perda</value></data>
+  <data name="Net_MsNote" xml:space="preserve"><value>Tempos de ida e volta em milissegundos, 8 amostras por troço. O túnel é medido deste PC até ao Playit e de volta: o caminho dos jogadores.</value></data>
+  <data name="Net_RowLocal" xml:space="preserve"><value>Servidor local (SLP)</value></data>
+  <data name="Net_RowInternet" xml:space="preserve"><value>Internet (Cloudflare)</value></data>
+  <data name="Net_RowTunnel" xml:space="preserve"><value>Túnel Java (SLP)</value></data>
+  <data name="Net_RowBedrock" xml:space="preserve"><value>Túnel Bedrock (RakNet)</value></data>
+  <data name="Net_Download" xml:space="preserve"><value>Download</value></data>
+  <data name="Net_Upload" xml:space="preserve"><value>Upload</value></data>
+  <data name="Net_Peak" xml:space="preserve"><value>Pico de upload</value></data>
+  <data name="Net_SamplesTunnelFmt" xml:space="preserve"><value>Latência do túnel, {0} amostras</value></data>
+  <data name="Net_SamplesLocalFmt" xml:space="preserve"><value>Latência do servidor, {0} amostras</value></data>
+  <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Servidor: {0} · {1}/{2} jogadores</value></data>
+  <data name="Net_CopyReport" xml:space="preserve"><value>Copiar relatório</value></data>
+  <data name="Net_Copied" xml:space="preserve"><value>Copiado</value></data>
 </root>

@@ -124,7 +124,8 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 <br>
 
 - **Todo en una ventana**: un menú lateral con **Servidores**, **Túneles**, **Ajustes** y **Acerca de**. Crear o
-  añadir un servidor se hace junto a la lista, y se puede dejar a medias y retomar.
+  añadir un servidor se hace junto a la lista, y se puede dejar a medias y retomar; la configuración de un
+  servidor se abre en el mismo sitio, nunca en un diálogo.
 - **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Paper /
   Purpur / Fabric / NeoForge / Forge).
 - **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang), **puerto** y
@@ -136,10 +137,15 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   **conservando el mundo**, con avisos por colores de lo que puede afectar cada cambio.
 - **Iniciar / Detener / Reiniciar** con parada limpia que guarda el mundo; detecta y libera un **puerto
   ocupado**; **CPU, RAM, tiempo activo y puerto** en vivo.
-- **Tarjeta estilo Minecraft** — icono, MOTD con colores, `jugadores/máx` y señal. Pulsa la imagen o el lápiz
-  para abrir **Apariencia del servidor**: la imagen, el nombre y las dos líneas del MOTD —colores, negrita,
-  cursiva, subrayado y tachado— con la propia tarjeta como vista previa.
-- **Configuración visual de `server.properties`** con explicaciones claras.
+- **Tarjeta estilo Minecraft** — icono, MOTD con colores, `jugadores/máx` y señal. Su lápiz abre
+  **Apariencia**: la imagen, el nombre y las dos líneas del MOTD —los 16 colores con su nombre, los recientes,
+  **degradados**, negrita, cursiva, subrayado y tachado, y **cualquier color hex** en Paper y Purpur— con la
+  propia tarjeta como vista previa. La barra de formato enseña lo que ya tiene el texto donde está el cursor.
+- **Toda la configuración de un servidor en una página** ⚙️ — **Configurar** la abre dentro de la ventana,
+  ordenada en Apariencia · Juego (partida, mundo) · Servidor (tipo y versión, rendimiento, red, crossplay) ·
+  Automático (encendido, copias, avisos) · Avanzado, con cada ajuste de `server.properties` explicado en
+  claro. Los cambios esperan en una barra que solo aparece cuando hay algo que guardar, y salir con cambios
+  sin guardar se frena ahí mismo. En una ventana estrecha el índice pasa a una tira de chips.
 - **Semillas** 🌱 — elígela al crear el servidor, mira la real en su configuración y ábrela en el mapa de
   Chunkbase, en la versión de ese servidor, con un clic.
 - **Se apaga y se enciende solo** 💤 — un servidor puede **apagarse a los N minutos sin nadie dentro** y
@@ -188,9 +194,13 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   credencial vive en un pequeño proxy).
 - **Túneles** — todos los túneles de tu cuenta en una tabla: marca los que no llevan a nada, los repetidos y
   los puertos compartidos, con un botón para arreglar cada uno, y deja renombrarlos o borrarlos.
+- **Prueba de conexión** 📶 — **Probar conexión** en la tarjeta de Playit mide cada tramo por separado —tu
+  servidor, tu internet (latencia, bajada y subida, con Cloudflare), el túnel de Java y el de Bedrock— y dice
+  en una frase si el retraso viene de tu PC, de tu línea o del túnel. Los detalles técnicos (mín/media/máx,
+  jitter, pérdida, pico de transmisión, muestras) están a un clic, con un informe para copiar.
 - **Jugar también desde Bedrock** 📱 — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea
   el segundo túnel (UDP) y configura el puerto público que Geyser debe anunciar. El puerto de Bedrock se cambia
-  en la configuración de cada servidor, y nunca se le da el mismo a dos. Depende del tipo de servidor:
+  en la configuración de cada servidor (Red y acceso), y nunca se le da el mismo a dos. Depende del tipo de servidor:
 
   | Tipo | Desde Bedrock | Por qué |
   |---|---|---|
@@ -237,7 +247,9 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 - **Copias de seguridad del mundo** — antes de cada arranque, en cada parada y, si lo dejas puesto, cada hora
   mientras se juega. Para copiar un servidor arrancado se le pide antes a Minecraft que vuelque el mundo a
   disco, así que la copia nunca queda a medias; y si nadie se ha conectado desde la anterior, se salta. Las que
-  haces a mano se cuentan aparte, así que el reloj nunca las borra. **Copia ahora** y **Restaurar** con un clic.
+  haces a mano se cuentan aparte, así que el reloj nunca las borra. La pestaña **Copias** enseña cada montón
+  frente a su cupo, el espacio que ocupan y cuándo toca la próxima, las ordena por días y marca la que la
+  próxima copia sustituirá. **Copia ahora** y **Restaurar** con un clic.
 - **Ajustes dentro de la ventana** ⚙️ — idioma, bandeja del sistema, **añadir al escritorio**, notificaciones,
   colores e historial de jugadores, cada cosa en su página. Se guarda al momento.
 - **No estorba** — minimiza o cierra **a la bandeja** y tus servidores siguen; abrir la app otra vez recupera
@@ -271,9 +283,9 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 
 ![Gestión de jugadores](docs/screenshots/players.png)
 
-**Editor visual de `server.properties`**
+**Configuración del servidor**
 
-![Editor visual de configuración](docs/screenshots/settings.png)
+![La configuración de un servidor, dentro de la ventana](docs/screenshots/settings.png)
 
 </details>
 

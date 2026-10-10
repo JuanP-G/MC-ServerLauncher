@@ -3,6 +3,7 @@ using McServerLauncher.Models;
 using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 using McServerLauncher.Views;
+using McServerLauncher.Views.ServerSettings;
 
 namespace McServerLauncher.Tests;
 
@@ -113,12 +114,18 @@ public class BedrockPortSettingTests(AvaloniaFixture ui) : IDisposable
         };
     }
 
+    private static (ServerSettingsView View, Control Section) Open(ServerConfig config, Func<int, string?>? owner = null)
+    {
+        var view = new ServerSettingsView(new ServerViewModel(config), ServerSettingsPage.Network, owner);
+        return (view, view.Section(ServerSettingsPage.Network));
+    }
+
     [Fact]
     public void WithoutCrossplayThereIsNoBedrockPortToChange() =>
         ui.Run(() =>
         {
-            var dialog = new ServerConfigDialog(Server(crossplay: false));
-            Assert.False(dialog.FindControl<Border>("BedrockPortCard")!.IsVisible);
+            var (_, section) = Open(Server(crossplay: false));
+            Assert.False(section.FindControl<Border>("BedrockPortCard")!.IsVisible);
         });
 
     [Fact]
@@ -126,12 +133,12 @@ public class BedrockPortSettingTests(AvaloniaFixture ui) : IDisposable
         ui.Run(() =>
         {
             var config = Server(crossplay: true);
-            var dialog = new ServerConfigDialog(config, port => port == 19140 ? "Java+Bedrock" : null);
-            dialog.FindControl<NumericUpDown>("BedrockPortBox")!.Value = 19140;
+            var (view, section) = Open(config, port => port == 19140 ? "Java+Bedrock" : null);
+            section.FindControl<NumericUpDown>("BedrockPortBox")!.Value = 19140;
 
-            Assert.False(dialog.TryApplyBedrockPort());
+            Assert.False(view.Save());
             Assert.Equal(19132, config.BedrockPort);
-            var warning = dialog.FindControl<TextBlock>("BedrockPortWarning")!;
+            var warning = section.FindControl<TextBlock>("BedrockPortWarning")!;
             Assert.True(warning.IsVisible);
             Assert.Contains("Java+Bedrock", warning.Text);
         });
@@ -141,12 +148,14 @@ public class BedrockPortSettingTests(AvaloniaFixture ui) : IDisposable
         ui.Run(() =>
         {
             var config = Server(crossplay: true);
-            var dialog = new ServerConfigDialog(config, _ => null);
-            dialog.FindControl<NumericUpDown>("BedrockPortBox")!.Value = 19141;
+            var (view, section) = Open(config, _ => null);
+            ServerSettingsSaved? saved = null;
+            view.Saved += s => saved = s;
+            section.FindControl<NumericUpDown>("BedrockPortBox")!.Value = 19141;
 
-            Assert.True(dialog.TryApplyBedrockPort());
+            Assert.True(view.Save());
             Assert.Equal(19141, config.BedrockPort);
-            Assert.True(dialog.BedrockPortChanged);
+            Assert.True(saved!.BedrockPortChanged);
 
             var geyser = GeyserConfigService.ConfigPath(_folder, ServerType.Paper)!;
             Assert.Contains("19141", File.ReadAllText(geyser));
@@ -156,10 +165,17 @@ public class BedrockPortSettingTests(AvaloniaFixture ui) : IDisposable
     public void LeavingThePortAloneChangesNothing() =>
         ui.Run(() =>
         {
+            // Not even going there and back: the config keeps 0 for "the default", and typing the
+            // default out must not turn that into a change.
             var config = Server(crossplay: true);
-            var dialog = new ServerConfigDialog(config, _ => "anyone");
+            config.BedrockPort = 0;
+            var (view, section) = Open(config, _ => "anyone");
+            var box = section.FindControl<NumericUpDown>("BedrockPortBox")!;
 
-            Assert.True(dialog.TryApplyBedrockPort());
-            Assert.False(dialog.BedrockPortChanged);
+            box.Value = 19150;
+            box.Value = 19132;
+
+            Assert.False(view.IsDirty);
+            Assert.Equal(0, config.BedrockPort);
         });
 }

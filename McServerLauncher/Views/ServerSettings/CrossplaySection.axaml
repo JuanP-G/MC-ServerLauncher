@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:models="using:McServerLauncher.Models"
+             x:Class="McServerLauncher.Views.ServerSettings.CrossplaySection"
+             x:DataType="models:ServerConfig">
+
+    <!-- Who else can play: Bedrock players, older and newer Java versions, and Bedrock players on a
+         modded server. Each is a request to install something, done on Save. What the type cannot
+         do is greyed out with why. DataContext: the draft's copy of the config. -->
+    <StackPanel>
+        <Border Classes="card">
+            <StackPanel>
+                <DockPanel Classes="setting">
+                    <ToggleSwitch x:Name="CrossplayCheck" Classes="ctl" IsChecked="{Binding CrossplayEnabled, Mode=TwoWay}" />
+                    <TextBlock Text="{loc:Loc Crossplay_Check}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </DockPanel>
+                <TextBlock x:Name="CrossplayHint" Classes="desc" Text="{loc:Loc Crossplay_Hint}" />
+                <TextBlock x:Name="CrossplayWhyNot" Classes="desc warn" IsVisible="False" />
+                <!-- Shown on the mod loaders only, and with different text for each: on Fabric the
+                     Hydraulic switch below is the answer, on NeoForge there is none. The text comes
+                     from CrossplayService.CaveatKey so the new-server panel says the same thing. -->
+                <TextBlock x:Name="CrossplayModdedNote" Classes="desc warn" IsVisible="False" />
+            </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+            <StackPanel>
+                <DockPanel Classes="setting">
+                    <ToggleSwitch x:Name="MultiVersionCheck" Classes="ctl" IsChecked="{Binding MultiVersionEnabled, Mode=TwoWay}" />
+                    <TextBlock Text="{loc:Loc MultiVersion_Check}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </DockPanel>
+                <TextBlock x:Name="MultiVersionHint" Classes="desc" Text="{loc:Loc MultiVersion_Hint}" />
+                <TextBlock x:Name="MultiVersionWhyNot" Classes="desc warn" IsVisible="False"
+                           Text="{loc:Loc MultiVersion_Unsupported}" />
+            </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+            <StackPanel>
+                <DockPanel Classes="setting">
+                    <ToggleSwitch x:Name="HydraulicCheck" Classes="ctl" IsChecked="{Binding BedrockModContentEnabled, Mode=TwoWay}" />
+                    <TextBlock Text="{loc:Loc Hydraulic_Check}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </DockPanel>
+                <TextBlock x:Name="HydraulicHint" Classes="desc" Text="{loc:Loc Hydraulic_Hint}" />
+                <TextBlock x:Name="HydraulicWhyNot" Classes="desc warn" IsVisible="False"
+                           Text="{loc:Loc Hydraulic_Unsupported}" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

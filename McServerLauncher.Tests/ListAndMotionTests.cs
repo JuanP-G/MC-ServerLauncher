@@ -66,7 +66,10 @@ public class ServerListBindingTests
 
     [Theory]
     [InlineData("ShowNewServerCommand")]
-    [InlineData("EditServerCommand")]
+    [InlineData("ConfigureServerCommand")]
+    [InlineData("EditAppearanceCommand")]
+    [InlineData("ServerSettingsPanel")]
+    [InlineData("IsEditingServer")]
     [InlineData("RemoveServerCommand")]
     [InlineData("ShowServerDetail")]
     [InlineData("ShowEmptyState")]
@@ -98,12 +101,14 @@ public class ServerListBindingTests
     }
 
     [Fact]
-    public void TheRowActionsActOnTheirOwnRow()
+    public void TheRowsOwnActionIsDeletingAndTheSettingsHaveOneWayIn()
     {
         var xaml = MainWindow();
 
-        Assert.Matches(@"EditServerCommand[^>]*\s+CommandParameter=""\{Binding\}""", Regex.Replace(xaml, @"\s+", " "));
         Assert.Matches(@"RemoveServerCommand[^>]*\s+CommandParameter=""\{Binding\}""", Regex.Replace(xaml, @"\s+", " "));
+        // The row's pencil went with the edit dialog: the detail's "Configure" and the card's pencil
+        // open the same settings, and a third button doing it again was what made them confusing.
+        Assert.DoesNotContain("EditServerCommand", xaml);
     }
 }
 

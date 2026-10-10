@@ -72,15 +72,16 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > se olvide de la tabla falla en vez de anunciar un nombre que no escucha nadie. Ese es todo el
 > asunto: el fallo nunca fue difícil, solo era silencioso.
 >
-> Persistir no es a propósito uno de los efectos. El diálogo de editar escribe en la config viva
-> según se teclea, así que guardar en cada cambio reescribiría `servers.json` en cada tecla; guardar
-> se queda donde está, una vez, cuando se acepta un diálogo.
+> Persistir no es a propósito uno de los efectos; guardar se queda donde está, una vez, cuando se
+> guarda la configuración del servidor.
 >
-> Por lo mismo, la caja de la carpeta en `AddEditServerDialog` es el único enlace con
-> `UpdateSourceTrigger=LostFocus`. La carpeta es la identidad entera del servidor en disco, y
-> volcarla en cada tecla releería el puerto, el MOTD, el icono, la carpeta de contenido y la lista de
-> backups una vez por letra, contra rutas que todavía no existen. Las demás cajas de ahí vuelcan
-> según se escribe, que es lo que hace que la tarjeta se actualice mientras la editas.
+> Esa configuración es una página dentro de la ventana (`ServerSettingsView`, con sus páginas en
+> `Views/ServerSettings`), no un diálogo, así que no puede editar la config viva como lo hacía el
+> antiguo diálogo de editar: nada modal impide al resto de la app mirarla a medio editar. Los
+> controles editan una copia (`ServerSettingsDraft`) y Guardar devuelve solo los campos que
+> cambiaron: la config viva se sigue escribiendo mientras tanto —una instalación de loader, la
+> semilla leída de la consola— y volcar la copia entera encima lo desharía. Salir de la página con
+> algo sin guardar lo impide la propia barra de guardar, no una ventana que pregunta.
 
 > **Un constructor monta; `Activate()` arranca.** `ServerViewModel` y `MainViewModel` se parten en
 > dos. El constructor lee —la config, la paleta de consola, los archivos del propio servidor— y no
@@ -204,7 +205,7 @@ mundo. No hay rutas fijas del equipo en el código.
   jugar» no son la misma afirmación: `Full` en Paper, Purpur y Fabric; `Partial` en NeoForge — conecta y autentica,
   y a partir de ahí cualquier mod que el cliente necesite tener deja fuera a Bedrock —; y `None` en Vanilla y
   Forge. `CrossplayService.CaveatKey` convierte el nivel en el aviso que muestran el panel de nuevo servidor
-  y el diálogo de editar.
+  y la página Crossplay de la configuración del servidor.
 - **`ServerJarInstaller`** — el único sitio que sabe cómo se obtiene cada tipo. Lo llaman el panel de nuevo servidor y
   el diálogo de cambiar el tipo; antes la cadena estaba escrita en los dos, y un tipo presente en uno y ausente en el otro
   producía un servidor Vanilla sin decir nada.
@@ -448,10 +449,11 @@ está en pantalla.
   pasos tras cualquiera de los dos orígenes. Elegir un servidor con el panel abierto enseña ese
   servidor y guarda el panel como borrador (`HasNewServerDraft`); una descarga ya empezada sigue y el
   servidor entra en la lista al terminar. La tarjeta de arriba de cada servidor (`ServerCardView`) es
-  también la vista previa de **Apariencia del servidor** (`ServerAppearanceDialog`), que edita la
-  imagen, el nombre y el MOTD como dos líneas con estilo letra a letra (`MotdDocument`); `WakeSign`
-  escribe el «entra para encenderlo» que enseñan tanto el listener del servidor dormido como esa
-  vista previa.
+  también la vista previa de la página **Apariencia** de su configuración (`AppearanceSection`), que
+  edita la imagen, el nombre y el MOTD como dos líneas con estilo letra a letra (`MotdDocument`);
+  `WakeSign` escribe el «entra para encenderlo» que enseñan tanto el listener del servidor dormido
+  como esa vista previa. El lápiz del cartel abre esa página y **Configurar** abre la configuración
+  donde se dejó: una sola página para lo que antes eran tres diálogos.
 - **Túneles** (`TunnelsViewModel`/`TunnelsView`) lee a la vez todas las claves de Playit que la app
   encuentra —el agente de la app, el `playit.toml` de un agente instalado, una clave guardada—, junta
   lo que ve cada una (`TunnelInventory`) y ofrece los arreglos que puede hacer. La cuenta se lee una
@@ -637,8 +639,8 @@ público del túnel, y el launcher es el único componente que conoce los dos n�
 creó el túnel. `RepairConfig` vuelve a aplicarlo cuando una reinstalación resetea el archivo.
 
 Lo bien que funcione todo esto es una propiedad del tipo de servidor, no una promesa:
-`ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores, y el panel de nuevo servidor y el
-diálogo de editar enseñan la advertencia antes de marcar la casilla. En Fabric, otra casilla instala **Hydraulic**
+`ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores, y el panel de nuevo servidor y la
+página Crossplay de la configuración enseñan la advertencia antes de marcar la casilla. En Fabric, otra casilla instala **Hydraulic**
 (`HydraulicService`) para que los bloques y objetos que añaden los mods se conviertan para los
 clientes de Bedrock; es solo para Fabric porque Hydraulic dejó de publicar builds de NeoForge en
 febrero de 2026. El único fallo que no se puede evitar — un servidor NeoForge rechazando la conexión
@@ -705,7 +707,7 @@ dice tener decenas de miles de píxeles de lado se rechaza en vez de decodificar
 tiene un presupuesto de 96 MB además del tope de entradas (`ImageCacheBudgetTests`).
 
 ### Cambiar el tipo de un servidor
-`InstallLoaderDialog` convierte un servidor existente en el sitio, **conservando el mundo**: de
+La página **Tipo y versión** de la configuración (`LoaderSection`) convierte el servidor en el sitio, **conservando el mundo**: de
 Vanilla a un cargador o a un servidor de plugins, de un cargador a otro, o de cualquiera de ellos de
 vuelta a Vanilla. Ofrece la misma lista que el panel de nuevo servidor (el `ServerTypePicker`
 compartido) e instala por el mismo `ServerJarInstaller`, así que los dos ya no pueden separarse — se
@@ -719,8 +721,8 @@ La conversión escribe en el `ServerConfig` que la app ya está mostrando, y **n
 ningún refresco**. La config avisa de cada campo que ha cambiado, `ServerConfigEffects` dice lo que
 ese campo cuesta, y la insignia, la versión, la pestaña de Mods, sus fichas de filtro, la lista de
 instalados —la carpeta de la familia vieja acaba de apartarse— y la búsqueda de la tienda van
-solos. Incluso cancelar el diálogo después queda cubierto, porque restaurar la copia anuncia sus
-propias asignaciones.
+solos. La página de configuración da por guardados los campos instalados
+(`ServerSettingsDraft.Adopt`), así que un Descartar posterior no puede devolver el jar viejo.
 
 Antes esto reconstruía el view model entero, y solo cuando había cambiado el *tipo* y el servidor
 estaba parado. Convertir Fabric 1.21.1 a Fabric 1.21.4 no cambiaba entonces nada en pantalla, y el
