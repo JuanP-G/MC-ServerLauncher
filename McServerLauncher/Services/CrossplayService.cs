@@ -188,13 +188,8 @@ public class CrossplayService
     /// </remarks>
     public async Task InstallAsync(ServerConfig config, IProgress<string>? log, CancellationToken ct = default)
     {
-        if (!CanEnable(config.Type))
-            throw new InvalidOperationException(
-                string.Format(Localizer.Get("Msg_CrossplayUnsupportedFmt"), config.Type));
-
         // Paper takes plugins, the mod loaders take mods. Same rule the mod store already uses.
-        var folder = Path.Combine(config.FolderPath, ServerTypeCatalog.ContentFolder(config.Type));
-        Directory.CreateDirectory(folder);
+        var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type), "Msg_CrossplayUnsupportedFmt");
 
         await InstallFromModrinthAsync(config, folder, GeyserProjectId, "Geyser", log, ct);
 
@@ -320,7 +315,7 @@ public class CrossplayService
     /// </remarks>
     public static bool IsFloodgateInstalled(ServerConfig config)
     {
-        var folder = Path.Combine(config.FolderPath, ServerTypeCatalog.ContentFolder(config.Type));
+        var folder = ContentManifest.FolderOf(config);
         if (!Directory.Exists(folder)) return false;
 
         return Directory.EnumerateFiles(folder)
