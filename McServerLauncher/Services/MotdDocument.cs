@@ -1,4 +1,5 @@
 using System.Text;
+using McServerLauncher.Models;
 
 namespace McServerLauncher.Services;
 
@@ -13,10 +14,22 @@ public enum MotdFormat
     Strike = 8,
 }
 
-/// <summary>How one character looks. <see cref="Color"/> is a Minecraft code (0-9, a-f), or '\0' for the list's default grey.</summary>
-public readonly record struct MotdStyle(char Color, MotdFormat Format)
+/// <summary>
+/// How one character looks. <see cref="Color"/> is a Minecraft code (0-9, a-f), <c>'x'</c> for the
+/// RGB colour in <see cref="Rgb"/>, or '\0' for the list's default grey.
+/// </summary>
+public readonly record struct MotdStyle(char Color, MotdFormat Format, int Rgb = -1)
 {
     public static readonly MotdStyle Plain = new('\0', MotdFormat.None);
+
+    /// <summary>A free RGB colour, with no formatting.</summary>
+    public static MotdStyle OfHex(int rgb) => new('x', MotdFormat.None, rgb & 0xFFFFFF);
+
+    public bool IsHex => Color == 'x';
+
+    /// <summary>The same formatting in another colour: a code, or 'x' with its RGB.</summary>
+    public MotdStyle WithColor(char color, int rgb = -1) =>
+        this with { Color = color, Rgb = color == 'x' ? rgb & 0xFFFFFF : -1 };
 }
 
 /// <summary>
@@ -44,6 +57,50 @@ public sealed class MotdDocument
     /// <summary>The 16 colour codes, in the order the game lists them.</summary>
     public const string ColorCodes = "0123456789abcdef";
 
+    // The game's own values for the 16 codes, as 0xRRGGBB.
+    private static readonly int[] CodeRgb =
+    [
+        0x000000, 0x0000AA, 0x00AA00, 0x00AAAA, 0xAA0000, 0xAA00AA, 0xFFAA00, 0xAAAAAA,
+        0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF,
+    ];
+
+    /// <summary>The colour a code draws, as 0xRRGGBB.</summary>
+    public static int RgbOf(char code) => CodeRgb[ColorCodes.IndexOf(code)];
+
+    /// <summary>The code whose colour is closest to <paramref name="rgb"/>.</summary>
+    public static char NearestCode(int rgb)
+    {
+        var best = '0';
+        var bestDistance = int.MaxValue;
+        foreach (var code in ColorCodes)
+        {
+            var c = RgbOf(code);
+            int dr = ((c >> 16) & 255) - ((rgb >> 16) & 255), dg = ((c >> 8) & 255) - ((rgb >> 8) & 255), db = (c & 255) - (rgb & 255);
+            var d = dr * dr * 3 + dg * dg * 4 + db * db * 2; // weighted the way the eye weighs them
+            if (d < bestDistance) (best, bestDistance) = (code, d);
+        }
+        return best;
+    }
+
+    /// <summary>
+    /// Whether a server of this kind shows free RGB colours in its MOTD.
+    /// </summary>
+    /// <remarks>
+    /// Paper and its fork Purpur read <c>motd=</c> with a parser that knows the long
+    /// <c>§x§R§R§G§G§B§B</c> form, from 1.16 on, when the game got RGB text. Vanilla and the mod
+    /// loaders read only the 16 codes, and would show the <c>§x</c> run as stray letters, so the
+    /// editor only offers it where it works.
+    /// </remarks>
+    public static bool HexWorksOn(ServerType type, string? gameVersion)
+    {
+        if (type is not (ServerType.Paper or ServerType.Purpur)) return false;
+        if (string.IsNullOrWhiteSpace(gameVersion)) return true;
+        var parts = gameVersion.Split('.', '-', ' ');
+        if (!int.TryParse(parts[0], out var major)) return true;
+        if (major > 1) return true;
+        return parts.Length > 1 && int.TryParse(parts[1], out var minor) && minor >= 16;
+    }
+
     private readonly string[] _text = ["", ""];
     private readonly List<MotdStyle>[] _styles = [new(), new()];
 
@@ -55,6 +112,9 @@ public sealed class MotdDocument
     public int Length(int line) => _text[line].Length;
 
     public MotdStyle StyleAt(int line, int index) => _styles[line][index];
+
+    /// <summary>True when some character has a free RGB colour.</summary>
+    public bool HasHex => _styles.Any(line => line.Any(s => s.IsHex));
 
     // ---------------------------------------------------------------- reading
 
@@ -89,6 +149,12 @@ public sealed class MotdDocument
 
             if (c == '§')
             {
+                if (TryReadHex(text, i, out var rgb))
+                {
+                    style = MotdStyle.OfHex(rgb); // a colour wipes the formatting, RGB ones too
+                    i += 13;
+                    continue;
+                }
                 if (i + 1 < text.Length) style = Apply(style, char.ToLowerInvariant(text[++i]));
                 continue;
             }
@@ -99,6 +165,21 @@ public sealed class MotdDocument
 
         CloseLine();
         return doc;
+    }
+
+    /// <summary>Reads <c>§x§R§R§G§G§B§B</c> starting at <paramref name="at"/>.</summary>
+    internal static bool TryReadHex(string text, int at, out int rgb)
+    {
+        rgb = 0;
+        if (at + 14 > text.Length || text[at] != '§' || char.ToLowerInvariant(text[at + 1]) != 'x') return false;
+        for (var k = 0; k < 6; k++)
+        {
+            if (text[at + 2 + 2 * k] != '§') return false;
+            var h = char.ToLowerInvariant(text[at + 3 + 2 * k]);
+            if (!Uri.IsHexDigit(h)) return false;
+            rgb = (rgb << 4) | Convert.ToInt32(h.ToString(), 16);
+        }
+        return true;
     }
 
     /// <summary>The style after one <c>§</c> code. A colour wipes the formatting, as it does in the game.</summary>
@@ -210,10 +291,15 @@ public sealed class MotdDocument
             have = MotdStyle.Plain;
         }
 
-        if (want.Color != have.Color)
+        if (want.Color != have.Color || want.Rgb != have.Rgb)
         {
-            sb.Append('§').Append(want.Color);
-            have = new MotdStyle(want.Color, MotdFormat.None); // a colour wipes the formatting
+            if (want.IsHex)
+            {
+                sb.Append("§x");
+                foreach (var digit in want.Rgb.ToString("x6")) sb.Append('§').Append(digit);
+            }
+            else sb.Append('§').Append(want.Color);
+            have = new MotdStyle(want.Color, MotdFormat.None, want.Rgb); // a colour wipes the formatting
         }
 
         var add = want.Format & ~have.Format;
@@ -289,7 +375,37 @@ public sealed class MotdDocument
 
     /// <summary>Sets the colour of a range, keeping its formatting.</summary>
     public void SetColor(int line, int start, int length, char color) =>
-        Transform(line, start, length, s => s with { Color = color });
+        Transform(line, start, length, s => s.WithColor(color));
+
+    /// <summary>Sets a free RGB colour on a range, keeping its formatting.</summary>
+    public void SetHex(int line, int start, int length, int rgb) =>
+        Transform(line, start, length, s => s.WithColor('x', rgb));
+
+    /// <summary>
+    /// Spreads a colour ramp from <paramref name="fromRgb"/> to <paramref name="toRgb"/> across a
+    /// range, one step per character, keeping the formatting.
+    /// </summary>
+    /// <param name="hex">
+    /// Each character its own RGB colour. Otherwise each takes the nearest of the 16 codes, which
+    /// gives bands rather than a smooth ramp — what a server without RGB text can show.
+    /// </param>
+    public void SetGradient(int line, int start, int length, int fromRgb, int toRgb, bool hex)
+    {
+        (start, length) = Clamp(line, start, length);
+        for (var i = 0; i < length; i++)
+        {
+            var t = length == 1 ? 0 : i / (double)(length - 1);
+            var rgb = Lerp(fromRgb, toRgb, t);
+            var at = start + i;
+            _styles[line][at] = hex ? _styles[line][at].WithColor('x', rgb) : _styles[line][at].WithColor(NearestCode(rgb));
+        }
+    }
+
+    private static int Lerp(int a, int b, double t)
+    {
+        int Channel(int shift) => (int)Math.Round(((a >> shift) & 255) + (((b >> shift) & 255) - ((a >> shift) & 255)) * t);
+        return (Channel(16) << 16) | (Channel(8) << 8) | Channel(0);
+    }
 
     /// <summary>Turns a format on or off across a range.</summary>
     public void SetFormat(int line, int start, int length, MotdFormat flag, bool on) =>

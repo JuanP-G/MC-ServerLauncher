@@ -121,7 +121,7 @@ public class AppearanceSectionTests(AvaloniaFixture ui) : IDisposable
             line1.Focus();
             line1.SelectionStart = 0;
             line1.SelectionEnd = 3;
-            var bold = Named<Button>(dialog, "BoldButton");
+            var bold = Named<Avalonia.Controls.Primitives.ToggleButton>(dialog, "BoldButton");
 
             bold.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
             Assert.Equal("§labc", PreviewMotd(dialog));

@@ -6,6 +6,48 @@
              x:Class="McServerLauncher.Views.ServerSettings.AppearanceSection"
              x:CompileBindings="False">
 
+    <UserControl.Styles>
+        <Style Selector="Button.swatch">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="2" />
+            <Setter Property="Margin" Value="0,0,4,4" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.swatch.on">
+            <Setter Property="BorderBrush" Value="{StaticResource TextOnPopup}" />
+        </Style>
+        <Style Selector="Button.swatch.armed">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentSelected}" />
+        </Style>
+        <Style Selector="Button.swatch.small">
+            <Setter Property="Width" Value="22" />
+            <Setter Property="Height" Value="22" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+        <Style Selector="ToggleButton.fmt">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="ToggleButton.chip">
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="10,3" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+    </UserControl.Styles>
+
     <!-- The server's card: the picture, the name and the two lines of the MOTD. Set from code rather
          than bound, because the MOTD's colours live in a MotdDocument and not in the text boxes. -->
     <StackPanel>
@@ -67,34 +109,92 @@
                 <TextBlock Classes="desc" Text="{loc:Loc Look_MotdDesc}" />
 
                 <!-- The format bar. Nothing in it takes the focus: if it did, the text box would
-                     lose its selection just before the button reads it. The 16 colours are built
-                     from MinecraftMotd's palette, so there is not a single hex in here. They wrap:
-                     sixteen swatches and five buttons do not fit on one line of a narrow window. -->
+                     lose its selection just before the button reads it (the hex box is the one
+                     exception, and the code remembers the selection for it). It shows what the text
+                     at the caret is — its colour on the colour button, its formats pressed — so the
+                     bar answers "what is this" as well as changing it. -->
                 <WrapPanel Margin="0,10,0,0" Orientation="Horizontal">
-                    <WrapPanel x:Name="ColorPanel" Orientation="Horizontal" Margin="0,0,10,4" />
+                    <ToggleButton x:Name="ColorButton" Focusable="False" Height="28" Padding="8,0" Margin="0,0,8,4"
+                                  ToolTip.Tip="{loc:Loc Look_Color}">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <Border x:Name="ColorButtonSwatch" Width="16" Height="16" CornerRadius="3" BorderThickness="1"
+                                    BorderBrush="{StaticResource SurfaceEdgeStrong}" VerticalAlignment="Center" />
+                            <TextBlock x:Name="ColorButtonText" VerticalAlignment="Center" MinWidth="70" />
+                            <ic:SymbolIcon Symbol="ChevronDown" FontSize="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
                     <StackPanel Orientation="Horizontal" Spacing="3" Margin="0,0,0,4">
-                        <Button x:Name="BoldButton" Focusable="False" Width="30" Height="26" Padding="0"
-                                ToolTip.Tip="{loc:Loc Look_Bold}" Click="Format_Click" Tag="Bold">
+                        <ToggleButton x:Name="BoldButton" Classes="fmt" Focusable="False"
+                                      ToolTip.Tip="{loc:Loc Look_Bold}" Click="Format_Click" Tag="Bold">
                             <TextBlock Text="B" FontWeight="Bold" />
-                        </Button>
-                        <Button x:Name="ItalicButton" Focusable="False" Width="30" Height="26" Padding="0"
-                                ToolTip.Tip="{loc:Loc Look_Italic}" Click="Format_Click" Tag="Italic">
+                        </ToggleButton>
+                        <ToggleButton x:Name="ItalicButton" Classes="fmt" Focusable="False"
+                                      ToolTip.Tip="{loc:Loc Look_Italic}" Click="Format_Click" Tag="Italic">
                             <TextBlock Text="I" FontStyle="Italic" />
-                        </Button>
-                        <Button x:Name="UnderlineButton" Focusable="False" Width="30" Height="26" Padding="0"
-                                ToolTip.Tip="{loc:Loc Look_Underline}" Click="Format_Click" Tag="Underline">
+                        </ToggleButton>
+                        <ToggleButton x:Name="UnderlineButton" Classes="fmt" Focusable="False"
+                                      ToolTip.Tip="{loc:Loc Look_Underline}" Click="Format_Click" Tag="Underline">
                             <TextBlock Text="U" TextDecorations="Underline" />
-                        </Button>
-                        <Button x:Name="StrikeButton" Focusable="False" Width="30" Height="26" Padding="0"
-                                ToolTip.Tip="{loc:Loc Look_Strike}" Click="Format_Click" Tag="Strike">
+                        </ToggleButton>
+                        <ToggleButton x:Name="StrikeButton" Classes="fmt" Focusable="False"
+                                      ToolTip.Tip="{loc:Loc Look_Strike}" Click="Format_Click" Tag="Strike">
                             <TextBlock Text="S" TextDecorations="Strikethrough" />
-                        </Button>
-                        <Button x:Name="ClearButton" Focusable="False" Height="26" Padding="8,0"
+                        </ToggleButton>
+                        <Button x:Name="ClearButton" Focusable="False" Height="28" Padding="8,0"
                                 ToolTip.Tip="{loc:Loc Look_ClearFormat}" Click="Clear_Click">
                             <ic:SymbolIcon Symbol="TextClearFormatting" FontSize="14" />
                         </Button>
                     </StackPanel>
                 </WrapPanel>
+
+                <!-- The colours, opened from the colour button inside the card rather than in a
+                     popup: solid colours or a ramp between two, the recent ones, and a free RGB
+                     colour where the server can show it. -->
+                <Border x:Name="ColorDrawer" IsVisible="{Binding #ColorButton.IsChecked}" Margin="0,4,0,8" Padding="12,10"
+                        CornerRadius="8" Background="{StaticResource GroundWell}"
+                        BorderBrush="{StaticResource SurfaceEdge}" BorderThickness="1">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <ToggleButton x:Name="SolidMode" Classes="chip" Focusable="False" Content="{loc:Loc Look_Solid}"
+                                          Click="SolidMode_Click" />
+                            <ToggleButton x:Name="GradientMode" Classes="chip" Focusable="False" Content="{loc:Loc Look_Gradient}"
+                                          Click="GradientMode_Click" />
+                        </StackPanel>
+
+                        <UniformGrid x:Name="ColorPanel" Columns="8" HorizontalAlignment="Left" />
+                        <TextBlock x:Name="ColorHint" Classes="desc" />
+
+                        <StackPanel x:Name="RecentRow" Orientation="Horizontal" Spacing="6" IsVisible="False">
+                            <TextBlock Text="{loc:Loc Look_Recent}" Classes="desc" VerticalAlignment="Center" />
+                            <StackPanel x:Name="RecentPanel" Orientation="Horizontal" Spacing="2" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="GradientRow" Spacing="6" IsVisible="False">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                <Button x:Name="GradientFromButton" Grid.Column="0" Classes="swatch" Focusable="False"
+                                        ToolTip.Tip="{loc:Loc Look_GradientFrom}" Click="GradientEnd_Click" Tag="from" />
+                                <Border x:Name="GradientBar" Grid.Column="1" Height="10" CornerRadius="5" Margin="8,0"
+                                        VerticalAlignment="Center" />
+                                <Button x:Name="GradientToButton" Grid.Column="2" Classes="swatch" Focusable="False"
+                                        ToolTip.Tip="{loc:Loc Look_GradientTo}" Click="GradientEnd_Click" Tag="to" />
+                                <Button x:Name="ApplyGradientButton" Grid.Column="3" Classes="accent" Focusable="False" Margin="10,0,0,0"
+                                        Content="{loc:Loc Look_GradientApply}" Click="ApplyGradient_Click" />
+                            </Grid>
+                            <TextBlock x:Name="GradientHint" Classes="desc" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="HexRow" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{loc:Loc Look_Hex}" Classes="desc" VerticalAlignment="Center" />
+                            <Border x:Name="HexPreview" Width="18" Height="18" CornerRadius="4" BorderThickness="1"
+                                    BorderBrush="{StaticResource SurfaceEdgeStrong}" VerticalAlignment="Center" />
+                            <TextBox x:Name="HexBox" Width="110" Watermark="#FF7A00" MaxLength="7"
+                                     FontFamily="Cascadia Mono, Consolas, monospace" />
+                            <Button x:Name="HexApplyButton" Focusable="False" Content="{loc:Loc Look_HexApply}" Click="HexApply_Click" />
+                        </StackPanel>
+                        <TextBlock x:Name="HexError" Classes="desc error" IsVisible="False" Text="{loc:Loc Look_HexInvalid}" />
+                        <TextBlock x:Name="HexNote" Classes="desc" Text="{loc:Loc Look_HexOnlyPaper}" />
+                    </StackPanel>
+                </Border>
 
                 <TextBlock Text="{loc:Loc Look_Line1}" Classes="desc" Margin="0,4,0,2" />
                 <TextBox x:Name="Line1Box" FontFamily="Cascadia Mono, Consolas, monospace" />
@@ -104,6 +204,8 @@
                 <TextBlock x:Name="Line2Note" Classes="desc" Text="{loc:Loc Look_Line2Locked}" IsVisible="False" />
 
                 <TextBlock x:Name="ExtraLinesNote" Classes="desc" Text="{loc:Loc Look_ExtraLines}"
+                           Foreground="{StaticResource SemanticWarn}" IsVisible="False" />
+                <TextBlock x:Name="HexWarn" Classes="desc" Text="{loc:Loc Look_HexWarnType}"
                            Foreground="{StaticResource SemanticWarn}" IsVisible="False" />
             </StackPanel>
         </Border>

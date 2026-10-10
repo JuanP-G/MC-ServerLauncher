@@ -25,8 +25,8 @@ namespace McServerLauncher.Views.ServerSettings;
 /// </para>
 /// <para>
 /// The two text boxes hold plain text; the colours live in a <see cref="MotdDocument"/> that is kept
-/// in step with every keystroke. The toolbar acts on the selection of whichever box was last
-/// focused, and with nothing selected it sets the style the next typed characters take.
+/// in step with every keystroke. The format bar and the colours are in
+/// <c>AppearanceSection.Colors.cs</c>.
 /// </para>
 /// </remarks>
 public partial class AppearanceSection : UserControl, IServerSettingsSection
@@ -72,7 +72,6 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         ExtraLinesNote.IsVisible = _doc.HadExtraLines;
         RestartNote.IsVisible = isRunning;
 
-        BuildSwatches();
 
         _wake = draft.Live.WakeOnDemand;
         PreviewModeRow.IsVisible = _wake;
@@ -93,6 +92,7 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
             Refresh();
         };
 
+        SetUpColors();
         Reload();
     }
 
@@ -109,6 +109,7 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         ImageError.IsVisible = false;
         _loading = false;
         Refresh();
+        UpdateToolbar();
     }
 
     /// <inheritdoc />
@@ -195,89 +196,7 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
     {
         _draft.Set("motd", _doc.ToProperties());
         Refresh();
-    }
-
-    // ---------------------------------------------------------------- toolbar
-
-    private void BuildSwatches()
-    {
-        foreach (var code in MotdDocument.ColorCodes)
-        {
-            // A Border inside a transparent Button: a Background set on the Button itself is
-            // replaced by the theme's hover colour, and the swatch would stop being its colour.
-            var swatch = new Border
-            {
-                Width = 18, Height = 18, CornerRadius = new CornerRadius(3),
-                Background = new SolidColorBrush(MinecraftMotd.Palette[code]),
-                BorderThickness = new Thickness(1),
-            };
-            // Bound rather than looked up: the page is made before it is in the window, and a
-            // resource looked up then is not found.
-            swatch.Bind(Border.BorderBrushProperty, this.GetResourceObservable("SurfaceEdgeStrong"));
-            var button = new Button
-            {
-                Content = swatch, Padding = new Thickness(2), Margin = new Thickness(0, 0, 3, 0),
-                Background = Brushes.Transparent, Focusable = false, Tag = code,
-                [ToolTip.TipProperty] = "§" + code,
-            };
-            button.Click += Color_Click;
-            ColorPanel.Children.Add(button);
-        }
-    }
-
-    /// <summary>The line being edited and the selected range in it; length 0 means nothing is selected.</summary>
-    private (int Line, int Start, int Length) Selection()
-    {
-        var box = _boxes[_active];
-        var start = Math.Min(box.SelectionStart, box.SelectionEnd);
-        return (_active, start, Math.Abs(box.SelectionEnd - box.SelectionStart));
-    }
-
-    /// <summary>The style new text would take at the caret if nothing had been chosen.</summary>
-    private MotdStyle StyleAtCaret(int line)
-    {
-        var caret = Math.Min(_boxes[line].CaretIndex, _doc.Length(line));
-        return _pending[line] ?? (caret > 0 ? _doc.StyleAt(line, caret - 1) : MotdStyle.Plain);
-    }
-
-    private void Color_Click(object? sender, RoutedEventArgs e)
-    {
-        var color = (char)((Button)sender!).Tag!;
-        var (line, start, length) = Selection();
-
-        if (length > 0) _doc.SetColor(line, start, length, color);
-        else _pending[line] = StyleAtCaret(line) with { Color = color };
-
-        MotdChanged();
-    }
-
-    private void Format_Click(object? sender, RoutedEventArgs e)
-    {
-        var flag = Enum.Parse<MotdFormat>((string)((Button)sender!).Tag!);
-        var (line, start, length) = Selection();
-
-        if (length > 0)
-        {
-            // All of it has the format → take it off; otherwise put it on all of it.
-            _doc.SetFormat(line, start, length, flag, on: !_doc.AllHave(line, start, length, flag));
-        }
-        else
-        {
-            var now = StyleAtCaret(line);
-            _pending[line] = now with { Format = now.Format ^ flag };
-        }
-
-        MotdChanged();
-    }
-
-    private void Clear_Click(object? sender, RoutedEventArgs e)
-    {
-        var (line, start, length) = Selection();
-
-        if (length > 0) _doc.ClearStyle(line, start, length);
-        else _pending[line] = MotdStyle.Plain;
-
-        MotdChanged();
+        UpdateToolbar();
     }
 
     // ---------------------------------------------------------------- image

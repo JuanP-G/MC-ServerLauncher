@@ -1070,4 +1070,38 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Backup_AdjustLimits" xml:space="preserve"><value>Ajuster les limites</value></data>
   <data name="Backup_Foreign" xml:space="preserve"><value>ajoutée au dossier à la main</value></data>
   <data name="Backup_NoneInFilter" xml:space="preserve"><value>Aucune sauvegarde de ce type.</value></data>
+  <data name="MotdColor_0" xml:space="preserve"><value>Noir</value></data>
+  <data name="MotdColor_1" xml:space="preserve"><value>Bleu foncé</value></data>
+  <data name="MotdColor_2" xml:space="preserve"><value>Vert foncé</value></data>
+  <data name="MotdColor_3" xml:space="preserve"><value>Cyan foncé</value></data>
+  <data name="MotdColor_4" xml:space="preserve"><value>Rouge foncé</value></data>
+  <data name="MotdColor_5" xml:space="preserve"><value>Violet foncé</value></data>
+  <data name="MotdColor_6" xml:space="preserve"><value>Or</value></data>
+  <data name="MotdColor_7" xml:space="preserve"><value>Gris</value></data>
+  <data name="MotdColor_8" xml:space="preserve"><value>Gris foncé</value></data>
+  <data name="MotdColor_9" xml:space="preserve"><value>Bleu</value></data>
+  <data name="MotdColor_a" xml:space="preserve"><value>Vert</value></data>
+  <data name="MotdColor_b" xml:space="preserve"><value>Cyan</value></data>
+  <data name="MotdColor_c" xml:space="preserve"><value>Rouge</value></data>
+  <data name="MotdColor_d" xml:space="preserve"><value>Violet clair</value></data>
+  <data name="MotdColor_e" xml:space="preserve"><value>Jaune</value></data>
+  <data name="MotdColor_f" xml:space="preserve"><value>Blanc</value></data>
+  <data name="MotdColor_Default" xml:space="preserve"><value>Par défaut</value></data>
+  <data name="Look_Color" xml:space="preserve"><value>Couleur du texte</value></data>
+  <data name="Look_ColorHintFmt" xml:space="preserve"><value>{0} · s'applique à la sélection, ou à ce que vous tapez ensuite.</value></data>
+  <data name="Look_Recent" xml:space="preserve"><value>Récentes</value></data>
+  <data name="Look_Solid" xml:space="preserve"><value>Couleur</value></data>
+  <data name="Look_Gradient" xml:space="preserve"><value>Dégradé</value></data>
+  <data name="Look_GradientFrom" xml:space="preserve"><value>Couleur de départ</value></data>
+  <data name="Look_GradientTo" xml:space="preserve"><value>Couleur de fin</value></data>
+  <data name="Look_GradientPickFrom" xml:space="preserve"><value>Choisissez la couleur de départ.</value></data>
+  <data name="Look_GradientPickTo" xml:space="preserve"><value>Maintenant la couleur de fin.</value></data>
+  <data name="Look_GradientApply" xml:space="preserve"><value>Appliquer le dégradé</value></data>
+  <data name="Look_GradientHint" xml:space="preserve"><value>S'applique à la sélection ou, sans sélection, à toute la ligne.</value></data>
+  <data name="Look_GradientBanded" xml:space="preserve"><value>Ce serveur n'affiche que les 16 couleurs : le dégradé se fait par paliers. S'applique à la sélection ou à toute la ligne.</value></data>
+  <data name="Look_Hex" xml:space="preserve"><value>Couleur libre</value></data>
+  <data name="Look_HexApply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="Look_HexInvalid" xml:space="preserve"><value>Saisissez une couleur comme #FF7A00.</value></data>
+  <data name="Look_HexOnlyPaper" xml:space="preserve"><value>Les couleurs libres (hex) ne s'affichent que sur Paper et Purpur à partir de la 1.16 ; ailleurs, les 16 de Minecraft.</value></data>
+  <data name="Look_HexWarnType" xml:space="preserve"><value>Ce texte contient des couleurs libres (hex) que ce type de serveur n'affiche pas : elles apparaîtront comme des lettres isolées.</value></data>
 </root>

@@ -24,16 +24,9 @@ public static partial class MinecraftMotd
         TextProperty.Changed.AddClassHandler<TextBlock>((tb, e) => OnTextChanged(tb, e));
     }
 
-    // Official Minecraft color palette (§0-§9, §a-§f).
-    internal static readonly Dictionary<char, Color> Palette = new()
-    {
-        ['0'] = Color.Parse("#000000"), ['1'] = Color.Parse("#0000AA"), ['2'] = Color.Parse("#00AA00"),
-        ['3'] = Color.Parse("#00AAAA"), ['4'] = Color.Parse("#AA0000"), ['5'] = Color.Parse("#AA00AA"),
-        ['6'] = Color.Parse("#FFAA00"), ['7'] = Color.Parse("#AAAAAA"), ['8'] = Color.Parse("#555555"),
-        ['9'] = Color.Parse("#5555FF"), ['a'] = Color.Parse("#55FF55"), ['b'] = Color.Parse("#55FFFF"),
-        ['c'] = Color.Parse("#FF5555"), ['d'] = Color.Parse("#FF55FF"), ['e'] = Color.Parse("#FFFF55"),
-        ['f'] = Color.Parse("#FFFFFF"),
-    };
+    // Official Minecraft color palette (§0-§9, §a-§f), from the one table MotdDocument keeps.
+    internal static readonly Dictionary<char, Color> Palette = Services.MotdDocument.ColorCodes.ToDictionary(
+        code => code, code => Color.FromUInt32(0xFF000000 | (uint)Services.MotdDocument.RgbOf(code)));
 
     private static readonly Color Default = Color.Parse("#AAAAAA");
 
@@ -72,6 +65,16 @@ public static partial class MinecraftMotd
         for (var i = 0; i < text.Length; i++)
         {
             var c = text[i];
+            // The long RGB form Paper reads: §x§R§R§G§G§B§B.
+            if (c == '§' && Services.MotdDocument.TryReadHex(text, i, out var rgb))
+            {
+                Flush();
+                color = Color.FromUInt32(0xFF000000 | (uint)rgb);
+                bold = italic = underline = strike = false;
+                i += 13;
+                continue;
+            }
+
             if ((c == '§' || c == '&') && i + 1 < text.Length)
             {
                 Flush();
