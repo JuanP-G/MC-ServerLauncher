@@ -109,6 +109,19 @@
                     </Border>
 
                     <Border Classes="card" Margin="0">
+                        <StackPanel Spacing="6">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc Upd_SettingsSection}" Classes="title" />
+                                <TextBlock Text="{loc:Loc Upd_BetasIntro}" Classes="desc" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Upd_ReceiveBetas}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding ReceiveBetas, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card" Margin="0">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel>
                                 <TextBlock Text="{loc:Loc Shortcut_Section}" Classes="title" />

@@ -204,7 +204,8 @@ if not defined javabin (
   goto :eof
 )
 
-set "installer=%TEMP%\mcsl-loader-installer.jar"
+rem %TEMP% belongs to this user, but a fixed name is still one something else can be waiting at.
+set "installer=%TEMP%\mcsl-loader-installer-%RANDOM%%RANDOM%.jar"
 echo @@DOWNLOADING@@
 
 where curl >nul 2>nul && (

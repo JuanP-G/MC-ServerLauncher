@@ -86,12 +86,21 @@ public class PlayitAgentRunner
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "playit-agent");
 
     /// <summary>The release asset for this OS/arch, or null if Playit ships no binary for it (e.g. macOS).</summary>
-    private static string? AssetName => RuntimeInformation.OSArchitecture switch
+    private static string? AssetName =>
+        AssetFor(OperatingSystem.IsWindows(), OperatingSystem.IsLinux(), RuntimeInformation.OSArchitecture);
+
+    /// <summary>The asset for a platform, taken as arguments so every platform can be checked from any.</summary>
+    /// <remarks>
+    /// Windows on ARM gets the x64 build. Playit publishes no ARM build for Windows, and the app
+    /// itself already runs there as x64 under emulation — which is what the README promises — so the
+    /// agent can too. It used to be "unsupported", which left those machines with no tunnels at all.
+    /// </remarks>
+    internal static string? AssetFor(bool windows, bool linux, Architecture arch) => arch switch
     {
-        _ when OperatingSystem.IsWindows() && RuntimeInformation.OSArchitecture == Architecture.X64 => "playit-windows-x86_64-signed.exe",
-        _ when OperatingSystem.IsWindows() && RuntimeInformation.OSArchitecture == Architecture.X86 => "playit-windows-x86-signed.exe",
-        Architecture.X64 when OperatingSystem.IsLinux() => "playit-linux-amd64",
-        Architecture.Arm64 when OperatingSystem.IsLinux() => "playit-linux-aarch64",
+        Architecture.X64 or Architecture.Arm64 when windows => "playit-windows-x86_64-signed.exe",
+        Architecture.X86 when windows => "playit-windows-x86-signed.exe",
+        Architecture.X64 when linux => "playit-linux-amd64",
+        Architecture.Arm64 when linux => "playit-linux-aarch64",
         _ => null // macOS (no official binary) and other combos: not auto-runnable
     };
 
@@ -196,6 +205,9 @@ public class PlayitAgentRunner
                     if (myGen != _generation) return;
                     _process = null;
                     _runningSecret = null;
+                    // The agent that needed it is gone. Only Stop used to remove the file, so an
+                    // agent that died on its own left the plaintext key behind until next time.
+                    DeleteSecretFile();
                     // Exiting before it ever came up = a startup failure (bad/expired secret, port,
                     // conflicting agent…).
                     startupFailure = !_reachedRunning;
@@ -279,17 +291,32 @@ public class PlayitAgentRunner
     private static void WriteSecretFile(string secretKey)
     {
         Directory.CreateDirectory(AgentDir);
+        WriteSecret(SecretPath, secretKey);
+    }
 
-        // Truncate anything already there before writing, so a longer previous key can't leave a
-        // readable tail behind.
-        File.WriteAllText(SecretPath, secretKey.Trim());
+    /// <summary>Writes <paramref name="secret"/> to a new file only its owner can read.</summary>
+    /// <remarks>
+    /// <para>
+    /// Born 0600 on Unix, rather than written and then narrowed. Writing first created the file
+    /// under the process umask — world-readable on many distributions — and only then changed its
+    /// mode, so for that moment any user on the machine could read the key.
+    /// </para>
+    /// <para>
+    /// A file already there is deleted rather than truncated: an old one could carry the wide mode
+    /// it was created with, and creating anew is what applies the narrow one.
+    /// </para>
+    /// </remarks>
+    internal static void WriteSecret(string path, string secret)
+    {
+        if (File.Exists(path)) File.Delete(path);
 
+        var options = new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write };
         if (!OperatingSystem.IsWindows())
-        {
-            // 0600. Without this the file lands under the process umask, which on many distros is
-            // world-readable — no better than the command line it replaces.
-            File.SetUnixFileMode(SecretPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-        }
+            options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+
+        using var stream = new FileStream(path, options);
+        using var writer = new StreamWriter(stream);
+        writer.Write(secret.Trim());
     }
 
     /// <summary>Removes the secret file, so the plaintext outlives the agent by as little as possible.</summary>

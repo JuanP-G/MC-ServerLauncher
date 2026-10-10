@@ -17,4 +17,7 @@ public static class AppLinks
     public const string Notice = Repository + "/blob/main/NOTICE";
     public const string Website = "https://mc-server-launcher.vercel.app/";
     public const string PlayitTunnels = "https://playit.gg/account/tunnels";
+
+    /// <summary>Mojang's own address for the Minecraft EULA, the one the server names in eula.txt.</summary>
+    public const string MinecraftEula = "https://aka.ms/MinecraftEULA";
 }

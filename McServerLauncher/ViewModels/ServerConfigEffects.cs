@@ -179,6 +179,8 @@ public static class ServerConfigEffects
         // The listener holds a real socket, so turning it on has to open one now rather than at the
         // next stop — which is what used to happen, i.e. not until the server had been run once.
         new(nameof(ServerConfig.WakeOnDemand), None, None, ConfigEffect.RestartWakeListener),
+        Unshown(nameof(ServerConfig.WakeOnlyForWhitelist),
+            "Read on every attempt to join the sleeping server, so the listener needs no restart."),
 
         new(nameof(ServerConfig.CrossplayEnabled),
             new[] { nameof(ServerViewModel.IsCrossplayOn) }, None, ConfigEffect.None),

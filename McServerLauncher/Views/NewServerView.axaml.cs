@@ -164,7 +164,36 @@ public partial class NewServerView : UserControl
         BackButton.IsVisible = _onDetails;
         CreateButton.IsVisible = _onDetails && !IsExistingMode;
         AddButton.IsVisible = _onDetails && IsExistingMode;
+        UpdateEula();
     }
+
+    // ---------------------------------------------------------------- the EULA
+
+    /// <summary>Whether what the form is about to do needs the EULA accepted first.</summary>
+    /// <remarks>
+    /// Always for a new server. For one taken over, only when its folder has not accepted it already:
+    /// asking again someone whose server has run for months would be noise.
+    /// </remarks>
+    private bool EulaNeeded => _onDetails &&
+        (!IsExistingMode || !ServerCreationService.EulaAccepted(ExistingFolderBox.Text?.Trim() ?? string.Empty));
+
+    /// <summary>Shows the box when it is needed, and keeps the button shut until it is ticked.</summary>
+    /// <remarks>
+    /// The app used to write eula=true on the user's behalf, with nothing on screen but a line in the
+    /// progress log. Accepting Mojang's EULA is the person's to do, so it is a box they tick.
+    /// </remarks>
+    private void UpdateEula()
+    {
+        EulaPanel.IsVisible = EulaNeeded;
+        CreateButton.IsEnabled = AddButton.IsEnabled = EulaAllowsGoingOn && !_busy;
+    }
+
+    /// <summary>True when the EULA is not in the way: not needed, or ticked.</summary>
+    internal bool EulaAllowsGoingOn => !EulaPanel.IsVisible || EulaCheck.IsChecked == true;
+
+    private void EulaCheck_Changed(object? sender, RoutedEventArgs e) => UpdateEula();
+
+    private void EulaLink_Click(object? sender, RoutedEventArgs e) => BrowserLauncher.Open(AppLinks.MinecraftEula);
 
     /// <summary>The width from which the details sit in two columns instead of one.</summary>
     internal const double TwoColumnWidth = 880;
@@ -225,6 +254,7 @@ public partial class NewServerView : UserControl
             NameBox.Text = Path.GetFileName(folder.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         ApplyDetection();
         UpdatePathWarning();
+        UpdateEula();
     }
 
     /// <summary>
@@ -447,6 +477,10 @@ public partial class NewServerView : UserControl
 
     private async void Create_Click(object? sender, RoutedEventArgs e)
     {
+        // The button is already shut until the box is ticked; this is the same rule, said again
+        // where the files are written.
+        if (!EulaAllowsGoingOn) return;
+
         if (IsExistingMode)
         {
             await AddExistingAsync();
@@ -652,6 +686,13 @@ public partial class NewServerView : UserControl
             if (ExistingServer.ApplyPort(folder, found.Port, port))
                 AppendLog(string.Format(Localizer.Get("Cs_ExistingPortWrittenFmt"), port));
 
+            // Only when the box was there to tick: a folder that had accepted it already is left alone.
+            if (EulaPanel.IsVisible && EulaCheck.IsChecked == true)
+            {
+                _creation.WriteEula(folder);
+                AppendLog(Localizer.Get("Cs_ExistingEulaWritten"));
+            }
+
             var config = ExistingServer.ToConfig(form with { JavaPath = javaPath }, found);
             _log.Stop();
             Completed?.Invoke(new NewServerResult(
@@ -720,7 +761,8 @@ public partial class NewServerView : UserControl
     {
         _busy = busy;
         FormPanel.IsEnabled = !busy;
-        CreateButton.IsEnabled = AddButton.IsEnabled = !busy;
+        EulaPanel.IsEnabled = !busy;
+        UpdateEula();
         BackButton.IsEnabled = !busy;
         CancelButton.IsEnabled = !busy;
         ProgressBox.IsVisible = busy;

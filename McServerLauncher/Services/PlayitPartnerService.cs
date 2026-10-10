@@ -23,8 +23,8 @@ public record CreateAgentResult(long AccountId, string AgentId, string AgentSecr
 public class PlayitPartnerService
 {
     // The proxy that adds the partner Api-Key and forwards to Playit. Public (not a secret): it can
-    // only reach create_agent, which still needs a user-authorized setup code. Override in dev with
-    // the PLAYIT_PROXY_URL environment variable.
+    // only reach create_agent, which still needs a user-authorized setup code. Override in a Debug
+    // build with the PLAYIT_PROXY_URL environment variable (see ProxyUrlFromEnvironment).
     private const string DefaultProxyUrl = "https://dawn-hall-c5a8.gustofparaps4.workers.dev";
     private const string AgentName = "MC Server Launcher";
     // Sent as X-MCSL-Client so the proxy can filter out random traffic (see playit-proxy/worker.js).
@@ -44,14 +44,25 @@ public class PlayitPartnerService
 
     public PlayitPartnerService() : this(null, null) { }
 
-    /// <summary>Test/overridable constructor. Null baseUrl uses the proxy (or PLAYIT_PROXY_URL).</summary>
+    /// <summary>Test/overridable constructor. Null baseUrl uses the proxy (or PLAYIT_PROXY_URL in Debug).</summary>
     public PlayitPartnerService(string? baseUrl, HttpClient? http)
     {
-        _baseUrl = (baseUrl
-            ?? Environment.GetEnvironmentVariable("PLAYIT_PROXY_URL")
-            ?? DefaultProxyUrl).TrimEnd('/');
+        _baseUrl = (baseUrl ?? ProxyUrlFromEnvironment ?? DefaultProxyUrl).TrimEnd('/');
         _http = http ?? SharedHttp;
     }
+
+    /// <summary>The proxy named by PLAYIT_PROXY_URL, in a Debug build only.</summary>
+    /// <remarks>
+    /// It is how a developer points the app at their own Worker. In a release it was also how
+    /// anything able to set the user's environment could send the setup code — which mints a key to
+    /// their Playit account — to a server of its choosing, and answer with a key of its own.
+    /// </remarks>
+    private static string? ProxyUrlFromEnvironment =>
+#if DEBUG
+        Environment.GetEnvironmentVariable("PLAYIT_PROXY_URL");
+#else
+        null;
+#endif
 
     /// <summary>Always available: the proxy URL is baked in and there is no per-app secret to set.</summary>
     public bool IsConfigured => !string.IsNullOrWhiteSpace(_baseUrl);

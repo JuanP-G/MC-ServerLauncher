@@ -15,15 +15,14 @@ public class BetaVersionNumberTests
 {
     private static (string? Tag, bool IsBeta) Pick(string json, string current)
     {
-        var m = typeof(UpdateService).GetMethod("PickNewestRelease",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
         var normalize = typeof(UpdateService).GetMethod("Normalize",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
 
         var releases = JsonDocument.Parse(json).RootElement;
         var version = (Version)normalize.Invoke(null, new object[] { new Version(current) })!;
 
-        var result = (JsonElement?)m.Invoke(null, new object[] { releases, version });
+        // Betas on: these tests are about how beta numbers compare, not about the switch.
+        var result = UpdateService.PickNewestRelease(releases, version, includePreReleases: true);
         if (result is not { } release) return (null, false);
 
         return (release.GetProperty("tag_name").GetString(),

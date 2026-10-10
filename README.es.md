@@ -58,8 +58,8 @@ Pulsa cada apartado para verlo en marcha.
 
 <br>
 
-**«+ Nuevo»** → **Crear uno nuevo** → un nombre, el tipo y la versión → **Crear servidor**. La app descarga el
-servidor oficial, comprueba su huella, acepta el EULA, prepara el puerto y lo arranca.
+**«+ Nuevo»** → **Crear uno nuevo** → un nombre, el tipo y la versión → marca **Acepto el EULA de Minecraft** →
+**Crear servidor**. La app descarga el servidor oficial, comprueba su huella, prepara el puerto y lo arranca.
 
 <img src="docs/media/es/create.gif" width="900" alt="Crear un servidor Paper desde el panel de nuevo servidor">
 
@@ -128,7 +128,7 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 - **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Paper /
   Purpur / Fabric / NeoForge / Forge).
 - **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang), **puerto** y
-  **RAM**; la app descarga el servidor correcto, acepta el EULA, prepara `run.bat` / `server.properties` e
+  **RAM**, y aceptas el EULA de Minecraft; la app descarga el servidor correcto, prepara `run.bat` / `server.properties` e
   instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur
   usan **plugins**. El mismo panel puede **usar una carpeta que ya existe**: reconoce el tipo, la versión de
   Minecraft y del loader, el puerto y la memoria, y no cambia nada en la carpeta.
@@ -145,7 +145,8 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 - **Se apaga y se enciende solo** 💤 — un servidor puede **apagarse a los N minutos sin nadie dentro** y
   **volver a encenderse cuando alguien intenta entrar**. Mientras duerme, la lista dice *«Apagado · entra para
   encenderlo»* y quien pulse Entrar recibe un mensaje mientras arranca. Hay **cuenta atrás** hasta el apagado y
-  un margen tras despertar. Por servidor y **desactivado de serie**.
+  un margen tras despertar. Si el servidor tiene lista blanca, solo la despiertan sus jugadores (u ops), no un
+  escáner de Internet. Por servidor y **desactivado de serie**.
 - **Antes de arrancar se comprueba que no falte nada** ✅ — si a un mod o plugin le falta una dependencia, se
   avisa **al darle a Iniciar**, con la opción de instalarla y arrancar. Se lee de los propios jars, así que
   funciona **sin conexión**. Para mods de Fabric y Forge/NeoForge y plugins de Paper y Purpur.
@@ -304,9 +305,23 @@ Hecha con **Avalonia / .NET 9**. El instalador de Windows es **solo x64** (Inno 
 **https://juanp-g.github.io/MC-ServerLauncher/docs/**.
 
 **Datos:** en `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` en Linux y macOS): `servers.json`,
-`settings.json`, el `java\` que instala la app, los `logs\` de consola (14 días), la `cache\` de la tienda, el
+`settings.json`, el `java\` que instala la app, los `logs\` de consola (14 días, 50 MB al día como mucho), la `cache\` de la tienda, el
 agente en `playit-agent\`, el `instance.lock` que mantiene una sola copia abierta y, en Linux/macOS,
 `.secret.key`. Cada servidor guarda sus copias en su carpeta `backups\`.
+
+**Privacidad:** no se envía nada a ningún sitio para recogerlo — no hay telemetría. Lo que queda en este
+equipo: el historial de jugadores (entradas, salidas, muertes, logros y, salvo que lo desactives en Ajustes →
+Jugadores, el chat; 90 días por defecto, nunca IPs) y los logs de consola de arriba, que guardan **todas** las
+líneas —el chat y las IPs de las líneas de conexión incluidos— digan lo que digan los ajustes del historial.
+A qué servicios pide cosas la app, y qué ven además de tu IP: Mojang, Paper, Purpur, Fabric, Forge y NeoForge
+(descargas del servidor, y Mojang el nombre de un jugador cuando lo añades a la whitelist), Modrinth y GeyserMC
+(mods y plugins), Adoptium (Java), GitHub (actualizaciones), Playit (túneles, a través del proxy de la app al
+vincular una cuenta) y **mc-heads.net** (el avatar de cada jugador, por su nombre, en el historial).
+
+**Flags de Java extra:** la app no tiene un campo para ellos, pero cada servidor de `servers.json` tiene
+una entrada `ExtraJvmArgs` (vacía por defecto) que se añade a la línea de comandos de Java tras
+`-Xms`/`-Xmx`, para flags como los de Aikar. Edítala con la app cerrada, porque la app reescribe el
+fichero mientras funciona.
 
 **Contribuir:** los pull requests son bienvenidos. Empieza por **[CONTRIBUTING.md](CONTRIBUTING.md)**, la
 versión corta de la [guía completa](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.es.html):

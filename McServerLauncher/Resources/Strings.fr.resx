@@ -74,6 +74,9 @@
   <data name="Cs_ExistingNeedsJar" xml:space="preserve"><value>Choisis quel .jar lance le serveur.</value></data>
   <data name="Cs_ExistingAddAnyway" xml:space="preserve"><value>L'ajouter quand même ?</value></data>
   <data name="Cs_ExistingPortWrittenFmt" xml:space="preserve"><value>Port {0} enregistré dans server.properties.</value></data>
+  <data name="Eula_Accept" xml:space="preserve"><value>J'accepte l'EULA de Minecraft</value></data>
+  <data name="Eula_ReadTip" xml:space="preserve"><value>Lire l'EULA de Minecraft (ouvre le navigateur)</value></data>
+  <data name="Cs_ExistingEulaWritten" xml:space="preserve"><value>EULA acceptée : enregistrée dans eula.txt du dossier du serveur.</value></data>
   <data name="Cs_Name" xml:space="preserve"><value>Nom du serveur</value></data>
   <data name="Cs_NamePlaceholder" xml:space="preserve"><value>ex. Survie, Créatif, Événements...</value></data>
   <data name="Cs_ParentFolder" xml:space="preserve"><value>Créer dans le dossier</value></data>
@@ -182,6 +185,7 @@
   <data name="Msg_JavaCompatibleFound" xml:space="preserve"><value>Java {0} compatible trouvé. Rien à installer.</value></data>
   <data name="Msg_JavaNotCompatibleDownloading" xml:space="preserve"><value>Aucun Java compatible. Téléchargement de Java {0} (Temurin)...</value></data>
   <data name="Msg_JavaNoChecksum" xml:space="preserve"><value>Adoptium n'a pas fourni la somme de contrôle de ce Java, il est donc impossible de le vérifier. Il ne sera pas installé ; réessaie plus tard.</value></data>
+  <data name="Msg_ModNoChecksumFmt" xml:space="preserve"><value>Modrinth n'a pas fourni de somme de contrôle pour « {0} », elle ne peut donc pas être vérifiée. Par sécurité, elle n'est pas installée ; réessaie plus tard.</value></data>
   <data name="Msg_JavaDownloading" xml:space="preserve"><value>Téléchargement de Java (cela peut prendre un moment)...</value></data>
   <data name="Msg_JavaInstalling" xml:space="preserve"><value>Installation de Java...</value></data>
   <data name="Msg_JavaInstalled" xml:space="preserve"><value>Java {0} installé avec succès.</value></data>
@@ -224,6 +228,9 @@
   <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>Le raccourci n'a pas pu être créé. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Fenêtre</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Choisis ce que font les boutons réduire et fermer. Avec l'application dans la zone de notification, les serveurs continuent de tourner et tu récupères la fenêtre en cliquant sur l'icône près de l'horloge.</value></data>
+  <data name="Upd_SettingsSection" xml:space="preserve"><value>Mises à jour</value></data>
+  <data name="Upd_BetasIntro" xml:space="preserve"><value>Les bêtas apportent les nouveautés avant les versions stables, mais elles peuvent contenir des bugs. Si tu les désactives pendant que tu en utilises une, tu la gardes jusqu'à la prochaine version stable.</value></data>
+  <data name="Upd_ReceiveBetas" xml:space="preserve"><value>Recevoir les versions bêta</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Réduire l'envoie dans la zone de notification (quitte la barre des tâches)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Fermer (X) l'envoie dans la zone de notification au lieu de quitter l'application</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notifications</value></data>
@@ -271,6 +278,8 @@
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Enregistrement d'une copie de l'état actuel avant la restauration (au cas où tu voudrais l'annuler)...</value></data>
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Restauration de la sauvegarde...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Sauvegarde restaurée.</value></data>
+  <data name="Msg_StartWaitsForRestore" xml:space="preserve"><value>[Launcher] Non démarré : une sauvegarde du monde est en cours de restauration. Réessaie quand elle sera terminée.</value></data>
+  <data name="Msg_BackupBadLevelNameFmt" xml:space="preserve"><value>level-name = "{0}" dans server.properties ne désigne pas un dossier à part à l'intérieur du serveur, la sauvegarde n'a donc rien touché. Remplace-le par un nom de dossier comme "world".</value></data>
   <data name="Backups" xml:space="preserve"><value>Sauvegardes</value></data>
   <data name="Backup_Hint" xml:space="preserve"><value>Une sauvegarde du monde est créée automatiquement avant chaque démarrage, à l'arrêt du serveur et, si vous le laissez activé, à intervalles pendant que l'on joue. La restauration exige toujours que le serveur soit arrêté.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Sauvegarder maintenant</value></data>
@@ -300,6 +309,9 @@
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Le démarrer quand quelqu'un essaie de se connecter</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>Tant qu'il est éteint, la liste des serveurs le montre endormi. Qui appuie sur Rejoindre reçoit un message et le serveur commence à démarrer.</value></data>
+  <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>Si la liste blanche est activée, ne le démarrer que pour les joueurs de la liste</value></data>
+  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>Ainsi, personne en dehors de la liste ne peut le démarrer depuis Internet. Les opérateurs comptent aussi.</value></data>
+  <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>Ce serveur est éteint et ne démarre que pour les joueurs de sa liste blanche.</value></data>
   <data name="Wake_MotdSleeping" xml:space="preserve"><value>Éteint · rejoins pour le réveiller</value></data>
   <data name="Wake_MotdStarting" xml:space="preserve"><value>Démarrage… reviens dans quelques secondes</value></data>
   <data name="Wake_KickWaking" xml:space="preserve"><value>Le serveur était éteint et il démarre.&#10;&#10;Réessaie dans quelques secondes.</value></data>
@@ -343,6 +355,7 @@
   <data name="Msg_OtherApp" xml:space="preserve"><value>une autre application</value></data>
   <data name="Msg_PortBusyTitle" xml:space="preserve"><value>Port occupé</value></data>
   <data name="Msg_PortBusyConfirm" xml:space="preserve"><value>Le port {0} est déjà utilisé par {1}. Cela arrive souvent si un serveur précédent est resté bloqué. Veux-tu fermer ce processus et démarrer le serveur ?</value></data>
+  <data name="Msg_PortBusyJavaNote" xml:space="preserve"><value>On dirait un serveur Minecraft resté allumé. Le fermer ainsi n'enregistre pas le monde : la dernière progression peut être perdue. Si tu peux, rejoins-le et tape /stop avant.</value></data>
   <data name="Msg_UpdateAvailableFmt" xml:space="preserve"><value>Une mise à jour est disponible : version {0}.</value></data>
   <data name="Msg_IconCreateError" xml:space="preserve"><value>Impossible de créer l'icône : {0}</value></data>
   <data name="Title_ChangeIcon" xml:space="preserve"><value>Changer l'icône</value></data>
@@ -528,6 +541,7 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Export_LeftOutFmt" xml:space="preserve"><value>Note : {0} fichiers qui ne fonctionnent que sur le serveur ont été laissés de côté ({1}). Ils ne sont pas nécessaires pour jouer.</value></data>
   <data name="Export_InstructionsFile" xml:space="preserve"><value>INSTRUCTIONS.txt</value></data>
   <data name="Msg_ModDeleteError" xml:space="preserve"><value>Impossible de supprimer le fichier : {0}</value></data>
+  <data name="Mods_ConfirmDeleteFmt" xml:space="preserve"><value>Supprimer "{0}" ? Le fichier est retiré du dossier du serveur et ne va pas dans la corbeille. Si tu veux seulement qu'il ne soit pas chargé, désactive-le avec l'interrupteur.</value></data>
   <data name="Msg_ExportError" xml:space="preserve"><value>Impossible d'exporter le modpack : {0}</value></data>
   <data name="Cmd_Say_Title" xml:space="preserve"><value>say &lt;message&gt;</value></data>
   <data name="Cmd_Say_Desc" xml:space="preserve"><value>Envoie un message dans le chat à tous les joueurs.</value></data>
@@ -983,7 +997,7 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Minerais par heure</value></data>
   <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Le plus tué</value></data>
   <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>Ce qui le tue le plus</value></data>
-  <data name="History_Privacy" xml:space="preserve"><value>Gardé sur cet ordinateur uniquement. L'adresse IP des joueurs n'est jamais conservée. Ce qui dépasse les limites est supprimé automatiquement.</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>L'historique est gardé sur cet ordinateur uniquement, sans l'adresse IP des joueurs, et ce qui dépasse les limites est supprimé automatiquement. À part, le journal de la console (dossier logs, 14 jours) garde toutes les lignes, chat et IP compris, même si le chat est désactivé ici. Les avatars sont demandés à mc-heads.net avec le nom de chaque joueur.</value></data>
   <data name="History_SizeFmt" xml:space="preserve"><value>Occupe {0}</value></data>
   <data name="PlayerDetails_Back" xml:space="preserve"><value>Retour</value></data>
   <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banni</value></data>

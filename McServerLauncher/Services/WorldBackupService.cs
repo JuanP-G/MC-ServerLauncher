@@ -40,6 +40,50 @@ public class WorldBackupService
             : "world";
     }
 
+    /// <summary>
+    /// The folder <paramref name="levelName"/> points at, or null when it is not a world folder
+    /// this app may zip or replace.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>level-name</c> is a value from a file the app did not write — a server added from a folder
+    /// someone downloaded, or a typo in the editor — and a restore deletes what it names,
+    /// recursively. <c>Path.Combine</c> keeps nothing in: <c>.</c> is the server folder itself, with
+    /// <c>backups/</c> and the very zip being restored inside it; <c>..</c> is the folder above; an
+    /// absolute path throws the server folder away altogether.
+    /// </para>
+    /// <para>
+    /// So the world has to resolve to a folder strictly inside the server's, and not inside
+    /// <c>backups/</c>. Subfolders are fine — <c>worlds/survival</c> is a real layout.
+    /// </para>
+    /// </remarks>
+    internal static string? WorldFolderFor(string serverFolder, string levelName)
+    {
+        string server, world;
+        try
+        {
+            server = Path.TrimEndingDirectorySeparator(Path.GetFullPath(serverFolder));
+            world = Path.TrimEndingDirectorySeparator(Path.GetFullPath(Path.Combine(server, levelName)));
+        }
+        catch
+        {
+            return null;   // characters the platform rejects in a path: not a folder at all
+        }
+
+        var backups = Path.Combine(server, "backups");
+        return IsInside(world, server) && !IsInside(world, backups) && !SamePath(world, backups)
+            ? world
+            : null;
+    }
+
+    private static StringComparison PathComparison =>
+        OperatingSystem.IsLinux() ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+    private static bool IsInside(string path, string parent) =>
+        path.StartsWith(parent + Path.DirectorySeparatorChar, PathComparison);
+
+    private static bool SamePath(string a, string b) => string.Equals(a, b, PathComparison);
+
     /// <summary>All backups for this server, newest first.</summary>
     public IReadOnlyList<BackupInfo> ListBackups(ServerConfig config)
     {
@@ -78,13 +122,23 @@ public class WorldBackupService
         CancellationToken ct = default, string? protectFromPruning = null)
     {
         var levelName = GetLevelName(config);
-        var worldDir = Path.Combine(config.FolderPath, levelName);
+        if (WorldFolderFor(config.FolderPath, levelName) is not { } worldDir)
+        {
+            // Said and skipped rather than thrown: this runs before every start, and a backup that
+            // cannot be made is not a reason to keep the server down.
+            log?.Report(string.Format(Localizer.Get("Msg_ErrorFmt"),
+                string.Format(Localizer.Get("Msg_BackupBadLevelNameFmt"), levelName)));
+            return null;
+        }
+
         if (!Directory.Exists(worldDir))
             return null;
 
         var dir = BackupsDir(config);
         Directory.CreateDirectory(dir);
-        var fileName = $"{levelName}-{DateTime.Now:yyyyMMdd-HHmmss}--{trigger}.zip";
+        // The folder's own name, not level-name: "worlds/survival" would otherwise put a slash in
+        // the file name and the zip in a folder that does not exist.
+        var fileName = $"{Path.GetFileName(worldDir)}-{DateTime.Now:yyyyMMdd-HHmmss}--{trigger}.zip";
         var zipPath = Path.Combine(dir, fileName);
 
         log?.Report(string.Format(Localizer.Get("Msg_BackupCreatingFmt"), levelName));
@@ -238,7 +292,13 @@ public class WorldBackupService
         CancellationToken ct = default)
     {
         var levelName = GetLevelName(config);
-        var worldDir = Path.Combine(config.FolderPath, levelName);
+
+        // Checked before anything is touched: what follows deletes this folder recursively, and
+        // with level-name set to "." that used to be the whole server, backups — and the zip about
+        // to be read — included.
+        var worldDir = WorldFolderFor(config.FolderPath, levelName)
+            ?? throw new InvalidOperationException(
+                string.Format(Localizer.Get("Msg_BackupBadLevelNameFmt"), levelName));
 
         if (Directory.Exists(worldDir))
         {
@@ -247,14 +307,60 @@ public class WorldBackupService
         }
 
         log?.Report(Localizer.Get("Msg_BackupRestoring"));
-        await Task.Run(() =>
-        {
-            if (Directory.Exists(worldDir))
-                Directory.Delete(worldDir, recursive: true);
-            Directory.CreateDirectory(worldDir);
-            ZipFile.ExtractToDirectory(zipPath, worldDir, overwriteFiles: true);
-        }, ct);
+        await Task.Run(() => ReplaceWorld(worldDir, zipPath), ct);
 
         log?.Report(Localizer.Get("Msg_BackupRestored"));
+    }
+
+    /// <summary>Puts the contents of <paramref name="zipPath"/> where <paramref name="worldDir"/> is.</summary>
+    /// <remarks>
+    /// <para>
+    /// The zip is unpacked beside the world first, and only a complete copy takes its place, by
+    /// renaming. This used to delete the world and then unpack into the empty folder, so a damaged
+    /// zip or a full disk left half a world behind; the safety backup was there, but nothing said it
+    /// was needed. Now a failed unpack leaves the world exactly as it was.
+    /// </para>
+    /// <para>
+    /// Both temporary folders are siblings of the world, so the renames stay on one volume, and
+    /// leftovers of a restore interrupted by a crash are cleared before starting.
+    /// </para>
+    /// </remarks>
+    internal static void ReplaceWorld(string worldDir, string zipPath)
+    {
+        var incoming = worldDir + ".restoring";
+        var outgoing = worldDir + ".replaced";
+        DeleteFolder(incoming);
+        DeleteFolder(outgoing);
+
+        try
+        {
+            Directory.CreateDirectory(incoming);
+            ZipFile.ExtractToDirectory(zipPath, incoming, overwriteFiles: true);
+        }
+        catch
+        {
+            DeleteFolder(incoming);
+            throw;   // the world was never touched
+        }
+
+        if (Directory.Exists(worldDir)) Directory.Move(worldDir, outgoing);
+        try
+        {
+            Directory.Move(incoming, worldDir);
+        }
+        catch
+        {
+            // Put the old world back rather than leave none at all.
+            if (!Directory.Exists(worldDir) && Directory.Exists(outgoing)) Directory.Move(outgoing, worldDir);
+            throw;
+        }
+
+        // Best-effort: a file held open by an antivirus can keep this one around until next time.
+        try { DeleteFolder(outgoing); } catch { /* cleared by the next restore */ }
+    }
+
+    private static void DeleteFolder(string path)
+    {
+        if (Directory.Exists(path)) Directory.Delete(path, recursive: true);
     }
 }

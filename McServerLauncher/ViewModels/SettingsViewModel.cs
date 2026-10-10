@@ -183,6 +183,24 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    /// <summary>Whether the update check offers betas as well as stable versions.</summary>
+    /// <remarks>
+    /// Asks again straight away, so the answer on screen follows the switch: turning it off takes
+    /// back a beta already being offered, and turning it on shows one that is there.
+    /// </remarks>
+    public bool ReceiveBetas
+    {
+        get => _settings.ReceiveBetas;
+        set
+        {
+            if (_settings.ReceiveBetas == value) return;
+            _settings.ReceiveBetas = value;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnReceiveBetasChanged();
+        }
+    }
+
     [ObservableProperty]
     private string? _shortcutStatus;
 

@@ -41,7 +41,11 @@ public class UpdateService
         string? ChecksumUrl, bool IsPreRelease = false);
 
     /// <summary>Returns the latest version if it is newer than <paramref name="current"/>; otherwise null.</summary>
-    public async Task<UpdateInfo?> CheckAsync(Version current, CancellationToken ct = default)
+    /// <param name="current">The version running.</param>
+    /// <param name="includePreReleases">Whether betas count. The user's choice; off by default.</param>
+    /// <param name="ct">Cancels the request.</param>
+    public async Task<UpdateInfo?> CheckAsync(Version current, bool includePreReleases = false,
+        CancellationToken ct = default)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
         req.Headers.UserAgent.ParseAdd("MC-ServerLauncher");
@@ -54,7 +58,7 @@ public class UpdateService
         using var doc = JsonDocument.Parse(json);
         if (doc.RootElement.ValueKind != JsonValueKind.Array) return null;
 
-        var root = PickNewestRelease(doc.RootElement, current);
+        var root = PickNewestRelease(doc.RootElement, current, includePreReleases);
         if (root is not { } release) return null;
 
         var tag = release.TryGetProperty("tag_name", out var t) ? t.GetString() : null;
@@ -82,14 +86,20 @@ public class UpdateService
     }
 
     /// <summary>
-    /// The newest published release above <paramref name="current"/>, betas included, or null.
+    /// The newest published release above <paramref name="current"/>, or null. Betas count only
+    /// when <paramref name="includePreReleases"/> says so.
     /// </summary>
     /// <remarks>
     /// Drafts are skipped: they are not published and their assets may not exist yet. Order comes
     /// from the version numbers rather than from the list, because GitHub sorts by creation date
     /// and a patch to an older line can be published after a newer release.
+    /// <para>
+    /// Somebody running a beta with betas switched off is not offered a later beta, but is offered
+    /// the next stable — which is newer than the beta by construction (see <see cref="Normalize"/>).
+    /// </para>
     /// </remarks>
-    private static JsonElement? PickNewestRelease(JsonElement releases, Version current)
+    internal static JsonElement? PickNewestRelease(JsonElement releases, Version current,
+        bool includePreReleases = true)
     {
         // Normalized here rather than trusted from the caller: .NET reports an unspecified
         // component as -1, so an un-padded 1.10.1 compares as 1.10.1.-1 and every parsed tag looks
@@ -102,6 +112,9 @@ public class UpdateService
         foreach (var release in releases.EnumerateArray())
         {
             if (release.TryGetProperty("draft", out var draft) && draft.ValueKind == JsonValueKind.True)
+                continue;
+            if (!includePreReleases &&
+                release.TryGetProperty("prerelease", out var pre) && pre.ValueKind == JsonValueKind.True)
                 continue;
 
             var tag = release.TryGetProperty("tag_name", out var t) ? t.GetString() : null;

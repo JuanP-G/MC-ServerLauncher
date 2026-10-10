@@ -255,6 +255,7 @@ public partial class MainViewModel : ObservableObject
 
         _ = CheckForUpdatesAsync();
         _ = Tunnels.PrefetchAsync();
+        _ = Task.Run(() => SelfUpdater.DeleteOldPackages(Path.GetTempPath(), DateTime.UtcNow));
         _updateTimer.Start();
     }
 
@@ -325,10 +326,17 @@ public partial class MainViewModel : ObservableObject
     private async Task RestartAppAsync()
     {
         await ShutdownAllAsync();
-        var exe = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
-        if (!string.IsNullOrEmpty(exe))
+
+        // What this copy is really running from: the AppImage, the .app bundle or the .exe. The
+        // process's own file is inside the AppImage's temporary mount, which goes away with this
+        // process, so relaunching that started a copy whose files were about to disappear.
+        var target = DesktopShortcutService.LaunchTarget;
+        if (!string.IsNullOrEmpty(target))
         {
-            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = exe, UseShellExecute = true }); }
+            // Before starting it, so the new copy can claim the app instead of handing itself over
+            // to this one, which is on its way out.
+            McServerLauncher.Program.ReleaseInstance();
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = target, UseShellExecute = true }); }
             catch { /* if it can't be relaunched, at least exit */ }
         }
         Environment.Exit(0);
@@ -389,7 +397,8 @@ public partial class MainViewModel : ObservableObject
         if (manual) UpdateCheckState = UpdateCheckState.Checking;
 
         var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0);
-        var (state, info) = await UpdateCheck.RunAsync(() => new UpdateService().CheckAsync(current));
+        var (state, info) = await UpdateCheck.RunAsync(
+            () => new UpdateService().CheckAsync(current, _appSettings.ReceiveBetas));
 
         if (state != UpdateCheckState.Failed || manual)
         {
@@ -399,6 +408,15 @@ public partial class MainViewModel : ObservableObject
         else if (UpdateCheckState == UpdateCheckState.Checking)
         {
             UpdateCheckState = UpdateCheckState.Unknown;
+        }
+
+        // A clear "nothing newer" takes back whatever was being offered: a beta, after betas were
+        // switched off, would otherwise stay in the banner until the app was restarted. A failed
+        // check says nothing about it either way, so it leaves the offer alone.
+        if (state == UpdateCheckState.UpToDate && UpdateAvailable)
+        {
+            UpdateAvailable = false;
+            _packageUrl = _packageName = _checksumUrl = null;
         }
 
         if (info is null) return;
@@ -419,6 +437,13 @@ public partial class MainViewModel : ObservableObject
     /// <summary>The "Check for updates" button in About.</summary>
     [RelayCommand]
     private Task CheckForUpdatesNow() => CheckForUpdatesAsync(manual: true);
+
+    /// <summary>The betas switch in Settings moved: ask again, so what is offered follows it.</summary>
+    /// <remarks>Not before <see cref="Activate"/>: nothing here calls GitHub until the app is up.</remarks>
+    internal void OnReceiveBetasChanged()
+    {
+        if (_activated) _ = CheckForUpdatesAsync();
+    }
 
     [RelayCommand]
     private void OpenLink(string? url) => BrowserLauncher.Open(url);
@@ -476,12 +501,15 @@ public partial class MainViewModel : ObservableObject
         }
 
         IsUpdating = true;
+        var offer = UpdateText;
         UpdateText = Localizer.Get("Update_Downloading");
+
+        // Random per-run folder: fixed names in %TEMP% could be pre-planted/replaced by
+        // another local process between download and execution.
+        var updateDir = Path.Combine(Path.GetTempPath(), SelfUpdater.PackageFolderPrefix + Path.GetRandomFileName());
+        var stoppedEverything = false;
         try
         {
-            // Random per-run folder: fixed names in %TEMP% could be pre-planted/replaced by
-            // another local process between download and execution.
-            var updateDir = Path.Combine(Path.GetTempPath(), "mcsl-" + Path.GetRandomFileName());
             var dest = Path.Combine(updateDir, SelfUpdater.PackageFileName(_packageName));
             var updateService = new UpdateService();
 
@@ -502,30 +530,52 @@ public partial class MainViewModel : ObservableObject
 
             UpdateText = Localizer.Get("Update_Installing");
             await ShutdownAllAsync();
+            stoppedEverything = true;
 
             // From here the platform decides: run the silent installer, swap the AppImage, or
-            // hand the .dmg to a script that replaces the bundle once we are gone.
+            // hand the .dmg to a script that replaces the bundle once we are gone. The claim on
+            // being the running copy goes first, so the new one does not hand itself over to this.
+            McServerLauncher.Program.ReleaseInstance();
             SelfUpdater.Apply(dest);
             Environment.Exit(0);
         }
         catch (InvalidOperationException ex)
         {
+            RecoverFromFailedUpdate(offer, updateDir, stoppedEverything);
             // Security-relevant refusals land here: either DownloadVerifier's mismatch (the
             // downloaded installer doesn't match the release's checksum) or the release publishing
             // no usable SHA256SUMS.txt at all. Tell the user explicitly instead of silently
             // falling back to the browser.
-            IsUpdating = false;
-            UpdateText = string.Empty;
             await MessageBox.ShowAsync(ex.Message, Localizer.Get("Update_Now"), Owner);
             OpenRelease();
         }
         catch
         {
+            RecoverFromFailedUpdate(offer, updateDir, stoppedEverything);
             // If the download/install fails, let the user open the page manually.
-            IsUpdating = false;
-            UpdateText = string.Empty;
             OpenRelease();
         }
+    }
+
+    /// <summary>Puts the app back the way it was when an update could not be applied.</summary>
+    /// <remarks>
+    /// It used to empty the banner — which went on showing, with nothing in it — leave the Playit
+    /// agent stopped after a failure on Linux or macOS, where everything had already been shut down
+    /// for the swap, and leave the downloaded package in a temporary folder for good.
+    /// </remarks>
+    private void RecoverFromFailedUpdate(string offer, string updateDir, bool stoppedEverything)
+    {
+        McServerLauncher.Program.ReacquireInstance();   // still the running copy after all
+        IsUpdating = false;
+        UpdateText = offer;
+
+        // The servers stay stopped: starting them is the user's call. The tunnels are not a
+        // decision anybody made, and without the agent every one of them is down.
+        if (stoppedEverything && !string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
+            _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
+
+        try { if (Directory.Exists(updateDir)) Directory.Delete(updateDir, recursive: true); }
+        catch { /* cleared at a later start, see SelfUpdater.DeleteOldPackages */ }
     }
 
     // Through BrowserLauncher, not Process.Start directly: _releaseUrl is the html_url the GitHub
@@ -836,25 +886,26 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanActOn))]
     private async Task RemoveServer(ServerViewModel? target)
     {
-        if (Target(target) is null || SelectedServer is null) return;
+        // Captured once, and only this from here on. Stopping a running server takes up to fifteen
+        // seconds with the window still usable, and reading SelectedServer again after that removed
+        // whichever server had been clicked in the meantime — taking it out of servers.json and
+        // leaving it running with nobody watching it.
+        if (Target(target) is not { } server) return;
 
-        var folder = SelectedServer.Config.FolderPath;
+        var folder = server.Config.FolderPath;
         // Read the ports BEFORE deleting anything (we need them to locate the tunnels).
-        var port = new ServerPropertiesService().GetServerPort(SelectedServer.Config.PropertiesPath);
+        var port = new ServerPropertiesService().GetServerPort(server.Config.PropertiesPath);
 
         // A crossplay server has two: the Java one and the Bedrock one. Forgetting the second
         // leaves an orphan tunnel on the account that nothing will ever clean up.
-        var bedrockPort = CrossplayService.EffectiveBedrockPort(SelectedServer.Config);
+        var bedrockPort = CrossplayService.EffectiveBedrockPort(server.Config);
 
         if (Owner is null) return;
-        var dialog = new DeleteServerDialog(SelectedServer.Name, folder);
+        var dialog = new DeleteServerDialog(server.Name, folder);
         if (!await dialog.ShowDialog<bool>(Owner))
             return;
 
-        await SelectedServer.ShutdownAsync();
-        Servers.Remove(SelectedServer);
-        SelectedServer = Servers.FirstOrDefault();
-        Save();
+        await ForgetServerAsync(server);
 
         // Not "&& port.HasValue". The Java port comes from server.properties, which can be
         // unreadable or already gone, and hanging the whole block on it took the Bedrock tunnel
@@ -910,6 +961,20 @@ public partial class MainViewModel : ObservableObject
                     Localizer.Get("Title_DeleteFiles"));
             }
         }
+    }
+
+    /// <summary>Stops <paramref name="server"/>, takes it off the list and saves the list.</summary>
+    /// <remarks>
+    /// The selection only moves if it was on the server being removed: whatever the user picked
+    /// while this one was stopping is theirs to keep looking at.
+    /// </remarks>
+    internal async Task ForgetServerAsync(ServerViewModel server)
+    {
+        await server.ShutdownAsync();
+        Servers.Remove(server);
+        if (SelectedServer is null || ReferenceEquals(SelectedServer, server))
+            SelectedServer = Servers.FirstOrDefault();
+        Save();
     }
 
     [RelayCommand]

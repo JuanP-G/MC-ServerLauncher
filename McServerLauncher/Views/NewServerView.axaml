@@ -299,6 +299,17 @@
                         <TextBlock Text="{loc:Loc New_Back}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
+                <!-- Beside the button it unlocks: accepting the EULA is the user's to do, not the app's. -->
+                <StackPanel Grid.Column="1" x:Name="EulaPanel" Orientation="Horizontal" Spacing="2"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="12,0,16,0"
+                            IsVisible="False">
+                    <CheckBox x:Name="EulaCheck" Content="{loc:Loc Eula_Accept}"
+                              IsCheckedChanged="EulaCheck_Changed" />
+                    <Button Background="Transparent" Padding="4,2" VerticalAlignment="Center"
+                            ToolTip.Tip="{loc:Loc Eula_ReadTip}" Click="EulaLink_Click">
+                        <ic:SymbolIcon Symbol="Open" FontSize="14" />
+                    </Button>
+                </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
                     <Button x:Name="CancelButton" Classes="bar" Content="{loc:Loc Cancel}" Click="Cancel_Click" />
                     <Button x:Name="CreateButton" Classes="bar accent" IsVisible="False" Click="Create_Click">

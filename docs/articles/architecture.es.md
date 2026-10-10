@@ -104,7 +104,10 @@ Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`
   como `.bak`, y un archivo corrupto se aparta como `.bad` y se recupera desde el `.bak` cuando es
   posible (avisando al usuario al arrancar en vez de perder la lista en silencio).
 - `java\` — las versiones de Java que instala la app (Temurin/Adoptium).
-- `logs\` — el log de consola persistente (`launcher-yyyy-MM-dd.log`, se poda a los 14 días).
+- `logs\` — el log de consola persistente (`launcher-yyyy-MM-dd.log`, se poda a los 14 días, 50 MB al día como mucho), y
+  `crash-*.log` de `CrashLog` cuando una excepción se escapa de todo manejador (se guardan las 20 más
+  recientes). Está enganchado al AppDomain, a las tareas no observadas y al dispatcher de la interfaz; en
+  el dispatcher la app lo apunta y sigue, porque cerrarse dejaría sin vigilar los servidores que arrancó.
 - `cache\images\` y `cache\store\` — las cachés en disco de la tienda: iconos y capturas de la
   galería (`ImageCache`, se podan a los 30 días) y las respuestas de la API (`StoreCache`). Ambas son
   prescindibles; borrarlas cuesta unas cuantas peticiones y nada más.
@@ -125,7 +128,9 @@ mundo. No hay rutas fijas del equipo en el código.
 
 - **`ServerProcessManager`** — gestiona el ciclo de vida del proceso `java`: lo arranca (sin ventana
   de consola), redirige stdin/stdout/stderr, reemite cada línea por un evento y lo detiene de forma
-  limpia enviando `stop` (con kill de respaldo).
+  limpia enviando `stop` (con kill de respaldo). El kill espera `ServerViewModel.StopTimeout` (60 s),
+  el mismo valor para el botón Parar, Reiniciar y cerrar o actualizar la app; al cerrar se daban
+  quince segundos, menos de lo que un modpack grande necesita para guardar.
 - **`JavaService`** — detecta los Java instalados y, si ninguno es compatible, descarga el JRE
   Temurin (Adoptium) adecuado para la arquitectura. Se usa al crear y al iniciar un servidor.
 - **`MinecraftVersionService`** — lee el manifiesto de versiones de Mojang, resuelve la URL del
@@ -173,7 +178,9 @@ mundo. No hay rutas fijas del equipo en el código.
   exacto; `minecraft:used` es lo más parecido a «bloques colocados», porque Minecraft cuenta usar un objeto y
   no colocarlo, y se enseña tal cual con una línea que lo explica en vez de filtrarlo contra una lista de ids
   de bloques mantenida a mano que se quedaría vieja cada versión.
-- **`ServerCreationService`** — escribe los archivos iniciales de un servidor nuevo: `eula.txt`,
+- **`ServerCreationService`** — escribe los archivos iniciales de un servidor nuevo: `eula.txt` (solo cuando
+  el usuario marca *Acepto el EULA de Minecraft* junto al botón Crear, que no se activa hasta entonces; antes la
+  app lo aceptaba en su nombre),
   `run.bat`/`user_jvm_args.txt` y el `server.properties` mínimo con el puerto elegido. (La descarga
   del jar la hacen `MinecraftVersionService`/`ModLoaderService`/`PaperService` y el puerto lo elige
   `PortService`, todo orquestado por `NewServerView`.) La semilla que se escriba ahí, si se escribe, va
@@ -261,6 +268,16 @@ mundo. No hay rutas fijas del equipo en el código.
   últimos solo cuentan si ese jugador está conectado —el view model le pasa una copia de quién lo está—,
   porque en Paper cada plugin escribe como `[NombreDelPlugin] …`, y el nombre de un plugin es un nombre de
   jugador válido.
+  **Nada que escriba un jugador se toma por un suceso.** Cada detector que lee uno —una entrada o una
+  salida, el `Saved the game` que espera una copia en caliente, la respuesta a `seed`, el UUID de un
+  jugador— compara el mensaje *entero* que da `MessageBody`: el texto tras el **primer** `]: `, que es donde
+  acaba el prefijo del propio servidor; todo lo que viene detrás se puede teclear. Buscar la frase en la
+  línea no bastaba: un chat como `<Bob> x: Bob left the game` o `<Bob> x]: Saved the game` lleva un trozo
+  con forma de prefijo, y sacaba a Bob de la lista de jugadores (y el temporizador de inactividad paraba
+  un servidor con gente dentro) o cortaba una copia antes de tiempo. Además, `ServerViewModel` no reacciona
+  a nada de una línea clasificada como chat salvo para guardarla en el historial, y solo escucha el rechazo
+  de ruta de Paper mientras el servidor aún no está en marcha. `ConsoleSpoofingTests` fija cada una de esas
+  líneas.
 - **`BlueMapConsent`** y `ServerProcessManager.ImpliedJvmFlags` — los dos avisos de arranque que la app
   resuelve ella misma, porque le tocan a ella. Desde Java 22 añade `--enable-native-access=ALL-UNNAMED` a la
   línea de comandos que construye: los mods que usan JNA provocan un aviso que dice que un Java futuro
@@ -280,7 +297,8 @@ mundo. No hay rutas fijas del equipo en el código.
   enseña, bloquea lo detectado y solo pregunta el resto; sustituyó al botón *Añadir*, cuyo diálogo
   pedía el nombre del jar a mano y se saltaba el túnel, el crossplay y el arranque. `ExistingServer`
   construye la config con la detección y el formulario (gana la detección) y nunca escribe en la
-  carpeta, salvo `server-port` si el usuario lo cambió. `DetectAndFill` es una capa fina sobre
+  carpeta, salvo `server-port` si el usuario lo cambió y `eula.txt` si la carpeta no había aceptado el
+  EULA y el usuario marca la casilla que el panel muestra para ello. `DetectAndFill` es una capa fina sobre
   `Detect` que, al arrancar, rellena los servidores guardados antes de que se guardaran el tipo y la
   versión; no toca una config que ya dice su versión. Purpur se mira antes que Paper: antes no
   coincidía con nada, ni siquiera en los servidores que crea esta app.
@@ -295,7 +313,9 @@ mundo. No hay rutas fijas del equipo en el código.
   un motivo legible del crash. (La detección del cierre inesperado es el evento `UnexpectedExit` de
   `ServerProcessManager`; la lógica de auto-reinicio vive en `ServerViewModel`.)
 - **`ConsoleLogService`** — copia cada línea de consola a `%APPDATA%\McServerLauncher\logs\` para que
-  el historial sobreviva a los reinicios (retención de 14 días).
+  el historial sobreviva a los reinicios (retención de 14 días, comprobada cada vez que cambia el día y no
+  solo al arrancar, porque la app puede vivir semanas en la bandeja; y un tope de 50 MB al día, pasado el
+  cual una línea lo dice y no se escribe nada más hasta el siguiente — `ConsoleLogLimitsTests`).
 - **`ProcessStatsService`** — muestrea CPU/RAM del proceso `java` en marcha para las estadísticas en
   vivo y las mini-gráficas `Sparkline`.
 - **`ToastService`** — muestra notificaciones emergentes propias — ventanas de Avalonia siempre
@@ -320,7 +340,10 @@ mundo. No hay rutas fijas del equipo en el código.
   nueva y elige el asset para *esta* plataforma y arquitectura (el instalador de Windows, el AppImage
   de Linux, el `.dmg` de macOS); `SelfUpdater` es quien lo aplica. Lee la **lista** de releases, no
   `/releases/latest`, porque GitHub deja las pre-releases fuera de esa última y una beta publicada
-  así sería invisible para la app. La verificación contra el asset `SHA256SUMS.txt` de la release es
+  así sería invisible para la app. Las betas solo se ofrecen con **Ajustes → General → Recibir versiones
+  beta** activado (`AppSettings.ReceiveBetas`, desactivado de serie); con él apagado, quien ya esté en una
+  beta la conserva hasta la siguiente estable, que la supera. Cambiarlo vuelve a comprobar en el acto, y
+  una comprobación que no encuentra nada más nuevo retira lo que ya ofrecía el banner. La verificación contra el asset `SHA256SUMS.txt` de la release es
   **obligatoria**: si el checksum falta o no se puede leer, la actualización in situ se rechaza y se
   abre la página de la release en su lugar.
 
@@ -379,10 +402,33 @@ mundo. No hay rutas fijas del equipo en el código.
 ## Flujos importantes
 
 ### Arrancar un servidor
-`ServerViewModel.Start` → refresca puerto/info → si el puerto está ocupado, ofrece liberarlo
-(`PortService` + `TryFreePortAsync`) → `EnsureCompatibleJavaAsync` (usa `JavaService` para leer el
-Java requerido del jar e instalarlo si hace falta) → `ServerProcessManager.Start`. La salida de la
-consola llega de vuelta por el evento `OutputReceived` hacia `ConsoleLines`.
+`ServerViewModel.Start` → `StartInternalAsync`, que se niega mientras se restaura una copia y, si no,
+primero suelta el listener del encendido bajo demanda (tiene el puerto del servidor) y después:
+
+1. **Puerto** — refresca puerto/info; si el puerto está ocupado, ofrece liberarlo (`PortService` +
+   `TryFreePortAsync`). Un auto-reinicio no pregunta: se rinde y lo dice en la consola.
+2. **Ruta** — `TryFixRejectedPathAsync`: Paper y Purpur se niegan a arrancar desde una carpeta cuya
+   ruta tiene un carácter que no saben manejar (`BukkitPathRule`), y la app ofrece renombrar la
+   carpeta en vez de dejar que falle.
+3. **Geyser** — con el crossplay activado, `CrossplayService.RepairConfig` corrige una configuración de
+   Geyser que escribió una versión anterior de la app.
+4. **Dependencias** — `CheckContentDependenciesAsync`: los mods o plugins a los que les falta algo se
+   avisan antes de arrancar, no como un crash después.
+5. **Java** — `EnsureCompatibleJavaAsync` (usa `JavaService` para leer el Java requerido del jar e
+   instalarlo si hace falta).
+6. **Copia** — la copia de arranque si las copias están activadas (espera a cualquier otra que siga
+   leyendo el mundo); con ellas desactivadas, igualmente espera a una hecha a mano.
+7. `ServerProcessManager.Start`, con la versión de Java leída antes fuera del hilo de la interfaz. La
+   línea de comandos es `-Xms`/`-Xmx`, los flags que añade la propia app (`ImpliedJvmFlags`), los
+   `ExtraJvmArgs` del servidor y el jar (o el fichero de argumentos de Forge/NeoForge modernos).
+
+Si algún paso para el arranque, el listener del encendido bajo demanda se vuelve a levantar
+(`finally`). La salida de la
+consola llega de vuelta por el evento `OutputReceived` hacia `ConsoleLines`, **por lotes**: las líneas de
+los hilos del proceso se encolan y una sola tarea del dispatcher se lleva todas las que llegaron antes de
+ejecutarse, con un único `AddRange` (un modpack cargando imprime miles, y una tarea por línea hacía que la
+ventana fuera a tirones). Las líneas de la propia app se escriben en el hilo de la interfaz y aparecen al
+instante (`ConsoleBatchingTests`).
 
 ### La ventana: secciones, el panel de nuevo servidor y el movimiento
 La ventana principal es un **menú lateral** de cuatro secciones —Servidores, Túneles, Ajustes, Acerca
@@ -436,6 +482,13 @@ Al **crear**, `NewServerView` pide a `MinecraftVersionService` el Java necesario
 `server.jar` (`version.json`) e instala/usa un runtime compatible, guardando la ruta en
 `ServerConfig.JavaPath`.
 
+Dos huecos en lo que publica Adoptium marcan las reglas (`JavaCompatibilityTests`, `ArmPlatformTests`).
+**No hay Java 16**, que es lo que declaran Minecraft 1.17 y 1.17.1, así que 17 cuenta como compatible
+con 16 y es lo que se descarga. Y **no hay JRE ARM** de Java 8, 16 ni 17 para Windows, ni de 8 para
+macOS: en esos dos sistemas un equipo ARM pide primero `aarch64` y, si no hay, `x64`, que Windows 11
+emula y macOS ejecuta con Rosetta; Linux no tiene ese recurso. El agente de Playit sigue el mismo
+razonamiento en Windows ARM y usa la build x64.
+
 ### Túnel de Playit
 La primera vez que el usuario conecta Playit, `MainViewModel.EnsurePlayitAgentAsync` muestra el
 diálogo de código de configuración (abre `playit.gg/l/setup-third-party` solo al pulsar), canjea el
@@ -464,8 +517,11 @@ Cumplimiento de las reglas de terceros de Playit: el navegador solo se abre al p
 indica que la app no está afiliada a Playit y el usuario siempre puede acceder a su cuenta de Playit
 directamente. Un agente autogestionado solo reenvía tráfico mientras su proceso corre, así que
 `PlayitAgentRunner` descarga el binario oficial `playitd` de Playit (una vez, fijado a la versión
-registrada) y lo ejecuta como proceso hijo oculto con `--secret <la clave por usuario>` mientras la
-app está abierta y conectada — el usuario no instala nada. Como ese binario nativo es el código de
+registrada) y lo ejecuta como proceso hijo oculto mientras la app está abierta y conectada — el usuario
+no instala nada. La clave va en un archivo que se le pasa con `--secret-path`, nunca en la línea de
+comandos (donde otros procesos y herramientas de registro la pueden leer); el archivo nace legible solo
+por su dueño (0600 en Unix, desde que se crea y no restringido después) y se borra en cuanto el agente
+se para, tanto si se le paró como si se cayó solo. Como ese binario nativo es el código de
 más privilegio que descarga la app, se **verifica contra un SHA-256 fijado en el código** (el de la
 versión pinneada) antes de ejecutarse — al descargar y también al reutilizar una copia en caché — y
 se borra/falla si no coincide, igual que el resto de descargas (`DownloadVerifier`). Un solo agente
@@ -499,6 +555,20 @@ tiempo mientras el servidor está en marcha. `ServerBackupsView` las lista y pue
 cualquiera (tomando antes una copia de seguridad por si acaso); restaurar sigue exigiendo el servidor
 parado, porque borra la carpeta del mundo y desempaqueta otra en su lugar.
 
+Qué carpeta es esa lo dice `level-name`, un valor de un archivo que la app no escribió, así que
+`WorldBackupService.WorldFolderFor` solo acepta una que quede **estrictamente dentro de la carpeta del
+servidor y fuera de `backups/`** (`worlds/survival` vale). Con `level-name=.` restaurar borraba el
+servidor entero, incluido el zip que iba a leer; `..` o una ruta absoluta llegaban fuera de él. Con un
+valor así, restaurar se niega antes de tocar nada, y la copia lo dice en la consola y se salta en vez de
+impedir que el servidor arranque (`BackupLevelNameTests`).
+
+El cambio en sí es todo o nada (`WorldBackupService.ReplaceWorld`): el zip se desempaqueta junto al
+mundo como `<mundo>.restoring`, y solo una copia completa ocupa su lugar, renombrando. Antes se borraba
+el mundo primero y se desempaquetaba en la carpeta vacía, así que un zip dañado o un disco lleno dejaban
+medio mundo. Y restaurar pasa por `ServerViewModel.RestoreBackupAsync`, que toma el mismo semáforo que
+cualquier copia, cierra el listener de despertar y activa `IsRestoring`, que impide cualquier arranque:
+el botón, un despertar o un reinicio automático (`RestoreSafetyTests`).
+
 Copiar un servidor **arrancado** pasa por `LiveWorldBackup`, porque zipear un mundo mientras la JVM
 escribe en él da una copia rota. Antes se le pide a Minecraft que lo suelte: `save-off`,
 `save-all flush`, esperar a que el servidor diga `Saved the game` (lo reconoce `SaveConfirmation`,
@@ -519,15 +589,23 @@ antes de probar algo era la primera en irse. Los zips que la app no escribió no
 ### Auto-reinicio tras un crash
 Cuando un servidor se cierra inesperadamente, `ServerProcessManager` emite su evento `UnexpectedExit`
 y `ServerViewModel` lo reinicia con un presupuesto (unos pocos intentos dentro de una ventana de
-estabilidad) para evitar bucles de crash, avisando al usuario con `ToastService` si el presupuesto se
-agota. `CrashReportService` lee el crash report del servidor para añadir un motivo legible a esa
-notificación.
+estabilidad) para evitar bucles de crash. `CrashReportService` lee el crash report del servidor para
+sacar un motivo legible, que va a la **consola** junto al código de salida; las notificaciones
+(`ToastService`, una por el crash y otra si el presupuesto se agota) son genéricas y solo salen cuando
+la ventana no está delante.
 
 ### Bandeja del sistema
-`App` instala un `TrayIcon`. Minimizar mantiene la ventana en la barra de tareas como siempre;
-cerrarla con la **X** la oculta a la bandeja (los servidores siguen corriendo) en vez de salir. El
-menú de la bandeja restaura la ventana (**Mostrar**) o cierra de verdad (**Salir** →
-`MainWindow.RequestExit`, que hace el apagado limpio).
+`App` instala un `TrayIcon`. Dos ajustes (Ajustes → General) deciden qué hace la ventana, y los dos se
+leen a través de `WindowBehavior`:
+
+- **Minimizar a la bandeja** (`MinimizeToTray`, **activado** por defecto): minimizar oculta la ventana
+  en la bandeja en vez de dejarla en la barra de tareas.
+- **Cerrar a la bandeja** (`CloseToTray`, **desactivado** por defecto): la **X** oculta la ventana en
+  vez de salir. Desactivado, la X sale tras parar los servidores limpiamente.
+
+En ambos casos los servidores siguen corriendo con la ventana oculta. Donde no hay bandeja desde la que
+volver (`App.TrayAvailable` es falso), los dos se ignoran. El menú de la bandeja restaura la ventana
+(**Mostrar**) o cierra de verdad (**Salir** → `MainWindow.RequestExit`, que hace el apagado limpio).
 
 ### Jugar desde Bedrock (crossplay)
 Una casilla, y tres cosas que tienen que encajar — que es justo por lo que hacerlo a mano sale mal.
@@ -582,6 +660,14 @@ gente que ni siquiera está jugando. Con un túnel de Playit este socket es acce
 así que todo lo que lee se trata como hostil: longitudes acotadas, una fecha límite por conexión y un
 tope de cuántas hay a la vez.
 
+**Quién puede despertarlo** lo decide `WakePolicy`. El listener lee el nombre del Login Start del
+cliente y pregunta; con la lista blanca del servidor activada, solo lo despierta alguien que esté en
+ella o en `ops.json`, y a cualquier otro se le dice que el servidor solo se enciende para su lista
+blanca. Los escáneres que buscan servidores de Minecraft entran por rutina, y cada uno arrancaba el
+servidor y la copia que va delante del arranque. Sin lista blanca no cambia nada, y
+`ServerConfig.WakeOnlyForWhitelist` (activado de serie, una casilla bajo *Encenderlo cuando alguien
+intente entrar*) deja al dueño abrirlo a cualquiera igualmente.
+
 ### La tienda: búsqueda, etiquetas y lenguaje llano
 `ServerModsViewModel` pide a `ModrinthService` resultados ya filtrados por el cargador y la versión
 del servidor — un resultado que el servidor no puede ejecutar es peor que ninguno, porque se instala
@@ -605,7 +691,10 @@ galería, versiones, dependencias, enlaces y proyectos relacionados — pintado 
 lo que ya traía el resultado de búsqueda aparezca al instante y el resto llegue cuando vuelvan sus
 peticiones. `StoreCache` (memoria, luego disco, luego red) e `ImageCache` son lo que hace que volver
 atrás y abrir algo otra vez no cueste nada, y lo que hace que un proyecto ya visto se abra sin
-conexión.
+conexión. `ImageCache` decodifica cada imagen al tamaño al que se dibuja —iconos y miniaturas a 256 px de
+ancho como mucho, capturas a 1600— leyendo antes las dimensiones de la cabecera, así que una imagen que
+dice tener decenas de miles de píxeles de lado se rechaza en vez de decodificarse, y su caché en memoria
+tiene un presupuesto de 96 MB además del tope de entradas (`ImageCacheBudgetTests`).
 
 ### Cambiar el tipo de un servidor
 `InstallLoaderDialog` convierte un servidor existente en el sitio, **conservando el mundo**: de

@@ -40,6 +40,25 @@ public sealed class BulkObservableCollection<T> : ObservableCollection<T>
             NotifyCollectionChangedAction.Remove, removed, 0));
     }
 
+    /// <summary>Appends <paramref name="items"/>, raising one Add for all of them.</summary>
+    /// <remarks>
+    /// An Add, not a Reset, for the same reason as <see cref="RemoveFromStart"/>: the list keeps the
+    /// containers it has and only builds the new ones. Used by the console, which takes the lines a
+    /// server printed in one go instead of one notification per line.
+    /// </remarks>
+    public void AddRange(IReadOnlyList<T> items)
+    {
+        if (items.Count == 0) return;
+
+        var start = Items.Count;
+        foreach (var item in items) Items.Add(item);
+
+        OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+        OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+            NotifyCollectionChangedAction.Add, new List<T>(items), start));
+    }
+
     /// <summary>Replaces the whole content with <paramref name="items"/>, raising one Reset.</summary>
     public void ReplaceAll(IEnumerable<T> items)
     {

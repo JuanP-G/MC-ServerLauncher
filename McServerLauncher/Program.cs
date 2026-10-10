@@ -12,15 +12,61 @@ public static class Program
     /// </summary>
     public static SingleInstance? Instance { get; private set; }
 
+    /// <summary>Another launch asked for the window. Raised on a background thread.</summary>
+    /// <remarks>
+    /// Here rather than on <see cref="Instance"/>, which can be let go of and claimed again (see
+    /// <see cref="ReleaseInstance"/>): whoever listens keeps listening across that.
+    /// </remarks>
+    public static event Action? ActivationRequested;
+
+    private static void Claimed(SingleInstance? instance)
+    {
+        Instance = instance;
+        if (instance is not null) instance.ActivationRequested += () => ActivationRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// Lets go of the claim, so a copy started to replace this one can take it straight away.
+    /// </summary>
+    /// <remarks>
+    /// Restarting (for a new language, or after an update) starts the new copy before this one has
+    /// finished exiting. Still holding the claim, this copy answered the new one's nudge — and the
+    /// new one, told that a copy was running, quietly closed itself, leaving none at all.
+    /// </remarks>
+    internal static void ReleaseInstance()
+    {
+        Instance?.Dispose();
+        Instance = null;
+    }
+
+    /// <summary>Claims it again when the copy that was to replace this one did not start.</summary>
+    internal static void ReacquireInstance()
+    {
+        if (Instance is null) Claimed(SingleInstance.TryAcquire(out _));
+    }
+
     // Initialization code. Don't use any Avalonia, third-party APIs or any SynchronizationContext-reliant
     // code before AppMain is called: things aren't initialized yet and stuff might break.
     [STAThread]
     public static void Main(string[] args)
     {
+        // First of all, so nothing that fails from here on can do it without leaving a trace.
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            if (e.ExceptionObject is Exception ex) CrashLog.Write("AppDomain", ex);
+            ConsoleLogService.Shared.Flush();
+        };
+        // A task nobody awaited that failed: recorded and marked seen, rather than lost.
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            CrashLog.Write("Task", e.Exception);
+            e.SetObserved();
+        };
+
         // Before Avalonia, on purpose: a second launch must not build a window, a tray icon or a
         // set of ViewModels — each of which would start timers and wake listeners of its own —
         // only to tear them all down again.
-        Instance = SingleInstance.TryAcquire(out var alreadyRunning);
+        Claimed(SingleInstance.TryAcquire(out var alreadyRunning));
         if (alreadyRunning)
         {
             // The normal case: hand over to the copy that is already up and stop here.
@@ -36,7 +82,7 @@ public static class Program
             for (var attempt = 0; attempt < 4 && Instance is null; attempt++)
             {
                 Thread.Sleep(500);
-                Instance = SingleInstance.TryAcquire(out _);
+                Claimed(SingleInstance.TryAcquire(out _));
             }
 
             if (Instance is null) return;

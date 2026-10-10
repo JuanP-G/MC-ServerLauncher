@@ -852,6 +852,41 @@ public partial class ServerModsViewModel : ObservableObject
         else Dispatcher.UIThread.Post(RefreshInstalledMods);
     }
 
+    /// <summary>
+    /// Which Modrinth project each jar in <paramref name="folder"/> is, by path. Jars the store does
+    /// not know are left out.
+    /// </summary>
+    private async Task<Dictionary<string, string>> ProjectByPathAsync(string folder)
+    {
+        var pathByHash = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var jar in Directory.EnumerateFiles(folder)
+                     .Where(f => f.EndsWith(".jar", StringComparison.OrdinalIgnoreCase)
+                              || f.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase)))
+        {
+            try { pathByHash[await _hashes.Sha1Async(jar)] = jar; }
+            catch { /* unreadable or locked: it simply is not identified */ }
+        }
+
+        var known = await _modrinthService.GetVersionsByHashAsync(pathByHash.Keys);
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (hash, found) in known)
+            if (pathByHash.TryGetValue(hash, out var path)) result[path] = found.ProjectId;
+        return result;
+    }
+
+    /// <summary>
+    /// The installed jars a new download of <paramref name="projectId"/> at <paramref name="newPath"/>
+    /// replaces: the same project, under any other file name.
+    /// </summary>
+    internal static IReadOnlyList<string> ReplacedBy(
+        IReadOnlyDictionary<string, string> projectByPath, string projectId, string newPath) =>
+        projectByPath
+            .Where(kv => string.Equals(kv.Value, projectId, StringComparison.Ordinal))
+            .Select(kv => kv.Key)
+            .Where(path => !string.Equals(Path.GetFullPath(path), Path.GetFullPath(newPath),
+                StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
     /// <summary>Downloads the library mods the scan found missing.</summary>
     [RelayCommand]
     private async Task InstallMissingDependencies(CancellationToken ct)
@@ -1179,6 +1214,13 @@ public partial class ServerModsViewModel : ObservableObject
     private async Task DeleteMod(ModItem? mod)
     {
         if (mod is null) return;
+
+        // Asked first, like deleting a backup: the file is gone for good, not to the recycle bin,
+        // and the button sits one row from the switch that only disables a mod.
+        if (!await MessageBox.ConfirmAsync(
+                string.Format(Localizer.Get("Mods_ConfirmDeleteFmt"), mod.FileName), ContentTabTitle))
+            return;
+
         try
         {
             File.Delete(mod.FilePath);
@@ -1739,11 +1781,30 @@ public partial class ServerModsViewModel : ObservableObject
             try { if (File.Exists(disabledPath)) File.Delete(disabledPath); }
             catch { /* best-effort */ }
 
+            // The same project already here under another file name — another version of it. Found
+            // before downloading, while the folder still holds only what the user had.
+            var previous = ReplacedBy(await ProjectByPathAsync(modsFolder), version.ProjectId, destPath);
+
             Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), file.Filename),
                 failed: false, transient: true);
 
             // Mods are third-party jars chosen by the user: verify against Modrinth's own checksum.
             await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512, file.Hashes?.Sha1);
+
+            // Installing a second version beside the first made the loader refuse to start with
+            // "duplicate mod". The new one replaces the old, the way an update does — and like an
+            // update, a jar the running server holds open means nothing changes.
+            foreach (var old in previous)
+            {
+                try { File.Delete(old); }
+                catch
+                {
+                    try { File.Delete(destPath); } catch { /* best-effort */ }
+                    RefreshInstalledMods();
+                    Notify(Localizer.Get("Msg_UpdateNeedsStop"), failed: true);
+                    return;
+                }
+            }
 
             // The libraries it needs, in the same click. Almost every Fabric mod declares at least
             // fabric-api, and a mod installed without them is a server that refuses to start with a

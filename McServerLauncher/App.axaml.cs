@@ -24,8 +24,17 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // An exception that reaches the dispatcher is written down and the app carries on. Closing
+        // would leave every server it started running with nothing to stop them, which is the worse
+        // of the two outcomes for whoever is playing.
+        Dispatcher.UIThread.UnhandledException += (_, e) =>
+        {
+            CrashLog.Write("UI", e.Exception);
+            e.Handled = true;
+        };
+
         // Apply the saved language BEFORE creating the window.
-        var lang = new AppSettingsService().Load().Language;
+        var lang = new AppSettingsService().LoadLanguage();
         if (!string.IsNullOrWhiteSpace(lang))
         {
             try
@@ -48,8 +57,7 @@ public partial class App : Application
             // Launching the app again brings this window back rather than opening a second copy.
             // The event arrives on a pipe-listener thread, so it has to hop to the UI thread before
             // touching the window.
-            if (Program.Instance is { } instance)
-                instance.ActivationRequested += () => Dispatcher.UIThread.Post(() => RestoreMainWindow(desktop));
+            Program.ActivationRequested += () => Dispatcher.UIThread.Post(() => RestoreMainWindow(desktop));
 
             // On Linux the desktop shortcut points at a copy of the icon, and updating replaces
             // only the AppImage — so without this, changing the app icon would never reach anyone

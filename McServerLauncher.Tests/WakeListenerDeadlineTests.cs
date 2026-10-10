@@ -63,7 +63,7 @@ public class WakeListenerDeadlineTests
     {
         var port = FreePort();
         using var listener = new WakeOnDemandListener { ConnectionDeadline = ShortDeadline };
-        Assert.True(listener.Start(port, Status, () => { }));
+        Assert.True(listener.Start(port, Status, _ => true));
 
         using var slow = StartSlowClient(port);
 
@@ -81,7 +81,7 @@ public class WakeListenerDeadlineTests
         // from being woken. Before the deadline existed, this stayed broken until the app restarted.
         var port = FreePort();
         using var listener = new WakeOnDemandListener { ConnectionDeadline = ShortDeadline };
-        Assert.True(listener.Start(port, Status, () => { }));
+        Assert.True(listener.Start(port, Status, _ => true));
 
         var hogs = new List<TcpClient>();
         try
@@ -104,7 +104,7 @@ public class WakeListenerDeadlineTests
         // The deadline must not have made the ordinary path any less willing.
         var port = FreePort();
         using var listener = new WakeOnDemandListener { ConnectionDeadline = ShortDeadline };
-        Assert.True(listener.Start(port, Status, () => { }));
+        Assert.True(listener.Start(port, Status, _ => true));
 
         Assert.True(await WaitUntil(() => CanCompleteStatusHandshake(port), TimeSpan.FromSeconds(5)));
     }

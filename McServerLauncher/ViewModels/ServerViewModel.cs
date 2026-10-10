@@ -61,6 +61,18 @@ public partial class ServerViewModel : ObservableObject
     // to a limited number of consecutive attempts so a persistently-crashing server doesn't loop
     // forever. The streak resets whenever a run has been stable (Running) for a while, or the user
     // starts the server manually.
+    /// <summary>
+    /// How long a server gets to save and exit after "stop" before it is killed.
+    /// </summary>
+    /// <remarks>
+    /// One value for every way a server is stopped. Closing the app (and updating it, and deleting a
+    /// server) used to allow fifteen seconds where the Stop button allowed thirty, so the most common
+    /// way of stopping a server was the one most likely to kill it halfway through writing its world —
+    /// and a large modpack can easily take longer than either to save. Killing is the last resort,
+    /// so the wait errs long: a server that has finished saving exits on its own long before this.
+    /// </remarks>
+    internal static readonly TimeSpan StopTimeout = TimeSpan.FromSeconds(60);
+
     private const int MaxAutoRestarts = 3;
     private static readonly TimeSpan StabilityWindow = TimeSpan.FromMinutes(2);
     private static readonly TimeSpan AutoRestartDelay = TimeSpan.FromSeconds(5);
@@ -678,22 +690,62 @@ public partial class ServerViewModel : ObservableObject
             VersionName: string.IsNullOrWhiteSpace(Config.GameVersion) ? "?" : Config.GameVersion,
             MaxPlayers: _maxPlayers,
             IconPath: File.Exists(icon) ? icon : null,
-            DisconnectMessage: WakeSign.KickStyle + Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"));
+            DisconnectMessage: WakeSign.KickStyle + Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"),
+            RefusedMessage: WakeSign.KickStyle + Localizer.Get("Wake_KickNotWhitelisted"));
     }
 
-    /// <summary>Somebody pressed Join on a sleeping server.</summary>
-    private void OnJoinAttempt() => RunOnUi(() =>
+    /// <summary>
+    /// Somebody pressed Join on a sleeping server. Returns whether it is being woken for them.
+    /// </summary>
+    /// <remarks>
+    /// Runs on the listener's thread, so reading the server's files here never holds up the UI;
+    /// only the start itself goes to the UI thread.
+    /// </remarks>
+    private bool OnJoinAttempt(string? player)
     {
-        if (State != ServerState.Stopped) return;   // already coming up from an earlier knock
+        if (!MayWake(player)) return false;
 
-        _wokeAtUtc = DateTime.UtcNow;
-        OnConsoleLine(Localizer.Get("Msg_WakeStarting"));
-        NotifyIf(NotificationKind.WokeOnDemand, Localizer.Get("Notif_Woke"));
+        RunOnUi(() =>
+        {
+            if (State != ServerState.Stopped) return;   // already coming up from an earlier knock
 
-        // isAutoRestart: nobody is sitting in front of the app to answer a dialog, which is exactly
-        // what that flag already means everywhere else.
-        _ = StartInternalAsync(isAutoRestart: true);
-    });
+            _wokeAtUtc = DateTime.UtcNow;
+            OnConsoleLine(Localizer.Get("Msg_WakeStarting"));
+            NotifyIf(NotificationKind.WokeOnDemand, Localizer.Get("Notif_Woke"));
+
+            // isAutoRestart: nobody is sitting in front of the app to answer a dialog, which is
+            // exactly what that flag already means everywhere else.
+            _ = StartInternalAsync(isAutoRestart: true);
+        });
+        return true;
+    }
+
+    /// <summary>Whether <paramref name="player"/> may wake this server. See <see cref="WakePolicy"/>.</summary>
+    /// <remarks>
+    /// Nothing is said in the console about a refusal: the ones worth refusing are scanners, and
+    /// they come by the hundred.
+    /// </remarks>
+    private bool MayWake(string? player)
+    {
+        try
+        {
+            var props = _properties.Read(Config.PropertiesPath);
+            var whitelistOn = props.TryGetValue("white-list", out var w)
+                              && w.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
+
+            // The two lists are only read when they can change the answer.
+            if (!whitelistOn || !Config.WakeOnlyForWhitelist) return true;
+
+            return WakePolicy.Allows(player, whitelistOn, Config.WakeOnlyForWhitelist,
+                _whitelist.ReadNames(Config.FolderPath), _players.ReadOps(Config.FolderPath));
+        }
+        catch
+        {
+            // The files could not be read this instant: behave as before this rule existed rather
+            // than lock everybody out of their own server.
+            return true;
+        }
+    }
 
     private async Task StopBecauseIdleAsync()
     {
@@ -712,7 +764,10 @@ public partial class ServerViewModel : ObservableObject
     {
         if (MainWindowHidden && ++_hiddenPlayitTicks % 10 != 0) return;
 
-        _playit.RefreshState();
+        // The system's own Playit service only matters when the app's agent is not the one in use:
+        // asking it otherwise meant a systemctl every three seconds, per server, for an answer the
+        // panel then ignored.
+        if (!_agent.HasSecret) _playit.RefreshState();
         // Every ~30 s (10 ticks of 3 s; ~5 min while in the tray) refresh the tunnel address.
         if (++_playitTickCounter % 10 == 0)
         {
@@ -870,7 +925,18 @@ public partial class ServerViewModel : ObservableObject
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
-    public bool CanStart => State == ServerState.Stopped;
+    public bool CanStart => State == ServerState.Stopped && !IsRestoring;
+
+    /// <summary>True while a backup is being put back in place of the world.</summary>
+    /// <remarks>
+    /// Nothing may start the server meanwhile: it would open a world that is being swapped out from
+    /// under it. The button follows this, and so does every start that has no button — waking on
+    /// demand, restarting after a crash.
+    /// </remarks>
+    [ObservableProperty]
+    private bool _isRestoring;
+
+    partial void OnIsRestoringChanged(bool value) => NotifyCommandStates();
     public bool CanStop => State is ServerState.Running or ServerState.Starting;
 
     partial void OnNameChanged(string value) => Config.Name = value;
@@ -972,6 +1038,15 @@ public partial class ServerViewModel : ObservableObject
 
         OnConsoleLine(line, kind);
 
+        // Here, on the output's own thread, so writing the history to disk never holds up the UI.
+        // Before the chat guard below: chat is something the history records on purpose.
+        if (source == ConsoleSource.Stdout) History.OnServerLine(line, _onlineNames);
+
+        // Chat is the one part of the console a player writes, so nothing below may react to it:
+        // each detector is anchored on its own, and this keeps one that is not — or a future one —
+        // from being driven by whatever somebody types.
+        if (kind == ConsoleLineKind.Chat) return;
+
         // The server's own answer to "seed": remembered in case the world's files cannot be read.
         if (source == ConsoleSource.Stdout && WorldSeed.FromConsoleLine(line) is { } seed)
             RunOnUi(() =>
@@ -984,9 +1059,6 @@ public partial class ServerViewModel : ObservableObject
         // The server's answer to "save-all flush", which a backup of a running world waits for.
         if (source == ConsoleSource.Stdout && SaveConfirmation.IsSaveFinished(line))
             _saveConfirmed?.TrySetResult(true);
-
-        // Here, on the output's own thread, so writing the history to disk never holds up the UI.
-        if (source == ConsoleSource.Stdout) History.OnServerLine(line, _onlineNames);
 
         // Once per run: BlueMap repeats itself on every start, and so would the question.
         if (!_blueMapAsked && BlueMapConsent.IsAskingForConsent(line))
@@ -1047,12 +1119,43 @@ public partial class ServerViewModel : ObservableObject
         // plain text — the kind is a way of looking at the console, not part of the record.
         ConsoleLogService.Shared.Log(Name, text);
 
-        var line = new ConsoleLine(text, kind);
+        _pendingLines.Enqueue(new ConsoleLine(text, kind));
 
-        RunOnUi(() =>
+        // The app's own lines are written on the UI thread and appear at once, in order with
+        // whatever the server had already queued.
+        if (Dispatcher.UIThread.CheckAccess())
         {
-            ConsoleLines.Add(line);
-            if (_kindFilters.TryGetValue(kind, out var filter))
+            FlushConsole();
+            return;
+        }
+
+        // The server's arrive on its output threads, sometimes thousands in a few seconds while a
+        // modpack loads. One trip to the UI thread for however many arrive before it runs, instead
+        // of one per line: that is what made the window stutter while a big server started.
+        if (Interlocked.Exchange(ref _flushScheduled, 1) == 0)
+            Dispatcher.UIThread.Post(FlushConsole, DispatcherPriority.Background);
+    }
+
+    /// <summary>Lines waiting for the UI thread. See <see cref="OnConsoleLine(string, ConsoleLineKind)"/>.</summary>
+    private readonly System.Collections.Concurrent.ConcurrentQueue<ConsoleLine> _pendingLines = new();
+
+    /// <summary>1 while a flush is posted and has not run yet.</summary>
+    private int _flushScheduled;
+
+    /// <summary>Puts every waiting line on screen, with one notification per list.</summary>
+    private void FlushConsole()
+    {
+        // Cleared before taking the lines, so one arriving meanwhile schedules a flush of its own.
+        Interlocked.Exchange(ref _flushScheduled, 0);
+
+        var batch = new List<ConsoleLine>();
+        while (_pendingLines.TryDequeue(out var queued)) batch.Add(queued);
+        if (batch.Count == 0) return;
+
+        var visible = new List<ConsoleLine>(batch.Count);
+        foreach (var line in batch)
+        {
+            if (_kindFilters.TryGetValue(line.Kind, out var filter))
             {
                 filter.Count++;
                 // Arriving while its own switch is off would otherwise be completely invisible:
@@ -1060,30 +1163,42 @@ public partial class ServerViewModel : ObservableObject
                 if (!filter.IsOn) filter.HasUnseen = true;
             }
 
-            if (MatchesConsoleFilter(line))
-                VisibleConsoleLines.Add(line);
+            if (MatchesConsoleFilter(line)) visible.Add(line);
+        }
 
-            // Trim in blocks (EFI-4): one RemoveAt(0) per line was an O(n) shift plus a UI
-            // notification for EVERY line once the cap was reached. Letting the list overshoot by
-            // ConsoleTrimBlock and cutting back to the cap in a single bulk operation makes the
-            // per-line cost amortized O(1), at the price of momentarily holding up to 2200 lines.
-            if (ConsoleLines.Count > MaxConsoleLines + ConsoleTrimBlock)
-            {
-                var excess = ConsoleLines.Count - MaxConsoleLines;
+        ConsoleLines.AddRange(batch);
+        VisibleConsoleLines.AddRange(visible);
 
-                // Counted before the lines are gone; see VisibleLinesLeaving for why the visible
-                // list is trimmed rather than rebuilt.
-                var leaving = ConsoleKindFilter.VisibleLinesLeaving(ConsoleLines, excess, MatchesConsoleFilter);
+        // Trim in blocks (EFI-4): one RemoveAt(0) per line was an O(n) shift plus a UI
+        // notification for EVERY line once the cap was reached. Letting the list overshoot by
+        // ConsoleTrimBlock and cutting back to the cap in a single bulk operation makes the
+        // per-line cost amortized O(1), at the price of momentarily holding up to 2200 lines.
+        if (ConsoleLines.Count > MaxConsoleLines + ConsoleTrimBlock)
+        {
+            var excess = ConsoleLines.Count - MaxConsoleLines;
 
-                ConsoleLines.RemoveFromStart(excess);
-                ConsoleKindFilter.Recount(ConsoleLines, ConsoleKinds); // lines fell off the top
-                VisibleConsoleLines.RemoveFromStart(leaving);
-            }
+            // Counted before the lines are gone; see VisibleLinesLeaving for why the visible
+            // list is trimmed rather than rebuilt.
+            var leaving = ConsoleKindFilter.VisibleLinesLeaving(ConsoleLines, excess, MatchesConsoleFilter);
 
-            TrackPlayers(text);
-            WarnAboutModdedKick(text);
-            WarnAboutRejectedPath(text);
-        });
+            ConsoleLines.RemoveFromStart(excess);
+            ConsoleKindFilter.Recount(ConsoleLines, ConsoleKinds); // lines fell off the top
+            VisibleConsoleLines.RemoveFromStart(leaving);
+        }
+
+        foreach (var line in batch)
+        {
+            // Only what the server says about itself. Chat is typed by players, and the app's own
+            // lines and the echoed commands are not events at all: "x: Bob left the game" in chat
+            // used to take Bob off the list, and with the list empty the idle timer stopped a
+            // server that people were still playing on.
+            if (line.Kind is ConsoleLineKind.Chat or ConsoleLineKind.Launcher or ConsoleLineKind.Command)
+                continue;
+
+            TrackPlayers(line.Text);
+            WarnAboutModdedKick(line.Text);
+            WarnAboutRejectedPath(line.Text);
+        }
     }
 
     /// <summary>
@@ -1097,6 +1212,10 @@ public partial class ServerViewModel : ObservableObject
     /// </remarks>
     private void WarnAboutRejectedPath(string line)
     {
+        // The refusal comes before the server is up — Paperclip prints it before the server even
+        // exists. Once it is running the path has been accepted, and a line saying otherwise can
+        // only be somebody typing the sentence; believing it would switch auto-restart off.
+        if (State == ServerState.Running) return;
         if (_pathRejectionWarned || !BukkitPathRule.IsPathRejection(line)) return;
 
         _pathRejectionWarned = true;
@@ -1209,6 +1328,12 @@ public partial class ServerViewModel : ObservableObject
 
     private async Task StartInternalAsync(bool isAutoRestart)
     {
+        if (IsRestoring)
+        {
+            OnConsoleLine(Localizer.Get("Msg_StartWaitsForRestore"));
+            return;
+        }
+
         // A new run starts a new console story: the first line must not inherit the colour of the
         // last line of a crash, and a question declined last time is asked again.
         _lastStdoutKind = null;
@@ -1261,8 +1386,20 @@ public partial class ServerViewModel : ObservableObject
 
             // Back up the world right before touching it again: the safety net that matters most,
             // since it covers every start path (manual, Restart, and auto-restart after a crash).
+            //
+            // And whatever happens, never while another copy is still reading the world — the one
+            // made on Stop, a moment ago, or one asked for by hand. The start's own used to be
+            // refused as "already running" and the server started anyway, writing to the world the
+            // other copy was still zipping.
             if (Config.BackupsEnabled)
-                await RunBackupAsync("start");
+                await RunBackupAsync("start", waitForOthers: true);
+            else
+                await WaitForBackupsAsync();
+
+            // Asked here, in the background, so the one Start asks for the JVM flags is answered
+            // from memory instead of starting a JVM on the UI thread.
+            var javaPath = Config.JavaPath;
+            await Task.Run(() => _java.GetMajorVersion(javaPath));
 
             _process.Start(Config);
             // Playit already runs as a background service: we don't launch another agent.
@@ -1271,6 +1408,15 @@ public partial class ServerViewModel : ObservableObject
         catch (Exception ex)
         {
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+        }
+        finally
+        {
+            // The listener was let go of at the top, and only the transition to Stopped took it back
+            // up — which never happens when the process never started. So a start abandoned here (a
+            // busy port, a path Paper refuses, a dependency check cancelled) left a server with
+            // wake-on-demand asleep and deaf until the app was restarted. Starting it twice is
+            // harmless: Start lets go of the old socket first.
+            if (!_process.IsRunning) StartWakeListener();
         }
     }
 
@@ -1343,7 +1489,10 @@ public partial class ServerViewModel : ObservableObject
 
         if (required is null) return; // cannot be determined (old jar): don't block the start
 
-        var current = _java.GetMajorVersion(Config.JavaPath);
+        // Off the UI thread: the first time for each Java it starts a JVM. The answer is remembered,
+        // so the start that follows (ServerProcessManager reads it again for the JVM flags) is free.
+        var javaPath = Config.JavaPath;
+        var current = await Task.Run(() => _java.GetMajorVersion(javaPath));
         if (current > 0 && JavaService.IsCompatible(current, required.Value))
             return;
 
@@ -1390,20 +1539,6 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// Stops a start that would fail on the path, offering to rename the folder when it can.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Renaming is offered only when the offending character is in the server's own folder name.
-    /// When it sits in a parent, renaming that folder would move everything else under it as well,
-    /// which is not the app's to decide — so it says which character and where, and stops.
-    /// </para>
-    /// <para>
-    /// Skipped during an unattended auto-restart for the same reason the busy-port check is: there
-    /// is nobody there to answer a dialog.
-    /// </para>
-    /// </remarks>
     /// <summary>
     /// Checks that every installed mod and plugin has what it needs, and asks what to do if not.
     /// </summary>
@@ -1497,6 +1632,20 @@ public partial class ServerViewModel : ObservableObject
         return dialog.Choice;
     }
 
+    /// <summary>
+    /// Stops a start that would fail on the path, offering to rename the folder when it can.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Renaming is offered only when the offending character is in the server's own folder name.
+    /// When it sits in a parent, renaming that folder would move everything else under it as well,
+    /// which is not the app's to decide — so it says which character and where, and stops.
+    /// </para>
+    /// <para>
+    /// Skipped during an unattended auto-restart for the same reason the busy-port check is: there
+    /// is nobody there to answer a dialog.
+    /// </para>
+    /// </remarks>
     private async Task<bool> TryFixRejectedPathAsync(bool isAutoRestart)
     {
         if (!BukkitPathRule.Rejects(Config.FolderPath, Config.Type)) return true;
@@ -1553,15 +1702,25 @@ public partial class ServerViewModel : ObservableObject
     {
         var pid = _ports.GetListeningPid(port);
         string procDesc = Localizer.Get("Msg_OtherApp");
+        var isJava = false;
         if (pid.HasValue)
         {
-            try { procDesc = $"\"{System.Diagnostics.Process.GetProcessById(pid.Value).ProcessName}\" (PID {pid})"; }
+            try
+            {
+                var name = System.Diagnostics.Process.GetProcessById(pid.Value).ProcessName;
+                procDesc = $"\"{name}\" (PID {pid})";
+                isJava = name.StartsWith("java", StringComparison.OrdinalIgnoreCase);
+            }
             catch { procDesc = $"PID {pid}"; }
         }
 
-        var accepted = await MessageBox.ConfirmAsync(
-            string.Format(Localizer.Get("Msg_PortBusyConfirm"), port, procDesc),
-            Localizer.Get("Msg_PortBusyTitle"));
+        // A Java holding the port is most likely a server left running when the app closed badly,
+        // with players' progress not yet saved. Killing it is still offered — it may be the only
+        // way — but not without saying what it costs.
+        var question = string.Format(Localizer.Get("Msg_PortBusyConfirm"), port, procDesc);
+        if (isJava) question += Environment.NewLine + Environment.NewLine + Localizer.Get("Msg_PortBusyJavaNote");
+
+        var accepted = await MessageBox.ConfirmAsync(question, Localizer.Get("Msg_PortBusyTitle"));
 
         if (!accepted)
         {
@@ -1617,7 +1776,7 @@ public partial class ServerViewModel : ObservableObject
     {
         try
         {
-            await _process.StopAsync(TimeSpan.FromSeconds(30));
+            await _process.StopAsync(StopTimeout);
 
             // A snapshot of the good state just reached by stopping cleanly. Not done for Restart's
             // internal stop or for the app-closing ShutdownAsync: the next Start's own pre-backup
@@ -1650,12 +1809,20 @@ public partial class ServerViewModel : ObservableObject
     /// copied would only make the first one slower.
     /// </para>
     /// </remarks>
-    public async Task<string?> RunBackupAsync(string trigger, CancellationToken ct = default)
+    /// <param name="trigger">Why it is made; it ends up in the file's name.</param>
+    /// <param name="ct">Cancels the copy.</param>
+    /// <param name="waitForOthers">
+    /// Wait for a backup already in progress instead of giving up — for the start, which must not
+    /// begin while another copy is reading the world.
+    /// </param>
+    public async Task<string?> RunBackupAsync(string trigger, CancellationToken ct = default,
+        bool waitForOthers = false)
     {
         if (!await _backupGate.WaitAsync(0, ct))
         {
             OnConsoleLine(Localizer.Get("Msg_BackupAlreadyRunning"));
-            return null;
+            if (!waitForOthers) return null;
+            await _backupGate.WaitAsync(ct);
         }
 
         try
@@ -1669,6 +1836,44 @@ public partial class ServerViewModel : ObservableObject
         finally
         {
             _backupGate.Release();
+        }
+    }
+
+    /// <summary>Waits until no backup is reading the world. Takes nothing and makes nothing.</summary>
+    private async Task WaitForBackupsAsync()
+    {
+        if (await _backupGate.WaitAsync(0)) { _backupGate.Release(); return; }
+
+        OnConsoleLine(Localizer.Get("Msg_BackupAlreadyRunning"));
+        await _backupGate.WaitAsync();
+        _backupGate.Release();
+    }
+
+    /// <summary>
+    /// Replaces the world with a backup. False when another backup was already running.
+    /// </summary>
+    /// <remarks>
+    /// Through here rather than straight to the service, for the same reason backups are: this is
+    /// where the gate lives that keeps two of them apart, and where the wake listener is — which has
+    /// to be closed while the world is swapped, or somebody pressing Join would start the server on
+    /// half of it. The caller has already made sure the server is stopped.
+    /// </remarks>
+    public async Task<bool> RestoreBackupAsync(string zipPath, IProgress<string>? log = null)
+    {
+        if (!await _backupGate.WaitAsync(0)) return false;
+
+        IsRestoring = true;
+        _wake.Stop();
+        try
+        {
+            await _backups.RestoreBackupAsync(Config, zipPath, log);
+            return true;
+        }
+        finally
+        {
+            IsRestoring = false;
+            _backupGate.Release();
+            if (!_process.IsRunning) StartWakeListener();
         }
     }
 
@@ -1735,7 +1940,7 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanStop))]
     private async Task Restart()
     {
-        await _process.StopAsync(TimeSpan.FromSeconds(30));
+        await _process.StopAsync(StopTimeout);
         _consecutiveCrashes = 0; // a deliberate Restart gives auto-restart a fresh budget too
         await StartInternalAsync(isAutoRestart: false);
     }
@@ -2107,7 +2312,7 @@ public partial class ServerViewModel : ObservableObject
         History.Shutdown();                            // drops a rebuild that was waiting its turn
         _wake.Stop();                                  // frees the port we answer on while asleep
         if (_process.IsRunning)
-            await _process.StopAsync(TimeSpan.FromSeconds(15));
+            await _process.StopAsync(StopTimeout);
     }
 
     private static void RunOnUi(Action action)

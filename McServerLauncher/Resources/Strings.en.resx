@@ -74,6 +74,9 @@
   <data name="Cs_ExistingNeedsJar" xml:space="preserve"><value>Pick which .jar runs the server.</value></data>
   <data name="Cs_ExistingAddAnyway" xml:space="preserve"><value>Add it anyway?</value></data>
   <data name="Cs_ExistingPortWrittenFmt" xml:space="preserve"><value>Port {0} saved to server.properties.</value></data>
+  <data name="Eula_Accept" xml:space="preserve"><value>I accept the Minecraft EULA</value></data>
+  <data name="Eula_ReadTip" xml:space="preserve"><value>Read the Minecraft EULA (opens the browser)</value></data>
+  <data name="Cs_ExistingEulaWritten" xml:space="preserve"><value>EULA accepted: saved in the server folder's eula.txt.</value></data>
   <data name="Cs_Name" xml:space="preserve"><value>Server name</value></data>
   <data name="Cs_NamePlaceholder" xml:space="preserve"><value>e.g. Survival, Creative, Events...</value></data>
   <data name="Cs_ParentFolder" xml:space="preserve"><value>Create inside the folder</value></data>
@@ -182,6 +185,7 @@
   <data name="Msg_JavaCompatibleFound" xml:space="preserve"><value>Compatible Java {0} found. Nothing to install.</value></data>
   <data name="Msg_JavaNotCompatibleDownloading" xml:space="preserve"><value>No compatible Java. Downloading Java {0} (Temurin)...</value></data>
   <data name="Msg_JavaNoChecksum" xml:space="preserve"><value>Adoptium did not provide a checksum for this Java build, so it cannot be verified. It will not be installed; please try again later.</value></data>
+  <data name="Msg_ModNoChecksumFmt" xml:space="preserve"><value>Modrinth gave no checksum for &quot;{0}&quot;, so it cannot be verified. It is not installed, to be safe; try again later.</value></data>
   <data name="Msg_JavaDownloading" xml:space="preserve"><value>Downloading Java (this may take a while)...</value></data>
   <data name="Msg_JavaInstalling" xml:space="preserve"><value>Installing Java...</value></data>
   <data name="Msg_JavaInstalled" xml:space="preserve"><value>Java {0} installed successfully.</value></data>
@@ -224,6 +228,9 @@
   <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>The shortcut could not be created. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Window</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Choose what the minimize and close buttons do. With the app in the tray, servers keep running and you get the window back by clicking the icon next to the clock.</value></data>
+  <data name="Upd_SettingsSection" xml:space="preserve"><value>Updates</value></data>
+  <data name="Upd_BetasIntro" xml:space="preserve"><value>Betas bring new things before the stable versions, but they can have bugs. If you switch them off while on one, you keep it until the next stable version.</value></data>
+  <data name="Upd_ReceiveBetas" xml:space="preserve"><value>Receive beta versions</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Minimizing sends it to the tray (leaves the taskbar)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Closing (X) sends it to the tray instead of quitting the app</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notifications</value></data>
@@ -271,6 +278,8 @@
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Saving a copy of the current state before restoring (in case you want to undo it)...</value></data>
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Restoring the backup...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Backup restored.</value></data>
+  <data name="Msg_StartWaitsForRestore" xml:space="preserve"><value>[Launcher] Not started: a world backup is being restored. Try again when it finishes.</value></data>
+  <data name="Msg_BackupBadLevelNameFmt" xml:space="preserve"><value>level-name = "{0}" in server.properties does not name a folder of its own inside the server, so the backup left everything alone. Change it to a folder name such as "world".</value></data>
   <data name="Backups" xml:space="preserve"><value>Backups</value></data>
   <data name="Backup_Hint" xml:space="preserve"><value>A world backup is created automatically before every start, when you stop the server and, if you leave it on, at intervals while people are playing. Restoring still needs the server stopped.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Back up now</value></data>
@@ -300,6 +309,9 @@
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Start it when someone tries to join</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>While it is off, the server list shows it as asleep. Anyone pressing Join gets a message and the server begins starting up.</value></data>
+  <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>If the whitelist is on, only start it for players on the list</value></data>
+  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>So nobody outside the list can start it from the internet. Operators count too.</value></data>
+  <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>This server is off and only starts for players on its whitelist.</value></data>
   <data name="Wake_MotdSleeping" xml:space="preserve"><value>Asleep · join to wake it up</value></data>
   <data name="Wake_MotdStarting" xml:space="preserve"><value>Starting up… come back in a few seconds</value></data>
   <data name="Wake_KickWaking" xml:space="preserve"><value>The server was off and is starting up now.&#10;&#10;Try joining again in a few seconds.</value></data>
@@ -343,6 +355,7 @@
   <data name="Msg_OtherApp" xml:space="preserve"><value>another application</value></data>
   <data name="Msg_PortBusyTitle" xml:space="preserve"><value>Port in use</value></data>
   <data name="Msg_PortBusyConfirm" xml:space="preserve"><value>Port {0} is already in use by {1}. This usually happens if a previous server got stuck. Do you want to close that process and start the server?</value></data>
+  <data name="Msg_PortBusyJavaNote" xml:space="preserve"><value>It looks like a Minecraft server that was left running. Closing it this way does not save the world: the latest progress can be lost. If you can, join it and type /stop first.</value></data>
   <data name="Msg_UpdateAvailableFmt" xml:space="preserve"><value>An update is available: version {0}.</value></data>
   <data name="Msg_IconCreateError" xml:space="preserve"><value>Could not create the icon: {0}</value></data>
   <data name="Title_ChangeIcon" xml:space="preserve"><value>Change icon</value></data>
@@ -528,6 +541,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Export_LeftOutFmt" xml:space="preserve"><value>Note: {0} files that only work on the server were left out ({1}). You do not need them to play.</value></data>
   <data name="Export_InstructionsFile" xml:space="preserve"><value>INSTRUCTIONS.txt</value></data>
   <data name="Msg_ModDeleteError" xml:space="preserve"><value>Could not delete the file: {0}</value></data>
+  <data name="Mods_ConfirmDeleteFmt" xml:space="preserve"><value>Delete "{0}"? The file is removed from the server folder and does not go to the recycle bin. If you only want it not to load, turn it off with the switch.</value></data>
   <data name="Msg_ExportError" xml:space="preserve"><value>Could not export the modpack: {0}</value></data>
   <data name="Cmd_Say_Title" xml:space="preserve"><value>say &lt;message&gt;</value></data>
   <data name="Cmd_Say_Desc" xml:space="preserve"><value>Sends a chat message to all players.</value></data>
@@ -983,7 +997,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Ores per hour</value></data>
   <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Killed most</value></data>
   <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>Killed by most</value></data>
-  <data name="History_Privacy" xml:space="preserve"><value>Kept on this computer only. Players' IP addresses are never kept. Anything past the limits is removed automatically.</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>The history is kept on this computer only, without players' IP addresses, and anything past the limits is removed automatically. Separately, the console log (logs folder, 14 days) keeps every line, chat and IPs included, even with chat turned off here. Avatars are fetched from mc-heads.net by each player's name.</value></data>
   <data name="History_SizeFmt" xml:space="preserve"><value>Uses {0}</value></data>
   <data name="PlayerDetails_Back" xml:space="preserve"><value>Back</value></data>
   <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banned</value></data>

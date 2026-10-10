@@ -83,7 +83,10 @@ export default {
         body,
       });
     } catch (e) {
-      return json({ status: "error", data: { type: "proxy", message: `upstream: ${e}` } }, 502);
+      // The reason stays in the Worker's own log: echoing it to the client told anyone calling
+      // the proxy how the upstream request failed, which is none of their business.
+      console.error("playit upstream request failed:", e);
+      return json({ status: "error", data: { type: "proxy", message: "upstream unavailable, try again later" } }, 502);
     }
 
     // Pass Playit's response (status + JSON body) straight through.

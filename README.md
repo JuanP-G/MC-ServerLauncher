@@ -57,8 +57,8 @@ Open each one to see it in action.
 
 <br>
 
-**"+ New"** → **Create a new one** → a name, the type and the version → **Create server**. The app downloads
-the official server, checks its checksum, accepts the EULA, sets up the port and starts it.
+**"+ New"** → **Create a new one** → a name, the type and the version → tick **I accept the Minecraft EULA** →
+**Create server**. The app downloads the official server, checks its checksum, sets up the port and starts it.
 
 <img src="docs/media/en/create.gif" width="900" alt="Creating a Paper server from the new-server panel">
 
@@ -127,7 +127,7 @@ When it opens again, **What's new** tells you what changed. It works the same on
 - **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Paper / Purpur /
   Fabric / NeoForge / Forge).
 - **Create a server** automatically: pick the **type**, **version** (official Mojang list), **port** and
-  **RAM**; the app downloads the right server, accepts the EULA, prepares `run.bat` / `server.properties`, and
+  **RAM**, and accept the Minecraft EULA; the app downloads the right server, prepares `run.bat` / `server.properties`, and
   installs the correct **Java** (Temurin) if needed. Fabric, Forge and NeoForge use **mods**; Paper and Purpur
   use **plugins**. The same panel can **use a folder that already exists**: it recognises the type, the
   Minecraft and loader versions, the port and the memory, and changes nothing in the folder.
@@ -144,7 +144,8 @@ When it opens again, **What's new** tells you what changed. It works the same on
 - **Sleeps and wakes on its own** 💤 — a server can **stop itself after N minutes with nobody on** and **start
   again when somebody tries to join**. While it sleeps the list shows *"Off · join to start it"* and whoever
   presses Join gets a message while it boots. There's a **countdown** to the shutdown and a grace period after
-  waking. Per server and **off by default**.
+  waking. If the server has a whitelist, only players on it (or ops) can wake it — an internet scanner can't. Per
+  server and **off by default**.
 - **Nothing missing before it starts** ✅ — if a mod or plugin is waiting on a dependency, you're told **when
   you press Start**, with the option to install it and start. It's read from the jars themselves, so it works
   **offline**. Covers Fabric and Forge/NeoForge mods, and Paper and Purpur plugins.
@@ -304,9 +305,22 @@ Built with **Avalonia / .NET 9**. The Windows installer is **x64 only** (Inno Se
 **https://juanp-g.github.io/MC-ServerLauncher/docs/**.
 
 **Data:** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux and macOS):
-`servers.json`, `settings.json`, the installed `java\`, the console `logs\` (kept 14 days), the store's
+`servers.json`, `settings.json`, the installed `java\`, the console `logs\` (kept 14 days, at most 50 MB a day), the store's
 `cache\`, the `playit-agent\` binary, the `instance.lock` that keeps the app to one running copy, and, on
 Linux/macOS, `.secret.key`. Each server keeps its backups in its own `backups\` folder.
+
+**Privacy:** nothing is sent anywhere to be collected — there is no telemetry. What stays on this computer:
+the player history (joins, leaves, deaths, advancements and, unless you turn it off in Settings → Players,
+chat; 90 days by default, never IP addresses) and the console logs above, which keep **every** line —
+chat and the IPs in login lines included — whatever the history settings say. What the app asks other
+services for, and what they see besides your IP: Mojang, Paper, Purpur, Fabric, Forge and NeoForge (server
+downloads, and Mojang a player's name when you add them to the whitelist), Modrinth and GeyserMC (mods and
+plugins), Adoptium (Java), GitHub (updates), Playit (tunnels, through the app's proxy when linking an
+account) and **mc-heads.net** (each player's avatar, by name, in the player history).
+
+**Extra Java flags:** there is no field for them in the app, but each server in `servers.json` has an
+`ExtraJvmArgs` entry (empty by default) that is added to the Java command line after `-Xms`/`-Xmx`, for
+flags such as Aikar's. Edit it with the app closed, since the app rewrites the file as it runs.
 
 **Contributing:** pull requests are welcome. Start with **[CONTRIBUTING.md](CONTRIBUTING.md)** — the short
 version of the [full guide](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.html): how to

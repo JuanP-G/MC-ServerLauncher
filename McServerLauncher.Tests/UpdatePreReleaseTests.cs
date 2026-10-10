@@ -15,12 +15,9 @@ public class UpdatePreReleaseTests
 {
     private static JsonElement Releases(string json) => JsonDocument.Parse(json).RootElement;
 
-    private static (string? Tag, bool IsBeta) Pick(string json, string current)
+    private static (string? Tag, bool IsBeta) Pick(string json, string current, bool betas = true)
     {
-        var m = typeof(UpdateService).GetMethod("PickNewestRelease",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
-
-        var result = (JsonElement?)m.Invoke(null, new object[] { Releases(json), new Version(current) });
+        var result = UpdateService.PickNewestRelease(Releases(json), new Version(current), betas);
         if (result is not { } release) return (null, false);
 
         return (release.GetProperty("tag_name").GetString(),
@@ -43,6 +40,34 @@ public class UpdatePreReleaseTests
 
         Assert.Equal("v1.10.1", tag);
         Assert.True(isBeta);
+    }
+
+    // --- With betas switched off, which is now the default ---
+
+    [Fact]
+    public void WithBetasOffABetaIsNotOffered() =>
+        Assert.Null(Pick(TwoReleases, "1.10.0", betas: false).Tag);
+
+    [Fact]
+    public void WithBetasOffTheNewestStableIsOfferedInstead()
+    {
+        var (tag, isBeta) = Pick(TwoReleases, "1.9.2", betas: false);
+
+        Assert.Equal("v1.10.0", tag);
+        Assert.False(isBeta);
+    }
+
+    [Fact]
+    public void SomebodyOnABetaIsStillOfferedTheStableThatFollowsIt()
+    {
+        const string list = """
+            [
+              { "tag_name": "v1.10.1",   "prerelease": false, "draft": false, "html_url": "u" },
+              { "tag_name": "v1.10.0.2", "prerelease": true,  "draft": false, "html_url": "u" }
+            ]
+            """;
+
+        Assert.Equal("v1.10.1", Pick(list, "1.10.0.1", betas: false).Tag);
     }
 
     [Fact]

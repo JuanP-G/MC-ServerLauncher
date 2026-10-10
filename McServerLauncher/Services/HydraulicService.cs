@@ -68,12 +68,7 @@ public class HydraulicService
     /// </remarks>
     public async Task InstallAsync(ServerConfig config, IProgress<string>? log, CancellationToken ct = default)
     {
-        if (!CanEnable(config.Type))
-            throw new InvalidOperationException(
-                string.Format(Localizer.Get("Msg_HydraulicUnsupportedFmt"), config.Type));
-
-        var folder = Path.Combine(config.FolderPath, ServerTypeCatalog.ContentFolder(config.Type));
-        Directory.CreateDirectory(folder);
+        var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type), "Msg_HydraulicUnsupportedFmt");
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Fabric API"));
         var api = await _modrinth.GetLatestProjectVersionAsync(FabricApiProjectId, config.Type, config.GameVersion, ct);

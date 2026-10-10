@@ -137,8 +137,10 @@ public partial class ServerBackupsViewModel : ObservableObject
         StatusText = Localizer.Get("Msg_BackupRestoring");
         try
         {
-            await _backupService.RestoreBackupAsync(Config, item.FilePath, new Progress<string>(s => StatusText = s));
-            StatusText = Localizer.Get("Msg_BackupRestored");
+            // Through the server, like a backup: it holds the gate that keeps this apart from a
+            // backup in progress, and the wake listener that must not start the server meanwhile.
+            var restored = await _server.RestoreBackupAsync(item.FilePath, new Progress<string>(s => StatusText = s));
+            StatusText = Localizer.Get(restored ? "Msg_BackupRestored" : "Msg_BackupAlreadyRunning");
             Refresh();
         }
         catch (Exception ex)

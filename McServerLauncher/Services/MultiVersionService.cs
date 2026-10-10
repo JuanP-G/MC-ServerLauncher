@@ -48,12 +48,7 @@ public class MultiVersionService
     /// </remarks>
     public async Task InstallAsync(ServerConfig config, IProgress<string>? log, CancellationToken ct = default)
     {
-        if (!CanEnable(config.Type))
-            throw new InvalidOperationException(
-                string.Format(Localizer.Get("Msg_MultiVersionUnsupportedFmt"), config.Type));
-
-        var folder = Path.Combine(config.FolderPath, ServerTypeCatalog.ContentFolder(config.Type));
-        Directory.CreateDirectory(folder);
+        var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type), "Msg_MultiVersionUnsupportedFmt");
 
         foreach (var projectId in ProjectIds)
         {

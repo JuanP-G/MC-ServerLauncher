@@ -120,8 +120,41 @@ public partial class JavaService
         return result;
     }
 
-    /// <summary>Runs "java -version" and returns the major version (8, 17, 21, 25...). 0 on failure.</summary>
+    /// <summary>What each Java executable answered, keyed by its path and stamped with its file.</summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (long Length, DateTime Written, int Major)>
+        Versions = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The major version (8, 17, 21, 25...) of a Java executable. 0 on failure.</summary>
+    /// <remarks>
+    /// <para>
+    /// Asking means starting a JVM, a fraction of a second to more than one on a slow disk, and it
+    /// was asked twice on every start — once to check the Java and again to build the command line —
+    /// on the UI thread, and once per JDK found when a server was created. The answer only changes
+    /// when the file does, so it is remembered against the file's size and write time; a Java
+    /// updated in place is asked again.
+    /// </para>
+    /// <para>
+    /// A bare "java" resolved through the PATH has no file to stamp and is not remembered.
+    /// </para>
+    /// </remarks>
     public int GetMajorVersion(string javaExe)
+    {
+        FileInfo? file = null;
+        try { file = File.Exists(javaExe) ? new FileInfo(javaExe) : null; }
+        catch { /* an unusable path: asked, not remembered */ }
+
+        if (file is not null && Versions.TryGetValue(file.FullName, out var known)
+            && known.Length == file.Length && known.Written == file.LastWriteTimeUtc)
+            return known.Major;
+
+        var major = AskMajorVersion(javaExe);
+        if (file is not null && major > 0)
+            Versions[file.FullName] = (file.Length, file.LastWriteTimeUtc, major);
+        return major;
+    }
+
+    /// <summary>Runs "java -version" and reads the major version out of what it prints.</summary>
+    private static int AskMajorVersion(string javaExe)
     {
         try
         {
@@ -136,8 +169,18 @@ public partial class JavaService
             };
             using var p = Process.Start(psi);
             if (p is null) return 0;
-            var output = p.StandardError.ReadToEnd() + p.StandardOutput.ReadToEnd();
-            p.WaitForExit(5000);
+
+            // Both streams at once, then a deadline that actually applies: reading one to the end
+            // before the other could wait forever on a process blocked writing the second, and
+            // WaitForExit after ReadToEnd never got the chance to time anything out.
+            var error = p.StandardError.ReadToEndAsync();
+            var standard = p.StandardOutput.ReadToEndAsync();
+            if (!p.WaitForExit(5000))
+            {
+                try { p.Kill(entireProcessTree: true); } catch { /* already gone */ }
+                return 0;
+            }
+            var output = error.GetAwaiter().GetResult() + standard.GetAwaiter().GetResult();
 
             var m = VersionRegex().Match(output);
             if (!m.Success) return 0;
@@ -153,8 +196,20 @@ public partial class JavaService
     }
 
     /// <summary>An installed Java version is valid for the required one (exact, or newer if 17+).</summary>
+    /// <remarks>
+    /// One exception, for Java 16 — what Mojang declares for Minecraft 1.17 and 1.17.1. Adoptium
+    /// publishes no Java 16 at all, so if 17 did not count, a 1.17 server could neither use the Java
+    /// 17 already on the machine nor download a 16, and would not start without a Java installed by
+    /// hand. 17 runs those versions; anything later is not promised to.
+    /// </remarks>
     public static bool IsCompatible(int installed, int required)
-        => installed == required || (required >= 17 && installed >= required);
+        => installed == required
+           || (required == 16 && installed == 17)
+           || (required >= 17 && installed >= required);
+
+    /// <summary>The Java to download when nothing installed fits <paramref name="required"/>.</summary>
+    /// <remarks>Java 16 does not exist on Adoptium; 17 is the one that runs what asks for it.</remarks>
+    internal static int DownloadableMajor(int required) => required == 16 ? 17 : required;
 
     /// <summary>
     /// Reads the Java a server.jar needs (modern versions include it in version.json).
@@ -247,15 +302,56 @@ public partial class JavaService
     /// </summary>
     public async Task<string> EnsureJavaAsync(int requiredMajor, IProgress<string>? log, CancellationToken ct = default)
     {
-        var match = DetectInstalled().FirstOrDefault(i => IsCompatible(i.Major, requiredMajor));
+        // Off the caller's thread: it starts a JVM per installation found, and the caller is the UI.
+        var installed = await Task.Run(DetectInstalled, ct);
+        var match = installed.FirstOrDefault(i => IsCompatible(i.Major, requiredMajor));
         if (match is not null)
         {
             log?.Report(string.Format(Localizer.Get("Msg_JavaCompatibleFound"), match.Major));
             return match.Path;
         }
 
-        log?.Report(string.Format(Localizer.Get("Msg_JavaNotCompatibleDownloading"), requiredMajor));
-        return await DownloadAdoptiumAsync(requiredMajor, log, ct);
+        var download = DownloadableMajor(requiredMajor);
+        log?.Report(string.Format(Localizer.Get("Msg_JavaNotCompatibleDownloading"), download));
+        return await DownloadAdoptiumAsync(download, log, ct);
+    }
+
+    /// <summary>The Adoptium architectures to ask for, in order, on a machine of <paramref name="arch"/>.</summary>
+    /// <remarks>
+    /// <para>
+    /// ARM machines get a native build where there is one, and an x64 one where there is not — but
+    /// only where the system can run it. Adoptium has no ARM JRE for Java 8 on macOS, nor for 8,
+    /// 16 or 17 on Windows (checked against its API), so asking for aarch64 alone left every server
+    /// older than 1.20.5 on Windows ARM, and older than 1.17 on Apple Silicon, without a Java. Both
+    /// systems run x64 code (Windows 11 by emulation, macOS through Rosetta); Linux does not, so an
+    /// ARM Linux machine only ever gets an ARM build.
+    /// </para>
+    /// <para>
+    /// The OS architecture, not the process's: an x64 build of this app on a Windows ARM machine
+    /// still wants a native Java if one exists.
+    /// </para>
+    /// </remarks>
+    internal static IReadOnlyList<string> AdoptiumArchitectures(Architecture arch, bool emulatesX64) => arch switch
+    {
+        Architecture.Arm64 => emulatesX64 ? new[] { "aarch64", "x64" } : new[] { "aarch64" },
+        Architecture.X86 => new[] { "x86" },
+        _ => new[] { "x64" }
+    };
+
+    /// <summary>The download link and checksum of the first package in an Adoptium answer.</summary>
+    private static (string? Link, string? Checksum) FirstPackage(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        foreach (var asset in doc.RootElement.EnumerateArray())
+        {
+            if (asset.TryGetProperty("binary", out var b) &&
+                b.TryGetProperty("package", out var pkg) &&
+                pkg.TryGetProperty("link", out var lk))
+            {
+                return (lk.GetString(), pkg.TryGetProperty("checksum", out var cs) ? cs.GetString() : null);
+            }
+        }
+        return (null, null);
     }
 
     private async Task<string> DownloadAdoptiumAsync(int major, IProgress<string>? log, CancellationToken ct)
@@ -266,35 +362,22 @@ public partial class JavaService
         var existing = FindJavaExe(target);
         if (existing is not null) return existing;
 
-        var arch = RuntimeInformation.OSArchitecture switch
-        {
-            Architecture.Arm64 => "aarch64",
-            Architecture.X86 => "x86",
-            _ => "x64"
-        };
         var os = OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsMacOS() ? "mac" : "linux";
-        var apiUrl = $"https://api.adoptium.net/v3/assets/latest/{major}/hotspot" +
-                     $"?architecture={arch}&image_type=jre&os={os}&vendor=eclipse";
-        var json = await Http.GetStringAsync(apiUrl, ct);
+        var archs = AdoptiumArchitectures(RuntimeInformation.OSArchitecture,
+            emulatesX64: OperatingSystem.IsWindows() || OperatingSystem.IsMacOS());
 
         string? link = null;
         string? checksum = null;
-        using (var doc = JsonDocument.Parse(json))
+        foreach (var arch in archs)
         {
-            foreach (var asset in doc.RootElement.EnumerateArray())
-            {
-                if (asset.TryGetProperty("binary", out var b) &&
-                    b.TryGetProperty("package", out var pkg) &&
-                    pkg.TryGetProperty("link", out var lk))
-                {
-                    link = lk.GetString();
-                    checksum = pkg.TryGetProperty("checksum", out var cs) ? cs.GetString() : null;
-                    break;
-                }
-            }
+            var apiUrl = $"https://api.adoptium.net/v3/assets/latest/{major}/hotspot" +
+                         $"?architecture={arch}&image_type=jre&os={os}&vendor=eclipse";
+            (link, checksum) = FirstPackage(await Http.GetStringAsync(apiUrl, ct));
+            if (!string.IsNullOrEmpty(link)) break;
         }
         if (string.IsNullOrEmpty(link))
-            throw new InvalidOperationException($"No Java {major} download was found for {os}/{arch}.");
+            throw new InvalidOperationException(
+                $"No Java {major} download was found for {os}/{string.Join(" or ", archs)}.");
 
         Directory.CreateDirectory(ManagedRoot);
         var isZip = OperatingSystem.IsWindows();
@@ -322,12 +405,19 @@ public partial class JavaService
         }
 
         log?.Report(Localizer.Get("Msg_JavaInstalling"));
-        if (Directory.Exists(target)) Directory.Delete(target, true);
-        Directory.CreateDirectory(target);
+        // Unpacked beside the target and moved into place whole. Unpacking straight into it left a
+        // half-extracted runtime after an interruption, and since an existing jre-N folder with a
+        // java in it counts as installed (above), that broken runtime was used from then on.
+        var partial = target + ".partial";
+        if (Directory.Exists(partial)) Directory.Delete(partial, true);
+        Directory.CreateDirectory(partial);
         if (isZip)
-            ZipFile.ExtractToDirectory(archivePath, target);
+            ZipFile.ExtractToDirectory(archivePath, partial);
         else
-            await ExtractTarGzAsync(archivePath, target, ct);
+            await ExtractTarGzAsync(archivePath, partial, ct);
+
+        if (Directory.Exists(target)) Directory.Delete(target, true);
+        Directory.Move(partial, target);
         try { File.Delete(archivePath); } catch { /* doesn't matter */ }
 
         var javaExe = FindJavaExe(target)

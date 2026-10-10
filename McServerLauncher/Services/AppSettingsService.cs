@@ -62,6 +62,25 @@ public class AppSettingsService
         }
     }
 
+    /// <summary>The saved language and nothing else, for before any window exists.</summary>
+    /// <remarks>
+    /// <see cref="App"/> needs only this, and used to call <see cref="Load"/> for it — decrypting the
+    /// Playit keys and, for an older file, migrating and saving it — just before the main view model
+    /// did all of that again.
+    /// </remarks>
+    public string? LoadLanguage()
+    {
+        try
+        {
+            var (loaded, _) = AtomicJsonFile.Load<AppSettings>(_filePath, JsonOptions);
+            return loaded?.Language;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public void Save(AppSettings settings)
     {
         Directory.CreateDirectory(_dataDir);

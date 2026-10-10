@@ -102,7 +102,10 @@ and macOS):
   `.bak`, and a corrupt file is quarantined as `.bad` and recovered from the `.bak` when possible
   (the user is warned at startup instead of silently losing the list).
 - `java\` — Java runtimes the app installs (Temurin/Adoptium).
-- `logs\` — the persistent console log (`launcher-yyyy-MM-dd.log`, pruned after 14 days).
+- `logs\` — the persistent console log (`launcher-yyyy-MM-dd.log`, pruned after 14 days, at most 50 MB a day), and
+  `crash-*.log` from `CrashLog` when an exception escapes every handler (the newest 20 are kept). It is
+  hooked to the AppDomain, to unobserved tasks and to the UI dispatcher; on the dispatcher the app
+  writes it down and carries on, since closing would leave every server it started running unwatched.
 - `cache\images\` and `cache\store\` — the store's disk caches: project icons and gallery
   screenshots (`ImageCache`, pruned after 30 days) and the API responses (`StoreCache`). Both are
   disposable; deleting them costs a few requests and nothing else.
@@ -122,7 +125,9 @@ are no hard-coded machine paths.
 
 - **`ServerProcessManager`** — owns the `java` process lifecycle: starts it (no console window),
   redirects stdin/stdout/stderr, re-emits each output line via an event, and stops it cleanly by
-  sending `stop` (with a kill fallback).
+  sending `stop` (with a kill fallback). The kill waits `ServerViewModel.StopTimeout` (60 s), one
+  value for the Stop button, Restart and closing or updating the app — closing used to allow fifteen
+  seconds, less than a large modpack needs to save.
 - **`JavaService`** — detects installed Java versions and, if none is compatible, downloads the
   right Temurin (Adoptium) JRE for the architecture. Used both when creating and when starting a
   server.
@@ -170,7 +175,9 @@ are no hard-coded machine paths.
   "blocks placed", since Minecraft counts using an item rather than placing it, and it is shown as it is
   with a line saying so rather than filtered against a hand-kept list of block ids that would go stale
   every release.
-- **`ServerCreationService`** — writes the initial files of a new server: `eula.txt`,
+- **`ServerCreationService`** — writes the initial files of a new server: `eula.txt` (only once the user has
+  ticked *I accept the Minecraft EULA* beside the Create button, which stays shut until then; the app used to
+  accept it on their behalf),
   `run.bat`/`user_jvm_args.txt` and a minimal `server.properties` with the chosen port. (The jar
   download is done by `MinecraftVersionService`/`ModLoaderService`/`PaperService` and the port is
   picked by `PortService`, all orchestrated by `NewServerView`.) The seed typed there, if any, is
@@ -256,6 +263,15 @@ are no hard-coded machine paths.
   (`[Alice] …`, `* Alice …`). Those last two count only when that player is connected — the view model hands
   in a copy of who is — because on Paper every plugin logs as `[PluginName] …`, and a plugin name is a valid
   player name.
+  **Nothing a player types is taken for an event.** Every detector that reads one — a join or a leave, the
+  `Saved the game` a live backup waits for, the answer to `seed`, a player's UUID — matches the *whole*
+  message from `MessageBody`, the text after the **first** `]: `, which is where the server's own prefix
+  ends; everything after it can be typed. Searching the line for the sentence was not enough: chat such as
+  `<Bob> x: Bob left the game` or `<Bob> x]: Saved the game` carries a prefix-shaped piece of its own, and
+  was taken off the player list (and the idle timer then stopped a server with people on it) or cut a
+  backup short. On top of that, `ServerViewModel` reacts to nothing in a line classified as chat except
+  recording it in the history, and only listens for Paper's path refusal before the server is running.
+  `ConsoleSpoofingTests` holds each of those lines down.
 - **`BlueMapConsent`** and `ServerProcessManager.ImpliedJvmFlags` — the two start-up warnings the app
   answers itself, because they are its to answer. From Java 22 it adds `--enable-native-access=ALL-UNNAMED`
   to the command line it builds: JNA-based mods trigger a warning that says a future Java will *block* the
@@ -274,7 +290,8 @@ are no hard-coded machine paths.
   what was found and asks only for the rest; this replaced the separate *Add* button, whose dialog
   asked for a jar name by hand and skipped the tunnel, crossplay and start options. `ExistingServer`
   builds the config from the detection and the form (the detection wins) and never writes to the
-  folder, except `server-port` when the user changed it. `DetectAndFill` is a thin layer over
+  folder, except `server-port` when the user changed it and `eula.txt` when the folder had not accepted
+  the EULA and the user ticks the box the panel shows for it. `DetectAndFill` is a thin layer over
   `Detect` that fills in servers saved before the type and version were recorded, at startup; it
   fills nothing in a config that already names its version. Purpur is checked before Paper — it used
   to match nothing, even for servers this app created.
@@ -289,7 +306,9 @@ are no hard-coded machine paths.
   a human-readable reason for a crash. (The unexpected-exit detection is `ServerProcessManager`'s
   `UnexpectedExit` event; the auto-restart logic lives in `ServerViewModel`.)
 - **`ConsoleLogService`** — mirrors every console line to `%APPDATA%\McServerLauncher\logs\` so the
-  history survives restarts (14-day retention).
+  history survives restarts (14-day retention, checked each time the day changes and not only at
+  start-up, since the app can live in the tray for weeks; and a 50 MB ceiling per day, past which one
+  line says so and nothing more is written until the next — `ConsoleLogLimitsTests`).
 - **`ProcessStatsService`** — samples CPU/RAM of the running `java` process for the live stats and the
   `Sparkline` mini-charts.
 - **`ToastService`** — shows the app's own pop-up notifications — always-on-top Avalonia windows in
@@ -313,7 +332,10 @@ are no hard-coded machine paths.
   the asset for *this* platform and architecture (the Windows installer, the Linux AppImage, the
   macOS `.dmg`); `SelfUpdater` is what applies it. It reads the release **list**, not
   `/releases/latest`, because GitHub leaves pre-releases out of the latter and a beta published that
-  way would be invisible to the app. Verification against the release's `SHA256SUMS.txt` asset is
+  way would be invisible to the app. Betas are only offered with **Settings → General → Receive beta
+  versions** on (`AppSettings.ReceiveBetas`, off by default); with it off, somebody already on a beta
+  keeps it until the next stable, which outranks it. Switching it re-checks at once, and a check that
+  finds nothing newer takes back an offer already in the banner. Verification against the release's `SHA256SUMS.txt` asset is
   **mandatory**: if the checksum is missing or unreadable, the in-place update is refused and the
   release page opens instead.
 
@@ -367,10 +389,31 @@ are no hard-coded machine paths.
 ## Important flows
 
 ### Starting a server
-`ServerViewModel.Start` → refresh port/info → if the port is busy, offer to free it
-(`PortService` + `TryFreePortAsync`) → `EnsureCompatibleJavaAsync` (uses `JavaService` to read the
-required Java from the jar and install it if needed) → `ServerProcessManager.Start`. Console output
-streams back through the `OutputReceived` event into `ConsoleLines`.
+`ServerViewModel.Start` → `StartInternalAsync`, which refuses while a backup is being restored and
+otherwise lets go of the wake-on-demand listener first (it holds the server's port), then:
+
+1. **Port** — refresh port/info; if the port is busy, offer to free it (`PortService` +
+   `TryFreePortAsync`). An auto-restart does not ask: it gives up and says so in the console.
+2. **Path** — `TryFixRejectedPathAsync`: Paper and Purpur refuse to start from a folder whose path
+   has a character they cannot handle (`BukkitPathRule`), and the app offers to rename the folder
+   rather than let it fail.
+3. **Geyser** — with crossplay on, `CrossplayService.RepairConfig` corrects a Geyser config written by
+   an older version of the app.
+4. **Dependencies** — `CheckContentDependenciesAsync`: mods or plugins missing something they need are
+   reported before the server starts, not as a crash afterwards.
+5. **Java** — `EnsureCompatibleJavaAsync` (uses `JavaService` to read the required Java from the jar
+   and install it if needed).
+6. **Backup** — the start backup when backups are on (it waits for any other copy still reading the
+   world); with them off it still waits for one made by hand.
+7. `ServerProcessManager.Start`, with the Java version read off the UI thread beforehand. The command
+   line is `-Xms`/`-Xmx`, the flags the app adds itself (`ImpliedJvmFlags`), the server's
+   `ExtraJvmArgs` and the jar (or a modern Forge/NeoForge args file).
+
+If any step stops the start, the wake-on-demand listener is put back up (`finally`). Console output
+streams back through the `OutputReceived` event into `ConsoleLines`, **in batches**: lines from the
+process's threads are queued and one dispatcher job takes all that arrived before it ran, appending them
+with a single `AddRange` (a loading modpack prints thousands, and one job per line made the window
+stutter). The app's own lines are written on the UI thread and appear at once (`ConsoleBatchingTests`).
 
 ### The window: sections, the new-server panel and motion
 The main window is a **rail** of four sections — Servers, Tunnels, Settings, About — sharing one cell
@@ -420,6 +463,13 @@ and calls `JavaService.EnsureJavaAsync`. At **start** time, `ServerViewModel` re
 embedded in `server.jar` (`version.json`) and installs/uses a compatible runtime, saving the path in
 `ServerConfig.JavaPath`.
 
+Two gaps in what Adoptium publishes shape the rules (`JavaCompatibilityTests`, `ArmPlatformTests`).
+There is **no Java 16**, which is what Minecraft 1.17 and 1.17.1 declare, so 17 counts as compatible
+with 16 and is what gets downloaded. And there is **no ARM JRE** for Java 8, 16 or 17 on Windows, nor
+for 8 on macOS: on those two systems an ARM machine asks for `aarch64` first and falls back to `x64`,
+which Windows 11 emulates and macOS runs through Rosetta; Linux has no such fallback. The Playit
+agent follows the same reasoning on Windows ARM and uses the x64 build.
+
 ### Playit tunnel
 First time the user connects Playit, `MainViewModel.EnsurePlayitAgentAsync` shows the setup-code
 dialog (opens `playit.gg/l/setup-third-party` only on a click), exchanges the pasted code via
@@ -448,8 +498,10 @@ with Playit's third-party rules: the browser only opens on an explicit click, a 
 the app is not affiliated with Playit, and the user can always reach their Playit account directly.
 A self-managed agent forwards traffic only while the agent process runs, so `PlayitAgentRunner`
 downloads Playit's official `playitd` binary (once, pinned to the registered version) and runs it as
-a hidden child process with `--secret <the per-user key>` while the app is open and connected — the
-user installs nothing. Since that native binary is the highest-privilege code the app fetches, it is
+a hidden child process while the app is open and connected — the user installs nothing. The key goes
+in a file passed as `--secret-path`, never on the command line (where other processes and logging tools
+can read it); the file is created readable by its owner only (0600 on Unix, from birth rather than
+narrowed afterwards) and deleted as soon as the agent stops, whether it was stopped or died on its own. Since that native binary is the highest-privilege code the app fetches, it is
 **verified against a hard-coded SHA-256** (of the exact pinned version) before it ever runs — on
 download and when reusing a cached copy — and deleted/failed on mismatch, just like every other
 download (`DownloadVerifier`). One agent serves all the user's tunnels. Not available on macOS
@@ -480,6 +532,20 @@ after a manual clean stop, before a restore, and at intervals while the server i
 still requires the server to be stopped, because it deletes the world folder and unpacks another one
 in its place.
 
+Which folder that is comes from `level-name`, a value in a file the app did not write, so
+`WorldBackupService.WorldFolderFor` only accepts one that resolves **strictly inside the server's
+folder and outside `backups/`** (`worlds/survival` is fine). With `level-name=.` a restore used to
+delete the whole server, the zip it was about to read included; `..` or an absolute path reached
+outside it. A restore with such a value refuses before touching anything, and a backup says why in
+the console and is skipped rather than keeping the server from starting (`BackupLevelNameTests`).
+
+The swap itself is all or nothing (`WorldBackupService.ReplaceWorld`): the zip is unpacked beside the
+world as `<world>.restoring`, and only a complete copy takes its place, by renaming. It used to delete
+the world first and unpack into the empty folder, so a damaged zip or a full disk left half a world.
+And a restore goes through `ServerViewModel.RestoreBackupAsync`, which takes the same gate as every
+backup, closes the wake listener and sets `IsRestoring`, which keeps every start out — the button, a
+wake, an auto-restart (`RestoreSafetyTests`).
+
 Backing up a **running** server goes through `LiveWorldBackup`, because zipping a world the JVM is
 writing to gives a torn copy. It asks Minecraft to let go of it first — `save-off`, `save-all flush`,
 wait for the server to say `Saved the game` (recognised by `SaveConfirmation`, anchored after the log
@@ -501,14 +567,22 @@ deleted at all.
 ### Auto-restart after a crash
 When a server exits unexpectedly, `ServerProcessManager` raises its `UnexpectedExit` event and
 `ServerViewModel` restarts it within a budget (a few attempts inside a stability window) to avoid
-crash loops, notifying the user via `ToastService` if the budget is exhausted. `CrashReportService`
-reads the server's crash report to add a human-readable reason to that notification.
+crash loops. `CrashReportService` reads the server's crash report for a human-readable reason, which
+goes to the **console** with the exit code; the notifications (`ToastService`, one for the crash and one
+if the budget is exhausted) are generic and only show when the window is not in front.
 
 ### System tray
-`App` installs a `TrayIcon`. Minimizing keeps the window on the taskbar as usual; closing it with the
-**X** hides it to the tray (servers keep running) instead of quitting. The tray menu restores the
-window (**Show**) or really quits (**Exit** → `MainWindow.RequestExit`, which runs the clean
-shutdown).
+`App` installs a `TrayIcon`. Two settings (Settings → General) decide what the window does, both read
+through `WindowBehavior`:
+
+- **Minimize to tray** (`MinimizeToTray`, **on** by default): minimizing hides the window to the tray
+  instead of leaving it on the taskbar.
+- **Close to tray** (`CloseToTray`, **off** by default): the **X** hides the window instead of
+  quitting. Off, the X quits after stopping the servers cleanly.
+
+Either way the servers keep running while the window is hidden. Where there is no tray to come back
+from (`App.TrayAvailable` is false), both are ignored. The tray menu restores the window (**Show**) or
+really quits (**Exit** → `MainWindow.RequestExit`, which runs the clean shutdown).
 
 ### Playing from Bedrock (crossplay)
 One checkbox, three things that have to line up — which is why doing it by hand goes wrong.
@@ -562,6 +636,13 @@ for people who are not even playing. With a Playit tunnel this socket is reachab
 so everything it reads is treated as hostile: bounded lengths, a deadline per connection, and a cap
 on how many there are at once.
 
+**Who may wake it** is `WakePolicy`. The listener reads the name from the client's Login Start and
+asks; with the server's whitelist on, only somebody on it or in `ops.json` wakes it, and anybody else
+is told the server only starts for its whitelist. Scanners that look for Minecraft servers log in as a
+matter of routine, and each of them used to start the server and the backup in front of the start.
+Without a whitelist nothing changes, and `ServerConfig.WakeOnlyForWhitelist` (on by default, a box
+under *Start it when someone tries to join*) lets the owner open it to anyone anyway.
+
 ### The store: search, tags and plain language
 `ServerModsViewModel` asks `ModrinthService` for results already filtered by the server's loader and
 game version — a result the server cannot run is worse than no result, because it installs and then
@@ -582,7 +663,10 @@ without a new build. Opening a result shows `ModDetailsViewModel` — gallery, v
 links and related projects — painted in two passes, so what the search result already carried appears
 at once and the rest arrives as its requests come back. `StoreCache` (memory, then disk, then the
 network) and `ImageCache` are what make going back and opening something again cost nothing, and what
-make a project already seen open with no connection.
+make a project already seen open with no connection. `ImageCache` decodes each image at the size it is
+drawn — icons and thumbnails 256 px wide at most, screenshots 1600 — reading the dimensions from the
+header first, so an image claiming tens of thousands of pixels a side is refused instead of decoded, and
+its memory cache has a 96 MB budget as well as a count (`ImageCacheBudgetTests`).
 
 ### Changing a server's type
 `InstallLoaderDialog` converts an existing server in place, **keeping the world**: Vanilla into a

@@ -74,6 +74,9 @@
   <data name="Cs_ExistingNeedsJar" xml:space="preserve"><value>Escolhe que .jar arranca o servidor.</value></data>
   <data name="Cs_ExistingAddAnyway" xml:space="preserve"><value>Adicioná-lo mesmo assim?</value></data>
   <data name="Cs_ExistingPortWrittenFmt" xml:space="preserve"><value>Porta {0} guardada em server.properties.</value></data>
+  <data name="Eula_Accept" xml:space="preserve"><value>Aceito o EULA do Minecraft</value></data>
+  <data name="Eula_ReadTip" xml:space="preserve"><value>Ler o EULA do Minecraft (abre o navegador)</value></data>
+  <data name="Cs_ExistingEulaWritten" xml:space="preserve"><value>EULA aceite: guardado em eula.txt na pasta do servidor.</value></data>
   <data name="Cs_Name" xml:space="preserve"><value>Nome do servidor</value></data>
   <data name="Cs_NamePlaceholder" xml:space="preserve"><value>ex.: Survival, Criativo, Eventos...</value></data>
   <data name="Cs_ParentFolder" xml:space="preserve"><value>Criar dentro da pasta</value></data>
@@ -182,6 +185,7 @@
   <data name="Msg_JavaCompatibleFound" xml:space="preserve"><value>Java {0} compatível encontrado. Não é preciso instalar nada.</value></data>
   <data name="Msg_JavaNotCompatibleDownloading" xml:space="preserve"><value>Sem Java compatível. A baixar Java {0} (Temurin)...</value></data>
   <data name="Msg_JavaNoChecksum" xml:space="preserve"><value>A Adoptium não forneceu a soma de verificação deste Java, por isso não é possível verificá-lo. Não será instalado; tenta novamente mais tarde.</value></data>
+  <data name="Msg_ModNoChecksumFmt" xml:space="preserve"><value>O Modrinth não deu o checksum de «{0}», por isso não pode ser verificado. Por segurança não é instalado; tenta mais tarde.</value></data>
   <data name="Msg_JavaDownloading" xml:space="preserve"><value>A baixar Java (pode demorar um pouco)...</value></data>
   <data name="Msg_JavaInstalling" xml:space="preserve"><value>A instalar Java...</value></data>
   <data name="Msg_JavaInstalled" xml:space="preserve"><value>Java {0} instalado com sucesso.</value></data>
@@ -224,6 +228,9 @@
   <data name="Msg_ShortcutFailedFmt" xml:space="preserve"><value>Não foi possível criar o atalho. {0}</value></data>
   <data name="Win_Section" xml:space="preserve"><value>Janela</value></data>
   <data name="Win_Intro" xml:space="preserve"><value>Escolhe o que fazem os botões de minimizar e fechar. Com a aplicação na bandeja, os servidores continuam a correr e recuperas a janela clicando no ícone junto ao relógio.</value></data>
+  <data name="Upd_SettingsSection" xml:space="preserve"><value>Atualizações</value></data>
+  <data name="Upd_BetasIntro" xml:space="preserve"><value>As betas trazem as novidades antes das versões estáveis, mas podem ter erros. Se as desativares enquanto usas uma, ficas com ela até à próxima versão estável.</value></data>
+  <data name="Upd_ReceiveBetas" xml:space="preserve"><value>Receber versões beta</value></data>
   <data name="Win_MinimizeToTray" xml:space="preserve"><value>Ao minimizar, enviar para a bandeja (sai da barra de tarefas)</value></data>
   <data name="Win_CloseToTray" xml:space="preserve"><value>Ao fechar (X), enviar para a bandeja em vez de sair da aplicação</value></data>
   <data name="Notif_Section" xml:space="preserve"><value>Notificações</value></data>
@@ -271,6 +278,8 @@
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] A guardar uma cópia do estado atual antes de restaurar (caso queiras desfazer)...</value></data>
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] A restaurar a cópia de segurança...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Cópia de segurança restaurada.</value></data>
+  <data name="Msg_StartWaitsForRestore" xml:space="preserve"><value>[Launcher] Não foi iniciado: está a ser restaurada uma cópia de segurança do mundo. Tenta de novo quando terminar.</value></data>
+  <data name="Msg_BackupBadLevelNameFmt" xml:space="preserve"><value>level-name = "{0}" em server.properties não indica uma pasta própria dentro do servidor, por isso a cópia de segurança não mexeu em nada. Muda-o para um nome de pasta como "world".</value></data>
   <data name="Backups" xml:space="preserve"><value>Cópias de segurança</value></data>
   <data name="Backup_Hint" xml:space="preserve"><value>É criada automaticamente uma cópia de segurança do mundo antes de cada arranque, ao parar o servidor e, se deixares ligado, de tempos a tempos enquanto se joga. Restaurar continua a exigir o servidor parado.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Fazer cópia agora</value></data>
@@ -300,6 +309,9 @@
   <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Ligá-lo quando alguém tentar entrar</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>Enquanto estiver desligado, a lista de servidores mostra-o adormecido. Quem carregar em Entrar recebe uma mensagem e o servidor começa a arrancar.</value></data>
+  <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>Se a lista branca estiver ativada, ligá-lo só para jogadores da lista</value></data>
+  <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>Assim ninguém fora da lista o pode ligar pela Internet. Os operadores também contam.</value></data>
+  <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>Este servidor está desligado e só liga para os jogadores da sua lista branca.</value></data>
   <data name="Wake_MotdSleeping" xml:space="preserve"><value>Desligado · entra para o acordar</value></data>
   <data name="Wake_MotdStarting" xml:space="preserve"><value>A arrancar… volta daqui a uns segundos</value></data>
   <data name="Wake_KickWaking" xml:space="preserve"><value>O servidor estava desligado e está a arrancar.&#10;&#10;Tenta entrar outra vez daqui a uns segundos.</value></data>
@@ -343,6 +355,7 @@
   <data name="Msg_OtherApp" xml:space="preserve"><value>outra aplicação</value></data>
   <data name="Msg_PortBusyTitle" xml:space="preserve"><value>Porta ocupada</value></data>
   <data name="Msg_PortBusyConfirm" xml:space="preserve"><value>A porta {0} já está em uso por {1}. Isto costuma acontecer se um servidor anterior ficou preso. Queres fechar esse processo e iniciar o servidor?</value></data>
+  <data name="Msg_PortBusyJavaNote" xml:space="preserve"><value>Parece um servidor de Minecraft que ficou ligado. Fechá-lo assim não guarda o mundo: o progresso mais recente pode perder-se. Se puderes, entra nele e escreve /stop antes.</value></data>
   <data name="Msg_UpdateAvailableFmt" xml:space="preserve"><value>Há uma atualização disponível: versão {0}.</value></data>
   <data name="Msg_IconCreateError" xml:space="preserve"><value>Não foi possível criar o ícone: {0}</value></data>
   <data name="Title_ChangeIcon" xml:space="preserve"><value>Mudar ícone</value></data>
@@ -528,6 +541,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Export_LeftOutFmt" xml:space="preserve"><value>Nota: ficaram de fora {0} ficheiros que só funcionam no servidor ({1}). Não fazem falta para jogar.</value></data>
   <data name="Export_InstructionsFile" xml:space="preserve"><value>INSTRUÇÕES.txt</value></data>
   <data name="Msg_ModDeleteError" xml:space="preserve"><value>Não foi possível eliminar o ficheiro: {0}</value></data>
+  <data name="Mods_ConfirmDeleteFmt" xml:space="preserve"><value>Eliminar "{0}"? O ficheiro é apagado da pasta do servidor e não vai para a reciclagem. Se só queres que não seja carregado, desativa-o com o interruptor.</value></data>
   <data name="Msg_ExportError" xml:space="preserve"><value>Não foi possível exportar o modpack: {0}</value></data>
   <data name="Cmd_Say_Title" xml:space="preserve"><value>say &lt;mensagem&gt;</value></data>
   <data name="Cmd_Say_Desc" xml:space="preserve"><value>Envia uma mensagem no chat para todos os jogadores.</value></data>
@@ -983,7 +997,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="PlayerDetails_StatOresPerHour" xml:space="preserve"><value>Minérios por hora</value></data>
   <data name="PlayerDetails_StatTopKill" xml:space="preserve"><value>Mais matado</value></data>
   <data name="PlayerDetails_StatTopKiller" xml:space="preserve"><value>O que mais o mata</value></data>
-  <data name="History_Privacy" xml:space="preserve"><value>Guarda-se só neste computador. O IP dos jogadores nunca é guardado. O que passa dos limites é apagado sozinho.</value></data>
+  <data name="History_Privacy" xml:space="preserve"><value>O histórico guarda-se só neste computador, sem o IP dos jogadores, e o que passa dos limites é apagado sozinho. À parte, o log da consola (pasta logs, 14 dias) guarda todas as linhas, chat e IPs incluídos, mesmo com o chat desativado aqui. Os avatares são pedidos ao mc-heads.net com o nome de cada jogador.</value></data>
   <data name="History_SizeFmt" xml:space="preserve"><value>Ocupa {0}</value></data>
   <data name="PlayerDetails_Back" xml:space="preserve"><value>Voltar</value></data>
   <data name="PlayerDetails_Banned" xml:space="preserve"><value>Banido</value></data>
