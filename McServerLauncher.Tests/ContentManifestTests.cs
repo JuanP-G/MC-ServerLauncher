@@ -435,4 +435,76 @@ public class ContentManifestTests : IDisposable
             Directory.Delete(dir, recursive: true);
         }
     }
+
+    // --- Everything a jar refers to ---
+    //
+    // What decides whether a library is still used, so it errs the other way from Requires: advice,
+    // soft dependencies and optional ones all count, and only "breaks" and "incompatible" do not.
+
+    [Fact]
+    public void AFabricModRefersToWhatItRecommendsAndSuggestsButNotWhatItBreaks()
+    {
+        var manifest = ContentManifest.Read(Jar("fabric.mod.json",
+            """
+            {"id": "litematica", "depends": {"malilib": "*"}, "recommends": {"modmenu": "*"},
+             "suggests": {"sodium": "*"}, "breaks": {"optifabric": "*"}}
+            """));
+
+        Assert.Equal(new[] { "malilib", "modmenu", "sodium" }, manifest.References.OrderBy(r => r));
+        Assert.Equal(new[] { "malilib" }, manifest.Requires);
+    }
+
+    [Fact]
+    public void APluginRefersToItsSoftDependenciesToo()
+    {
+        var manifest = ContentManifest.Read(Jar("plugin.yml",
+            "name: Shop\ndepend: [Vault]\nsoftdepend:\n  - PlaceholderAPI\n"));
+
+        Assert.Equal(new[] { "PlaceholderAPI", "Vault" }, manifest.References.OrderBy(r => r));
+    }
+
+    [Fact]
+    public void APaperPluginRefersToTheNamesUnderItsDependencies()
+    {
+        var manifest = ContentManifest.Read(Jar("paper-plugin.yml",
+            """
+            name: Shop
+            dependencies:
+              server:
+                Vault:
+                  load: BEFORE
+                  required: false
+                ProtocolLib:
+                  required: true
+              bootstrap:
+                CommandAPI:
+                  load: BEFORE
+            permissions:
+              shop.use:
+                default: true
+            """));
+
+        Assert.Equal(new[] { "CommandAPI", "ProtocolLib", "Vault" }, manifest.References.OrderBy(r => r));
+    }
+
+    [Fact]
+    public void AForgeModRefersToOptionalDependenciesButNotIncompatibleOnes()
+    {
+        var manifest = ContentManifest.Read(Jar("META-INF/neoforge.mods.toml",
+            """
+            [[mods]]
+            modId="create"
+            [[dependencies.create]]
+            modId="flywheel"
+            type="required"
+            [[dependencies.create]]
+            modId="jei"
+            type="optional"
+            [[dependencies.create]]
+            modId="optifine"
+            type="incompatible"
+            """));
+
+        Assert.Equal(new[] { "flywheel", "jei" }, manifest.References.OrderBy(r => r));
+    }
 }

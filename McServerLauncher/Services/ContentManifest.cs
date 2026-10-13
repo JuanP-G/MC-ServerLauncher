@@ -63,6 +63,36 @@ public static class ContentManifest
         /// <summary>The name the jar shows people, if it declares one.</summary>
         public string? Name { get; init; }
 
+        /// <summary>
+        /// Every id the jar mentions needing in any way: hard requirements, but also the ones it only
+        /// recommends, suggests, softly depends on or marks optional.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Requires"/> is what blocks a start, so it is strict. This is the opposite: it
+        /// answers "does anything here still use that library?", where counting too little means
+        /// offering to delete something a mod uses. Raw, as the jar wrote them — the loader's own ids
+        /// are not filtered, and Fabric's old <c>fabric</c> alias is left for the reader to resolve.
+        /// <c>breaks</c>, <c>conflicts</c> and incompatible dependencies are not references.
+        /// </remarks>
+        public IReadOnlyList<string> References { get; init; } = Array.Empty<string>();
+
+        /// <summary>
+        /// The ids the jar answers to by itself: its own and its <c>provides</c> aliases, without
+        /// anything bundled inside it. <see cref="Provides"/> when it bundles nothing.
+        /// </summary>
+        /// <remarks>
+        /// malilib carries three Fabric API modules inside itself. Asked "who provides
+        /// fabric-resource-loader-v1?", <see cref="Provides"/> rightly says malilib does — and then
+        /// every mod that uses that module looked like it used malilib.
+        /// </remarks>
+        public IReadOnlyList<string> OwnProvides
+        {
+            get => _ownProvides ?? Provides;
+            init => _ownProvides = value;
+        }
+
+        private readonly IReadOnlyList<string>? _ownProvides;
+
         public static Manifest Empty(string fileName) =>
             new(fileName, Array.Empty<string>(), Array.Empty<string>());
 
@@ -195,7 +225,7 @@ public static class ContentManifest
             .Where(r => !provides.Contains(r, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
-        return own with { Provides = provides, Requires = requires };
+        return own with { Provides = provides, Requires = requires, OwnProvides = own.Provides };
     }
 
     /// <summary>Where the two loaders put the jars they carry inside another jar.</summary>
@@ -319,6 +349,11 @@ public static class ContentManifest
         if (root.TryGetProperty("depends", out var depends) && depends.ValueKind == JsonValueKind.Object)
             requires.AddRange(depends.EnumerateObject().Select(p => p.Name));
 
+        var references = new List<string>(requires);
+        foreach (var advice in new[] { "recommends", "suggests" })
+            if (root.TryGetProperty(advice, out var block) && block.ValueKind == JsonValueKind.Object)
+                references.AddRange(block.EnumerateObject().Select(p => p.Name));
+
         // "environment" is Fabric's own word for the side. The entrypoints are deliberately not
         // consulted as well: a jar with both a client and a server entrypoint is a jar that runs on
         // both, which is what the absence of an "environment" already says.
@@ -332,7 +367,10 @@ public static class ContentManifest
             }
             : ContentSide.Unspecified;
 
-        return Build(fileName, provides, requires) with { Side = side, Id = Clean(ownId), Name = Clean(display) };
+        return Build(fileName, provides, requires) with
+        {
+            Side = side, Id = Clean(ownId), Name = Clean(display), References = CleanList(references)
+        };
     }
 
     // --- Bukkit, Paper, Purpur: plugin.yml ---
@@ -357,8 +395,57 @@ public static class ContentManifest
         //
         // Server by definition, and the one side that needs no parsing to know: a Bukkit plugin
         // runs in the server and there is no client half of the platform for it to run in.
-        return Build(fileName, provides, ListValue(text, "depend"))
-            with { Side = ContentSide.Server, Id = Clean(name), Name = Clean(name) };
+        var depend = ListValue(text, "depend");
+        var references = depend
+            .Concat(ListValue(text, "softdepend"))
+            .Concat(PaperPluginDependencies(text));
+
+        return Build(fileName, provides, depend) with
+        {
+            Side = ContentSide.Server, Id = Clean(name), Name = Clean(name), References = CleanList(references)
+        };
+    }
+
+    /// <summary>
+    /// The plugins named in a <c>paper-plugin.yml</c>'s <c>dependencies:</c> block.
+    /// </summary>
+    /// <remarks>
+    /// Paper's own format nests them two levels down, under <c>server:</c> and <c>bootstrap:</c>,
+    /// each name a key with its options beneath it:
+    /// <code>
+    /// dependencies:
+    ///   server:
+    ///     Vault:
+    ///       load: BEFORE
+    ///       required: false
+    /// </code>
+    /// The levels are told apart by indentation alone — the first one seen is the section, the next
+    /// deeper one the names, anything deeper still their options — since no YAML library is used here.
+    /// Every name counts, required or not: this feeds <see cref="Manifest.References"/>.
+    /// </remarks>
+    private static IEnumerable<string> PaperPluginDependencies(string yaml)
+    {
+        var lines = yaml.Split('\n').Select(l => l.TrimEnd('\r')).ToList();
+        var start = lines.FindIndex(l => l.StartsWith("dependencies:", StringComparison.OrdinalIgnoreCase));
+        if (start < 0) yield break;
+
+        int? sectionIndent = null, nameIndent = null;
+        for (var i = start + 1; i < lines.Count; i++)
+        {
+            var line = lines[i];
+            if (line.Trim().Length == 0 || line.TrimStart().StartsWith('#')) continue;
+            if (!char.IsWhiteSpace(line[0])) yield break;   // the block is over
+
+            var indent = line.Length - line.TrimStart().Length;
+            sectionIndent ??= indent;
+            if (indent <= sectionIndent) { nameIndent = null; continue; }   // server:, bootstrap:
+            nameIndent ??= indent;
+            if (indent != nameIndent) continue;                               // load:, required:
+
+            var key = line.Trim();
+            var colon = key.IndexOf(':');
+            if (colon > 0) yield return key[..colon].Trim().Trim('"', '\'');
+        }
     }
 
     // --- Forge and NeoForge: mods.toml ---
@@ -373,6 +460,7 @@ public static class ContentManifest
 
         var provides = new List<string>();
         var requires = new List<string>();
+        var references = new List<string>();
         var side = ContentSide.Unspecified;
 
         // The first [[mods]] entry is the jar itself; any further ones are mods it also carries.
@@ -385,12 +473,15 @@ public static class ContentManifest
         var inDependency = false;
         string? dependencyId = null;
         var dependencyRequired = true;   // both formats default a dependency to mandatory
+        var dependencyRefused = false;   // NeoForge's "incompatible" and "discouraged"
 
         void FlushDependency()
         {
             if (dependencyId is { Length: > 0 } && dependencyRequired) requires.Add(dependencyId);
+            if (dependencyId is { Length: > 0 } && !dependencyRefused) references.Add(dependencyId);
             dependencyId = null;
             dependencyRequired = true;
+            dependencyRefused = false;
         }
 
         foreach (var raw in lines)
@@ -437,16 +528,30 @@ public static class ContentManifest
             // NeoForge writes type = "required"; older Forge writes mandatory = true. Both appear
             // in the wild, and a jar built for either has to be read correctly by the same code.
             if (TomlKey(line, "type") is { } type)
+            {
                 dependencyRequired = type.Equals("required", StringComparison.OrdinalIgnoreCase);
+                dependencyRefused = type.Equals("incompatible", StringComparison.OrdinalIgnoreCase)
+                                    || type.Equals("discouraged", StringComparison.OrdinalIgnoreCase);
+            }
             else if (TomlBool(line, "mandatory") is { } mandatory)
                 dependencyRequired = mandatory;
         }
 
         FlushDependency();
-        return Build(fileName, provides, requires) with { Side = side, Id = Clean(ownId), Name = Clean(display) };
+        return Build(fileName, provides, requires) with
+        {
+            Side = side, Id = Clean(ownId), Name = Clean(display), References = CleanList(references)
+        };
     }
 
     // --- Shared ---
+
+    /// <summary>Trimmed, without blanks or repeats.</summary>
+    private static IReadOnlyList<string> CleanList(IEnumerable<string> values) =>
+        values.Select(v => v.Trim())
+            .Where(v => v.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
     /// <summary>A trimmed value, or null when there is nothing left of it.</summary>
     private static string? Clean(string? value) =>

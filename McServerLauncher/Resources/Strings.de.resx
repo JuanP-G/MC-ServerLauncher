@@ -584,6 +584,20 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_UpdateAllRemovedFmt" xml:space="preserve"><value>{0} alte Versionen oder doppelte Kopien wurden gelöscht.</value></data>
   <data name="Msg_RemovedOneFmt" xml:space="preserve"><value>{0} wurde gelöscht.</value></data>
   <data name="Msg_RemovedManyFmt" xml:space="preserve"><value>{0} Dateien wurden gelöscht: {1}.</value></data>
+  <data name="Cleanup_Title" xml:space="preserve"><value>Der Server braucht das nicht mehr. Entfernen hält ihn sauber und lässt ihn schneller starten.</value></data>
+  <data name="Cleanup_OrphanRemovedOneFmt" xml:space="preserve"><value>Nur {0} hat sie benutzt, und das ist nicht mehr installiert.</value></data>
+  <data name="Cleanup_OrphanRemovedManyFmt" xml:space="preserve"><value>{0} haben sie benutzt, und die sind nicht mehr installiert.</value></data>
+  <data name="Cleanup_OrphanChainFmt" xml:space="preserve"><value>Nur {0} hat sie benutzt, und das wird auch nicht gebraucht.</value></data>
+  <data name="Cleanup_OrphanNoMod" xml:space="preserve"><value>Kein installierter Mod braucht sie.</value></data>
+  <data name="Cleanup_OrphanNoPlugin" xml:space="preserve"><value>Kein installiertes Plugin braucht sie.</value></data>
+  <data name="Cleanup_DisabledSinceFmt" xml:space="preserve"><value>Aus seit {0} · {1} Tage</value></data>
+  <data name="Cleanup_DisabledAtLeastFmt" xml:space="preserve"><value>Aus mindestens seit {0} · {1} Tage</value></data>
+  <data name="Cleanup_DateFormat" xml:space="preserve"><value>d. MMMM</value></data>
+  <data name="Cleanup_NotNow" xml:space="preserve"><value>Nicht jetzt</value></data>
+  <data name="Cleanup_RemoveSelectedOne" xml:space="preserve"><value>1 ausgewähltes entfernen</value></data>
+  <data name="Cleanup_RemoveSelectedFmt" xml:space="preserve"><value>{0} ausgewählte entfernen</value></data>
+  <data name="Cleanup_RemovedFmt" xml:space="preserve"><value>Entfernt: {0}.</value></data>
+  <data name="Cleanup_FailedFmt" xml:space="preserve"><value>Konnte nicht entfernt werden ({0}): Der Server verwendet sie. Stoppe den Server und versuche es erneut.</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Aktualisierung fehlgeschlagen: {0}</value></data>
   <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Stoppe den Server vor der Aktualisierung (die alte Datei wird verwendet).</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Auf {0} aktualisieren</value></data>

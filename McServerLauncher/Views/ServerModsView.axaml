@@ -429,6 +429,41 @@
                 </TextBox>
 
                 <StackPanel Grid.Row="2">
+                    <!-- What the server no longer needs: libraries nothing uses and mods off for a
+                         month. Only offered — every row is ticked and still waits for the button.
+                         The list scrolls inside a fixed height so a long one cannot push the
+                         installed list off screen. -->
+                    <Border IsVisible="{Binding HasCleanupSuggestions}" Margin="0,0,0,8" Padding="10,8"
+                            Background="{StaticResource SemanticWarnFill}" BorderBrush="{StaticResource SemanticWarnEdge}" BorderThickness="1" CornerRadius="6">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="{loc:Loc Cleanup_Title}" TextWrapping="Wrap"
+                                       FontSize="12" Foreground="{StaticResource SemanticWarn}" />
+                            <ScrollViewer MaxHeight="180" HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl ItemsSource="{Binding CleanupSuggestions}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,2"
+                                                      MinHeight="0" VerticalContentAlignment="Top">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding FileName}" FontSize="12"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Reason}" FontSize="11" Opacity="0.7"
+                                                               TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </CheckBox>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                                <Button Content="{loc:Loc Cleanup_NotNow}" Padding="10,4"
+                                        Command="{Binding DismissCleanupCommand}" />
+                                <Button Content="{Binding RemoveSelectedText}" Padding="10,4"
+                                        Command="{Binding RemoveSelectedCleanupCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
                     <TextBlock Text="{Binding NoInstalledText}" Opacity="0.7"
                                HorizontalAlignment="Center" Margin="0,20,0,0"
                                IsVisible="{Binding !InstalledMods.Count}" />

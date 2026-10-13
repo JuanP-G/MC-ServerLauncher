@@ -584,6 +584,20 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_UpdateAllRemovedFmt" xml:space="preserve"><value>Foram apagadas {0} versões antigas ou cópias repetidas.</value></data>
   <data name="Msg_RemovedOneFmt" xml:space="preserve"><value>Foi apagado {0}.</value></data>
   <data name="Msg_RemovedManyFmt" xml:space="preserve"><value>Foram apagados {0} ficheiros: {1}.</value></data>
+  <data name="Cleanup_Title" xml:space="preserve"><value>O servidor já não precisa disto. Retirá-lo deixa-o mais limpo e faz com que arranque mais depressa.</value></data>
+  <data name="Cleanup_OrphanRemovedOneFmt" xml:space="preserve"><value>Só {0} a usava, e já não está instalado.</value></data>
+  <data name="Cleanup_OrphanRemovedManyFmt" xml:space="preserve"><value>{0} usavam-na, e já não estão instalados.</value></data>
+  <data name="Cleanup_OrphanChainFmt" xml:space="preserve"><value>Só {0} a usava, e também não faz falta.</value></data>
+  <data name="Cleanup_OrphanNoMod" xml:space="preserve"><value>Nenhum mod instalado precisa dela.</value></data>
+  <data name="Cleanup_OrphanNoPlugin" xml:space="preserve"><value>Nenhum plugin instalado precisa dela.</value></data>
+  <data name="Cleanup_DisabledSinceFmt" xml:space="preserve"><value>Desligado desde {0} · {1} dias</value></data>
+  <data name="Cleanup_DisabledAtLeastFmt" xml:space="preserve"><value>Desligado pelo menos desde {0} · {1} dias</value></data>
+  <data name="Cleanup_DateFormat" xml:space="preserve"><value>d 'de' MMMM</value></data>
+  <data name="Cleanup_NotNow" xml:space="preserve"><value>Agora não</value></data>
+  <data name="Cleanup_RemoveSelectedOne" xml:space="preserve"><value>Retirar 1 selecionado</value></data>
+  <data name="Cleanup_RemoveSelectedFmt" xml:space="preserve"><value>Retirar {0} selecionados</value></data>
+  <data name="Cleanup_RemovedFmt" xml:space="preserve"><value>Retirados: {0}.</value></data>
+  <data name="Cleanup_FailedFmt" xml:space="preserve"><value>Não foi possível retirar ({0}): o servidor está a usá-los. Para o servidor e tenta de novo.</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Não foi possível atualizar: {0}</value></data>
   <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Pára o servidor antes de atualizar (o ficheiro antigo está em uso).</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Atualizar para {0}</value></data>

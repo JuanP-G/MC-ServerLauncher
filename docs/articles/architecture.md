@@ -111,6 +111,8 @@ and macOS):
 - `cache\images\` and `cache\store\` — the store's disk caches: project icons and gallery
   screenshots (`ImageCache`, pruned after 30 days) and the API responses (`StoreCache`). Both are
   disposable; deleting them costs a few requests and nothing else.
+- `content\<serverId>\ledger.json` — what the clean-up panel remembers about each server's mods: when
+  each was switched off, who last needed each library, and the "Not now"s (`ContentLedger`).
 - `playit-agent\` — Playit's official `playitd` binary, downloaded once and pinned to the version
   the app registers (`PlayitAgentRunner`).
 - `instance.lock` — the exclusive file lock that keeps the app to one running copy per user
@@ -867,6 +869,29 @@ in the notice. The Crossplay, Hydraulic and MultiVersion installers go through t
 GeyserMC and Modrinth does not know them; Hydraulic also skips Fabric API when an enabled one is there.
 `ContentManifestCache` keeps what was read from each jar by path, size and write time, like `FileHashCache`, so
 **Update all** does not reopen the whole folder for every mod.
+
+### Suggested clean-up
+An amber panel above the installed list offers to remove what the server no longer needs. **It only
+suggests**: every row comes ticked and waits for the button, and "Not now" hides it for 30 days.
+`CleanupAdvisor` decides (pure, tested without a network); the panel half (`ServerModsViewModel.Cleanup.cs`)
+gathers the facts and shows the answer.
+
+- **Libraries nothing uses.** A library is what is on a hand-written list (`KnownLibraryIds`) or what Modrinth
+  files *only* under `library`. The category alone will not do: JEI and malilib are both "library, utility",
+  and offering to remove JEI because "no mod needs it" is exactly the suggestion that loses people's trust.
+  What still needs it is everything that is not a library, **enabled or not** (a disabled mod may be turned
+  back on), through any way of naming it — `ContentManifest.Manifest.References`: dependencies,
+  `recommends`/`suggests`, `softdepend`, optional ones, the `dependencies:` block of `paper-plugin.yml` — and
+  through Modrinth's dependency list, following chains of libraries. A reference is resolved first to the
+  library that *is* that id (`OwnProvides`), then to the one it stands for (a `fabric-*-vN` module is
+  fabric-api), and only last to one that carries it inside: malilib bundles three Fabric API modules and
+  otherwise looked used by every mod using them. Without an answer from Modrinth no library is suggested.
+- **Mods switched off for over 30 days.** Disabling renames the jar and keeps its dates, so the day is written down.
+- **`ContentLedger`**, in `%APPDATA%\McServerLauncher\content\<id>\ledger.json`, keeps that: when each jar
+  was switched off (ones already off count from when first seen, and the panel says "at least since"), who
+  used each library last time — which is what lets it say "only Litematica used it" — and the "Not now"s.
+  **None of it is read or written until the tab is opened**: the panel is built for every server and in tests,
+  and has no business touching the user's data or asking Modrinth.
 
 ## Localization
 
