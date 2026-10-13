@@ -314,13 +314,14 @@
   <data name="Notif_TestBody" xml:space="preserve"><value>Notificación de ejemplo: así se verán los avisos de tus servidores.</value></data>
   <data name="Msg_BackupCreatingFmt" xml:space="preserve"><value>[Launcher] Creando copia de seguridad de "{0}"...</value></data>
   <data name="Msg_BackupCreatedFmt" xml:space="preserve"><value>[Launcher] Copia de seguridad creada ({0} MB).</value></data>
+  <data name="Msg_BackupSkippedUnchanged" xml:space="preserve"><value>[Launcher] Copia de seguridad saltada: nadie ha tocado el mundo desde la última.</value></data>
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Guardando una copia del estado actual antes de restaurar (por si quieres deshacerlo)...</value></data>
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Restaurando la copia de seguridad...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Copia de seguridad restaurada.</value></data>
   <data name="Msg_StartWaitsForRestore" xml:space="preserve"><value>[Launcher] No se ha arrancado: se está restaurando una copia del mundo. Vuelve a intentarlo cuando termine.</value></data>
   <data name="Msg_BackupBadLevelNameFmt" xml:space="preserve"><value>level-name = "{0}" en server.properties no apunta a una carpeta propia dentro del servidor, así que la copia no ha tocado nada. Cámbialo por un nombre de carpeta como "world".</value></data>
   <data name="Backups" xml:space="preserve"><value>Copias de seguridad</value></data>
-  <data name="Backup_Hint" xml:space="preserve"><value>Se crea una copia de seguridad del mundo automáticamente antes de cada arranque, al detener el servidor y, si lo dejas puesto, cada cierto tiempo mientras se juega. Restaurar sigue necesitando el servidor detenido.</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>Se crea una copia de seguridad del mundo automáticamente antes de cada arranque, al detener el servidor y, si lo dejas puesto, cada cierto tiempo mientras se juega. Si nadie ha jugado ni tocado el mundo desde la última copia, la de arranque y la de parada se saltan. Restaurar sigue necesitando el servidor detenido.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Copia de seguridad ahora</value></data>
   <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Crea una copia de seguridad del mundo ahora, esté el servidor arrancado o detenido.</value></data>
   <data name="Backup_TriggerAuto" xml:space="preserve"><value>mientras se jugaba</value></data>
