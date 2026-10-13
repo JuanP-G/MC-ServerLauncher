@@ -225,7 +225,9 @@ When it opens again, **What's new** tells you what changed. It works the same on
 
 <br>
 
-- **Players** — connected (live), operators, whitelist and banned, with buttons instead of commands.
+- **Players** — connected (live), operators, whitelist and banned, with buttons instead of commands. The
+  whitelist has its own switch: off lets anyone in and keeps the names; adding someone turns it on. New servers
+  start with it off (Minecraft 26.3 turned it on by default).
 - **Player history** 📜 — everyone who has ever joined, with their last connection. Their profile: joins and
   leaves, chat, deaths and advancements, time played, blocks broken and items used — each with its share — and
   odds and ends (jumps, damage, distance on foot, flying and by elytra). Filled from the old logs the first

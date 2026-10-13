@@ -62,9 +62,15 @@ public class ServerCreationService
     }
 
     /// <summary>
-    /// Writes a minimal server.properties with the port and MOTD if it doesn't exist yet.
-    /// Minecraft fills in the rest of the default properties on startup.
+    /// Writes a minimal server.properties with the port, the MOTD and the whitelist off, if it
+    /// doesn't exist yet. Minecraft fills in the rest of the default properties on startup.
     /// </summary>
+    /// <remarks>
+    /// The whitelist is written because Minecraft's own default for it changed: up to 26.2 a new
+    /// server was open, and from 26.3 it starts with <c>white-list=true</c> and an empty list, so
+    /// nobody at all can get in — the owner included, until they find the setting. Somebody who
+    /// wants a private server turns it on, or adds a first name, which turns it on by itself.
+    /// </remarks>
     /// <param name="folder">The new server's folder.</param>
     /// <param name="port">The port it listens on.</param>
     /// <param name="motd">The message the server list shows.</param>
@@ -92,7 +98,7 @@ public class ServerCreationService
         // The MOTD derives from the user-typed server name: sanitize it so a pasted value with
         // line breaks can't inject extra keys into the file (see ServerPropertiesService).
         var safeMotd = ServerPropertiesService.SanitizeValue(motd);
-        var content = $"#Minecraft server properties\r\nserver-port={port}\r\nmotd={safeMotd}\r\n";
+        var content = $"#Minecraft server properties\r\nserver-port={port}\r\nmotd={safeMotd}\r\nwhite-list=false\r\n";
         if (hasSeed) content += $"level-seed={WorldSeed.EscapeForProperties(seed!)}\r\n";
         File.WriteAllText(path, content);
     }

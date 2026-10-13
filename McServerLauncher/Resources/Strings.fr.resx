@@ -33,7 +33,11 @@
   <data name="Players_Ops" xml:space="preserve"><value>Opérateurs</value></data>
   <data name="RemoveOp" xml:space="preserve"><value>Retirer OP</value></data>
   <data name="Players_Whitelist" xml:space="preserve"><value>Liste blanche</value></data>
-  <data name="Whitelist_Hint" xml:space="preserve"><value>Seuls ces joueurs peuvent rejoindre (si la liste blanche est activée dans Configurer).</value></data>
+  <data name="Whitelist_On" xml:space="preserve"><value>Activée</value></data>
+  <data name="Whitelist_Off" xml:space="preserve"><value>Désactivée</value></data>
+  <data name="Whitelist_ToggleTip" xml:space="preserve"><value>Active ou désactive la liste blanche. La désactiver ne retire personne.</value></data>
+  <data name="Whitelist_HintOn" xml:space="preserve"><value>Seuls ces joueurs peuvent se connecter.</value></data>
+  <data name="Whitelist_HintOff" xml:space="preserve"><value>Désactivée : tout le monde peut se connecter. La liste est conservée pour quand tu la réactives, et ajouter quelqu'un l'active.</value></data>
   <data name="Player_Placeholder" xml:space="preserve"><value>Nom du joueur (ex. Steve)</value></data>
   <data name="Remove" xml:space="preserve"><value>Retirer</value></data>
   <data name="Players_Banned" xml:space="preserve"><value>Bannis</value></data>

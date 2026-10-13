@@ -152,7 +152,10 @@ are no hard-coded machine paths.
 - **`PortService`** — checks which TCP ports are in use, finds a free one, and (via P/Invoke) finds
   the PID listening on a port so a stuck server can be freed.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — read/write the
-  server's files (`server.properties`, `ops.json`, `banned-players.json`, `whitelist.json`).
+  server's files (`server.properties`, `ops.json`, `banned-players.json`, `whitelist.json`). A new server's
+  `server.properties` is written with `white-list=false`: Minecraft 26.3 changed its own default to `true`,
+  which locked every new server behind an empty list. The Players tab switches it with `whitelist on/off`
+  while running and in the file while stopped, never touching `whitelist.json`, and adding a name turns it on.
 - **`MinecraftIds`** — turns `minecraft:deepslate_diamond_ore` into "Deepslate diamond ore". Deliberately
   not translated: there are well over a thousand blocks, more with every version and every mod, and what is
   translated is the label above the list rather than the game's own vocabulary inside it. A block from a mod

@@ -154,7 +154,11 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`PortService`** — comprueba qué puertos TCP están en uso, encuentra uno libre y (vía P/Invoke)
   localiza el PID que escucha en un puerto para liberar un servidor colgado.
 - **`ServerPropertiesService`**, **`PlayersService`**, **`WhitelistService`** — leen/escriben los
-  archivos del servidor (`server.properties`, `ops.json`, `banned-players.json`, `whitelist.json`).
+  archivos del servidor (`server.properties`, `ops.json`, `banned-players.json`, `whitelist.json`). El
+  `server.properties` de un servidor nuevo se escribe con `white-list=false`: Minecraft 26.3 cambió su valor por
+  defecto a `true`, y eso dejaba todo servidor nuevo cerrado tras una lista vacía. La pestaña Jugadores la
+  enciende y apaga con `whitelist on/off` si está arrancado y en el archivo si está parado, sin tocar nunca
+  `whitelist.json`, y añadir un nombre la enciende.
 - **`MinecraftIds`** — convierte `minecraft:deepslate_diamond_ore` en «Deepslate diamond ore». A propósito
   sin traducir: hay más de mil bloques, más con cada versión y cada mod, y lo que se traduce es la etiqueta
   de la lista, no el vocabulario del propio juego que va dentro. Un bloque de un mod conserva su espacio de
