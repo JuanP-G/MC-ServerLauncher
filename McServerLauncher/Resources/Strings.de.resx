@@ -581,6 +581,9 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_UpdateAllDoneFmt" xml:space="preserve"><value>{0} aktualisiert ✔</value></data>
   <data name="Msg_UpdateAllPartialFmt" xml:space="preserve"><value>{0} aktualisiert; {1} ging nicht: {2}. Sie bleiben in der Liste für einen neuen Versuch.</value></data>
   <data name="Msg_UpdateAllStoppedFmt" xml:space="preserve"><value>{0} aktualisiert. Stoppe den Server, um den Rest zu aktualisieren: die Dateien sind in Benutzung.</value></data>
+  <data name="Msg_UpdateAllRemovedFmt" xml:space="preserve"><value>{0} alte Versionen oder doppelte Kopien wurden gelöscht.</value></data>
+  <data name="Msg_RemovedOneFmt" xml:space="preserve"><value>{0} wurde gelöscht.</value></data>
+  <data name="Msg_RemovedManyFmt" xml:space="preserve"><value>{0} Dateien wurden gelöscht: {1}.</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Aktualisierung fehlgeschlagen: {0}</value></data>
   <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Stoppe den Server vor der Aktualisierung (die alte Datei wird verwendet).</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Auf {0} aktualisieren</value></data>
@@ -806,6 +809,9 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_HydraulicNoBuild" xml:space="preserve"><value>Hydraulic hat derzeit keinen veröffentlichten Fabric-Build.</value></data>
   <data name="Msg_HydraulicWrongVersionFmt" xml:space="preserve"><value>Hydraulic passt nicht zu Minecraft {0}: Der veröffentlichte Build verlangt {1}. Es wurde nichts installiert.</value></data>
   <data name="Msg_HydraulicReady" xml:space="preserve"><value>Fertig: Bedrock-Spieler sehen jetzt die Blöcke und Gegenstände der Mods.</value></data>
+  <data name="Msg_HydraulicFabricApiPresent" xml:space="preserve"><value>Die Fabric API ist bereits installiert und bleibt, wie sie ist.</value></data>
+  <data name="Msg_ContentReplacedFmt" xml:space="preserve"><value>{0}: die vorherige Version wurde gelöscht ({1}).</value></data>
+  <data name="Msg_ContentInUseFmt" xml:space="preserve"><value>{0} konnte nicht ersetzt werden: Der Server verwendet es. Stoppe den Server und versuche es erneut.</value></data>
   <data name="Hydraulic_Check" xml:space="preserve"><value>Bedrock-Spieler sollen die Blöcke und Gegenstände der Mods sehen</value></data>
   <data name="Hydraulic_Hint" xml:space="preserve"><value>Installiert Hydraulic (ebenfalls von GeyserMC) und die Fabric API. Ohne das erreichen Bedrock-Spieler zwar den Server, sehen aber nichts von dem, was die Mods hinzufügen. Die Autoren nennen es sehr frühe Entwicklung.</value></data>
   <data name="Hydraulic_Unsupported" xml:space="preserve"><value>Nur mit Fabric. Hydraulic veröffentlicht seit Februar 2026 keine NeoForge-Builds mehr und das Modul ist weiterhin aus der Kompilierung genommen; wer Mods und Bedrock zugleich will, hat heute nur Fabric.</value></data>

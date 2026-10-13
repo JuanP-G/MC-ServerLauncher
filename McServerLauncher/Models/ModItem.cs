@@ -4,7 +4,13 @@ using McServerLauncher.Localization;
 namespace McServerLauncher.Models;
 
 /// <summary>Everything needed to update an installed mod to its latest Modrinth version.</summary>
-public record ModUpdateInfo(string VersionNumber, string Url, string FileName, string? Sha512, string? Sha1);
+/// <remarks>
+/// <c>ProjectId</c> is the store project the update belongs to, so every other copy of that project
+/// can go with the old version. Optional so a caller that does not know it still compiles and still
+/// updates.
+/// </remarks>
+public record ModUpdateInfo(string VersionNumber, string Url, string FileName, string? Sha512, string? Sha1,
+    string? ProjectId = null);
 
 /// <summary>
 /// One mod or plugin file already sitting in a server's content folder, as the Mods tab shows it.

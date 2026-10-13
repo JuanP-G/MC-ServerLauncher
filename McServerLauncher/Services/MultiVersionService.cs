@@ -62,8 +62,8 @@ public class MultiVersionService
                     Localizer.Get("Msg_CrossplayNoVersionFmt"), projectId, config.GameVersion, config.Type));
 
             log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), projectId, version!.VersionNumber));
-            await _modrinth.DownloadModAsync(
-                file.Url, AtomicDownload.PathIn(folder, file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct);
+            await ContentInstall.InstallReplacingAsync(folder, file.Filename, projectId, log, path =>
+                _modrinth.DownloadModAsync(file.Url, path, file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct));
         }
 
         log?.Report(Localizer.Get("Msg_MultiVersionReady"));

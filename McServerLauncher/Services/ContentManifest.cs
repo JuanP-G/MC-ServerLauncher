@@ -48,6 +48,21 @@ public static class ContentManifest
         /// </remarks>
         public ContentSide Side { get; init; } = ContentSide.Unspecified;
 
+        /// <summary>
+        /// The id the jar gives itself, or null if it gives none.
+        /// </summary>
+        /// <remarks>
+        /// Only the jar's own: Fabric's <c>id</c>, the first <c>modId</c> under <c>[[mods]]</c>, a
+        /// plugin's <c>name</c>. Not its <c>provides</c> aliases and not anything bundled inside it,
+        /// which <see cref="Provides"/> does include. The difference is the whole point: a mod that
+        /// carries fabric-api inside itself provides <c>fabric-api</c>, but it is not fabric-api, and
+        /// deciding it was another copy of fabric-api would delete it.
+        /// </remarks>
+        public string? Id { get; init; }
+
+        /// <summary>The name the jar shows people, if it declares one.</summary>
+        public string? Name { get; init; }
+
         public static Manifest Empty(string fileName) =>
             new(fileName, Array.Empty<string>(), Array.Empty<string>());
 
@@ -231,6 +246,40 @@ public static class ContentManifest
             .ToList();
     }
 
+    /// <summary>One jar in a content folder, switched on or off.</summary>
+    /// <param name="Path">The file as it is on disk, <c>.disabled</c> included.</param>
+    /// <param name="Enabled">False for a <c>.jar.disabled</c>.</param>
+    /// <param name="Manifest">What the jar says about itself.</param>
+    public sealed record Entry(string Path, bool Enabled, Manifest Manifest);
+
+    /// <summary>
+    /// Every jar in a content folder, the disabled ones too.
+    /// </summary>
+    /// <remarks>
+    /// The opposite choice to <see cref="ReadFolder"/>, for the opposite question. Which jars load is
+    /// a question about enabled ones only; which jars are copies of the same mod is not — a disabled
+    /// old version is exactly the leftover that has to go when the mod is updated.
+    /// </remarks>
+    /// <param name="folder">The content folder.</param>
+    /// <param name="read">How to read one jar; a cache passes itself here.</param>
+    public static IReadOnlyList<Entry> ReadAll(string folder, Func<string, Manifest>? read = null)
+    {
+        if (!Directory.Exists(folder)) return Array.Empty<Entry>();
+        read ??= Read;
+
+        return Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
+            .Where(IsContentFile)
+            .Select(path => new Entry(path, !IsDisabled(path), read(path)))
+            .ToList();
+    }
+
+    /// <summary>A <c>.jar</c> or a <c>.jar.disabled</c>: what the content tab lists.</summary>
+    public static bool IsContentFile(string path) =>
+        path.EndsWith(".jar", StringComparison.OrdinalIgnoreCase) || IsDisabled(path);
+
+    private static bool IsDisabled(string path) =>
+        path.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>The content folder of a server, whether it takes mods or plugins.</summary>
     public static string FolderOf(ServerConfig config) =>
         Path.Combine(config.FolderPath, ServerTypeCatalog.ContentFolder(config.Type));
@@ -247,8 +296,14 @@ public static class ContentManifest
         var root = doc.RootElement;
 
         var provides = new List<string>();
-        if (root.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String)
-            provides.Add(id.GetString()!);
+        var ownId = root.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String
+            ? id.GetString()
+            : null;
+        if (ownId is not null) provides.Add(ownId);
+
+        var display = root.TryGetProperty("name", out var named) && named.ValueKind == JsonValueKind.String
+            ? named.GetString()
+            : null;
 
         // "provides" is how a mod says it also answers to another id — a fork standing in for the
         // original, or one jar carrying what used to be several. Ignoring it invents missing
@@ -277,7 +332,7 @@ public static class ContentManifest
             }
             : ContentSide.Unspecified;
 
-        return Build(fileName, provides, requires) with { Side = side };
+        return Build(fileName, provides, requires) with { Side = side, Id = Clean(ownId), Name = Clean(display) };
     }
 
     // --- Bukkit, Paper, Purpur: plugin.yml ---
@@ -291,7 +346,8 @@ public static class ContentManifest
         var text = reader.ReadToEnd();
 
         var provides = new List<string>();
-        if (ScalarValue(text, "name") is { } name) provides.Add(name);
+        var name = ScalarValue(text, "name");
+        if (name is not null) provides.Add(name);
 
         // "provides" exists in plugin.yml too, and means the same thing it does in Fabric.
         provides.AddRange(ListValue(text, "provides"));
@@ -301,7 +357,8 @@ public static class ContentManifest
         //
         // Server by definition, and the one side that needs no parsing to know: a Bukkit plugin
         // runs in the server and there is no client half of the platform for it to run in.
-        return Build(fileName, provides, ListValue(text, "depend")) with { Side = ContentSide.Server };
+        return Build(fileName, provides, ListValue(text, "depend"))
+            with { Side = ContentSide.Server, Id = Clean(name), Name = Clean(name) };
     }
 
     // --- Forge and NeoForge: mods.toml ---
@@ -317,6 +374,10 @@ public static class ContentManifest
         var provides = new List<string>();
         var requires = new List<string>();
         var side = ContentSide.Unspecified;
+
+        // The first [[mods]] entry is the jar itself; any further ones are mods it also carries.
+        string? ownId = null;
+        string? display = null;
 
         // A tiny state machine over the two table headers that matter. Everything else is skipped,
         // including values spanning lines, which none of the keys read here ever do.
@@ -345,7 +406,13 @@ public static class ContentManifest
                 continue;
             }
 
-            if (inMods && TomlKey(line, "modId") is { } own) provides.Add(own);
+            if (inMods && TomlKey(line, "modId") is { } own)
+            {
+                provides.Add(own);
+                ownId ??= own;
+            }
+
+            if (inMods && display is null && TomlKey(line, "displayName") is { } shown) display = shown;
 
             // Only inside [[mods]]. "side" appears in [[dependencies.x]] as well, where it means
             // which side that dependency is needed on — read there, a mod that merely requires a
@@ -376,10 +443,14 @@ public static class ContentManifest
         }
 
         FlushDependency();
-        return Build(fileName, provides, requires) with { Side = side };
+        return Build(fileName, provides, requires) with { Side = side, Id = Clean(ownId), Name = Clean(display) };
     }
 
     // --- Shared ---
+
+    /// <summary>A trimmed value, or null when there is nothing left of it.</summary>
+    private static string? Clean(string? value) =>
+        value?.Trim() is { Length: > 0 } trimmed ? trimmed : null;
 
     private static Manifest Build(string fileName, IEnumerable<string> provides, IEnumerable<string> requires)
     {

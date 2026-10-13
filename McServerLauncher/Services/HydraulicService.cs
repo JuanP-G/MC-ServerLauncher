@@ -70,16 +70,25 @@ public class HydraulicService
     {
         var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type), "Msg_HydraulicUnsupportedFmt");
 
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Fabric API"));
-        var api = await _modrinth.GetLatestProjectVersionAsync(FabricApiProjectId, config.Type, config.GameVersion, ct);
-        var apiFile = api?.Files.FirstOrDefault();
-        if (apiFile is null)
-            throw new InvalidOperationException(string.Format(
-                Localizer.Get("Msg_CrossplayNoVersionFmt"), "Fabric API", config.GameVersion, config.Type));
+        // Nearly every Fabric server has it already. Downloading the newest build anyway put a second
+        // fabric-api beside the first, and the loader will not start with two.
+        if (!NeedsFabricApi(folder))
+        {
+            log?.Report(Localizer.Get("Msg_HydraulicFabricApiPresent"));
+        }
+        else
+        {
+            log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Fabric API"));
+            var api = await _modrinth.GetLatestProjectVersionAsync(FabricApiProjectId, config.Type, config.GameVersion, ct);
+            var apiFile = api?.Files.FirstOrDefault();
+            if (apiFile is null)
+                throw new InvalidOperationException(string.Format(
+                    Localizer.Get("Msg_CrossplayNoVersionFmt"), "Fabric API", config.GameVersion, config.Type));
 
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Fabric API", api!.VersionNumber));
-        await _modrinth.DownloadModAsync(apiFile.Url, AtomicDownload.PathIn(folder, apiFile.Filename),
-            apiFile.Hashes?.Sha512, apiFile.Hashes?.Sha1, ct: ct);
+            log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Fabric API", api!.VersionNumber));
+            await ContentInstall.InstallReplacingAsync(folder, apiFile.Filename, "Fabric API", log, path =>
+                _modrinth.DownloadModAsync(apiFile.Url, path, apiFile.Hashes?.Sha512, apiFile.Hashes?.Sha1, ct: ct));
+        }
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Hydraulic"));
         var build = await GetLatestBuildAsync(ct)
@@ -90,23 +99,36 @@ public class HydraulicService
         using var resp = await GeyserDownloadsApi.OpenAsync(build, ct);
         resp.EnsureSuccessStatusCode();
 
-        await AtomicDownload.ToFileAsync(resp.Content, AtomicDownload.PathIn(folder, build.FileName),
-            verifyAsync: async (part, token) =>
-            {
-                await DownloadVerifier.VerifyAsync(part, build.Sha256, HashAlgorithmName.SHA256, token);
+        await ContentInstall.InstallReplacingAsync(folder, build.FileName, "Hydraulic", log, path =>
+            AtomicDownload.ToFileAsync(resp.Content, path,
+                verifyAsync: async (part, token) =>
+                {
+                    await DownloadVerifier.VerifyAsync(part, build.Sha256, HashAlgorithmName.SHA256, token);
 
-                // Its downloads API has no per-Minecraft-version dimension: there is one line of
-                // builds and the newest targets the newest Minecraft. The jar says which, so the
-                // jar is asked before it is kept.
-                var required = ReadRequiredMinecraft(part);
-                if (required is not null && !MinecraftRange.Satisfies(config.GameVersion, required))
-                    throw new InvalidOperationException(string.Format(
-                        Localizer.Get("Msg_HydraulicWrongVersionFmt"), config.GameVersion, required));
-            },
-            ct: ct);
+                    // Its downloads API has no per-Minecraft-version dimension: there is one line of
+                    // builds and the newest targets the newest Minecraft. The jar says which, so the
+                    // jar is asked before it is kept.
+                    var required = ReadRequiredMinecraft(part);
+                    if (required is not null && !MinecraftRange.Satisfies(config.GameVersion, required))
+                        throw new InvalidOperationException(string.Format(
+                            Localizer.Get("Msg_HydraulicWrongVersionFmt"), config.GameVersion, required));
+                },
+                ct: ct));
 
         log?.Report(Localizer.Get("Msg_HydraulicReady"));
     }
+
+    /// <summary>
+    /// Whether the folder still lacks a working Fabric API: no enabled jar provides it.
+    /// </summary>
+    /// <remarks>
+    /// Enabled ones only. A disabled fabric-api does not load, so Hydraulic would not either — that
+    /// case installs a fresh one, and the install then removes the disabled copy as another copy of
+    /// the same mod.
+    /// </remarks>
+    internal static bool NeedsFabricApi(string folder) =>
+        !ContentManifest.ReadFolder(folder)
+            .Any(m => m.Provides.Contains(FabricApiProjectId, StringComparer.OrdinalIgnoreCase));
 
     /// <summary>The Minecraft range a Fabric mod declares, from its own metadata. Null if absent.</summary>
     internal static string? ReadRequiredMinecraft(string jarPath)
