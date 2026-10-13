@@ -268,12 +268,12 @@
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBlock Text="{loc:Loc History_MaxEvents}" VerticalAlignment="Center" TextWrapping="Wrap" />
                                 <NumericUpDown Grid.Column="1" Width="150" FormatString="0" Increment="50"
-                                               Minimum="50" Maximum="5000" Value="{Binding HistoryMaxEvents, Mode=TwoWay}" />
+                                               Minimum="50" Maximum="5000" Value="{Binding HistoryMaxEvents, Mode=TwoWay, Converter={x:Static vm:WholeNumberConverter.Instance}}" />
                             </Grid>
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBlock Text="{loc:Loc History_RetentionDays}" VerticalAlignment="Center" TextWrapping="Wrap" />
                                 <NumericUpDown Grid.Column="1" Width="150" FormatString="0" Increment="30"
-                                               Minimum="7" Maximum="3650" Value="{Binding HistoryRetentionDays, Mode=TwoWay}" />
+                                               Minimum="7" Maximum="3650" Value="{Binding HistoryRetentionDays, Mode=TwoWay, Converter={x:Static vm:WholeNumberConverter.Instance}}" />
                             </Grid>
                         </StackPanel>
                     </Border>

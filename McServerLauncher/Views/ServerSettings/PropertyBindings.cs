@@ -41,7 +41,9 @@ internal sealed class PropertyBindings(ServerSettingsDraft draft)
 
         box.ValueChanged += (_, _) =>
         {
-            if (!_loading) draft.Set(key, ((int)(box.Value ?? fallback)).ToString());
+            // Empty while somebody types: nothing to write yet. EmptyNumberBoxes puts the number
+            // back if they leave it like that.
+            if (!_loading && box.Value is { } value) draft.Set(key, ((int)value).ToString());
         };
         _loads.Add(() => box.Value = int.TryParse(draft.Get(key), out var v) ? v : fallback);
     }

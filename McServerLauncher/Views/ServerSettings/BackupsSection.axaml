@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:McServerLauncher.ViewModels"
              xmlns:loc="using:McServerLauncher.Localization"
              xmlns:models="using:McServerLauncher.Models"
              x:Class="McServerLauncher.Views.ServerSettings.BackupsSection"
@@ -23,7 +24,7 @@
             <Border Classes="card">
                 <StackPanel Spacing="10">
                     <DockPanel Classes="setting">
-                        <NumericUpDown Classes="ctl" Width="140" Value="{Binding BackupRetention}"
+                        <NumericUpDown Classes="ctl" Width="140" Value="{Binding BackupRetention, Converter={x:Static vm:WholeNumberConverter.Instance}}"
                                        Minimum="1" Maximum="50" Increment="1" FormatString="0" />
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Backup_RetentionLabel}" Classes="title" TextWrapping="Wrap" />
@@ -31,7 +32,7 @@
                         </StackPanel>
                     </DockPanel>
                     <DockPanel Classes="setting">
-                        <NumericUpDown Classes="ctl" Width="140" Value="{Binding ManualBackupRetention}"
+                        <NumericUpDown Classes="ctl" Width="140" Value="{Binding ManualBackupRetention, Converter={x:Static vm:WholeNumberConverter.Instance}}"
                                        Minimum="1" Maximum="50" Increment="1" FormatString="0" />
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Backup_ManualRetentionLabel}" Classes="title" TextWrapping="Wrap" />
@@ -48,7 +49,7 @@
                         <TextBlock Text="{loc:Loc Backup_AutoWhilePlaying}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
                     </DockPanel>
                     <DockPanel Classes="setting" Margin="0,10,0,0" IsEnabled="{Binding AutoBackupEnabled}">
-                        <NumericUpDown Classes="ctl" Width="140" Value="{Binding BackupIntervalMinutes}"
+                        <NumericUpDown Classes="ctl" Width="140" Value="{Binding BackupIntervalMinutes, Converter={x:Static vm:WholeNumberConverter.Instance}}"
                                        Minimum="5" Maximum="1440" Increment="5" FormatString="0" />
                         <TextBlock Text="{loc:Loc Backup_IntervalLabel}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
                     </DockPanel>
