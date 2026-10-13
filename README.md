@@ -257,7 +257,8 @@ When it opens again, **What's new** tells you what changed. It works the same on
   **Back up now** and one-click **Restore**.
 - **A world never goes back a version** — if the world was last saved by a newer Minecraft than the server's,
   it won't start: an older version empties the chunks it can't read. The header says so in red, with **Change
-  version** and **See backups**.
+  version** and **See backups**. If a backup from the older version exists, **Start** offers to go back to it
+  (the newer world is backed up first).
 - **Settings, part of the window** ⚙️ — language, tray behaviour, **Add to desktop**, notifications, colours
   and the player history, each on its own page. Saved as you go.
 - **Stays out of the way** — minimize or close **to the system tray** and your servers keep running; launching

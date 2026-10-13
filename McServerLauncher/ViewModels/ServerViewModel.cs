@@ -939,28 +939,112 @@ public partial class ServerViewModel : ObservableObject
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
-    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing && !HasNewerWorld;
+    /// <remarks>
+    /// A world from a newer Minecraft keeps Start off, unless there is a backup from a version the
+    /// server can open: then Start offers to go back to it (<see cref="AskingToGoBack"/>).
+    /// </remarks>
+    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing
+                            && (!HasNewerWorld || HasBackupToGoBackTo);
 
     /// <summary>
     /// The Minecraft version that last saved the world, when it is newer than this server's; null
     /// when it is not, or when that cannot be told. See <see cref="WorldVersionCheck"/>.
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasNewerWorld), nameof(NewerWorldText))]
+    [NotifyPropertyChangedFor(nameof(HasNewerWorld), nameof(NewerWorldText), nameof(ShowNewerWorldBlocked),
+        nameof(ShowGoBackOffer), nameof(GoBackOfferText), nameof(GoBackQuestionText), nameof(GoBackLossText))]
     private string? _newerWorldVersion;
+
+    /// <summary>The newest backup the server's version can open, while the world is too new for it.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasBackupToGoBackTo), nameof(ShowNewerWorldBlocked), nameof(ShowGoBackOffer),
+        nameof(GoBackOfferText), nameof(GoBackQuestionText))]
+    private WorldVersionCheck.CompatibleBackup? _backupToGoBackTo;
+
+    /// <summary>True after Start was pressed with a backup to go back to, until it is answered.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowGoBackOffer))]
+    private bool _askingToGoBack;
 
     /// <summary>Whether the world is from a newer Minecraft than the server, which keeps it from starting.</summary>
     public bool HasNewerWorld => NewerWorldVersion is not null;
+
+    public bool HasBackupToGoBackTo => BackupToGoBackTo is not null;
+
+    /// <summary>The red strip: too new, and nothing to go back to.</summary>
+    public bool ShowNewerWorldBlocked => HasNewerWorld && !HasBackupToGoBackTo;
+
+    /// <summary>The blue strip: too new, but Start will offer the backup.</summary>
+    public bool ShowGoBackOffer => HasNewerWorld && HasBackupToGoBackTo && !AskingToGoBack;
 
     /// <summary>The red line under the header that says so.</summary>
     public string NewerWorldText => NewerWorldVersion is null
         ? string.Empty
         : string.Format(Localizer.Get("World_NewerFmt"), NewerWorldVersion, Config.GameVersion);
 
+    public string GoBackOfferText => BackupToGoBackTo is not { } b || NewerWorldVersion is null
+        ? string.Empty
+        : string.Format(Localizer.Get("World_GoBackOfferFmt"), NewerWorldVersion, Config.GameVersion, When(b), b.Version);
+
+    public string GoBackQuestionText => BackupToGoBackTo is not { } b
+        ? string.Empty
+        : string.Format(Localizer.Get("World_GoBackQuestionFmt"), When(b));
+
+    public string GoBackLossText => NewerWorldVersion is null
+        ? string.Empty
+        : string.Format(Localizer.Get("World_GoBackLossFmt"), NewerWorldVersion);
+
+    private static string When(WorldVersionCheck.CompatibleBackup b) =>
+        b.CreatedAt.ToString("g", System.Globalization.CultureInfo.CurrentCulture);
+
     partial void OnNewerWorldVersionChanged(string? value) => NotifyCommandStates();
+    partial void OnBackupToGoBackToChanged(WorldVersionCheck.CompatibleBackup? value) => NotifyCommandStates();
 
     /// <summary>Reads again which version saved the world and compares it with the server's.</summary>
-    private void RefreshWorldVersion() => NewerWorldVersion = WorldVersionCheck.NewerThanServer(Config);
+    private void RefreshWorldVersion()
+    {
+        NewerWorldVersion = WorldVersionCheck.NewerThanServer(Config);
+        BackupToGoBackTo = HasNewerWorld ? WorldVersionCheck.BackupFor(Config) : null;
+        if (!HasNewerWorld) AskingToGoBack = false;
+    }
+
+    /// <summary>"Restore and start" on the blue strip: puts the backup back, then starts.</summary>
+    /// <remarks>
+    /// The restore is the ordinary one, so the world as it is now is backed up first and nothing is
+    /// lost for good — only what was played on the newer version since is not in the world started.
+    /// </remarks>
+    [RelayCommand]
+    private async Task GoBackAndStart()
+    {
+        if (await GoBackAsync() && CanStart) await Start();
+    }
+
+    /// <summary>Puts back <see cref="BackupToGoBackTo"/>. True when the world is now one the server can open.</summary>
+    private async Task<bool> GoBackAsync()
+    {
+        AskingToGoBack = false;
+        if (BackupToGoBackTo is not { } backup || _process.IsRunning) return false;
+
+        try
+        {
+            if (!await RestoreBackupAsync(backup.FilePath, new Progress<string>(OnConsoleLine)))
+            {
+                OnConsoleLine(Localizer.Get("Msg_BackupAlreadyRunning"));
+                return false;
+            }
+            Backups.RefreshIfLoaded();
+            return !HasNewerWorld;
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            return false;
+        }
+    }
+
+    /// <summary>"Cancel" on the blue strip.</summary>
+    [RelayCommand]
+    private void CancelGoBack() => AskingToGoBack = false;
 
     /// <summary>True from the moment a start begins until the process is up or the start gives up.</summary>
     /// <remarks>
@@ -1426,8 +1510,17 @@ public partial class ServerViewModel : ObservableObject
             // A world saved by a newer Minecraft is not one an older server can open: what it does
             // not understand it loads as empty, and the next save makes that permanent. Checked on
             // every start path, Restart and a wake included, since the version may have just changed.
+            //
+            // With a backup the server can open, somebody pressing Start is asked whether to go back
+            // to it. Nobody is asked on a wake or an auto-restart: the world is never swapped behind
+            // the owner's back.
             if (HasNewerWorld)
             {
+                if (HasBackupToGoBackTo && !isAutoRestart)
+                {
+                    AskingToGoBack = true;
+                    return;
+                }
                 OnConsoleLine(string.Format(Localizer.Get("Msg_WorldNewerFmt"), NewerWorldVersion, Config.GameVersion));
                 return;
             }

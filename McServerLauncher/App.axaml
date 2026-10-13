@@ -21,6 +21,7 @@
     <Application.Resources>
         <SolidColorBrush x:Key="SemanticOk" Color="#3FB950" />
         <SolidColorBrush x:Key="SemanticInfo" Color="#2F6FB0" />
+        <SolidColorBrush x:Key="SemanticInfoPanel" Color="#332F6FB0" />
         <SolidColorBrush x:Key="SemanticWarn" Color="#E3A82B" />
         <SolidColorBrush x:Key="SemanticDanger" Color="#E05561" />
 

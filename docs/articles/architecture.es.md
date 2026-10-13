@@ -421,6 +421,11 @@ primero suelta el listener del encendido bajo demanda (tiene el puerto del servi
    *Cambiar versión* y *Ver copias*, Iniciar queda desactivado (`CanStart`), y un Reiniciar o un
    despertar lo dicen en la consola (`NewerWorldTests`). Las snapshots y las pre-releases no se pueden
    comparar, así que nunca bloquean.
+   Subir de versión y volver a bajar se deshace con una copia: cada zip lleva su propio `level.dat`, y
+   `WorldVersionCheck.BackupFor` busca la más reciente que la versión del servidor sabe abrir. Entonces la
+   franja es azul, Iniciar sigue activo y al pulsarlo pregunta, en la propia franja, si restaurar esa
+   copia y arrancar (`GoBackAndStart`, una restauración normal, así que antes se guarda el mundo más
+   nuevo). Un despertar o un reinicio automático nunca cambian el mundo: se queda parado y dice por qué.
 2. **Ruta** — `TryFixRejectedPathAsync`: Paper y Purpur se niegan a arrancar desde una carpeta cuya
    ruta tiene un carácter que no saben manejar (`BukkitPathRule`), y la app ofrece renombrar la
    carpeta en vez de dejar que falle.

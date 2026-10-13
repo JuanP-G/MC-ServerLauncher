@@ -174,6 +174,10 @@
   <data name="World_NewerFmt" xml:space="preserve"><value>Diese Welt wurde mit Minecraft {0} gespeichert, der Server ist {1}. Mit einer älteren Version geöffnet gehen Chunks kaputt, daher startet er nicht.</value></data>
   <data name="World_ChangeVersion" xml:space="preserve"><value>Version ändern</value></data>
   <data name="World_SeeBackups" xml:space="preserve"><value>Sicherungen ansehen</value></data>
+  <data name="World_GoBackOfferFmt" xml:space="preserve"><value>Die Welt ist von {0}, der Server ist {1}. Beim Start wird die Sicherung vom {2} ({3}) verwendet.</value></data>
+  <data name="World_GoBackQuestionFmt" xml:space="preserve"><value>Sicherung vom {0} wiederherstellen und starten?</value></data>
+  <data name="World_GoBackLossFmt" xml:space="preserve"><value>Was nach dieser Sicherung in {0} gespielt wurde, fehlt dann; die aktuelle Welt wird vorher gesichert.</value></data>
+  <data name="World_GoBackConfirm" xml:space="preserve"><value>Wiederherstellen und starten</value></data>
   <data name="Msg_WorldNewerFmt" xml:space="preserve"><value>[Launcher] Kein Start: Die Welt wurde mit Minecraft {0} gespeichert und dieser Server ist {1}. Mit einer älteren Version geöffnet bleiben Chunks leer oder kaputt. Wechsle zurück zu {0} oder stelle eine mit {1} erstellte Sicherung wieder her.</value></data>
   <data name="Signal_Accessible" xml:space="preserve"><value>Erreichbar</value></data>
   <data name="Cs_PortNote" xml:space="preserve"><value>Um mehrere Server gleichzeitig zu betreiben, muss jeder einen anderen Port verwenden.</value></data>

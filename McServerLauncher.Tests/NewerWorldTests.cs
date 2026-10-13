@@ -129,6 +129,103 @@ public class NewerWorldTests(AvaloniaFixture ui) : IDisposable
         Assert.True(server.CanStart);
     }
 
+    // --- Going back with a backup ---
+
+    /// <summary>A backup zip whose world was saved by <paramref name="version"/>, made <paramref name="age"/> ago.</summary>
+    private string Backup(string version, TimeSpan age, string trigger = "stop")
+    {
+        var backups = Path.Combine(_folder, "backups");
+        Directory.CreateDirectory(backups);
+        var at = DateTime.Now - age;
+        var zip = Path.Combine(backups, $"world-{at:yyyyMMdd-HHmmss}--{trigger}.zip");
+        using (var archive = ZipFile.Open(zip, ZipArchiveMode.Create))
+        {
+            using var entry = archive.CreateEntry("level.dat").Open();
+            entry.Write(LevelDat(version));
+        }
+        File.SetLastWriteTime(zip, at);
+        return zip;
+    }
+
+    [Fact]
+    public void TheNewestBackupTheServerCanOpenIsTheOneOffered()
+    {
+        var config = Config("26.1", "26.3");
+        Backup("26.3", TimeSpan.FromHours(1));                        // after the upgrade: too new
+        var before = Backup("26.1", TimeSpan.FromHours(3));           // the last one before it
+        Backup("26.1", TimeSpan.FromHours(5));
+        Backup("25w14a", TimeSpan.FromHours(2));                      // a snapshot: can't tell
+
+        var offered = WorldVersionCheck.BackupFor(config);
+
+        Assert.Equal(before, offered?.FilePath);
+        Assert.Equal("26.1", offered?.Version);
+    }
+
+    [Fact]
+    public void WithoutSuchABackupNothingIsOffered()
+    {
+        var config = Config("26.1", "26.3");
+        Backup("26.3", TimeSpan.FromHours(1));
+
+        Assert.Null(WorldVersionCheck.BackupFor(config));
+    }
+
+    [Fact]
+    public void StartAsksToGoBackInsteadOfBeingOff()
+    {
+        var config = Config("26.1", "26.3");
+        Backup("26.1", TimeSpan.FromHours(3));
+        var server = Server(config);
+
+        Assert.True(server.CanStart);
+        Assert.True(server.ShowGoBackOffer);
+        Assert.False(server.ShowNewerWorldBlocked);
+
+        ui.Run(() => server.StartInternalAsync(isAutoRestart: false).GetAwaiter().GetResult());
+
+        Assert.True(server.AskingToGoBack);
+        Assert.False(server.IsRunning);
+        Assert.Equal("26.3", WorldVersionCheck.SavedBy(Path.Combine(_folder, "world")));   // nothing swapped yet
+    }
+
+    [Fact]
+    public async Task NobodyThereMeansNothingIsSwapped()
+    {
+        var config = Config("26.1", "26.3");
+        Backup("26.1", TimeSpan.FromHours(3));
+        var server = Server(config);
+
+        // A wake or an auto-restart.
+        ui.Run(() => server.StartInternalAsync(isAutoRestart: true).GetAwaiter().GetResult());
+        await Task.Delay(100);
+
+        Assert.False(server.AskingToGoBack);
+        Assert.Equal("26.3", WorldVersionCheck.SavedBy(Path.Combine(_folder, "world")));
+        Assert.Contains(server.ConsoleLines,
+            l => l.Text == string.Format(Localizer.Get("Msg_WorldNewerFmt"), "26.3", "26.1"));
+    }
+
+    [Fact]
+    public async Task GoingBackPutsTheOldWorldBackAndKeepsTheNewOne()
+    {
+        var config = Config("26.1", "26.3");
+        Backup("26.1", TimeSpan.FromHours(3));
+        var server = Server(config);
+
+        var ok = await (Task<bool>)typeof(ServerViewModel)
+            .GetMethod("GoBackAsync", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .Invoke(server, [])!;
+
+        Assert.True(ok);
+        Assert.Equal("26.1", WorldVersionCheck.SavedBy(Path.Combine(_folder, "world")));
+        Assert.False(server.HasNewerWorld);
+
+        // The 26.3 world went into a safety backup first, as with any restore.
+        var safety = Directory.EnumerateFiles(Path.Combine(_folder, "backups"), "*--before-restore.zip").Single();
+        Assert.Equal("26.3", WorldVersionCheck.SavedByBackup(safety));
+    }
+
     public void Dispose()
     {
         try { Directory.Delete(_folder, recursive: true); } catch { /* best-effort */ }

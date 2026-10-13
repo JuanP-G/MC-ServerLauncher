@@ -174,6 +174,10 @@
   <data name="World_NewerFmt" xml:space="preserve"><value>Este mundo foi guardado com o Minecraft {0} e o servidor é {1}. Abri-lo com uma versão anterior estraga os chunks, por isso não arranca.</value></data>
   <data name="World_ChangeVersion" xml:space="preserve"><value>Mudar versão</value></data>
   <data name="World_SeeBackups" xml:space="preserve"><value>Ver cópias</value></data>
+  <data name="World_GoBackOfferFmt" xml:space="preserve"><value>O mundo é de {0} e o servidor de {1}. Ao arrancar será usada a cópia de {2} ({3}).</value></data>
+  <data name="World_GoBackQuestionFmt" xml:space="preserve"><value>Restaurar a cópia de {0} e arrancar?</value></data>
+  <data name="World_GoBackLossFmt" xml:space="preserve"><value>O que foi jogado em {0} depois dessa cópia não vai estar; antes é guardada uma cópia do mundo atual.</value></data>
+  <data name="World_GoBackConfirm" xml:space="preserve"><value>Restaurar e arrancar</value></data>
   <data name="Msg_WorldNewerFmt" xml:space="preserve"><value>[Launcher] Não arranca: o mundo foi guardado com o Minecraft {0} e este servidor é {1}. Abri-lo com uma versão anterior deixa chunks vazios ou estragados. Volta a {0} ou restaura uma cópia feita com {1}.</value></data>
   <data name="Signal_Accessible" xml:space="preserve"><value>Acessível</value></data>
   <data name="Cs_PortNote" xml:space="preserve"><value>Para ter vários servidores ligados ao mesmo tempo, cada um deve usar uma porta diferente.</value></data>

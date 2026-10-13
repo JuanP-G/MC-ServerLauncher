@@ -50,6 +50,57 @@ public static class WorldVersionCheck
         }
     }
 
+    /// <summary>A backup whose world the server's version can open.</summary>
+    /// <param name="FilePath">The zip.</param>
+    /// <param name="CreatedAt">When it was made, as the backups list shows it.</param>
+    /// <param name="Version">The Minecraft version that had saved the world it holds.</param>
+    public sealed record CompatibleBackup(string FilePath, DateTime CreatedAt, string Version);
+
+    /// <summary>
+    /// The newest backup made with a version no newer than the server's, or null.
+    /// </summary>
+    /// <remarks>
+    /// Going up a version and back down is undone this way: the backups taken before the upgrade
+    /// still hold the world as the older version wrote it. Each zip carries its own
+    /// <c>level.dat</c>, so the version is read from the backup itself rather than guessed from its
+    /// date. One whose version cannot be read, or is a snapshot, is not offered.
+    /// </remarks>
+    public static CompatibleBackup? BackupFor(ServerConfig config)
+    {
+        if (Release(config.GameVersion) is null) return null;
+
+        try
+        {
+            foreach (var backup in new WorldBackupService().ListBackups(config))
+            {
+                var version = SavedByBackup(backup.FilePath);
+                if (Release(version) is not null && !IsNewer(version, config.GameVersion))
+                    return new CompatibleBackup(backup.FilePath, backup.CreatedAt, version!);
+            }
+        }
+        catch
+        {
+            // A folder that cannot be listed offers nothing; the red strip still says why.
+        }
+        return null;
+    }
+
+    /// <summary>The version that had saved the world inside a backup zip, or null.</summary>
+    public static string? SavedByBackup(string zipPath)
+    {
+        try
+        {
+            using var zip = System.IO.Compression.ZipFile.OpenRead(zipPath);
+            if (zip.GetEntry("level.dat") is not { } entry) return null;
+            using var stream = entry.Open();
+            return NbtReader.ReadString(stream, "Data", "Version", "Name");
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     /// <summary>"26.3" or "1.21.4" as a comparable version; null for anything else.</summary>
     private static Version? Release(string? name)
     {

@@ -174,6 +174,10 @@
   <data name="World_NewerFmt" xml:space="preserve"><value>This world was saved by Minecraft {0} and the server is {1}. Opening it with an older version breaks its chunks, so it won't start.</value></data>
   <data name="World_ChangeVersion" xml:space="preserve"><value>Change version</value></data>
   <data name="World_SeeBackups" xml:space="preserve"><value>See backups</value></data>
+  <data name="World_GoBackOfferFmt" xml:space="preserve"><value>The world is from {0} and the server is {1}. Starting will use the backup from {2} ({3}).</value></data>
+  <data name="World_GoBackQuestionFmt" xml:space="preserve"><value>Restore the backup from {0} and start?</value></data>
+  <data name="World_GoBackLossFmt" xml:space="preserve"><value>What was played on {0} after that backup won't be there; the current world is backed up first.</value></data>
+  <data name="World_GoBackConfirm" xml:space="preserve"><value>Restore and start</value></data>
   <data name="Msg_WorldNewerFmt" xml:space="preserve"><value>[Launcher] Not starting: the world was saved by Minecraft {0} and this server is {1}. Opening it with an older version leaves chunks empty or broken. Go back to {0} or restore a backup made with {1}.</value></data>
   <data name="Signal_Accessible" xml:space="preserve"><value>Accessible</value></data>
   <data name="Cs_PortNote" xml:space="preserve"><value>To run several servers at once, each must use a different port.</value></data>
