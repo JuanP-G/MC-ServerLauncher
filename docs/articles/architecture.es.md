@@ -899,7 +899,7 @@ la tienda no conoce; antes, si `GetVersionsByHashAsync` no contestaba, la versi�
 Se quitan **todas o ninguna**: primero se renombran a `*.mcsl-removing` y, si una está en uso (el servidor la
 tiene abierta), se devuelven las demás y se retira la descarga nueva — salvo que esta haya sobrescrito un archivo
 del mismo nombre, porque entonces es la única copia. Lo que quede renombrado lo barre el siguiente refresco
-(`SweepLeftovers`). Lo que se ha borrado se nombra en el aviso. Los instaladores de Crossplay, Hydraulic y
+(`SweepLeftovers`). El aviso solo dice que se ha actualizado: quitar las copias viejas es lo que significa actualizar, no una noticia. Los instaladores de Crossplay, Hydraulic y
 MultiVersion pasan por lo mismo (`ContentInstall.InstallReplacingAsync`), solo por id, porque Floodgate para
 Paper e Hydraulic vienen de GeyserMC y Modrinth no los conoce; Hydraulic además no descarga Fabric API si ya
 hay una activa. `ContentManifestCache` guarda lo leído de cada jar por ruta, tamaño y fecha, como

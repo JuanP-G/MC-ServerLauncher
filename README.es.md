@@ -174,8 +174,7 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   instalan con él, también las de sus dependencias. Solo las *obligatorias*, y nunca una segunda copia.
 - **Actualizaciones** — **buscar actualizaciones** dice qué hay nuevo y qué librerías faltan; se actualiza de
   uno en uno o con **Actualizar todas**. **No queda basura**: la versión vieja y cualquier otra copia del mismo
-  mod (un duplicado con otro nombre, una copia desactivada) se borran, también sin conexión, y la app te dice
-  qué archivos quitó.
+  mod (un duplicado con otro nombre, una copia desactivada) se borran, también sin conexión.
 - **Limpieza sugerida** 🧹 — la app avisa de lo que ya sobra: **librerías que ningún mod usa** (con el motivo,
   p. ej. «solo la usaba Litematica, que ya no está») y **mods apagados hace más de un mes**. Solo lo propone:
   marcas, pulsas y se quita; «Ahora no» lo esconde 30 días.
