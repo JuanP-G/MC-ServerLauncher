@@ -251,9 +251,10 @@ When it opens again, **What's new** tells you what changed. It works the same on
 
 - **Automatic world backups** — before every start, on every stop and, if you leave it on, every hour while
   people are playing. A backup of a running server asks Minecraft to flush the world to disk first, so it is
-  never half-written, and one nobody played since is skipped. Backups you take by hand are counted separately,
-  so the clock never deletes them. The **Backups** tab shows each pile against its limit, the space they take
-  and when the next one is due, lists them by day and marks the one the next backup will replace.
+  never half-written, and one nobody played since is skipped — the start's and the stop's too, so a server
+  that sleeps and wakes with nobody coming in does not pile up copies of the same world. Backups you take by
+  hand are counted separately, so the clock never deletes them. The **Backups** tab shows each pile against
+  its limit, the space they take and when the next one is due, lists them by day and marks the one the next backup will replace.
   **Back up now** and one-click **Restore**.
 - **Settings, part of the window** ⚙️ — language, tray behaviour, **Add to desktop**, notifications, colours
   and the player history, each on its own page. Saved as you go.
