@@ -5,11 +5,11 @@ using System.Text;
 namespace McServerLauncher.Services;
 
 /// <summary>
-/// Reads one number out of a gzipped NBT file, the format Minecraft saves its world data in.
+/// Reads one value out of a gzipped NBT file, the format Minecraft saves its world data in.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Only reading, and only a long at a known path. Everything else in the file is skipped without
+/// Only reading, and only a long or a string at a known path. Everything else in the file is skipped without
 /// being kept. That is all the app needs from it, and not reason enough to take on a library.
 /// </para>
 /// <para>
@@ -42,7 +42,32 @@ public static class NbtReader
     }
 
     /// <summary>The same, from a stream holding the gzipped file.</summary>
-    public static long? ReadLong(Stream gzipped, params string[] path)
+    public static long? ReadLong(Stream gzipped, params string[] path) =>
+        Read(gzipped, path, (type, reader) => type == TagLong ? ReadBigEndianLong(reader) : null) as long?;
+
+    /// <summary>
+    /// The string at <paramref name="path"/> (compound names from the root, root excluded), or null.
+    /// </summary>
+    public static string? ReadString(string file, params string[] path)
+    {
+        try
+        {
+            if (!File.Exists(file)) return null;
+            using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            return ReadString(stream, path);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>The same, from a stream holding the gzipped file.</summary>
+    public static string? ReadString(Stream gzipped, params string[] path) =>
+        Read(gzipped, path, (type, reader) => type == TagString ? ReadString(reader) : null) as string;
+
+    /// <summary>Finds <paramref name="path"/> and hands its tag to <paramref name="leaf"/>.</summary>
+    private static object? Read(Stream gzipped, string[] path, Func<byte, BinaryReader, object?> leaf)
     {
         try
         {
@@ -53,7 +78,7 @@ public static class NbtReader
             if (rootType != TagCompound) return null;
             SkipString(reader);
 
-            return Find(reader, path, 0);
+            return Find(reader, path, 0, leaf);
         }
         catch
         {
@@ -66,7 +91,7 @@ public static class NbtReader
         TagIntArray = 11, TagLongArray = 12;
 
     /// <summary>Walks the compound the reader is positioned in, looking for path[index].</summary>
-    private static long? Find(BinaryReader reader, string[] path, int index)
+    private static object? Find(BinaryReader reader, string[] path, int index, Func<byte, BinaryReader, object?> leaf)
     {
         if (index >= path.Length) return null;
 
@@ -79,10 +104,10 @@ public static class NbtReader
             var wanted = name == path[index];
 
             if (wanted && index == path.Length - 1)
-                return type == TagLong ? ReadBigEndianLong(reader) : null;
+                return leaf(type, reader);
 
             if (wanted && type == TagCompound)
-                return Find(reader, path, index + 1);
+                return Find(reader, path, index + 1, leaf);
 
             Skip(reader, type, 1);
         }

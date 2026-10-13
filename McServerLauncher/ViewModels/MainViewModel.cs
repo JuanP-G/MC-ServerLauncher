@@ -851,6 +851,13 @@ public partial class MainViewModel : ObservableObject
         if (SelectedServer is { } server) OpenSettings(server, ServerSettingsPage.Backups);
     }
 
+    /// <summary>Opens the selected server's loader page, where its Minecraft version is changed.</summary>
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void OpenVersionSettings()
+    {
+        if (SelectedServer is { } server) OpenSettings(server, ServerSettingsPage.Loader);
+    }
+
     /// <summary>Opens the selected server's network page and runs the connection test there.</summary>
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private void TestConnection()
@@ -1114,6 +1121,7 @@ public partial class MainViewModel : ObservableObject
         ConfigureServerCommand.NotifyCanExecuteChanged();
         EditAppearanceCommand.NotifyCanExecuteChanged();
         OpenBackupSettingsCommand.NotifyCanExecuteChanged();
+        OpenVersionSettingsCommand.NotifyCanExecuteChanged();
         TestConnectionCommand.NotifyCanExecuteChanged();
     }
 }

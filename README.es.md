@@ -255,6 +255,9 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   haces a mano se cuentan aparte, así que el reloj nunca las borra. La pestaña **Copias** enseña cada montón
   frente a su cupo, el espacio que ocupan y cuándo toca la próxima, las ordena por días y marca la que la
   próxima copia sustituirá. **Copia ahora** y **Restaurar** con un clic.
+- **Un mundo nunca baja de versión** — si el mundo se guardó con un Minecraft más nuevo que el del servidor, no
+  arranca: una versión anterior vacía los chunks que no sabe leer. La cabecera lo dice en rojo, con **Cambiar
+  versión** y **Ver copias**.
 - **Ajustes dentro de la ventana** ⚙️ — idioma, bandeja del sistema, **añadir al escritorio**, notificaciones,
   colores e historial de jugadores, cada cosa en su página. Se guarda al momento.
 - **No estorba** — minimiza o cierra **a la bandeja** y tus servidores siguen; abrir la app otra vez recupera

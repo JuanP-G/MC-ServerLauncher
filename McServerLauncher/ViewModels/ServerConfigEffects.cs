@@ -148,8 +148,9 @@ public static class ServerConfigEffects
                 nameof(ServerModsViewModel.HowToPlaySteps)
             },
             // Results on screen were chosen for the old version; leaving them is what made an
-            // install fail minutes later, far from the change that caused it.
-            ConfigEffect.CloseDetails | ConfigEffect.ReSearchStore),
+            // install fail minutes later, far from the change that caused it. RereadInfo checks the
+            // world against the new version: going back to an older one is what breaks it.
+            ConfigEffect.CloseDetails | ConfigEffect.ReSearchStore | ConfigEffect.RereadInfo),
 
         Unshown(nameof(ServerConfig.ModLoaderVersion),
             "Recorded for the installer; the badge shows the type and the Minecraft version."),

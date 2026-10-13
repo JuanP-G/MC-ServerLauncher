@@ -939,7 +939,28 @@ public partial class ServerViewModel : ObservableObject
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
-    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing;
+    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing && !HasNewerWorld;
+
+    /// <summary>
+    /// The Minecraft version that last saved the world, when it is newer than this server's; null
+    /// when it is not, or when that cannot be told. See <see cref="WorldVersionCheck"/>.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasNewerWorld), nameof(NewerWorldText))]
+    private string? _newerWorldVersion;
+
+    /// <summary>Whether the world is from a newer Minecraft than the server, which keeps it from starting.</summary>
+    public bool HasNewerWorld => NewerWorldVersion is not null;
+
+    /// <summary>The red line under the header that says so.</summary>
+    public string NewerWorldText => NewerWorldVersion is null
+        ? string.Empty
+        : string.Format(Localizer.Get("World_NewerFmt"), NewerWorldVersion, Config.GameVersion);
+
+    partial void OnNewerWorldVersionChanged(string? value) => NotifyCommandStates();
+
+    /// <summary>Reads again which version saved the world and compares it with the server's.</summary>
+    private void RefreshWorldVersion() => NewerWorldVersion = WorldVersionCheck.NewerThanServer(Config);
 
     /// <summary>True from the moment a start begins until the process is up or the start gives up.</summary>
     /// <remarks>
@@ -1401,6 +1422,15 @@ public partial class ServerViewModel : ObservableObject
 
             RefreshPort();
             RefreshInfo();
+
+            // A world saved by a newer Minecraft is not one an older server can open: what it does
+            // not understand it loads as empty, and the next save makes that permanent. Checked on
+            // every start path, Restart and a wake included, since the version may have just changed.
+            if (HasNewerWorld)
+            {
+                OnConsoleLine(string.Format(Localizer.Get("Msg_WorldNewerFmt"), NewerWorldVersion, Config.GameVersion));
+                return;
+            }
 
             // If the port is busy, offer to close the process holding it. Skipped during an
             // unattended auto-restart: nobody would be there to answer the confirmation dialog.
@@ -1925,6 +1955,7 @@ public partial class ServerViewModel : ObservableObject
         {
             IsRestoring = false;
             _backupGate.Release();
+            RefreshWorldVersion();   // the world just put back may be from another version
             if (!_process.IsRunning) StartWakeListener();
         }
     }
@@ -2117,6 +2148,7 @@ public partial class ServerViewModel : ObservableObject
     /// <summary>Reads MOTD, max players and the server icon (Minecraft-style view).</summary>
     private void RefreshInfo()
     {
+        RefreshWorldVersion();
         var props = _properties.Read(Config.PropertiesPath);
         MotdText = props.TryGetValue("motd", out var m) && !string.IsNullOrWhiteSpace(m) ? m : "A Minecraft Server";
         _maxPlayers = props.TryGetValue("max-players", out var mp) && int.TryParse(mp, out var n) ? n : 20;

@@ -171,6 +171,10 @@
   <data name="Signal_Off" xml:space="preserve"><value>Server off</value></data>
   <data name="Signal_Transition" xml:space="preserve"><value>Changing state...</value></data>
   <data name="Signal_NoTunnel" xml:space="preserve"><value>On on your PC, but the Playit tunnel is off: nobody can join from the Internet.</value></data>
+  <data name="World_NewerFmt" xml:space="preserve"><value>This world was saved by Minecraft {0} and the server is {1}. Opening it with an older version breaks its chunks, so it won't start.</value></data>
+  <data name="World_ChangeVersion" xml:space="preserve"><value>Change version</value></data>
+  <data name="World_SeeBackups" xml:space="preserve"><value>See backups</value></data>
+  <data name="Msg_WorldNewerFmt" xml:space="preserve"><value>[Launcher] Not starting: the world was saved by Minecraft {0} and this server is {1}. Opening it with an older version leaves chunks empty or broken. Go back to {0} or restore a backup made with {1}.</value></data>
   <data name="Signal_Accessible" xml:space="preserve"><value>Accessible</value></data>
   <data name="Cs_PortNote" xml:space="preserve"><value>To run several servers at once, each must use a different port.</value></data>
   <data name="Cs_Creating" xml:space="preserve"><value>Creating server...</value></data>

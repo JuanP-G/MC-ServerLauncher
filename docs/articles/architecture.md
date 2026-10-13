@@ -401,6 +401,12 @@ otherwise lets go of the wake-on-demand listener first (it holds the server's po
 
 1. **Port** — refresh port/info; if the port is busy, offer to free it (`PortService` +
    `TryFreePortAsync`). An auto-restart does not ask: it gives up and says so in the console.
+   Refreshing the info also reads which Minecraft last saved the world (`level.dat`,
+   `Data.Version.Name`, via `WorldVersionCheck`). If it is a newer release than the server's, the start
+   stops here: Minecraft never downgrades a world, and what an older version cannot read it loads as
+   air and then saves that way. The header shows it in red as soon as it is known, with *Change version*
+   and *See backups*, Start stays off (`CanStart`), and a Restart or a wake says it in the console
+   (`NewerWorldTests`). Snapshots and pre-releases can't be compared, so they never block.
 2. **Path** — `TryFixRejectedPathAsync`: Paper and Purpur refuse to start from a folder whose path
    has a character they cannot handle (`BukkitPathRule`), and the app offers to rename the folder
    rather than let it fail.

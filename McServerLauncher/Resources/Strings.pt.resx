@@ -171,6 +171,10 @@
   <data name="Signal_Off" xml:space="preserve"><value>Servidor desligado</value></data>
   <data name="Signal_Transition" xml:space="preserve"><value>A mudar de estado...</value></data>
   <data name="Signal_NoTunnel" xml:space="preserve"><value>Ligado no teu PC, mas o túnel do Playit está desligado: ninguém pode entrar pela Internet.</value></data>
+  <data name="World_NewerFmt" xml:space="preserve"><value>Este mundo foi guardado com o Minecraft {0} e o servidor é {1}. Abri-lo com uma versão anterior estraga os chunks, por isso não arranca.</value></data>
+  <data name="World_ChangeVersion" xml:space="preserve"><value>Mudar versão</value></data>
+  <data name="World_SeeBackups" xml:space="preserve"><value>Ver cópias</value></data>
+  <data name="Msg_WorldNewerFmt" xml:space="preserve"><value>[Launcher] Não arranca: o mundo foi guardado com o Minecraft {0} e este servidor é {1}. Abri-lo com uma versão anterior deixa chunks vazios ou estragados. Volta a {0} ou restaura uma cópia feita com {1}.</value></data>
   <data name="Signal_Accessible" xml:space="preserve"><value>Acessível</value></data>
   <data name="Cs_PortNote" xml:space="preserve"><value>Para ter vários servidores ligados ao mesmo tempo, cada um deve usar uma porta diferente.</value></data>
   <data name="Cs_Creating" xml:space="preserve"><value>A criar servidor...</value></data>
