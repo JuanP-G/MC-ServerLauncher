@@ -172,7 +172,9 @@ When it opens again, **What's new** tells you what changed. It works the same on
 - **Installing a mod brings what it needs** — the libraries it depends on (Fabric API and the rest) are
   installed with it, transitively. Only *required* ones, and never a second copy.
 - **Updates** — **check for updates** says what's new and which libraries are missing; update them one by one
-  or with **Update all**.
+  or with **Update all**. **No junk left behind**: the old version and any other copy of the same mod (a
+  duplicate under another name, a disabled copy) are removed, offline too, and the app tells you which files
+  went.
 - **Send your friends a ready-made modpack** 📦 — one button zips the mods with instructions in their language.
   Mods that only do anything on the server (Geyser, Floodgate, a backup mod) are **left out automatically**, and
   the app tells you which. The pack carries a **script for Windows, Linux and macOS** that finds the mods

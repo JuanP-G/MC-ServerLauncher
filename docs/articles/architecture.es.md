@@ -888,6 +888,21 @@ cosa. **Actualizar todas** las recorre una detrás de otra por el mismo código 
 fila, con la lista desactivada mientras tanto; un jar en uso para la tanda, porque significa que el
 servidor está en marcha y todos los demás fallarían igual.
 
+**Actualizar o reinstalar deja una sola copia del mod: la nueva.** `ContentReplacement` decide qué otros
+jars son el mismo mod: los que Modrinth pone en el mismo proyecto, los que se dan a sí mismos el mismo id
+(`ContentManifest.Manifest.Id`: el `id` de Fabric, el primer `modId` de `mods.toml`, el `name` de un plugin; no
+los alias de `provides` ni lo que va anidado, porque un mod que lleva `fabric-api` dentro no *es* `fabric-api`)
+y el nombre nuevo con `.disabled`. El id se lee del propio archivo, así que funciona sin conexión y con jars que
+la tienda no conoce; antes, si `GetVersionsByHashAsync` no contestaba, la versión vieja se quedaba sin avisar.
+Se quitan **todas o ninguna**: primero se renombran a `*.mcsl-removing` y, si una está en uso (el servidor la
+tiene abierta), se devuelven las demás y se retira la descarga nueva — salvo que esta haya sobrescrito un archivo
+del mismo nombre, porque entonces es la única copia. Lo que quede renombrado lo barre el siguiente refresco
+(`SweepLeftovers`). Lo que se ha borrado se nombra en el aviso. Los instaladores de Crossplay, Hydraulic y
+MultiVersion pasan por lo mismo (`ContentInstall.InstallReplacingAsync`), solo por id, porque Floodgate para
+Paper e Hydraulic vienen de GeyserMC y Modrinth no los conoce; Hydraulic además no descarga Fabric API si ya
+hay una activa. `ContentManifestCache` guarda lo leído de cada jar por ruta, tamaño y fecha, como
+`FileHashCache`, para no reabrir toda la carpeta en cada mod de **Actualizar todas**.
+
 ## Localización
 
 Todo el texto visible está en `Resources/Strings.resx` (español, idioma neutral/base) más los

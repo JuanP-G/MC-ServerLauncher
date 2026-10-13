@@ -366,4 +366,73 @@ public class ContentManifestTests : IDisposable
         Assert.Empty(ContentManifest.ReadFolder(
             Path.Combine(Path.GetTempPath(), "mcl-cm-nope-" + Guid.NewGuid().ToString("N"))));
     }
+
+    // --- Its own id and name ---
+    //
+    // What decides whether two jars are copies of the same mod, which is what an update removes. The
+    // own id only: an alias or a bundled mod is something the jar carries, not something it is.
+
+    [Fact]
+    public void AFabricModGivesItsOwnIdAndName()
+    {
+        var manifest = ContentManifest.Read(Jar("fabric.mod.json",
+            """
+            {"schemaVersion": 1, "id": "sodium-fork", "name": "Sodium Fork", "provides": ["sodium"]}
+            """));
+
+        Assert.Equal("sodium-fork", manifest.Id);
+        Assert.Equal("Sodium Fork", manifest.Name);
+    }
+
+    [Fact]
+    public void AForgeJarIsItsFirstModAndItsDisplayName()
+    {
+        var manifest = ContentManifest.Read(Jar("META-INF/mods.toml",
+            """
+            modLoader="javafml"
+            [[mods]]
+            modId="create"
+            displayName="Create"
+            [[mods]]
+            modId="flywheel"
+            displayName="Flywheel"
+            """));
+
+        Assert.Equal("create", manifest.Id);
+        Assert.Equal("Create", manifest.Name);
+    }
+
+    [Fact]
+    public void APluginIsItsName()
+    {
+        var manifest = ContentManifest.Read(Jar("plugin.yml", "name: Floodgate\nversion: 2.2\n"));
+
+        Assert.Equal("Floodgate", manifest.Id);
+        Assert.Equal("Floodgate", manifest.Name);
+    }
+
+    [Fact]
+    public void AJarThatSaysNothingHasNoId() => Assert.Null(ContentManifest.Read(Jar(null, null)).Id);
+
+    [Fact]
+    public void ReadingTheWholeFolderIncludesDisabledJars()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "mcl-cm-all-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            File.Copy(Jar("fabric.mod.json", """{"id": "on"}"""), Path.Combine(dir, "on.jar"));
+            File.Copy(Jar("fabric.mod.json", """{"id": "off"}"""), Path.Combine(dir, "off.jar.disabled"));
+            File.WriteAllText(Path.Combine(dir, "notes.txt"), "not a jar");
+
+            var all = ContentManifest.ReadAll(dir).OrderBy(e => e.Manifest.Id).ToList();
+
+            Assert.Equal(new[] { "off", "on" }, all.Select(e => e.Manifest.Id));
+            Assert.Equal(new[] { false, true }, all.Select(e => e.Enabled));
+        }
+        finally
+        {
+            Directory.Delete(dir, recursive: true);
+        }
+    }
 }

@@ -173,7 +173,9 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 - **Instalar un mod trae lo que necesita** — las librerías de las que depende (Fabric API y compañía) se
   instalan con él, también las de sus dependencias. Solo las *obligatorias*, y nunca una segunda copia.
 - **Actualizaciones** — **buscar actualizaciones** dice qué hay nuevo y qué librerías faltan; se actualiza de
-  uno en uno o con **Actualizar todas**.
+  uno en uno o con **Actualizar todas**. **No queda basura**: la versión vieja y cualquier otra copia del mismo
+  mod (un duplicado con otro nombre, una copia desactivada) se borran, también sin conexión, y la app te dice
+  qué archivos quitó.
 - **Manda a tus amigos un modpack listo** 📦 — un botón comprime los mods con instrucciones en su idioma. Los
   que solo hacen algo en el servidor (Geyser, Floodgate, un mod de copias) **se dejan fuera solos**, y la app
   te dice cuáles. El paquete lleva un **script para Windows, Linux y macOS** que encuentra las carpetas de

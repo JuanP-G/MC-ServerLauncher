@@ -57,6 +57,9 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>Identifying a jar means hashing it, and both scans want the same answers.</summary>
     private readonly FileHashCache _hashes = new();
 
+    /// <summary>What each jar says about itself, for finding the other copies of a mod.</summary>
+    private readonly ContentManifestCache _manifests = new();
+
     /// <summary>
     /// Which Modrinth project each jar's SHA-1 belongs to, remembered for the session.
     /// </summary>
@@ -618,6 +621,9 @@ public partial class ServerModsViewModel : ObservableObject
         var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
         if (Directory.Exists(modsFolder))
         {
+            // Old copies an install could not finish deleting, because the server still held them.
+            ContentReplacement.SweepLeftovers(modsFolder);
+
             // Include disabled mods (.jar.disabled) so they can be re-enabled from the app.
             var files = Directory.EnumerateFiles(modsFolder)
                 .Where(f => f.EndsWith(".jar", StringComparison.OrdinalIgnoreCase)
@@ -697,7 +703,7 @@ public partial class ServerModsViewModel : ObservableObject
                 if (!string.Equals(file.Hashes?.Sha1, installedHash, StringComparison.OrdinalIgnoreCase))
                 {
                     mod.Update = new ModUpdateInfo(version.VersionNumber, file.Url,
-                        Path.GetFileName(file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1);
+                        Path.GetFileName(file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1, version.ProjectId);
                     RememberUpdate(mod.FilePath, mod.Update);
                     updates++;
                 }
@@ -867,10 +873,18 @@ public partial class ServerModsViewModel : ObservableObject
             catch { /* unreadable or locked: it simply is not identified */ }
         }
 
-        var known = await _modrinthService.GetVersionsByHashAsync(pathByHash.Keys);
+        // Only what this session has not identified yet: the update check already asked about every
+        // jar, and "update all" asks once more before its first download.
+        var unknown = pathByHash.Keys.Where(h => !_projectIdByHash.ContainsKey(h)).ToList();
+        if (unknown.Count > 0)
+        {
+            foreach (var (hash, found) in await _modrinthService.GetVersionsByHashAsync(unknown))
+                _projectIdByHash[hash] = found.ProjectId;
+        }
+
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (hash, found) in known)
-            if (pathByHash.TryGetValue(hash, out var path)) result[path] = found.ProjectId;
+        foreach (var (hash, path) in pathByHash)
+            if (_projectIdByHash.TryGetValue(hash, out var projectId)) result[path] = projectId;
         return result;
     }
 
@@ -1063,7 +1077,7 @@ public partial class ServerModsViewModel : ObservableObject
         // race it for the same folder.
         if (mod?.Update is null || mod.IsUpdating || IsUpdatingAll) return;
 
-        var (outcome, error) = await UpdateOneAsync(mod);
+        var (outcome, error, removed) = await UpdateOneAsync(mod);
         RefreshInstalledMods();
 
         // Set after the refresh, which rewrites the line with what is still pending — before, the
@@ -1075,6 +1089,23 @@ public partial class ServerModsViewModel : ObservableObject
             UpdateOutcome.Updated => Localizer.Get("Msg_ModUpdated"),
             UpdateOutcome.NeedsStop => Localizer.Get("Msg_UpdateNeedsStop"),
             _ => string.Format(Localizer.Get("Msg_UpdateErrorFmt"), error)
+        };
+
+        // Which files went, by name: deleting from somebody's server without saying what would
+        // leave them wondering where a jar they remember went.
+        if (outcome == UpdateOutcome.Updated && removed.Count > 0)
+            UpdateStatus += " " + RemovedText(removed);
+    }
+
+    /// <summary>"Se borró x.jar." or "Se borraron 3 archivos: …", or nothing when nothing went.</summary>
+    internal static string RemovedText(IReadOnlyList<string> removedPaths)
+    {
+        var names = removedPaths.Select(ContentReplacement.DisplayName).ToList();
+        return names.Count switch
+        {
+            0 => string.Empty,
+            1 => string.Format(Localizer.Get("Msg_RemovedOneFmt"), names[0]),
+            _ => string.Format(Localizer.Get("Msg_RemovedManyFmt"), names.Count, string.Join(", ", names))
         };
     }
 
@@ -1093,19 +1124,35 @@ public partial class ServerModsViewModel : ObservableObject
 
         IsUpdatingAll = true;
         var updated = 0;
+        var removed = 0;
         var failed = new List<string>();
         var stoppedByServer = false;
 
         try
         {
+            // Asked once, before the first download, rather than once per mod: the answer is about
+            // the jars that were already here, and those are the only ones an update replaces.
+            var folder = Path.Combine(_config.FolderPath, ContentFolder);
+            var projects = Directory.Exists(folder) ? await ProjectByPathAsync(folder) : null;
+
             for (var i = 0; i < queue.Count; i++)
             {
                 var mod = queue[i];
+
+                // Already gone as another copy of a mod updated earlier in this run: what it was a
+                // copy of is up to date now, and updating this one too would bring the duplicate back.
+                if (!File.Exists(mod.FilePath)) continue;
+
                 UpdateStatus = string.Format(
                     Localizer.Get("Msg_UpdatingNofMFmt"), i + 1, queue.Count, mod.FileName);
 
-                var (outcome, _) = await UpdateOneAsync(mod);
-                if (outcome == UpdateOutcome.Updated) { updated++; continue; }
+                var (outcome, _, gone) = await UpdateOneAsync(mod, projects);
+                if (outcome == UpdateOutcome.Updated)
+                {
+                    updated++;
+                    removed += gone.Count;
+                    continue;
+                }
 
                 failed.Add(mod.FileName);
                 if (outcome == UpdateOutcome.NeedsStop) { stoppedByServer = true; break; }
@@ -1117,21 +1164,29 @@ public partial class ServerModsViewModel : ObservableObject
             RefreshInstalledMods();
         }
 
-        UpdateStatus = UpdateAllSummary(updated, failed, stoppedByServer);
+        UpdateStatus = UpdateAllSummary(updated, failed, stoppedByServer, removed);
     }
 
     private bool CanUpdateAll => HasPendingUpdates && !IsUpdatingAll && !IsCheckingUpdates;
 
     /// <summary>The line "update all" leaves behind.</summary>
-    internal static string UpdateAllSummary(int updated, IReadOnlyList<string> failed, bool stoppedByServer)
+    /// <param name="updated">How many mods were updated.</param>
+    /// <param name="failed">The ones that could not be.</param>
+    /// <param name="stoppedByServer">Whether it stopped because the server holds the files.</param>
+    /// <param name="removed">Old versions and duplicate copies deleted along the way.</param>
+    internal static string UpdateAllSummary(int updated, IReadOnlyList<string> failed, bool stoppedByServer,
+        int removed = 0)
     {
-        if (stoppedByServer)
-            return string.Format(Localizer.Get("Msg_UpdateAllStoppedFmt"), updated);
+        var summary = stoppedByServer
+            ? string.Format(Localizer.Get("Msg_UpdateAllStoppedFmt"), updated)
+            : failed.Count == 0
+                ? string.Format(Localizer.Get("Msg_UpdateAllDoneFmt"), updated)
+                : string.Format(Localizer.Get("Msg_UpdateAllPartialFmt"),
+                    updated, failed.Count, string.Join(", ", failed));
 
-        return failed.Count == 0
-            ? string.Format(Localizer.Get("Msg_UpdateAllDoneFmt"), updated)
-            : string.Format(Localizer.Get("Msg_UpdateAllPartialFmt"),
-                updated, failed.Count, string.Join(", ", failed));
+        return removed > 0
+            ? summary + " " + string.Format(Localizer.Get("Msg_UpdateAllRemovedFmt"), removed)
+            : summary;
     }
 
     /// <summary>
@@ -1142,9 +1197,15 @@ public partial class ServerModsViewModel : ObservableObject
     /// does not refresh the list — the callers do, once, when they are finished — because a
     /// refresh halfway through "update all" would rebuild the very rows it is walking.
     /// </remarks>
-    private async Task<(UpdateOutcome Outcome, string? Error)> UpdateOneAsync(ModItem mod)
+    /// <param name="mod">The row to update.</param>
+    /// <param name="projectByPath">
+    /// Which store project each jar already here is. "Update all" asks once and passes it to every
+    /// mod; a single update asks for itself.
+    /// </param>
+    private async Task<(UpdateOutcome Outcome, string? Error, IReadOnlyList<string> Removed)> UpdateOneAsync(
+        ModItem mod, IReadOnlyDictionary<string, string>? projectByPath = null)
     {
-        if (mod.Update is not { } update) return (UpdateOutcome.Failed, null);
+        if (mod.Update is not { } update) return (UpdateOutcome.Failed, null, Array.Empty<string>());
 
         mod.IsUpdating = true;
         try
@@ -1153,49 +1214,91 @@ public partial class ServerModsViewModel : ObservableObject
             Directory.CreateDirectory(modsFolder);
             var wasDisabled = !mod.IsEnabled;
 
+            // Asked before downloading, while the folder still holds only what the user had.
+            if (projectByPath is null && update.ProjectId is not null)
+                projectByPath = await ProjectByPathAsync(modsFolder);
+
             // Download+verify the new jar under its own (enabled) name first, so a failure never
             // destroys the currently installed one.
-            var enabledPath = Path.Combine(modsFolder, update.FileName);
+            var enabledPath = AtomicDownload.PathIn(modsFolder, update.FileName);
+            var replacesAFile = File.Exists(enabledPath);
             await _modrinthService.DownloadModAsync(update.Url, enabledPath, update.Sha512, update.Sha1);
 
-            // Remove the previous jar when the new version has a different file name.
-            var sameFile = string.Equals(
-                Path.GetFullPath(mod.FilePath), Path.GetFullPath(enabledPath), StringComparison.OrdinalIgnoreCase);
-            if (!sameFile)
-            {
-                try
-                {
-                    File.Delete(mod.FilePath);
-                }
-                catch
-                {
-                    // Old jar in use (server running): keeping both would load two versions of the
-                    // mod. Roll the new one back and tell the user to stop the server first.
-                    try { File.Delete(enabledPath); } catch { /* best-effort */ }
-                    return (UpdateOutcome.NeedsStop, null);
-                }
-            }
+            var (outcome, removed) = ApplyDownloadedUpdate(modsFolder, enabledPath, mod.FilePath, wasDisabled,
+                replacesAFile, update.ProjectId, projectByPath, _manifests.Read);
 
-            // Preserve the enabled/disabled state the mod had.
-            if (wasDisabled)
+            if (outcome == UpdateOutcome.Updated)
             {
-                var disabledPath = enabledPath + ".disabled";
-                try { if (File.Exists(disabledPath)) File.Delete(disabledPath); } catch { /* best-effort */ }
-                File.Move(enabledPath, disabledPath);
+                _pendingUpdates.Remove(PendingKey(mod.FilePath));
+                mod.Update = null;
             }
-
-            _pendingUpdates.Remove(PendingKey(mod.FilePath));
-            mod.Update = null;
-            return (UpdateOutcome.Updated, null);
+            return (outcome, null, removed);
         }
         catch (Exception ex)
         {
-            return (UpdateOutcome.Failed, ex.Message);
+            return (UpdateOutcome.Failed, ex.Message, Array.Empty<string>());
         }
         finally
         {
             mod.IsUpdating = false;
         }
+    }
+
+    /// <summary>
+    /// Everything after the download of an update: the old version and every other copy of the mod
+    /// out, and the new one switched on or off the way the mod was.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Separate from the download so it can be tested on a folder of fake jars, with no network.
+    /// </para>
+    /// <para>
+    /// A disabled mod stays disabled — unless another copy of it was switched on, because then the
+    /// server was running that copy, and the update is of the mod it was actually using.
+    /// </para>
+    /// </remarks>
+    /// <param name="modsFolder">The content folder.</param>
+    /// <param name="downloadedPath">Where the new version was just written, under its enabled name.</param>
+    /// <param name="oldPath">The row's own file, <c>.disabled</c> included if it was off.</param>
+    /// <param name="wasDisabled">Whether the row was switched off.</param>
+    /// <param name="downloadReplacedAFile">
+    /// True when the download overwrote a file of the same name. Then the new jar is the only copy
+    /// left and must not be rolled back if the others cannot be removed.
+    /// </param>
+    /// <param name="projectId">The update's store project, or null.</param>
+    /// <param name="projectByPath">Which store project each jar is; may be null.</param>
+    /// <param name="read">How to read one jar's manifest.</param>
+    internal static (UpdateOutcome Outcome, IReadOnlyList<string> Removed) ApplyDownloadedUpdate(
+        string modsFolder, string downloadedPath, string oldPath, bool wasDisabled, bool downloadReplacedAFile,
+        string? projectId, IReadOnlyDictionary<string, string>? projectByPath,
+        Func<string, ContentManifest.Manifest>? read = null)
+    {
+        var victims = ContentReplacement.OthersOf(modsFolder, downloadedPath, projectId, projectByPath, read).ToList();
+
+        // The row's own file always goes, even when nothing else ties it to the new one — a jar that
+        // declares no id, and a store that did not answer.
+        var oldIsNew = string.Equals(Path.GetFullPath(oldPath), Path.GetFullPath(downloadedPath),
+            StringComparison.OrdinalIgnoreCase);
+        if (!oldIsNew && File.Exists(oldPath) && !victims.Contains(oldPath, StringComparer.OrdinalIgnoreCase))
+            victims.Add(oldPath);
+
+        var anotherCopyWasOn = victims.Any(v => !v.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase));
+
+        // Old jar in use (server running): keeping both would load two versions of the mod, so the
+        // new one is rolled back and the user is told to stop the server first.
+        var (result, removed) = ContentReplacement.RemoveAllOrNothing(
+            victims, downloadReplacedAFile ? null : downloadedPath);
+        if (result == ContentReplacement.RemoveResult.Locked)
+            return (UpdateOutcome.NeedsStop, Array.Empty<string>());
+
+        if (wasDisabled && !anotherCopyWasOn)
+        {
+            var disabledPath = downloadedPath + ".disabled";
+            if (File.Exists(disabledPath)) File.Delete(disabledPath);
+            File.Move(downloadedPath, disabledPath);
+        }
+
+        return (UpdateOutcome.Updated, removed);
     }
 
     [RelayCommand]
@@ -1750,7 +1853,8 @@ public partial class ServerModsViewModel : ObservableObject
     /// offers the last few); without it the newest compatible one is resolved, as before.
     /// This is the only install path in the app — the details page routes through it too.
     /// </summary>
-    public async Task InstallModAsync(string projectId, VersionResult? chosen = null)
+    /// <returns>True when the mod ended up installed.</returns>
+    public async Task<bool> InstallModAsync(string projectId, VersionResult? chosen = null)
     {
         IsSearching = true;
         // transient: progress, not an outcome — it must not time out while the download runs.
@@ -1763,7 +1867,7 @@ public partial class ServerModsViewModel : ObservableObject
             if (version == null || version.Files.Count == 0)
             {
                 Notify(Localizer.Get("Msg_NoCompatibleVersion"), failed: true);
-                return;
+                return false;
             }
 
             var file = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.First();
@@ -1773,17 +1877,11 @@ public partial class ServerModsViewModel : ObservableObject
             // The file name comes from the Modrinth API, so the join goes through the one
             // place that keeps it inside the folder.
             var destPath = AtomicDownload.PathIn(modsFolder, file.Filename);
+            var replacesAFile = File.Exists(destPath);
 
-            // If the same mod is already present but disabled, remove the disabled copy first so we
-            // don't end up with two files (a new enabled one + an old disabled one) that then clash
-            // when toggling. The download below overwrites any enabled copy of the same name.
-            var disabledPath = destPath + ".disabled";
-            try { if (File.Exists(disabledPath)) File.Delete(disabledPath); }
-            catch { /* best-effort */ }
-
-            // The same project already here under another file name — another version of it. Found
-            // before downloading, while the folder still holds only what the user had.
-            var previous = ReplacedBy(await ProjectByPathAsync(modsFolder), version.ProjectId, destPath);
+            // Which project each jar already here is. Found before downloading, while the folder
+            // still holds only what the user had.
+            var projectByPath = await ProjectByPathAsync(modsFolder);
 
             Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), file.Filename),
                 failed: false, transient: true);
@@ -1792,18 +1890,17 @@ public partial class ServerModsViewModel : ObservableObject
             await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512, file.Hashes?.Sha1);
 
             // Installing a second version beside the first made the loader refuse to start with
-            // "duplicate mod". The new one replaces the old, the way an update does — and like an
-            // update, a jar the running server holds open means nothing changes.
-            foreach (var old in previous)
+            // "duplicate mod". The new one replaces every other copy — another version, a disabled
+            // one, one the store does not know — the way an update does; and like an update, a jar
+            // the running server holds open means nothing changes.
+            var others = ContentReplacement.OthersOf(modsFolder, destPath, version.ProjectId, projectByPath,
+                _manifests.Read);
+            var (result, removed) = ContentReplacement.RemoveAllOrNothing(others, replacesAFile ? null : destPath);
+            if (result == ContentReplacement.RemoveResult.Locked)
             {
-                try { File.Delete(old); }
-                catch
-                {
-                    try { File.Delete(destPath); } catch { /* best-effort */ }
-                    RefreshInstalledMods();
-                    Notify(Localizer.Get("Msg_UpdateNeedsStop"), failed: true);
-                    return;
-                }
+                RefreshInstalledMods();
+                Notify(Localizer.Get("Msg_UpdateNeedsStop"), failed: true);
+                return false;
             }
 
             // The libraries it needs, in the same click. Almost every Fabric mod declares at least
@@ -1815,18 +1912,21 @@ public partial class ServerModsViewModel : ObservableObject
             // A dependency with no build for this Minecraft version is not an install failure — the
             // mod is on disk — but it is the reason the server will not start, so it stays on screen
             // instead of fading away with the success message.
+            var removedText = removed.Count > 0 ? " " + RemovedText(removed) : string.Empty;
             if (unresolved.Count > 0)
-                Notify(string.Format(Localizer.Get("Msg_DepUnresolvedFmt"), string.Join(", ", unresolved)),
+                Notify(string.Format(Localizer.Get("Msg_DepUnresolvedFmt"), string.Join(", ", unresolved)) + removedText,
                     failed: true);
             else
-                Notify(extra == 0
+                Notify((extra == 0
                         ? Localizer.Get("Msg_ModInstalled")
-                        : string.Format(Localizer.Get("Msg_ModInstalledWithDepsFmt"), extra),
+                        : string.Format(Localizer.Get("Msg_ModInstalledWithDepsFmt"), extra)) + removedText,
                     failed: false);
+            return true;
         }
         catch (Exception ex)
         {
             Notify(string.Format(Localizer.Get("Msg_InstallErrorFmt"), ex.Message), failed: true);
+            return false;
         }
         finally
         {

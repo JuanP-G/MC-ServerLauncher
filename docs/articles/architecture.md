@@ -853,6 +853,21 @@ answer was for something else. **Update all** walks them one after another throu
 row's button uses, with the list disabled meanwhile; a jar in use stops the batch, because it means
 the server is running and every other one would fail the same way.
 
+**Updating or reinstalling leaves one copy of the mod: the new one.** `ContentReplacement` decides which other
+jars are the same mod: those Modrinth puts in the same project, those that give themselves the same id
+(`ContentManifest.Manifest.Id`: Fabric's `id`, the first `modId` in `mods.toml`, a plugin's `name`; not
+`provides` aliases or anything nested, because a mod carrying `fabric-api` inside is not `fabric-api`) and the
+new name with `.disabled`. The id is read from the file itself, so it works offline and for jars the store does
+not know; before, when `GetVersionsByHashAsync` did not answer, the old version silently stayed. They go **all
+or none**: each is first renamed to `*.mcsl-removing`, and if one is in use (the server holds it open) the rest
+are put back and the new download is withdrawn — unless it overwrote a file of the same name, since it is then
+the only copy. Anything left renamed is swept on the next refresh (`SweepLeftovers`). What was removed is named
+in the notice. The Crossplay, Hydraulic and MultiVersion installers go through the same thing
+(`ContentInstall.InstallReplacingAsync`), by id only, because Floodgate for Paper and Hydraulic come from
+GeyserMC and Modrinth does not know them; Hydraulic also skips Fabric API when an enabled one is there.
+`ContentManifestCache` keeps what was read from each jar by path, size and write time, like `FileHashCache`, so
+**Update all** does not reopen the whole folder for every mod.
+
 ## Localization
 
 All user-facing text lives in `Resources/Strings.resx` (Spanish, the neutral/base language) plus
