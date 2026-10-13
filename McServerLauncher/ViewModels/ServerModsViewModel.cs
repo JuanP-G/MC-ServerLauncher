@@ -651,6 +651,9 @@ public partial class ServerModsViewModel : ObservableObject
 
         // After the scan, so a search typed before a rescan still applies to what is there now.
         RebuildVisibleInstalled();
+
+        // Whatever changed the folder may have changed what can be cleaned up.
+        RescanCleanup();
     }
 
     /// <summary>
@@ -1231,6 +1234,9 @@ public partial class ServerModsViewModel : ObservableObject
             {
                 _pendingUpdates.Remove(PendingKey(mod.FilePath));
                 mod.Update = null;
+
+                // The month it has been off does not start again because it was updated meanwhile.
+                if (wasDisabled) CarryDisabledDate(mod.FilePath, update.FileName);
             }
             return (outcome, null, removed);
         }
@@ -1308,7 +1314,11 @@ public partial class ServerModsViewModel : ObservableObject
         var newExt = mod.IsEnabled ? ".disabled" : "";
         var newFile = mod.FilePath.Replace(".jar.disabled", ".jar") + newExt;
 
-        try { File.Move(mod.FilePath, newFile); }
+        try
+        {
+            File.Move(mod.FilePath, newFile);
+            RecordToggle(newFile, nowEnabled: !mod.IsEnabled);
+        }
         catch { /* ignore; the refresh below resyncs the toggle with the real file state */ }
         RefreshInstalledMods();
     }
@@ -1668,6 +1678,10 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>Loads the first page of mods the first time the Mods tab is shown.</summary>
     public void EnsureLoaded()
     {
+        // Every time the tab is shown, not just the first: what was off for 29 days yesterday may
+        // be worth suggesting today.
+        ArmCleanup();
+
         if (_hasLoadedOnce) return;
         _ = LoadPageAsync(append: false, CancellationToken.None);
     }

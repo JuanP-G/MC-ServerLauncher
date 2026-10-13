@@ -584,6 +584,20 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Msg_UpdateAllRemovedFmt" xml:space="preserve"><value>{0} anciennes versions ou copies en double ont été supprimées.</value></data>
   <data name="Msg_RemovedOneFmt" xml:space="preserve"><value>{0} a été supprimé.</value></data>
   <data name="Msg_RemovedManyFmt" xml:space="preserve"><value>{0} fichiers ont été supprimés : {1}.</value></data>
+  <data name="Cleanup_Title" xml:space="preserve"><value>Le serveur n'a plus besoin de ceci. Le retirer le garde propre et le fait démarrer plus vite.</value></data>
+  <data name="Cleanup_OrphanRemovedOneFmt" xml:space="preserve"><value>Seul {0} l'utilisait, et il n'est plus installé.</value></data>
+  <data name="Cleanup_OrphanRemovedManyFmt" xml:space="preserve"><value>{0} l'utilisaient, et ils ne sont plus installés.</value></data>
+  <data name="Cleanup_OrphanChainFmt" xml:space="preserve"><value>Seul {0} l'utilisait, et il n'est pas nécessaire non plus.</value></data>
+  <data name="Cleanup_OrphanNoMod" xml:space="preserve"><value>Aucun mod installé n'en a besoin.</value></data>
+  <data name="Cleanup_OrphanNoPlugin" xml:space="preserve"><value>Aucun plugin installé n'en a besoin.</value></data>
+  <data name="Cleanup_DisabledSinceFmt" xml:space="preserve"><value>Désactivé depuis le {0} · {1} jours</value></data>
+  <data name="Cleanup_DisabledAtLeastFmt" xml:space="preserve"><value>Désactivé au moins depuis le {0} · {1} jours</value></data>
+  <data name="Cleanup_DateFormat" xml:space="preserve"><value>d MMMM</value></data>
+  <data name="Cleanup_NotNow" xml:space="preserve"><value>Pas maintenant</value></data>
+  <data name="Cleanup_RemoveSelectedOne" xml:space="preserve"><value>Retirer 1 sélectionné</value></data>
+  <data name="Cleanup_RemoveSelectedFmt" xml:space="preserve"><value>Retirer {0} sélectionnés</value></data>
+  <data name="Cleanup_RemovedFmt" xml:space="preserve"><value>Retirés : {0}.</value></data>
+  <data name="Cleanup_FailedFmt" xml:space="preserve"><value>Impossible de retirer ({0}) : le serveur les utilise. Arrête le serveur et réessaie.</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Impossible de mettre à jour : {0}</value></data>
   <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Arrête le serveur avant de mettre à jour (l'ancien fichier est utilisé).</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Mettre à jour vers {0}</value></data>

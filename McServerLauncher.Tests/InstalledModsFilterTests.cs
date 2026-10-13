@@ -159,9 +159,10 @@ public class InstalledModsFilterTests : IDisposable
         var start = markup.IndexOf("<!-- Right: installed -->", StringComparison.Ordinal);
         Assert.True(start >= 0, "el panel de instalados ya no está en ServerModsView.axaml");
         var panel = markup[start..];
-        var template = Regex.Match(panel, @"<DataTemplate[\s\S]*?</DataTemplate>").Value;
+        // Row templates bind to their rows, not to the panel; the column has more than one of them.
+        var outside = Regex.Replace(panel, @"<DataTemplate[\s\S]*?</DataTemplate>", "");
 
-        foreach (Match m in Regex.Matches(panel.Replace(template, ""), @"\{Binding !{0,2}([A-Za-z0-9_.]+)"))
+        foreach (Match m in Regex.Matches(outside, @"\{Binding !{0,2}([A-Za-z0-9_.]+)"))
         {
             var type = typeof(ServerModsViewModel);
             foreach (var part in m.Groups[1].Value.Split('.'))

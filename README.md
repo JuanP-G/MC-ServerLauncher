@@ -175,6 +175,9 @@ When it opens again, **What's new** tells you what changed. It works the same on
   or with **Update all**. **No junk left behind**: the old version and any other copy of the same mod (a
   duplicate under another name, a disabled copy) are removed, offline too, and the app tells you which files
   went.
+- **Suggested clean-up** 🧹 — the app points out what is no longer needed: **libraries no mod uses** (with the
+  reason, e.g. "only Litematica used it, and it's gone") and **mods switched off for over a month**. It only
+  suggests: you tick, press, and they go; "Not now" hides it for 30 days.
 - **Send your friends a ready-made modpack** 📦 — one button zips the mods with instructions in their language.
   Mods that only do anything on the server (Geyser, Floodgate, a backup mod) are **left out automatically**, and
   the app tells you which. The pack carries a **script for Windows, Linux and macOS** that finds the mods
@@ -321,7 +324,7 @@ Built with **Avalonia / .NET 9**. The Windows installer is **x64 only** (Inno Se
 
 **Data:** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux and macOS):
 `servers.json`, `settings.json`, the installed `java\`, the console `logs\` (kept 14 days, at most 50 MB a day), the store's
-`cache\`, the `playit-agent\` binary, the `instance.lock` that keeps the app to one running copy, and, on
+`cache\`, what the clean-up panel remembers in `content\`, the `playit-agent\` binary, the `instance.lock` that keeps the app to one running copy, and, on
 Linux/macOS, `.secret.key`. Each server keeps its backups in its own `backups\` folder.
 
 **Privacy:** nothing is sent anywhere to be collected — there is no telemetry. What stays on this computer:

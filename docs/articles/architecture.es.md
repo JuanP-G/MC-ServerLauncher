@@ -113,6 +113,8 @@ Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`
 - `cache\images\` y `cache\store\` — las cachés en disco de la tienda: iconos y capturas de la
   galería (`ImageCache`, se podan a los 30 días) y las respuestas de la API (`StoreCache`). Ambas son
   prescindibles; borrarlas cuesta unas cuantas peticiones y nada más.
+- `content\<serverId>\ledger.json` — lo que el panel de limpieza recuerda de los mods de cada servidor:
+  cuándo se apagó cada uno, quién necesitaba cada librería y los «Ahora no» (`ContentLedger`).
 - `playit-agent\` — el binario oficial `playitd` de Playit, descargado una vez y fijado a la versión
   que registra la app (`PlayitAgentRunner`).
 - `instance.lock` — el bloqueo exclusivo de archivo que mantiene la app en una sola copia por usuario
@@ -902,6 +904,29 @@ MultiVersion pasan por lo mismo (`ContentInstall.InstallReplacingAsync`), solo p
 Paper e Hydraulic vienen de GeyserMC y Modrinth no los conoce; Hydraulic además no descarga Fabric API si ya
 hay una activa. `ContentManifestCache` guarda lo leído de cada jar por ruta, tamaño y fecha, como
 `FileHashCache`, para no reabrir toda la carpeta en cada mod de **Actualizar todas**.
+
+### Limpieza sugerida
+Un panel ámbar encima de la lista de instalados ofrece quitar lo que el servidor ya no necesita. **Solo lo
+propone**: cada fila viene marcada y espera al botón, y «Ahora no» la esconde 30 días. `CleanupAdvisor` decide
+(puro, probado sin red); la parte del panel (`ServerModsViewModel.Cleanup.cs`) reúne los datos y lo pinta.
+
+- **Librerías que nadie usa.** Una librería es lo que está en una lista escrita a mano (`KnownLibraryIds`) o lo
+  que Modrinth clasifica *solo* como `library`. La categoría sola no vale: JEI y malilib están las dos en
+  «library, utility», y proponer quitar JEI porque «ningún mod lo necesita» es justo la sugerencia que hace
+  perder la confianza. Lo que la sigue necesitando es todo lo que no es librería, **activado o no** (un mod
+  apagado puede volver a encenderse), a través de cualquier forma de mencionarla —
+  `ContentManifest.Manifest.References`: dependencias, `recommends`/`suggests`, `softdepend`, opcionales, el
+  bloque `dependencies:` de `paper-plugin.yml`— y de la lista de dependencias de Modrinth, siguiendo cadenas de
+  librerías. Una referencia se resuelve primero por la librería que *es* ese id (`OwnProvides`), luego por la
+  que representa (un módulo `fabric-*-vN` es fabric-api) y solo al final por la que lo lleva dentro: malilib
+  incluye tres módulos de Fabric API y, al revés, parecía usada por todo mod que usara esos módulos. Sin
+  respuesta de Modrinth no se sugiere ninguna librería.
+- **Mods apagados más de 30 días.** Apagar renombra el jar y no cambia sus fechas, así que el día se apunta.
+- **`ContentLedger`**, en `%APPDATA%\McServerLauncher\content\<id>\ledger.json`, guarda eso: cuándo se apagó
+  cada jar (los que ya estaban apagados cuentan desde que se ven por primera vez, y el panel dice «al menos
+  desde»), quién usaba cada librería la última vez —lo que permite decir «solo la usaba Litematica»— y los
+  «Ahora no». **Nada de esto se lee ni se escribe hasta que se abre la pestaña**: el panel se construye para
+  todos los servidores y en las pruebas, y no tiene por qué tocar los datos del usuario ni preguntar a Modrinth.
 
 ## Localización
 

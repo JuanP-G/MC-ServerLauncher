@@ -176,6 +176,9 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   uno en uno o con **Actualizar todas**. **No queda basura**: la versión vieja y cualquier otra copia del mismo
   mod (un duplicado con otro nombre, una copia desactivada) se borran, también sin conexión, y la app te dice
   qué archivos quitó.
+- **Limpieza sugerida** 🧹 — la app avisa de lo que ya sobra: **librerías que ningún mod usa** (con el motivo,
+  p. ej. «solo la usaba Litematica, que ya no está») y **mods apagados hace más de un mes**. Solo lo propone:
+  marcas, pulsas y se quita; «Ahora no» lo esconde 30 días.
 - **Manda a tus amigos un modpack listo** 📦 — un botón comprime los mods con instrucciones en su idioma. Los
   que solo hacen algo en el servidor (Geyser, Floodgate, un mod de copias) **se dejan fuera solos**, y la app
   te dice cuáles. El paquete lleva un **script para Windows, Linux y macOS** que encuentra las carpetas de
@@ -320,8 +323,8 @@ Hecha con **Avalonia / .NET 9**. El instalador de Windows es **solo x64** (Inno 
 **https://juanp-g.github.io/MC-ServerLauncher/docs/**.
 
 **Datos:** en `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` en Linux y macOS): `servers.json`,
-`settings.json`, el `java\` que instala la app, los `logs\` de consola (14 días, 50 MB al día como mucho), la `cache\` de la tienda, el
-agente en `playit-agent\`, el `instance.lock` que mantiene una sola copia abierta y, en Linux/macOS,
+`settings.json`, el `java\` que instala la app, los `logs\` de consola (14 días, 50 MB al día como mucho), la `cache\` de la tienda, lo que recuerda
+el panel de limpieza en `content\`, el agente en `playit-agent\`, el `instance.lock` que mantiene una sola copia abierta y, en Linux/macOS,
 `.secret.key`. Cada servidor guarda sus copias en su carpeta `backups\`.
 
 **Privacidad:** no se envía nada a ningún sitio para recogerlo — no hay telemetría. Lo que queda en este

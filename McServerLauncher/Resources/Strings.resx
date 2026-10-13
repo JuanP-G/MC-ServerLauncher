@@ -630,6 +630,20 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_UpdateAllRemovedFmt" xml:space="preserve"><value>Se borraron {0} versiones antiguas o copias repetidas.</value></data>
   <data name="Msg_RemovedOneFmt" xml:space="preserve"><value>Se borró {0}.</value></data>
   <data name="Msg_RemovedManyFmt" xml:space="preserve"><value>Se borraron {0} archivos: {1}.</value></data>
+  <data name="Cleanup_Title" xml:space="preserve"><value>Esto ya no hace falta en el servidor. Quitarlo lo deja más limpio y hace que arranque antes.</value></data>
+  <data name="Cleanup_OrphanRemovedOneFmt" xml:space="preserve"><value>Solo la usaba {0}, que ya no está instalado.</value></data>
+  <data name="Cleanup_OrphanRemovedManyFmt" xml:space="preserve"><value>La usaban {0}, que ya no están instalados.</value></data>
+  <data name="Cleanup_OrphanChainFmt" xml:space="preserve"><value>Solo la usaba {0}, que tampoco hace falta.</value></data>
+  <data name="Cleanup_OrphanNoMod" xml:space="preserve"><value>Ningún mod instalado la necesita.</value></data>
+  <data name="Cleanup_OrphanNoPlugin" xml:space="preserve"><value>Ningún plugin instalado la necesita.</value></data>
+  <data name="Cleanup_DisabledSinceFmt" xml:space="preserve"><value>Apagado desde el {0} · {1} días</value></data>
+  <data name="Cleanup_DisabledAtLeastFmt" xml:space="preserve"><value>Apagado al menos desde el {0} · {1} días</value></data>
+  <data name="Cleanup_DateFormat" xml:space="preserve"><value>d 'de' MMMM</value></data>
+  <data name="Cleanup_NotNow" xml:space="preserve"><value>Ahora no</value></data>
+  <data name="Cleanup_RemoveSelectedOne" xml:space="preserve"><value>Quitar 1 seleccionado</value></data>
+  <data name="Cleanup_RemoveSelectedFmt" xml:space="preserve"><value>Quitar {0} seleccionados</value></data>
+  <data name="Cleanup_RemovedFmt" xml:space="preserve"><value>Quitados: {0}.</value></data>
+  <data name="Cleanup_FailedFmt" xml:space="preserve"><value>No se pudieron quitar ({0}): el servidor los está usando. Detén el servidor y vuelve a intentarlo.</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>No se pudo actualizar: {0}</value></data>
   <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Detén el servidor antes de actualizar (el archivo antiguo está en uso).</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Actualizar a {0}</value></data>
