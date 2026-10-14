@@ -58,7 +58,7 @@ public class MultiVersionService
             var version = await _modrinth.GetLatestProjectVersionAsync(projectId, config.Type, config.GameVersion, ct);
             var file = version?.Files.FirstOrDefault();
             if (file is null)
-                throw new InvalidOperationException(string.Format(
+                throw new UserFacingException(string.Format(
                     Localizer.Get("Msg_CrossplayNoVersionFmt"), projectId, config.GameVersion, config.Type));
 
             log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), projectId, version!.VersionNumber));

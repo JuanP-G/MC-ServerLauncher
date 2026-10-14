@@ -45,7 +45,7 @@ public static class AtomicDownload
     {
         var name = Path.GetFileName(remoteFileName);
         if (string.IsNullOrWhiteSpace(name))
-            throw new InvalidOperationException(
+            throw new UserFacingException(
                 string.Format(Localizer.Get("Msg_BadRemoteFileNameFmt"), remoteFileName));
 
         return Path.Combine(folder, name);

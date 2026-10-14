@@ -136,7 +136,7 @@ public static class SelfUpdater
     [SupportedOSPlatform("linux")]
     private static void ApplyLinux(string package)
     {
-        var target = AppImagePath ?? throw new InvalidOperationException(Localizer.Get("Msg_UpdateNotAppImage"));
+        var target = AppImagePath ?? throw new UserFacingException(Localizer.Get("Msg_UpdateNotAppImage"));
 
         // Renaming over a running AppImage is safe: the running process keeps the old inode alive
         // and carries on from it, while the directory entry already points at the new build.
@@ -160,8 +160,9 @@ public static class SelfUpdater
             try { if (File.Exists(staged)) File.Delete(staged); } catch { /* best-effort */ }
             // The AppImage in use was never touched, so the app still runs: say why and let the
             // caller offer the download page instead.
-            throw new InvalidOperationException(
-                string.Format(Localizer.Get("Msg_UpdateCannotReplaceFmt"), target, ex.Message), ex);
+            throw new UserFacingException(
+                string.Format(Localizer.Get("Msg_UpdateCannotReplaceFmt"),
+                    target, ErrorMessages.Describe(ex)), ex);
         }
 
         Process.Start(new ProcessStartInfo { FileName = target, UseShellExecute = false });
@@ -186,7 +187,7 @@ public static class SelfUpdater
     [SupportedOSPlatform("macos")]
     private static void ApplyMacOs(string dmg)
     {
-        var bundle = AppBundlePath ?? throw new InvalidOperationException(Localizer.Get("Msg_UpdateNotBundle"));
+        var bundle = AppBundlePath ?? throw new UserFacingException(Localizer.Get("Msg_UpdateNotBundle"));
 
         // A bundle can't replace itself from inside while it runs, so a detached script does it
         // once this process is gone. It swaps by rename and puts the old bundle back if the copy

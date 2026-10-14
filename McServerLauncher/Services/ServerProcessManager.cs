@@ -72,18 +72,19 @@ public class ServerProcessManager
             // to actually die before returning, so this should be rare; still, fail loudly instead
             // of silently no-op-ing if something calls Start() while a stop is still in flight.
             if (IsRunning)
-                throw new InvalidOperationException(Localizer.Get("Msg_ServerStillStopping"));
+                throw new UserFacingException(Localizer.Get("Msg_ServerStillStopping"));
 
             var isForgeArgs = !string.IsNullOrWhiteSpace(config.ForgeArgs);
             if (isForgeArgs)
             {
                 if (ResolveForgeArgsFile(config) is null)
-                    throw new FileNotFoundException(
-                        $"Forge launch args not found under {Path.Combine(config.FolderPath, "libraries")}");
+                    throw new UserFacingException(string.Format(Localizer.Get("Msg_ForgeArgsMissingFmt"),
+                        Path.Combine(config.FolderPath, "libraries")));
             }
             else if (!File.Exists(config.JarFullPath))
             {
-                throw new FileNotFoundException($"Server .jar not found: {config.JarFullPath}");
+                throw new UserFacingException(string.Format(Localizer.Get("Msg_ServerJarMissingFmt"),
+                    config.JarFullPath));
             }
 
             var args = BuildJavaArguments(config, new JavaService().GetMajorVersion(config.JavaPath));

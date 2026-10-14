@@ -1,4 +1,5 @@
 using System.IO;
+using McServerLauncher.Localization;
 using SkiaSharp;
 
 namespace McServerLauncher.Services;
@@ -25,7 +26,7 @@ public class ServerIconService
     {
         using var input = File.OpenRead(sourceImagePath);
         using var original = SKBitmap.Decode(input)
-            ?? throw new InvalidOperationException("Could not read the selected image.");
+            ?? throw new UserFacingException(Localizer.Get("Msg_IconUnreadable"));
 
         // Centered square crop to avoid distortion.
         var side = Math.Min(original.Width, original.Height);

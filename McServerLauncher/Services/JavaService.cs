@@ -376,8 +376,8 @@ public partial class JavaService
             if (!string.IsNullOrEmpty(link)) break;
         }
         if (string.IsNullOrEmpty(link))
-            throw new InvalidOperationException(
-                $"No Java {major} download was found for {os}/{string.Join(" or ", archs)}.");
+            throw new UserFacingException(string.Format(Localizer.Get("Msg_JavaNoDownloadFmt"),
+                major, $"{os}/{string.Join("/", archs)}"));
 
         Directory.CreateDirectory(ManagedRoot);
         var isZip = OperatingSystem.IsWindows();
@@ -389,7 +389,7 @@ public partial class JavaService
         // publishes a checksum for every binary, so a missing one is a broken download path, not a
         // normal condition — the same rule the Forge installer already follows.
         if (string.IsNullOrEmpty(checksum))
-            throw new InvalidOperationException(Localizer.Get("Msg_JavaNoChecksum"));
+            throw new UserFacingException(Localizer.Get("Msg_JavaNoChecksum"));
 
         log?.Report(Localizer.Get("Msg_JavaDownloading"));
         using (var resp = await Http.GetAsync(link, HttpCompletionOption.ResponseHeadersRead, ct))
@@ -421,7 +421,7 @@ public partial class JavaService
         try { File.Delete(archivePath); } catch { /* doesn't matter */ }
 
         var javaExe = FindJavaExe(target)
-            ?? throw new InvalidOperationException(Localizer.Get("Msg_JavaExeNotFound"));
+            ?? throw new UserFacingException(Localizer.Get("Msg_JavaExeNotFound"));
 
         // Make sure the java binary is executable on Unix (tar usually preserves this, but be safe).
         if (!OperatingSystem.IsWindows())

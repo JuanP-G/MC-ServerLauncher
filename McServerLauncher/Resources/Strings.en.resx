@@ -337,6 +337,22 @@
   <data name="Msg_CannotKill" xml:space="preserve"><value>[Error] Could not close the process: {0}</value></data>
   <data name="Msg_PortStillBusy" xml:space="preserve"><value>[Error] Port {0} is still busy. Try again in a few seconds.</value></data>
   <data name="Msg_ErrorFmt" xml:space="preserve"><value>[Error] {0}</value></data>
+  <data name="Err_FileInUse" xml:space="preserve"><value>Another program is using a file this needs (usually the running server or an antivirus). Close it and try again.</value></data>
+  <data name="Err_NoPermission" xml:space="preserve"><value>There is no permission to read or write in that folder. Choose another one or give the app access.</value></data>
+  <data name="Err_NotFound" xml:space="preserve"><value>A file or folder this needs can't be found; it may have been moved or deleted.</value></data>
+  <data name="Err_DiskFull" xml:space="preserve"><value>The disk is full. Free some space and try again.</value></data>
+  <data name="Err_NoConnection" xml:space="preserve"><value>Couldn't connect. Check the internet connection and try again.</value></data>
+  <data name="Err_HttpStatusFmt" xml:space="preserve"><value>The service answered with an error (HTTP {0}). Try again later.</value></data>
+  <data name="Err_Timeout" xml:space="preserve"><value>The service took too long to answer. Try again.</value></data>
+  <data name="Err_Cancelled" xml:space="preserve"><value>It was cancelled before it finished.</value></data>
+  <data name="Err_Damaged" xml:space="preserve"><value>A file is damaged or not in the expected format.</value></data>
+  <data name="Err_Playit" xml:space="preserve"><value>Playit refused the request. Try again in a moment.</value></data>
+  <data name="Err_Unexpected" xml:space="preserve"><value>Something failed unexpectedly. The technical details are in the app's log (the logs folder in the app's data).</value></data>
+  <data name="Msg_JavaNoDownloadFmt" xml:space="preserve"><value>There is no Java {0} download for this system ({1}).</value></data>
+  <data name="Msg_ServerJarMissingFmt" xml:space="preserve"><value>The server's .jar can't be found: {0}</value></data>
+  <data name="Msg_ForgeArgsMissingFmt" xml:space="preserve"><value>Forge's launch arguments can't be found under {0}. Reinstall the loader from the server's settings.</value></data>
+  <data name="Msg_IconUnreadable" xml:space="preserve"><value>The chosen image can't be read. Try a PNG or a JPG.</value></data>
+  <data name="Msg_SystemctlFailedFmt" xml:space="preserve"><value>systemctl ended with code {0}; the details are in the app's log.</value></data>
   <data name="Msg_ServerStillStopping" xml:space="preserve"><value>The server is still stopping; wait a few seconds and try again.</value></data>
   <data name="Msg_CreatingTunnel" xml:space="preserve"><value>[Playit] Creating Minecraft Java tunnel for port {0}...</value></data>
   <data name="Msg_TunnelCreated" xml:space="preserve"><value>[Playit] Tunnel created successfully. The address will appear shortly.</value></data>

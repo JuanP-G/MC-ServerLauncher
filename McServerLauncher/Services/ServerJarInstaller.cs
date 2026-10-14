@@ -102,7 +102,8 @@ public class ServerJarInstaller
             {
                 log?.Report(Localizer.Get("Msg_PaperResolving"));
                 var build = await _paper.GetLatestBuildAsync(mcVersion, ct)
-                    ?? throw new InvalidOperationException(string.Format(Localizer.Get("Msg_PaperNoBuild"), mcVersion));
+                    ?? throw new UserFacingException(string.Format(Localizer.Get("Msg_PaperNoBuild"),
+                        mcVersion));
 
                 const string jarName = "paper-server.jar";
                 await _paper.DownloadPaperServerAsync(build, Path.Combine(folder, jarName), log, ct);
@@ -113,7 +114,8 @@ public class ServerJarInstaller
             {
                 log?.Report(Localizer.Get("Msg_PurpurResolving"));
                 var build = await _purpur.GetLatestBuildAsync(mcVersion, ct)
-                    ?? throw new InvalidOperationException(string.Format(Localizer.Get("Msg_PurpurNoBuild"), mcVersion));
+                    ?? throw new UserFacingException(string.Format(Localizer.Get("Msg_PurpurNoBuild"),
+                        mcVersion));
 
                 const string jarName = "purpur-server.jar";
                 await _purpur.DownloadPurpurServerAsync(build, Path.Combine(folder, jarName), log, ct);
@@ -125,7 +127,8 @@ public class ServerJarInstaller
                 log?.Report(Localizer.Get("Msg_ForgeResolving"));
                 var forgeVersion = await _mods.GetRecommendedForgeVersionAsync(mcVersion, ct);
                 if (string.IsNullOrEmpty(forgeVersion))
-                    throw new InvalidOperationException(string.Format(Localizer.Get("Msg_ForgeNoVersion"), mcVersion));
+                    throw new UserFacingException(string.Format(Localizer.Get("Msg_ForgeNoVersion"),
+                        mcVersion));
 
                 var forge = await _mods.InstallForgeServerAsync(folder, mcVersion, forgeVersion, javaPath, log, ct);
 
@@ -139,14 +142,14 @@ public class ServerJarInstaller
                 if (!string.IsNullOrEmpty(forge.JarFile))
                     return new InstallResult(forge.JarFile!, forgeVersion, string.Empty);   // old Forge
 
-                throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallNoOutput"));
+                throw new UserFacingException(Localizer.Get("Msg_ForgeInstallNoOutput"));
             }
 
             case ServerType.NeoForge:
             {
                 log?.Report(Localizer.Get("Msg_NeoForgeResolving"));
                 var choice = await _mods.GetNeoForgeVersionAsync(mcVersion, ct)
-                    ?? throw new InvalidOperationException(
+                    ?? throw new UserFacingException(
                         string.Format(Localizer.Get("Msg_NeoForgeNoVersion"), mcVersion));
 
                 // Said before installing, not after: for six Minecraft versions a pre-release was
@@ -156,7 +159,7 @@ public class ServerJarInstaller
 
                 var neo = await _mods.InstallNeoForgeServerAsync(folder, choice.Version, javaPath, log, ct);
                 if (neo.ArgsId is null)
-                    throw new InvalidOperationException(Localizer.Get("Msg_NeoForgeInstallNoOutput"));
+                    throw new UserFacingException(Localizer.Get("Msg_NeoForgeInstallNoOutput"));
 
                 if (writeLoaderJvmArgs) _creation.WriteForgeUserJvmArgs(folder, minRamGb, maxRamGb);
                 return new InstallResult(string.Empty, choice.Version, neo.ArgsId);
@@ -172,7 +175,7 @@ public class ServerJarInstaller
             default:
                 // Reached only by a type added to the enum and not here. Saying so beats installing
                 // the vanilla jar and letting the user find out their pick was ignored.
-                throw new InvalidOperationException(
+                throw new UserFacingException(
                     string.Format(Localizer.Get("Msg_TypeNotInstallableFmt"), type));
         }
     }

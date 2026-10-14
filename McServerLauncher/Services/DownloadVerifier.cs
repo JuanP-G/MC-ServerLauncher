@@ -25,7 +25,7 @@ public static class DownloadVerifier
         if (!string.Equals(actualHex, expectedHex, StringComparison.OrdinalIgnoreCase))
         {
             TryDelete(filePath);
-            throw new InvalidOperationException(
+            throw new UserFacingException(
                 string.Format(Localizer.Get("Msg_ChecksumMismatchFmt"), AtomicDownload.DisplayName(filePath)));
         }
     }

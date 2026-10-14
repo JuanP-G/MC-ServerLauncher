@@ -457,7 +457,7 @@ public class PlayitApiService
         TunnelEdition edition = TunnelEdition.Java, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(key))
-            throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
+            throw new UserFacingException(Localizer.Get("Msg_MissingWriteKey"));
 
         var (tunnelType, portType) = Wire(edition);
 
@@ -510,7 +510,7 @@ public class PlayitApiService
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(key))
-            throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
+            throw new UserFacingException(Localizer.Get("Msg_MissingWriteKey"));
 
         var (_, tunnels) = await GetRunDataAsync(key, ct);
         var match = Match(tunnels, localPort, udp);
@@ -574,7 +574,7 @@ public class PlayitApiService
     public async Task RenameTunnelAsync(string key, string tunnelId, string name, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(key))
-            throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
+            throw new UserFacingException(Localizer.Get("Msg_MissingWriteKey"));
         if (string.IsNullOrWhiteSpace(tunnelId) || string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("A tunnel id and a name are both needed.");
 
@@ -589,7 +589,7 @@ public class PlayitApiService
     public async Task DeleteTunnelAsync(string key, string tunnelId, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(key))
-            throw new InvalidOperationException(Localizer.Get("Msg_MissingWriteKey"));
+            throw new UserFacingException(Localizer.Get("Msg_MissingWriteKey"));
         if (string.IsNullOrWhiteSpace(tunnelId))
             throw new ArgumentException("A tunnel id is needed.");
 

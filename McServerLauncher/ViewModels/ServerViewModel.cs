@@ -777,7 +777,10 @@ public partial class ServerViewModel : ObservableObject
         // Through the normal Stop, so an automatic shutdown saves the world exactly like a manual
         // one — the last thing anyone wants from an unattended stop is a missing backup.
         try { await Stop(); }
-        catch (Exception ex) { OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message)); }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+        }
         finally
         {
             _idleStopping = false;
@@ -1165,7 +1168,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
         }
     }
 
@@ -1479,7 +1482,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
         }
         finally
         {
@@ -1540,7 +1543,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
         }
     }
 
@@ -1585,7 +1588,8 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_JavaPrepareFailStart"), required, ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_JavaPrepareFailStart"),
+                required, ErrorMessages.Describe(ex)));
         }
     }
 
@@ -1645,7 +1649,7 @@ public partial class ServerViewModel : ObservableObject
             // A check that cannot run is not a reason to refuse a start: the server may well be
             // fine, and the loader will say so far better than a guess would. Said out loud, though
             // — a silent skip here is how the old code came to claim nothing was ever missing.
-            OnConsoleLine(string.Format(Localizer.Get("Msg_DepsCheckFailedFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_DepsCheckFailedFmt"), ErrorMessages.Describe(ex)));
             return true;
         }
 
@@ -1764,7 +1768,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
             return false;
         }
     }
@@ -1829,7 +1833,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_CannotKill"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_CannotKill"), ErrorMessages.Describe(ex)));
             return false;
         }
 
@@ -1866,7 +1870,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
         }
     }
 
@@ -2090,7 +2094,7 @@ public partial class ServerViewModel : ObservableObject
         catch (Exception ex)
         {
             // A failed backup must never take the server down with it.
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
         }
     }
 
@@ -2200,7 +2204,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ErrorMessages.Describe(ex)));
         }
     }
 
@@ -2272,7 +2276,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ErrorMessages.Describe(ex)));
         }
     }
 
@@ -2309,7 +2313,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ErrorMessages.Describe(ex)));
         }
         finally
         {
@@ -2339,7 +2343,7 @@ public partial class ServerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ErrorMessages.Describe(ex)));
         }
     }
 

@@ -60,7 +60,7 @@ public class MinecraftVersionService
             !server.TryGetProperty("url", out var url) ||
             url.GetString() is not { Length: > 0 } serverUrl)
         {
-            throw new InvalidOperationException(
+            throw new UserFacingException(
                 string.Format(Localizer.Get("Msg_NoServerDownload"), version.Id));
         }
 

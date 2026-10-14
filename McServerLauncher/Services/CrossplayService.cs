@@ -208,7 +208,7 @@ public class CrossplayService
         var version = await _modrinth.GetLatestProjectVersionAsync(projectId, config.Type, config.GameVersion, ct);
         var file = version?.Files.FirstOrDefault();
         if (file is null)
-            throw new InvalidOperationException(string.Format(
+            throw new UserFacingException(string.Format(
                 Localizer.Get("Msg_CrossplayNoVersionFmt"), display, config.GameVersion, config.Type));
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), display, version!.VersionNumber));
@@ -229,7 +229,7 @@ public class CrossplayService
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Floodgate"));
 
         var artifact = await GeyserDownloadsApi.LatestAsync("floodgate", "spigot", ct)
-            ?? throw new InvalidOperationException(string.Format(
+            ?? throw new UserFacingException(string.Format(
                 Localizer.Get("Msg_CrossplayNoVersionFmt"), "Floodgate", "?", ServerType.Paper));
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Floodgate",

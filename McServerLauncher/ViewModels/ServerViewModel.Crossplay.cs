@@ -100,7 +100,7 @@ public partial class ServerViewModel
             // offered to install it again next time while servers.json still claimed it was there.
             Config.BedrockModContentEnabled = false;
             ConfigChanged?.Invoke();
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
         }
     }
 
@@ -133,7 +133,7 @@ public partial class ServerViewModel
             // Same as above: the failure has to survive the run that produced it.
             Config.MultiVersionEnabled = false;   // it did not happen; do not claim that it did
             ConfigChanged?.Invoke();
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
         }
     }
 
@@ -206,7 +206,7 @@ public partial class ServerViewModel
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
         }
     }
 
@@ -413,7 +413,7 @@ public partial class ServerViewModel
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ErrorMessages.Describe(ex)));
         }
     }
 
@@ -470,7 +470,8 @@ public partial class ServerViewModel
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockMoveFailedFmt"), ex.Message));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockMoveFailedFmt"),
+                ErrorMessages.Describe(ex)));
         }
     }
 }

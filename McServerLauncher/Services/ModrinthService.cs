@@ -321,7 +321,7 @@ public class ModrinthService
         string? expectedSha1 = null, IProgress<double>? progress = null, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(expectedSha512) && string.IsNullOrEmpty(expectedSha1))
-            throw new InvalidOperationException(string.Format(
+            throw new UserFacingException(string.Format(
                 Localizer.Get("Msg_ModNoChecksumFmt"), AtomicDownload.DisplayName(destinationPath)));
 
         using var response = await Http.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, ct);

@@ -82,7 +82,7 @@ public class HydraulicService
             var api = await _modrinth.GetLatestProjectVersionAsync(FabricApiProjectId, config.Type, config.GameVersion, ct);
             var apiFile = api?.Files.FirstOrDefault();
             if (apiFile is null)
-                throw new InvalidOperationException(string.Format(
+                throw new UserFacingException(string.Format(
                     Localizer.Get("Msg_CrossplayNoVersionFmt"), "Fabric API", config.GameVersion, config.Type));
 
             log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Fabric API", api!.VersionNumber));
@@ -92,7 +92,7 @@ public class HydraulicService
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Hydraulic"));
         var build = await GetLatestBuildAsync(ct)
-            ?? throw new InvalidOperationException(Localizer.Get("Msg_HydraulicNoBuild"));
+            ?? throw new UserFacingException(Localizer.Get("Msg_HydraulicNoBuild"));
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Hydraulic", "b" + build.Build));
 
@@ -110,7 +110,7 @@ public class HydraulicService
                     // jar is asked before it is kept.
                     var required = ReadRequiredMinecraft(part);
                     if (required is not null && !MinecraftRange.Satisfies(config.GameVersion, required))
-                        throw new InvalidOperationException(string.Format(
+                        throw new UserFacingException(string.Format(
                             Localizer.Get("Msg_HydraulicWrongVersionFmt"), config.GameVersion, required));
                 },
                 ct: ct));
