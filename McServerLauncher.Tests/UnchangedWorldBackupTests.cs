@@ -53,6 +53,20 @@ public class UnchangedWorldBackupTests : IDisposable
     [Fact]
     public void WithNoBackupAtAllItNeverIs() => Assert.False(_backups.IsUpToDate(Config()));
 
+    [Fact]
+    public async Task AServerThatTakesCommandsOverRconIsNeverTakenAsUntouched()
+    {
+        // A /fill sent over RCON changes the world with nobody joining and nothing typed in the app.
+        File.WriteAllLines(Path.Combine(_server, "server.properties"), ["enable-rcon=true"]);
+        var config = Config();
+        await _backups.CreateBackupAsync(config, "stop");
+        Rewrite("level.dat");
+
+        _backups.MarkUnchanged(config);
+
+        Assert.False(_backups.IsUpToDate(config));
+    }
+
     /// <summary>Reports synchronously, so the test can act at an exact step of the copy.</summary>
     private sealed class AtStep(string step, Action act) : IProgress<string>
     {

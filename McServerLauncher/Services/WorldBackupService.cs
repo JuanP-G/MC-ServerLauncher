@@ -411,15 +411,24 @@ public class WorldBackupService
     /// Records that the world as it is now counts as the last backup, without copying it again.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// For a server that ran with nobody playing and nothing typed that changes the world. Minecraft
     /// still writes on the way out — <c>level.dat</c> keeps the time it was last saved — so its files
     /// no longer match the backup, but nothing anybody would want back is in the difference. Does
     /// nothing when there is no backup to point at, so it can never stand in for a missing one.
+    /// </para>
+    /// <para>
+    /// Nor when the server takes commands over RCON (<c>enable-rcon=true</c>): a <c>/fill</c> sent
+    /// that way changes the world with nobody joining and nothing typed here, and only the copy can
+    /// tell. Other changes nobody joins to make — a farm in the spawn chunks, which tick with nobody
+    /// near, or a plugin on a timer — are small enough to wait for the next time somebody plays.
+    /// </para>
     /// </remarks>
     public virtual void MarkUnchanged(ServerConfig config)
     {
         try
         {
+            if (AcceptsRemoteCommands(config)) return;
             if (ReadState(config) is not { } state) return;
             if (!File.Exists(Path.Combine(BackupsDir(config), state.Zip))) return;
             var levelName = GetLevelName(config);
@@ -433,6 +442,10 @@ public class WorldBackupService
             // Best-effort: the next start just makes the copy it would have made anyway.
         }
     }
+
+    private bool AcceptsRemoteCommands(ServerConfig config) =>
+        _properties.Read(config.PropertiesPath).TryGetValue("enable-rcon", out var rcon)
+        && string.Equals(rcon.Trim(), "true", StringComparison.OrdinalIgnoreCase);
 
     private static BackupState? ReadState(ServerConfig config)
     {
