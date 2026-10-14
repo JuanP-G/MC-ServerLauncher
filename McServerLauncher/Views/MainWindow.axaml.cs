@@ -59,6 +59,10 @@ public partial class MainWindow : Window
 
     }
 
+    /// <summary>"See backups" on the newer-world warning: the backups tab, where one from the right version can be restored.</summary>
+    private void OnSeeBackupsClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) =>
+        ServerTabs.SelectedItem = BackupsTab;
+
     /// <summary>
     /// Optional minimize-to-tray (see settings): minimizing hides the window, so it leaves the taskbar
     /// and lives on only as the tray icon while the servers keep running. Also guarded by

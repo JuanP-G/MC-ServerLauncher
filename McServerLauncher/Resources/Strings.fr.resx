@@ -171,6 +171,14 @@
   <data name="Signal_Off" xml:space="preserve"><value>Serveur éteint</value></data>
   <data name="Signal_Transition" xml:space="preserve"><value>Changement d'état...</value></data>
   <data name="Signal_NoTunnel" xml:space="preserve"><value>Allumé sur votre PC, mais le tunnel Playit est éteint : personne ne peut rejoindre depuis Internet.</value></data>
+  <data name="World_NewerFmt" xml:space="preserve"><value>Ce monde a été sauvegardé par Minecraft {0} et le serveur est en {1}. L'ouvrir avec une version antérieure abîme ses chunks, donc il ne démarre pas.</value></data>
+  <data name="World_ChangeVersion" xml:space="preserve"><value>Changer de version</value></data>
+  <data name="World_SeeBackups" xml:space="preserve"><value>Voir les sauvegardes</value></data>
+  <data name="World_GoBackOfferFmt" xml:space="preserve"><value>Le monde est en {0} et le serveur en {1}. Au démarrage, la sauvegarde du {2} ({3}) sera utilisée.</value></data>
+  <data name="World_GoBackQuestionFmt" xml:space="preserve"><value>Restaurer la sauvegarde du {0} et démarrer ?</value></data>
+  <data name="World_GoBackLossFmt" xml:space="preserve"><value>Ce qui a été joué en {0} après cette sauvegarde n'y sera pas ; le monde actuel est sauvegardé avant.</value></data>
+  <data name="World_GoBackConfirm" xml:space="preserve"><value>Restaurer et démarrer</value></data>
+  <data name="Msg_WorldNewerFmt" xml:space="preserve"><value>[Launcher] Pas de démarrage : le monde a été sauvegardé par Minecraft {0} et ce serveur est en {1}. L'ouvrir avec une version antérieure laisse des chunks vides ou abîmés. Reviens à {0} ou restaure une sauvegarde faite avec {1}.</value></data>
   <data name="Signal_Accessible" xml:space="preserve"><value>Accessible</value></data>
   <data name="Cs_PortNote" xml:space="preserve"><value>Pour avoir plusieurs serveurs allumés en même temps, chacun doit utiliser un port différent.</value></data>
   <data name="Cs_Creating" xml:space="preserve"><value>Création du serveur...</value></data>

@@ -414,6 +414,18 @@ primero suelta el listener del encendido bajo demanda (tiene el puerto del servi
 
 1. **Puerto** — refresca puerto/info; si el puerto está ocupado, ofrece liberarlo (`PortService` +
    `TryFreePortAsync`). Un auto-reinicio no pregunta: se rinde y lo dice en la consola.
+   Al refrescar la info también se lee qué Minecraft guardó el mundo por última vez (`level.dat`,
+   `Data.Version.Name`, con `WorldVersionCheck`). Si es una versión posterior a la del servidor, el
+   arranque para aquí: Minecraft nunca baja de versión un mundo, y lo que una versión anterior no sabe
+   leer lo carga como aire y luego lo guarda así. La cabecera lo dice en rojo en cuanto se sabe, con
+   *Cambiar versión* y *Ver copias*, Iniciar queda desactivado (`CanStart`), y un Reiniciar o un
+   despertar lo dicen en la consola (`NewerWorldTests`). Las snapshots y las pre-releases no se pueden
+   comparar, así que nunca bloquean.
+   Subir de versión y volver a bajar se deshace con una copia: cada zip lleva su propio `level.dat`, y
+   `WorldVersionCheck.BackupFor` busca la más reciente que la versión del servidor sabe abrir. Entonces la
+   franja es azul, Iniciar sigue activo y al pulsarlo pregunta, en la propia franja, si restaurar esa
+   copia y arrancar (`GoBackAndStart`, una restauración normal, así que antes se guarda el mundo más
+   nuevo). Un despertar o un reinicio automático nunca cambian el mundo: se queda parado y dice por qué.
 2. **Ruta** — `TryFixRejectedPathAsync`: Paper y Purpur se niegan a arrancar desde una carpeta cuya
    ruta tiene un carácter que no saben manejar (`BukkitPathRule`), y la app ofrece renombrar la
    carpeta en vez de dejar que falle.
