@@ -657,6 +657,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Cleanup_DisabledSinceFmt" xml:space="preserve"><value>Apagado desde el {0} · {1} días</value></data>
   <data name="Cleanup_DisabledAtLeastFmt" xml:space="preserve"><value>Apagado al menos desde el {0} · {1} días</value></data>
   <data name="Cleanup_DateFormat" xml:space="preserve"><value>d 'de' MMMM</value></data>
+  <data name="Cleanup_DateWithYearFormat" xml:space="preserve"><value>d 'de' MMMM 'de' yyyy</value></data>
   <data name="Cleanup_NotNow" xml:space="preserve"><value>Ahora no</value></data>
   <data name="Cleanup_RemoveSelectedOne" xml:space="preserve"><value>Quitar 1 seleccionado</value></data>
   <data name="Cleanup_RemoveSelectedFmt" xml:space="preserve"><value>Quitar {0} seleccionados</value></data>

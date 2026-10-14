@@ -376,7 +376,11 @@ public class CleanupSuggestionsTests : IDisposable
         try
         {
             CultureInfo.CurrentUICulture = new CultureInfo("es-ES");
-            Assert.Equal("2 de agosto", ServerModsViewModel.FormatDay(new DateTime(2026, 8, 2, 12, 0, 0, DateTimeKind.Utc)));
+            var day = new DateTime(2026, 8, 2, 12, 0, 0, DateTimeKind.Utc);
+            Assert.Equal("2 de agosto", ServerModsViewModel.FormatDay(day, today: new DateTime(2026, 10, 14)));
+
+            // A year ago is not "2 August": the year is said when it is not this one.
+            Assert.Equal("2 de agosto de 2026", ServerModsViewModel.FormatDay(day, today: new DateTime(2027, 9, 1)));
         }
         finally
         {

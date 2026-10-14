@@ -611,6 +611,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Cleanup_DisabledSinceFmt" xml:space="preserve"><value>Off since {0} · {1} days</value></data>
   <data name="Cleanup_DisabledAtLeastFmt" xml:space="preserve"><value>Off since at least {0} · {1} days</value></data>
   <data name="Cleanup_DateFormat" xml:space="preserve"><value>MMMM d</value></data>
+  <data name="Cleanup_DateWithYearFormat" xml:space="preserve"><value>MMMM d, yyyy</value></data>
   <data name="Cleanup_NotNow" xml:space="preserve"><value>Not now</value></data>
   <data name="Cleanup_RemoveSelectedOne" xml:space="preserve"><value>Remove 1 selected</value></data>
   <data name="Cleanup_RemoveSelectedFmt" xml:space="preserve"><value>Remove {0} selected</value></data>

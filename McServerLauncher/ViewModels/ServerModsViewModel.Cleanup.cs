@@ -347,11 +347,21 @@ public partial class ServerModsViewModel
         string.Format(Localizer.Get(off.SinceIsFirstSeen ? "Cleanup_DisabledAtLeastFmt" : "Cleanup_DisabledSinceFmt"),
             FormatDay(off.SinceUtc), off.Days);
 
-    /// <summary>"2 de agosto", "August 2": the day only, in the app's language.</summary>
+    /// <summary>
+    /// "2 de agosto", "August 2", in the app's language — with the year when it is not this one.
+    /// </summary>
     /// <remarks>
     /// The pattern is its own resource rather than part of the sentence: a resx value holding
     /// <c>{0:d MMMM}</c> would break the check that every translation keeps the same placeholders.
+    /// Without the year, a mod off since an August more than a year ago read as "since 2 August ·
+    /// 437 days".
     /// </remarks>
-    internal static string FormatDay(DateTime utc) =>
-        utc.ToLocalTime().ToString(Localizer.Get("Cleanup_DateFormat"), CultureInfo.CurrentUICulture);
+    /// <param name="utc">The day.</param>
+    /// <param name="today">Today, for tests; the real one otherwise.</param>
+    internal static string FormatDay(DateTime utc, DateTime? today = null)
+    {
+        var day = utc.ToLocalTime();
+        var key = day.Year == (today ?? DateTime.Today).Year ? "Cleanup_DateFormat" : "Cleanup_DateWithYearFormat";
+        return day.ToString(Localizer.Get(key), CultureInfo.CurrentUICulture);
+    }
 }

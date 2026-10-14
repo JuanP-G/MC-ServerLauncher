@@ -1812,8 +1812,10 @@ public partial class ServerModsViewModel : ObservableObject
             var (result, removed) = ContentReplacement.RemoveAllOrNothing(others, replacesAFile ? null : destPath);
             if (result == ContentReplacement.RemoveResult.Locked)
             {
+                // An install, not an update: say which copy is in the way, not "before updating".
                 RefreshInstalledMods();
-                Notify(Localizer.Get("Msg_UpdateNeedsStop"), failed: true);
+                Notify(string.Format(Localizer.Get("Msg_ContentInUseFmt"), ContentReplacement.DisplayName(others[0])),
+                    failed: true);
                 return false;
             }
 
