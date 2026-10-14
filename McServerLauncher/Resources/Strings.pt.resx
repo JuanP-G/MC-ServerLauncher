@@ -1056,6 +1056,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Sset_Back" xml:space="preserve"><value>Voltar ao servidor</value></data>
   <data name="Sset_Discard" xml:space="preserve"><value>Descartar</value></data>
   <data name="Sset_Unsaved" xml:space="preserve"><value>Tens alterações por guardar</value></data>
+  <data name="Sset_SaveUnfinished" xml:space="preserve"><value>A gravação não terminou</value></data>
   <data name="Sset_UnsavedRestart" xml:space="preserve"><value>O servidor está ligado: o que guardares aplica-se quando reiniciar.</value></data>
   <data name="Sset_LeaveBlocked" xml:space="preserve"><value>Guarda ou descarta as alterações antes de sair</value></data>
   <data name="Sset_FixErrors" xml:space="preserve"><value>Há algo a corrigir antes de guardar.</value></data>

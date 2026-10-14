@@ -1056,6 +1056,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Sset_Back" xml:space="preserve"><value>Back to the server</value></data>
   <data name="Sset_Discard" xml:space="preserve"><value>Discard</value></data>
   <data name="Sset_Unsaved" xml:space="preserve"><value>You have unsaved changes</value></data>
+  <data name="Sset_SaveUnfinished" xml:space="preserve"><value>The save didn't finish</value></data>
   <data name="Sset_UnsavedRestart" xml:space="preserve"><value>The server is running: what you save applies when it restarts.</value></data>
   <data name="Sset_LeaveBlocked" xml:space="preserve"><value>Save or discard your changes before leaving</value></data>
   <data name="Sset_FixErrors" xml:space="preserve"><value>Something needs fixing before you can save.</value></data>

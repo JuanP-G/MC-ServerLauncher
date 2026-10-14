@@ -1056,6 +1056,7 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Sset_Back" xml:space="preserve"><value>Retour au serveur</value></data>
   <data name="Sset_Discard" xml:space="preserve"><value>Annuler les modifications</value></data>
   <data name="Sset_Unsaved" xml:space="preserve"><value>Vous avez des modifications non enregistrées</value></data>
+  <data name="Sset_SaveUnfinished" xml:space="preserve"><value>L'enregistrement ne s'est pas terminé</value></data>
   <data name="Sset_UnsavedRestart" xml:space="preserve"><value>Le serveur est allumé : ce que vous enregistrez s'applique au redémarrage.</value></data>
   <data name="Sset_LeaveBlocked" xml:space="preserve"><value>Enregistrez ou annulez vos modifications avant de partir</value></data>
   <data name="Sset_FixErrors" xml:space="preserve"><value>Il faut corriger quelque chose avant d'enregistrer.</value></data>

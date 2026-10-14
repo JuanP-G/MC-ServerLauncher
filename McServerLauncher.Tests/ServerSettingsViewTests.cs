@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Avalonia.Controls;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.ViewModels;
 using McServerLauncher.Views;
@@ -370,5 +371,84 @@ public class ServerSettingsFlowTests : IDisposable
 
             Assert.Equal("renombrado", main.SelectedServer!.Name);
             Assert.Contains("renombrado", File.ReadAllText(Path.Combine(_dataDir, "servers.json")));
+        });
+
+    private static int FreePort()
+    {
+        var probe = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        probe.Start();
+        var port = ((System.Net.IPEndPoint)probe.LocalEndpoint).Port;
+        probe.Stop();
+        return port;
+    }
+
+    private static bool Accepts(int port)
+    {
+        try
+        {
+            using var client = new System.Net.Sockets.TcpClient();
+            return client.ConnectAsync(System.Net.IPAddress.Loopback, port).Wait(TimeSpan.FromSeconds(2));
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    [Fact]
+    public void ChangingThePortMovesTheWakeListenerWithIt()
+    {
+        // The listener read the port once and kept it: after a change it went on answering on the
+        // old one, and players knocking on the new one woke nothing until the server next stopped.
+        var (before, after) = (FreePort(), FreePort());
+        File.WriteAllText(Path.Combine(_dataDir, "uno", "server.properties"), $"server-port={before}");
+        MainViewModel? main = null;
+
+        _ui.Run(() =>
+        {
+            main = new MainViewModel(_dataDir);
+            main.SelectedServer!.Config.WakeOnDemand = true;   // listening on the old port
+            main.ConfigureServerCommand.Execute(null);
+            main.ServerSettingsPanel!.Section(ServerSettingsPage.Network)
+                .FindControl<NumericUpDown>("PortBox")!.Value = after;
+            AvaloniaFixture.Pump();
+
+            Assert.True(main.ServerSettingsPanel.Save());
+            AvaloniaFixture.Pump();
+        });
+
+        try
+        {
+            Assert.True(Accepts(after), "nothing answers on the new port");
+            Assert.False(Accepts(before), "the old port is still being answered");
+        }
+        finally
+        {
+            _ui.Run(() => main!.SelectedServer!.Config.WakeOnDemand = false);
+        }
+    }
+
+    [Fact]
+    public void AServersJsonThatCannotBeWrittenIsSaidOnTheBar() =>
+        _ui.Run(() =>
+        {
+            var main = new MainViewModel(_dataDir);
+            main.EditAppearanceCommand.Execute(null);
+            var panel = main.ServerSettingsPanel!;
+            panel.Section(ServerSettingsPage.Appearance).FindControl<TextBox>("NameBox")!.Text = "renombrado";
+            AvaloniaFixture.Pump();
+
+            // servers.json cannot be replaced: a folder stands where it goes.
+            var json = Path.Combine(_dataDir, "servers.json");
+            File.Delete(json);
+            Directory.CreateDirectory(json);
+
+            Assert.True(panel.Save());   // the page itself saved
+            AvaloniaFixture.Pump();
+
+            Assert.True(panel.FindControl<Border>("SaveBar")!.IsVisible);
+            Assert.Contains("error", panel.FindControl<TextBlock>("SaveBarHint")!.Classes);
+            // Nothing is unsaved: the bar says the save did not finish, not that changes are pending.
+            Assert.Equal(Localizer.Get("Sset_SaveUnfinished"), panel.FindControl<TextBlock>("SaveBarText")!.Text);
         });
 }

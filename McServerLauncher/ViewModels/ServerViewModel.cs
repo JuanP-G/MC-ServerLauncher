@@ -692,6 +692,22 @@ public partial class ServerViewModel : ObservableObject
     internal static bool IsWithinWakeGrace(DateTime? wokeAtUtc, DateTime nowUtc) =>
         wokeAtUtc is not null && nowUtc - wokeAtUtc.Value < WakeGrace;
 
+    /// <summary>
+    /// <c>server-port</c> changed on disk: the wake-on-demand listener moves with it, if the server
+    /// is stopped and nothing else has the port.
+    /// </summary>
+    /// <remarks>
+    /// The listener read the port when it opened and kept it. Only a config field restarted it, and
+    /// the port is not one — it lives in <c>server.properties</c> — so after a change it went on
+    /// answering on the old port until the server was next stopped, and players knocking on the new
+    /// one woke nothing.
+    /// </remarks>
+    internal void FollowPortChange()
+    {
+        if (_process.IsRunning || IsPreparing || IsRestoring) return;
+        StartWakeListener();
+    }
+
     /// <summary>Answers on the server's port while it is stopped, if the owner asked for it.</summary>
     private void StartWakeListener()
     {

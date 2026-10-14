@@ -268,9 +268,13 @@ public partial class ServerSettingsView : UserControl
         foreach (var (page, item) in _items)
             item.Dot.IsVisible = item.ChipDot.IsVisible = _draft.IsPageDirty(page);
 
-        SaveBar.IsVisible = dirty;
+        // A problem shows the bar on its own too: one found after the page was saved (servers.json
+        // could not be written) leaves nothing unsaved, and Save is how it is tried again.
+        SaveBar.IsVisible = dirty || _problem is not null;
         SaveBar.Classes.Set("nudged", _nudged);
-        SaveBarText.Text = Localizer.Get(_nudged ? "Sset_LeaveBlocked" : "Sset_Unsaved");
+        SaveBarText.Text = Localizer.Get(_nudged ? "Sset_LeaveBlocked"
+            : dirty ? "Sset_Unsaved"
+            : "Sset_SaveUnfinished");   // saved, but what follows the save did not finish
 
         var hint = _problem ?? (Server.IsRunning ? Localizer.Get("Sset_UnsavedRestart") : null);
         SaveBarHint.Text = hint;
@@ -283,6 +287,9 @@ public partial class ServerSettingsView : UserControl
         _problem = text;
         Refresh();
     }
+
+    /// <summary>Says on the bar that something after the save itself went wrong.</summary>
+    internal void ReportProblem(string text) => ShowBarProblem(text);
 
     private void Save_Click(object? sender, RoutedEventArgs e) => Save();
 

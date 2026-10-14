@@ -1102,6 +1102,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Sset_Back" xml:space="preserve"><value>Volver al servidor</value></data>
   <data name="Sset_Discard" xml:space="preserve"><value>Descartar</value></data>
   <data name="Sset_Unsaved" xml:space="preserve"><value>Tienes cambios sin guardar</value></data>
+  <data name="Sset_SaveUnfinished" xml:space="preserve"><value>El guardado no terminó</value></data>
   <data name="Sset_UnsavedRestart" xml:space="preserve"><value>El servidor está encendido: lo que guardes se aplica cuando se reinicie.</value></data>
   <data name="Sset_LeaveBlocked" xml:space="preserve"><value>Guarda o descarta los cambios antes de salir</value></data>
   <data name="Sset_FixErrors" xml:space="preserve"><value>Hay algo que corregir antes de guardar.</value></data>

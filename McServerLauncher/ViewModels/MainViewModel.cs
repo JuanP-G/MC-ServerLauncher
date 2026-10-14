@@ -892,7 +892,7 @@ public partial class MainViewModel : ObservableObject
             Servers.FirstOrDefault(s => !ReferenceEquals(s, server) &&
                                         CrossplayService.EffectiveBedrockPort(s.Config) == port)?.Name);
         panel.Closed += CloseSettings;
-        panel.Saved += saved => _ = AfterSettingsSavedAsync(server, saved);
+        panel.Saved += saved => _ = AfterSettingsSavedAsync(server, saved, panel);
 
         // A loader install changes the config and the disk in the act (files already downloaded),
         // so it is persisted at once, whatever then happens to the rest of the page.
@@ -909,18 +909,44 @@ public partial class MainViewModel : ObservableObject
     /// disk again, and the steps that install or move something.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The page wrote into the config the view model is showing, the config announced each change
     /// and ServerConfigEffects said what it costs, so the card and the panels have already followed.
     /// What is left is what the config alone cannot do.
+    /// </para>
+    /// <para>
+    /// Nothing here may fail unseen. It runs after the page has said "saved", and it used to be
+    /// started and forgotten: a <c>servers.json</c> that could not be written (a full disk, no
+    /// permission) left the page looking saved and the changes gone at the next start. A failure is
+    /// now said on the page's bar, whose Save tries again.
+    /// </para>
     /// </remarks>
-    private async Task AfterSettingsSavedAsync(ServerViewModel server, ServerSettingsSaved saved)
+    private async Task AfterSettingsSavedAsync(ServerViewModel server, ServerSettingsSaved saved,
+        ServerSettingsView panel)
+    {
+        try
+        {
+            await FollowSavedSettingsAsync(server, saved);
+        }
+        catch (Exception ex)
+        {
+            panel.ReportProblem(string.Format(Localizer.Get("Msg_ConfigSaveError"),
+                ErrorMessages.Describe(ex)));
+        }
+    }
+
+    private async Task FollowSavedSettingsAsync(ServerViewModel server, ServerSettingsSaved saved)
     {
         server.Name = server.Config.Name;
         Save();
         server.RefreshFromDisk();
         if (server.Name != saved.OldName) _ = Tunnels.RenameTunnelsForServerAsync(server, saved.OldName);
         if (saved.BedrockPortChanged) _ = server.RefreshTunnelInfoAsync();
-        if (saved.JavaPortChanged) _ = Tunnels.RefreshAsync();
+        if (saved.JavaPortChanged)
+        {
+            server.FollowPortChange();
+            _ = Tunnels.RefreshAsync();
+        }
 
         // These three are requests to install something, not settings that take effect by being
         // remembered. Turning one on and having nothing happen is worse than not offering it,
