@@ -52,10 +52,20 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
     }
 
     /// <inheritdoc />
-    public void ShowError(string? message)
+    public void ShowError(string? message) => ShowError(message, null);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Each port's problem under its own box: the Bedrock card is hidden without crossplay, and a
+    /// problem with the server's own port shown there would not be seen at all.
+    /// </remarks>
+    public void ShowError(string? message, string? field)
     {
-        BedrockPortWarning.Text = message;
-        BedrockPortWarning.IsVisible = message is not null;
+        var onJavaPort = field == "server-port";
+        PortWarning.Text = onJavaPort ? message : null;
+        PortWarning.IsVisible = onJavaPort && message is not null;
+        BedrockPortWarning.Text = onJavaPort ? null : message;
+        BedrockPortWarning.IsVisible = !onJavaPort && message is not null;
     }
 
     /// <remarks>

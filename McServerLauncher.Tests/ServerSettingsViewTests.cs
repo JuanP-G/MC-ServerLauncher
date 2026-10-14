@@ -533,6 +533,25 @@ public class ServerSettingsFlowTests : IDisposable
     }
 
     [Fact]
+    public void AJavaPortAnotherServerUsesIsRefusedBesideItsBox() =>
+        _ui.Run(() =>
+        {
+            // Two servers on one port: one of them fails to start, or never wakes on demand.
+            File.WriteAllText(Path.Combine(_dataDir, "dos", "server.properties"), "server-port=25570");
+            var main = new MainViewModel(_dataDir);
+            main.ConfigureServerCommand.Execute(null);
+            var network = main.ServerSettingsPanel!.Section(ServerSettingsPage.Network);
+            network.FindControl<NumericUpDown>("PortBox")!.Value = 25570;
+            AvaloniaFixture.Pump();
+
+            Assert.False(main.ServerSettingsPanel.Save());
+
+            var warning = network.FindControl<TextBlock>("PortWarning")!;
+            Assert.True(warning.IsVisible);
+            Assert.Contains("dos", warning.Text);
+        });
+
+    [Fact]
     public void AServersJsonThatCannotBeWrittenIsSaidOnTheBar() =>
         _ui.Run(() =>
         {

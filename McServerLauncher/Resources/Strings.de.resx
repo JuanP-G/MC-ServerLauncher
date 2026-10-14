@@ -950,6 +950,7 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Cfg_BedrockPortDesc" xml:space="preserve"><value>UDP-Port, auf dem Geyser Bedrock-Spieler empfängt. Wenn du ihn änderst, muss der Bedrock-Tunnel von Playit auf denselben Port zeigen.</value></data>
   <data name="Cfg_BedrockPortRange" xml:space="preserve"><value>Wähle einen Port zwischen 1024 und 65535.</value></data>
   <data name="Cfg_BedrockPortTakenFmt" xml:space="preserve"><value>Diesen Port nutzt bereits {0}. Wähle einen anderen.</value></data>
+  <data name="Cfg_JavaPortTakenFmt" xml:space="preserve"><value>Diesen Port verwendet bereits {0}. Zwei Server auf demselben Port können nicht gleichzeitig laufen; wähle einen anderen.</value></data>
   <data name="Tun_Fix_MoveBedrockFmt" xml:space="preserve"><value>{0} auf einen freien Bedrock-Port verlegen</value></data>
   <data name="Msg_BedrockAlreadyFreeFmt" xml:space="preserve"><value>[Crossplay] Der Bedrock-Port {0} wird nicht mehr geteilt; er bleibt, wie er ist.</value></data>
   <data name="Msg_BedrockMovedFmt" xml:space="preserve"><value>[Crossplay] Bedrock-Port von {0} auf {1} geändert.</value></data>

@@ -888,9 +888,13 @@ public partial class MainViewModel : ObservableObject
 
     private ServerSettingsView CreateSettingsPanel(ServerViewModel server, ServerSettingsPage page)
     {
-        var panel = new ServerSettingsView(server, page, port =>
-            Servers.FirstOrDefault(s => !ReferenceEquals(s, server) &&
-                                        CrossplayService.EffectiveBedrockPort(s.Config) == port)?.Name);
+        var properties = new ServerPropertiesService();
+        string? OwnerOf(Func<ServerViewModel, int?> portOf, int port) =>
+            Servers.FirstOrDefault(s => !ReferenceEquals(s, server) && portOf(s) == port)?.Name;
+
+        var panel = new ServerSettingsView(server, page, new PortOwners(
+            Java: port => OwnerOf(s => properties.GetServerPort(s.Config.PropertiesPath), port),
+            Bedrock: port => OwnerOf(s => CrossplayService.EffectiveBedrockPort(s.Config), port)));
         panel.Closed += CloseSettings;
         panel.Saved += saved => _ = AfterSettingsSavedAsync(server, saved, panel);
 

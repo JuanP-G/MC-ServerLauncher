@@ -950,6 +950,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Cfg_BedrockPortDesc" xml:space="preserve"><value>Porta UDP em que o Geyser recebe os jogadores de Bedrock. Se a mudares, o túnel Bedrock do Playit tem de apontar para esta mesma porta.</value></data>
   <data name="Cfg_BedrockPortRange" xml:space="preserve"><value>Escolhe uma porta entre 1024 e 65535.</value></data>
   <data name="Cfg_BedrockPortTakenFmt" xml:space="preserve"><value>Essa porta já é usada por {0}. Escolhe outra.</value></data>
+  <data name="Cfg_JavaPortTakenFmt" xml:space="preserve"><value>Essa porta já é usada por {0}. Dois servidores na mesma porta não podem estar ligados ao mesmo tempo; escolhe outra.</value></data>
   <data name="Tun_Fix_MoveBedrockFmt" xml:space="preserve"><value>Mover {0} para uma porta Bedrock livre</value></data>
   <data name="Msg_BedrockAlreadyFreeFmt" xml:space="preserve"><value>[Crossplay] A porta Bedrock {0} já não é partilhada; fica como está.</value></data>
   <data name="Msg_BedrockMovedFmt" xml:space="preserve"><value>[Crossplay] Porta Bedrock alterada de {0} para {1}.</value></data>

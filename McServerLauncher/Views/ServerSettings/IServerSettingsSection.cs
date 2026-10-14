@@ -13,4 +13,10 @@ internal interface IServerSettingsSection
 
     /// <summary>Says what is wrong under the controls, or clears it with null.</summary>
     void ShowError(string? message);
+
+    /// <summary>
+    /// Says what is wrong about <paramref name="field"/> (a config field or a <c>server.properties</c>
+    /// key), for a page that shows each problem beside its own control. The rest have one place.
+    /// </summary>
+    void ShowError(string? message, string? field) => ShowError(message);
 }

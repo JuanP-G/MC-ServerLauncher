@@ -91,13 +91,13 @@ public partial class ServerSettingsView : UserControl
 
     /// <param name="server">The server to configure.</param>
     /// <param name="page">The page to open on.</param>
-    /// <param name="bedrockPortOwner">Whose is a Bedrock port, when another server already has it.</param>
-    public ServerSettingsView(ServerViewModel server, ServerSettingsPage page, Func<int, string?>? bedrockPortOwner = null)
+    /// <param name="portOwners">Whose is a port, when another server already has it.</param>
+    public ServerSettingsView(ServerViewModel server, ServerSettingsPage page, PortOwners? portOwners = null)
     {
         InitializeComponent();
         Server = server;
         DataContext = server;
-        _draft = new ServerSettingsDraft(server.Config, bedrockPortOwner);
+        _draft = new ServerSettingsDraft(server.Config, portOwners);
 
         BuildIndex();
         _draft.Changed += () =>
@@ -346,8 +346,8 @@ public partial class ServerSettingsView : UserControl
         var problems = _draft.Validate();
         if (problems.Count > 0)
         {
-            foreach (var (page, message) in problems)
-                ((IServerSettingsSection)Section(page)).ShowError(message);
+            foreach (var problem in problems)
+                ((IServerSettingsSection)Section(problem.Page)).ShowError(problem.Message, problem.Field);
             Show(problems[0].Page);
             ShowBarProblem(Localizer.Get("Sset_FixErrors"));
             return false;

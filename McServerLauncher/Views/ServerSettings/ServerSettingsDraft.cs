@@ -36,6 +36,25 @@ public sealed record ServerSettingsSaved(
     bool CrossplayTurnedOn, bool MultiVersionTurnedOn, bool ModContentTurnedOn,
     IReadOnlyDictionary<string, string> PropertyChanges);
 
+/// <summary>Something that keeps a page from being saved, and where.</summary>
+/// <param name="Page">The page it is on.</param>
+/// <param name="Message">What is wrong, for the user.</param>
+/// <param name="Field">The config field or <c>server.properties</c> key it is about, if one.</param>
+public sealed record SettingsProblem(ServerSettingsPage Page, string Message, string? Field = null);
+
+/// <summary>Who already has a port: the name of another server on it, or null when none is.</summary>
+/// <remarks>
+/// Lets the page refuse a port by saying whose it is. Two servers on one Java port fail to start, or
+/// to wake on demand, one of them; two on one Bedrock port end up behind one tunnel.
+/// </remarks>
+/// <param name="Java">Another server whose <c>server-port</c> this is.</param>
+/// <param name="Bedrock">Another server whose Bedrock port this is.</param>
+public sealed record PortOwners(Func<int, string?> Java, Func<int, string?> Bedrock)
+{
+    /// <summary>Nobody else: for a page with no other servers to ask about.</summary>
+    public static readonly PortOwners None = new(_ => null, _ => null);
+}
+
 /// <summary>
 /// Everything a server's settings page has changed and not yet saved: a copy of its
 /// <see cref="ServerConfig"/>, the <c>server.properties</c> values it shows, and the new icon.
@@ -100,7 +119,7 @@ public sealed class ServerSettingsDraft
 
     private readonly ServerPropertiesService _service = new();
     private readonly ServerIconService _icons = new();
-    private readonly Func<int, string?> _bedrockPortOwner;
+    private readonly PortOwners _portOwners;
 
     private ServerConfig _baseline;
     private IDictionary<string, string> _file = new Dictionary<string, string>();
@@ -129,14 +148,14 @@ public sealed class ServerSettingsDraft
     public event Action? ChangedOutside;
 
     /// <param name="live">The server being configured.</param>
-    /// <param name="bedrockPortOwner">
+    /// <param name="portOwners">
     /// The name of another server already on a Bedrock port, or null when none is. Lets the page
     /// refuse a port by saying whose it is, instead of letting two servers end up behind one tunnel.
     /// </param>
-    public ServerSettingsDraft(ServerConfig live, Func<int, string?>? bedrockPortOwner = null)
+    public ServerSettingsDraft(ServerConfig live, PortOwners? portOwners = null)
     {
         Live = live;
-        _bedrockPortOwner = bedrockPortOwner ?? (_ => null);
+        _portOwners = portOwners ?? PortOwners.None;
 
         // The per-server notification override must be non-null for the checkboxes to bind. Seeded
         // on the live config as well, as the edit dialog always did, so that it is not a change.
@@ -218,28 +237,35 @@ public sealed class ServerSettingsDraft
     /// Only what was changed is checked. A server whose folder has since gone missing must still be
     /// able to change its difficulty; it was the edit dialog's to refuse, not this page's.
     /// </remarks>
-    public IReadOnlyList<(ServerSettingsPage Page, string Message)> Validate()
+    public IReadOnlyList<SettingsProblem> Validate()
     {
-        var problems = new List<(ServerSettingsPage, string)>();
+        var problems = new List<SettingsProblem>();
 
         if (string.IsNullOrWhiteSpace(Config.Name))
-            problems.Add((ServerSettingsPage.Appearance, Localizer.Get("Msg_NameEmpty")));
+            problems.Add(new(ServerSettingsPage.Appearance, Localizer.Get("Msg_NameEmpty")));
 
         if (Config.MaxRamGb < Config.MinRamGb)
-            problems.Add((ServerSettingsPage.Performance, Localizer.Get("Msg_RamMaxMin")));
+            problems.Add(new(ServerSettingsPage.Performance, Localizer.Get("Msg_RamMaxMin")));
 
         if (!Same(Config, _baseline, nameof(ServerConfig.BedrockPort))
             && CrossplayService.EffectiveBedrockPort(Live) is not null)
         {
             var wanted = Config.BedrockPort;
             if (wanted < 1024 || wanted > 65535)
-                problems.Add((ServerSettingsPage.Network, Localizer.Get("Cfg_BedrockPortRange")));
-            else if (_bedrockPortOwner(wanted) is { } owner)
-                problems.Add((ServerSettingsPage.Network, string.Format(Localizer.Get("Cfg_BedrockPortTakenFmt"), owner)));
+                problems.Add(new(ServerSettingsPage.Network, Localizer.Get("Cfg_BedrockPortRange"),
+                    nameof(ServerConfig.BedrockPort)));
+            else if (_portOwners.Bedrock(wanted) is { } owner)
+                problems.Add(new(ServerSettingsPage.Network,
+                    string.Format(Localizer.Get("Cfg_BedrockPortTakenFmt"), owner), nameof(ServerConfig.BedrockPort)));
         }
 
+        if (PropertyChanged("server-port") && int.TryParse(Get("server-port"), out var javaPort)
+            && _portOwners.Java(javaPort) is { } javaOwner)
+            problems.Add(new(ServerSettingsPage.Network,
+                string.Format(Localizer.Get("Cfg_JavaPortTakenFmt"), javaOwner), "server-port"));
+
         if (!Same(Config, _baseline, nameof(ServerConfig.FolderPath)) && !Directory.Exists(Config.FolderPath))
-            problems.Add((ServerSettingsPage.Advanced, Localizer.Get("Msg_FolderNotExist")));
+            problems.Add(new(ServerSettingsPage.Advanced, Localizer.Get("Msg_FolderNotExist")));
 
         return problems;
     }

@@ -199,14 +199,17 @@
         </Border>
 
         <Border Classes="card">
-            <DockPanel Classes="setting">
-                <NumericUpDown x:Name="PortBox" Classes="ctl" Width="140"
-                               Minimum="1" Maximum="65535" Increment="1" FormatString="0" />
-                <StackPanel>
-                    <TextBlock Text="{loc:Loc Port}" Classes="title" />
-                    <TextBlock Classes="desc" Text="{loc:Loc Cfg_PortDesc}" />
-                </StackPanel>
-            </DockPanel>
+            <StackPanel>
+                <DockPanel Classes="setting">
+                    <NumericUpDown x:Name="PortBox" Classes="ctl" Width="140"
+                                   Minimum="1" Maximum="65535" Increment="1" FormatString="0" />
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Port}" Classes="title" />
+                        <TextBlock Classes="desc" Text="{loc:Loc Cfg_PortDesc}" />
+                    </StackPanel>
+                </DockPanel>
+                <TextBlock x:Name="PortWarning" Classes="desc error" IsVisible="False" />
+            </StackPanel>
         </Border>
 
         <!-- The Bedrock port is not in server.properties: it is Geyser's. Only shown with
