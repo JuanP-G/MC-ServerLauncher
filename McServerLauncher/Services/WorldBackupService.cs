@@ -15,11 +15,18 @@ namespace McServerLauncher.Services;
 
 /// <summary>
 /// Creates and restores zip backups of a server's world folder — the "level-name" directory from
-/// server.properties ("world" by default). That single folder holds every dimension, including the
-/// modern layout that nests them under "dimensions/", so zipping it alone is a complete backup.
-/// Backups live in "&lt;server folder&gt;/backups/"; old ones beyond the configured retention are
-/// pruned after each new one.
+/// server.properties ("world" by default) — together with the Nether and the End when the server
+/// keeps them beside it. Backups live in "&lt;server folder&gt;/backups/"; old ones beyond the
+/// configured retention are pruned after each new one.
 /// </summary>
+/// <remarks>
+/// Vanilla and the modded loaders keep every dimension inside the world folder (under
+/// <c>DIM-1</c>, <c>DIM1</c> or <c>dimensions/</c>), so that folder alone is the whole world. Paper
+/// and Purpur, like every Bukkit server, keep them in sibling folders, <c>world_nether</c> and
+/// <c>world_the_end</c>. Those used to be left out: every backup of a Paper server lacked them,
+/// and restoring one put an old overworld beside today's Nether and End. See
+/// <see cref="DimensionSuffixes"/>.
+/// </remarks>
 public class WorldBackupService
 {
     private readonly ServerPropertiesService _properties = new();
@@ -77,6 +84,33 @@ public class WorldBackupService
         return IsInside(world, server) && !IsInside(world, backups) && !SamePath(world, backups)
             ? world
             : null;
+    }
+
+    /// <summary>The sibling folders a Bukkit server keeps its other dimensions in.</summary>
+    /// <remarks>
+    /// Found on disk rather than decided by the server's type: a server converted away from Paper
+    /// still has them, and a vanilla one never does, so "it is there" is the answer that is right in
+    /// both cases.
+    /// </remarks>
+    internal static readonly string[] DimensionSuffixes = { "_nether", "_the_end" };
+
+    /// <summary>
+    /// Where the sibling dimensions go inside a zip: a folder no Minecraft writes, so the world's own
+    /// files stay at the root and every zip made before this still restores the same.
+    /// </summary>
+    internal const string DimensionsRoot = ".mcserverlauncher-dimensions";
+
+    /// <summary>The sibling dimension folders of <paramref name="levelName"/> on disk.</summary>
+    internal static IReadOnlyList<(string Suffix, string Folder)> DimensionsBeside(string serverFolder,
+        string levelName)
+    {
+        var found = new List<(string, string)>();
+        foreach (var suffix in DimensionSuffixes)
+        {
+            if (WorldFolderFor(serverFolder, levelName + suffix) is { } folder && Directory.Exists(folder))
+                found.Add((suffix, folder));
+        }
+        return found;
     }
 
     private static StringComparison PathComparison =>
@@ -158,8 +192,9 @@ public class WorldBackupService
         // the world again, and the record would describe a world this zip does not hold — one the
         // next start would find "up to date" and not copy. Taken first, any change made meanwhile
         // only means the next start makes one copy too many, which is the safe side to be wrong on.
-        var fingerprint = await Task.Run(() => Fingerprint(worldDir), ct);
-        await Task.Run(() => CreateZipWithRetry(worldDir, zipPath, ct), ct);
+        var dimensions = DimensionsBeside(config.FolderPath, levelName);
+        var fingerprint = await Task.Run(() => Fingerprint(worldDir, dimensions), ct);
+        await Task.Run(() => CreateZipWithRetry(worldDir, dimensions, zipPath, ct), ct);
 
         var sizeMb = new FileInfo(zipPath).Length / (1024.0 * 1024.0);
         log?.Report(string.Format(Localizer.Get("Msg_BackupCreatedFmt"), sizeMb.ToString("0.#")));
@@ -199,14 +234,15 @@ public class WorldBackupService
     /// half-written file is deleted, and <paramref name="zipPath"/> never exists until the copy is
     /// whole.
     /// </remarks>
-    private void CreateZipWithRetry(string worldDir, string zipPath, CancellationToken ct)
+    private void CreateZipWithRetry(string worldDir, IReadOnlyList<(string Suffix, string Folder)> dimensions,
+        string zipPath, CancellationToken ct)
     {
         var partial = zipPath + PartialSuffix;
         try
         {
             try
             {
-                ZipWorld(worldDir, partial, ct);
+                ZipWorld(worldDir, dimensions, partial, ct);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -214,7 +250,7 @@ public class WorldBackupService
                 // the scanner holds the file, so both take the retry path.
                 TryDeleteZip(partial);
                 Thread.Sleep(1000);
-                ZipWorld(worldDir, partial, ct);
+                ZipWorld(worldDir, dimensions, partial, ct);
             }
 
             ct.ThrowIfCancellationRequested();   // cancelled during the last file: still not a backup
@@ -249,36 +285,60 @@ public class WorldBackupService
     /// the server writes a new one every time it starts, including after a restore.
     /// </para>
     /// </remarks>
-    private void ZipWorld(string worldDir, string zipPath, CancellationToken ct)
+    private void ZipWorld(string worldDir, IReadOnlyList<(string Suffix, string Folder)> dimensions,
+        string zipPath, CancellationToken ct)
     {
         using var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create);
-        var root = new DirectoryInfo(worldDir);
+        ZipFolder(zip, worldDir, "", ct);
+        foreach (var (suffix, folder) in dimensions)
+            ZipFolder(zip, folder, DimensionsRoot + "/" + suffix + "/", ct);
+    }
 
-        foreach (var entry in root.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+    /// <summary>Adds one folder of the world to the zip, under <paramref name="prefix"/>.</summary>
+    private void ZipFolder(ZipArchive zip, string folder, string prefix, CancellationToken ct)
+    {
+        foreach (var (name, entry) in WorldEntries(folder))
         {
             ct.ThrowIfCancellationRequested();
-            var name = Path.GetRelativePath(worldDir, entry.FullName).Replace(Path.DirectorySeparatorChar, '/');
 
             if (entry is DirectoryInfo dir)
             {
                 // Kept only when empty, as CreateFromDirectory does: a folder with files in it comes
                 // back with them.
                 if (!dir.EnumerateFileSystemInfos().Any())
-                    zip.CreateEntry(name + "/");
+                    zip.CreateEntry(prefix + name + "/");
                 continue;
             }
-
-            if (string.Equals(name, SessionLock, StringComparison.OrdinalIgnoreCase))
-                continue;
 
             // Region files (.mca) are already internally compressed, so re-deflating them at the
             // "Optimal" level burns CPU for little gain; "Fastest" keeps backups quick without
             // giving up much size.
-            var zipped = zip.CreateEntry(name, CompressionLevel.Fastest);
+            var zipped = zip.CreateEntry(prefix + name, CompressionLevel.Fastest);
             zipped.LastWriteTime = ZipTime(entry.LastWriteTime);
             using var source = OpenForCopy(entry.FullName);
             using var target = zipped.Open();
             source.CopyTo(target);
+        }
+    }
+
+    /// <summary>
+    /// Every file and folder of one world folder that belongs in a backup, by its name relative to
+    /// the folder (with <c>/</c>).
+    /// </summary>
+    /// <remarks>
+    /// Without <c>session.lock</c>, and without a <see cref="DimensionsRoot"/> folder an older version
+    /// of the app may have unpacked into the world when it restored a newer zip.
+    /// </remarks>
+    private static IEnumerable<(string Name, FileSystemInfo Entry)> WorldEntries(string folder)
+    {
+        var all = new DirectoryInfo(folder).EnumerateFileSystemInfos("*", SearchOption.AllDirectories);
+        foreach (var entry in all)
+        {
+            var name = Path.GetRelativePath(folder, entry.FullName).Replace(Path.DirectorySeparatorChar, '/');
+            if (string.Equals(name, SessionLock, StringComparison.OrdinalIgnoreCase)) continue;
+            if (name == DimensionsRoot || name.StartsWith(DimensionsRoot + "/", StringComparison.Ordinal))
+                continue;
+            yield return (name, entry);
         }
     }
 
@@ -308,7 +368,7 @@ public class WorldBackupService
     /// Which backup the world on disk is a copy of, as far as anybody playing could tell.
     /// </summary>
     /// <param name="Zip">The backup's file name in <c>backups/</c>.</param>
-    /// <param name="Fingerprint">The world folder as it was then; see <see cref="WorldBackupService.Fingerprint(string)"/>.</param>
+    /// <param name="Fingerprint">The world folder as it was then; see <see cref="Fingerprint"/>.</param>
     internal record BackupState(string Zip, string Fingerprint);
 
     /// <summary>Beside the zips it names, so it travels with them; the list only shows <c>*.zip</c>.</summary>
@@ -336,9 +396,10 @@ public class WorldBackupService
         {
             if (ReadState(config) is not { } state) return false;
             if (!File.Exists(Path.Combine(BackupsDir(config), state.Zip))) return false;
-            if (WorldFolderFor(config.FolderPath, GetLevelName(config)) is not { } worldDir
+            var levelName = GetLevelName(config);
+            if (WorldFolderFor(config.FolderPath, levelName) is not { } worldDir
                 || !Directory.Exists(worldDir)) return false;
-            return state.Fingerprint == Fingerprint(worldDir);
+            return state.Fingerprint == Fingerprint(worldDir, DimensionsBeside(config.FolderPath, levelName));
         }
         catch
         {
@@ -361,9 +422,11 @@ public class WorldBackupService
         {
             if (ReadState(config) is not { } state) return;
             if (!File.Exists(Path.Combine(BackupsDir(config), state.Zip))) return;
-            if (WorldFolderFor(config.FolderPath, GetLevelName(config)) is not { } worldDir
+            var levelName = GetLevelName(config);
+            if (WorldFolderFor(config.FolderPath, levelName) is not { } worldDir
                 || !Directory.Exists(worldDir)) return;
-            WriteState(config, state with { Fingerprint = Fingerprint(worldDir) });
+            var fingerprint = Fingerprint(worldDir, DimensionsBeside(config.FolderPath, levelName));
+            WriteState(config, state with { Fingerprint = fingerprint });
         }
         catch
         {
@@ -398,21 +461,30 @@ public class WorldBackupService
     /// A hash of every file in the world: where it is, how big, and when it was last written.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The contents are not read — a world can be gigabytes, and this runs on every start and stop.
     /// Anything that writes a file changes its time, which is enough. <c>session.lock</c> is left
-    /// out, as it is from the zip: the server rewrites it on every start. The folder's own path is
+    /// out, as it is from the zip: the server rewrites it on every start. The folders' own paths are
     /// part of it, so pointing <c>level-name</c> at another world is a change too.
+    /// </para>
+    /// <para>
+    /// With no sibling dimensions the text hashed is exactly what it was before they were counted, so
+    /// only a Paper or Purpur server makes one extra copy after updating the app.
+    /// </para>
     /// </remarks>
-    internal static string Fingerprint(string worldDir)
+    internal static string Fingerprint(string worldDir,
+        IReadOnlyList<(string Suffix, string Folder)>? dimensions = null)
     {
-        var lines = new DirectoryInfo(worldDir)
-            .EnumerateFiles("*", SearchOption.AllDirectories)
-            .Select(f => (Name: Path.GetRelativePath(worldDir, f.FullName).Replace(Path.DirectorySeparatorChar, '/'), File: f))
-            .Where(f => !string.Equals(f.Name, SessionLock, StringComparison.OrdinalIgnoreCase))
-            .Select(f => $"{f.Name}|{f.File.Length}|{f.File.LastWriteTimeUtc.Ticks}")
+        dimensions ??= Array.Empty<(string, string)>();
+        var lines = WorldEntries(worldDir).Select(e => (e.Name, e.Entry))
+            .Concat(dimensions.SelectMany(d => WorldEntries(d.Folder)
+                .Select(e => (Name: DimensionsRoot + "/" + d.Suffix + "/" + e.Name, e.Entry))))
+            .Where(e => e.Entry is FileInfo)
+            .Select(e => $"{e.Name}|{((FileInfo)e.Entry).Length}|{e.Entry.LastWriteTimeUtc.Ticks}")
             .Order(StringComparer.Ordinal);
 
-        var text = Path.GetFullPath(worldDir) + "\n" + string.Join("\n", lines);
+        var folders = dimensions.Select(d => d.Folder).Prepend(worldDir).Select(Path.GetFullPath);
+        var text = string.Join("\n", folders) + "\n" + string.Join("\n", lines);
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
     }
 
@@ -499,8 +571,110 @@ public class WorldBackupService
     /// Both temporary folders are siblings of the world, so the renames stay on one volume, and
     /// leftovers of a restore interrupted by a crash are cleared before starting.
     /// </para>
+    /// <para>
+    /// The Nether and the End a Paper server keeps beside the world (see <see cref="DimensionSuffixes"/>)
+    /// are swapped with it as one unit: if any part cannot be put in place, every part already swapped
+    /// goes back, so the world never ends up from one moment and its dimensions from another. A zip
+    /// without them — made before they were backed up — leaves the ones on disk as they are.
+    /// </para>
     /// </remarks>
     internal static void ReplaceWorld(string worldDir, string zipPath)
+    {
+        if (!ZipHoldsDimensions(zipPath))
+        {
+            ReplaceFolder(worldDir, zipPath);
+            return;
+        }
+
+        var units = DimensionSuffixes.Select(suffix => worldDir + suffix).Prepend(worldDir).ToList();
+        foreach (var unit in units)
+        {
+            DeleteFolder(unit + ".restoring");
+            DeleteFolder(unit + ".replaced");
+        }
+
+        var incoming = worldDir + ".restoring";
+        var swapped = new List<string>();
+        try
+        {
+            Directory.CreateDirectory(incoming);
+            ZipFile.ExtractToDirectory(zipPath, incoming, overwriteFiles: true);
+
+            // The dimensions come out of the world's folder to sit beside it, as Paper expects them.
+            var dimensions = Path.Combine(incoming, DimensionsRoot);
+            var present = new List<string> { worldDir };
+            foreach (var suffix in DimensionSuffixes)
+            {
+                var packed = Path.Combine(dimensions, suffix);
+                if (!Directory.Exists(packed)) continue;
+                Directory.Move(packed, worldDir + suffix + ".restoring");
+                present.Add(worldDir + suffix);
+            }
+            DeleteFolder(dimensions);
+
+            foreach (var unit in present)
+            {
+                if (Directory.Exists(unit)) Directory.Move(unit, unit + ".replaced");
+                Directory.Move(unit + ".restoring", unit);
+                swapped.Add(unit);
+            }
+        }
+        catch
+        {
+            // Every part back as it was, newest first; a part that never moved is still in place.
+            foreach (var unit in units.Where(u => !swapped.Contains(u)))
+            {
+                try
+                {
+                    if (!Directory.Exists(unit) && Directory.Exists(unit + ".replaced"))
+                        Directory.Move(unit + ".replaced", unit);
+                }
+                catch { /* best-effort: the before-restore backup still has it */ }
+            }
+            for (var i = swapped.Count - 1; i >= 0; i--)
+            {
+                try
+                {
+                    DeleteFolder(swapped[i]);
+                    if (Directory.Exists(swapped[i] + ".replaced"))
+                        Directory.Move(swapped[i] + ".replaced", swapped[i]);
+                }
+                catch { /* best-effort: the before-restore backup still has it */ }
+            }
+            throw;
+        }
+        finally
+        {
+            foreach (var unit in units)
+            {
+                try { DeleteFolder(unit + ".restoring"); } catch { /* cleared by the next restore */ }
+            }
+        }
+
+        // Best-effort: a file held open by an antivirus can keep one around until next time.
+        foreach (var unit in swapped)
+        {
+            try { DeleteFolder(unit + ".replaced"); } catch { /* cleared by the next restore */ }
+        }
+    }
+
+    /// <summary>Whether a zip carries sibling dimensions, as only the newer ones do.</summary>
+    private static bool ZipHoldsDimensions(string zipPath)
+    {
+        try
+        {
+            using var zip = ZipFile.OpenRead(zipPath);
+            var root = DimensionsRoot + "/";
+            return zip.Entries.Any(e => e.FullName.StartsWith(root, StringComparison.Ordinal));
+        }
+        catch
+        {
+            return false;   // not a zip at all: ReplaceFolder fails on it, leaving the world as it was
+        }
+    }
+
+    /// <summary>Puts <paramref name="zipPath"/> where <paramref name="worldDir"/> is, on its own.</summary>
+    private static void ReplaceFolder(string worldDir, string zipPath)
     {
         var incoming = worldDir + ".restoring";
         var outgoing = worldDir + ".replaced";
