@@ -628,16 +628,16 @@ public partial class ServerModsViewModel : ObservableObject
             ContentReplacement.SweepLeftovers(modsFolder);
 
             // Include disabled mods (.jar.disabled) so they can be re-enabled from the app.
-            var files = Directory.EnumerateFiles(modsFolder)
-                .Where(f => f.EndsWith(".jar", StringComparison.OrdinalIgnoreCase)
-                         || f.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase);
+            var files = ContentFiles(modsFolder)
+                .OrderBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            _manifests.ForgetAllBut(files);
 
             foreach (var file in files)
             {
                 var name = Path.GetFileName(file);
                 var isEnabled = !name.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase);
-                var display = isEnabled ? name : name[..^".disabled".Length];
+                var display = ContentReplacement.DisplayName(file);
 
                 // Rebuilt rows get back the update the last check found for them. This is the whole
                 // fix: the list is rebuilt after every update, and used to forget every other one.
