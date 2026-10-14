@@ -108,4 +108,4 @@ a user would see or lose, not as what the code does.
 | Date | Tag | Range | High · Medium · Low · Design | Issue | Fixed in |
 |---|---|---|---|---|---|
 | 2026-10-04 | `auditoria/2026-10-04` | the whole app, up to `5c6d45e` | 40 fixes (security, reliability, performance) | — | #34, #35 |
-| 2026-10-14 | `auditoria/2026-10-14` | `auditoria/2026-10-04..989678f` (v1.17.0 → 1.19.1) | 6 · 13 · 17 · 8 | pending | pending |
+| 2026-10-14 | `auditoria/2026-10-14` | `auditoria/2026-10-04..989678f` (v1.17.0 → 1.19.1) | 6 · 13 · 17 · 8 | #55 | #49–#54 (in progress) |

@@ -114,4 +114,4 @@ usuario vería o perdería, no como lo que hace el código.
 | Fecha | Etiqueta | Rango | Alta · Media · Baja · Diseño | Issue | Arreglado en |
 |---|---|---|---|---|---|
 | 2026-10-04 | `auditoria/2026-10-04` | toda la app, hasta `5c6d45e` | 40 arreglos (seguridad, fiabilidad, rendimiento) | — | #34, #35 |
-| 2026-10-14 | `auditoria/2026-10-14` | `auditoria/2026-10-04..989678f` (v1.17.0 → 1.19.1) | 6 · 13 · 17 · 8 | pendiente | pendiente |
+| 2026-10-14 | `auditoria/2026-10-14` | `auditoria/2026-10-04..989678f` (v1.17.0 → 1.19.1) | 6 · 13 · 17 · 8 | #55 | #49–#54 (en curso) |
