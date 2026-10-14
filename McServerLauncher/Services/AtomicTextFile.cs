@@ -50,4 +50,17 @@ public static class AtomicTextFile
 
         return true;
     }
+
+    /// <summary>Writes <paramref name="bytes"/> to <paramref name="path"/> the same way: never half-written.</summary>
+    /// <remarks>For the one binary file the app writes into a server's folder, its icon.</remarks>
+    public static void Write(string path, byte[] bytes)
+    {
+        var tmp = path + ".tmp";
+        File.WriteAllBytes(tmp, bytes);
+
+        if (File.Exists(path))
+            File.Replace(tmp, path, null);
+        else
+            File.Move(tmp, path);
+    }
 }

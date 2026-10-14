@@ -155,7 +155,10 @@ public sealed class MotdDocument
                     i += 13;
                     continue;
                 }
-                if (i + 1 < text.Length) style = Apply(style, char.ToLowerInvariant(text[++i]));
+                // A § with nothing after it on its line is a stray: taking the line break as its code
+                // used to join the second line onto the first.
+                if (i + 1 < text.Length && text[i + 1] is not ('\n' or '\r'))
+                    style = Apply(style, char.ToLowerInvariant(text[++i]));
                 continue;
             }
 
