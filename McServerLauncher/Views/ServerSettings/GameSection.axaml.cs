@@ -15,8 +15,8 @@ public partial class GameSection : UserControl, IServerSettingsSection
     {
         InitializeComponent();
         _bindings = new PropertyBindings(draft);
-        _bindings.Choice(GamemodeBox, "gamemode", "survival");
-        _bindings.Choice(DifficultyBox, "difficulty", "easy");
+        _bindings.Choice(GamemodeBox, "gamemode", "survival", numberedInOrder: true);
+        _bindings.Choice(DifficultyBox, "difficulty", "easy", numberedInOrder: true);
         _bindings.Number(MaxPlayersBox, "max-players", 20);
         _bindings.Toggle(PvpToggle, "pvp", true);
         _bindings.Toggle(HardcoreToggle, "hardcore", false);

@@ -18,69 +18,86 @@ namespace McServerLauncher.Views.ServerSettings;
 /// The defaults are the game's own, the same ones the old <c>server.properties</c> dialog used.
 /// </para>
 /// </remarks>
-internal sealed class PropertyBindings(ServerSettingsDraft draft)
+internal sealed class PropertyBindings
 {
+    private readonly ServerSettingsDraft _draft;
     private readonly List<Action> _loads = new();
     private bool _loading;
 
+    public PropertyBindings(ServerSettingsDraft draft) => _draft = draft;
+
     public void Toggle(ToggleSwitch toggle, string key, bool fallback)
     {
-        var raw = draft.FileValue(key);
-        draft.Track(key, Text(raw is null ? fallback : raw.Trim().Equals("true", StringComparison.OrdinalIgnoreCase)));
+        var raw = _draft.FileValue(key);
+        _draft.Track(key, Text(raw is null ? fallback : raw.Trim().Equals("true", StringComparison.OrdinalIgnoreCase)));
 
         toggle.IsCheckedChanged += (_, _) =>
         {
-            if (!_loading) draft.Set(key, Text(toggle.IsChecked == true));
+            if (!_loading) _draft.Set(key, Text(toggle.IsChecked == true));
         };
-        _loads.Add(() => toggle.IsChecked = draft.Get(key) == "true");
+        _loads.Add(() => toggle.IsChecked = _draft.Get(key) == "true");
     }
 
     public void Number(NumericUpDown box, string key, int fallback)
     {
-        var raw = draft.FileValue(key);
-        draft.Track(key, (int.TryParse(raw, out var n) ? n : fallback).ToString());
+        var raw = _draft.FileValue(key);
+        _draft.Track(key, (int.TryParse(raw, out var n) ? n : fallback).ToString());
 
         box.ValueChanged += (_, _) =>
         {
             // Empty while somebody types: nothing to write yet. WholeNumberBoxes puts the number
             // back if they leave it like that.
-            if (!_loading && box.Value is { } value) draft.Set(key, WholeNumberConverter.ToWhole(value).ToString());
+            if (!_loading && box.Value is { } value) _draft.Set(key, WholeNumberConverter.ToWhole(value).ToString());
         };
-        _loads.Add(() => box.Value = int.TryParse(draft.Get(key), out var v) ? v : fallback);
+        _loads.Add(() => box.Value = int.TryParse(_draft.Get(key), out var v) ? v : fallback);
     }
 
     /// <summary>A drop-down whose items carry the value to write in their <c>Tag</c>.</summary>
     /// <remarks>
-    /// A value the list does not know is kept as it is until something is picked: the first item is
-    /// shown, but nothing is written for a choice the user did not make.
+    /// <para>
+    /// A value the list does not know is kept as it is until something is picked, and the list shows
+    /// nothing picked: it used to show its first item, so a server on a value it did not know read as
+    /// "Peaceful" or "Survival" whatever it really played as.
+    /// </para>
+    /// <para>
+    /// With <paramref name="numberedInOrder"/>, a number is read as the position of an item, the way
+    /// Minecraft still accepts <c>difficulty=3</c> and <c>gamemode=1</c> (the items are listed in the
+    /// order of those ids). It shows as that item and counts as unchanged, so the file is not rewritten
+    /// unless something else is picked.
+    /// </para>
     /// </remarks>
-    public void Choice(ComboBox combo, string key, string fallback)
+    public void Choice(ComboBox combo, string key, string fallback, bool numberedInOrder = false)
     {
-        var raw = draft.FileValue(key)?.Trim() ?? fallback;
-        var known = Items(combo).FirstOrDefault(i => string.Equals(i.Tag as string, raw, StringComparison.OrdinalIgnoreCase));
-        draft.Track(key, known?.Tag as string ?? raw);
+        var raw = _draft.FileValue(key)?.Trim() ?? fallback;
+        var known = Find(combo, raw)
+                    ?? (numberedInOrder && int.TryParse(raw, out var id) ? Items(combo).ElementAtOrDefault(id) : null);
+        _draft.Track(key, known?.Tag as string ?? raw);
 
         combo.SelectionChanged += (_, _) =>
         {
-            if (!_loading && combo.SelectedItem is ComboBoxItem { Tag: string tag }) draft.Set(key, tag);
+            if (!_loading && combo.SelectedItem is ComboBoxItem { Tag: string tag }) _draft.Set(key, tag);
         };
-        _loads.Add(() =>
-        {
-            var now = draft.Get(key);
-            combo.SelectedItem = Items(combo).FirstOrDefault(i => string.Equals(i.Tag as string, now, StringComparison.OrdinalIgnoreCase))
-                                 ?? Items(combo).FirstOrDefault();
-        });
+        _loads.Add(() => combo.SelectedItem = Find(combo, _draft.Get(key)));
     }
 
     /// <summary>Shows every control what the draft holds, without that counting as a change.</summary>
     public void Load()
     {
         _loading = true;
-        try { foreach (var load in _loads) load(); }
-        finally { _loading = false; }
+        try
+        {
+            foreach (var load in _loads) load();
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private static IEnumerable<ComboBoxItem> Items(ComboBox combo) => combo.Items.OfType<ComboBoxItem>();
+
+    private static ComboBoxItem? Find(ComboBox combo, string value) =>
+        Items(combo).FirstOrDefault(i => string.Equals(i.Tag as string, value, StringComparison.OrdinalIgnoreCase));
 
     private static string Text(bool value) => value ? "true" : "false";
 }

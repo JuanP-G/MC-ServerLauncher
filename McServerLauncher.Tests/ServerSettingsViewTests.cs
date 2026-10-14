@@ -237,6 +237,35 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
         });
 
     [Fact]
+    public void ANumberedDifficultyAndGameModeShowAsWhatTheyAre() =>
+        ui.Run(() =>
+        {
+            // Minecraft still takes the old ids; the drop-downs showed their first item for them,
+            // so a hard creative server read as peaceful survival.
+            var folder = Folder("dieciseis");
+            File.WriteAllText(Path.Combine(folder, "server.properties"), "difficulty=3\ngamemode=1\n");
+            var view = Open(new ServerConfig { Name = "dieciseis", FolderPath = folder });
+
+            Assert.Equal("hard", Named<ComboBox>(view, ServerSettingsPage.Game, "DifficultyBox").SelectedItem
+                is ComboBoxItem { Tag: string d } ? d : null);
+            Assert.Equal("creative", Named<ComboBox>(view, ServerSettingsPage.Game, "GamemodeBox").SelectedItem
+                is ComboBoxItem { Tag: string g } ? g : null);
+            Assert.False(view.IsDirty);   // shown as what it is, not rewritten
+        });
+
+    [Fact]
+    public void AValueTheListDoesNotKnowShowsNothingPicked() =>
+        ui.Run(() =>
+        {
+            var folder = Folder("diecisiete");
+            File.WriteAllText(Path.Combine(folder, "server.properties"), "gamemode=minigame\n");
+            var view = Open(new ServerConfig { Name = "diecisiete", FolderPath = folder });
+
+            Assert.Null(Named<ComboBox>(view, ServerSettingsPage.Game, "GamemodeBox").SelectedItem);
+            Assert.False(view.IsDirty);
+        });
+
+    [Fact]
     public void ASwitchTheAppTurnsBackOffIsShownOff() =>
         ui.Run(() =>
         {
