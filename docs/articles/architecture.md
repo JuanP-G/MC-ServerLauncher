@@ -896,17 +896,30 @@ jars are the same mod: those Modrinth puts in the same project, those that give 
 new name with `.disabled`. The id is read from the file itself, so it works offline and for jars the store does
 not know; before, when `GetVersionsByHashAsync` did not answer, the old version silently stayed. They go **all
 or none**: each is first renamed to `*.mcsl-removing`, and if one is in use (the server holds it open) the rest
-are put back and the new download is withdrawn — unless it overwrote a file of the same name, since it is then
-the only copy. Anything left renamed is swept on the next refresh (`SweepLeftovers`). The notice only says
+are put back and the new download is withdrawn — unless it overwrote a file of the same name, or one of them
+could not be put back, since it is then the only copy in place. Anything left renamed is swept on the next
+refresh (`SweepLeftovers`). Paths are compared the way the system does (`FilePaths`): Linux tells `Sodium.jar`
+from `sodium.jar`.
+
+What the store says each jar is comes from one place, `ServerModsViewModel.Identify.cs`: one answer per SHA-1
+for the session, "unknown" remembered only when the store did answer, and a jar counts as its project only when
+it is that version's main file — a module or a sources jar published beside it would otherwise be deleted by
+installing the main one. The notice only says
 it was updated: taking the old copies out is what updating means, not news. The Crossplay, Hydraulic and MultiVersion installers go through the same thing
 (`ContentInstall.InstallReplacingAsync`), by id only, because Floodgate for Paper and Hydraulic come from
-GeyserMC and Modrinth does not know them; Hydraulic also skips Fabric API when an enabled one is there.
+GeyserMC and Modrinth does not know them; Hydraulic also skips Fabric API when an enabled one is there. They
+fetch through one path each — `ContentInstall.InstallFromModrinthAsync`, which takes the version's main file
+as the store does, and `InstallFromGeyserAsync`, verified by the SHA-256 GeyserMC publishes — and the Mods tab
+reloads whether they succeed or not.
 `ContentManifestCache` keeps what was read from each jar by path, size and write time, like `FileHashCache`, so
 **Update all** does not reopen the whole folder for every mod.
 
 ### Suggested clean-up
 An amber panel above the installed list offers to remove what the server no longer needs. **It only
-suggests**: every row comes ticked and waits for the button, and "Not now" hides it for 30 days.
+suggests**: rows come ticked and wait for the button — except "nothing installed needs it", the weakest
+reason, which comes unticked — and "Not now" hides it for 30 days. It folds to its title line. A row removes
+its file only if it is still the one the scan saw (same size and write time), and nothing is removed while
+**Update all** runs.
 `CleanupAdvisor` decides (pure, tested without a network); the panel half (`ServerModsViewModel.Cleanup.cs`)
 gathers the facts and shows the answer.
 
@@ -925,7 +938,8 @@ gathers the facts and shows the answer.
   was switched off (ones already off count from when first seen, and the panel says "at least since"), who
   used each library last time — which is what lets it say "only Litematica used it" — and the "Not now"s.
   **None of it is read or written until the tab is opened**: the panel is built for every server and in tests,
-  and has no business touching the user's data or asking Modrinth.
+  and has no business touching the user's data or asking Modrinth. It is written only when something changed,
+  and the ledgers of removed servers are deleted at start-up.
 
 ## Localization
 

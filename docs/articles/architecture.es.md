@@ -936,16 +936,27 @@ y el nombre nuevo con `.disabled`. El id se lee del propio archivo, así que fun
 la tienda no conoce; antes, si `GetVersionsByHashAsync` no contestaba, la versión vieja se quedaba sin avisar.
 Se quitan **todas o ninguna**: primero se renombran a `*.mcsl-removing` y, si una está en uso (el servidor la
 tiene abierta), se devuelven las demás y se retira la descarga nueva — salvo que esta haya sobrescrito un archivo
-del mismo nombre, porque entonces es la única copia. Lo que quede renombrado lo barre el siguiente refresco
-(`SweepLeftovers`). El aviso solo dice que se ha actualizado: quitar las copias viejas es lo que significa actualizar, no una noticia. Los instaladores de Crossplay, Hydraulic y
+del mismo nombre, o que alguna no se haya podido devolver, porque entonces es la única copia en su sitio. Lo que
+quede renombrado lo barre el siguiente refresco (`SweepLeftovers`). Las rutas se comparan como las compara el
+sistema (`FilePaths`): Linux distingue `Sodium.jar` de `sodium.jar`.
+
+Lo que la tienda dice que es cada jar sale de un solo sitio, `ServerModsViewModel.Identify.cs`: una respuesta por
+SHA-1 para la sesión, «desconocido» apuntado solo cuando la tienda sí contestó, y un jar cuenta como su proyecto
+solo si es el archivo principal de su versión — si no, un módulo o un jar de fuentes publicado al lado se
+borraría al instalar el principal. El aviso solo dice que se ha actualizado: quitar las copias viejas es lo que significa actualizar, no una noticia. Los instaladores de Crossplay, Hydraulic y
 MultiVersion pasan por lo mismo (`ContentInstall.InstallReplacingAsync`), solo por id, porque Floodgate para
 Paper e Hydraulic vienen de GeyserMC y Modrinth no los conoce; Hydraulic además no descarga Fabric API si ya
-hay una activa. `ContentManifestCache` guarda lo leído de cada jar por ruta, tamaño y fecha, como
+hay una activa. Descargan por un solo camino cada uno —`ContentInstall.InstallFromModrinthAsync`, que coge el
+archivo principal de la versión como hace la tienda, e `InstallFromGeyserAsync`, verificado con el SHA-256 que
+publica GeyserMC— y la pestaña de Mods se recarga salgan bien o no. `ContentManifestCache` guarda lo leído de cada jar por ruta, tamaño y fecha, como
 `FileHashCache`, para no reabrir toda la carpeta en cada mod de **Actualizar todas**.
 
 ### Limpieza sugerida
 Un panel ámbar encima de la lista de instalados ofrece quitar lo que el servidor ya no necesita. **Solo lo
-propone**: cada fila viene marcada y espera al botón, y «Ahora no» la esconde 30 días. `CleanupAdvisor` decide
+propone**: las filas vienen marcadas y esperan al botón —salvo «ningún mod instalado la necesita», el motivo
+más débil, que viene sin marcar— y «Ahora no» las esconde 30 días. Se pliega a su línea de título. Una fila
+solo quita su archivo si sigue siendo el que vio la búsqueda (mismo tamaño y fecha), y no se quita nada
+mientras corre **Actualizar todas**. `CleanupAdvisor` decide
 (puro, probado sin red); la parte del panel (`ServerModsViewModel.Cleanup.cs`) reúne los datos y lo pinta.
 
 - **Librerías que nadie usa.** Una librería es lo que está en una lista escrita a mano (`KnownLibraryIds`) o lo
@@ -965,6 +976,7 @@ propone**: cada fila viene marcada y espera al botón, y «Ahora no» la esconde
   desde»), quién usaba cada librería la última vez —lo que permite decir «solo la usaba Litematica»— y los
   «Ahora no». **Nada de esto se lee ni se escribe hasta que se abre la pestaña**: el panel se construye para
   todos los servidores y en las pruebas, y no tiene por qué tocar los datos del usuario ni preguntar a Modrinth.
+  Se escribe solo cuando algo cambia, y los registros de servidores quitados se borran al arrancar.
 
 ## Localización
 
