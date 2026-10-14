@@ -11,7 +11,7 @@ namespace McServerLauncher.ViewModels;
 /// </summary>
 /// <remarks>
 /// An empty box writes nothing, rather than failing to write a null into an <c>int</c> and showing the
-/// exception under the box. <see cref="Views.EmptyNumberBoxes"/> puts the number back once the box is
+/// exception under the box. <see cref="Views.WholeNumberBoxes"/> puts the number back once the box is
 /// left empty.
 /// </remarks>
 public class WholeNumberConverter : IValueConverter
@@ -23,7 +23,14 @@ public class WholeNumberConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         value is decimal number
-            ? System.Convert.ChangeType(Math.Round(number, MidpointRounding.AwayFromZero),
+            ? System.Convert.ChangeType(ToWhole(number),
                 Nullable.GetUnderlyingType(targetType) ?? targetType, CultureInfo.InvariantCulture)
             : BindingOperations.DoNothing;
+
+    /// <summary>A box's value as the whole number it stands for, rounded the way the box shows it.</summary>
+    /// <remarks>
+    /// The one place a box's <c>decimal</c> becomes an <c>int</c>. Some code used to cast instead,
+    /// which truncates: a box showing 3 (its format rounds 2.5) wrote 2.
+    /// </remarks>
+    public static int ToWhole(decimal value) => (int)Math.Round(value, MidpointRounding.AwayFromZero);
 }

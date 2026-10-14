@@ -66,7 +66,7 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
         if (_loading) return;
         ShowError(null);
 
-        var wanted = (int)(BedrockPortBox.Value ?? CrossplayService.DefaultBedrockPort);
+        var wanted = WholeNumberConverter.ToWhole(BedrockPortBox.Value ?? CrossplayService.DefaultBedrockPort);
         var saved = (int)_draft.Saved(nameof(ServerConfig.BedrockPort))!;
         var savedEffective = saved > 0 ? saved : CrossplayService.DefaultBedrockPort;
         _draft.Config.BedrockPort = wanted == savedEffective ? saved : wanted;

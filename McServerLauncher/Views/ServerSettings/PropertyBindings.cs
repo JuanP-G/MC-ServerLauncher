@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views.ServerSettings;
 
@@ -41,9 +42,9 @@ internal sealed class PropertyBindings(ServerSettingsDraft draft)
 
         box.ValueChanged += (_, _) =>
         {
-            // Empty while somebody types: nothing to write yet. EmptyNumberBoxes puts the number
+            // Empty while somebody types: nothing to write yet. WholeNumberBoxes puts the number
             // back if they leave it like that.
-            if (!_loading && box.Value is { } value) draft.Set(key, ((int)value).ToString());
+            if (!_loading && box.Value is { } value) draft.Set(key, WholeNumberConverter.ToWhole(value).ToString());
         };
         _loads.Add(() => box.Value = int.TryParse(draft.Get(key), out var v) ? v : fallback);
     }
