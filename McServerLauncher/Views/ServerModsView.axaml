@@ -430,38 +430,56 @@
 
                 <StackPanel Grid.Row="2">
                     <!-- What the server no longer needs: libraries nothing uses and mods off for a
-                         month. Only offered — every row is ticked and still waits for the button.
+                         month. Only offered — rows are ticked, and still wait for the button.
                          The list scrolls inside a fixed height so a long one cannot push the
-                         installed list off screen. -->
-                    <Border IsVisible="{Binding HasCleanupSuggestions}" IsEnabled="{Binding !IsUpdatingAll}" Margin="0,0,0,8" Padding="10,8"
+                         installed list off screen, and the whole panel folds to its title line for a
+                         short window. -->
+                    <Border IsVisible="{Binding HasCleanupSuggestions}" IsEnabled="{Binding !IsUpdatingAll}" Margin="0,0,0,8" Padding="4,2"
                             Background="{StaticResource SemanticWarnFill}" BorderBrush="{StaticResource SemanticWarnEdge}" BorderThickness="1" CornerRadius="6">
-                        <StackPanel Spacing="6">
-                            <TextBlock Text="{loc:Loc Cleanup_Title}" TextWrapping="Wrap"
-                                       FontSize="12" Foreground="{StaticResource SemanticWarn}" />
-                            <ScrollViewer MaxHeight="180" HorizontalScrollBarVisibility="Disabled">
-                                <ItemsControl ItemsSource="{Binding CleanupSuggestions}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,2"
-                                                      MinHeight="0" VerticalContentAlignment="Top">
-                                                <StackPanel>
-                                                    <TextBlock Text="{Binding FileName}" FontSize="12"
-                                                               TextTrimming="CharacterEllipsis" />
-                                                    <TextBlock Text="{Binding Reason}" FontSize="11" Opacity="0.7"
-                                                               TextWrapping="Wrap" />
-                                                </StackPanel>
-                                            </CheckBox>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                <Button Content="{loc:Loc Cleanup_NotNow}" Padding="10,4"
-                                        Command="{Binding DismissCleanupCommand}" />
-                                <Button Content="{Binding RemoveSelectedText}" Padding="10,4"
-                                        Command="{Binding RemoveSelectedCleanupCommand}" />
+                        <Expander IsExpanded="True" HorizontalAlignment="Stretch" Padding="6,0,6,6"
+                                  Background="Transparent" BorderThickness="0">
+                            <!-- The theme draws the header as a dark bar of its own; on the amber panel it
+                                 is part of the panel, not a control on top of it. -->
+                            <Expander.Resources>
+                                <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="Transparent" />
+                                <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver" Color="Transparent" />
+                                <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed" Color="Transparent" />
+                                <SolidColorBrush x:Key="ExpanderHeaderBorderBrush" Color="Transparent" />
+                                <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPointerOver" Color="Transparent" />
+                                <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPressed" Color="Transparent" />
+                                <SolidColorBrush x:Key="ExpanderContentBackground" Color="Transparent" />
+                                <SolidColorBrush x:Key="ExpanderContentBorderBrush" Color="Transparent" />
+                            </Expander.Resources>
+                            <Expander.Header>
+                                <TextBlock Text="{loc:Loc Cleanup_Title}" TextWrapping="Wrap"
+                                           FontSize="12" Foreground="{StaticResource SemanticWarn}" />
+                            </Expander.Header>
+                            <StackPanel Spacing="6">
+                                <ScrollViewer MaxHeight="180" HorizontalScrollBarVisibility="Disabled">
+                                    <ItemsControl ItemsSource="{Binding CleanupSuggestions}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,2"
+                                                          MinHeight="0" VerticalContentAlignment="Top">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding FileName}" FontSize="12"
+                                                                   TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{Binding Reason}" FontSize="11" Opacity="0.7"
+                                                                   TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                </CheckBox>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                                    <Button Content="{loc:Loc Cleanup_NotNow}" Padding="10,4"
+                                            Command="{Binding DismissCleanupCommand}" />
+                                    <Button Content="{Binding RemoveSelectedText}" Padding="10,4"
+                                            Command="{Binding RemoveSelectedCleanupCommand}" />
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+                        </Expander>
                     </Border>
 
                     <TextBlock Text="{Binding NoInstalledText}" Opacity="0.7"
