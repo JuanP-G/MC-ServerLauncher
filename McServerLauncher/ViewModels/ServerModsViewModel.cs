@@ -1266,7 +1266,10 @@ public partial class ServerModsViewModel : ObservableObject
         if (!oldIsNew && File.Exists(oldPath) && !victims.Contains(oldPath, StringComparer.OrdinalIgnoreCase))
             victims.Add(oldPath);
 
-        var anotherCopyWasOn = victims.Any(v => !v.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase));
+        // The download itself counts when it overwrote a file: that was an enabled copy by the same
+        // name, the one the server was using — and left out, the update switched the mod off.
+        var anotherCopyWasOn = downloadReplacedAFile
+                               || victims.Any(v => !v.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase));
 
         // Old jar in use (server running): keeping both would load two versions of the mod, so the
         // new one is rolled back and the user is told to stop the server first.

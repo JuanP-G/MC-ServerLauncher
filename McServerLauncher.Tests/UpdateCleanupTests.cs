@@ -266,6 +266,21 @@ public class UpdateCleanupTests : IDisposable
     }
 
     [Fact]
+    public void UpdatingADisabledRowOverTheEnabledCopyOfTheSameNameKeepsItOn()
+    {
+        // The server runs Geyser-Fabric.jar; a stale Geyser-Fabric.jar.disabled is updated, and the
+        // update's file has the enabled copy's name, so the download overwrote it. The only other
+        // copy left is the disabled one, and the update used to switch the mod off.
+        var row = FabricJar("Geyser-Fabric.jar.disabled", "geyser-fabric");
+        var fresh = FabricJar("Geyser-Fabric.jar", "geyser-fabric");   // what the download overwrote
+
+        ServerModsViewModel.ApplyDownloadedUpdate(
+            _dir, fresh, row, wasDisabled: true, downloadReplacedAFile: true, null, null);
+
+        Assert.Equal(new[] { "Geyser-Fabric.jar" }, FilesLeft());
+    }
+
+    [Fact]
     public void TheRowsOwnFileGoesEvenWhenNothingTiesItToTheNewOne()
     {
         // A jar that declares no id, and a store that did not answer: the row is still the mod the
