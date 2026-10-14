@@ -15,7 +15,7 @@ public partial class CleanupSuggestionViewModel : ObservableObject
         _scanned = Stamp(path);
     }
 
-    /// <summary>The file as the scan saw it: its size and when it was written, or null if it was gone.</summary>
+    /// <summary>The file as the scan saw it: its size and write time, or null if it was gone.</summary>
     private readonly (long Length, DateTime WrittenUtc)? _scanned;
 
     /// <summary>Whether the file is still the one the suggestion was made about.</summary>

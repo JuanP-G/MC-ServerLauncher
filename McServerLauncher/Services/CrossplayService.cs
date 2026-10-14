@@ -191,10 +191,12 @@ public class CrossplayService
         // Paper takes plugins, the mod loaders take mods. Same rule the mod store already uses.
         var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type), "Msg_CrossplayUnsupportedFmt");
 
-        await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, GeyserProjectId, "Geyser", log, ct);
+        await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, GeyserProjectId, "Geyser",
+            log, ct);
 
         if (FloodgateComesFromModrinth(config.Type))
-            await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, FloodgateProjectId, "Floodgate", log, ct);
+            await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, FloodgateProjectId,
+                "Floodgate", log, ct);
         else
             await InstallFloodgateForSpigotAsync(folder, log, ct);
     }

@@ -31,7 +31,8 @@ public partial class ServerModsViewModel
     private readonly Dictionary<string, VersionResult?> _storeAnswers = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>The SHA-1 of every jar in <paramref name="paths"/> that can be read, by path.</summary>
-    private async Task<Dictionary<string, string>> HashesAsync(IEnumerable<string> paths, CancellationToken ct)
+    private async Task<Dictionary<string, string>> HashesAsync(IEnumerable<string> paths,
+        CancellationToken ct)
     {
         var hashByPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var path in paths)
@@ -47,7 +48,8 @@ public partial class ServerModsViewModel
     /// <summary>Asks the store about the hashes it has not been asked about this session.</summary>
     private async Task LearnAsync(IEnumerable<string> hashes, CancellationToken ct)
     {
-        var unasked = hashes.Where(h => !_storeAnswers.ContainsKey(h)).Distinct(StringComparer.OrdinalIgnoreCase)
+        var unasked = hashes.Where(h => !_storeAnswers.ContainsKey(h))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
         if (unasked.Count == 0) return;
 
@@ -60,7 +62,8 @@ public partial class ServerModsViewModel
     }
 
     /// <summary>The version the store said <paramref name="hash"/> is, or null.</summary>
-    private VersionResult? Known(string hash) => _storeAnswers.TryGetValue(hash, out var version) ? version : null;
+    private VersionResult? Known(string hash) =>
+        _storeAnswers.TryGetValue(hash, out var version) ? version : null;
 
     /// <summary>The project <paramref name="hash"/> is, when it is that version's main file.</summary>
     private string? ProjectOf(string hash) =>

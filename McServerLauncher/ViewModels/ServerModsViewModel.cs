@@ -866,7 +866,8 @@ public partial class ServerModsViewModel : ObservableObject
     /// Which Modrinth project each jar in <paramref name="folder"/> is, by path. Jars the store does
     /// not know, and files that are not a version's main one, are left out.
     /// </summary>
-    private async Task<Dictionary<string, string>> ProjectByPathAsync(string folder, CancellationToken ct = default)
+    private async Task<Dictionary<string, string>> ProjectByPathAsync(string folder,
+        CancellationToken ct = default)
     {
         var hashByPath = await HashesAsync(ContentFiles(folder), ct);
         await LearnAsync(hashByPath.Values, ct);
@@ -1070,7 +1071,9 @@ public partial class ServerModsViewModel : ObservableObject
             // Asked once, before the first download, rather than once per mod: the answer is about
             // the jars that were already here, and those are the only ones an update replaces.
             var folder = Path.Combine(_config.FolderPath, ContentFolder);
-            var projects = Directory.Exists(folder) ? await ProjectByPathAsync(folder, _lifetime.Token) : null;
+            var projects = Directory.Exists(folder)
+                ? await ProjectByPathAsync(folder, _lifetime.Token)
+                : null;
 
             for (var i = 0; i < queue.Count; i++)
             {
@@ -1132,10 +1135,12 @@ public partial class ServerModsViewModel : ObservableObject
     /// Which store project each jar already here is. "Update all" asks once and passes it to every
     /// mod; a single update asks for itself.
     /// </param>
-    private async Task<(ContentReplacement.UpdateOutcome Outcome, string? Error, IReadOnlyList<string> Removed)> UpdateOneAsync(
-        ModItem mod, IReadOnlyDictionary<string, string>? projectByPath = null)
+    private async Task<(ContentReplacement.UpdateOutcome Outcome, string? Error,
+        IReadOnlyList<string> Removed)> UpdateOneAsync(ModItem mod,
+        IReadOnlyDictionary<string, string>? projectByPath = null)
     {
-        if (mod.Update is not { } update) return (ContentReplacement.UpdateOutcome.Failed, null, Array.Empty<string>());
+        if (mod.Update is not { } update)
+            return (ContentReplacement.UpdateOutcome.Failed, null, Array.Empty<string>());
 
         mod.IsUpdating = true;
         try
@@ -1155,8 +1160,8 @@ public partial class ServerModsViewModel : ObservableObject
             await _modrinthService.DownloadModAsync(update.Url, enabledPath, update.Sha512, update.Sha1,
                 ct: _lifetime.Token);
 
-            var (outcome, removed) = ContentReplacement.ApplyDownloadedUpdate(modsFolder, enabledPath, mod.FilePath, wasDisabled,
-                replacesAFile, update.ProjectId, projectByPath, _manifests.Read);
+            var (outcome, removed) = ContentReplacement.ApplyDownloadedUpdate(modsFolder, enabledPath,
+                mod.FilePath, wasDisabled, replacesAFile, update.ProjectId, projectByPath, _manifests.Read);
 
             if (outcome == ContentReplacement.UpdateOutcome.Updated)
             {
@@ -1170,7 +1175,8 @@ public partial class ServerModsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            return (ContentReplacement.UpdateOutcome.Failed, ErrorMessages.Describe(ex), Array.Empty<string>());
+            return (ContentReplacement.UpdateOutcome.Failed, ErrorMessages.Describe(ex),
+                Array.Empty<string>());
         }
         finally
         {
@@ -1772,8 +1778,8 @@ public partial class ServerModsViewModel : ObservableObject
                 failed: false, transient: true);
 
             // Mods are third-party jars chosen by the user: verify against Modrinth's own checksum.
-            await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512, file.Hashes?.Sha1,
-                ct: _lifetime.Token);
+            await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512,
+                file.Hashes?.Sha1, ct: _lifetime.Token);
 
             // Installing a second version beside the first made the loader refuse to start with
             // "duplicate mod". The new one replaces every other copy — another version, a disabled
@@ -1786,8 +1792,8 @@ public partial class ServerModsViewModel : ObservableObject
             {
                 // An install, not an update: say which copy is in the way, not "before updating".
                 RefreshInstalledMods();
-                Notify(string.Format(Localizer.Get("Msg_ContentInUseFmt"), ContentReplacement.DisplayName(others[0])),
-                    failed: true);
+                Notify(string.Format(Localizer.Get("Msg_ContentInUseFmt"),
+                    ContentReplacement.DisplayName(others[0])), failed: true);
                 return false;
             }
 

@@ -15,5 +15,6 @@ internal static class FilePaths
         OperatingSystem.IsLinux() ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
 
     /// <summary>Whether <paramref name="a"/> and <paramref name="b"/> are the same file.</summary>
-    public static bool Same(string a, string b) => string.Equals(Path.GetFullPath(a), Path.GetFullPath(b), Comparison);
+    public static bool Same(string a, string b) =>
+        string.Equals(Path.GetFullPath(a), Path.GetFullPath(b), Comparison);
 }

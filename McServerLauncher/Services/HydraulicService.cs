@@ -78,8 +78,8 @@ public class HydraulicService
         }
         else
         {
-            await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, FabricApiProjectId, "Fabric API",
-                log, ct);
+            await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, FabricApiProjectId,
+                "Fabric API", log, ct);
         }
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Hydraulic"));

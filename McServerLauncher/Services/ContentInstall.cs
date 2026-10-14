@@ -89,13 +89,14 @@ internal static class ContentInstall
     /// <param name="display">Its name, as the log and the errors say it.</param>
     /// <param name="log">Where the steps are reported.</param>
     /// <param name="ct">Cancels the download.</param>
-    public static async Task InstallFromModrinthAsync(ModrinthService modrinth, ServerConfig config, string folder,
-        string projectId, string display, IProgress<string>? log, CancellationToken ct)
+    public static async Task InstallFromModrinthAsync(ModrinthService modrinth, ServerConfig config,
+        string folder, string projectId, string display, IProgress<string>? log, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), display));
 
-        var version = await modrinth.GetLatestProjectVersionAsync(projectId, config.Type, config.GameVersion, ct);
+        var version = await modrinth.GetLatestProjectVersionAsync(projectId, config.Type, config.GameVersion,
+            ct);
         // The main file, as the store's own install picks it: a version can carry a module or a
         // sources jar beside it, and the first file listed is not always the right one.
         var file = version?.Files.FirstOrDefault(f => f.Primary) ?? version?.Files.FirstOrDefault();
@@ -103,7 +104,8 @@ internal static class ContentInstall
             throw new UserFacingException(string.Format(
                 Localizer.Get("Msg_CrossplayNoVersionFmt"), display, config.GameVersion, config.Type));
 
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), display, version!.VersionNumber));
+        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), display,
+            version!.VersionNumber));
         await InstallReplacingAsync(folder, file.Filename, display, path =>
             modrinth.DownloadModAsync(file.Url, path, file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct));
     }
@@ -115,7 +117,7 @@ internal static class ContentInstall
     /// <param name="artifact">The build.</param>
     /// <param name="folder">The content folder.</param>
     /// <param name="display">Its name, as the errors say it.</param>
-    /// <param name="alsoCheck">One more check of the downloaded file before it is kept; it throws to refuse.</param>
+    /// <param name="alsoCheck">One more check of the file before it is kept; it throws to refuse.</param>
     /// <param name="ct">Cancels the download.</param>
     public static async Task InstallFromGeyserAsync(GeyserDownloadsApi.Artifact artifact, string folder,
         string display, Func<string, CancellationToken, Task>? alsoCheck, CancellationToken ct)
@@ -127,7 +129,8 @@ internal static class ContentInstall
             AtomicDownload.ToFileAsync(resp.Content, path,
                 verifyAsync: async (part, token) =>
                 {
-                    await DownloadVerifier.VerifyAsync(part, artifact.Sha256, HashAlgorithmName.SHA256, token);
+                    await DownloadVerifier.VerifyAsync(part, artifact.Sha256, HashAlgorithmName.SHA256,
+                        token);
                     if (alsoCheck is not null) await alsoCheck(part, token);
                 },
                 ct: ct));

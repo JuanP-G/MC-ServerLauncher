@@ -237,7 +237,8 @@ internal static class ContentReplacement
     /// <param name="projectByPath">Which store project each jar is; may be null.</param>
     /// <param name="read">How to read one jar's manifest.</param>
     internal static (UpdateOutcome Outcome, IReadOnlyList<string> Removed) ApplyDownloadedUpdate(
-        string modsFolder, string downloadedPath, string oldPath, bool wasDisabled, bool downloadReplacedAFile,
+        string modsFolder, string downloadedPath, string oldPath, bool wasDisabled,
+        bool downloadReplacedAFile,
         string? projectId, IReadOnlyDictionary<string, string>? projectByPath,
         Func<string, ContentManifest.Manifest>? read = null)
     {
@@ -252,7 +253,8 @@ internal static class ContentReplacement
         // The download itself counts when it overwrote a file: that was an enabled copy by the same
         // name, the one the server was using — and left out, the update switched the mod off.
         var anotherCopyWasOn = downloadReplacedAFile
-                               || victims.Any(v => !v.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase));
+                               || victims.Any(v =>
+                                   !v.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase));
 
         // Old jar in use (server running): keeping both would load two versions of the mod, so the
         // new one is rolled back and the user is told to stop the server first.

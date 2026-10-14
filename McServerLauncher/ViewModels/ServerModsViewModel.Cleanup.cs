@@ -136,7 +136,8 @@ public partial class ServerModsViewModel
                 {
                     var key = CleanupAdvisor.OrphanKey(orphan.Jar);
                     if (CleanupAdvisor.IsSnoozed(record, key, now)) continue;
-                    rows.Add(new CleanupSuggestionViewModel(orphan.Jar.Path, orphan.Jar.FileName, ReasonFor(orphan), key)
+                    rows.Add(new CleanupSuggestionViewModel(orphan.Jar.Path, orphan.Jar.FileName,
+                        ReasonFor(orphan), key)
                     {
                         // "Nothing installed needs it" is the weakest reason: a mod the store does not
                         // know may need it without saying so. Offered, but left for the user to tick.
@@ -293,7 +294,8 @@ public partial class ServerModsViewModel
         var parts = new List<string>();
         if (removed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_RemovedFmt"), string.Join(", ", removed)));
         if (failed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_FailedFmt"), string.Join(", ", failed)));
-        if (changed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_ChangedFmt"), string.Join(", ", changed)));
+        if (changed.Count > 0)
+            parts.Add(string.Format(Localizer.Get("Cleanup_ChangedFmt"), string.Join(", ", changed)));
         UpdateStatus = string.Join(" ", parts);
     }
 
@@ -355,7 +357,9 @@ public partial class ServerModsViewModel
     internal static string FormatDay(DateTime utc, DateTime? today = null)
     {
         var day = utc.ToLocalTime();
-        var key = day.Year == (today ?? DateTime.Today).Year ? "Cleanup_DateFormat" : "Cleanup_DateWithYearFormat";
+        var key = day.Year == (today ?? DateTime.Today).Year
+            ? "Cleanup_DateFormat"
+            : "Cleanup_DateWithYearFormat";
         return day.ToString(Localizer.Get(key), CultureInfo.CurrentUICulture);
     }
 }
