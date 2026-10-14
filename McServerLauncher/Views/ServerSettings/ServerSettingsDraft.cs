@@ -244,11 +244,25 @@ public sealed class ServerSettingsDraft
         Changed?.Invoke();
     }
 
-    /// <summary>Writes what changed to the server: its config, <c>server.properties</c> and its icon.</summary>
+    /// <summary>Writes what changed to the server: <c>server.properties</c>, its icon, and its config.</summary>
     /// <remarks>
-    /// The config goes first, because the folder may be what changed and the rest is written into
-    /// the folder the server now has. Throws when a file cannot be written; what had been written
-    /// stays written, and the page keeps the rest so it can be saved again.
+    /// <para>
+    /// The files go first, into the folder the draft names — the folder may be what changed — and the
+    /// live config last. It used to be the other way round, so a file that could not be written (a
+    /// folder that had gone missing, a file in use) left the live config already changed: the server
+    /// list showed the new name and RAM, Discard only put the page back, and the next save of
+    /// <c>servers.json</c> made the half-done change permanent. Now a failure leaves the server as it
+    /// was.
+    /// </para>
+    /// <para>
+    /// Each file counts as saved as soon as it is written, so a failure after it does not leave the
+    /// page claiming something unsaved that is already on disk. Throws on the first file that cannot
+    /// be written; the page keeps the rest so it can be saved again.
+    /// </para>
+    /// <para>
+    /// Last also means the live config's own reactions run with the files already in place: turning
+    /// on "join to start it" in the same save as a new port opens the listener on the new port.
+    /// </para>
     /// </remarks>
     public ServerSettingsSaved Apply()
     {
@@ -261,26 +275,30 @@ public sealed class ServerSettingsDraft
             ModContentTurnedOn: !_baseline.BedrockModContentEnabled && Config.BedrockModContentEnabled);
 
         Config.Name = Config.Name.Trim();
-        foreach (var field in EditableFields)
-            if (!Same(Config, _baseline, field)) CopyField(Config, Live, field);
-
-        if (saved.BedrockPortChanged && CrossplayService.EffectiveBedrockPort(Live) is not null)
-            new CrossplayService().WriteConfig(Live, null);
 
         // Only what changed: rewriting an untouched value would reformat a MOTD written by hand, and
         // would create server.properties on a server that never ran.
         var changes = _props.Where(p => PropertyChanged(p.Key))
             .ToDictionary(p => p.Key, p => p.Value, StringComparer.OrdinalIgnoreCase);
-        if (changes.Count > 0) _service.Update(Live.PropertiesPath, changes);
+        if (changes.Count > 0)
+        {
+            _service.Update(Config.PropertiesPath, changes);
+            foreach (var key in changes.Keys) _propsBaseline[key] = _props[key];
+            _file = _service.Read(Config.PropertiesPath);
+        }
 
-        if (NewIcon is not null) _icons.WriteIcon(Live.FolderPath, NewIcon);
-        else if (RemoveIcon) _icons.RemoveIcon(Live.FolderPath);
-
-        _baseline = Copy(Config);
-        foreach (var key in _props.Keys) _propsBaseline[key] = _props[key];
-        _file = _service.Read(Live.PropertiesPath);
+        if (NewIcon is not null) _icons.WriteIcon(Config.FolderPath, NewIcon);
+        else if (RemoveIcon) _icons.RemoveIcon(Config.FolderPath);
         NewIcon = null;
         RemoveIcon = false;
+
+        if (saved.BedrockPortChanged && CrossplayService.EffectiveBedrockPort(Config) is not null)
+            new CrossplayService().WriteConfig(Config, null);
+
+        foreach (var field in EditableFields)
+            if (!Same(Config, _baseline, field)) CopyField(Config, Live, field);
+        _baseline = Copy(Config);
+
         Changed?.Invoke();
         return saved;
     }
