@@ -5,83 +5,11 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FluentIcons.Common;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 
 namespace McServerLauncher.ViewModels;
-
-/// <summary>How one stretch of the connection did.</summary>
-public enum StepState { Waiting, Running, Good, Fair, Bad, Skipped }
-
-/// <summary>One stretch of the way a player's packets travel, and how it did.</summary>
-public partial class ConnectionStepViewModel : ObservableObject
-{
-    public ConnectionStepViewModel(string title) => _title = title;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(Icon), nameof(IsGood), nameof(IsFair), nameof(IsBad), nameof(IsRunning), nameof(IsIdle))]
-    private StepState _state;
-
-    [ObservableProperty]
-    private string _title;
-
-    [ObservableProperty]
-    private string _detail = string.Empty;
-
-    /// <summary>The number beside it: "3 ms", "↑ 42 Mb/s".</summary>
-    [ObservableProperty]
-    private string _badge = string.Empty;
-
-    public Symbol Icon => State switch
-    {
-        StepState.Good => Symbol.Checkmark,
-        StepState.Fair => Symbol.Warning,
-        StepState.Bad => Symbol.ErrorCircle,
-        StepState.Running => Symbol.ArrowSync,
-        StepState.Skipped => Symbol.Subtract,
-        _ => Symbol.Circle,
-    };
-
-    public bool IsGood => State == StepState.Good;
-    public bool IsFair => State == StepState.Fair;
-    public bool IsBad => State == StepState.Bad;
-    public bool IsRunning => State == StepState.Running;
-    public bool IsIdle => State is StepState.Waiting or StepState.Skipped;
-
-    internal void Set(StepState state, string title, string detail, string badge = "")
-    {
-        State = state;
-        Title = title;
-        Detail = detail;
-        Badge = badge;
-    }
-}
-
-/// <summary>The verdict's colour, from its state.</summary>
-public static class StepStateConverters
-{
-    public static readonly Avalonia.Data.Converters.FuncValueConverter<StepState, bool> IsFair = new(s => s == StepState.Fair);
-    public static readonly Avalonia.Data.Converters.FuncValueConverter<StepState, bool> IsBad = new(s => s == StepState.Bad);
-}
-
-/// <summary>One row of the technical table: the round trips to one place.</summary>
-public sealed record ProbeRow(string Name, string Min, string Average, string Max, string Jitter, string Loss)
-{
-    /// <summary>Milliseconds with a decimal under ten: on a LAN "0" says nothing, "0.3" does.</summary>
-    internal static string Number(double ms) =>
-        ms.ToString(ms < 10 ? "0.0" : "0", CultureInfo.CurrentCulture);
-
-    internal static ProbeRow From(string name, LatencyStats stats)
-    {
-        static string Ms(double v) => Number(v);
-        return stats.AnyReply
-            ? new(name, Ms(stats.Min), Ms(stats.Average), Ms(stats.Max), Ms(stats.Jitter),
-                (stats.Loss * 100).ToString("0", CultureInfo.CurrentCulture) + " %")
-            : new(name, "—", "—", "—", "—", stats.Sent > 0 ? "100 %" : "—");
-    }
-}
 
 /// <summary>
 /// The connection test on a server's network page: where a slow game is coming from.
@@ -106,7 +34,7 @@ public partial class ConnectionTestViewModel : ObservableObject
     private static readonly TimeSpan Wait = TimeSpan.FromSeconds(3);
 
     // Whether the details were left open: for as long as the app runs, on every server.
-    private static bool _detailsOpen;
+    private static bool DetailsLeftOpen;
 
     private readonly ServerViewModel _server;
     private readonly ServerPropertiesService _properties = new();
@@ -160,11 +88,11 @@ public partial class ConnectionTestViewModel : ObservableObject
 
     public bool DetailsOpen
     {
-        get => _detailsOpen;
+        get => DetailsLeftOpen;
         set
         {
-            if (_detailsOpen == value) return;
-            _detailsOpen = value;
+            if (DetailsLeftOpen == value) return;
+            DetailsLeftOpen = value;
             OnPropertyChanged();
         }
     }
@@ -403,7 +331,7 @@ public partial class ConnectionTestViewModel : ObservableObject
             stats.AnyReply ? Ms(stats.Average) : Localizer.Get("Net_NoAnswer"));
     }
 
-    private void JudgeInternet(LatencyStats latency, Throughput up)
+    internal void JudgeInternet(LatencyStats latency, Throughput up)
     {
         if (!latency.AnyReply)
         {
@@ -446,7 +374,7 @@ public partial class ConnectionTestViewModel : ObservableObject
 
     // ---------------------------------------------------------------- report
 
-    private void WriteReport(List<string> addresses, Throughput down, Throughput up)
+    internal void WriteReport(List<string> addresses, Throughput down, Throughput up)
     {
         foreach (var step in Steps)
             _report.AppendLine($"[{step.State}] {step.Title} — {step.Badge} — {step.Detail}");
@@ -459,6 +387,9 @@ public partial class ConnectionTestViewModel : ObservableObject
         _report.AppendLine(Verdict);
     }
 
+    /// <summary>What Copy puts on the clipboard.</summary>
+    internal string Report => _report.ToString();
+
     private bool CanCopy => !IsTesting && _report.Length > 0;
 
     [RelayCommand(CanExecute = nameof(CanCopy))]
@@ -468,7 +399,7 @@ public partial class ConnectionTestViewModel : ObservableObject
         if (top?.Clipboard is not { } clipboard) return;
         try
         {
-            await clipboard.SetTextAsync(_report.ToString());
+            await clipboard.SetTextAsync(Report);
             CopyText = Localizer.Get("Net_Copied");
         }
         catch { /* clipboard busy */ }
