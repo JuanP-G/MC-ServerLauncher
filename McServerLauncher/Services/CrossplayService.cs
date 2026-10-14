@@ -212,7 +212,7 @@ public class CrossplayService
                 Localizer.Get("Msg_CrossplayNoVersionFmt"), display, config.GameVersion, config.Type));
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), display, version!.VersionNumber));
-        await ContentInstall.InstallReplacingAsync(folder, file.Filename, display, log, path =>
+        await ContentInstall.InstallReplacingAsync(folder, file.Filename, display, path =>
             _modrinth.DownloadModAsync(file.Url, path, file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct));
     }
 
@@ -238,7 +238,7 @@ public class CrossplayService
         using var resp = await GeyserDownloadsApi.OpenAsync(artifact, ct);
         resp.EnsureSuccessStatusCode();
 
-        await ContentInstall.InstallReplacingAsync(folder, artifact.FileName, "Floodgate", log, path =>
+        await ContentInstall.InstallReplacingAsync(folder, artifact.FileName, "Floodgate", path =>
             AtomicDownload.ToFileAsync(resp.Content, path,
                 verifyAsync: (part, token) =>
                     DownloadVerifier.VerifyAsync(part, artifact.Sha256, HashAlgorithmName.SHA256, token),

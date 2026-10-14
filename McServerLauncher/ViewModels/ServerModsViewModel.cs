@@ -1080,7 +1080,7 @@ public partial class ServerModsViewModel : ObservableObject
         // race it for the same folder.
         if (mod?.Update is null || mod.IsUpdating || IsUpdatingAll) return;
 
-        var (outcome, error, removed) = await UpdateOneAsync(mod);
+        var (outcome, error, _) = await UpdateOneAsync(mod);
         RefreshInstalledMods();
 
         // Set after the refresh, which rewrites the line with what is still pending — before, the
@@ -1094,22 +1094,8 @@ public partial class ServerModsViewModel : ObservableObject
             _ => string.Format(Localizer.Get("Msg_UpdateErrorFmt"), error)
         };
 
-        // Which files went, by name: deleting from somebody's server without saying what would
-        // leave them wondering where a jar they remember went.
-        if (outcome == UpdateOutcome.Updated && removed.Count > 0)
-            UpdateStatus += " " + RemovedText(removed);
-    }
-
-    /// <summary>"Se borró x.jar." or "Se borraron 3 archivos: …", or nothing when nothing went.</summary>
-    internal static string RemovedText(IReadOnlyList<string> removedPaths)
-    {
-        var names = removedPaths.Select(ContentReplacement.DisplayName).ToList();
-        return names.Count switch
-        {
-            0 => string.Empty,
-            1 => string.Format(Localizer.Get("Msg_RemovedOneFmt"), names[0]),
-            _ => string.Format(Localizer.Get("Msg_RemovedManyFmt"), names.Count, string.Join(", ", names))
-        };
+        // Only "updated". The old version and any other copy going with it is what updating means,
+        // not news: listing the files deleted read as if the app had done something unusual.
     }
 
     /// <summary>Updates every mod the last check found a newer version for, one after another.</summary>
@@ -1127,7 +1113,6 @@ public partial class ServerModsViewModel : ObservableObject
 
         IsUpdatingAll = true;
         var updated = 0;
-        var removed = 0;
         var failed = new List<string>();
         var stoppedByServer = false;
 
@@ -1149,11 +1134,10 @@ public partial class ServerModsViewModel : ObservableObject
                 UpdateStatus = string.Format(
                     Localizer.Get("Msg_UpdatingNofMFmt"), i + 1, queue.Count, mod.FileName);
 
-                var (outcome, _, gone) = await UpdateOneAsync(mod, projects);
+                var (outcome, _, _) = await UpdateOneAsync(mod, projects);
                 if (outcome == UpdateOutcome.Updated)
                 {
                     updated++;
-                    removed += gone.Count;
                     continue;
                 }
 
@@ -1167,7 +1151,7 @@ public partial class ServerModsViewModel : ObservableObject
             RefreshInstalledMods();
         }
 
-        UpdateStatus = UpdateAllSummary(updated, failed, stoppedByServer, removed);
+        UpdateStatus = UpdateAllSummary(updated, failed, stoppedByServer);
     }
 
     private bool CanUpdateAll => HasPendingUpdates && !IsUpdatingAll && !IsCheckingUpdates;
@@ -1176,20 +1160,14 @@ public partial class ServerModsViewModel : ObservableObject
     /// <param name="updated">How many mods were updated.</param>
     /// <param name="failed">The ones that could not be.</param>
     /// <param name="stoppedByServer">Whether it stopped because the server holds the files.</param>
-    /// <param name="removed">Old versions and duplicate copies deleted along the way.</param>
-    internal static string UpdateAllSummary(int updated, IReadOnlyList<string> failed, bool stoppedByServer,
-        int removed = 0)
+    internal static string UpdateAllSummary(int updated, IReadOnlyList<string> failed, bool stoppedByServer)
     {
-        var summary = stoppedByServer
+        return stoppedByServer
             ? string.Format(Localizer.Get("Msg_UpdateAllStoppedFmt"), updated)
             : failed.Count == 0
                 ? string.Format(Localizer.Get("Msg_UpdateAllDoneFmt"), updated)
                 : string.Format(Localizer.Get("Msg_UpdateAllPartialFmt"),
                     updated, failed.Count, string.Join(", ", failed));
-
-        return removed > 0
-            ? summary + " " + string.Format(Localizer.Get("Msg_UpdateAllRemovedFmt"), removed)
-            : summary;
     }
 
     /// <summary>
@@ -1926,14 +1904,13 @@ public partial class ServerModsViewModel : ObservableObject
             // A dependency with no build for this Minecraft version is not an install failure — the
             // mod is on disk — but it is the reason the server will not start, so it stays on screen
             // instead of fading away with the success message.
-            var removedText = removed.Count > 0 ? " " + RemovedText(removed) : string.Empty;
             if (unresolved.Count > 0)
-                Notify(string.Format(Localizer.Get("Msg_DepUnresolvedFmt"), string.Join(", ", unresolved)) + removedText,
+                Notify(string.Format(Localizer.Get("Msg_DepUnresolvedFmt"), string.Join(", ", unresolved)),
                     failed: true);
             else
-                Notify((extra == 0
+                Notify(extra == 0
                         ? Localizer.Get("Msg_ModInstalled")
-                        : string.Format(Localizer.Get("Msg_ModInstalledWithDepsFmt"), extra)) + removedText,
+                        : string.Format(Localizer.Get("Msg_ModInstalledWithDepsFmt"), extra),
                     failed: false);
             return true;
         }

@@ -581,9 +581,6 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_UpdateAllDoneFmt" xml:space="preserve"><value>Atualizados {0} ✔</value></data>
   <data name="Msg_UpdateAllPartialFmt" xml:space="preserve"><value>Atualizados {0}; {1} não foi possível: {2}. Continuam na lista para tentar de novo.</value></data>
   <data name="Msg_UpdateAllStoppedFmt" xml:space="preserve"><value>Atualizados {0}. Para o servidor para atualizar o resto: os ficheiros estão em uso.</value></data>
-  <data name="Msg_UpdateAllRemovedFmt" xml:space="preserve"><value>Foram apagadas {0} versões antigas ou cópias repetidas.</value></data>
-  <data name="Msg_RemovedOneFmt" xml:space="preserve"><value>Foi apagado {0}.</value></data>
-  <data name="Msg_RemovedManyFmt" xml:space="preserve"><value>Foram apagados {0} ficheiros: {1}.</value></data>
   <data name="Cleanup_Title" xml:space="preserve"><value>O servidor já não precisa disto. Retirá-lo deixa-o mais limpo e faz com que arranque mais depressa.</value></data>
   <data name="Cleanup_OrphanRemovedOneFmt" xml:space="preserve"><value>Só {0} a usava, e já não está instalado.</value></data>
   <data name="Cleanup_OrphanRemovedManyFmt" xml:space="preserve"><value>{0} usavam-na, e já não estão instalados.</value></data>
@@ -825,7 +822,6 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_HydraulicWrongVersionFmt" xml:space="preserve"><value>O Hydraulic não serve para o Minecraft {0}: a versão publicada pede {1}. Não se instalou nada.</value></data>
   <data name="Msg_HydraulicReady" xml:space="preserve"><value>Pronto: os jogadores de Bedrock vão ver os blocos e objetos dos mods.</value></data>
   <data name="Msg_HydraulicFabricApiPresent" xml:space="preserve"><value>A Fabric API já está instalada; fica como está.</value></data>
-  <data name="Msg_ContentReplacedFmt" xml:space="preserve"><value>{0}: a versão anterior foi apagada ({1}).</value></data>
   <data name="Msg_ContentInUseFmt" xml:space="preserve"><value>Não foi possível substituir {0}: o servidor está a usá-lo. Para o servidor e tenta de novo.</value></data>
   <data name="Hydraulic_Check" xml:space="preserve"><value>Que os jogadores de Bedrock vejam os blocos e objetos dos mods</value></data>
   <data name="Hydraulic_Hint" xml:space="preserve"><value>Instala o Hydraulic (dos mesmos GeyserMC) e a Fabric API. Sem isto, quem entra pelo Bedrock chega ao servidor mas não vê o que os mods acrescentam. Os próprios autores consideram-no de desenvolvimento muito inicial.</value></data>
