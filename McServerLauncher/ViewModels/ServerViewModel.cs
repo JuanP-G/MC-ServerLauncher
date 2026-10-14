@@ -2265,10 +2265,56 @@ public partial class ServerViewModel : ObservableObject
             }
             NewWhitelistName = string.Empty;
             RefreshWhitelist();
+
+            // Somebody adding a name means they want a list that counts. Before, the name went in
+            // and nothing changed until they also found the switch in Configurar.
+            if (!WhitelistEnabled) await SetWhitelistAsync(true);
         }
         catch (Exception ex)
         {
             OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ex.Message));
+        }
+    }
+
+    /// <summary>The switch on the whitelist card: turns it off without emptying it, or back on.</summary>
+    [RelayCommand]
+    private Task ToggleWhitelist() => SetWhitelistAsync(!WhitelistEnabled);
+
+    /// <summary>Switches the whitelist on or off, keeping whoever is on it.</summary>
+    /// <remarks>
+    /// While the server runs, through its own command, which applies it at once and writes
+    /// server.properties itself; while it is stopped, straight into the file. whitelist.json is
+    /// never touched, so switching it off and on again gives back the same list.
+    /// </remarks>
+    private async Task SetWhitelistAsync(bool on)
+    {
+        try
+        {
+            if (_process.IsRunning)
+            {
+                var command = on ? "whitelist on" : "whitelist off";
+                OnConsoleLine("> " + command, ConsoleLineKind.Command);
+                _process.SendCommand(command);
+                await Task.Delay(500);
+            }
+            else
+            {
+                _properties.Update(Config.PropertiesPath,
+                    new Dictionary<string, string> { ["white-list"] = on ? "true" : "false" });
+            }
+            RefreshWhitelist();
+
+            // The server writes the file when it gets to it; what was asked is what it will be.
+            if (_process.IsRunning) WhitelistEnabled = on;
+        }
+        catch (Exception ex)
+        {
+            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ex.Message));
+        }
+        finally
+        {
+            // The switch flips itself when clicked; this puts it back on the real state if that failed.
+            OnPropertyChanged(nameof(WhitelistEnabled));
         }
     }
 

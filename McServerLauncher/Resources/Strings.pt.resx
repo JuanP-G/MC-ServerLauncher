@@ -33,7 +33,11 @@
   <data name="Players_Ops" xml:space="preserve"><value>Operadores</value></data>
   <data name="RemoveOp" xml:space="preserve"><value>Remover OP</value></data>
   <data name="Players_Whitelist" xml:space="preserve"><value>Lista branca</value></data>
-  <data name="Whitelist_Hint" xml:space="preserve"><value>Só estes jogadores podem entrar (se a lista branca estiver ativada em Configurar).</value></data>
+  <data name="Whitelist_On" xml:space="preserve"><value>Ativada</value></data>
+  <data name="Whitelist_Off" xml:space="preserve"><value>Desativada</value></data>
+  <data name="Whitelist_ToggleTip" xml:space="preserve"><value>Ativa ou desativa a lista branca. Desativá-la não remove ninguém.</value></data>
+  <data name="Whitelist_HintOn" xml:space="preserve"><value>Só estes jogadores podem entrar.</value></data>
+  <data name="Whitelist_HintOff" xml:space="preserve"><value>Desativada: qualquer pessoa pode entrar. A lista fica guardada para quando a voltares a ativar, e adicionar alguém ativa-a.</value></data>
   <data name="Player_Placeholder" xml:space="preserve"><value>Nome do jogador (ex.: Steve)</value></data>
   <data name="Remove" xml:space="preserve"><value>Remover</value></data>
   <data name="Players_Banned" xml:space="preserve"><value>Banidos</value></data>

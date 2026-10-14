@@ -225,7 +225,9 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 
 <br>
 
-- **Jugadores** — conectados en vivo, operadores, lista blanca y baneados, con botones en vez de comandos.
+- **Jugadores** — conectados en vivo, operadores, lista blanca y baneados, con botones en vez de comandos. La
+  lista blanca tiene su propio interruptor: apagada deja entrar a cualquiera y guarda los nombres; añadir a
+  alguien la enciende. Los servidores nuevos empiezan con ella apagada (Minecraft 26.3 la trae encendida).
 - **Historial de jugadores** 📜 — todos los que han entrado alguna vez, con su última conexión. Su ficha:
   entradas y salidas, chat, muertes y logros, tiempo jugado, bloques minados y objetos usados —con su
   porcentaje— y curiosidades (saltos, daño, lo recorrido a pie, volando y con elytra). Se rellena la primera vez
