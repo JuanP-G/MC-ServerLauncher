@@ -57,18 +57,12 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>Identifying a jar means hashing it, and both scans want the same answers.</summary>
     private readonly FileHashCache _hashes = new();
 
+    /// <summary>Cancelled when the app closes: downloads and store questions stop with it.</summary>
+    private CancellationTokenSource _lifetime = new();
+
     /// <summary>What each jar says about itself, for finding the other copies of a mod.</summary>
     private readonly ContentManifestCache _manifests = new();
 
-    /// <summary>
-    /// Which Modrinth project each jar's SHA-1 belongs to, remembered for the session.
-    /// </summary>
-    /// <remarks>
-    /// The update check already asks this and throws the answer away. Keeping it means that
-    /// exporting after checking for updates — which is the order anybody does it in — costs the
-    /// store lookup nothing at all.
-    /// </remarks>
-    private readonly Dictionary<string, string> _projectIdByHash = new(StringComparer.OrdinalIgnoreCase);
     
     // --- Local Mods State ---
     
@@ -437,6 +431,13 @@ public partial class ServerModsViewModel : ObservableObject
     {
         CloseDetails();
 
+        // Cut short and replaced, never left cancelled: a failed app update brings these same view
+        // models back, and they must still be able to install.
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+        _lifetime = new CancellationTokenSource();
+        _cleanupScan?.Cancel();
+
         try { _reload?.Cancel(); } catch { /* already disposed */ }
         _reload?.Dispose();
         _reload = null;
@@ -763,13 +764,11 @@ public partial class ServerModsViewModel : ObservableObject
 
         // What each installed jar *is* — the update endpoint answers what could replace it, and the
         // dependencies that matter are the ones declared by the file actually on disk.
-        var installed = await _modrinthService.GetVersionsByHashAsync(sha1Hashes, ct);
-        if (installed.Count == 0) return;
+        var hashes = sha1Hashes.ToList();
+        await LearnAsync(hashes, ct);
+        var roots = hashes.Select(Known).OfType<VersionResult>().ToList();
+        if (roots.Count == 0) return;
 
-        // Kept for the export, which needs exactly this and would otherwise ask for it again.
-        foreach (var (hash, version) in installed) _projectIdByHash[hash] = version.ProjectId;
-
-        var roots = installed.Values.ToList();
         var installedIds = roots.Select(r => r.ProjectId).ToList();
 
         var plan = await _dependencies.ResolveMissingAsync(
@@ -865,31 +864,16 @@ public partial class ServerModsViewModel : ObservableObject
 
     /// <summary>
     /// Which Modrinth project each jar in <paramref name="folder"/> is, by path. Jars the store does
-    /// not know are left out.
+    /// not know, and files that are not a version's main one, are left out.
     /// </summary>
-    private async Task<Dictionary<string, string>> ProjectByPathAsync(string folder)
+    private async Task<Dictionary<string, string>> ProjectByPathAsync(string folder, CancellationToken ct = default)
     {
-        var pathByHash = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var jar in Directory.EnumerateFiles(folder)
-                     .Where(f => f.EndsWith(".jar", StringComparison.OrdinalIgnoreCase)
-                              || f.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase)))
-        {
-            try { pathByHash[await _hashes.Sha1Async(jar)] = jar; }
-            catch { /* unreadable or locked: it simply is not identified */ }
-        }
-
-        // Only what this session has not identified yet: the update check already asked about every
-        // jar, and "update all" asks once more before its first download.
-        var unknown = pathByHash.Keys.Where(h => !_projectIdByHash.ContainsKey(h)).ToList();
-        if (unknown.Count > 0)
-        {
-            foreach (var (hash, found) in await _modrinthService.GetVersionsByHashAsync(unknown))
-                _projectIdByHash[hash] = found.ProjectId;
-        }
+        var hashByPath = await HashesAsync(ContentFiles(folder), ct);
+        await LearnAsync(hashByPath.Values, ct);
 
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (hash, path) in pathByHash)
-            if (_projectIdByHash.TryGetValue(hash, out var projectId)) result[path] = projectId;
+        foreach (var (path, hash) in hashByPath)
+            if (ProjectOf(hash) is { } projectId) result[path] = projectId;
         return result;
     }
 
@@ -936,21 +920,10 @@ public partial class ServerModsViewModel : ObservableObject
     /// </remarks>
     private async Task<List<string>> InstalledProjectIdsAsync(CancellationToken ct)
     {
-        var folder = Path.Combine(_config.FolderPath, ContentFolder);
-        if (!Directory.Exists(folder)) return new List<string>();
-
-        var hashes = new List<string>();
-        foreach (var file in Directory.EnumerateFiles(folder)
-                     .Where(f => f.EndsWith(".jar", StringComparison.OrdinalIgnoreCase)
-                              || f.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase)))
-        {
-            ct.ThrowIfCancellationRequested();
-            try { hashes.Add(await _hashes.Sha1Async(file, ct)); }
-            catch { /* unreadable or locked: it simply does not count as installed */ }
-        }
-
-        var known = await _modrinthService.GetVersionsByHashAsync(hashes, ct);
-        return known.Values.Select(v => v.ProjectId).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var hashes = (await HashesAsync(ContentFiles(ContentManifest.FolderOf(_config)), ct)).Values.ToList();
+        await LearnAsync(hashes, ct);
+        return hashes.Select(Known).OfType<VersionResult>().Select(v => v.ProjectId)
+            .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     /// <summary>
@@ -1097,7 +1070,7 @@ public partial class ServerModsViewModel : ObservableObject
             // Asked once, before the first download, rather than once per mod: the answer is about
             // the jars that were already here, and those are the only ones an update replaces.
             var folder = Path.Combine(_config.FolderPath, ContentFolder);
-            var projects = Directory.Exists(folder) ? await ProjectByPathAsync(folder) : null;
+            var projects = Directory.Exists(folder) ? await ProjectByPathAsync(folder, _lifetime.Token) : null;
 
             for (var i = 0; i < queue.Count; i++)
             {
@@ -1173,13 +1146,14 @@ public partial class ServerModsViewModel : ObservableObject
 
             // Asked before downloading, while the folder still holds only what the user had.
             if (projectByPath is null && update.ProjectId is not null)
-                projectByPath = await ProjectByPathAsync(modsFolder);
+                projectByPath = await ProjectByPathAsync(modsFolder, _lifetime.Token);
 
             // Download+verify the new jar under its own (enabled) name first, so a failure never
             // destroys the currently installed one.
             var enabledPath = AtomicDownload.PathIn(modsFolder, update.FileName);
             var replacesAFile = File.Exists(enabledPath);
-            await _modrinthService.DownloadModAsync(update.Url, enabledPath, update.Sha512, update.Sha1);
+            await _modrinthService.DownloadModAsync(update.Url, enabledPath, update.Sha512, update.Sha1,
+                ct: _lifetime.Token);
 
             var (outcome, removed) = ContentReplacement.ApplyDownloadedUpdate(modsFolder, enabledPath, mod.FilePath, wasDisabled,
                 replacesAFile, update.ProjectId, projectByPath, _manifests.Read);
@@ -1455,13 +1429,10 @@ public partial class ServerModsViewModel : ObservableObject
                 catch { /* unreadable or locked: that jar simply gets no store answer */ }
             }
 
-            var unknown = hashByName.Values.Where(h => !_projectIdByHash.ContainsKey(h)).ToList();
-            if (unknown.Count > 0)
-                foreach (var (hash, version) in await _modrinthService.GetVersionsByHashAsync(unknown, budget.Token))
-                    _projectIdByHash[hash] = version.ProjectId;
+            await LearnAsync(hashByName.Values, budget.Token);
 
             var ids = hashByName.Values
-                .Select(h => _projectIdByHash.TryGetValue(h, out var id) ? id : null)
+                .Select(h => Known(h)?.ProjectId)
                 .Where(id => !string.IsNullOrEmpty(id))
                 .Select(id => id!)
                 .Distinct(StringComparer.Ordinal)
@@ -1480,7 +1451,7 @@ public partial class ServerModsViewModel : ObservableObject
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
 
             foreach (var (name, hash) in hashByName)
-                if (_projectIdByHash.TryGetValue(hash, out var id) && byId.TryGetValue(id, out var project))
+                if (Known(hash)?.ProjectId is { } id && byId.TryGetValue(id, out var project))
                     byName[name] = (StoreSideOf(project.ClientSide), StoreSideOf(project.ServerSide));
         }
         catch
@@ -1795,13 +1766,14 @@ public partial class ServerModsViewModel : ObservableObject
 
             // Which project each jar already here is. Found before downloading, while the folder
             // still holds only what the user had.
-            var projectByPath = await ProjectByPathAsync(modsFolder);
+            var projectByPath = await ProjectByPathAsync(modsFolder, _lifetime.Token);
 
             Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), file.Filename),
                 failed: false, transient: true);
 
             // Mods are third-party jars chosen by the user: verify against Modrinth's own checksum.
-            await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512, file.Hashes?.Sha1);
+            await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512, file.Hashes?.Sha1,
+                ct: _lifetime.Token);
 
             // Installing a second version beside the first made the loader refuse to start with
             // "duplicate mod". The new one replaces every other copy — another version, a disabled

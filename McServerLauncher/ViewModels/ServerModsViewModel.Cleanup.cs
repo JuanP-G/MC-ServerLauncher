@@ -60,12 +60,6 @@ public partial class ServerModsViewModel
 
     private ContentLedgerStore Ledger => _ledger ??= ContentLedgerStore.For(_config.Id);
 
-    /// <summary>
-    /// What the store said each jar is, by SHA-1, for the session. The dependencies are the part this
-    /// needs and the update check does not keep.
-    /// </summary>
-    private readonly Dictionary<string, VersionResult> _versionByHash = new(StringComparer.OrdinalIgnoreCase);
-
     /// <summary>Starts the panel's scans: the tab is on screen.</summary>
     private void ArmCleanup()
     {
@@ -89,6 +83,7 @@ public partial class ServerModsViewModel
     internal async Task RefreshCleanupAsync()
     {
         _cleanupScan?.Cancel();
+        _cleanupScan?.Dispose();
         var scan = _cleanupScan = new CancellationTokenSource();
         var ct = scan.Token;
 
@@ -164,27 +159,12 @@ public partial class ServerModsViewModel
     private async Task<(IReadOnlyList<CleanupAdvisor.Jar> Jars, bool StoreAnswered)> IdentifyAsync(
         IReadOnlyList<ContentManifest.Entry> entries, CancellationToken ct)
     {
-        var hashByPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var entry in entries)
-        {
-            try { hashByPath[entry.Path] = await _hashes.Sha1Async(entry.Path, ct); }
-            catch (OperationCanceledException) { throw; }
-            catch { /* unreadable or locked: it simply is not identified */ }
-        }
-
-        var unknown = hashByPath.Values.Where(h => !_versionByHash.ContainsKey(h)).Distinct().ToList();
-        if (unknown.Count > 0)
-        {
-            foreach (var (hash, version) in await _modrinthService.GetVersionsByHashAsync(unknown, ct))
-            {
-                _versionByHash[hash] = version;
-                _projectIdByHash[hash] = version.ProjectId;
-            }
-        }
+        var hashByPath = await HashesAsync(entries.Select(e => e.Path), ct);
+        await LearnAsync(hashByPath.Values, ct);
 
         var versionByPath = hashByPath
-            .Where(kv => _versionByHash.ContainsKey(kv.Value))
-            .ToDictionary(kv => kv.Key, kv => _versionByHash[kv.Value], StringComparer.OrdinalIgnoreCase);
+            .Where(kv => Known(kv.Value) is not null)
+            .ToDictionary(kv => kv.Key, kv => Known(kv.Value)!, StringComparer.OrdinalIgnoreCase);
 
         // "Answered" means it recognised something here. GetVersionsByHashAsync swallows every error
         // and returns an empty map, so an empty answer cannot be told apart from being offline — and
