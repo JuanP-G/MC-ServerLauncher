@@ -85,6 +85,12 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
     /// <summary>Set when the server failed for a reason that repeating the start cannot change.</summary>
     private bool _startFailureIsFinal;
+
+    /// <summary>
+    /// Somebody asked for a stop that is still going: waiting for a backup to finish reading the
+    /// world, or for the server to exit. A crash meanwhile is not restarted — they asked for it off.
+    /// </summary>
+    private bool _stopRequested;
     private DateTime? _lastRunningAtUtc;
 
     public ServerConfig Config { get; }
@@ -1503,6 +1509,10 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
                 return;
             }
 
+            // Stop was pressed and is waiting for a backup to finish reading the world: the crash
+            // only got there first.
+            if (_stopRequested) return;
+
             var stableRun = _lastRunningAtUtc is { } last && DateTime.UtcNow - last >= StabilityWindow;
             if (stableRun) _consecutiveCrashes = 0;
             _consecutiveCrashes++;
@@ -1833,6 +1843,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     [RelayCommand(CanExecute = nameof(CanStop))]
     private async Task Stop()
     {
+        _stopRequested = true;
         try
         {
             // With a snapshot of the good state just reached by stopping cleanly. Not for Restart's
@@ -1846,6 +1857,10 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         catch (Exception ex)
         {
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+        }
+        finally
+        {
+            _stopRequested = false;
         }
     }
 
