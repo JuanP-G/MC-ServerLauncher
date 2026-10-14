@@ -228,10 +228,10 @@ public class UpdateCleanupTests : IDisposable
         var old = FabricJar("sodium-0.5.jar.disabled", "sodium");
         var fresh = FabricJar("sodium-0.6.jar", "sodium");
 
-        var (outcome, removed) = ServerModsViewModel.ApplyDownloadedUpdate(
+        var (outcome, removed) = ContentReplacement.ApplyDownloadedUpdate(
             _dir, fresh, old, wasDisabled: true, downloadReplacedAFile: false, null, null);
 
-        Assert.Equal(ServerModsViewModel.UpdateOutcome.Updated, outcome);
+        Assert.Equal(ContentReplacement.UpdateOutcome.Updated, outcome);
         Assert.Equal(new[] { old }, removed);
         Assert.Equal(new[] { "sodium-0.6.jar.disabled" }, FilesLeft());
     }
@@ -244,7 +244,7 @@ public class UpdateCleanupTests : IDisposable
         FabricJar("lithium.jar", "lithium");
         var fresh = FabricJar("sodium-0.6.jar", "sodium");
 
-        var (_, removed) = ServerModsViewModel.ApplyDownloadedUpdate(
+        var (_, removed) = ContentReplacement.ApplyDownloadedUpdate(
             _dir, fresh, row, wasDisabled: false, downloadReplacedAFile: false, null, null);
 
         Assert.Equal(2, removed.Count);
@@ -259,7 +259,7 @@ public class UpdateCleanupTests : IDisposable
         FabricJar("sodium-0.4.jar", "sodium");
         var fresh = FabricJar("sodium-0.6.jar", "sodium");
 
-        ServerModsViewModel.ApplyDownloadedUpdate(
+        ContentReplacement.ApplyDownloadedUpdate(
             _dir, fresh, row, wasDisabled: true, downloadReplacedAFile: false, null, null);
 
         Assert.Equal(new[] { "sodium-0.6.jar" }, FilesLeft());
@@ -274,7 +274,7 @@ public class UpdateCleanupTests : IDisposable
         var row = FabricJar("Geyser-Fabric.jar.disabled", "geyser-fabric");
         var fresh = FabricJar("Geyser-Fabric.jar", "geyser-fabric");   // what the download overwrote
 
-        ServerModsViewModel.ApplyDownloadedUpdate(
+        ContentReplacement.ApplyDownloadedUpdate(
             _dir, fresh, row, wasDisabled: true, downloadReplacedAFile: true, null, null);
 
         Assert.Equal(new[] { "Geyser-Fabric.jar" }, FilesLeft());
@@ -288,7 +288,7 @@ public class UpdateCleanupTests : IDisposable
         var row = FabricJar("mystery-1.jar", id: null);
         var fresh = FabricJar("mystery-2.jar", id: null);
 
-        ServerModsViewModel.ApplyDownloadedUpdate(
+        ContentReplacement.ApplyDownloadedUpdate(
             _dir, fresh, row, wasDisabled: false, downloadReplacedAFile: false, null, null);
 
         Assert.Equal(new[] { "mystery-2.jar" }, FilesLeft());
@@ -299,10 +299,10 @@ public class UpdateCleanupTests : IDisposable
     {
         var same = FabricJar("spark.jar", "spark");
 
-        var (outcome, removed) = ServerModsViewModel.ApplyDownloadedUpdate(
+        var (outcome, removed) = ContentReplacement.ApplyDownloadedUpdate(
             _dir, same, same, wasDisabled: false, downloadReplacedAFile: true, null, null);
 
-        Assert.Equal(ServerModsViewModel.UpdateOutcome.Updated, outcome);
+        Assert.Equal(ContentReplacement.UpdateOutcome.Updated, outcome);
         Assert.Empty(removed);
         Assert.Equal(new[] { "spark.jar" }, FilesLeft());
     }
@@ -315,12 +315,12 @@ public class UpdateCleanupTests : IDisposable
         var row = FabricJar("sodium-0.5.jar", "sodium");
         var fresh = FabricJar("sodium-0.6.jar", "sodium");
 
-        ServerModsViewModel.UpdateOutcome outcome;
+        ContentReplacement.UpdateOutcome outcome;
         using (new FileStream(row, FileMode.Open, FileAccess.Read, FileShare.None))
-            (outcome, _) = ServerModsViewModel.ApplyDownloadedUpdate(
+            (outcome, _) = ContentReplacement.ApplyDownloadedUpdate(
                 _dir, fresh, row, wasDisabled: false, downloadReplacedAFile: false, null, null);
 
-        Assert.Equal(ServerModsViewModel.UpdateOutcome.NeedsStop, outcome);
+        Assert.Equal(ContentReplacement.UpdateOutcome.NeedsStop, outcome);
         Assert.Equal(new[] { "sodium-0.5.jar" }, FilesLeft());
     }
 
