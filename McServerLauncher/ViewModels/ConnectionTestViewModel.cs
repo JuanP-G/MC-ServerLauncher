@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Net;
 using System.Text;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -289,9 +290,12 @@ public partial class ConnectionTestViewModel : ObservableObject
                 {
                     BedrockStep.Set(StepState.Running, Localizer.Get("Net_StepBedrock"), Localizer.Get("Net_Measuring"));
                     addresses.Add($"{Localizer.Get("Net_RowBedrock")}: {host}:{bedrockPort}");
-                    var bedrock = await ConnectionProbe.SampleAsync(
-                        c => ConnectionProbe.PingBedrockAsync(host, bedrockPort, Wait, c),
-                        Samples, Gap, Live(BedrockStep), ct);
+                    // A name that does not resolve is a tunnel nobody can reach: every ping lost.
+                    var bedrock = await ConnectionProbe.ResolveAsync(host, ct) is { } ip
+                        ? await ConnectionProbe.SampleAsync(
+                            c => ConnectionProbe.PingBedrockAsync(new IPEndPoint(ip, bedrockPort), Wait, c),
+                            Samples, Gap, Live(BedrockStep), ct)
+                        : new LatencyStats(Array.Empty<double>(), Samples);
                     Judge(BedrockStep, bedrock, good: 80, fair: 180, "Net_Bedrock");
                     Rows.Add(ProbeRow.From(Localizer.Get("Net_RowBedrock"), bedrock));
                 }
