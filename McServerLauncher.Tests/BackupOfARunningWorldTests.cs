@@ -159,6 +159,19 @@ public class BackupOfARunningWorldTests : IDisposable
         Assert.Single(service.ListBackups(Config()));
     }
 
+    [Theory]
+    [InlineData(1970)]
+    [InlineData(2150)]
+    public async Task AFileWithADateAZipCannotHoldIsStillBackedUp(int year)
+    {
+        File.SetLastWriteTime(Path.Combine(_dir, "world", "level.dat"), new DateTime(year, 1, 1, 12, 0, 0));
+
+        var zip = await new WorldBackupService().CreateBackupAsync(Config(), "start");
+
+        Assert.NotNull(zip);
+        Assert.Contains("level.dat", Entries(zip));
+    }
+
     public void Dispose()
     {
         foreach (var stream in _heldByTheServer) stream.Dispose();

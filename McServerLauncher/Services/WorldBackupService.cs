@@ -269,12 +269,24 @@ public class WorldBackupService
             // "Optimal" level burns CPU for little gain; "Fastest" keeps backups quick without
             // giving up much size.
             var zipped = zip.CreateEntry(name, CompressionLevel.Fastest);
-            zipped.LastWriteTime = entry.LastWriteTime;
+            zipped.LastWriteTime = ZipTime(entry.LastWriteTime);
             using var source = OpenForCopy(entry.FullName);
             using var target = zipped.Open();
             source.CopyTo(target);
         }
     }
+
+    /// <summary>A file's time as a zip can hold it: between 1980 and 2107.</summary>
+    /// <remarks>
+    /// The zip format stores dates from 1980 to 2107, and setting one outside that throws.
+    /// <see cref="ZipFile.CreateFromDirectory(string, string)"/>, which this replaced, quietly used
+    /// 1980 instead; the hand-written copy did not, so a single file dated 1970 — copied out of a
+    /// tar, a container or a Nix store — failed every backup of the world, and with it every start.
+    /// </remarks>
+    internal static DateTime ZipTime(DateTime local) =>
+        local.Year < 1980 ? new DateTime(1980, 1, 1)
+        : local.Year > 2107 ? new DateTime(2107, 12, 31, 23, 59, 58)
+        : local;
 
     /// <summary>Opens one file of the world for the zip, letting the running server keep it open.</summary>
     /// <remarks>Virtual so a test can make one file fail halfway through a copy.</remarks>
