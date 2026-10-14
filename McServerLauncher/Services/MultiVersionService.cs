@@ -25,8 +25,12 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public class MultiVersionService
 {
+    /// <summary>The two plugins, by Modrinth project and by the name people know them by.</summary>
+    private static readonly (string Id, string Name)[] Plugins =
+        [("viaversion", "ViaVersion"), ("viabackwards", "ViaBackwards")];
+
     /// <summary>Modrinth ids. Both publish for the <c>paper</c> loader, which covers the family.</summary>
-    public static readonly string[] ProjectIds = { "viaversion", "viabackwards" };
+    public static readonly string[] ProjectIds = Plugins.Select(p => p.Id).ToArray();
 
     private readonly ModrinthService _modrinth;
 
@@ -50,21 +54,9 @@ public class MultiVersionService
     {
         var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type), "Msg_MultiVersionUnsupportedFmt");
 
-        foreach (var projectId in ProjectIds)
-        {
-            ct.ThrowIfCancellationRequested();
-            log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), projectId));
-
-            var version = await _modrinth.GetLatestProjectVersionAsync(projectId, config.Type, config.GameVersion, ct);
-            var file = version?.Files.FirstOrDefault();
-            if (file is null)
-                throw new UserFacingException(string.Format(
-                    Localizer.Get("Msg_CrossplayNoVersionFmt"), projectId, config.GameVersion, config.Type));
-
-            log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), projectId, version!.VersionNumber));
-            await ContentInstall.InstallReplacingAsync(folder, file.Filename, projectId, path =>
-                _modrinth.DownloadModAsync(file.Url, path, file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct));
-        }
+        // By name in what the user reads: "No se pudo sustituir viaversion" read like a bug.
+        foreach (var (id, name) in Plugins)
+            await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, id, name, log, ct);
 
         log?.Report(Localizer.Get("Msg_MultiVersionReady"));
     }
