@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using McServerLauncher.Localization;
@@ -150,6 +153,7 @@ public class WorldBackupService
         var sizeMb = new FileInfo(zipPath).Length / (1024.0 * 1024.0);
         log?.Report(string.Format(Localizer.Get("Msg_BackupCreatedFmt"), sizeMb.ToString("0.#")));
 
+        RecordBackup(config, fileName, worldDir);
         PruneOldBackups(config, protectFromPruning);
         return zipPath;
     }
@@ -239,6 +243,125 @@ public class WorldBackupService
     private static void TryDeleteZip(string zipPath)
     {
         try { File.Delete(zipPath); } catch { /* best-effort */ }
+    }
+
+    /// <summary>
+    /// Which backup the world on disk is a copy of, as far as anybody playing could tell.
+    /// </summary>
+    /// <param name="Zip">The backup's file name in <c>backups/</c>.</param>
+    /// <param name="Fingerprint">The world folder as it was then; see <see cref="Fingerprint(string)"/>.</param>
+    internal record BackupState(string Zip, string Fingerprint);
+
+    /// <summary>Beside the zips it names, so it travels with them; the list only shows <c>*.zip</c>.</summary>
+    private static string StatePath(ServerConfig config) => Path.Combine(BackupsDir(config), "last-backup.json");
+
+    /// <summary>
+    /// Whether the world on disk is still the one the last backup copied — so a start or a stop can
+    /// skip making another copy of it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A server that sleeps when empty and wakes when somebody presses Join used to leave two backups
+    /// per cycle — one on the way down, one on the way up — even when nobody came in. Enough of those
+    /// and the retention deleted every copy somebody had actually played in.
+    /// </para>
+    /// <para>
+    /// False whenever there is any doubt: no record, a record naming a zip that is no longer there
+    /// (somebody cleared the folder), a world that is missing, or one whose files differ in any way
+    /// from what was recorded — including a <c>level-name</c> that now points somewhere else.
+    /// </para>
+    /// </remarks>
+    public virtual bool IsUpToDate(ServerConfig config)
+    {
+        try
+        {
+            if (ReadState(config) is not { } state) return false;
+            if (!File.Exists(Path.Combine(BackupsDir(config), state.Zip))) return false;
+            if (WorldFolderFor(config.FolderPath, GetLevelName(config)) is not { } worldDir
+                || !Directory.Exists(worldDir)) return false;
+            return state.Fingerprint == Fingerprint(worldDir);
+        }
+        catch
+        {
+            return false;   // can't tell: make the copy
+        }
+    }
+
+    /// <summary>
+    /// Records that the world as it is now counts as the last backup, without copying it again.
+    /// </summary>
+    /// <remarks>
+    /// For a server that ran with nobody playing and nothing typed that changes the world. Minecraft
+    /// still writes on the way out — <c>level.dat</c> keeps the time it was last saved — so its files
+    /// no longer match the backup, but nothing anybody would want back is in the difference. Does
+    /// nothing when there is no backup to point at, so it can never stand in for a missing one.
+    /// </remarks>
+    public virtual void MarkUnchanged(ServerConfig config)
+    {
+        try
+        {
+            if (ReadState(config) is not { } state) return;
+            if (!File.Exists(Path.Combine(BackupsDir(config), state.Zip))) return;
+            if (WorldFolderFor(config.FolderPath, GetLevelName(config)) is not { } worldDir
+                || !Directory.Exists(worldDir)) return;
+            WriteState(config, state with { Fingerprint = Fingerprint(worldDir) });
+        }
+        catch
+        {
+            // Best-effort: the next start just makes the copy it would have made anyway.
+        }
+    }
+
+    private static BackupState? ReadState(ServerConfig config)
+    {
+        var path = StatePath(config);
+        if (!File.Exists(path)) return null;
+        try { return JsonSerializer.Deserialize<BackupState>(File.ReadAllText(path)); }
+        catch { return null; }
+    }
+
+    /// <summary>Remembers that <paramref name="zipName"/> is a copy of the world as it is now.</summary>
+    private static void RecordBackup(ServerConfig config, string zipName, string worldDir)
+    {
+        try { WriteState(config, new BackupState(zipName, Fingerprint(worldDir))); }
+        catch { /* a file that vanished mid-listing: the next start or stop simply makes its copy */ }
+    }
+
+    private static void WriteState(ServerConfig config, BackupState state)
+    {
+        try
+        {
+            var path = StatePath(config);
+            var tmp = path + ".tmp";
+            File.WriteAllText(tmp, JsonSerializer.Serialize(state));
+            File.Move(tmp, path, overwrite: true);
+        }
+        catch
+        {
+            // Best-effort: without it the next start or stop makes one copy too many, nothing worse.
+        }
+    }
+
+    /// <summary>
+    /// A hash of every file in the world: where it is, how big, and when it was last written.
+    /// </summary>
+    /// <remarks>
+    /// The contents are not read — a world can be gigabytes, and this runs on every start and stop.
+    /// Anything that writes a file changes its time, which is enough. <c>session.lock</c> is left
+    /// out, as it is from the zip: the server rewrites it on every start. The folder's own path is
+    /// part of it, so pointing <c>level-name</c> at another world is a change too.
+    /// </remarks>
+    internal static string Fingerprint(string worldDir)
+    {
+        var lines = new DirectoryInfo(worldDir)
+            .EnumerateFiles("*", SearchOption.AllDirectories)
+            .Select(f => (Name: Path.GetRelativePath(worldDir, f.FullName).Replace(Path.DirectorySeparatorChar, '/'), File: f))
+            .Where(f => !string.Equals(f.Name, SessionLock, StringComparison.OrdinalIgnoreCase))
+            .Select(f => $"{f.Name}|{f.File.Length}|{f.File.LastWriteTimeUtc.Ticks}")
+            .Order(StringComparer.Ordinal);
+
+        var text = Path.GetFullPath(worldDir) + "\n" + string.Join("\n", lines);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
     }
 
     /// <summary>A backup the app made on its own: before a start, after a stop, or by the clock.</summary>

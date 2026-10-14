@@ -250,10 +250,11 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 
 - **Copias de seguridad del mundo** — antes de cada arranque, en cada parada y, si lo dejas puesto, cada hora
   mientras se juega. Para copiar un servidor arrancado se le pide antes a Minecraft que vuelque el mundo a
-  disco, así que la copia nunca queda a medias; y si nadie se ha conectado desde la anterior, se salta. Las que
-  haces a mano se cuentan aparte, así que el reloj nunca las borra. La pestaña **Copias** enseña cada montón
-  frente a su cupo, el espacio que ocupan y cuándo toca la próxima, las ordena por días y marca la que la
-  próxima copia sustituirá. **Copia ahora** y **Restaurar** con un clic.
+  disco, así que la copia nunca queda a medias; y si nadie ha jugado ni tocado el mundo desde la anterior, se
+  salta, también la de arrancar y la de parar, así que un servidor que se duerme y se despierta sin que entre
+  nadie no acumula copias del mismo mundo. Las que haces a mano se cuentan aparte, así que el reloj nunca las
+  borra. La pestaña **Copias** enseña cada montón frente a su cupo, el espacio que ocupan y cuándo toca la
+  próxima, las ordena por días y marca la que la próxima copia sustituirá. **Copia ahora** y **Restaurar** con un clic.
 - **Ajustes dentro de la ventana** ⚙️ — idioma, bandeja del sistema, **añadir al escritorio**, notificaciones,
   colores e historial de jugadores, cada cosa en su página. Se guarda al momento.
 - **No estorba** — minimiza o cierra **a la bandeja** y tus servidores siguen; abrir la app otra vez recupera

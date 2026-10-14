@@ -601,6 +601,29 @@ run out but nobody has played since the last one — a server left running overn
 copying it every hour would only fill the disk. `ServerViewModel.RunBackupAsync` is the single door
 every backup goes through, with a semaphore so two can never overlap.
 
+The start's and the stop's backups are skipped too when **nobody has touched the world since the last
+one**. A server that sleeps when empty is woken by anybody pressing Join, and each sleep and wake used
+to leave a `--stop` and a `--start` copy of the same world even when nobody came back in — a few of
+those and the retention had deleted every copy anybody had played in. Comparing files alone cannot
+tell: a running server writes its world with nobody on it (`level.dat` keeps `LastPlayed`, spawn
+chunks tick), so after any session the files differ. Two signals are used instead:
+
+- **While it runs**, `ServerViewModel._playedSinceBackup` says whether the world may have changed:
+  somebody joined, or a command typed into the console that `WorldCommand.Touches` does not know to
+  be harmless (`list`, `say`, bans, ops and the whitelist are; anything else, a plugin's included, is
+  not). It starts true and goes back to true after every stop; only a start whose backup was made or
+  found up to date clears it, and a live backup clears it for everyone not still on.
+- **On disk**, every backup writes `backups/last-backup.json`: the zip's name and a fingerprint of the
+  world (path, size and write time of every file but `session.lock`, plus the folder's own path).
+  `WorldBackupService.IsUpToDate` is true only if that zip still exists and the world still matches,
+  so editing the world by hand while it is stopped, or pointing `level-name` elsewhere, still gets a
+  copy. After a stop with nobody playing, `NoteUntouchedWorldAsync` calls `MarkUnchanged`, which
+  re-fingerprints the world against the same zip — what the server wrote on its way down does not
+  count. It never stands in for a backup that does not exist.
+
+`BackupUnlessUnchangedAsync` checks and copies inside the same gate, and says *Backup skipped* in the
+console when it skips (`UnchangedWorldBackupTests`, `SkipUnchangedBackupTests`, `WorldCommandTests`).
+
 Retention counts the automatic backups (`start`, `stop`, `auto`) and the user's own (`manual`,
 `before-restore`) **separately**. One shared count stopped working the day backups started happening
 by the clock: overnight the hourly copies would fill the whole allowance, and the backup somebody
@@ -694,6 +717,9 @@ login, so somebody who knows a listed name can still wake the server, and is the
 The rule stops the scanners, which is what it is for; it is not access control. Without a whitelist
 nothing changes, and `ServerConfig.WakeOnlyForWhitelist` (on by default, a box
 under *Start it when someone tries to join*) lets the owner open it to anyone anyway.
+
+A sleep and a wake with nobody coming in leave **no backups**: the stop sees nobody played and the
+start finds the world still the last backup's (see *World backups*).
 
 ### The store: search, tags and plain language
 `ServerModsViewModel` asks `ModrinthService` for results already filtered by the server's loader and
