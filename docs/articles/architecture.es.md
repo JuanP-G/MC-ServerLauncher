@@ -629,6 +629,31 @@ pasado pero nadie ha jugado desde la anterior — un servidor encendido toda la 
 así que copiarlo cada hora solo llenaría el disco. `ServerViewModel.RunBackupAsync` es la única
 puerta por la que pasan todas las copias, con un semáforo para que nunca se solapen dos.
 
+Las copias del arranque y de la parada también se saltan cuando **nadie ha tocado el mundo desde la
+anterior**. Un servidor que se duerme vacío lo despierta cualquiera que pulse Unirse, y cada vez que se
+dormía y se despertaba dejaba una copia `--stop` y otra `--start` del mismo mundo aunque nadie llegara a
+entrar; con unas cuantas, la retención ya había borrado todas las copias en las que alguien había
+jugado. Comparar archivos no basta: un servidor arrancado escribe su mundo aunque no haya nadie
+(`level.dat` guarda `LastPlayed`, los chunks del spawn avanzan), así que tras cualquier sesión los
+archivos son otros. Se usan dos señales:
+
+- **Mientras corre**, `ServerViewModel._playedSinceBackup` dice si el mundo ha podido cambiar: ha
+  entrado alguien, o se ha escrito en la consola un comando que `WorldCommand.Touches` no sabe que es
+  inofensivo (`list`, `say`, baneos, OPs y la lista blanca lo son; cualquier otro, incluidos los de
+  plugins, no). Empieza a true y vuelve a true tras cada parada; solo lo limpia un arranque cuya copia
+  se hizo o ya estaba al día, y una copia en marcha lo limpia salvo que siga habiendo alguien dentro.
+- **En disco**, cada copia escribe `backups/last-backup.json`: el nombre del zip y una huella del mundo
+  (ruta, tamaño y fecha de cada archivo menos `session.lock`, más la ruta de la propia carpeta).
+  `WorldBackupService.IsUpToDate` solo es true si ese zip sigue existiendo y el mundo sigue igual, así
+  que tocar el mundo a mano con el servidor parado, o apuntar `level-name` a otro, sigue dando copia.
+  Tras una parada sin nadie, `NoteUntouchedWorldAsync` llama a `MarkUnchanged`, que vuelve a tomar la
+  huella del mundo frente al mismo zip: lo que el servidor escribe al pararse no cuenta. Nunca sustituye
+  a una copia que no existe.
+
+`BackupUnlessUnchangedAsync` comprueba y copia dentro del mismo semáforo, y dice *Copia de seguridad
+saltada* en la consola cuando se la salta (`UnchangedWorldBackupTests`, `SkipUnchangedBackupTests`,
+`WorldCommandTests`).
+
 La retención cuenta **por separado** las automáticas (`start`, `stop`, `auto`) y las del usuario
 (`manual`, `before-restore`). Una sola cuenta dejó de servir el día que empezaron a hacerse copias
 por reloj: de noche, las copias horarias llenaban todo el cupo y la que alguien había hecho a mano
@@ -724,6 +749,9 @@ puede despertarlo igualmente, y luego el servidor lo echa. La regla frena a los 
 lo que está; no es un control de acceso. Sin lista blanca no cambia nada, y
 `ServerConfig.WakeOnlyForWhitelist` (activado de serie, una casilla bajo *Encenderlo cuando alguien
 intente entrar*) deja al dueño abrirlo a cualquiera igualmente.
+
+Dormirse y despertarse sin que nadie entre **no deja copias**: la parada ve que nadie ha jugado y el
+arranque encuentra el mundo igual que en la última copia (ver *Copias del mundo*).
 
 ### La tienda: búsqueda, etiquetas y lenguaje llano
 `ServerModsViewModel` pide a `ModrinthService` resultados ya filtrados por el cargador y la versión
@@ -903,7 +931,7 @@ la tienda no conoce; antes, si `GetVersionsByHashAsync` no contestaba, la versi�
 Se quitan **todas o ninguna**: primero se renombran a `*.mcsl-removing` y, si una está en uso (el servidor la
 tiene abierta), se devuelven las demás y se retira la descarga nueva — salvo que esta haya sobrescrito un archivo
 del mismo nombre, porque entonces es la única copia. Lo que quede renombrado lo barre el siguiente refresco
-(`SweepLeftovers`). Lo que se ha borrado se nombra en el aviso. Los instaladores de Crossplay, Hydraulic y
+(`SweepLeftovers`). El aviso solo dice que se ha actualizado: quitar las copias viejas es lo que significa actualizar, no una noticia. Los instaladores de Crossplay, Hydraulic y
 MultiVersion pasan por lo mismo (`ContentInstall.InstallReplacingAsync`), solo por id, porque Floodgate para
 Paper e Hydraulic vienen de GeyserMC y Modrinth no los conoce; Hydraulic además no descarga Fabric API si ya
 hay una activa. `ContentManifestCache` guarda lo leído de cada jar por ruta, tamaño y fecha, como

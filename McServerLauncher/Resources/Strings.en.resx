@@ -272,13 +272,14 @@
   <data name="Notif_TestBody" xml:space="preserve"><value>Sample notification: this is how your servers' alerts will look.</value></data>
   <data name="Msg_BackupCreatingFmt" xml:space="preserve"><value>[Launcher] Creating backup of "{0}"...</value></data>
   <data name="Msg_BackupCreatedFmt" xml:space="preserve"><value>[Launcher] Backup created ({0} MB).</value></data>
+  <data name="Msg_BackupSkippedUnchanged" xml:space="preserve"><value>[Launcher] Backup skipped: nobody has touched the world since the last one.</value></data>
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Saving a copy of the current state before restoring (in case you want to undo it)...</value></data>
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Restoring the backup...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Backup restored.</value></data>
   <data name="Msg_StartWaitsForRestore" xml:space="preserve"><value>[Launcher] Not started: a world backup is being restored. Try again when it finishes.</value></data>
   <data name="Msg_BackupBadLevelNameFmt" xml:space="preserve"><value>level-name = "{0}" in server.properties does not name a folder of its own inside the server, so the backup left everything alone. Change it to a folder name such as "world".</value></data>
   <data name="Backups" xml:space="preserve"><value>Backups</value></data>
-  <data name="Backup_Hint" xml:space="preserve"><value>A world backup is created automatically before every start, when you stop the server and, if you leave it on, at intervals while people are playing. Restoring still needs the server stopped.</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>A world backup is created automatically before every start, when you stop the server and, if you leave it on, at intervals while people are playing. If nobody has played or touched the world since the last backup, the start and stop ones are skipped. Restoring still needs the server stopped.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Back up now</value></data>
   <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Back the world up now, whether the server is running or stopped.</value></data>
   <data name="Backup_TriggerAuto" xml:space="preserve"><value>while playing</value></data>
@@ -585,9 +586,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_UpdateAllDoneFmt" xml:space="preserve"><value>{0} updated ✔</value></data>
   <data name="Msg_UpdateAllPartialFmt" xml:space="preserve"><value>{0} updated; {1} could not be: {2}. They are still in the list to try again.</value></data>
   <data name="Msg_UpdateAllStoppedFmt" xml:space="preserve"><value>{0} updated. Stop the server to update the rest: their files are in use.</value></data>
-  <data name="Msg_UpdateAllRemovedFmt" xml:space="preserve"><value>{0} old versions or duplicate copies were removed.</value></data>
-  <data name="Msg_RemovedOneFmt" xml:space="preserve"><value>Removed {0}.</value></data>
-  <data name="Msg_RemovedManyFmt" xml:space="preserve"><value>Removed {0} files: {1}.</value></data>
   <data name="Cleanup_Title" xml:space="preserve"><value>The server no longer needs these. Removing them keeps it tidy and makes it start faster.</value></data>
   <data name="Cleanup_OrphanRemovedOneFmt" xml:space="preserve"><value>Only {0} used it, and it is no longer installed.</value></data>
   <data name="Cleanup_OrphanRemovedManyFmt" xml:space="preserve"><value>{0} used it, and they are no longer installed.</value></data>
@@ -829,7 +827,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_HydraulicWrongVersionFmt" xml:space="preserve"><value>Hydraulic does not work with Minecraft {0}: the published build requires {1}. Nothing was installed.</value></data>
   <data name="Msg_HydraulicReady" xml:space="preserve"><value>Ready: Bedrock players will see the blocks and items the mods add.</value></data>
   <data name="Msg_HydraulicFabricApiPresent" xml:space="preserve"><value>Fabric API is already installed; leaving it as it is.</value></data>
-  <data name="Msg_ContentReplacedFmt" xml:space="preserve"><value>{0}: removed the previous version ({1}).</value></data>
   <data name="Msg_ContentInUseFmt" xml:space="preserve"><value>Could not replace {0}: the server is using it. Stop the server and try again.</value></data>
   <data name="Hydraulic_Check" xml:space="preserve"><value>Let Bedrock players see the blocks and items that mods add</value></data>
   <data name="Hydraulic_Hint" xml:space="preserve"><value>Installs Hydraulic (from GeyserMC too) and Fabric API. Without it, people joining from Bedrock reach the server but cannot see anything the mods add. Its own authors call it very early development.</value></data>

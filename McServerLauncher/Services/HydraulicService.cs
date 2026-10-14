@@ -86,7 +86,7 @@ public class HydraulicService
                     Localizer.Get("Msg_CrossplayNoVersionFmt"), "Fabric API", config.GameVersion, config.Type));
 
             log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Fabric API", api!.VersionNumber));
-            await ContentInstall.InstallReplacingAsync(folder, apiFile.Filename, "Fabric API", log, path =>
+            await ContentInstall.InstallReplacingAsync(folder, apiFile.Filename, "Fabric API", path =>
                 _modrinth.DownloadModAsync(apiFile.Url, path, apiFile.Hashes?.Sha512, apiFile.Hashes?.Sha1, ct: ct));
         }
 
@@ -99,7 +99,7 @@ public class HydraulicService
         using var resp = await GeyserDownloadsApi.OpenAsync(build, ct);
         resp.EnsureSuccessStatusCode();
 
-        await ContentInstall.InstallReplacingAsync(folder, build.FileName, "Hydraulic", log, path =>
+        await ContentInstall.InstallReplacingAsync(folder, build.FileName, "Hydraulic", path =>
             AtomicDownload.ToFileAsync(resp.Content, path,
                 verifyAsync: async (part, token) =>
                 {

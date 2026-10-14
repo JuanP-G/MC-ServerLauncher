@@ -272,13 +272,14 @@
   <data name="Notif_TestBody" xml:space="preserve"><value>Beispiel-Benachrichtigung: So sehen die Hinweise deiner Server aus.</value></data>
   <data name="Msg_BackupCreatingFmt" xml:space="preserve"><value>[Launcher] Sicherung von "{0}" wird erstellt...</value></data>
   <data name="Msg_BackupCreatedFmt" xml:space="preserve"><value>[Launcher] Sicherung erstellt ({0} MB).</value></data>
+  <data name="Msg_BackupSkippedUnchanged" xml:space="preserve"><value>[Launcher] Sicherung übersprungen: Seit der letzten hat niemand die Welt verändert.</value></data>
   <data name="Msg_BackupSafetyNet" xml:space="preserve"><value>[Launcher] Aktueller Zustand wird vor der Wiederherstellung gesichert (falls du es rückgängig machen möchtest)...</value></data>
   <data name="Msg_BackupRestoring" xml:space="preserve"><value>[Launcher] Sicherung wird wiederhergestellt...</value></data>
   <data name="Msg_BackupRestored" xml:space="preserve"><value>[Launcher] Sicherung wiederhergestellt.</value></data>
   <data name="Msg_StartWaitsForRestore" xml:space="preserve"><value>[Launcher] Nicht gestartet: Eine Weltsicherung wird gerade wiederhergestellt. Versuche es erneut, wenn sie fertig ist.</value></data>
   <data name="Msg_BackupBadLevelNameFmt" xml:space="preserve"><value>level-name = "{0}" in server.properties bezeichnet keinen eigenen Ordner innerhalb des Servers, daher hat die Sicherung nichts angefasst. Ändere es auf einen Ordnernamen wie "world".</value></data>
   <data name="Backups" xml:space="preserve"><value>Sicherungen</value></data>
-  <data name="Backup_Hint" xml:space="preserve"><value>Vor jedem Start, beim Stoppen des Servers und — wenn eingeschaltet — in Abständen während gespielt wird, wird automatisch eine Sicherung der Welt erstellt. Zum Wiederherstellen muss der Server weiterhin gestoppt sein.</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>Vor jedem Start, beim Stoppen des Servers und — wenn eingeschaltet — in Abständen während gespielt wird, wird automatisch eine Sicherung der Welt erstellt. Hat seit der letzten Sicherung niemand gespielt oder die Welt verändert, werden die beim Start und beim Stoppen übersprungen. Zum Wiederherstellen muss der Server weiterhin gestoppt sein.</value></data>
   <data name="Backup_NowButton" xml:space="preserve"><value>Jetzt sichern</value></data>
   <data name="Backup_NeedsStoppedTip" xml:space="preserve"><value>Die Welt jetzt sichern, ob der Server läuft oder gestoppt ist.</value></data>
   <data name="Backup_TriggerAuto" xml:space="preserve"><value>beim Spielen</value></data>
@@ -585,9 +586,6 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_UpdateAllDoneFmt" xml:space="preserve"><value>{0} aktualisiert ✔</value></data>
   <data name="Msg_UpdateAllPartialFmt" xml:space="preserve"><value>{0} aktualisiert; {1} ging nicht: {2}. Sie bleiben in der Liste für einen neuen Versuch.</value></data>
   <data name="Msg_UpdateAllStoppedFmt" xml:space="preserve"><value>{0} aktualisiert. Stoppe den Server, um den Rest zu aktualisieren: die Dateien sind in Benutzung.</value></data>
-  <data name="Msg_UpdateAllRemovedFmt" xml:space="preserve"><value>{0} alte Versionen oder doppelte Kopien wurden gelöscht.</value></data>
-  <data name="Msg_RemovedOneFmt" xml:space="preserve"><value>{0} wurde gelöscht.</value></data>
-  <data name="Msg_RemovedManyFmt" xml:space="preserve"><value>{0} Dateien wurden gelöscht: {1}.</value></data>
   <data name="Cleanup_Title" xml:space="preserve"><value>Der Server braucht das nicht mehr. Entfernen hält ihn sauber und lässt ihn schneller starten.</value></data>
   <data name="Cleanup_OrphanRemovedOneFmt" xml:space="preserve"><value>Nur {0} hat sie benutzt, und das ist nicht mehr installiert.</value></data>
   <data name="Cleanup_OrphanRemovedManyFmt" xml:space="preserve"><value>{0} haben sie benutzt, und die sind nicht mehr installiert.</value></data>
@@ -829,7 +827,6 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_HydraulicWrongVersionFmt" xml:space="preserve"><value>Hydraulic passt nicht zu Minecraft {0}: Der veröffentlichte Build verlangt {1}. Es wurde nichts installiert.</value></data>
   <data name="Msg_HydraulicReady" xml:space="preserve"><value>Fertig: Bedrock-Spieler sehen jetzt die Blöcke und Gegenstände der Mods.</value></data>
   <data name="Msg_HydraulicFabricApiPresent" xml:space="preserve"><value>Die Fabric API ist bereits installiert und bleibt, wie sie ist.</value></data>
-  <data name="Msg_ContentReplacedFmt" xml:space="preserve"><value>{0}: die vorherige Version wurde gelöscht ({1}).</value></data>
   <data name="Msg_ContentInUseFmt" xml:space="preserve"><value>{0} konnte nicht ersetzt werden: Der Server verwendet es. Stoppe den Server und versuche es erneut.</value></data>
   <data name="Hydraulic_Check" xml:space="preserve"><value>Bedrock-Spieler sollen die Blöcke und Gegenstände der Mods sehen</value></data>
   <data name="Hydraulic_Hint" xml:space="preserve"><value>Installiert Hydraulic (ebenfalls von GeyserMC) und die Fabric API. Ohne das erreichen Bedrock-Spieler zwar den Server, sehen aber nichts von dem, was die Mods hinzufügen. Die Autoren nennen es sehr frühe Entwicklung.</value></data>

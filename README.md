@@ -173,8 +173,7 @@ When it opens again, **What's new** tells you what changed. It works the same on
   installed with it, transitively. Only *required* ones, and never a second copy.
 - **Updates** — **check for updates** says what's new and which libraries are missing; update them one by one
   or with **Update all**. **No junk left behind**: the old version and any other copy of the same mod (a
-  duplicate under another name, a disabled copy) are removed, offline too, and the app tells you which files
-  went.
+  duplicate under another name, a disabled copy) are removed, offline too.
 - **Suggested clean-up** 🧹 — the app points out what is no longer needed: **libraries no mod uses** (with the
   reason, e.g. "only Litematica used it, and it's gone") and **mods switched off for over a month**. It only
   suggests: you tick, press, and they go; "Not now" hides it for 30 days.
@@ -253,9 +252,10 @@ When it opens again, **What's new** tells you what changed. It works the same on
 
 - **Automatic world backups** — before every start, on every stop and, if you leave it on, every hour while
   people are playing. A backup of a running server asks Minecraft to flush the world to disk first, so it is
-  never half-written, and one nobody played since is skipped. Backups you take by hand are counted separately,
-  so the clock never deletes them. The **Backups** tab shows each pile against its limit, the space they take
-  and when the next one is due, lists them by day and marks the one the next backup will replace.
+  never half-written, and one nobody played since is skipped — the start's and the stop's too, so a server
+  that sleeps and wakes with nobody coming in does not pile up copies of the same world. Backups you take by
+  hand are counted separately, so the clock never deletes them. The **Backups** tab shows each pile against
+  its limit, the space they take and when the next one is due, lists them by day and marks the one the next backup will replace.
   **Back up now** and one-click **Restore**.
 - **Settings, part of the window** ⚙️ — language, tray behaviour, **Add to desktop**, notifications, colours
   and the player history, each on its own page. Saved as you go.
