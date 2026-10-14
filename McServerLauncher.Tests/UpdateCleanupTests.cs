@@ -194,6 +194,46 @@ public class UpdateCleanupTests : IDisposable
         Assert.Equal(new[] { "a.jar", "b.jar" }, FilesLeft());
     }
 
+    /// <summary>A rename that refuses the file named <paramref name="refused"/>, the way a lock does.</summary>
+    private static Action<string, string> RefusingToMove(params string[] refused) => (from, to) =>
+    {
+        if (refused.Contains(Path.GetFileName(from))) throw new IOException("in use");
+        File.Move(from, to);
+    };
+
+    [Fact]
+    public void ACopyInUseMeansNothingIsRemovedOnEveryPlatform()
+    {
+        // The same as the test above, with the refusal handed in: Linux and macOS lock nothing, so
+        // that one proves nothing on the other CI runner.
+        var first = FabricJar("a.jar", "x");
+        var held = FabricJar("b.jar", "x");
+        var fresh = FabricJar("c.jar", "x");
+
+        var (result, removed) = ContentReplacement.RemoveAllOrNothing(
+            new[] { first, held }, fresh, RefusingToMove("b.jar"));
+
+        Assert.Equal(ContentReplacement.RemoveResult.Locked, result);
+        Assert.Empty(removed);
+        Assert.Equal(new[] { "a.jar", "b.jar" }, FilesLeft());
+    }
+
+    [Fact]
+    public void ACopyThatCannotBePutBackKeepsTheNewJar()
+    {
+        // The second copy is in use, and the first, already moved aside, cannot be put back (an
+        // antivirus opened the renamed file). Deleting the new jar as well left no copy at all.
+        var first = FabricJar("a.jar", "x");
+        var held = FabricJar("b.jar", "x");
+        var fresh = FabricJar("c.jar", "x");
+
+        var (result, _) = ContentReplacement.RemoveAllOrNothing(
+            new[] { first, held }, fresh, RefusingToMove("b.jar", "a.jar" + ContentReplacement.RemovingSuffix));
+
+        Assert.Equal(ContentReplacement.RemoveResult.Locked, result);
+        Assert.True(File.Exists(fresh));
+    }
+
     [Fact]
     public void ANewJarThatReplacedAFileOfItsNameIsNotRolledBack()
     {

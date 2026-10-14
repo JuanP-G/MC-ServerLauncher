@@ -116,12 +116,15 @@ internal static class ContentReplacement
     /// <param name="victims">The copies to remove.</param>
     /// <param name="rollbackPath">
     /// The new jar, deleted if the old copies cannot be removed. Null when deleting it would lose the
-    /// mod — when the download replaced a file of the same name.
+    /// mod — when the download replaced a file of the same name. Kept as well when an old copy could
+    /// not be put back: it is then the only copy of the mod left in place.
     /// </param>
+    /// <param name="move">How a file is renamed; a test passes one that fails.</param>
     /// <returns>The outcome, and the paths that were removed (as they were named before).</returns>
     internal static (RemoveResult Result, IReadOnlyList<string> Removed) RemoveAllOrNothing(
-        IReadOnlyList<string> victims, string? rollbackPath)
+        IReadOnlyList<string> victims, string? rollbackPath, Action<string, string>? move = null)
     {
+        move ??= (from, to) => File.Move(from, to);
         var moved = new List<(string From, string To)>();
 
         foreach (var victim in victims)
@@ -132,18 +135,22 @@ internal static class ContentReplacement
             try
             {
                 if (File.Exists(aside)) File.Delete(aside);
-                File.Move(victim, aside);
+                move(victim, aside);
                 moved.Add((victim, aside));
             }
             catch
             {
                 // In use: put back what already moved, so the server keeps every file it had.
+                var allPutBack = true;
                 for (var i = moved.Count - 1; i >= 0; i--)
                 {
-                    try { File.Move(moved[i].To, moved[i].From); } catch { /* best-effort */ }
+                    try { move(moved[i].To, moved[i].From); }
+                    catch { allPutBack = false; }
                 }
 
-                if (rollbackPath is not null)
+                // Only when everything is back where it was. A copy left aside is swept next time,
+                // and deleting the new jar too used to leave the server with no copy of the mod.
+                if (rollbackPath is not null && allPutBack)
                 {
                     try { File.Delete(rollbackPath); } catch { /* best-effort */ }
                 }
