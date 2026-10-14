@@ -29,7 +29,8 @@ internal sealed class PropertyBindings
     public void Toggle(ToggleSwitch toggle, string key, bool fallback)
     {
         var raw = _draft.FileValue(key);
-        _draft.Track(key, Text(raw is null ? fallback : raw.Trim().Equals("true", StringComparison.OrdinalIgnoreCase)));
+        var on = raw is null ? fallback : raw.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
+        _draft.Track(key, Text(on));
 
         toggle.IsCheckedChanged += (_, _) =>
         {
@@ -47,7 +48,8 @@ internal sealed class PropertyBindings
         {
             // Empty while somebody types: nothing to write yet. WholeNumberBoxes puts the number
             // back if they leave it like that.
-            if (!_loading && box.Value is { } value) _draft.Set(key, WholeNumberConverter.ToWhole(value).ToString());
+            if (!_loading && box.Value is { } value)
+                _draft.Set(key, WholeNumberConverter.ToWhole(value).ToString());
         };
         _loads.Add(() => box.Value = int.TryParse(_draft.Get(key), out var v) ? v : fallback);
     }
@@ -69,8 +71,10 @@ internal sealed class PropertyBindings
     public void Choice(ComboBox combo, string key, string fallback, bool numberedInOrder = false)
     {
         var raw = _draft.FileValue(key)?.Trim() ?? fallback;
-        var known = Find(combo, raw)
-                    ?? (numberedInOrder && int.TryParse(raw, out var id) ? Items(combo).ElementAtOrDefault(id) : null);
+        var byPosition = numberedInOrder && int.TryParse(raw, out var id)
+            ? Items(combo).ElementAtOrDefault(id)
+            : null;
+        var known = Find(combo, raw) ?? byPosition;
         _draft.Track(key, known?.Tag as string ?? raw);
 
         combo.SelectionChanged += (_, _) =>
@@ -97,7 +101,8 @@ internal sealed class PropertyBindings
     private static IEnumerable<ComboBoxItem> Items(ComboBox combo) => combo.Items.OfType<ComboBoxItem>();
 
     private static ComboBoxItem? Find(ComboBox combo, string value) =>
-        Items(combo).FirstOrDefault(i => string.Equals(i.Tag as string, value, StringComparison.OrdinalIgnoreCase));
+        Items(combo).FirstOrDefault(item =>
+            string.Equals(item.Tag as string, value, StringComparison.OrdinalIgnoreCase));
 
     private static string Text(bool value) => value ? "true" : "false";
 }

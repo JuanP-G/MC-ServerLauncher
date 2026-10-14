@@ -409,7 +409,10 @@ public sealed class MotdDocument
         }
     }
 
-    /// <summary>The colour a fraction <paramref name="t"/> of the way from <paramref name="a"/> to <paramref name="b"/>.</summary>
+    /// <summary>
+    /// The colour a fraction <paramref name="t"/> of the way from <paramref name="a"/> to
+    /// <paramref name="b"/>.
+    /// </summary>
     internal static int Lerp(int a, int b, double t)
     {
         int Channel(int shift) => (int)Math.Round(((a >> shift) & 255) + (((b >> shift) & 255) - ((a >> shift) & 255)) * t);

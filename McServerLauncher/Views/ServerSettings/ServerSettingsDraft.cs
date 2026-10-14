@@ -214,7 +214,8 @@ public sealed class ServerSettingsDraft
                     nameof(ServerConfig.BedrockPort)));
             else if (_portOwners.Bedrock(wanted) is { } owner)
                 problems.Add(new(ServerSettingsPage.Network,
-                    string.Format(Localizer.Get("Cfg_BedrockPortTakenFmt"), owner), nameof(ServerConfig.BedrockPort)));
+                    string.Format(Localizer.Get("Cfg_BedrockPortTakenFmt"), owner),
+                    nameof(ServerConfig.BedrockPort)));
         }
 
         if (PropertyChanged("server-port") && int.TryParse(Get("server-port"), out var javaPort)
@@ -239,7 +240,7 @@ public sealed class ServerSettingsDraft
         Changed?.Invoke();
     }
 
-    /// <summary>Writes what changed to the server: <c>server.properties</c>, its icon, and its config.</summary>
+    /// <summary>Writes what changed: <c>server.properties</c>, the icon, and the server's config.</summary>
     /// <remarks>
     /// <para>
     /// The files go first, into the folder the draft names — the folder may be what changed — and the

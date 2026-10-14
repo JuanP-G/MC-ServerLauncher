@@ -12,7 +12,7 @@ namespace McServerLauncher.ViewModels;
 /// </remarks>
 internal static class ServerIconImage
 {
-    /// <summary>The icon in <paramref name="serverFolder"/>, or null when it has none or it cannot be read.</summary>
+    /// <summary>The icon in <paramref name="serverFolder"/>, or null if none can be read.</summary>
     /// <remarks>Read fully into memory, so the file is not locked and a new one is picked up.</remarks>
     public static Bitmap? Load(string serverFolder)
     {

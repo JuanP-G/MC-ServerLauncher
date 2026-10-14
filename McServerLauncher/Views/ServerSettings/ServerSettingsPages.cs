@@ -47,7 +47,8 @@ internal static class ServerSettingsPages
         new(ServerSettingsPage.Loader, Symbol.Box, "Sset_Loader", "Sset_LoaderHint", "Sset_GroupServer",
             [], []),
         new(ServerSettingsPage.Performance, Symbol.Gauge, "Sset_Performance", "Sset_PerformanceHint", null,
-            [nameof(ServerConfig.MinRamGb), nameof(ServerConfig.MaxRamGb), nameof(ServerConfig.JavaPath)], []),
+            [nameof(ServerConfig.MinRamGb), nameof(ServerConfig.MaxRamGb),
+             nameof(ServerConfig.JavaPath)], []),
         new(ServerSettingsPage.Network, Symbol.PlugConnected, "Sset_Network", "Sset_NetworkHint", null,
             [nameof(ServerConfig.BedrockPort), nameof(ServerConfig.PlayitEnabled)],
             ["server-port", "online-mode", "white-list"]),
@@ -61,10 +62,12 @@ internal static class ServerSettingsPages
             [nameof(ServerConfig.BackupsEnabled), nameof(ServerConfig.BackupRetention),
              nameof(ServerConfig.ManualBackupRetention), nameof(ServerConfig.AutoBackupEnabled),
              nameof(ServerConfig.BackupIntervalMinutes)], []),
-        new(ServerSettingsPage.Notifications, Symbol.Alert, "Sset_Notifications", "Sset_NotificationsHint", null,
+        new(ServerSettingsPage.Notifications, Symbol.Alert, "Sset_Notifications", "Sset_NotificationsHint",
+            null,
             [nameof(ServerConfig.UseCustomNotifications), nameof(ServerConfig.Notifications)], []),
         new(ServerSettingsPage.Advanced, Symbol.Wrench, "Sset_Advanced", "Sset_AdvancedHint", "",
-            [nameof(ServerConfig.FolderPath), nameof(ServerConfig.JarFile), nameof(ServerConfig.ExtraJvmArgs)], []),
+            [nameof(ServerConfig.FolderPath), nameof(ServerConfig.JarFile),
+             nameof(ServerConfig.ExtraJvmArgs)], []),
     ];
 
     /// <summary>The row of <paramref name="page"/>.</summary>

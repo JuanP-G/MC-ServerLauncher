@@ -65,7 +65,8 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         // What the file says, normalised through the document: that is what Save would write back
         // untouched, so it is what counts as unchanged.
         var raw = draft.FileValue("motd");
-        _doc = MotdDocument.FromProperties(string.IsNullOrWhiteSpace(raw) ? ServerPropertiesService.DefaultMotd : raw);
+        _doc = MotdDocument.FromProperties(
+            string.IsNullOrWhiteSpace(raw) ? ServerPropertiesService.DefaultMotd : raw);
         draft.Track("motd", _doc.ToProperties());
         ExtraLinesNote.IsVisible = _doc.HadExtraLines;
         PreviewAsleep.IsCheckedChanged += (_, _) => Refresh();
@@ -134,7 +135,8 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         {
             var edited = _draft.Get("max-players");
             var value = edited.Length > 0 ? edited : _draft.FileValue("max-players");
-            return (int.TryParse(value, out var n) ? n : ServerPropertiesService.DefaultMaxPlayers).ToString();
+            var players = int.TryParse(value, out var n) ? n : ServerPropertiesService.DefaultMaxPlayers;
+            return players.ToString();
         }
     }
 
