@@ -88,12 +88,18 @@ public class WorldBackupService
     private static bool SamePath(string a, string b) => string.Equals(a, b, PathComparison);
 
     /// <summary>All backups for this server, newest first.</summary>
+    /// <remarks>
+    /// Only names ending exactly in <c>.zip</c>: a copy still being written is a <c>.zip.tmp</c>
+    /// (see <see cref="PartialSuffix"/>), and Windows' <c>*.zip</c> pattern also matches longer
+    /// extensions that merely start with it.
+    /// </remarks>
     public IReadOnlyList<BackupInfo> ListBackups(ServerConfig config)
     {
         var dir = BackupsDir(config);
         if (!Directory.Exists(dir)) return Array.Empty<BackupInfo>();
 
         return Directory.EnumerateFiles(dir, "*.zip")
+            .Where(f => f.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
             .Select(f => new FileInfo(f))
             .OrderByDescending(f => f.LastWriteTimeUtc)
             .Select(f => new BackupInfo(f.FullName, f.Name, f.LastWriteTime, f.Length, ParseTrigger(f.Name)))
@@ -137,18 +143,17 @@ public class WorldBackupService
         if (!Directory.Exists(worldDir))
             return null;
 
+        ct.ThrowIfCancellationRequested();
         var dir = BackupsDir(config);
         Directory.CreateDirectory(dir);
+        SweepPartials(dir);
         // The folder's own name, not level-name: "worlds/survival" would otherwise put a slash in
         // the file name and the zip in a folder that does not exist.
         var fileName = $"{Path.GetFileName(worldDir)}-{DateTime.Now:yyyyMMdd-HHmmss}--{trigger}.zip";
         var zipPath = Path.Combine(dir, fileName);
 
         log?.Report(string.Format(Localizer.Get("Msg_BackupCreatingFmt"), levelName));
-        // Region files (.mca) are already internally compressed, so re-deflating them at the
-        // "Optimal" level burns CPU for little gain; "Fastest" keeps backups quick without giving
-        // up much size.
-        await Task.Run(() => CreateZipWithRetry(worldDir, zipPath), ct);
+        await Task.Run(() => CreateZipWithRetry(worldDir, zipPath, ct), ct);
 
         var sizeMb = new FileInfo(zipPath).Length / (1024.0 * 1024.0);
         log?.Report(string.Format(Localizer.Get("Msg_BackupCreatedFmt"), sizeMb.ToString("0.#")));
@@ -158,33 +163,61 @@ public class WorldBackupService
         return zipPath;
     }
 
-    /// <summary>
-    /// Zips <paramref name="worldDir"/>, retrying once after a short pause if a file inside it is
-    /// still transiently locked (e.g. antivirus scanning a region file the server process just
-    /// closed).
-    /// </summary>
-    private static void CreateZipWithRetry(string worldDir, string zipPath)
+    /// <summary>What a backup is called while it is being written.</summary>
+    /// <remarks>
+    /// The zip used to be written under its final name, so a copy cut short — the app closed or
+    /// updated halfway, a failure the retry below did not catch — stayed in the list as a backup:
+    /// one that counted towards the retention, could push a good one out, and failed when restored.
+    /// Now it only gets its <c>.zip</c> name once it is complete.
+    /// </remarks>
+    internal const string PartialSuffix = ".tmp";
+
+    /// <summary>Deletes copies an earlier run left half-written.</summary>
+    /// <remarks>
+    /// Safe because only one copy of a server's world is ever made at a time (the server's backup
+    /// gate) and only one instance of the app runs.
+    /// </remarks>
+    private static void SweepPartials(string backupsDir)
     {
+        foreach (var partial in Directory.EnumerateFiles(backupsDir, "*.zip" + PartialSuffix))
+            TryDeleteZip(partial);
+    }
+
+    /// <summary>
+    /// Zips <paramref name="worldDir"/> into <paramref name="zipPath"/>, retrying once after a short
+    /// pause if a file inside it is still transiently locked (e.g. antivirus scanning a region file
+    /// the server process just closed).
+    /// </summary>
+    /// <remarks>
+    /// Whatever goes wrong — a lock that outlasts the retry, a cancellation, anything else — the
+    /// half-written file is deleted, and <paramref name="zipPath"/> never exists until the copy is
+    /// whole.
+    /// </remarks>
+    private void CreateZipWithRetry(string worldDir, string zipPath, CancellationToken ct)
+    {
+        var partial = zipPath + PartialSuffix;
         try
         {
-            ZipWorld(worldDir, zipPath);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            // Antivirus-style transient locks surface as either exception type depending on how
-            // the scanner holds the file, so both take the retry path.
-            TryDeleteZip(zipPath); // CreateFromDirectory already created a partial file before failing
-            Thread.Sleep(1000);
             try
             {
-                ZipWorld(worldDir, zipPath);
+                ZipWorld(worldDir, partial, ct);
             }
-            catch
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // Still locked: don't leave a partial/corrupt zip in backups/ for the list to show.
-                TryDeleteZip(zipPath);
-                throw;
+                // Antivirus-style transient locks surface as either exception type depending on how
+                // the scanner holds the file, so both take the retry path.
+                TryDeleteZip(partial);
+                Thread.Sleep(1000);
+                ZipWorld(worldDir, partial, ct);
             }
+
+            ct.ThrowIfCancellationRequested();   // cancelled during the last file: still not a backup
+            File.Move(partial, zipPath);
+        }
+        catch
+        {
+            TryDeleteZip(partial);
+            throw;
         }
     }
 
@@ -210,13 +243,14 @@ public class WorldBackupService
     /// the server writes a new one every time it starts, including after a restore.
     /// </para>
     /// </remarks>
-    private static void ZipWorld(string worldDir, string zipPath)
+    private void ZipWorld(string worldDir, string zipPath, CancellationToken ct)
     {
         using var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create);
         var root = new DirectoryInfo(worldDir);
 
         foreach (var entry in root.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
         {
+            ct.ThrowIfCancellationRequested();
             var name = Path.GetRelativePath(worldDir, entry.FullName).Replace(Path.DirectorySeparatorChar, '/');
 
             if (entry is DirectoryInfo dir)
@@ -231,14 +265,21 @@ public class WorldBackupService
             if (string.Equals(name, SessionLock, StringComparison.OrdinalIgnoreCase))
                 continue;
 
+            // Region files (.mca) are already internally compressed, so re-deflating them at the
+            // "Optimal" level burns CPU for little gain; "Fastest" keeps backups quick without
+            // giving up much size.
             var zipped = zip.CreateEntry(name, CompressionLevel.Fastest);
             zipped.LastWriteTime = entry.LastWriteTime;
-            using var source = new FileStream(entry.FullName, FileMode.Open, FileAccess.Read,
-                FileShare.ReadWrite | FileShare.Delete);
+            using var source = OpenForCopy(entry.FullName);
             using var target = zipped.Open();
             source.CopyTo(target);
         }
     }
+
+    /// <summary>Opens one file of the world for the zip, letting the running server keep it open.</summary>
+    /// <remarks>Virtual so a test can make one file fail halfway through a copy.</remarks>
+    internal virtual Stream OpenForCopy(string path) =>
+        new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
 
     private static void TryDeleteZip(string zipPath)
     {

@@ -101,6 +101,64 @@ public class BackupOfARunningWorldTests : IDisposable
         Assert.False(File.Exists(Path.Combine(_dir, "world", "session.lock")));
     }
 
+    /// <summary>A copy whose second file fails to open, the way a disk error or a new kind of lock would.</summary>
+    private sealed class FailsHalfway(Exception failure, Action? beforeSecond = null) : WorldBackupService
+    {
+        private int _opened;
+
+        internal override Stream OpenForCopy(string path)
+        {
+            if (++_opened == 2)
+            {
+                beforeSecond?.Invoke();
+                if (failure is not OperationCanceledException) throw failure;
+            }
+            return base.OpenForCopy(path);
+        }
+    }
+
+    private string Backups => Path.Combine(_dir, "backups");
+
+    [Fact]
+    public async Task ACopyThatFailsHalfwayLeavesNothingInTheList()
+    {
+        // Not an IOException, so the retry does not catch it: before, the half-written zip was left
+        // under its final name, listed as a backup and counted towards the retention.
+        var service = new FailsHalfway(new InvalidDataException("unreadable"));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.CreateBackupAsync(Config(), "auto"));
+
+        Assert.Empty(service.ListBackups(Config()));
+        Assert.Empty(Directory.GetFiles(Backups));
+    }
+
+    [Fact]
+    public async Task ACancelledCopyLeavesNothingBehind()
+    {
+        using var cts = new CancellationTokenSource();
+        var service = new FailsHalfway(new OperationCanceledException(), cts.Cancel);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => service.CreateBackupAsync(Config(), "auto", ct: cts.Token));
+
+        Assert.Empty(Directory.GetFiles(Backups));
+    }
+
+    [Fact]
+    public async Task WhatACrashedCopyLeftIsNeitherListedNorKept()
+    {
+        Directory.CreateDirectory(Backups);
+        var leftover = Path.Combine(Backups, "world-20260101-000000--stop.zip" + WorldBackupService.PartialSuffix);
+        File.WriteAllText(leftover, "half a zip");
+        var service = new WorldBackupService();
+
+        Assert.Empty(service.ListBackups(Config()));
+        await service.CreateBackupAsync(Config(), "manual");
+
+        Assert.False(File.Exists(leftover));
+        Assert.Single(service.ListBackups(Config()));
+    }
+
     public void Dispose()
     {
         foreach (var stream in _heldByTheServer) stream.Dispose();
