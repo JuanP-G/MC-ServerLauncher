@@ -129,7 +129,7 @@ public partial class ConnectionTestViewModel : ObservableObject
     private void Reset()
     {
         foreach (var step in Steps)
-            step.Set(StepState.Waiting, step.Title, Localizer.Get("Net_Waiting"));
+            step.Reset(Localizer.Get("Net_Waiting"));
         Verdict = string.Empty;
         ServerWasOff = false;
     }

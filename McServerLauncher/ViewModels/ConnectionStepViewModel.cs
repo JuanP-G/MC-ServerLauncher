@@ -9,7 +9,10 @@ public enum StepState { Waiting, Running, Good, Fair, Bad, Skipped }
 /// <summary>One stretch of the way a player's packets travel, and how it did.</summary>
 public partial class ConnectionStepViewModel : ObservableObject
 {
-    public ConnectionStepViewModel(string title) => _title = title;
+    private readonly string _name;
+
+    /// <param name="name">What the stretch is called, until a run gives it a verdict.</param>
+    public ConnectionStepViewModel(string name) => _title = _name = name;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Icon), nameof(IsGood), nameof(IsFair), nameof(IsBad), nameof(IsRunning), nameof(IsIdle))]
@@ -40,6 +43,9 @@ public partial class ConnectionStepViewModel : ObservableObject
     public bool IsBad => State == StepState.Bad;
     public bool IsRunning => State == StepState.Running;
     public bool IsIdle => State is StepState.Waiting or StepState.Skipped;
+
+    /// <summary>Back to waiting, under its own name rather than the last run's verdict.</summary>
+    internal void Reset(string detail) => Set(StepState.Waiting, _name, detail);
 
     internal void Set(StepState state, string title, string detail, string badge = "")
     {

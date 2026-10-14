@@ -69,4 +69,36 @@ public class ConnectionTestTests : IDisposable
         Assert.True(testing, "the test stopped waiting while the server was getting ready");
         Assert.Equal(Localizer.Get("Net_Starting"), title);
     }
+
+    /// <summary>A test that stops goes back to each stretch's own name.</summary>
+    /// <remarks>
+    /// Resetting kept each step's title as it was, so a cancelled run — and the next one, until it
+    /// reached each step — showed "Starting the server…" or the last verdict ("The tunnel is slow")
+    /// beside "Waiting".
+    /// </remarks>
+    [Fact]
+    public async Task AStoppedTestShowsEachStretchByItsName()
+    {
+        ConnectionTestViewModel? test = null;
+        Task? run = null;
+        _ui.Run(() =>
+        {
+            var server = NewServer();
+            server.IsPreparing = true;
+            test = server.ConnectionTest;
+            test.TunnelStep.Set(StepState.Bad, Localizer.Get("Net_TunnelBad"), "", "180 ms");
+            run = test.StartServerAndRunCommand.ExecuteAsync(null);
+        });
+
+        await Task.Delay(300);
+        _ui.Run(() => test!.Cancel());
+        await run!.WaitAsync(TimeSpan.FromSeconds(10));
+
+        _ui.Run(() =>
+        {
+            Assert.Equal(Localizer.Get("Net_StepLocal"), test!.LocalStep.Title);
+            Assert.Equal(Localizer.Get("Net_StepTunnel"), test.TunnelStep.Title);
+            Assert.All(test.Steps, s => Assert.Equal(StepState.Waiting, s.State));
+        });
+    }
 }
