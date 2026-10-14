@@ -91,19 +91,28 @@ public class RestoreSafetyTests : IDisposable
         Assert.False(Directory.Exists(World + ".restoring"));
     }
 
-    [Fact]
-    public void NothingStartsTheServerWhileItRestores()
+    /// <summary>Reports synchronously, so the test can look at the server in the middle of the restore.</summary>
+    private sealed class DuringRestore(Action look) : IProgress<string>
     {
-        _ui.Run(() =>
-        {
-            var server = new ServerViewModel(new ServerConfig { Name = "survival", FolderPath = _root });
-            Assert.True(server.StartCommand.CanExecute(null));
+        public void Report(string value) => look();
+    }
 
-            server.IsRestoring = true;
+    [Fact]
+    public async Task NothingStartsTheServerWhileItRestores()
+    {
+        ServerViewModel? server = null;
+        _ui.Run(() => server = new ServerViewModel(new ServerConfig { Name = "survival", FolderPath = _root }));
+        Assert.True(server!.StartCommand.CanExecute(null));
 
-            Assert.False(server.CanStart);
-            Assert.False(server.StartCommand.CanExecute(null));
-        });
+        // Awaited here, not on the UI thread: blocking that thread would deadlock the restore.
+        var couldStart = new List<bool>();
+        var result = await server.BackupCoordinator.RestoreAsync(BackupOf("yesterday"),
+            new DuringRestore(() => couldStart.Add(server.CanStart || server.StartCommand.CanExecute(null))));
+
+        Assert.Equal(RestoreResult.Restored, result);
+        Assert.NotEmpty(couldStart);
+        Assert.All(couldStart, Assert.False);
+        Assert.True(server.CanStart);   // and it can again once the world is back
     }
 
     public void Dispose()

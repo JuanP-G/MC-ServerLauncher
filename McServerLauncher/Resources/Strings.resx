@@ -338,6 +338,9 @@
   <data name="Msg_BackupSaveNotConfirmed" xml:space="preserve"><value>[Copia] El servidor no ha confirmado el guardado a tiempo; se copia igualmente.</value></data>
   <data name="Msg_BackupSavesResumed" xml:space="preserve"><value>[Copia] Guardado del mundo reanudado.</value></data>
   <data name="Msg_BackupAlreadyRunning" xml:space="preserve"><value>[Copia] Ya hay una copia de seguridad en curso.</value></data>
+  <data name="Msg_StopWaitsForBackup" xml:space="preserve"><value>[Copia] Esperando a que termine la copia en curso antes de detener el servidor...</value></data>
+  <data name="Msg_BackupFailedStartingAnywayFmt" xml:space="preserve"><value>[Copia] No se pudo hacer la copia de antes de arrancar ({0}). El servidor arranca igualmente; la próxima copia lo intentará otra vez.</value></data>
+  <data name="Backup_RestoreNeedsStopped" xml:space="preserve"><value>El servidor se ha puesto en marcha mientras tanto. Detenlo para restaurar la copia.</value></data>
   <data name="Backup_NoneYet" xml:space="preserve"><value>Aún no hay copias de seguridad.</value></data>
   <data name="Backup_RestoreButton" xml:space="preserve"><value>Restaurar</value></data>
   <data name="Backup_RestoreTitle" xml:space="preserve"><value>Restaurar copia de seguridad</value></data>

@@ -292,6 +292,9 @@
   <data name="Msg_BackupSaveNotConfirmed" xml:space="preserve"><value>[Sauvegarde] Le serveur n'a pas confirmé l'enregistrement à temps ; copie quand même.</value></data>
   <data name="Msg_BackupSavesResumed" xml:space="preserve"><value>[Sauvegarde] Enregistrement du monde repris.</value></data>
   <data name="Msg_BackupAlreadyRunning" xml:space="preserve"><value>[Sauvegarde] Une sauvegarde est déjà en cours.</value></data>
+  <data name="Msg_StopWaitsForBackup" xml:space="preserve"><value>[Sauvegarde] Attente de la fin de la sauvegarde en cours avant d'arrêter le serveur...</value></data>
+  <data name="Msg_BackupFailedStartingAnywayFmt" xml:space="preserve"><value>[Sauvegarde] La sauvegarde avant le démarrage n'a pas pu être faite ({0}). Le serveur démarre quand même ; la prochaine sauvegarde réessaiera.</value></data>
+  <data name="Backup_RestoreNeedsStopped" xml:space="preserve"><value>Le serveur a démarré entre-temps. Arrête-le pour restaurer la sauvegarde.</value></data>
   <data name="Backup_NoneYet" xml:space="preserve"><value>Aucune sauvegarde pour l'instant.</value></data>
   <data name="Backup_RestoreButton" xml:space="preserve"><value>Restaurer</value></data>
   <data name="Backup_RestoreTitle" xml:space="preserve"><value>Restaurer la sauvegarde</value></data>

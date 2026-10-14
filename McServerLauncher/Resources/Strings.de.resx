@@ -292,6 +292,9 @@
   <data name="Msg_BackupSaveNotConfirmed" xml:space="preserve"><value>[Sicherung] Der Server hat das Speichern nicht rechtzeitig bestätigt; es wird trotzdem kopiert.</value></data>
   <data name="Msg_BackupSavesResumed" xml:space="preserve"><value>[Sicherung] Speichern der Welt fortgesetzt.</value></data>
   <data name="Msg_BackupAlreadyRunning" xml:space="preserve"><value>[Sicherung] Es läuft bereits eine Sicherung.</value></data>
+  <data name="Msg_StopWaitsForBackup" xml:space="preserve"><value>[Sicherung] Warte, bis die laufende Sicherung fertig ist, bevor der Server gestoppt wird...</value></data>
+  <data name="Msg_BackupFailedStartingAnywayFmt" xml:space="preserve"><value>[Sicherung] Die Sicherung vor dem Start war nicht möglich ({0}). Der Server startet trotzdem; die nächste Sicherung versucht es erneut.</value></data>
+  <data name="Backup_RestoreNeedsStopped" xml:space="preserve"><value>Der Server wurde inzwischen gestartet. Stoppe ihn, um die Sicherung wiederherzustellen.</value></data>
   <data name="Backup_NoneYet" xml:space="preserve"><value>Noch keine Sicherungen vorhanden.</value></data>
   <data name="Backup_RestoreButton" xml:space="preserve"><value>Wiederherstellen</value></data>
   <data name="Backup_RestoreTitle" xml:space="preserve"><value>Sicherung wiederherstellen</value></data>
