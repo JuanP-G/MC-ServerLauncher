@@ -140,35 +140,60 @@ public partial class ConnectionTestViewModel : ObservableObject
     private Task Run() => RunAsync();
 
     /// <summary>Starts the server, waits until it answers, and runs the whole test.</summary>
+    /// <remarks>
+    /// A start spends its first seconds — minutes, with a big world to back up — getting ready, and
+    /// all that time the server still reads as stopped. The wait used to give up after five seconds
+    /// of "stopped" and test a server that was about to come up, and say it was off. A start already
+    /// under way (the button, or waking on demand) is waited for in the same way, not started twice.
+    /// </remarks>
     [RelayCommand(CanExecute = nameof(CanRun))]
     private async Task StartServerAndRun()
     {
-        if (_server.State != ServerState.Running && _server.StartCommand.CanExecute(null))
+        var startsOrIsStarting = _server.IsPreparing || _server.StartCommand.CanExecute(null);
+        if (_server.State != ServerState.Running && startsOrIsStarting)
         {
+            var ct = Renew();
             IsTesting = true;
             LocalStep.Set(StepState.Running, Localizer.Get("Net_Starting"), Localizer.Get("Net_StartingDetail"));
-            _server.StartCommand.Execute(null);
-
-            // Up to three minutes: a modded server can take that long to open its port. Back to
-            // stopped after the first seconds means it did not start, and there is no point waiting.
-            var started = DateTime.UtcNow;
-            while (DateTime.UtcNow - started < TimeSpan.FromMinutes(3) && _server.State != ServerState.Running)
+            if (!_server.IsPreparing) _server.StartCommand.Execute(null);
+            try
             {
-                if (_server.State == ServerState.Stopped && DateTime.UtcNow - started > TimeSpan.FromSeconds(5)) break;
-                await Task.Delay(500);
+                await WaitUntilRunningAsync(ct);
             }
-            IsTesting = false;
+            catch (OperationCanceledException)
+            {
+                Reset();
+                return;
+            }
+            finally
+            {
+                IsTesting = false;
+            }
         }
         await RunAsync();
+    }
+
+    /// <summary>
+    /// Up to three minutes: a modded server can take that long to open its port. Stopped and no
+    /// longer getting ready, past the first seconds, means it did not start, and there is no point
+    /// waiting.
+    /// </summary>
+    private async Task WaitUntilRunningAsync(CancellationToken ct)
+    {
+        var started = DateTime.UtcNow;
+        while (DateTime.UtcNow - started < TimeSpan.FromMinutes(3) && _server.State != ServerState.Running)
+        {
+            var gaveUp = _server.State == ServerState.Stopped && !_server.IsPreparing;
+            if (gaveUp && DateTime.UtcNow - started > TimeSpan.FromSeconds(5)) break;
+            await Task.Delay(500, ct);
+        }
     }
 
     /// <summary>Runs every stretch in turn.</summary>
     internal async Task RunAsync()
     {
         if (IsTesting) return;
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
-        var ct = _cts.Token;
+        var ct = Renew();
 
         // Crossplay may have been switched on or off since the last run.
         if (_server.IsCrossplayOn && !Steps.Contains(BedrockStep)) Steps.Add(BedrockStep);
@@ -299,6 +324,14 @@ public partial class ConnectionTestViewModel : ObservableObject
 
     /// <summary>Stops a test in progress: the page is going away.</summary>
     internal void Cancel() => _cts?.Cancel();
+
+    /// <summary>Cancels what was running and hands out the token for what runs next.</summary>
+    private CancellationToken Renew()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        return _cts.Token;
+    }
 
     // ---------------------------------------------------------------- judging
 
