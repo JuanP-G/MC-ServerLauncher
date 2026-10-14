@@ -60,16 +60,16 @@ internal static class ContentReplacement
         var sameProject = projectId is not null && projectByPath is not null
             ? ReplacedBy(projectByPath, projectId, newJarPath)
                 .Select(Path.GetFullPath)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase)
-            : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                .ToHashSet(FilePaths.Comparer)
+            : new HashSet<string>(FilePaths.Comparer);
 
         var victims = new List<string>();
         foreach (var entry in folder)
         {
             var full = Path.GetFullPath(entry.Path);
-            if (string.Equals(full, newFull, StringComparison.OrdinalIgnoreCase)) continue;
+            if (string.Equals(full, newFull, FilePaths.Comparison)) continue;
 
-            var staleDisabled = string.Equals(full, newFull + ".disabled", StringComparison.OrdinalIgnoreCase);
+            var staleDisabled = string.Equals(full, newFull + ".disabled", FilePaths.Comparison);
             var sameId = newOwnId is not null &&
                          string.Equals(entry.Manifest.Id, newOwnId, StringComparison.OrdinalIgnoreCase);
 
@@ -209,8 +209,7 @@ internal static class ContentReplacement
         projectByPath
             .Where(kv => string.Equals(kv.Value, projectId, StringComparison.Ordinal))
             .Select(kv => kv.Key)
-            .Where(path => !string.Equals(Path.GetFullPath(path), Path.GetFullPath(newPath),
-                StringComparison.OrdinalIgnoreCase))
+            .Where(path => !FilePaths.Same(path, newPath))
             .ToList();
 
     /// <summary>
@@ -246,9 +245,8 @@ internal static class ContentReplacement
 
         // The row's own file always goes, even when nothing else ties it to the new one — a jar that
         // declares no id, and a store that did not answer.
-        var oldIsNew = string.Equals(Path.GetFullPath(oldPath), Path.GetFullPath(downloadedPath),
-            StringComparison.OrdinalIgnoreCase);
-        if (!oldIsNew && File.Exists(oldPath) && !victims.Contains(oldPath, StringComparer.OrdinalIgnoreCase))
+        var oldIsNew = FilePaths.Same(oldPath, downloadedPath);
+        if (!oldIsNew && File.Exists(oldPath) && !victims.Contains(oldPath, FilePaths.Comparer))
             victims.Add(oldPath);
 
         // The download itself counts when it overwrote a file: that was an enabled copy by the same

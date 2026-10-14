@@ -52,7 +52,9 @@ internal static partial class CleanupAdvisor
         "architectury", "balm", "malilib", "puzzleslib", "geckolib", "owo", "collective",
         "creativecore", "citadel", "moonlight", "iceberg", "prism", "konkrete", "jamlib",
         "bookshelf", "resourcefullib", "supermartijn642corelib", "cristellib", "placeholder-api",
-        "framework", "fzzy_config", "trender", "lithostitched",
+        "framework", "fzzy_config", "trender",
+        // Not lithostitched, though it is one: world-generation datapacks in world/datapacks need it,
+        // and nothing here can see them — it would be offered as unused while the world uses it.
         // Bukkit, Paper, Purpur
         "ProtocolLib", "packetevents", "CommandAPI", "NBTAPI", "PlaceholderAPI"
     };
@@ -230,8 +232,10 @@ internal static partial class CleanupAdvisor
     /// Libraries that are no longer installed lose their entry; libraries that nothing needs keep the
     /// one they had, which is the record of who used to.
     /// </remarks>
-    internal static void RecordDependents(ContentLedger ledger, IReadOnlyList<Jar> jars)
+    /// <returns>True when the record changed, and so has to be written.</returns>
+    internal static bool RecordDependents(ContentLedger ledger, IReadOnlyList<Jar> jars)
     {
+        var before = Snapshot(ledger.DependentsByLibrary);
         var libraries = jars.Where(j => j.IsLibrary).ToList();
         var usedBy = new Dictionary<Jar, List<Jar>>(ReferenceEqualityComparer.Instance);
         foreach (var jar in jars) usedBy[jar] = UsedBy(jar, libraries).ToList();
@@ -250,7 +254,13 @@ internal static partial class CleanupAdvisor
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var gone in ledger.DependentsByLibrary.Keys.Where(k => !installed.Contains(k)).ToList())
             ledger.DependentsByLibrary.Remove(gone);
+
+        return Snapshot(ledger.DependentsByLibrary) != before;
     }
+
+    private static string Snapshot(Dictionary<string, List<string>> record) =>
+        string.Join("\n", record.OrderBy(kv => kv.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(kv => kv.Key + "=" + string.Join(",", kv.Value)));
 
     /// <summary>The jars that have been off for longer than <paramref name="threshold"/>.</summary>
     internal static IReadOnlyList<LongDisabled> FindLongDisabled(IReadOnlyList<Jar> jars, ContentLedger ledger,

@@ -157,6 +157,19 @@ public class UpdateCleanupTests : IDisposable
         Assert.Empty(ContentReplacement.Select(folder, At("SODIUM.jar"), "sodium", null, null));
     }
 
+    [Fact]
+    public void OnLinuxACopyWhoseNameDiffersOnlyInCaseIsAnotherFile()
+    {
+        // Linux tells Sodium.jar from sodium.jar; ignoring case took the old one for the new one and
+        // left both. Elsewhere they are one file and cannot both exist.
+        if (!OperatingSystem.IsLinux()) return;
+
+        FabricJar("Sodium.jar", "sodium");
+        var fresh = FabricJar("sodium.jar", "sodium");
+
+        Assert.Equal(new[] { At("Sodium.jar") }, ContentReplacement.OthersOf(_dir, fresh));
+    }
+
     // --- Removing them ---
 
     [Fact]

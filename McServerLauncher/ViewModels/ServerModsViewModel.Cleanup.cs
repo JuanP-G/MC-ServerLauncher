@@ -68,10 +68,16 @@ public partial class ServerModsViewModel
     }
 
     /// <summary>Scans again after the folder changed, if the panel is armed.</summary>
+    /// <remarks>
+    /// After a short pause, so that switching several mods in a row asks the store once, not once
+    /// per switch: each new call cancels the one still waiting.
+    /// </remarks>
     private void RescanCleanup()
     {
-        if (_cleanupArmed) _ = RefreshCleanupAsync();
+        if (_cleanupArmed) _ = RefreshCleanupAsync(RescanPause);
     }
+
+    private static readonly TimeSpan RescanPause = TimeSpan.FromMilliseconds(400);
 
     /// <summary>
     /// Works out what can be cleaned up and shows it. A newer call cancels an older one.
@@ -80,12 +86,18 @@ public partial class ServerModsViewModel
     /// Never throws and never shows an error: a suggestion that could not be worked out is simply
     /// not made, which is the right failure for something the user did not ask for.
     /// </remarks>
-    internal async Task RefreshCleanupAsync()
+    internal async Task RefreshCleanupAsync(TimeSpan pause = default)
     {
         _cleanupScan?.Cancel();
         _cleanupScan?.Dispose();
         var scan = _cleanupScan = new CancellationTokenSource();
         var ct = scan.Token;
+
+        if (pause > TimeSpan.Zero)
+        {
+            try { await Task.Delay(pause, ct); }
+            catch (OperationCanceledException) { return; }   // a newer scan is on its way
+        }
 
         var folder = Path.Combine(_config.FolderPath, ContentFolder);
         if (_config.Type == ServerType.Vanilla || !Directory.Exists(folder))
@@ -117,17 +129,19 @@ public partial class ServerModsViewModel
                 // Asked before recording: the record is who needed it *last time*, which is the one
                 // fact that explains an orphan.
                 var orphans = CleanupAdvisor.FindOrphanLibraries(jars, record.DependentsByLibrary, storeAnswered);
-                if (storeAnswered)
-                {
-                    CleanupAdvisor.RecordDependents(record, jars);
-                    ledger.Save();
-                }
+                // Written only when it changed: this runs after every toggle and delete.
+                if (storeAnswered && CleanupAdvisor.RecordDependents(record, jars)) ledger.Save();
 
                 foreach (var orphan in orphans)
                 {
                     var key = CleanupAdvisor.OrphanKey(orphan.Jar);
                     if (CleanupAdvisor.IsSnoozed(record, key, now)) continue;
-                    rows.Add(new CleanupSuggestionViewModel(orphan.Jar.Path, orphan.Jar.FileName, ReasonFor(orphan), key));
+                    rows.Add(new CleanupSuggestionViewModel(orphan.Jar.Path, orphan.Jar.FileName, ReasonFor(orphan), key)
+                    {
+                        // "Nothing installed needs it" is the weakest reason: a mod the store does not
+                        // know may need it without saying so. Offered, but left for the user to tick.
+                        IsSelected = orphan.Reason != CleanupAdvisor.OrphanReason.NoKnownUser,
+                    });
                 }
 
                 foreach (var off in CleanupAdvisor.FindLongDisabled(jars, record, now, CleanupAdvisor.DisabledThreshold))
