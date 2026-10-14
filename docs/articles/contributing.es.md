@@ -201,6 +201,11 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   JVM no reconoce le impide arrancar, que es peor que cualquier aviso que se quisiera callar. Ver
   `ServerProcessManager.ImpliedJvmFlags`, y nunca por encima de lo que el usuario puso en sus
   argumentos extra.
+- **Lo que lee o reemplaza el mundo lo sostiene de principio a fin.** Las copias, las restauraciones
+  y el arranque y la parada de la JVM pasan por la única puerta de `BackupCoordinator`, y cada uno la
+  sostiene durante toda la operación, no solo en la parte de «la copia». Cogerla solo alrededor del
+  zip dejaba que Parar mandara `stop` dentro de una copia que aún se leía, y que una restauración
+  ocurriera con un servidor que se había despertado mientras tanto.
 - **El mensaje propio de una excepción no se enseña nunca.** Está escrito para quien programa, en
   inglés o en el idioma del sistema, con rutas y códigos, y salía en mitad de frases en español en
   unos cincuenta sitios. Lanza una `UserFacingException` cuando el mensaje es una frase de los .resx,

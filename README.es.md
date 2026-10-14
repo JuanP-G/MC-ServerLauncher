@@ -251,8 +251,9 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 <br>
 
 - **Copias de seguridad del mundo** — antes de cada arranque, en cada parada y, si lo dejas puesto, cada hora
-  mientras se juega. Para copiar un servidor arrancado se le pide antes a Minecraft que vuelque el mundo a
-  disco, así que la copia nunca queda a medias; y si nadie ha jugado ni tocado el mundo desde la anterior, se
+  mientras se juega; en Paper y Purpur, con el Nether y el End que guardan junto al mundo. Para copiar un
+  servidor arrancado se le pide antes a Minecraft que vuelque el mundo a disco, así que la copia nunca queda
+  a medias; parar el servidor espera a una copia que aún esté leyendo el mundo; y si nadie ha jugado ni tocado el mundo desde la anterior, se
   salta, también la de arrancar y la de parar, así que un servidor que se duerme y se despierta sin que entre
   nadie no acumula copias del mismo mundo. Las que haces a mano se cuentan aparte, así que el reloj nunca las
   borra. La pestaña **Copias** enseña cada montón frente a su cupo, el espacio que ocupan y cuándo toca la
