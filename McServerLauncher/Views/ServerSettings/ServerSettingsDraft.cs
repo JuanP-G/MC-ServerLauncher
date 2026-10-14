@@ -121,6 +121,11 @@ public sealed class ServerSettingsDraft
     /// <summary>Raised on every change, to the config copy, a property or the icon.</summary>
     public event Action? Changed;
 
+    /// <summary>
+    /// Raised when something other than the page changed a field it shows, and the page took it in.
+    /// </summary>
+    public event Action? ChangedOutside;
+
     /// <param name="live">The server being configured.</param>
     /// <param name="bedrockPortOwner">
     /// The name of another server already on a Bedrock port, or null when none is. Lets the page
@@ -141,8 +146,12 @@ public sealed class ServerSettingsDraft
         _file = _service.Read(live.PropertiesPath);
 
         Config.PropertyChanged += OnConfigChanged;
+        Live.PropertyChanged += OnLiveChanged;
         WatchNotifications();
     }
+
+    /// <summary>Stops following the live config: the page is gone.</summary>
+    public void Detach() => Live.PropertyChanged -= OnLiveChanged;
 
     // ---------------------------------------------------------------- server.properties
 
@@ -345,6 +354,29 @@ public sealed class ServerSettingsDraft
 
     private bool PropertyChanged(string key) =>
         _props.TryGetValue(key, out var now) && (!_propsBaseline.TryGetValue(key, out var was) || was != now);
+
+    /// <summary>
+    /// Takes in a change to the live config that did not come from this page, unless the user has
+    /// edited that field here — their edit is what Save is for.
+    /// </summary>
+    /// <remarks>
+    /// The page used to read the live config once. Whatever changed it afterwards went unseen: the
+    /// app switching multi-version or crossplay back off when their install failed (the switch went
+    /// on saying on, and saving it "on" again was no change, so nothing retried), the Bedrock port
+    /// a crossplay setup picked, the folder renamed for Paper, the Java found for the server.
+    /// </remarks>
+    private void OnLiveChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        var field = e.PropertyName;
+        if (field is null || !EditableFields.Contains(field)) return;
+        if (!Same(Config, _baseline, field)) return;   // the user's own edit, for Save to decide
+        if (Same(Live, _baseline, field)) return;      // nothing new: Save copying it there, say
+
+        CopyField(Live, Config, field);
+        CopyField(Live, _baseline, field);
+        ChangedOutside?.Invoke();
+        Changed?.Invoke();
+    }
 
     private void OnConfigChanged(object? sender, PropertyChangedEventArgs e)
     {

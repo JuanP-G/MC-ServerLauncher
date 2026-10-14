@@ -35,8 +35,7 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
 
     private readonly ServerSettingsDraft _draft;
     private readonly ServerIconService _icons = new();
-    private readonly bool _wake;
-    private readonly string _maxPlayers;
+    private readonly Func<bool> _isRunning;
     private readonly TextBox[] _boxes;
 
     private MotdDocument _doc = MotdDocument.FromProperties(DefaultMotd);
@@ -53,16 +52,16 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
     internal ServerSettingsDraft Draft => _draft;
 
     // Parameterless constructor for the Avalonia XAML loader / designer only.
-    public AppearanceSection() : this(new ServerSettingsDraft(new ServerConfig()), false) { }
+    public AppearanceSection() : this(new ServerSettingsDraft(new ServerConfig()), () => false) { }
 
-    public AppearanceSection(ServerSettingsDraft draft, bool isRunning)
+    /// <param name="draft">What the page edits.</param>
+    /// <param name="isRunning">Whether the server runs now; asked each time the page reloads.</param>
+    public AppearanceSection(ServerSettingsDraft draft, Func<bool> isRunning)
     {
         InitializeComponent();
         _draft = draft;
+        _isRunning = isRunning;
         _boxes = [Line1Box, Line2Box];
-
-        var maxPlayers = draft.FileValue("max-players");
-        _maxPlayers = int.TryParse(maxPlayers, out var n) ? n.ToString() : "20";
 
         // What the file says, normalised through the document: that is what Save would write back
         // untouched, so it is what counts as unchanged.
@@ -70,13 +69,6 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         _doc = MotdDocument.FromProperties(string.IsNullOrWhiteSpace(raw) ? DefaultMotd : raw);
         draft.Track("motd", _doc.ToProperties());
         ExtraLinesNote.IsVisible = _doc.HadExtraLines;
-        RestartNote.IsVisible = isRunning;
-
-
-        _wake = draft.Live.WakeOnDemand;
-        PreviewModeRow.IsVisible = _wake;
-        PreviewAsleep.IsChecked = _wake && !isRunning;
-        PreviewAwake.IsChecked = _wake && isRunning;
         PreviewAsleep.IsCheckedChanged += (_, _) => Refresh();
 
         for (var line = 0; line < _boxes.Length; line++)
@@ -88,6 +80,7 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         NameBox.TextChanged += (_, _) =>
         {
             if (_loading) return;
+            ShowError(null);   // the only error here is about the name, which is being fixed
             _draft.Config.Name = NameBox.Text ?? string.Empty;
             Refresh();
         };
@@ -107,6 +100,15 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         NameBox.Text = _draft.Config.Name;
         _icon = _draft.NewIcon is { } png ? Decode(png) : _draft.RemoveIcon ? null : LoadCurrentIcon();
         ImageError.IsVisible = false;
+        _hexSelection = null;   // a range of the text this replaced
+
+        // Read again each time rather than kept from when the page was made: the server can start
+        // or stop, and "join to start it" be switched on, while the page is open.
+        var running = _isRunning();
+        RestartNote.IsVisible = running;
+        PreviewModeRow.IsVisible = Wake;
+        PreviewAsleep.IsChecked = Wake && !running;
+        PreviewAwake.IsChecked = Wake && running;
         _loading = false;
         Refresh();
         UpdateToolbar();
@@ -121,9 +123,23 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
 
     // ---------------------------------------------------------------- preview
 
+    /// <summary>The page's own "join to start it", saved or not: the preview shows what Save would.</summary>
+    private bool Wake => _draft.Config.WakeOnDemand;
+
+    /// <summary>Max players as the Game page has it now, or as the file says if it is not open.</summary>
+    private string MaxPlayers
+    {
+        get
+        {
+            var edited = _draft.Get("max-players");
+            var value = edited.Length > 0 ? edited : _draft.FileValue("max-players");
+            return int.TryParse(value, out var n) ? n.ToString() : "20";
+        }
+    }
+
     private void Refresh()
     {
-        var asleep = _wake && PreviewAsleep.IsChecked == true;
+        var asleep = Wake && PreviewAsleep.IsChecked == true;
         var config = _draft.Live;
 
         // The sleeping preview goes through the same code the listener uses to answer the game, so
@@ -136,10 +152,10 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         Line2Note.IsVisible = asleep;
 
         Preview.ServerName = NameBox.Text;
-        Preview.TypeText = config.Type.ToString();
+        Preview.TypeText = ServerTypeCatalog.For(config.Type).DisplayName;
         Preview.TypeBrush = ServerTypeBrushes.For(config.Type);
         Preview.Version = config.GameVersion;
-        Preview.PlayerCount = "0/" + _maxPlayers;
+        Preview.PlayerCount = "0/" + MaxPlayers;
         Preview.SignalBrush = new SolidColorBrush(Color.Parse("#55FF55"));
         Preview.Icon = _icon;
 

@@ -62,6 +62,7 @@ public partial class ServerSettingsView : UserControl
     private readonly Dictionary<ServerSettingsPage, Control> _sections = new();
     private readonly Dictionary<ServerSettingsPage, (Button Nav, ToggleButton Chip, Control Dot, Control ChipDot)> _items = new();
     private bool _nudged;
+    private bool _wasRunning;
     private string? _problem;
 
     /// <summary>The server these are the settings of.</summary>
@@ -105,9 +106,31 @@ public partial class ServerSettingsView : UserControl
             _problem = null;
             Refresh();
         };
+        _draft.ChangedOutside += ReloadSections;
+        _wasRunning = server.IsRunning;
+        Server.PropertyChanged += OnServerChanged;
         SizeChanged += (_, e) => ApplyWidth(e.NewSize.Width);
 
         Show(page);
+        Refresh();
+    }
+
+    /// <summary>Stops following the server: the page is closed.</summary>
+    public void Detach()
+    {
+        _draft.Detach();
+        Server.PropertyChanged -= OnServerChanged;
+    }
+
+    // Starting or stopping the server changes what the bar and the Appearance preview say. Only on a
+    // real change, and only those two: reloading a page puts its text back and moves the caret of
+    // whoever is typing in it.
+    private void OnServerChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(ServerViewModel.IsRunning) || Server.IsRunning == _wasRunning) return;
+        _wasRunning = Server.IsRunning;
+        if (_sections.TryGetValue(ServerSettingsPage.Appearance, out var appearance))
+            ((IServerSettingsSection)appearance).Reload();
         Refresh();
     }
 
@@ -121,7 +144,7 @@ public partial class ServerSettingsView : UserControl
 
         Control section = page switch
         {
-            ServerSettingsPage.Appearance => new AppearanceSection(_draft, Server.IsRunning),
+            ServerSettingsPage.Appearance => new AppearanceSection(_draft, () => Server.IsRunning),
             ServerSettingsPage.Game => new GameSection(_draft),
             ServerSettingsPage.World => new WorldSection(_draft),
             ServerSettingsPage.Loader => Loader(),

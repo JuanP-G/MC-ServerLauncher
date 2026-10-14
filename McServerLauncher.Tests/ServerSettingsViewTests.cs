@@ -237,6 +237,54 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
         });
 
     [Fact]
+    public void ASwitchTheAppTurnsBackOffIsShownOff() =>
+        ui.Run(() =>
+        {
+            // Multi-version is switched on and saved; its install fails and the app switches it back
+            // off on the server. The page went on showing it on, and saving "on" again was no change,
+            // so nothing tried the install again.
+            var config = new ServerConfig { Name = "trece", FolderPath = Folder("trece"), Type = ServerType.Paper };
+            var view = Open(config, ServerSettingsPage.Crossplay);
+            view.Draft.Config.MultiVersionEnabled = true;
+            Assert.True(view.Save());
+
+            config.MultiVersionEnabled = false;   // what a failed install does
+            AvaloniaFixture.Pump();
+
+            Assert.False(view.Draft.Config.MultiVersionEnabled);
+            Assert.False(view.IsDirty);
+            view.Draft.Config.MultiVersionEnabled = true;
+            Assert.True(view.IsDirty);           // so saving it on again asks for the install again
+        });
+
+    [Fact]
+    public void WhatTheUserChangedIsNotOverwrittenFromOutside() =>
+        ui.Run(() =>
+        {
+            var config = new ServerConfig { Name = "catorce", FolderPath = Folder("catorce"), JavaPath = "java" };
+            var view = Open(config, ServerSettingsPage.Performance);
+            view.Draft.Config.JavaPath = "/opt/my-java/bin/java";
+
+            config.JavaPath = "/usr/lib/jvm/21/bin/java";   // the app found a better Java meanwhile
+            AvaloniaFixture.Pump();
+
+            Assert.Equal("/opt/my-java/bin/java", view.Draft.Config.JavaPath);
+        });
+
+    [Fact]
+    public void AClosedPageStopsFollowingItsServer() =>
+        ui.Run(() =>
+        {
+            var config = new ServerConfig { Name = "quince", FolderPath = Folder("quince") };
+            var view = Open(config);
+            view.Detach();
+
+            config.JavaPath = "/somewhere/else/java";
+
+            Assert.NotEqual("/somewhere/else/java", view.Draft.Config.JavaPath);
+        });
+
+    [Fact]
     public void ALoaderCannotBeInstalledUnderARunningServer() =>
         ui.Run(() =>
         {

@@ -995,6 +995,10 @@ public partial class MainViewModel : ObservableObject
         ServerSettingsPanel = null;
     }
 
+    // A page that is replaced or closed stops following its server, or the server would keep it alive.
+    partial void OnServerSettingsPanelChanged(ServerSettingsView? oldValue, ServerSettingsView? newValue) =>
+        oldValue?.Detach();
+
     /// <summary>
     /// True when the window should not close yet, because the settings have something unsaved: they
     /// are put on screen saying so. Asked once; closing again closes.

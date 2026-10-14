@@ -34,8 +34,6 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
         _bindings.Toggle(OnlineModeToggle, "online-mode", true);
         _bindings.Toggle(WhitelistToggle, "white-list", false);
 
-        // Only with crossplay set up: without Geyser there is no Bedrock port to change.
-        BedrockPortCard.IsVisible = CrossplayService.EffectiveBedrockPort(draft.Live) is not null;
         BedrockPortBox.ValueChanged += (_, _) => OnBedrockPortChanged();
 
         Reload();
@@ -44,6 +42,9 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
     /// <inheritdoc />
     public void Reload()
     {
+        // Only with crossplay set up: without Geyser there is no Bedrock port to change. Asked on
+        // every reload, since crossplay can be set up while the page is open.
+        BedrockPortCard.IsVisible = CrossplayService.EffectiveBedrockPort(_draft.Live) is not null;
         _bindings.Load();
         _loading = true;
         BedrockPortBox.Value = CrossplayService.EffectiveBedrockPort(_draft.Config) ?? CrossplayService.DefaultBedrockPort;
