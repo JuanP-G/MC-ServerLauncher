@@ -153,12 +153,18 @@ public class WorldBackupService
         var zipPath = Path.Combine(dir, fileName);
 
         log?.Report(string.Format(Localizer.Get("Msg_BackupCreatingFmt"), levelName));
+
+        // Taken before the copy, not after: by then a running server may already have written to
+        // the world again, and the record would describe a world this zip does not hold — one the
+        // next start would find "up to date" and not copy. Taken first, any change made meanwhile
+        // only means the next start makes one copy too many, which is the safe side to be wrong on.
+        var fingerprint = await Task.Run(() => Fingerprint(worldDir), ct);
         await Task.Run(() => CreateZipWithRetry(worldDir, zipPath, ct), ct);
 
         var sizeMb = new FileInfo(zipPath).Length / (1024.0 * 1024.0);
         log?.Report(string.Format(Localizer.Get("Msg_BackupCreatedFmt"), sizeMb.ToString("0.#")));
 
-        RecordBackup(config, fileName, worldDir);
+        WriteState(config, new BackupState(fileName, fingerprint));
         PruneOldBackups(config, protectFromPruning);
         return zipPath;
     }
@@ -302,7 +308,7 @@ public class WorldBackupService
     /// Which backup the world on disk is a copy of, as far as anybody playing could tell.
     /// </summary>
     /// <param name="Zip">The backup's file name in <c>backups/</c>.</param>
-    /// <param name="Fingerprint">The world folder as it was then; see <see cref="Fingerprint(string)"/>.</param>
+    /// <param name="Fingerprint">The world folder as it was then; see <see cref="WorldBackupService.Fingerprint(string)"/>.</param>
     internal record BackupState(string Zip, string Fingerprint);
 
     /// <summary>Beside the zips it names, so it travels with them; the list only shows <c>*.zip</c>.</summary>
@@ -371,13 +377,6 @@ public class WorldBackupService
         if (!File.Exists(path)) return null;
         try { return JsonSerializer.Deserialize<BackupState>(File.ReadAllText(path)); }
         catch { return null; }
-    }
-
-    /// <summary>Remembers that <paramref name="zipName"/> is a copy of the world as it is now.</summary>
-    private static void RecordBackup(ServerConfig config, string zipName, string worldDir)
-    {
-        try { WriteState(config, new BackupState(zipName, Fingerprint(worldDir))); }
-        catch { /* a file that vanished mid-listing: the next start or stop simply makes its copy */ }
     }
 
     private static void WriteState(ServerConfig config, BackupState state)

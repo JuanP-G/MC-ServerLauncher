@@ -1,3 +1,4 @@
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 
@@ -51,6 +52,30 @@ public class UnchangedWorldBackupTests : IDisposable
 
     [Fact]
     public void WithNoBackupAtAllItNeverIs() => Assert.False(_backups.IsUpToDate(Config()));
+
+    /// <summary>Reports synchronously, so the test can act at an exact step of the copy.</summary>
+    private sealed class AtStep(string step, Action act) : IProgress<string>
+    {
+        public void Report(string value)
+        {
+            if (value.StartsWith(step, StringComparison.Ordinal)) act();
+        }
+    }
+
+    [Fact]
+    public async Task TheRecordIsOfTheWorldTheZipHolds()
+    {
+        // A running server writes again while the zip is being finished. The record used to be taken
+        // after the copy, so it described that newer world, and the next start found it "up to date"
+        // and made no copy of what was actually played.
+        var config = Config();
+        var zipDone = Localizer.Get("Msg_BackupCreatedFmt").Split("{0}")[0];
+
+        await _backups.CreateBackupAsync(config, "auto",
+            new AtStep(zipDone, () => File.WriteAllText(Path.Combine(World, "level.dat"), "played since")));
+
+        Assert.False(_backups.IsUpToDate(config));
+    }
 
     [Fact]
     public async Task AFileWrittenAgainIsAChange()
