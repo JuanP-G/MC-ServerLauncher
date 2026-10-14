@@ -194,6 +194,11 @@ Each of these is here because breaking it shipped a bug that no test caught at t
   sentences in about fifty places. Throw a `UserFacingException` when the message is a sentence from
   the .resx files, and show any failure with `ErrorMessages.Describe(ex)`, which logs the details.
   `ErrorMessagesTests` fails on an `ex.Message` that is not going to the log.
+- **What edits a copy follows the original, and saves it last.** The settings page edits a copy of
+  the server's config. It used to read the original once — so a switch the app turned back off stayed
+  on, and saving it was no change — and copied its fields over the original before writing the files
+  they go with, so a file that failed left the server half changed. Take in what changes outside
+  unless the user edited it, and change the original only once everything else is on disk.
 - **Scripts written for players.** Logic in a `.in` template, every visible line in the .resx files,
   and a placeholder always replaced by a whole finished message — never a format string. Line
   endings are per file (`.sh` LF, `.bat` CRLF), no BOM anywhere, and every `choice` in a `.bat`

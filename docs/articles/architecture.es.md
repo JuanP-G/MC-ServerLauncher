@@ -83,6 +83,29 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > cambiaron: la config viva se sigue escribiendo mientras tanto —una instalación de loader, la
 > semilla leída de la consola— y volcar la copia entera encima lo desharía. Salir de la página con
 > algo sin guardar lo impide la propia barra de guardar, no una ventana que pregunta.
+>
+> Lo que además se cumple en esa página:
+>
+> - **Una fila por página.** `ServerSettingsPages` guarda el icono, los textos y los campos y claves
+>   de `server.properties` de cada página; qué campos puede editar la página sale de las filas
+>   (`ServerSettingsPagesTests`).
+> - **Primero los archivos, la config viva al final.** Guardar escribe `server.properties`, el icono
+>   y la config de Geyser en la carpeta que dice el borrador, y solo entonces copia los campos
+>   cambiados a la config viva. Un archivo que no se puede escribir deja el servidor como estaba; cada
+>   archivo cuenta como guardado en cuanto se escribe (`ServerSettingsDraftTests`). Lo que hace la
+>   ventana tras guardar (escribir `servers.json`, mover el listener de despertar al puerto nuevo) se
+>   espera, y un fallo sale en la barra de la página, cuyo Guardar lo reintenta.
+> - **Sigue a la config viva.** Un campo que cambia otra cosa con la página abierta (una instalación
+>   fallida que vuelve a apagar la multiversión, el puerto Bedrock que eligió crossplay) se recoge
+>   salvo que el usuario lo haya editado ahí (`ServerSettingsDraft.ChangedOutside`); la página deja
+>   de escuchar al cerrarse (`Detach`).
+> - **Puertos y problemas.** `PortOwners` dice qué otro servidor tiene un puerto Java o Bedrock, y
+>   cada `SettingsProblem` dice de qué campo es, para que la página de Red lo enseñe bajo su caja.
+> - **Un servidor encendido** reescribe `server.properties` con lo que cargó cada vez que se cambia
+>   su lista blanca; `PropertiesSavedWhileRunning` vuelve a escribir lo guardado mientras tanto
+>   después de ese comando.
+> - **Las cajas de números** solo aceptan enteros, en cualquier idioma (`WholeNumberBoxes`): con el
+>   lector por defecto, en español `1.5` GB se leía como 15.
 
 > **Un constructor monta; `Activate()` arranca.** `ServerViewModel` y `MainViewModel` se parten en
 > dos. El constructor lee —la config, la paleta de consola, los archivos del propio servidor— y no
@@ -804,6 +827,11 @@ ese campo cuesta, y la insignia, la versión, la pestaña de Mods, sus fichas de
 instalados —la carpeta de la familia vieja acaba de apartarse— y la búsqueda de la tienda van
 solos. La página de configuración da por guardados los campos instalados
 (`ServerSettingsDraft.Adopt`), así que un Descartar posterior no puede devolver el jar viejo.
+
+La página no es modal, así que la instalación se protege sola: no está disponible con el servidor
+encendido o preparándose, el servidor no arranca mientras se instala (`ServerViewModel.IsConverting`)
+y la configuración no se puede guardar ni dejar hasta que termine. La carpeta y la RAM se leen una
+vez, al pulsar Instalar.
 
 Antes esto reconstruía el view model entero, y solo cuando había cambiado el *tipo* y el servidor
 estaba parado. Convertir Fabric 1.21.1 a Fabric 1.21.4 no cambiaba entonces nada en pantalla, y el
