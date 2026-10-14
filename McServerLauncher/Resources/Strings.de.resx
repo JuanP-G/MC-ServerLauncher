@@ -1182,6 +1182,8 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Net_InternetFair" xml:space="preserve"><value>Dein Internet ist knapp</value></data>
   <data name="Net_InternetSlowUpFmt" xml:space="preserve"><value>Der Upload ist knapp: reicht für etwa {0} Spieler, bevor man es merkt.</value></data>
   <data name="Net_InternetLaggyDetail" xml:space="preserve"><value>Deine Verbindung hat Verzögerung oder verliert Pakete; Kabel ist meist besser als WLAN.</value></data>
+  <data name="Net_InternetNoSpeed" xml:space="preserve"><value>Die Geschwindigkeit ließ sich nicht messen</value></data>
+  <data name="Net_InternetNoSpeedDetail" xml:space="preserve"><value>Die Verzögerung ist gut, aber der Geschwindigkeitstest wurde nicht fertig: Vielleicht bricht ihn eine Firewall oder ein Proxy ab. Versuch es später noch einmal.</value></data>
   <data name="Net_InternetBad" xml:space="preserve"><value>Dein Internet ist schlecht</value></data>
   <data name="Net_InternetBadDetail" xml:space="preserve"><value>Mit dieser Verbindung spüren Spieler Verzögerung: Versuche Kabel oder starte den Router neu.</value></data>
   <data name="Net_InternetNone" xml:space="preserve"><value>Keine Internetverbindung</value></data>

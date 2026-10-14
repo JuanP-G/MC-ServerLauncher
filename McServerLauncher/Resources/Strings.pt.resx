@@ -1182,6 +1182,8 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Net_InternetFair" xml:space="preserve"><value>A tua internet está no limite</value></data>
   <data name="Net_InternetSlowUpFmt" xml:space="preserve"><value>O upload é curto: dá para cerca de {0} jogadores sem se notar.</value></data>
   <data name="Net_InternetLaggyDetail" xml:space="preserve"><value>A tua ligação tem atraso ou perde pacotes; por cabo costuma ir melhor do que por Wi-Fi.</value></data>
+  <data name="Net_InternetNoSpeed" xml:space="preserve"><value>Não foi possível medir a velocidade</value></data>
+  <data name="Net_InternetNoSpeedDetail" xml:space="preserve"><value>O atraso é bom, mas o teste de velocidade não chegou ao fim: pode ser que uma firewall ou um proxy o cortem. Tenta outra vez mais tarde.</value></data>
   <data name="Net_InternetBad" xml:space="preserve"><value>A tua internet está mal</value></data>
   <data name="Net_InternetBadDetail" xml:space="preserve"><value>Com esta ligação os jogadores vão sentir atraso: experimenta por cabo ou reinicia o router.</value></data>
   <data name="Net_InternetNone" xml:space="preserve"><value>Sem ligação à internet</value></data>

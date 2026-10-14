@@ -161,4 +161,23 @@ public class ConnectionTestTests : IDisposable
 
         _ui.Run(() => Assert.False(test!.IsTesting));
     }
+
+    /// <summary>A speed test that could not run says so, instead of blaming lag.</summary>
+    /// <remarks>
+    /// With a good round trip and nothing measured going up — a firewall cutting the upload, the
+    /// speed host down — the step said the connection "has lag or loses packets".
+    /// </remarks>
+    [Fact]
+    public void AnUnmeasuredLineIsNotBlamedOnLag()
+    {
+        _ui.Run(() =>
+        {
+            var test = NewServer().ConnectionTest;
+            test.JudgeInternet(new LatencyStats([20, 21, 19, 22, 20, 21, 20, 19], 8), Throughput.None);
+
+            Assert.Equal(StepState.Fair, test.InternetStep.State);
+            Assert.Equal(Localizer.Get("Net_InternetNoSpeed"), test.InternetStep.Title);
+            Assert.Equal(Localizer.Get("Net_InternetNoSpeedDetail"), test.InternetStep.Detail);
+        });
+    }
 }

@@ -382,6 +382,9 @@ public partial class ConnectionTestViewModel : ObservableObject
         var (title, detail) = state switch
         {
             StepState.Good => ("Net_InternetGood", string.Format(Localizer.Get("Net_InternetGoodDetailFmt"), players)),
+            // Nothing went up: the line was not measured, which is not the same as lag.
+            StepState.Fair when up.Mbps <= 0 && byLatency == StepState.Good =>
+                ("Net_InternetNoSpeed", Localizer.Get("Net_InternetNoSpeedDetail")),
             StepState.Fair when byUpload >= byLatency && up.Mbps > 0 =>
                 ("Net_InternetFair", string.Format(Localizer.Get("Net_InternetSlowUpFmt"), players)),
             StepState.Fair => ("Net_InternetFair", Localizer.Get("Net_InternetLaggyDetail")),
