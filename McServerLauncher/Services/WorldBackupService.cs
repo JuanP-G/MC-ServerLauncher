@@ -518,16 +518,24 @@ public class WorldBackupService
             throw;   // the world was never touched
         }
 
-        if (Directory.Exists(worldDir)) Directory.Move(worldDir, outgoing);
         try
         {
-            Directory.Move(incoming, worldDir);
+            if (Directory.Exists(worldDir)) Directory.Move(worldDir, outgoing);
+            try
+            {
+                Directory.Move(incoming, worldDir);
+            }
+            catch
+            {
+                // Put the old world back rather than leave none at all.
+                if (!Directory.Exists(worldDir) && Directory.Exists(outgoing)) Directory.Move(outgoing, worldDir);
+                throw;
+            }
         }
-        catch
+        finally
         {
-            // Put the old world back rather than leave none at all.
-            if (!Directory.Exists(worldDir) && Directory.Exists(outgoing)) Directory.Move(outgoing, worldDir);
-            throw;
+            // A whole second copy of the world, if moving the old one aside failed (a file in use).
+            try { DeleteFolder(incoming); } catch { /* cleared by the next restore */ }
         }
 
         // Best-effort: a file held open by an antivirus can keep this one around until next time.

@@ -78,6 +78,20 @@ public class RestoreSafetyTests : IDisposable
     }
 
     [Fact]
+    public void ARestoreThatCannotMoveTheOldWorldAsideLeavesNoSecondCopy()
+    {
+        // Something occupies the name the old world is moved to — here a file, which a folder can
+        // never be renamed over, on Windows or Linux. The unpacked backup, a whole second world,
+        // used to stay beside it as world.restoring until the next restore.
+        File.WriteAllText(World + ".replaced", "in the way");
+
+        Assert.ThrowsAny<IOException>(() => WorldBackupService.ReplaceWorld(World, BackupOf("yesterday")));
+
+        Assert.Equal("today", File.ReadAllText(Path.Combine(World, "level.dat")));
+        Assert.False(Directory.Exists(World + ".restoring"));
+    }
+
+    [Fact]
     public void NothingStartsTheServerWhileItRestores()
     {
         _ui.Run(() =>
