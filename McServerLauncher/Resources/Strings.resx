@@ -491,7 +491,10 @@
   <data name="Tip_ToggleMod" xml:space="preserve"><value>Activar / Desactivar</value></data>
   <data name="Loader_Title" xml:space="preserve"><value>Cambiar el tipo de servidor</value></data>
   <data name="Loader_Section" xml:space="preserve"><value>Tipo de servidor</value></data>
-  <data name="Loader_Current" xml:space="preserve"><value>Loader actual: </value></data>
+  <data name="Loader_CurrentFmt" xml:space="preserve"><value>Loader actual: {0} {1}</value></data>
+  <data name="Loader_StopServerFirst" xml:space="preserve"><value>Detén el servidor antes de cambiar el loader: sus archivos están en uso.</value></data>
+  <data name="Loader_StillInstalling" xml:space="preserve"><value>Se está instalando el loader. Espera a que termine antes de guardar o salir.</value></data>
+  <data name="Msg_StartWaitsForLoader" xml:space="preserve"><value>No se puede arrancar mientras se instala el loader; espera a que termine.</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Cambia el tipo de este servidor. Cada tarjeta dice si lleva plugins o mods, y si se puede entrar desde Bedrock. Tu mundo se conserva.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sin mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Conservar el archivo de arranque actual (run.bat)</value></data>

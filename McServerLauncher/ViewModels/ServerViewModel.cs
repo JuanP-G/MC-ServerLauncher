@@ -969,7 +969,17 @@ public partial class ServerViewModel : ObservableObject
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
-    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing;
+    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing && !IsConverting;
+
+    /// <summary>True while the settings page installs another loader into this server's folder.</summary>
+    /// <remarks>
+    /// Starting meanwhile would launch a jar that is being replaced. The button follows this, and so
+    /// does every start without one — waking on demand, restarting after a crash.
+    /// </remarks>
+    [ObservableProperty]
+    private bool _isConverting;
+
+    partial void OnIsConvertingChanged(bool value) => NotifyCommandStates();
 
     /// <summary>True from the moment a start begins until the process is up or the start gives up.</summary>
     /// <remarks>
@@ -1411,6 +1421,11 @@ public partial class ServerViewModel : ObservableObject
         if (IsRestoring)
         {
             OnConsoleLine(Localizer.Get("Msg_StartWaitsForRestore"));
+            return;
+        }
+        if (IsConverting)
+        {
+            OnConsoleLine(Localizer.Get("Msg_StartWaitsForLoader"));
             return;
         }
 

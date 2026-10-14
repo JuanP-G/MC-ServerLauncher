@@ -236,6 +236,33 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
             Assert.Contains("nudged", view.FindControl<Border>("SaveBar")!.Classes);
         });
 
+    [Fact]
+    public void ALoaderCannotBeInstalledUnderARunningServer() =>
+        ui.Run(() =>
+        {
+            // The page used to be a modal dialog; on the page nothing stopped an install from
+            // replacing the jar of a server that was running.
+            var server = new ServerViewModel(new ServerConfig { Name = "diez", FolderPath = Folder("diez") });
+            server.State = ServerState.Running;
+            var view = new ServerSettingsView(server, ServerSettingsPage.Loader);
+            AvaloniaFixture.Pump();
+
+            Assert.False(Named<Button>(view, ServerSettingsPage.Loader, "InstallButton").IsEnabled);
+        });
+
+    [Fact]
+    public void NothingStartsTheServerWhileALoaderIsBeingInstalled() =>
+        ui.Run(() =>
+        {
+            var server = new ServerViewModel(new ServerConfig { Name = "once", FolderPath = Folder("once") });
+            Assert.True(server.StartCommand.CanExecute(null));
+
+            server.IsConverting = true;
+
+            Assert.False(server.CanStart);
+            Assert.False(server.StartCommand.CanExecute(null));
+        });
+
     public void Dispose()
     {
         try { Directory.Delete(_root, recursive: true); } catch { /* best-effort */ }

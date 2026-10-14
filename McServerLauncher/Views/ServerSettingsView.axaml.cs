@@ -140,7 +140,7 @@ public partial class ServerSettingsView : UserControl
 
     private LoaderSection Loader()
     {
-        var loader = new LoaderSection(_draft);
+        var loader = new LoaderSection(_draft, Server);
         loader.Installed += () =>
         {
             // The install wrote these into the live config; the page takes them as saved, and
@@ -184,10 +184,25 @@ public partial class ServerSettingsView : UserControl
     /// </summary>
     public bool TryLeave()
     {
+        if (LoaderBusy())
+        {
+            ShowBarProblem(Localizer.Get("Loader_StillInstalling"));
+            return false;
+        }
         if (!IsDirty) return true;
         Nudge();
         return false;
     }
+
+    /// <summary>An install on the Loader page is still writing into the server's folder.</summary>
+    /// <remarks>
+    /// Leaving would leave it running unseen, with its failures on a page nobody can open again — a
+    /// new one would let a second install into the same folder. Saving would copy a folder or a
+    /// Java path into the live config under it.
+    /// </remarks>
+    private bool LoaderBusy() =>
+        _sections.TryGetValue(ServerSettingsPage.Loader, out var loader)
+        && loader is LoaderSection { IsBusy: true };
 
     /// <summary>Makes the bar say that the unsaved changes are what is in the way.</summary>
     public void Nudge()
@@ -298,6 +313,12 @@ public partial class ServerSettingsView : UserControl
     {
         foreach (var section in _sections.Values.OfType<IServerSettingsSection>()) section.ShowError(null);
         ShowBarProblem(null);
+
+        if (LoaderBusy())
+        {
+            ShowBarProblem(Localizer.Get("Loader_StillInstalling"));
+            return false;
+        }
 
         var problems = _draft.Validate();
         if (problems.Count > 0)
