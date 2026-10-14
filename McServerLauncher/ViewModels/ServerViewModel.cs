@@ -1079,6 +1079,7 @@ public partial class ServerViewModel : ObservableObject
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
             StartWakeListener();
+            _savedWhileRunning.Clear();   // the next start reads the file as it is
 
             // However it stopped — a crash, "stop" typed in the console. Stop and Restart also ask
             // themselves, since this arrives posted and they must not decide before it has run.
@@ -2315,11 +2316,34 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand]
     private Task ToggleWhitelist() => SetWhitelistAsync(!WhitelistEnabled);
 
+    /// <summary>What the settings page saved into server.properties while the server ran.</summary>
+    private readonly PropertiesSavedWhileRunning _savedWhileRunning = new();
+
+    /// <summary>
+    /// The settings page wrote <paramref name="changes"/> into server.properties. With the server
+    /// running they are remembered, and a whitelist switch among them goes to the server as a command.
+    /// </summary>
+    /// <remarks>
+    /// Written to the file, a whitelist switch only took effect on the next start, while the Players
+    /// tab's switch takes effect at once: the same setting behaved two ways. And the command makes the
+    /// server rewrite the whole file from what it loaded, which is why the rest is remembered — see
+    /// <see cref="PropertiesSavedWhileRunning"/>.
+    /// </remarks>
+    internal async Task FollowSavedPropertiesAsync(IReadOnlyDictionary<string, string> changes)
+    {
+        if (!_process.IsRunning || changes.Count == 0) return;
+
+        _savedWhileRunning.Note(changes);
+        if (changes.TryGetValue("white-list", out var whitelist))
+            await SetWhitelistAsync(whitelist.Trim().Equals("true", StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>Switches the whitelist on or off, keeping whoever is on it.</summary>
     /// <remarks>
     /// While the server runs, through its own command, which applies it at once and writes
-    /// server.properties itself; while it is stopped, straight into the file. whitelist.json is
-    /// never touched, so switching it off and on again gives back the same list.
+    /// server.properties itself — from the values it loaded at start, so whatever was saved since is
+    /// written again after it. While it is stopped, straight into the file. whitelist.json is never
+    /// touched, so switching it off and on again gives back the same list.
     /// </remarks>
     private async Task SetWhitelistAsync(bool on)
     {
@@ -2331,6 +2355,9 @@ public partial class ServerViewModel : ObservableObject
                 OnConsoleLine("> " + command, ConsoleLineKind.Command);
                 _process.SendCommand(command);
                 await Task.Delay(500);
+
+                if (_savedWhileRunning.ToRestore() is { Count: > 0 } owed)
+                    _properties.Update(Config.PropertiesPath, owed);
             }
             else
             {

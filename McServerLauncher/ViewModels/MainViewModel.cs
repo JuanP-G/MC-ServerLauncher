@@ -940,6 +940,7 @@ public partial class MainViewModel : ObservableObject
         server.Name = server.Config.Name;
         Save();
         server.RefreshFromDisk();
+        await server.FollowSavedPropertiesAsync(saved.PropertyChanges);
         if (server.Name != saved.OldName) _ = Tunnels.RenameTunnelsForServerAsync(server, saved.OldName);
         if (saved.BedrockPortChanged) _ = server.RefreshTunnelInfoAsync();
         if (saved.JavaPortChanged)

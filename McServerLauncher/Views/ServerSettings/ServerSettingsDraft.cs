@@ -30,9 +30,11 @@ public enum ServerSettingsPage
 /// <param name="CrossplayTurnedOn">Crossplay was switched on and has to be installed.</param>
 /// <param name="MultiVersionTurnedOn">Version bridging was switched on and has to be installed.</param>
 /// <param name="ModContentTurnedOn">Hydraulic was switched on and has to be installed.</param>
+/// <param name="PropertyChanges">The <c>server.properties</c> values written, by key.</param>
 public sealed record ServerSettingsSaved(
     string OldName, bool JavaPortChanged, bool BedrockPortChanged,
-    bool CrossplayTurnedOn, bool MultiVersionTurnedOn, bool ModContentTurnedOn);
+    bool CrossplayTurnedOn, bool MultiVersionTurnedOn, bool ModContentTurnedOn,
+    IReadOnlyDictionary<string, string> PropertyChanges);
 
 /// <summary>
 /// Everything a server's settings page has changed and not yet saved: a copy of its
@@ -275,20 +277,22 @@ public sealed class ServerSettingsDraft
     /// </remarks>
     public ServerSettingsSaved Apply()
     {
-        var saved = new ServerSettingsSaved(
-            OldName: Live.Name,
-            JavaPortChanged: PropertyChanged("server-port"),
-            BedrockPortChanged: !Same(Config, _baseline, nameof(ServerConfig.BedrockPort)),
-            CrossplayTurnedOn: !_baseline.CrossplayEnabled && Config.CrossplayEnabled,
-            MultiVersionTurnedOn: !_baseline.MultiVersionEnabled && Config.MultiVersionEnabled,
-            ModContentTurnedOn: !_baseline.BedrockModContentEnabled && Config.BedrockModContentEnabled);
-
-        Config.Name = Config.Name.Trim();
-
         // Only what changed: rewriting an untouched value would reformat a MOTD written by hand, and
         // would create server.properties on a server that never ran.
         var changes = _props.Where(p => PropertyChanged(p.Key))
             .ToDictionary(p => p.Key, p => p.Value, StringComparer.OrdinalIgnoreCase);
+
+        var saved = new ServerSettingsSaved(
+            OldName: Live.Name,
+            JavaPortChanged: changes.ContainsKey("server-port"),
+            BedrockPortChanged: !Same(Config, _baseline, nameof(ServerConfig.BedrockPort)),
+            CrossplayTurnedOn: !_baseline.CrossplayEnabled && Config.CrossplayEnabled,
+            MultiVersionTurnedOn: !_baseline.MultiVersionEnabled && Config.MultiVersionEnabled,
+            ModContentTurnedOn: !_baseline.BedrockModContentEnabled && Config.BedrockModContentEnabled,
+            PropertyChanges: changes);
+
+        Config.Name = Config.Name.Trim();
+
         if (changes.Count > 0)
         {
             _service.Update(Config.PropertiesPath, changes);
