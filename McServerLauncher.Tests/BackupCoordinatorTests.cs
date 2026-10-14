@@ -60,7 +60,8 @@ public class BackupCoordinatorTests : IDisposable
     {
         public override Task<string?> CreateBackupAsync(ServerConfig config, string trigger,
             IProgress<string>? log = null, CancellationToken ct = default, string? protectFromPruning = null) =>
-            throw new IOException("There is not enough space on the disk.", unchecked((int)0x80070070));
+            throw new IOException("There is not enough space on the disk.",
+                OperatingSystem.IsWindows() ? unchecked((int)0x80070070) : 28);   // ENOSPC elsewhere
     }
 
     private (FakeBackupHost Server, BackupCoordinator Coordinator) Running(WorldBackupService? service = null)
