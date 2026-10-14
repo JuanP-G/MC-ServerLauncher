@@ -1,6 +1,9 @@
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
+using Avalonia.Controls;
+using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
+using McServerLauncher.Views.ServerSettings;
 
 namespace McServerLauncher.Tests;
 
@@ -100,5 +103,62 @@ public class ConnectionTestTests : IDisposable
             Assert.Equal(Localizer.Get("Net_StepTunnel"), test.TunnelStep.Title);
             Assert.All(test.Steps, s => Assert.Equal(StepState.Waiting, s.State));
         });
+    }
+
+    /// <summary>A server that is removed, or the app closing, stops its test.</summary>
+    [Fact]
+    public async Task ShuttingTheServerDownStopsItsTest()
+    {
+        ServerViewModel? server = null;
+        ConnectionTestViewModel? test = null;
+        Task? run = null, shutdown = null;
+        _ui.Run(() =>
+        {
+            server = NewServer();
+            server.IsPreparing = true;
+            test = server.ConnectionTest;
+            run = test.StartServerAndRunCommand.ExecuteAsync(null);
+        });
+
+        await Task.Delay(300);
+        _ui.Run(() => shutdown = server!.ShutdownAsync());
+        await shutdown!.WaitAsync(TimeSpan.FromSeconds(10));
+        await run!.WaitAsync(TimeSpan.FromSeconds(10));
+
+        _ui.Run(() => Assert.False(test!.IsTesting));
+    }
+
+    /// <summary>Leaving the network page stops the test that was running on it.</summary>
+    [Fact]
+    public async Task LeavingTheNetworkPageStopsTheTest()
+    {
+        ConnectionTestViewModel? test = null;
+        Window? window = null;
+        Task? run = null;
+        _ui.Run(() =>
+        {
+            var server = NewServer();
+            server.IsPreparing = true;
+            test = server.ConnectionTest;
+            var page = new NetworkSection(new ServerSettingsDraft(server.Config), test);
+            AvaloniaFixture.WithoutIcons(page);
+            // The steps' icons come from a template, after WithoutIcons has looked. Hidden, the card
+            // is never measured, and what is tested is the page going away, not how it looks.
+            page.FindControl<Control>("TestCard")!.IsVisible = false;
+            window = new Window { Content = page };
+            window.Show();
+            AvaloniaFixture.Pump();
+            run = test.StartServerAndRunCommand.ExecuteAsync(null);
+        });
+
+        await Task.Delay(300);
+        _ui.Run(() =>
+        {
+            window!.Content = null;
+            window.Hide();
+        });
+        await run!.WaitAsync(TimeSpan.FromSeconds(10));
+
+        _ui.Run(() => Assert.False(test!.IsTesting));
     }
 }

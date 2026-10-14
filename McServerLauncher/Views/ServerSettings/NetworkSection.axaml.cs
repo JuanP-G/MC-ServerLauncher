@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
@@ -13,6 +14,7 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
 {
     private readonly ServerSettingsDraft _draft;
     private readonly PropertyBindings _bindings;
+    private readonly ConnectionTestViewModel? _test;
     private bool _loading;
 
     // Parameterless constructor for the Avalonia XAML loader / designer only.
@@ -24,6 +26,7 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
     {
         InitializeComponent();
         _draft = draft;
+        _test = test;
         // The card first: it must never inherit the config, which it does not bind to.
         TestCard.DataContext = test;
         TestCard.IsVisible = test is not null;
@@ -39,6 +42,16 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
         BedrockPortBox.ValueChanged += (_, _) => OnBedrockPortChanged();
 
         Reload();
+    }
+
+    /// <remarks>
+    /// A test left running when the page goes away — another page, the settings closed — would go
+    /// on downloading 25 MB for nobody to read.
+    /// </remarks>
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _test?.Cancel();
+        base.OnDetachedFromVisualTree(e);
     }
 
     /// <inheritdoc />

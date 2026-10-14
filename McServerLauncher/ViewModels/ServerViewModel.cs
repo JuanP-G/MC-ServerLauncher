@@ -2519,6 +2519,7 @@ public partial class ServerViewModel : ObservableObject
         _autoBackupTimer.Stop();
         Mods.Shutdown();                               // cancels anything the store was fetching
         History.Shutdown();                            // drops a rebuild that was waiting its turn
+        _connectionTest?.Cancel();                     // nobody is left to read what it measures
         _wake.Stop();                                  // frees the port we answer on while asleep
         if (_process.IsRunning)
         {
