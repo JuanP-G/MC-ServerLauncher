@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using McServerLauncher.Models;
+using McServerLauncher.Services;
 
 namespace McServerLauncher.Views.ServerSettings;
 
@@ -17,7 +18,7 @@ public partial class GameSection : UserControl, IServerSettingsSection
         _bindings = new PropertyBindings(draft);
         _bindings.Choice(GamemodeBox, "gamemode", "survival", numberedInOrder: true);
         _bindings.Choice(DifficultyBox, "difficulty", "easy", numberedInOrder: true);
-        _bindings.Number(MaxPlayersBox, "max-players", 20);
+        _bindings.Number(MaxPlayersBox, "max-players", ServerPropertiesService.DefaultMaxPlayers);
         _bindings.Toggle(PvpToggle, "pvp", true);
         _bindings.Toggle(HardcoreToggle, "hardcore", false);
         _bindings.Toggle(AllowFlightToggle, "allow-flight", false);

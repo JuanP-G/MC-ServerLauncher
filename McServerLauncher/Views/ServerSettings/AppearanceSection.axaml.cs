@@ -31,14 +31,13 @@ namespace McServerLauncher.Views.ServerSettings;
 /// </remarks>
 public partial class AppearanceSection : UserControl, IServerSettingsSection
 {
-    private const string DefaultMotd = "A Minecraft Server";
 
     private readonly ServerSettingsDraft _draft;
     private readonly ServerIconService _icons = new();
     private readonly Func<bool> _isRunning;
     private readonly TextBox[] _boxes;
 
-    private MotdDocument _doc = MotdDocument.FromProperties(DefaultMotd);
+    private MotdDocument _doc = MotdDocument.FromProperties(ServerPropertiesService.DefaultMotd);
 
     // Style chosen from the toolbar with nothing selected: used by the next characters typed in that
     // line, then forgotten.
@@ -66,7 +65,7 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         // What the file says, normalised through the document: that is what Save would write back
         // untouched, so it is what counts as unchanged.
         var raw = draft.FileValue("motd");
-        _doc = MotdDocument.FromProperties(string.IsNullOrWhiteSpace(raw) ? DefaultMotd : raw);
+        _doc = MotdDocument.FromProperties(string.IsNullOrWhiteSpace(raw) ? ServerPropertiesService.DefaultMotd : raw);
         draft.Track("motd", _doc.ToProperties());
         ExtraLinesNote.IsVisible = _doc.HadExtraLines;
         PreviewAsleep.IsCheckedChanged += (_, _) => Refresh();
@@ -98,7 +97,9 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         Line1Box.Text = _doc.GetText(0);
         Line2Box.Text = _doc.GetText(1);
         NameBox.Text = _draft.Config.Name;
-        _icon = _draft.NewIcon is { } png ? Decode(png) : _draft.RemoveIcon ? null : LoadCurrentIcon();
+        _icon = _draft.NewIcon is { } png ? ServerIconImage.Decode(png)
+            : _draft.RemoveIcon ? null
+            : ServerIconImage.Load(_draft.Live.FolderPath);
         ImageError.IsVisible = false;
         _hexSelection = null;   // a range of the text this replaced
 
@@ -133,7 +134,7 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         {
             var edited = _draft.Get("max-players");
             var value = edited.Length > 0 ? edited : _draft.FileValue("max-players");
-            return int.TryParse(value, out var n) ? n.ToString() : "20";
+            return (int.TryParse(value, out var n) ? n : ServerPropertiesService.DefaultMaxPlayers).ToString();
         }
     }
 
@@ -164,24 +165,6 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         RemoveImageButton.IsEnabled = _icon is not null;
     }
 
-    private Bitmap? LoadCurrentIcon()
-    {
-        var path = Path.Combine(_draft.Live.FolderPath, ServerIconService.FileName);
-        if (!File.Exists(path)) return null;
-        try
-        {
-            // Read fully into memory so the file is not locked while the page is open.
-            using var fs = File.OpenRead(path);
-            return new Bitmap(fs);
-        }
-        catch { return null; }
-    }
-
-    private static Bitmap Decode(byte[] png)
-    {
-        using var ms = new MemoryStream(png);
-        return new Bitmap(ms);
-    }
 
     // ---------------------------------------------------------------- text
 
@@ -248,7 +231,7 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
     internal void UseImage(string path)
     {
         var png = _icons.RenderIcon(path);
-        _icon = Decode(png);
+        _icon = ServerIconImage.Decode(png);
         ImageError.IsVisible = false;
         _draft.UseIcon(png);
         Refresh();

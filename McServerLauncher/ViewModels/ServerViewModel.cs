@@ -322,7 +322,7 @@ public partial class ServerViewModel : ObservableObject
 
     // --- State properties ---
     [ObservableProperty]
-    private string _motdText = "A Minecraft Server";
+    private string _motdText = ServerPropertiesService.DefaultMotd;
 
     [ObservableProperty]
     private string _playerCountText = "0/20";
@@ -724,7 +724,7 @@ public partial class ServerViewModel : ObservableObject
     private WakeStatus BuildWakeStatus()
     {
         var starting = State != ServerState.Stopped;
-        var icon = Path.Combine(Config.FolderPath, "server-icon.png");
+        var icon = Path.Combine(Config.FolderPath, ServerIconService.FileName);
 
         return new WakeStatus(
             Description: WakeSign.Compose(MotdText, WakeSign.Notice(starting)),
@@ -2260,8 +2260,12 @@ public partial class ServerViewModel : ObservableObject
     private void RefreshInfo()
     {
         var props = _properties.Read(Config.PropertiesPath);
-        MotdText = props.TryGetValue("motd", out var m) && !string.IsNullOrWhiteSpace(m) ? m : "A Minecraft Server";
-        _maxPlayers = props.TryGetValue("max-players", out var mp) && int.TryParse(mp, out var n) ? n : 20;
+        MotdText = props.TryGetValue("motd", out var m) && !string.IsNullOrWhiteSpace(m)
+            ? m
+            : ServerPropertiesService.DefaultMotd;
+        _maxPlayers = props.TryGetValue("max-players", out var mp) && int.TryParse(mp, out var n)
+            ? n
+            : ServerPropertiesService.DefaultMaxPlayers;
         UpdatePlayerCount();
         LoadIcon();
         RefreshPlayers();
@@ -2405,26 +2409,8 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
-    private void LoadIcon()
-    {
-        // The icon players see in the server list is server-icon.png (root, 64x64).
-        var path = Path.Combine(Config.FolderPath, "server-icon.png");
-        if (!File.Exists(path))
-        {
-            ServerIcon = null;
-            return;
-        }
-        try
-        {
-            // Read fully into memory so the file isn't locked and updates are picked up.
-            using var fs = File.OpenRead(path);
-            ServerIcon = new Bitmap(fs);
-        }
-        catch
-        {
-            ServerIcon = null;
-        }
-    }
+    // The icon players see in the server list is server-icon.png (root, 64x64).
+    private void LoadIcon() => ServerIcon = ServerIconImage.Load(Config.FolderPath);
 
     private void UpdatePlayerCount() => PlayerCountText = $"{ConnectedPlayers.Count}/{_maxPlayers}";
 
