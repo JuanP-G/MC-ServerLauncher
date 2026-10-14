@@ -189,6 +189,11 @@ Each of these is here because breaking it shipped a bug that no test caught at t
 - **A JVM option the app adds is gated by the Java version.** An option the JVM does not recognise
   stops it from starting at all, which is worse than any warning it was meant to silence. See
   `ServerProcessManager.ImpliedJvmFlags`, and never override what the user put in their extra arguments.
+- **An exception's own message is never shown.** It is written for developers, in English or the
+  system's language, with paths and codes in it, and it used to appear in the middle of Spanish
+  sentences in about fifty places. Throw a `UserFacingException` when the message is a sentence from
+  the .resx files, and show any failure with `ErrorMessages.Describe(ex)`, which logs the details.
+  `ErrorMessagesTests` fails on an `ex.Message` that is not going to the log.
 - **Scripts written for players.** Logic in a `.in` template, every visible line in the .resx files,
   and a placeholder always replaced by a whole finished message — never a format string. Line
   endings are per file (`.sh` LF, `.bat` CRLF), no BOM anywhere, and every `choice` in a `.bat`

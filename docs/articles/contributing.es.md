@@ -201,6 +201,11 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   JVM no reconoce le impide arrancar, que es peor que cualquier aviso que se quisiera callar. Ver
   `ServerProcessManager.ImpliedJvmFlags`, y nunca por encima de lo que el usuario puso en sus
   argumentos extra.
+- **El mensaje propio de una excepción no se enseña nunca.** Está escrito para quien programa, en
+  inglés o en el idioma del sistema, con rutas y códigos, y salía en mitad de frases en español en
+  unos cincuenta sitios. Lanza una `UserFacingException` cuando el mensaje es una frase de los .resx,
+  y enseña cualquier fallo con `ErrorMessages.Describe(ex)`, que deja el detalle en el registro.
+  `ErrorMessagesTests` falla con un `ex.Message` que no vaya al registro.
 - **Scripts escritos para jugadores.** La lógica en una plantilla `.in`, cada línea visible en los
   .resx, y cada marcador sustituido por un mensaje entero y terminado — nunca una cadena de formato.
   Finales de línea por archivo (`.sh` LF, `.bat` CRLF), sin BOM en ningún sitio, y todo `choice` de
