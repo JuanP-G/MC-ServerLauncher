@@ -159,6 +159,8 @@ public partial class ServerModsViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(UpdateAllCommand))]
     [NotifyCanExecuteChangedFor(nameof(CheckUpdatesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveSelectedCleanupCommand))]
+    [NotifyPropertyChangedFor(nameof(CanRemoveSelectedCleanup))]
     private bool _isUpdatingAll;
 
     /// <summary>How many rows are offering an update right now.</summary>

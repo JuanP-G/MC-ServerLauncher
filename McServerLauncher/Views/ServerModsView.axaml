@@ -433,7 +433,7 @@
                          month. Only offered — every row is ticked and still waits for the button.
                          The list scrolls inside a fixed height so a long one cannot push the
                          installed list off screen. -->
-                    <Border IsVisible="{Binding HasCleanupSuggestions}" Margin="0,0,0,8" Padding="10,8"
+                    <Border IsVisible="{Binding HasCleanupSuggestions}" IsEnabled="{Binding !IsUpdatingAll}" Margin="0,0,0,8" Padding="10,8"
                             Background="{StaticResource SemanticWarnFill}" BorderBrush="{StaticResource SemanticWarnEdge}" BorderThickness="1" CornerRadius="6">
                         <StackPanel Spacing="6">
                             <TextBlock Text="{loc:Loc Cleanup_Title}" TextWrapping="Wrap"

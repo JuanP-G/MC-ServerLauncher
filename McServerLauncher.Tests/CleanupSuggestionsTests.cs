@@ -442,6 +442,51 @@ public class CleanupSuggestionsTests : IDisposable
     }
 
     [Fact]
+    public void ARowWhoseFileWentAwaySaysSoInsteadOfRemoved()
+    {
+        // The mod was switched back on (renamed) after the scan: deleting the old path removed
+        // nothing and the status said "removed".
+        var vm = Panel(out var mods);
+        var off = Path.Combine(mods, "foo.jar.disabled");
+        File.WriteAllText(off, "");
+        vm.ShowCleanup(new[] { new CleanupSuggestionViewModel(off, "foo.jar", "x", "disabled:foo") });
+        File.Move(off, Path.Combine(mods, "foo.jar"));
+
+        vm.RemoveSelectedCleanupCommand.Execute(null);
+
+        Assert.True(File.Exists(Path.Combine(mods, "foo.jar")));
+        Assert.DoesNotContain(string.Format(Localizer.Get("Cleanup_RemovedFmt"), "foo.jar"), vm.UpdateStatus);
+        Assert.Contains(string.Format(Localizer.Get("Cleanup_ChangedFmt"), "foo.jar"), vm.UpdateStatus);
+    }
+
+    [Fact]
+    public void AFileReplacedUnderTheSameNameIsNotRemoved()
+    {
+        var vm = Panel(out var mods);
+        var jar = Path.Combine(mods, "geyser.jar");
+        File.WriteAllText(jar, "old");
+        vm.ShowCleanup(new[] { new CleanupSuggestionViewModel(jar, "geyser.jar", "x", "orphan:geyser") });
+        File.WriteAllText(jar, "a new version, just installed");
+
+        vm.RemoveSelectedCleanupCommand.Execute(null);
+
+        Assert.True(File.Exists(jar));
+    }
+
+    [Fact]
+    public void NothingIsRemovedWhileUpdateAllRuns()
+    {
+        var vm = Panel(out var mods);
+        var jar = Path.Combine(mods, "a.jar");
+        File.WriteAllText(jar, "");
+        vm.ShowCleanup(new[] { new CleanupSuggestionViewModel(jar, "a.jar", "x", "orphan:a") });
+
+        vm.IsUpdatingAll = true;
+
+        Assert.False(vm.RemoveSelectedCleanupCommand.CanExecute(null));
+    }
+
+    [Fact]
     public void NothingTickedMeansTheButtonDoesNothing()
     {
         var vm = Panel(out var mods);

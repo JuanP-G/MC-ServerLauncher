@@ -40,7 +40,11 @@ public partial class ServerModsViewModel
     /// <summary>How many rows are ticked.</summary>
     public int SelectedCleanupCount => CleanupSuggestions.Count(s => s.IsSelected);
 
-    public bool CanRemoveSelectedCleanup => SelectedCleanupCount > 0;
+    /// <remarks>
+    /// Not while "update all" runs: it walks the installed rows and swaps their files, and removing
+    /// rebuilds those rows under it.
+    /// </remarks>
+    public bool CanRemoveSelectedCleanup => SelectedCleanupCount > 0 && !IsUpdatingAll;
 
     /// <summary>"Quitar 1 seleccionado" / "Quitar 3 seleccionados".</summary>
     public string RemoveSelectedText => SelectedCleanupCount == 1
@@ -269,8 +273,15 @@ public partial class ServerModsViewModel
 
         var removed = new List<string>();
         var failed = new List<string>();
+        var changed = new List<string>();
         foreach (var row in chosen)
         {
+            if (!row.IsStillAsScanned)
+            {
+                changed.Add(row.FileName);
+                continue;
+            }
+
             try
             {
                 File.Delete(row.Path);
@@ -288,6 +299,7 @@ public partial class ServerModsViewModel
         var parts = new List<string>();
         if (removed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_RemovedFmt"), string.Join(", ", removed)));
         if (failed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_FailedFmt"), string.Join(", ", failed)));
+        if (changed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_ChangedFmt"), string.Join(", ", changed)));
         UpdateStatus = string.Join(" ", parts);
     }
 
