@@ -335,7 +335,7 @@ justo como alguien acaba fiándose de una página que va una versión por detrá
    (`GameSection`, `WorldSection`, `NetworkSection`…), como un `DockPanel.setting` con el control en
    la clase `ctl`.
 2. Átalo a su clave en el constructor de la página con `PropertyBindings` (`Toggle`, `Number`,
-   `Choice`) y añade la clave a la fila de esa página en `ServerSettingsDraft.Owned`. Guardar la
+   `Choice`) y añade la clave a la fila de esa página en `ServerSettingsPages.All`. Guardar la
    escribe con `ServerPropertiesService.Update`, que conserva el resto del archivo, los comentarios y
    el orden.
 

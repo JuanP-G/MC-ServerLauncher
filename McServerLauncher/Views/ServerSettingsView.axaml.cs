@@ -41,23 +41,6 @@ public partial class ServerSettingsView : UserControl
     /// <summary>Below this width the index turns into a strip of chips above the page.</summary>
     private const double NarrowWidth = 640;
 
-    private sealed record PageInfo(ServerSettingsPage Page, Symbol Icon, string Title, string Hint, string? Group);
-
-    private static readonly PageInfo[] Pages =
-    [
-        new(ServerSettingsPage.Appearance, Symbol.Image, "Sset_Appearance", "Sset_AppearanceHint", null),
-        new(ServerSettingsPage.Game, Symbol.Games, "Sset_Game", "Sset_GameHint", "Sset_GroupGame"),
-        new(ServerSettingsPage.World, Symbol.Globe, "Sset_World", "Sset_WorldHint", null),
-        new(ServerSettingsPage.Loader, Symbol.Box, "Sset_Loader", "Sset_LoaderHint", "Sset_GroupServer"),
-        new(ServerSettingsPage.Performance, Symbol.Gauge, "Sset_Performance", "Sset_PerformanceHint", null),
-        new(ServerSettingsPage.Network, Symbol.PlugConnected, "Sset_Network", "Sset_NetworkHint", null),
-        new(ServerSettingsPage.Crossplay, Symbol.Phone, "Sset_Crossplay", "Sset_CrossplayHint", null),
-        new(ServerSettingsPage.Power, Symbol.Power, "Sset_Power", "Sset_PowerHint", "Sset_GroupAuto"),
-        new(ServerSettingsPage.Backups, Symbol.Archive, "Sset_Backups", "Sset_BackupsHint", null),
-        new(ServerSettingsPage.Notifications, Symbol.Alert, "Sset_Notifications", "Sset_NotificationsHint", null),
-        new(ServerSettingsPage.Advanced, Symbol.Wrench, "Sset_Advanced", "Sset_AdvancedHint", ""),
-    ];
-
     private readonly ServerSettingsDraft _draft;
     private readonly Dictionary<ServerSettingsPage, Control> _sections = new();
     private readonly Dictionary<ServerSettingsPage, (Button Nav, ToggleButton Chip, Control Dot, Control ChipDot)> _items = new();
@@ -188,7 +171,7 @@ public partial class ServerSettingsView : UserControl
     public void Show(ServerSettingsPage page)
     {
         Page = page;
-        var info = Pages.First(p => p.Page == page);
+        var info = ServerSettingsPages.For(page);
         PageTitle.Text = Localizer.Get(info.Title);
         PageHint.Text = Localizer.Get(info.Hint);
         SectionHost.Content = Section(page);
@@ -236,7 +219,7 @@ public partial class ServerSettingsView : UserControl
 
     private void BuildIndex()
     {
-        foreach (var info in Pages)
+        foreach (var info in ServerSettingsPages.All)
         {
             if (info.Group is not null)
                 PageItems.Children.Add(new TextBlock
@@ -271,7 +254,7 @@ public partial class ServerSettingsView : UserControl
         Marker.Host = PageItems;
     }
 
-    private static Control Row(PageInfo info, Control dot, bool chip)
+    private static Control Row(ServerSettingsPageInfo info, Control dot, bool chip)
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = chip ? 5 : 8 };
         if (!chip) row.Children.Add(new SymbolIcon { Symbol = info.Icon, FontSize = 16 });

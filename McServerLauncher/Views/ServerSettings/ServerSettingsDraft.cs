@@ -75,48 +75,6 @@ public sealed record PortOwners(Func<int, string?> Java, Func<int, string?> Bedr
 /// </remarks>
 public sealed class ServerSettingsDraft
 {
-    /// <summary>The fields of <see cref="ServerConfig"/> the page edits.</summary>
-    internal static readonly string[] EditableFields =
-    [
-        nameof(ServerConfig.Name), nameof(ServerConfig.FolderPath), nameof(ServerConfig.JarFile),
-        nameof(ServerConfig.JavaPath), nameof(ServerConfig.MinRamGb), nameof(ServerConfig.MaxRamGb),
-        nameof(ServerConfig.ExtraJvmArgs), nameof(ServerConfig.PlayitEnabled),
-        nameof(ServerConfig.IdleShutdownMinutes), nameof(ServerConfig.WakeOnlyForWhitelist),
-        nameof(ServerConfig.WakeOnDemand), nameof(ServerConfig.CrossplayEnabled),
-        nameof(ServerConfig.MultiVersionEnabled), nameof(ServerConfig.BedrockModContentEnabled),
-        nameof(ServerConfig.BedrockPort), nameof(ServerConfig.BackupsEnabled),
-        nameof(ServerConfig.BackupRetention), nameof(ServerConfig.AutoBackupEnabled),
-        nameof(ServerConfig.BackupIntervalMinutes), nameof(ServerConfig.ManualBackupRetention),
-        nameof(ServerConfig.UseCustomNotifications), nameof(ServerConfig.Notifications),
-    ];
-
-    /// <summary>Which config fields and which <c>server.properties</c> keys each page owns.</summary>
-    /// <remarks>What puts the dot beside a page in the index, and what Discard has to undo.</remarks>
-    internal static readonly IReadOnlyDictionary<ServerSettingsPage, (string[] Fields, string[] Keys)> Owned =
-        new Dictionary<ServerSettingsPage, (string[], string[])>
-        {
-            [ServerSettingsPage.Appearance] = ([nameof(ServerConfig.Name)], ["motd"]),
-            [ServerSettingsPage.Game] = ([], ["gamemode", "difficulty", "max-players", "pvp", "hardcore",
-                                              "allow-flight", "enable-command-block", "spawn-protection"]),
-            [ServerSettingsPage.World] = ([], ["view-distance", "simulation-distance", "generate-structures"]),
-            [ServerSettingsPage.Loader] = ([], []),
-            [ServerSettingsPage.Performance] = ([nameof(ServerConfig.MinRamGb), nameof(ServerConfig.MaxRamGb),
-                                                 nameof(ServerConfig.JavaPath)], []),
-            [ServerSettingsPage.Network] = ([nameof(ServerConfig.BedrockPort), nameof(ServerConfig.PlayitEnabled)],
-                                            ["server-port", "online-mode", "white-list"]),
-            [ServerSettingsPage.Crossplay] = ([nameof(ServerConfig.CrossplayEnabled), nameof(ServerConfig.MultiVersionEnabled),
-                                               nameof(ServerConfig.BedrockModContentEnabled)], []),
-            [ServerSettingsPage.Power] = ([nameof(ServerConfig.WakeOnDemand), nameof(ServerConfig.WakeOnlyForWhitelist),
-                                           nameof(ServerConfig.IdleShutdownMinutes)], []),
-            [ServerSettingsPage.Backups] = ([nameof(ServerConfig.BackupsEnabled), nameof(ServerConfig.BackupRetention),
-                                             nameof(ServerConfig.ManualBackupRetention), nameof(ServerConfig.AutoBackupEnabled),
-                                             nameof(ServerConfig.BackupIntervalMinutes)], []),
-            [ServerSettingsPage.Notifications] = ([nameof(ServerConfig.UseCustomNotifications),
-                                                   nameof(ServerConfig.Notifications)], []),
-            [ServerSettingsPage.Advanced] = ([nameof(ServerConfig.FolderPath), nameof(ServerConfig.JarFile),
-                                              nameof(ServerConfig.ExtraJvmArgs)], []),
-        };
-
     private readonly ServerPropertiesService _service = new();
     private readonly ServerIconService _icons = new();
     private readonly PortOwners _portOwners;
@@ -224,9 +182,9 @@ public sealed class ServerSettingsDraft
 
     public bool IsPageDirty(ServerSettingsPage page)
     {
-        var (fields, keys) = Owned[page];
         if (page == ServerSettingsPage.Appearance && (NewIcon is not null || RemoveIcon)) return true;
-        return fields.Any(f => !Same(Config, _baseline, f)) || keys.Any(PropertyChanged);
+        var info = ServerSettingsPages.For(page);
+        return info.Fields.Any(f => !Same(Config, _baseline, f)) || info.Keys.Any(PropertyChanged);
     }
 
     /// <summary>The value <paramref name="field"/> had when the page was opened or last saved.</summary>
@@ -273,7 +231,7 @@ public sealed class ServerSettingsDraft
     /// <summary>Puts every page back the way it was saved.</summary>
     public void Revert()
     {
-        foreach (var field in EditableFields)
+        foreach (var field in ServerSettingsPages.EditableFields)
             if (!Same(Config, _baseline, field)) CopyField(_baseline, Config, field);
         foreach (var key in _propsBaseline.Keys) _props[key] = _propsBaseline[key];
         NewIcon = null;
@@ -334,7 +292,7 @@ public sealed class ServerSettingsDraft
         if (saved.BedrockPortChanged && CrossplayService.EffectiveBedrockPort(Config) is not null)
             new CrossplayService().WriteConfig(Config, null);
 
-        foreach (var field in EditableFields)
+        foreach (var field in ServerSettingsPages.EditableFields)
             if (!Same(Config, _baseline, field)) CopyField(Config, Live, field);
         _baseline = Copy(Config);
 
@@ -398,7 +356,7 @@ public sealed class ServerSettingsDraft
     private void OnLiveChanged(object? sender, PropertyChangedEventArgs e)
     {
         var field = e.PropertyName;
-        if (field is null || !EditableFields.Contains(field)) return;
+        if (field is null || !ServerSettingsPages.EditableFields.Contains(field)) return;
         if (!Same(Config, _baseline, field)) return;   // the user's own edit, for Save to decide
         if (Same(Live, _baseline, field)) return;      // nothing new: Save copying it there, say
 

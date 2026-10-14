@@ -322,7 +322,7 @@ reader ends up trusting a page that is quietly a version behind.
    (`GameSection`, `WorldSection`, `NetworkSection`…), as a `DockPanel.setting` with the control in
    the `ctl` class.
 2. Tie it to its key in the page's constructor with `PropertyBindings` (`Toggle`, `Number`,
-   `Choice`) and add the key to that page's row in `ServerSettingsDraft.Owned`. Save writes it through
+   `Choice`) and add the key to that page's row in `ServerSettingsPages.All`. Save writes it through
    `ServerPropertiesService.Update`, which preserves the rest of the file, comments and order.
 
 ### Add a server type
