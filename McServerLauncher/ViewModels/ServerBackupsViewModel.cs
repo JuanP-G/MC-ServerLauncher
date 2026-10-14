@@ -232,9 +232,12 @@ public partial class ServerBackupsViewModel : ObservableObject
             // world has to be prised out of a running JVM first, and it holds the one gate that
             // keeps this from overlapping with a backup the clock started a second earlier.
             var result = await _server.BackupCoordinator.BackupAsync("manual");
-            StatusText = result == BackupResult.Made
-                ? Localizer.Get("Backup_Done")
-                : Localizer.Get("Backup_NothingToBackUp");
+            StatusText = Localizer.Get(result switch
+            {
+                BackupResult.Made => "Backup_Done",
+                BackupResult.Busy => "Backup_WorldBusy",
+                _ => "Backup_NothingToBackUp",
+            });
             Refresh();
         }
         catch (Exception ex)
@@ -308,7 +311,9 @@ public sealed record BackupDayGroup(string Title, IReadOnlyList<BackupItemViewMo
     {
         if (day == today) return Localizer.Get("Backup_Today");
         if (day == today.AddDays(-1)) return Localizer.Get("Backup_Yesterday");
-        var culture = CultureInfo.CurrentCulture;
+        // The app's language, not the system's: a Spanish app on an English Windows wrote "Hoy"
+        // above "Monday, 13 October".
+        var culture = CultureInfo.CurrentUICulture;
         var text = day.ToString(day.Year == today.Year ? "dddd, d MMMM" : "d MMMM yyyy", culture);
         return text.Length > 0 ? char.ToUpper(text[0], culture) + text[1..] : text;
     }

@@ -303,6 +303,7 @@
   <data name="Backup_Creating" xml:space="preserve"><value>A criar cópia de segurança...</value></data>
   <data name="Backup_Done" xml:space="preserve"><value>Cópia de segurança criada.</value></data>
   <data name="Backup_NothingToBackUp" xml:space="preserve"><value>Ainda não há mundo para copiar (o servidor nunca foi iniciado).</value></data>
+  <data name="Backup_WorldBusy" xml:space="preserve"><value>Já há outra cópia ou um restauro em curso. Espera que termine.</value></data>
   <data name="Backup_TriggerStart" xml:space="preserve"><value>antes de arrancar</value></data>
   <data name="Backup_TriggerStop" xml:space="preserve"><value>ao parar</value></data>
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>

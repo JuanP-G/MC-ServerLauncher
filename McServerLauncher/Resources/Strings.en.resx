@@ -303,6 +303,7 @@
   <data name="Backup_Creating" xml:space="preserve"><value>Creating backup...</value></data>
   <data name="Backup_Done" xml:space="preserve"><value>Backup created.</value></data>
   <data name="Backup_NothingToBackUp" xml:space="preserve"><value>There's no world to back up yet (the server has never been started).</value></data>
+  <data name="Backup_WorldBusy" xml:space="preserve"><value>Another backup or a restore is already in progress. Wait for it to finish.</value></data>
   <data name="Backup_TriggerStart" xml:space="preserve"><value>before start</value></data>
   <data name="Backup_TriggerStop" xml:space="preserve"><value>on stop</value></data>
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>

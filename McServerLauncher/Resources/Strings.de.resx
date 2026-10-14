@@ -303,6 +303,7 @@
   <data name="Backup_Creating" xml:space="preserve"><value>Sicherung wird erstellt...</value></data>
   <data name="Backup_Done" xml:space="preserve"><value>Sicherung erstellt.</value></data>
   <data name="Backup_NothingToBackUp" xml:space="preserve"><value>Es gibt noch keine Welt zum Sichern (der Server wurde noch nie gestartet).</value></data>
+  <data name="Backup_WorldBusy" xml:space="preserve"><value>Eine andere Sicherung oder eine Wiederherstellung läuft bereits. Warte, bis sie fertig ist.</value></data>
   <data name="Backup_TriggerStart" xml:space="preserve"><value>vor dem Start</value></data>
   <data name="Backup_TriggerStop" xml:space="preserve"><value>beim Stoppen</value></data>
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manuell</value></data>

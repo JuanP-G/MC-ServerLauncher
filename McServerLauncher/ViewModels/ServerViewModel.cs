@@ -53,7 +53,12 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private int _shutdowns;
 
     /// <summary>When the clock will next consider an automatic backup; see the coordinator.</summary>
-    internal DateTime? NextAutoBackupUtc => BackupCoordinator.NextAutoBackupUtc(IsRunning);
+    /// <remarks>
+    /// Only once the server is up: the clock starts then. While it starts or stops — minutes, for a
+    /// big modpack — the last time it was set is from an earlier run, or never, and the tab
+    /// announced a "next backup" that was already in the past.
+    /// </remarks>
+    internal DateTime? NextAutoBackupUtc => BackupCoordinator.NextAutoBackupUtc(State == ServerState.Running);
 
     /// <summary>
     /// How long a server gets to save and exit after "stop" before it is killed.
@@ -1465,7 +1470,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
                 if (shutdowns == _shutdowns) _process.Start(Config);
             });
             // Playit already runs as a background service: we don't launch another agent.
-            Backups.RefreshCommand.Execute(null);
+            Backups.RefreshIfLoaded();
         }
         catch (Exception ex)
         {
@@ -1852,7 +1857,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             // played: then the world is still the last backup's, and this is how a server going to
             // sleep with nobody on stopped filling the folder with copies of it.
             await BackupCoordinator.StopAsync(() => _process.StopAsync(StopTimeout), backupAfter: true);
-            if (Config.BackupsEnabled) Backups.RefreshCommand.Execute(null);
+            if (Config.BackupsEnabled) Backups.RefreshIfLoaded();
         }
         catch (Exception ex)
         {
