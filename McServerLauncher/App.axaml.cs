@@ -20,7 +20,11 @@ namespace McServerLauncher;
 /// </remarks>
 public partial class App : Application
 {
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+        Views.EmptyNumberBoxes.Install();   // a number box left empty gets its number back
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {

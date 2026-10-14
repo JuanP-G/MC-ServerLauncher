@@ -889,8 +889,8 @@ new name with `.disabled`. The id is read from the file itself, so it works offl
 not know; before, when `GetVersionsByHashAsync` did not answer, the old version silently stayed. They go **all
 or none**: each is first renamed to `*.mcsl-removing`, and if one is in use (the server holds it open) the rest
 are put back and the new download is withdrawn — unless it overwrote a file of the same name, since it is then
-the only copy. Anything left renamed is swept on the next refresh (`SweepLeftovers`). What was removed is named
-in the notice. The Crossplay, Hydraulic and MultiVersion installers go through the same thing
+the only copy. Anything left renamed is swept on the next refresh (`SweepLeftovers`). The notice only says
+it was updated: taking the old copies out is what updating means, not news. The Crossplay, Hydraulic and MultiVersion installers go through the same thing
 (`ContentInstall.InstallReplacingAsync`), by id only, because Floodgate for Paper and Hydraulic come from
 GeyserMC and Modrinth does not know them; Hydraulic also skips Fabric API when an enabled one is there.
 `ContentManifestCache` keeps what was read from each jar by path, size and write time, like `FileHashCache`, so

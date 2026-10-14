@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:McServerLauncher.ViewModels"
              xmlns:loc="using:McServerLauncher.Localization"
              xmlns:models="using:McServerLauncher.Models"
              x:Class="McServerLauncher.Views.ServerSettings.PerformanceSection"
@@ -14,12 +15,12 @@
                 <WrapPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <StackPanel Margin="0,0,16,4">
                         <TextBlock Text="{loc:Loc Cs_RamMin}" Classes="desc" Margin="0,0,0,4" />
-                        <NumericUpDown x:Name="MinRamBox" Width="140" Value="{Binding MinRamGb}"
+                        <NumericUpDown x:Name="MinRamBox" Width="140" Value="{Binding MinRamGb, Converter={x:Static vm:WholeNumberConverter.Instance}}"
                                        Minimum="1" Maximum="64" Increment="1" FormatString="0" />
                     </StackPanel>
                     <StackPanel Margin="0,0,0,4">
                         <TextBlock Text="{loc:Loc Cs_RamMax}" Classes="desc" Margin="0,0,0,4" />
-                        <NumericUpDown x:Name="MaxRamBox" Width="140" Value="{Binding MaxRamGb}"
+                        <NumericUpDown x:Name="MaxRamBox" Width="140" Value="{Binding MaxRamGb, Converter={x:Static vm:WholeNumberConverter.Instance}}"
                                        Minimum="1" Maximum="64" Increment="1" FormatString="0" />
                     </StackPanel>
                 </WrapPanel>

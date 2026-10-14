@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:McServerLauncher.ViewModels"
              xmlns:loc="using:McServerLauncher.Localization"
              xmlns:models="using:McServerLauncher.Models"
              x:Class="McServerLauncher.Views.ServerSettings.PowerSection"
@@ -31,7 +32,7 @@
 
         <Border Classes="card">
             <DockPanel Classes="setting">
-                <NumericUpDown Classes="ctl" Width="140" Value="{Binding IdleShutdownMinutes}"
+                <NumericUpDown Classes="ctl" Width="140" Value="{Binding IdleShutdownMinutes, Converter={x:Static vm:WholeNumberConverter.Instance}}"
                                Minimum="0" Maximum="1440" Increment="5" FormatString="0" />
                 <StackPanel>
                     <TextBlock Text="{loc:Loc Idle_MinutesLabel}" Classes="title" TextWrapping="Wrap" />

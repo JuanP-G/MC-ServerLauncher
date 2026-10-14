@@ -318,13 +318,11 @@ public class UpdateCleanupTests : IDisposable
         // only the plugin's own name can say the old build is the same plugin.
         JarWith("floodgate-spigot-100.jar", "plugin.yml", "name: floodgate\nversion: 2.2.3\n");
         var fresh = JarWith("floodgate-spigot-120.jar", "plugin.yml", "name: floodgate\nversion: 2.2.4\n");
-        var log = new List<string>();
 
-        var removed = ContentInstall.ReplacePrevious(_dir, fresh, "Floodgate", new SyncProgress(log));
+        var removed = ContentInstall.ReplacePrevious(_dir, fresh, "Floodgate");
 
         Assert.Single(removed);
         Assert.Equal(new[] { "floodgate-spigot-120.jar" }, FilesLeft());
-        Assert.Contains(log, line => line.Contains("floodgate-spigot-100.jar"));
     }
 
     [Fact]
@@ -356,37 +354,13 @@ public class UpdateCleanupTests : IDisposable
 
     // --- What the user is told ---
 
+    /// <remarks>
+    /// Only that it was updated. Taking out the old version is what updating is, and listing the files
+    /// deleted along the way read as if something unusual had happened.
+    /// </remarks>
     [Fact]
-    public void OneRemovedFileIsNamedWithoutItsDisabledSuffix()
-    {
-        var text = ServerModsViewModel.RemovedText(new[] { At("sodium-0.5.jar.disabled") });
+    public void UpdateAllSaysHowManyWereUpdatedAndNothingAboutOldFiles() =>
+        Assert.Equal(string.Format(Localizer.Get("Msg_UpdateAllDoneFmt"), 3),
+            ServerModsViewModel.UpdateAllSummary(3, Array.Empty<string>(), stoppedByServer: false));
 
-        Assert.Equal(string.Format(Localizer.Get("Msg_RemovedOneFmt"), "sodium-0.5.jar"), text);
-    }
-
-    [Fact]
-    public void SeveralRemovedFilesAreCountedAndNamed()
-    {
-        var text = ServerModsViewModel.RemovedText(new[] { At("a.jar"), At("b.jar") });
-
-        Assert.Equal(string.Format(Localizer.Get("Msg_RemovedManyFmt"), 2, "a.jar, b.jar"), text);
-    }
-
-    [Fact]
-    public void NothingRemovedSaysNothing() => Assert.Empty(ServerModsViewModel.RemovedText(Array.Empty<string>()));
-
-    [Fact]
-    public void UpdateAllSaysHowManyOldCopiesWent()
-    {
-        var plain = ServerModsViewModel.UpdateAllSummary(3, Array.Empty<string>(), stoppedByServer: false);
-        var withRemoved = ServerModsViewModel.UpdateAllSummary(3, Array.Empty<string>(), stoppedByServer: false, removed: 4);
-
-        Assert.Equal(plain + " " + string.Format(Localizer.Get("Msg_UpdateAllRemovedFmt"), 4), withRemoved);
-    }
-
-    /// <summary>Progress that reports on the calling thread, so the log is complete when the call returns.</summary>
-    private sealed class SyncProgress(List<string> lines) : IProgress<string>
-    {
-        public void Report(string value) => lines.Add(value);
-    }
 }

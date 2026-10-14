@@ -173,8 +173,7 @@ When it opens again, **What's new** tells you what changed. It works the same on
   installed with it, transitively. Only *required* ones, and never a second copy.
 - **Updates** — **check for updates** says what's new and which libraries are missing; update them one by one
   or with **Update all**. **No junk left behind**: the old version and any other copy of the same mod (a
-  duplicate under another name, a disabled copy) are removed, offline too, and the app tells you which files
-  went.
+  duplicate under another name, a disabled copy) are removed, offline too.
 - **Suggested clean-up** 🧹 — the app points out what is no longer needed: **libraries no mod uses** (with the
   reason, e.g. "only Litematica used it, and it's gone") and **mods switched off for over a month**. It only
   suggests: you tick, press, and they go; "Not now" hides it for 30 days.
