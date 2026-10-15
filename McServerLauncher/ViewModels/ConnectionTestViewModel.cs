@@ -429,7 +429,8 @@ public partial class ConnectionTestViewModel : ObservableObject
         foreach (var row in Rows)
             _report.AppendLine($"{row.Name}: {row.Min} / {row.Average} / {row.Max} / {row.Jitter} / {row.Loss}");
         _report.AppendLine($"{Localizer.Get("Net_Download")}: {Mbps(down)} · " +
-                           $"{Localizer.Get("Net_Upload")}: {Mbps(up)} · {Localizer.Get("Net_Peak")}: {PeakText}");
+                           $"{Localizer.Get("Net_Upload")}: {Mbps(up)} · " +
+                           $"{Localizer.Get("Net_Peak")}: {PeakText}");
         foreach (var a in addresses) _report.AppendLine(a);
         _report.AppendLine(Verdict);
     }

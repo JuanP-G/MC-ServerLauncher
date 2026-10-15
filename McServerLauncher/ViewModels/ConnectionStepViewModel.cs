@@ -1,3 +1,4 @@
+using Avalonia.Data.Converters;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FluentIcons.Common;
 
@@ -15,7 +16,8 @@ public partial class ConnectionStepViewModel : ObservableObject
     public ConnectionStepViewModel(string name) => _title = _name = name;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(Icon), nameof(IsGood), nameof(IsFair), nameof(IsBad), nameof(IsRunning), nameof(IsIdle))]
+    [NotifyPropertyChangedFor(nameof(Icon), nameof(IsGood), nameof(IsFair), nameof(IsBad), nameof(IsRunning),
+        nameof(IsIdle))]
     private StepState _state;
 
     [ObservableProperty]
@@ -59,6 +61,6 @@ public partial class ConnectionStepViewModel : ObservableObject
 /// <summary>The verdict's colour, from its state.</summary>
 public static class StepStateConverters
 {
-    public static readonly Avalonia.Data.Converters.FuncValueConverter<StepState, bool> IsFair = new(s => s == StepState.Fair);
-    public static readonly Avalonia.Data.Converters.FuncValueConverter<StepState, bool> IsBad = new(s => s == StepState.Bad);
+    public static readonly FuncValueConverter<StepState, bool> IsFair = new(s => s == StepState.Fair);
+    public static readonly FuncValueConverter<StepState, bool> IsBad = new(s => s == StepState.Bad);
 }
