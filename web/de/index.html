@@ -24,8 +24,11 @@
 <meta name="google-site-verification" content="qGZ8wjkWWDFZegK_AUZMJPkmKx1ltD8UrLaUq2PivyY">
 <meta name="theme-color" content="#070B14">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<link rel="icon" href="../assets/logo.png" type="image/png">
-<link rel="apple-touch-icon" href="../assets/logo.png">
+<link rel="icon" href="../assets/icons/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="../assets/icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="../assets/site.webmanifest">
+<meta name="author" content="JuanP-G">
 
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
@@ -33,19 +36,25 @@
 <meta property="og:title" content="Minecraft-Server auf dem eigenen PC, kostenlos und ohne Befehle">
 <meta property="og:description" content="Richte deinen Minecraft-Server per App ein und verwalte ihn: Mods, Sicherungen und Internetzugang ohne Portfreigabe. Kostenlos und quelloffen.">
 <meta property="og:url" content="https://mc-server-launcher.vercel.app/de/">
-<meta property="og:image" content="https://mc-server-launcher.vercel.app/assets/app-screenshot.jpg">
-<meta property="og:image:width" content="1600">
-<meta property="og:image:height" content="900">
+<!-- Imagen al compartir el enlace: 1200x630, una por idioma con su titular. Se generan
+     con web/_tools/og_images.py; build.py cambia la ruta en cada traducción. -->
+<meta property="og:image" content="https://mc-server-launcher.vercel.app/assets/og/de.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Die App MC-ServerLauncher verwaltet einen Minecraft-Server">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Minecraft-Server auf dem eigenen PC, kostenlos und ohne Befehle">
 <meta name="twitter:description" content="Richte deinen Minecraft-Server per App ein und verwalte ihn. Kostenlos und quelloffen.">
-<meta name="twitter:image" content="https://mc-server-launcher.vercel.app/assets/app-screenshot.jpg">
+<meta name="twitter:image" content="https://mc-server-launcher.vercel.app/assets/og/de.jpg">
+<meta name="twitter:image:alt" content="Die App MC-ServerLauncher verwaltet einen Minecraft-Server">
 
 <link rel="preload" as="image" href="../assets/app-screenshot.jpg" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="font" type="font/woff" href="../assets/mc/minecraft.woff" crossorigin>
+<link rel="preload" as="image" href="../assets/mc/button_hover.png">
 
 <script type="application/ld+json">
 {
@@ -62,7 +71,19 @@
   "license": "https://opensource.org/licenses/MIT",
   "isAccessibleForFree": true,
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-  "author": { "@type": "Person", "name": "JuanP-G" }
+  "image": "https://mc-server-launcher.vercel.app/assets/og/de.jpg",
+  "screenshot": "https://mc-server-launcher.vercel.app/assets/app-screenshot.jpg",
+  "applicationSubCategory": "Minecraft server manager",
+  "author": { "@type": "Person", "name": "JuanP-G", "url": "https://github.com/JuanP-G" },
+  "sameAs": ["https://github.com/JuanP-G/MC-ServerLauncher"]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "MC-ServerLauncher",
+  "url": "https://mc-server-launcher.vercel.app/de/"
 }
 </script>
 <script type="application/ld+json">
@@ -110,228 +131,222 @@
 </script>
 
 <style>
+/* La letra del juego, convertida desde su mapa de bits (web/_tools/mc_assets.py). Cada
+   píxel del juego mide 1/8 de em, así que se ve nítida en tamaños múltiplos de 8 px: por
+   eso los titulares cambian de tamaño a escalones y no con clamp(). */
+@font-face{font-family:"Minecraft Web"; src:url("../assets/mc/minecraft.woff") format("woff");
+  font-weight:400; font-display:swap}
 :root{
   --bg-base:#070B14; --bg-elev:#0D1524; --bg-card:#111C2E;
   --border:#1E2D45; --text:#E8F0F8; --muted:#93A4BC;
   --green:#3FB950; --bright:#5CE07B; --deep:#1B7F3B;
-  --maxw:1200px; --day:0;
+  /* colores de la interfaz del juego */
+  --mc-shadow:#3F3F3F; --mc-hover:#FFFFA0; --mc-yellow:#FFFF55; --mc-green:#80FF20;
+  --gui:#C6C6C6; --gui-hi:#FFFFFF; --gui-lo:#555555; --gui-text:#3F3F3F;
+  --f-mc:"Minecraft Web",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --f-body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  /* Margen lateral: nunca cero. 16 px en móvil y crece con la pantalla hasta 64 px. */
+  --gut:clamp(16px,5vw,64px); --maxw:1200px;
+  --nav-h:68px; --ground:96px; --day:0;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
-  margin:0; background:var(--bg-base); color:var(--text);
-  font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  margin:0; background:var(--bg-base); color:var(--text); font-family:var(--f-body);
   -webkit-font-smoothing:antialiased; overflow-x:hidden;
 }
-h1,h2,h3{margin:0; letter-spacing:-.02em; line-height:1.1}
+h1,h2,h3{margin:0; line-height:1.1}
 p{margin:0; line-height:1.65}
 a{color:inherit; text-decoration:none}
 img{max-width:100%; display:block}
-.wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px}
+:focus-visible{outline:2px solid var(--mc-hover); outline-offset:3px}
+/* El ancho útil incluye el margen lateral, así el contenido nunca toca el borde. */
+.wrap{width:100%; max-width:calc(var(--maxw) + var(--gut) * 2); margin:0 auto; padding-inline:var(--gut)}
+/* Texto con la letra del juego: sin suavizado, como en pantalla del juego, y con su sombra
+   (una copia desplazada un píxel del juego, al 25 % de brillo). */
+.mc{font-family:var(--f-mc); font-weight:400; letter-spacing:0; -webkit-font-smoothing:none}
 
-/* ---------- ESCENARIO MINECRAFT (fijo, detrás de todo) ---------- */
+/* ---------- ESCENARIO (fijo, detrás de todo) ---------- */
 .scene{position:fixed; inset:0; z-index:-1; overflow:hidden}
-/* dos cielos superpuestos: la opacidad la mueve el scroll = ciclo día/noche */
-/* Sin transition a propósito: el valor lo mueve el scroll fotograma a fotograma, así que
-   una transición solo añadiría retardo — y en navegadores que suprimen animaciones
-   (modo automatizado, "reducir movimiento" agresivo) dejaba el cielo congelado. */
+/* El cielo lo mueve el scroll fotograma a fotograma, así que no lleva transition: solo
+   añadiría retardo, y en navegadores que suprimen animaciones dejaba el cielo congelado. */
 .sky{position:absolute; inset:0}
 .sky-night{background:linear-gradient(180deg,#04070F 0%,#0A1224 45%,#101E38 100%); opacity:calc(1 - var(--day))}
-/* Azul de día deliberadamente contenido: con el celeste claro anterior, el texto que
-   va suelto encima se quedaba en 2:1 de contraste. Este tono mantiene la sensación de
-   día (frente al casi negro de la noche) y deja el texto por encima de 4.5:1 sin
-   necesidad de poner paneles detrás. */
+/* Azul de día contenido a propósito: el texto que va suelto encima tiene que pasar de
+   4.5:1 de contraste sin paneles detrás. */
 .sky-day{background:linear-gradient(180deg,#0D2A4C 0%,#17416E 55%,#245A8A 100%); opacity:var(--day)}
-/* Franja naranja de amanecer/atardecer: se enciende justo en las transiciones
-   (--dusk vale 1 a mitad de camino entre noche y día) para que se note el paso del tiempo. */
-/* El naranja no llega a opacidad plena: tiñe el cielo en vez de sustituirlo, para que
-   el amanecer/atardecer se note sin dejar el texto sobre un fondo claro. */
+/* Amanecer y atardecer: el naranja se enciende a medio camino entre noche y día y no
+   llega a opacidad plena, para teñir el cielo sin dejar el texto sobre un fondo claro. */
 .sky-dusk{background:linear-gradient(180deg,#16233E 0%,#7A4238 55%,#C2793E 85%,#D69A57 100%);
   opacity:calc(var(--dusk,0) * .72)}
 .stars{position:absolute; inset:0; opacity:calc(1 - var(--day))}
-
-/* Nubes de bloques que cruzan el cielo: se ven de día y se apagan de noche */
-.clouds{position:absolute; inset:0; overflow:hidden; opacity:calc(var(--day) * .92)}
-.cloud{position:absolute; left:-260px; width:110px; height:22px; background:#F2F7FF;
-  box-shadow:
-     44px -22px 0 0 #F2F7FF,  110px 0 0 0 #F2F7FF,  66px 22px 0 0 #F2F7FF,
-    -22px  22px 0 0 #E2ECF7,  88px -22px 0 0 #E2ECF7;
-  animation:drift linear infinite; will-change:transform}
-@keyframes drift{from{transform:translateX(0)}to{transform:translateX(calc(100vw + 520px))}}
 .star{position:absolute; width:2px; height:2px; background:#fff; opacity:.8; animation:tw 4s infinite ease-in-out}
 @keyframes tw{0%,100%{opacity:.15}50%{opacity:.9}}
-/* sol y luna: un mismo eje que rota con el scroll */
-/* Sol y luna en un mismo eje, separados 180°: al girar, uno sale por un lado
-   mientras el otro se pone por el contrario, como en Minecraft. El centro del eje
-   está bajo el horizonte para que ambos describan un arco por el cielo. */
-.orbit{position:absolute; left:50%; top:92%; width:1px; height:1px;
-  transform:rotate(var(--orbit,180deg))}
-.sun,.moon{position:absolute; left:-31px; width:62px; height:62px; image-rendering:pixelated;
-  transform:rotate(calc(var(--orbit,180deg) * -1))} /* se mantienen rectos al girar el eje */
-.sun{top:-58vh; background:#FFF3A8;
-  box-shadow:0 0 0 6px rgba(255,231,115,.55), 0 0 90px 34px rgba(255,214,92,.45)}
-.moon{top:58vh; background:#F4F7FF;
-  box-shadow:0 0 0 5px rgba(226,235,255,.4), 0 0 60px 20px rgba(200,220,255,.32)}
-/* El suelo forma parte del decorado FIJO: al hacer scroll se mueve el contenido por
-   delante, no el mundo del fondo. Por eso la tierra está siempre presente.
-   La textura son dos teselas de 16x16 px dibujadas como en el juego (hierba con borde
-   irregular sobre tierra, y tierra con motas), escaladas x4 a bloques de 64 px y
-   renderizadas con image-rendering:pixelated para que el pixel quede nítido. */
-.terrain{position:absolute; left:0; right:0; bottom:0; height:128px; pointer-events:none;
-  image-rendering:pixelated;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%238B6141'/%3E%3Crect x='2' y='7' width='3' height='2' fill='%237A5437'/%3E%3Crect x='9' y='6' width='2' height='3' fill='%237A5437'/%3E%3Crect x='6' y='11' width='3' height='2' fill='%239A6E4A'/%3E%3Crect x='12' y='10' width='3' height='2' fill='%237A5437'/%3E%3Crect x='1' y='13' width='2' height='2' fill='%239A6E4A'/%3E%3Crect x='13' y='14' width='2' height='2' fill='%239A6E4A'/%3E%3Crect width='16' height='3' fill='%235B8C36'/%3E%3Crect x='0' y='0' width='4' height='1' fill='%236BA044'/%3E%3Crect x='7' y='0' width='3' height='1' fill='%236BA044'/%3E%3Crect x='12' y='1' width='3' height='1' fill='%234F7D2E'/%3E%3Crect x='5' y='2' width='2' height='1' fill='%234F7D2E'/%3E%3Crect x='0' y='3' width='2' height='1' fill='%235B8C36'/%3E%3Crect x='3' y='3' width='3' height='1' fill='%235B8C36'/%3E%3Crect x='8' y='3' width='2' height='1' fill='%235B8C36'/%3E%3Crect x='11' y='3' width='2' height='1' fill='%235B8C36'/%3E%3Crect x='14' y='3' width='2' height='1' fill='%235B8C36'/%3E%3Crect x='4' y='4' width='1' height='1' fill='%235B8C36'/%3E%3Crect x='9' y='4' width='1' height='1' fill='%235B8C36'/%3E%3Crect x='12' y='4' width='1' height='1' fill='%235B8C36'/%3E%3C/svg%3E") 0 0/64px 64px repeat-x,
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%238B6141'/%3E%3Crect x='1' y='2' width='3' height='2' fill='%237A5437'/%3E%3Crect x='6' y='1' width='2' height='2' fill='%239A6E4A'/%3E%3Crect x='11' y='3' width='3' height='2' fill='%237A5437'/%3E%3Crect x='3' y='7' width='2' height='3' fill='%239A6E4A'/%3E%3Crect x='8' y='6' width='3' height='2' fill='%237A5437'/%3E%3Crect x='13' y='9' width='2' height='2' fill='%239A6E4A'/%3E%3Crect x='1' y='11' width='3' height='2' fill='%237A5437'/%3E%3Crect x='6' y='12' width='2' height='3' fill='%239A6E4A'/%3E%3Crect x='10' y='13' width='3' height='2' fill='%237A5437'/%3E%3C/svg%3E") 0 64px/64px 64px repeat}
-/* Colinas de bloques recortadas contra el cielo, por detrás de la tierra */
-.hills{position:absolute; left:0; right:0; bottom:110px; width:100%; height:auto}
-.hill-far{opacity:.5}
-.hill-mid{opacity:.75}
 
-/* ---------- BARRA DE XP (progreso de scroll) ---------- */
-.xpbar{position:fixed; top:0; left:0; right:0; height:8px; z-index:60;
-  background:#0A0F1A; border-bottom:2px solid #05070C}
-/* Igual que el cielo: el ancho lo fija el scroll en cada fotograma, sin transition. */
+/* Sol y luna del juego en un mismo eje, separados 180°: al girar con el scroll uno sale
+   por un lado mientras el otro se pone por el contrario. Sus texturas traen el halo sobre
+   fondo negro, que el juego suma a la luz del cielo: mix-blend-mode:screen hace lo mismo. */
+.orbit{position:absolute; left:50%; top:92%; width:1px; height:1px; transform:rotate(var(--orbit,180deg));
+  mix-blend-mode:screen}   /* en el eje y no en las imágenes: el giro aísla a sus hijos */
+.sun,.moon{position:absolute; left:-96px; width:192px; height:192px; max-width:none; image-rendering:pixelated;
+  transform:rotate(calc(var(--orbit,180deg) * -1))}
+.sun{top:-62vh}
+.moon{top:calc(62vh - 192px)}
+
+/* Nubes del juego en 3D: el mapa de nubes (clouds.png, cada píxel una nube de 12x12
+   bloques y 4 de grosor) como un techo a gran altura visto desde el suelo, igual que con
+   los gráficos «Detallados». Se dibujan en un canvas por detrás del paisaje; hacia el
+   horizonte se funden con el color del cielo. La cámara no se mueve: solo las nubes,
+   despacio y en una dirección, como en el juego. */
+.clouds{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+@keyframes drift{to{background-position-x:var(--cw,-4096px)}}
+
+/* Paisaje del fondo: tres capas de bloques del juego (las de atrás más pequeñas y con
+   neblina) dibujadas en un canvas al cargar y al cambiar el ancho de la ventana. De
+   noche se oscurece con un filtro en lugar de redibujarlo. */
+.land{position:absolute; left:0; right:0; bottom:0; pointer-events:none;
+  filter:brightness(calc(.32 + var(--day) * .68)) saturate(calc(.6 + var(--day) * .4))}
+.land canvas{position:absolute; left:0; bottom:0; image-rendering:pixelated}
+/* El agua del juego es una tira de 32 fotogramas a 2 ticks cada uno (0,1 s): se recorre
+   con steps() sin JavaScript. */
+.water{position:absolute; background-repeat:repeat-x; image-rendering:pixelated;
+  animation:water 3.2s steps(32) infinite}
+@keyframes water{to{background-position-y:calc(var(--b) * -32)}}
+.leaf{position:absolute; width:var(--lp); height:var(--lp); image-rendering:pixelated;
+  background-repeat:no-repeat; opacity:0; animation:fall linear infinite}
+@keyframes fall{
+  0%{opacity:0; transform:translate(0,0)}
+  8%{opacity:1}
+  25%{transform:translate(10px,calc(var(--fall) * .25))}
+  50%{transform:translate(-8px,calc(var(--fall) * .5))}
+  75%{transform:translate(12px,calc(var(--fall) * .75))}
+  92%{opacity:1}
+  100%{opacity:0; transform:translate(0,var(--fall))}
+}
+
+/* ---------- BARRA DE EXPERIENCIA (progreso de scroll) ---------- */
+/* Los sprites de la barra del juego estirados a lo ancho. El ancho lo fija el scroll en
+   cada fotograma, sin transition. */
+.xpbar{position:fixed; top:0; left:0; right:0; height:10px; z-index:60;
+  background:url("../assets/mc/xp_bg.png") 0 0/100% 100%; image-rendering:pixelated}
 .xpbar i{display:block; height:100%; width:var(--p,0%);
-  background:repeating-linear-gradient(90deg,#7CFF9E 0 10px,#4FD86F 10px 20px);
-  box-shadow:0 0 12px rgba(92,224,123,.7)}
+  background:url("../assets/mc/xp_fg.png") 0 0/100vw 100%; image-rendering:pixelated}
+
+/* ---------- BOTONES ---------- */
+/* Planos con bisel, como los de la edición Bedrock: color liso, esquinas rectas, luz
+   arriba a la izquierda y un canto oscuro abajo que se hunde al pulsar. Letra normal: la
+   del juego se reserva para títulos y rótulos. */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  min-height:52px; padding:0 22px; cursor:pointer; color:#FFFFFF; background:#3A3D44; border:0;
+  font-family:var(--f-body); font-weight:600; font-size:16px; line-height:1.2; letter-spacing:.01em; text-align:center;
+  box-shadow:inset 0 -5px 0 #1E2024, inset 3px 3px 0 rgba(255,255,255,.14), 0 0 0 2px #000;
+  transition:background .12s, transform .06s, box-shadow .06s}
+.btn:hover{background:#474B53}
+.btn:active{transform:translateY(3px); box-shadow:inset 0 -2px 0 #1E2024, inset 3px 3px 0 rgba(255,255,255,.14), 0 0 0 2px #000}
+.btn svg.i{width:20px; height:20px; flex:none; fill:currentColor}
+.btn-primary{background:#3C8527; box-shadow:inset 0 -5px 0 #1D4D13, inset 3px 3px 0 rgba(255,255,255,.22), 0 0 0 2px #000}
+.btn-primary:hover{background:#4A9C32}
+.btn-primary:active{box-shadow:inset 0 -2px 0 #1D4D13, inset 3px 3px 0 rgba(255,255,255,.22), 0 0 0 2px #000}
+.btn-lg{min-height:58px; padding:0 28px}
+
+/* Botón con el sprite del juego (los del pie, como los del menú principal): border-image
+   recorta el sprite de 200x20 en 9 trozos de 3 px y estira el centro, así conserva el
+   bisel exacto a cualquier ancho. Al pasar el ratón, el borde blanco y el texto amarillo
+   claro del juego. Los sprites de hover se precargan en el <head>: si no, el primer paso
+   del ratón dejaba el botón en blanco mientras se descargaba la imagen. */
+.btn-mc{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:46px; padding:0 16px;
+  color:#FFFFFF; font-family:var(--f-mc); font-size:16px; line-height:1; text-shadow:2px 2px 0 var(--mc-shadow);
+  -webkit-font-smoothing:none; border:6px solid transparent; border-image:url("../assets/mc/button.png") 3 fill / 6px stretch;
+  image-rendering:pixelated}
+.btn-mc svg{width:18px; height:18px; flex:none; fill:currentColor; filter:drop-shadow(2px 2px 0 var(--mc-shadow))}
+.btn-mc:hover,.btn-mc:focus-visible{border-image-source:url("../assets/mc/button_hover.png"); color:var(--mc-hover); outline:none}
 
 /* ---------- NAV ---------- */
-.nav{position:sticky; top:8px; z-index:50; backdrop-filter:blur(12px);
-  background:rgba(13,21,36,.82); border-bottom:1px solid var(--border)}
-/* La barra se descuadraba en los idiomas de palabras largas (Fonctionnalités,
-   Transferências): la marca y los enlaces partían en dos líneas. Ahora nada parte
-   (nowrap), la marca y el botón no se encogen, y el bloque de la derecha se separa
-   con margin-left:auto en lugar de space-between, para que marca y secciones queden
-   pegadas a la izquierda. */
-.nav .wrap{display:flex; align-items:center; height:72px; gap:20px; max-width:1420px}
-.brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px;
-  white-space:nowrap; flex-shrink:0}
-.brand img{width:32px; height:32px; image-rendering:pixelated;
-  filter:drop-shadow(0 0 10px rgba(63,185,80,.45))}
-.nav nav{display:flex; gap:22px; white-space:nowrap; margin-left:8px}
-.nav nav a{color:var(--muted); font-size:15px; transition:color .2s; white-space:nowrap}
-.nav nav a:hover{color:var(--bright)}
-/* Selector de idioma: una URL por idioma, no un cambio de textos por JavaScript,
-   para que los buscadores puedan indexar cada versión por separado. */
-.langs{display:flex; gap:5px; margin-left:auto; flex-shrink:0}
-.langs a{display:grid; place-items:center; padding:5px; border:2px solid transparent;
-  opacity:.5; transition:opacity .15s, border-color .15s}
-.langs a svg{display:block; width:21px; height:14px; image-rendering:pixelated;
-  box-shadow:0 0 0 1px rgba(0,0,0,.55)}
-.langs a:hover{opacity:1}
-.langs a.on{opacity:1; border-color:var(--bright)}
-.dlbtn{flex-shrink:0}
-/* Botones al estilo de la interfaz de Minecraft: esquinas rectas, contorno oscuro,
-   bisel pixelado (luz arriba-izquierda, sombra abajo-derecha) y un zócalo grueso
-   que hace de bloque. Al pulsar, el botón baja hasta comerse el zócalo. */
-.btn{display:inline-flex; align-items:center; justify-content:center; gap:9px;
-  border-radius:0; padding:15px 26px; cursor:pointer;
-  font-family:"Press Start 2P",monospace; font-size:11px; line-height:1.6;
-  border:3px solid #07130B; text-align:center;
-  box-shadow:
-    inset 2px 2px 0 rgba(255,255,255,.34),
-    inset -2px -2px 0 rgba(0,0,0,.34),
-    0 6px 0 var(--btn-base,#0C2E17),
-    0 10px 20px rgba(0,0,0,.45);
-  transition:filter .12s, transform .06s, box-shadow .06s}
-.btn:hover{filter:brightness(1.14)}
-.btn:active{transform:translateY(6px);
-  box-shadow:
-    inset 2px 2px 0 rgba(255,255,255,.24),
-    inset -2px -2px 0 rgba(0,0,0,.34),
-    0 0 0 var(--btn-base,#0C2E17),
-    0 4px 10px rgba(0,0,0,.4)}
-.btn-primary{--btn-base:#14602C; color:#07210E; background:#4FD86F}
-.btn-ghost{--btn-base:#141F2E; color:var(--text); background:#31445E; border-color:#0A1119}
-.btn-sm{padding:11px 18px; font-size:9px; box-shadow:
-    inset 2px 2px 0 rgba(255,255,255,.32),
-    inset -2px -2px 0 rgba(0,0,0,.32),
-    0 4px 0 var(--btn-base,#0C2E17),
-    0 8px 14px rgba(0,0,0,.4)}
-.btn-sm:active{transform:translateY(4px)}
-.btn-lg{padding:19px 32px; font-size:13px}
-
-/* Botón de descarga del nav: panel de piedra con textura de 16x16 escalada, borde
-   oscuro grueso y bisel pixelado, icono de descarga a la izquierda separado por una
-   junta, y dos líneas de texto. Lleva a la sección de descargas, donde se elige el
-   sistema operativo. */
-.dlbtn{display:inline-flex; align-items:center; gap:0; padding:0;
-  border:3px solid #0C0F13; cursor:pointer; position:relative;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%234A4F55'/%3E%3Crect x='1' y='2' width='3' height='2' fill='%233E434A'/%3E%3Crect x='7' y='1' width='2' height='2' fill='%23565C63'/%3E%3Crect x='11' y='4' width='3' height='2' fill='%233E434A'/%3E%3Crect x='3' y='7' width='2' height='3' fill='%23565C63'/%3E%3Crect x='8' y='6' width='3' height='2' fill='%233E434A'/%3E%3Crect x='13' y='9' width='2' height='2' fill='%23565C63'/%3E%3Crect x='1' y='11' width='3' height='2' fill='%233E434A'/%3E%3Crect x='6' y='12' width='2' height='3' fill='%23565C63'/%3E%3Crect x='10' y='13' width='3' height='2' fill='%233E434A'/%3E%3C/svg%3E") 0 0/44px 44px,
-    linear-gradient(180deg,#565C63 0%,#464B52 45%,#3A3F45 100%);
-  image-rendering:pixelated;
-  box-shadow:
-    inset 2px 2px 0 rgba(255,255,255,.22),
-    inset -2px -2px 0 rgba(0,0,0,.38),
-    0 5px 0 #1B1F24, 0 9px 18px rgba(0,0,0,.5);
-  transition:filter .12s, transform .06s, box-shadow .06s}
-.dlbtn:hover{filter:brightness(1.15)}
-.dlbtn:hover .dlbtn-txt i{color:#7CFF9E}
-.dlbtn:active{transform:translateY(5px);
-  box-shadow:inset 2px 2px 0 rgba(255,255,255,.18), inset -2px -2px 0 rgba(0,0,0,.38),
-    0 0 0 #1B1F24, 0 4px 9px rgba(0,0,0,.45)}
-.dlbtn-ico{display:grid; place-items:center; padding:0 14px; color:#F2F7FF;
-  filter:drop-shadow(0 2px 0 rgba(0,0,0,.55))}
-.dlbtn-sep{width:3px; align-self:stretch; background:rgba(0,0,0,.42);
-  box-shadow:1px 0 0 rgba(255,255,255,.12)}
-.dlbtn-txt{display:flex; flex-direction:column; gap:3px; padding:9px 18px 9px 16px;
-  font-family:"Press Start 2P",monospace; line-height:1}
-.dlbtn-txt b{font-size:13px; font-weight:400; color:#FFFFFF;
-  text-shadow:0 2px 0 rgba(0,0,0,.6)}
-.dlbtn-txt i{font-size:8px; font-style:normal; color:var(--bright);
-  text-shadow:0 2px 0 rgba(0,0,0,.6); transition:color .12s}
+/* Cabecera como la de los menús del juego: franja oscura translúcida y un separador de
+   dos tonos (sombra y luz) en el borde inferior. */
+.nav{position:sticky; top:10px; z-index:50; background:rgba(0,0,0,.6);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  box-shadow:0 2px 0 rgba(0,0,0,.75), 0 4px 0 rgba(255,255,255,.12)}
+/* Nada parte en dos líneas (nowrap) y el bloque de la derecha se separa con
+   margin-left:auto, para que marca y secciones queden juntas a la izquierda. */
+.nav .wrap{display:flex; align-items:center; min-height:var(--nav-h); gap:clamp(12px,1.6vw,22px);
+  max-width:calc(1420px + var(--gut) * 2); padding-inline:clamp(16px,3vw,40px)}
+.brand{display:flex; align-items:center; gap:10px; white-space:nowrap; flex-shrink:0;
+  font-family:var(--f-mc); font-size:16px; text-shadow:2px 2px 0 var(--mc-shadow); -webkit-font-smoothing:none}
+/* Solo el logo: quien llega a la web ya conoce el nombre, y así la barra respira. */
+.brand img{width:40px; height:40px; image-rendering:pixelated; transition:transform .15s}
+.brand:hover img{transform:scale(1.08) rotate(-4deg)}
+.nav nav{display:flex; gap:clamp(14px,1.8vw,24px); white-space:nowrap}
+.nav nav a{font-family:var(--f-mc); font-size:16px; color:#E0E0E0; text-shadow:2px 2px 0 var(--mc-shadow);
+  -webkit-font-smoothing:none}
+.nav nav a:hover{color:var(--mc-hover)}
+/* Selector de idioma: una URL por idioma, no un cambio de textos por JavaScript, para que
+   los buscadores indexen cada versión por separado. */
+/* Un solo botón con la bandera y el código del idioma actual, que abre la lista de los
+   cinco en el panel morado del juego. */
+.langs{position:relative; margin-left:auto; flex-shrink:0}
+.lang-btn{display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 10px 2px; cursor:pointer; border:0;
+  color:#E8E8E8; font:600 14px/1 var(--f-body); background:#2A2D33;
+  box-shadow:inset 0 -4px 0 #16181B, inset 2px 2px 0 rgba(255,255,255,.1), 0 0 0 2px #000; transition:background .12s}
+.lang-btn:hover{background:#363A41}
+.lang-btn .chev{width:10px; height:10px; fill:currentColor; opacity:.8; transition:transform .15s}
+.lang-btn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.langs svg.flag,.lang-list a svg{display:block; width:21px; height:14px; flex:none; box-shadow:0 0 0 1px rgba(0,0,0,.55)}
+.lang-list{position:absolute; right:0; top:calc(100% + 10px); z-index:60; min-width:200px; padding:6px; display:grid; gap:2px;
+  background:rgba(16,0,16,.96); box-shadow:inset 0 0 0 2px #28007F, 0 0 0 2px #100010, 0 18px 40px rgba(0,0,0,.5)}
+.lang-list a{display:flex; align-items:center; gap:10px; padding:9px 10px; font-size:14px; font-weight:500; color:#FFFFFF}
+.lang-list a:hover{background:rgba(255,255,255,.08); color:var(--mc-hover)}
+.lang-list a.on{background:rgba(255,255,255,.12)}
+.lang-list a.on::after{content:"✓"; margin-left:auto; color:var(--mc-green)}
+.lang-list a b{width:24px; font-family:var(--f-mc); font-weight:400; font-size:16px; color:#AFAFAF; -webkit-font-smoothing:none}
+/* Botón de descarga: icono separado por una junta y dos líneas de texto. Lleva a la
+   sección de descargas, donde se elige sistema. */
+.dlbtn{min-height:52px; padding:0 0 3px; gap:0; flex-shrink:0}
+.dlbtn-ico{display:grid; place-items:center; padding:0 12px 0 14px}
+.dlbtn-sep{width:2px; align-self:stretch; margin-block:8px; background:rgba(0,0,0,.3); box-shadow:2px 0 0 rgba(255,255,255,.14)}
+.dlbtn-txt{display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:0 16px 0 14px}
+.dlbtn-txt b{font-weight:600; font-size:15px}
+.dlbtn-txt i{font-style:normal; font-weight:500; font-size:11px; color:#CFF2C2}
+/* Menú para pantallas estrechas: un panel del juego que se despliega bajo la barra. */
+.menu-btn{display:none; min-height:48px; padding:0 14px; margin-left:auto}
+.menu-btn svg{display:block}
+.menu{position:absolute; top:100%; right:var(--gut); left:auto; width:min(320px,calc(100vw - var(--gut) * 2));
+  margin-top:8px; padding:12px; display:grid; gap:4px; background:rgba(16,0,16,.94);
+  box-shadow:inset 0 0 0 2px #28007F, 0 0 0 2px #100010, 0 18px 40px rgba(0,0,0,.5)}
+.menu a{padding:10px 12px; font-family:var(--f-mc); font-size:16px; text-shadow:2px 2px 0 var(--mc-shadow); -webkit-font-smoothing:none}
+.menu a:hover{background:rgba(255,255,255,.08); color:var(--mc-hover)}
 
 /* ---------- SECCIONES ---------- */
-/* Cada apartado se ajusta a su contenido en lugar de estirarse a la ventana entera:
-   forzar 100vh dejaba huecos enormes en los apartados cortos (p. ej. So funktioniert es).
-   scroll-margin-top compensa el nav pegajoso, que si no se comía el principio de la
-   sección al llegar desde el menú. El relleno inferior es mayor que el superior
-   porque la franja de tierra ocupa los últimos 128 px de la ventana. */
-section{position:relative; padding:84px 0 168px; scroll-margin-top:86px}
-.hero{scroll-margin-top:0}
-
-section > .wrap{position:relative}
-/* Todo el texto que va suelto sobre el cielo tiene que leerse igual de noche (fondo
-   casi negro) que de día (azul claro). El gris apagado desaparecía sobre el cielo
-   diurno, así que estos textos suben de contraste y llevan una sombra oscura que los
-   despega del fondo pase lo que pase. */
-.eyebrow{font-family:"Press Start 2P",monospace; font-size:10px; color:var(--bright);
-  letter-spacing:.06em; margin-bottom:18px; display:inline-block;
-  text-shadow:0 2px 0 rgba(3,8,16,.9), 0 0 14px rgba(3,8,16,.8)}
-.h2{font-size:clamp(30px,4vw,44px); font-weight:800; margin-bottom:16px;
-  text-shadow:0 3px 0 rgba(3,8,16,.55), 0 2px 18px rgba(3,8,16,.75)}
+/* Cada apartado se ajusta a su contenido; scroll-margin-top compensa la barra pegajosa
+   para que al llegar desde el menú no se coma el principio de la sección. */
+section{position:relative; padding-block:clamp(56px,10vh,104px); scroll-margin-top:calc(var(--nav-h) + 16px)}
+/* Los textos que van sueltos sobre el cielo se tienen que leer igual de noche que de día:
+   llevan la sombra del juego y un halo oscuro que los despega del fondo. */
+.eyebrow{display:inline-block; margin-bottom:14px; font-family:var(--f-mc); font-size:16px;
+  color:var(--mc-yellow); text-shadow:2px 2px 0 #3F3F15, 0 0 14px rgba(3,8,16,.8); -webkit-font-smoothing:none}
+.h2{font-family:var(--f-mc); font-weight:400; font-size:24px; line-height:1.3; margin-bottom:16px;
+  text-shadow:3px 3px 0 var(--mc-shadow), 0 2px 18px rgba(3,8,16,.75); -webkit-font-smoothing:none; text-wrap:balance}
 .lead{color:#CBD8E8; font-size:18px; max-width:640px; font-weight:500;
   text-shadow:0 2px 3px rgba(3,8,16,.85), 0 0 16px rgba(3,8,16,.7)}
 .center{text-align:center}
 .center .lead{margin:0 auto}
 
 /* ---------- HERO ---------- */
-/* La columna de la captura pesa más que el texto: es la prueba visual del producto.
-   El ancho extra sale de la rejilla, no de sacar la imagen fuera del contenedor
-   (eso provocaba desbordamiento horizontal de la página). */
-/* La primera pantalla es solo el hero: ocupa el alto de la ventana menos el nav,
-   así no asoma el contenido de la sección siguiente. */
-.hero{padding:48px 0 160px; display:grid; grid-template-columns:0.78fr 1.22fr;
-  gap:44px; align-items:center; align-content:center; max-width:1380px;
-  min-height:calc(100vh - 72px); position:relative}
-.badge{display:inline-flex; align-items:center; gap:10px; padding:9px 18px;
-  border:1px solid var(--border); background:rgba(17,28,46,.7); border-radius:999px;
-  font-family:"Press Start 2P",monospace; font-size:9px; color:var(--bright)}
-.badge b{width:8px; height:8px; background:var(--bright); border-radius:50%;
-  animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(92,224,123,.6)}50%{opacity:.6; box-shadow:0 0 0 7px rgba(92,224,123,0)}}
-.hero h1{font-size:clamp(36px,4.6vw,58px); font-weight:800; margin:0 0 20px; line-height:1.06}
-.hero h1 .kw{color:var(--bright); text-shadow:0 0 30px rgba(92,224,123,.45)}
-.hero .lead{font-size:19px}
-.hero-cta{display:flex; gap:14px; margin:32px 0 22px; flex-wrap:wrap}
-.trust{display:flex; gap:22px; flex-wrap:wrap; color:var(--muted); font-size:14px}
-.trust span::before{content:"✓ "; color:var(--green); font-weight:700}
+/* Texto y captura lado a lado solo en pantallas anchas y apaisadas (más abajo); en las
+   demás, incluidos los plegables abiertos, que son casi cuadrados, se apilan. */
+.hero{display:grid; grid-template-columns:minmax(0,1fr); gap:40px; align-items:center;
+  max-width:calc(1380px + var(--gut) * 2); padding-block:clamp(32px,7vh,72px) clamp(48px,10vh,120px)}
+.hero h1{font-family:var(--f-mc); font-weight:400; font-size:32px; line-height:1.25; margin:0 0 20px;
+  text-shadow:4px 4px 0 var(--mc-shadow), 0 2px 24px rgba(3,8,16,.6); -webkit-font-smoothing:none; text-wrap:balance}
+.hero h1 .kw{color:var(--mc-green); text-shadow:4px 4px 0 #204008, 0 0 30px rgba(128,255,32,.3)}
+.hero .lead{font-size:clamp(16px,1.4vw,19px)}
+.hero-cta{display:flex; gap:14px; margin:30px 0 22px; flex-wrap:wrap}
+.trust{display:flex; gap:8px 22px; flex-wrap:wrap; color:#CBD8E8; font-size:14px; text-shadow:0 1px 3px rgba(3,8,16,.9)}
+.trust span::before{content:"✓ "; color:var(--mc-green); font-weight:700}
 
 /* ventana con la captura real */
-.shot{position:relative; border-radius:14px; overflow:hidden; border:1px solid var(--border);
-  background:var(--bg-elev); box-shadow:0 34px 80px rgba(0,0,0,.65);
-  width:100%;
+.shot{position:relative; margin:0; border-radius:14px; overflow:hidden; border:1px solid var(--border);
+  background:var(--bg-elev); box-shadow:0 34px 80px rgba(0,0,0,.65); width:100%; min-width:0;
   transform:perspective(1400px) rotateY(var(--ry,-5deg)) rotateX(var(--rx,3deg));
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .shot-bar{display:flex; align-items:center; gap:9px; padding:11px 14px;
@@ -341,92 +356,98 @@ section > .wrap{position:relative}
 .shot-bar i{margin-left:auto; color:var(--muted); font-style:normal; font-size:12px; letter-spacing:2px}
 .shot img.cap{width:100%; height:auto}
 
-/* ---------- BARRA DE DATOS ---------- */
-/* Esta franja es un remate del hero, no un apartado. */
-.stats{padding:0 0 40px}
-.stats .wrap{display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap;
-  background:rgba(13,21,36,.75); border:1px solid var(--border); border-radius:16px;
-  padding:26px 34px; max-width:calc(var(--maxw) - 0px)}
-.stat{display:flex; align-items:baseline; gap:10px}
-.stat b{font-size:26px; font-weight:800; color:var(--bright)}
-.stat span{color:var(--muted); font-size:15px}
-
-/* ---------- REJILLAS ---------- */
-.grid{display:grid; gap:18px; margin-top:38px}
-.g3{grid-template-columns:repeat(3,1fr)}
-.card{background:rgba(17,28,46,.82); border:1px solid var(--border); border-radius:16px;
-  padding:24px; transition:transform .25s, border-color .25s, box-shadow .25s}
-.card:hover{transform:translateY(-6px); border-color:var(--green);
-  box-shadow:0 18px 40px rgba(0,0,0,.45)}
-.ico{width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
-  font-size:19px; background:rgba(28,90,48,.55); margin-bottom:12px}
-.card h3{font-size:19px; margin-bottom:10px}
-.card p{color:var(--muted); font-size:15px}
-.step-n{font-family:"Press Start 2P",monospace; font-size:15px; color:var(--bright);
-  margin-bottom:14px; display:block}
+/* ---------- PANELES DE INVENTARIO ---------- */
+/* Las tarjetas son la ventana del inventario: gris del juego, bisel de luz arriba a la
+   izquierda y sombra abajo a la derecha, y contorno negro. Cada una lleva su objeto en
+   una casilla real. */
+.grid{display:grid; gap:clamp(14px,1.6vw,20px); margin-top:36px;
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.card{position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px 16px; align-content:start;
+  padding:20px 20px 22px; text-align:left; color:var(--gui-text); background:var(--gui);
+  box-shadow:inset 4px 4px 0 var(--gui-hi), inset -4px -4px 0 var(--gui-lo), 0 0 0 2px #000, 0 12px 28px rgba(0,0,0,.35)}
+.card h3{align-self:center; font-family:var(--f-mc); font-weight:400; font-size:16px; line-height:1.45; color:#404040;
+  -webkit-font-smoothing:none}
+.card p{grid-column:1 / -1; margin-top:6px; color:#3F3F3F; font-size:15px; line-height:1.6}
+.slot{position:relative; width:60px; height:60px; display:grid; place-items:center;
+  background:url("../assets/mc/slot.png") 0 0/100% 100%; image-rendering:pixelated}
+.slot img{width:48px; height:48px; image-rendering:pixelated}
+.slot img.iso{image-rendering:auto}
+.slot:hover::after{content:""; position:absolute; inset:3px; background:rgba(255,255,255,.4)}
+/* número de la pila, en la esquina como en el inventario */
+.slot b{position:absolute; right:3px; bottom:0; font-family:var(--f-mc); font-weight:400; font-size:16px; color:#FFFFFF;
+  text-shadow:2px 2px 0 var(--mc-shadow); -webkit-font-smoothing:none}
 
 /* ---------- DOWNLOADS ---------- */
-.os{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:34px}
-.os .card{text-align:center}
-.os .card.featured{border-color:var(--bright); box-shadow:0 0 40px rgba(63,185,80,.16)}
-.os h3{font-size:22px; margin-bottom:6px}
-.os p{margin-bottom:20px}
-.os .btn{width:100%; justify-content:center}
-/* Los textos pequeños sueltos (aviso del SHA-256, enlace al historial) son los que peor
-   se leían: además del contraste llevan una cápsula oscura translúcida detrás. */
+.os{display:grid; gap:clamp(14px,1.6vw,22px); margin-top:34px;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.os .card{grid-template-columns:1fr; justify-items:center; text-align:center; padding:24px}
+.os h3{font-size:24px}
+.os p{margin:0 0 16px; color:#4A4A4A; font-size:15px}
+.os .btn{width:100%}
+/* La de Windows lleva el marco blanco de la casilla seleccionada de la barra rápida. */
+.os .card.featured{box-shadow:inset 4px 4px 0 var(--gui-hi), inset -4px -4px 0 var(--gui-lo), 0 0 0 2px #000, 0 0 0 6px #FFFFFF, 0 0 0 8px #000, 0 12px 28px rgba(0,0,0,.35)}
+/* Los textos pequeños sueltos (aviso del SHA-256, enlace al historial) llevan una cápsula
+   oscura translúcida detrás, como el chat del juego. */
 .note{color:#CBD8E8; font-size:14px; text-align:center; margin-top:26px}
-.note, .all-releases{display:block; width:fit-content; margin-left:auto; margin-right:auto;
-  padding:9px 18px; border-radius:999px; background:rgba(6,11,20,.62);
-  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
-  border:1px solid rgba(120,150,185,.18)}
+.note, .all-releases{display:block; width:fit-content; max-width:100%; margin-left:auto; margin-right:auto;
+  padding:9px 18px; background:rgba(0,0,0,.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px)}
 
-/* Listado de versiones publicadas, traído de la API de GitHub */
-.releases{max-width:860px; margin:38px auto 0; text-align:left}
-.releases-title{font-size:19px; margin-bottom:16px; text-align:center;
-  text-shadow:0 2px 4px rgba(3,8,16,.85)}
-.release-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px}
-.release-list li{display:flex; align-items:center; gap:16px; flex-wrap:wrap;
-  background:rgba(17,28,46,.82); border:1px solid var(--border); padding:14px 20px}
-.release-list li.latest{border-color:var(--green)}
-.rel-tag{font-family:"Press Start 2P",monospace; font-size:11px; color:var(--bright)}
-.rel-name{color:var(--text); font-size:15px; flex:1 1 220px; min-width:0;
-  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.rel-date{color:var(--muted); font-size:13px}
-.rel-badge{font-size:11px; font-weight:700; color:#07210E; background:var(--bright);
-  padding:3px 9px; letter-spacing:.03em}
-.release-empty{color:var(--muted); font-size:14px; justify-content:center}
+/* Veröffentlichte Versionen (de la API de GitHub), como la lista de servidores del modo
+   multijugador: filas oscuras, y la última con el marco de la fila seleccionada. */
+.releases{max-width:860px; margin:40px auto 0; text-align:left}
+.releases-title{font-family:var(--f-mc); font-weight:400; font-size:16px; margin-bottom:16px; text-align:center;
+  text-shadow:2px 2px 0 var(--mc-shadow); -webkit-font-smoothing:none}
+.release-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px}
+.release-list li{display:flex; align-items:center; gap:8px 16px; flex-wrap:wrap; padding:12px 18px;
+  background:rgba(0,0,0,.6); box-shadow:inset 0 0 0 2px transparent}
+.release-list li:hover{box-shadow:inset 0 0 0 2px #808080}
+.release-list li.latest{box-shadow:inset 0 0 0 2px #FFFFFF}
+.rel-tag{font-family:var(--f-mc); font-size:16px; color:var(--mc-green); text-shadow:2px 2px 0 #204008; -webkit-font-smoothing:none}
+.rel-name{color:var(--text); font-size:15px; flex:1 1 220px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.rel-name:hover{color:var(--mc-hover)}
+.rel-date{color:#A8A8A8; font-size:13px}
+.rel-badge{font-family:var(--f-mc); font-size:8px; color:#07210E; background:var(--mc-green); padding:4px 7px 3px; -webkit-font-smoothing:none}
+.release-empty{color:#A8A8A8; font-size:14px; justify-content:center}
 .all-releases{text-align:center; margin-top:20px; color:#CBD8E8; font-size:14px}
-.all-releases:hover{color:var(--bright); border-color:rgba(92,224,123,.5)}
+.all-releases:hover{color:var(--mc-hover)}
 
 /* ---------- FAQ ---------- */
-.faq{max-width:900px; margin:46px auto 0}
-.faq details{background:rgba(17,28,46,.82); border:1px solid var(--border);
-  border-radius:14px; padding:20px 24px; margin-bottom:14px; transition:border-color .2s}
-.faq details[open]{border-color:var(--green)}
+/* Paneles oscuros como el fondo del chat; las preguntas, largas, van en letra normal. */
+.faq{max-width:900px; margin:44px auto 0; display:grid; gap:10px; text-align:left}
+.faq details{background:rgba(0,0,0,.6); padding:18px 22px; box-shadow:inset 0 0 0 2px transparent; transition:box-shadow .15s}
+.faq details:hover{box-shadow:inset 0 0 0 2px #808080}
+.faq details[open]{box-shadow:inset 0 0 0 2px #FFFFFF}
 .faq summary{font-weight:700; font-size:17px; cursor:pointer; list-style:none;
   display:flex; justify-content:space-between; gap:16px; align-items:center}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::after{content:"+"; color:var(--bright); font-size:22px; line-height:1; flex:none}
-.faq details[open] summary::after{content:"–"}
-.faq p{color:var(--muted); font-size:15px; margin-top:12px}
+.faq summary::after{content:"+"; font-family:var(--f-mc); font-weight:400; color:var(--mc-yellow); font-size:24px; line-height:1; flex:none;
+  text-shadow:2px 2px 0 #3F3F15}
+.faq details[open] summary::after{content:"-"}
+.faq p{color:#C8D0DA; font-size:15px; margin-top:12px}
 
 /* ---------- CTA FINAL + PIE ---------- */
-.final{text-align:center; padding:120px 0 90px}
-.final .h2{font-size:clamp(32px,4.4vw,46px)}
-/* .lead lleva max-width, así que centrarlo necesita márgenes automáticos:
-   con text-align solo, el bloque se quedaba pegado a la izquierda. */
+.final{text-align:center; padding-block:clamp(72px,12vh,120px) clamp(48px,8vh,90px)}
+/* .lead lleva max-width, así que centrarlo necesita márgenes automáticos. */
 .final .lead{margin:0 auto 30px}
-.creeper{width:78px; margin:0 auto 26px; image-rendering:pixelated}
-/* El suelo de bloques está fijo al fondo de la ventana. En vez de taparlo con una
-   barra negra, el pie se funde con él: degradado que muere en transparente y hueco
-   inferior suficiente para que el texto quede sobre la hierba, no debajo. */
-footer{border-top:none; background:linear-gradient(180deg,
-  rgba(7,11,20,0) 0%, rgba(7,11,20,.55) 26%, rgba(7,11,20,.78) 60%, rgba(7,11,20,0) 100%)}
-footer .wrap{display:flex; justify-content:center; gap:26px;
-  padding-top:26px; padding-bottom:150px; color:#CBD8E8; font-size:14px; flex-wrap:wrap;
-  text-shadow:0 2px 4px rgba(3,8,16,.85)}
-footer nav{display:flex; gap:26px}
-footer a:hover{color:var(--bright)}
+.creeper{width:80px; margin:0 auto 26px; image-rendering:pixelated}
+/* Pie como la parte de abajo de la pantalla de título del juego: tierra oscurecida,
+   botones grises del juego con los iconos de la ventana «Acerca de» de la app, la versión
+   en la esquina izquierda y el aviso legal en la derecha, donde el juego pone su copyright.
+   Es opaco y tapa el suelo fijo del fondo al llegar al final. */
+footer{position:relative; background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.7) 45%),
+  url("../assets/mc/dirt.png") 0 0/48px 48px; image-rendering:pixelated; box-shadow:0 -2px 0 #000, 0 -4px 0 rgba(255,255,255,.1)}
+footer .wrap{padding-block:30px calc(16px + env(safe-area-inset-bottom,0px))}
+footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
+.foot-bar{display:flex; justify-content:space-between; align-items:baseline; gap:6px 24px; flex-wrap:wrap; margin-top:26px}
+.foot-ver{font-family:var(--f-mc); font-size:16px; color:#FFFFFF; text-shadow:2px 2px 0 var(--mc-shadow); -webkit-font-smoothing:none}
+.foot-legal{font-size:11px; color:#A9B2BE; image-rendering:auto}
+
+/* Botón de descarga fijo abajo en móvil; se esconde al llegar a la sección de descargas. */
+.dock{position:fixed; z-index:55; left:var(--gut); right:var(--gut);
+  bottom:calc(12px + env(safe-area-inset-bottom,0px)); display:none;
+  transition:transform .25s, opacity .25s}
+.dock.away{transform:translateY(140%); opacity:0; pointer-events:none}
 
 /* ---------- ANIMACIONES DE ENTRADA ---------- */
 /* "colocar bloque": cae, aplasta al aterrizar y suelta un destello */
@@ -439,8 +460,7 @@ footer a:hover{color:var(--bright)}
 }
 /* titulares que se montan palabra a palabra, como bloques encajando */
 .build > span{display:inline-block; opacity:0; transform:translateY(-26px) rotate(-6deg)}
-.build.in > span{animation:snap .5s cubic-bezier(.2,1.6,.4,1) forwards;
-  animation-delay:calc(var(--i) * .07s)}
+.build.in > span{animation:snap .5s cubic-bezier(.2,1.6,.4,1) forwards; animation-delay:calc(var(--i) * .07s)}
 @keyframes snap{to{opacity:1; transform:translateY(0) rotate(0)}}
 /* "carga de chunk": el bloque aparece por franjas verticales, como el terreno al generarse */
 .chunk{clip-path:inset(0 100% 0 0)}
@@ -451,63 +471,68 @@ footer a:hover{color:var(--bright)}
   .reveal,.build > span,.chunk{opacity:1 !important; transform:none !important;
     clip-path:none !important; animation:none !important}
   html{scroll-behavior:auto}
-  .star,.badge b,.cloud{animation:none}
+  .star,.water{animation:none}
+  .leaf{display:none}
 }
-/* Entre 1040 y 1200 px los idiomas de palabras largas (Fonctionnalités,
-   Transferências) hacían que el botón de descarga se saliera de la pantalla. En vez
-   de romper la barra, se compacta: menos separación, texto algo menor y el botón
-   pierde su segunda línea, que es decorativa. */
-@media (max-width:1200px){
-  .nav .wrap{gap:14px}
-  .nav nav{gap:16px; margin-left:0}
-  .nav nav a{font-size:14px}
-  .brand{font-size:16px}
-  .brand img{width:28px; height:28px}
-  .langs{gap:2px}
-  .langs a{padding:3px}
-  .langs a svg{width:16px; height:11px}
-  .dlbtn-txt i{display:none}
-  .dlbtn-txt{padding:11px 14px}
-  .dlbtn-txt b{font-size:12px}
-  .dlbtn-ico{padding:0 11px}
+
+/* ---------- TAMAÑOS ---------- */
+/* La letra del juego cambia a escalones de 8 px para seguir nítida. La altura también
+   cuenta: en una pantalla baja como la de un portátil de 13" a 150 % (1280x650) el
+   titular grande empujaba los botones fuera de la primera vista. */
+@media (min-width:700px){ .h2{font-size:32px} }
+@media (min-width:900px) and (min-height:700px){ .hero h1{font-size:40px} }
+@media (min-width:1300px) and (min-height:820px){ .hero h1{font-size:48px} .h2{font-size:40px} }
+/* Lado a lado: pantalla ancha y apaisada. */
+@media (min-width:1000px) and (min-aspect-ratio:6/5){
+  .hero{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr); gap:clamp(32px,4vw,56px);
+    min-height:calc(100svh - var(--nav-h) - 10px)}
 }
-/* Por debajo de esto ya no caben los enlaces en francés ni en portugués sin apretarlos
-   hasta ser ilegibles, así que se ocultan (las secciones siguen alcanzables desde el
-   pie y haciendo scroll). El umbral se fijó midiendo el francés, que es el más ancho. */
-@media (max-width:1100px){
-  .nav nav{display:none}
+/* La barra se ajusta a lo que mide de verdad en cada idioma (las secciones en francés son
+   mucho más largas que en inglés): el script prueba primero a compactarla (.tight: el
+   botón pierde su segunda línea, que es decorativa) y, si aun así
+   no cabe, pasa las secciones al menú desplegable (.compact). */
+.nav.tight .dlbtn-txt i{display:none}
+.nav.compact nav{display:none}
+.nav.compact .menu-btn{display:inline-flex; margin-left:0}
+.nav.compact .wrap > .langs{margin-left:auto}
+@media (max-width:640px){
+  :root{--nav-h:60px}
+  .nav .wrap > .dlbtn{display:none}
+  .nav.compact .menu-btn,.menu-btn{margin-left:10px}
+  .dock{display:flex}
+  .hero-cta .btn{flex:1 1 100%}
+  .shot{transform:none}
+  .sun,.moon{left:-64px; width:128px; height:128px}
+  .moon{top:calc(62vh - 128px)}
+  .lead{font-size:16px}
+  footer .wrap{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 }
-@media (max-width:960px){
-  .hero{grid-template-columns:1fr; gap:40px}
-  .g3,.os{grid-template-columns:1fr}
-}
+[hidden]{display:none !important}
 </style>
+<!-- Las animaciones de entrada parten de opacity:0 y las activa el script; sin JavaScript
+     (algunos lectores y generadores de vistas previas) el contenido se ve directamente. -->
+<noscript><style>.reveal,.build > span,.chunk{opacity:1 !important; transform:none !important; clip-path:none !important}</style></noscript>
+
 </head>
 <body>
 
-<!-- Escenario: cielo con ciclo día/noche, estrellas, sol/luna y terreno de bloques -->
+<!-- Escenario: cielo con ciclo día/noche, estrellas, sol y luna, nubes y paisaje de bloques -->
 <div class="scene" aria-hidden="true">
   <div class="sky sky-night"></div>
   <div class="sky sky-day"></div>
   <div class="sky sky-dusk"></div>
   <div class="stars" id="stars"></div>
-  <div class="clouds" id="clouds"></div>
-  <div class="orbit" id="orbit"><div class="sun"></div><div class="moon"></div></div>
-  <svg class="hills hill-far" viewBox="0 0 1200 220" preserveAspectRatio="none" height="220">
-    <path fill="#0B1B2E" d="M0 220V150h40v-20h40v-20h40v20h40v20h40v-40h40v-20h40v20h40v40h40v-20h40v20h40v-40h40v40h40v20h40v-20h40v-20h40v40h40v20h40v-40h40v40h40v20h40v-20h40v20h40v20H0z"/>
-  </svg>
-  <svg class="hills hill-mid" viewBox="0 0 1200 160" preserveAspectRatio="none" height="160">
-    <path fill="#0A2418" d="M0 160v-50h50v-20h50v20h50v-40h50v20h50v20h50v-30h50v30h50v20h50v-40h50v40h50v-20h50v20h50v-30h50v30h50v20h50v-20h50v20h50v20H0z"/>
-  </svg>
-  <div class="terrain"></div>
+  <div class="orbit" id="orbit"><img class="sun" src="../assets/mc/sun.png" alt=""><img class="moon" src="../assets/mc/moon.png" alt=""></div>
+  <canvas class="clouds" id="clouds"></canvas>
+  <div class="land" id="land"></div>
 </div>
 
 <div class="xpbar" aria-hidden="true"><i id="xp"></i></div>
 
 <header class="nav">
   <div class="wrap">
-    <a class="brand" href="#inicio"><img src="../assets/logo.png" alt="MC-ServerLauncher-Logo" width="34" height="34">MC-ServerLauncher</a>
-    <nav>
+    <a class="brand" href="#inicio"><img src="../assets/logo.png" alt="MC-ServerLauncher" width="40" height="40"></a>
+    <nav id="sections">
       <a href="#caracteristicas">Funktionen</a>
       <a href="#como-funciona">So funktioniert es</a>
       <a href="#descargas">Downloads</a>
@@ -515,20 +540,20 @@ footer a:hover{color:var(--bright)}
     </nav>
     <!-- Los enlaces relativos los reescribe web/_i18n/build.py para cada idioma.
          Banderas dibujadas en SVG y no emoji: Windows no dibuja las banderas emoji,
-         las muestra como dos letras, así que se verían rotas en muchos equipos. -->
+         las muestra como dos letras, así que se verían rotas en muchos equipos.
+         El botón muestra el idioma marcado con class="on"; lo rellena el script. -->
     <div class="langs">
-      <a href="../" hreflang="es" title="Español" aria-label="Español">
-        <svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#C60B1E"/><rect y="3" width="16" height="5" fill="#FFC400"/></svg></a>
-      <a href="../en/" hreflang="en" title="English" aria-label="English">
-        <svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#012169"/><path d="M0 0l16 11M16 0L0 11" stroke="#FFF" stroke-width="2.4"/><path d="M0 0l16 11M16 0L0 11" stroke="#C8102E" stroke-width="1.1"/><path d="M8 0v11M0 5.5h16" stroke="#FFF" stroke-width="3.6"/><path d="M8 0v11M0 5.5h16" stroke="#C8102E" stroke-width="2"/></svg></a>
-      <a href="../de/" class="on" hreflang="de" title="Deutsch" aria-label="Deutsch">
-        <svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#000"/><rect y="3.67" width="16" height="3.67" fill="#DD0000"/><rect y="7.34" width="16" height="3.66" fill="#FFCE00"/></svg></a>
-      <a href="../fr/" hreflang="fr" title="Français" aria-label="Français">
-        <svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#FFF"/><rect width="5.33" height="11" fill="#002395"/><rect x="10.67" width="5.33" height="11" fill="#ED2939"/></svg></a>
-      <a href="../pt/" hreflang="pt" title="Português" aria-label="Português">
-        <svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#DA291C"/><rect width="6.4" height="11" fill="#046A38"/><circle cx="6.4" cy="5.5" r="2.1" fill="#FFE000"/><circle cx="6.4" cy="5.5" r="1.15" fill="#DA291C"/></svg></a>
+      <button class="lang-btn" type="button" id="langBtn" aria-expanded="false" aria-controls="langList" aria-label="Sprache"><span id="langCur"></span>
+        <svg class="chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 3h10L5 8z"/></svg></button>
+      <div class="lang-list" id="langList" hidden>
+        <a href="../" hreflang="es"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#C60B1E"/><rect y="3" width="16" height="5" fill="#FFC400"/></svg><b>ES</b>Español</a>
+        <a href="../en/" hreflang="en"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#012169"/><path d="M0 0l16 11M16 0L0 11" stroke="#FFF" stroke-width="2.4"/><path d="M0 0l16 11M16 0L0 11" stroke="#C8102E" stroke-width="1.1"/><path d="M8 0v11M0 5.5h16" stroke="#FFF" stroke-width="3.6"/><path d="M8 0v11M0 5.5h16" stroke="#C8102E" stroke-width="2"/></svg><b>EN</b>English</a>
+        <a href="../de/" class="on" hreflang="de"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#000"/><rect y="3.67" width="16" height="3.67" fill="#DD0000"/><rect y="7.34" width="16" height="3.66" fill="#FFCE00"/></svg><b>DE</b>Deutsch</a>
+        <a href="../fr/" hreflang="fr"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#FFF"/><rect width="5.33" height="11" fill="#002395"/><rect x="10.67" width="5.33" height="11" fill="#ED2939"/></svg><b>FR</b>Français</a>
+        <a href="../pt/" hreflang="pt"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#DA291C"/><rect width="6.4" height="11" fill="#046A38"/><circle cx="6.4" cy="5.5" r="2.1" fill="#FFE000"/><circle cx="6.4" cy="5.5" r="1.15" fill="#DA291C"/></svg><b>PT</b>Português</a>
+      </div>
     </div>
-    <a class="dlbtn" href="#descargas">
+    <a class="btn btn-primary dlbtn" href="#descargas">
       <span class="dlbtn-ico" aria-hidden="true">
         <svg viewBox="0 0 16 16" shape-rendering="crispEdges" width="20" height="20">
           <rect x="6" y="1" width="4" height="6" fill="currentColor"/>
@@ -541,6 +566,11 @@ footer a:hover{color:var(--bright)}
       <span class="dlbtn-sep" aria-hidden="true"></span>
       <span class="dlbtn-txt"><b>Herunterladen</b><i>MC-ServerLauncher</i></span>
     </a>
+    <button class="btn menu-btn" type="button" id="menuBtn" aria-expanded="false" aria-controls="menu" aria-label="Menü">
+      <svg viewBox="0 0 8 7" width="20" height="18" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h8v1H0zM0 3h8v1H0zM0 6h8v1H0z"/></svg>
+    </button>
+    <!-- El menú se rellena desde el script con los mismos enlaces e idiomas de la barra. -->
+    <div class="menu" id="menu" hidden></div>
   </div>
 </header>
 
@@ -550,8 +580,8 @@ footer a:hover{color:var(--bright)}
       <h1 class="build">Erstelle deinen <span class="kw">Minecraft</span>-Server auf deinem eigenen PC.</h1>
       <p class="lead reveal">Erstelle, konfiguriere und verwalte Minecraft-Server unter Windows, Linux und macOS, ohne die Konsole anzufassen. Mods von Modrinth, automatische Sicherungen und Internetzugang mit ein paar Klicks.</p>
       <div class="hero-cta reveal">
-        <a class="btn btn-primary" href="#descargas">Kostenlos laden</a>
-        <a class="btn btn-ghost" href="https://github.com/JuanP-G/MC-ServerLauncher">Auf GitHub ansehen</a>
+        <a class="btn btn-primary btn-lg" href="#descargas"><svg class="i" viewBox="0 0 1920 1920" aria-hidden="true"><path d="M1488 1632Q1508 1632 1522.0 1646.0Q1536 1660 1536 1680Q1536 1698 1525.0 1711.0Q1514 1724 1497 1727L1488 1728H432Q412 1728 398.0 1714.0Q384 1700 384 1680Q384 1662 395.0 1649.0Q406 1636 423 1633L432 1632ZM960 192Q978 192 991.0 203.5Q1004 215 1007 232L1008 240V1372L1358 1022Q1370 1010 1387.5 1008.5Q1405 1007 1419 1017L1425 1022Q1438 1035 1439.5 1052.0Q1441 1069 1431 1083L1426 1090L994 1522Q984 1532 970 1535L960 1536Q936 1536 922 1517L494 1090Q480 1076 480.0 1056.0Q480 1036 494 1022Q506 1010 523.5 1008.5Q541 1007 555 1017L562 1022L912 1372V240Q912 220 926.0 206.0Q940 192 960 192Z"/></svg>Kostenlos laden</a>
+        <a class="btn btn-lg" href="https://github.com/JuanP-G/MC-ServerLauncher"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>Auf GitHub ansehen</a>
       </div>
       <div class="trust reveal">
         <span>Kostenlos und quelloffen</span>
@@ -559,7 +589,7 @@ footer a:hover{color:var(--bright)}
         <span>Windows · Linux · macOS</span>
       </div>
     </div>
-    <figure class="shot reveal" id="shot" style="margin:0">
+    <figure class="shot reveal" id="shot">
       <div class="shot-bar">
         <img src="../assets/logo.png" alt="" width="18" height="18">
         <b>MC Server Launcher</b><i>—  ▢  ✕</i>
@@ -569,32 +599,32 @@ footer a:hover{color:var(--bright)}
     </figure>
   </section>
 
-
   <section id="caracteristicas">
     <div class="wrap center">
       <span class="eyebrow reveal">FUNKTIONEN</span>
       <h2 class="h2 build">Alles, was dein Server braucht, ohne Terminal</h2>
       <p class="lead reveal">Was sonst Konfigurationsdateien, Befehle und lose Ordner sind, sind hier Schaltflächen.</p>
-      <div class="grid g3">
-        <article class="card reveal"><div class="ico">🧱</div><h3>Server in 2 Minuten erstellen</h3><p>Version wählen, EULA akzeptieren, fertig: Die App lädt die offizielle JAR und erzeugt die Welt für dich. Vanilla, Paper, Purpur, Forge, NeoForge und Fabric.</p></article>
-        <article class="card reveal"><div class="ico">🧩</div><h3>Mods und Plugins von Modrinth</h3><p>Suche und installiere Mods, ohne die App zu verlassen, gefiltert nach deiner Version und deinem Servertyp. Jeder Download wird geprüft.</p></article>
-        <article class="card reveal"><div class="ico">💾</div><h3>Automatische Sicherungen</h3><p>Sichert deine Welt vor jedem Start, beim Stoppen und stündlich, während gespielt wird, ohne das Spiel zu unterbrechen. Mit so vielen Kopien, wie du behalten willst, und Wiederherstellung per Klick.</p></article>
-        <article class="card reveal"><div class="ico">🌍</div><h3>Mit Freunden über das Internet spielen</h3><p>Integrierter Playit.gg-Tunnel: Adresse teilen und sie treten von überall bei. Ohne Portfreigabe im Router.</p></article>
-        <article class="card reveal"><div class="ico">📊</div><h3>Konsole, Spieler und Statistiken</h3><p>CPU und RAM live, Suche in der Konsole und ein Profil für jeden Spieler: wann er kam, was er sagte und was er abgebaut hat. Ops, Banns und Whitelist mit Knöpfen statt Befehlen.</p></article>
-        <article class="card reveal"><div class="ico">🔄</div><h3>Erholt sich selbst von Abstürzen</h3><p>Stürzt der Server ab, startet er selbst neu und nennt dir den Grund aus dem Absturzbericht. Mit Desktop-Benachrichtigungen.</p></article>
+      <div class="grid">
+        <article class="card reveal"><div class="slot"><img class="iso" src="../assets/mc/iso_crafting.png" alt="" width="48" height="48"></div><h3>Server in 2 Minuten erstellen</h3><p>Version wählen, EULA akzeptieren, fertig: Die App lädt die offizielle JAR und erzeugt die Welt für dich. Vanilla, Paper, Purpur, Forge, NeoForge und Fabric.</p></article>
+        <article class="card reveal"><div class="slot"><img src="../assets/mc/enchanted_book.png" alt="" width="48" height="48"></div><h3>Mods und Plugins von Modrinth</h3><p>Suche und installiere Mods, ohne die App zu verlassen, gefiltert nach deiner Version und deinem Servertyp. Jeder Download wird geprüft.</p></article>
+        <article class="card reveal"><div class="slot"><img class="iso" src="../assets/mc/iso_chest.png" alt="" width="48" height="48"></div><h3>Automatische Sicherungen</h3><p>Sichert deine Welt vor jedem Start, beim Stoppen und stündlich, während gespielt wird, ohne das Spiel zu unterbrechen. Mit so vielen Kopien, wie du behalten willst, und Wiederherstellung per Klick.</p></article>
+        <article class="card reveal"><div class="slot"><img src="../assets/mc/ender_pearl.png" alt="" width="48" height="48"></div><h3>Mit Freunden über das Internet spielen</h3><p>Integrierter Playit.gg-Tunnel: Adresse teilen und sie treten von überall bei. Ohne Portfreigabe im Router.</p></article>
+        <article class="card reveal"><div class="slot"><img class="iso" src="../assets/mc/iso_command.png" alt="" width="48" height="48"></div><h3>Konsole, Spieler und Statistiken</h3><p>CPU und RAM live, Suche in der Konsole und ein Profil für jeden Spieler: wann er kam, was er sagte und was er abgebaut hat. Ops, Banns und Whitelist mit Knöpfen statt Befehlen.</p></article>
+        <article class="card reveal"><div class="slot"><img src="../assets/mc/totem.png" alt="" width="48" height="48"></div><h3>Erholt sich selbst von Abstürzen</h3><p>Stürzt der Server ab, startet er selbst neu und nennt dir den Grund aus dem Absturzbericht. Mit Desktop-Benachrichtigungen.</p></article>
       </div>
     </div>
   </section>
 
+  <!-- Los pasos llevan el número como el contador de una pila de objetos. -->
   <section id="como-funciona">
     <div class="wrap center">
       <span class="eyebrow reveal">SO FUNKTIONIERT ES</span>
       <h2 class="h2 build">So erstellst du einen Minecraft-Server auf deinem PC</h2>
       <p class="lead reveal">In drei Schritten von null zum Spielen, ohne einen einzigen Befehl.</p>
       <div class="grid g3">
-        <article class="card reveal"><span class="step-n">01</span><h3>Herunterladen und installieren</h3><p>Ein normaler Installer für Windows, ein AppImage für Linux oder ein DMG für macOS. Java muss nicht vorinstalliert sein: Die App findet oder lädt es.</p></article>
-        <article class="card reveal"><span class="step-n">02</span><h3>Server erstellen</h3><p>Namen vergeben, Minecraft-Version und Typ wählen. Die App lädt die offiziellen Dateien, prüft deren Prüfsumme und erzeugt die Welt.</p></article>
-        <article class="card reveal"><span class="step-n">03</span><h3>Auf Starten klicken und spielen</h3><p>Teile die Adresse mit deinen Freunden und verwalte alles im Fenster: Konsole, Mods, Spieler und Sicherungen.</p></article>
+        <article class="card reveal"><div class="slot"><img class="iso" src="../assets/mc/iso_barrel.png" alt="" width="48" height="48"><b>1</b></div><h3>Herunterladen und installieren</h3><p>Ein normaler Installer für Windows, ein AppImage für Linux oder ein DMG für macOS. Java muss nicht vorinstalliert sein: Die App findet oder lädt es.</p></article>
+        <article class="card reveal"><div class="slot"><img class="iso" src="../assets/mc/iso_grass.png" alt="" width="48" height="48"><b>2</b></div><h3>Server erstellen</h3><p>Namen vergeben, Minecraft-Version und Typ wählen. Die App lädt die offiziellen Dateien, prüft deren Prüfsumme und erzeugt die Welt.</p></article>
+        <article class="card reveal"><div class="slot"><img src="../assets/mc/diamond_pickaxe.png" alt="" width="48" height="48"><b>3</b></div><h3>Auf Starten klicken und spielen</h3><p>Teile die Adresse mit deinen Freunden und verwalte alles im Fenster: Konsole, Mods, Spieler und Sicherungen.</p></article>
       </div>
     </div>
   </section>
@@ -607,9 +637,9 @@ footer a:hover{color:var(--bright)}
         <article class="card featured reveal"><h3>Windows</h3><p>10 und 11 · 64 Bit</p>
           <a class="btn btn-primary" data-dl="win" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">.exe-Installer</a></article>
         <article class="card reveal"><h3>Linux</h3><p>AppImage · x86_64</p>
-          <a class="btn btn-ghost" data-dl="linux" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">AppImage laden</a></article>
+          <a class="btn" data-dl="linux" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">AppImage laden</a></article>
         <article class="card reveal"><h3>macOS</h3><p>Apple Silicon und Intel</p>
-          <a class="btn btn-ghost" data-dl="mac" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">.dmg laden</a></article>
+          <a class="btn" data-dl="mac" href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest">.dmg laden</a></article>
       </div>
 
       <div class="releases reveal">
@@ -657,15 +687,22 @@ footer a:hover{color:var(--bright)}
   </section>
 </main>
 
+<!-- Iconos de la ventana «Acerca de» de la app (Fluent UI System Icons, licencia MIT). -->
 <footer>
   <div class="wrap">
     <nav>
-      <a href="https://github.com/JuanP-G/MC-ServerLauncher">GitHub</a>
-      <a href="https://github.com/JuanP-G/MC-ServerLauncher/releases">Neuerungen</a>
-      <a href="https://github.com/JuanP-G/MC-ServerLauncher/issues">Fehler melden</a>
+      <a class="btn-mc" href="https://github.com/JuanP-G/MC-ServerLauncher"><svg class="i" viewBox="0 0 1920 1920" aria-hidden="true"><path d="M1245 353Q1252 335 1244.0 316.5Q1236 298 1217.5 291.0Q1199 284 1180.5 292.0Q1162 300 1155 319L675 1567Q668 1585 676.0 1603.5Q684 1622 702.5 1629.0Q721 1636 739.5 1628.0Q758 1620 765 1601ZM559 588Q574 601 575.5 620.5Q577 640 564 655L303 960L564 1265Q577 1280 575.5 1300.0Q574 1320 559.0 1332.5Q544 1345 524.0 1343.5Q504 1342 492 1327L204 991Q192 978 192.0 960.0Q192 942 204 929L492 593Q504 578 524.0 576.5Q544 575 559 588ZM1361 1380Q1346 1368 1344.5 1348.0Q1343 1328 1356 1313L1617 1008L1356 703Q1343 688 1344.5 668.5Q1346 649 1361.0 636.0Q1376 623 1396.0 624.5Q1416 626 1428 641L1716 977Q1728 990 1728.0 1008.0Q1728 1026 1716 1039L1428 1375Q1416 1390 1396.0 1391.5Q1376 1393 1361 1380Z"/></svg>Repository</a>
+      <a class="btn-mc" href="https://github.com/JuanP-G/MC-ServerLauncher/issues"><svg class="i" viewBox="0 0 1920 1920" aria-hidden="true"><path d="M864 240Q864 220 850.0 206.0Q836 192 816.0 192.0Q796 192 782.0 206.0Q768 220 768 240V288Q768 344 798 392Q735 406 684.5 447.0Q634 488 605 545Q576 605 576 672H528Q489 672 456.0 652.5Q423 633 403.5 600.0Q384 567 384 528V336Q384 316 370.0 302.0Q356 288 336.0 288.0Q316 288 302.0 302.0Q288 316 288 336V528Q288 593 320.5 648.0Q353 703 408.0 735.5Q463 768 528 768H576V912H240Q220 912 206.0 926.0Q192 940 192.0 960.0Q192 980 206.0 994.0Q220 1008 240 1008H576V1152H528Q463 1152 408.0 1184.5Q353 1217 320.5 1272.0Q288 1327 288 1392V1584Q288 1604 302.0 1618.0Q316 1632 336.0 1632.0Q356 1632 370.0 1618.0Q384 1604 384 1584V1392Q384 1353 403.5 1320.0Q423 1287 456.0 1267.5Q489 1248 528 1248H576Q576 1352 628 1442Q679 1529 766 1580Q856 1632 960.0 1632.0Q1064 1632 1154 1580Q1241 1529 1292 1442Q1344 1352 1344 1248H1392Q1431 1248 1464.0 1267.5Q1497 1287 1516.5 1320.0Q1536 1353 1536 1392V1584Q1536 1604 1550.0 1618.0Q1564 1632 1584.0 1632.0Q1604 1632 1618.0 1618.0Q1632 1604 1632 1584V1392Q1632 1327 1599.5 1272.0Q1567 1217 1512.0 1184.5Q1457 1152 1392 1152H1344V1008H1680Q1700 1008 1714.0 994.0Q1728 980 1728.0 960.0Q1728 940 1714.0 926.0Q1700 912 1680 912H1344V768H1392Q1457 768 1512.0 735.5Q1567 703 1599.5 648.0Q1632 593 1632 528V336Q1632 316 1618.0 302.0Q1604 288 1584.0 288.0Q1564 288 1550.0 302.0Q1536 316 1536 336V528Q1536 567 1516.5 600.0Q1497 633 1464.0 652.5Q1431 672 1392 672H1344Q1344 605 1315.0 546.5Q1286 488 1235.5 447.0Q1185 406 1122 392Q1152 344 1152 288V240Q1152 220 1138.0 206.0Q1124 192 1104.0 192.0Q1084 192 1070.0 206.0Q1056 220 1056 240V288Q1056 328 1028.0 356.0Q1000 384 960.0 384.0Q920 384 892.0 356.0Q864 328 864 288ZM1248 672V1248Q1248 1326 1209 1393Q1171 1459 1105 1497Q1038 1536 960.0 1536.0Q882 1536 815 1497Q749 1459 711 1393Q672 1326 672 1248V672Q672 620 698.0 576.0Q724 532 768.0 506.0Q812 480 864 480H1056Q1108 480 1152.0 506.0Q1196 532 1222.0 576.0Q1248 620 1248 672Z"/></svg>Fehler melden</a>
+      <a class="btn-mc" href="https://github.com/JuanP-G/MC-ServerLauncher/releases"><svg class="i" viewBox="0 0 1920 1920" aria-hidden="true"><path d="M1344 672Q1384 672 1412.0 644.0Q1440 616 1440.0 576.0Q1440 536 1412.0 508.0Q1384 480 1344.0 480.0Q1304 480 1276.0 508.0Q1248 536 1248.0 576.0Q1248 616 1276.0 644.0Q1304 672 1344 672ZM1068 192Q1030 192 994.5 206.5Q959 221 932 248L290 888Q253 925 240.0 974.5Q227 1024 240.0 1073.5Q253 1123 290 1160L765 1635Q802 1671 851.5 1684.0Q901 1697 950.5 1684.0Q1000 1671 1037 1635L1673 998Q1700 971 1714.5 935.5Q1729 900 1729 862V387Q1729 335 1703.0 291.0Q1677 247 1633.5 221.0Q1590 195 1538 195ZM999 316Q1013 302 1031.0 295.0Q1049 288 1068 288L1537 291Q1577 291 1605.0 319.0Q1633 347 1633 387V862Q1633 881 1626.0 899.0Q1619 917 1605 930L969 1567Q941 1595 901.0 1595.0Q861 1595 833 1567L358 1092Q339 1073 332.5 1048.5Q326 1024 332.5 999.0Q339 974 358 956Z"/></svg>Versionen</a>
     </nav>
+    <div class="foot-bar">
+      <span class="foot-ver" id="footVer">MC-ServerLauncher</span>
+      <span class="foot-legal">Kein offizielles Minecraft-Produkt. Nicht von Mojang oder Microsoft genehmigt oder mit ihnen verbunden.</span>
+    </div>
   </div>
 </footer>
+
+<a class="btn btn-primary dock" id="dock" href="#descargas">Kostenlos laden</a>
 
 <script>
 (function(){
@@ -682,20 +719,6 @@ footer a:hover{color:var(--bright)}
     frag.appendChild(s);
   }
   stars.appendChild(frag);
-
-  // --- nubes de bloques cruzando el cielo ---
-  var clouds = document.getElementById('clouds'), cfrag = document.createDocumentFragment();
-  for (var c = 0; c < 7; c++) {
-    var cl = document.createElement('span');
-    cl.className = 'cloud';
-    cl.style.top = (6 + c * 9 + Math.random() * 4) + '%';
-    cl.style.transform = 'scale(' + (0.7 + Math.random() * 0.9).toFixed(2) + ')';
-    cl.style.animationDuration = (70 + Math.random() * 70).toFixed(0) + 's';
-    cl.style.animationDelay = (-Math.random() * 90).toFixed(0) + 's'; // ya en marcha al cargar
-    cl.style.opacity = (0.55 + Math.random() * 0.45).toFixed(2);
-    cfrag.appendChild(cl);
-  }
-  clouds.appendChild(cfrag);
 
   // --- titulares que se montan palabra a palabra ---
   // Recorre los nodos hijos en vez de partir el HTML en crudo: así las etiquetas
@@ -786,12 +809,292 @@ footer a:hover{color:var(--bright)}
     // Va ligado a la posición del scroll, igual que el color del cielo, así que también
     // se aplica con "movimiento reducido": si no, el cielo cambiaba sin que el sol se moviera.
     orbit.style.setProperty('--orbit', (180 + p * 360).toFixed(1) + 'deg');
+    if (reduced) drawClouds(0);
     ticking = false;
   }
   addEventListener('scroll', function(){
     if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
   }, { passive: true });
   onScroll();
+
+  // --- paisaje del fondo con las texturas del juego ---
+  // Ruta entre comillas dobles a propósito: build.py la reescribe a "../assets/mc/" en las
+  // versiones traducidas, igual que el resto de rutas a assets/.
+  var MC = "../assets/mc/";
+  var TEX = ['grass_side','dirt','stone','sand','gravel','oak_log','oak_leaves','short_grass','fern',
+    'tall_grass_bottom','tall_grass_top','poppy','dandelion','cornflower','oxeye_daisy','azure_bluet','sugar_cane'];
+  var img = {};
+  function load(name){
+    return new Promise(function(ok){
+      var i = new Image(); i.onload = function(){ img[name] = i; ok(); }; i.onerror = ok; i.src = MC + name + '.png';
+    });
+  }
+
+  // Generador con semilla: el paisaje sale igual en cada visita y en cada idioma.
+  function rng(seed){ return function(){ seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
+
+  // --- nubes en 3D ---
+  // Cámara en el suelo mirando al horizonte; el mapa de nubes es un techo a 128 bloques
+  // por encima (el juego las pone a la altura 192 y el jugador anda cerca de la 64). Se
+  // pinta de lejos a cerca: cara inferior al 70 % de luz, laterales al 80 % y la cara que
+  // mira al jugador al 90 %, las sombras que pone el juego. Las celdas seguidas de una fila
+  // van en un solo trozo y cada fila pisa un poco la siguiente, para que el suavizado del
+  // canvas no deje juntas.
+  var cloudCv = document.getElementById('clouds'), cloudG = cloudCv.getContext('2d'), cloudMap = null;
+  var CELL = 12, CH = 128, CT = 4, ZFAR = 1400;
+  function cloudAt(i, j){ return cloudMap[((j & 255) * 256 + (i & 255)) * 4 + 3] > 128; }
+  function lerp(a, b, k){ return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]; }
+  function css(c, k, fog){ var m = lerp(c, fog, k); return 'rgb(' + (m[0] | 0) + ',' + (m[1] | 0) + ',' + (m[2] | 0) + ')'; }
+  function drawClouds(t){
+    var w = innerWidth, h = innerHeight, dpr = Math.min(devicePixelRatio || 1, 1.5);
+    if (!w || !h || !cloudMap) return;
+    if (cloudCv.width !== Math.round(w * dpr) || cloudCv.height !== Math.round(h * dpr)) {
+      cloudCv.width = Math.round(w * dpr); cloudCv.height = Math.round(h * dpr);
+    }
+    var g = cloudG; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+    var day = parseFloat(root.style.getPropertyValue('--day')) || 0;
+    // Niebla del color del horizonte del cielo de cada momento; de noche, nubes grises.
+    var fog = lerp([16, 30, 56], [36, 90, 138], day);
+    var white = lerp([62, 70, 94], [255, 255, 255], day);
+    var under = white.map(function(v){ return v * .7; }), side = white.map(function(v){ return v * .8; }), front = white.map(function(v){ return v * .9; });
+    // El horizonte se esconde detrás de las colinas del fondo.
+    var horizon = h - land.offsetHeight * .45, f = Math.max(h, w * .55) * .75, cx = w / 2;
+    var off = (reduced ? 0 : t / 1000 * .8) / CELL, oi = Math.floor(off), of = off - oi;
+    function P(x, y, z){ return [cx + f * x / z, horizon - f * y / z]; }
+    function quad(a, b, c, d, col){ g.fillStyle = col; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.lineTo(c[0], c[1]); g.lineTo(d[0], d[1]); g.closePath(); g.fill(); }
+    var yb = CH, yt = CH + CT;
+    for (var j = Math.ceil(ZFAR / CELL); j >= 1; j--) {
+      var z0 = j * CELL, z1 = z0 + CELL, zz = z1 + CELL * .08;
+      var k = Math.min(1, Math.pow(z0 / ZFAR, .55));
+      if (k > .97) continue;
+      var cu = css(under, k, fog), cs = css(side, k, fog), cf = css(front, k, fog);
+      var maxI = Math.ceil((w / 2) / f * z1 / CELL) + 2;
+      for (var i = -maxI; i <= maxI; i++) {
+        if (!cloudAt(i + oi, j + 37)) continue;
+        var a = i; while (i + 1 <= maxI && cloudAt(i + 1 + oi, j + 37)) i++;
+        var x0 = (a - of) * CELL, x1 = (i + 1 - of) * CELL;
+        if (x0 > 0) quad(P(x0, yb, z0), P(x0, yt, z0), P(x0, yt, z1), P(x0, yb, z1), cs);
+        if (x1 < 0) quad(P(x1, yb, z0), P(x1, yt, z0), P(x1, yt, z1), P(x1, yb, z1), cs);
+        for (var q = a; q <= i; q++) {
+          if (cloudAt(q + oi, j - 1 + 37)) continue;
+          var r0 = q; while (q + 1 <= i && !cloudAt(q + 1 + oi, j - 1 + 37)) q++;
+          var fx0 = (r0 - of) * CELL - .3, fx1 = (q + 1 - of) * CELL + .3;
+          quad(P(fx0, yb, z0), P(fx1, yb, z0), P(fx1, yt, z0), P(fx0, yt, z0), cf);
+        }
+        quad(P(x0 - .3, yb, z0), P(x1 + .3, yb, z0), P(x1 + .3, yb, zz), P(x0 - .3, yb, zz), cu);
+      }
+    }
+  }
+  var clouds = new Image();
+  clouds.onload = function(){
+    var t = document.createElement('canvas'); t.width = t.height = 256;
+    var tg = t.getContext('2d'); tg.drawImage(clouds, 0, 0);
+    cloudMap = tg.getImageData(0, 0, 256, 256).data;
+    drawClouds(performance.now());
+    // Se mueven muy despacio: 15 fotogramas por segundo bastan. Con «reducir movimiento»
+    // solo se redibujan al cambiar el cielo (ver onScroll) o el tamaño.
+    var last = 0;
+    if (!reduced) requestAnimationFrame(function tick(t){
+      requestAnimationFrame(tick);
+      if (document.hidden || t - last < 66) return;
+      last = t; drawClouds(t);
+    });
+  };
+  clouds.src = MC + 'clouds.png';
+  addEventListener('resize', function(){ drawClouds(performance.now()); });
+
+  var land = document.getElementById('land'), lastW = 0;
+
+  function drawLand(){
+    var W = innerWidth, small = W < 700 || innerHeight < 700;
+    // Con la pestaña oculta o en una vista previa el ancho puede ser 0: se espera al
+    // siguiente resize en vez de fallar al dibujar un canvas vacío.
+    if (!W) return;
+    lastW = W;
+    var B = small ? 32 : 48;                 // un bloque: 2 o 3 px por píxel de la textura
+    var dpr = Math.min(devicePixelRatio || 1, 2), r = rng(20261014);
+    var FLOWERS = ['poppy','dandelion','cornflower','oxeye_daisy','azure_bluet'];
+
+    // Tres capas: las de atrás con bloques más pequeños y neblina del color del cielo.
+    var layers = [
+      { b: Math.round(B * .5),  base: 6, spread: 3, fog: .55, trees: .05, front: false },
+      { b: Math.round(B * .72), base: 3, spread: 2, fog: .3,  trees: .07, front: false },
+      { b: B,                   base: 2, spread: 1, fog: 0,   trees: 0,   front: true }
+    ];
+    var parts = [], top = 0, overlays = [];
+    layers.forEach(function(L){
+      var cols = Math.ceil(W / L.b) + 1, h = L.base, cells = [];
+      for (var x = 0; x < cols; x++) {
+        var q = r();
+        if (q < .2) h--; else if (q > .8) h++;
+        h = Math.max(L.base - L.spread + (L.front ? 1 : 0), Math.min(L.base + L.spread, h));
+        cells.push({ h: h });
+      }
+      // Charca con arena en las orillas y cañas de azúcar, solo en la capa de delante.
+      var pond = null;
+      if (L.front && cols >= 16) {
+        var len = cols >= 30 ? 6 : 4, s = Math.floor(cols * .58);
+        pond = { s: s, len: len };
+        for (var p = s - 1; p <= s + len; p++) {
+          cells[p].h = L.base;
+          cells[p].sand = true;
+        }
+        for (p = s; p < s + len; p++) { cells[p].h = L.base - 1; cells[p].water = true; }
+        cells[s + len].cane = 2 + Math.floor(r() * 2);
+      }
+      // Árboles: en la capa de delante solo uno, a la derecha, para no quedar detrás del texto.
+      var trees = [];
+      cells.forEach(function(c, x){
+        if (c.water || c.sand || x < 2 || x > cols - 3) return;
+        var want = L.front ? x === cols - 4 : r() < L.trees;
+        if (want && !trees.some(function(t){ return Math.abs(t.x - x) < 5; })) trees.push({ x: x, h: c.h, t: 4 + Math.floor(r() * 2) });
+      });
+      cells.forEach(function(c, x){
+        if (c.water || c.cane || trees.some(function(t){ return t.x === x; })) return;
+        var q = r();
+        if (q < .28) c.plant = 'short_grass';
+        else if (q < .34) c.plant = 'fern';
+        else if (q < .38) c.plant = 'tall';
+        else if (q < .46) c.plant = FLOWERS[Math.floor(r() * FLOWERS.length)];
+      });
+      var layerTop = 0;
+      cells.forEach(function(c){ layerTop = Math.max(layerTop, (c.h + 2) * L.b); });
+      trees.forEach(function(t){ layerTop = Math.max(layerTop, (t.h + t.t + 2) * L.b); });
+      top = Math.max(top, layerTop);
+      parts.push({ L: L, cells: cells, trees: trees, pond: pond });
+    });
+
+    var H = top;
+    var canvas = document.createElement('canvas');
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    var g = canvas.getContext('2d');
+
+    parts.forEach(function(part){
+      var L = part.L, b = L.b;
+      var lc = document.createElement('canvas');
+      lc.width = canvas.width; lc.height = canvas.height;
+      var c = lc.getContext('2d');
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      c.imageSmoothingEnabled = false;
+      function block(name, x, y){ if (img[name]) c.drawImage(img[name], x * b, H - (y + 1) * b, b, b); }
+      part.cells.forEach(function(cell, x){
+        for (var y = 0; y < cell.h; y++) {
+          var name = y === cell.h - 1 ? (cell.sand ? 'sand' : (cell.water ? 'gravel' : 'grass_side'))
+                   : (y >= cell.h - 3 ? (cell.sand || cell.water ? 'sand' : 'dirt') : 'stone');
+          block(name, x, y);
+        }
+        if (cell.plant === 'tall') { block('tall_grass_bottom', x, cell.h); block('tall_grass_top', x, cell.h + 1); }
+        else if (cell.plant) block(cell.plant, x, cell.h);
+        if (cell.cane) for (var k = 0; k < cell.cane; k++) block('sugar_cane', x, cell.h + k);
+      });
+      // Roble como los del juego: tronco de 4 o 5 bloques y copa de dos capas anchas y dos
+      // estrechas. Las hojas tienen huecos, así que se ve el tronco por detrás.
+      part.trees.forEach(function(t){
+        for (var y = 0; y < t.t; y++) block('oak_log', t.x, t.h + y);
+        var tt = t.h + t.t;
+        [[-2, 2, tt - 2], [-2, 2, tt - 1], [-1, 1, tt], [-1, 1, tt + 1]].forEach(function(row){
+          for (var dx = row[0]; dx <= row[1]; dx++) {
+            if (row[2] === tt + 1 && dx !== 0 && r() < .5) continue;
+            block('oak_leaves', t.x + dx, row[2]);
+          }
+        });
+        if (!reduced) for (var n = 0; n < (L.front ? 3 : 1); n++) {
+          var lp = Math.max(3, Math.round(b * 5 / 16));
+          var leaf = document.createElement('i');
+          leaf.className = 'leaf';
+          leaf.style.left = ((t.x - 2 + r() * 5) * b) + 'px';
+          leaf.style.bottom = ((tt - 2 + r()) * b) + 'px';
+          leaf.style.setProperty('--lp', lp + 'px');
+          leaf.style.setProperty('--fall', ((tt - 2 - t.h + 1) * b) + 'px');
+          leaf.style.backgroundImage = 'url(' + MC + 'leaf_particles.png)';
+          leaf.style.backgroundSize = (lp * 12) + 'px ' + lp + 'px';
+          leaf.style.backgroundPosition = (-lp * Math.floor(r() * 12)) + 'px 0';
+          leaf.style.animationDuration = (6 + r() * 5).toFixed(1) + 's';
+          leaf.style.animationDelay = (-r() * 10).toFixed(1) + 's';
+          if (L.fog) leaf.style.opacity = '.7';
+          overlays.push(leaf);
+        }
+      });
+      if (L.fog) {
+        c.setTransform(1, 0, 0, 1, 0, 0);
+        c.globalCompositeOperation = 'source-atop';
+        c.fillStyle = 'rgba(42,92,140,' + L.fog + ')';      // el azul del horizonte de día
+        c.fillRect(0, 0, lc.width, lc.height);
+      }
+      g.drawImage(lc, 0, 0);
+      // El agua va aparte, encima del lecho de la charca, para animarla con CSS.
+      if (part.pond) {
+        var w = document.createElement('div');
+        w.className = 'water';
+        w.style.left = (part.pond.s * b) + 'px';
+        w.style.width = (part.pond.len * b) + 'px';
+        w.style.bottom = ((L.base - 1) * b) + 'px';
+        w.style.height = Math.round(b * 14 / 16) + 'px';      // el agua del juego no llena el bloque
+        w.style.setProperty('--b', b + 'px');
+        w.style.backgroundImage = 'url(' + MC + 'water.png)';
+        w.style.backgroundSize = b + 'px ' + (b * 32) + 'px';
+        w.style.opacity = '.85';
+        overlays.push(w);
+      }
+    });
+
+    land.textContent = '';
+    land.style.height = H + 'px';
+    land.appendChild(canvas);
+    overlays.forEach(function(o){ land.appendChild(o); });
+    // Alto del suelo de delante: el pie deja este hueco para que su texto quede sobre la hierba.
+    root.style.setProperty('--ground', (layers[2].base * B) + 'px');
+  }
+
+  Promise.all(TEX.map(load)).then(drawLand);
+  // En móvil la barra de direcciones cambia el alto al hacer scroll: solo se redibuja si
+  // cambia el ancho, que es lo que altera el paisaje.
+  var landTimer;
+  addEventListener('resize', function(){
+    if (innerWidth === lastW) return;
+    clearTimeout(landTimer); landTimer = setTimeout(drawLand, 200);
+  });
+
+  // --- menú para pantallas estrechas: los mismos enlaces de la barra ---
+  var menu = document.getElementById('menu'), menuBtn = document.getElementById('menuBtn');
+  [].forEach.call(document.querySelectorAll('#sections a'), function(a){ menu.appendChild(a.cloneNode(true)); });
+  function setMenu(open){ menu.hidden = !open; menuBtn.setAttribute('aria-expanded', open); }
+  menuBtn.addEventListener('click', function(e){ e.stopPropagation(); setMenu(menu.hidden); });
+  menu.addEventListener('click', function(e){ if (e.target.closest('a')) setMenu(false); });
+  document.addEventListener('click', function(e){ if (!menu.hidden && !menu.contains(e.target)) setMenu(false); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') setMenu(false); });
+
+  // --- selector de idioma: el botón enseña el idioma marcado y abre la lista ---
+  var langBtn = document.getElementById('langBtn'), langList = document.getElementById('langList');
+  var cur = langList.querySelector('a.on');
+  if (cur) {
+    var flag = cur.querySelector('svg').cloneNode(true); flag.setAttribute('class', 'flag');
+    var cs = document.getElementById('langCur');
+    cs.parentNode.insertBefore(flag, cs);
+    cs.textContent = cur.getAttribute('hreflang').toUpperCase();
+  }
+  function setLangs(open){ langList.hidden = !open; langBtn.setAttribute('aria-expanded', open); }
+  langBtn.addEventListener('click', function(e){ e.stopPropagation(); setLangs(langList.hidden); });
+  document.addEventListener('click', function(e){ if (!langList.hidden && !langList.contains(e.target)) setLangs(false); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') setLangs(false); });
+
+  // --- la barra se compacta solo si no cabe (ver .tight y .compact en el CSS) ---
+  var navEl = document.querySelector('.nav'), navWrap = navEl.querySelector('.wrap');
+  function fitNav(){
+    navEl.classList.remove('tight', 'compact');
+    if (navWrap.scrollWidth > navWrap.clientWidth) navEl.classList.add('tight');
+    if (navWrap.scrollWidth > navWrap.clientWidth) navEl.classList.add('compact');
+  }
+  fitNav();
+  addEventListener('resize', fitNav);
+  if (document.fonts) document.fonts.ready.then(fitNav);
+
+  // --- el botón fijo de descarga del móvil se aparta al llegar a las descargas ---
+  var dock = document.getElementById('dock');
+  new IntersectionObserver(function(entries){
+    dock.classList.toggle('away', entries[0].isIntersecting);
+  }, { rootMargin: '0px 0px -30% 0px' }).observe(document.getElementById('descargas'));
 
   // --- versiones y descargas reales, desde la API de GitHub ---
   // Sin autenticar son 60 peticiones/hora por IP; si falla (límite, sin red, repo privado)
@@ -809,6 +1112,7 @@ footer a:hover{color:var(--bright)}
       if (!Array.isArray(releases) || !releases.length) throw new Error('sin versiones');
       var published = releases.filter(function(r){ return !r.draft; });
       var latest = published.find(function(r){ return !r.prerelease; }) || published[0];
+      if (latest) document.getElementById('footVer').textContent = 'MC-ServerLauncher ' + latest.tag_name.replace(/^v/, '');
 
       // Solo las tarjetas por sistema operativo descargan el archivo: los botones
       // generales (nav, hero y cierre) llevan a esta sección para que el usuario elija
@@ -840,12 +1144,12 @@ footer a:hover{color:var(--bright)}
         name.textContent = (rel.name || rel.tag_name).replace(/^MC Server Launcher\s*[\d.]*\s*[—-]\s*/, '');
         var date = document.createElement('span');
         date.className = 'rel-date';
-        date.textContent = new Date(rel.published_at).toLocaleDateString('es-ES',
+        date.textContent = new Date(rel.published_at).toLocaleDateString('de-DE',
           { day: 'numeric', month: 'short', year: 'numeric' });
         li.appendChild(tag); li.appendChild(name); li.appendChild(date);
         if (rel === latest) {
           var b = document.createElement('span');
-          b.className = 'rel-badge'; b.textContent = 'ÚLTIMA';
+          b.className = 'rel-badge'; b.textContent = 'NEUESTE';
           li.appendChild(b);
         }
         list.appendChild(li);

@@ -17,5 +17,6 @@ This site has two parts:
 |---|---|
 | 🏗️ Architecture | [English](articles/architecture.md) · [Español](articles/architecture.es.md) |
 | 🤝 Contributing | [English](articles/contributing.md) · [Español](articles/contributing.es.md) |
+| 🔍 Code audits | [English](articles/auditing.md) · [Español](articles/auditing.es.md) |
 | 📚 API Reference | [Browse the API](xref:McServerLauncher) |
 | 💻 Source code | [github.com/JuanP-G/MC-ServerLauncher](https://github.com/JuanP-G/MC-ServerLauncher) |

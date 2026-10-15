@@ -23,7 +23,6 @@
       "Cómo funciona": "How it works",
       "Descargas": "Downloads",
       "Descargar": "Download",
-      "Logo de MC-ServerLauncher": "MC-ServerLauncher logo",
       "Crea tu servidor de ": "Make your ",
       " en tu propio PC.": " server on your own PC.",
       "Crea, configura y gestiona servidores de Minecraft en Windows, Linux y macOS sin tocar la consola. Mods de Modrinth, copias de seguridad automáticas y acceso desde Internet en un par de clics.": "Create, configure and manage Minecraft servers on Windows, Linux and macOS without touching the console. Modrinth mods, automatic backups and Internet access in a couple of clicks.",
@@ -86,8 +85,15 @@
       "¿Listo para crear tu mundo?": "Ready to build your world?",
       "Descarga MC-ServerLauncher y monta tu servidor hoy.": "Download MC-ServerLauncher and set up your server today.",
       "Descargar MC-ServerLauncher": "Download MC-ServerLauncher",
-      "Novedades": "Releases",
-      "Reportar un fallo": "Report a bug"
+      "Reportar un fallo": "Report a bug",
+      "\"Menú\"": "\"Menu\"",
+      "b.textContent = 'ÚLTIMA'": "b.textContent = 'LATEST'",
+      "toLocaleDateString('es-ES'": "toLocaleDateString('en-GB'",
+      "Repositorio": "Repository",
+      "Versiones": "Releases",
+      "No es un producto oficial de Minecraft. No está aprobado ni asociado con Mojang ni Microsoft.": "Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.",
+      "\"Idioma\"": "\"Language\"",
+      "/assets/og/es.jpg": "/assets/og/en.jpg"
     }
   },
   "de": {
@@ -113,7 +119,6 @@
       "Cómo funciona": "So funktioniert es",
       "Descargas": "Downloads",
       "Descargar": "Herunterladen",
-      "Logo de MC-ServerLauncher": "MC-ServerLauncher-Logo",
       "Crea tu servidor de ": "Erstelle deinen ",
       " en tu propio PC.": "-Server auf deinem eigenen PC.",
       "Crea, configura y gestiona servidores de Minecraft en Windows, Linux y macOS sin tocar la consola. Mods de Modrinth, copias de seguridad automáticas y acceso desde Internet en un par de clics.": "Erstelle, konfiguriere und verwalte Minecraft-Server unter Windows, Linux und macOS, ohne die Konsole anzufassen. Mods von Modrinth, automatische Sicherungen und Internetzugang mit ein paar Klicks.",
@@ -176,8 +181,15 @@
       "¿Listo para crear tu mundo?": "Bereit, deine Welt zu bauen?",
       "Descarga MC-ServerLauncher y monta tu servidor hoy.": "Lade MC-ServerLauncher und richte deinen Server noch heute ein.",
       "Descargar MC-ServerLauncher": "MC-ServerLauncher laden",
-      "Novedades": "Neuerungen",
-      "Reportar un fallo": "Fehler melden"
+      "Reportar un fallo": "Fehler melden",
+      "\"Menú\"": "\"Menü\"",
+      "b.textContent = 'ÚLTIMA'": "b.textContent = 'NEUESTE'",
+      "toLocaleDateString('es-ES'": "toLocaleDateString('de-DE'",
+      "Repositorio": "Repository",
+      "Versiones": "Versionen",
+      "No es un producto oficial de Minecraft. No está aprobado ni asociado con Mojang ni Microsoft.": "Kein offizielles Minecraft-Produkt. Nicht von Mojang oder Microsoft genehmigt oder mit ihnen verbunden.",
+      "\"Idioma\"": "\"Sprache\"",
+      "/assets/og/es.jpg": "/assets/og/de.jpg"
     }
   },
   "fr": {
@@ -203,7 +215,6 @@
       "Cómo funciona": "Comment ça marche",
       "Descargas": "Téléchargements",
       "Descargar": "Télécharger",
-      "Logo de MC-ServerLauncher": "Logo de MC-ServerLauncher",
       "Crea tu servidor de ": "Crée ton serveur ",
       " en tu propio PC.": " sur ton propre PC.",
       "Crea, configura y gestiona servidores de Minecraft en Windows, Linux y macOS sin tocar la consola. Mods de Modrinth, copias de seguridad automáticas y acceso desde Internet en un par de clics.": "Crée, configure et gère des serveurs Minecraft sur Windows, Linux et macOS sans toucher à la console. Mods de Modrinth, sauvegardes automatiques et accès Internet en deux clics.",
@@ -266,8 +277,15 @@
       "¿Listo para crear tu mundo?": "Prêt à créer ton monde ?",
       "Descarga MC-ServerLauncher y monta tu servidor hoy.": "Télécharge MC-ServerLauncher et monte ton serveur aujourd'hui.",
       "Descargar MC-ServerLauncher": "Télécharger MC-ServerLauncher",
-      "Novedades": "Nouveautés",
-      "Reportar un fallo": "Signaler un bug"
+      "Reportar un fallo": "Signaler un bug",
+      "\"Menú\"": "\"Menu\"",
+      "b.textContent = 'ÚLTIMA'": "b.textContent = 'DERNIÈRE'",
+      "toLocaleDateString('es-ES'": "toLocaleDateString('fr-FR'",
+      "Repositorio": "Dépôt",
+      "Versiones": "Versions",
+      "No es un producto oficial de Minecraft. No está aprobado ni asociado con Mojang ni Microsoft.": "Ceci n’est pas un produit officiel de Minecraft. Non approuvé par Mojang ou Microsoft, ni associé à ces sociétés.",
+      "\"Idioma\"": "\"Langue\"",
+      "/assets/og/es.jpg": "/assets/og/fr.jpg"
     }
   },
   "pt": {
@@ -293,7 +311,6 @@
       "Cómo funciona": "Como funciona",
       "Descargas": "Transferências",
       "Descargar": "Transferir",
-      "Logo de MC-ServerLauncher": "Logótipo do MC-ServerLauncher",
       "Crea tu servidor de ": "Cria o teu servidor de ",
       " en tu propio PC.": " no teu próprio PC.",
       "Crea, configura y gestiona servidores de Minecraft en Windows, Linux y macOS sin tocar la consola. Mods de Modrinth, copias de seguridad automáticas y acceso desde Internet en un par de clics.": "Cria, configura e gere servidores de Minecraft em Windows, Linux e macOS sem tocar na consola. Mods do Modrinth, cópias de segurança automáticas e acesso pela Internet em dois cliques.",
@@ -356,8 +373,15 @@
       "¿Listo para crear tu mundo?": "Pronto para criar o teu mundo?",
       "Descarga MC-ServerLauncher y monta tu servidor hoy.": "Transfere o MC-ServerLauncher e monta o teu servidor hoje.",
       "Descargar MC-ServerLauncher": "Transferir o MC-ServerLauncher",
-      "Novedades": "Novidades",
-      "Reportar un fallo": "Reportar um erro"
+      "Reportar un fallo": "Reportar um erro",
+      "\"Menú\"": "\"Menu\"",
+      "b.textContent = 'ÚLTIMA'": "b.textContent = 'ÚLTIMA'",
+      "toLocaleDateString('es-ES'": "toLocaleDateString('pt-PT'",
+      "Repositorio": "Repositório",
+      "Versiones": "Versões",
+      "No es un producto oficial de Minecraft. No está aprobado ni asociado con Mojang ni Microsoft.": "Não é um produto oficial do Minecraft. Não é aprovado nem está associado à Mojang ou à Microsoft.",
+      "\"Idioma\"": "\"Idioma\"",
+      "/assets/og/es.jpg": "/assets/og/pt.jpg"
     }
   }
 }
