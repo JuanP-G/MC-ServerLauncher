@@ -4,9 +4,13 @@
       href: architecture.md
     - name: Contributing
       href: contributing.md
+    - name: Code audits
+      href: auditing.md
 - name: 🇪🇸 Español
   items:
     - name: Arquitectura
       href: architecture.es.md
     - name: Cómo contribuir
       href: contributing.es.md
+    - name: Auditorías del código
+      href: auditing.es.md

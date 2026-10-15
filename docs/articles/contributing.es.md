@@ -256,7 +256,8 @@ Dos cosas relacionadas se unen con `, y`. Si no caben en una frase, son dos comm
 `seg` es un tipo propio a propósito, y no un sabor de `fix`. Esta app descarga y ejecuta código en la
 máquina del usuario, así que «¿qué hemos cambiado de eso desde la última auditoría?» es una pregunta
 que alguien hace cada cierto tiempo — y tiene que poder responderse con
-`git log --grep '^seg'` en vez de leyendo cuatrocientos commits.
+`git log --grep '^seg'` en vez de leyendo cuatrocientos commits. Cómo se hace una auditoría, cuánto
+hace de la última y qué encontró cada una: [Auditorías del código](auditing.es.md).
 
 ### Ámbitos
 
