@@ -548,7 +548,9 @@ verdict:
   timed against `speed.cloudflare.com` (no account, random bytes up);
 - **the Java tunnel** — SLP to the public address, its port taken from the `_minecraft._tcp` SRV
   record asked of Cloudflare's DNS over HTTPS, since .NET has no SRV lookup;
-- **the Bedrock tunnel** — a RakNet unconnected ping, with crossplay on.
+- **the Bedrock tunnel** — a RakNet unconnected ping, with crossplay on. The name is resolved once,
+  asynchronously (`ConnectionProbe.ResolveAsync`): `UdpClient.Connect` with a name looks it up
+  synchronously on the UI thread, once per ping.
 
 Only the ping's echo is timed, as the game does: the status JSON carries the favicon and through a
 tunnel it measures transfer, not latency. **Every handshake carries a real protocol number, never
@@ -556,7 +558,11 @@ the `-1` status tools send**: measured against a live tunnel, Playit's Minecraft
 handshake and resets the connection within milliseconds when the protocol is `-1` or the host is an
 IP. A server asked with protocol N may report N back as its own, so the report does not show it.
 With the server off only the internet is measured; the test says so and offers to start the server
-and run again, and never starts it by itself.
+and run again, and never starts it by itself. That offer waits while the server is getting ready
+(`IsPreparing`, when its state still reads Stopped), and a start already under way is waited for, not
+repeated. A speed test that measured nothing says so rather than blaming lag. The test stops when the
+network page goes away and when the server is shut down, and each step goes back to its own name. The
+report it copies is in the app's language.
 
 ### In-app update + what's-new
 On startup `MainViewModel.CheckForUpdatesAsync` asks `UpdateService` for the newest release and the
