@@ -375,7 +375,8 @@ public partial class NewServerView : UserControl
         }
         catch (Exception ex)
         {
-            VersionStatus.Text = string.Format(Localizer.Get("Msg_VersionsLoadError"), ex.Message);
+            VersionStatus.Text = string.Format(Localizer.Get("Msg_VersionsLoadError"),
+                ErrorMessages.Describe(ex));
         }
     }
 
@@ -541,7 +542,8 @@ public partial class NewServerView : UserControl
             }
             catch (Exception jex)
             {
-                AppendLog(string.Format(Localizer.Get("Msg_JavaPrepareFail"), details.JavaMajor, jex.Message));
+                AppendLog(string.Format(Localizer.Get("Msg_JavaPrepareFail"),
+                    details.JavaMajor, ErrorMessages.Describe(jex)));
                 AppendLog(Localizer.Get("Msg_UseSystemJava"));
             }
 
@@ -592,8 +594,8 @@ public partial class NewServerView : UserControl
         }
         catch (Exception ex)
         {
-            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
-            await Warn(string.Format(Localizer.Get("Msg_CreateServerError"), ex.Message));
+            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            await Warn(string.Format(Localizer.Get("Msg_CreateServerError"), ErrorMessages.Describe(ex)));
             SetBusy(false);
         }
     }
@@ -684,7 +686,7 @@ public partial class NewServerView : UserControl
                 }
                 catch (Exception jex)
                 {
-                    AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), jex.Message));
+                    AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(jex)));
                     AppendLog(Localizer.Get("Msg_UseSystemJava"));
                 }
             }
@@ -708,8 +710,8 @@ public partial class NewServerView : UserControl
         }
         catch (Exception ex)
         {
-            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
-            await Warn(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
+            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            await Warn(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
             SetBusy(false);
         }
     }

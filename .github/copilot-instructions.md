@@ -123,6 +123,8 @@ Anything that alters behaviour alters the docs in the same commit, and **both la
   an unrecognised option stops the JVM from starting.
 - **Read what the loader reads**: jars inside jars (`META-INF/jars/`, `META-INF/jarjar/`) and
   libraries the loader bundles (`mixinextras`) count as installed.
+- **Never show `ex.Message`**: throw `UserFacingException` for a .resx sentence, and show failures with
+  `ErrorMessages.Describe(ex)` (it logs the details). `ErrorMessagesTests` enforces it.
 - **Secrets are encrypted at rest** (`SecretProtector`: DPAPI on Windows, AES-GCM elsewhere).
 - **Sanitize external input** before it reaches a process or a config file (CR/LF in player names for
   stdin, values written to `server.properties`).

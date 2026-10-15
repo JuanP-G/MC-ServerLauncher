@@ -64,16 +64,16 @@ public static class DesktopShortcutService
     public static string Create()
     {
         var target = LaunchTarget
-            ?? throw new InvalidOperationException(Localizer.Get("Msg_ShortcutNoTarget"));
+            ?? throw new UserFacingException(Localizer.Get("Msg_ShortcutNoTarget"));
 
         var desktop = DesktopDir;
         if (!Directory.Exists(desktop))
-            throw new InvalidOperationException(Localizer.Get("Msg_ShortcutNoDesktop"));
+            throw new UserFacingException(Localizer.Get("Msg_ShortcutNoDesktop"));
 
         if (OperatingSystem.IsWindows()) return CreateWindows(target, desktop);
         if (OperatingSystem.IsMacOS()) return CreateMacOs(target, desktop);
         if (OperatingSystem.IsLinux()) return CreateLinux(target, desktop);
-        throw new InvalidOperationException(Localizer.Get("Msg_ShortcutFailed"));
+        throw new UserFacingException(Localizer.Get("Msg_ShortcutFailed"));
     }
 
     // --- Windows -------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ public static class DesktopShortcutService
         psi.Environment["MCSL_TARGET"] = target;
 
         RunOrThrow(psi);
-        if (!File.Exists(link)) throw new InvalidOperationException(Localizer.Get("Msg_ShortcutFailed"));
+        if (!File.Exists(link)) throw new UserFacingException(Localizer.Get("Msg_ShortcutFailed"));
         return link;
     }
 
@@ -333,12 +333,12 @@ public static class DesktopShortcutService
     private static void RunOrThrow(ProcessStartInfo psi)
     {
         using var p = Process.Start(psi)
-            ?? throw new InvalidOperationException(Localizer.Get("Msg_ShortcutFailed"));
+            ?? throw new UserFacingException(Localizer.Get("Msg_ShortcutFailed"));
         var error = psi.RedirectStandardError ? p.StandardError.ReadToEnd() : string.Empty;
         p.WaitForExit(15000);
 
         if (!p.HasExited || p.ExitCode != 0)
-            throw new InvalidOperationException(
+            throw new UserFacingException(
                 string.Format(Localizer.Get("Msg_ShortcutFailedFmt"), error.Trim()));
     }
 

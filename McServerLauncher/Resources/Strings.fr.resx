@@ -337,6 +337,22 @@
   <data name="Msg_CannotKill" xml:space="preserve"><value>[Erreur] Impossible de fermer le processus : {0}</value></data>
   <data name="Msg_PortStillBusy" xml:space="preserve"><value>[Erreur] Le port {0} est toujours occupé. Réessaie dans quelques secondes.</value></data>
   <data name="Msg_ErrorFmt" xml:space="preserve"><value>[Erreur] {0}</value></data>
+  <data name="Err_FileInUse" xml:space="preserve"><value>Un autre programme utilise un fichier nécessaire (souvent le serveur en marche ou un antivirus). Ferme-le et réessaie.</value></data>
+  <data name="Err_NoPermission" xml:space="preserve"><value>Pas d'autorisation pour lire ou écrire dans ce dossier. Choisis-en un autre ou donne l'accès à l'application.</value></data>
+  <data name="Err_NotFound" xml:space="preserve"><value>Un fichier ou un dossier nécessaire est introuvable ; il a peut-être été déplacé ou supprimé.</value></data>
+  <data name="Err_DiskFull" xml:space="preserve"><value>Le disque est plein. Libère de l'espace et réessaie.</value></data>
+  <data name="Err_NoConnection" xml:space="preserve"><value>Connexion impossible. Vérifie la connexion internet et réessaie.</value></data>
+  <data name="Err_HttpStatusFmt" xml:space="preserve"><value>Le service a répondu par une erreur (HTTP {0}). Réessaie plus tard.</value></data>
+  <data name="Err_Timeout" xml:space="preserve"><value>Le service a mis trop de temps à répondre. Réessaie.</value></data>
+  <data name="Err_Cancelled" xml:space="preserve"><value>Annulé avant la fin.</value></data>
+  <data name="Err_Damaged" xml:space="preserve"><value>Un fichier est endommagé ou n'a pas le format attendu.</value></data>
+  <data name="Err_Playit" xml:space="preserve"><value>Playit a refusé la demande. Réessaie dans un instant.</value></data>
+  <data name="Err_Unexpected" xml:space="preserve"><value>Quelque chose a échoué de façon inattendue. Les détails techniques sont dans le journal de l'application (dossier logs des données de l'application).</value></data>
+  <data name="Msg_JavaNoDownloadFmt" xml:space="preserve"><value>Aucun téléchargement de Java {0} pour ce système ({1}).</value></data>
+  <data name="Msg_ServerJarMissingFmt" xml:space="preserve"><value>Le .jar du serveur est introuvable : {0}</value></data>
+  <data name="Msg_ForgeArgsMissingFmt" xml:space="preserve"><value>Les arguments de lancement de Forge sont introuvables dans {0}. Réinstalle le loader depuis la configuration du serveur.</value></data>
+  <data name="Msg_IconUnreadable" xml:space="preserve"><value>L'image choisie ne peut pas être lue. Essaie un PNG ou un JPG.</value></data>
+  <data name="Msg_SystemctlFailedFmt" xml:space="preserve"><value>systemctl s'est terminé avec le code {0} ; les détails sont dans le journal de l'application.</value></data>
   <data name="Msg_ServerStillStopping" xml:space="preserve"><value>Le serveur est encore en train de s'arrêter ; attends quelques secondes et réessaie.</value></data>
   <data name="Msg_CreatingTunnel" xml:space="preserve"><value>[Playit] Création du tunnel Minecraft Java pour le port {0}...</value></data>
   <data name="Msg_TunnelCreated" xml:space="preserve"><value>[Playit] Tunnel créé avec succès. L'adresse apparaîtra dans un instant.</value></data>

@@ -61,7 +61,7 @@ public class WhitelistService
             : OfflineUuid(name);
 
         if (uuid is null)
-            throw new InvalidOperationException(
+            throw new UserFacingException(
                 string.Format(Localizer.Get("Msg_PlayerNotFoundMojang"), name));
 
         entries.Add(new Entry { uuid = uuid, name = name });

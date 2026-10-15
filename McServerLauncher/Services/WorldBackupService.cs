@@ -420,7 +420,7 @@ public class WorldBackupService
         // with level-name set to "." that used to be the whole server, backups — and the zip about
         // to be read — included.
         var worldDir = WorldFolderFor(config.FolderPath, levelName)
-            ?? throw new InvalidOperationException(
+            ?? throw new UserFacingException(
                 string.Format(Localizer.Get("Msg_BackupBadLevelNameFmt"), levelName));
 
         if (Directory.Exists(worldDir))

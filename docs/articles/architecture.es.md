@@ -370,6 +370,12 @@ mundo. No hay rutas fijas del equipo en el código.
   escritura. Una descarga aterriza en `<destino>.part` y se verifica ahí, así que una interrumpida no
   puede sustituir un archivo que funcionaba por la mitad de otro; un archivo de configuración que es
   de la app se escribe solo cuando de verdad ha cambiado, y nunca a medias.
+- **`ErrorMessages`** / **`UserFacingException`** — lo que un fallo dice en pantalla. Una
+  `UserFacingException` lleva una frase de los .resx y se enseña tal cual; cualquier otra excepción se
+  convierte en una frase propia de la app (un archivo en uso, sin permiso, el disco lleno, sin
+  conexión, un código HTTP o «algo ha fallado de forma inesperada»), y la excepción en sí va al
+  registro del día. `ErrorMessagesTests` falla si el código vuelve a poner `ex.Message` delante del
+  usuario.
 - **`SingleInstance`** — una sola copia en marcha por usuario, y un segundo lanzamiento trae la
   primera al frente. Es una garantía de corrección, no una cuestión de orden: dos copias arrancan
   cada una sus procesos de servidor y sus escuchas de wake, y dos JVM sobre la misma carpeta de mundo

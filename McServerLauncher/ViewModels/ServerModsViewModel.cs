@@ -719,7 +719,7 @@ public partial class ServerModsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            UpdateStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ex.Message);
+            UpdateStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ErrorMessages.Describe(ex));
         }
         finally
         {
@@ -928,7 +928,7 @@ public partial class ServerModsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            UpdateStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ex.Message);
+            UpdateStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ErrorMessages.Describe(ex));
         }
         finally
         {
@@ -1220,7 +1220,7 @@ public partial class ServerModsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            return (UpdateOutcome.Failed, ex.Message, Array.Empty<string>());
+            return (UpdateOutcome.Failed, ErrorMessages.Describe(ex), Array.Empty<string>());
         }
         finally
         {
@@ -1320,7 +1320,8 @@ public partial class ServerModsViewModel : ObservableObject
         {
             // Typically the file is locked because the server is running.
             await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_ModDeleteError"), ex.Message), ContentTabTitle);
+                string.Format(Localizer.Get("Msg_ModDeleteError"),
+                    ErrorMessages.Describe(ex)), ContentTabTitle);
         }
         RefreshInstalledMods();
     }
@@ -1361,7 +1362,8 @@ public partial class ServerModsViewModel : ObservableObject
         catch (Exception ex)
         {
             await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_ExportError"), ex.Message), Localizer.Get("Export_Modpack"));
+                string.Format(Localizer.Get("Msg_ExportError"),
+                    ErrorMessages.Describe(ex)), Localizer.Get("Export_Modpack"));
         }
     }
 
@@ -1649,7 +1651,8 @@ public partial class ServerModsViewModel : ObservableObject
         catch (Exception ex)
         {
             await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_ExportError"), ex.Message), Localizer.Get("Export_Modpack"));
+                string.Format(Localizer.Get("Msg_ExportError"),
+                    ErrorMessages.Describe(ex)), Localizer.Get("Export_Modpack"));
         }
     }
 
@@ -1755,7 +1758,7 @@ public partial class ServerModsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            SearchStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ex.Message);
+            SearchStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ErrorMessages.Describe(ex));
         }
         finally
         {
@@ -1916,7 +1919,8 @@ public partial class ServerModsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Notify(string.Format(Localizer.Get("Msg_InstallErrorFmt"), ex.Message), failed: true);
+            Notify(string.Format(Localizer.Get("Msg_InstallErrorFmt"),
+                ErrorMessages.Describe(ex)), failed: true);
             return false;
         }
         finally

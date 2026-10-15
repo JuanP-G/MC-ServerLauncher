@@ -223,7 +223,7 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         try { UseImage(path); }
         catch (Exception ex)
         {
-            ImageError.Text = string.Format(Localizer.Get("Msg_IconCreateError"), ex.Message);
+            ImageError.Text = string.Format(Localizer.Get("Msg_IconCreateError"), ErrorMessages.Describe(ex));
             ImageError.IsVisible = true;
         }
     }

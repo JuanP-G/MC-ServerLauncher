@@ -19,7 +19,7 @@ public class ModChecksumRequiredTests : IDisposable
     {
         var dest = Path.Combine(_dir, "mod.jar");
 
-        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        var refused = await Assert.ThrowsAsync<UserFacingException>(() =>
             new ModrinthService().DownloadModAsync("https://cdn.modrinth.invalid/mod.jar", dest, null, null));
 
         Assert.Contains("mod.jar", refused.Message);

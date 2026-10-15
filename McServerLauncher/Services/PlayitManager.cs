@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.ServiceProcess;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 
 namespace McServerLauncher.Services;
@@ -226,8 +227,13 @@ public class PlayitManager
     {
         // A minute, not five seconds: starting or stopping a unit can wait on a polkit prompt.
         var r = Run("systemctl", $"{action} {unit}", seconds: 60);
-        if (r.ExitCode != 0)
-            throw new InvalidOperationException(string.IsNullOrWhiteSpace(r.Error) ? r.Output : r.Error);
+        if (r.ExitCode == 0) return;
+
+        // What systemctl says ("Interactive authentication required.") is for the log: it is in
+        // English, or in the system's language, whatever the app's is.
+        ConsoleLogService.Shared.Log("Playit", $"systemctl {action} {unit}: " +
+                                               (string.IsNullOrWhiteSpace(r.Error) ? r.Output : r.Error));
+        throw new UserFacingException(string.Format(Localizer.Get("Msg_SystemctlFailedFmt"), r.ExitCode));
     }
 
     /// <summary>Runs a command and returns its exit code and captured output. Never throws.</summary>

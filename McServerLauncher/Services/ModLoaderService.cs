@@ -111,7 +111,7 @@ public class ModLoaderService
             !string.Equals(loader, expectedLoaderVersion, StringComparison.OrdinalIgnoreCase))
         {
             TryDelete(jarPath);
-            throw new InvalidOperationException(string.Format(
+            throw new UserFacingException(string.Format(
                 Localizer.Get("Msg_FabricJarInvalidFmt"), expectedGameVersion, expectedLoaderVersion));
         }
     }
@@ -172,7 +172,7 @@ public class ModLoaderService
                     // a missing one means a broken download path, not a normal condition.
                     var expectedSha1 = await TryGetRemoteHashAsync(installerUrl + ".sha1", token);
                     if (string.IsNullOrEmpty(expectedSha1))
-                        throw new InvalidOperationException(Localizer.Get("Msg_ForgeNoChecksum"));
+                        throw new UserFacingException(Localizer.Get("Msg_ForgeNoChecksum"));
 
                     log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
                     await DownloadVerifier.VerifyAsync(part, expectedSha1, HashAlgorithmName.SHA1, token);
@@ -263,7 +263,7 @@ public class ModLoaderService
                 {
                     var expected = await TryGetRemoteHashAsync(installerUrl + ".sha256", token);
                     if (string.IsNullOrEmpty(expected))
-                        throw new InvalidOperationException(Localizer.Get("Msg_NeoForgeNoChecksum"));
+                        throw new UserFacingException(Localizer.Get("Msg_NeoForgeNoChecksum"));
 
                     log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
                     await DownloadVerifier.VerifyAsync(part, expected, HashAlgorithmName.SHA256, token);
@@ -326,11 +326,12 @@ public class ModLoaderService
         {
             try { p.Kill(entireProcessTree: true); } catch { /* already gone */ }
             if (ct.IsCancellationRequested) throw;
-            throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallerTimeout"));
+            throw new UserFacingException(Localizer.Get("Msg_ForgeInstallerTimeout"));
         }
 
         if (p.ExitCode != 0)
-            throw new InvalidOperationException(string.Format(Localizer.Get("Msg_ForgeInstallerFailed"), p.ExitCode));
+            throw new UserFacingException(string.Format(Localizer.Get("Msg_ForgeInstallerFailed"),
+                p.ExitCode));
     }
 
     /// <summary>
@@ -356,7 +357,7 @@ public class ModLoaderService
         if (!looksLikeInstaller)
         {
             TryDelete(jarPath);
-            throw new InvalidOperationException(Localizer.Get("Msg_ForgeInstallerInvalid"));
+            throw new UserFacingException(Localizer.Get("Msg_ForgeInstallerInvalid"));
         }
     }
 

@@ -222,7 +222,8 @@ public partial class TunnelsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorText = string.Format(Localizer.Get("Msg_PlayitServiceChangeFail"), ex.Message);
+            ErrorText = string.Format(Localizer.Get("Msg_PlayitServiceChangeFail"),
+                ErrorMessages.Describe(ex));
         }
         RaiseAccount();
     }
@@ -377,12 +378,16 @@ public partial class TunnelsViewModel : ObservableObject
     }
 
     /// <summary>What to tell a person about a failure, rather than what the API said.</summary>
+    /// <remarks>
+    /// A refused key means something different when it was trying to change the account: the key
+    /// works, it just may not write. Everything else is <see cref="ErrorMessages.Describe(Exception)"/>.
+    /// </remarks>
     private static string Describe(Exception? ex, bool write = false) => ex switch
     {
         null => "",
-        PlayitApiException { IsReadOnlyRefusal: true } => Localizer.Get("Tun_Err_ReadOnly"),
-        PlayitApiException { IsAuthError: true } => Localizer.Get(write ? "Tun_Err_NoPermission" : "Tun_Err_Key"),
-        _ => ex.Message,
+        PlayitApiException { IsAuthError: true, IsReadOnlyRefusal: false } when write =>
+            Localizer.Get("Tun_Err_NoPermission"),
+        _ => ErrorMessages.Describe(ex),
     };
 
     /// <summary>Whether a suggestion can be carried out from here, or only on playit.gg.</summary>
@@ -497,7 +502,7 @@ public partial class TunnelsViewModel : ObservableObject
             {
                 // Said as what to do next, not as what the API said: renaming is the one change here
                 // that a key may be refused for even though it can read, and playit.gg can always do it.
-                throw new InvalidOperationException(
+                throw new UserFacingException(
                     string.Format(Localizer.Get("Tun_RenameFailFmt"), Describe(ex, write: true)), ex);
             }
         }, tunnelId);

@@ -360,6 +360,11 @@ are no hard-coded machine paths.
   A download lands in `<dest>.part` and is verified there, so an interrupted one can never replace a
   working file with half of one; a config file the app owns is written only when it actually changed,
   and never half-written.
+- **`ErrorMessages`** / **`UserFacingException`** — what a failure says on screen. A
+  `UserFacingException` carries a sentence from the .resx files and is shown as it is; any other
+  exception becomes a sentence of the app's own (a file in use, no permission, a full disk, no
+  connection, an HTTP code, or "something failed unexpectedly"), and the exception itself goes to the
+  day's log. `ErrorMessagesTests` fails if code puts `ex.Message` in front of the user again.
 - **`SingleInstance`** — one running copy per user, with a second launch bringing the first one to
   the front. A correctness guard, not a nicety: two copies each start their own server processes and
   wake listeners, and two JVMs on one world folder is how worlds get corrupted. A lock file answers

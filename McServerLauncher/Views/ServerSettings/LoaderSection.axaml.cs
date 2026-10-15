@@ -159,7 +159,8 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
         }
         catch (Exception ex)
         {
-            VersionStatus.Text = string.Format(Localizer.Get("Msg_VersionsLoadError"), ex.Message);
+            VersionStatus.Text = string.Format(Localizer.Get("Msg_VersionsLoadError"),
+                ErrorMessages.Describe(ex));
         }
     }
 
@@ -210,7 +211,8 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
             }
             catch (Exception jex)
             {
-                AppendLog(string.Format(Localizer.Get("Msg_JavaPrepareFail"), details.JavaMajor, jex.Message));
+                AppendLog(string.Format(Localizer.Get("Msg_JavaPrepareFail"),
+                    details.JavaMajor, ErrorMessages.Describe(jex)));
                 AppendLog(Localizer.Get("Msg_UseSystemJava"));
             }
 
@@ -267,8 +269,8 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
         }
         catch (Exception ex)
         {
-            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message));
-            ShowError(string.Format(Localizer.Get("Loader_Error"), ex.Message));
+            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            ShowError(string.Format(Localizer.Get("Loader_Error"), ErrorMessages.Describe(ex)));
             SetBusy(false, keepLog: true);
         }
     }

@@ -36,7 +36,7 @@ internal static class ContentInstall
     public static string PrepareFolder(ServerConfig config, bool supported, string unsupportedFmtKey)
     {
         if (!supported)
-            throw new InvalidOperationException(
+            throw new UserFacingException(
                 string.Format(Localizer.Get(unsupportedFmtKey), config.Type));
 
         var folder = ContentManifest.FolderOf(config);
@@ -91,7 +91,7 @@ internal static class ContentInstall
 
         var (result, removed) = ContentReplacement.RemoveAllOrNothing(others, canRollBack ? newJar : null);
         if (result == ContentReplacement.RemoveResult.Locked)
-            throw new InvalidOperationException(string.Format(Localizer.Get("Msg_ContentInUseFmt"), display));
+            throw new UserFacingException(string.Format(Localizer.Get("Msg_ContentInUseFmt"), display));
 
         return removed;
     }

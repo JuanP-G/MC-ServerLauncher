@@ -80,7 +80,7 @@ public class BackupLevelNameTests : IDisposable
         var zip = SomeBackup();
         LevelName(".");
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<UserFacingException>(
             () => new WorldBackupService().RestoreBackupAsync(Config(), zip));
 
         Assert.True(File.Exists(zip));
@@ -98,7 +98,7 @@ public class BackupLevelNameTests : IDisposable
         var zip = SomeBackup();
         LevelName("../neighbour");
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<UserFacingException>(
             () => new WorldBackupService().RestoreBackupAsync(Config(), zip));
 
         Assert.True(File.Exists(Path.Combine(neighbour, "keep.txt")));

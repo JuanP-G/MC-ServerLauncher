@@ -568,7 +568,7 @@ public partial class MainViewModel : ObservableObject
                 ? null
                 : await updateService.GetExpectedSha256Async(_checksumUrl, _packageName);
             if (string.IsNullOrEmpty(expectedSha256))
-                throw new InvalidOperationException(Localizer.Get("Msg_UpdateNoChecksum"));
+                throw new UserFacingException(Localizer.Get("Msg_UpdateNoChecksum"));
 
             await updateService.DownloadInstallerAsync(_packageUrl, dest);
 
@@ -593,7 +593,7 @@ public partial class MainViewModel : ObservableObject
             // downloaded installer doesn't match the release's checksum) or the release publishing
             // no usable SHA256SUMS.txt at all. Tell the user explicitly instead of silently
             // falling back to the browser.
-            await MessageBox.ShowAsync(ex.Message, Localizer.Get("Update_Now"), Owner);
+            await MessageBox.ShowAsync(ErrorMessages.Describe(ex), Localizer.Get("Update_Now"), Owner);
             OpenRelease();
         }
         catch
@@ -1045,7 +1045,7 @@ public partial class MainViewModel : ObservableObject
             catch (Exception ex)
             {
                 await MessageBox.ShowAsync(
-                    string.Format(Localizer.Get("Msg_TunnelDeleteError"), ex.Message),
+                    string.Format(Localizer.Get("Msg_TunnelDeleteError"), ErrorMessages.Describe(ex)),
                     Localizer.Get("Title_DeleteTunnel"));
             }
         }
@@ -1059,7 +1059,7 @@ public partial class MainViewModel : ObservableObject
             catch (Exception ex)
             {
                 await MessageBox.ShowAsync(
-                    string.Format(Localizer.Get("Msg_FilesDeleteError"), ex.Message),
+                    string.Format(Localizer.Get("Msg_FilesDeleteError"), ErrorMessages.Describe(ex)),
                     Localizer.Get("Title_DeleteFiles"));
             }
         }

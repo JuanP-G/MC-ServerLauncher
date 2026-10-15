@@ -219,7 +219,7 @@ public partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ShortcutStatus = ex.Message;
+            ShortcutStatus = ErrorMessages.Describe(ex);
             ShortcutStatusBrush = Bad;
         }
     }

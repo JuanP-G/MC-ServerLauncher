@@ -89,7 +89,7 @@ public partial class PlayitApiKeyDialog : Window
         catch (Exception ex)
         {
             // Invalid/expired code, network, or not-configured: show it inline and let them retry.
-            StatusText.Text = ex.Message;
+            StatusText.Text = ErrorMessages.Describe(ex);
             StatusText.IsVisible = true;
             SetBusy(false);
         }

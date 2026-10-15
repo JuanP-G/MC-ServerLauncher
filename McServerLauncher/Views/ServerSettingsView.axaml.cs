@@ -9,6 +9,7 @@ using FluentIcons.Avalonia;
 using FluentIcons.Common;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
+using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 using McServerLauncher.Views.ServerSettings;
 
@@ -308,7 +309,7 @@ public partial class ServerSettingsView : UserControl
         }
         catch (Exception ex)
         {
-            ShowBarProblem(string.Format(Localizer.Get("Msg_ConfigSaveError"), ex.Message));
+            ShowBarProblem(string.Format(Localizer.Get("Msg_ConfigSaveError"), ErrorMessages.Describe(ex)));
             return false;
         }
 

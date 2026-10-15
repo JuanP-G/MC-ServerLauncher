@@ -67,8 +67,8 @@ public class SafeWriteTests : IDisposable
     {
         // No last segment at all. Inventing one would put a file with a made-up name in the mods
         // folder; refusing says the API returned something the app does not understand.
-        Assert.Throws<InvalidOperationException>(() => AtomicDownload.PathIn(Folder(), "some/dir/"));
-        Assert.Throws<InvalidOperationException>(() => AtomicDownload.PathIn(Folder(), "   "));
+        Assert.Throws<UserFacingException>(() => AtomicDownload.PathIn(Folder(), "some/dir/"));
+        Assert.Throws<UserFacingException>(() => AtomicDownload.PathIn(Folder(), "   "));
     }
 
     [Fact]

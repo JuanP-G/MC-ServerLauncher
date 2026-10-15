@@ -253,7 +253,7 @@ public class PlayitAgentRunner
         }
             catch (Exception ex)
             {
-                LastError = ex.Message;
+                LastError = ErrorMessages.Describe(ex);
                 ConsoleLogService.Shared.Log("Playit", $"Could not start the Playit agent: {ex.Message}");
                 SetState(AgentRunState.Failed);
             }

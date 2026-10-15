@@ -237,7 +237,7 @@ public partial class ServerBackupsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusText = string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message);
+            StatusText = string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex));
         }
         finally
         {
@@ -267,7 +267,7 @@ public partial class ServerBackupsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusText = string.Format(Localizer.Get("Msg_ErrorFmt"), ex.Message);
+            StatusText = string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex));
         }
         finally
         {
