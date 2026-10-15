@@ -273,9 +273,9 @@ public static class ConnectionProbe
 
     /// <summary>
     /// A RakNet unconnected ping, which is what the Bedrock client sends to fill its server list.
-    /// Milliseconds, or null when nothing answered in time.
+    /// Milliseconds, or null when nothing answered in time. The address comes already resolved: see
+    /// <see cref="ResolveAsync"/>.
     /// </summary>
-    /// <param name="server">Already resolved: see <see cref="ResolveAsync"/>.</param>
     public static async Task<double?> PingBedrockAsync(IPEndPoint server, TimeSpan timeout,
         CancellationToken ct = default)
     {
