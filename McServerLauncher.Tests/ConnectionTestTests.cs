@@ -1,5 +1,6 @@
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
+using System.Globalization;
 using Avalonia.Controls;
 using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
@@ -178,6 +179,33 @@ public class ConnectionTestTests : IDisposable
             Assert.Equal(StepState.Fair, test.InternetStep.State);
             Assert.Equal(Localizer.Get("Net_InternetNoSpeed"), test.InternetStep.Title);
             Assert.Equal(Localizer.Get("Net_InternetNoSpeedDetail"), test.InternetStep.Detail);
+        });
+    }
+
+    /// <summary>The copied report is in the app's language, like the page it comes from.</summary>
+    [Fact]
+    public void TheReportSpeaksTheAppsLanguage()
+    {
+        _ui.Run(() =>
+        {
+            var original = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = new CultureInfo("es-ES");
+                var test = NewServer().ConnectionTest;
+                test.LocalStep.Set(StepState.Good, Localizer.Get("Net_LocalGood"), "", "3 ms");
+                test.InternetStep.Set(StepState.Fair, Localizer.Get("Net_InternetFair"), "", "40 ms");
+                test.TunnelStep.Set(StepState.Skipped, Localizer.Get("Net_NoTunnel"), "");
+                test.WriteReport([], Throughput.None, Throughput.None);
+
+                Assert.Contains("[Bien]", test.Report);
+                Assert.Contains("[Justo]", test.Report);
+                Assert.Contains("[Sin probar]", test.Report);
+                Assert.Contains("mín / media / máx", test.Report);
+                Assert.DoesNotContain("[Good]", test.Report);
+                Assert.DoesNotContain("peak", test.Report);
+            }
+            finally { CultureInfo.CurrentUICulture = original; }
         });
     }
 }

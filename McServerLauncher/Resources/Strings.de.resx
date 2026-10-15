@@ -1229,4 +1229,8 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Server: {0} · {1}/{2} Spieler</value></data>
   <data name="Net_CopyReport" xml:space="preserve"><value>Bericht kopieren</value></data>
   <data name="Net_Copied" xml:space="preserve"><value>Kopiert</value></data>
+  <data name="Net_StateGood" xml:space="preserve"><value>Gut</value></data>
+  <data name="Net_StateFair" xml:space="preserve"><value>Knapp</value></data>
+  <data name="Net_StateBad" xml:space="preserve"><value>Schlecht</value></data>
+  <data name="Net_StateSkipped" xml:space="preserve"><value>Nicht getestet</value></data>
 </root>

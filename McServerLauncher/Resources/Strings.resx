@@ -1275,4 +1275,8 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Servidor: {0} · {1}/{2} jugadores</value></data>
   <data name="Net_CopyReport" xml:space="preserve"><value>Copiar informe</value></data>
   <data name="Net_Copied" xml:space="preserve"><value>Copiado</value></data>
+  <data name="Net_StateGood" xml:space="preserve"><value>Bien</value></data>
+  <data name="Net_StateFair" xml:space="preserve"><value>Justo</value></data>
+  <data name="Net_StateBad" xml:space="preserve"><value>Mal</value></data>
+  <data name="Net_StateSkipped" xml:space="preserve"><value>Sin probar</value></data>
 </root>

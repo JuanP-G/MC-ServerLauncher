@@ -414,15 +414,22 @@ public partial class ConnectionTestViewModel : ObservableObject
 
     // ---------------------------------------------------------------- report
 
+    /// <remarks>
+    /// In the app's language, as the page is: it is pasted to whoever helps, and it used to mix the
+    /// page's sentences with enum names ("[Fair]") and English headers.
+    /// </remarks>
     internal void WriteReport(List<string> addresses, Throughput down, Throughput up)
     {
         foreach (var step in Steps)
-            _report.AppendLine($"[{step.State}] {step.Title} — {step.Badge} — {step.Detail}");
+            _report.AppendLine($"[{StateName(step.State)}] {step.Title} — {step.Badge} — {step.Detail}");
         _report.AppendLine();
-        _report.AppendLine("min / avg / max / jitter / loss (ms)");
+        _report.AppendLine($"{Localizer.Get("Net_ColStretch")}: {Localizer.Get("Net_ColMin")} / " +
+                           $"{Localizer.Get("Net_ColAvg")} / {Localizer.Get("Net_ColMax")} / " +
+                           $"{Localizer.Get("Net_ColJitter")} (ms) / {Localizer.Get("Net_ColLoss")}");
         foreach (var row in Rows)
             _report.AppendLine($"{row.Name}: {row.Min} / {row.Average} / {row.Max} / {row.Jitter} / {row.Loss}");
-        _report.AppendLine($"↓ {Mbps(down)}   ↑ {Mbps(up)}   peak ↑ {PeakText}");
+        _report.AppendLine($"{Localizer.Get("Net_Download")}: {Mbps(down)} · " +
+                           $"{Localizer.Get("Net_Upload")}: {Mbps(up)} · {Localizer.Get("Net_Peak")}: {PeakText}");
         foreach (var a in addresses) _report.AppendLine(a);
         _report.AppendLine(Verdict);
     }
@@ -446,6 +453,15 @@ public partial class ConnectionTestViewModel : ObservableObject
     }
 
     // ---------------------------------------------------------------- formats
+
+    /// <summary>A step's state as the report names it; one never reached was not tested.</summary>
+    private static string StateName(StepState state) => Localizer.Get(state switch
+    {
+        StepState.Good => "Net_StateGood",
+        StepState.Fair => "Net_StateFair",
+        StepState.Bad => "Net_StateBad",
+        _ => "Net_StateSkipped",
+    });
 
     private static string Ms(double ms) => ProbeRow.Number(ms) + " ms";
 
