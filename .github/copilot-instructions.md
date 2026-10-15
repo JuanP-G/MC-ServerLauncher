@@ -143,6 +143,12 @@ Anything that alters behaviour alters the docs in the same commit, and **both la
 - Embedded resources with dotted names need `WithCulture=false` and a `LogicalName`: MSBuild reads
   `sh` in `install-mods-unix.sh.in` as a culture and drops the file from the main assembly.
 
+## Audits
+When asked to audit or review "the recent code", start from the last `auditoria/*` tag
+(`git describe --tags --match 'auditoria/*'`) and follow `docs/articles/auditing.md`: the three areas,
+the checklist, the severities, verifying before reporting, and the report's shape. An audit ends with
+a new annotated tag on the reviewed commit and a row in that page's log.
+
 ## Releases
 See `docs/articles/contributing.md` → "Release a new version" for the full checklist (bump the version
 in csproj + `.iss`, add the `Changelog` entry + `Whatsnew_x_y_z` keys, run `publish.ps1`, attach the
