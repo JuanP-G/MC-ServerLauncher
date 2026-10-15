@@ -153,8 +153,12 @@ public class UpdateCleanupTests : IDisposable
         var fresh = FabricJar("Sodium.jar", "sodium");
         var folder = new[] { new ContentManifest.Entry(At("sodium.JAR"), true, ContentManifest.Read(fresh)) };
 
-        // Same file, spelled differently: Windows paths do not care about case.
-        Assert.Empty(ContentReplacement.Select(folder, At("SODIUM.jar"), "sodium", null, null));
+        Assert.Empty(ContentReplacement.Select(folder, At("sodium.JAR"), "sodium", null, null));
+
+        // Same file, spelled differently: Windows and macOS paths do not care about case. On Linux
+        // these are two files, and the next test is the one about that.
+        if (!OperatingSystem.IsLinux())
+            Assert.Empty(ContentReplacement.Select(folder, At("SODIUM.jar"), "sodium", null, null));
     }
 
     [Fact]
