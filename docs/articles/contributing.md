@@ -253,7 +253,8 @@ Two related things join with `, y`. If they will not fit in one sentence, they a
 `seg` is deliberately its own type rather than a flavour of `fix`. This app downloads and executes
 code on the user's machine, so "what have we changed about that since the last audit?" is a question
 somebody asks periodically — and it has to be answerable from `git log --grep '^seg'` rather than by
-reading four hundred commits.
+reading four hundred commits. How an audit is done, how long it has been since the last one, and
+what each one found: [Code audits](auditing.md).
 
 ### Scopes
 
