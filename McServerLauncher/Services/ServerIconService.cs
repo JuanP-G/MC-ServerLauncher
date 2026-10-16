@@ -43,8 +43,9 @@ public class ServerIconService
         return data.ToArray();
     }
 
+    /// <summary>Writes the icon, never half: a cut-off PNG is an icon the game refuses to show.</summary>
     public void WriteIcon(string serverFolder, byte[] png) =>
-        File.WriteAllBytes(Path.Combine(serverFolder, FileName), png);
+        AtomicTextFile.Write(Path.Combine(serverFolder, FileName), png);
 
     /// <summary>Deletes the icon, so the server list falls back to the game's default.</summary>
     public void RemoveIcon(string serverFolder)

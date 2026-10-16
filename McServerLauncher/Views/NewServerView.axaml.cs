@@ -7,6 +7,7 @@ using Avalonia.VisualTree;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
+using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views;
 
@@ -493,11 +494,11 @@ public partial class NewServerView : UserControl
         if (!Directory.Exists(ParentFolderBox.Text)) { await Warn(Localizer.Get("Msg_FolderNotExistCreate")); return; }
         if (VersionCombo.SelectedItem is not MinecraftVersion version) { await Warn(Localizer.Get("Msg_SelectVersion")); return; }
 
-        var minGb = (int)(MinRamBox.Value ?? 2m);
-        var maxGb = (int)(MaxRamBox.Value ?? 4m);
+        var minGb = WholeNumberConverter.ToWhole(MinRamBox.Value ?? 2m);
+        var maxGb = WholeNumberConverter.ToWhole(MaxRamBox.Value ?? 4m);
         if (maxGb < minGb) { await Warn(Localizer.Get("Msg_RamMaxMin")); return; }
 
-        var port = (int)(PortBox.Value ?? 25565m);
+        var port = WholeNumberConverter.ToWhole(PortBox.Value ?? 25565m);
         if (_usedPorts.Contains(port)) { await Warn(string.Format(Localizer.Get("Msg_PortAssigned"), port)); return; }
         if (_ports.IsPortInUse(port)) { await Warn(string.Format(Localizer.Get("Msg_PortInUseOther"), port)); return; }
 
@@ -607,8 +608,8 @@ public partial class NewServerView : UserControl
         Type: type,
         GameVersion: (VersionCombo.SelectedItem as MinecraftVersion)?.Id,
         JarFile: JarCombo.SelectedItem as string,
-        MinRamGb: (int)(MinRamBox.Value ?? 2m),
-        MaxRamGb: (int)(MaxRamBox.Value ?? 4m),
+        MinRamGb: WholeNumberConverter.ToWhole(MinRamBox.Value ?? 2m),
+        MaxRamGb: WholeNumberConverter.ToWhole(MaxRamBox.Value ?? 4m),
         JavaPath: "java",
         Playit: PlayitCheck.IsChecked == true,
         Crossplay: CrossplayCheck.IsChecked == true,
@@ -652,7 +653,7 @@ public partial class NewServerView : UserControl
             return;
         }
 
-        var port = (int)(PortBox.Value ?? 25565m);
+        var port = WholeNumberConverter.ToWhole(PortBox.Value ?? 25565m);
         if (_usedPorts.Contains(port)) { await Warn(string.Format(Localizer.Get("Msg_PortAssigned"), port)); return; }
         // Only a port the user changed is checked against the system: the one the folder already
         // uses may well be busy because this very server is running outside the app right now.

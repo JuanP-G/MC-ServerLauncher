@@ -308,7 +308,7 @@ public partial class AppearanceSection
         for (var i = 0; i < steps; i++)
         {
             var t = i / (double)(steps - 1);
-            var rgb = LerpRgb(_gradientFrom, _gradientTo, t);
+            var rgb = MotdDocument.Lerp(_gradientFrom, _gradientTo, t);
             if (!_hexOk) rgb = MotdDocument.RgbOf(MotdDocument.NearestCode(rgb));
             brush.GradientStops.Add(new GradientStop(ColorOf(MotdStyle.OfHex(rgb)), t));
         }
@@ -324,12 +324,6 @@ public partial class AppearanceSection
 
         _doc.SetGradient(line, start, length, _gradientFrom, _gradientTo, hex: _hexOk);
         MotdChanged();
-    }
-
-    private static int LerpRgb(int a, int b, double t)
-    {
-        int Channel(int shift) => (int)Math.Round(((a >> shift) & 255) + (((b >> shift) & 255) - ((a >> shift) & 255)) * t);
-        return (Channel(16) << 16) | (Channel(8) << 8) | Channel(0);
     }
 
     // ---------------------------------------------------------------- formats

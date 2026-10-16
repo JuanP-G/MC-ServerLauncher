@@ -51,6 +51,16 @@ public class MotdDocumentTests
     }
 
     [Fact]
+    public void AStraySectionSignAtTheEndOfALineKeepsTheLinesApart()
+    {
+        // It took the line break as its code, and the second line joined the first.
+        var doc = MotdDocument.FromProperties(@"Hola§\nMundo");
+
+        Assert.Equal("Hola", doc.GetText(0));
+        Assert.Equal("Mundo", doc.GetText(1));
+    }
+
+    [Fact]
     public void ExtraLinesAreFlaggedAndNotKept()
     {
         var doc = MotdDocument.FromProperties(@"a\nb\nc");

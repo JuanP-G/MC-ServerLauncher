@@ -8,6 +8,12 @@ namespace McServerLauncher.Services;
 /// </summary>
 public class ServerPropertiesService
 {
+    /// <summary>The MOTD a server shows when <c>server.properties</c> sets none: Minecraft's own.</summary>
+    public const string DefaultMotd = "A Minecraft Server";
+
+    /// <summary>The player limit when <c>server.properties</c> sets none: Minecraft's own.</summary>
+    public const int DefaultMaxPlayers = 20;
+
     /// <summary>
     /// Reads server.properties and returns a key→value dictionary.
     /// Returns empty if the file does not exist.

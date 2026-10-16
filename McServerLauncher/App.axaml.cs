@@ -23,7 +23,7 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-        Views.EmptyNumberBoxes.Install();   // a number box left empty gets its number back
+        Views.WholeNumberBoxes.Install();   // a number box left empty gets its number back
     }
 
     public override void OnFrameworkInitializationCompleted()

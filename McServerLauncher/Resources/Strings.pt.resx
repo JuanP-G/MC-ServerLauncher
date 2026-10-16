@@ -292,6 +292,9 @@
   <data name="Msg_BackupSaveNotConfirmed" xml:space="preserve"><value>[Cópia] O servidor não confirmou a gravação a tempo; copia-se na mesma.</value></data>
   <data name="Msg_BackupSavesResumed" xml:space="preserve"><value>[Cópia] Gravação do mundo retomada.</value></data>
   <data name="Msg_BackupAlreadyRunning" xml:space="preserve"><value>[Cópia] Já há uma cópia de segurança em curso.</value></data>
+  <data name="Msg_StopWaitsForBackup" xml:space="preserve"><value>[Cópia] À espera que a cópia em curso termine antes de parar o servidor...</value></data>
+  <data name="Msg_BackupFailedStartingAnywayFmt" xml:space="preserve"><value>[Cópia] Não foi possível fazer a cópia antes de arrancar ({0}). O servidor arranca na mesma; a próxima cópia volta a tentar.</value></data>
+  <data name="Backup_RestoreNeedsStopped" xml:space="preserve"><value>O servidor arrancou entretanto. Para-o para restaurar a cópia.</value></data>
   <data name="Backup_NoneYet" xml:space="preserve"><value>Ainda não há cópias de segurança.</value></data>
   <data name="Backup_RestoreButton" xml:space="preserve"><value>Restaurar</value></data>
   <data name="Backup_RestoreTitle" xml:space="preserve"><value>Restaurar cópia de segurança</value></data>
@@ -300,6 +303,7 @@
   <data name="Backup_Creating" xml:space="preserve"><value>A criar cópia de segurança...</value></data>
   <data name="Backup_Done" xml:space="preserve"><value>Cópia de segurança criada.</value></data>
   <data name="Backup_NothingToBackUp" xml:space="preserve"><value>Ainda não há mundo para copiar (o servidor nunca foi iniciado).</value></data>
+  <data name="Backup_WorldBusy" xml:space="preserve"><value>Já há outra cópia ou um restauro em curso. Espera que termine.</value></data>
   <data name="Backup_TriggerStart" xml:space="preserve"><value>antes de arrancar</value></data>
   <data name="Backup_TriggerStop" xml:space="preserve"><value>ao parar</value></data>
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
@@ -445,7 +449,10 @@
   <data name="Tip_ToggleMod" xml:space="preserve"><value>Ativar / Desativar</value></data>
   <data name="Loader_Title" xml:space="preserve"><value>Mudar o tipo de servidor</value></data>
   <data name="Loader_Section" xml:space="preserve"><value>Tipo de servidor</value></data>
-  <data name="Loader_Current" xml:space="preserve"><value>Loader atual: </value></data>
+  <data name="Loader_CurrentFmt" xml:space="preserve"><value>Loader atual: {0} {1}</value></data>
+  <data name="Loader_StopServerFirst" xml:space="preserve"><value>Para o servidor antes de mudar o loader: os ficheiros dele estão em uso.</value></data>
+  <data name="Loader_StillInstalling" xml:space="preserve"><value>O loader está a ser instalado. Espera que termine antes de guardar ou sair.</value></data>
+  <data name="Msg_StartWaitsForLoader" xml:space="preserve"><value>Não é possível arrancar enquanto o loader é instalado; espera que termine.</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Muda o tipo deste servidor. Cada cartão diz se leva plugins ou mods, e se dá para entrar pelo Bedrock. O teu mundo é mantido.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sem mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Manter o ficheiro de arranque atual (run.bat)</value></data>
@@ -947,6 +954,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Cfg_BedrockPortDesc" xml:space="preserve"><value>Porta UDP em que o Geyser recebe os jogadores de Bedrock. Se a mudares, o túnel Bedrock do Playit tem de apontar para esta mesma porta.</value></data>
   <data name="Cfg_BedrockPortRange" xml:space="preserve"><value>Escolhe uma porta entre 1024 e 65535.</value></data>
   <data name="Cfg_BedrockPortTakenFmt" xml:space="preserve"><value>Essa porta já é usada por {0}. Escolhe outra.</value></data>
+  <data name="Cfg_JavaPortTakenFmt" xml:space="preserve"><value>Essa porta já é usada por {0}. Dois servidores na mesma porta não podem estar ligados ao mesmo tempo; escolhe outra.</value></data>
   <data name="Tun_Fix_MoveBedrockFmt" xml:space="preserve"><value>Mover {0} para uma porta Bedrock livre</value></data>
   <data name="Msg_BedrockAlreadyFreeFmt" xml:space="preserve"><value>[Crossplay] A porta Bedrock {0} já não é partilhada; fica como está.</value></data>
   <data name="Msg_BedrockMovedFmt" xml:space="preserve"><value>[Crossplay] Porta Bedrock alterada de {0} para {1}.</value></data>
@@ -1056,6 +1064,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Sset_Back" xml:space="preserve"><value>Voltar ao servidor</value></data>
   <data name="Sset_Discard" xml:space="preserve"><value>Descartar</value></data>
   <data name="Sset_Unsaved" xml:space="preserve"><value>Tens alterações por guardar</value></data>
+  <data name="Sset_SaveUnfinished" xml:space="preserve"><value>A gravação não terminou</value></data>
   <data name="Sset_UnsavedRestart" xml:space="preserve"><value>O servidor está ligado: o que guardares aplica-se quando reiniciar.</value></data>
   <data name="Sset_LeaveBlocked" xml:space="preserve"><value>Guarda ou descarta as alterações antes de sair</value></data>
   <data name="Sset_FixErrors" xml:space="preserve"><value>Há algo a corrigir antes de guardar.</value></data>

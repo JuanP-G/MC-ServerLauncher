@@ -1,6 +1,4 @@
-using System.Reflection;
-using McServerLauncher.Models;
-using McServerLauncher.ViewModels;
+using McServerLauncher.Services;
 
 namespace McServerLauncher.Tests;
 
@@ -12,37 +10,20 @@ namespace McServerLauncher.Tests;
 /// leave a <c>--stop</c> and a <c>--start</c> copy of the same world, even when nobody came back in,
 /// until the retention had deleted every copy anybody had played in.
 /// </remarks>
-[Collection("avalonia")]
-public class SkipUnchangedBackupTests(AvaloniaFixture ui) : IDisposable
+public class SkipUnchangedBackupTests : IDisposable
 {
     private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-skip-" + Guid.NewGuid().ToString("N"));
 
     private string World => Path.Combine(_folder, "world");
     private string Backups => Path.Combine(_folder, "backups");
 
-    private ServerViewModel Server()
+    private (FakeBackupHost Server, BackupCoordinator Coordinator) Server()
     {
         Directory.CreateDirectory(World);
         File.WriteAllText(Path.Combine(World, "level.dat"), "level");
-        ServerViewModel? server = null;
-        ui.Run(() => server = new ServerViewModel(new ServerConfig { Name = "survival", FolderPath = _folder }));
-        return server!;
+        var server = new FakeBackupHost(_folder);
+        return (server, new BackupCoordinator(server, new WorldBackupService()));
     }
-
-    private static Task<bool> BackupUnlessUnchanged(ServerViewModel server, string trigger) =>
-        (Task<bool>)typeof(ServerViewModel)
-            .GetMethod("BackupUnlessUnchangedAsync", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .Invoke(server, [trigger, false])!;
-
-    private static Task NoteUntouchedWorld(ServerViewModel server) =>
-        (Task)typeof(ServerViewModel)
-            .GetMethod("NoteUntouchedWorldAsync", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .Invoke(server, [])!;
-
-    private static void SetPlayed(ServerViewModel server, bool played) =>
-        typeof(ServerViewModel)
-            .GetField("_playedSinceBackup", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .SetValue(server, played);
 
     private int Zips() => Directory.EnumerateFiles(Backups, "*.zip").Count();
 
@@ -53,25 +34,33 @@ public class SkipUnchangedBackupTests(AvaloniaFixture ui) : IDisposable
         File.SetLastWriteTimeUtc(level, File.GetLastWriteTimeUtc(level).AddMinutes(1));
     }
 
+    /// <summary>A start that finds the world, then a JVM that runs it.</summary>
+    private static Task Start(FakeBackupHost server, BackupCoordinator coordinator) =>
+        coordinator.StartAsync(() => server.IsProcessRunning = true);
+
+    private Task Stop(FakeBackupHost server, BackupCoordinator coordinator) =>
+        coordinator.StopAsync(() => server.Stop(ServerWritesOnItsWayDown), backupAfter: true);
+
     [Fact]
     public async Task AWakeFindingTheWorldAsItWasMakesNoCopy()
     {
-        var server = Server();
-        await server.RunBackupAsync("manual");
+        var (server, coordinator) = Server();
+        await coordinator.BackupAsync("manual");
 
-        Assert.True(await BackupUnlessUnchanged(server, "start"));
+        await Start(server, coordinator);
 
         Assert.Equal(1, Zips());
+        Assert.False(coordinator.PlayedSinceBackup);
     }
 
     [Fact]
     public async Task AWorldChangedSinceGetsItsCopy()
     {
-        var server = Server();
-        await server.RunBackupAsync("manual");
+        var (server, coordinator) = Server();
+        await coordinator.BackupAsync("manual");
         File.WriteAllText(Path.Combine(World, "level.dat"), "edited by hand while stopped");
 
-        Assert.True(await BackupUnlessUnchanged(server, "start"));
+        await Start(server, coordinator);
 
         Assert.Equal(2, Zips());
     }
@@ -79,29 +68,26 @@ public class SkipUnchangedBackupTests(AvaloniaFixture ui) : IDisposable
     [Fact]
     public async Task NobodyPlayingSkipsTheStopsCopyAndTheNextStarts()
     {
-        var server = Server();
-        await server.RunBackupAsync("manual");
-        SetPlayed(server, false);                 // the start was covered and nobody came in
+        var (server, coordinator) = Server();
+        await coordinator.BackupAsync("manual");
+        await Start(server, coordinator);         // covered, and nobody comes in
 
-        ServerWritesOnItsWayDown();
-        await NoteUntouchedWorld(server);
+        await Stop(server, coordinator);
+        await Start(server, coordinator);
 
-        Assert.True(await BackupUnlessUnchanged(server, "stop"));
-        Assert.True(await BackupUnlessUnchanged(server, "start"));
         Assert.Equal(1, Zips());
     }
 
     [Fact]
     public async Task SomebodyPlayingStillGetsTheStopsCopy()
     {
-        var server = Server();
-        await server.RunBackupAsync("manual");
-        SetPlayed(server, true);                  // somebody joined
+        var (server, coordinator) = Server();
+        await coordinator.BackupAsync("manual");
+        await Start(server, coordinator);
+        coordinator.NoteWorldTouched();           // somebody joined
 
-        ServerWritesOnItsWayDown();
-        await NoteUntouchedWorld(server);
+        await Stop(server, coordinator);
 
-        Assert.True(await BackupUnlessUnchanged(server, "stop"));
         Assert.Equal(2, Zips());
     }
 
@@ -109,13 +95,12 @@ public class SkipUnchangedBackupTests(AvaloniaFixture ui) : IDisposable
     public async Task AFreshServerAssumesTheWorldChanged()
     {
         // Nothing in this session has looked at the world yet: it may have been edited, or swapped.
-        var server = Server();
-        await server.RunBackupAsync("manual");
-        ServerWritesOnItsWayDown();
+        var (server, coordinator) = Server();
+        await coordinator.BackupAsync("manual");
+        server.IsProcessRunning = true;
 
-        await NoteUntouchedWorld(server);
+        await Stop(server, coordinator);
 
-        Assert.True(await BackupUnlessUnchanged(server, "stop"));
         Assert.Equal(2, Zips());
     }
 

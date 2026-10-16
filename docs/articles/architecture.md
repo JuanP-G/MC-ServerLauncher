@@ -81,6 +81,28 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > config goes on being written meanwhile by a loader install or the seed read from the console, and
 > copying the whole copy back would undo that. Leaving the page with something unsaved is refused by
 > the save bar itself, not asked about in a window.
+>
+> What else holds for that page:
+>
+> - **One row per page.** `ServerSettingsPages` holds each page's icon, texts and the fields and
+>   `server.properties` keys it owns; which fields the page can edit at all comes from the rows
+>   (`ServerSettingsPagesTests`).
+> - **Files first, live config last.** Save writes `server.properties`, the icon and Geyser's
+>   config into the folder the draft names, and only then copies the changed fields into the live
+>   config. A file that cannot be written leaves the server as it was; each file counts as saved as
+>   soon as it is written (`ServerSettingsDraftTests`). What the window does after a save (writing
+>   `servers.json`, moving the wake listener to a new port) is awaited, and a failure is said on the
+>   page's bar, whose Save tries again.
+> - **It follows the live config.** A field something else changes while the page is open (a failed
+>   install switching multi-version back off, the Bedrock port crossplay picked) is taken in unless
+>   the user edited it there (`ServerSettingsDraft.ChangedOutside`); the page stops listening when it
+>   is closed (`Detach`).
+> - **Ports and problems.** `PortOwners` says which other server has a Java or a Bedrock port, and
+>   each `SettingsProblem` names its field, so the Network page shows it under its own box.
+> - **A running server** rewrites `server.properties` from what it loaded whenever its whitelist is
+>   switched; `PropertiesSavedWhileRunning` writes what was saved meanwhile back after that command.
+> - **Number boxes** take whole numbers only, in any language (`WholeNumberBoxes`): with the default
+>   parser, Spanish read `1.5` GB as 15.
 
 > **A constructor assembles; `Activate()` starts.** `ServerViewModel` and `MainViewModel` each split
 > in two. The constructor reads — the config, the console palette, the server's own files — and
@@ -306,7 +328,11 @@ are no hard-coded machine paths.
   a centered square and scales it to 64×64 with SkiaSharp. (`ServerViewModel.LoadIcon` is what reads
   it back for the Minecraft-style view.)
 - **`WorldBackupService`** — creates and restores zip backups of a server's world folder
-  (`<server>/backups/`), pruning old ones past the retention.
+  (`<server>/backups/`) — with the Nether and the End a Bukkit server keeps beside it — pruning old
+  ones past the retention.
+- **`BackupCoordinator`** — the order in which backups, restores and the JVM starting and stopping
+  touch the world; see *World backups* below. Talks to its server through `IBackupHost`, so the
+  protocol is tested without Avalonia (`BackupCoordinatorTests`).
 - **`LiveWorldBackup`** / **`SaveConfirmation`** / **`BackupSchedule`** — backing up a world the
   server is still playing on: pausing saves, recognising the flush, and deciding when it is due
 - **`CrashReportService`** — reads `crash-reports/*.txt` to pull out the `Description:` line and show
@@ -418,11 +444,13 @@ otherwise lets go of the wake-on-demand listener first (it holds the server's po
    reported before the server starts, not as a crash afterwards.
 5. **Java** — `EnsureCompatibleJavaAsync` (uses `JavaService` to read the required Java from the jar
    and install it if needed).
-6. **Backup** — the start backup when backups are on (it waits for any other copy still reading the
-   world); with them off it still waits for one made by hand.
-7. `ServerProcessManager.Start`, with the Java version read off the UI thread beforehand. The command
-   line is `-Xms`/`-Xmx`, the flags the app adds itself (`ImpliedJvmFlags`), the server's
-   `ExtraJvmArgs` and the jar (or a modern Forge/NeoForge args file).
+6. **Backup and launch** — the Java version is read off the UI thread, then
+   `BackupCoordinator.StartAsync` takes the world (waiting for any copy still reading it), makes the
+   start backup when backups are on and the world is not the last backup's, and calls
+   `ServerProcessManager.Start` **while still holding it**, so no copy slips in between. A backup that
+   fails is said in the console and the server starts anyway. The command line is `-Xms`/`-Xmx`, the flags the app adds itself (`ImpliedJvmFlags`), the server's
+   `ExtraJvmArgs` and the jar (or a modern Forge/NeoForge args file). A start still getting ready when
+   the app begins closing does not launch at all.
 
 All of it can take minutes with a big world to back up, and the state is still Stopped meanwhile, so
 `IsPreparing` is on from the first step to the last: the list and the header say *Preparing…* in
@@ -589,6 +617,20 @@ after a manual clean stop, before a restore, and at intervals while the server i
 still requires the server to be stopped, because it deletes the world folder and unpacks another one
 in its place.
 
+Vanilla and the modded loaders keep every dimension inside the world folder. **Paper and Purpur**, like
+every Bukkit server, keep the Nether and the End beside it, in `<world>_nether` and `<world>_the_end`,
+and those used to be left out of every backup. `WorldBackupService.DimensionsBeside` finds them on disk
+(not by server type: a server converted away from Paper still has them), and they go into the zip
+under a reserved folder, `.mcserverlauncher-dimensions/_nether|_the_end/`, with the world itself
+still at the root — so every older zip restores exactly as before, and leaves the dimensions on disk
+alone (`BukkitDimensionBackupTests`).
+
+A zip is written as `<name>.zip.tmp` and only renamed to `.zip` once complete: a copy cut short (the
+app closing, a failure the retry does not cover) used to stay in the list as a backup. Any failure
+deletes the temporary file, and leftovers of a crashed run are swept by the next copy. File dates
+outside what the zip format holds (1980–2107) are clamped, as `ZipFile.CreateFromDirectory` did: one
+file dated 1970 used to fail every backup, and with it every start.
+
 Which folder that is comes from `level-name`, a value in a file the app did not write, so
 `WorldBackupService.WorldFolderFor` only accepts one that resolves **strictly inside the server's
 folder and outside `backups/`** (`worlds/survival` is fine). With `level-name=.` a restore used to
@@ -599,9 +641,27 @@ the console and is skipped rather than keeping the server from starting (`Backup
 The swap itself is all or nothing (`WorldBackupService.ReplaceWorld`): the zip is unpacked beside the
 world as `<world>.restoring`, and only a complete copy takes its place, by renaming. It used to delete
 the world first and unpack into the empty folder, so a damaged zip or a full disk left half a world.
-And a restore goes through `ServerViewModel.RestoreBackupAsync`, which takes the same gate as every
-backup, closes the wake listener and sets `IsRestoring`, which keeps every start out — the button, a
-wake, an auto-restart (`RestoreSafetyTests`).
+The world and its sibling dimensions are swapped as one unit: if one cannot be put in place, every one
+already swapped goes back. Whatever happens, no `.restoring` folder is left behind.
+
+**Who touches the world, and when** is `BackupCoordinator`'s job, with one rule: whatever reads or
+replaces the world, or makes the JVM start or stop writing to it, holds the same gate from beginning to
+end. Each command used to take the gate only for "the backup" part, and that left holes:
+
+- **Stop, Restart, the idle stop and closing the app** sent `stop` while a backup by the clock was
+  still zipping. The server wrote the world on its way down into a copy being read, the stop's own
+  backup was refused as "already running", and the torn zip was recorded as matching the world. Now a
+  stop takes the gate first (a copy by the clock is cut short, since the stop's own replaces it; one
+  made by hand is waited for, with a line in the console), sends `stop`, notes the world and makes its
+  backup inside the same hold. A crash while it waits is not restarted.
+- **A start** holds it from its backup until the JVM is launched (see *Starting a server*).
+- **A restore** asks again, inside the gate, whether the server is still stopped and not getting
+  ready: the confirmation can stay open while a knock on a sleeping server, or a restart after a
+  crash, starts it. Then it sets `IsRestoring`, which closes the wake listener and keeps every start
+  out — the button, a wake, an auto-restart (`RestoreSafetyTests`).
+- **Closing the app** cuts only the copy in progress short. A failed update brings the app back with
+  the same servers, which must still back up.
+- **A stop nobody asked for** (a crash, `stop` typed) notes the world once nothing else is reading it.
 
 Backing up a **running** server goes through `LiveWorldBackup`, because zipping a world the JVM is
 writing to gives a torn copy. It asks Minecraft to let go of it first — `save-off`, `save-all flush`,
@@ -612,8 +672,8 @@ somebody restarts it.
 
 `BackupSchedule` decides when the next automatic one is due, and answers `Skip` when the interval has
 run out but nobody has played since the last one — a server left running overnight barely changes, so
-copying it every hour would only fill the disk. `ServerViewModel.RunBackupAsync` is the single door
-every backup goes through, with a semaphore so two can never overlap.
+copying it every hour would only fill the disk. A backup asked for while another holds the world is
+refused, not queued, and the tab says the world is busy (it used to say there was no world yet).
 
 The start's and the stop's backups are skipped too when **nobody has touched the world since the last
 one**. A server that sleeps when empty is woken by anybody pressing Join, and each sleep and wake used
@@ -622,21 +682,25 @@ those and the retention had deleted every copy anybody had played in. Comparing 
 tell: a running server writes its world with nobody on it (`level.dat` keeps `LastPlayed`, spawn
 chunks tick), so after any session the files differ. Two signals are used instead:
 
-- **While it runs**, `ServerViewModel._playedSinceBackup` says whether the world may have changed:
+- **While it runs**, `BackupCoordinator.PlayedSinceBackup` says whether the world may have changed:
   somebody joined, or a command typed into the console that `WorldCommand.Touches` does not know to
   be harmless (`list`, `say`, bans, ops and the whitelist are; anything else, a plugin's included, is
   not). It starts true and goes back to true after every stop; only a start whose backup was made or
   found up to date clears it, and a live backup clears it for everyone not still on.
 - **On disk**, every backup writes `backups/last-backup.json`: the zip's name and a fingerprint of the
-  world (path, size and write time of every file but `session.lock`, plus the folder's own path).
-  `WorldBackupService.IsUpToDate` is true only if that zip still exists and the world still matches,
-  so editing the world by hand while it is stopped, or pointing `level-name` elsewhere, still gets a
-  copy. After a stop with nobody playing, `NoteUntouchedWorldAsync` calls `MarkUnchanged`, which
-  re-fingerprints the world against the same zip — what the server wrote on its way down does not
-  count. It never stands in for a backup that does not exist.
+  world (path, size and write time of every file but `session.lock`, the Bukkit dimensions included,
+  plus the folders' own paths), taken **before** the zip, so it describes what the zip holds and not a
+  world the running server wrote again meanwhile. `WorldBackupService.IsUpToDate` is true only if
+  that zip still exists and the world still matches, so editing the world by hand while it is
+  stopped, or pointing `level-name` elsewhere, still gets a copy. After a stop with nobody playing,
+  `MarkUnchanged` re-fingerprints the world against the same zip — what the server wrote on its way
+  down does not count. It never stands in for a backup that does not exist, and never runs for a
+  server with RCON on (`enable-rcon=true`), where a `/fill` can arrive with nobody joining.
 
-`BackupUnlessUnchangedAsync` checks and copies inside the same gate, and says *Backup skipped* in the
-console when it skips (`UnchangedWorldBackupTests`, `SkipUnchangedBackupTests`, `WorldCommandTests`).
+What this cannot see: a farm in the spawn chunks, which tick with nobody near, or a plugin on a
+timer. Those changes wait for the next time somebody plays. The check and the copy happen inside the
+same hold, and the console says *Backup skipped* when it skips (`UnchangedWorldBackupTests`,
+`SkipUnchangedBackupTests`, `WorldCommandTests`).
 
 Retention counts the automatic backups (`start`, `stop`, `auto`) and the user's own (`manual`,
 `before-restore`) **separately**. One shared count stopped working the day backups started happening
@@ -646,7 +710,8 @@ deleted at all.
 
 The backups tab says so, because a flat list did not: it read as "five of each kind" half missing
 when it was the automatic pile, full. `ServerBackupsViewModel` shows each pile against its limit, the
-space they take and when the next one is due (`ServerViewModel.NextAutoBackupUtc`), lists them by day
+space they take and when the next one is due (`ServerViewModel.NextAutoBackupUtc`, only once the
+server is up: the clock starts then), lists them by day in the app's language
 under a filter, and marks the oldest of a full pile as the one its next backup will delete. The
 retention and timer fields feed it through `ConfigEffect.ReloadBackups`.
 
@@ -776,6 +841,11 @@ field costs, and the badge, the version, the Mods tab, its filter chips, the ins
 old family's folder has just been moved aside — and the store search all follow on their own. The
 settings page takes the installed fields as saved (`ServerSettingsDraft.Adopt`), so a later Discard
 cannot put the old jar back.
+
+The page is not modal, so the install says so itself: it is unavailable while the server runs or is
+getting ready to, the server cannot start while it installs (`ServerViewModel.IsConverting`), and the
+settings cannot be saved or left until it is done. The folder and the RAM are read once, when Install
+is pressed.
 
 It used to rebuild the whole view model instead, and only when the *type* had changed and the server
 was stopped. Converting Fabric 1.21.1 to Fabric 1.21.4 therefore changed nothing on screen, and the

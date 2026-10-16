@@ -7,6 +7,7 @@ using FluentIcons.Common;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
+using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views.ServerSettings;
 
@@ -27,6 +28,12 @@ namespace McServerLauncher.Views.ServerSettings;
 /// the install would run with the saved RAM and folder while the page showed others, and a later
 /// Discard would seem to undo a conversion that can no longer be undone.
 /// </para>
+/// <para>
+/// It was a modal dialog once, and nothing else could happen while it ran. On a page that is not
+/// modal it has to say so itself: no install while the server is running or getting ready to start,
+/// no start while it installs (<see cref="ServerViewModel.IsConverting"/>), and the page cannot be
+/// left or saved meanwhile (<see cref="IsBusy"/>).
+/// </para>
 /// </remarks>
 public partial class LoaderSection : UserControl, IServerSettingsSection
 {
@@ -42,6 +49,7 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
     private readonly JavaService _java = new();
     private readonly ServerCreationService _creation = new();
     private readonly ServerSettingsDraft _draft;
+    private readonly ServerViewModel _server;
 
     private List<MinecraftVersion> _allVersions = new();
     private string _latestRelease = string.Empty;
@@ -55,13 +63,18 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
     /// <summary>Raised once a loader is installed: the live config and the disk have changed.</summary>
     public event Action? Installed;
 
-    // Parameterless constructor for the Avalonia XAML loader / designer only.
-    public LoaderSection() : this(new ServerSettingsDraft(new ServerConfig())) { }
+    /// <summary>True while an install is downloading or writing into the server's folder.</summary>
+    public bool IsBusy => _busy;
 
-    public LoaderSection(ServerSettingsDraft draft)
+    // Parameterless constructor for the Avalonia XAML loader / designer only.
+    public LoaderSection()
+        : this(new ServerSettingsDraft(new ServerConfig()), new ServerViewModel(new ServerConfig())) { }
+
+    public LoaderSection(ServerSettingsDraft draft, ServerViewModel server)
     {
         InitializeComponent();
         _draft = draft;
+        _server = server;
         _log = new LogBatcher(ProgressLog);
 
         // Start on the type the server already is, so pressing Install without touching
@@ -94,7 +107,8 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
     public void Reload()
     {
         var config = _draft.Live;
-        CurrentText.Text = Localizer.Get("Loader_Current") + config.Type + " " + config.GameVersion;
+        CurrentText.Text = string.Format(Localizer.Get("Loader_CurrentFmt"),
+            ServerTypeCatalog.For(config.Type).DisplayName, config.GameVersion);
         UpdateWarning();
         UpdateInstallable();
     }
@@ -113,8 +127,11 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
     {
         var unsaved = _draft.IsDirty;
         NeedsSaveNote.IsVisible = unsaved && !_busy;
-        InstallButton.IsEnabled = !unsaved && !_busy;
+        InstallButton.IsEnabled = !unsaved && !_busy && !ServerIsUp;
     }
+
+    /// <summary>The server is running or getting ready to: its files are not for replacing.</summary>
+    private bool ServerIsUp => _server.IsRunning || _server.IsPreparing;
 
     /// <summary>Shows a warning whose wording and color depend on the conversion direction.</summary>
     private void UpdateWarning()
@@ -122,21 +139,25 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
         var current = _draft.Live.Type;
         var target = SelectedLoader();
 
-        string key, bg, border;
+        string key, fill, edge;
         bool danger;
         if (current == target)
-            (key, bg, border, danger) = ("Loader_WarnSame", "#33E3A82B", "#E3A82B", false);
+            (key, fill, edge, danger) =
+                ("Loader_WarnSame", "SemanticWarnPanel", "SemanticWarn", false);
         else if (current == ServerType.Vanilla)
-            (key, bg, border, danger) = ("Loader_WarnVanillaToLoader", "#332E7D32", "#3FB950", false);
+            (key, fill, edge, danger) =
+                ("Loader_WarnVanillaToLoader", "SemanticOkPanel", "SemanticOk", false);
         else if (target == ServerType.Vanilla)
-            (key, bg, border, danger) = ("Loader_WarnToVanilla", "#33E05561", "#E05561", true);
+            (key, fill, edge, danger) =
+                ("Loader_WarnToVanilla", "SemanticDangerPanel", "SemanticDanger", true);
         else // crossing between loaders: Fabric, Forge, NeoForge, Paper
-            (key, bg, border, danger) = ("Loader_WarnCrossLoader", "#33E05561", "#E05561", true);
+            (key, fill, edge, danger) =
+                ("Loader_WarnCrossLoader", "SemanticDangerPanel", "SemanticDanger", true);
 
         WarnText.Text = Localizer.Get(key);
         WarnText.FontWeight = danger ? FontWeight.SemiBold : FontWeight.Normal;
-        WarnBox.Background = new SolidColorBrush(Color.Parse(bg));
-        WarnBox.BorderBrush = new SolidColorBrush(Color.Parse(border));
+        WarnBox.Background = this.FindResource(fill) as IBrush;
+        WarnBox.BorderBrush = this.FindResource(edge) as IBrush;
         WarnIcon.Symbol = danger ? Symbol.Warning : Symbol.Info;
     }
 
@@ -185,7 +206,18 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
         ShowError(null);
         var config = _draft.Live;
 
-        if (!Directory.Exists(config.FolderPath))
+        // Read once, here, and not from the live config after each await: the rest of the page can
+        // be saved meanwhile, and a folder changed mid-install would split it between two folders.
+        var folder = config.FolderPath;
+        var (minRam, maxRam) = (config.MinRamGb, config.MaxRamGb);
+        var currentType = config.Type;
+
+        if (ServerIsUp)
+        {
+            ShowError(Localizer.Get("Loader_StopServerFirst"));
+            return;
+        }
+        if (!Directory.Exists(folder))
         {
             ShowError(Localizer.Get("Msg_FolderNotExist"));
             return;
@@ -198,6 +230,7 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
 
         SetBusy(true);
         var progress = new Progress<string>(AppendLog);
+        var done = false;
         try
         {
             AppendLog(string.Format(Localizer.Get("Msg_Resolving"), version.Id));
@@ -222,37 +255,35 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
             // Forge and NeoForge installers overwrite run.bat. Keep the user's copy if they asked,
             // and leave user_jvm_args.txt alone in that case too: their script reads it, and
             // rewriting the memory settings would quietly undo whatever they had set.
-            var runBatPath = Path.Combine(config.FolderPath, "run.bat");
+            var runBatPath = Path.Combine(folder, "run.bat");
             var keepRunBat = KeepRunBatCheck.IsChecked == true;
             var keptRunBat = keepRunBat && File.Exists(runBatPath) ? File.ReadAllText(runBatPath) : null;
 
             // Checked before anything is downloaded or moved: converting to Paper in a folder it
             // refuses to run from produces a server that installs perfectly and never starts.
-            if (BukkitPathRule.Rejects(config.FolderPath, target))
+            if (BukkitPathRule.Rejects(folder, target))
             {
-                var bad = BukkitPathRule.OffendingCharacter(config.FolderPath)!.Value;
+                var bad = BukkitPathRule.OffendingCharacter(folder)!.Value;
                 AppendLog(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
                 ShowError(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
-                SetBusy(false);
                 return;
             }
 
             // Before the config says the new type: the old family's folder has to be found under
             // the name the OLD type used.
             var archived = ContentMigrationService.ArchiveIfFamilyChanged(
-                config.FolderPath, config.Type, target, DateTime.Now);
+                folder, currentType, target, DateTime.Now);
             if (archived is not null)
                 AppendLog(string.Format(Localizer.Get("Msg_ContentArchivedFmt"), archived));
 
             var installed = await _installer.InstallAsync(
-                target, config.FolderPath, version.Id, details, javaPath,
-                config.MinRamGb, config.MaxRamGb, progress, writeLoaderJvmArgs: !keepRunBat);
+                target, folder, version.Id, details, javaPath,
+                minRam, maxRam, progress, writeLoaderJvmArgs: !keepRunBat);
 
             if (keptRunBat is not null)
                 File.WriteAllText(runBatPath, keptRunBat);
             else if (!keepRunBat && !installed.LaunchesViaArgsFile)
-                _creation.WriteRunBat(config.FolderPath, config.MinRamGb, config.MaxRamGb,
-                    installed.JarFile, javaPath);
+                _creation.WriteRunBat(folder, minRam, maxRam, installed.JarFile, javaPath);
 
             config.Type = target;
             config.GameVersion = version.Id;
@@ -264,20 +295,36 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
             config.JavaPath = javaPath;
 
             AppendLog(Localizer.Get("Loader_Done"));
-            SetBusy(false, keepLog: true);
-            Installed?.Invoke();
+            done = true;
         }
         catch (Exception ex)
         {
             AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
             ShowError(string.Format(Localizer.Get("Loader_Error"), ErrorMessages.Describe(ex)));
+        }
+        finally
+        {
             SetBusy(false, keepLog: true);
+        }
+
+        // Outside the install's try: what the page and the window do with a finished install
+        // (taking the new type in, saving servers.json) failing is not the install failing, and the
+        // log had just said it was done.
+        if (!done) return;
+        try
+        {
+            Installed?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            ShowError(string.Format(Localizer.Get("Msg_ConfigSaveError"), ErrorMessages.Describe(ex)));
         }
     }
 
     private void SetBusy(bool busy, bool keepLog = false)
     {
         _busy = busy;
+        _server.IsConverting = busy;
         FormPanel.IsEnabled = !busy;
         ProgressBox.IsVisible = busy || keepLog;
         Spinner.IsIndeterminate = busy;
