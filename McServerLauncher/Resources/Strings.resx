@@ -88,8 +88,6 @@
   <data name="Remove" xml:space="preserve"><value>Quitar</value></data>
   <data name="Players_Banned" xml:space="preserve"><value>Baneados</value></data>
   <data name="Unban" xml:space="preserve"><value>Desbanear</value></data>
-  <data name="Players_Known" xml:space="preserve"><value>Han entrado alguna vez</value></data>
-  <data name="Update_Download" xml:space="preserve"><value>Descargar</value></data>
   <data name="Tip_Hide" xml:space="preserve"><value>Ocultar</value></data>
   <data name="Language" xml:space="preserve"><value>Idioma</value></data>
   <data name="Status_Stopped" xml:space="preserve"><value>Apagado</value></data>
@@ -103,8 +101,6 @@
   <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
   <data name="Save" xml:space="preserve"><value>Guardar</value></data>
   <data name="Browse" xml:space="preserve"><value>Examinar...</value></data>
-  <data name="Cs_ModeNew" xml:space="preserve"><value>Crear uno nuevo</value></data>
-  <data name="Cs_ModeExisting" xml:space="preserve"><value>Usar una carpeta que ya existe</value></data>
   <data name="Cs_ExistingFolder" xml:space="preserve"><value>Carpeta del servidor</value></data>
   <data name="Cs_ExistingFolderPlaceholder" xml:space="preserve"><value>La carpeta donde está el servidor</value></data>
   <data name="Cs_ExistingJar" xml:space="preserve"><value>Qué .jar arrancar</value></data>
@@ -202,10 +198,8 @@
   <data name="Pk_Connect" xml:space="preserve"><value>Conectar con Playit</value></data>
   <data name="Pk_Reconnect" xml:space="preserve"><value>Reconectar</value></data>
   <data name="Pk_Disconnect" xml:space="preserve"><value>Desconectar</value></data>
-  <data name="Pk_Connected" xml:space="preserve"><value>Conectado</value></data>
   <data name="Pk_NotConnected" xml:space="preserve"><value>No conectado</value></data>
   <data name="Msg_PasteSetupCode" xml:space="preserve"><value>Pega el código de configuración que has obtenido en playit.gg.</value></data>
-  <data name="Msg_PartnerNotConfigured" xml:space="preserve"><value>La conexión con Playit no está disponible en esta versión de la app.</value></data>
   <data name="Msg_SetupCodeFailedFmt" xml:space="preserve"><value>No se pudo conectar con Playit: {0}</value></data>
   <data name="Msg_SetupCodeNoAgent" xml:space="preserve"><value>Playit no devolvió un agente válido para este código.</value></data>
   <data name="Msg_PartnerVariantNotFound" xml:space="preserve"><value>Tu aplicación todavía no está registrada del todo en Playit (falta el variant_id, o la versión no coincide con la registrada). Pide a Playit el variant_id de tu app.</value></data>
@@ -259,7 +253,6 @@
   <data name="Notif_PlayerLeftFmt" xml:space="preserve"><value>{0} ha salido del servidor.</value></data>
   <data name="Notif_Crashed" xml:space="preserve"><value>El servidor se ha cerrado inesperadamente.</value></data>
   <data name="Notif_GaveUp" xml:space="preserve"><value>Se ha caído varias veces seguidas; no se reiniciará automáticamente más.</value></data>
-  <data name="Notif_Title" xml:space="preserve"><value>Notificaciones</value></data>
   <data name="Notif_Intro" xml:space="preserve"><value>Elige qué avisos quieres recibir cuando no estás mirando la app. Aparecen en la esquina de la pantalla con el nombre del servidor.</value></data>
   <data name="Shortcut_Section" xml:space="preserve"><value>Acceso directo</value></data>
   <data name="Shortcut_Intro" xml:space="preserve"><value>Crea un acceso directo en tu escritorio para abrir la app de un doble clic.</value></data>
@@ -354,7 +347,6 @@
   <data name="Backup_TriggerStop" xml:space="preserve"><value>al detener</value></data>
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>antes de restaurar</value></data>
-  <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Encenderlo cuando alguien intente entrar</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>Mientras esté apagado, en la lista de servidores se verá que está dormido. Quien pulse Entrar recibe un mensaje y el servidor empieza a arrancar.</value></data>
   <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>Si la lista blanca está activada, encenderlo solo para jugadores de la lista</value></data>
@@ -447,11 +439,8 @@
   <data name="Msg_FolderNotExist" xml:space="preserve"><value>La carpeta del servidor no existe.</value></data>
   <data name="Title_SelectServerFolder" xml:space="preserve"><value>Selecciona la carpeta del servidor</value></data>
   <data name="Title_SelectJava" xml:space="preserve"><value>Selecciona java.exe</value></data>
-  <data name="Filter_Java" xml:space="preserve"><value>Ejecutable de Java (java.exe)|java.exe|Todos los ejecutables (*.exe)|*.exe</value></data>
   <data name="Title_SelectFolderCreate" xml:space="preserve"><value>Carpeta donde crear el servidor</value></data>
   <data name="Title_SelectImage" xml:space="preserve"><value>Elige una imagen para el icono del servidor</value></data>
-  <data name="Filter_Images" xml:space="preserve"><value>Imágenes (*.png;*.jpg;*.jpeg;*.bmp;*.gif)|*.png;*.jpg;*.jpeg;*.bmp;*.gif|Todos los archivos (*.*)|*.*</value></data>
-  <data name="Msg_PasteKey" xml:space="preserve"><value>Pega tu clave de Playit.</value></data>
   <data name="Msg_ConfigSaveError" xml:space="preserve"><value>No se pudo guardar la configuración: {0}</value></data>
   <data name="Msg_ClosingTitle" xml:space="preserve"><value>MC Server Launcher — deteniendo servidores y guardando...</value></data>
   <data name="Update_Now" xml:space="preserve"><value>Actualizar</value></data>
@@ -500,7 +489,6 @@
   <data name="Loader_StillInstalling" xml:space="preserve"><value>Se está instalando el loader. Espera a que termine antes de guardar o salir.</value></data>
   <data name="Msg_StartWaitsForLoader" xml:space="preserve"><value>No se puede arrancar mientras se instala el loader; espera a que termine.</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Cambia el tipo de este servidor. Cada tarjeta dice si lleva plugins o mods, y si se puede entrar desde Bedrock. Tu mundo se conserva.</value></data>
-  <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sin mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Conservar el archivo de arranque actual (run.bat)</value></data>
   <data name="Loader_Kept" xml:space="preserve"><value>Se conservan el mundo, server.properties y tus carpetas de mods/plugins y config.</value></data>
   <data name="Loader_WarnSame" xml:space="preserve"><value>Vas a reinstalar el mismo tipo de servidor. Solo tiene sentido para cambiar de versión; se reescribe el arranque y podrías perder algunos ajustes.</value></data>
@@ -520,14 +508,12 @@
 1. Los jugadores solo tienen que entrar con Minecraft normal (versión {0}); no instalan nada.
 2. Los plugins (.jar) se ponen en la carpeta plugins del servidor.
 3. Reinicia el servidor tras añadir o quitar plugins.</value></data>
-  <data name="Loader_Warning" xml:space="preserve"><value>Se aplicará el loader elegido con esa versión. Usa la misma versión que ya tenía el servidor para no romper el mundo.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>Instalando loader...</value></data>
   <data name="Loader_InstallButton" xml:space="preserve"><value>Instalar</value></data>
   <data name="Loader_DetectedFmt" xml:space="preserve"><value>Versión detectada del servidor: {0}</value></data>
   <data name="Loader_Done" xml:space="preserve"><value>Hecho. El servidor se ha actualizado.</value></data>
   <data name="Loader_Error" xml:space="preserve"><value>No se pudo instalar el loader: {0}</value></data>
   <data name="Msg_ModBrowserNeedsLoader" xml:space="preserve"><value>El explorador de mods solo está disponible en servidores Fabric o Forge.</value></data>
-  <data name="Msg_SearchingModrinth" xml:space="preserve"><value>Buscando en Modrinth...</value></data>
   <data name="Msg_ModsFoundFmt" xml:space="preserve"><value>{0} resultados.</value></data>
   <data name="Msg_NoModsFound" xml:space="preserve"><value>No se encontraron mods para esta versión y este tipo de servidor.</value></data>
   <data name="Msg_ModErrorFmt" xml:space="preserve"><value>Error: {0}</value></data>
@@ -729,7 +715,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Store_Description" xml:space="preserve"><value>Descripción</value></data>
   <data name="Store_Gallery" xml:space="preserve"><value>Imágenes</value></data>
   <data name="Store_Compatibility" xml:space="preserve"><value>Compatibilidad</value></data>
-  <data name="Store_Tags" xml:space="preserve"><value>Etiquetas</value></data>
   <data name="Store_Dependencies" xml:space="preserve"><value>Dependencias</value></data>
   <data name="Store_RelatedMods" xml:space="preserve"><value>Mods relacionados</value></data>
   <data name="Store_RelatedPlugins" xml:space="preserve"><value>Plugins relacionados</value></data>
@@ -744,7 +729,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Store_Updated" xml:space="preserve"><value>Actualizado</value></data>
   <data name="Store_Published" xml:space="preserve"><value>Publicado</value></data>
   <data name="Store_License" xml:space="preserve"><value>Licencia</value></data>
-  <data name="Store_Loading" xml:space="preserve"><value>Cargando…</value></data>
   <data name="Store_LoadError" xml:space="preserve"><value>No se han podido cargar los detalles. Comprueba tu conexión.</value></data>
   <data name="Store_OpenOnModrinth" xml:space="preserve"><value>Ver en Modrinth</value></data>
   <data name="Store_Source" xml:space="preserve"><value>Código fuente</value></data>
@@ -755,7 +739,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Store_DepRequired" xml:space="preserve"><value>Obligatoria</value></data>
   <data name="Store_DepOptional" xml:space="preserve"><value>Opcional</value></data>
   <data name="Store_BodyTruncated" xml:space="preserve"><value>La descripción sigue; el resto está en Modrinth.</value></data>
-  <data name="Store_NoDescription" xml:space="preserve"><value>Este proyecto no tiene una descripción larga.</value></data>
   <data name="Store_Fallback_Mod" xml:space="preserve"><value>Mod para tu servidor.</value></data>
   <data name="Store_Fallback_Plugin" xml:space="preserve"><value>Plugin para tu servidor.</value></data>
   <data name="Store_Fallback_ModFmt" xml:space="preserve"><value>Mod de {0} para tu servidor.</value></data>
@@ -763,7 +746,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Store_Side_NeedsClient" xml:space="preserve"><value>Los jugadores también tendrán que instalarlo en su Minecraft.</value></data>
   <data name="Store_Side_ServerOnly" xml:space="preserve"><value>Solo se instala en el servidor; los jugadores no necesitan nada.</value></data>
   <data name="Store_Side_ClientOptional" xml:space="preserve"><value>Se instala en el servidor; en el cliente es opcional.</value></data>
-  <data name="Store_BrowseBy" xml:space="preserve"><value>Categorías</value></data>
   <data name="Store_NeedsClientBadge" xml:space="preserve"><value>Requiere cliente</value></data>
   <data name="Store_ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
   <data name="Store_VersionsNote" xml:space="preserve"><value>Se muestran las versiones compatibles más recientes.</value></data>
@@ -775,8 +757,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Filters_TopicsHint" xml:space="preserve"><value>Solo uno a la vez.</value></data>
   <data name="Tip_DismissNotice" xml:space="preserve"><value>Descartar el aviso</value></data>
   <data name="Tip_RemoveFilter" xml:space="preserve"><value>Quitar este filtro</value></data>
-  <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Mostrar u ocultar la lista de instalados</value></data>
-  <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Ningún resultado con estos filtros. Prueba a quitar alguno.</value></data>
   <data name="Idle_CountdownFmt" xml:space="preserve">
     <value>Se apaga en {0}</value>
   </data>
@@ -839,7 +819,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_CrossplayResolvingFmt" xml:space="preserve"><value>Buscando la versión de {0} para este servidor…</value></data>
   <data name="Msg_CrossplayInstallingFmt" xml:space="preserve"><value>Instalando {0} {1}…</value></data>
   <data name="Msg_CrossplayNoVersionFmt" xml:space="preserve"><value>No hay versión de {0} para Minecraft {1} en un servidor {2}.</value></data>
-  <data name="Msg_CrossplayNoChecksum" xml:space="preserve"><value>No se ha podido obtener la huella de Floodgate. Se cancela: no se instala nada sin verificar.</value></data>
   <data name="Msg_CrossplayTunnelFmt" xml:space="preserve"><value>Creando el túnel de Bedrock (UDP) en el puerto {0}…</value></data>
   <data name="Msg_CrossplayReady" xml:space="preserve"><value>Crossplay listo. Reinicia el servidor para que Geyser arranque.</value></data>
   <data name="Msg_UpdateBetaAvailableFmt" xml:space="preserve"><value>Versión {0} disponible — BETA. Trae funciones nuevas sin rodar del todo; si prefieres ir sobre seguro, espera a la estable.</value></data>
@@ -1049,7 +1028,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="History_Importing" xml:space="preserve"><value>Leyendo los logs antiguos del servidor para rellenar el historial…</value></data>
   <data name="History_DisabledHint" xml:space="preserve"><value>El historial está desactivado en Ajustes: solo se ve la lista del propio servidor, sin conexiones ni chat.</value></data>
   <data name="History_Search" xml:space="preserve"><value>Buscar jugador…</value></data>
-  <data name="History_Section" xml:space="preserve"><value>Historial de jugadores</value></data>
   <data name="History_Intro" xml:space="preserve"><value>Guarda cuándo entra y sale cada jugador, sus muertes, sus logros y lo que dice por el chat, para verlo en su ficha de la pestaña Jugadores.</value></data>
   <data name="History_Enabled" xml:space="preserve"><value>Guardar historial de jugadores</value></data>
   <data name="History_RecordChat" xml:space="preserve"><value>Guardar también el chat</value></data>
