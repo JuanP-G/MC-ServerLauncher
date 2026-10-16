@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using McServerLauncher.Localization;
@@ -443,8 +442,7 @@ public partial class ConnectionTestViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCopy))]
     private async Task CopyReport()
     {
-        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-        if (top?.Clipboard is not { } clipboard) return;
+        if (AppWindows.Main?.Clipboard is not { } clipboard) return;
         try
         {
             await clipboard.SetTextAsync(Report);
@@ -469,6 +467,7 @@ public partial class ConnectionTestViewModel : ObservableObject
     private static string Mbps(Throughput t) =>
         t.Mbps <= 0 ? "—" : t.Mbps.ToString(t.Mbps < 10 ? "0.0" : "0", CultureInfo.CurrentCulture) + " Mb/s";
 
+    /// <summary>The upload peak, in decimal units like the Mb/s beside it: 8 Mb/s is 1 MB/s.</summary>
     private static string Bytes(double bytes) =>
         bytes >= 1_000_000 ? (bytes / 1_000_000).ToString("0.0", CultureInfo.CurrentCulture) + " MB"
         : (bytes / 1_000).ToString("0", CultureInfo.CurrentCulture) + " kB";

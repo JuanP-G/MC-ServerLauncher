@@ -175,7 +175,7 @@ public partial class ServerBackupsViewModel : ObservableObject
     {
         AutomaticCount = Items.Count(i => i.IsAutomatic);
         ManualCount = Items.Count(i => i.IsManual);
-        TotalSizeText = BackupItemViewModel.FormatSize(Items.Sum(i => i.SizeBytes));
+        TotalSizeText = ByteSize.Format(Items.Sum(i => i.SizeBytes));
         var next = Localizer.Get(NextKey(out var at));
         NextBackupText = at is { } when
             ? string.Format(next, when.ToLocalTime().ToString("t", CultureInfo.CurrentCulture))
@@ -356,7 +356,7 @@ public partial class BackupItemViewModel : ObservableObject
         CreatedAt = info.CreatedAt;
         SizeBytes = info.SizeBytes;
         CreatedAtText = info.CreatedAt.ToString("g");
-        SizeText = FormatSize(info.SizeBytes);
+        SizeText = ByteSize.Format(info.SizeBytes);
         IsAutomatic = WorldBackupService.IsAutomatic(info.Trigger);
         IsManual = WorldBackupService.IsTheUsers(info.Trigger);
         TriggerText = Localizer.Get(info.Trigger switch
@@ -378,13 +378,5 @@ public partial class BackupItemViewModel : ObservableObject
             _ => Symbol.Document,
         };
         Title = info.CreatedAt.ToString("t", CultureInfo.CurrentCulture) + " · " + TriggerText;
-    }
-
-    internal static string FormatSize(long bytes)
-    {
-        var gb = bytes / (1024.0 * 1024.0 * 1024.0);
-        if (gb >= 1) return $"{gb:0.#} GB";
-        var mb = bytes / (1024.0 * 1024.0);
-        return mb >= 1 ? $"{mb:0.#} MB" : $"{bytes / 1024.0:0.#} KB";
     }
 }

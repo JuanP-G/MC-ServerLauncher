@@ -4,7 +4,6 @@ using System.IO;
 using System.Security.Cryptography;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -33,8 +32,7 @@ public partial class MainViewModel : ObservableObject
     private readonly AppSettings _appSettings;
 
     /// <summary>The main window, used as the owner of modal dialogs.</summary>
-    private static Window? Owner =>
-        (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+    private static Window? Owner => AppWindows.Main;
 
     public ObservableCollection<ServerViewModel> Servers { get; } = new();
 

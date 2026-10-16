@@ -708,9 +708,7 @@ public partial class ModVersionViewModel : ObservableObject
         DownloadsText = ModDetailsViewModel.FormatCount(version.Downloads);
 
         var primary = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.FirstOrDefault();
-        SizeText = primary is { Size: > 0 }
-            ? (primary.Size / (1024.0 * 1024.0)).ToString("0.0", CultureInfo.CurrentCulture) + " MB"
-            : string.Empty;
+        SizeText = primary is { Size: > 0 } ? ByteSize.Format(primary.Size) : string.Empty;
     }
 
     public bool HasSize => !string.IsNullOrEmpty(SizeText);

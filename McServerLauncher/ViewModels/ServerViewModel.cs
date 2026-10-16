@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
@@ -550,9 +549,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     // returns to full speed on the first tick after the window is shown again.
 
     /// <summary>True when the main window is hidden, i.e. minimized to the tray (see MainWindow).</summary>
-    private static bool MainWindowHidden =>
-        (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
-            is not { IsVisible: true };
+    private static bool MainWindowHidden => AppWindows.Main is not { IsVisible: true };
 
     private int _hiddenStatsTicks;
     private int _hiddenPlayitTicks;
@@ -1719,8 +1716,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     /// <summary>Shows a dialog owned by the main window, so it cannot open behind it.</summary>
     private static async Task<MissingDependenciesChoice> ShowDialogAsync(MissingDependenciesDialog dialog)
     {
-        var owner = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
-            ?.MainWindow;
+        var owner = AppWindows.Main;
 
         if (owner is null)
         {
@@ -1981,8 +1977,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private async Task CopyTunnelAddress()
     {
         if (string.IsNullOrEmpty(TunnelAddress)) return;
-        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-        if (top?.Clipboard is { } cb)
+        if (AppWindows.Main?.Clipboard is { } cb)
             await cb.SetTextAsync(TunnelAddress);
     }
 

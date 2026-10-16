@@ -113,7 +113,7 @@ public partial class SettingsViewModel : ObservableObject
 
     /// <summary>How much the history takes on disk, for every server together.</summary>
     public string HistorySizeText => string.Format(Localizer.Get("History_SizeFmt"),
-        FormatBytes(PlayerHistoryStore.SizeOnDisk()));
+        ByteSize.Format(PlayerHistoryStore.SizeOnDisk()));
 
     /// <summary>
     /// Puts the history settings to work straight away: the app-wide preferences, every server's
@@ -132,13 +132,6 @@ public partial class SettingsViewModel : ObservableObject
         _main?.OnHistorySettingsChanged();
         Persist();
     }
-
-    internal static string FormatBytes(long bytes) => bytes switch
-    {
-        < 1024 => bytes + " B",
-        < 1024 * 1024 => (bytes / 1024.0).ToString("0.#") + " KB",
-        _ => (bytes / (1024.0 * 1024)).ToString("0.#") + " MB",
-    };
 
     // ---------------------------------------------------------------- general
 

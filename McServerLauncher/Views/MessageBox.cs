@@ -1,8 +1,8 @@
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Layout;
 using Avalonia.Media;
 using McServerLauncher.Localization;
+using McServerLauncher.Services;
 
 namespace McServerLauncher.Views;
 
@@ -12,8 +12,7 @@ namespace McServerLauncher.Views;
 /// </summary>
 public static class MessageBox
 {
-    private static Window? MainWindow =>
-        (Avalonia.Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+    private static Window? MainWindow => AppWindows.Main;
 
     /// <summary>Shows an OK-only dialog.</summary>
     public static Task ShowAsync(string message, string title, Window? owner = null)

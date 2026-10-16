@@ -17,7 +17,6 @@ using McServerLauncher.Models.Store;
 using McServerLauncher.Services;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
@@ -1238,7 +1237,7 @@ public partial class ServerModsViewModel : ObservableObject
         var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
         if (!Directory.Exists(modsFolder)) return;
 
-        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        var top = AppWindows.Main;
         if (top == null) return;
 
         var file = await top.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
