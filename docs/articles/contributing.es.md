@@ -182,6 +182,10 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   emparejamiento de túneles (`PlayitApiService.Match`), los hashes que van a la tienda
   (`ModrinthService.ApiHashes`) y las dependencias que declara un jar (`ContentManifest`). Cada vez
   solo una de las copias aprendió lo que hacía falta.
+- **Una clave `.resx` nueva se usa, y una que ya no se usa se borra.** Añádela a los cinco archivos con
+  el código que la pide. `LocalizationTests.EveryKeyIsAskedForSomewhere` falla ante una clave que nadie
+  nombra; las pocas que se piden construyendo su nombre (`Cmd_`, `Console_Kind`, `MotdColor_`…) están en
+  esa prueba, cada una con el sitio donde se arma.
 - **La prueba de un arreglo tiene que fallar con el código de antes.** Compruébalo: aparta el
   arreglo, ejecuta la prueba y mírala ponerse roja. Una prueba que pasa en los dos casos no demuestra
   nada, y es fácil escribirla.

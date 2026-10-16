@@ -156,7 +156,10 @@ are no hard-coded machine paths.
   seconds, less than a large modpack needs to save.
 - **`JavaService`** — detects installed Java versions and, if none is compatible, downloads the
   right Temurin (Adoptium) JRE for the architecture. Used both when creating and when starting a
-  server.
+  server. Each server asks its own `JavaService`, so the download of a given Java (by major version)
+  goes through one process-wide gate: two servers starting together used to share one archive path and
+  one `.partial` folder and delete what the other was writing. It runs `java -version` and `which`
+  through `ProcessRunner`, like everything else that runs a short command.
 - **`MinecraftVersionService`** — reads Mojang's version manifest, resolves the `server.jar`
   download URL and the required Java version, and downloads files.
 - **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — talk to Playit.gg.
@@ -178,6 +181,13 @@ are no hard-coded machine paths.
   `server.properties` is written with `white-list=false`: Minecraft 26.3 changed its own default to `true`,
   which locked every new server behind an empty list. The Players tab switches it with `whitelist on/off`
   while running and in the file while stopped, never touching `whitelist.json`, and adding a name turns it on.
+  A true/false key is read with `ServerPropertiesService.ParseBool`/`GetBool`, the way the server reads
+  it (only `true` is true: `online-mode=yes` is an offline server).
+- **`PlayerNames`** — what a Minecraft Java name looks like (`IsValid`, and `Pattern` for picking one out
+  of a line). One rule for the five places that used to keep a regex of their own; it is also what stops
+  a name from carrying a line break into a console command or becoming part of a path.
+- **`ByteSize`** and **`AppWindows`** — one way to write a size on disk (powers of 1024; line speeds stay
+  decimal, like the Mb/s beside them) and one place to ask for the main window.
 - **`MinecraftIds`** — turns `minecraft:deepslate_diamond_ore` into "Deepslate diamond ore". Deliberately
   not translated: there are well over a thousand blocks, more with every version and every mod, and what is
   translated is the label above the list rather than the game's own vocabulary inside it. A block from a mod
