@@ -292,6 +292,9 @@
   <data name="Msg_BackupSaveNotConfirmed" xml:space="preserve"><value>[Backup] The server did not confirm the save in time; copying anyway.</value></data>
   <data name="Msg_BackupSavesResumed" xml:space="preserve"><value>[Backup] World saving resumed.</value></data>
   <data name="Msg_BackupAlreadyRunning" xml:space="preserve"><value>[Backup] A backup is already in progress.</value></data>
+  <data name="Msg_StopWaitsForBackup" xml:space="preserve"><value>[Backup] Waiting for the backup in progress to finish before stopping the server...</value></data>
+  <data name="Msg_BackupFailedStartingAnywayFmt" xml:space="preserve"><value>[Backup] The backup before starting couldn't be made ({0}). The server starts anyway; the next backup will try again.</value></data>
+  <data name="Backup_RestoreNeedsStopped" xml:space="preserve"><value>The server started in the meantime. Stop it to restore the backup.</value></data>
   <data name="Backup_NoneYet" xml:space="preserve"><value>No backups yet.</value></data>
   <data name="Backup_RestoreButton" xml:space="preserve"><value>Restore</value></data>
   <data name="Backup_RestoreTitle" xml:space="preserve"><value>Restore backup</value></data>
@@ -300,6 +303,7 @@
   <data name="Backup_Creating" xml:space="preserve"><value>Creating backup...</value></data>
   <data name="Backup_Done" xml:space="preserve"><value>Backup created.</value></data>
   <data name="Backup_NothingToBackUp" xml:space="preserve"><value>There's no world to back up yet (the server has never been started).</value></data>
+  <data name="Backup_WorldBusy" xml:space="preserve"><value>Another backup or a restore is already in progress. Wait for it to finish.</value></data>
   <data name="Backup_TriggerStart" xml:space="preserve"><value>before start</value></data>
   <data name="Backup_TriggerStop" xml:space="preserve"><value>on stop</value></data>
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>

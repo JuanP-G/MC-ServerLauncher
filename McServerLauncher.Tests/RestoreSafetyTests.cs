@@ -78,18 +78,41 @@ public class RestoreSafetyTests : IDisposable
     }
 
     [Fact]
-    public void NothingStartsTheServerWhileItRestores()
+    public void ARestoreThatCannotMoveTheOldWorldAsideLeavesNoSecondCopy()
     {
-        _ui.Run(() =>
-        {
-            var server = new ServerViewModel(new ServerConfig { Name = "survival", FolderPath = _root });
-            Assert.True(server.StartCommand.CanExecute(null));
+        // Something occupies the name the old world is moved to — here a file, which a folder can
+        // never be renamed over, on Windows or Linux. The unpacked backup, a whole second world,
+        // used to stay beside it as world.restoring until the next restore.
+        File.WriteAllText(World + ".replaced", "in the way");
 
-            server.IsRestoring = true;
+        Assert.ThrowsAny<IOException>(() => WorldBackupService.ReplaceWorld(World, BackupOf("yesterday")));
 
-            Assert.False(server.CanStart);
-            Assert.False(server.StartCommand.CanExecute(null));
-        });
+        Assert.Equal("today", File.ReadAllText(Path.Combine(World, "level.dat")));
+        Assert.False(Directory.Exists(World + ".restoring"));
+    }
+
+    /// <summary>Reports synchronously, so the test can look at the server in the middle of the restore.</summary>
+    private sealed class DuringRestore(Action look) : IProgress<string>
+    {
+        public void Report(string value) => look();
+    }
+
+    [Fact]
+    public async Task NothingStartsTheServerWhileItRestores()
+    {
+        ServerViewModel? server = null;
+        _ui.Run(() => server = new ServerViewModel(new ServerConfig { Name = "survival", FolderPath = _root }));
+        Assert.True(server!.StartCommand.CanExecute(null));
+
+        // Awaited here, not on the UI thread: blocking that thread would deadlock the restore.
+        var couldStart = new List<bool>();
+        var result = await server.BackupCoordinator.RestoreAsync(BackupOf("yesterday"),
+            new DuringRestore(() => couldStart.Add(server.CanStart || server.StartCommand.CanExecute(null))));
+
+        Assert.Equal(RestoreResult.Restored, result);
+        Assert.NotEmpty(couldStart);
+        Assert.All(couldStart, Assert.False);
+        Assert.True(server.CanStart);   // and it can again once the world is back
     }
 
     public void Dispose()

@@ -292,6 +292,9 @@
   <data name="Msg_BackupSaveNotConfirmed" xml:space="preserve"><value>[Cópia] O servidor não confirmou a gravação a tempo; copia-se na mesma.</value></data>
   <data name="Msg_BackupSavesResumed" xml:space="preserve"><value>[Cópia] Gravação do mundo retomada.</value></data>
   <data name="Msg_BackupAlreadyRunning" xml:space="preserve"><value>[Cópia] Já há uma cópia de segurança em curso.</value></data>
+  <data name="Msg_StopWaitsForBackup" xml:space="preserve"><value>[Cópia] À espera que a cópia em curso termine antes de parar o servidor...</value></data>
+  <data name="Msg_BackupFailedStartingAnywayFmt" xml:space="preserve"><value>[Cópia] Não foi possível fazer a cópia antes de arrancar ({0}). O servidor arranca na mesma; a próxima cópia volta a tentar.</value></data>
+  <data name="Backup_RestoreNeedsStopped" xml:space="preserve"><value>O servidor arrancou entretanto. Para-o para restaurar a cópia.</value></data>
   <data name="Backup_NoneYet" xml:space="preserve"><value>Ainda não há cópias de segurança.</value></data>
   <data name="Backup_RestoreButton" xml:space="preserve"><value>Restaurar</value></data>
   <data name="Backup_RestoreTitle" xml:space="preserve"><value>Restaurar cópia de segurança</value></data>
@@ -300,6 +303,7 @@
   <data name="Backup_Creating" xml:space="preserve"><value>A criar cópia de segurança...</value></data>
   <data name="Backup_Done" xml:space="preserve"><value>Cópia de segurança criada.</value></data>
   <data name="Backup_NothingToBackUp" xml:space="preserve"><value>Ainda não há mundo para copiar (o servidor nunca foi iniciado).</value></data>
+  <data name="Backup_WorldBusy" xml:space="preserve"><value>Já há outra cópia ou um restauro em curso. Espera que termine.</value></data>
   <data name="Backup_TriggerStart" xml:space="preserve"><value>antes de arrancar</value></data>
   <data name="Backup_TriggerStop" xml:space="preserve"><value>ao parar</value></data>
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>

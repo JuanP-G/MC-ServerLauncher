@@ -336,8 +336,11 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`ServerIconService`** — genera el `server-icon.png` de un servidor: toma cualquier imagen del
   usuario, la recorta al cuadrado centrado y la escala a 64×64 con SkiaSharp. (Quien lo lee de vuelta
   para la vista estilo Minecraft es `ServerViewModel.LoadIcon`.)
-- **`WorldBackupService`** — crea y restaura copias zip del mundo del servidor
-  (`<servidor>/backups/`), podando las antiguas según la retención.
+- **`BackupCoordinator`** — el orden en que las copias, las restauraciones y el arranque y la parada
+  de la JVM tocan el mundo; ver *Copias del mundo* más abajo. Habla con su servidor por `IBackupHost`,
+  así que el protocolo se prueba sin Avalonia (`BackupCoordinatorTests`).
+- **`WorldBackupService`** — crea y restaura copias zip del mundo del servidor (`<servidor>/backups/`),
+  con el Nether y el End que un servidor Bukkit guarda al lado, podando las antiguas según la retención.
 - **`LiveWorldBackup`** / **`SaveConfirmation`** / **`BackupSchedule`** — copiar un mundo en el que
   todavía se está jugando: pausar el guardado, reconocer el volcado y decidir cuándo toca
 - **`CrashReportService`** — lee `crash-reports/*.txt` para extraer la línea `Description:` y mostrar
@@ -456,11 +459,13 @@ primero suelta el listener del encendido bajo demanda (tiene el puerto del servi
    avisan antes de arrancar, no como un crash después.
 5. **Java** — `EnsureCompatibleJavaAsync` (usa `JavaService` para leer el Java requerido del jar e
    instalarlo si hace falta).
-6. **Copia** — la copia de arranque si las copias están activadas (espera a cualquier otra que siga
-   leyendo el mundo); con ellas desactivadas, igualmente espera a una hecha a mano.
-7. `ServerProcessManager.Start`, con la versión de Java leída antes fuera del hilo de la interfaz. La
-   línea de comandos es `-Xms`/`-Xmx`, los flags que añade la propia app (`ImpliedJvmFlags`), los
-   `ExtraJvmArgs` del servidor y el jar (o el fichero de argumentos de Forge/NeoForge modernos).
+6. **Copia y lanzamiento** — se lee la versión de Java fuera del hilo de la interfaz, y
+   `BackupCoordinator.StartAsync` toma el mundo (esperando a cualquier copia que siga leyéndolo), hace
+   la copia de arranque si las copias están activadas y el mundo ya no es el de la última copia, y
+   llama a `ServerProcessManager.Start` **sin soltarlo**, para que ninguna copia se cuele entre medias.
+   Si la copia falla, se dice en la consola y el servidor arranca igualmente. La línea de comandos es `-Xms`/`-Xmx`, los flags que añade la propia app (`ImpliedJvmFlags`), los
+   `ExtraJvmArgs` del servidor y el jar (o el fichero de argumentos de Forge/NeoForge modernos). Un
+   arranque que aún se preparaba cuando la app empieza a cerrarse ya no lanza nada.
 
 Todo ello puede durar minutos con un mundo grande que copiar, y el estado sigue siendo Detenido mientras
 tanto, así que `IsPreparing` está activo del primer paso al último: la lista y la cabecera dicen
@@ -632,6 +637,22 @@ tiempo mientras el servidor está en marcha. `ServerBackupsView` las lista y pue
 cualquiera (tomando antes una copia de seguridad por si acaso); restaurar sigue exigiendo el servidor
 parado, porque borra la carpeta del mundo y desempaqueta otra en su lugar.
 
+Vanilla y los cargadores de mods guardan todas las dimensiones dentro de la carpeta del mundo. **Paper y
+Purpur**, como todo servidor Bukkit, guardan el Nether y el End al lado, en `<mundo>_nether` y
+`<mundo>_the_end`, y esas carpetas se quedaban fuera de todas las copias.
+`WorldBackupService.DimensionsBeside` las encuentra en disco (no por el tipo de servidor: uno convertido
+desde Paper las sigue teniendo) y entran en el zip bajo una carpeta reservada,
+`.mcserverlauncher-dimensions/_nether|_the_end/`, con el mundo en la raíz como siempre: cualquier zip
+anterior se restaura igual que antes y no toca las dimensiones que haya en disco
+(`BukkitDimensionBackupTests`).
+
+Un zip se escribe como `<nombre>.zip.tmp` y solo pasa a `.zip` cuando está completo: una copia cortada
+(la app que se cierra, un fallo que el reintento no cubre) se quedaba en la lista como una copia más.
+Cualquier fallo borra el temporal, y la siguiente copia barre los que dejó una ejecución caída. Las
+fechas de archivo que el formato zip no admite (fuera de 1980–2107) se recortan, como hacía
+`ZipFile.CreateFromDirectory`: un solo archivo de 1970 hacía fallar todas las copias, y con ellas todos
+los arranques.
+
 Qué carpeta es esa lo dice `level-name`, un valor de un archivo que la app no escribió, así que
 `WorldBackupService.WorldFolderFor` solo acepta una que quede **estrictamente dentro de la carpeta del
 servidor y fuera de `backups/`** (`worlds/survival` vale). Con `level-name=.` restaurar borraba el
@@ -642,9 +663,30 @@ impedir que el servidor arranque (`BackupLevelNameTests`).
 El cambio en sí es todo o nada (`WorldBackupService.ReplaceWorld`): el zip se desempaqueta junto al
 mundo como `<mundo>.restoring`, y solo una copia completa ocupa su lugar, renombrando. Antes se borraba
 el mundo primero y se desempaquetaba en la carpeta vacía, así que un zip dañado o un disco lleno dejaban
-medio mundo. Y restaurar pasa por `ServerViewModel.RestoreBackupAsync`, que toma el mismo semáforo que
-cualquier copia, cierra el listener de despertar y activa `IsRestoring`, que impide cualquier arranque:
-el botón, un despertar o un reinicio automático (`RestoreSafetyTests`).
+medio mundo. El mundo y sus dimensiones hermanas se cambian como una sola unidad: si una no se puede
+colocar, todas las que ya se cambiaron vuelven atrás. Pase lo que pase, no queda ninguna carpeta
+`.restoring`.
+
+**Quién toca el mundo y cuándo** es cosa de `BackupCoordinator`, con una regla: lo que lee o reemplaza
+el mundo, o hace que la JVM empiece o deje de escribirlo, sostiene la misma puerta de principio a fin.
+Antes cada orden cogía la puerta solo para «la copia», y eso dejaba huecos:
+
+- **Parar, Reiniciar, la parada por inactividad y cerrar la app** mandaban `stop` mientras una copia
+  por reloj seguía zipeando. El servidor escribía el mundo al apagarse dentro de una copia que se
+  estaba leyendo, la copia de parada se rechazaba por «ya hay una en curso» y el zip roto quedaba
+  apuntado como igual al mundo. Ahora una parada toma la puerta primero (una copia por reloj se corta,
+  porque la de parada la sustituye; una manual se espera, con una línea en la consola), manda `stop`,
+  apunta el mundo y hace su copia dentro de la misma retención. Una caída mientras espera no se
+  reinicia.
+- **Un arranque** la sostiene desde su copia hasta lanzar la JVM (ver *Arrancar un servidor*).
+- **Restaurar** vuelve a preguntar, dentro de la puerta, si el servidor sigue parado y sin prepararse:
+  la confirmación puede quedarse abierta mientras alguien que pulsa Unirse, o un reinicio tras una
+  caída, lo arranca. Después activa `IsRestoring`, que cierra el listener de despertar e impide
+  cualquier arranque: el botón, un despertar o un reinicio automático (`RestoreSafetyTests`).
+- **Cerrar la app** solo corta la copia en curso. Una actualización fallida vuelve con los mismos
+  servidores, que tienen que poder seguir copiando.
+- **Una parada que nadie pidió** (una caída, `stop` escrito) apunta el mundo cuando nada más lo está
+  leyendo.
 
 Copiar un servidor **arrancado** pasa por `LiveWorldBackup`, porque zipear un mundo mientras la JVM
 escribe en él da una copia rota. Antes se le pide a Minecraft que lo suelte: `save-off`,
@@ -655,8 +697,9 @@ queda el guardado apagado pierde todo lo jugado hasta que alguien lo reinicie.
 
 `BackupSchedule` decide cuándo toca la siguiente automática, y responde `Skip` cuando el intervalo ha
 pasado pero nadie ha jugado desde la anterior — un servidor encendido toda la noche casi no cambia,
-así que copiarlo cada hora solo llenaría el disco. `ServerViewModel.RunBackupAsync` es la única
-puerta por la que pasan todas las copias, con un semáforo para que nunca se solapen dos.
+así que copiarlo cada hora solo llenaría el disco. Una copia pedida mientras otra sostiene el mundo se
+rechaza en vez de ponerse en cola, y la pestaña dice que el mundo está ocupado (antes decía que aún no
+había mundo).
 
 Las copias del arranque y de la parada también se saltan cuando **nadie ha tocado el mundo desde la
 anterior**. Un servidor que se duerme vacío lo despierta cualquiera que pulse Unirse, y cada vez que se
@@ -666,22 +709,25 @@ jugado. Comparar archivos no basta: un servidor arrancado escribe su mundo aunqu
 (`level.dat` guarda `LastPlayed`, los chunks del spawn avanzan), así que tras cualquier sesión los
 archivos son otros. Se usan dos señales:
 
-- **Mientras corre**, `ServerViewModel._playedSinceBackup` dice si el mundo ha podido cambiar: ha
+- **Mientras corre**, `BackupCoordinator.PlayedSinceBackup` dice si el mundo ha podido cambiar: ha
   entrado alguien, o se ha escrito en la consola un comando que `WorldCommand.Touches` no sabe que es
   inofensivo (`list`, `say`, baneos, OPs y la lista blanca lo son; cualquier otro, incluidos los de
   plugins, no). Empieza a true y vuelve a true tras cada parada; solo lo limpia un arranque cuya copia
   se hizo o ya estaba al día, y una copia en marcha lo limpia salvo que siga habiendo alguien dentro.
 - **En disco**, cada copia escribe `backups/last-backup.json`: el nombre del zip y una huella del mundo
-  (ruta, tamaño y fecha de cada archivo menos `session.lock`, más la ruta de la propia carpeta).
-  `WorldBackupService.IsUpToDate` solo es true si ese zip sigue existiendo y el mundo sigue igual, así
-  que tocar el mundo a mano con el servidor parado, o apuntar `level-name` a otro, sigue dando copia.
-  Tras una parada sin nadie, `NoteUntouchedWorldAsync` llama a `MarkUnchanged`, que vuelve a tomar la
-  huella del mundo frente al mismo zip: lo que el servidor escribe al pararse no cuenta. Nunca sustituye
-  a una copia que no existe.
+  (ruta, tamaño y fecha de cada archivo menos `session.lock`, con las dimensiones de Bukkit, más las
+  rutas de las propias carpetas), tomada **antes** del zip, para que describa lo que hay en él y no un
+  mundo que el servidor arrancado volvió a escribir mientras tanto. `WorldBackupService.IsUpToDate`
+  solo es true si ese zip sigue existiendo y el mundo sigue igual, así que tocar el mundo a mano con el
+  servidor parado, o apuntar `level-name` a otro, sigue dando copia. Tras una parada sin nadie,
+  `MarkUnchanged` vuelve a tomar la huella del mundo frente al mismo zip: lo que el servidor escribe al
+  pararse no cuenta. Nunca sustituye a una copia que no existe, y nunca se aplica a un servidor con
+  RCON activo (`enable-rcon=true`), donde un `/fill` puede llegar sin que entre nadie.
 
-`BackupUnlessUnchangedAsync` comprueba y copia dentro del mismo semáforo, y dice *Copia de seguridad
-saltada* en la consola cuando se la salta (`UnchangedWorldBackupTests`, `SkipUnchangedBackupTests`,
-`WorldCommandTests`).
+Lo que esto no ve: una granja en los chunks del spawn, que avanzan sin nadie cerca, o un plugin con
+temporizador. Esos cambios esperan a la próxima vez que alguien juegue. La comprobación y la copia se
+hacen dentro de la misma retención, y la consola dice *Copia de seguridad saltada* cuando se la salta
+(`UnchangedWorldBackupTests`, `SkipUnchangedBackupTests`, `WorldCommandTests`).
 
 La retención cuenta **por separado** las automáticas (`start`, `stop`, `auto`) y las del usuario
 (`manual`, `before-restore`). Una sola cuenta dejó de servir el día que empezaron a hacerse copias
@@ -690,8 +736,9 @@ antes de probar algo era la primera en irse. Los zips que la app no escribió no
 
 La pestaña de copias lo dice, porque una lista plana no lo decía: se leía como «cinco de cada tipo» y
 faltando la mitad, cuando era el montón automático lleno. `ServerBackupsViewModel` enseña cada montón
-frente a su cupo, el espacio que ocupan y cuándo toca la próxima (`ServerViewModel.NextAutoBackupUtc`),
-las ordena por días con un filtro y marca la más antigua de un montón lleno como la que su próxima copia
+frente a su cupo, el espacio que ocupan y cuándo toca la próxima (`ServerViewModel.NextAutoBackupUtc`,
+solo con el servidor en marcha, que es cuando empieza el reloj), las ordena por días en el idioma de la
+app con un filtro y marca la más antigua de un montón lleno como la que su próxima copia
 borrará. Los campos de retención y del reloj le llegan por `ConfigEffect.ReloadBackups`.
 
 ### Auto-reinicio tras un crash
