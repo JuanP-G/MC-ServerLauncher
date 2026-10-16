@@ -81,12 +81,14 @@ public static partial class PlayerEventParser
 
     // Anchored to the start of the message, like every other detector: a chat line quoting it has
     // "<Bob> " in front and does not match.
-    [GeneratedRegex(@"^(" + PlayerNames.Pattern + @") has (?:made the advancement|completed the challenge|reached the goal) \[(.+)\]\s*$")]
+    [GeneratedRegex(@"^(" + PlayerNames.Pattern + @") has " +
+                    @"(?:made the advancement|completed the challenge|reached the goal) \[(.+)\]\s*$")]
     private static partial Regex Advancement();
 
     // Anchored like the rest. It used to look for "]: UUID of player" anywhere in the line, and a
     // player typing "x]: UUID of player Alice is …" in chat could tie Alice's history — and the
     // statistics read for her — to any UUID they liked.
-    [GeneratedRegex(@"^UUID of player (" + PlayerNames.Pattern + @") is ([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\s*$")]
+    [GeneratedRegex(@"^UUID of player (" + PlayerNames.Pattern + @") is " +
+                    @"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\s*$")]
     private static partial Regex UuidLine();
 }
