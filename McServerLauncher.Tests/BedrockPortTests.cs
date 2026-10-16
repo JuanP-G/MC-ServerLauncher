@@ -178,7 +178,8 @@ public class BedrockPortTests
     [Fact]
     public void NothingIsDeletedWhenTheUserDidNotAskOrThereIsNoPort()
     {
-        Assert.False(PlayitApiService.ShouldDeleteBedrockTunnel(userAskedToDelete: false, bedrockPort: 19133));
+        Assert.False(PlayitApiService.ShouldDeleteBedrockTunnel(userAskedToDelete: false,
+            bedrockPort: 19133));
         Assert.False(PlayitApiService.ShouldDeleteBedrockTunnel(userAskedToDelete: true, bedrockPort: null));
         Assert.False(PlayitApiService.ShouldDeleteBedrockTunnel(userAskedToDelete: true, bedrockPort: 0));
     }
@@ -242,7 +243,8 @@ public class BedrockPortTests
     /// <summary>The block of XAML that shows the local port and the state.</summary>
     private static string BedrockPanelMarkup()
     {
-        var view = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml");
+        var view = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views",
+            "MainWindow.axaml");
         var xaml = File.ReadAllText(view);
 
         var start = xaml.IndexOf("IsVisible=\"{Binding IsCrossplayOn}\"", StringComparison.Ordinal);

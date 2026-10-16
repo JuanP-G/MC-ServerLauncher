@@ -165,7 +165,8 @@ public class NewServerCreateFormTests(AvaloniaFixture ui)
 [Collection("avalonia")]
 public class NewServerStepsTests(AvaloniaFixture ui) : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-new-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-new-" + Guid.NewGuid()
+        .ToString("N"));
 
     public void Dispose()
     {
@@ -185,7 +186,8 @@ public class NewServerStepsTests(AvaloniaFixture ui) : IDisposable
             // under the very pointer that had just clicked it.
             var view = new NewServerView();
 
-            Named<Button>(view, card).RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+            Named<Button>(view, card)
+                .RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
 
             Assert.False(Named<Control>(view, "OriginStep").IsVisible);
             Assert.True(Named<Control>(view, "DetailsStep").IsVisible);
@@ -227,7 +229,13 @@ public class NewServerStepsTests(AvaloniaFixture ui) : IDisposable
     {
         Directory.CreateDirectory(folder);
         File.WriteAllText(Path.Combine(folder, "server.jar"), "");
-        return new ServerDetection { Type = ServerType.Paper, GameVersion = "1.21.1", JarFile = "server.jar", Jars = new[] { "server.jar" } };
+        return new ServerDetection
+        {
+            Type = ServerType.Paper,
+            GameVersion = "1.21.1",
+            JarFile = "server.jar",
+            Jars = new[] { "server.jar" }
+        };
     }
 
     [Fact]

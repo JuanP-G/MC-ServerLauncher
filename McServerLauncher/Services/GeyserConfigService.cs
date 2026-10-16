@@ -183,7 +183,8 @@ public static class GeyserConfigService
     /// comment in the file, and in Geyser's config the comments <em>are</em> the documentation —
     /// the next person to open it by hand would find it stripped bare.
     /// </remarks>
-    public static string SetBedrockPorts(string yaml, int bedrockPort, int? broadcastPort, bool floodgate = true)
+    public static string SetBedrockPorts(string yaml, int bedrockPort, int? broadcastPort,
+        bool floodgate = true)
     {
         var newline = yaml.Contains("\r\n") ? "\r\n" : "\n";
         var lines = yaml.Replace("\r\n", "\n").Split('\n').ToList();

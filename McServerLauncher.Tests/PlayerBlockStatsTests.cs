@@ -57,7 +57,8 @@ public class PlayerBlockStatsTests
         var stats = PlayerStatsReader.Parse(Full)!;
 
         Assert.Equal(
-            new[] { "minecraft:stone", "minecraft:dirt", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris" },
+            new[] { "minecraft:stone", "minecraft:dirt", "minecraft:deepslate_diamond_ore",
+                "minecraft:ancient_debris" },
             stats.Mined.Select(e => e.Id));
         Assert.Equal(800, stats.Mined[0].Count);
         Assert.Equal(1000, stats.BlocksMined);

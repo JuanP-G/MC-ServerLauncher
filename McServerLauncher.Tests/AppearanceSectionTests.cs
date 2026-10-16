@@ -19,7 +19,8 @@ namespace McServerLauncher.Tests;
 [Collection("avalonia")]
 public class AppearanceSectionTests(AvaloniaFixture ui) : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-look-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-look-" + Guid.NewGuid()
+        .ToString("N"));
 
     public void Dispose()
     {
@@ -29,8 +30,16 @@ public class AppearanceSectionTests(AvaloniaFixture ui) : IDisposable
     private ServerConfig Server(string? motd, bool wake = false)
     {
         Directory.CreateDirectory(_folder);
-        if (motd is not null) File.WriteAllText(Path.Combine(_folder, "server.properties"), "motd=" + motd + "\nmax-players=8\n");
-        return new ServerConfig { Name = "ServerMC", FolderPath = _folder, WakeOnDemand = wake, Type = ServerType.Fabric, GameVersion = "26.2" };
+        if (motd is not null) File.WriteAllText(Path.Combine(_folder, "server.properties"),
+            "motd=" + motd + "\nmax-players=8\n");
+        return new ServerConfig
+        {
+            Name = "ServerMC",
+            FolderPath = _folder,
+            WakeOnDemand = wake,
+            Type = ServerType.Fabric,
+            GameVersion = "26.2"
+        };
     }
 
     /// <summary>
@@ -96,7 +105,8 @@ public class AppearanceSectionTests(AvaloniaFixture ui) : IDisposable
             line1.SelectionStart = 1;
             line1.SelectionEnd = 3;
 
-            var gold = Named<Panel>(dialog, "ColorPanel").Children.OfType<Button>().First(b => (char)b.Tag! == '6');
+            var gold = Named<Panel>(dialog, "ColorPanel").Children.OfType<Button>()
+                .First(b => (char)b.Tag! == '6');
             gold.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
             AvaloniaFixture.Pump();
 
@@ -140,7 +150,8 @@ public class AppearanceSectionTests(AvaloniaFixture ui) : IDisposable
             var line1 = Named<TextBox>(dialog, "Line1Box");
             line1.Focus();
             line1.CaretIndex = 2;
-            var red = Named<Panel>(dialog, "ColorPanel").Children.OfType<Button>().First(b => (char)b.Tag! == 'c');
+            var red = Named<Panel>(dialog, "ColorPanel").Children.OfType<Button>()
+                .First(b => (char)b.Tag! == 'c');
             red.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
 
             line1.Text = "abc";
@@ -279,7 +290,8 @@ public class AppearanceSectionTests(AvaloniaFixture ui) : IDisposable
             Assert.True(File.Exists(icon));
 
             var again = Open(config);
-            Named<Button>(again, "RemoveImageButton").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+            Named<Button>(again, "RemoveImageButton")
+                .RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
             again.Draft.Apply();
             Assert.False(File.Exists(icon));
         });
@@ -304,7 +316,11 @@ public class AppearanceSectionTests(AvaloniaFixture ui) : IDisposable
 
             foreach (var ch in "cdefg")
             {
-                line1.RaiseEvent(new TextInputEventArgs { RoutedEvent = InputElement.TextInputEvent, Text = ch.ToString() });
+                line1.RaiseEvent(new TextInputEventArgs
+                {
+                    RoutedEvent = InputElement.TextInputEvent,
+                    Text = ch.ToString()
+                });
                 AvaloniaFixture.Pump();
             }
 

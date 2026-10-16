@@ -169,7 +169,9 @@ public partial class ServerBackupsViewModel : ObservableObject
     [RelayCommand]
     private void ShowManual() => Filter = BackupFilter.Manual;
 
-    /// <summary>The counts against their limits, the space and the next backup, from the list as read.</summary>
+    /// <summary>
+    /// The counts against their limits, the space and the next backup, from the list as read.
+    /// </summary>
     /// <remarks>Also when nothing on disk changed: the limits and the clock live in the config.</remarks>
     internal void RefreshSummary()
     {
@@ -190,7 +192,8 @@ public partial class ServerBackupsViewModel : ObservableObject
 
         foreach (var name in new[]
                  {
-                     nameof(AutomaticCount), nameof(ManualCount), nameof(AutomaticCountText), nameof(ManualCountText),
+                     nameof(AutomaticCount), nameof(ManualCount), nameof(AutomaticCountText),
+                         nameof(ManualCountText),
                      nameof(AutomaticFill), nameof(ManualFill), nameof(TotalSizeText), nameof(NextBackupText),
                      nameof(IsEmpty),
                  })

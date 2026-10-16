@@ -38,7 +38,8 @@ public class PlayitSourcesTests
         var kinds = Of(settings, installed: "installed").Select(s => s.Kind);
 
         Assert.Equal(
-            [PlayitConnection.SourceKind.AppAgent, PlayitConnection.SourceKind.InstalledAgent, PlayitConnection.SourceKind.SavedKey],
+            [PlayitConnection.SourceKind.AppAgent, PlayitConnection.SourceKind.InstalledAgent,
+                PlayitConnection.SourceKind.SavedKey],
             kinds);
     }
 

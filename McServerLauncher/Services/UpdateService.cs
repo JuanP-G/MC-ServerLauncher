@@ -40,7 +40,9 @@ public class UpdateService
     public record UpdateInfo(string Version, string Url, string? PackageUrl, string? PackageName,
         string? ChecksumUrl, bool IsPreRelease = false);
 
-    /// <summary>Returns the latest version if it is newer than <paramref name="current"/>; otherwise null.</summary>
+    /// <summary>
+    /// Returns the latest version if it is newer than <paramref name="current"/>; otherwise null.
+    /// </summary>
     /// <param name="current">The version running.</param>
     /// <param name="includePreReleases">Whether betas count. The user's choice; off by default.</param>
     /// <param name="ct">Cancels the request.</param>
@@ -65,7 +67,8 @@ public class UpdateService
         var url = release.TryGetProperty("html_url", out var u) ? u.GetString() : null;
         if (tag is null || url is null) return null;
 
-        var isPreRelease = release.TryGetProperty("prerelease", out var pre) && pre.ValueKind == JsonValueKind.True;
+        var isPreRelease = release.TryGetProperty("prerelease", out var pre)
+            && pre.ValueKind == JsonValueKind.True;
 
         var assets = ReadAssets(release);
         var (packageName, packageUrl) = PickPackage(assets, CurrentOs, RuntimeInformation.OSArchitecture);
@@ -82,7 +85,8 @@ public class UpdateService
                 assets.TryGetValue(packageName + ".sha256", out checksumUrl);
         }
 
-        return new UpdateInfo(tag.TrimStart('v', 'V'), url, packageUrl, packageName, checksumUrl, isPreRelease);
+        return new UpdateInfo(tag.TrimStart('v', 'V'), url, packageUrl, packageName, checksumUrl,
+            isPreRelease);
     }
 
     /// <summary>
@@ -161,8 +165,10 @@ public class UpdateService
     {
         var wanted = os switch
         {
-            "windows" => assets.Keys.FirstOrDefault(k => k.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)),
-            "linux" => assets.Keys.FirstOrDefault(k => k.EndsWith(".AppImage", StringComparison.OrdinalIgnoreCase)),
+            "windows" => assets.Keys.FirstOrDefault(k
+                => k.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)),
+            "linux" => assets.Keys.FirstOrDefault(k
+                => k.EndsWith(".AppImage", StringComparison.OrdinalIgnoreCase)),
             // Installing the wrong architecture would produce an app that cannot start, so the name
             // is matched exactly rather than falling back to "any .dmg".
             "macos" => assets.Keys.FirstOrDefault(k =>
@@ -181,7 +187,8 @@ public class UpdateService
     /// unreachable, malformed, or has no entry for that file — the in-app updater treats that as a
     /// refusal to run the installer (verification is mandatory), falling back to the release page.
     /// </summary>
-    public async Task<string?> GetExpectedSha256Async(string sha256SumsUrl, string fileName, CancellationToken ct = default)
+    public async Task<string?> GetExpectedSha256Async(string sha256SumsUrl, string fileName,
+        CancellationToken ct = default)
     {
         try
         {
@@ -208,8 +215,11 @@ public class UpdateService
         return null;
     }
 
-    /// <summary>Downloads the installer to <paramref name="destPath"/>. Returns the downloaded path.</summary>
-    public async Task<string> DownloadInstallerAsync(string url, string destPath, CancellationToken ct = default)
+    /// <summary>
+    /// Downloads the installer to <paramref name="destPath"/>. Returns the downloaded path.
+    /// </summary>
+    public async Task<string> DownloadInstallerAsync(string url, string destPath,
+        CancellationToken ct = default)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         req.Headers.UserAgent.ParseAdd("MC-ServerLauncher");

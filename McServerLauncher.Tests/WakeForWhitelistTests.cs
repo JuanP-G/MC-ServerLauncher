@@ -86,7 +86,9 @@ public class WakeForWhitelistTests
         Assert.Equal("waking", message);
     }
 
-    /// <summary>Connects as <paramref name="player"/>; returns who the listener asked about, and what it said.</summary>
+    /// <summary>
+    /// Connects as <paramref name="player"/>; returns who the listener asked about, and what it said.
+    /// </summary>
     private static async Task<(string? Asked, string? Message)> JoinAs(string player, bool allow)
     {
         var port = FreePort();

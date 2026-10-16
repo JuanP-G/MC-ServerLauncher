@@ -19,15 +19,21 @@ public partial class JavaService
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(15) };
 
-    /// <summary>A Java runtime found on the machine: where its executable is, and its major version.</summary>
-    /// <param name="Path">Full path to the <c>java</c> executable, which is what a server is launched with.</param>
-    /// <param name="Major">The feature release (8, 17, 21…) — the only part a Minecraft version cares about.</param>
+    /// <summary>
+    /// A Java runtime found on the machine: where its executable is, and its major version.
+    /// </summary>
+    /// <param name="Path">Full path to the <c>java</c> executable, which is what a server is launched
+    /// with.</param>
+    /// <param name="Major">The feature release (8, 17, 21…) — the only part a Minecraft version cares
+    /// about.</param>
     public record JavaInstall(string Path, int Major);
 
     private static string ManagedRoot => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "java");
 
-    /// <summary>The java executable name for the current OS ("java.exe" on Windows, "java" elsewhere).</summary>
+    /// <summary>
+    /// The java executable name for the current OS ("java.exe" on Windows, "java" elsewhere).
+    /// </summary>
     private static string JavaExeName => OperatingSystem.IsWindows() ? "java.exe" : "java";
 
     [GeneratedRegex("version \"(\\d+)(?:\\.(\\d+))?")]
@@ -121,7 +127,8 @@ public partial class JavaService
     }
 
     /// <summary>What each Java executable answered, keyed by its path and stamped with its file.</summary>
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (long Length, DateTime Written, int Major)>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string,
+        (long Length, DateTime Written, int Major)>
         Versions = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>The major version (8, 17, 21, 25...) of a Java executable. 0 on failure.</summary>
@@ -225,7 +232,8 @@ public partial class JavaService
             if (!Directory.Exists(root)) return null;
 
             var dirs = Directory.GetDirectories(root)
-                .OrderByDescending(d => string.Equals(Path.GetFileName(d), gameVersion, StringComparison.OrdinalIgnoreCase));
+                .OrderByDescending(d => string.Equals(Path.GetFileName(d), gameVersion,
+                    StringComparison.OrdinalIgnoreCase));
 
             // A version dir holds several jars (server-x.y.z.jar, -extra, -srg...): the plain one
             // and -extra both carry version.json; the others just return null harmlessly.
@@ -272,7 +280,8 @@ public partial class JavaService
     /// Returns the path to a java executable compatible with the required version. If none is
     /// installed, downloads and installs the matching Temurin. Throws if it can't.
     /// </summary>
-    public async Task<string> EnsureJavaAsync(int requiredMajor, IProgress<string>? log, CancellationToken ct = default)
+    public async Task<string> EnsureJavaAsync(int requiredMajor, IProgress<string>? log,
+        CancellationToken ct = default)
     {
         // Off the caller's thread: it starts a JVM per installation found, and the caller is the UI.
         var installed = await Task.Run(DetectInstalled, ct);
@@ -288,7 +297,9 @@ public partial class JavaService
         return await DownloadAdoptiumAsync(download, log, ct);
     }
 
-    /// <summary>The Adoptium architectures to ask for, in order, on a machine of <paramref name="arch"/>.</summary>
+    /// <summary>
+    /// The Adoptium architectures to ask for, in order, on a machine of <paramref name="arch"/>.
+    /// </summary>
     /// <remarks>
     /// <para>
     /// ARM machines get a native build where there is one, and an x64 one where there is not — but
@@ -303,12 +314,13 @@ public partial class JavaService
     /// still wants a native Java if one exists.
     /// </para>
     /// </remarks>
-    internal static IReadOnlyList<string> AdoptiumArchitectures(Architecture arch, bool emulatesX64) => arch switch
-    {
-        Architecture.Arm64 => emulatesX64 ? new[] { "aarch64", "x64" } : new[] { "aarch64" },
-        Architecture.X86 => new[] { "x86" },
-        _ => new[] { "x64" }
-    };
+    internal static IReadOnlyList<string> AdoptiumArchitectures(Architecture arch, bool emulatesX64)
+        => arch switch
+        {
+            Architecture.Arm64 => emulatesX64 ? new[] { "aarch64", "x64" } : new[] { "aarch64" },
+            Architecture.X86 => new[] { "x86" },
+            _ => new[] { "x64" }
+        };
 
     /// <summary>The download link and checksum of the first package in an Adoptium answer.</summary>
     private static (string? Link, string? Checksum) FirstPackage(string json)
@@ -440,7 +452,9 @@ public partial class JavaService
         await TarFile.ExtractToDirectoryAsync(gz, destDir, overwriteFiles: true, ct);
     }
 
-    /// <summary>Resolves the 'java' executable on PATH (Linux/macOS) via 'which'. Null if not found.</summary>
+    /// <summary>
+    /// Resolves the 'java' executable on PATH (Linux/macOS) via 'which'. Null if not found.
+    /// </summary>
     private static string? WhichJava()
     {
         var result = ProcessRunner.Run("which", ["java"], TimeSpan.FromSeconds(3));

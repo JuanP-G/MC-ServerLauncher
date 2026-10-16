@@ -22,7 +22,8 @@ public class HexBrushConverter : IValueConverter
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is string hex && NotificationPalette.IsValid(hex) && Color.TryParse(hex.Trim(), out var colour))
+        if (value is string hex && NotificationPalette.IsValid(hex)
+            && Color.TryParse(hex.Trim(), out var colour))
             return new SolidColorBrush(colour);
 
         return Brushes.Transparent;

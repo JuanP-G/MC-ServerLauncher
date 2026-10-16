@@ -90,8 +90,10 @@ public class ConsoleChatTests
     {
         // Callers that have no player list (tests, imports) get the safe answer.
         Assert.Equal(ConsoleLineKind.Chat,
-            ConsoleLineClassifier.Classify("[21:10:03] [Server thread/INFO]: [Server] hola", ConsoleSource.Stdout));
+            ConsoleLineClassifier.Classify("[21:10:03] [Server thread/INFO]: [Server] hola",
+                ConsoleSource.Stdout));
         Assert.Equal(ConsoleLineKind.Info,
-            ConsoleLineClassifier.Classify("[21:10:03] [Server thread/INFO]: [Alice] hola", ConsoleSource.Stdout));
+            ConsoleLineClassifier.Classify("[21:10:03] [Server thread/INFO]: [Alice] hola",
+                ConsoleSource.Stdout));
     }
 }

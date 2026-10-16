@@ -3,7 +3,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace McServerLauncher.ViewModels;
 
-/// <summary>One row of the "you can clean up" panel: a jar, why it is there, and whether it is ticked.</summary>
+/// <summary>
+/// One row of the "you can clean up" panel: a jar, why it is there, and whether it is ticked.
+/// </summary>
 public partial class CleanupSuggestionViewModel : ObservableObject
 {
     public CleanupSuggestionViewModel(string path, string fileName, string reason, string key)

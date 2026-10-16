@@ -44,7 +44,9 @@ public class PlayitPartnerService
 
     public PlayitPartnerService() : this(null, null) { }
 
-    /// <summary>Test/overridable constructor. Null baseUrl uses the proxy (or PLAYIT_PROXY_URL in Debug).</summary>
+    /// <summary>
+    /// Test/overridable constructor. Null baseUrl uses the proxy (or PLAYIT_PROXY_URL in Debug).
+    /// </summary>
     public PlayitPartnerService(string? baseUrl, HttpClient? http)
     {
         _baseUrl = (baseUrl ?? ProxyUrlFromEnvironment ?? DefaultProxyUrl).TrimEnd('/');
@@ -137,7 +139,8 @@ public class PlayitPartnerService
         var accountId = data.TryGetProperty("account_id", out var a) && a.TryGetInt64(out var id) ? id : 0L;
         var agentId = data.TryGetProperty("agent_id", out var ag) ? ag.GetString() ?? "" : "";
         var secret = data.TryGetProperty("agent_secret_key", out var s) ? s.GetString() ?? "" : "";
-        var overLimit = data.TryGetProperty("agent_over_limit", out var o) && o.ValueKind == JsonValueKind.True;
+        var overLimit = data.TryGetProperty("agent_over_limit", out var o)
+            && o.ValueKind == JsonValueKind.True;
 
         if (string.IsNullOrEmpty(secret) || string.IsNullOrEmpty(agentId))
             throw new UserFacingException(string.Format(
@@ -182,7 +185,8 @@ public class PlayitPartnerService
             if (root.TryGetProperty("data", out var d))
             {
                 if (d.ValueKind == JsonValueKind.String) return d.GetString();
-                if (d.TryGetProperty("message", out var dm) && dm.GetString() is { Length: > 0 } dmsg) return dmsg;
+                if (d.TryGetProperty("message", out var dm)
+                    && dm.GetString() is { Length: > 0 } dmsg) return dmsg;
                 if (d.TryGetProperty("type", out var t) && t.GetString() is { Length: > 0 } type) return type;
             }
         }

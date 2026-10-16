@@ -86,7 +86,8 @@ public class MarqueeTextTests(AvaloniaFixture ui)
 
         Assert.Equal(0, MarqueeText.OffsetAt(TimeSpan.Zero, 80));
         Assert.Equal(0, MarqueeText.OffsetAt(rest - TimeSpan.FromMilliseconds(1), 80));
-        Assert.Equal(80, MarqueeText.OffsetAt(rest + TimeSpan.FromSeconds(2) + TimeSpan.FromMilliseconds(1), 80));
+        Assert.Equal(80, MarqueeText.OffsetAt(rest + TimeSpan.FromSeconds(2) + TimeSpan.FromMilliseconds(1),
+            80));
     }
 
     [Fact]
@@ -171,7 +172,9 @@ public class MarqueeScopeTests(AvaloniaFixture ui)
     {
         var views = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views");
 
-        Assert.Contains("controls:MarqueeText.IsHoverScope=\"True\"", File.ReadAllText(Path.Combine(views, "ServerCardView.axaml")));
-        Assert.Contains("controls:MarqueeText.IsHoverScope=\"True\"", File.ReadAllText(Path.Combine(views, "TunnelsView.axaml")));
+        Assert.Contains("controls:MarqueeText.IsHoverScope=\"True\"",
+            File.ReadAllText(Path.Combine(views, "ServerCardView.axaml")));
+        Assert.Contains("controls:MarqueeText.IsHoverScope=\"True\"",
+            File.ReadAllText(Path.Combine(views, "TunnelsView.axaml")));
     }
 }

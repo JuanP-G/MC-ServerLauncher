@@ -61,7 +61,9 @@ public partial class MainViewModel : ObservableObject
     /// <summary>The new-server panel is on screen.</summary>
     public bool IsCreatingServer => IsNewServerOpen && NewServerPanel is not null;
 
-    /// <summary>An unfinished new server is waiting, put away while another server is being looked at.</summary>
+    /// <summary>
+    /// An unfinished new server is waiting, put away while another server is being looked at.
+    /// </summary>
     public bool HasNewServerDraft => NewServerPanel is not null && !IsNewServerOpen;
 
     public string NewServerTip => Localizer.Get(HasNewServerDraft ? "New_ResumeTip" : "New_Title");
@@ -86,7 +88,9 @@ public partial class MainViewModel : ObservableObject
     /// <summary>The page the settings last showed, to open on next time.</summary>
     private ServerSettingsPage _lastSettingsPage = ServerSettingsPage.Game;
 
-    /// <summary>The selected server's detail, unless the new-server panel or its settings have the space.</summary>
+    /// <summary>
+    /// The selected server's detail, unless the new-server panel or its settings have the space.
+    /// </summary>
     public bool ShowServerDetail => HasSelection && !IsCreatingServer && !IsEditingServer;
 
     public bool ShowEmptyState => !HasSelection && !IsCreatingServer;
@@ -103,7 +107,8 @@ public partial class MainViewModel : ObservableObject
 
     /// <summary>What the About screen says about updates; the banner keeps its own flag.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsCheckingUpdates), nameof(IsUpToDate), nameof(UpdateCheckFailed), nameof(UpdateCheckText))]
+    [NotifyPropertyChangedFor(nameof(IsCheckingUpdates), nameof(IsUpToDate), nameof(UpdateCheckFailed),
+        nameof(UpdateCheckText))]
     private UpdateCheckState _updateCheckState = UpdateCheckState.Unknown;
 
     [ObservableProperty]
@@ -128,7 +133,8 @@ public partial class MainViewModel : ObservableObject
 
     /// <summary>The version running, as its release calls it.</summary>
     public string VersionText =>
-        Changelog.Format(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0));
+        Changelog.Format(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version
+            ?? new Version(0, 0));
 
     /// <summary>"Version 1.12.1 · MIT", under the name in About.</summary>
     public string VersionLineText => string.Format(Localizer.Get("About_VersionFmt"), VersionText);
@@ -136,7 +142,8 @@ public partial class MainViewModel : ObservableObject
     // ---- Sections ----
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsSettingsSection), nameof(IsAboutSection))]
+    [NotifyPropertyChangedFor(nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsSettingsSection),
+        nameof(IsAboutSection))]
     private AppSection _section = AppSection.Servers;
 
     public bool IsServersSection => Section == AppSection.Servers;
@@ -160,7 +167,9 @@ public partial class MainViewModel : ObservableObject
         Section = AppSection.Settings;
     }
 
-    /// <summary>The tunnels screen: the Playit account, every tunnel on it, and what to do about them.</summary>
+    /// <summary>
+    /// The tunnels screen: the Playit account, every tunnel on it, and what to do about them.
+    /// </summary>
     public TunnelsViewModel Tunnels { get; }
 
     [RelayCommand]
@@ -191,8 +200,10 @@ public partial class MainViewModel : ObservableObject
     private string? _checksumUrl;
 
     /// <summary>One entry of the language selector.</summary>
-    /// <param name="Code">The culture code stored in <c>AppSettings.Language</c> (es, en, pt, fr, de).</param>
-    /// <param name="Name">The language's name in itself, never translated — that is how a selector is read.</param>
+    /// <param name="Code">The culture code stored in <c>AppSettings.Language</c> (es, en, pt, fr,
+    /// de).</param>
+    /// <param name="Name">The language's name in itself, never translated — that is how a selector is
+    /// read.</param>
     public record LanguageOption(string Code, string Name);
 
     public IReadOnlyList<LanguageOption> Languages { get; } = new List<LanguageOption>
@@ -223,7 +234,8 @@ public partial class MainViewModel : ObservableObject
         Load();
         _appSettings = _settings.Load();
         Tunnels = new TunnelsViewModel(Servers, _appSettings, _settings, () => Owner, ConfigureServerAsync);
-        Settings = new SettingsViewModel(this, _appSettings, _settings, ApplyConsoleColours, ApplyWindowBehavior);
+        Settings = new SettingsViewModel(this, _appSettings, _settings, ApplyConsoleColours,
+            ApplyWindowBehavior);
 
         // Make the saved notification preferences the app-wide defaults for this session.
         NotificationPreferences.Global = _appSettings.Notifications;
@@ -232,7 +244,8 @@ public partial class MainViewModel : ObservableObject
         ApplyWindowBehavior();
 
         var saved = _appSettings.Language;
-        var code = !string.IsNullOrWhiteSpace(saved) ? saved : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        var code = !string.IsNullOrWhiteSpace(saved) ? saved
+            : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
         SelectedLanguage = Languages.FirstOrDefault(l => l.Code == code) ?? Languages[0];
         _languageReady = true;
 
@@ -442,7 +455,8 @@ public partial class MainViewModel : ObservableObject
         if (IsCheckingUpdates) return;
         if (manual) UpdateCheckState = UpdateCheckState.Checking;
 
-        var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0);
+        var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version
+            ?? new Version(0, 0);
         var (state, info) = await UpdateCheck.RunAsync(
             () => new UpdateService().CheckAsync(current, _appSettings.ReceiveBetas));
 
@@ -552,7 +566,8 @@ public partial class MainViewModel : ObservableObject
 
         // Random per-run folder: fixed names in %TEMP% could be pre-planted/replaced by
         // another local process between download and execution.
-        var updateDir = Path.Combine(Path.GetTempPath(), SelfUpdater.PackageFolderPrefix + Path.GetRandomFileName());
+        var updateDir = Path.Combine(Path.GetTempPath(),
+            SelfUpdater.PackageFolderPrefix + Path.GetRandomFileName());
         var stoppedEverything = false;
         try
         {
@@ -708,7 +723,9 @@ public partial class MainViewModel : ObservableObject
         return vm;
     }
 
-    /// <summary>Opens the new-server panel: create one from scratch, or add one that already exists.</summary>
+    /// <summary>
+    /// Opens the new-server panel: create one from scratch, or add one that already exists.
+    /// </summary>
     /// <remarks>
     /// <para>
     /// One panel for both, in the window, where two buttons used to open two dialogs. An unfinished
@@ -763,7 +780,8 @@ public partial class MainViewModel : ObservableObject
         NewServerPanel = null;
         IsNewServerOpen = false;
         if (wasOnScreen && SelectedServer is null)
-            SelectedServer = select is not null && Servers.Contains(select) ? select : Servers.FirstOrDefault();
+            SelectedServer = select is not null && Servers.Contains(select) ? select
+                : Servers.FirstOrDefault();
     }
     /// <summary>Registers what the panel produced and does what was asked for it.</summary>
     private async Task FinishNewServerAsync(NewServerResult result, bool select)
@@ -856,7 +874,9 @@ public partial class MainViewModel : ObservableObject
         return Task.CompletedTask;
     }
 
-    /// <summary>Puts <paramref name="server"/>'s settings in the detail area, on <paramref name="page"/>.</summary>
+    /// <summary>
+    /// Puts <paramref name="server"/>'s settings in the detail area, on <paramref name="page"/>.
+    /// </summary>
     private void OpenSettings(ServerViewModel server, ServerSettingsPage page)
     {
         if (ServerSettingsPanel is { } open && ReferenceEquals(open.Server, server))
@@ -981,7 +1001,9 @@ public partial class MainViewModel : ObservableObject
     /// </summary>
     private bool SettingsLetGo() => ServerSettingsPanel?.TryLeave() ?? true;
 
-    /// <summary>Throws the settings away, saved or not, and gives the detail area back to the server.</summary>
+    /// <summary>
+    /// Throws the settings away, saved or not, and gives the detail area back to the server.
+    /// </summary>
     private void CloseSettings()
     {
         if (ServerSettingsPanel is { } panel) _lastSettingsPage = panel.Page;
@@ -1049,7 +1071,8 @@ public partial class MainViewModel : ObservableObject
                 if (key is not null && port.HasValue)
                     javaDeleted = await api.DeleteTunnelForPortAsync(key, port.Value, udp: false);
 
-                if (key is not null && PlayitApiService.ShouldDeleteBedrockTunnel(dialog.DeleteTunnel, bedrockPort))
+                if (key is not null && PlayitApiService.ShouldDeleteBedrockTunnel(dialog.DeleteTunnel,
+                    bedrockPort))
                     await api.DeleteTunnelForPortAsync(key, bedrockPort!.Value, udp: true);
 
                 if (key is null)

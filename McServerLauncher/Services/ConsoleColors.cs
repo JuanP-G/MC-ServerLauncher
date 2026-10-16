@@ -55,7 +55,8 @@ public static class ConsoleColors
                 levels?.ColorInfo, NotificationLevel.Info),
 
             ConsoleLineKind.Chat => NotificationPalette.IsValid(chat) ? chat!.Trim() : DefaultChat,
-            ConsoleLineKind.Players => NotificationPalette.IsValid(players) ? players!.Trim() : DefaultPlayers,
+            ConsoleLineKind.Players => NotificationPalette.IsValid(players) ? players!.Trim()
+                : DefaultPlayers,
             ConsoleLineKind.Command => Command,
             _ => Info
         };

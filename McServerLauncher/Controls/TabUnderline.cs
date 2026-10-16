@@ -78,7 +78,8 @@ public class TabUnderline : SlidingIndicator
         var bottom = tab?.TranslatePoint(new Point(0, tab.Bounds.Height), this);
 
         if (title is null || origin is null || bottom is null) return null;
-        return new Rect(origin.Value.X, bottom.Value.Y - BottomGap - Thickness, title.Bounds.Width, Thickness);
+        return new Rect(origin.Value.X, bottom.Value.Y - BottomGap - Thickness, title.Bounds.Width,
+            Thickness);
     }
 
     /// <summary>

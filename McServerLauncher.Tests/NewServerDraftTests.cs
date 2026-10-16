@@ -18,7 +18,8 @@ namespace McServerLauncher.Tests;
 public class NewServerDraftTests : IDisposable
 {
     private readonly AvaloniaFixture _ui;
-    private readonly string _dataDir = Path.Combine(Path.GetTempPath(), "mcl-draft-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dataDir = Path.Combine(Path.GetTempPath(), "mcl-draft-" + Guid.NewGuid()
+        .ToString("N"));
 
     public NewServerDraftTests(AvaloniaFixture ui)
     {

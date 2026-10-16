@@ -43,7 +43,9 @@ public partial class ServerTypePicker : UserControl
         Build(ServerTypeCatalog.All);
     }
 
-    /// <summary>The type currently picked. Setting it moves the selection without raising the event.</summary>
+    /// <summary>
+    /// The type currently picked. Setting it moves the selection without raising the event.
+    /// </summary>
     /// <remarks>
     /// Tracked in a field rather than read back from whichever card is checked. Reading the cards
     /// made this one selection behind: a RadioButton raises its own "checked" before its siblings

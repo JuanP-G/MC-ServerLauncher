@@ -21,14 +21,17 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class ServerDetectionTests : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-detect-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-detect-" + Guid.NewGuid()
+        .ToString("N"));
 
     public ServerDetectionTests() => Directory.CreateDirectory(_folder);
 
     private ServerDetection Detect(string? preferredJar = null) =>
         new ServerDetectionService().Detect(_folder, preferredJar);
 
-    /// <summary>A jar whose version.json says which Minecraft it is, as vanilla, Paper and Purpur's do.</summary>
+    /// <summary>
+    /// A jar whose version.json says which Minecraft it is, as vanilla, Paper and Purpur's do.
+    /// </summary>
     private void VersionedJar(string name, string version) =>
         Jar(name, "version.json", $$"""{"id":"{{version}}","name":"{{version}}"}""");
 
@@ -144,7 +147,8 @@ public class ServerDetectionTests : IDisposable
     [Fact]
     public void ModernForge()
     {
-        File(Path.Combine("libraries", "net", "minecraftforge", "forge", "1.20.1-47.2.0", "win_args.txt"), "");
+        File(Path.Combine("libraries", "net", "minecraftforge", "forge", "1.20.1-47.2.0", "win_args.txt"),
+            "");
 
         var found = Detect();
 
@@ -198,7 +202,8 @@ public class ServerDetectionTests : IDisposable
     {
         // Forge writes a user_jvm_args.txt that is mostly comments, including an example -Xmx4G
         // that nobody chose. Reading that would have every Forge server claim 4 GB.
-        File("user_jvm_args.txt", "# Xmx and Xms set the maximum and minimum RAM usage.\n# -Xmx4G\n-Xms3G\n-Xmx6G\n");
+        File("user_jvm_args.txt",
+            "# Xmx and Xms set the maximum and minimum RAM usage.\n# -Xmx4G\n-Xms3G\n-Xmx6G\n");
 
         var found = Detect();
 
@@ -245,7 +250,8 @@ public class ServerDetectionTests : IDisposable
     public void AnEmptyOrMissingFolderIsNothingAndNeverThrows()
     {
         Assert.False(Detect().IsComplete);
-        Assert.Same(ServerDetection.Nothing, new ServerDetectionService().Detect(Path.Combine(_folder, "no-existe")));
+        Assert.Same(ServerDetection.Nothing, new ServerDetectionService()
+            .Detect(Path.Combine(_folder, "no-existe")));
         Assert.Same(ServerDetection.Nothing, new ServerDetectionService().Detect(""));
     }
 

@@ -59,7 +59,8 @@ public class InstalledModsFilterTests : IDisposable
 
         mods.InstalledFilter = "sodium";
 
-        Assert.Equal(new[] { "sodium-extra-0.6.0+mc1.21.1.jar", "sodium-fabric-0.6.0+mc1.21.1.jar" }, Shown(mods));
+        Assert.Equal(new[] { "sodium-extra-0.6.0+mc1.21.1.jar", "sodium-fabric-0.6.0+mc1.21.1.jar" },
+            Shown(mods));
     }
 
     [Theory]
@@ -96,7 +97,8 @@ public class InstalledModsFilterTests : IDisposable
 
         Assert.Empty(mods.VisibleInstalledMods);
         Assert.True(mods.HasNoMatches);
-        Assert.Equal(string.Format(McServerLauncher.Localization.Localizer.Get("Mods_InstalledCountFmt"), 0, 5),
+        Assert.Equal(string.Format(McServerLauncher.Localization.Localizer.Get("Mods_InstalledCountFmt"),
+            0, 5),
             mods.InstalledCountText);
     }
 

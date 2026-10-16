@@ -25,7 +25,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class BackupCoordinatorTests : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-coord-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-coord-" + Guid.NewGuid()
+        .ToString("N"));
 
     private string World => Path.Combine(_folder, "world");
     private string LevelDat => Path.Combine(World, "level.dat");
@@ -59,7 +60,8 @@ public class BackupCoordinatorTests : IDisposable
     private sealed class ThrowingService : WorldBackupService
     {
         public override Task<string?> CreateBackupAsync(ServerConfig config, string trigger,
-            IProgress<string>? log = null, CancellationToken ct = default, string? protectFromPruning = null) =>
+            IProgress<string>? log = null, CancellationToken ct = default,
+                string? protectFromPruning = null) =>
             throw new IOException("There is not enough space on the disk.",
                 OperatingSystem.IsWindows() ? unchecked((int)0x80070070) : 28);   // ENOSPC elsewhere
     }
@@ -143,7 +145,8 @@ public class BackupCoordinatorTests : IDisposable
         var stop = coordinator.StopAsync(
             () => server.Stop(() => File.WriteAllText(LevelDat, "saved on the way down")), backupAfter: true);
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => copy.WaitAsync(TimeSpan.FromSeconds(10)));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(()
+            => copy.WaitAsync(TimeSpan.FromSeconds(10)));
         await stop.WaitAsync(TimeSpan.FromSeconds(10));
         Assert.Equal(new[] { "save-off", "save-all flush", "save-on", "stop" }, server.Commands);
         Assert.Single(Zips(), z => z.EndsWith("--stop.zip", StringComparison.Ordinal));
@@ -178,7 +181,8 @@ public class BackupCoordinatorTests : IDisposable
         await copy;
         await coordinator.StartAsync(() => { });   // waits for the note, as a crash's restart does
 
-        Assert.Equal(new[] { "zip:manual", "note" }, service.Events.Where(e => e is "note" || e.StartsWith("zip:")));
+        Assert.Equal(new[] { "zip:manual", "note" },
+            service.Events.Where(e => e is "note" || e.StartsWith("zip:")));
     }
 
     [Fact]
@@ -289,7 +293,8 @@ public class BackupCoordinatorTests : IDisposable
         var copy = coordinator.BackupAsync("auto");
         await UntilFlushAsked(server);
 
-        Assert.Equal(BackupResult.Busy, await coordinator.BackupAsync("manual").WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.Equal(BackupResult.Busy, await coordinator.BackupAsync("manual")
+            .WaitAsync(TimeSpan.FromSeconds(5)));
 
         coordinator.ServerSaved();
         await copy;

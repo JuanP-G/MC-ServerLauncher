@@ -44,10 +44,14 @@ public static class ImageCache
     /// </summary>
     internal const long MemoryBudgetBytes = 96L * 1024 * 1024;
 
-    /// <summary>The longest side an icon or a thumbnail is decoded at. They are drawn 112 px wide at most.</summary>
+    /// <summary>
+    /// The longest side an icon or a thumbnail is decoded at. They are drawn 112 px wide at most.
+    /// </summary>
     internal const int IconDecodeWidth = 256;
 
-    /// <summary>The longest side a gallery screenshot is decoded at. It is drawn 340 px high at most.</summary>
+    /// <summary>
+    /// The longest side a gallery screenshot is decoded at. It is drawn 340 px high at most.
+    /// </summary>
     internal const int GalleryDecodeWidth = 1600;
 
     /// <summary>More pixels than any store image has: past this it is a decompression bomb.</summary>
@@ -269,7 +273,8 @@ public static class ImageCache
     /// Over the count it drops down to half, as before, so a session full of small icons does not
     /// evict one per new image. Over the budget it drops just enough.
     /// </remarks>
-    internal static IEnumerable<string> Evict(IReadOnlyList<(string Key, DateTime Stored, long Bytes)> entries,
+    internal static IEnumerable<string> Evict(IReadOnlyList<(string Key, DateTime Stored,
+        long Bytes)> entries,
         int maxEntries, long budgetBytes)
     {
         var total = entries.Sum(e => e.Bytes);

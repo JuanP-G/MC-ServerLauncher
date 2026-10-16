@@ -21,7 +21,8 @@ namespace McServerLauncher.Tests;
 public class WakeAfterAbortedStartTests : IDisposable
 {
     private readonly AvaloniaFixture _ui;
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-wake+" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-wake+" + Guid.NewGuid()
+        .ToString("N"));
 
     public WakeAfterAbortedStartTests(AvaloniaFixture ui)
     {

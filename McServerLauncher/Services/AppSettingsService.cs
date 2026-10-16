@@ -43,7 +43,8 @@ public class AppSettingsService
             // it in plaintext, i.e. destroy data without making anything safer.
             var needsMigration = false;
             settings.PlayitApiKey = DecryptTracking(settings.PlayitApiKey, ref needsMigration);
-            settings.PlayitAgentSecretKey = DecryptTracking(settings.PlayitAgentSecretKey, ref needsMigration);
+            settings.PlayitAgentSecretKey = DecryptTracking(settings.PlayitAgentSecretKey,
+                ref needsMigration);
 
             if (needsMigration)
             {
@@ -107,7 +108,9 @@ public class AppSettingsService
         AtomicJsonFile.Write(_filePath, toWrite, JsonOptions);
     }
 
-    /// <summary>Decrypts a stored secret; flags <paramref name="needsMigration"/> if it was plaintext.</summary>
+    /// <summary>
+    /// Decrypts a stored secret; flags <paramref name="needsMigration"/> if it was plaintext.
+    /// </summary>
     private static string? DecryptTracking(string? stored, ref bool needsMigration)
     {
         if (string.IsNullOrEmpty(stored)) return stored;

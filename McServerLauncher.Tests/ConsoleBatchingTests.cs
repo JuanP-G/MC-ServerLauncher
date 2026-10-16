@@ -54,7 +54,8 @@ public class ConsoleBatchingTests(AvaloniaFixture ui)
     [Fact]
     public void LinesFromTheServerArriveTogetherAndInOrder()
     {
-        var feed = typeof(ServerViewModel).GetMethod("OnServerLine", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var feed = typeof(ServerViewModel).GetMethod("OnServerLine",
+            BindingFlags.NonPublic | BindingFlags.Instance)!;
         var folder = Path.Combine(Path.GetTempPath(), "mcl-batch-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(folder);
 
@@ -73,7 +74,8 @@ public class ConsoleBatchingTests(AvaloniaFixture ui)
             Task.Run(() =>
             {
                 for (var i = 0; i < 500; i++)
-                    feed.Invoke(server, new object[] { $"[12:00:00] [Server thread/INFO]: line {i}", ConsoleSource.Stdout });
+                    feed.Invoke(server, new object[] { $"[12:00:00] [Server thread/INFO]: line {i}",
+                        ConsoleSource.Stdout });
             }).Wait();
         });
 

@@ -186,7 +186,8 @@ public class PendingUpdateTests : IDisposable
     {
         // Naming them is what makes it something to act on: they stay in the list, and the user can
         // see which ones to look at.
-        var text = ServerModsViewModel.UpdateAllSummary(3, new[] { "roto.jar", "otro.jar" }, stoppedByServer: false);
+        var text = ServerModsViewModel.UpdateAllSummary(3, new[] { "roto.jar", "otro.jar" },
+            stoppedByServer: false);
 
         Assert.Contains("roto.jar", text);
         Assert.Contains("otro.jar", text);

@@ -186,10 +186,12 @@ public class CrossplayService
     /// connections, then rejects every player who hasn't bought Minecraft: Java — which looks like
     /// crossplay is broken rather than half-installed. Failing loudly is the better outcome.
     /// </remarks>
-    public async Task InstallAsync(ServerConfig config, IProgress<string>? log, CancellationToken ct = default)
+    public async Task InstallAsync(ServerConfig config, IProgress<string>? log,
+        CancellationToken ct = default)
     {
         // Paper takes plugins, the mod loaders take mods. Same rule the mod store already uses.
-        var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type), "Msg_CrossplayUnsupportedFmt");
+        var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type),
+            "Msg_CrossplayUnsupportedFmt");
 
         await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, GeyserProjectId, "Geyser",
             log, ct);
@@ -208,7 +210,8 @@ public class CrossplayService
     /// Their API returns the SHA-256 alongside the download, which is what makes this acceptable:
     /// the jar is verified before it is kept, exactly like everything else the app installs.
     /// </remarks>
-    private async Task InstallFloodgateForSpigotAsync(string folder, IProgress<string>? log, CancellationToken ct)
+    private async Task InstallFloodgateForSpigotAsync(string folder, IProgress<string>? log,
+        CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Floodgate"));

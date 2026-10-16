@@ -136,9 +136,11 @@ public partial class MainWindow : Window
         base.OnClosing(e);
     }
 
-    private void ConsoleCopy_Click(object? sender, RoutedEventArgs e) => _ = CopyConsoleAsync(selectedOnly: true);
+    private void ConsoleCopy_Click(object? sender, RoutedEventArgs e)
+        => _ = CopyConsoleAsync(selectedOnly: true);
 
-    private void ConsoleCopyAll_Click(object? sender, RoutedEventArgs e) => _ = CopyConsoleAsync(selectedOnly: false);
+    private void ConsoleCopyAll_Click(object? sender, RoutedEventArgs e)
+        => _ = CopyConsoleAsync(selectedOnly: false);
 
     private void ConsoleList_KeyDown(object? sender, KeyEventArgs e)
     {

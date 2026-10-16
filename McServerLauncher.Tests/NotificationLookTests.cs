@@ -223,7 +223,8 @@ public class NotificationLookTests
         Assert.NotEmpty(names);
         foreach (var name in names)
             Assert.True(
-                typeof(NotificationSettings).GetProperty(name, BindingFlags.Public | BindingFlags.Instance) is not null,
+                typeof(NotificationSettings).GetProperty(name,
+                    BindingFlags.Public | BindingFlags.Instance) is not null,
                 $"NotificationSettings no tiene ninguna propiedad «{name}», que SettingsView.axaml enlaza");
     }
 
@@ -241,7 +242,8 @@ public class NotificationLookTests
         foreach (var view in views)
         {
             var xaml = File.ReadAllText(view);
-            foreach (Match match in Regex.Matches(xaml, "\"#(?:[0-9A-Fa-f]{2})?(3FB950|E3A82B|E05561|2F6FB0)\""))
+            foreach (Match match in Regex.Matches(xaml,
+                "\"#(?:[0-9A-Fa-f]{2})?(3FB950|E3A82B|E05561|2F6FB0)\""))
                 offenders.Add($"{Path.GetFileName(view)}: {match.Value}");
         }
 
@@ -259,7 +261,8 @@ public class NotificationLookTests
             Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views"), "*.axaml");
 
         foreach (var view in views)
-            foreach (Match match in Regex.Matches(File.ReadAllText(view), @"\{StaticResource (Semantic[A-Za-z]+)\}"))
+            foreach (Match match in Regex.Matches(File.ReadAllText(view),
+                @"\{StaticResource (Semantic[A-Za-z]+)\}"))
             {
                 var key = match.Groups[1].Value;
 

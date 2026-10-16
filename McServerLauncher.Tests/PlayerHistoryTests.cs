@@ -18,7 +18,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class PlayerHistoryTests : IDisposable
 {
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-history-" + Guid.NewGuid().ToString("N"));
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-history-" + Guid.NewGuid()
+        .ToString("N"));
     private DateTime _now = new(2026, 9, 19, 12, 0, 0, DateTimeKind.Utc);
     private PlayerHistorySettings _settings = new();
 
@@ -44,14 +45,20 @@ public class PlayerHistoryTests : IDisposable
     // --- Reading a line ---
 
     [Theory]
-    [InlineData("[21:10:03] [Server thread/INFO]: Alice joined the game", PlayerEventKind.Join, "Alice", null)]
+    [InlineData("[21:10:03] [Server thread/INFO]: Alice joined the game", PlayerEventKind.Join, "Alice",
+        null)]
     [InlineData("[21:10:03 INFO]: Alice left the game", PlayerEventKind.Leave, "Alice", null)]
     [InlineData("[21:10:03] [Server thread/INFO]: <Alice> hola", PlayerEventKind.Chat, "Alice", "hola")]
-    [InlineData("[21:10:03] [Server thread/INFO]: [Not Secure] <Alice> hola", PlayerEventKind.Chat, "Alice", "hola")]
-    [InlineData("[21:10:03] [Server thread/INFO]: Alice was slain by Zombie", PlayerEventKind.Death, "Alice", "Alice was slain by Zombie")]
-    [InlineData("[21:10:03] [Server thread/INFO]: Alice has made the advancement [Stone Age]", PlayerEventKind.Advancement, "Alice", "Stone Age")]
-    [InlineData("[21:10:03] [Server thread/INFO]: Alice has completed the challenge [Monsters Hunted]", PlayerEventKind.Advancement, "Alice", "Monsters Hunted")]
-    public void EachThingAPlayerDoesIsRecognised(string line, PlayerEventKind kind, string player, string? text)
+    [InlineData("[21:10:03] [Server thread/INFO]: [Not Secure] <Alice> hola", PlayerEventKind.Chat, "Alice",
+        "hola")]
+    [InlineData("[21:10:03] [Server thread/INFO]: Alice was slain by Zombie", PlayerEventKind.Death, "Alice",
+        "Alice was slain by Zombie")]
+    [InlineData("[21:10:03] [Server thread/INFO]: Alice has made the advancement [Stone Age]",
+        PlayerEventKind.Advancement, "Alice", "Stone Age")]
+    [InlineData("[21:10:03] [Server thread/INFO]: Alice has completed the challenge [Monsters Hunted]",
+        PlayerEventKind.Advancement, "Alice", "Monsters Hunted")]
+    public void EachThingAPlayerDoesIsRecognised(string line, PlayerEventKind kind, string player,
+        string? text)
     {
         Assert.Equal(new PlayerEvent(kind, player, text), PlayerEventParser.Parse(line, Nobody));
     }
@@ -70,7 +77,8 @@ public class PlayerHistoryTests : IDisposable
     [Fact]
     public void TheServerTalkingIsNobodysChat()
     {
-        Assert.Null(PlayerEventParser.Parse("[21:10:03] [Server thread/INFO]: [Server] reinicio en 5", Nobody));
+        Assert.Null(PlayerEventParser.Parse("[21:10:03] [Server thread/INFO]: [Server] reinicio en 5",
+            Nobody));
     }
 
     [Fact]
@@ -98,7 +106,8 @@ public class PlayerHistoryTests : IDisposable
         store.Record(Leave("Alice"), _now.AddMinutes(-10));
 
         var events = store.Events("alice");
-        Assert.Equal(new[] { PlayerEventKind.Leave, PlayerEventKind.Chat, PlayerEventKind.Join }, events.Select(e => e.Kind));
+        Assert.Equal(new[] { PlayerEventKind.Leave, PlayerEventKind.Chat, PlayerEventKind.Join },
+            events.Select(e => e.Kind));
         Assert.Equal("hola", events[1].Text);
 
         var rec = store.Get("Alice")!;
@@ -360,7 +369,8 @@ public class PlayerHistoryTests : IDisposable
     [Fact]
     public void WhileTheServerRunsLatestLogIsLeftToTheLiveConsole()
     {
-        var server = ServerWithLogs(("latest.log", new[] { "[22:00:00] [Server thread/INFO]: Alice joined the game" }));
+        var server = ServerWithLogs(("latest.log",
+            new[] { "[22:00:00] [Server thread/INFO]: Alice joined the game" }));
         var store = Store();
 
         PlayerLogImporter.ImportOnce(server, store, serverRunning: true);
@@ -410,7 +420,8 @@ public class PlayerHistoryTests : IDisposable
         _now = Local(2026, 9, 19, 12, 0, 0);
         var store = Store();
         store.Record(Join("Bob"), _now.AddMinutes(-5));
-        var server = ServerWithLogs(("2026-09-10-1.log.gz", new[] { "[10:00:00] [Server thread/INFO]: Alice joined the game" }));
+        var server = ServerWithLogs(("2026-09-10-1.log.gz",
+            new[] { "[10:00:00] [Server thread/INFO]: Alice joined the game" }));
 
         PlayerLogImporter.ImportOnce(server, store, serverRunning: true);
 

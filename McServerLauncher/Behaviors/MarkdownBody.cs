@@ -31,7 +31,8 @@ public static class MarkdownBody
 
     static MarkdownBody()
     {
-        SourceProperty.Changed.AddClassHandler<Panel>((panel, e) => _ = RenderAsync(panel, e.NewValue as string));
+        SourceProperty.Changed.AddClassHandler<Panel>((panel, e)
+            => _ = RenderAsync(panel, e.NewValue as string));
     }
 
     private static readonly IBrush LinkBrush = new ImmutableSolidColorBrush(Color.Parse("#58A6FF"));

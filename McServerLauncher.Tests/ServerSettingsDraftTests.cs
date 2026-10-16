@@ -15,12 +15,18 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class ServerSettingsDraftTests : IDisposable
 {
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-draft-" + Guid.NewGuid().ToString("N"));
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-draft-" + Guid.NewGuid()
+        .ToString("N"));
 
     [Fact]
     public void ASaveThatCannotWriteItsFilesLeavesTheServerAsItWas()
     {
-        var live = new ServerConfig { Name = "survival", FolderPath = Path.Combine(_root, "gone"), MaxRamGb = 4 };
+        var live = new ServerConfig
+        {
+            Name = "survival",
+            FolderPath = Path.Combine(_root, "gone"),
+            MaxRamGb = 4
+        };
         var draft = new ServerSettingsDraft(live);
         draft.Track("difficulty", "easy");
 

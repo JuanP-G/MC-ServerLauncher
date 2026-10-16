@@ -23,7 +23,9 @@ public class AppSettings
     /// <summary>UI language (es, en, pt, fr, de). Empty = system language.</summary>
     public string? Language { get; set; }
 
-    /// <summary>Last app version the user has already seen (to show the what's-new screen after updating).</summary>
+    /// <summary>
+    /// Last app version the user has already seen (to show the what's-new screen after updating).
+    /// </summary>
     public string? LastVersionSeen { get; set; }
 
     /// <summary>

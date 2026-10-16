@@ -12,7 +12,8 @@ public sealed record StatEntry(string Id, long Count);
 /// <param name="MobKills">Mobs killed.</param>
 /// <param name="PlayerKills">Players killed.</param>
 /// <param name="DistanceCm">Distance covered on foot, swimming, flying and riding, in centimetres.</param>
-public sealed record PlayerStats(long PlayTicks, long Deaths, long MobKills, long PlayerKills, long DistanceCm)
+public sealed record PlayerStats(long PlayTicks, long Deaths, long MobKills, long PlayerKills,
+    long DistanceCm)
 {
     public TimeSpan PlayTime => TimeSpan.FromSeconds(PlayTicks / 20.0);
 
@@ -56,7 +57,9 @@ public sealed record PlayerStats(long PlayTicks, long Deaths, long MobKills, lon
     /// <summary>Total blocks broken, whatever they were.</summary>
     public long BlocksMined => Mined.Sum(e => e.Count);
 
-    /// <summary>Ore blocks broken; see <see cref="MinecraftIds.LooksLikeOre"/> for how they are spotted.</summary>
+    /// <summary>
+    /// Ore blocks broken; see <see cref="MinecraftIds.LooksLikeOre"/> for how they are spotted.
+    /// </summary>
     public long OresMined => Mined.Where(e => MinecraftIds.LooksLikeOre(e.Id)).Sum(e => e.Count);
 }
 
@@ -98,7 +101,8 @@ public static class PlayerStatsReader
         var world = Path.Combine(serverFolder, level);
         var file = id.ToString("D") + ".json";
 
-        foreach (var path in new[] { Path.Combine(world, "players", "stats", file), Path.Combine(world, "stats", file) })
+        foreach (var path in new[] { Path.Combine(world, "players", "stats", file),
+            Path.Combine(world, "stats", file) })
         {
             if (File.Exists(path) && Parse(ReadShared(path)) is { } stats) return stats;
         }

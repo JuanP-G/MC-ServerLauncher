@@ -43,7 +43,8 @@ public sealed class SingleInstance : IDisposable
     /// <c>instance-tests-*.lock</c> in the real data folder of whoever ran it — hundreds of them.
     /// </remarks>
     private static string Dir => Scope is null
-        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher")
+        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "McServerLauncher")
         : Path.Combine(Path.GetTempPath(), "mcsl-instance-tests");
 
     /// <summary>
@@ -147,7 +148,8 @@ public sealed class SingleInstance : IDisposable
 
             // CurrentUserOnly here and on the listener: the pipe's name can be worked out by anyone,
             // and it is only ever this user's own copies that have anything to say to each other.
-            using var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.CurrentUserOnly);
+            using var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out,
+                PipeOptions.CurrentUserOnly);
 
             // Short: if the other process is wedged, the user is better served by this launch
             // failing visibly than by a window that never appears and never says why.

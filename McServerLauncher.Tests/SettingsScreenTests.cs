@@ -97,7 +97,8 @@ public class SettingsScreenTests
 [Collection("avalonia")]
 public class BedrockPortSettingTests(AvaloniaFixture ui) : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-bport-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-bport-" + Guid.NewGuid()
+        .ToString("N"));
 
     public void Dispose()
     {
@@ -118,7 +119,8 @@ public class BedrockPortSettingTests(AvaloniaFixture ui) : IDisposable
         };
     }
 
-    private static (ServerSettingsView View, Control Section) Open(ServerConfig config, Func<int, string?>? owner = null)
+    private static (ServerSettingsView View, Control Section) Open(ServerConfig config, Func<int,
+        string?>? owner = null)
     {
         var owners = new PortOwners(Java: _ => null, Bedrock: owner ?? (_ => null));
         var view = new ServerSettingsView(new ServerViewModel(config), ServerSettingsPage.Network, owners);

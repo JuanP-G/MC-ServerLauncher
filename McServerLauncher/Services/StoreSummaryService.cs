@@ -69,21 +69,25 @@ public sealed class StoreSummaryService
         {
             if (File.Exists(overridePath))
             {
-                var custom = JsonSerializer.Deserialize<StoreSummaryCatalog>(File.ReadAllText(overridePath), JsonOptions);
+                var custom = JsonSerializer.Deserialize<StoreSummaryCatalog>(File.ReadAllText(overridePath),
+                    JsonOptions);
                 if (custom is { Summaries.Count: > 0 })
-                    return new Dictionary<string, Dictionary<string, string>>(custom.Summaries, StringComparer.OrdinalIgnoreCase);
+                    return new Dictionary<string, Dictionary<string,
+                        string>>(custom.Summaries, StringComparer.OrdinalIgnoreCase);
             }
         }
         catch { /* a broken override must not cost us the built-in catalogue */ }
 
         try
         {
-            using var stream = typeof(StoreSummaryService).Assembly.GetManifestResourceStream(EmbeddedResourceName);
+            using var stream = typeof(StoreSummaryService)
+                .Assembly.GetManifestResourceStream(EmbeddedResourceName);
             if (stream is not null)
             {
                 var embedded = JsonSerializer.Deserialize<StoreSummaryCatalog>(stream, JsonOptions);
                 if (embedded is not null)
-                    return new Dictionary<string, Dictionary<string, string>>(embedded.Summaries, StringComparer.OrdinalIgnoreCase);
+                    return new Dictionary<string, Dictionary<string,
+                        string>>(embedded.Summaries, StringComparer.OrdinalIgnoreCase);
             }
         }
         catch { /* no catalogue simply means every project uses the fallback */ }

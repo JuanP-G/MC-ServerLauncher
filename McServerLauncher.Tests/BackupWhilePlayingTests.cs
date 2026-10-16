@@ -20,7 +20,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class BackupWhilePlayingTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-hot-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-hot-" + Guid.NewGuid()
+        .ToString("N"));
 
     public BackupWhilePlayingTests() => Directory.CreateDirectory(_dir);
 
@@ -28,7 +29,13 @@ public class BackupWhilePlayingTests : IDisposable
     {
         Directory.CreateDirectory(Path.Combine(_dir, "world"));
         File.WriteAllText(Path.Combine(_dir, "world", "level.dat"), "not really nbt, but it is bytes");
-        return new ServerConfig { Name = "survival", FolderPath = _dir, BackupRetention = 5, ManualBackupRetention = 5 };
+        return new ServerConfig
+        {
+            Name = "survival",
+            FolderPath = _dir,
+            BackupRetention = 5,
+            ManualBackupRetention = 5
+        };
     }
 
     /// <summary>A console that records what was sent and answers the flush when asked to.</summary>
@@ -71,7 +78,8 @@ public class BackupWhilePlayingTests : IDisposable
     private sealed class ThrowingBackupService : WorldBackupService
     {
         public override Task<string?> CreateBackupAsync(ServerConfig config, string trigger,
-            IProgress<string>? log = null, CancellationToken ct = default, string? protectFromPruning = null) =>
+            IProgress<string>? log = null, CancellationToken ct = default,
+                string? protectFromPruning = null) =>
             throw new IOException("el disco dijo que no");
     }
 

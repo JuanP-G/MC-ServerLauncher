@@ -67,7 +67,8 @@ public class ModLoaderService
     /// versions that were requested — a corrupted or swapped file is deleted and rejected instead
     /// of being executed later.
     /// </summary>
-    public async Task DownloadFabricServerAsync(string gameVersion, string loaderVersion, string destPath, IProgress<string>? log, CancellationToken ct = default)
+    public async Task DownloadFabricServerAsync(string gameVersion, string loaderVersion, string destPath,
+        IProgress<string>? log, CancellationToken ct = default)
     {
         var url = $"https://meta.fabricmc.net/v2/versions/loader/{gameVersion}/{loaderVersion}/1.0.0/server/jar";
 
@@ -102,7 +103,8 @@ public class ModLoaderService
     /// install.properties matches the requested game and loader versions. On failure the file is
     /// deleted (so a bad download can't linger and get executed) and an exception is thrown.
     /// </summary>
-    public static void ValidateFabricServerJar(string jarPath, string expectedGameVersion, string expectedLoaderVersion)
+    public static void ValidateFabricServerJar(string jarPath, string expectedGameVersion,
+        string expectedLoaderVersion)
     {
         // ReadFabricInstall swallows unreadable/corrupt jars into (null, null), which fails below.
         var (game, loader) = ServerDetectionService.ReadFabricInstall(jarPath);
@@ -118,14 +120,17 @@ public class ModLoaderService
 
     // --- Forge ---
 
-    /// <summary>Outcome of a Forge server install: a runnable jar (old Forge) or an args id (modern Forge).</summary>
+    /// <summary>
+    /// Outcome of a Forge server install: a runnable jar (old Forge) or an args id (modern Forge).
+    /// </summary>
     public record ForgeInstallResult(string? JarFile, string? ArgsId);
 
     /// <summary>
     /// Recommended (or latest) Forge version for a Minecraft version, from Forge's promotions feed.
     /// Returns null if there is no Forge build for that version.
     /// </summary>
-    public async Task<string?> GetRecommendedForgeVersionAsync(string mcVersion, CancellationToken ct = default)
+    public async Task<string?> GetRecommendedForgeVersionAsync(string mcVersion,
+        CancellationToken ct = default)
     {
         var json = await Http.GetStringAsync(
             "https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json", ct);
@@ -202,7 +207,8 @@ public class ModLoaderService
         // Old Forge (≤1.16.5): a runnable forge jar in the root.
         var jar = Directory.EnumerateFiles(folder, "forge-*.jar")
             .Select(Path.GetFileName)
-            .FirstOrDefault(n => n is not null && !n.Contains("installer", StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(n => n is not null && !n.Contains("installer",
+                StringComparison.OrdinalIgnoreCase));
         return new ForgeInstallResult(jar, null);
     }
 
@@ -347,7 +353,8 @@ public class ModLoaderService
         try
         {
             using var zip = ZipFile.OpenRead(jarPath);
-            looksLikeInstaller = zip.GetEntry("install_profile.json") is not null || HasInstallerMainClass(zip);
+            looksLikeInstaller = zip.GetEntry("install_profile.json") is not null
+                || HasInstallerMainClass(zip);
         }
         catch
         {

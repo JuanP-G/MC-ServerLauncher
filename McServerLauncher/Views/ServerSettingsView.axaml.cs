@@ -43,7 +43,8 @@ public partial class ServerSettingsView : UserControl
 
     private readonly ServerSettingsDraft _draft;
     private readonly Dictionary<ServerSettingsPage, Control> _sections = new();
-    private readonly Dictionary<ServerSettingsPage, (Button Nav, ToggleButton Chip, Control Dot, Control ChipDot)> _items = new();
+    private readonly Dictionary<ServerSettingsPage,
+        (Button Nav, ToggleButton Chip, Control Dot, Control ChipDot)> _items = new();
     private bool _nudged;
     private bool _wasRunning;
     private string? _problem;
@@ -258,7 +259,11 @@ public partial class ServerSettingsView : UserControl
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = chip ? 5 : 8 };
         if (!chip) row.Children.Add(new SymbolIcon { Symbol = info.Icon, FontSize = 16 });
-        row.Children.Add(new TextBlock { Text = Localizer.Get(info.Title), VerticalAlignment = VerticalAlignment.Center });
+        row.Children.Add(new TextBlock
+        {
+            Text = Localizer.Get(info.Title),
+            VerticalAlignment = VerticalAlignment.Center
+        });
         row.Children.Add(dot);
         return row;
     }
@@ -266,7 +271,13 @@ public partial class ServerSettingsView : UserControl
     // Says a page has something unsaved, beside its name.
     private Control Dot()
     {
-        var dot = new Ellipse { Width = 7, Height = 7, VerticalAlignment = VerticalAlignment.Center, IsVisible = false };
+        var dot = new Ellipse
+        {
+            Width = 7,
+            Height = 7,
+            VerticalAlignment = VerticalAlignment.Center,
+            IsVisible = false
+        };
         dot.Bind(Shape.FillProperty, this.GetResourceObservable("SemanticWarn"));
         return dot;
     }
@@ -314,7 +325,9 @@ public partial class ServerSettingsView : UserControl
 
     private void Save_Click(object? sender, RoutedEventArgs e) => Save();
 
-    /// <summary>Checks every page and writes what changed. Returns false when nothing could be saved.</summary>
+    /// <summary>
+    /// Checks every page and writes what changed. Returns false when nothing could be saved.
+    /// </summary>
     internal bool Save()
     {
         foreach (var section in _sections.Values.OfType<IServerSettingsSection>()) section.ShowError(null);

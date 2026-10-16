@@ -82,7 +82,8 @@ public partial class AdvancedSection : UserControl, IServerSettingsSection
     /// </remarks>
     private void ClearHistory_Click(object? sender, RoutedEventArgs e)
     {
-        ClearHistoryQuestion.Text = string.Format(Localizer.Get("Cfg_HistoryClearConfirmFmt"), _draft.Live.Name);
+        ClearHistoryQuestion.Text = string.Format(Localizer.Get("Cfg_HistoryClearConfirmFmt"),
+            _draft.Live.Name);
         ClearHistoryConfirm.IsVisible = true;
         ClearHistoryButton.IsVisible = false;
     }

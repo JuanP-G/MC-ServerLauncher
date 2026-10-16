@@ -69,9 +69,12 @@ public static class BeaconBehavior
         c.PointerExited -= OnPointerExited;
     }
 
-    private static void OnAttached(object? sender, VisualTreeAttachmentEventArgs e) => Restart((Control)sender!);
-    private static void OnDetached(object? sender, VisualTreeAttachmentEventArgs e) => ((Control)sender!).GetValue(TimerProperty)?.Stop();
-    private static void OnPointerEntered(object? sender, PointerEventArgs e) => ((Control)sender!).GetValue(TimerProperty)?.Stop();
+    private static void OnAttached(object? sender, VisualTreeAttachmentEventArgs e)
+        => Restart((Control)sender!);
+    private static void OnDetached(object? sender, VisualTreeAttachmentEventArgs e) => ((Control)sender!)
+        .GetValue(TimerProperty)?.Stop();
+    private static void OnPointerEntered(object? sender, PointerEventArgs e) => ((Control)sender!)
+        .GetValue(TimerProperty)?.Stop();
     private static void OnPointerExited(object? sender, PointerEventArgs e) => Restart((Control)sender!);
 
     /// <summary>Starts the wait from zero, unless the control should keep quiet right now.</summary>

@@ -71,7 +71,9 @@ public static partial class MarkdownParser
     [GeneratedRegex(@"^\s{0,3}([-*_])(\s*\1){2,}\s*$")]
     private static partial Regex RuleRegex();
 
-    /// <summary>A setext underline: a run of = or - directly under a line of text makes it a heading.</summary>
+    /// <summary>
+    /// A setext underline: a run of = or - directly under a line of text makes it a heading.
+    /// </summary>
     [GeneratedRegex(@"^\s{0,3}(?<c>=|-)\k<c>*\s*$")]
     private static partial Regex SetextRegex();
 
@@ -331,12 +333,14 @@ public static partial class MarkdownParser
             }
             else if (match.Groups["bold"].Success || match.Groups["bold2"].Success)
             {
-                var value = match.Groups["bold"].Success ? match.Groups["bold"].Value : match.Groups["bold2"].Value;
+                var value = match.Groups["bold"].Success ? match.Groups["bold"].Value
+                    : match.Groups["bold2"].Value;
                 spans.Add(new MarkdownSpan(Decode(value), Bold: true));
             }
             else if (match.Groups["italic"].Success || match.Groups["italic2"].Success)
             {
-                var value = match.Groups["italic"].Success ? match.Groups["italic"].Value : match.Groups["italic2"].Value;
+                var value = match.Groups["italic"].Success ? match.Groups["italic"].Value
+                    : match.Groups["italic2"].Value;
                 spans.Add(new MarkdownSpan(Decode(value), Italic: true));
             }
         }

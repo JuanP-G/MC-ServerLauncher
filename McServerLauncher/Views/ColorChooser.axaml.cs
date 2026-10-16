@@ -43,7 +43,9 @@ public partial class ColorChooser : UserControl
     /// <summary>The colour the chooser was opened on, which Esc goes back to.</summary>
     private string? _before;
 
-    /// <summary>Set while this control writes its own views, so their change events do not echo back.</summary>
+    /// <summary>
+    /// Set while this control writes its own views, so their change events do not echo back.
+    /// </summary>
     private bool _syncing;
 
     private readonly List<Button> _swatches = new();
@@ -133,7 +135,10 @@ public partial class ColorChooser : UserControl
     private IBrush? Token(string key) =>
         this.FindResource(key) as IBrush ?? Application.Current?.FindResource(key) as IBrush;
 
-    /// <summary>Brings the swatch, the boxes, the spectrum, the before/after and the contrast line to <see cref="Hex"/>.</summary>
+    /// <summary>
+    /// Brings the swatch, the boxes, the spectrum, the before/after and the contrast line to
+    /// <see cref="Hex"/>.
+    /// </summary>
     private void Show()
     {
         if (ColorPalette.TryParse(Hex) is not { } color) return;
@@ -143,18 +148,22 @@ public partial class ColorChooser : UserControl
             var brush = new SolidColorBrush(color);
             OpenerSwatch.Background = brush;
             AfterSwatch.Background = brush;
-            BeforeSwatch.Background = ColorPalette.TryParse(_before ?? Hex) is { } before ? new SolidColorBrush(before) : brush;
+            BeforeSwatch.Background = ColorPalette.TryParse(_before ?? Hex) is { } before
+                ? new SolidColorBrush(before) : brush;
 
             var hex = ColorPalette.ToHex(color);
-            if (!string.Equals(HexBox.Text, hex, StringComparison.OrdinalIgnoreCase) && !HexBox.IsFocused) HexBox.Text = hex;
-            if (!string.Equals(ChooserHexBox.Text, hex, StringComparison.OrdinalIgnoreCase) && !ChooserHexBox.IsFocused) ChooserHexBox.Text = hex;
+            if (!string.Equals(HexBox.Text, hex, StringComparison.OrdinalIgnoreCase)
+                && !HexBox.IsFocused) HexBox.Text = hex;
+            if (!string.Equals(ChooserHexBox.Text, hex, StringComparison.OrdinalIgnoreCase)
+                && !ChooserHexBox.IsFocused) ChooserHexBox.Text = hex;
 
             // The square keeps its own hue while it is at grey or black, where the colour has none.
             if (ColorPalette.ToHex(Spectrum.Color) != hex) Spectrum.Color = color;
             HueSlider.HsvColor = new HsvColor(1, Spectrum.HsvColor.H, 1, 1);
 
             foreach (var swatch in _swatches)
-                swatch.Classes.Set("on", string.Equals((string)swatch.Tag!, hex, StringComparison.OrdinalIgnoreCase));
+                swatch.Classes.Set("on", string.Equals((string)swatch.Tag!, hex,
+                    StringComparison.OrdinalIgnoreCase));
 
             var readable = ColorPalette.ReadsWellOnDark(color, Threshold);
             ContrastText.Text = Localizer.Get(readable ? "Col_ReadsWell" : "Col_TooDark");

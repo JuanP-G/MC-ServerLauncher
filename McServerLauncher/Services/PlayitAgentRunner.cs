@@ -53,7 +53,8 @@ public class PlayitAgentRunner
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
 
     private readonly object _lock = new();
-    private readonly SemaphoreSlim _startGate = new(1, 1); // serialize StartAsync so two calls can't both launch
+    private readonly SemaphoreSlim _startGate = new(1,
+        1); // serialize StartAsync so two calls can't both launch
     private Process? _process;
     private string? _runningSecret;
     private string? _lastSecret; // last secret we were asked to run (for HasSecret / RetryAsync)
@@ -66,7 +67,9 @@ public class PlayitAgentRunner
     /// <summary>Human-readable reason for the last <see cref="AgentRunState.Failed"/> (for the UI).</summary>
     public string? LastError { get; private set; }
 
-    /// <summary>True once the app has an agent key to run (i.e. the user connected their Playit account).</summary>
+    /// <summary>
+    /// True once the app has an agent key to run (i.e. the user connected their Playit account).
+    /// </summary>
     public bool HasSecret => !string.IsNullOrWhiteSpace(_lastSecret);
 
     /// <summary>(Re)starts the agent with the last known secret. No-op if we never had one.</summary>
@@ -83,13 +86,18 @@ public class PlayitAgentRunner
     }
 
     private static string AgentDir => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "playit-agent");
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher",
+            "playit-agent");
 
-    /// <summary>The release asset for this OS/arch, or null if Playit ships no binary for it (e.g. macOS).</summary>
+    /// <summary>
+    /// The release asset for this OS/arch, or null if Playit ships no binary for it (e.g. macOS).
+    /// </summary>
     private static string? AssetName =>
         AssetFor(OperatingSystem.IsWindows(), OperatingSystem.IsLinux(), RuntimeInformation.OSArchitecture);
 
-    /// <summary>The asset for a platform, taken as arguments so every platform can be checked from any.</summary>
+    /// <summary>
+    /// The asset for a platform, taken as arguments so every platform can be checked from any.
+    /// </summary>
     /// <remarks>
     /// Windows on ARM gets the x64 build. Playit publishes no ARM build for Windows, and the app
     /// itself already runs there as x64 under emulation — which is what the README promises — so the
@@ -108,7 +116,8 @@ public class PlayitAgentRunner
     public bool PlatformSupported => AssetName is not null;
 
     /// <summary>Local path of the downloaded agent binary.</summary>
-    private static string BinaryPath => Path.Combine(AgentDir, OperatingSystem.IsWindows() ? "playitd.exe" : "playitd");
+    private static string BinaryPath => Path.Combine(AgentDir, OperatingSystem.IsWindows() ? "playitd.exe"
+        : "playitd");
 
     /// <summary>
     /// A private IPC socket/named pipe for our managed agent, so it never clashes with a system-wide
@@ -319,7 +328,9 @@ public class PlayitAgentRunner
         writer.Write(secret.Trim());
     }
 
-    /// <summary>Removes the secret file, so the plaintext outlives the agent by as little as possible.</summary>
+    /// <summary>
+    /// Removes the secret file, so the plaintext outlives the agent by as little as possible.
+    /// </summary>
     private static void DeleteSecretFile()
     {
         try { if (File.Exists(SecretPath)) File.Delete(SecretPath); }
@@ -366,7 +377,8 @@ public class PlayitAgentRunner
 
     // Strips playitd's log prefix ("2026-…Z ERROR playitd::daemon: ") to leave the human message.
     private static readonly Regex LogPrefix =
-        new(@"^\S+Z\s+(TRACE|DEBUG|INFO|WARN|ERROR)\s+[\w:]+:\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        new(@"^\S+Z\s+(TRACE|DEBUG|INFO|WARN|ERROR)\s+[\w:]+:\s*",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     /// <summary>Turns playitd's raw output into a short, human-readable failure reason for the UI.</summary>
     private static string BuildFailureReason(List<string> rawLines, int? exitCode)
@@ -394,7 +406,8 @@ public class PlayitAgentRunner
     /// <summary>
     /// Downloads the agent binary to <see cref="AgentDir"/> if not already there, and returns its path.
     /// The binary runs as a child process with the user's agent key, so it's the highest-privilege code
-    /// the app fetches: it is <b>verified against a pinned SHA-256</b> (of the exact <see cref="AgentVersion"/>
+    /// the app fetches: it is <b>verified against a pinned SHA-256</b> (of the exact
+    /// <see cref="AgentVersion"/>
     /// asset) before it is ever executed — on mismatch it is deleted and this throws, so a tampered or
     /// corrupted binary is never trusted. A cached copy is re-checked too (a poisoned cache is re-fetched).
     /// </summary>

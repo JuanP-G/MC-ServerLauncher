@@ -23,7 +23,8 @@ namespace McServerLauncher.Tests;
 [Collection("avalonia")]
 public class WhitelistSwitchTests(AvaloniaFixture ui) : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-whitelist-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-whitelist-" + Guid.NewGuid()
+        .ToString("N"));
     private string Properties => Path.Combine(_folder, "server.properties");
 
     private string? WhiteList() =>
@@ -55,7 +56,11 @@ public class WhitelistSwitchTests(AvaloniaFixture ui) : IDisposable
         Directory.CreateDirectory(_folder);
         File.WriteAllText(Properties, properties);
         ServerViewModel? server = null;
-        ui.Run(() => server = new ServerViewModel(new ServerConfig { Name = "survival", FolderPath = _folder }));
+        ui.Run(() => server = new ServerViewModel(new ServerConfig
+        {
+            Name = "survival",
+            FolderPath = _folder
+        }));
         return server!;
     }
 

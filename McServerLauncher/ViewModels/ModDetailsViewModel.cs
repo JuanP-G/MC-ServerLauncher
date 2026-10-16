@@ -33,7 +33,9 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
     private readonly ServerModsViewModel _parent;
     private readonly ModrinthService _modrinth;
 
-    /// <summary>Cancels every pending request when the page is left, so nothing lands on a dead page.</summary>
+    /// <summary>
+    /// Cancels every pending request when the page is left, so nothing lands on a dead page.
+    /// </summary>
     private readonly CancellationTokenSource _cts = new();
 
     private ProjectDetail? _project;
@@ -151,7 +153,8 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
 
     // --- Section labels (also used to hide empty sections) ---
 
-    public string RelatedTitle => Localizer.Get(_parent.IsPluginBased ? "Store_RelatedPlugins" : "Store_RelatedMods");
+    public string RelatedTitle => Localizer.Get(_parent.IsPluginBased ? "Store_RelatedPlugins"
+        : "Store_RelatedMods");
 
     public bool HasTags => Tags.Count > 0;
     public bool HasGallery => Gallery.Count > 0;
@@ -184,7 +187,8 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
 
     private static string BuildModrinthUrl(StoreItem item)
     {
-        var kind = string.Equals(item.ProjectType, "plugin", StringComparison.OrdinalIgnoreCase) ? "plugin" : "mod";
+        var kind = string.Equals(item.ProjectType, "plugin", StringComparison.OrdinalIgnoreCase) ? "plugin"
+            : "mod";
         var key = string.IsNullOrEmpty(item.Slug) ? item.Id : item.Slug;
         return $"https://modrinth.com/{kind}/{Uri.EscapeDataString(key)}";
     }

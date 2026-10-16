@@ -32,13 +32,17 @@ public static class WorldCommand
         "save-all", "save-on", "save-off", "stop",
     };
 
-    /// <summary>Commands that only change something with a subcommand; these are the ones that only ask.</summary>
+    /// <summary>
+    /// Commands that only change something with a subcommand; these are the ones that only ask.
+    /// </summary>
     private static readonly HashSet<string> OnlyAsks = new(StringComparer.OrdinalIgnoreCase)
     {
         "time query", "datapack list",
     };
 
-    /// <summary>True when <paramref name="command"/> may have changed the world, as far as can be told.</summary>
+    /// <summary>
+    /// True when <paramref name="command"/> may have changed the world, as far as can be told.
+    /// </summary>
     public static bool Touches(string command)
     {
         var words = command.Trim().TrimStart('/').Split(' ', StringSplitOptions.RemoveEmptyEntries);

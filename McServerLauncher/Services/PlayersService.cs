@@ -60,7 +60,9 @@ public class PlayersService
         return null;
     }
 
-    /// <summary>Removes a player (by name) from banned-players.json. Returns true if any was removed.</summary>
+    /// <summary>
+    /// Removes a player (by name) from banned-players.json. Returns true if any was removed.
+    /// </summary>
     public bool Unban(string folder, string name)
     {
         var path = Path.Combine(folder, "banned-players.json");
@@ -70,7 +72,8 @@ public class PlayersService
             if (JsonNode.Parse(File.ReadAllText(path)) is not JsonArray array) return false;
 
             var toRemove = array
-                .Where(x => string.Equals(x?["name"]?.GetValue<string>(), name, StringComparison.OrdinalIgnoreCase))
+                .Where(x => string.Equals(x?["name"]?.GetValue<string>(), name,
+                    StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var node in toRemove)

@@ -24,8 +24,11 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public sealed class ConsoleLogService : IDisposable
 {
-    /// <summary>Single shared instance: the log file is one per day for the whole app, not per server.</summary>
-    public static readonly ConsoleLogService Shared = new(DefaultLogsDir, () => DateTime.Now, DefaultMaxBytesPerDay);
+    /// <summary>
+    /// Single shared instance: the log file is one per day for the whole app, not per server.
+    /// </summary>
+    public static readonly ConsoleLogService Shared = new(DefaultLogsDir, () => DateTime.Now,
+        DefaultMaxBytesPerDay);
 
     private const int RetentionDays = 14;
 
@@ -63,7 +66,9 @@ public sealed class ConsoleLogService : IDisposable
         _flushTimer = new System.Threading.Timer(_ => Flush(), null, FlushInterval, FlushInterval);
     }
 
-    /// <summary>Appends one line, timestamped and tagged with the server's name, to today's log file.</summary>
+    /// <summary>
+    /// Appends one line, timestamped and tagged with the server's name, to today's log file.
+    /// </summary>
     public void Log(string serverName, string line)
     {
         try

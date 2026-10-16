@@ -71,9 +71,11 @@ public partial class MissingDependenciesDialog : Window
 
     }
 
-    private void InstallAndStart_Click(object? sender, RoutedEventArgs e) => Finish(MissingDependenciesChoice.InstallAndStart);
+    private void InstallAndStart_Click(object? sender, RoutedEventArgs e)
+        => Finish(MissingDependenciesChoice.InstallAndStart);
 
-    private void StartAnyway_Click(object? sender, RoutedEventArgs e) => Finish(MissingDependenciesChoice.StartAnyway);
+    private void StartAnyway_Click(object? sender, RoutedEventArgs e)
+        => Finish(MissingDependenciesChoice.StartAnyway);
 
     private void Cancel_Click(object? sender, RoutedEventArgs e) => Finish(MissingDependenciesChoice.Cancel);
 

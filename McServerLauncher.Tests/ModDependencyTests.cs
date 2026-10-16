@@ -28,7 +28,8 @@ public class ModDependencyTests
             Id = projectId + "-v1",
             ProjectId = projectId,
             VersionNumber = "1.0.0",
-            Files = { new VersionFile { Url = $"https://example/{projectId}.jar", Filename = $"{projectId}.jar", Primary = true } },
+            Files = { new VersionFile { Url = $"https://example/{projectId}.jar",
+                Filename = $"{projectId}.jar", Primary = true } },
             Dependencies = deps.ToList()
         };
 
@@ -46,7 +47,8 @@ public class ModDependencyTests
         {
             if (versionId is { Length: > 0 })
                 return Task.FromResult(byVersion.GetValueOrDefault(versionId));
-            return Task.FromResult(projectId is { Length: > 0 } ? byProject.GetValueOrDefault(projectId) : null);
+            return Task.FromResult(projectId is { Length: > 0 } ? byProject.GetValueOrDefault(projectId)
+                : null);
         };
     }
 
@@ -154,7 +156,11 @@ public class ModDependencyTests
         newest.VersionNumber = "4.0.0";
 
         var root = Version("t_and_t");
-        root.Dependencies.Add(new VersionDependency { VersionId = "cristallib-3.1.3", DependencyType = "required" });
+        root.Dependencies.Add(new VersionDependency
+        {
+            VersionId = "cristallib-3.1.3",
+            DependencyType = "required"
+        });
 
         // The catalogue answers by project id with the newest; by version id with the pinned one.
         var byVersion = new Dictionary<string, VersionResult> { ["cristallib-3.1.3"] = pinned };

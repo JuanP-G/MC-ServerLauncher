@@ -47,7 +47,8 @@ internal static class ContentReplacement
     /// <summary>
     /// The jars in <paramref name="folder"/> that are another copy of <paramref name="newJarPath"/>.
     /// </summary>
-    /// <param name="folder">Every jar in the content folder, from <see cref="ContentManifest.ReadAll"/>.</param>
+    /// <param name="folder">Every jar in the content folder, from
+    /// <see cref="ContentManifest.ReadAll"/>.</param>
     /// <param name="newJarPath">The jar just installed. Never its own victim.</param>
     /// <param name="newOwnId">The id the new jar gives itself, or null if it gives none.</param>
     /// <param name="projectId">The new jar's store project, or null if unknown.</param>
@@ -172,7 +173,8 @@ internal static class ContentReplacement
     {
         if (!Directory.Exists(folder)) return;
 
-        foreach (var left in Directory.EnumerateFiles(folder, "*" + RemovingSuffix, SearchOption.TopDirectoryOnly))
+        foreach (var left in Directory.EnumerateFiles(folder, "*" + RemovingSuffix,
+            SearchOption.TopDirectoryOnly))
         {
             try { File.Delete(left); } catch { /* still held; next time */ }
         }

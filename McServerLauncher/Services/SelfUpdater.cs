@@ -64,7 +64,8 @@ public static class SelfUpdater
             foreach (var dir in Directory.EnumerateDirectories(tempRoot, PackageFolderPrefix + "*"))
             {
                 var rest = Path.GetFileName(dir)[PackageFolderPrefix.Length..];
-                if (!System.Text.RegularExpressions.Regex.IsMatch(rest, "^[a-z0-9]{8}\\.[a-z0-9]{3}$")) continue;
+                if (!System.Text.RegularExpressions.Regex.IsMatch(rest,
+                    "^[a-z0-9]{8}\\.[a-z0-9]{3}$")) continue;
                 if (nowUtc - Directory.GetLastWriteTimeUtc(dir) < TimeSpan.FromDays(1)) continue;
 
                 try { Directory.Delete(dir, recursive: true); }
@@ -194,7 +195,8 @@ public static class SelfUpdater
         // fails, so an interrupted update can never leave the user with no app at all.
         var script = Path.Combine(Path.GetDirectoryName(dmg)!, "mcsl-update.sh");
         File.WriteAllText(script, BuildMacUpdateScript(bundle, dmg));
-        File.SetUnixFileMode(script, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        File.SetUnixFileMode(script,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
 
         Process.Start(new ProcessStartInfo
         {

@@ -158,7 +158,8 @@ public class LocalizationTests
         Assert.True(used.Count > 100, $"solo se encontraron {used.Count} claves: el escaneo no funciona");
 
         var missing = used.Where(k => !neutral.ContainsKey(k)).ToList();
-        Assert.True(missing.Count == 0, "claves usadas en el código que no existen: " + string.Join(", ", missing));
+        Assert.True(missing.Count == 0, "claves usadas en el código que no existen: " + string.Join(", ",
+            missing));
     }
 
     [Fact]

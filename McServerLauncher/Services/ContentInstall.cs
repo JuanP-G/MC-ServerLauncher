@@ -136,7 +136,9 @@ internal static class ContentInstall
                 ct: ct));
     }
 
-    /// <summary>Takes out every other copy of <paramref name="newJar"/>, or throws having changed nothing.</summary>
+    /// <summary>
+    /// Takes out every other copy of <paramref name="newJar"/>, or throws having changed nothing.
+    /// </summary>
     /// <param name="folder">The content folder.</param>
     /// <param name="newJar">The jar just installed.</param>
     /// <param name="display">What to call it in the error.</param>

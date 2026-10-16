@@ -27,7 +27,8 @@ namespace McServerLauncher.Tests;
 [Collection("avalonia")]
 public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
 {
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-settings-" + Guid.NewGuid().ToString("N"));
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-settings-" + Guid.NewGuid()
+        .ToString("N"));
 
     private string Folder(string name)
     {
@@ -36,15 +37,18 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
         return path;
     }
 
-    private static ServerSettingsView Open(ServerConfig config, ServerSettingsPage page = ServerSettingsPage.Game)
+    private static ServerSettingsView Open(ServerConfig config,
+        ServerSettingsPage page = ServerSettingsPage.Game)
     {
         var view = new ServerSettingsView(new ServerViewModel(config), page);
         AvaloniaFixture.Pump();
         return view;
     }
 
-    private static T Named<T>(ServerSettingsView view, ServerSettingsPage page, string name) where T : Control =>
-        view.Section(page).FindControl<T>(name) ?? throw new InvalidOperationException($"no hay un control llamado {name}");
+    private static T Named<T>(ServerSettingsView view, ServerSettingsPage page,
+        string name) where T : Control =>
+        view.Section(page).FindControl<T>(name)
+            ?? throw new InvalidOperationException($"no hay un control llamado {name}");
 
     [Fact]
     public void OpeningChangesNothing() =>
@@ -53,8 +57,14 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
             // Every page made, so every one of them has read its values in: none of that may count
             // as a change, or the save bar would be up before anybody touched anything.
             var folder = Folder("abrir");
-            File.WriteAllText(Path.Combine(folder, "server.properties"), "pvp=TRUE\ngamemode=Creative\nmotd=§6Hola\n");
-            var view = Open(new ServerConfig { Name = "abrir", FolderPath = folder, Type = ServerType.Paper });
+            File.WriteAllText(Path.Combine(folder, "server.properties"),
+                "pvp=TRUE\ngamemode=Creative\nmotd=§6Hola\n");
+            var view = Open(new ServerConfig
+            {
+                Name = "abrir",
+                FolderPath = folder,
+                Type = ServerType.Paper
+            });
 
             foreach (var page in Enum.GetValues<ServerSettingsPage>()) view.Section(page);
             AvaloniaFixture.Pump();
@@ -131,7 +141,13 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
         {
             // The live config is written while the page is open — a loader install, the seed read
             // from the console. Copying the whole draft back would put the old values over them.
-            var config = new ServerConfig { Name = "cuatro", FolderPath = Folder("cuatro"), JarFile = "server.jar", MinRamGb = 2 };
+            var config = new ServerConfig
+            {
+                Name = "cuatro",
+                FolderPath = Folder("cuatro"),
+                JarFile = "server.jar",
+                MinRamGb = 2
+            };
             var view = Open(config, ServerSettingsPage.Performance);
 
             Named<NumericUpDown>(view, ServerSettingsPage.Performance, "MinRamBox").Value = 3;
@@ -172,7 +188,12 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
     public void ALoaderInstallIsTakenAsSavedAndRefreshesWhatDependsOnTheType() =>
         ui.Run(() =>
         {
-            var config = new ServerConfig { Name = "seis", FolderPath = Folder("seis"), Type = ServerType.Vanilla };
+            var config = new ServerConfig
+            {
+                Name = "seis",
+                FolderPath = Folder("seis"),
+                Type = ServerType.Vanilla
+            };
             var view = Open(config, ServerSettingsPage.Crossplay);
             var crossplay = Named<ToggleSwitch>(view, ServerSettingsPage.Crossplay, "CrossplayCheck");
             Assert.False(crossplay.IsEnabled);    // Vanilla takes no plugins
@@ -217,7 +238,8 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
             AvaloniaFixture.Pump();
             Assert.True(view.Save());
 
-            Named<TextBox>(view, ServerSettingsPage.Advanced, "FolderBox").Text = Path.Combine(_root, "tampoco");
+            Named<TextBox>(view, ServerSettingsPage.Advanced, "FolderBox")
+                .Text = Path.Combine(_root, "tampoco");
             AvaloniaFixture.Pump();
             Assert.False(view.Save());
             Assert.Equal(ServerSettingsPage.Advanced, view.Page);
@@ -249,7 +271,8 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
 
             Assert.Equal("hard", Named<ComboBox>(view, ServerSettingsPage.Game, "DifficultyBox").SelectedItem
                 is ComboBoxItem { Tag: string d } ? d : null);
-            Assert.Equal("creative", Named<ComboBox>(view, ServerSettingsPage.Game, "GamemodeBox").SelectedItem
+            Assert.Equal("creative", Named<ComboBox>(view, ServerSettingsPage.Game, "GamemodeBox")
+                .SelectedItem
                 is ComboBoxItem { Tag: string g } ? g : null);
             Assert.False(view.IsDirty);   // shown as what it is, not rewritten
         });
@@ -273,7 +296,12 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
             // Multi-version is switched on and saved; its install fails and the app switches it back
             // off on the server. The page went on showing it on, and saving "on" again was no change,
             // so nothing tried the install again.
-            var config = new ServerConfig { Name = "trece", FolderPath = Folder("trece"), Type = ServerType.Paper };
+            var config = new ServerConfig
+            {
+                Name = "trece",
+                FolderPath = Folder("trece"),
+                Type = ServerType.Paper
+            };
             var view = Open(config, ServerSettingsPage.Crossplay);
             view.Draft.Config.MultiVersionEnabled = true;
             Assert.True(view.Save());
@@ -291,7 +319,12 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
     public void WhatTheUserChangedIsNotOverwrittenFromOutside() =>
         ui.Run(() =>
         {
-            var config = new ServerConfig { Name = "catorce", FolderPath = Folder("catorce"), JavaPath = "java" };
+            var config = new ServerConfig
+            {
+                Name = "catorce",
+                FolderPath = Folder("catorce"),
+                JavaPath = "java"
+            };
             var view = Open(config, ServerSettingsPage.Performance);
             view.Draft.Config.JavaPath = "/opt/my-java/bin/java";
 
@@ -356,7 +389,8 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
 public class ServerSettingsFlowTests : IDisposable
 {
     private readonly AvaloniaFixture _ui;
-    private readonly string _dataDir = Path.Combine(Path.GetTempPath(), "mcl-sflow-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dataDir = Path.Combine(Path.GetTempPath(), "mcl-sflow-" + Guid.NewGuid()
+        .ToString("N"));
 
     public ServerSettingsFlowTests(AvaloniaFixture ui)
     {
@@ -576,6 +610,7 @@ public class ServerSettingsFlowTests : IDisposable
             Assert.True(panel.FindControl<Border>("SaveBar")!.IsVisible);
             Assert.Contains("error", panel.FindControl<TextBlock>("SaveBarHint")!.Classes);
             // Nothing is unsaved: the bar says the save did not finish, not that changes are pending.
-            Assert.Equal(Localizer.Get("Sset_SaveUnfinished"), panel.FindControl<TextBlock>("SaveBarText")!.Text);
+            Assert.Equal(Localizer.Get("Sset_SaveUnfinished"),
+                panel.FindControl<TextBlock>("SaveBarText")!.Text);
         });
 }

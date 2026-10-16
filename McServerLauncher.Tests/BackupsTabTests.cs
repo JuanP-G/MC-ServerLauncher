@@ -13,14 +13,19 @@ namespace McServerLauncher.Tests;
 [Collection("avalonia")]
 public class BackupsTabTests(AvaloniaFixture ui) : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-btab-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-btab-" + Guid.NewGuid()
+        .ToString("N"));
 
     private ServerViewModel Server()
     {
         Directory.CreateDirectory(Path.Combine(_folder, "world"));
         File.WriteAllText(Path.Combine(_folder, "world", "level.dat"), "level");
         ServerViewModel? server = null;
-        ui.Run(() => server = new ServerViewModel(new ServerConfig { Name = "copias", FolderPath = _folder }));
+        ui.Run(() => server = new ServerViewModel(new ServerConfig
+        {
+            Name = "copias",
+            FolderPath = _folder
+        }));
         return server!;
     }
 

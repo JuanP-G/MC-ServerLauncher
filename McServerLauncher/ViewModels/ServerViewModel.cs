@@ -81,7 +81,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private static readonly TimeSpan AutoRestartDelay = TimeSpan.FromSeconds(5);
     private int _consecutiveCrashes;
 
-    /// <summary>Whether this run has already explained a Bedrock player being kicked for having no mods.</summary>
+    /// <summary>
+    /// Whether this run has already explained a Bedrock player being kicked for having no mods.
+    /// </summary>
     private bool _moddedKickWarned;
 
     /// <summary>Whether this run has already explained the server refusing to start from its path.</summary>
@@ -621,7 +623,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
         IdleCountdownText = string.Format(
             Localizer.Get("Idle_CountdownFmt"),
-            FormatCountdown(IdleRemaining(Config.IdleShutdownMinutes, _emptySinceUtc.Value, DateTime.UtcNow)));
+            FormatCountdown(IdleRemaining(Config.IdleShutdownMinutes, _emptySinceUtc.Value,
+                DateTime.UtcNow)));
     }
 
     private void StopIdleCountdown()
@@ -721,7 +724,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             VersionName: string.IsNullOrWhiteSpace(Config.GameVersion) ? "?" : Config.GameVersion,
             MaxPlayers: _maxPlayers,
             IconPath: File.Exists(icon) ? icon : null,
-            DisconnectMessage: WakeSign.KickStyle + Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"),
+            DisconnectMessage: WakeSign.KickStyle + Localizer.Get(starting ? "Wake_KickStarting"
+                : "Wake_KickWaking"),
             RefusedMessage: WakeSign.KickStyle + Localizer.Get("Wake_KickNotWhitelisted"));
     }
 
@@ -751,7 +755,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         return true;
     }
 
-    /// <summary>Whether <paramref name="player"/> may wake this server. See <see cref="WakePolicy"/>.</summary>
+    /// <summary>
+    /// Whether <paramref name="player"/> may wake this server. See <see cref="WakePolicy"/>.
+    /// </summary>
     /// <remarks>
     /// Nothing is said in the console about a refusal: the ones worth refusing are scanners, and
     /// they come by the hundred.
@@ -1196,7 +1202,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         }
     }
 
-    /// <summary>What the last line on standard output was. See <see cref="ConsoleLineClassifier.Classify"/>.</summary>
+    /// <summary>
+    /// What the last line on standard output was. See <see cref="ConsoleLineClassifier.Classify"/>.
+    /// </summary>
     private ConsoleLineKind? _lastStdoutKind;
 
     private void OnConsoleLine(string text, ConsoleLineKind kind)
@@ -1223,7 +1231,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             Dispatcher.UIThread.Post(FlushConsole, DispatcherPriority.Background);
     }
 
-    /// <summary>Lines waiting for the UI thread. See <see cref="OnConsoleLine(string, ConsoleLineKind)"/>.</summary>
+    /// <summary>
+    /// Lines waiting for the UI thread. See <see cref="OnConsoleLine(string, ConsoleLineKind)"/>.
+    /// </summary>
     private readonly System.Collections.Concurrent.ConcurrentQueue<ConsoleLine> _pendingLines = new();
 
     /// <summary>1 while a flush is posted and has not run yet.</summary>
@@ -1364,7 +1374,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             SnapshotOnline();
             History.RequestRefresh();
             UpdatePlayerCount();
-            NotifyIf(NotificationKind.PlayerJoined, string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
+            NotifyIf(NotificationKind.PlayerJoined,
+                string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
             return;
         }
 
@@ -1554,7 +1565,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
                 return;
             }
 
-            OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartingFmt"), _consecutiveCrashes, MaxAutoRestarts));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartingFmt"), _consecutiveCrashes,
+                MaxAutoRestarts));
             await Task.Delay(AutoRestartDelay);
 
             // Only proceed if nothing else already started it in the meantime (e.g. the user
@@ -1696,7 +1708,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
                 return true;
 
             case MissingDependenciesChoice.InstallAndStart:
-                await Mods.InstallMissingAsync(missing.Select(m => m.Id), new Progress<string>(OnConsoleLine));
+                await Mods.InstallMissingAsync(missing.Select(m => m.Id),
+                    new Progress<string>(OnConsoleLine));
 
                 // Checked again rather than assumed: an install can fail, and a store that does not
                 // know a name — cristallib is published as cristel-lib — resolves to nothing at all.
@@ -2264,28 +2277,32 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     [RelayCommand]
     private async Task OpPlayer(string? name)
     {
-        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Op"))) return;
+        if ((name = ValidPlayerNameOrWarn(name)) is null
+            || !EnsureRunning(Localizer.Get("Action_Op"))) return;
         await PlayerCommandAsync($"op {name}");
     }
 
     [RelayCommand]
     private async Task DeopPlayer(string? name)
     {
-        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Deop"))) return;
+        if ((name = ValidPlayerNameOrWarn(name)) is null
+            || !EnsureRunning(Localizer.Get("Action_Deop"))) return;
         await PlayerCommandAsync($"deop {name}");
     }
 
     [RelayCommand]
     private async Task KickPlayer(string? name)
     {
-        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Kick"))) return;
+        if ((name = ValidPlayerNameOrWarn(name)) is null
+            || !EnsureRunning(Localizer.Get("Action_Kick"))) return;
         await PlayerCommandAsync($"kick {name}");
     }
 
     [RelayCommand]
     private async Task BanPlayer(string? name)
     {
-        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Ban"))) return;
+        if ((name = ValidPlayerNameOrWarn(name)) is null
+            || !EnsureRunning(Localizer.Get("Action_Ban"))) return;
         await PlayerCommandAsync($"ban {name}");
     }
 

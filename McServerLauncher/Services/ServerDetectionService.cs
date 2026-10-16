@@ -19,7 +19,9 @@ public sealed record ServerDetection
     public string? GameVersion { get; init; }
     public string? LoaderVersion { get; init; }
 
-    /// <summary>The jar to run, relative to the folder; null for loaders launched through an args file.</summary>
+    /// <summary>
+    /// The jar to run, relative to the folder; null for loaders launched through an args file.
+    /// </summary>
     public string? JarFile { get; init; }
 
     /// <summary>The Forge/NeoForge id whose args file launches the server.</summary>
@@ -160,12 +162,14 @@ public partial class ServerDetectionService
         // Old Forge (≤1.16.5): a runnable forge-*.jar in the root.
         var oldForge = Directory.EnumerateFiles(folder, "forge-*.jar")
             .Select(Path.GetFileName)
-            .FirstOrDefault(n => n is not null && !n.Contains("installer", StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(n => n is not null && !n.Contains("installer",
+                StringComparison.OrdinalIgnoreCase));
         if (oldForge is null) return null;
 
         var core = oldForge.EndsWith(".jar", StringComparison.OrdinalIgnoreCase) ? oldForge[..^4] : oldForge;
         if (core.StartsWith("forge-", StringComparison.OrdinalIgnoreCase)) core = core[6..];
-        if (core.EndsWith("-universal", StringComparison.OrdinalIgnoreCase)) core = core[..^"-universal".Length];
+        if (core.EndsWith("-universal",
+            StringComparison.OrdinalIgnoreCase)) core = core[..^"-universal".Length];
         var (oldGame, oldLoader) = SplitForgeId(core);
         return new ServerDetection
         {
@@ -258,7 +262,12 @@ public partial class ServerDetectionService
         {
             var version = _java.GetGameVersionFromJar(Path.Combine(folder, jar));
             if (version is not null)
-                return new ServerDetection { Type = ServerType.Vanilla, JarFile = jar, GameVersion = version };
+                return new ServerDetection
+                {
+                    Type = ServerType.Vanilla,
+                    JarFile = jar,
+                    GameVersion = version
+                };
         }
         return null;
     }

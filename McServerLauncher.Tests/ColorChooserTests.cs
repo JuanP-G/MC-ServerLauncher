@@ -21,7 +21,8 @@ public class ColorPaletteTests
     public void ThePaletteIsFourRowsOfEightWithoutRepeats()
     {
         Assert.Equal(4 * ColorPalette.RowLength, ColorPalette.Swatches.Count);
-        Assert.Equal(ColorPalette.Swatches.Count, ColorPalette.Swatches.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.Equal(ColorPalette.Swatches.Count,
+            ColorPalette.Swatches.Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.All(ColorPalette.Swatches, hex => Assert.Matches("^#[0-9A-F]{6}$", hex));
     }
 
@@ -33,9 +34,11 @@ public class ColorPaletteTests
         for (var i = 0; i < ColorPalette.Swatches.Count; i++)
         {
             var color = Color.Parse(ColorPalette.Swatches[i]);
-            Assert.True(ColorPalette.ReadsWellOnDark(color, ColorPalette.MarkContrast), ColorPalette.Swatches[i]);
+            Assert.True(ColorPalette.ReadsWellOnDark(color, ColorPalette.MarkContrast),
+                ColorPalette.Swatches[i]);
             if (i < 3 * ColorPalette.RowLength)
-                Assert.True(ColorPalette.ReadsWellOnDark(color, ColorPalette.TextContrast), ColorPalette.Swatches[i]);
+                Assert.True(ColorPalette.ReadsWellOnDark(color, ColorPalette.TextContrast),
+                    ColorPalette.Swatches[i]);
         }
     }
 
@@ -65,7 +68,8 @@ public class ColorChooserTests(AvaloniaFixture ui)
 
             Assert.Equal("#FF5C5C", chooser.Hex);
             Assert.Equal("#FF5C5C", Named<TextBox>(chooser, "HexBox").Text);
-            var marked = Named<UniformGrid>(chooser, "SwatchGrid").Children.Where(c => c.Classes.Contains("on")).ToList();
+            var marked = Named<UniformGrid>(chooser, "SwatchGrid")
+                .Children.Where(c => c.Classes.Contains("on")).ToList();
             Assert.Equal("#FF5C5C", (string)Assert.Single(marked).Tag!);
         });
 
@@ -114,9 +118,11 @@ public class ColorChooserTests(AvaloniaFixture ui)
     [Fact]
     public void EverySettingsColourUsesTheChooser()
     {
-        var xaml = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "SettingsView.axaml"));
+        var xaml = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views",
+            "SettingsView.axaml"));
 
-        foreach (var prop in new[] { "ColorSuccess", "ColorInfo", "ColorWarning", "ColorError", "ConsoleChatColor", "ConsolePlayersColor" })
+        foreach (var prop in new[] { "ColorSuccess", "ColorInfo", "ColorWarning", "ColorError",
+            "ConsoleChatColor", "ConsolePlayersColor" })
             Assert.Matches($@"<views:ColorChooser[^>]*Hex=""\{{Binding {prop}, Mode=TwoWay\}}""", Regex.Replace(xaml, @"\s+", " "));
         Assert.DoesNotContain("HexBrushConverter", xaml);
     }

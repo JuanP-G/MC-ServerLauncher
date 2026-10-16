@@ -52,8 +52,11 @@ public static class ColorPalette
         return (Math.Max(la, lb) + 0.05) / (Math.Min(la, lb) + 0.05);
     }
 
-    /// <summary>Whether <paramref name="color"/> reaches <paramref name="threshold"/> on <see cref="DarkSurface"/>.</summary>
-    public static bool ReadsWellOnDark(Color color, double threshold) => Contrast(color, DarkSurface) >= threshold;
+    /// <summary>
+    /// Whether <paramref name="color"/> reaches <paramref name="threshold"/> on <see cref="DarkSurface"/>.
+    /// </summary>
+    public static bool ReadsWellOnDark(Color color, double threshold)
+        => Contrast(color, DarkSurface) >= threshold;
 
     /// <summary>Relative luminance as WCAG defines it.</summary>
     private static double Luminance(Color c)

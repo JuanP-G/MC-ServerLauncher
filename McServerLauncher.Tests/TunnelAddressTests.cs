@@ -138,7 +138,9 @@ public class TunnelAddressTests(AvaloniaFixture ui)
         "Strings.resx", "Strings.en.resx", "Strings.pt.resx", "Strings.fr.resx", "Strings.de.resx"
     };
 
-    /// <summary>One key's text straight out of one .resx, since Localizer only reads the current culture.</summary>
+    /// <summary>
+    /// One key's text straight out of one .resx, since Localizer only reads the current culture.
+    /// </summary>
     private static string Value(string file, string key)
     {
         var path = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Resources", file);
@@ -149,7 +151,9 @@ public class TunnelAddressTests(AvaloniaFixture ui)
         return entry!.Element("value")?.Value ?? string.Empty;
     }
 
-    /// <summary>A server view model on the UI thread, shut down afterwards. Activate() is not called.</summary>
+    /// <summary>
+    /// A server view model on the UI thread, shut down afterwards. Activate() is not called.
+    /// </summary>
     private void WithServer(Action<ServerViewModel> assert) =>
         ui.Run(() =>
         {

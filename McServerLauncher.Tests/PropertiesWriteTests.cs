@@ -11,7 +11,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class PropertiesWriteTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-props-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-props-" + Guid.NewGuid()
+        .ToString("N"));
     private string File_ => Path.Combine(_dir, "server.properties");
 
     public PropertiesWriteTests() => Directory.CreateDirectory(_dir);
@@ -21,7 +22,9 @@ public class PropertiesWriteTests : IDisposable
     {
         File.WriteAllText(File_, "#Minecraft server properties\nmotd=Hola\nserver-port=25565\n");
 
-        new ServerPropertiesService().Update(File_, new Dictionary<string, string> { ["server-port"] = "25570" });
+        new ServerPropertiesService().Update(File_, new Dictionary<string,
+            string>
+        { ["server-port"] = "25570" });
 
         var lines = File.ReadAllLines(File_);
         Assert.Equal(new[] { "#Minecraft server properties", "motd=Hola", "server-port=25570" }, lines);

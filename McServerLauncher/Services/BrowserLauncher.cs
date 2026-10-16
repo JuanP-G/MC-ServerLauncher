@@ -19,7 +19,9 @@ public static class BrowserLauncher
         Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
         (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 
-    /// <summary>Opens the link if it is a web URL. Anything else is ignored, silently and on purpose.</summary>
+    /// <summary>
+    /// Opens the link if it is a web URL. Anything else is ignored, silently and on purpose.
+    /// </summary>
     public static void Open(string? url)
     {
         if (!IsWebUrl(url)) return;

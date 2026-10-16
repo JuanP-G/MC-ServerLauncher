@@ -54,7 +54,8 @@ public class Sparkline : Control
     /// (newest at the right edge), Y scales 0..scale to bottom..top. Kept static and pure so the
     /// scaling math can be exercised in tests without any rendering infrastructure.
     /// </summary>
-    public static Point[] BuildPoints(IReadOnlyList<double> values, double width, double height, double maxValue)
+    public static Point[] BuildPoints(IReadOnlyList<double> values, double width, double height,
+        double maxValue)
     {
         if (values.Count == 0 || width <= 0 || height <= 0)
             return Array.Empty<Point>();

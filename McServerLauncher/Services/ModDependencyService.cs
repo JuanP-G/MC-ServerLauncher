@@ -49,12 +49,15 @@ public class ModDependencyService
 
     private readonly ModrinthService _modrinth;
 
-    public ModDependencyService(ModrinthService? modrinth = null) => _modrinth = modrinth ?? new ModrinthService();
+    public ModDependencyService(ModrinthService? modrinth = null) => _modrinth = modrinth
+        ?? new ModrinthService();
 
     /// <summary>One dependency that has to be downloaded, already resolved to a concrete file.</summary>
     public record Needed(string ProjectId, VersionResult Version, VersionFile File)
     {
-        /// <summary>What to show the user. The file name is the only name we have without another request.</summary>
+        /// <summary>
+        /// What to show the user. The file name is the only name we have without another request.
+        /// </summary>
         public string Label => System.IO.Path.GetFileName(File.Filename);
     }
 
@@ -76,7 +79,8 @@ public class ModDependencyService
     /// The required dependencies of <paramref name="roots"/>, transitively, minus what is already
     /// installed.
     /// </summary>
-    public Task<Plan> ResolveMissingAsync(IEnumerable<VersionResult> roots, ServerType loader, string mcVersion,
+    public Task<Plan> ResolveMissingAsync(IEnumerable<VersionResult> roots, ServerType loader,
+        string mcVersion,
         IEnumerable<string> installedProjectIds, CancellationToken ct = default) =>
         WalkAsync(roots, installedProjectIds,
             (projectId, versionId, token) => versionId is { Length: > 0 }
@@ -96,7 +100,8 @@ public class ModDependencyService
     /// unresolved: an id Modrinth has never heard of is not evidence that anything is missing, and
     /// saying so would turn a guess into a warning.
     /// </remarks>
-    public async Task<Plan> ResolveByModIdAsync(IEnumerable<string> modIds, ServerType loader, string mcVersion,
+    public async Task<Plan> ResolveByModIdAsync(IEnumerable<string> modIds, ServerType loader,
+        string mcVersion,
         IEnumerable<string> installedProjectIds, CancellationToken ct = default)
     {
         var root = ModIdRoot(modIds);
@@ -198,7 +203,8 @@ public class ModDependencyService
             {
                 // "optional" is a suggestion; "incompatible" is a warning; "embedded" is already
                 // inside the jar we just downloaded, and installing it again is its own bug.
-                if (!string.Equals(dep.DependencyType, "required", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!string.Equals(dep.DependencyType, "required",
+                    StringComparison.OrdinalIgnoreCase)) continue;
 
                 if (dep.ProjectId is { Length: > 0 } && settled.Contains(dep.ProjectId)) continue;
 

@@ -42,7 +42,9 @@ public class PlayitManager
     /// <summary>Result of the one-off <c>which playit</c>, kept so it isn't asked again each tick.</summary>
     private bool _linuxBinaryOnPath;
 
-    /// <summary>Serialises probes: several view models share this instance and a probe spawns processes.</summary>
+    /// <summary>
+    /// Serialises probes: several view models share this instance and a probe spawns processes.
+    /// </summary>
     private readonly SemaphoreSlim _probeGate = new(1, 1);
 
     public event Action<PlayitState>? StateChanged;
@@ -181,7 +183,9 @@ public class PlayitManager
         return code is 0 or 1 or 2 or 3;
     }
 
-    /// <summary>Starts the Playit agent (Windows service / Linux systemd unit). May require privileges.</summary>
+    /// <summary>
+    /// Starts the Playit agent (Windows service / Linux systemd unit). May require privileges.
+    /// </summary>
     public async Task StartServiceAsync()
     {
         if (OperatingSystem.IsWindows())
@@ -191,7 +195,9 @@ public class PlayitManager
         await RefreshStateAsync(force: true);
     }
 
-    /// <summary>Stops the Playit agent (Windows service / Linux systemd unit). May require privileges.</summary>
+    /// <summary>
+    /// Stops the Playit agent (Windows service / Linux systemd unit). May require privileges.
+    /// </summary>
     public async Task StopServiceAsync()
     {
         if (OperatingSystem.IsWindows())

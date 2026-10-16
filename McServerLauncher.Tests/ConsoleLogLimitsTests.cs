@@ -12,7 +12,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class ConsoleLogLimitsTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-logs-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-logs-" + Guid.NewGuid()
+        .ToString("N"));
     private DateTime _now = new(2026, 1, 10, 12, 0, 0);
 
     private ConsoleLogService Service(long max = ConsoleLogService.DefaultMaxBytesPerDay) =>

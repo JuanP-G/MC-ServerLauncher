@@ -20,7 +20,8 @@ namespace McServerLauncher.Tests;
 public class StartPreparationTests : IDisposable
 {
     private readonly AvaloniaFixture _ui;
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-prep-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-prep-" + Guid.NewGuid()
+        .ToString("N"));
 
     public StartPreparationTests(AvaloniaFixture ui)
     {
@@ -62,7 +63,8 @@ public class StartPreparationTests : IDisposable
         string? shownAfter = null;
         _ui.Run(() =>
         {
-            errors = server!.ConsoleLines.Count(l => l.Text.StartsWith(ErrorPrefix, StringComparison.Ordinal));
+            errors = server!.ConsoleLines.Count(l => l.Text.StartsWith(ErrorPrefix,
+                StringComparison.Ordinal));
             canStartAfter = server.CanStart;
             shownAfter = server.StatusText;
         });

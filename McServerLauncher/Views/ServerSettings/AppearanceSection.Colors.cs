@@ -104,7 +104,9 @@ public partial class AppearanceSection
         });
     }
 
-    /// <summary>The line being edited and the selected range in it; length 0 means nothing is selected.</summary>
+    /// <summary>
+    /// The line being edited and the selected range in it; length 0 means nothing is selected.
+    /// </summary>
     private (int Line, int Start, int Length) Selection()
     {
         var box = _boxes[_active];
@@ -120,7 +122,8 @@ public partial class AppearanceSection
     }
 
     /// <summary>What the bar describes: the selection's first character, or the caret's style.</summary>
-    /// <remarks>Never past the document's end, whatever the box says: see <see cref="QueueToolbarUpdate"/>.</remarks>
+    /// <remarks>Never past the document's end, whatever the box says: see
+    /// <see cref="QueueToolbarUpdate"/>.</remarks>
     private MotdStyle CurrentStyle()
     {
         var (line, start, length) = Selection();
@@ -171,7 +174,12 @@ public partial class AppearanceSection
     /// replaced by the theme's hover colour, and the swatch would stop being its colour.</summary>
     private Button Swatch(IBrush fill, bool small = false)
     {
-        var inner = new Border { CornerRadius = new CornerRadius(small ? 4 : 5), Background = fill, BorderThickness = new Thickness(1) };
+        var inner = new Border
+        {
+            CornerRadius = new CornerRadius(small ? 4 : 5),
+            Background = fill,
+            BorderThickness = new Thickness(1)
+        };
         // Bound rather than looked up: the page is made before it is in the window, and a resource
         // looked up then is not found.
         inner.Bind(Border.BorderBrushProperty, this.GetResourceObservable("SurfaceEdgeStrong"));
@@ -252,7 +260,8 @@ public partial class AppearanceSection
         rgb = 0;
         var t = text?.Trim().TrimStart('#') ?? "";
         if (t.Length == 3) t = string.Concat(t.Select(c => $"{c}{c}"));
-        return t.Length == 6 && int.TryParse(t, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out rgb);
+        return t.Length == 6 && int.TryParse(t, NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+            out rgb);
     }
 
     // ---------------------------------------------------------------- the ramp
@@ -293,7 +302,8 @@ public partial class AppearanceSection
 
     private void ShowGradient()
     {
-        GradientFromButton.Content = Swatch(new SolidColorBrush(ColorOf(MotdStyle.OfHex(_gradientFrom)))).Content;
+        GradientFromButton.Content = Swatch(new SolidColorBrush(ColorOf(MotdStyle.OfHex(_gradientFrom))))
+            .Content;
         GradientToButton.Content = Swatch(new SolidColorBrush(ColorOf(MotdStyle.OfHex(_gradientTo)))).Content;
         GradientFromButton.Classes.Set("armed", !_pickingTo);
         GradientToButton.Classes.Set("armed", _pickingTo);

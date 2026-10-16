@@ -112,7 +112,8 @@ public class GeyserAuthTests
             .Replace("auth-type: online", "auth-type: floodgate")
             .Replace("floodgate-key-file: key.pem", "floodgate-key-file: ../floodgate/key.pem");
 
-        Assert.Equal(already, GeyserConfigService.SetJavaAuth(already, floodgate: true, "../floodgate/key.pem"));
+        Assert.Equal(already, GeyserConfigService.SetJavaAuth(already, floodgate: true,
+            "../floodgate/key.pem"));
     }
 
     [Fact]

@@ -45,7 +45,9 @@ public abstract class SlidingIndicator : Panel
     /// <summary>Where the mark should be now, in this control's coordinates, or null to hide it.</summary>
     protected abstract Rect? Measure();
 
-    /// <summary>Moves the mark to where <see cref="Measure"/> says, sliding when it was already somewhere.</summary>
+    /// <summary>
+    /// Moves the mark to where <see cref="Measure"/> says, sliding when it was already somewhere.
+    /// </summary>
     internal void Place()
     {
         if (Measure() is not { Width: > 0, Height: > 0 } target)

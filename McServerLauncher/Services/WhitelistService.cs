@@ -52,7 +52,8 @@ public class WhitelistService
     }
 
     private void WriteEntries(string folder, List<Entry> entries)
-        => File.WriteAllText(PathOf(folder), JsonSerializer.Serialize(entries, JsonOptions), new UTF8Encoding(false));
+        => File.WriteAllText(PathOf(folder), JsonSerializer.Serialize(entries, JsonOptions),
+            new UTF8Encoding(false));
 
     /// <summary>Adds a player to whitelist.json (resolving their UUID). Does not duplicate.</summary>
     public async Task AddAsync(string folder, string name, bool onlineMode, CancellationToken ct = default)

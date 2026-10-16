@@ -11,8 +11,10 @@ namespace McServerLauncher.Tests;
 /// <summary>What a server card shows after the account is asked about its tunnels.</summary>
 public class TunnelAddressSyncTests
 {
-    private static PlayitTunnel Tcp(int port, string host) => new("t" + port, "x", port, host, null, "tcp", 30000);
-    private static PlayitTunnel Udp(int port, string host, int pub = 51917) => new("u" + port, "x", port, host, null, "udp", pub);
+    private static PlayitTunnel Tcp(int port, string host)
+        => new("t" + port, "x", port, host, null, "tcp", 30000);
+    private static PlayitTunnel Udp(int port, string host, int pub = 51917)
+        => new("u" + port, "x", port, host, null, "udp", pub);
 
     [Fact]
     public void WhenTheAccountCannotBeAskedThereIsNoJavaAnswer() =>
@@ -24,11 +26,13 @@ public class TunnelAddressSyncTests
 
     [Fact]
     public void ABedrockTunnelOnTheJavaPortIsNotTheJavaAddress() =>
-        Assert.Equal(("", TunnelAddressState.NoTunnel), TunnelAddressSync.Java([Udp(25565, "udp.ply.gg")], 25565));
+        Assert.Equal(("", TunnelAddressState.NoTunnel),
+            TunnelAddressSync.Java([Udp(25565, "udp.ply.gg")], 25565));
 
     [Fact]
     public void TheJavaTunnelOnThePortIsShown() =>
-        Assert.Equal(("java.ply.gg", TunnelAddressState.Ready), TunnelAddressSync.Java([Tcp(25565, "java.ply.gg")], 25565));
+        Assert.Equal(("java.ply.gg", TunnelAddressState.Ready),
+            TunnelAddressSync.Java([Tcp(25565, "java.ply.gg")], 25565));
 
     [Fact]
     public void AJavaTunnelWithoutItsAddressYetIsWaiting() =>
@@ -51,7 +55,8 @@ public class TunnelAddressSyncTests
 
     [Fact]
     public void ABedrockTunnelWithoutItsAddressYetIsWaiting() =>
-        Assert.Equal(BedrockAddressState.Waiting, TunnelAddressSync.Bedrock([Udp(19134, "", 0)], 19134)!.Value.State);
+        Assert.Equal(BedrockAddressState.Waiting, TunnelAddressSync.Bedrock([Udp(19134, "", 0)],
+            19134)!.Value.State);
 
     [Fact]
     public void WhenTheAccountCannotBeAskedThereIsNoBedrockAnswer() =>
@@ -62,7 +67,8 @@ public class TunnelAddressSyncTests
 public class ServerListBindingTests
 {
     private static string MainWindow() =>
-        File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml"));
+        File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views",
+            "MainWindow.axaml"));
 
     [Theory]
     [InlineData("ShowNewServerCommand")]
@@ -127,7 +133,8 @@ public class MotionTests
             .Where(f =>
             {
                 var xaml = File.ReadAllText(f);
-                return xaml.Contains("<Transitions>") || xaml.Contains("<Animation ") || xaml.Contains("<Animation>");
+                return xaml.Contains("<Transitions>") || xaml.Contains("<Animation ")
+                    || xaml.Contains("<Animation>");
             })
             .Select(Path.GetFileName)
             .ToList();
@@ -211,7 +218,8 @@ public class BeaconTests(AvaloniaFixture ui)
     [Fact]
     public void TheAnimationsItTakesTurnsWithExist()
     {
-        var motion = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Styles", "Motion.axaml"));
+        var motion = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Styles",
+            "Motion.axaml"));
 
         foreach (var cls in new[] { "beacon-a", "beacon-b" })
             foreach (var part in new[] { "shine", "halo" })
@@ -223,7 +231,8 @@ public class BeaconTests(AvaloniaFixture ui)
 [Collection("avalonia")]
 public class TabUnderlineTests(AvaloniaFixture ui)
 {
-    private static (Window Window, TabControl Tabs, McServerLauncher.Controls.TabUnderline Line, ListBox Inner) Build(object? thirdHeader = null)
+    private static (Window Window, TabControl Tabs, McServerLauncher.Controls.TabUnderline Line,
+        ListBox Inner) Build(object? thirdHeader = null)
     {
         var inner = new ListBox { ItemsSource = new[] { "a", "b", "c" } };
         var tabs = new TabControl
@@ -236,7 +245,12 @@ public class TabUnderlineTests(AvaloniaFixture ui)
             }
         };
         var line = new McServerLauncher.Controls.TabUnderline { Tabs = tabs };
-        var window = new Window { Width = 800, Height = 400, Content = new Panel { Children = { tabs, line } } };
+        var window = new Window
+        {
+            Width = 800,
+            Height = 400,
+            Content = new Panel { Children = { tabs, line } }
+        };
         window.Show();
         Settle(window);
         return (window, tabs, line, inner);
@@ -311,7 +325,8 @@ public class TabUnderlineTests(AvaloniaFixture ui)
                 Children =
                 {
                     new TextBlock { Text = "Plugins", Opacity = 0 },
-                    new TextBlock { Text = "Mods", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center },
+                    new TextBlock { Text = "Mods",
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center },
                 }
             };
             var (window, tabs, line, _) = Build(title);
@@ -330,14 +345,25 @@ public class TabUnderlineTests(AvaloniaFixture ui)
 [Collection("avalonia")]
 public class SelectionMarkerTests(AvaloniaFixture ui)
 {
-    private static (Window Window, StackPanel Host, McServerLauncher.Controls.SelectionMarker Marker) Build(McServerLauncher.Controls.MarkerShape shape)
+    private static (Window Window, StackPanel Host,
+        McServerLauncher.Controls.SelectionMarker Marker) Build(McServerLauncher.Controls.MarkerShape shape)
     {
         var host = new StackPanel { Spacing = 4 };
         foreach (var text in new[] { "Servidores", "Túneles", "Ajustes" })
-            host.Children.Add(new Button { Content = text, Height = 40, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch });
+            host.Children.Add(new Button
+            {
+                Content = text,
+                Height = 40,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch
+            });
         host.Children[0].Classes.Add("on");
         var marker = new McServerLauncher.Controls.SelectionMarker { Host = host, Shape = shape };
-        var window = new Window { Width = 300, Height = 300, Content = new Panel { Children = { marker, host } } };
+        var window = new Window
+        {
+            Width = 300,
+            Height = 300,
+            Content = new Panel { Children = { marker, host } }
+        };
         window.Show();
         Settle(window);
         return (window, host, marker);

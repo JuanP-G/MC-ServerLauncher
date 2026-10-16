@@ -17,7 +17,8 @@ namespace McServerLauncher.Tests;
 public class RestoreSafetyTests : IDisposable
 {
     private readonly AvaloniaFixture _ui;
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-restore-" + Guid.NewGuid().ToString("N"));
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-restore-" + Guid.NewGuid()
+        .ToString("N"));
     private string World => Path.Combine(_root, "world");
 
     public RestoreSafetyTests(AvaloniaFixture ui)
@@ -91,7 +92,9 @@ public class RestoreSafetyTests : IDisposable
         Assert.False(Directory.Exists(World + ".restoring"));
     }
 
-    /// <summary>Reports synchronously, so the test can look at the server in the middle of the restore.</summary>
+    /// <summary>
+    /// Reports synchronously, so the test can look at the server in the middle of the restore.
+    /// </summary>
     private sealed class DuringRestore(Action look) : IProgress<string>
     {
         public void Report(string value) => look();
@@ -101,7 +104,11 @@ public class RestoreSafetyTests : IDisposable
     public async Task NothingStartsTheServerWhileItRestores()
     {
         ServerViewModel? server = null;
-        _ui.Run(() => server = new ServerViewModel(new ServerConfig { Name = "survival", FolderPath = _root }));
+        _ui.Run(() => server = new ServerViewModel(new ServerConfig
+        {
+            Name = "survival",
+            FolderPath = _root
+        }));
         Assert.True(server!.StartCommand.CanExecute(null));
 
         // Awaited here, not on the UI thread: blocking that thread would deadlock the restore.

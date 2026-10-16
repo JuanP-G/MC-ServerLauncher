@@ -36,8 +36,10 @@ public class WorldBackupService
     /// <param name="FileName">Its name, which is also where the other fields are read from.</param>
     /// <param name="CreatedAt">The file's write time.</param>
     /// <param name="SizeBytes">Size of the zip.</param>
-    /// <param name="Trigger">Why it was made ("start", "stop", "manual", "before-restore"), or "?" for a name this app didn't write.</param>
-    public record BackupInfo(string FilePath, string FileName, DateTime CreatedAt, long SizeBytes, string Trigger);
+    /// <param name="Trigger">Why it was made ("start", "stop", "manual", "before-restore"), or "?" for a name
+    /// this app didn't write.</param>
+    public record BackupInfo(string FilePath, string FileName, DateTime CreatedAt, long SizeBytes,
+        string Trigger);
 
     private static string BackupsDir(ServerConfig config) => Path.Combine(config.FolderPath, "backups");
 
@@ -161,7 +163,8 @@ public class WorldBackupService
     /// <see cref="RestoreBackupAsync"/> so its own safety-net backup can never delete the very backup
     /// being restored from.
     /// </summary>
-    public virtual async Task<string?> CreateBackupAsync(ServerConfig config, string trigger, IProgress<string>? log = null,
+    public virtual async Task<string?> CreateBackupAsync(ServerConfig config, string trigger,
+        IProgress<string>? log = null,
         CancellationToken ct = default, string? protectFromPruning = null)
     {
         var levelName = GetLevelName(config);
@@ -371,8 +374,11 @@ public class WorldBackupService
     /// <param name="Fingerprint">The world folder as it was then; see <see cref="Fingerprint"/>.</param>
     internal record BackupState(string Zip, string Fingerprint);
 
-    /// <summary>Beside the zips it names, so it travels with them; the list only shows <c>*.zip</c>.</summary>
-    private static string StatePath(ServerConfig config) => Path.Combine(BackupsDir(config), "last-backup.json");
+    /// <summary>
+    /// Beside the zips it names, so it travels with them; the list only shows <c>*.zip</c>.
+    /// </summary>
+    private static string StatePath(ServerConfig config)
+        => Path.Combine(BackupsDir(config), "last-backup.json");
 
     /// <summary>
     /// Whether the world on disk is still the one the last backup copied — so a start or a stop can
@@ -527,7 +533,8 @@ public class WorldBackupService
     {
         var candidates = ListBackups(config);
         if (protectFromPruning is not null)
-            candidates = candidates.Where(b => !string.Equals(b.FilePath, protectFromPruning, StringComparison.OrdinalIgnoreCase)).ToList();
+            candidates = candidates.Where(b => !string.Equals(b.FilePath, protectFromPruning,
+                StringComparison.OrdinalIgnoreCase)).ToList();
 
         DeletePast(candidates.Where(b => IsAutomatic(b.Trigger)), config.BackupRetention);
         DeletePast(candidates.Where(b => IsTheUsers(b.Trigger)), config.ManualBackupRetention);
@@ -572,7 +579,9 @@ public class WorldBackupService
         log?.Report(Localizer.Get("Msg_BackupRestored"));
     }
 
-    /// <summary>Puts the contents of <paramref name="zipPath"/> where <paramref name="worldDir"/> is.</summary>
+    /// <summary>
+    /// Puts the contents of <paramref name="zipPath"/> where <paramref name="worldDir"/> is.
+    /// </summary>
     /// <remarks>
     /// <para>
     /// The zip is unpacked beside the world first, and only a complete copy takes its place, by
@@ -715,7 +724,8 @@ public class WorldBackupService
             catch
             {
                 // Put the old world back rather than leave none at all.
-                if (!Directory.Exists(worldDir) && Directory.Exists(outgoing)) Directory.Move(outgoing, worldDir);
+                if (!Directory.Exists(worldDir) && Directory.Exists(outgoing)) Directory.Move(outgoing,
+                    worldDir);
                 throw;
             }
         }

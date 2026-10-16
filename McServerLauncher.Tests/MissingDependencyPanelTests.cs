@@ -51,10 +51,12 @@ public class MissingDependencyPanelTests : IDisposable
     /// <summary>The block of XAML this panel is, found by the property that only it binds.</summary>
     private static string PanelMarkup()
     {
-        var view = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "ServerModsView.axaml");
+        var view = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views",
+            "ServerModsView.axaml");
         var xaml = File.ReadAllText(view);
 
-        var start = xaml.IndexOf("<Border IsVisible=\"{Binding HasMissingDependencies}\"", StringComparison.Ordinal);
+        var start = xaml.IndexOf("<Border IsVisible=\"{Binding HasMissingDependencies}\"",
+            StringComparison.Ordinal);
         Assert.True(start >= 0, "el panel de dependencias que faltan ya no está en ServerModsView.axaml");
 
         var end = xaml.IndexOf("</Border>", start, StringComparison.Ordinal);
@@ -78,7 +80,8 @@ public class MissingDependencyPanelTests : IDisposable
         {
             var member = type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance)
                          ?? (MemberInfo?)type.GetField(name, BindingFlags.Public | BindingFlags.Instance);
-            Assert.True(member is not null, $"ServerModsViewModel no expone \"{name}\", al que se enlaza el panel");
+            Assert.True(member is not null,
+                $"ServerModsViewModel no expone \"{name}\", al que se enlaza el panel");
         }
     }
 

@@ -12,7 +12,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class SettingsLanguageTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-lang-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-lang-" + Guid.NewGuid()
+        .ToString("N"));
 
     [Fact]
     public void TheLanguageIsReadAndTheFileLeftAsItWas()

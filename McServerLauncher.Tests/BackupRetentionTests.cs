@@ -15,7 +15,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class BackupRetentionTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-keep-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-keep-" + Guid.NewGuid()
+        .ToString("N"));
 
     public BackupRetentionTests()
     {

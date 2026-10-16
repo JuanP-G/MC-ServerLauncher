@@ -64,7 +64,8 @@ public class PaperService
             return null;
 
         string? sha256 = null;
-        if (server.TryGetProperty("checksums", out var checksums) && checksums.TryGetProperty("sha256", out var s))
+        if (server.TryGetProperty("checksums", out var checksums)
+            && checksums.TryGetProperty("sha256", out var s))
             sha256 = s.GetString();
 
         return new PaperBuild(build, name, url, sha256);

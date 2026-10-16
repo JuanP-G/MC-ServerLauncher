@@ -94,7 +94,8 @@ public class ServerJarInstaller
                     // Fabric server by finding exactly this file, so renaming it makes older servers
                     // come back as Vanilla.
                     const string jarName = "fabric-server.jar";
-                    await _mods.DownloadFabricServerAsync(mcVersion, loaderVersion, Path.Combine(folder, jarName), log, ct);
+                    await _mods.DownloadFabricServerAsync(mcVersion, loaderVersion,
+                        Path.Combine(folder, jarName), log, ct);
                     return new InstallResult(jarName, loaderVersion, string.Empty);
                 }
 
@@ -130,7 +131,8 @@ public class ServerJarInstaller
                         throw new UserFacingException(string.Format(Localizer.Get("Msg_ForgeNoVersion"),
                             mcVersion));
 
-                    var forge = await _mods.InstallForgeServerAsync(folder, mcVersion, forgeVersion, javaPath, log, ct);
+                    var forge = await _mods.InstallForgeServerAsync(folder, mcVersion, forgeVersion, javaPath,
+                        log, ct);
 
                     if (forge.ArgsId is not null)
                     {
@@ -157,7 +159,8 @@ public class ServerJarInstaller
                     if (choice.IsBeta)
                         log?.Report(string.Format(Localizer.Get("Msg_NeoForgeBetaWarning"), choice.Version));
 
-                    var neo = await _mods.InstallNeoForgeServerAsync(folder, choice.Version, javaPath, log, ct);
+                    var neo = await _mods.InstallNeoForgeServerAsync(folder, choice.Version, javaPath, log,
+                        ct);
                     if (neo.ArgsId is null)
                         throw new UserFacingException(Localizer.Get("Msg_NeoForgeInstallNoOutput"));
 
@@ -168,7 +171,8 @@ public class ServerJarInstaller
             case ServerType.Vanilla:
                 {
                     const string jarName = "server.jar";
-                    await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(folder, jarName), log, details.Sha1, ct);
+                    await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(folder, jarName), log,
+                        details.Sha1, ct);
                     return new InstallResult(jarName, string.Empty, string.Empty);
                 }
 

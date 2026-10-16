@@ -20,7 +20,9 @@ public sealed class PlayerHistorySettings
     /// <summary>Whether anything is recorded at all.</summary>
     public bool Enabled { get; set; } = true;
 
-    /// <summary>Whether what players say in chat is recorded. Joins, leaves and deaths are either way.</summary>
+    /// <summary>
+    /// Whether what players say in chat is recorded. Joins, leaves and deaths are either way.
+    /// </summary>
     public bool RecordChat { get; set; } = true;
 
     /// <summary>The newest events kept per player; older ones are dropped.</summary>
@@ -30,7 +32,8 @@ public sealed class PlayerHistorySettings
     public int RetentionDays { get; set; } = DefaultDays;
 
     /// <summary>The same settings with every number inside its allowed range.</summary>
-    /// <remarks>settings.json is a file people can edit; a zero or a negative must not mean "keep nothing".</remarks>
+    /// <remarks>settings.json is a file people can edit; a zero or a negative must not mean "keep
+    /// nothing".</remarks>
     public PlayerHistorySettings Clamped() => new()
     {
         Enabled = Enabled,

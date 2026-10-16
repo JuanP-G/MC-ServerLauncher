@@ -16,7 +16,8 @@ namespace McServerLauncher.Tests;
 [Collection("avalonia")]
 public class EulaConsentTests(AvaloniaFixture ui) : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-eula-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-eula-" + Guid.NewGuid()
+        .ToString("N"));
 
     private static (Window Window, NewServerView Panel) Open()
     {
@@ -121,7 +122,8 @@ public class EulaConsentTests(AvaloniaFixture ui) : IDisposable
             Assert.True(Named<Button>(panel, "AddButton").IsEnabled);
 
             Named<TextBox>(panel, "ExistingFolderBox").Text = typed;
-            Named<Button>(panel, "AddButton").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+            Named<Button>(panel, "AddButton")
+                .RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
         });
 
         // The whole three seconds, not until the box shows: it showed before as well, just too late

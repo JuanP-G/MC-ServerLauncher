@@ -41,7 +41,9 @@ public class MinecraftVersionService
         return (latest, list);
     }
 
-    /// <summary>server.jar URL, required Java version and its official SHA-1 (for integrity checking).</summary>
+    /// <summary>
+    /// server.jar URL, required Java version and its official SHA-1 (for integrity checking).
+    /// </summary>
     public record VersionDetails(string ServerUrl, int JavaMajor, string? Sha1);
 
     /// <summary>Resolves the server.jar URL for a specific version.</summary>
@@ -49,7 +51,8 @@ public class MinecraftVersionService
         => (await GetVersionDetailsAsync(version, ct)).ServerUrl;
 
     /// <summary>Resolves the server download and the Java version that version needs.</summary>
-    public async Task<VersionDetails> GetVersionDetailsAsync(MinecraftVersion version, CancellationToken ct = default)
+    public async Task<VersionDetails> GetVersionDetailsAsync(MinecraftVersion version,
+        CancellationToken ct = default)
     {
         var json = await Http.GetStringAsync(version.Url, ct);
         using var doc = JsonDocument.Parse(json);

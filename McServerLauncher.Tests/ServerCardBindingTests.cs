@@ -16,7 +16,8 @@ public class ServerCardBindingTests
 {
     private static string CardMarkup()
     {
-        var path = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml");
+        var path = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views",
+            "MainWindow.axaml");
         var xaml = File.ReadAllText(path);
 
         var start = xaml.IndexOf("<views:ServerCardView", StringComparison.Ordinal);

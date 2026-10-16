@@ -20,7 +20,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class UnchangedWorldBackupTests : IDisposable
 {
-    private readonly string _server = Path.Combine(Path.GetTempPath(), "mcl-unchanged-" + Guid.NewGuid().ToString("N"));
+    private readonly string _server = Path.Combine(Path.GetTempPath(), "mcl-unchanged-" + Guid.NewGuid()
+        .ToString("N"));
     private readonly WorldBackupService _backups = new();
 
     private string World => Path.Combine(_server, "world");

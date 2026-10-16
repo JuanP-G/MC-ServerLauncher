@@ -113,7 +113,8 @@ public class ModrinthService
     /// <summary>Full project: long description, gallery, links and licence.</summary>
     public Task<ProjectDetail?> GetProjectAsync(string idOrSlug, CancellationToken ct = default) =>
         StoreCache.Shared.GetOrFetchAsync($"project:{idOrSlug}", ProjectTtl,
-            token => GetJsonAsync<ProjectDetail>($"{ApiBaseUrl}/project/{Uri.EscapeDataString(idOrSlug)}", token), ct);
+            token => GetJsonAsync<ProjectDetail>($"{ApiBaseUrl}/project/{Uri.EscapeDataString(idOrSlug)}",
+                token), ct);
 
     /// <summary>
     /// Every published version of a project, newest first. When <paramref name="mcVersion"/> is
@@ -136,7 +137,8 @@ public class ModrinthService
     /// Several projects in a single request. Used for dependencies and related mods, so opening a
     /// mod with five dependencies costs one request rather than five.
     /// </summary>
-    public async Task<List<ProjectDetail>?> GetProjectsAsync(IEnumerable<string> ids, CancellationToken ct = default)
+    public async Task<List<ProjectDetail>?> GetProjectsAsync(IEnumerable<string> ids,
+        CancellationToken ct = default)
     {
         // Sorted + deduplicated so two callers asking for the same set share one cache entry.
         var list = ids.Where(i => !string.IsNullOrWhiteSpace(i))
@@ -158,7 +160,8 @@ public class ModrinthService
     /// </summary>
     public Task<VersionResult?> GetVersionAsync(string versionId, CancellationToken ct = default) =>
         StoreCache.Shared.GetOrFetchAsync($"version:{versionId}", VersionsTtl,
-            token => GetJsonAsync<VersionResult>($"{ApiBaseUrl}/version/{Uri.EscapeDataString(versionId)}", token), ct);
+            token => GetJsonAsync<VersionResult>($"{ApiBaseUrl}/version/{Uri.EscapeDataString(versionId)}",
+                token), ct);
 
     /// <summary>
     /// The hashes as Modrinth expects them: lowercase hex, without repeats.
@@ -212,7 +215,8 @@ public class ModrinthService
             using var response = await Http.SendAsync(req, ct);
             response.EnsureSuccessStatusCode();
 
-            var map = await response.Content.ReadFromJsonAsync<Dictionary<string, VersionResult>>(cancellationToken: ct);
+            var map = await response.Content.ReadFromJsonAsync<Dictionary<string,
+                VersionResult>>(cancellationToken: ct);
             if (map != null)
                 foreach (var kv in map)
                     result[kv.Key] = kv.Value;
@@ -229,7 +233,8 @@ public class ModrinthService
         StoreCache.Shared.GetOrFetchAsync($"team:{teamId}", TeamTtl,
             token => GetJsonAsync<List<TeamMember>>($"{ApiBaseUrl}/team/{Uri.EscapeDataString(teamId)}/members", token), ct);
 
-    public async Task<VersionResult?> GetLatestProjectVersionAsync(string projectId, ServerType loader, string mcVersion, CancellationToken ct = default)
+    public async Task<VersionResult?> GetLatestProjectVersionAsync(string projectId, ServerType loader,
+        string mcVersion, CancellationToken ct = default)
     {
         // The API returns them sorted by newest first.
         var versions = await GetProjectVersionsAsync(projectId, loader, mcVersion, ct);
@@ -287,7 +292,8 @@ public class ModrinthService
             using var response = await Http.SendAsync(req, ct);
             response.EnsureSuccessStatusCode();
 
-            var map = await response.Content.ReadFromJsonAsync<Dictionary<string, VersionResult>>(cancellationToken: ct);
+            var map = await response.Content.ReadFromJsonAsync<Dictionary<string,
+                VersionResult>>(cancellationToken: ct);
             if (map != null)
                 foreach (var kv in map)
                     result[kv.Key] = kv.Value;
@@ -317,7 +323,8 @@ public class ModrinthService
     /// (see <see cref="VerifiedJarDownload"/>) was "no checksum, no install", while this went ahead
     /// and installed the jar unverified.
     /// </remarks>
-    public async Task DownloadModAsync(string downloadUrl, string destinationPath, string? expectedSha512 = null,
+    public async Task DownloadModAsync(string downloadUrl, string destinationPath,
+        string? expectedSha512 = null,
         string? expectedSha1 = null, IProgress<double>? progress = null, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(expectedSha512) && string.IsNullOrEmpty(expectedSha1))

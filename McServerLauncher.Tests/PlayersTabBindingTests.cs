@@ -37,7 +37,8 @@ public class PlayersTabBindingTests
         foreach (var part in path.Split('.'))
         {
             var property = current.GetProperty(part, BindingFlags.Public | BindingFlags.Instance);
-            Assert.True(property is not null, $"{current.Name} has no property «{part}», which {where} binds to ({path})");
+            Assert.True(property is not null,
+                $"{current.Name} has no property «{part}», which {where} binds to ({path})");
             current = property!.PropertyType;
         }
     }
@@ -97,7 +98,8 @@ public class PlayersTabBindingTests
             foreach (var name in BoundNames(template))
             {
                 if (name.StartsWith("DataContext.", StringComparison.Ordinal))
-                    AssertResolves(typeof(ServerViewModel), name["DataContext.".Length..], "a row of the Players tab");
+                    AssertResolves(typeof(ServerViewModel), name["DataContext.".Length..],
+                        "a row of the Players tab");
                 else if (template.Contains("History.OpenCommand", StringComparison.Ordinal))
                     AssertResolves(typeof(PlayerRowViewModel), name, "a row of the player list");
             }

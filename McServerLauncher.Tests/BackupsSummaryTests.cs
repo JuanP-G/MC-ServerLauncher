@@ -14,7 +14,8 @@ namespace McServerLauncher.Tests;
 [Collection("avalonia")]
 public class BackupsSummaryTests(AvaloniaFixture ui) : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-bsum-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-bsum-" + Guid.NewGuid()
+        .ToString("N"));
 
     public void Dispose()
     {
@@ -106,6 +107,7 @@ public class BackupsSummaryTests(AvaloniaFixture ui) : IDisposable
         {
             var backups = Open();
             Assert.True(backups.IsEmpty);
-            Assert.Equal(McServerLauncher.Localization.Localizer.Get("Backup_NextOnStart"), backups.NextBackupText);
+            Assert.Equal(McServerLauncher.Localization.Localizer.Get("Backup_NextOnStart"),
+                backups.NextBackupText);
         });
 }

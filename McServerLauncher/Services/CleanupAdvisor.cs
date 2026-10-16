@@ -65,7 +65,8 @@ internal static partial class CleanupAdvisor
     /// <param name="Manifest">What the jar says about itself.</param>
     /// <param name="ProjectId">Its store project, or null if the store does not know it.</param>
     /// <param name="IsLibrary">From <see cref="IsLibrary"/>.</param>
-    /// <param name="StoreDependencies">The project ids the store lists as its dependencies, any kind but incompatible.</param>
+    /// <param name="StoreDependencies">The project ids the store lists as its dependencies, any kind but
+    /// incompatible.</param>
     internal sealed record Jar(string Path, bool Enabled, ContentManifest.Manifest Manifest,
         string? ProjectId, bool IsLibrary, IReadOnlyCollection<string> StoreDependencies)
     {
@@ -107,8 +108,10 @@ internal static partial class CleanupAdvisor
     /// as nothing else.
     /// </summary>
     /// <param name="manifest">What the jar says about itself.</param>
-    /// <param name="storeCategories">The project's main categories, or null when the store does not know it.</param>
-    internal static bool IsLibrary(ContentManifest.Manifest manifest, IReadOnlyCollection<string>? storeCategories)
+    /// <param name="storeCategories">The project's main categories, or null when the store does not know
+    /// it.</param>
+    internal static bool IsLibrary(ContentManifest.Manifest manifest,
+        IReadOnlyCollection<string>? storeCategories)
     {
         if (manifest.Id is { } id && KnownLibraryIds.Contains(id)) return true;
 
@@ -153,7 +156,8 @@ internal static partial class CleanupAdvisor
         var used = new HashSet<Jar>(ReferenceEqualityComparer.Instance);
 
         foreach (var library in libraries)
-            if (library.ProjectId is { } project && user.StoreDependencies.Contains(project, StringComparer.Ordinal))
+            if (library.ProjectId is { } project && user.StoreDependencies.Contains(project,
+                StringComparer.Ordinal))
                 used.Add(library);
 
         foreach (var reference in user.Manifest.References)
@@ -161,7 +165,8 @@ internal static partial class CleanupAdvisor
             var owners = Owning(reference, libraries);
             if (owners.Count == 0) owners = Owning(Canonical(reference), libraries);
             if (owners.Count == 0)
-                owners = libraries.Where(l => l.Manifest.Provides.Contains(reference, StringComparer.OrdinalIgnoreCase)).ToList();
+                owners = libraries.Where(l => l.Manifest.Provides.Contains(reference,
+                    StringComparer.OrdinalIgnoreCase)).ToList();
             used.UnionWith(owners);
         }
 
@@ -172,7 +177,9 @@ internal static partial class CleanupAdvisor
     private static List<Jar> Owning(string id, IReadOnlyList<Jar> libraries) =>
         libraries.Where(l => l.Manifest.OwnProvides.Contains(id, StringComparer.OrdinalIgnoreCase)).ToList();
 
-    /// <summary>Every library something installed still needs, followed through chains of libraries.</summary>
+    /// <summary>
+    /// Every library something installed still needs, followed through chains of libraries.
+    /// </summary>
     private static HashSet<Jar> NeededLibraries(IReadOnlyList<Jar> jars)
     {
         var libraries = jars.Where(j => j.IsLibrary).ToList();
@@ -263,7 +270,8 @@ internal static partial class CleanupAdvisor
             .Select(kv => kv.Key + "=" + string.Join(",", kv.Value)));
 
     /// <summary>The jars that have been off for longer than <paramref name="threshold"/>.</summary>
-    internal static IReadOnlyList<LongDisabled> FindLongDisabled(IReadOnlyList<Jar> jars, ContentLedger ledger,
+    internal static IReadOnlyList<LongDisabled> FindLongDisabled(IReadOnlyList<Jar> jars,
+        ContentLedger ledger,
         DateTime nowUtc, TimeSpan threshold)
     {
         var found = new List<LongDisabled>();
@@ -273,7 +281,8 @@ internal static partial class CleanupAdvisor
             var off = nowUtc - since;
             if (off <= threshold) continue;
 
-            found.Add(new LongDisabled(jar, since, ledger.DisabledFirstSeen.Contains(jar.FileName), (int)off.TotalDays));
+            found.Add(new LongDisabled(jar, since, ledger.DisabledFirstSeen.Contains(jar.FileName),
+                (int)off.TotalDays));
         }
         return found;
     }
@@ -286,7 +295,8 @@ internal static partial class CleanupAdvisor
     /// <param name="files">Every jar's file name without <c>.disabled</c>, and whether it is on.</param>
     /// <param name="nowUtc">The current time.</param>
     /// <returns>True when anything changed and the ledger needs saving.</returns>
-    internal static bool Reconcile(ContentLedger ledger, IEnumerable<(string Name, bool Enabled)> files, DateTime nowUtc)
+    internal static bool Reconcile(ContentLedger ledger, IEnumerable<(string Name, bool Enabled)> files,
+        DateTime nowUtc)
     {
         var changed = false;
         var disabled = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -312,7 +322,8 @@ internal static partial class CleanupAdvisor
             changed = true;
         }
 
-        foreach (var key in ledger.DismissedUtc.Where(d => nowUtc - d.Value > Snooze).Select(d => d.Key).ToList())
+        foreach (var key in ledger.DismissedUtc.Where(d => nowUtc - d.Value > Snooze).Select(d => d.Key)
+            .ToList())
         {
             ledger.DismissedUtc.Remove(key);
             changed = true;

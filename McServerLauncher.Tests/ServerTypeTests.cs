@@ -28,7 +28,8 @@ public class ServerTypeTests
         var path = Path.Combine(Path.GetTempPath(), "mcsl-type-" + Guid.NewGuid().ToString("N") + ".json");
         try
         {
-            var saved = new[] { new ServerConfig { Name = "n", Type = ServerType.NeoForge, ForgeArgs = "21.1.248" } };
+            var saved = new[] { new ServerConfig { Name = "n", Type = ServerType.NeoForge,
+                ForgeArgs = "21.1.248" } };
             AtomicJsonFile.Write(path, saved);
 
             var (back, _) = AtomicJsonFile.Load<ServerConfig[]>(path);

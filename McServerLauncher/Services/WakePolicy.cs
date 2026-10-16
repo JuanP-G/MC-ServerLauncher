@@ -25,7 +25,8 @@ public static class WakePolicy
     /// <summary>Whether a join attempt by <paramref name="player"/> should start the server.</summary>
     /// <param name="player">The name the client sent in Login Start, or null when it sent none.</param>
     /// <param name="whitelistOn">Whether <c>white-list=true</c> in server.properties.</param>
-    /// <param name="onlyWhitelisted">The server's <see cref="Models.ServerConfig.WakeOnlyForWhitelist"/>.</param>
+    /// <param name="onlyWhitelisted">The server's
+    /// <see cref="Models.ServerConfig.WakeOnlyForWhitelist"/>.</param>
     /// <param name="whitelist">Names in whitelist.json.</param>
     /// <param name="ops">Names in ops.json.</param>
     public static bool Allows(string? player, bool whitelistOn, bool onlyWhitelisted,
