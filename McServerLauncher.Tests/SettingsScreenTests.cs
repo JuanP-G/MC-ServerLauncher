@@ -116,7 +116,8 @@ public class BedrockPortSettingTests(AvaloniaFixture ui) : IDisposable
 
     private static (ServerSettingsView View, Control Section) Open(ServerConfig config, Func<int, string?>? owner = null)
     {
-        var view = new ServerSettingsView(new ServerViewModel(config), ServerSettingsPage.Network, owner);
+        var owners = new PortOwners(Java: _ => null, Bedrock: owner ?? (_ => null));
+        var view = new ServerSettingsView(new ServerViewModel(config), ServerSettingsPage.Network, owners);
         return (view, view.Section(ServerSettingsPage.Network));
     }
 

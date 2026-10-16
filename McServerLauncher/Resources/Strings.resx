@@ -495,7 +495,10 @@
   <data name="Tip_ToggleMod" xml:space="preserve"><value>Activar / Desactivar</value></data>
   <data name="Loader_Title" xml:space="preserve"><value>Cambiar el tipo de servidor</value></data>
   <data name="Loader_Section" xml:space="preserve"><value>Tipo de servidor</value></data>
-  <data name="Loader_Current" xml:space="preserve"><value>Loader actual: </value></data>
+  <data name="Loader_CurrentFmt" xml:space="preserve"><value>Loader actual: {0} {1}</value></data>
+  <data name="Loader_StopServerFirst" xml:space="preserve"><value>Detén el servidor antes de cambiar el loader: sus archivos están en uso.</value></data>
+  <data name="Loader_StillInstalling" xml:space="preserve"><value>Se está instalando el loader. Espera a que termine antes de guardar o salir.</value></data>
+  <data name="Msg_StartWaitsForLoader" xml:space="preserve"><value>No se puede arrancar mientras se instala el loader; espera a que termine.</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Cambia el tipo de este servidor. Cada tarjeta dice si lleva plugins o mods, y si se puede entrar desde Bedrock. Tu mundo se conserva.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (sin mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Conservar el archivo de arranque actual (run.bat)</value></data>
@@ -997,6 +1000,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Cfg_BedrockPortDesc" xml:space="preserve"><value>Puerto UDP en el que Geyser recibe a los jugadores de Bedrock. Si lo cambias, el túnel de Bedrock de Playit debe apuntar a este mismo puerto.</value></data>
   <data name="Cfg_BedrockPortRange" xml:space="preserve"><value>Elige un puerto entre 1024 y 65535.</value></data>
   <data name="Cfg_BedrockPortTakenFmt" xml:space="preserve"><value>Ese puerto ya lo usa {0}. Elige otro.</value></data>
+  <data name="Cfg_JavaPortTakenFmt" xml:space="preserve"><value>Ese puerto ya lo usa {0}. Dos servidores en el mismo puerto no pueden estar encendidos a la vez; elige otro.</value></data>
   <data name="Tun_Fix_MoveBedrockFmt" xml:space="preserve"><value>Mover {0} a un puerto Bedrock libre</value></data>
   <data name="Msg_BedrockAlreadyFreeFmt" xml:space="preserve"><value>[Crossplay] El puerto Bedrock {0} ya no lo comparte nadie; se queda como está.</value></data>
   <data name="Msg_BedrockMovedFmt" xml:space="preserve"><value>[Crossplay] Puerto Bedrock cambiado de {0} a {1}.</value></data>
@@ -1106,6 +1110,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Sset_Back" xml:space="preserve"><value>Volver al servidor</value></data>
   <data name="Sset_Discard" xml:space="preserve"><value>Descartar</value></data>
   <data name="Sset_Unsaved" xml:space="preserve"><value>Tienes cambios sin guardar</value></data>
+  <data name="Sset_SaveUnfinished" xml:space="preserve"><value>El guardado no terminó</value></data>
   <data name="Sset_UnsavedRestart" xml:space="preserve"><value>El servidor está encendido: lo que guardes se aplica cuando se reinicie.</value></data>
   <data name="Sset_LeaveBlocked" xml:space="preserve"><value>Guarda o descarta los cambios antes de salir</value></data>
   <data name="Sset_FixErrors" xml:space="preserve"><value>Hay algo que corregir antes de guardar.</value></data>

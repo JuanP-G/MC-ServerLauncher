@@ -41,7 +41,7 @@ public class AppearanceSectionTests(AvaloniaFixture ui) : IDisposable
     /// </summary>
     private static AppearanceSection Open(ServerConfig config, bool running = false)
     {
-        var section = new AppearanceSection(new ServerSettingsDraft(config), running);
+        var section = new AppearanceSection(new ServerSettingsDraft(config), () => running);
         AvaloniaFixture.Pump();
         return section;
     }

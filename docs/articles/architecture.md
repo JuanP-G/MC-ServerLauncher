@@ -81,6 +81,28 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > config goes on being written meanwhile by a loader install or the seed read from the console, and
 > copying the whole copy back would undo that. Leaving the page with something unsaved is refused by
 > the save bar itself, not asked about in a window.
+>
+> What else holds for that page:
+>
+> - **One row per page.** `ServerSettingsPages` holds each page's icon, texts and the fields and
+>   `server.properties` keys it owns; which fields the page can edit at all comes from the rows
+>   (`ServerSettingsPagesTests`).
+> - **Files first, live config last.** Save writes `server.properties`, the icon and Geyser's
+>   config into the folder the draft names, and only then copies the changed fields into the live
+>   config. A file that cannot be written leaves the server as it was; each file counts as saved as
+>   soon as it is written (`ServerSettingsDraftTests`). What the window does after a save (writing
+>   `servers.json`, moving the wake listener to a new port) is awaited, and a failure is said on the
+>   page's bar, whose Save tries again.
+> - **It follows the live config.** A field something else changes while the page is open (a failed
+>   install switching multi-version back off, the Bedrock port crossplay picked) is taken in unless
+>   the user edited it there (`ServerSettingsDraft.ChangedOutside`); the page stops listening when it
+>   is closed (`Detach`).
+> - **Ports and problems.** `PortOwners` says which other server has a Java or a Bedrock port, and
+>   each `SettingsProblem` names its field, so the Network page shows it under its own box.
+> - **A running server** rewrites `server.properties` from what it loaded whenever its whitelist is
+>   switched; `PropertiesSavedWhileRunning` writes what was saved meanwhile back after that command.
+> - **Number boxes** take whole numbers only, in any language (`WholeNumberBoxes`): with the default
+>   parser, Spanish read `1.5` GB as 15.
 
 > **A constructor assembles; `Activate()` starts.** `ServerViewModel` and `MainViewModel` each split
 > in two. The constructor reads — the config, the console palette, the server's own files — and
@@ -813,6 +835,11 @@ field costs, and the badge, the version, the Mods tab, its filter chips, the ins
 old family's folder has just been moved aside — and the store search all follow on their own. The
 settings page takes the installed fields as saved (`ServerSettingsDraft.Adopt`), so a later Discard
 cannot put the old jar back.
+
+The page is not modal, so the install says so itself: it is unavailable while the server runs or is
+getting ready to, the server cannot start while it installs (`ServerViewModel.IsConverting`), and the
+settings cannot be saved or left until it is done. The folder and the RAM are read once, when Install
+is pressed.
 
 It used to rebuild the whole view model instead, and only when the *type* had changed and the server
 was stopped. Converting Fabric 1.21.1 to Fabric 1.21.4 therefore changed nothing on screen, and the

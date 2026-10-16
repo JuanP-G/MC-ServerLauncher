@@ -41,27 +41,11 @@ public partial class ServerSettingsView : UserControl
     /// <summary>Below this width the index turns into a strip of chips above the page.</summary>
     private const double NarrowWidth = 640;
 
-    private sealed record PageInfo(ServerSettingsPage Page, Symbol Icon, string Title, string Hint, string? Group);
-
-    private static readonly PageInfo[] Pages =
-    [
-        new(ServerSettingsPage.Appearance, Symbol.Image, "Sset_Appearance", "Sset_AppearanceHint", null),
-        new(ServerSettingsPage.Game, Symbol.Games, "Sset_Game", "Sset_GameHint", "Sset_GroupGame"),
-        new(ServerSettingsPage.World, Symbol.Globe, "Sset_World", "Sset_WorldHint", null),
-        new(ServerSettingsPage.Loader, Symbol.Box, "Sset_Loader", "Sset_LoaderHint", "Sset_GroupServer"),
-        new(ServerSettingsPage.Performance, Symbol.Gauge, "Sset_Performance", "Sset_PerformanceHint", null),
-        new(ServerSettingsPage.Network, Symbol.PlugConnected, "Sset_Network", "Sset_NetworkHint", null),
-        new(ServerSettingsPage.Crossplay, Symbol.Phone, "Sset_Crossplay", "Sset_CrossplayHint", null),
-        new(ServerSettingsPage.Power, Symbol.Power, "Sset_Power", "Sset_PowerHint", "Sset_GroupAuto"),
-        new(ServerSettingsPage.Backups, Symbol.Archive, "Sset_Backups", "Sset_BackupsHint", null),
-        new(ServerSettingsPage.Notifications, Symbol.Alert, "Sset_Notifications", "Sset_NotificationsHint", null),
-        new(ServerSettingsPage.Advanced, Symbol.Wrench, "Sset_Advanced", "Sset_AdvancedHint", ""),
-    ];
-
     private readonly ServerSettingsDraft _draft;
     private readonly Dictionary<ServerSettingsPage, Control> _sections = new();
     private readonly Dictionary<ServerSettingsPage, (Button Nav, ToggleButton Chip, Control Dot, Control ChipDot)> _items = new();
     private bool _nudged;
+    private bool _wasRunning;
     private string? _problem;
 
     /// <summary>The server these are the settings of.</summary>
@@ -90,13 +74,13 @@ public partial class ServerSettingsView : UserControl
 
     /// <param name="server">The server to configure.</param>
     /// <param name="page">The page to open on.</param>
-    /// <param name="bedrockPortOwner">Whose is a Bedrock port, when another server already has it.</param>
-    public ServerSettingsView(ServerViewModel server, ServerSettingsPage page, Func<int, string?>? bedrockPortOwner = null)
+    /// <param name="portOwners">Whose is a port, when another server already has it.</param>
+    public ServerSettingsView(ServerViewModel server, ServerSettingsPage page, PortOwners? portOwners = null)
     {
         InitializeComponent();
         Server = server;
         DataContext = server;
-        _draft = new ServerSettingsDraft(server.Config, bedrockPortOwner);
+        _draft = new ServerSettingsDraft(server.Config, portOwners);
 
         BuildIndex();
         _draft.Changed += () =>
@@ -105,9 +89,31 @@ public partial class ServerSettingsView : UserControl
             _problem = null;
             Refresh();
         };
+        _draft.ChangedOutside += ReloadSections;
+        _wasRunning = server.IsRunning;
+        Server.PropertyChanged += OnServerChanged;
         SizeChanged += (_, e) => ApplyWidth(e.NewSize.Width);
 
         Show(page);
+        Refresh();
+    }
+
+    /// <summary>Stops following the server: the page is closed.</summary>
+    public void Detach()
+    {
+        _draft.Detach();
+        Server.PropertyChanged -= OnServerChanged;
+    }
+
+    // Starting or stopping the server changes what the bar and the Appearance preview say. Only on a
+    // real change, and only those two: reloading a page puts its text back and moves the caret of
+    // whoever is typing in it.
+    private void OnServerChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(ServerViewModel.IsRunning) || Server.IsRunning == _wasRunning) return;
+        _wasRunning = Server.IsRunning;
+        if (_sections.TryGetValue(ServerSettingsPage.Appearance, out var appearance))
+            ((IServerSettingsSection)appearance).Reload();
         Refresh();
     }
 
@@ -121,7 +127,7 @@ public partial class ServerSettingsView : UserControl
 
         Control section = page switch
         {
-            ServerSettingsPage.Appearance => new AppearanceSection(_draft, Server.IsRunning),
+            ServerSettingsPage.Appearance => new AppearanceSection(_draft, () => Server.IsRunning),
             ServerSettingsPage.Game => new GameSection(_draft),
             ServerSettingsPage.World => new WorldSection(_draft),
             ServerSettingsPage.Loader => Loader(),
@@ -140,7 +146,7 @@ public partial class ServerSettingsView : UserControl
 
     private LoaderSection Loader()
     {
-        var loader = new LoaderSection(_draft);
+        var loader = new LoaderSection(_draft, Server);
         loader.Installed += () =>
         {
             // The install wrote these into the live config; the page takes them as saved, and
@@ -165,7 +171,7 @@ public partial class ServerSettingsView : UserControl
     public void Show(ServerSettingsPage page)
     {
         Page = page;
-        var info = Pages.First(p => p.Page == page);
+        var info = ServerSettingsPages.For(page);
         PageTitle.Text = Localizer.Get(info.Title);
         PageHint.Text = Localizer.Get(info.Hint);
         SectionHost.Content = Section(page);
@@ -184,10 +190,25 @@ public partial class ServerSettingsView : UserControl
     /// </summary>
     public bool TryLeave()
     {
+        if (LoaderBusy())
+        {
+            ShowBarProblem(Localizer.Get("Loader_StillInstalling"));
+            return false;
+        }
         if (!IsDirty) return true;
         Nudge();
         return false;
     }
+
+    /// <summary>An install on the Loader page is still writing into the server's folder.</summary>
+    /// <remarks>
+    /// Leaving would leave it running unseen, with its failures on a page nobody can open again — a
+    /// new one would let a second install into the same folder. Saving would copy a folder or a
+    /// Java path into the live config under it.
+    /// </remarks>
+    private bool LoaderBusy() =>
+        _sections.TryGetValue(ServerSettingsPage.Loader, out var loader)
+        && loader is LoaderSection { IsBusy: true };
 
     /// <summary>Makes the bar say that the unsaved changes are what is in the way.</summary>
     public void Nudge()
@@ -198,7 +219,7 @@ public partial class ServerSettingsView : UserControl
 
     private void BuildIndex()
     {
-        foreach (var info in Pages)
+        foreach (var info in ServerSettingsPages.All)
         {
             if (info.Group is not null)
                 PageItems.Children.Add(new TextBlock
@@ -233,7 +254,7 @@ public partial class ServerSettingsView : UserControl
         Marker.Host = PageItems;
     }
 
-    private static Control Row(PageInfo info, Control dot, bool chip)
+    private static Control Row(ServerSettingsPageInfo info, Control dot, bool chip)
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = chip ? 5 : 8 };
         if (!chip) row.Children.Add(new SymbolIcon { Symbol = info.Icon, FontSize = 16 });
@@ -268,9 +289,13 @@ public partial class ServerSettingsView : UserControl
         foreach (var (page, item) in _items)
             item.Dot.IsVisible = item.ChipDot.IsVisible = _draft.IsPageDirty(page);
 
-        SaveBar.IsVisible = dirty;
+        // A problem shows the bar on its own too: one found after the page was saved (servers.json
+        // could not be written) leaves nothing unsaved, and Save is how it is tried again.
+        SaveBar.IsVisible = dirty || _problem is not null;
         SaveBar.Classes.Set("nudged", _nudged);
-        SaveBarText.Text = Localizer.Get(_nudged ? "Sset_LeaveBlocked" : "Sset_Unsaved");
+        SaveBarText.Text = Localizer.Get(_nudged ? "Sset_LeaveBlocked"
+            : dirty ? "Sset_Unsaved"
+            : "Sset_SaveUnfinished");   // saved, but what follows the save did not finish
 
         var hint = _problem ?? (Server.IsRunning ? Localizer.Get("Sset_UnsavedRestart") : null);
         SaveBarHint.Text = hint;
@@ -284,6 +309,9 @@ public partial class ServerSettingsView : UserControl
         Refresh();
     }
 
+    /// <summary>Says on the bar that something after the save itself went wrong.</summary>
+    internal void ReportProblem(string text) => ShowBarProblem(text);
+
     private void Save_Click(object? sender, RoutedEventArgs e) => Save();
 
     /// <summary>Checks every page and writes what changed. Returns false when nothing could be saved.</summary>
@@ -292,11 +320,17 @@ public partial class ServerSettingsView : UserControl
         foreach (var section in _sections.Values.OfType<IServerSettingsSection>()) section.ShowError(null);
         ShowBarProblem(null);
 
+        if (LoaderBusy())
+        {
+            ShowBarProblem(Localizer.Get("Loader_StillInstalling"));
+            return false;
+        }
+
         var problems = _draft.Validate();
         if (problems.Count > 0)
         {
-            foreach (var (page, message) in problems)
-                ((IServerSettingsSection)Section(page)).ShowError(message);
+            foreach (var problem in problems)
+                ((IServerSettingsSection)Section(problem.Page)).ShowError(problem.Message, problem.Field);
             Show(problems[0].Page);
             ShowBarProblem(Localizer.Get("Sset_FixErrors"));
             return false;

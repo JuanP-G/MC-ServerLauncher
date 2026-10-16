@@ -34,8 +34,6 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
         _bindings.Toggle(OnlineModeToggle, "online-mode", true);
         _bindings.Toggle(WhitelistToggle, "white-list", false);
 
-        // Only with crossplay set up: without Geyser there is no Bedrock port to change.
-        BedrockPortCard.IsVisible = CrossplayService.EffectiveBedrockPort(draft.Live) is not null;
         BedrockPortBox.ValueChanged += (_, _) => OnBedrockPortChanged();
 
         Reload();
@@ -44,6 +42,9 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
     /// <inheritdoc />
     public void Reload()
     {
+        // Only with crossplay set up: without Geyser there is no Bedrock port to change. Asked on
+        // every reload, since crossplay can be set up while the page is open.
+        BedrockPortCard.IsVisible = CrossplayService.EffectiveBedrockPort(_draft.Live) is not null;
         _bindings.Load();
         _loading = true;
         BedrockPortBox.Value = CrossplayService.EffectiveBedrockPort(_draft.Config) ?? CrossplayService.DefaultBedrockPort;
@@ -51,10 +52,20 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
     }
 
     /// <inheritdoc />
-    public void ShowError(string? message)
+    public void ShowError(string? message) => ShowError(message, null);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Each port's problem under its own box: the Bedrock card is hidden without crossplay, and a
+    /// problem with the server's own port shown there would not be seen at all.
+    /// </remarks>
+    public void ShowError(string? message, string? field)
     {
-        BedrockPortWarning.Text = message;
-        BedrockPortWarning.IsVisible = message is not null;
+        var onJavaPort = field == "server-port";
+        PortWarning.Text = onJavaPort ? message : null;
+        PortWarning.IsVisible = onJavaPort && message is not null;
+        BedrockPortWarning.Text = onJavaPort ? null : message;
+        BedrockPortWarning.IsVisible = !onJavaPort && message is not null;
     }
 
     /// <remarks>
@@ -66,7 +77,8 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
         if (_loading) return;
         ShowError(null);
 
-        var wanted = (int)(BedrockPortBox.Value ?? CrossplayService.DefaultBedrockPort);
+        var wanted = WholeNumberConverter.ToWhole(
+            BedrockPortBox.Value ?? CrossplayService.DefaultBedrockPort);
         var saved = (int)_draft.Saved(nameof(ServerConfig.BedrockPort))!;
         var savedEffective = saved > 0 ? saved : CrossplayService.DefaultBedrockPort;
         _draft.Config.BedrockPort = wanted == savedEffective ? saved : wanted;

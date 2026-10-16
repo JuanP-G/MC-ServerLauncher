@@ -449,7 +449,10 @@
   <data name="Tip_ToggleMod" xml:space="preserve"><value>Aktivieren / Deaktivieren</value></data>
   <data name="Loader_Title" xml:space="preserve"><value>Servertyp ändern</value></data>
   <data name="Loader_Section" xml:space="preserve"><value>Servertyp</value></data>
-  <data name="Loader_Current" xml:space="preserve"><value>Aktueller Loader: </value></data>
+  <data name="Loader_CurrentFmt" xml:space="preserve"><value>Aktueller Loader: {0} {1}</value></data>
+  <data name="Loader_StopServerFirst" xml:space="preserve"><value>Stoppe den Server, bevor du den Loader wechselst: seine Dateien werden verwendet.</value></data>
+  <data name="Loader_StillInstalling" xml:space="preserve"><value>Der Loader wird installiert. Warte, bis er fertig ist, bevor du speicherst oder gehst.</value></data>
+  <data name="Msg_StartWaitsForLoader" xml:space="preserve"><value>Der Server kann nicht starten, während der Loader installiert wird; warte, bis er fertig ist.</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Ändere den Typ dieses Servers. Jede Karte sagt, ob er Plugins oder Mods nimmt und ob Bedrock beitreten kann. Deine Welt bleibt erhalten.</value></data>
   <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (ohne Mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Aktuelle Startdatei (run.bat) behalten</value></data>
@@ -951,6 +954,7 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Cfg_BedrockPortDesc" xml:space="preserve"><value>UDP-Port, auf dem Geyser Bedrock-Spieler empfängt. Wenn du ihn änderst, muss der Bedrock-Tunnel von Playit auf denselben Port zeigen.</value></data>
   <data name="Cfg_BedrockPortRange" xml:space="preserve"><value>Wähle einen Port zwischen 1024 und 65535.</value></data>
   <data name="Cfg_BedrockPortTakenFmt" xml:space="preserve"><value>Diesen Port nutzt bereits {0}. Wähle einen anderen.</value></data>
+  <data name="Cfg_JavaPortTakenFmt" xml:space="preserve"><value>Diesen Port verwendet bereits {0}. Zwei Server auf demselben Port können nicht gleichzeitig laufen; wähle einen anderen.</value></data>
   <data name="Tun_Fix_MoveBedrockFmt" xml:space="preserve"><value>{0} auf einen freien Bedrock-Port verlegen</value></data>
   <data name="Msg_BedrockAlreadyFreeFmt" xml:space="preserve"><value>[Crossplay] Der Bedrock-Port {0} wird nicht mehr geteilt; er bleibt, wie er ist.</value></data>
   <data name="Msg_BedrockMovedFmt" xml:space="preserve"><value>[Crossplay] Bedrock-Port von {0} auf {1} geändert.</value></data>
@@ -1060,6 +1064,7 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Sset_Back" xml:space="preserve"><value>Zurück zum Server</value></data>
   <data name="Sset_Discard" xml:space="preserve"><value>Verwerfen</value></data>
   <data name="Sset_Unsaved" xml:space="preserve"><value>Du hast ungespeicherte Änderungen</value></data>
+  <data name="Sset_SaveUnfinished" xml:space="preserve"><value>Das Speichern wurde nicht abgeschlossen</value></data>
   <data name="Sset_UnsavedRestart" xml:space="preserve"><value>Der Server läuft: Was du speicherst, gilt nach dem Neustart.</value></data>
   <data name="Sset_LeaveBlocked" xml:space="preserve"><value>Speichere oder verwirf die Änderungen, bevor du gehst</value></data>
   <data name="Sset_FixErrors" xml:space="preserve"><value>Vor dem Speichern muss etwas korrigiert werden.</value></data>

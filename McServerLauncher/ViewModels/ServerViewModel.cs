@@ -312,7 +312,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
     // --- State properties ---
     [ObservableProperty]
-    private string _motdText = "A Minecraft Server";
+    private string _motdText = ServerPropertiesService.DefaultMotd;
 
     [ObservableProperty]
     private string _playerCountText = "0/20";
@@ -685,6 +685,22 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     internal static bool IsWithinWakeGrace(DateTime? wokeAtUtc, DateTime nowUtc) =>
         wokeAtUtc is not null && nowUtc - wokeAtUtc.Value < WakeGrace;
 
+    /// <summary>
+    /// <c>server-port</c> changed on disk: the wake-on-demand listener moves with it, if the server
+    /// is stopped and nothing else has the port.
+    /// </summary>
+    /// <remarks>
+    /// The listener read the port when it opened and kept it. Only a config field restarted it, and
+    /// the port is not one — it lives in <c>server.properties</c> — so after a change it went on
+    /// answering on the old port until the server was next stopped, and players knocking on the new
+    /// one woke nothing.
+    /// </remarks>
+    internal void FollowPortChange()
+    {
+        if (_process.IsRunning || IsPreparing || IsRestoring) return;
+        StartWakeListener();
+    }
+
     /// <summary>Answers on the server's port while it is stopped, if the owner asked for it.</summary>
     private void StartWakeListener()
     {
@@ -701,7 +717,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private WakeStatus BuildWakeStatus()
     {
         var starting = State != ServerState.Stopped;
-        var icon = Path.Combine(Config.FolderPath, "server-icon.png");
+        var icon = Path.Combine(Config.FolderPath, ServerIconService.FileName);
 
         return new WakeStatus(
             Description: WakeSign.Compose(MotdText, WakeSign.Notice(starting)),
@@ -946,7 +962,17 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
-    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing;
+    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing && !IsConverting;
+
+    /// <summary>True while the settings page installs another loader into this server's folder.</summary>
+    /// <remarks>
+    /// Starting meanwhile would launch a jar that is being replaced. The button follows this, and so
+    /// does every start without one — waking on demand, restarting after a crash.
+    /// </remarks>
+    [ObservableProperty]
+    private bool _isConverting;
+
+    partial void OnIsConvertingChanged(bool value) => NotifyCommandStates();
 
     /// <summary>True from the moment a start begins until the process is up or the start gives up.</summary>
     /// <remarks>
@@ -1054,6 +1080,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
             StartWakeListener();
+            _savedWhileRunning.Clear();   // the next start reads the file as it is
 
             // However it stopped — a crash, "stop" typed in the console. A stop the app asked for
             // notes the world itself, holding it; this one waits until nothing else is reading it.
@@ -1396,6 +1423,11 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         if (IsRestoring)
         {
             OnConsoleLine(Localizer.Get("Msg_StartWaitsForRestore"));
+            return;
+        }
+        if (IsConverting)
+        {
+            OnConsoleLine(Localizer.Get("Msg_StartWaitsForLoader"));
             return;
         }
 
@@ -2032,8 +2064,12 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private void RefreshInfo()
     {
         var props = _properties.Read(Config.PropertiesPath);
-        MotdText = props.TryGetValue("motd", out var m) && !string.IsNullOrWhiteSpace(m) ? m : "A Minecraft Server";
-        _maxPlayers = props.TryGetValue("max-players", out var mp) && int.TryParse(mp, out var n) ? n : 20;
+        MotdText = props.TryGetValue("motd", out var m) && !string.IsNullOrWhiteSpace(m)
+            ? m
+            : ServerPropertiesService.DefaultMotd;
+        _maxPlayers = props.TryGetValue("max-players", out var mp) && int.TryParse(mp, out var n)
+            ? n
+            : ServerPropertiesService.DefaultMaxPlayers;
         UpdatePlayerCount();
         LoadIcon();
         RefreshPlayers();
@@ -2088,11 +2124,34 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     [RelayCommand]
     private Task ToggleWhitelist() => SetWhitelistAsync(!WhitelistEnabled);
 
+    /// <summary>What the settings page saved into server.properties while the server ran.</summary>
+    private readonly PropertiesSavedWhileRunning _savedWhileRunning = new();
+
+    /// <summary>
+    /// The settings page wrote <paramref name="changes"/> into server.properties. With the server
+    /// running they are remembered, and a whitelist switch among them goes to the server as a command.
+    /// </summary>
+    /// <remarks>
+    /// Written to the file, a whitelist switch only took effect on the next start, while the Players
+    /// tab's switch takes effect at once: the same setting behaved two ways. And the command makes the
+    /// server rewrite the whole file from what it loaded, which is why the rest is remembered — see
+    /// <see cref="PropertiesSavedWhileRunning"/>.
+    /// </remarks>
+    internal async Task FollowSavedPropertiesAsync(IReadOnlyDictionary<string, string> changes)
+    {
+        if (!_process.IsRunning || changes.Count == 0) return;
+
+        _savedWhileRunning.Note(changes);
+        if (changes.TryGetValue("white-list", out var whitelist))
+            await SetWhitelistAsync(whitelist.Trim().Equals("true", StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>Switches the whitelist on or off, keeping whoever is on it.</summary>
     /// <remarks>
     /// While the server runs, through its own command, which applies it at once and writes
-    /// server.properties itself; while it is stopped, straight into the file. whitelist.json is
-    /// never touched, so switching it off and on again gives back the same list.
+    /// server.properties itself — from the values it loaded at start, so whatever was saved since is
+    /// written again after it. While it is stopped, straight into the file. whitelist.json is never
+    /// touched, so switching it off and on again gives back the same list.
     /// </remarks>
     private async Task SetWhitelistAsync(bool on)
     {
@@ -2104,6 +2163,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
                 OnConsoleLine("> " + command, ConsoleLineKind.Command);
                 _process.SendCommand(command);
                 await Task.Delay(500);
+
+                if (_savedWhileRunning.ToRestore() is { Count: > 0 } owed)
+                    _properties.Update(Config.PropertiesPath, owed);
             }
             else
             {
@@ -2151,26 +2213,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         }
     }
 
-    private void LoadIcon()
-    {
-        // The icon players see in the server list is server-icon.png (root, 64x64).
-        var path = Path.Combine(Config.FolderPath, "server-icon.png");
-        if (!File.Exists(path))
-        {
-            ServerIcon = null;
-            return;
-        }
-        try
-        {
-            // Read fully into memory so the file isn't locked and updates are picked up.
-            using var fs = File.OpenRead(path);
-            ServerIcon = new Bitmap(fs);
-        }
-        catch
-        {
-            ServerIcon = null;
-        }
-    }
+    // The icon players see in the server list is server-icon.png (root, 64x64).
+    private void LoadIcon() => ServerIcon = ServerIconImage.Load(Config.FolderPath);
 
     private void UpdatePlayerCount() => PlayerCountText = $"{ConnectedPlayers.Count}/{_maxPlayers}";
 

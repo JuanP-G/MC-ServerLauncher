@@ -156,7 +156,7 @@ public static class ServerConfigEffects
         Unshown(nameof(ServerConfig.ForgeArgs),
             "The launch method for Forge and NeoForge, read when starting."),
         Unshown(nameof(ServerConfig.JavaPath),
-            "Resolved again on every start, and shown only inside the edit dialog."),
+            "Resolved again on every start, and shown only on the settings' Performance page."),
         Unshown(nameof(ServerConfig.MinRamGb), "Becomes -Xms when the server starts."),
         Unshown(nameof(ServerConfig.MaxRamGb), "Becomes -Xmx when the server starts."),
         Unshown(nameof(ServerConfig.ExtraJvmArgs), "Appended to the JVM arguments on start."),
@@ -199,7 +199,7 @@ public static class ServerConfigEffects
         Unshown(nameof(ServerConfig.Notifications),
             "Read at the moment a notification would be raised."),
         Unshown(nameof(ServerConfig.LastKnownSeed),
-            "Read when the configuration dialog opens, which is the only place a seed is shown.")
+            "Read when the settings' World page opens, which is the only place a seed is shown.")
     };
 
     private static readonly Dictionary<string, Row> ByProperty =

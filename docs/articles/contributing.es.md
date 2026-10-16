@@ -211,6 +211,12 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   unos cincuenta sitios. Lanza una `UserFacingException` cuando el mensaje es una frase de los .resx,
   y enseña cualquier fallo con `ErrorMessages.Describe(ex)`, que deja el detalle en el registro.
   `ErrorMessagesTests` falla con un `ex.Message` que no vaya al registro.
+- **Lo que edita una copia sigue al original, y lo cambia al final.** La página de configuración
+  edita una copia de la config del servidor. Antes leía el original una vez —así que un interruptor
+  que la app volvía a apagar seguía encendido, y guardarlo no era un cambio— y copiaba sus campos al
+  original antes de escribir los archivos que van con ellos, así que un archivo que fallaba dejaba el
+  servidor a medio cambiar. Recoge lo que cambia fuera salvo que el usuario lo haya editado, y cambia
+  el original solo cuando todo lo demás está en disco.
 - **Scripts escritos para jugadores.** La lógica en una plantilla `.in`, cada línea visible en los
   .resx, y cada marcador sustituido por un mensaje entero y terminado — nunca una cadena de formato.
   Finales de línea por archivo (`.sh` LF, `.bat` CRLF), sin BOM en ningún sitio, y todo `choice` de
@@ -341,7 +347,7 @@ justo como alguien acaba fiándose de una página que va una versión por detrá
    (`GameSection`, `WorldSection`, `NetworkSection`…), como un `DockPanel.setting` con el control en
    la clase `ctl`.
 2. Átalo a su clave en el constructor de la página con `PropertyBindings` (`Toggle`, `Number`,
-   `Choice`) y añade la clave a la fila de esa página en `ServerSettingsDraft.Owned`. Guardar la
+   `Choice`) y añade la clave a la fila de esa página en `ServerSettingsPages.All`. Guardar la
    escribe con `ServerPropertiesService.Update`, que conserva el resto del archivo, los comentarios y
    el orden.
 
