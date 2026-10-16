@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Collections.Concurrent;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
@@ -156,43 +156,15 @@ public partial class JavaService
     /// <summary>Runs "java -version" and reads the major version out of what it prints.</summary>
     private static int AskMajorVersion(string javaExe)
     {
-        try
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = javaExe,
-                Arguments = "-version",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true
-            };
-            using var p = Process.Start(psi);
-            if (p is null) return 0;
+        // It prints to standard error; both streams are read, under a deadline that holds.
+        var result = ProcessRunner.Run(javaExe, ["-version"], TimeSpan.FromSeconds(5));
 
-            // Both streams at once, then a deadline that actually applies: reading one to the end
-            // before the other could wait forever on a process blocked writing the second, and
-            // WaitForExit after ReadToEnd never got the chance to time anything out.
-            var error = p.StandardError.ReadToEndAsync();
-            var standard = p.StandardOutput.ReadToEndAsync();
-            if (!p.WaitForExit(5000))
-            {
-                try { p.Kill(entireProcessTree: true); } catch { /* already gone */ }
-                return 0;
-            }
-            var output = error.GetAwaiter().GetResult() + standard.GetAwaiter().GetResult();
-
-            var m = VersionRegex().Match(output);
-            if (!m.Success) return 0;
-            var first = int.Parse(m.Groups[1].Value);
-            // "1.8" => Java 8
-            if (first == 1 && m.Groups[2].Success) return int.Parse(m.Groups[2].Value);
-            return first;
-        }
-        catch
-        {
-            return 0;
-        }
+        var m = VersionRegex().Match(result.Error + result.Output);
+        if (!m.Success || !int.TryParse(m.Groups[1].Value, out var first)) return 0;
+        // "1.8" => Java 8
+        if (first == 1 && m.Groups[2].Success)
+            return int.TryParse(m.Groups[2].Value, out var minor) ? minor : 0;
+        return first;
     }
 
     /// <summary>An installed Java version is valid for the required one (exact, or newer if 17+).</summary>
@@ -354,7 +326,28 @@ public partial class JavaService
         return (null, null);
     }
 
-    private async Task<string> DownloadAdoptiumAsync(int major, IProgress<string>? log, CancellationToken ct)
+    /// <summary>One download of each Java at a time, in this process.</summary>
+    private static readonly ConcurrentDictionary<int, SemaphoreSlim> DownloadGates = new();
+
+    /// <summary>Runs <paramref name="work"/> once at a time per major version of Java.</summary>
+    /// <remarks>
+    /// Two servers that need the same Java — started together with the app, or one after the other
+    /// while the first still downloads — shared one archive path and one <c>.partial</c> folder, and
+    /// each deleted what the other was writing. The second now waits, and finds the Java installed.
+    /// </remarks>
+    internal static async Task<T> OneAtATimeAsync<T>(int major, Func<Task<T>> work, CancellationToken ct)
+    {
+        var gate = DownloadGates.GetOrAdd(major, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(ct);
+        try { return await work(); }
+        finally { gate.Release(); }
+    }
+
+    private Task<string> DownloadAdoptiumAsync(int major, IProgress<string>? log, CancellationToken ct) =>
+        OneAtATimeAsync(major, () => DownloadAdoptiumCoreAsync(major, log, ct), ct);
+
+    private async Task<string> DownloadAdoptiumCoreAsync(int major, IProgress<string>? log,
+        CancellationToken ct)
     {
         var target = Path.Combine(ManagedRoot, $"jre-{major}");
 
@@ -450,26 +443,11 @@ public partial class JavaService
     /// <summary>Resolves the 'java' executable on PATH (Linux/macOS) via 'which'. Null if not found.</summary>
     private static string? WhichJava()
     {
-        try
-        {
-            using var p = Process.Start(new ProcessStartInfo
-            {
-                FileName = "which",
-                Arguments = "java",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            });
-            if (p is null) return null;
-            var outp = p.StandardOutput.ReadLine();
-            p.WaitForExit(3000);
-            return !string.IsNullOrWhiteSpace(outp) && File.Exists(outp) ? outp : null;
-        }
-        catch
-        {
-            return null;
-        }
+        var result = ProcessRunner.Run("which", ["java"], TimeSpan.FromSeconds(3));
+        var path = result.Output
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault();
+        return !string.IsNullOrWhiteSpace(path) && File.Exists(path) ? path : null;
     }
 
     private static string? FindJavaExe(string root)
