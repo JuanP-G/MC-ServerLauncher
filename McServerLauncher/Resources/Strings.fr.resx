@@ -1193,6 +1193,8 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Net_InternetFair" xml:space="preserve"><value>Votre internet est juste</value></data>
   <data name="Net_InternetSlowUpFmt" xml:space="preserve"><value>Le débit montant est faible : de quoi tenir environ {0} joueurs avant que ça se voie.</value></data>
   <data name="Net_InternetLaggyDetail" xml:space="preserve"><value>Votre connexion a du retard ou perd des paquets ; un câble fait souvent mieux que le Wi-Fi.</value></data>
+  <data name="Net_InternetNoSpeed" xml:space="preserve"><value>La vitesse n'a pas pu être mesurée</value></data>
+  <data name="Net_InternetNoSpeedDetail" xml:space="preserve"><value>Le délai est bon, mais le test de vitesse n'a pas abouti : un pare-feu ou un proxy l'interrompt peut-être. Réessayez plus tard.</value></data>
   <data name="Net_InternetBad" xml:space="preserve"><value>Votre internet est mauvais</value></data>
   <data name="Net_InternetBadDetail" xml:space="preserve"><value>Avec cette connexion les joueurs sentiront du retard : essayez un câble ou redémarrez la box.</value></data>
   <data name="Net_InternetNone" xml:space="preserve"><value>Pas de connexion internet</value></data>
@@ -1238,4 +1240,8 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Serveur : {0} · {1}/{2} joueurs</value></data>
   <data name="Net_CopyReport" xml:space="preserve"><value>Copier le rapport</value></data>
   <data name="Net_Copied" xml:space="preserve"><value>Copié</value></data>
+  <data name="Net_StateGood" xml:space="preserve"><value>Bon</value></data>
+  <data name="Net_StateFair" xml:space="preserve"><value>Juste</value></data>
+  <data name="Net_StateBad" xml:space="preserve"><value>Mauvais</value></data>
+  <data name="Net_StateSkipped" xml:space="preserve"><value>Non testé</value></data>
 </root>

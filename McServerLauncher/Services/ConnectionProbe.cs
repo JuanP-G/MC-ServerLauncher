@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
@@ -246,17 +247,44 @@ public static class ConnectionProbe
         [0x00, 0xff, 0xff, 0x00, 0xfe, 0xfe, 0xfe, 0xfe, 0xfd, 0xfd, 0xfd, 0xfd, 0x12, 0x34, 0x56, 0x78];
 
     /// <summary>
-    /// A RakNet unconnected ping, which is what the Bedrock client sends to fill its server list.
-    /// Milliseconds, or null when nothing answered in time.
+    /// What <paramref name="host"/> points to, or null when it does not resolve: asked once and
+    /// without holding the thread, to be pinged as often as needed.
     /// </summary>
-    public static async Task<double?> PingBedrockAsync(string host, int port, TimeSpan timeout, CancellationToken ct = default)
+    /// <remarks>
+    /// <see cref="UdpClient.Connect(string, int)"/> resolves the name itself, synchronously, and the
+    /// test pings eight times from the UI thread: eight lookups that froze the window while each
+    /// waited on a slow DNS. TCP does not need this — its <c>ConnectAsync</c> resolves asynchronously,
+    /// and the Java ping must keep the name, which Playit's edge routes by.
+    /// </remarks>
+    public static async Task<IPAddress?> ResolveAsync(string host, CancellationToken ct = default)
+    {
+        if (IPAddress.TryParse(host, out var literal)) return literal;
+        try
+        {
+            var all = await Dns.GetHostAddressesAsync(host, ct);
+            return all.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)
+                   ?? all.FirstOrDefault();
+        }
+        catch (Exception) when (!ct.IsCancellationRequested)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// A RakNet unconnected ping, which is what the Bedrock client sends to fill its server list.
+    /// Milliseconds, or null when nothing answered in time. The address comes already resolved: see
+    /// <see cref="ResolveAsync"/>.
+    /// </summary>
+    public static async Task<double?> PingBedrockAsync(IPEndPoint server, TimeSpan timeout,
+        CancellationToken ct = default)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(timeout);
         try
         {
-            using var udp = new UdpClient();
-            udp.Connect(host, port);
+            using var udp = new UdpClient(server.AddressFamily);
+            udp.Connect(server);
             var packet = new byte[33];
             packet[0] = 0x01;
             BinaryPrimitives.WriteInt64BigEndian(packet.AsSpan(1), Environment.TickCount64);

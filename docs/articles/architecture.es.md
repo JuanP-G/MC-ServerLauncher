@@ -600,7 +600,9 @@ veredicto:
   subida cronometradas contra `speed.cloudflare.com` (sin cuenta; lo que sube son bytes al azar);
 - **el túnel de Java** — SLP a la dirección pública, con el puerto del registro SRV
   `_minecraft._tcp` preguntado al DNS sobre HTTPS de Cloudflare, porque .NET no resuelve SRV;
-- **el túnel de Bedrock** — un ping RakNet sin conexión, si hay crossplay.
+- **el túnel de Bedrock** — un ping RakNet sin conexión, si hay crossplay. El nombre se resuelve una
+  vez y en asíncrono (`ConnectionProbe.ResolveAsync`): `UdpClient.Connect` con un nombre lo busca de
+  forma síncrona en el hilo de la interfaz, una vez por ping.
 
 Solo se cronometra el eco del ping, como hace el juego: el JSON de estado lleva el icono y a través de
 un túnel mide transferencia, no latencia. **Todo saludo lleva un número de protocolo real, nunca el
@@ -608,7 +610,11 @@ un túnel mide transferencia, no latencia. **Todo saludo lleva un número de pro
 para Minecraft lee el saludo y corta la conexión en milisegundos si el protocolo es `-1` o el host es
 una IP. Un servidor preguntado con el protocolo N puede devolver N como el suyo, así que el informe no
 lo enseña. Con el servidor apagado solo se mide el internet; la prueba lo dice y ofrece encenderlo y
-repetir, y nunca lo enciende sola.
+repetir, y nunca lo enciende sola. Esa oferta espera mientras el servidor se prepara (`IsPreparing`,
+cuando su estado todavía dice Parado), y un arranque que ya está en marcha se espera, no se repite.
+Una prueba de velocidad que no midió nada lo dice en vez de culpar al retraso. La prueba se para
+cuando la página de red desaparece y cuando el servidor se apaga del todo, y cada paso vuelve a su
+nombre. El informe que copia va en el idioma de la app.
 
 ### Actualización in-app + novedades
 Al arrancar, `MainViewModel.CheckForUpdatesAsync` pide a `UpdateService` la release más nueva y el

@@ -139,10 +139,20 @@ public class ConnectionProbeTests
             await server.SendAsync(pong, request.RemoteEndPoint);
         });
 
-        var ms = await ConnectionProbe.PingBedrockAsync("127.0.0.1", port, TimeSpan.FromSeconds(5));
+        var ms = await ConnectionProbe.PingBedrockAsync(new IPEndPoint(IPAddress.Loopback, port),
+            TimeSpan.FromSeconds(5));
         await serving;
 
         Assert.NotNull(ms);
+    }
+
+    [Fact]
+    public async Task ANameIsResolvedAndAnAddressIsTakenAsItIs()
+    {
+        Assert.Equal(IPAddress.Parse("203.0.113.7"), await ConnectionProbe.ResolveAsync("203.0.113.7"));
+        Assert.True(IPAddress.IsLoopback((await ConnectionProbe.ResolveAsync("localhost"))!));
+        // .invalid is reserved never to resolve (RFC 2606).
+        Assert.Null(await ConnectionProbe.ResolveAsync("no-such-tunnel.invalid"));
     }
 
     /// <summary>Answers one status ping the way a Minecraft server does.</summary>

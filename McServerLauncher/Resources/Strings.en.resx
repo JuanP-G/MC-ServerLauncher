@@ -1193,6 +1193,8 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Net_InternetFair" xml:space="preserve"><value>Your internet is borderline</value></data>
   <data name="Net_InternetSlowUpFmt" xml:space="preserve"><value>Upload is short: enough for about {0} players before it shows.</value></data>
   <data name="Net_InternetLaggyDetail" xml:space="preserve"><value>Your connection has lag or loses packets; a cable usually does better than Wi-Fi.</value></data>
+  <data name="Net_InternetNoSpeed" xml:space="preserve"><value>The speed could not be measured</value></data>
+  <data name="Net_InternetNoSpeedDetail" xml:space="preserve"><value>The delay is good, but the speed test did not finish: a firewall or a proxy may be cutting it off. Try again later.</value></data>
   <data name="Net_InternetBad" xml:space="preserve"><value>Your internet is poor</value></data>
   <data name="Net_InternetBadDetail" xml:space="preserve"><value>With this connection players will feel lag: try a cable or restart the router.</value></data>
   <data name="Net_InternetNone" xml:space="preserve"><value>No internet connection</value></data>
@@ -1238,4 +1240,8 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Net_ServerInfoFmt" xml:space="preserve"><value>Server: {0} · {1}/{2} players</value></data>
   <data name="Net_CopyReport" xml:space="preserve"><value>Copy report</value></data>
   <data name="Net_Copied" xml:space="preserve"><value>Copied</value></data>
+  <data name="Net_StateGood" xml:space="preserve"><value>Good</value></data>
+  <data name="Net_StateFair" xml:space="preserve"><value>Borderline</value></data>
+  <data name="Net_StateBad" xml:space="preserve"><value>Bad</value></data>
+  <data name="Net_StateSkipped" xml:space="preserve"><value>Not tested</value></data>
 </root>

@@ -1,87 +1,16 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Net;
 using System.Text;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FluentIcons.Common;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 
 namespace McServerLauncher.ViewModels;
-
-/// <summary>How one stretch of the connection did.</summary>
-public enum StepState { Waiting, Running, Good, Fair, Bad, Skipped }
-
-/// <summary>One stretch of the way a player's packets travel, and how it did.</summary>
-public partial class ConnectionStepViewModel : ObservableObject
-{
-    public ConnectionStepViewModel(string title) => _title = title;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(Icon), nameof(IsGood), nameof(IsFair), nameof(IsBad), nameof(IsRunning), nameof(IsIdle))]
-    private StepState _state;
-
-    [ObservableProperty]
-    private string _title;
-
-    [ObservableProperty]
-    private string _detail = string.Empty;
-
-    /// <summary>The number beside it: "3 ms", "↑ 42 Mb/s".</summary>
-    [ObservableProperty]
-    private string _badge = string.Empty;
-
-    public Symbol Icon => State switch
-    {
-        StepState.Good => Symbol.Checkmark,
-        StepState.Fair => Symbol.Warning,
-        StepState.Bad => Symbol.ErrorCircle,
-        StepState.Running => Symbol.ArrowSync,
-        StepState.Skipped => Symbol.Subtract,
-        _ => Symbol.Circle,
-    };
-
-    public bool IsGood => State == StepState.Good;
-    public bool IsFair => State == StepState.Fair;
-    public bool IsBad => State == StepState.Bad;
-    public bool IsRunning => State == StepState.Running;
-    public bool IsIdle => State is StepState.Waiting or StepState.Skipped;
-
-    internal void Set(StepState state, string title, string detail, string badge = "")
-    {
-        State = state;
-        Title = title;
-        Detail = detail;
-        Badge = badge;
-    }
-}
-
-/// <summary>The verdict's colour, from its state.</summary>
-public static class StepStateConverters
-{
-    public static readonly Avalonia.Data.Converters.FuncValueConverter<StepState, bool> IsFair = new(s => s == StepState.Fair);
-    public static readonly Avalonia.Data.Converters.FuncValueConverter<StepState, bool> IsBad = new(s => s == StepState.Bad);
-}
-
-/// <summary>One row of the technical table: the round trips to one place.</summary>
-public sealed record ProbeRow(string Name, string Min, string Average, string Max, string Jitter, string Loss)
-{
-    /// <summary>Milliseconds with a decimal under ten: on a LAN "0" says nothing, "0.3" does.</summary>
-    internal static string Number(double ms) =>
-        ms.ToString(ms < 10 ? "0.0" : "0", CultureInfo.CurrentCulture);
-
-    internal static ProbeRow From(string name, LatencyStats stats)
-    {
-        static string Ms(double v) => Number(v);
-        return stats.AnyReply
-            ? new(name, Ms(stats.Min), Ms(stats.Average), Ms(stats.Max), Ms(stats.Jitter),
-                (stats.Loss * 100).ToString("0", CultureInfo.CurrentCulture) + " %")
-            : new(name, "—", "—", "—", "—", stats.Sent > 0 ? "100 %" : "—");
-    }
-}
 
 /// <summary>
 /// The connection test on a server's network page: where a slow game is coming from.
@@ -106,7 +35,7 @@ public partial class ConnectionTestViewModel : ObservableObject
     private static readonly TimeSpan Wait = TimeSpan.FromSeconds(3);
 
     // Whether the details were left open: for as long as the app runs, on every server.
-    private static bool _detailsOpen;
+    private static bool DetailsLeftOpen;
 
     private readonly ServerViewModel _server;
     private readonly ServerPropertiesService _properties = new();
@@ -160,11 +89,11 @@ public partial class ConnectionTestViewModel : ObservableObject
 
     public bool DetailsOpen
     {
-        get => _detailsOpen;
+        get => DetailsLeftOpen;
         set
         {
-            if (_detailsOpen == value) return;
-            _detailsOpen = value;
+            if (DetailsLeftOpen == value) return;
+            DetailsLeftOpen = value;
             OnPropertyChanged();
         }
     }
@@ -201,7 +130,7 @@ public partial class ConnectionTestViewModel : ObservableObject
     private void Reset()
     {
         foreach (var step in Steps)
-            step.Set(StepState.Waiting, step.Title, Localizer.Get("Net_Waiting"));
+            step.Reset(Localizer.Get("Net_Waiting"));
         Verdict = string.Empty;
         ServerWasOff = false;
     }
@@ -212,35 +141,60 @@ public partial class ConnectionTestViewModel : ObservableObject
     private Task Run() => RunAsync();
 
     /// <summary>Starts the server, waits until it answers, and runs the whole test.</summary>
+    /// <remarks>
+    /// A start spends its first seconds — minutes, with a big world to back up — getting ready, and
+    /// all that time the server still reads as stopped. The wait used to give up after five seconds
+    /// of "stopped" and test a server that was about to come up, and say it was off. A start already
+    /// under way (the button, or waking on demand) is waited for in the same way, not started twice.
+    /// </remarks>
     [RelayCommand(CanExecute = nameof(CanRun))]
     private async Task StartServerAndRun()
     {
-        if (_server.State != ServerState.Running && _server.StartCommand.CanExecute(null))
+        var startsOrIsStarting = _server.IsPreparing || _server.StartCommand.CanExecute(null);
+        if (_server.State != ServerState.Running && startsOrIsStarting)
         {
+            var ct = Renew();
             IsTesting = true;
             LocalStep.Set(StepState.Running, Localizer.Get("Net_Starting"), Localizer.Get("Net_StartingDetail"));
-            _server.StartCommand.Execute(null);
-
-            // Up to three minutes: a modded server can take that long to open its port. Back to
-            // stopped after the first seconds means it did not start, and there is no point waiting.
-            var started = DateTime.UtcNow;
-            while (DateTime.UtcNow - started < TimeSpan.FromMinutes(3) && _server.State != ServerState.Running)
+            if (!_server.IsPreparing) _server.StartCommand.Execute(null);
+            try
             {
-                if (_server.State == ServerState.Stopped && DateTime.UtcNow - started > TimeSpan.FromSeconds(5)) break;
-                await Task.Delay(500);
+                await WaitUntilRunningAsync(ct);
             }
-            IsTesting = false;
+            catch (OperationCanceledException)
+            {
+                Reset();
+                return;
+            }
+            finally
+            {
+                IsTesting = false;
+            }
         }
         await RunAsync();
+    }
+
+    /// <summary>
+    /// Up to three minutes: a modded server can take that long to open its port. Stopped and no
+    /// longer getting ready, past the first seconds, means it did not start, and there is no point
+    /// waiting.
+    /// </summary>
+    private async Task WaitUntilRunningAsync(CancellationToken ct)
+    {
+        var started = DateTime.UtcNow;
+        while (DateTime.UtcNow - started < TimeSpan.FromMinutes(3) && _server.State != ServerState.Running)
+        {
+            var gaveUp = _server.State == ServerState.Stopped && !_server.IsPreparing;
+            if (gaveUp && DateTime.UtcNow - started > TimeSpan.FromSeconds(5)) break;
+            await Task.Delay(500, ct);
+        }
     }
 
     /// <summary>Runs every stretch in turn.</summary>
     internal async Task RunAsync()
     {
         if (IsTesting) return;
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
-        var ct = _cts.Token;
+        var ct = Renew();
 
         // Crossplay may have been switched on or off since the last run.
         if (_server.IsCrossplayOn && !Steps.Contains(BedrockStep)) Steps.Add(BedrockStep);
@@ -336,9 +290,12 @@ public partial class ConnectionTestViewModel : ObservableObject
                 {
                     BedrockStep.Set(StepState.Running, Localizer.Get("Net_StepBedrock"), Localizer.Get("Net_Measuring"));
                     addresses.Add($"{Localizer.Get("Net_RowBedrock")}: {host}:{bedrockPort}");
-                    var bedrock = await ConnectionProbe.SampleAsync(
-                        c => ConnectionProbe.PingBedrockAsync(host, bedrockPort, Wait, c),
-                        Samples, Gap, Live(BedrockStep), ct);
+                    // A name that does not resolve is a tunnel nobody can reach: every ping lost.
+                    var bedrock = await ConnectionProbe.ResolveAsync(host, ct) is { } ip
+                        ? await ConnectionProbe.SampleAsync(
+                            c => ConnectionProbe.PingBedrockAsync(new IPEndPoint(ip, bedrockPort), Wait, c),
+                            Samples, Gap, Live(BedrockStep), ct)
+                        : new LatencyStats(Array.Empty<double>(), Samples);
                     Judge(BedrockStep, bedrock, good: 80, fair: 180, "Net_Bedrock");
                     Rows.Add(ProbeRow.From(Localizer.Get("Net_RowBedrock"), bedrock));
                 }
@@ -372,6 +329,14 @@ public partial class ConnectionTestViewModel : ObservableObject
     /// <summary>Stops a test in progress: the page is going away.</summary>
     internal void Cancel() => _cts?.Cancel();
 
+    /// <summary>Cancels what was running and hands out the token for what runs next.</summary>
+    private CancellationToken Renew()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        return _cts.Token;
+    }
+
     // ---------------------------------------------------------------- judging
 
     /// <summary>Shows each round trip in the badge as it arrives, so the step visibly works.</summary>
@@ -403,7 +368,7 @@ public partial class ConnectionTestViewModel : ObservableObject
             stats.AnyReply ? Ms(stats.Average) : Localizer.Get("Net_NoAnswer"));
     }
 
-    private void JudgeInternet(LatencyStats latency, Throughput up)
+    internal void JudgeInternet(LatencyStats latency, Throughput up)
     {
         if (!latency.AnyReply)
         {
@@ -421,6 +386,9 @@ public partial class ConnectionTestViewModel : ObservableObject
         var (title, detail) = state switch
         {
             StepState.Good => ("Net_InternetGood", string.Format(Localizer.Get("Net_InternetGoodDetailFmt"), players)),
+            // Nothing went up: the line was not measured, which is not the same as lag.
+            StepState.Fair when up.Mbps <= 0 && byLatency == StepState.Good =>
+                ("Net_InternetNoSpeed", Localizer.Get("Net_InternetNoSpeedDetail")),
             StepState.Fair when byUpload >= byLatency && up.Mbps > 0 =>
                 ("Net_InternetFair", string.Format(Localizer.Get("Net_InternetSlowUpFmt"), players)),
             StepState.Fair => ("Net_InternetFair", Localizer.Get("Net_InternetLaggyDetail")),
@@ -446,18 +414,29 @@ public partial class ConnectionTestViewModel : ObservableObject
 
     // ---------------------------------------------------------------- report
 
-    private void WriteReport(List<string> addresses, Throughput down, Throughput up)
+    /// <remarks>
+    /// In the app's language, as the page is: it is pasted to whoever helps, and it used to mix the
+    /// page's sentences with enum names ("[Fair]") and English headers.
+    /// </remarks>
+    internal void WriteReport(List<string> addresses, Throughput down, Throughput up)
     {
         foreach (var step in Steps)
-            _report.AppendLine($"[{step.State}] {step.Title} — {step.Badge} — {step.Detail}");
+            _report.AppendLine($"[{StateName(step.State)}] {step.Title} — {step.Badge} — {step.Detail}");
         _report.AppendLine();
-        _report.AppendLine("min / avg / max / jitter / loss (ms)");
+        _report.AppendLine($"{Localizer.Get("Net_ColStretch")}: {Localizer.Get("Net_ColMin")} / " +
+                           $"{Localizer.Get("Net_ColAvg")} / {Localizer.Get("Net_ColMax")} / " +
+                           $"{Localizer.Get("Net_ColJitter")} (ms) / {Localizer.Get("Net_ColLoss")}");
         foreach (var row in Rows)
             _report.AppendLine($"{row.Name}: {row.Min} / {row.Average} / {row.Max} / {row.Jitter} / {row.Loss}");
-        _report.AppendLine($"↓ {Mbps(down)}   ↑ {Mbps(up)}   peak ↑ {PeakText}");
+        _report.AppendLine($"{Localizer.Get("Net_Download")}: {Mbps(down)} · " +
+                           $"{Localizer.Get("Net_Upload")}: {Mbps(up)} · " +
+                           $"{Localizer.Get("Net_Peak")}: {PeakText}");
         foreach (var a in addresses) _report.AppendLine(a);
         _report.AppendLine(Verdict);
     }
+
+    /// <summary>What Copy puts on the clipboard.</summary>
+    internal string Report => _report.ToString();
 
     private bool CanCopy => !IsTesting && _report.Length > 0;
 
@@ -468,13 +447,22 @@ public partial class ConnectionTestViewModel : ObservableObject
         if (top?.Clipboard is not { } clipboard) return;
         try
         {
-            await clipboard.SetTextAsync(_report.ToString());
+            await clipboard.SetTextAsync(Report);
             CopyText = Localizer.Get("Net_Copied");
         }
         catch { /* clipboard busy */ }
     }
 
     // ---------------------------------------------------------------- formats
+
+    /// <summary>A step's state as the report names it; one never reached was not tested.</summary>
+    private static string StateName(StepState state) => Localizer.Get(state switch
+    {
+        StepState.Good => "Net_StateGood",
+        StepState.Fair => "Net_StateFair",
+        StepState.Bad => "Net_StateBad",
+        _ => "Net_StateSkipped",
+    });
 
     private static string Ms(double ms) => ProbeRow.Number(ms) + " ms";
 
