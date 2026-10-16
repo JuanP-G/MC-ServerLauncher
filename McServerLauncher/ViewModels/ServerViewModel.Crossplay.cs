@@ -89,7 +89,6 @@ public partial class ServerViewModel
         try
         {
             await _hydraulic.InstallAsync(Config, new Progress<string>(OnConsoleLine));
-            RunOnUi(Mods.ReloadInstalled);
 
             Config.BedrockModContentEnabled = true;
             ConfigChanged?.Invoke();
@@ -101,6 +100,11 @@ public partial class ServerViewModel
             Config.BedrockModContentEnabled = false;
             ConfigChanged?.Invoke();
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+        }
+        finally
+        {
+            // Failed or not: an install that fails halfway can already have replaced one jar.
+            RunOnUi(Mods.ReloadInstalled);
         }
     }
 
@@ -122,9 +126,6 @@ public partial class ServerViewModel
         {
             await _multiVersion.InstallAsync(Config, new Progress<string>(OnConsoleLine));
 
-            // Same reason as crossplay: the panel read the folder before these jars existed.
-            RunOnUi(Mods.ReloadInstalled);
-
             Config.MultiVersionEnabled = true;
             ConfigChanged?.Invoke();
         }
@@ -134,6 +135,12 @@ public partial class ServerViewModel
             Config.MultiVersionEnabled = false;   // it did not happen; do not claim that it did
             ConfigChanged?.Invoke();
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+        }
+        finally
+        {
+            // Same reason as crossplay: the panel read the folder before these jars existed — and
+            // ViaVersion can be in place even when ViaBackwards failed.
+            RunOnUi(Mods.ReloadInstalled);
         }
     }
 
@@ -173,10 +180,6 @@ public partial class ServerViewModel
 
             await _crossplay.InstallAsync(Config, log);
 
-            // Geyser and Floodgate are mods like any other, and the Mods tab listed the folder
-            // before they existed. Left alone it would keep claiming the server has none.
-            RunOnUi(Mods.ReloadInstalled);
-
             // Set as soon as Geyser is installed, before the tunnel — deliberately unlike
             // BedrockModContentEnabled and MultiVersionEnabled, which are only set once everything
             // succeeded. There the flag means "this is done"; here it means "the user wants this,
@@ -207,6 +210,13 @@ public partial class ServerViewModel
         catch (Exception ex)
         {
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+        }
+        finally
+        {
+            // Geyser and Floodgate are mods like any other, and the Mods tab listed the folder
+            // before they existed. Failed or not: a new Geyser can be in place, and the old one
+            // gone, when Floodgate is what failed.
+            RunOnUi(Mods.ReloadInstalled);
         }
     }
 

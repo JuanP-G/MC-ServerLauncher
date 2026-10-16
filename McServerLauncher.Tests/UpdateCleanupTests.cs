@@ -153,8 +153,25 @@ public class UpdateCleanupTests : IDisposable
         var fresh = FabricJar("Sodium.jar", "sodium");
         var folder = new[] { new ContentManifest.Entry(At("sodium.JAR"), true, ContentManifest.Read(fresh)) };
 
-        // Same file, spelled differently: Windows paths do not care about case.
-        Assert.Empty(ContentReplacement.Select(folder, At("SODIUM.jar"), "sodium", null, null));
+        Assert.Empty(ContentReplacement.Select(folder, At("sodium.JAR"), "sodium", null, null));
+
+        // Same file, spelled differently: Windows and macOS paths do not care about case. On Linux
+        // these are two files, and the next test is the one about that.
+        if (!OperatingSystem.IsLinux())
+            Assert.Empty(ContentReplacement.Select(folder, At("SODIUM.jar"), "sodium", null, null));
+    }
+
+    [Fact]
+    public void OnLinuxACopyWhoseNameDiffersOnlyInCaseIsAnotherFile()
+    {
+        // Linux tells Sodium.jar from sodium.jar; ignoring case took the old one for the new one and
+        // left both. Elsewhere they are one file and cannot both exist.
+        if (!OperatingSystem.IsLinux()) return;
+
+        FabricJar("Sodium.jar", "sodium");
+        var fresh = FabricJar("sodium.jar", "sodium");
+
+        Assert.Equal(new[] { At("Sodium.jar") }, ContentReplacement.OthersOf(_dir, fresh));
     }
 
     // --- Removing them ---
@@ -194,6 +211,46 @@ public class UpdateCleanupTests : IDisposable
         Assert.Equal(new[] { "a.jar", "b.jar" }, FilesLeft());
     }
 
+    /// <summary>A rename that refuses the file named <paramref name="refused"/>, the way a lock does.</summary>
+    private static Action<string, string> RefusingToMove(params string[] refused) => (from, to) =>
+    {
+        if (refused.Contains(Path.GetFileName(from))) throw new IOException("in use");
+        File.Move(from, to);
+    };
+
+    [Fact]
+    public void ACopyInUseMeansNothingIsRemovedOnEveryPlatform()
+    {
+        // The same as the test above, with the refusal handed in: Linux and macOS lock nothing, so
+        // that one proves nothing on the other CI runner.
+        var first = FabricJar("a.jar", "x");
+        var held = FabricJar("b.jar", "x");
+        var fresh = FabricJar("c.jar", "x");
+
+        var (result, removed) = ContentReplacement.RemoveAllOrNothing(
+            new[] { first, held }, fresh, RefusingToMove("b.jar"));
+
+        Assert.Equal(ContentReplacement.RemoveResult.Locked, result);
+        Assert.Empty(removed);
+        Assert.Equal(new[] { "a.jar", "b.jar" }, FilesLeft());
+    }
+
+    [Fact]
+    public void ACopyThatCannotBePutBackKeepsTheNewJar()
+    {
+        // The second copy is in use, and the first, already moved aside, cannot be put back (an
+        // antivirus opened the renamed file). Deleting the new jar as well left no copy at all.
+        var first = FabricJar("a.jar", "x");
+        var held = FabricJar("b.jar", "x");
+        var fresh = FabricJar("c.jar", "x");
+
+        var (result, _) = ContentReplacement.RemoveAllOrNothing(
+            new[] { first, held }, fresh, RefusingToMove("b.jar", "a.jar" + ContentReplacement.RemovingSuffix));
+
+        Assert.Equal(ContentReplacement.RemoveResult.Locked, result);
+        Assert.True(File.Exists(fresh));
+    }
+
     [Fact]
     public void ANewJarThatReplacedAFileOfItsNameIsNotRolledBack()
     {
@@ -228,10 +285,10 @@ public class UpdateCleanupTests : IDisposable
         var old = FabricJar("sodium-0.5.jar.disabled", "sodium");
         var fresh = FabricJar("sodium-0.6.jar", "sodium");
 
-        var (outcome, removed) = ServerModsViewModel.ApplyDownloadedUpdate(
+        var (outcome, removed) = ContentReplacement.ApplyDownloadedUpdate(
             _dir, fresh, old, wasDisabled: true, downloadReplacedAFile: false, null, null);
 
-        Assert.Equal(ServerModsViewModel.UpdateOutcome.Updated, outcome);
+        Assert.Equal(ContentReplacement.UpdateOutcome.Updated, outcome);
         Assert.Equal(new[] { old }, removed);
         Assert.Equal(new[] { "sodium-0.6.jar.disabled" }, FilesLeft());
     }
@@ -244,7 +301,7 @@ public class UpdateCleanupTests : IDisposable
         FabricJar("lithium.jar", "lithium");
         var fresh = FabricJar("sodium-0.6.jar", "sodium");
 
-        var (_, removed) = ServerModsViewModel.ApplyDownloadedUpdate(
+        var (_, removed) = ContentReplacement.ApplyDownloadedUpdate(
             _dir, fresh, row, wasDisabled: false, downloadReplacedAFile: false, null, null);
 
         Assert.Equal(2, removed.Count);
@@ -259,10 +316,25 @@ public class UpdateCleanupTests : IDisposable
         FabricJar("sodium-0.4.jar", "sodium");
         var fresh = FabricJar("sodium-0.6.jar", "sodium");
 
-        ServerModsViewModel.ApplyDownloadedUpdate(
+        ContentReplacement.ApplyDownloadedUpdate(
             _dir, fresh, row, wasDisabled: true, downloadReplacedAFile: false, null, null);
 
         Assert.Equal(new[] { "sodium-0.6.jar" }, FilesLeft());
+    }
+
+    [Fact]
+    public void UpdatingADisabledRowOverTheEnabledCopyOfTheSameNameKeepsItOn()
+    {
+        // The server runs Geyser-Fabric.jar; a stale Geyser-Fabric.jar.disabled is updated, and the
+        // update's file has the enabled copy's name, so the download overwrote it. The only other
+        // copy left is the disabled one, and the update used to switch the mod off.
+        var row = FabricJar("Geyser-Fabric.jar.disabled", "geyser-fabric");
+        var fresh = FabricJar("Geyser-Fabric.jar", "geyser-fabric");   // what the download overwrote
+
+        ContentReplacement.ApplyDownloadedUpdate(
+            _dir, fresh, row, wasDisabled: true, downloadReplacedAFile: true, null, null);
+
+        Assert.Equal(new[] { "Geyser-Fabric.jar" }, FilesLeft());
     }
 
     [Fact]
@@ -273,7 +345,7 @@ public class UpdateCleanupTests : IDisposable
         var row = FabricJar("mystery-1.jar", id: null);
         var fresh = FabricJar("mystery-2.jar", id: null);
 
-        ServerModsViewModel.ApplyDownloadedUpdate(
+        ContentReplacement.ApplyDownloadedUpdate(
             _dir, fresh, row, wasDisabled: false, downloadReplacedAFile: false, null, null);
 
         Assert.Equal(new[] { "mystery-2.jar" }, FilesLeft());
@@ -284,10 +356,10 @@ public class UpdateCleanupTests : IDisposable
     {
         var same = FabricJar("spark.jar", "spark");
 
-        var (outcome, removed) = ServerModsViewModel.ApplyDownloadedUpdate(
+        var (outcome, removed) = ContentReplacement.ApplyDownloadedUpdate(
             _dir, same, same, wasDisabled: false, downloadReplacedAFile: true, null, null);
 
-        Assert.Equal(ServerModsViewModel.UpdateOutcome.Updated, outcome);
+        Assert.Equal(ContentReplacement.UpdateOutcome.Updated, outcome);
         Assert.Empty(removed);
         Assert.Equal(new[] { "spark.jar" }, FilesLeft());
     }
@@ -300,12 +372,12 @@ public class UpdateCleanupTests : IDisposable
         var row = FabricJar("sodium-0.5.jar", "sodium");
         var fresh = FabricJar("sodium-0.6.jar", "sodium");
 
-        ServerModsViewModel.UpdateOutcome outcome;
+        ContentReplacement.UpdateOutcome outcome;
         using (new FileStream(row, FileMode.Open, FileAccess.Read, FileShare.None))
-            (outcome, _) = ServerModsViewModel.ApplyDownloadedUpdate(
+            (outcome, _) = ContentReplacement.ApplyDownloadedUpdate(
                 _dir, fresh, row, wasDisabled: false, downloadReplacedAFile: false, null, null);
 
-        Assert.Equal(ServerModsViewModel.UpdateOutcome.NeedsStop, outcome);
+        Assert.Equal(ContentReplacement.UpdateOutcome.NeedsStop, outcome);
         Assert.Equal(new[] { "sodium-0.5.jar" }, FilesLeft());
     }
 

@@ -38,4 +38,19 @@ public sealed class ContentManifestCache
         _known[path] = (stamp.Length, stamp.LastWriteTimeUtc, manifest);
         return manifest;
     }
+
+    /// <summary>How many jars it remembers.</summary>
+    internal int Count => _known.Count;
+
+    /// <summary>Drops every jar but <paramref name="present"/>: the ones renamed or deleted since.</summary>
+    /// <remarks>
+    /// Every toggle renames a jar and every update writes a new one, so without this the cache only
+    /// grew for as long as the app ran.
+    /// </remarks>
+    public void ForgetAllBut(IEnumerable<string> present)
+    {
+        var keep = present.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var path in _known.Keys)
+            if (!keep.Contains(path)) _known.TryRemove(path, out _);
+    }
 }

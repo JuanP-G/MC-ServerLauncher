@@ -191,29 +191,14 @@ public class CrossplayService
         // Paper takes plugins, the mod loaders take mods. Same rule the mod store already uses.
         var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type), "Msg_CrossplayUnsupportedFmt");
 
-        await InstallFromModrinthAsync(config, folder, GeyserProjectId, "Geyser", log, ct);
+        await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, GeyserProjectId, "Geyser",
+            log, ct);
 
         if (FloodgateComesFromModrinth(config.Type))
-            await InstallFromModrinthAsync(config, folder, FloodgateProjectId, "Floodgate", log, ct);
+            await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, FloodgateProjectId,
+                "Floodgate", log, ct);
         else
             await InstallFloodgateForSpigotAsync(folder, log, ct);
-    }
-
-    private async Task InstallFromModrinthAsync(ServerConfig config, string folder,
-        string projectId, string display, IProgress<string>? log, CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), display));
-
-        var version = await _modrinth.GetLatestProjectVersionAsync(projectId, config.Type, config.GameVersion, ct);
-        var file = version?.Files.FirstOrDefault();
-        if (file is null)
-            throw new UserFacingException(string.Format(
-                Localizer.Get("Msg_CrossplayNoVersionFmt"), display, config.GameVersion, config.Type));
-
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), display, version!.VersionNumber));
-        await ContentInstall.InstallReplacingAsync(folder, file.Filename, display, path =>
-            _modrinth.DownloadModAsync(file.Url, path, file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct));
     }
 
     /// <summary>
@@ -235,14 +220,7 @@ public class CrossplayService
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Floodgate",
             $"{artifact.Version}-b{artifact.Build}"));
 
-        using var resp = await GeyserDownloadsApi.OpenAsync(artifact, ct);
-        resp.EnsureSuccessStatusCode();
-
-        await ContentInstall.InstallReplacingAsync(folder, artifact.FileName, "Floodgate", path =>
-            AtomicDownload.ToFileAsync(resp.Content, path,
-                verifyAsync: (part, token) =>
-                    DownloadVerifier.VerifyAsync(part, artifact.Sha256, HashAlgorithmName.SHA256, token),
-                ct: ct));
+        await ContentInstall.InstallFromGeyserAsync(artifact, folder, "Floodgate", alsoCheck: null, ct);
     }
 
     /// <summary>

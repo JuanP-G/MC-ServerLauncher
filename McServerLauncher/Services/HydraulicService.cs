@@ -78,16 +78,8 @@ public class HydraulicService
         }
         else
         {
-            log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Fabric API"));
-            var api = await _modrinth.GetLatestProjectVersionAsync(FabricApiProjectId, config.Type, config.GameVersion, ct);
-            var apiFile = api?.Files.FirstOrDefault();
-            if (apiFile is null)
-                throw new UserFacingException(string.Format(
-                    Localizer.Get("Msg_CrossplayNoVersionFmt"), "Fabric API", config.GameVersion, config.Type));
-
-            log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Fabric API", api!.VersionNumber));
-            await ContentInstall.InstallReplacingAsync(folder, apiFile.Filename, "Fabric API", path =>
-                _modrinth.DownloadModAsync(apiFile.Url, path, apiFile.Hashes?.Sha512, apiFile.Hashes?.Sha1, ct: ct));
+            await ContentInstall.InstallFromModrinthAsync(_modrinth, config, folder, FabricApiProjectId,
+                "Fabric API", log, ct);
         }
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Hydraulic"));
@@ -96,24 +88,16 @@ public class HydraulicService
 
         log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Hydraulic", "b" + build.Build));
 
-        using var resp = await GeyserDownloadsApi.OpenAsync(build, ct);
-        resp.EnsureSuccessStatusCode();
-
-        await ContentInstall.InstallReplacingAsync(folder, build.FileName, "Hydraulic", path =>
-            AtomicDownload.ToFileAsync(resp.Content, path,
-                verifyAsync: async (part, token) =>
-                {
-                    await DownloadVerifier.VerifyAsync(part, build.Sha256, HashAlgorithmName.SHA256, token);
-
-                    // Its downloads API has no per-Minecraft-version dimension: there is one line of
-                    // builds and the newest targets the newest Minecraft. The jar says which, so the
-                    // jar is asked before it is kept.
-                    var required = ReadRequiredMinecraft(part);
-                    if (required is not null && !MinecraftRange.Satisfies(config.GameVersion, required))
-                        throw new UserFacingException(string.Format(
-                            Localizer.Get("Msg_HydraulicWrongVersionFmt"), config.GameVersion, required));
-                },
-                ct: ct));
+        // Its downloads API has no per-Minecraft-version dimension: there is one line of builds and the
+        // newest targets the newest Minecraft. The jar says which, so the jar is asked before it is kept.
+        await ContentInstall.InstallFromGeyserAsync(build, folder, "Hydraulic", alsoCheck: (part, _) =>
+        {
+            var required = ReadRequiredMinecraft(part);
+            if (required is not null && !MinecraftRange.Satisfies(config.GameVersion, required))
+                throw new UserFacingException(string.Format(
+                    Localizer.Get("Msg_HydraulicWrongVersionFmt"), config.GameVersion, required));
+            return Task.CompletedTask;
+        }, ct);
 
         log?.Report(Localizer.Get("Msg_HydraulicReady"));
     }
