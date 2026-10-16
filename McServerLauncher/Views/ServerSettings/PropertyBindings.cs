@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views.ServerSettings;
@@ -28,8 +29,7 @@ internal sealed class PropertyBindings
 
     public void Toggle(ToggleSwitch toggle, string key, bool fallback)
     {
-        var raw = _draft.FileValue(key);
-        var on = raw is null ? fallback : raw.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
+        var on = ServerPropertiesService.ParseBool(_draft.FileValue(key), fallback);
         _draft.Track(key, Text(on));
 
         toggle.IsCheckedChanged += (_, _) =>

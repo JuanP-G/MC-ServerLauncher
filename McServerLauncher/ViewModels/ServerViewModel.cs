@@ -764,8 +764,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         try
         {
             var props = _properties.Read(Config.PropertiesPath);
-            var whitelistOn = props.TryGetValue("white-list", out var w)
-                              && w.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
+            var whitelistOn = ServerPropertiesService.GetBool(props, "white-list", fallback: false);
 
             // The two lists are only read when they can change the answer.
             if (!whitelistOn || !Config.WakeOnlyForWhitelist) return true;
@@ -2072,11 +2071,10 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         RefreshPlayers();
     }
 
-    private void RefreshWhitelist(IDictionary<string, string>? props = null)
+    private void RefreshWhitelist(IReadOnlyDictionary<string, string>? props = null)
     {
         props ??= _properties.Read(Config.PropertiesPath);
-        WhitelistEnabled = props.TryGetValue("white-list", out var w)
-                           && w.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
+        WhitelistEnabled = ServerPropertiesService.GetBool(props, "white-list", fallback: false);
 
         WhitelistPlayers.Clear();
         foreach (var name in _whitelist.ReadNames(Config.FolderPath))
@@ -2100,8 +2098,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             else
             {
                 var props = _properties.Read(Config.PropertiesPath);
-                var online = !props.TryGetValue("online-mode", out var om)
-                             || !om.Trim().Equals("false", StringComparison.OrdinalIgnoreCase);
+                var online = ServerPropertiesService.GetBool(props, "online-mode", fallback: true);
                 await _whitelist.AddAsync(Config.FolderPath, name, online);
             }
             NewWhitelistName = string.Empty;
@@ -2139,8 +2136,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         if (!_process.IsRunning || changes.Count == 0) return;
 
         _savedWhileRunning.Note(changes);
-        if (changes.TryGetValue("white-list", out var whitelist))
-            await SetWhitelistAsync(whitelist.Trim().Equals("true", StringComparison.OrdinalIgnoreCase));
+        if (changes.ContainsKey("white-list"))
+            await SetWhitelistAsync(ServerPropertiesService.GetBool(changes, "white-list", fallback: false));
     }
 
     /// <summary>Switches the whitelist on or off, keeping whoever is on it.</summary>

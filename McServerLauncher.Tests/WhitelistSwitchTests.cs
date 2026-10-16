@@ -95,6 +95,23 @@ public class WhitelistSwitchTests(AvaloniaFixture ui) : IDisposable
         Assert.Contains("Alex", server.WhitelistPlayers);
     }
 
+    /// <summary>
+    /// "online-mode=yes" is an offline server, as the server itself reads it (only "true" is true):
+    /// the name goes in with the offline UUID, without asking Mojang. It used to count as online.
+    /// </summary>
+    [Fact]
+    public async Task OnlineModeThatIsNotTrueMeansOffline()
+    {
+        var server = Server("white-list=false\nonline-mode=yes\n");
+        server.NewWhitelistName = "Alex";
+
+        await Run(server, "AddToWhitelist");
+
+        Assert.Equal(new[] { "Alex" }, new WhitelistService().ReadNames(_folder));
+        Assert.Contains(WhitelistService.OfflineUuid("Alex"),
+            File.ReadAllText(Path.Combine(_folder, "whitelist.json")));
+    }
+
     public void Dispose()
     {
         try { Directory.Delete(_folder, recursive: true); } catch { /* best-effort */ }
