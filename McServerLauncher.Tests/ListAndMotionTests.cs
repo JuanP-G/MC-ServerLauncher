@@ -214,8 +214,8 @@ public class BeaconTests(AvaloniaFixture ui)
         var motion = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Styles", "Motion.axaml"));
 
         foreach (var cls in new[] { "beacon-a", "beacon-b" })
-        foreach (var part in new[] { "shine", "halo" })
-            Assert.Contains($"Panel.newserver.{cls}:not(:pointerover) Border.{part}", motion);
+            foreach (var part in new[] { "shine", "halo" })
+                Assert.Contains($"Panel.newserver.{cls}:not(:pointerover) Border.{part}", motion);
     }
 }
 

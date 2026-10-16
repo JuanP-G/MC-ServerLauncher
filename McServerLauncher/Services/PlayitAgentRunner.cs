@@ -45,9 +45,9 @@ public class PlayitAgentRunner
     private static readonly Dictionary<string, string> AssetSha256 = new(StringComparer.Ordinal)
     {
         ["playit-windows-x86_64-signed.exe"] = "2dbdaad119844cbbc062cc9774b8b462afa5f1b4b7832a9fc5ef4676cae887cf",
-        ["playit-windows-x86-signed.exe"]    = "9cec088fa4ee9ad4d59acd27512cf914078bdb31742e9abc946b81ea705f9d35",
-        ["playit-linux-amd64"]               = "2df7d9f10227ab312b1ad341853db4e8a8243df5cfcdbae58713a4271711c339",
-        ["playit-linux-aarch64"]             = "4c0db3e7b3a8158e249441c2f0b73f54e83429395890c7b1ca45fd7a6303d763",
+        ["playit-windows-x86-signed.exe"] = "9cec088fa4ee9ad4d59acd27512cf914078bdb31742e9abc946b81ea705f9d35",
+        ["playit-linux-amd64"] = "2df7d9f10227ab312b1ad341853db4e8a8243df5cfcdbae58713a4271711c339",
+        ["playit-linux-aarch64"] = "4c0db3e7b3a8158e249441c2f0b73f54e83429395890c7b1ca45fd7a6303d763",
     };
 
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
@@ -176,81 +176,81 @@ public class PlayitAgentRunner
                 KillStrayAgents();
 
                 var psi = new ProcessStartInfo
-            {
-                FileName = exe,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
-            // --secret-path, never --secret: see SecretPath for why the key must not appear in the
-            // process command line.
-            WriteSecretFile(secretKey);
-            psi.ArgumentList.Add("--secret-path");
-            psi.ArgumentList.Add(SecretPath);
-            psi.ArgumentList.Add("--socket-path");
-            psi.ArgumentList.Add(SocketPath);
-
-            var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
-            proc.OutputDataReceived += OnAgentLine;
-            proc.ErrorDataReceived += OnAgentLine;
-            proc.Exited += (sender, _) =>
-            {
-                var exitCode = sender is Process p && p.HasExited ? p.ExitCode : (int?)null;
-                bool startupFailure;
-                lock (_lock)
                 {
-                    // A newer start (or Stop) bumped the generation: this process was replaced or
-                    // killed on purpose — ignore its exit entirely.
-                    if (myGen != _generation) return;
-                    _process = null;
-                    _runningSecret = null;
-                    // The agent that needed it is gone. Only Stop used to remove the file, so an
-                    // agent that died on its own left the plaintext key behind until next time.
-                    DeleteSecretFile();
-                    // Exiting before it ever came up = a startup failure (bad/expired secret, port,
-                    // conflicting agent…).
-                    startupFailure = !_reachedRunning;
-                }
-                if (!startupFailure) { SetState(AgentRunState.Stopped); return; }
+                    FileName = exe,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                };
+                // --secret-path, never --secret: see SecretPath for why the key must not appear in the
+                // process command line.
+                WriteSecretFile(secretKey);
+                psi.ArgumentList.Add("--secret-path");
+                psi.ArgumentList.Add(SecretPath);
+                psi.ArgumentList.Add("--socket-path");
+                psi.ArgumentList.Add(SocketPath);
 
-                // Exited can fire before the last stdout/stderr callbacks do; give them a moment to
-                // drain so we can surface playitd's own last words as the failure reason.
-                Task.Delay(400).ContinueWith(t =>
+                var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                proc.OutputDataReceived += OnAgentLine;
+                proc.ErrorDataReceived += OnAgentLine;
+                proc.Exited += (sender, _) =>
                 {
-                    List<string> lines;
+                    var exitCode = sender is Process p && p.HasExited ? p.ExitCode : (int?)null;
+                    bool startupFailure;
                     lock (_lock)
                     {
-                        if (myGen != _generation) return; // a new start began meanwhile
-                        lines = new List<string>(_recentOutput);
+                        // A newer start (or Stop) bumped the generation: this process was replaced or
+                        // killed on purpose — ignore its exit entirely.
+                        if (myGen != _generation) return;
+                        _process = null;
+                        _runningSecret = null;
+                        // The agent that needed it is gone. Only Stop used to remove the file, so an
+                        // agent that died on its own left the plaintext key behind until next time.
+                        DeleteSecretFile();
+                        // Exiting before it ever came up = a startup failure (bad/expired secret, port,
+                        // conflicting agent…).
+                        startupFailure = !_reachedRunning;
                     }
-                    LastError = BuildFailureReason(lines, exitCode);
-                    SetState(AgentRunState.Failed);
-                });
-            };
+                    if (!startupFailure) { SetState(AgentRunState.Stopped); return; }
 
-            lock (_lock)
-            {
-                _process = proc;
-                _runningSecret = secretKey;
-            }
-            SetState(AgentRunState.Starting);
-            proc.Start();
-            proc.BeginOutputReadLine();
-            proc.BeginErrorReadLine();
+                    // Exited can fire before the last stdout/stderr callbacks do; give them a moment to
+                    // drain so we can surface playitd's own last words as the failure reason.
+                    Task.Delay(400).ContinueWith(t =>
+                    {
+                        List<string> lines;
+                        lock (_lock)
+                        {
+                            if (myGen != _generation) return; // a new start began meanwhile
+                            lines = new List<string>(_recentOutput);
+                        }
+                        LastError = BuildFailureReason(lines, exitCode);
+                        SetState(AgentRunState.Failed);
+                    });
+                };
 
-            // Consider it running once it stays up briefly (it keeps a persistent control connection).
-            _ = Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(_ =>
-            {
-                bool up;
                 lock (_lock)
                 {
-                    up = myGen == _generation && _process is { HasExited: false };
-                    if (up) _reachedRunning = true;
+                    _process = proc;
+                    _runningSecret = secretKey;
                 }
-                if (up) SetState(AgentRunState.Running);
-            });
-        }
+                SetState(AgentRunState.Starting);
+                proc.Start();
+                proc.BeginOutputReadLine();
+                proc.BeginErrorReadLine();
+
+                // Consider it running once it stays up briefly (it keeps a persistent control connection).
+                _ = Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(_ =>
+                {
+                    bool up;
+                    lock (_lock)
+                    {
+                        up = myGen == _generation && _process is { HasExited: false };
+                        if (up) _reachedRunning = true;
+                    }
+                    if (up) SetState(AgentRunState.Running);
+                });
+            }
             catch (Exception ex)
             {
                 LastError = ErrorMessages.Describe(ex);

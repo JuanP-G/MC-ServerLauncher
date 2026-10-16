@@ -32,7 +32,10 @@ public class InstalledModsFilterTests : IDisposable
         foreach (var jar in jars) File.WriteAllText(Path.Combine(_folder, "mods", jar), "");
         return new ServerModsViewModel(new ServerConfig
         {
-            Name = "test", FolderPath = _folder, Type = ServerType.Fabric, GameVersion = "1.21.1"
+            Name = "test",
+            FolderPath = _folder,
+            Type = ServerType.Fabric,
+            GameVersion = "1.21.1"
         });
     }
 

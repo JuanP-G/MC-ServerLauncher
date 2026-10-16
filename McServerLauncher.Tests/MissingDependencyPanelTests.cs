@@ -33,7 +33,10 @@ public class MissingDependencyPanelTests : IDisposable
         Directory.CreateDirectory(Path.Combine(_folder, "mods"));
         return new ServerModsViewModel(new ServerConfig
         {
-            Name = "test", FolderPath = _folder, Type = ServerType.Fabric, GameVersion = "1.21.1"
+            Name = "test",
+            FolderPath = _folder,
+            Type = ServerType.Fabric,
+            GameVersion = "1.21.1"
         });
     }
 

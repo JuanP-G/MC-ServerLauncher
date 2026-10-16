@@ -19,7 +19,10 @@ public class ModsListRefreshTests : IDisposable
 
     private ServerConfig Config(ServerType type) => new()
     {
-        Name = "test", FolderPath = _folder, Type = type, GameVersion = "1.21.1"
+        Name = "test",
+        FolderPath = _folder,
+        Type = type,
+        GameVersion = "1.21.1"
     };
 
     [Fact]

@@ -259,15 +259,15 @@ public class NotificationLookTests
             Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views"), "*.axaml");
 
         foreach (var view in views)
-        foreach (Match match in Regex.Matches(File.ReadAllText(view), @"\{StaticResource (Semantic[A-Za-z]+)\}"))
-        {
-            var key = match.Groups[1].Value;
+            foreach (Match match in Regex.Matches(File.ReadAllText(view), @"\{StaticResource (Semantic[A-Za-z]+)\}"))
+            {
+                var key = match.Groups[1].Value;
 
-            // A StaticResource that does not resolve throws when the view loads, which for a dialog
-            // means a button that does nothing at all.
-            Assert.True(app.Contains($"x:Key=\"{key}\"", StringComparison.Ordinal),
-                $"{Path.GetFileName(view)} pide «{key}», que App.axaml no define");
-        }
+                // A StaticResource that does not resolve throws when the view loads, which for a dialog
+                // means a button that does nothing at all.
+                Assert.True(app.Contains($"x:Key=\"{key}\"", StringComparison.Ordinal),
+                    $"{Path.GetFileName(view)} pide «{key}», que App.axaml no define");
+            }
     }
 
     [Fact]

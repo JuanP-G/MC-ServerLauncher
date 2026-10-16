@@ -110,7 +110,11 @@ public class BedrockPortSettingTests(AvaloniaFixture ui) : IDisposable
         File.WriteAllText(Path.Combine(_folder, "server.properties"), "server-port=25565\n");
         return new ServerConfig
         {
-            Name = "Paper", FolderPath = _folder, Type = ServerType.Paper, CrossplayEnabled = crossplay, BedrockPort = 19132,
+            Name = "Paper",
+            FolderPath = _folder,
+            Type = ServerType.Paper,
+            CrossplayEnabled = crossplay,
+            BedrockPort = 19132,
         };
     }
 

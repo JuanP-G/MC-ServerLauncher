@@ -63,8 +63,11 @@ public class MainViewModelFlowTests : IDisposable
         Directory.CreateDirectory(Path.Combine(folder, "mods"));
         WriteServersJson(new ServerConfig
         {
-            Id = "conv1", Name = "survival", FolderPath = folder,
-            Type = ServerType.Vanilla, GameVersion = "1.21.1"
+            Id = "conv1",
+            Name = "survival",
+            FolderPath = folder,
+            Type = ServerType.Vanilla,
+            GameVersion = "1.21.1"
         });
 
         _ui.Run(() =>
@@ -126,7 +129,9 @@ public class MainViewModelFlowTests : IDisposable
     {
         WriteServersJson(new ServerConfig
         {
-            Name = "antiguo", FolderPath = Folder("renombrado"), GameVersion = "1.21.1"
+            Name = "antiguo",
+            FolderPath = Folder("renombrado"),
+            GameVersion = "1.21.1"
         });
 
         _ui.Run(() =>
@@ -149,9 +154,13 @@ public class MainViewModelFlowTests : IDisposable
         // Closing and reopening the app, which is what the whole file format argument is about.
         WriteServersJson(new ServerConfig
         {
-            Name = "ida y vuelta", FolderPath = Folder("ida"),
-            Type = ServerType.Purpur, GameVersion = "1.21.1",
-            CrossplayEnabled = true, BedrockPort = 19133, IdleShutdownMinutes = 15
+            Name = "ida y vuelta",
+            FolderPath = Folder("ida"),
+            Type = ServerType.Purpur,
+            GameVersion = "1.21.1",
+            CrossplayEnabled = true,
+            BedrockPort = 19133,
+            IdleShutdownMinutes = 15
         });
 
         _ui.Run(() =>

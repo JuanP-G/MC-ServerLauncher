@@ -369,7 +369,10 @@ public static class ContentManifest
 
         return Build(fileName, provides, requires) with
         {
-            Side = side, Id = Clean(ownId), Name = Clean(display), References = CleanList(references)
+            Side = side,
+            Id = Clean(ownId),
+            Name = Clean(display),
+            References = CleanList(references)
         };
     }
 
@@ -402,7 +405,10 @@ public static class ContentManifest
 
         return Build(fileName, provides, depend) with
         {
-            Side = ContentSide.Server, Id = Clean(name), Name = Clean(name), References = CleanList(references)
+            Side = ContentSide.Server,
+            Id = Clean(name),
+            Name = Clean(name),
+            References = CleanList(references)
         };
     }
 
@@ -540,7 +546,10 @@ public static class ContentManifest
         FlushDependency();
         return Build(fileName, provides, requires) with
         {
-            Side = side, Id = Clean(ownId), Name = Clean(display), References = CleanList(references)
+            Side = side,
+            Id = Clean(ownId),
+            Name = Clean(display),
+            References = CleanList(references)
         };
     }
 

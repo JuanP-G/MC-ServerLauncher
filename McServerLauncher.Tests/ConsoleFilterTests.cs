@@ -148,7 +148,9 @@ public class ConsoleFilterTests
     {
         var levels = new NotificationSettings
         {
-            ColorError = "#AA0000", ColorWarning = "#BB0000", ColorInfo = "#CC0000"
+            ColorError = "#AA0000",
+            ColorWarning = "#BB0000",
+            ColorInfo = "#CC0000"
         };
 
         // Red should mean the same thing in a toast and in the console; asking somebody to pick the

@@ -52,7 +52,10 @@ public class ModpackExportTests : IDisposable
 
         return new ServerConfig
         {
-            Name = "mi servidor", FolderPath = folder, Type = type, GameVersion = "1.21.1"
+            Name = "mi servidor",
+            FolderPath = folder,
+            Type = type,
+            GameVersion = "1.21.1"
         };
     }
 

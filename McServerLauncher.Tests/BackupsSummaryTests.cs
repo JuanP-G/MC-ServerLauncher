@@ -34,7 +34,10 @@ public class BackupsSummaryTests(AvaloniaFixture ui) : IDisposable
     {
         var server = new ServerViewModel(new ServerConfig
         {
-            Name = "copias", FolderPath = _folder, BackupRetention = automatic, ManualBackupRetention = manual,
+            Name = "copias",
+            FolderPath = _folder,
+            BackupRetention = automatic,
+            ManualBackupRetention = manual,
         });
         server.Backups.EnsureLoaded();
         return server.Backups;

@@ -14,7 +14,7 @@ namespace McServerLauncher.Tests;
 public class ChangelogTests
 {
     private static (Version Version, string Key)[] Entries() =>
-        (( (Version, string)[] )typeof(Changelog)
+        (((Version, string)[])typeof(Changelog)
             .GetField("Entries", BindingFlags.NonPublic | BindingFlags.Static)!
             .GetValue(null)!)
         .Select(e => (e.Item1, e.Item2)).ToArray();

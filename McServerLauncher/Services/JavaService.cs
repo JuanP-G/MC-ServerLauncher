@@ -230,11 +230,11 @@ public partial class JavaService
             // A version dir holds several jars (server-x.y.z.jar, -extra, -srg...): the plain one
             // and -extra both carry version.json; the others just return null harmlessly.
             foreach (var dir in dirs)
-            foreach (var jar in Directory.GetFiles(dir, "server-*.jar"))
-            {
-                if (GetRequiredJavaFromJar(jar) is { } major)
-                    return major;
-            }
+                foreach (var jar in Directory.GetFiles(dir, "server-*.jar"))
+                {
+                    if (GetRequiredJavaFromJar(jar) is { } major)
+                        return major;
+                }
             return null;
         }
         catch

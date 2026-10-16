@@ -62,9 +62,9 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>What each jar says about itself, for finding the other copies of a mod.</summary>
     private readonly ContentManifestCache _manifests = new();
 
-    
+
     // --- Local Mods State ---
-    
+
     public ObservableCollection<ModItem> InstalledMods { get; } = new();
 
     /// <summary>
@@ -103,10 +103,10 @@ public partial class ServerModsViewModel : ObservableObject
     }
 
     // --- Marketplace State ---
-    
+
     [ObservableProperty]
     private string _searchQuery = string.Empty;
-    
+
     [ObservableProperty]
     private bool _isSearching;
 

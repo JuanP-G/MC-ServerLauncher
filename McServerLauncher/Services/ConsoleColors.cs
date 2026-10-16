@@ -42,21 +42,21 @@ public static class ConsoleColors
     /// <summary>The hex a kind is drawn in, given the settings that apply.</summary>
     public static string HexFor(ConsoleLineKind kind, NotificationSettings? levels,
         string? chat, string? players) => kind switch
-    {
-        ConsoleLineKind.Error => NotificationPalette.Sanitize(
-            levels?.ColorError, NotificationLevel.Error),
+        {
+            ConsoleLineKind.Error => NotificationPalette.Sanitize(
+                levels?.ColorError, NotificationLevel.Error),
 
-        ConsoleLineKind.Warn => NotificationPalette.Sanitize(
-            levels?.ColorWarning, NotificationLevel.Warning),
+            ConsoleLineKind.Warn => NotificationPalette.Sanitize(
+                levels?.ColorWarning, NotificationLevel.Warning),
 
-        // The app talking. Takes the notification "info" blue rather than the server's grey,
-        // because telling those two apart is the entire point of the category.
-        ConsoleLineKind.Launcher => NotificationPalette.Sanitize(
-            levels?.ColorInfo, NotificationLevel.Info),
+            // The app talking. Takes the notification "info" blue rather than the server's grey,
+            // because telling those two apart is the entire point of the category.
+            ConsoleLineKind.Launcher => NotificationPalette.Sanitize(
+                levels?.ColorInfo, NotificationLevel.Info),
 
-        ConsoleLineKind.Chat => NotificationPalette.IsValid(chat) ? chat!.Trim() : DefaultChat,
-        ConsoleLineKind.Players => NotificationPalette.IsValid(players) ? players!.Trim() : DefaultPlayers,
-        ConsoleLineKind.Command => Command,
-        _ => Info
-    };
+            ConsoleLineKind.Chat => NotificationPalette.IsValid(chat) ? chat!.Trim() : DefaultChat,
+            ConsoleLineKind.Players => NotificationPalette.IsValid(players) ? players!.Trim() : DefaultPlayers,
+            ConsoleLineKind.Command => Command,
+            _ => Info
+        };
 }

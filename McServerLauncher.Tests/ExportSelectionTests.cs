@@ -31,7 +31,7 @@ public class ExportSelectionTests
         string[]? requires = null) =>
         new(new ContentManifest.Manifest(
                 fileName, provides ?? Array.Empty<string>(), requires ?? Array.Empty<string>())
-            { Side = side },
+        { Side = side },
             client, server);
 
     private static ExportSelection.Plan Decide(params ExportSelection.Candidate[] jars) =>

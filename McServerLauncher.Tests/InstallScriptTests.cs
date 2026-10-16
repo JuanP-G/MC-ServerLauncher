@@ -288,7 +288,10 @@ public class InstallScriptTests
         {
             var mods = new ViewModels.ServerModsViewModel(new ServerConfig
             {
-                Name = "mi servidor", FolderPath = root, Type = ServerType.Fabric, GameVersion = "1.21.1"
+                Name = "mi servidor",
+                FolderPath = root,
+                Type = ServerType.Fabric,
+                GameVersion = "1.21.1"
             });
 
             var zipPath = Path.Combine(root, "pack.zip");
@@ -325,7 +328,10 @@ public class InstallScriptTests
         {
             var mods = new ViewModels.ServerModsViewModel(new ServerConfig
             {
-                Name = "paper", FolderPath = root, Type = ServerType.Paper, GameVersion = "1.21.1"
+                Name = "paper",
+                FolderPath = root,
+                Type = ServerType.Paper,
+                GameVersion = "1.21.1"
             });
 
             var zipPath = Path.Combine(root, "pack.zip");

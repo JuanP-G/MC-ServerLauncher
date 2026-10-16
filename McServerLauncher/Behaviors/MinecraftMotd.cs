@@ -85,14 +85,14 @@ public static partial class MinecraftMotd
                     bold = italic = underline = strike = false;
                 }
                 else switch (code)
-                {
-                    case 'l': bold = true; break;
-                    case 'o': italic = true; break;
-                    case 'n': underline = true; break;
-                    case 'm': strike = true; break;
-                    case 'k': break; // obfuscated: shown as normal text
-                    case 'r': color = Default; bold = italic = underline = strike = false; break;
-                }
+                    {
+                        case 'l': bold = true; break;
+                        case 'o': italic = true; break;
+                        case 'n': underline = true; break;
+                        case 'm': strike = true; break;
+                        case 'k': break; // obfuscated: shown as normal text
+                        case 'r': color = Default; bold = italic = underline = strike = false; break;
+                    }
             }
             else if (c == '\n')
             {

@@ -36,7 +36,10 @@ public class PendingUpdateTests : IDisposable
 
     private ServerConfig Config() => new()
     {
-        Name = "actualizaciones", FolderPath = _root, Type = ServerType.Fabric, GameVersion = "1.21.1"
+        Name = "actualizaciones",
+        FolderPath = _root,
+        Type = ServerType.Fabric,
+        GameVersion = "1.21.1"
     };
 
     private string Jar(string name, string content = "v1")

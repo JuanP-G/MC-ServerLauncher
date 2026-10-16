@@ -140,7 +140,8 @@ public class CleanupSuggestionsTests : IDisposable
         {
             Manifest = jar.Manifest with
             {
-                Provides = new[] { id }.Concat(bundled).ToList(), OwnProvides = new[] { id }
+                Provides = new[] { id }.Concat(bundled).ToList(),
+                OwnProvides = new[] { id }
             }
         };
     }
@@ -437,7 +438,10 @@ public class CleanupSuggestionsTests : IDisposable
         Directory.CreateDirectory(mods);
         return new ServerModsViewModel(new ServerConfig
         {
-            Name = "test", FolderPath = folder, Type = ServerType.Fabric, GameVersion = "1.21.1"
+            Name = "test",
+            FolderPath = folder,
+            Type = ServerType.Fabric,
+            GameVersion = "1.21.1"
         });
     }
 

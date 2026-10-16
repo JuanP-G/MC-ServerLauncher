@@ -18,7 +18,9 @@ public class PrimaryFileTests
         ProjectId = "essentials",
         Files = files.Select(f => new VersionFile
         {
-            Filename = f.Sha1 + ".jar", Primary = f.Primary, Hashes = new FileHashes { Sha1 = f.Sha1 },
+            Filename = f.Sha1 + ".jar",
+            Primary = f.Primary,
+            Hashes = new FileHashes { Sha1 = f.Sha1 },
         }).ToList(),
     };
 

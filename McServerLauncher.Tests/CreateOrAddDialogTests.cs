@@ -42,8 +42,15 @@ public class CreateOrAddDialogTests(AvaloniaFixture ui)
 
     private static readonly ServerDetection AFabricServer = new()
     {
-        Type = ServerType.Fabric, GameVersion = "1.21.1", LoaderVersion = "0.16.2", JarFile = "fabric-server.jar",
-        Port = 25570, MinRamGb = 3, MaxRamGb = 6, HasWorld = true, Jars = new[] { "fabric-server.jar" }
+        Type = ServerType.Fabric,
+        GameVersion = "1.21.1",
+        LoaderVersion = "0.16.2",
+        JarFile = "fabric-server.jar",
+        Port = 25570,
+        MinRamGb = 3,
+        MaxRamGb = 6,
+        HasWorld = true,
+        Jars = new[] { "fabric-server.jar" }
     };
 
     [Fact]

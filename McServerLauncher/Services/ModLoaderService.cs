@@ -44,17 +44,17 @@ public class ModLoaderService
     {
         var json = await Http.GetStringAsync("https://meta.fabricmc.net/v2/versions/loader", ct);
         using var doc = JsonDocument.Parse(json);
-        
+
         foreach (var element in doc.RootElement.EnumerateArray())
         {
-            if (element.TryGetProperty("version", out var versionProp) && 
-                element.TryGetProperty("stable", out var stableProp) && 
+            if (element.TryGetProperty("version", out var versionProp) &&
+                element.TryGetProperty("stable", out var stableProp) &&
                 stableProp.GetBoolean())
             {
                 return versionProp.GetString() ?? string.Empty;
             }
         }
-        
+
         return "0.16.2"; // Fallback just in case
     }
 

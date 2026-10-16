@@ -149,7 +149,10 @@ public partial class ServerDetectionService
                 var (game, loader) = SplitForgeId(id);
                 return new ServerDetection
                 {
-                    Type = ServerType.Forge, ForgeArgs = id, GameVersion = game, LoaderVersion = loader
+                    Type = ServerType.Forge,
+                    ForgeArgs = id,
+                    GameVersion = game,
+                    LoaderVersion = loader
                 };
             }
         }
@@ -166,7 +169,10 @@ public partial class ServerDetectionService
         var (oldGame, oldLoader) = SplitForgeId(core);
         return new ServerDetection
         {
-            Type = ServerType.Forge, JarFile = oldForge, GameVersion = oldGame, LoaderVersion = oldLoader
+            Type = ServerType.Forge,
+            JarFile = oldForge,
+            GameVersion = oldGame,
+            LoaderVersion = oldLoader
         };
     }
 
@@ -194,14 +200,17 @@ public partial class ServerDetectionService
             if (game is not null)
                 return new ServerDetection
                 {
-                    Type = ServerType.Fabric, JarFile = name, GameVersion = game,
+                    Type = ServerType.Fabric,
+                    JarFile = name,
+                    GameVersion = game,
                     LoaderVersion = string.IsNullOrEmpty(loader) ? null : loader
                 };
 
             if (name.Equals("fabric-server-launch.jar", StringComparison.OrdinalIgnoreCase))
                 return new ServerDetection
                 {
-                    Type = ServerType.Fabric, JarFile = name,
+                    Type = ServerType.Fabric,
+                    JarFile = name,
                     GameVersion = _java.GetGameVersionFromJar(Path.Combine(folder, "server.jar"))
                 };
         }
@@ -227,7 +236,9 @@ public partial class ServerDetectionService
 
         return new ServerDetection
         {
-            Type = type, JarFile = jar, GameVersion = _java.GetGameVersionFromJar(Path.Combine(folder, jar))
+            Type = type,
+            JarFile = jar,
+            GameVersion = _java.GetGameVersionFromJar(Path.Combine(folder, jar))
         };
     }
 

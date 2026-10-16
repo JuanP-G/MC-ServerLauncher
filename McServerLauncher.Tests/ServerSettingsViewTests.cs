@@ -155,7 +155,8 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
             // bar up on a page nobody has touched.
             var config = new ServerConfig
             {
-                Name = "convertido", FolderPath = Folder("cinco"),
+                Name = "convertido",
+                FolderPath = Folder("cinco"),
                 Type = ServerType.Paper,        // no Hydraulic, no mod content
                 BedrockModContentEnabled = true // as if it had been a Fabric server until a moment ago
             };
@@ -363,8 +364,11 @@ public class ServerSettingsFlowTests : IDisposable
         Directory.CreateDirectory(_dataDir);
         var servers = new[] { "uno", "dos" }.Select(name => new ServerConfig
         {
-            Id = name, Name = name, FolderPath = Directory.CreateDirectory(Path.Combine(_dataDir, name)).FullName,
-            Type = ServerType.Vanilla, GameVersion = "1.21.1"
+            Id = name,
+            Name = name,
+            FolderPath = Directory.CreateDirectory(Path.Combine(_dataDir, name)).FullName,
+            Type = ServerType.Vanilla,
+            GameVersion = "1.21.1"
         });
         File.WriteAllText(Path.Combine(_dataDir, "servers.json"), JsonSerializer.Serialize(servers));
     }
