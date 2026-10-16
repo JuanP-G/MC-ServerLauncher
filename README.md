@@ -251,8 +251,9 @@ When it opens again, **What's new** tells you what changed. It works the same on
 <br>
 
 - **Automatic world backups** — before every start, on every stop and, if you leave it on, every hour while
-  people are playing. A backup of a running server asks Minecraft to flush the world to disk first, so it is
-  never half-written, and one nobody played since is skipped — the start's and the stop's too, so a server
+  people are playing — on Paper and Purpur, with the Nether and the End they keep beside the world. A backup
+  of a running server asks Minecraft to flush the world to disk first, so it is never half-written, stopping
+  the server waits for a backup still reading the world, and one nobody played since is skipped — the start's and the stop's too, so a server
   that sleeps and wakes with nobody coming in does not pile up copies of the same world. Backups you take by
   hand are counted separately, so the clock never deletes them. The **Backups** tab shows each pile against
   its limit, the space they take and when the next one is due, lists them by day and marks the one the next backup will replace.
