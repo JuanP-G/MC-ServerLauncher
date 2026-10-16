@@ -88,6 +88,12 @@ public class CleanupSuggestionsTests : IDisposable
     public void AJarTheStoreDoesNotKnowIsNotALibrary() =>
         Assert.False(CleanupAdvisor.IsLibrary(Jar("handmade").Manifest, null));
 
+    [Fact]
+    public void AWorldGenerationLibraryIsNotTakenForOneByName() =>
+        // Datapacks in world/datapacks need lithostitched, and the panel cannot see them: by name
+        // alone it would be offered as unused while the world uses it.
+        Assert.False(CleanupAdvisor.IsLibrary(Jar("lithostitched").Manifest, null));
+
     // --- Which libraries are orphans ---
 
     [Fact]
@@ -254,6 +260,31 @@ public class CleanupSuggestionsTests : IDisposable
         Assert.Empty(ledger.DependentsByLibrary);
     }
 
+    [Fact]
+    public void RecordingTheSameDependentsAgainChangesNothing()
+    {
+        // It runs after every toggle and delete, and the ledger was written every time.
+        var ledger = new ContentLedger();
+        var jars = new[] { Jar("mod", refs: new[] { "lib" }), Jar("lib", library: true) };
+
+        Assert.True(CleanupAdvisor.RecordDependents(ledger, jars));
+        Assert.False(CleanupAdvisor.RecordDependents(ledger, jars));
+    }
+
+    [Fact]
+    public void TheLedgerOfARemovedServerIsDeleted()
+    {
+        var kept = Path.Combine(ContentLedgerStore.RootDirectory, "kept");
+        var gone = Path.Combine(ContentLedgerStore.RootDirectory, "gone");
+        Directory.CreateDirectory(kept);
+        Directory.CreateDirectory(gone);
+
+        ContentLedgerStore.PruneOrphans(new[] { "kept" });
+
+        Assert.True(Directory.Exists(kept));
+        Assert.False(Directory.Exists(gone));
+    }
+
     // --- Off for a month ---
 
     [Fact]
@@ -376,7 +407,11 @@ public class CleanupSuggestionsTests : IDisposable
         try
         {
             CultureInfo.CurrentUICulture = new CultureInfo("es-ES");
-            Assert.Equal("2 de agosto", ServerModsViewModel.FormatDay(new DateTime(2026, 8, 2, 12, 0, 0, DateTimeKind.Utc)));
+            var day = new DateTime(2026, 8, 2, 12, 0, 0, DateTimeKind.Utc);
+            Assert.Equal("2 de agosto", ServerModsViewModel.FormatDay(day, today: new DateTime(2026, 10, 14)));
+
+            // A year ago is not "2 August": the year is said when it is not this one.
+            Assert.Equal("2 de agosto de 2026", ServerModsViewModel.FormatDay(day, today: new DateTime(2027, 9, 1)));
         }
         finally
         {
@@ -439,6 +474,51 @@ public class CleanupSuggestionsTests : IDisposable
         Assert.True(File.Exists(keep));
         Assert.False(File.Exists(drop));
         Assert.Contains("drop.jar", vm.UpdateStatus);
+    }
+
+    [Fact]
+    public void ARowWhoseFileWentAwaySaysSoInsteadOfRemoved()
+    {
+        // The mod was switched back on (renamed) after the scan: deleting the old path removed
+        // nothing and the status said "removed".
+        var vm = Panel(out var mods);
+        var off = Path.Combine(mods, "foo.jar.disabled");
+        File.WriteAllText(off, "");
+        vm.ShowCleanup(new[] { new CleanupSuggestionViewModel(off, "foo.jar", "x", "disabled:foo") });
+        File.Move(off, Path.Combine(mods, "foo.jar"));
+
+        vm.RemoveSelectedCleanupCommand.Execute(null);
+
+        Assert.True(File.Exists(Path.Combine(mods, "foo.jar")));
+        Assert.DoesNotContain(string.Format(Localizer.Get("Cleanup_RemovedFmt"), "foo.jar"), vm.UpdateStatus);
+        Assert.Contains(string.Format(Localizer.Get("Cleanup_ChangedFmt"), "foo.jar"), vm.UpdateStatus);
+    }
+
+    [Fact]
+    public void AFileReplacedUnderTheSameNameIsNotRemoved()
+    {
+        var vm = Panel(out var mods);
+        var jar = Path.Combine(mods, "geyser.jar");
+        File.WriteAllText(jar, "old");
+        vm.ShowCleanup(new[] { new CleanupSuggestionViewModel(jar, "geyser.jar", "x", "orphan:geyser") });
+        File.WriteAllText(jar, "a new version, just installed");
+
+        vm.RemoveSelectedCleanupCommand.Execute(null);
+
+        Assert.True(File.Exists(jar));
+    }
+
+    [Fact]
+    public void NothingIsRemovedWhileUpdateAllRuns()
+    {
+        var vm = Panel(out var mods);
+        var jar = Path.Combine(mods, "a.jar");
+        File.WriteAllText(jar, "");
+        vm.ShowCleanup(new[] { new CleanupSuggestionViewModel(jar, "a.jar", "x", "orphan:a") });
+
+        vm.IsUpdatingAll = true;
+
+        Assert.False(vm.RemoveSelectedCleanupCommand.CanExecute(null));
     }
 
     [Fact]

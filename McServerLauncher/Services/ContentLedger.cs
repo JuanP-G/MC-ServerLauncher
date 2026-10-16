@@ -59,6 +59,26 @@ public sealed class ContentLedgerStore
 
     private static readonly ConcurrentDictionary<string, ContentLedgerStore> Open = new(StringComparer.Ordinal);
 
+    /// <summary>
+    /// Deletes the ledgers of servers that are no longer in the app. A removed server's id is never
+    /// reused — adding it back gives it a new one — so its dates would only pile up for ever.
+    /// </summary>
+    public static void PruneOrphans(IEnumerable<string> liveServerIds)
+    {
+        try
+        {
+            if (!Directory.Exists(RootDirectory)) return;
+            var live = liveServerIds.ToHashSet(StringComparer.Ordinal);
+            foreach (var dir in Directory.EnumerateDirectories(RootDirectory))
+            {
+                if (live.Contains(Path.GetFileName(dir))) continue;
+                Open.TryRemove(dir, out _);
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+        catch { /* best-effort: what is left is cleared next time */ }
+    }
+
     /// <summary>The store for a server, shared by everything that asks for it.</summary>
     public static ContentLedgerStore For(string serverId) =>
         Open.GetOrAdd(Path.Combine(RootDirectory, serverId), dir => new ContentLedgerStore(dir));

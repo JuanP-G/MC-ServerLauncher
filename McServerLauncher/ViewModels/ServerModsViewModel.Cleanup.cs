@@ -40,7 +40,11 @@ public partial class ServerModsViewModel
     /// <summary>How many rows are ticked.</summary>
     public int SelectedCleanupCount => CleanupSuggestions.Count(s => s.IsSelected);
 
-    public bool CanRemoveSelectedCleanup => SelectedCleanupCount > 0;
+    /// <remarks>
+    /// Not while "update all" runs: it walks the installed rows and swaps their files, and removing
+    /// rebuilds those rows under it.
+    /// </remarks>
+    public bool CanRemoveSelectedCleanup => SelectedCleanupCount > 0 && !IsUpdatingAll;
 
     /// <summary>"Quitar 1 seleccionado" / "Quitar 3 seleccionados".</summary>
     public string RemoveSelectedText => SelectedCleanupCount == 1
@@ -56,12 +60,6 @@ public partial class ServerModsViewModel
 
     private ContentLedgerStore Ledger => _ledger ??= ContentLedgerStore.For(_config.Id);
 
-    /// <summary>
-    /// What the store said each jar is, by SHA-1, for the session. The dependencies are the part this
-    /// needs and the update check does not keep.
-    /// </summary>
-    private readonly Dictionary<string, VersionResult> _versionByHash = new(StringComparer.OrdinalIgnoreCase);
-
     /// <summary>Starts the panel's scans: the tab is on screen.</summary>
     private void ArmCleanup()
     {
@@ -70,10 +68,16 @@ public partial class ServerModsViewModel
     }
 
     /// <summary>Scans again after the folder changed, if the panel is armed.</summary>
+    /// <remarks>
+    /// After a short pause, so that switching several mods in a row asks the store once, not once
+    /// per switch: each new call cancels the one still waiting.
+    /// </remarks>
     private void RescanCleanup()
     {
-        if (_cleanupArmed) _ = RefreshCleanupAsync();
+        if (_cleanupArmed) _ = RefreshCleanupAsync(RescanPause);
     }
+
+    private static readonly TimeSpan RescanPause = TimeSpan.FromMilliseconds(400);
 
     /// <summary>
     /// Works out what can be cleaned up and shows it. A newer call cancels an older one.
@@ -82,11 +86,18 @@ public partial class ServerModsViewModel
     /// Never throws and never shows an error: a suggestion that could not be worked out is simply
     /// not made, which is the right failure for something the user did not ask for.
     /// </remarks>
-    internal async Task RefreshCleanupAsync()
+    internal async Task RefreshCleanupAsync(TimeSpan pause = default)
     {
         _cleanupScan?.Cancel();
+        _cleanupScan?.Dispose();
         var scan = _cleanupScan = new CancellationTokenSource();
         var ct = scan.Token;
+
+        if (pause > TimeSpan.Zero)
+        {
+            try { await Task.Delay(pause, ct); }
+            catch (OperationCanceledException) { return; }   // a newer scan is on its way
+        }
 
         var folder = Path.Combine(_config.FolderPath, ContentFolder);
         if (_config.Type == ServerType.Vanilla || !Directory.Exists(folder))
@@ -118,17 +129,20 @@ public partial class ServerModsViewModel
                 // Asked before recording: the record is who needed it *last time*, which is the one
                 // fact that explains an orphan.
                 var orphans = CleanupAdvisor.FindOrphanLibraries(jars, record.DependentsByLibrary, storeAnswered);
-                if (storeAnswered)
-                {
-                    CleanupAdvisor.RecordDependents(record, jars);
-                    ledger.Save();
-                }
+                // Written only when it changed: this runs after every toggle and delete.
+                if (storeAnswered && CleanupAdvisor.RecordDependents(record, jars)) ledger.Save();
 
                 foreach (var orphan in orphans)
                 {
                     var key = CleanupAdvisor.OrphanKey(orphan.Jar);
                     if (CleanupAdvisor.IsSnoozed(record, key, now)) continue;
-                    rows.Add(new CleanupSuggestionViewModel(orphan.Jar.Path, orphan.Jar.FileName, ReasonFor(orphan), key));
+                    rows.Add(new CleanupSuggestionViewModel(orphan.Jar.Path, orphan.Jar.FileName,
+                        ReasonFor(orphan), key)
+                    {
+                        // "Nothing installed needs it" is the weakest reason: a mod the store does not
+                        // know may need it without saying so. Offered, but left for the user to tick.
+                        IsSelected = orphan.Reason != CleanupAdvisor.OrphanReason.NoKnownUser,
+                    });
                 }
 
                 foreach (var off in CleanupAdvisor.FindLongDisabled(jars, record, now, CleanupAdvisor.DisabledThreshold))
@@ -160,27 +174,12 @@ public partial class ServerModsViewModel
     private async Task<(IReadOnlyList<CleanupAdvisor.Jar> Jars, bool StoreAnswered)> IdentifyAsync(
         IReadOnlyList<ContentManifest.Entry> entries, CancellationToken ct)
     {
-        var hashByPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var entry in entries)
-        {
-            try { hashByPath[entry.Path] = await _hashes.Sha1Async(entry.Path, ct); }
-            catch (OperationCanceledException) { throw; }
-            catch { /* unreadable or locked: it simply is not identified */ }
-        }
-
-        var unknown = hashByPath.Values.Where(h => !_versionByHash.ContainsKey(h)).Distinct().ToList();
-        if (unknown.Count > 0)
-        {
-            foreach (var (hash, version) in await _modrinthService.GetVersionsByHashAsync(unknown, ct))
-            {
-                _versionByHash[hash] = version;
-                _projectIdByHash[hash] = version.ProjectId;
-            }
-        }
+        var hashByPath = await HashesAsync(entries.Select(e => e.Path), ct);
+        await LearnAsync(hashByPath.Values, ct);
 
         var versionByPath = hashByPath
-            .Where(kv => _versionByHash.ContainsKey(kv.Value))
-            .ToDictionary(kv => kv.Key, kv => _versionByHash[kv.Value], StringComparer.OrdinalIgnoreCase);
+            .Where(kv => Known(kv.Value) is not null)
+            .ToDictionary(kv => kv.Key, kv => Known(kv.Value)!, StringComparer.OrdinalIgnoreCase);
 
         // "Answered" means it recognised something here. GetVersionsByHashAsync swallows every error
         // and returns an empty map, so an empty answer cannot be told apart from being offline — and
@@ -269,8 +268,15 @@ public partial class ServerModsViewModel
 
         var removed = new List<string>();
         var failed = new List<string>();
+        var changed = new List<string>();
         foreach (var row in chosen)
         {
+            if (!row.IsStillAsScanned)
+            {
+                changed.Add(row.FileName);
+                continue;
+            }
+
             try
             {
                 File.Delete(row.Path);
@@ -288,6 +294,8 @@ public partial class ServerModsViewModel
         var parts = new List<string>();
         if (removed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_RemovedFmt"), string.Join(", ", removed)));
         if (failed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_FailedFmt"), string.Join(", ", failed)));
+        if (changed.Count > 0)
+            parts.Add(string.Format(Localizer.Get("Cleanup_ChangedFmt"), string.Join(", ", changed)));
         UpdateStatus = string.Join(" ", parts);
     }
 
@@ -335,11 +343,23 @@ public partial class ServerModsViewModel
         string.Format(Localizer.Get(off.SinceIsFirstSeen ? "Cleanup_DisabledAtLeastFmt" : "Cleanup_DisabledSinceFmt"),
             FormatDay(off.SinceUtc), off.Days);
 
-    /// <summary>"2 de agosto", "August 2": the day only, in the app's language.</summary>
+    /// <summary>
+    /// "2 de agosto", "August 2", in the app's language — with the year when it is not this one.
+    /// </summary>
     /// <remarks>
     /// The pattern is its own resource rather than part of the sentence: a resx value holding
     /// <c>{0:d MMMM}</c> would break the check that every translation keeps the same placeholders.
+    /// Without the year, a mod off since an August more than a year ago read as "since 2 August ·
+    /// 437 days".
     /// </remarks>
-    internal static string FormatDay(DateTime utc) =>
-        utc.ToLocalTime().ToString(Localizer.Get("Cleanup_DateFormat"), CultureInfo.CurrentUICulture);
+    /// <param name="utc">The day.</param>
+    /// <param name="today">Today, for tests; the real one otherwise.</param>
+    internal static string FormatDay(DateTime utc, DateTime? today = null)
+    {
+        var day = utc.ToLocalTime();
+        var key = day.Year == (today ?? DateTime.Today).Year
+            ? "Cleanup_DateFormat"
+            : "Cleanup_DateWithYearFormat";
+        return day.ToString(Localizer.Get(key), CultureInfo.CurrentUICulture);
+    }
 }

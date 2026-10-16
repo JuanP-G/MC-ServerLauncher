@@ -1,4 +1,4 @@
-using McServerLauncher.ViewModels;
+using McServerLauncher.Services;
 
 namespace McServerLauncher.Tests;
 
@@ -23,7 +23,7 @@ public class ModReinstallTests
         };
 
         Assert.Equal(new[] { Mods("sodium-0.5.jar") },
-            ServerModsViewModel.ReplacedBy(installed, "AANobbMI", Mods("sodium-0.6.jar")));
+            ContentReplacement.ReplacedBy(installed, "AANobbMI", Mods("sodium-0.6.jar")));
     }
 
     [Fact]
@@ -31,7 +31,7 @@ public class ModReinstallTests
     {
         var installed = new Dictionary<string, string> { [Mods("sodium-0.5.jar.disabled")] = "AANobbMI" };
 
-        Assert.Single(ServerModsViewModel.ReplacedBy(installed, "AANobbMI", Mods("sodium-0.6.jar")));
+        Assert.Single(ContentReplacement.ReplacedBy(installed, "AANobbMI", Mods("sodium-0.6.jar")));
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class ModReinstallTests
         // new one.
         var installed = new Dictionary<string, string> { [Mods("sodium-0.6.jar")] = "AANobbMI" };
 
-        Assert.Empty(ServerModsViewModel.ReplacedBy(installed, "AANobbMI", Mods("sodium-0.6.jar")));
+        Assert.Empty(ContentReplacement.ReplacedBy(installed, "AANobbMI", Mods("sodium-0.6.jar")));
     }
 
     [Fact]
@@ -49,6 +49,6 @@ public class ModReinstallTests
     {
         var installed = new Dictionary<string, string> { [Mods("lithium.jar")] = "gvQqBUqZ" };
 
-        Assert.Empty(ServerModsViewModel.ReplacedBy(installed, "AANobbMI", Mods("sodium-0.6.jar")));
+        Assert.Empty(ContentReplacement.ReplacedBy(installed, "AANobbMI", Mods("sodium-0.6.jar")));
     }
 }

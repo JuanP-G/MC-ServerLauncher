@@ -618,11 +618,13 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Cleanup_DisabledSinceFmt" xml:space="preserve"><value>Aus seit {0} · {1} Tage</value></data>
   <data name="Cleanup_DisabledAtLeastFmt" xml:space="preserve"><value>Aus mindestens seit {0} · {1} Tage</value></data>
   <data name="Cleanup_DateFormat" xml:space="preserve"><value>d. MMMM</value></data>
+  <data name="Cleanup_DateWithYearFormat" xml:space="preserve"><value>d. MMMM yyyy</value></data>
   <data name="Cleanup_NotNow" xml:space="preserve"><value>Nicht jetzt</value></data>
   <data name="Cleanup_RemoveSelectedOne" xml:space="preserve"><value>1 ausgewähltes entfernen</value></data>
   <data name="Cleanup_RemoveSelectedFmt" xml:space="preserve"><value>{0} ausgewählte entfernen</value></data>
   <data name="Cleanup_RemovedFmt" xml:space="preserve"><value>Entfernt: {0}.</value></data>
   <data name="Cleanup_FailedFmt" xml:space="preserve"><value>Konnte nicht entfernt werden ({0}): Der Server verwendet sie. Stoppe den Server und versuche es erneut.</value></data>
+  <data name="Cleanup_ChangedFmt" xml:space="preserve"><value>Nicht angefasst ({0}): Sie haben sich seit dem Vorschlag geändert. Sieh dir die Liste noch einmal an.</value></data>
   <data name="Msg_UpdateErrorFmt" xml:space="preserve"><value>Aktualisierung fehlgeschlagen: {0}</value></data>
   <data name="Msg_UpdateNeedsStop" xml:space="preserve"><value>Stoppe den Server vor der Aktualisierung (die alte Datei wird verwendet).</value></data>
   <data name="Tip_UpdateToFmt" xml:space="preserve"><value>Auf {0} aktualisieren</value></data>
