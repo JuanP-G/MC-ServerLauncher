@@ -1,7 +1,7 @@
-using McServerLauncher.Services;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 using McServerLauncher.Models;
+using McServerLauncher.Services;
 using McServerLauncher.Views;
 
 namespace McServerLauncher.Tests;

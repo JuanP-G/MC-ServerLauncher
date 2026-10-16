@@ -1,7 +1,7 @@
+using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
-using System.Text.RegularExpressions;
 using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 using static McServerLauncher.Services.PlayitApiService;

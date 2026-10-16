@@ -6,8 +6,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using McServerLauncher.Localization;
-using McServerLauncher.Services;
 using McServerLauncher.Models;
+using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views;

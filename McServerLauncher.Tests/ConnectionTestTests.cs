@@ -1,7 +1,7 @@
-using McServerLauncher.Localization;
-using McServerLauncher.Models;
 using System.Globalization;
 using Avalonia.Controls;
+using McServerLauncher.Localization;
+using McServerLauncher.Models;
 using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 using McServerLauncher.Views.ServerSettings;
