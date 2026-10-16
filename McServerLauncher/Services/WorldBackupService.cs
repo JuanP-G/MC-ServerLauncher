@@ -115,13 +115,10 @@ public class WorldBackupService
         return found;
     }
 
-    private static StringComparison PathComparison =>
-        OperatingSystem.IsLinux() ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-
     private static bool IsInside(string path, string parent) =>
-        path.StartsWith(parent + Path.DirectorySeparatorChar, PathComparison);
+        path.StartsWith(parent + Path.DirectorySeparatorChar, FilePaths.Comparison);
 
-    private static bool SamePath(string a, string b) => string.Equals(a, b, PathComparison);
+    private static bool SamePath(string a, string b) => string.Equals(a, b, FilePaths.Comparison);
 
     /// <summary>All backups for this server, newest first.</summary>
     /// <remarks>
