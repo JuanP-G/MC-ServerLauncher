@@ -228,11 +228,16 @@ public partial class ServerBackupsViewModel : ObservableObject
         StatusText = Localizer.Get("Backup_Creating");
         try
         {
-            // Through the server, not straight to the service: it is the one that knows whether
-            // the world has to be prised out of a running JVM first, and it holds the one gate that
+            // Through the server's coordinator, not straight to the service: it knows whether the
+            // world has to be prised out of a running JVM first, and it holds the one gate that
             // keeps this from overlapping with a backup the clock started a second earlier.
-            var path = await _server.RunBackupAsync("manual");
-            StatusText = path is not null ? Localizer.Get("Backup_Done") : Localizer.Get("Backup_NothingToBackUp");
+            var result = await _server.BackupCoordinator.BackupAsync("manual");
+            StatusText = Localizer.Get(result switch
+            {
+                BackupResult.Made => "Backup_Done",
+                BackupResult.Busy => "Backup_WorldBusy",
+                _ => "Backup_NothingToBackUp",
+            });
             Refresh();
         }
         catch (Exception ex)
@@ -259,10 +264,17 @@ public partial class ServerBackupsViewModel : ObservableObject
         StatusText = Localizer.Get("Msg_BackupRestoring");
         try
         {
-            // Through the server, like a backup: it holds the gate that keeps this apart from a
-            // backup in progress, and the wake listener that must not start the server meanwhile.
-            var restored = await _server.RestoreBackupAsync(item.FilePath, new Progress<string>(s => StatusText = s));
-            StatusText = Localizer.Get(restored ? "Msg_BackupRestored" : "Msg_BackupAlreadyRunning");
+            // Through the server's coordinator, like a backup: it holds the gate that keeps this apart
+            // from a backup in progress, and asks again whether the server is still stopped — the
+            // question above can stay open while a knock on the server wakes it.
+            var result = await _server.BackupCoordinator.RestoreAsync(item.FilePath,
+                new Progress<string>(s => StatusText = s));
+            StatusText = Localizer.Get(result switch
+            {
+                RestoreResult.Restored => "Msg_BackupRestored",
+                RestoreResult.ServerRunning => "Backup_RestoreNeedsStopped",
+                _ => "Msg_BackupAlreadyRunning",
+            });
             Refresh();
         }
         catch (Exception ex)
@@ -299,7 +311,9 @@ public sealed record BackupDayGroup(string Title, IReadOnlyList<BackupItemViewMo
     {
         if (day == today) return Localizer.Get("Backup_Today");
         if (day == today.AddDays(-1)) return Localizer.Get("Backup_Yesterday");
-        var culture = CultureInfo.CurrentCulture;
+        // The app's language, not the system's: a Spanish app on an English Windows wrote "Hoy"
+        // above "Monday, 13 October".
+        var culture = CultureInfo.CurrentUICulture;
         var text = day.ToString(day.Year == today.Year ? "dddd, d MMMM" : "d MMMM yyyy", culture);
         return text.Length > 0 ? char.ToUpper(text[0], culture) + text[1..] : text;
     }

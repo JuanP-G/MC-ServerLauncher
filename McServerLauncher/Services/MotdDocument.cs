@@ -155,7 +155,10 @@ public sealed class MotdDocument
                     i += 13;
                     continue;
                 }
-                if (i + 1 < text.Length) style = Apply(style, char.ToLowerInvariant(text[++i]));
+                // A § with nothing after it on its line is a stray: taking the line break as its code
+                // used to join the second line onto the first.
+                if (i + 1 < text.Length && text[i + 1] is not ('\n' or '\r'))
+                    style = Apply(style, char.ToLowerInvariant(text[++i]));
                 continue;
             }
 
@@ -406,7 +409,11 @@ public sealed class MotdDocument
         }
     }
 
-    private static int Lerp(int a, int b, double t)
+    /// <summary>
+    /// The colour a fraction <paramref name="t"/> of the way from <paramref name="a"/> to
+    /// <paramref name="b"/>.
+    /// </summary>
+    internal static int Lerp(int a, int b, double t)
     {
         int Channel(int shift) => (int)Math.Round(((a >> shift) & 255) + (((b >> shift) & 255) - ((a >> shift) & 255)) * t);
         return (Channel(16) << 16) | (Channel(8) << 8) | Channel(0);

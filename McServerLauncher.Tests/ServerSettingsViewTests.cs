@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Avalonia.Controls;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.ViewModels;
 using McServerLauncher.Views;
@@ -235,6 +236,110 @@ public class ServerSettingsViewTests(AvaloniaFixture ui) : IDisposable
             Assert.Contains("nudged", view.FindControl<Border>("SaveBar")!.Classes);
         });
 
+    [Fact]
+    public void ANumberedDifficultyAndGameModeShowAsWhatTheyAre() =>
+        ui.Run(() =>
+        {
+            // Minecraft still takes the old ids; the drop-downs showed their first item for them,
+            // so a hard creative server read as peaceful survival.
+            var folder = Folder("dieciseis");
+            File.WriteAllText(Path.Combine(folder, "server.properties"), "difficulty=3\ngamemode=1\n");
+            var view = Open(new ServerConfig { Name = "dieciseis", FolderPath = folder });
+
+            Assert.Equal("hard", Named<ComboBox>(view, ServerSettingsPage.Game, "DifficultyBox").SelectedItem
+                is ComboBoxItem { Tag: string d } ? d : null);
+            Assert.Equal("creative", Named<ComboBox>(view, ServerSettingsPage.Game, "GamemodeBox").SelectedItem
+                is ComboBoxItem { Tag: string g } ? g : null);
+            Assert.False(view.IsDirty);   // shown as what it is, not rewritten
+        });
+
+    [Fact]
+    public void AValueTheListDoesNotKnowShowsNothingPicked() =>
+        ui.Run(() =>
+        {
+            var folder = Folder("diecisiete");
+            File.WriteAllText(Path.Combine(folder, "server.properties"), "gamemode=minigame\n");
+            var view = Open(new ServerConfig { Name = "diecisiete", FolderPath = folder });
+
+            Assert.Null(Named<ComboBox>(view, ServerSettingsPage.Game, "GamemodeBox").SelectedItem);
+            Assert.False(view.IsDirty);
+        });
+
+    [Fact]
+    public void ASwitchTheAppTurnsBackOffIsShownOff() =>
+        ui.Run(() =>
+        {
+            // Multi-version is switched on and saved; its install fails and the app switches it back
+            // off on the server. The page went on showing it on, and saving "on" again was no change,
+            // so nothing tried the install again.
+            var config = new ServerConfig { Name = "trece", FolderPath = Folder("trece"), Type = ServerType.Paper };
+            var view = Open(config, ServerSettingsPage.Crossplay);
+            view.Draft.Config.MultiVersionEnabled = true;
+            Assert.True(view.Save());
+
+            config.MultiVersionEnabled = false;   // what a failed install does
+            AvaloniaFixture.Pump();
+
+            Assert.False(view.Draft.Config.MultiVersionEnabled);
+            Assert.False(view.IsDirty);
+            view.Draft.Config.MultiVersionEnabled = true;
+            Assert.True(view.IsDirty);           // so saving it on again asks for the install again
+        });
+
+    [Fact]
+    public void WhatTheUserChangedIsNotOverwrittenFromOutside() =>
+        ui.Run(() =>
+        {
+            var config = new ServerConfig { Name = "catorce", FolderPath = Folder("catorce"), JavaPath = "java" };
+            var view = Open(config, ServerSettingsPage.Performance);
+            view.Draft.Config.JavaPath = "/opt/my-java/bin/java";
+
+            config.JavaPath = "/usr/lib/jvm/21/bin/java";   // the app found a better Java meanwhile
+            AvaloniaFixture.Pump();
+
+            Assert.Equal("/opt/my-java/bin/java", view.Draft.Config.JavaPath);
+        });
+
+    [Fact]
+    public void AClosedPageStopsFollowingItsServer() =>
+        ui.Run(() =>
+        {
+            var config = new ServerConfig { Name = "quince", FolderPath = Folder("quince") };
+            var view = Open(config);
+            view.Detach();
+
+            config.JavaPath = "/somewhere/else/java";
+
+            Assert.NotEqual("/somewhere/else/java", view.Draft.Config.JavaPath);
+        });
+
+    [Fact]
+    public void ALoaderCannotBeInstalledUnderARunningServer() =>
+        ui.Run(() =>
+        {
+            // The page used to be a modal dialog; on the page nothing stopped an install from
+            // replacing the jar of a server that was running.
+            var server = new ServerViewModel(new ServerConfig { Name = "diez", FolderPath = Folder("diez") });
+            server.State = ServerState.Running;
+            var view = new ServerSettingsView(server, ServerSettingsPage.Loader);
+            AvaloniaFixture.Pump();
+
+            Assert.False(Named<Button>(view, ServerSettingsPage.Loader, "InstallButton").IsEnabled);
+        });
+
+    [Fact]
+    public void NothingStartsTheServerWhileALoaderIsBeingInstalled() =>
+        ui.Run(() =>
+        {
+            var server = new ServerViewModel(new ServerConfig { Name = "once", FolderPath = Folder("once") });
+            Assert.True(server.StartCommand.CanExecute(null));
+
+            server.IsConverting = true;
+
+            Assert.False(server.CanStart);
+            Assert.False(server.StartCommand.CanExecute(null));
+        });
+
     public void Dispose()
     {
         try { Directory.Delete(_root, recursive: true); } catch { /* best-effort */ }
@@ -370,5 +475,103 @@ public class ServerSettingsFlowTests : IDisposable
 
             Assert.Equal("renombrado", main.SelectedServer!.Name);
             Assert.Contains("renombrado", File.ReadAllText(Path.Combine(_dataDir, "servers.json")));
+        });
+
+    private static int FreePort()
+    {
+        var probe = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        probe.Start();
+        var port = ((System.Net.IPEndPoint)probe.LocalEndpoint).Port;
+        probe.Stop();
+        return port;
+    }
+
+    private static bool Accepts(int port)
+    {
+        try
+        {
+            using var client = new System.Net.Sockets.TcpClient();
+            return client.ConnectAsync(System.Net.IPAddress.Loopback, port).Wait(TimeSpan.FromSeconds(2));
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    [Fact]
+    public void ChangingThePortMovesTheWakeListenerWithIt()
+    {
+        // The listener read the port once and kept it: after a change it went on answering on the
+        // old one, and players knocking on the new one woke nothing until the server next stopped.
+        var (before, after) = (FreePort(), FreePort());
+        File.WriteAllText(Path.Combine(_dataDir, "uno", "server.properties"), $"server-port={before}");
+        MainViewModel? main = null;
+
+        _ui.Run(() =>
+        {
+            main = new MainViewModel(_dataDir);
+            main.SelectedServer!.Config.WakeOnDemand = true;   // listening on the old port
+            main.ConfigureServerCommand.Execute(null);
+            main.ServerSettingsPanel!.Section(ServerSettingsPage.Network)
+                .FindControl<NumericUpDown>("PortBox")!.Value = after;
+            AvaloniaFixture.Pump();
+
+            Assert.True(main.ServerSettingsPanel.Save());
+            AvaloniaFixture.Pump();
+        });
+
+        try
+        {
+            Assert.True(Accepts(after), "nothing answers on the new port");
+            Assert.False(Accepts(before), "the old port is still being answered");
+        }
+        finally
+        {
+            _ui.Run(() => main!.SelectedServer!.Config.WakeOnDemand = false);
+        }
+    }
+
+    [Fact]
+    public void AJavaPortAnotherServerUsesIsRefusedBesideItsBox() =>
+        _ui.Run(() =>
+        {
+            // Two servers on one port: one of them fails to start, or never wakes on demand.
+            File.WriteAllText(Path.Combine(_dataDir, "dos", "server.properties"), "server-port=25570");
+            var main = new MainViewModel(_dataDir);
+            main.ConfigureServerCommand.Execute(null);
+            var network = main.ServerSettingsPanel!.Section(ServerSettingsPage.Network);
+            network.FindControl<NumericUpDown>("PortBox")!.Value = 25570;
+            AvaloniaFixture.Pump();
+
+            Assert.False(main.ServerSettingsPanel.Save());
+
+            var warning = network.FindControl<TextBlock>("PortWarning")!;
+            Assert.True(warning.IsVisible);
+            Assert.Contains("dos", warning.Text);
+        });
+
+    [Fact]
+    public void AServersJsonThatCannotBeWrittenIsSaidOnTheBar() =>
+        _ui.Run(() =>
+        {
+            var main = new MainViewModel(_dataDir);
+            main.EditAppearanceCommand.Execute(null);
+            var panel = main.ServerSettingsPanel!;
+            panel.Section(ServerSettingsPage.Appearance).FindControl<TextBox>("NameBox")!.Text = "renombrado";
+            AvaloniaFixture.Pump();
+
+            // servers.json cannot be replaced: a folder stands where it goes.
+            var json = Path.Combine(_dataDir, "servers.json");
+            File.Delete(json);
+            Directory.CreateDirectory(json);
+
+            Assert.True(panel.Save());   // the page itself saved
+            AvaloniaFixture.Pump();
+
+            Assert.True(panel.FindControl<Border>("SaveBar")!.IsVisible);
+            Assert.Contains("error", panel.FindControl<TextBlock>("SaveBarHint")!.Classes);
+            // Nothing is unsaved: the bar says the save did not finish, not that changes are pending.
+            Assert.Equal(Localizer.Get("Sset_SaveUnfinished"), panel.FindControl<TextBlock>("SaveBarText")!.Text);
         });
 }

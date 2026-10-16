@@ -19,7 +19,7 @@ namespace McServerLauncher.ViewModels;
 /// Represents a server in the UI: its configuration, live state, embedded
 /// console, command sending and Playit integration.
 /// </summary>
-public partial class ServerViewModel : ObservableObject
+public partial class ServerViewModel : ObservableObject, IBackupHost
 {
     private const int MaxConsoleLines = 2000;
     private const int ConsoleTrimBlock = 200;
@@ -35,7 +35,6 @@ public partial class ServerViewModel : ObservableObject
     private readonly JavaService _java = new();
     private readonly PlayitApiService _playitApi = new();
     private readonly CrashReportService _crashReports = new();
-    private readonly WorldBackupService _backups = new();
     private int _playitTickCounter;
     private readonly DispatcherTimer _statsTimer;
 
@@ -44,37 +43,22 @@ public partial class ServerViewModel : ObservableObject
     private readonly DispatcherTimer _playitTimer;
     private readonly DispatcherTimer _autoBackupTimer;
 
-    /// <summary>Only one backup of this server at a time, whoever asked for it.</summary>
-    private readonly SemaphoreSlim _backupGate = new(1, 1);
-
-    /// <summary>When the clock last made — or deliberately skipped — an automatic backup.</summary>
-    private DateTime _lastAutoBackupUtc;
+    /// <summary>Backups, restores, and the moments the JVM starts and stops writing the world.</summary>
+    internal BackupCoordinator BackupCoordinator { get; }
 
     /// <summary>
-    /// Whether the world may have changed since the last backup: somebody joined, or a command that
-    /// can change it was typed. See <see cref="BackupSchedule"/> and <see cref="NoteUntouchedWorldAsync"/>.
+    /// Counts the times this server was shut down. A start that was still getting ready when the app
+    /// began closing finds it changed and does not launch a JVM nobody would then be watching.
     /// </summary>
+    private int _shutdowns;
+
+    /// <summary>When the clock will next consider an automatic backup; see the coordinator.</summary>
     /// <remarks>
-    /// Starts true, and goes back to true after every stop: until a start has checked the world
-    /// against its backups, nobody knows what happened to it — it may have been edited by hand, or
-    /// swapped for another. Only a start that made its backup, or found it up to date, clears it.
+    /// Only once the server is up: the clock starts then. While it starts or stops — minutes, for a
+    /// big modpack — the last time it was set is from an earlier run, or never, and the tab
+    /// announced a "next backup" that was already in the past.
     /// </remarks>
-    private bool _playedSinceBackup = true;
-
-    /// <summary>The last <see cref="WorldBackupService.MarkUnchanged"/>, for whoever needs it finished.</summary>
-    private Task _noteUntouched = Task.CompletedTask;
-
-    /// <summary>
-    /// When the clock will next consider an automatic backup, while the server runs and they are on;
-    /// null otherwise. "Consider": if nobody has played by then, it skips and waits another interval.
-    /// </summary>
-    internal DateTime? NextAutoBackupUtc =>
-        IsRunning && Config.BackupsEnabled && Config.AutoBackupEnabled
-            ? _lastAutoBackupUtc + TimeSpan.FromMinutes(BackupSchedule.Clamp(Config.BackupIntervalMinutes))
-            : null;
-
-    /// <summary>Armed while a backup is waiting for the server to confirm it has saved.</summary>
-    private TaskCompletionSource<bool>? _saveConfirmed;
+    internal DateTime? NextAutoBackupUtc => BackupCoordinator.NextAutoBackupUtc(State == ServerState.Running);
 
     /// <summary>
     /// How long a server gets to save and exit after "stop" before it is killed.
@@ -106,6 +90,12 @@ public partial class ServerViewModel : ObservableObject
 
     /// <summary>Set when the server failed for a reason that repeating the start cannot change.</summary>
     private bool _startFailureIsFinal;
+
+    /// <summary>
+    /// Somebody asked for a stop that is still going: waiting for a backup to finish reading the
+    /// world, or for the server to exit. A crash meanwhile is not restarted — they asked for it off.
+    /// </summary>
+    private bool _stopRequested;
     private DateTime? _lastRunningAtUtc;
 
     public ServerConfig Config { get; }
@@ -322,7 +312,7 @@ public partial class ServerViewModel : ObservableObject
 
     // --- State properties ---
     [ObservableProperty]
-    private string _motdText = "A Minecraft Server";
+    private string _motdText = ServerPropertiesService.DefaultMotd;
 
     [ObservableProperty]
     private string _playerCountText = "0/20";
@@ -445,6 +435,9 @@ public partial class ServerViewModel : ObservableObject
         // config, and changing the interval takes effect without restarting anything.
         _autoBackupTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
         _autoBackupTimer.Tick += (_, _) => OnAutoBackupTick();
+
+        BackupCoordinator = new BackupCoordinator(this, new WorldBackupService());
+        BackupCoordinator.RestoringChanged += () => RunOnUi(OnRestoringChanged);
 
         // Before RefreshInfo, which refreshes the player lists and with them this.
         History = new PlayerHistoryViewModel(this);
@@ -692,6 +685,22 @@ public partial class ServerViewModel : ObservableObject
     internal static bool IsWithinWakeGrace(DateTime? wokeAtUtc, DateTime nowUtc) =>
         wokeAtUtc is not null && nowUtc - wokeAtUtc.Value < WakeGrace;
 
+    /// <summary>
+    /// <c>server-port</c> changed on disk: the wake-on-demand listener moves with it, if the server
+    /// is stopped and nothing else has the port.
+    /// </summary>
+    /// <remarks>
+    /// The listener read the port when it opened and kept it. Only a config field restarted it, and
+    /// the port is not one — it lives in <c>server.properties</c> — so after a change it went on
+    /// answering on the old port until the server was next stopped, and players knocking on the new
+    /// one woke nothing.
+    /// </remarks>
+    internal void FollowPortChange()
+    {
+        if (_process.IsRunning || IsPreparing || IsRestoring) return;
+        StartWakeListener();
+    }
+
     /// <summary>Answers on the server's port while it is stopped, if the owner asked for it.</summary>
     private void StartWakeListener()
     {
@@ -708,7 +717,7 @@ public partial class ServerViewModel : ObservableObject
     private WakeStatus BuildWakeStatus()
     {
         var starting = State != ServerState.Stopped;
-        var icon = Path.Combine(Config.FolderPath, "server-icon.png");
+        var icon = Path.Combine(Config.FolderPath, ServerIconService.FileName);
 
         return new WakeStatus(
             Description: WakeSign.Compose(MotdText, WakeSign.Notice(starting)),
@@ -953,7 +962,17 @@ public partial class ServerViewModel : ObservableObject
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
-    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing;
+    public bool CanStart => State == ServerState.Stopped && !IsRestoring && !IsPreparing && !IsConverting;
+
+    /// <summary>True while the settings page installs another loader into this server's folder.</summary>
+    /// <remarks>
+    /// Starting meanwhile would launch a jar that is being replaced. The button follows this, and so
+    /// does every start without one — waking on demand, restarting after a crash.
+    /// </remarks>
+    [ObservableProperty]
+    private bool _isConverting;
+
+    partial void OnIsConvertingChanged(bool value) => NotifyCommandStates();
 
     /// <summary>True from the moment a start begins until the process is up or the start gives up.</summary>
     /// <remarks>
@@ -979,10 +998,19 @@ public partial class ServerViewModel : ObservableObject
     /// under it. The button follows this, and so does every start that has no button — waking on
     /// demand, restarting after a crash.
     /// </remarks>
-    [ObservableProperty]
-    private bool _isRestoring;
+    public bool IsRestoring => BackupCoordinator.IsRestoring;
 
-    partial void OnIsRestoringChanged(bool value) => NotifyCommandStates();
+    /// <summary>
+    /// The wake listener is closed while the world is swapped, or somebody pressing Join would start
+    /// the server on half of it.
+    /// </summary>
+    private void OnRestoringChanged()
+    {
+        OnPropertyChanged(nameof(IsRestoring));
+        NotifyCommandStates();
+        if (IsRestoring) _wake.Stop();
+        else if (!_process.IsRunning) StartWakeListener();
+    }
     public bool CanStop => State is ServerState.Running or ServerState.Starting;
 
     partial void OnNameChanged(string value) => Config.Name = value;
@@ -1027,8 +1055,7 @@ public partial class ServerViewModel : ObservableObject
             _lastRunningAtUtc = DateTime.UtcNow;
 
             // The interval starts now: the pre-start backup already covers the world as it is.
-            // (Whether it did is _playedSinceBackup, which the start has already set.)
-            _lastAutoBackupUtc = DateTime.UtcNow;
+            BackupCoordinator.ClockStarted(DateTime.UtcNow);
             _autoBackupTimer.Start();
         }
         else if (state == ServerState.Stopped)
@@ -1053,10 +1080,11 @@ public partial class ServerViewModel : ObservableObject
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
             StartWakeListener();
+            _savedWhileRunning.Clear();   // the next start reads the file as it is
 
-            // However it stopped — a crash, "stop" typed in the console. Stop and Restart also ask
-            // themselves, since this arrives posted and they must not decide before it has run.
-            _ = NoteUntouchedWorldAsync();
+            // However it stopped — a crash, "stop" typed in the console. A stop the app asked for
+            // notes the world itself, holding it; this one waits until nothing else is reading it.
+            BackupCoordinator.ServerStopped();
         }
         else if (state == ServerState.Starting)
         {
@@ -1121,7 +1149,7 @@ public partial class ServerViewModel : ObservableObject
 
         // The server's answer to "save-all flush", which a backup of a running world waits for.
         if (source == ConsoleSource.Stdout && SaveConfirmation.IsSaveFinished(line))
-            _saveConfirmed?.TrySetResult(true);
+            BackupCoordinator.ServerSaved();
 
         // Once per run: BlueMap repeats itself on every start, and so would the question.
         if (!_blueMapAsked && BlueMapConsent.IsAskingForConsent(line))
@@ -1336,7 +1364,7 @@ public partial class ServerViewModel : ObservableObject
         if (joined is not null)
         {
             if (!ConnectedPlayers.Contains(joined)) ConnectedPlayers.Add(joined);
-            _playedSinceBackup = true;   // even if they leave before the clock next looks
+            BackupCoordinator.NoteWorldTouched();   // even if they leave before the clock next looks
             SnapshotOnline();
             History.RequestRefresh();
             UpdatePlayerCount();
@@ -1397,11 +1425,17 @@ public partial class ServerViewModel : ObservableObject
             OnConsoleLine(Localizer.Get("Msg_StartWaitsForRestore"));
             return;
         }
+        if (IsConverting)
+        {
+            OnConsoleLine(Localizer.Get("Msg_StartWaitsForLoader"));
+            return;
+        }
 
         // One start at a time (see IsPreparing). Said nowhere: the one already under way is the
         // answer to this one too.
         if (IsPreparing) return;
         IsPreparing = true;
+        var shutdowns = _shutdowns;
 
         // A new run starts a new console story: the first line must not inherit the colour of the
         // last line of a crash, and a question declined last time is asked again.
@@ -1453,32 +1487,22 @@ public partial class ServerViewModel : ObservableObject
             // Make sure the configured Java is compatible with this server's version.
             await EnsureCompatibleJavaAsync();
 
-            // Back up the world right before touching it again: the safety net that matters most,
-            // since it covers every start path (manual, Restart, and auto-restart after a crash).
-            //
-            // And whatever happens, never while another copy is still reading the world — the one
-            // made on Stop, a moment ago, or one asked for by hand. The start's own used to be
-            // refused as "already running" and the server started anyway, writing to the world the
-            // other copy was still zipping.
-            //
-            // Skipped when the world is still the last backup's: a server that sleeps when empty is
-            // woken by anybody pressing Join, and used to leave a copy on every wake even when they
-            // never came back in. Whether this start covered the world is also what lets the stop
-            // skip its own, if nobody plays.
-            await _noteUntouched;   // a crash's restart: the stop's note must be in before asking
-            if (Config.BackupsEnabled)
-                _playedSinceBackup = !await BackupUnlessUnchangedAsync("start", waitForOthers: true);
-            else
-                await WaitForBackupsAsync();
-
             // Asked here, in the background, so the one Start asks for the JVM flags is answered
             // from memory instead of starting a JVM on the UI thread.
             var javaPath = Config.JavaPath;
             await Task.Run(() => _java.GetMajorVersion(javaPath));
 
-            _process.Start(Config);
+            // Back up the world right before touching it again: the safety net that matters most,
+            // since it covers every start path (manual, Restart, and auto-restart after a crash).
+            // Never while another copy is still reading the world, skipped when the world is still
+            // the last backup's, and the JVM launched before anything else may read it: see
+            // BackupCoordinator.StartAsync.
+            await BackupCoordinator.StartAsync(() =>
+            {
+                if (shutdowns == _shutdowns) _process.Start(Config);
+            });
             // Playit already runs as a background service: we don't launch another agent.
-            Backups.RefreshCommand.Execute(null);
+            Backups.RefreshIfLoaded();
         }
         catch (Exception ex)
         {
@@ -1521,6 +1545,10 @@ public partial class ServerViewModel : ObservableObject
                 OnConsoleLine(Localizer.Get("Msg_NotRetryingFinal"));
                 return;
             }
+
+            // Stop was pressed and is waiting for a backup to finish reading the world: the crash
+            // only got there first.
+            if (_stopRequested) return;
 
             var stableRun = _lastRunningAtUtc is { } last && DateTime.UtcNow - last >= StabilityWindow;
             if (stableRun) _consecutiveCrashes = 0;
@@ -1852,233 +1880,38 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanStop))]
     private async Task Stop()
     {
+        _stopRequested = true;
         try
         {
-            await _process.StopAsync(StopTimeout);
-            await NoteUntouchedWorldAsync();
-
-            // A snapshot of the good state just reached by stopping cleanly. Not done for Restart's
+            // With a snapshot of the good state just reached by stopping cleanly. Not for Restart's
             // internal stop or for the app-closing ShutdownAsync: the next Start's own pre-backup
             // (or, when closing, simply not needing one) already covers those. Nor when nobody
             // played: then the world is still the last backup's, and this is how a server going to
             // sleep with nobody on stopped filling the folder with copies of it.
-            if (Config.BackupsEnabled)
-            {
-                await BackupUnlessUnchangedAsync("stop");
-                Backups.RefreshCommand.Execute(null);
-            }
+            await BackupCoordinator.StopAsync(() => _process.StopAsync(StopTimeout), backupAfter: true);
+            if (Config.BackupsEnabled) Backups.RefreshIfLoaded();
         }
         catch (Exception ex)
         {
             OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
         }
-    }
-
-    /// <summary>
-    /// Makes one backup of this server's world — the only way any of them are made.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Before a start, after a stop, on the clock and from the button all come through here, so
-    /// that two can never overlap and so that "is the server running?" is answered in one place.
-    /// While it is running the copy goes through <see cref="LiveWorldBackup"/>, which asks Minecraft
-    /// to let go of the world first; while it is stopped there is nothing to ask.
-    /// </para>
-    /// <para>
-    /// A second request while one is in progress is refused rather than queued. The reason to ask
-    /// twice is impatience, and answering it with a second copy of a world that is already being
-    /// copied would only make the first one slower.
-    /// </para>
-    /// </remarks>
-    /// <param name="trigger">Why it is made; it ends up in the file's name.</param>
-    /// <param name="ct">Cancels the copy.</param>
-    /// <param name="waitForOthers">
-    /// Wait for a backup already in progress instead of giving up — for the start, which must not
-    /// begin while another copy is reading the world.
-    /// </param>
-    public async Task<string?> RunBackupAsync(string trigger, CancellationToken ct = default,
-        bool waitForOthers = false)
-    {
-        if (!await EnterBackupGateAsync(waitForOthers, ct)) return null;
-
-        try
-        {
-            return await BackupInsideGateAsync(trigger, ct);
-        }
         finally
         {
-            _backupGate.Release();
-        }
-    }
-
-    /// <summary>
-    /// The start's and the stop's backup: made only if the world is no longer the last backup's.
-    /// True when the world is covered — copied now, or found already copied.
-    /// </summary>
-    /// <remarks>
-    /// The check is made inside the gate, with the copy, so that nothing can change the world between
-    /// "it is the same" and acting on it. Only these two triggers skip: one asked for by hand is made
-    /// because somebody asked, and the clock has its own rule (<see cref="BackupSchedule"/>).
-    /// </remarks>
-    private async Task<bool> BackupUnlessUnchangedAsync(string trigger, bool waitForOthers = false)
-    {
-        if (!await EnterBackupGateAsync(waitForOthers)) return false;
-
-        try
-        {
-            var config = Config;
-            if (await Task.Run(() => _backups.IsUpToDate(config)))
-            {
-                OnConsoleLine(Localizer.Get("Msg_BackupSkippedUnchanged"));
-                return true;
-            }
-            return await BackupInsideGateAsync(trigger, default) is not null;
-        }
-        finally
-        {
-            _backupGate.Release();
-        }
-    }
-
-    /// <summary>Takes the gate, or says why not. False when refused.</summary>
-    private async Task<bool> EnterBackupGateAsync(bool waitForOthers, CancellationToken ct = default)
-    {
-        if (await _backupGate.WaitAsync(0, ct)) return true;
-
-        OnConsoleLine(Localizer.Get("Msg_BackupAlreadyRunning"));
-        if (!waitForOthers) return false;
-        await _backupGate.WaitAsync(ct);
-        return true;
-    }
-
-    /// <summary>The copy itself; the caller holds <see cref="_backupGate"/>.</summary>
-    private async Task<string?> BackupInsideGateAsync(string trigger, CancellationToken ct)
-    {
-        var log = new Progress<string>(OnConsoleLine);
-        if (!_process.IsRunning)
-            return await _backups.CreateBackupAsync(Config, trigger, log, ct);
-
-        // Cleared before the copy rather than after, so that somebody joining while it zips still
-        // counts; anybody already on is still playing, so it is not cleared for them at all.
-        var wasPlayed = _playedSinceBackup;
-        _playedSinceBackup = ConnectedPlayers.Count > 0;
-        string? zip = null;
-        try
-        {
-            zip = await LiveWorldBackup.RunAsync(_backups, Config, trigger,
-                _process.SendCommand, WaitForSaveAsync, log, ct);
-            return zip;
-        }
-        finally
-        {
-            if (zip is null) _playedSinceBackup |= wasPlayed;   // nothing was copied: nothing is covered
-        }
-    }
-
-    /// <summary>
-    /// After a stop: if nobody played and nothing was typed that changes the world, records the world
-    /// as it is now as still being the last backup's.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The server writes on its way down even with nobody on — <c>level.dat</c> keeps when it was last
-    /// saved — so without this the next start would find the files changed and copy them again.
-    /// </para>
-    /// <para>
-    /// Called from wherever a stop can be seen, and safe to call twice: the first call takes the
-    /// flag and starts the note, any later one gets the same note to wait for. The flag is left set,
-    /// since from now until the next start nobody knows what happens to the world.
-    /// </para>
-    /// </remarks>
-    private Task NoteUntouchedWorldAsync()
-    {
-        if (!_playedSinceBackup && Config.BackupsEnabled)
-        {
-            _playedSinceBackup = true;
-            var config = Config;
-            _noteUntouched = Task.Run(() => _backups.MarkUnchanged(config));
-        }
-        return _noteUntouched;
-    }
-
-    /// <summary>Waits until no backup is reading the world. Takes nothing and makes nothing.</summary>
-    private async Task WaitForBackupsAsync()
-    {
-        if (await _backupGate.WaitAsync(0)) { _backupGate.Release(); return; }
-
-        OnConsoleLine(Localizer.Get("Msg_BackupAlreadyRunning"));
-        await _backupGate.WaitAsync();
-        _backupGate.Release();
-    }
-
-    /// <summary>
-    /// Replaces the world with a backup. False when another backup was already running.
-    /// </summary>
-    /// <remarks>
-    /// Through here rather than straight to the service, for the same reason backups are: this is
-    /// where the gate lives that keeps two of them apart, and where the wake listener is — which has
-    /// to be closed while the world is swapped, or somebody pressing Join would start the server on
-    /// half of it. The caller has already made sure the server is stopped.
-    /// </remarks>
-    public async Task<bool> RestoreBackupAsync(string zipPath, IProgress<string>? log = null)
-    {
-        if (!await _backupGate.WaitAsync(0)) return false;
-
-        IsRestoring = true;
-        _wake.Stop();
-        try
-        {
-            await _backups.RestoreBackupAsync(Config, zipPath, log);
-            return true;
-        }
-        finally
-        {
-            IsRestoring = false;
-            _backupGate.Release();
-            if (!_process.IsRunning) StartWakeListener();
-        }
-    }
-
-    /// <summary>
-    /// Waits for the server to say it has saved, or gives up after <paramref name="timeout"/>.
-    /// </summary>
-    /// <remarks>
-    /// Arms the listener synchronously, before its first await, so that a caller can start the wait
-    /// and only then send the command it is waiting for — which is the order that cannot miss an
-    /// answer from a world small enough to flush instantly.
-    /// </remarks>
-    private async Task<bool> WaitForSaveAsync(TimeSpan timeout)
-    {
-        var confirmed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _saveConfirmed = confirmed;
-        try
-        {
-            return await Task.WhenAny(confirmed.Task, Task.Delay(timeout)) == confirmed.Task;
-        }
-        finally
-        {
-            _saveConfirmed = null;
+            _stopRequested = false;
         }
     }
 
     /// <summary>Once a minute while the server runs: is it time for an automatic backup?</summary>
     private void OnAutoBackupTick()
     {
-        // Joining sets it too; this catches anybody already on when the server started counting.
-        if (ConnectedPlayers.Count > 0) _playedSinceBackup = true;
-
-        var enabled = Config.BackupsEnabled && Config.AutoBackupEnabled;
-        switch (BackupSchedule.Due(DateTime.UtcNow, _lastAutoBackupUtc, Config.BackupIntervalMinutes,
-                    _playedSinceBackup, enabled))
+        switch (BackupCoordinator.ClockTick(DateTime.UtcNow))
         {
             case BackupDue.Now:
-                _lastAutoBackupUtc = DateTime.UtcNow;
-                _ = RunAutoBackupAsync();   // clears _playedSinceBackup once it has copied
+                _ = RunAutoBackupAsync();
                 break;
 
-            // Nobody played: don't copy the same world again, but don't ask again in a minute either.
+            // Nobody played: no copy of the same world again, and the next one an interval away.
             case BackupDue.Skip:
-                _lastAutoBackupUtc = DateTime.UtcNow;
                 Backups.RefreshSummary();
                 break;
         }
@@ -2088,8 +1921,12 @@ public partial class ServerViewModel : ObservableObject
     {
         try
         {
-            await RunBackupAsync("auto");
+            await BackupCoordinator.BackupAsync("auto");
             Backups.RefreshIfLoaded();
+        }
+        catch (OperationCanceledException)
+        {
+            // Cut short by a stop, whose own backup covers the same world.
         }
         catch (Exception ex)
         {
@@ -2101,8 +1938,7 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanStop))]
     private async Task Restart()
     {
-        await _process.StopAsync(StopTimeout);
-        await NoteUntouchedWorldAsync();   // so the start can see nobody played
+        await BackupCoordinator.StopAsync(() => _process.StopAsync(StopTimeout), backupAfter: false);
         _consecutiveCrashes = 0; // a deliberate Restart gives auto-restart a fresh budget too
         await StartInternalAsync(isAutoRestart: false);
     }
@@ -2116,7 +1952,7 @@ public partial class ServerViewModel : ObservableObject
         if (cmd.Length == 0) return;
         OnConsoleLine("> " + cmd, ConsoleLineKind.Command);
         _process.SendCommand(cmd);
-        if (WorldCommand.Touches(cmd)) _playedSinceBackup = true;   // a /fill is a change nobody joined to make
+        if (WorldCommand.Touches(cmd)) BackupCoordinator.NoteWorldTouched();   // a /fill, with nobody on
         CommandText = string.Empty;
     }
 
@@ -2228,8 +2064,12 @@ public partial class ServerViewModel : ObservableObject
     private void RefreshInfo()
     {
         var props = _properties.Read(Config.PropertiesPath);
-        MotdText = props.TryGetValue("motd", out var m) && !string.IsNullOrWhiteSpace(m) ? m : "A Minecraft Server";
-        _maxPlayers = props.TryGetValue("max-players", out var mp) && int.TryParse(mp, out var n) ? n : 20;
+        MotdText = props.TryGetValue("motd", out var m) && !string.IsNullOrWhiteSpace(m)
+            ? m
+            : ServerPropertiesService.DefaultMotd;
+        _maxPlayers = props.TryGetValue("max-players", out var mp) && int.TryParse(mp, out var n)
+            ? n
+            : ServerPropertiesService.DefaultMaxPlayers;
         UpdatePlayerCount();
         LoadIcon();
         RefreshPlayers();
@@ -2284,11 +2124,34 @@ public partial class ServerViewModel : ObservableObject
     [RelayCommand]
     private Task ToggleWhitelist() => SetWhitelistAsync(!WhitelistEnabled);
 
+    /// <summary>What the settings page saved into server.properties while the server ran.</summary>
+    private readonly PropertiesSavedWhileRunning _savedWhileRunning = new();
+
+    /// <summary>
+    /// The settings page wrote <paramref name="changes"/> into server.properties. With the server
+    /// running they are remembered, and a whitelist switch among them goes to the server as a command.
+    /// </summary>
+    /// <remarks>
+    /// Written to the file, a whitelist switch only took effect on the next start, while the Players
+    /// tab's switch takes effect at once: the same setting behaved two ways. And the command makes the
+    /// server rewrite the whole file from what it loaded, which is why the rest is remembered — see
+    /// <see cref="PropertiesSavedWhileRunning"/>.
+    /// </remarks>
+    internal async Task FollowSavedPropertiesAsync(IReadOnlyDictionary<string, string> changes)
+    {
+        if (!_process.IsRunning || changes.Count == 0) return;
+
+        _savedWhileRunning.Note(changes);
+        if (changes.TryGetValue("white-list", out var whitelist))
+            await SetWhitelistAsync(whitelist.Trim().Equals("true", StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>Switches the whitelist on or off, keeping whoever is on it.</summary>
     /// <remarks>
     /// While the server runs, through its own command, which applies it at once and writes
-    /// server.properties itself; while it is stopped, straight into the file. whitelist.json is
-    /// never touched, so switching it off and on again gives back the same list.
+    /// server.properties itself — from the values it loaded at start, so whatever was saved since is
+    /// written again after it. While it is stopped, straight into the file. whitelist.json is never
+    /// touched, so switching it off and on again gives back the same list.
     /// </remarks>
     private async Task SetWhitelistAsync(bool on)
     {
@@ -2300,6 +2163,9 @@ public partial class ServerViewModel : ObservableObject
                 OnConsoleLine("> " + command, ConsoleLineKind.Command);
                 _process.SendCommand(command);
                 await Task.Delay(500);
+
+                if (_savedWhileRunning.ToRestore() is { Count: > 0 } owed)
+                    _properties.Update(Config.PropertiesPath, owed);
             }
             else
             {
@@ -2347,26 +2213,8 @@ public partial class ServerViewModel : ObservableObject
         }
     }
 
-    private void LoadIcon()
-    {
-        // The icon players see in the server list is server-icon.png (root, 64x64).
-        var path = Path.Combine(Config.FolderPath, "server-icon.png");
-        if (!File.Exists(path))
-        {
-            ServerIcon = null;
-            return;
-        }
-        try
-        {
-            // Read fully into memory so the file isn't locked and updates are picked up.
-            using var fs = File.OpenRead(path);
-            ServerIcon = new Bitmap(fs);
-        }
-        catch
-        {
-            ServerIcon = null;
-        }
-    }
+    // The icon players see in the server list is server-icon.png (root, 64x64).
+    private void LoadIcon() => ServerIcon = ServerIconImage.Load(Config.FolderPath);
 
     private void UpdatePlayerCount() => PlayerCountText = $"{ConnectedPlayers.Count}/{_maxPlayers}";
 
@@ -2520,12 +2368,20 @@ public partial class ServerViewModel : ObservableObject
         Mods.Shutdown();                               // cancels anything the store was fetching
         History.Shutdown();                            // drops a rebuild that was waiting its turn
         _wake.Stop();                                  // frees the port we answer on while asleep
-        if (_process.IsRunning)
-        {
-            await _process.StopAsync(StopTimeout);
-            await NoteUntouchedWorldAsync();   // the app is closing: the Stopped event may never run
-        }
+        _shutdowns++;                                  // a start still getting ready must not launch
+
+        // Cuts a backup in progress short, and stops the server holding the world: the app is
+        // closing, so the Stopped event may never run to note it.
+        Func<Task>? stop = _process.IsRunning ? () => _process.StopAsync(StopTimeout) : null;
+        await BackupCoordinator.ShutdownAsync(stop);
     }
+
+    ServerConfig IBackupHost.Config => Config;
+    bool IBackupHost.IsProcessRunning => _process.IsRunning;
+    bool IBackupHost.IsPreparing => IsPreparing;
+    int IBackupHost.PlayersOnline => ConnectedPlayers.Count;
+    void IBackupHost.SendToConsole(string command) => _process.SendCommand(command);
+    void IBackupHost.Say(string line) => OnConsoleLine(line);
 
     private static void RunOnUi(Action action)
     {

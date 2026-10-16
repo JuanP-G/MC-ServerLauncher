@@ -3,7 +3,7 @@ namespace McServerLauncher.Views.ServerSettings;
 /// <summary>One page of a server's settings, as the page around it sees it.</summary>
 /// <remarks>
 /// Deliberately small. What a page has changed is not its own to say: the draft knows which fields
-/// and keys each page owns (<see cref="ServerSettingsDraft.Owned"/>), so a page that has never been
+/// and keys each page owns (<see cref="ServerSettingsPages"/>), so a page that has never been
 /// opened can still be asked, and nothing has to be kept in step by hand.
 /// </remarks>
 internal interface IServerSettingsSection
@@ -13,4 +13,10 @@ internal interface IServerSettingsSection
 
     /// <summary>Says what is wrong under the controls, or clears it with null.</summary>
     void ShowError(string? message);
+
+    /// <summary>
+    /// Says what is wrong about <paramref name="field"/> (a config field or a <c>server.properties</c>
+    /// key), for a page that shows each problem beside its own control. The rest have one place.
+    /// </summary>
+    void ShowError(string? message, string? field) => ShowError(message);
 }
