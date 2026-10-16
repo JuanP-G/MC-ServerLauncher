@@ -17,7 +17,9 @@ public class SectionBindingTests
     private static string View(string file) =>
         File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", file));
 
-    /// <summary>The plain property or command names bound with <c>{Binding Name}</c> in a piece of markup.</summary>
+    /// <summary>
+    /// The plain property or command names bound with <c>{Binding Name}</c> in a piece of markup.
+    /// </summary>
     private static IEnumerable<string> Bound(string xaml) =>
         Regex.Matches(xaml, @"\{Binding (!?)(\w+)[,}]").Select(m => m.Groups[2].Value).Distinct();
 
@@ -25,7 +27,8 @@ public class SectionBindingTests
     {
         Assert.NotEmpty(names);
         foreach (var name in names)
-            Assert.True(type.GetProperty(name) is not null, $"{type.Name} no tiene '{name}', y la vista lo enlaza");
+            Assert.True(type.GetProperty(name) is not null,
+                $"{type.Name} no tiene '{name}', y la vista lo enlaza");
     }
 
     [Fact]
@@ -34,9 +37,11 @@ public class SectionBindingTests
         var xaml = View("TunnelsView.axaml");
 
         // Each item template binds to the row or the suggestion; the rest to the screen itself.
-        var rowStart = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Rows}\">", StringComparison.Ordinal);
+        var rowStart = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Rows}\">",
+            StringComparison.Ordinal);
         var rowEnd = xaml.IndexOf("</ItemsControl>", rowStart, StringComparison.Ordinal);
-        var sugStart = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Suggestions}\">", StringComparison.Ordinal);
+        var sugStart = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Suggestions}\">",
+            StringComparison.Ordinal);
         var sugEnd = xaml.IndexOf("</ItemsControl>", sugStart, StringComparison.Ordinal);
         Assert.True(rowStart > 0 && sugStart > 0, "ya no están las listas de la pantalla de túneles");
 
@@ -46,7 +51,8 @@ public class SectionBindingTests
 
         AssertAllExist(typeof(TunnelsViewModel), Bound(screen));
         AssertAllExist(typeof(TunnelRowViewModel), Bound(rows.Replace("{Binding Rows}", "")));
-        AssertAllExist(typeof(TunnelSuggestionViewModel), Bound(suggestions.Replace("{Binding Suggestions}", "")));
+        AssertAllExist(typeof(TunnelSuggestionViewModel),
+            Bound(suggestions.Replace("{Binding Suggestions}", "")));
     }
 
     [Fact]

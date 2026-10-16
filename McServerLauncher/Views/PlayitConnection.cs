@@ -45,7 +45,8 @@ public static class PlayitConnection
     /// installed agent's key is as good a way into the account as any, so it counts.
     /// </remarks>
     /// <param name="settings">What the connect flow saved.</param>
-    /// <param name="installedKey">Reads the key from playit.toml; a parameter so a test need not touch the machine.</param>
+    /// <param name="installedKey">Reads the key from playit.toml; a parameter so a test need not touch the
+    /// machine.</param>
     public static IReadOnlyList<Source> Sources(AppSettings settings, Func<string?>? installedKey = null)
     {
         var found = new List<Source>();
@@ -70,14 +71,16 @@ public static class PlayitConnection
     /// Returns the stored credential if already connected; otherwise runs the connect flow. Returns
     /// null if the user cancels.
     /// </summary>
-    public static async Task<string?> EnsureAsync(Window owner, AppSettings settings, AppSettingsService service)
+    public static async Task<string?> EnsureAsync(Window owner, AppSettings settings,
+        AppSettingsService service)
         => Credential(settings) ?? await ConnectAsync(owner, settings, service);
 
     /// <summary>
     /// Shows the setup-code dialog, stores the result (encrypted) and wires it. Returns the
     /// credential, or null if cancelled.
     /// </summary>
-    public static async Task<string?> ConnectAsync(Window owner, AppSettings settings, AppSettingsService service)
+    public static async Task<string?> ConnectAsync(Window owner, AppSettings settings,
+        AppSettingsService service)
     {
         var dialog = new PlayitApiKeyDialog();
         if (!await dialog.ShowDialog<bool>(owner))
@@ -104,14 +107,17 @@ public static class PlayitConnection
         // If the secret couldn't be encrypted, Save refused to persist it (never plaintext on disk):
         // it still works this session but will be asked for again next time.
         if (service.LastSaveCouldNotProtectKey)
-            await MessageBox.ShowAsync(Localizer.Get("Msg_PlayitKeyNotProtected"), Localizer.Get("Pk_Title"), owner);
+            await MessageBox.ShowAsync(Localizer.Get("Msg_PlayitKeyNotProtected"), Localizer.Get("Pk_Title"),
+                owner);
         if (dialog.AgentOverLimit)
             await MessageBox.ShowAsync(Localizer.Get("Msg_AgentOverLimit"), Localizer.Get("Pk_Title"), owner);
 
         return Credential(settings);
     }
 
-    /// <summary>Clears the stored Playit connection (agent key + any legacy key) and stops the agent.</summary>
+    /// <summary>
+    /// Clears the stored Playit connection (agent key + any legacy key) and stops the agent.
+    /// </summary>
     public static void Disconnect(AppSettings settings, AppSettingsService service)
     {
         settings.PlayitAgentSecretKey = null;

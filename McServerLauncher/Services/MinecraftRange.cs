@@ -113,7 +113,9 @@ public static class MinecraftRange
         };
     }
 
-    /// <summary>The part before a component wildcard ("1.21.x" -&gt; "1.21"), or null if there is none.</summary>
+    /// <summary>
+    /// The part before a component wildcard ("1.21.x" -&gt; "1.21"), or null if there is none.
+    /// </summary>
     private static string? WildcardPrefix(string text)
     {
         var parts = text.Split('.');
@@ -124,7 +126,9 @@ public static class MinecraftRange
         return string.Join('.', parts.Take(at));
     }
 
-    /// <summary>Whether <paramref name="actual"/> begins with the components of <paramref name="prefix"/>.</summary>
+    /// <summary>
+    /// Whether <paramref name="actual"/> begins with the components of <paramref name="prefix"/>.
+    /// </summary>
     private static bool StartsWithComponents(Version actual, string prefix)
     {
         if (prefix.Length == 0) return true;                       // "x" on its own is any version

@@ -42,7 +42,8 @@ public class HydraulicService
 
     private readonly ModrinthService _modrinth;
 
-    public HydraulicService(ModrinthService? modrinth = null) => _modrinth = modrinth ?? new ModrinthService();
+    public HydraulicService(ModrinthService? modrinth = null) => _modrinth = modrinth
+        ?? new ModrinthService();
 
     /// <summary>Whether this server type can run Hydraulic at all.</summary>
     public static bool CanEnable(ServerType type) => type == ServerType.Fabric;
@@ -66,9 +67,11 @@ public class HydraulicService
     /// Fabric API first: if that is unavailable for this Minecraft version there is no point
     /// downloading forty megabytes of Hydraulic to sit unloaded beside it.
     /// </remarks>
-    public async Task InstallAsync(ServerConfig config, IProgress<string>? log, CancellationToken ct = default)
+    public async Task InstallAsync(ServerConfig config, IProgress<string>? log,
+        CancellationToken ct = default)
     {
-        var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type), "Msg_HydraulicUnsupportedFmt");
+        var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type),
+            "Msg_HydraulicUnsupportedFmt");
 
         // Nearly every Fabric server has it already. Downloading the newest build anyway put a second
         // fabric-api beside the first, and the loader will not start with two.
@@ -86,7 +89,8 @@ public class HydraulicService
         var build = await GetLatestBuildAsync(ct)
             ?? throw new UserFacingException(Localizer.Get("Msg_HydraulicNoBuild"));
 
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Hydraulic", "b" + build.Build));
+        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Hydraulic",
+            "b" + build.Build));
 
         // Its downloads API has no per-Minecraft-version dimension: there is one line of builds and the
         // newest targets the newest Minecraft. The jar says which, so the jar is asked before it is kept.

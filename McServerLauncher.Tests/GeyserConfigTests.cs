@@ -71,7 +71,8 @@ public class GeyserConfigTests
         // line, and leave the file with a commented setting and a live one disagreeing.
         var result = GeyserConfigService.SetBedrockPorts(RealConfig, 19132, 51234);
 
-        var live = Lines(result).Count(l => l.TrimStart().StartsWith("broadcast-port:", StringComparison.Ordinal));
+        var live = Lines(result).Count(l => l.TrimStart()
+            .StartsWith("broadcast-port:", StringComparison.Ordinal));
         Assert.Equal(1, live);
         Assert.Equal("51234", ValueOf(result, "broadcast-port"));
     }
@@ -106,7 +107,8 @@ public class GeyserConfigTests
         var twice = GeyserConfigService.SetBedrockPorts(once, 19132, 60000);
 
         Assert.Equal("60000", ValueOf(twice, "broadcast-port"));
-        Assert.Equal(1, Lines(twice).Count(l => l.TrimStart().StartsWith("broadcast-port:", StringComparison.Ordinal)));
+        Assert.Equal(1, Lines(twice).Count(l => l.TrimStart().StartsWith("broadcast-port:",
+            StringComparison.Ordinal)));
     }
 
     [Fact]
@@ -117,7 +119,8 @@ public class GeyserConfigTests
 
         var without = GeyserConfigService.SetBedrockPorts(withTunnel, 19132, null);
 
-        Assert.Equal(0, Lines(without).Count(l => l.TrimStart().StartsWith("broadcast-port:", StringComparison.Ordinal)));
+        Assert.Equal(0, Lines(without).Count(l => l.TrimStart().StartsWith("broadcast-port:",
+            StringComparison.Ordinal)));
     }
 
     // --- everything else must survive ---
@@ -210,7 +213,8 @@ public class GeyserConfigTests
         var patched = GeyserConfigService.SetBedrockPorts(yaml, 19140, 60000);
 
         Assert.Equal("60000", ValueOf(patched, "broadcast-port"));
-        Assert.Equal(1, Lines(patched).Count(l => l.TrimStart().StartsWith("broadcast-port:", StringComparison.Ordinal)));
+        Assert.Equal(1, Lines(patched).Count(l => l.TrimStart().StartsWith("broadcast-port:",
+            StringComparison.Ordinal)));
     }
 
     // --- which servers can do this at all ---

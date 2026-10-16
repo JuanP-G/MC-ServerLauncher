@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
-using Avalonia.Styling;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Styling;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
@@ -43,7 +43,9 @@ public partial class ServerTypePicker : UserControl
         Build(ServerTypeCatalog.All);
     }
 
-    /// <summary>The type currently picked. Setting it moves the selection without raising the event.</summary>
+    /// <summary>
+    /// The type currently picked. Setting it moves the selection without raising the event.
+    /// </summary>
     /// <remarks>
     /// Tracked in a field rather than read back from whichever card is checked. Reading the cards
     /// made this one selection behind: a RadioButton raises its own "checked" before its siblings

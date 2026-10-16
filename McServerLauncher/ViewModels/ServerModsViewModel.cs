@@ -8,6 +8,12 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Media.Immutable;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using McServerLauncher.Localization;
@@ -15,13 +21,6 @@ using McServerLauncher.Models;
 using McServerLauncher.Models.Modrinth;
 using McServerLauncher.Models.Store;
 using McServerLauncher.Services;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Media.Immutable;
-using Avalonia.Threading;
 using McServerLauncher.Views;
 
 namespace McServerLauncher.ViewModels;
@@ -63,9 +62,9 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>What each jar says about itself, for finding the other copies of a mod.</summary>
     private readonly ContentManifestCache _manifests = new();
 
-    
+
     // --- Local Mods State ---
-    
+
     public ObservableCollection<ModItem> InstalledMods { get; } = new();
 
     /// <summary>
@@ -90,7 +89,8 @@ public partial class ServerModsViewModel : ObservableObject
 
     /// <summary>"12", or "3 of 12" while searching.</summary>
     public string InstalledCountText => IsInstalledFiltered
-        ? string.Format(Localizer.Get("Mods_InstalledCountFmt"), VisibleInstalledMods.Count, InstalledMods.Count)
+        ? string.Format(Localizer.Get("Mods_InstalledCountFmt"), VisibleInstalledMods.Count,
+            InstalledMods.Count)
         : InstalledMods.Count.ToString(System.Globalization.CultureInfo.CurrentUICulture);
 
     partial void OnInstalledFilterChanged(string value) => RebuildVisibleInstalled();
@@ -98,16 +98,17 @@ public partial class ServerModsViewModel : ObservableObject
     private void RebuildVisibleInstalled()
     {
         var words = InstalledModFilter.Words(InstalledFilter);
-        VisibleInstalledMods.ReplaceAll(InstalledMods.Where(m => InstalledModFilter.Matches(m.FileName, words)));
+        VisibleInstalledMods.ReplaceAll(InstalledMods.Where(m
+            => InstalledModFilter.Matches(m.FileName, words)));
         OnPropertyChanged(nameof(HasNoMatches));
         OnPropertyChanged(nameof(InstalledCountText));
     }
 
     // --- Marketplace State ---
-    
+
     [ObservableProperty]
     private string _searchQuery = string.Empty;
-    
+
     [ObservableProperty]
     private bool _isSearching;
 
@@ -137,7 +138,8 @@ public partial class ServerModsViewModel : ObservableObject
     /// so a jar replaced by hand is not offered an update found for the file it used to be.
     /// </para>
     /// </remarks>
-    private readonly Dictionary<string, PendingUpdate> _pendingUpdates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string,
+        PendingUpdate> _pendingUpdates = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>The loader and Minecraft version the pending updates were found for.</summary>
     /// <remarks>
@@ -487,9 +489,12 @@ public partial class ServerModsViewModel : ObservableObject
     public string ContentTabTitle => Localizer.Get(IsPluginBased ? "Plugins" : "Mods");
     public string BrowseTitle => Localizer.Get(IsPluginBased ? "Browse_Plugins" : "Browse_Mods");
     public string InstalledTitle => Localizer.Get(IsPluginBased ? "Installed_Plugins" : "Installed_Mods");
-    public string SearchPlaceholder => Localizer.Get(IsPluginBased ? "SearchPlugins_Placeholder" : "SearchMods_Placeholder");
-    public string NoInstalledText => Localizer.Get(IsPluginBased ? "No_Installed_Plugins" : "No_Installed_Mods");
-    public string InstalledFilterPlaceholder => Localizer.Get(IsPluginBased ? "Plugins_InstalledFilter" : "Mods_InstalledFilter");
+    public string SearchPlaceholder => Localizer.Get(IsPluginBased ? "SearchPlugins_Placeholder"
+        : "SearchMods_Placeholder");
+    public string NoInstalledText => Localizer.Get(IsPluginBased ? "No_Installed_Plugins"
+        : "No_Installed_Mods");
+    public string InstalledFilterPlaceholder => Localizer.Get(IsPluginBased ? "Plugins_InstalledFilter"
+        : "Mods_InstalledFilter");
 
     // Active filter (results are always limited to this server's type + version).
     public string FilterTypeText => _config.Type.ToString();
@@ -691,7 +696,8 @@ public partial class ServerModsViewModel : ObservableObject
                 catch { /* unreadable/locked file: skip it */ }
             }
 
-            var latest = await _modrinthService.GetLatestVersionsByHashAsync(byHash.Keys, _config.Type, _config.GameVersion, ct);
+            var latest = await _modrinthService.GetLatestVersionsByHashAsync(byHash.Keys, _config.Type,
+                _config.GameVersion, ct);
             if (latest is null)
             {
                 UpdateStatus = UpdateStatusText(couldAsk: false, updates: 0);
@@ -709,7 +715,8 @@ public partial class ServerModsViewModel : ObservableObject
                 if (!string.Equals(file.Hashes?.Sha1, installedHash, StringComparison.OrdinalIgnoreCase))
                 {
                     mod.Update = new ModUpdateInfo(version.VersionNumber, file.Url,
-                        Path.GetFileName(file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1, version.ProjectId);
+                        Path.GetFileName(file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1,
+                            version.ProjectId);
                     RememberUpdate(mod.FilePath, mod.Update);
                     updates++;
                 }
@@ -1015,14 +1022,17 @@ public partial class ServerModsViewModel : ObservableObject
     }
 
     /// <summary>One dependency onto disk, verified, with the same path safety as any other install.</summary>
-    private Task DownloadDependencyAsync(ModDependencyService.Needed needed, string folder, CancellationToken ct)
+    private Task DownloadDependencyAsync(ModDependencyService.Needed needed, string folder,
+        CancellationToken ct)
     {
         var path = AtomicDownload.PathIn(folder, needed.File.Filename);
         return _modrinthService.DownloadModAsync(needed.File.Url, path,
             needed.File.Hashes?.Sha512, needed.File.Hashes?.Sha1, ct: ct);
     }
 
-    /// <summary>Downloads the newer version flagged by <see cref="CheckUpdates"/> and replaces the old jar.</summary>
+    /// <summary>
+    /// Downloads the newer version flagged by <see cref="CheckUpdates"/> and replaces the old jar.
+    /// </summary>
     [RelayCommand]
     private async Task UpdateMod(ModItem? mod)
     {
@@ -1238,7 +1248,7 @@ public partial class ServerModsViewModel : ObservableObject
         var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
         if (!Directory.Exists(modsFolder)) return;
 
-        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        var top = AppWindows.Main;
         if (top == null) return;
 
         var file = await top.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
@@ -1253,7 +1263,8 @@ public partial class ServerModsViewModel : ObservableObject
 
         try
         {
-            var result = await BuildModpackAsync(file.Path.LocalPath, includeEverything: false, CancellationToken.None);
+            var result = await BuildModpackAsync(file.Path.LocalPath, includeEverything: false,
+                CancellationToken.None);
             _lastExportPath = file.Path.LocalPath;
             _lastExportLeftSomethingOut = result.Excluded.Count > 0;
             ExportNotice = NoticeFor(result);
@@ -1330,7 +1341,8 @@ public partial class ServerModsViewModel : ObservableObject
     /// <param name="loader">The client installer to offer, or null to only warn about it.</param>
     internal Task<ModpackResult> BuildModpackWithSidesAsync(
         string destination,
-        IReadOnlyDictionary<string, (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)> storeSides,
+        IReadOnlyDictionary<string, (ExportSelection.StoreSide Client,
+            ExportSelection.StoreSide Server)> storeSides,
         bool includeEverything,
         ClientLoaderInstall.Plan? loader,
         CancellationToken ct)
@@ -1405,7 +1417,8 @@ public partial class ServerModsViewModel : ObservableObject
     /// </remarks>
     private static readonly TimeSpan StoreLookupBudget = TimeSpan.FromSeconds(4);
 
-    private static readonly IReadOnlyDictionary<string, (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)>
+    private static readonly IReadOnlyDictionary<string,
+        (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)>
         EmptySides = new Dictionary<string, (ExportSelection.StoreSide, ExportSelection.StoreSide)>();
 
     /// <summary>
@@ -1416,7 +1429,8 @@ public partial class ServerModsViewModel : ObservableObject
     /// (memoised, and usually already known from the update check), then the project itself, which
     /// the store service caches for six hours with a copy on disk.
     /// </remarks>
-    private async Task<IReadOnlyDictionary<string, (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)>>
+    private async Task<IReadOnlyDictionary<string,
+        (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)>>
         StoreSidesAsync(IReadOnlyList<string> jarPaths, CancellationToken ct)
     {
         var byName = new Dictionary<string, (ExportSelection.StoreSide, ExportSelection.StoreSide)>(
@@ -1754,7 +1768,8 @@ public partial class ServerModsViewModel : ObservableObject
         try
         {
             var version = chosen
-                ?? await _modrinthService.GetLatestProjectVersionAsync(projectId, _config.Type, _config.GameVersion);
+                ?? await _modrinthService.GetLatestProjectVersionAsync(projectId, _config.Type,
+                    _config.GameVersion);
             if (version == null || version.Files.Count == 0)
             {
                 Notify(Localizer.Get("Msg_NoCompatibleVersion"), failed: true);
@@ -1787,7 +1802,8 @@ public partial class ServerModsViewModel : ObservableObject
             // the running server holds open means nothing changes.
             var others = ContentReplacement.OthersOf(modsFolder, destPath, version.ProjectId, projectByPath,
                 _manifests.Read);
-            var (result, removed) = ContentReplacement.RemoveAllOrNothing(others, replacesAFile ? null : destPath);
+            var (result, removed) = ContentReplacement.RemoveAllOrNothing(others, replacesAFile ? null
+                : destPath);
             if (result == ContentReplacement.RemoveResult.Locked)
             {
                 // An install, not an update: say which copy is in the way, not "before updating".

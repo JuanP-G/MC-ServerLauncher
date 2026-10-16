@@ -110,7 +110,8 @@ public class ServerProcessManager
 
             State = ServerState.Starting;
             _startedAtUtc = DateTime.UtcNow;
-            OutputReceived?.Invoke(string.Format(Localizer.Get("Msg_LauncherStarting"), config.JavaPath, args), ConsoleSource.Launcher);
+            OutputReceived?.Invoke(string.Format(Localizer.Get("Msg_LauncherStarting"), config.JavaPath,
+                args), ConsoleSource.Launcher);
 
             try
             {

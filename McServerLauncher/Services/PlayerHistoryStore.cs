@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using McServerLauncher.Models;
 
 namespace McServerLauncher.Services;
@@ -44,7 +43,9 @@ public sealed class PlayerRecord
 /// <summary>One event as it is stored and shown.</summary>
 public sealed record StoredEvent(DateTime At, PlayerEventKind Kind, string? Text);
 
-/// <summary>The app-wide history settings, set from AppSettings at startup and by the settings dialog.</summary>
+/// <summary>
+/// The app-wide history settings, set from AppSettings at startup and by the settings dialog.
+/// </summary>
 /// <remarks>The same shape as <see cref="ConsolePreferences"/>, for the same reason.</remarks>
 public static class PlayerHistoryPreferences
 {
@@ -72,13 +73,14 @@ public static class PlayerHistoryPreferences
 /// from a background one, and the settings dialog can clear everything at any moment.
 /// </para>
 /// </remarks>
-public sealed partial class PlayerHistoryStore : IDisposable
+public sealed class PlayerHistoryStore : IDisposable
 {
     /// <summary>Where every server's history lives.</summary>
     public static string RootDirectory { get; set; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "players");
 
-    private static readonly ConcurrentDictionary<string, PlayerHistoryStore> Open = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string,
+        PlayerHistoryStore> Open = new(StringComparer.Ordinal);
 
     /// <summary>The store for a server, shared by everything that asks for it.</summary>
     public static PlayerHistoryStore For(string serverId) =>
@@ -103,7 +105,8 @@ public sealed partial class PlayerHistoryStore : IDisposable
     // Only while importing: the events already on disk, per player, so the same line is not added twice.
     private Dictionary<string, HashSet<string>>? _importSeen;
 
-    public PlayerHistoryStore(string directory, Func<PlayerHistorySettings>? settings = null, Func<DateTime>? utcNow = null)
+    public PlayerHistoryStore(string directory, Func<PlayerHistorySettings>? settings = null,
+        Func<DateTime>? utcNow = null)
     {
         _directory = directory;
         _settings = settings ?? (() => PlayerHistoryPreferences.Current.Clamped());
@@ -146,13 +149,16 @@ public sealed partial class PlayerHistoryStore : IDisposable
             Directory.CreateDirectory(Path.GetDirectoryName(EventsPath(key))!);
             File.AppendAllText(EventsPath(key), line + "\n", Utf8);
             rec.EventCount++;
-            if (rec.EventCount > settings.MaxEventsPerPlayer * 5 / 4) Compact(key, rec, settings.MaxEventsPerPlayer, null);
+            if (rec.EventCount > settings.MaxEventsPerPlayer * 5 / 4) Compact(key, rec,
+                settings.MaxEventsPerPlayer, null);
 
             _dirty = true;
         }
     }
 
-    /// <summary>Remembers a player's UUID, which is what the server's own statistics are filed under.</summary>
+    /// <summary>
+    /// Remembers a player's UUID, which is what the server's own statistics are filed under.
+    /// </summary>
     public void RecordUuid(string player, string uuid)
     {
         if (!IsName(player)) return;
@@ -169,7 +175,8 @@ public sealed partial class PlayerHistoryStore : IDisposable
     /// <summary>
     /// Ends every session still open: the server stopped or crashed without saying who left.
     /// </summary>
-    /// <param name="atUtc">When they ended; null means each player's own last event, for a log that just stops.</param>
+    /// <param name="atUtc">When they ended; null means each player's own last event, for a log that just
+    /// stops.</param>
     public void CloseOpenSessions(DateTime? atUtc) => CloseOpenSessions(null, atUtc);
 
     /// <summary>The same, for only these players; null means everyone.</summary>
@@ -341,7 +348,9 @@ public sealed partial class PlayerHistoryStore : IDisposable
         Flush();
     }
 
-    /// <summary>Rewrites a player's events keeping the newest <paramref name="max"/>, none older than the cutoff.</summary>
+    /// <summary>
+    /// Rewrites a player's events keeping the newest <paramref name="max"/>, none older than the cutoff.
+    /// </summary>
     private void Compact(string key, PlayerRecord rec, int max, DateTime? cutoff)
     {
         var lines = ReadLines(key).ToList();
@@ -419,7 +428,8 @@ public sealed partial class PlayerHistoryStore : IDisposable
         try
         {
             return Directory.Exists(directory)
-                ? new DirectoryInfo(directory).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length)
+                ? new DirectoryInfo(directory).EnumerateFiles("*", SearchOption.AllDirectories)
+                    .Sum(f => f.Length)
                 : 0;
         }
         catch
@@ -491,7 +501,8 @@ public sealed partial class PlayerHistoryStore : IDisposable
     };
 
     private static string Serialize(DateTime atUtc, PlayerEventKind kind, string? text) =>
-        JsonSerializer.Serialize(new Line(new DateTimeOffset(DateTime.SpecifyKind(atUtc, DateTimeKind.Utc)).ToUnixTimeSeconds(),
+        JsonSerializer.Serialize(new Line(new DateTimeOffset(DateTime.SpecifyKind(atUtc, DateTimeKind.Utc))
+            .ToUnixTimeSeconds(),
             KindName(kind), text), LineJson);
 
     private static StoredEvent? Deserialize(string line)
@@ -572,12 +583,11 @@ public sealed partial class PlayerHistoryStore : IDisposable
         try { if (File.Exists(path)) File.Delete(path); } catch { /* best-effort */ }
     }
 
-    /// <summary>The file and index key: the name in lower case. Names are ASCII letters, digits and _.</summary>
+    /// <summary>
+    /// The file and index key: the name in lower case. Names are ASCII letters, digits and _.
+    /// </summary>
     private static string Key(string player) => player.ToLowerInvariant();
 
     // Also what keeps a name from ever becoming a path: nothing but [A-Za-z0-9_] reaches Key().
-    private static bool IsName(string? player) => player is not null && PlayerName().IsMatch(player);
-
-    [GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]
-    private static partial Regex PlayerName();
+    private static bool IsName(string? player) => PlayerNames.IsValid(player);
 }

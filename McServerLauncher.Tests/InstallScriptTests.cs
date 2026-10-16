@@ -41,7 +41,8 @@ public class InstallScriptTests
         InstallScriptBuilder.Template(name)
             .Split('\n')
             .Select(l => l.Trim())
-            .Where(l => l.Length > 0 && !l.StartsWith("rem ", StringComparison.Ordinal) && !l.StartsWith('#'));
+            .Where(l => l.Length > 0 && !l.StartsWith("rem ", StringComparison.Ordinal)
+                && !l.StartsWith('#'));
 
     /// <summary>Runs a build under each language, so a check covers all five.</summary>
     private static void InEveryLanguage(Action<string, string> check)
@@ -101,7 +102,8 @@ public class InstallScriptTests
             var mismatch = text.IndexOf("HASH_MISMATCH", StringComparison.Ordinal);
 
             Assert.True(mismatch > 0, $"«{name}» ya no comprueba el hash de la descarga");
-            Assert.Contains("installer", text[mismatch..(mismatch + 200)], StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("installer", text[mismatch..(mismatch + 200)],
+                StringComparison.OrdinalIgnoreCase);
         }
     }
 
@@ -268,7 +270,8 @@ public class InstallScriptTests
         {
             foreach (var line in script.Split('\n').Where(l => l.TrimStart().StartsWith("say \"", StringComparison.Ordinal)))
             {
-                Assert.False(line.Contains("$(", StringComparison.Ordinal) && !line.Contains("basename", StringComparison.Ordinal),
+                Assert.False(line.Contains("$(", StringComparison.Ordinal)
+                    && !line.Contains("basename", StringComparison.Ordinal),
                     $"«{culture}»: sustitución de comandos inesperada en una línea de mensaje: {line}");
             }
         });
@@ -288,7 +291,10 @@ public class InstallScriptTests
         {
             var mods = new ViewModels.ServerModsViewModel(new ServerConfig
             {
-                Name = "mi servidor", FolderPath = root, Type = ServerType.Fabric, GameVersion = "1.21.1"
+                Name = "mi servidor",
+                FolderPath = root,
+                Type = ServerType.Fabric,
+                GameVersion = "1.21.1"
             });
 
             var zipPath = Path.Combine(root, "pack.zip");
@@ -325,7 +331,10 @@ public class InstallScriptTests
         {
             var mods = new ViewModels.ServerModsViewModel(new ServerConfig
             {
-                Name = "paper", FolderPath = root, Type = ServerType.Paper, GameVersion = "1.21.1"
+                Name = "paper",
+                FolderPath = root,
+                Type = ServerType.Paper,
+                GameVersion = "1.21.1"
             });
 
             var zipPath = Path.Combine(root, "pack.zip");

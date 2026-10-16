@@ -44,9 +44,11 @@ public sealed record ExistingServerForm(
 public static class ExistingServer
 {
     /// <summary>Why this cannot be added, as a resx key; null when it can.</summary>
-    public static string? Problem(ExistingServerForm form, ServerDetection found, IEnumerable<string> registeredFolders)
+    public static string? Problem(ExistingServerForm form, ServerDetection found,
+        IEnumerable<string> registeredFolders)
     {
-        if (string.IsNullOrWhiteSpace(form.Folder) || !Directory.Exists(form.Folder)) return "Cs_ExistingFolderMissing";
+        if (string.IsNullOrWhiteSpace(form.Folder)
+            || !Directory.Exists(form.Folder)) return "Cs_ExistingFolderMissing";
         if (string.IsNullOrWhiteSpace(form.Name)) return "Msg_NameRequired";
         if (registeredFolders.Any(f => SameFolder(f, form.Folder))) return "Cs_ExistingAlreadyAdded";
 

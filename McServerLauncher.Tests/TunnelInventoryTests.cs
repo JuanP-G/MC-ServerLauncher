@@ -59,7 +59,8 @@ public class TunnelInventoryTests
     [Fact]
     public void ATunnelExistingTwiceKeepsTheOneNamedAfterItsServer()
     {
-        var report = Report([Tcp("a", "mc-25565", 25565), Tcp("b", "Survival", 25565)], Server("Survival", 25565));
+        var report = Report([Tcp("a", "mc-25565", 25565), Tcp("b", "Survival", 25565)],
+            Server("Survival", 25565));
 
         Assert.All(report.Rows, r => Assert.Equal(TunnelHealth.Duplicate, r.Health));
         var s = report.Suggestions.Single(x => x.Kind == TunnelSuggestionKind.DeleteDuplicate);
@@ -71,7 +72,8 @@ public class TunnelInventoryTests
     {
         var report = Report([Tcp("a", "x", 25565), Tcp("b", "y", 25565)], Server("Survival", 25565));
 
-        Assert.Equal("b", report.Suggestions.Single(x => x.Kind == TunnelSuggestionKind.DeleteDuplicate).TunnelId);
+        Assert.Equal("b", report.Suggestions.Single(x => x.Kind == TunnelSuggestionKind.DeleteDuplicate)
+            .TunnelId);
     }
 
     // --- protocol ---
@@ -97,7 +99,8 @@ public class TunnelInventoryTests
     public void WithCrossplayOffAUdpTunnelOnTheOldBedrockPortIsAnOrphan()
     {
         // BedrockPort is null in the snapshot when crossplay is off.
-        var report = Report([Udp("a", "Survival (Bedrock)", 19132)], Server("Survival", 25565, bedrock: null));
+        var report = Report([Udp("a", "Survival (Bedrock)", 19132)],
+            Server("Survival", 25565, bedrock: null));
 
         Assert.Equal(TunnelHealth.Orphan, report.Rows.Single().Health);
     }
@@ -191,8 +194,10 @@ public class TunnelInventoryTests
     {
         var report = Report([], Server("Survival", 25570, 19140));
 
-        Assert.Contains(report.Suggestions, s => s.Kind == TunnelSuggestionKind.CreateJava && s.Port == 25570 && !s.Udp);
-        Assert.Contains(report.Suggestions, s => s.Kind == TunnelSuggestionKind.CreateBedrock && s.Port == 19140 && s.Udp);
+        Assert.Contains(report.Suggestions, s => s.Kind == TunnelSuggestionKind.CreateJava && s.Port == 25570
+            && !s.Udp);
+        Assert.Contains(report.Suggestions, s => s.Kind == TunnelSuggestionKind.CreateBedrock
+            && s.Port == 19140 && s.Udp);
     }
 
     [Fact]

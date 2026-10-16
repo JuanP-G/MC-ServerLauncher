@@ -36,7 +36,8 @@ public class ServerConfigFormatTests : IDisposable
         "Id", "Name", "FolderPath", "JarFile", "Type", "GameVersion", "ModLoaderVersion", "ForgeArgs",
         "JavaPath", "MinRamGb", "MaxRamGb", "ExtraJvmArgs", "PlayitEnabled", "TunnelAddress",
         "BackupsEnabled", "BackupRetention", "AutoBackupEnabled", "BackupIntervalMinutes",
-        "ManualBackupRetention", "IdleShutdownMinutes", "WakeOnDemand", "WakeOnlyForWhitelist", "CrossplayEnabled",
+        "ManualBackupRetention", "IdleShutdownMinutes", "WakeOnDemand", "WakeOnlyForWhitelist",
+            "CrossplayEnabled",
         "BedrockModContentEnabled", "MultiVersionEnabled", "BedrockPort", "UseCustomNotifications",
         "Notifications", "LastKnownSeed"
     };

@@ -174,6 +174,10 @@ Each of these is here because breaking it shipped a bug that no test caught at t
   matching (`PlayitApiService.Match`), the hashes sent to the store (`ModrinthService.ApiHashes`)
   and the dependencies a jar declares (`ContentManifest`). Each time only one copy learnt what was
   needed.
+- **A new `.resx` key is used, and an unused one goes.** Add it to all five files with the code that
+  asks for it. `LocalizationTests.EveryKeyIsAskedForSomewhere` fails on a key nothing names; the few that
+  are looked up by building their name (`Cmd_`, `Console_Kind`, `MotdColor_`…) are listed in that test,
+  each with where its name is put together.
 - **A test for a fix has to fail against the old code.** Check it — stash the fix, run the test,
   watch it go red. A test that passes either way proves nothing, and it is easy to write one.
 - **Read what the loader reads.** Mods carry other mods inside themselves (`META-INF/jars/`,

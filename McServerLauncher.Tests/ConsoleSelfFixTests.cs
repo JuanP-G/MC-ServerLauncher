@@ -62,7 +62,8 @@ public class ConsoleSelfFixTests : IDisposable
 
         var args = ServerProcessManager.BuildJavaArguments(config, javaMajor: 25);
 
-        Assert.Equal("-Xms4G -Xmx6G --enable-native-access=ALL-UNNAMED -jar \"fabric-server.jar\" nogui", args);
+        Assert.Equal("-Xms4G -Xmx6G --enable-native-access=ALL-UNNAMED -jar \"fabric-server.jar\" nogui",
+            args);
     }
 
     [Fact]
@@ -129,7 +130,8 @@ public class ConsoleSelfFixTests : IDisposable
 
         var asPlugin = Path.Combine(_root, "plugin");
         Directory.CreateDirectory(Path.Combine(asPlugin, "plugins", "BlueMap"));
-        File.WriteAllText(Path.Combine(asPlugin, "plugins", "BlueMap", "core.conf"), "accept-download: false");
+        File.WriteAllText(Path.Combine(asPlugin, "plugins", "BlueMap", "core.conf"),
+            "accept-download: false");
 
         Assert.EndsWith(Path.Combine("config", "bluemap", "core.conf"), BlueMapConsent.FindConfig(asMod));
         Assert.EndsWith(Path.Combine("plugins", "BlueMap", "core.conf"), BlueMapConsent.FindConfig(asPlugin));

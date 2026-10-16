@@ -135,7 +135,9 @@ public partial class ServerConfig : ObservableObject
 
     // --- World backups ---
 
-    /// <summary>Whether a zip backup of the world is made before starting and after an explicit stop.</summary>
+    /// <summary>
+    /// Whether a zip backup of the world is made before starting and after an explicit stop.
+    /// </summary>
     [ObservableProperty]
     private bool _backupsEnabled = true;
 
@@ -253,7 +255,9 @@ public partial class ServerConfig : ObservableObject
     [ObservableProperty]
     private bool _useCustomNotifications;
 
-    /// <summary>Per-server notification override, used only when <see cref="UseCustomNotifications"/>.</summary>
+    /// <summary>
+    /// Per-server notification override, used only when <see cref="UseCustomNotifications"/>.
+    /// </summary>
     [ObservableProperty]
     private NotificationSettings? _notifications;
 

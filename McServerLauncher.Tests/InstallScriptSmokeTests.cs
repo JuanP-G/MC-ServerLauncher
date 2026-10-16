@@ -201,7 +201,8 @@ public class InstallScriptSmokeTests : IDisposable
         File.WriteAllText(Path.Combine(_root, "mods", "sodium.jar"), "nuevo");
 
         var home = Path.Combine(_root, "home");
-        var prism = Path.Combine(home, ".local", "share", "PrismLauncher", "instances", "Survival", "minecraft", "mods");
+        var prism = Path.Combine(home, ".local", "share", "PrismLauncher", "instances", "Survival",
+            "minecraft", "mods");
         Directory.CreateDirectory(prism);
 
         var (exit, output) = RunWithoutOverride(bash, script);

@@ -23,7 +23,8 @@ namespace McServerLauncher.Tests;
 [Collection("avalonia")]
 public class WhitelistSwitchTests(AvaloniaFixture ui) : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-whitelist-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-whitelist-" + Guid.NewGuid()
+        .ToString("N"));
     private string Properties => Path.Combine(_folder, "server.properties");
 
     private string? WhiteList() =>
@@ -55,7 +56,11 @@ public class WhitelistSwitchTests(AvaloniaFixture ui) : IDisposable
         Directory.CreateDirectory(_folder);
         File.WriteAllText(Properties, properties);
         ServerViewModel? server = null;
-        ui.Run(() => server = new ServerViewModel(new ServerConfig { Name = "survival", FolderPath = _folder }));
+        ui.Run(() => server = new ServerViewModel(new ServerConfig
+        {
+            Name = "survival",
+            FolderPath = _folder
+        }));
         return server!;
     }
 
@@ -93,6 +98,23 @@ public class WhitelistSwitchTests(AvaloniaFixture ui) : IDisposable
         Assert.Equal("true", WhiteList());
         Assert.True(server.WhitelistEnabled);
         Assert.Contains("Alex", server.WhitelistPlayers);
+    }
+
+    /// <summary>
+    /// "online-mode=yes" is an offline server, as the server itself reads it (only "true" is true):
+    /// the name goes in with the offline UUID, without asking Mojang. It used to count as online.
+    /// </summary>
+    [Fact]
+    public async Task OnlineModeThatIsNotTrueMeansOffline()
+    {
+        var server = Server("white-list=false\nonline-mode=yes\n");
+        server.NewWhitelistName = "Alex";
+
+        await Run(server, "AddToWhitelist");
+
+        Assert.Equal(new[] { "Alex" }, new WhitelistService().ReadNames(_folder));
+        Assert.Contains(WhitelistService.OfflineUuid("Alex"),
+            File.ReadAllText(Path.Combine(_folder, "whitelist.json")));
     }
 
     public void Dispose()

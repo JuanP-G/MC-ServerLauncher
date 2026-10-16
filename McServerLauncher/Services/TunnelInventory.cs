@@ -67,12 +67,15 @@ public sealed record TunnelSuggestion(
 public sealed record TunnelRow(
     PlayitTunnel Tunnel, TunnelHealth Health, IReadOnlyList<ServerPorts> Owners, string? SuggestedName)
 {
-    public bool NameDiffers => SuggestedName is not null && !string.Equals(Tunnel.Name, SuggestedName, StringComparison.Ordinal);
+    public bool NameDiffers => SuggestedName is not null
+        && !string.Equals(Tunnel.Name, SuggestedName, StringComparison.Ordinal);
 }
 
 public sealed record TunnelReport(IReadOnlyList<TunnelRow> Rows, IReadOnlyList<TunnelSuggestion> Suggestions)
 {
-    /// <summary>How many rows have something wrong with them (renaming is a tidy-up, not a problem).</summary>
+    /// <summary>
+    /// How many rows have something wrong with them (renaming is a tidy-up, not a problem).
+    /// </summary>
     public int ProblemCount => Rows.Count(r => r.Health != TunnelHealth.Ok);
 }
 
@@ -96,8 +99,11 @@ public static class TunnelInventory
 {
     private const string BedrockSuffix = " (Bedrock)";
 
-    /// <summary>The name a tunnel is created under, and recognised by: the server's, plus a suffix for Bedrock.</summary>
-    public static string NameFor(string serverName, bool udp) => udp ? serverName + BedrockSuffix : serverName;
+    /// <summary>
+    /// The name a tunnel is created under, and recognised by: the server's, plus a suffix for Bedrock.
+    /// </summary>
+    public static string NameFor(string serverName, bool udp) => udp ? serverName + BedrockSuffix
+        : serverName;
 
     public static TunnelReport Build(IReadOnlyList<PlayitTunnel> tunnels, IReadOnlyList<ServerPorts> servers)
     {
@@ -132,7 +138,8 @@ public static class TunnelInventory
 
         // One suggestion per shared tunnel, not per copy: a duplicated shared tunnel would otherwise
         // be reported twice for one underlying mistake.
-        foreach (var group in rows.Where(r => r.Owners.Count > 1).GroupBy(r => (r.Tunnel.LocalPort, r.Tunnel.IsUdp)))
+        foreach (var group in rows.Where(r => r.Owners.Count > 1)
+            .GroupBy(r => (r.Tunnel.LocalPort, r.Tunnel.IsUdp)))
         {
             var row = group.First();
             // Move the server the tunnel is not named after; when neither matches, the later one.
@@ -140,17 +147,20 @@ public static class TunnelInventory
                               row.Tunnel.Name, NameFor(o.Name, row.Tunnel.IsUdp), StringComparison.Ordinal))
                         ?? row.Owners[^1];
             var other = row.Owners.First(o => o.Id != mover.Id);
-            suggestions.Add(new(TunnelSuggestionKind.SharedPort, row.Tunnel.Id, mover.Id, mover.Name, other.Name,
+            suggestions.Add(new(TunnelSuggestionKind.SharedPort, row.Tunnel.Id, mover.Id, mover.Name,
+                other.Name,
                 Udp: row.Tunnel.IsUdp, Port: row.Tunnel.LocalPort));
         }
 
         foreach (var server in servers.Where(s => s.PlayitEnabled))
         {
             if (server.JavaPort is { } java && !tunnels.Any(t => !t.IsUdp && t.LocalPort == java))
-                suggestions.Add(new(TunnelSuggestionKind.CreateJava, null, server.Id, server.Name, Port: java));
+                suggestions.Add(new(TunnelSuggestionKind.CreateJava, null, server.Id, server.Name,
+                    Port: java));
 
             if (server.BedrockPort is { } bedrock && !tunnels.Any(t => t.IsUdp && t.LocalPort == bedrock))
-                suggestions.Add(new(TunnelSuggestionKind.CreateBedrock, null, server.Id, server.Name, Udp: true, Port: bedrock));
+                suggestions.Add(new(TunnelSuggestionKind.CreateBedrock, null, server.Id, server.Name,
+                    Udp: true, Port: bedrock));
         }
 
         // No suggestion for tunnels that work but carry another name. It was offered once and was
@@ -159,7 +169,9 @@ public static class TunnelInventory
         return new TunnelReport(rows, suggestions);
     }
 
-    /// <summary>The renames that keep a server's tunnels in step after the server itself was renamed.</summary>
+    /// <summary>
+    /// The renames that keep a server's tunnels in step after the server itself was renamed.
+    /// </summary>
     /// <param name="server">The server, carrying its <em>new</em> name.</param>
     /// <param name="oldName">The name it had.</param>
     /// <param name="tunnels">Every tunnel of the account.</param>
@@ -170,7 +182,8 @@ public static class TunnelInventory
     /// its own naming, never overwrites somebody else's.
     /// </remarks>
     public static IReadOnlyList<(string TunnelId, string NewName)> RenamesFor(
-        ServerPorts server, string oldName, IReadOnlyList<PlayitTunnel> tunnels, IReadOnlyList<ServerPorts> servers)
+        ServerPorts server, string oldName, IReadOnlyList<PlayitTunnel> tunnels,
+            IReadOnlyList<ServerPorts> servers)
     {
         var renames = new List<(string, string)>();
 
@@ -181,7 +194,8 @@ public static class TunnelInventory
             var owners = OwnersOf(tunnel, servers);
             if (owners.Count != 1 || owners[0].Id != server.Id) continue;
 
-            if (!string.Equals(tunnel.Name, NameFor(oldName, tunnel.IsUdp), StringComparison.Ordinal)) continue;
+            if (!string.Equals(tunnel.Name, NameFor(oldName, tunnel.IsUdp),
+                StringComparison.Ordinal)) continue;
 
             var next = NameFor(server.Name, tunnel.IsUdp);
             if (!string.Equals(tunnel.Name, next, StringComparison.Ordinal))

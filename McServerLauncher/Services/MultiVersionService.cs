@@ -34,7 +34,8 @@ public class MultiVersionService
 
     private readonly ModrinthService _modrinth;
 
-    public MultiVersionService(ModrinthService? modrinth = null) => _modrinth = modrinth ?? new ModrinthService();
+    public MultiVersionService(ModrinthService? modrinth = null) => _modrinth = modrinth
+        ?? new ModrinthService();
 
     /// <summary>Whether this kind of server can take them at all.</summary>
     /// <remarks>
@@ -50,9 +51,11 @@ public class MultiVersionService
     /// Both or neither, like Geyser and Floodgate: half of this is a server that quietly turns away
     /// the very players it was switched on for.
     /// </remarks>
-    public async Task InstallAsync(ServerConfig config, IProgress<string>? log, CancellationToken ct = default)
+    public async Task InstallAsync(ServerConfig config, IProgress<string>? log,
+        CancellationToken ct = default)
     {
-        var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type), "Msg_MultiVersionUnsupportedFmt");
+        var folder = ContentInstall.PrepareFolder(config, CanEnable(config.Type),
+            "Msg_MultiVersionUnsupportedFmt");
 
         // By name in what the user reads: "No se pudo sustituir viaversion" read like a bug.
         foreach (var (id, name) in Plugins)

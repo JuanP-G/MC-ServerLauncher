@@ -20,7 +20,9 @@ public partial class PlayitApiKeyDialog : Window
     /// <summary>True when the setup-code flow ran (as opposed to the legacy write-key fallback).</summary>
     public bool IsSetupResult { get; private set; }
 
-    /// <summary>The per-user agent secret key (valid when <see cref="IsSetupResult"/> and returned true).</summary>
+    /// <summary>
+    /// The per-user agent secret key (valid when <see cref="IsSetupResult"/> and returned true).
+    /// </summary>
     public string AgentSecretKey { get; private set; } = string.Empty;
 
     /// <summary>The agent id paired with <see cref="AgentSecretKey"/>.</summary>
@@ -29,7 +31,9 @@ public partial class PlayitApiKeyDialog : Window
     /// <summary>True if Playit reported the account is over its agent limit (still usable).</summary>
     public bool AgentOverLimit { get; private set; }
 
-    /// <summary>The pasted write key (legacy fallback path; valid when NOT <see cref="IsSetupResult"/>).</summary>
+    /// <summary>
+    /// The pasted write key (legacy fallback path; valid when NOT <see cref="IsSetupResult"/>).
+    /// </summary>
     public string LegacyWriteKey { get; private set; } = string.Empty;
 
     public PlayitApiKeyDialog()

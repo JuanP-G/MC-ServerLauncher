@@ -33,7 +33,8 @@ public class StoreHashTests : IDisposable
         // to the store the way the Mods tab does, and look at what would go out on the wire.
         var computed = await new FileHashCache().Sha1Async(_file);
 
-        Assert.Equal(computed.ToLowerInvariant(), Assert.Single(ModrinthService.ApiHashes(new[] { computed })));
+        Assert.Equal(computed.ToLowerInvariant(),
+            Assert.Single(ModrinthService.ApiHashes(new[] { computed })));
     }
 
     [Fact]

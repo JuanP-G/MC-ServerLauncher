@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using McServerLauncher.Localization;
@@ -64,14 +63,16 @@ public partial class ConnectionTestViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RunButtonText))]
-    [NotifyCanExecuteChangedFor(nameof(RunCommand), nameof(StartServerAndRunCommand), nameof(CopyReportCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RunCommand), nameof(StartServerAndRunCommand),
+        nameof(CopyReportCommand))]
     private bool _isTesting;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RunButtonText))]
     private bool _hasRun;
 
-    public string RunButtonText => Localizer.Get(IsTesting ? "Net_Testing" : HasRun ? "Net_Repeat" : "Net_Run");
+    public string RunButtonText => Localizer.Get(IsTesting ? "Net_Testing" : HasRun ? "Net_Repeat"
+        : "Net_Run");
 
     /// <summary>One sentence for the whole test, once it has run.</summary>
     [ObservableProperty]
@@ -111,7 +112,9 @@ public partial class ConnectionTestViewModel : ObservableObject
     [ObservableProperty]
     private string _peakText = "—";
 
-    /// <summary>The tunnel's round trips, or the server's when there is no tunnel, for the little graph.</summary>
+    /// <summary>
+    /// The tunnel's round trips, or the server's when there is no tunnel, for the little graph.
+    /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSamples))]
     private IReadOnlyList<double> _samplesSeries = Array.Empty<double>();
@@ -155,7 +158,8 @@ public partial class ConnectionTestViewModel : ObservableObject
         {
             var ct = Renew();
             IsTesting = true;
-            LocalStep.Set(StepState.Running, Localizer.Get("Net_Starting"), Localizer.Get("Net_StartingDetail"));
+            LocalStep.Set(StepState.Running, Localizer.Get("Net_Starting"),
+                Localizer.Get("Net_StartingDetail"));
             if (!_server.IsPreparing) _server.StartCommand.Execute(null);
             try
             {
@@ -221,11 +225,13 @@ public partial class ConnectionTestViewModel : ObservableObject
             SlpReply? status = null;
             if (!running)
             {
-                LocalStep.Set(StepState.Skipped, Localizer.Get("Net_LocalOff"), Localizer.Get("Net_LocalOffDetail"));
+                LocalStep.Set(StepState.Skipped, Localizer.Get("Net_LocalOff"),
+                    Localizer.Get("Net_LocalOffDetail"));
             }
             else
             {
-                LocalStep.Set(StepState.Running, Localizer.Get("Net_StepLocal"), Localizer.Get("Net_Measuring"));
+                LocalStep.Set(StepState.Running, Localizer.Get("Net_StepLocal"),
+                    Localizer.Get("Net_Measuring"));
                 local = await ConnectionProbe.SampleAsync(async c =>
                 {
                     var reply = await ConnectionProbe.PingJavaAsync("127.0.0.1", port, Wait, c);
@@ -237,7 +243,8 @@ public partial class ConnectionTestViewModel : ObservableObject
             }
 
             // ---- This machine's internet ----
-            InternetStep.Set(StepState.Running, Localizer.Get("Net_StepInternet"), Localizer.Get("Net_Measuring"));
+            InternetStep.Set(StepState.Running, Localizer.Get("Net_StepInternet"),
+                Localizer.Get("Net_Measuring"));
             var internet = await ConnectionProbe.SampleAsync(
                 c => ConnectionProbe.TcpRoundTripAsync(ConnectionProbe.LatencyHost, 443, Wait, c),
                 Samples, TimeSpan.FromMilliseconds(100), Live(InternetStep), ct);
@@ -261,16 +268,20 @@ public partial class ConnectionTestViewModel : ObservableObject
             LatencyStats tunnel = LatencyStats.None;
             var address = _server.Config.PlayitEnabled ? _server.TunnelAddress : null;
             if (string.IsNullOrWhiteSpace(address))
-                TunnelStep.Set(StepState.Skipped, Localizer.Get("Net_NoTunnel"), Localizer.Get("Net_NoTunnelDetail"));
+                TunnelStep.Set(StepState.Skipped, Localizer.Get("Net_NoTunnel"),
+                    Localizer.Get("Net_NoTunnelDetail"));
             else if (!running)
-                TunnelStep.Set(StepState.Skipped, Localizer.Get("Net_StepTunnel"), Localizer.Get("Net_NeedsServer"));
+                TunnelStep.Set(StepState.Skipped, Localizer.Get("Net_StepTunnel"),
+                    Localizer.Get("Net_NeedsServer"));
             else
             {
-                TunnelStep.Set(StepState.Running, Localizer.Get("Net_StepTunnel"), Localizer.Get("Net_Measuring"));
+                TunnelStep.Set(StepState.Running, Localizer.Get("Net_StepTunnel"),
+                    Localizer.Get("Net_Measuring"));
                 var (host, publicPort) = await ConnectionProbe.ResolveJavaAsync(address, ct);
                 addresses.Add($"{Localizer.Get("Net_RowTunnel")}: {address} → {host}:{publicPort}");
                 // The server's own protocol number: Playit's edge refuses the -1 status tools send.
-                var protocol = status?.Protocol is > 0 and var known ? known : ConnectionProbe.FallbackProtocol;
+                var protocol = status?.Protocol is > 0 and var known ? known
+                    : ConnectionProbe.FallbackProtocol;
                 tunnel = await ConnectionProbe.SampleAsync(async c =>
                     (await ConnectionProbe.PingJavaAsync(host, publicPort, Wait, c, protocol))?.LatencyMs,
                     Samples, Gap, Live(TunnelStep), ct);
@@ -282,13 +293,17 @@ public partial class ConnectionTestViewModel : ObservableObject
             if (Steps.Contains(BedrockStep))
             {
                 var host = _server.BedrockHost;
-                if (string.IsNullOrWhiteSpace(host) || !int.TryParse(_server.BedrockPortText, out var bedrockPort))
-                    BedrockStep.Set(StepState.Skipped, Localizer.Get("Net_NoBedrock"), Localizer.Get("Net_NoBedrockDetail"));
+                if (string.IsNullOrWhiteSpace(host)
+                    || !int.TryParse(_server.BedrockPortText, out var bedrockPort))
+                    BedrockStep.Set(StepState.Skipped, Localizer.Get("Net_NoBedrock"),
+                        Localizer.Get("Net_NoBedrockDetail"));
                 else if (!running)
-                    BedrockStep.Set(StepState.Skipped, Localizer.Get("Net_StepBedrock"), Localizer.Get("Net_NeedsServer"));
+                    BedrockStep.Set(StepState.Skipped, Localizer.Get("Net_StepBedrock"),
+                        Localizer.Get("Net_NeedsServer"));
                 else
                 {
-                    BedrockStep.Set(StepState.Running, Localizer.Get("Net_StepBedrock"), Localizer.Get("Net_Measuring"));
+                    BedrockStep.Set(StepState.Running, Localizer.Get("Net_StepBedrock"),
+                        Localizer.Get("Net_Measuring"));
                     addresses.Add($"{Localizer.Get("Net_RowBedrock")}: {host}:{bedrockPort}");
                     // A name that does not resolve is a tunnel nobody can reach: every ping lost.
                     var bedrock = await ConnectionProbe.ResolveAsync(host, ct) is { } ip
@@ -303,7 +318,8 @@ public partial class ConnectionTestViewModel : ObservableObject
 
             var series = tunnel.AnyReply ? tunnel : local;
             SamplesSeries = series.Samples.ToList();
-            SamplesTitle = string.Format(Localizer.Get(tunnel.AnyReply ? "Net_SamplesTunnelFmt" : "Net_SamplesLocalFmt"),
+            SamplesTitle = string.Format(Localizer.Get(tunnel.AnyReply ? "Net_SamplesTunnelFmt"
+                : "Net_SamplesLocalFmt"),
                 series.Received);
 
             if (status is not null)
@@ -354,13 +370,15 @@ public partial class ConnectionTestViewModel : ObservableObject
     internal static StepState Grade(LatencyStats stats, double good, double fair)
     {
         if (!stats.AnyReply) return StepState.Bad;
-        var state = stats.Average < good ? StepState.Good : stats.Average < fair ? StepState.Fair : StepState.Bad;
+        var state = stats.Average < good ? StepState.Good : stats.Average < fair ? StepState.Fair
+            : StepState.Bad;
         if (stats.Loss > 0.25) return StepState.Bad;
         if (stats.Loss > 0 && state == StepState.Good) return StepState.Fair;
         return state;
     }
 
-    private static void Judge(ConnectionStepViewModel step, LatencyStats stats, double good, double fair, string prefix)
+    private static void Judge(ConnectionStepViewModel step, LatencyStats stats, double good, double fair,
+        string prefix)
     {
         var state = Grade(stats, good, fair);
         var key = !stats.AnyReply ? "NoReply" : state.ToString();
@@ -372,20 +390,23 @@ public partial class ConnectionTestViewModel : ObservableObject
     {
         if (!latency.AnyReply)
         {
-            InternetStep.Set(StepState.Bad, Localizer.Get("Net_InternetNone"), Localizer.Get("Net_InternetNoneDetail"),
+            InternetStep.Set(StepState.Bad, Localizer.Get("Net_InternetNone"),
+                Localizer.Get("Net_InternetNoneDetail"),
                 Localizer.Get("Net_NoAnswer"));
             return;
         }
 
         var byLatency = Grade(latency, good: 50, fair: 120);
-        var byUpload = up.Mbps <= 0 ? StepState.Fair : up.Mbps < 3 ? StepState.Bad : up.Mbps < 10 ? StepState.Fair : StepState.Good;
+        var byUpload = up.Mbps <= 0 ? StepState.Fair : up.Mbps < 3 ? StepState.Bad : up.Mbps < 10
+            ? StepState.Fair : StepState.Good;
         var state = (StepState)Math.Max((int)byLatency, (int)byUpload);
         // About one megabit a player, which is generous: past a hundred the number stops meaning much.
         var players = Math.Clamp((int)Math.Floor(up.Mbps), 1, 100);
 
         var (title, detail) = state switch
         {
-            StepState.Good => ("Net_InternetGood", string.Format(Localizer.Get("Net_InternetGoodDetailFmt"), players)),
+            StepState.Good => ("Net_InternetGood",
+                string.Format(Localizer.Get("Net_InternetGoodDetailFmt"), players)),
             // Nothing went up: the line was not measured, which is not the same as lag.
             StepState.Fair when up.Mbps <= 0 && byLatency == StepState.Good =>
                 ("Net_InternetNoSpeed", Localizer.Get("Net_InternetNoSpeedDetail")),
@@ -400,7 +421,8 @@ public partial class ConnectionTestViewModel : ObservableObject
 
     private void Conclude()
     {
-        var measured = Steps.Where(s => s.State is StepState.Good or StepState.Fair or StepState.Bad).ToList();
+        var measured = Steps.Where(s => s.State is StepState.Good or StepState.Fair or StepState.Bad)
+            .ToList();
         var worst = measured.OrderByDescending(s => (int)s.State).FirstOrDefault();
         if (worst is null || worst.State == StepState.Good)
         {
@@ -443,8 +465,7 @@ public partial class ConnectionTestViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCopy))]
     private async Task CopyReport()
     {
-        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-        if (top?.Clipboard is not { } clipboard) return;
+        if (AppWindows.Main?.Clipboard is not { } clipboard) return;
         try
         {
             await clipboard.SetTextAsync(Report);
@@ -469,6 +490,7 @@ public partial class ConnectionTestViewModel : ObservableObject
     private static string Mbps(Throughput t) =>
         t.Mbps <= 0 ? "—" : t.Mbps.ToString(t.Mbps < 10 ? "0.0" : "0", CultureInfo.CurrentCulture) + " Mb/s";
 
+    /// <summary>The upload peak, in decimal units like the Mb/s beside it: 8 Mb/s is 1 MB/s.</summary>
     private static string Bytes(double bytes) =>
         bytes >= 1_000_000 ? (bytes / 1_000_000).ToString("0.0", CultureInfo.CurrentCulture) + " MB"
         : (bytes / 1_000).ToString("0", CultureInfo.CurrentCulture) + " kB";

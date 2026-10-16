@@ -106,14 +106,16 @@ public class ConsoleContinuationTests
         // printStackTrace to standard output, with no log line announcing it: the frames alone still
         // have to stand out, and they are recognised by shape, not by indentation.
         Assert.Equal(ConsoleLineKind.Error, ConsoleLineClassifier.Classify(
-            "\tat java.base/java.lang.Thread.run(Thread.java:840)", ConsoleSource.Stdout, ConsoleLineKind.Info));
+            "\tat java.base/java.lang.Thread.run(Thread.java:840)", ConsoleSource.Stdout,
+                ConsoleLineKind.Info));
     }
 
     [Fact]
     public void WithNothingAboveItAPrefixlessLineIsPlainOutput()
     {
         Assert.Equal(ConsoleLineKind.Info, ConsoleLineClassifier.Classify(
-            "Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture", ConsoleSource.Stdout));
+            "Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture",
+                ConsoleSource.Stdout));
     }
 
     [Fact]

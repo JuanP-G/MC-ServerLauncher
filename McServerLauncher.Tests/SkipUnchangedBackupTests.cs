@@ -12,7 +12,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class SkipUnchangedBackupTests : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-skip-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-skip-" + Guid.NewGuid()
+        .ToString("N"));
 
     private string World => Path.Combine(_folder, "world");
     private string Backups => Path.Combine(_folder, "backups");

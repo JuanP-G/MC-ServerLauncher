@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
@@ -82,7 +81,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private static readonly TimeSpan AutoRestartDelay = TimeSpan.FromSeconds(5);
     private int _consecutiveCrashes;
 
-    /// <summary>Whether this run has already explained a Bedrock player being kicked for having no mods.</summary>
+    /// <summary>
+    /// Whether this run has already explained a Bedrock player being kicked for having no mods.
+    /// </summary>
     private bool _moddedKickWarned;
 
     /// <summary>Whether this run has already explained the server refusing to start from its path.</summary>
@@ -550,9 +551,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     // returns to full speed on the first tick after the window is shown again.
 
     /// <summary>True when the main window is hidden, i.e. minimized to the tray (see MainWindow).</summary>
-    private static bool MainWindowHidden =>
-        (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
-            is not { IsVisible: true };
+    private static bool MainWindowHidden => AppWindows.Main is not { IsVisible: true };
 
     private int _hiddenStatsTicks;
     private int _hiddenPlayitTicks;
@@ -624,7 +623,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
         IdleCountdownText = string.Format(
             Localizer.Get("Idle_CountdownFmt"),
-            FormatCountdown(IdleRemaining(Config.IdleShutdownMinutes, _emptySinceUtc.Value, DateTime.UtcNow)));
+            FormatCountdown(IdleRemaining(Config.IdleShutdownMinutes, _emptySinceUtc.Value,
+                DateTime.UtcNow)));
     }
 
     private void StopIdleCountdown()
@@ -724,7 +724,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             VersionName: string.IsNullOrWhiteSpace(Config.GameVersion) ? "?" : Config.GameVersion,
             MaxPlayers: _maxPlayers,
             IconPath: File.Exists(icon) ? icon : null,
-            DisconnectMessage: WakeSign.KickStyle + Localizer.Get(starting ? "Wake_KickStarting" : "Wake_KickWaking"),
+            DisconnectMessage: WakeSign.KickStyle + Localizer.Get(starting ? "Wake_KickStarting"
+                : "Wake_KickWaking"),
             RefusedMessage: WakeSign.KickStyle + Localizer.Get("Wake_KickNotWhitelisted"));
     }
 
@@ -754,7 +755,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         return true;
     }
 
-    /// <summary>Whether <paramref name="player"/> may wake this server. See <see cref="WakePolicy"/>.</summary>
+    /// <summary>
+    /// Whether <paramref name="player"/> may wake this server. See <see cref="WakePolicy"/>.
+    /// </summary>
     /// <remarks>
     /// Nothing is said in the console about a refusal: the ones worth refusing are scanners, and
     /// they come by the hundred.
@@ -764,8 +767,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         try
         {
             var props = _properties.Read(Config.PropertiesPath);
-            var whitelistOn = props.TryGetValue("white-list", out var w)
-                              && w.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
+            var whitelistOn = ServerPropertiesService.GetBool(props, "white-list", fallback: false);
 
             // The two lists are only read when they can change the answer.
             if (!whitelistOn || !Config.WakeOnlyForWhitelist) return true;
@@ -1200,7 +1202,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         }
     }
 
-    /// <summary>What the last line on standard output was. See <see cref="ConsoleLineClassifier.Classify"/>.</summary>
+    /// <summary>
+    /// What the last line on standard output was. See <see cref="ConsoleLineClassifier.Classify"/>.
+    /// </summary>
     private ConsoleLineKind? _lastStdoutKind;
 
     private void OnConsoleLine(string text, ConsoleLineKind kind)
@@ -1227,7 +1231,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             Dispatcher.UIThread.Post(FlushConsole, DispatcherPriority.Background);
     }
 
-    /// <summary>Lines waiting for the UI thread. See <see cref="OnConsoleLine(string, ConsoleLineKind)"/>.</summary>
+    /// <summary>
+    /// Lines waiting for the UI thread. See <see cref="OnConsoleLine(string, ConsoleLineKind)"/>.
+    /// </summary>
     private readonly System.Collections.Concurrent.ConcurrentQueue<ConsoleLine> _pendingLines = new();
 
     /// <summary>1 while a flush is posted and has not run yet.</summary>
@@ -1368,7 +1374,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             SnapshotOnline();
             History.RequestRefresh();
             UpdatePlayerCount();
-            NotifyIf(NotificationKind.PlayerJoined, string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
+            NotifyIf(NotificationKind.PlayerJoined,
+                string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
             return;
         }
 
@@ -1404,9 +1411,6 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         ToastService.Shared.Notify(Name, message, entry.Level, entry.Emoji,
             NotificationPreferences.EffectiveFor(Config));
     }
-
-    [System.Text.RegularExpressions.GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]
-    private static partial System.Text.RegularExpressions.Regex PlayerNameRegex();
 
     [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task Start()
@@ -1561,7 +1565,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
                 return;
             }
 
-            OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartingFmt"), _consecutiveCrashes, MaxAutoRestarts));
+            OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartingFmt"), _consecutiveCrashes,
+                MaxAutoRestarts));
             await Task.Delay(AutoRestartDelay);
 
             // Only proceed if nothing else already started it in the meantime (e.g. the user
@@ -1703,7 +1708,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
                 return true;
 
             case MissingDependenciesChoice.InstallAndStart:
-                await Mods.InstallMissingAsync(missing.Select(m => m.Id), new Progress<string>(OnConsoleLine));
+                await Mods.InstallMissingAsync(missing.Select(m => m.Id),
+                    new Progress<string>(OnConsoleLine));
 
                 // Checked again rather than assumed: an install can fail, and a store that does not
                 // know a name — cristallib is published as cristel-lib — resolves to nothing at all.
@@ -1723,8 +1729,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     /// <summary>Shows a dialog owned by the main window, so it cannot open behind it.</summary>
     private static async Task<MissingDependenciesChoice> ShowDialogAsync(MissingDependenciesDialog dialog)
     {
-        var owner = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
-            ?.MainWindow;
+        var owner = AppWindows.Main;
 
         if (owner is null)
         {
@@ -1985,8 +1990,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private async Task CopyTunnelAddress()
     {
         if (string.IsNullOrEmpty(TunnelAddress)) return;
-        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-        if (top?.Clipboard is { } cb)
+        if (AppWindows.Main?.Clipboard is { } cb)
             await cb.SetTextAsync(TunnelAddress);
     }
 
@@ -2075,11 +2079,10 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         RefreshPlayers();
     }
 
-    private void RefreshWhitelist(IDictionary<string, string>? props = null)
+    private void RefreshWhitelist(IReadOnlyDictionary<string, string>? props = null)
     {
         props ??= _properties.Read(Config.PropertiesPath);
-        WhitelistEnabled = props.TryGetValue("white-list", out var w)
-                           && w.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
+        WhitelistEnabled = ServerPropertiesService.GetBool(props, "white-list", fallback: false);
 
         WhitelistPlayers.Clear();
         foreach (var name in _whitelist.ReadNames(Config.FolderPath))
@@ -2103,8 +2106,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             else
             {
                 var props = _properties.Read(Config.PropertiesPath);
-                var online = !props.TryGetValue("online-mode", out var om)
-                             || !om.Trim().Equals("false", StringComparison.OrdinalIgnoreCase);
+                var online = ServerPropertiesService.GetBool(props, "online-mode", fallback: true);
                 await _whitelist.AddAsync(Config.FolderPath, name, online);
             }
             NewWhitelistName = string.Empty;
@@ -2142,8 +2144,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         if (!_process.IsRunning || changes.Count == 0) return;
 
         _savedWhileRunning.Note(changes);
-        if (changes.TryGetValue("white-list", out var whitelist))
-            await SetWhitelistAsync(whitelist.Trim().Equals("true", StringComparison.OrdinalIgnoreCase));
+        if (changes.ContainsKey("white-list"))
+            await SetWhitelistAsync(ServerPropertiesService.GetBool(changes, "white-list", fallback: false));
     }
 
     /// <summary>Switches the whitelist on or off, keeping whoever is on it.</summary>
@@ -2253,8 +2255,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     /// <summary>
     /// Validates a player name before it's embedded in a console command sent over stdin or
     /// written to the whitelist/ban files. Only real Minecraft names pass
-    /// (letters/digits/underscore, 1-16 chars — the same rule <see cref="PlayerNameRegex"/>
-    /// enforces for join/leave detection): this both blocks command injection (a "\n" would add a
+    /// (letters/digits/underscore, 1-16 chars — the same rule <see cref="PlayerNames"/>
+    /// holds for join/leave detection): this both blocks command injection (a "\n" would add a
     /// second console command) and confusing extra arguments (a name with spaces would turn
     /// "ban a b" into banning "a" with reason "b"). Returns the trimmed name, or null after
     /// logging a clear message when the input isn't a valid name.
@@ -2263,7 +2265,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     {
         name = name?.Trim();
         if (string.IsNullOrEmpty(name)) return null;
-        if (PlayerNameRegex().IsMatch(name)) return name;
+        if (PlayerNames.IsValid(name)) return name;
 
         // Show what was rejected, defanged for display (no line breaks, capped length).
         var shown = name.Replace("\r", "").Replace("\n", " ");
@@ -2275,28 +2277,32 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     [RelayCommand]
     private async Task OpPlayer(string? name)
     {
-        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Op"))) return;
+        if ((name = ValidPlayerNameOrWarn(name)) is null
+            || !EnsureRunning(Localizer.Get("Action_Op"))) return;
         await PlayerCommandAsync($"op {name}");
     }
 
     [RelayCommand]
     private async Task DeopPlayer(string? name)
     {
-        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Deop"))) return;
+        if ((name = ValidPlayerNameOrWarn(name)) is null
+            || !EnsureRunning(Localizer.Get("Action_Deop"))) return;
         await PlayerCommandAsync($"deop {name}");
     }
 
     [RelayCommand]
     private async Task KickPlayer(string? name)
     {
-        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Kick"))) return;
+        if ((name = ValidPlayerNameOrWarn(name)) is null
+            || !EnsureRunning(Localizer.Get("Action_Kick"))) return;
         await PlayerCommandAsync($"kick {name}");
     }
 
     [RelayCommand]
     private async Task BanPlayer(string? name)
     {
-        if ((name = ValidPlayerNameOrWarn(name)) is null || !EnsureRunning(Localizer.Get("Action_Ban"))) return;
+        if ((name = ValidPlayerNameOrWarn(name)) is null
+            || !EnsureRunning(Localizer.Get("Action_Ban"))) return;
         await PlayerCommandAsync($"ban {name}");
     }
 

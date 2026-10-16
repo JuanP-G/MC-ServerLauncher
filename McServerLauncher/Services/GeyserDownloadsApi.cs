@@ -54,7 +54,8 @@ public static class GeyserDownloadsApi
     /// nothing is installed without its checksum, and returning one here would push that decision
     /// out to callers who would each have to remember it.
     /// </remarks>
-    public static async Task<Artifact?> LatestAsync(string project, string platform, CancellationToken ct = default)
+    public static async Task<Artifact?> LatestAsync(string project, string platform,
+        CancellationToken ct = default)
     {
         var versionsJson = await Http.GetStringAsync($"{Base}/{project}", ct);
         using var versions = JsonDocument.Parse(versionsJson);
@@ -72,10 +73,12 @@ public static class GeyserDownloadsApi
         {
             ct.ThrowIfCancellationRequested();
 
-            var buildJson = await Http.GetStringAsync($"{Base}/{project}/versions/{version}/builds/{build}", ct);
+            var buildJson = await Http.GetStringAsync($"{Base}/{project}/versions/{version}/builds/{build}",
+                ct);
             using var doc = JsonDocument.Parse(buildJson);
 
-            if (!doc.RootElement.GetProperty("downloads").TryGetProperty(platform, out var download)) continue;
+            if (!doc.RootElement.GetProperty("downloads")
+                .TryGetProperty(platform, out var download)) continue;
 
             var name = download.TryGetProperty("name", out var n) ? n.GetString() : null;
             var sha256 = download.TryGetProperty("sha256", out var h) ? h.GetString() : null;

@@ -24,7 +24,8 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public sealed class FileHashCache
 {
-    private readonly ConcurrentDictionary<string, (long Length, DateTime Written, string Sha1)> _known = new();
+    private readonly ConcurrentDictionary<string, (long Length, DateTime Written,
+        string Sha1)> _known = new();
 
     /// <summary>The file's SHA-1, hashing it only if this exact file has not been hashed already.</summary>
     public async Task<string> Sha1Async(string path, CancellationToken ct = default)

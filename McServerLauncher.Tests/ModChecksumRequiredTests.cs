@@ -12,7 +12,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class ModChecksumRequiredTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-nohash-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-nohash-" + Guid.NewGuid()
+        .ToString("N"));
 
     [Fact]
     public async Task NoHashMeansNoDownload()

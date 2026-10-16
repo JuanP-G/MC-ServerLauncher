@@ -59,8 +59,10 @@ public class ViewModelLifecycleTests : IDisposable
         {
             var config = new ServerConfig
             {
-                Name = "survival", FolderPath = ServerFolder("survival"),
-                Type = ServerType.Fabric, GameVersion = "1.21.1"
+                Name = "survival",
+                FolderPath = ServerFolder("survival"),
+                Type = ServerType.Fabric,
+                GameVersion = "1.21.1"
             };
 
             var server = new ServerViewModel(config);
@@ -83,7 +85,8 @@ public class ViewModelLifecycleTests : IDisposable
         {
             var server = new ServerViewModel(new ServerConfig
             {
-                Name = "never-started", FolderPath = ServerFolder("never-started")
+                Name = "never-started",
+                FolderPath = ServerFolder("never-started")
             });
 
             // On the UI thread and waited for here rather than awaited: with no process running,

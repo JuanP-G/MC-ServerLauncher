@@ -42,6 +42,21 @@ public class ServerPropertiesService
         return result;
     }
 
+    /// <summary>A true/false value as the server reads it: only "true" is true, in any case.</summary>
+    /// <param name="raw">What the file says, or null when the key is not there.</param>
+    /// <param name="fallback">What an absent key means.</param>
+    /// <remarks>
+    /// Java's <c>Boolean.parseBoolean</c>, which is what the server calls: "yes" or "1" are false, so
+    /// <c>online-mode=yes</c> is an offline server. The reads that each compared the text themselves
+    /// had two readings — some took anything but "false" as true.
+    /// </remarks>
+    public static bool ParseBool(string? raw, bool fallback) =>
+        raw is null ? fallback : raw.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>One true/false key of <paramref name="props"/>, see <see cref="ParseBool"/>.</summary>
+    public static bool GetBool(IReadOnlyDictionary<string, string> props, string key, bool fallback) =>
+        ParseBool(props.TryGetValue(key, out var raw) ? raw : null, fallback);
+
     /// <summary>Returns the server port (server-port) or null if not found.</summary>
     public int? GetServerPort(string propertiesPath)
     {

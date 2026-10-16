@@ -22,13 +22,15 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class BackupOfARunningWorldTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-hot-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-hot-" + Guid.NewGuid()
+        .ToString("N"));
     private readonly List<FileStream> _heldByTheServer = new();
 
     public BackupOfARunningWorldTests()
     {
         Directory.CreateDirectory(Path.Combine(_dir, "world", "region"));
-        Directory.CreateDirectory(Path.Combine(_dir, "world", "data"));   // empty, and still part of the world
+        Directory.CreateDirectory(Path.Combine(_dir, "world",
+            "data"));   // empty, and still part of the world
         File.WriteAllText(Path.Combine(_dir, "world", "level.dat"), "level");
         File.WriteAllText(Path.Combine(_dir, "world", "region", "r.0.0.mca"), "chunks");
         File.WriteAllText(Path.Combine(_dir, "world", "session.lock"), "☃");
@@ -39,7 +41,8 @@ public class BackupOfARunningWorldTests : IDisposable
     /// <summary>Opens a file the way a running Minecraft server has it open.</summary>
     private void HeldOpen(string relative, FileShare share)
     {
-        var stream = new FileStream(Path.Combine(_dir, "world", relative), FileMode.Open, FileAccess.ReadWrite, share);
+        var stream = new FileStream(Path.Combine(_dir, "world", relative), FileMode.Open,
+            FileAccess.ReadWrite, share);
         _heldByTheServer.Add(stream);
     }
 
@@ -101,7 +104,9 @@ public class BackupOfARunningWorldTests : IDisposable
         Assert.False(File.Exists(Path.Combine(_dir, "world", "session.lock")));
     }
 
-    /// <summary>A copy whose second file fails to open, the way a disk error or a new kind of lock would.</summary>
+    /// <summary>
+    /// A copy whose second file fails to open, the way a disk error or a new kind of lock would.
+    /// </summary>
     private sealed class FailsHalfway(Exception failure, Action? beforeSecond = null) : WorldBackupService
     {
         private int _opened;
@@ -148,7 +153,8 @@ public class BackupOfARunningWorldTests : IDisposable
     public async Task WhatACrashedCopyLeftIsNeitherListedNorKept()
     {
         Directory.CreateDirectory(Backups);
-        var leftover = Path.Combine(Backups, "world-20260101-000000--stop.zip" + WorldBackupService.PartialSuffix);
+        var leftover = Path.Combine(Backups,
+            "world-20260101-000000--stop.zip" + WorldBackupService.PartialSuffix);
         File.WriteAllText(leftover, "half a zip");
         var service = new WorldBackupService();
 

@@ -8,7 +8,9 @@ namespace McServerLauncher.Services;
 /// <summary>Where a seed the app shows came from, which decides how it is described.</summary>
 public enum SeedSource
 {
-    /// <summary>Nothing to show: no world yet and no seed asked for, or a world the app cannot read.</summary>
+    /// <summary>
+    /// Nothing to show: no world yet and no seed asked for, or a world the app cannot read.
+    /// </summary>
     Unknown,
 
     /// <summary>Read from the world itself. This is the seed the world was generated with.</summary>
@@ -127,7 +129,8 @@ public static partial class WorldSeed
     /// <summary>The inverse of <see cref="EscapeForProperties"/>, for reading level-seed back.</summary>
     internal static string Unescape(string value) =>
         EscapedChar().Replace(value, m => m.Groups[1].Success
-            ? ((char)int.Parse(m.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)).ToString()
+            ? ((char)int.Parse(m.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture))
+                .ToString()
             : m.Groups[2].Value);
 
     /// <summary>

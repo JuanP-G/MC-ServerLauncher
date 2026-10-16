@@ -22,7 +22,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class BackupLevelNameTests : IDisposable
 {
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-level-" + Guid.NewGuid().ToString("N"));
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-level-" + Guid.NewGuid()
+        .ToString("N"));
     private string Server => Path.Combine(_root, "server");
 
     public BackupLevelNameTests()

@@ -87,7 +87,10 @@ public class ServerViewModelRefreshTests : IDisposable
         Jar(folder, "mods", "lithium.jar");
         var config = new ServerConfig
         {
-            Name = "convert", FolderPath = folder, Type = ServerType.Fabric, GameVersion = "1.21.1"
+            Name = "convert",
+            FolderPath = folder,
+            Type = ServerType.Fabric,
+            GameVersion = "1.21.1"
         };
 
         WithServer(config, server =>
@@ -121,8 +124,10 @@ public class ServerViewModelRefreshTests : IDisposable
         // nothing and the store went on filtering for a version the server had left behind.
         var config = new ServerConfig
         {
-            Name = "version", FolderPath = Folder("version"),
-            Type = ServerType.Fabric, GameVersion = "1.21.1"
+            Name = "version",
+            FolderPath = Folder("version"),
+            Type = ServerType.Fabric,
+            GameVersion = "1.21.1"
         };
 
         WithServer(config, server =>
@@ -156,7 +161,10 @@ public class ServerViewModelRefreshTests : IDisposable
 
         var config = new ServerConfig
         {
-            Name = "mover", FolderPath = before, Type = ServerType.Fabric, GameVersion = "1.21.1"
+            Name = "mover",
+            FolderPath = before,
+            Type = ServerType.Fabric,
+            GameVersion = "1.21.1"
         };
 
         WithServer(config, server =>
@@ -199,9 +207,12 @@ public class ServerViewModelRefreshTests : IDisposable
         // Bedrock panel stayed on screen for a server that no longer had crossplay.
         var config = new ServerConfig
         {
-            Name = "bedrock", FolderPath = Folder("bedrock"),
-            Type = ServerType.Paper, GameVersion = "1.21.1",
-            CrossplayEnabled = true, BedrockPort = 19132
+            Name = "bedrock",
+            FolderPath = Folder("bedrock"),
+            Type = ServerType.Paper,
+            GameVersion = "1.21.1",
+            CrossplayEnabled = true,
+            BedrockPort = 19132
         };
 
         WithServer(config, server =>
@@ -227,7 +238,9 @@ public class ServerViewModelRefreshTests : IDisposable
         // finished with keeps reacting to a config somebody else may still be editing.
         var config = new ServerConfig
         {
-            Name = "suelto", FolderPath = Folder("suelto"), Type = ServerType.Vanilla
+            Name = "suelto",
+            FolderPath = Folder("suelto"),
+            Type = ServerType.Vanilla
         };
 
         _ui.Run(() =>

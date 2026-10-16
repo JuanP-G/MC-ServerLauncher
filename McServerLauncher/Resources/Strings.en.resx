@@ -42,8 +42,6 @@
   <data name="Remove" xml:space="preserve"><value>Remove</value></data>
   <data name="Players_Banned" xml:space="preserve"><value>Banned</value></data>
   <data name="Unban" xml:space="preserve"><value>Unban</value></data>
-  <data name="Players_Known" xml:space="preserve"><value>Have joined before</value></data>
-  <data name="Update_Download" xml:space="preserve"><value>Download</value></data>
   <data name="Tip_Hide" xml:space="preserve"><value>Hide</value></data>
   <data name="Language" xml:space="preserve"><value>Language</value></data>
   <data name="Status_Stopped" xml:space="preserve"><value>Off</value></data>
@@ -57,8 +55,6 @@
   <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="Browse" xml:space="preserve"><value>Browse...</value></data>
-  <data name="Cs_ModeNew" xml:space="preserve"><value>Create a new one</value></data>
-  <data name="Cs_ModeExisting" xml:space="preserve"><value>Use a folder that already exists</value></data>
   <data name="Cs_ExistingFolder" xml:space="preserve"><value>Server folder</value></data>
   <data name="Cs_ExistingFolderPlaceholder" xml:space="preserve"><value>The folder the server is in</value></data>
   <data name="Cs_ExistingJar" xml:space="preserve"><value>Which .jar to run</value></data>
@@ -156,10 +152,8 @@
   <data name="Pk_Connect" xml:space="preserve"><value>Connect to Playit</value></data>
   <data name="Pk_Reconnect" xml:space="preserve"><value>Reconnect</value></data>
   <data name="Pk_Disconnect" xml:space="preserve"><value>Disconnect</value></data>
-  <data name="Pk_Connected" xml:space="preserve"><value>Connected</value></data>
   <data name="Pk_NotConnected" xml:space="preserve"><value>Not connected</value></data>
   <data name="Msg_PasteSetupCode" xml:space="preserve"><value>Paste the setup code you obtained from playit.gg.</value></data>
-  <data name="Msg_PartnerNotConfigured" xml:space="preserve"><value>Playit connection isn't available in this build of the app.</value></data>
   <data name="Msg_SetupCodeFailedFmt" xml:space="preserve"><value>Couldn't connect to Playit: {0}</value></data>
   <data name="Msg_SetupCodeNoAgent" xml:space="preserve"><value>Playit didn't return a valid agent for this code.</value></data>
   <data name="Msg_PartnerVariantNotFound" xml:space="preserve"><value>Your app isn't fully registered with Playit yet (the variant_id is missing, or the version doesn't match a registered one). Ask Playit for your app's variant_id.</value></data>
@@ -213,7 +207,6 @@
   <data name="Notif_PlayerLeftFmt" xml:space="preserve"><value>{0} left the server.</value></data>
   <data name="Notif_Crashed" xml:space="preserve"><value>The server exited unexpectedly.</value></data>
   <data name="Notif_GaveUp" xml:space="preserve"><value>It has crashed several times in a row; it won't be restarted automatically anymore.</value></data>
-  <data name="Notif_Title" xml:space="preserve"><value>Notifications</value></data>
   <data name="Notif_Intro" xml:space="preserve"><value>Choose which alerts you get when you're not looking at the app. They pop up in the corner of the screen with the server's name.</value></data>
   <data name="Shortcut_Section" xml:space="preserve"><value>Desktop shortcut</value></data>
   <data name="Shortcut_Intro" xml:space="preserve"><value>Put a shortcut on your desktop so the app is one double-click away.</value></data>
@@ -308,7 +301,6 @@
   <data name="Backup_TriggerStop" xml:space="preserve"><value>on stop</value></data>
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>before restore</value></data>
-  <data name="Backup_TriggerUnknown" xml:space="preserve"><value>—</value></data>
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Start it when someone tries to join</value></data>
   <data name="Wake_Hint" xml:space="preserve"><value>While it is off, the server list shows it as asleep. Anyone pressing Join gets a message and the server begins starting up.</value></data>
   <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>If the whitelist is on, only start it for players on the list</value></data>
@@ -401,11 +393,8 @@
   <data name="Msg_FolderNotExist" xml:space="preserve"><value>The server folder does not exist.</value></data>
   <data name="Title_SelectServerFolder" xml:space="preserve"><value>Select the server folder</value></data>
   <data name="Title_SelectJava" xml:space="preserve"><value>Select java.exe</value></data>
-  <data name="Filter_Java" xml:space="preserve"><value>Java executable (java.exe)|java.exe|All executables (*.exe)|*.exe</value></data>
   <data name="Title_SelectFolderCreate" xml:space="preserve"><value>Folder to create the server in</value></data>
   <data name="Title_SelectImage" xml:space="preserve"><value>Choose an image for the server icon</value></data>
-  <data name="Filter_Images" xml:space="preserve"><value>Images (*.png;*.jpg;*.jpeg;*.bmp;*.gif)|*.png;*.jpg;*.jpeg;*.bmp;*.gif|All files (*.*)|*.*</value></data>
-  <data name="Msg_PasteKey" xml:space="preserve"><value>Paste your Playit key.</value></data>
   <data name="Msg_ConfigSaveError" xml:space="preserve"><value>Could not save the configuration: {0}</value></data>
   <data name="Msg_ClosingTitle" xml:space="preserve"><value>MC Server Launcher — stopping servers and saving...</value></data>
   <data name="Update_Now" xml:space="preserve"><value>Update</value></data>
@@ -454,7 +443,6 @@
   <data name="Loader_StillInstalling" xml:space="preserve"><value>The loader is being installed. Wait for it to finish before saving or leaving.</value></data>
   <data name="Msg_StartWaitsForLoader" xml:space="preserve"><value>The server can't start while the loader is being installed; wait for it to finish.</value></data>
   <data name="Loader_Intro" xml:space="preserve"><value>Change this server's type. Each card says whether it takes plugins or mods, and whether Bedrock can join. Your world is kept.</value></data>
-  <data name="Loader_Vanilla" xml:space="preserve"><value>Vanilla (no mods)</value></data>
   <data name="Loader_KeepConfig" xml:space="preserve"><value>Keep the current startup file (run.bat)</value></data>
   <data name="Loader_Kept" xml:space="preserve"><value>The world, server.properties and your mods/plugins and config folders are kept.</value></data>
   <data name="Loader_WarnSame" xml:space="preserve"><value>You're reinstalling the same server type. It only makes sense to change version; the startup is rewritten and you may lose some settings.</value></data>
@@ -474,14 +462,12 @@
 1. Players just join with normal Minecraft (version {0}); they install nothing.
 2. Plugins (.jar) go in the server's plugins folder.
 3. Restart the server after adding or removing plugins.</value></data>
-  <data name="Loader_Warning" xml:space="preserve"><value>The chosen loader will be applied with that version. Use the same version the server already had to avoid breaking the world.</value></data>
   <data name="Loader_Installing" xml:space="preserve"><value>Installing loader...</value></data>
   <data name="Loader_InstallButton" xml:space="preserve"><value>Install</value></data>
   <data name="Loader_DetectedFmt" xml:space="preserve"><value>Detected server version: {0}</value></data>
   <data name="Loader_Done" xml:space="preserve"><value>Done. The server has been updated.</value></data>
   <data name="Loader_Error" xml:space="preserve"><value>Could not install the loader: {0}</value></data>
   <data name="Msg_ModBrowserNeedsLoader" xml:space="preserve"><value>The mod browser is only available on Fabric or Forge servers.</value></data>
-  <data name="Msg_SearchingModrinth" xml:space="preserve"><value>Searching Modrinth...</value></data>
   <data name="Msg_ModsFoundFmt" xml:space="preserve"><value>{0} results.</value></data>
   <data name="Msg_NoModsFound" xml:space="preserve"><value>No mods found for this version and server type.</value></data>
   <data name="Msg_ModErrorFmt" xml:space="preserve"><value>Error: {0}</value></data>
@@ -683,7 +669,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Store_Description" xml:space="preserve"><value>Description</value></data>
   <data name="Store_Gallery" xml:space="preserve"><value>Images</value></data>
   <data name="Store_Compatibility" xml:space="preserve"><value>Compatibility</value></data>
-  <data name="Store_Tags" xml:space="preserve"><value>Tags</value></data>
   <data name="Store_Dependencies" xml:space="preserve"><value>Dependencies</value></data>
   <data name="Store_RelatedMods" xml:space="preserve"><value>Related mods</value></data>
   <data name="Store_RelatedPlugins" xml:space="preserve"><value>Related plugins</value></data>
@@ -698,7 +683,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Store_Updated" xml:space="preserve"><value>Updated</value></data>
   <data name="Store_Published" xml:space="preserve"><value>Published</value></data>
   <data name="Store_License" xml:space="preserve"><value>License</value></data>
-  <data name="Store_Loading" xml:space="preserve"><value>Loading…</value></data>
   <data name="Store_LoadError" xml:space="preserve"><value>The details could not be loaded. Check your connection.</value></data>
   <data name="Store_OpenOnModrinth" xml:space="preserve"><value>View on Modrinth</value></data>
   <data name="Store_Source" xml:space="preserve"><value>Source code</value></data>
@@ -709,7 +693,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Store_DepRequired" xml:space="preserve"><value>Required</value></data>
   <data name="Store_DepOptional" xml:space="preserve"><value>Optional</value></data>
   <data name="Store_BodyTruncated" xml:space="preserve"><value>The description goes on; the rest is on Modrinth.</value></data>
-  <data name="Store_NoDescription" xml:space="preserve"><value>This project has no long description.</value></data>
   <data name="Store_Fallback_Mod" xml:space="preserve"><value>A mod for your server.</value></data>
   <data name="Store_Fallback_Plugin" xml:space="preserve"><value>A plugin for your server.</value></data>
   <data name="Store_Fallback_ModFmt" xml:space="preserve"><value>{0} mod for your server.</value></data>
@@ -717,7 +700,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Store_Side_NeedsClient" xml:space="preserve"><value>Players will have to install it in their Minecraft too.</value></data>
   <data name="Store_Side_ServerOnly" xml:space="preserve"><value>It only goes on the server; players need nothing.</value></data>
   <data name="Store_Side_ClientOptional" xml:space="preserve"><value>It goes on the server; on the client it is optional.</value></data>
-  <data name="Store_BrowseBy" xml:space="preserve"><value>Categories</value></data>
   <data name="Store_NeedsClientBadge" xml:space="preserve"><value>Client needed</value></data>
   <data name="Store_ViewDetails" xml:space="preserve"><value>View details</value></data>
   <data name="Store_VersionsNote" xml:space="preserve"><value>Showing the most recent compatible versions.</value></data>
@@ -729,8 +711,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Filters_TopicsHint" xml:space="preserve"><value>One at a time.</value></data>
   <data name="Tip_DismissNotice" xml:space="preserve"><value>Dismiss this message</value></data>
   <data name="Tip_RemoveFilter" xml:space="preserve"><value>Remove this filter</value></data>
-  <data name="Tip_ToggleInstalled" xml:space="preserve"><value>Show or hide the installed list</value></data>
-  <data name="Msg_NoModsFoundFiltered" xml:space="preserve"><value>Nothing matches these filters. Try removing one.</value></data>
   <data name="Idle_CountdownFmt" xml:space="preserve">
     <value>Stops in {0}</value>
   </data>
@@ -793,7 +773,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_CrossplayResolvingFmt" xml:space="preserve"><value>Looking up the {0} build for this server…</value></data>
   <data name="Msg_CrossplayInstallingFmt" xml:space="preserve"><value>Installing {0} {1}…</value></data>
   <data name="Msg_CrossplayNoVersionFmt" xml:space="preserve"><value>There is no {0} build for Minecraft {1} on a {2} server.</value></data>
-  <data name="Msg_CrossplayNoChecksum" xml:space="preserve"><value>Couldn't get Floodgate's checksum. Cancelled: nothing unverified gets installed.</value></data>
   <data name="Msg_CrossplayTunnelFmt" xml:space="preserve"><value>Creating the Bedrock tunnel (UDP) on port {0}…</value></data>
   <data name="Msg_CrossplayReady" xml:space="preserve"><value>Crossplay ready. Restart the server so Geyser starts up.</value></data>
   <data name="Msg_UpdateBetaAvailableFmt" xml:space="preserve"><value>Version {0} is available — BETA. It brings new features that aren't fully proven yet; if you'd rather play safe, wait for the stable one.</value></data>
@@ -1003,7 +982,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="History_Importing" xml:space="preserve"><value>Reading the server's old logs to fill in the history…</value></data>
   <data name="History_DisabledHint" xml:space="preserve"><value>The history is turned off in Settings: only the server's own list is shown, without connections or chat.</value></data>
   <data name="History_Search" xml:space="preserve"><value>Search player…</value></data>
-  <data name="History_Section" xml:space="preserve"><value>Player history</value></data>
   <data name="History_Intro" xml:space="preserve"><value>Keeps when each player joins and leaves, their deaths, advancements and what they say in chat, to see on their profile in the Players tab.</value></data>
   <data name="History_Enabled" xml:space="preserve"><value>Keep player history</value></data>
   <data name="History_RecordChat" xml:space="preserve"><value>Keep chat too</value></data>

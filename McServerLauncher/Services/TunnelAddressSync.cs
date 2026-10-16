@@ -26,7 +26,8 @@ public static class TunnelAddressSync
     /// address, or nothing with the reason. Null when the account could not be asked, meaning
     /// "leave the address as it is, but say it failed".
     /// </summary>
-    public static (string Address, TunnelAddressState State)? Java(IReadOnlyList<PlayitTunnel>? tunnels, int port)
+    public static (string Address, TunnelAddressState State)? Java(IReadOnlyList<PlayitTunnel>? tunnels,
+        int port)
     {
         if (tunnels is null) return null;
 

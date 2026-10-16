@@ -11,7 +11,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class CrashLogTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-crash-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-crash-" + Guid.NewGuid()
+        .ToString("N"));
     private readonly string _real = CrashLog.Folder;
 
     public CrashLogTests() => CrashLog.Folder = _dir;

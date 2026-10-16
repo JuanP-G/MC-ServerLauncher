@@ -12,7 +12,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class IconRefreshTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcsl-icon-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcsl-icon-" + Guid.NewGuid()
+        .ToString("N"));
 
     private static readonly byte[] NewIcon = { 1, 2, 3, 4, 5, 6, 7, 8 };
     private static readonly byte[] OldIcon = { 9, 9, 9, 9, 9, 9, 9, 9 };   // same length, different bytes

@@ -155,7 +155,8 @@ internal static class InstallScriptBuilder
             ("DEFAULT_YES", yes[0]),
             // choice.exe takes one key per option, in order: yes first, no second.
             ("YES_NO_KEYS", yes[0] + "n"),
-            ("YES_PATTERN", string.Join("|", yes.SelectMany(w => new[] { w, w.ToUpperInvariant() }).Distinct()))
+            ("YES_PATTERN", string.Join("|", yes.SelectMany(w => new[] { w, w.ToUpperInvariant() })
+                .Distinct()))
         };
 
         return new[]

@@ -18,7 +18,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class WorldSeedTests : IDisposable
 {
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-seed-" + Guid.NewGuid().ToString("N"));
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-seed-" + Guid.NewGuid()
+        .ToString("N"));
 
     public WorldSeedTests() => Directory.CreateDirectory(_root);
 
@@ -116,9 +117,11 @@ public class WorldSeedTests : IDisposable
         var server = Server();
         // level.dat still exists, with plenty in it, but no seed — exactly the 26.2 world that
         // showed this.
-        Put(server, "world/level.dat", Gzip(Compound("", Compound("Data", Text("LevelName", "world"), Int("version", 19133)))));
+        Put(server, "world/level.dat", Gzip(Compound("", Compound("Data", Text("LevelName", "world"),
+            Int("version", 19133)))));
         Put(server, "world/data/minecraft/world_gen_settings.dat",
-            Gzip(Compound("", Compound("data", Long("seed", -8661663486445701832)), Int("DataVersion", 4700))));
+            Gzip(Compound("", Compound("data", Long("seed", -8661663486445701832)),
+                Int("DataVersion", 4700))));
 
         Assert.Equal(new SeedInfo(-8661663486445701832, SeedSource.World), WorldSeed.Read(server));
     }
@@ -132,7 +135,8 @@ public class WorldSeedTests : IDisposable
                 Text("LevelName", "world"),
                 IntList("DataPacks", 1, 2, 3),        // something to skip on the way
                 Compound("WorldGenSettings",
-                    Compound("dimensions", Compound("minecraft:overworld", Text("type", "minecraft:overworld"))),
+                    Compound("dimensions", Compound("minecraft:overworld",
+                        Text("type", "minecraft:overworld"))),
                     Long("seed", 1970052618634497367))))));
 
         Assert.Equal(1970052618634497367, WorldSeed.Read(server).Seed);
@@ -213,7 +217,8 @@ public class WorldSeedTests : IDisposable
     public void WithNoWorldYetTheAskedSeedIsPending()
     {
         Assert.Equal(new SeedInfo(12345, SeedSource.Pending), WorldSeed.Read(Server("level-seed=12345\n")));
-        Assert.Equal(new SeedInfo(99162322, SeedSource.Pending), WorldSeed.Read(Server("level-seed=hello\n")));
+        Assert.Equal(new SeedInfo(99162322, SeedSource.Pending),
+            WorldSeed.Read(Server("level-seed=hello\n")));
         Assert.Equal(SeedInfo.None, WorldSeed.Read(Server("level-seed=\n")));
         Assert.Equal(SeedInfo.None, WorldSeed.Read(Server(properties: null)));
     }
@@ -283,7 +288,8 @@ public class WorldSeedTests : IDisposable
         var folder = Server(properties: null);
         new ServerCreationService().WriteInitialProperties(folder, 25565, "motd", "12345");
 
-        Assert.Equal("12345", new ServerPropertiesService().Read(Path.Combine(folder, "server.properties"))["level-seed"]);
+        Assert.Equal("12345", new ServerPropertiesService()
+            .Read(Path.Combine(folder, "server.properties"))["level-seed"]);
     }
 
     [Fact]
@@ -292,7 +298,8 @@ public class WorldSeedTests : IDisposable
         var folder = Server(properties: null);
         new ServerCreationService().WriteInitialProperties(folder, 25565, "motd", "  ");
 
-        Assert.False(new ServerPropertiesService().Read(Path.Combine(folder, "server.properties")).ContainsKey("level-seed"));
+        Assert.False(new ServerPropertiesService().Read(Path.Combine(folder, "server.properties"))
+            .ContainsKey("level-seed"));
     }
 
     [Fact]

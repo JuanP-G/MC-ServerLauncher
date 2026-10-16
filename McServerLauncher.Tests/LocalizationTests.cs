@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace McServerLauncher.Tests;
@@ -45,6 +46,55 @@ public class LocalizationTests
             entries[name] = data.Element("value")?.Value ?? string.Empty;
         }
         return entries;
+    }
+
+    /// <summary>
+    /// Keys that are looked up by building their name, so nothing spells them out whole.
+    /// </summary>
+    /// <remarks>
+    /// Each one says where its name is put together. A key that falls under one of these is not
+    /// checked for use, so keep them as narrow as the code allows.
+    /// </remarks>
+    private static readonly string[] BuiltNames =
+    {
+        "Cmd_",            // ServerViewModel.Cmd: "Cmd_Say" + "_Title" / "_Desc"
+        "Console_Kind",    // ConsoleKindFilter: "Console_Kind" + the kind
+        "MotdColor_",      // the colour chooser: "MotdColor_" + the code
+        "Net_Local",       // ConnectionTestViewModel.Judge: prefix + state + "Detail"
+        "Net_Tunnel",
+        "Net_Bedrock",
+        "Notif_Level",     // SettingsViewModel: "Notif_Level" + the level
+    };
+
+    /// <summary>
+    /// A sentence nobody shows is a sentence somebody translated four times.
+    /// </summary>
+    /// <remarks>
+    /// Twenty-one of them had piled up as screens were redesigned: the old text stayed in all five
+    /// files. The check is by name — a key counts as used when it appears anywhere in the code or the
+    /// markup, comments included — so it errs towards keeping.
+    /// </remarks>
+    [Fact]
+    public void EveryKeyIsAskedForSomewhere()
+    {
+        var root = Path.Combine(RepoRoot(), "McServerLauncher");
+        var sep = Path.DirectorySeparatorChar;
+        var words = new HashSet<string>();
+        foreach (var file in Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories)
+                     .Where(f => f.EndsWith(".cs") || f.EndsWith(".axaml"))
+                     .Where(f => !f.Contains($"{sep}obj{sep}") && !f.Contains($"{sep}bin{sep}")))
+        {
+            foreach (Match m in Regex.Matches(File.ReadAllText(file), "[A-Za-z][A-Za-z0-9_]*"))
+                words.Add(m.Value);
+        }
+
+        var unused = Load("Strings.resx").Keys
+            .Where(k => !words.Contains(k))
+            .Where(k => !BuiltNames.Any(prefix => k.StartsWith(prefix, StringComparison.Ordinal)))
+            .OrderBy(k => k)
+            .ToList();
+
+        Assert.True(unused.Count == 0, "claves que nadie usa: " + string.Join(", ", unused));
     }
 
     [Fact]
@@ -108,7 +158,8 @@ public class LocalizationTests
         Assert.True(used.Count > 100, $"solo se encontraron {used.Count} claves: el escaneo no funciona");
 
         var missing = used.Where(k => !neutral.ContainsKey(k)).ToList();
-        Assert.True(missing.Count == 0, "claves usadas en el código que no existen: " + string.Join(", ", missing));
+        Assert.True(missing.Count == 0, "claves usadas en el código que no existen: " + string.Join(", ",
+            missing));
     }
 
     [Fact]

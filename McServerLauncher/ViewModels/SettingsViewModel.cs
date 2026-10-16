@@ -46,7 +46,8 @@ public partial class SettingsViewModel : ObservableObject
     private readonly Action _applyConsoleColours;
     private readonly Action _applyWindowBehavior;
 
-    /// <param name="main">For the language, which the main view model already persists; null in tests.</param>
+    /// <param name="main">For the language, which the main view model already persists; null in
+    /// tests.</param>
     /// <param name="settings">The settings the app runs on, edited in place.</param>
     /// <param name="service">Writes them to disk.</param>
     /// <param name="applyConsoleColours">Repaints the consoles after a console colour changes.</param>
@@ -74,13 +75,16 @@ public partial class SettingsViewModel : ObservableObject
         _historyRetentionDays = history.RetentionDays;
     }
 
-    /// <summary>Where saving happens. A parameter only so a test can watch it instead of touching the disk.</summary>
+    /// <summary>
+    /// Where saving happens. A parameter only so a test can watch it instead of touching the disk.
+    /// </summary>
     internal Action<AppSettings>? SaveOverride { get; set; }
 
     // ---------------------------------------------------------------- pages
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsGeneralPage), nameof(IsNotificationsPage), nameof(IsColorsPage), nameof(IsPlayersPage))]
+    [NotifyPropertyChangedFor(nameof(IsGeneralPage), nameof(IsNotificationsPage), nameof(IsColorsPage),
+        nameof(IsPlayersPage))]
     private SettingsPage _page = SettingsPage.General;
 
     public bool IsGeneralPage => Page == SettingsPage.General;
@@ -113,7 +117,7 @@ public partial class SettingsViewModel : ObservableObject
 
     /// <summary>How much the history takes on disk, for every server together.</summary>
     public string HistorySizeText => string.Format(Localizer.Get("History_SizeFmt"),
-        FormatBytes(PlayerHistoryStore.SizeOnDisk()));
+        ByteSize.Format(PlayerHistoryStore.SizeOnDisk()));
 
     /// <summary>
     /// Puts the history settings to work straight away: the app-wide preferences, every server's
@@ -132,13 +136,6 @@ public partial class SettingsViewModel : ObservableObject
         _main?.OnHistorySettingsChanged();
         Persist();
     }
-
-    internal static string FormatBytes(long bytes) => bytes switch
-    {
-        < 1024 => bytes + " B",
-        < 1024 * 1024 => (bytes / 1024.0).ToString("0.#") + " KB",
-        _ => (bytes / (1024.0 * 1024)).ToString("0.#") + " MB",
-    };
 
     // ---------------------------------------------------------------- general
 
@@ -207,7 +204,9 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private IBrush? _shortcutStatusBrush;
 
-    /// <summary>Puts the app on the desktop, and says so next to the button rather than in a dialog.</summary>
+    /// <summary>
+    /// Puts the app on the desktop, and says so next to the button rather than in a dialog.
+    /// </summary>
     [RelayCommand]
     private void CreateShortcut()
     {

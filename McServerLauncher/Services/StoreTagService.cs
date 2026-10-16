@@ -61,7 +61,8 @@ public sealed class StoreTagService
         {
             if (File.Exists(overridePath))
             {
-                var custom = JsonSerializer.Deserialize<StoreTagCatalog>(File.ReadAllText(overridePath), JsonOptions);
+                var custom = JsonSerializer.Deserialize<StoreTagCatalog>(File.ReadAllText(overridePath),
+                    JsonOptions);
                 if (custom is { Tags.Count: > 0 }) return custom.Tags;
             }
         }
@@ -69,7 +70,8 @@ public sealed class StoreTagService
 
         try
         {
-            using var stream = typeof(StoreTagService).Assembly.GetManifestResourceStream(EmbeddedResourceName);
+            using var stream = typeof(StoreTagService)
+                .Assembly.GetManifestResourceStream(EmbeddedResourceName);
             if (stream is not null)
             {
                 var embedded = JsonSerializer.Deserialize<StoreTagCatalog>(stream, JsonOptions);
@@ -97,7 +99,8 @@ public sealed class StoreTagService
         var matched = new List<StoreTagDefinition>();
         foreach (var tag in _tags)
         {
-            if (onlyKind is not null && !string.Equals(tag.Kind, onlyKind, StringComparison.OrdinalIgnoreCase))
+            if (onlyKind is not null && !string.Equals(tag.Kind, onlyKind,
+                StringComparison.OrdinalIgnoreCase))
                 continue;
 
             if (Matches(tag, categories, haystack, item))
@@ -109,7 +112,8 @@ public sealed class StoreTagService
         return matched;
     }
 
-    private static bool Matches(StoreTagDefinition tag, HashSet<string> categories, string haystack, StoreItem item)
+    private static bool Matches(StoreTagDefinition tag, HashSet<string> categories, string haystack,
+        StoreItem item)
     {
         if (tag.Categories.Any(categories.Contains)) return true;
 
@@ -121,7 +125,8 @@ public sealed class StoreTagService
             tag.ServerSide.Any(v => string.Equals(v, server, StringComparison.OrdinalIgnoreCase)))
             return true;
 
-        return tag.Keywords.Any(k => !string.IsNullOrEmpty(k) && haystack.Contains(Normalize(k), StringComparison.Ordinal));
+        return tag.Keywords.Any(k => !string.IsNullOrEmpty(k)
+            && haystack.Contains(Normalize(k), StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -133,7 +138,8 @@ public sealed class StoreTagService
     public IReadOnlyList<StoreTagDefinition> BrowseTags(string projectType) =>
         _tags.Where(t => t.Browse)
              .Where(t => t.ProjectTypes.Count == 0 ||
-                         t.ProjectTypes.Any(p => string.Equals(p, projectType, StringComparison.OrdinalIgnoreCase)))
+                         t.ProjectTypes.Any(p => string.Equals(p, projectType,
+                             StringComparison.OrdinalIgnoreCase)))
              .ToList();
 
     /// <summary>Finds a tag by id; null when the catalogue doesn't define it.</summary>
@@ -148,11 +154,14 @@ public sealed class StoreTagService
     {
         var lang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
         if (tag.Labels.TryGetValue(lang, out var label) && !string.IsNullOrWhiteSpace(label)) return label;
-        if (tag.Labels.TryGetValue("en", out var english) && !string.IsNullOrWhiteSpace(english)) return english;
+        if (tag.Labels.TryGetValue("en", out var english)
+            && !string.IsNullOrWhiteSpace(english)) return english;
         return tag.Id;
     }
 
-    /// <summary>Lowercases and strips accents so keyword rules survive "Génération" vs "generation".</summary>
+    /// <summary>
+    /// Lowercases and strips accents so keyword rules survive "Génération" vs "generation".
+    /// </summary>
     private static string Normalize(string text)
     {
         var lowered = text.ToLowerInvariant().Normalize(NormalizationForm.FormD);

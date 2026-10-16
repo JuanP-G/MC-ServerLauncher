@@ -45,7 +45,9 @@ public partial class TunnelRowViewModel : ObservableObject
     public string ProtoText => _row.Tunnel.IsUdp ? "UDP" : "TCP";
     public int LocalPort => _row.Tunnel.LocalPort;
 
-    /// <summary>Where players connect. Bedrock has no SRV record, so its port is part of what they type.</summary>
+    /// <summary>
+    /// Where players connect. Bedrock has no SRV record, so its port is part of what they type.
+    /// </summary>
     public string Address => _row.Tunnel.Address is not { Length: > 0 } host
         ? "—"
         : _row.Tunnel.IsUdp && _row.Tunnel.PublicPort > 0 ? $"{host}:{_row.Tunnel.PublicPort}" : host;

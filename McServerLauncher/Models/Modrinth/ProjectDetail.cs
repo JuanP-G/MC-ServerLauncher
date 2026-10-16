@@ -154,7 +154,9 @@ public class TeamMember
     public TeamUser? User { get; set; }
 }
 
-/// <summary>The account behind a <see cref="TeamMember"/>, which is where the author's name comes from.</summary>
+/// <summary>
+/// The account behind a <see cref="TeamMember"/>, which is where the author's name comes from.
+/// </summary>
 public class TeamUser
 {
     [JsonPropertyName("username")]

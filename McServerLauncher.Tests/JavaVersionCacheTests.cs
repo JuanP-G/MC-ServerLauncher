@@ -12,7 +12,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class JavaVersionCacheTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-java-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-java-" + Guid.NewGuid()
+        .ToString("N"));
     private string Calls => Path.Combine(_dir, "calls.txt");
 
     /// <summary>A "java" that says it is 21 and leaves a line behind every time it runs.</summary>
@@ -52,7 +53,8 @@ public class JavaVersionCacheTests : IDisposable
 
         Assert.Equal(21, service.GetMajorVersion(java));
         Assert.Equal(21, service.GetMajorVersion(java));
-        Assert.Equal(21, new JavaService().GetMajorVersion(java));   // remembered for the app, not per instance
+        Assert.Equal(21, new JavaService()
+            .GetMajorVersion(java));   // remembered for the app, not per instance
 
         Assert.Equal(1, TimesRun());
     }

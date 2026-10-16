@@ -18,7 +18,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class BukkitDimensionBackupTests : IDisposable
 {
-    private readonly string _server = Path.Combine(Path.GetTempPath(), "mcl-bukkit-" + Guid.NewGuid().ToString("N"));
+    private readonly string _server = Path.Combine(Path.GetTempPath(), "mcl-bukkit-" + Guid.NewGuid()
+        .ToString("N"));
     private readonly WorldBackupService _backups = new();
 
     private string World => Path.Combine(_server, "world");
@@ -133,7 +134,8 @@ public class BukkitDimensionBackupTests : IDisposable
         File.WriteAllText(Path.Combine(World, "session.lock"), "held");
 
         var lines = new DirectoryInfo(World).EnumerateFiles("*", SearchOption.AllDirectories)
-            .Select(f => (Name: Path.GetRelativePath(World, f.FullName).Replace(Path.DirectorySeparatorChar, '/'), File: f))
+            .Select(f => (Name: Path.GetRelativePath(World, f.FullName)
+                .Replace(Path.DirectorySeparatorChar, '/'), File: f))
             .Where(f => f.Name != "session.lock")
             .Select(f => $"{f.Name}|{f.File.Length}|{f.File.LastWriteTimeUtc.Ticks}")
             .Order(StringComparer.Ordinal);

@@ -52,7 +52,10 @@ public class ModpackExportTests : IDisposable
 
         return new ServerConfig
         {
-            Name = "mi servidor", FolderPath = folder, Type = type, GameVersion = "1.21.1"
+            Name = "mi servidor",
+            FolderPath = folder,
+            Type = type,
+            GameVersion = "1.21.1"
         };
     }
 
@@ -332,7 +335,8 @@ public class ModpackExportTests : IDisposable
             new[] { "sodium.jar" }, new[] { "floodgate.jar" }, AskedTheStore: true));
 
         Assert.Contains("floodgate.jar", one);
-        Assert.Equal(Localizer.Get("Export_NoticeOneFmt").Replace("{0}", "1").Replace("{1}", "floodgate.jar"), one);
+        Assert.Equal(Localizer.Get("Export_NoticeOneFmt").Replace("{0}", "1").Replace("{1}", "floodgate.jar"),
+            one);
         Assert.DoesNotContain("{", one);
     }
 
@@ -347,7 +351,8 @@ public class ModpackExportTests : IDisposable
         var text = EntryText(Destination, Localizer.Get("Export_InstructionsFile"));
 
         Assert.Contains(
-            Localizer.Get("Export_LeftOutOneFmt").Replace("{0}", "geyser.jar"), text, StringComparison.Ordinal);
+            Localizer.Get("Export_LeftOutOneFmt").Replace("{0}", "geyser.jar"), text,
+                StringComparison.Ordinal);
     }
 
     [Fact]

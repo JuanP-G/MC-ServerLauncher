@@ -30,7 +30,10 @@ public class LiveConfigRefreshTests : IDisposable
 
     private ServerConfig Config(ServerType type, string version = "1.21.1") => new()
     {
-        Name = "test", FolderPath = _folder, Type = type, GameVersion = version
+        Name = "test",
+        FolderPath = _folder,
+        Type = type,
+        GameVersion = version
     };
 
     private void Jar(string folder, string name)

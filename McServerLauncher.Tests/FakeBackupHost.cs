@@ -6,7 +6,11 @@ namespace McServerLauncher.Tests;
 /// <summary>A server as <see cref="BackupCoordinator"/> sees it: a console, a process, a few flags.</summary>
 internal sealed class FakeBackupHost : IBackupHost
 {
-    public FakeBackupHost(string folder) => Config = new ServerConfig { Name = "survival", FolderPath = folder };
+    public FakeBackupHost(string folder) => Config = new ServerConfig
+    {
+        Name = "survival",
+        FolderPath = folder
+    };
 
     public ServerConfig Config { get; }
     public bool IsProcessRunning { get; set; }

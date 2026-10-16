@@ -229,7 +229,9 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
         }
     }
 
-    /// <summary>Renders the image the way the server will store it, and previews that — not the original.</summary>
+    /// <summary>
+    /// Renders the image the way the server will store it, and previews that — not the original.
+    /// </summary>
     internal void UseImage(string path)
     {
         var png = _icons.RenderIcon(path);

@@ -27,7 +27,9 @@ public sealed class ContentLedger
     public int Version { get; set; } = 1;
 
     /// <summary>When each disabled jar was switched off, by file name without <c>.disabled</c>.</summary>
-    public Dictionary<string, DateTime> DisabledSinceUtc { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string,
+        DateTime> DisabledSinceUtc
+    { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// The disabled jars whose date is only when the app first saw them, not when they were turned off.
@@ -39,7 +41,9 @@ public sealed class ContentLedger
     public HashSet<string> DisabledFirstSeen { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>By library id, the names of the mods that last needed it.</summary>
-    public Dictionary<string, List<string>> DependentsByLibrary { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string,
+        List<string>> DependentsByLibrary
+    { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>When the user said "not now" to a suggestion, by suggestion key.</summary>
     public Dictionary<string, DateTime> DismissedUtc { get; set; } = new(StringComparer.Ordinal);
@@ -57,7 +61,8 @@ public sealed class ContentLedgerStore
     public static string RootDirectory { get; set; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "content");
 
-    private static readonly ConcurrentDictionary<string, ContentLedgerStore> Open = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string,
+        ContentLedgerStore> Open = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Deletes the ledgers of servers that are no longer in the app. A removed server's id is never

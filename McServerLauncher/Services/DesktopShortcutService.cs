@@ -281,8 +281,10 @@ public static class DesktopShortcutService
                 ".local", "share", "icons", "hicolor");
             var psi = new ProcessStartInfo("gtk-update-icon-cache")
             {
-                UseShellExecute = false, CreateNoWindow = true,
-                RedirectStandardOutput = true, RedirectStandardError = true
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
             psi.ArgumentList.Add("-f");
             psi.ArgumentList.Add("-t");

@@ -21,7 +21,8 @@ public class PlayitApiException : Exception
     /// treated as "something else went wrong" — which stopped the client from trying the next way
     /// of presenting the same key, the one that would have worked.
     /// </remarks>
-    public bool IsAuthError => ErrorType == "auth" || LooksLikeKeyProblem(ErrorType) || LooksLikeKeyProblem(Message);
+    public bool IsAuthError => ErrorType == "auth" || LooksLikeKeyProblem(ErrorType)
+        || LooksLikeKeyProblem(Message);
 
     private static readonly string[] KeyProblems =
     {
@@ -38,7 +39,8 @@ public class PlayitApiException : Exception
     /// answers and both <c>/tunnels/rename</c> and <c>/tunnels/delete</c> come back
     /// <c>{"type":"auth","message":"NotAllowedWithReadOnly"}</c> under every way of sending the key.
     /// </remarks>
-    public bool IsReadOnlyRefusal => Message.Contains("NotAllowedWithReadOnly", StringComparison.OrdinalIgnoreCase);
+    public bool IsReadOnlyRefusal => Message.Contains("NotAllowedWithReadOnly",
+        StringComparison.OrdinalIgnoreCase);
 
     /// <summary>True when the text names a rejected or missing key.</summary>
     internal static bool LooksLikeKeyProblem(string? text) =>
@@ -69,7 +71,7 @@ public class PlayitApiService
 
     // App-wide per-user agent secret key from the partner setup-code flow. When set, it is the
     // credential used for all Playit API calls (reads and writes), superseding playit.toml.
-    private static string? _agentKey;
+    private static string? AgentKey;
 
     /// <summary>
     /// Sets (or clears) the per-user agent secret key used for all Playit API auth. Called once at
@@ -78,22 +80,27 @@ public class PlayitApiService
     /// </summary>
     public static void SetAgentKey(string? agentSecretKey)
     {
-        lock (SecretLock) { _agentKey = string.IsNullOrWhiteSpace(agentSecretKey) ? null : agentSecretKey; }
+        lock (SecretLock) { AgentKey = string.IsNullOrWhiteSpace(agentSecretKey) ? null : agentSecretKey; }
         InvalidateTunnelCache();
     }
 
-    /// <summary>The credential to read with: the partner agent key if set, else the playit.toml secret.</summary>
+    /// <summary>
+    /// The credential to read with: the partner agent key if set, else the playit.toml secret.
+    /// </summary>
     private string? CurrentReadKey()
     {
-        lock (SecretLock) { if (_agentKey is not null) return _agentKey; }
+        lock (SecretLock) { if (AgentKey is not null) return AgentKey; }
         return ReadSecretKey();
     }
 
     private static readonly string[] TomlPaths =
     {
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "playit_gg", "playit.toml"),
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "playit_gg", "playit.toml"),
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "playit_gg", "playit.toml"),
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "playit_gg",
+            "playit.toml"),
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "playit_gg",
+            "playit.toml"),
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "playit_gg",
+            "playit.toml"),
     };
 
     /// <summary>One tunnel as the agent reports it.</summary>
@@ -118,24 +125,26 @@ public class PlayitApiService
     // almost never changes (only when the user re-installs the agent), so a short TTL removes the
     // repeated file I/O while still picking up a new install quickly.
     private static readonly object SecretLock = new();
-    private static string? _cachedSecret;
-    private static DateTime _secretReadAtUtc = DateTime.MinValue;
+    private static string? CachedSecret;
+    private static DateTime SecretReadAtUtc = DateTime.MinValue;
     private static readonly TimeSpan SecretTtl = TimeSpan.FromSeconds(30);
 
-    /// <summary>Reads the (read-only) secret_key from playit.toml (cached ~30 s). Null if not found.</summary>
+    /// <summary>
+    /// Reads the (read-only) secret_key from playit.toml (cached ~30 s). Null if not found.
+    /// </summary>
     public string? ReadSecretKey()
     {
         lock (SecretLock)
         {
-            if (DateTime.UtcNow - _secretReadAtUtc < SecretTtl)
-                return _cachedSecret;
+            if (DateTime.UtcNow - SecretReadAtUtc < SecretTtl)
+                return CachedSecret;
         }
 
         var value = ReadSecretKeyUncached();
         lock (SecretLock)
         {
-            _cachedSecret = value;
-            _secretReadAtUtc = DateTime.UtcNow;
+            CachedSecret = value;
+            SecretReadAtUtc = DateTime.UtcNow;
         }
         return value;
     }
@@ -160,7 +169,8 @@ public class PlayitApiService
         return null;
     }
 
-    private async Task<JsonElement> PostAsync(string path, string authValue, string body, CancellationToken ct)
+    private async Task<JsonElement> PostAsync(string path, string authValue, string body,
+        CancellationToken ct)
     {
         using var req = new HttpRequestMessage(HttpMethod.Post, BaseUrl + path);
         req.Headers.TryAddWithoutValidation("Authorization", authValue);
@@ -186,7 +196,8 @@ public class PlayitApiService
     {
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
-        var status = root.TryGetProperty("status", out var s) && s.ValueKind == JsonValueKind.String ? s.GetString() : null;
+        var status = root.TryGetProperty("status", out var s) && s.ValueKind == JsonValueKind.String
+            ? s.GetString() : null;
         if (status == "success") return null;
 
         string? type = status, msg = json;
@@ -195,7 +206,8 @@ public class PlayitApiService
             switch (d.ValueKind)
             {
                 case JsonValueKind.Object:
-                    type = d.TryGetProperty("type", out var ty) && ty.ValueKind == JsonValueKind.String ? ty.GetString() : status;
+                    type = d.TryGetProperty("type", out var ty) && ty.ValueKind == JsonValueKind.String
+                        ? ty.GetString() : status;
                     msg = d.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String
                         ? m.GetString() ?? d.ToString()
                         : d.ToString();
@@ -215,7 +227,8 @@ public class PlayitApiService
     /// POSTs trying each auth scheme in <see cref="AuthSchemes"/> until one is not rejected for auth
     /// reasons. Works for both the agent secret key (agent-key) and a legacy write key (Api-Key).
     /// </summary>
-    private async Task<JsonElement> PostWithAuthFallbackAsync(string path, string key, string body, CancellationToken ct)
+    private async Task<JsonElement> PostWithAuthFallbackAsync(string path, string key, string body,
+        CancellationToken ct)
     {
         PlayitApiException? firstAuthError = null;
         foreach (var scheme in AuthSchemes)
@@ -223,15 +236,20 @@ public class PlayitApiService
             // A read-only refusal means the key was understood and is simply not allowed to change
             // anything: presenting it another way cannot help. Every other refusal tries the next.
             try { return await PostAsync(path, $"{scheme} {key}", body, ct); }
-            catch (PlayitApiException ex) when (ex.IsAuthError && !ex.IsReadOnlyRefusal) { firstAuthError ??= ex; }
+            catch (PlayitApiException ex) when (ex.IsAuthError
+                && !ex.IsReadOnlyRefusal)
+            { firstAuthError ??= ex; }
         }
         // The first refusal, not the last: the later schemes are fallbacks for other kinds of key, and
         // what they say ("InvalidHeader") is about how the key was sent, not about the key.
         throw firstAuthError ?? new PlayitApiException("auth", Localizer.Get("Msg_PlayitAuthFail"));
     }
 
-    /// <summary>Reads agent_id and tunnels using <paramref name="key"/> (agent secret or write key).</summary>
-    public async Task<(string AgentId, List<PlayitTunnel> Tunnels)> GetRunDataAsync(string key, CancellationToken ct = default)
+    /// <summary>
+    /// Reads agent_id and tunnels using <paramref name="key"/> (agent secret or write key).
+    /// </summary>
+    public async Task<(string AgentId, List<PlayitTunnel> Tunnels)> GetRunDataAsync(string key,
+        CancellationToken ct = default)
     {
         var data = await PostWithAuthFallbackAsync("/agents/rundata", key, "", ct);
         var agentId = data.TryGetProperty("agent_id", out var a) ? a.GetString() ?? "" : "";
@@ -243,7 +261,8 @@ public class PlayitApiService
             {
                 var id = t.TryGetProperty("id", out var i) ? i.GetString() ?? "" : "";
                 var name = t.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
-                var localPort = t.TryGetProperty("local_port", out var lp) && lp.TryGetInt32(out var p) ? p : 0;
+                var localPort = t.TryGetProperty("local_port", out var lp) && lp.TryGetInt32(out var p) ? p
+                    : 0;
                 var assigned = t.TryGetProperty("assigned_domain", out var ad) ? ad.GetString() : null;
                 var custom = t.TryGetProperty("custom_domain", out var cd) ? cd.GetString() : null;
                 var proto = t.TryGetProperty("proto", out var pr) ? pr.GetString() ?? "tcp" : "tcp";
@@ -266,8 +285,8 @@ public class PlayitApiService
     // fetch serves them all: the first caller inside the TTL window pays the request, the rest
     // await the same task and just filter by their port.
     private static readonly object TunnelCacheLock = new();
-    private static Task<List<PlayitTunnel>>? _tunnelFetch;
-    private static DateTime _tunnelFetchAtUtc = DateTime.MinValue;
+    private static Task<List<PlayitTunnel>>? TunnelFetch;
+    private static DateTime TunnelFetchAtUtc = DateTime.MinValue;
     internal static readonly TimeSpan TunnelCacheTtl = TimeSpan.FromSeconds(25);
 
     /// <summary>
@@ -405,13 +424,13 @@ public class PlayitApiService
         {
             // A failed fetch also stays cached until the TTL expires: no point hammering the API
             // when it's down; the next window retries naturally.
-            if (_tunnelFetch is null ||
-                ShouldFetchTunnels(fresh, _tunnelFetchAtUtc, DateTime.UtcNow))
+            if (TunnelFetch is null ||
+                ShouldFetchTunnels(fresh, TunnelFetchAtUtc, DateTime.UtcNow))
             {
-                _tunnelFetchAtUtc = DateTime.UtcNow;
-                _tunnelFetch = StartTunnelFetch(); // detached from any single caller's ct
+                TunnelFetchAtUtc = DateTime.UtcNow;
+                TunnelFetch = StartTunnelFetch(); // detached from any single caller's ct
             }
-            fetch = _tunnelFetch;
+            fetch = TunnelFetch;
         }
 
         try { return await fetch.WaitAsync(ct); }
@@ -423,8 +442,8 @@ public class PlayitApiService
     {
         lock (TunnelCacheLock)
         {
-            _tunnelFetch = null;
-            _tunnelFetchAtUtc = DateTime.MinValue;
+            TunnelFetch = null;
+            TunnelFetchAtUtc = DateTime.MinValue;
         }
     }
 
@@ -441,7 +460,9 @@ public class PlayitApiService
         Bedrock
     }
 
-    /// <summary>The pair playit's API expects for an edition. Internal so it can be pinned by a test.</summary>
+    /// <summary>
+    /// The pair playit's API expects for an edition. Internal so it can be pinned by a test.
+    /// </summary>
     internal static (string Type, string Port) Wire(TunnelEdition edition) => edition switch
     {
         TunnelEdition.Bedrock => ("minecraft-bedrock", "udp"),
@@ -539,7 +560,8 @@ public class PlayitApiService
 
         try
         {
-            await PostWithAuthFallbackAsync("/tunnels/rename", key, RenameBody(Guid.NewGuid().ToString(), "probe"), ct);
+            await PostWithAuthFallbackAsync("/tunnels/rename", key,
+                RenameBody(Guid.NewGuid().ToString(), "probe"), ct);
             Writable[key] = true;                      // a success would be surprising; it still means yes
         }
         catch (PlayitApiException ex) when (ex.IsReadOnlyRefusal)
@@ -565,13 +587,16 @@ public class PlayitApiService
     internal static string DeleteBody(string tunnelId) =>
         new JsonObject { ["tunnel_id"] = tunnelId }.ToJsonString();
 
-    /// <summary>Gives a tunnel a new name. The name is the only thing about a tunnel that is ours to change.</summary>
+    /// <summary>
+    /// Gives a tunnel a new name. The name is the only thing about a tunnel that is ours to change.
+    /// </summary>
     /// <remarks>
     /// Named by id, not by port: a rename is harmless, but the id is what the account actually
     /// keys a tunnel on, and two tunnels can share a port (that is one of the things the tunnels
     /// screen exists to point out).
     /// </remarks>
-    public async Task RenameTunnelAsync(string key, string tunnelId, string name, CancellationToken ct = default)
+    public async Task RenameTunnelAsync(string key, string tunnelId, string name,
+        CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(key))
             throw new UserFacingException(Localizer.Get("Msg_MissingWriteKey"));

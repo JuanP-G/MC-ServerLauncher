@@ -195,7 +195,8 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
         var filtered = includeSnapshots ? _allVersions : _allVersions.Where(v => v.IsRelease).ToList();
         VersionCombo.ItemsSource = filtered;
 
-        var preferred = (_detectedVersion is not null ? filtered.FirstOrDefault(v => v.Id == _detectedVersion) : null)
+        var preferred = (_detectedVersion is not null ? filtered.FirstOrDefault(v => v.Id == _detectedVersion)
+            : null)
                         ?? filtered.FirstOrDefault(v => v.Id == _latestRelease)
                         ?? filtered.FirstOrDefault();
         VersionCombo.SelectedItem = preferred;

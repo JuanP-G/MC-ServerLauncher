@@ -26,12 +26,16 @@ public static class DownloadVerifier
         {
             TryDelete(filePath);
             throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_ChecksumMismatchFmt"), AtomicDownload.DisplayName(filePath)));
+                string.Format(Localizer.Get("Msg_ChecksumMismatchFmt"),
+                    AtomicDownload.DisplayName(filePath)));
         }
     }
 
-    /// <summary>Computes the hex-encoded hash of a file in a streaming fashion (no full read into memory).</summary>
-    public static async Task<string> ComputeHashAsync(string filePath, HashAlgorithmName algorithm, CancellationToken ct = default)
+    /// <summary>
+    /// Computes the hex-encoded hash of a file in a streaming fashion (no full read into memory).
+    /// </summary>
+    public static async Task<string> ComputeHashAsync(string filePath, HashAlgorithmName algorithm,
+        CancellationToken ct = default)
     {
         using var hasher = IncrementalHash.CreateHash(algorithm);
         await using var stream = File.OpenRead(filePath);

@@ -36,7 +36,8 @@ public static partial class ConsoleLineClassifier
     /// <c>/say</c> (<c>[Alice] …</c>) from a plugin logging under its own name (<c>[LuckPerms] …</c>);
     /// without it those stay ordinary output. See <see cref="ChatOf"/>.
     /// </param>
-    public static ConsoleLineKind Classify(string text, ConsoleSource source, ConsoleLineKind? previous = null,
+    public static ConsoleLineKind Classify(string text, ConsoleSource source,
+        ConsoleLineKind? previous = null,
         IReadOnlySet<string>? online = null)
     {
         if (source == ConsoleSource.Launcher) return ConsoleLineKind.Launcher;
@@ -49,7 +50,8 @@ public static partial class ConsoleLineClassifier
         // about restricted or deprecated methods. They are warnings, and painting them red made a
         // healthy start look like a failing one.
         if (source == ConsoleSource.Stderr)
-            return text.StartsWith("WARNING:", StringComparison.Ordinal) ? ConsoleLineKind.Warn : ConsoleLineKind.Error;
+            return text.StartsWith("WARNING:", StringComparison.Ordinal) ? ConsoleLineKind.Warn
+                : ConsoleLineKind.Error;
 
         // A stack frame is an error wherever it turns up. Recognised by its shape — "at x.y(File:1)",
         // "Caused by:", "... 12 more" — and not by indentation, which is what it used to go by: the
@@ -62,7 +64,8 @@ public static partial class ConsoleLineClassifier
         // Judged on its own each one read as plain output, so a warning's explanation came out grey
         // and an exception's message came out as though nothing had happened.
         if (!HasLogPrefix(text))
-            return previous is ConsoleLineKind.Warn or ConsoleLineKind.Error ? previous.Value : ConsoleLineKind.Info;
+            return previous is ConsoleLineKind.Warn or ConsoleLineKind.Error ? previous.Value
+                : ConsoleLineKind.Info;
 
         var level = LevelOf(text);
         if (level is ConsoleLineKind.Warn or ConsoleLineKind.Error) return level;
@@ -151,7 +154,7 @@ public static partial class ConsoleLineClassifier
             var close = message.IndexOf('>');
             if (close <= 1) return null;
             var name = message[1..close];
-            return PlayerName().IsMatch(name) ? (name, message[(close + 1)..].TrimStart()) : null;
+            return PlayerNames.IsValid(name) ? (name, message[(close + 1)..].TrimStart()) : null;
         }
 
         if (message[0] == '[')
@@ -181,13 +184,14 @@ public static partial class ConsoleLineClassifier
     private const string NotSecure = "[Not Secure] ";
 
     /// <summary>The senders the server itself uses: console, RCON, and a command block.</summary>
-    private static readonly HashSet<string> ServerSenders = new(StringComparer.Ordinal) { "Server", "Rcon", "@" };
+    private static readonly HashSet<string> ServerSenders = new(StringComparer.Ordinal) { "Server", "Rcon",
+        "@" };
 
     /// <summary>Whether a chat sender is the server itself (console, RCON, a command block).</summary>
     internal static bool IsServerSender(string sender) => ServerSenders.Contains(sender);
 
     private static bool IsOnline(string name, IReadOnlySet<string>? online) =>
-        online is not null && PlayerName().IsMatch(name) && online.Contains(name);
+        online is not null && PlayerNames.IsValid(name) && online.Contains(name);
 
     /// <summary>Whether somebody joined, left or died.</summary>
     internal static bool IsPlayerEvent(string text) =>
@@ -225,7 +229,7 @@ public static partial class ConsoleLineClassifier
         if (idx <= 0) return null;
 
         var name = body[..idx];
-        return PlayerName().IsMatch(name) ? name : null;
+        return PlayerNames.IsValid(name) ? name : null;
     }
 
     /// <summary>The message after the log prefix, or null when there is no prefix.</summary>
@@ -258,7 +262,4 @@ public static partial class ConsoleLineClassifier
     // [12:34:56] [Server thread/WARN]:  and  [12:34:56 WARN]:  — the two shapes in the wild.
     [GeneratedRegex(@"\[[^\]]*[\s/](INFO|WARN|WARNING|ERROR|SEVERE|FATAL)\]", RegexOptions.IgnoreCase)]
     private static partial Regex LogLevel();
-
-    [GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]
-    private static partial Regex PlayerName();
 }

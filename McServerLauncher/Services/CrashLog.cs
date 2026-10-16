@@ -27,7 +27,9 @@ public static class CrashLog
     internal static string Folder { get; set; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "logs");
 
-    /// <summary>Records <paramref name="error"/>. Returns the file, or null if it could not be written.</summary>
+    /// <summary>
+    /// Records <paramref name="error"/>. Returns the file, or null if it could not be written.
+    /// </summary>
     /// <param name="origin">Which handler caught it, so the file says how far it got.</param>
     /// <param name="error">What was thrown.</param>
     public static string? Write(string origin, Exception error)

@@ -6,7 +6,9 @@ public enum BackupDue
     /// <summary>Nothing to do: switched off, or the interval has not run out yet.</summary>
     NotYet,
 
-    /// <summary>The interval ran out, but nobody has played since the last one, so it is not worth making.</summary>
+    /// <summary>
+    /// The interval ran out, but nobody has played since the last one, so it is not worth making.
+    /// </summary>
     Skip,
 
     /// <summary>Time to back up.</summary>
@@ -41,10 +43,13 @@ public static class BackupSchedule
     /// </summary>
     public static int Clamp(int minutes) => Math.Clamp(minutes, MinMinutes, MaxMinutes);
 
-    /// <summary>Whether a backup is due, given when the last one was and whether anyone has played since.</summary>
+    /// <summary>
+    /// Whether a backup is due, given when the last one was and whether anyone has played since.
+    /// </summary>
     /// <param name="nowUtc">The current time.</param>
     /// <param name="lastUtc">When the last automatic backup was made, or the server started.</param>
-    /// <param name="intervalMinutes">The configured interval; clamped here, so an odd stored value is harmless.</param>
+    /// <param name="intervalMinutes">The configured interval; clamped here, so an odd stored value is
+    /// harmless.</param>
     /// <param name="playedSince">Whether anybody has been connected since <paramref name="lastUtc"/>.</param>
     /// <param name="enabled">Whether automatic backups are switched on for this server at all.</param>
     public static BackupDue Due(DateTime nowUtc, DateTime lastUtc, int intervalMinutes, bool playedSince,

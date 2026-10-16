@@ -75,7 +75,8 @@ public sealed class MotdDocument
         foreach (var code in ColorCodes)
         {
             var c = RgbOf(code);
-            int dr = ((c >> 16) & 255) - ((rgb >> 16) & 255), dg = ((c >> 8) & 255) - ((rgb >> 8) & 255), db = (c & 255) - (rgb & 255);
+            int dr = ((c >> 16) & 255) - ((rgb >> 16) & 255), dg = ((c >> 8) & 255) - ((rgb >> 8) & 255),
+                db = (c & 255) - (rgb & 255);
             var d = dr * dr * 3 + dg * dg * 4 + db * db * 2; // weighted the way the eye weighs them
             if (d < bestDistance) (best, bestDistance) = (code, d);
         }
@@ -104,7 +105,10 @@ public sealed class MotdDocument
     private readonly string[] _text = ["", ""];
     private readonly List<MotdStyle>[] _styles = [new(), new()];
 
-    /// <summary>True when the source had a third line or more, which the list cannot show and this document does not keep.</summary>
+    /// <summary>
+    /// True when the source had a third line or more, which the list cannot show and this document does not
+    /// keep.
+    /// </summary>
     public bool HadExtraLines { get; private set; }
 
     public string GetText(int line) => _text[line];
@@ -174,7 +178,8 @@ public sealed class MotdDocument
     internal static bool TryReadHex(string text, int at, out int rgb)
     {
         rgb = 0;
-        if (at + 14 > text.Length || text[at] != '§' || char.ToLowerInvariant(text[at + 1]) != 'x') return false;
+        if (at + 14 > text.Length || text[at] != '§'
+            || char.ToLowerInvariant(text[at + 1]) != 'x') return false;
         for (var k = 0; k < 6; k++)
         {
             if (text[at + 2 + 2 * k] != '§') return false;
@@ -185,7 +190,9 @@ public sealed class MotdDocument
         return true;
     }
 
-    /// <summary>The style after one <c>§</c> code. A colour wipes the formatting, as it does in the game.</summary>
+    /// <summary>
+    /// The style after one <c>§</c> code. A colour wipes the formatting, as it does in the game.
+    /// </summary>
     private static MotdStyle Apply(MotdStyle s, char code) => code switch
     {
         >= '0' and <= '9' or >= 'a' and <= 'f' => new MotdStyle(code, MotdFormat.None),
@@ -232,14 +239,17 @@ public sealed class MotdDocument
     {
         ch = '\0';
         if (at + 4 > s.Length) return false;
-        if (!int.TryParse(s.AsSpan(at, 4), System.Globalization.NumberStyles.HexNumber, null, out var v)) return false;
+        if (!int.TryParse(s.AsSpan(at, 4), System.Globalization.NumberStyles.HexNumber, null,
+            out var v)) return false;
         ch = (char)v;
         return true;
     }
 
     // ---------------------------------------------------------------- writing
 
-    /// <summary>The value to store after <c>motd=</c>: ASCII only, <c>§</c> as <c>\u00a7</c>, the break as <c>\n</c>.</summary>
+    /// <summary>
+    /// The value to store after <c>motd=</c>: ASCII only, <c>§</c> as <c>\u00a7</c>, the break as <c>\n</c>.
+    /// </summary>
     /// <remarks>
     /// Escaping everything past ASCII is what the game itself does when it writes the file. Older
     /// versions read <c>server.properties</c> as Latin-1, so a raw "·" or "ñ" would come back mangled;
@@ -281,7 +291,9 @@ public sealed class MotdDocument
         }
     }
 
-    /// <summary>Emits the fewest codes that take the game's current style to <paramref name="want"/>.</summary>
+    /// <summary>
+    /// Emits the fewest codes that take the game's current style to <paramref name="want"/>.
+    /// </summary>
     private static void Transition(StringBuilder sb, ref MotdStyle have, MotdStyle want)
     {
         if (have == want) return;
@@ -322,7 +334,8 @@ public sealed class MotdDocument
             var edge = i == 0 || i == codes.Length - 1; // Java drops leading whitespace of a value
             if (c == '\n') sb.Append("\\n");
             else if (c == '\\') sb.Append("\\\\");
-            else if (c < 32 || c > 126 || (c == ' ' && edge)) sb.Append("\\u").Append(((int)c).ToString("x4"));
+            else if (c < 32 || c > 126 || (c == ' ' && edge)) sb.Append("\\u")
+                .Append(((int)c).ToString("x4"));
             else sb.Append(c);
         }
         return sb.ToString();
@@ -339,7 +352,8 @@ public sealed class MotdDocument
     /// Where the caret is after the edit. Typing, backspace and delete all leave the edit touching
     /// the caret, which settles the cases a plain diff cannot — typing an "a" next to an "a".
     /// </param>
-    /// <param name="typing">The style new characters take; by default that of the character they replace or follow.</param>
+    /// <param name="typing">The style new characters take; by default that of the character they replace or
+    /// follow.</param>
     public void SetText(int line, string? value, int? caret = null, MotdStyle? typing = null)
     {
         var next = Clean(value);
@@ -405,7 +419,8 @@ public sealed class MotdDocument
             var t = length == 1 ? 0 : i / (double)(length - 1);
             var rgb = Lerp(fromRgb, toRgb, t);
             var at = start + i;
-            _styles[line][at] = hex ? _styles[line][at].WithColor('x', rgb) : _styles[line][at].WithColor(NearestCode(rgb));
+            _styles[line][at] = hex ? _styles[line][at].WithColor('x', rgb)
+                : _styles[line][at].WithColor(NearestCode(rgb));
         }
     }
 

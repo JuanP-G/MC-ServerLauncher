@@ -53,16 +53,44 @@ public partial class ServerCardView : UserControl
         AvaloniaProperty.Register<ServerCardView, ICommand?>(nameof(EditCommand));
 
     public Bitmap? Icon { get => GetValue(IconProperty); set => SetValue(IconProperty, value); }
-    public string? ServerName { get => GetValue(ServerNameProperty); set => SetValue(ServerNameProperty, value); }
+    public string? ServerName
+    {
+        get => GetValue(ServerNameProperty); set
+        => SetValue(ServerNameProperty, value);
+    }
     public string? TypeText { get => GetValue(TypeTextProperty); set => SetValue(TypeTextProperty, value); }
-    public IBrush? TypeBrush { get => GetValue(TypeBrushProperty); set => SetValue(TypeBrushProperty, value); }
+    public IBrush? TypeBrush
+    {
+        get => GetValue(TypeBrushProperty); set
+        => SetValue(TypeBrushProperty, value);
+    }
     public string? Version { get => GetValue(VersionProperty); set => SetValue(VersionProperty, value); }
     public string? Motd { get => GetValue(MotdProperty); set => SetValue(MotdProperty, value); }
-    public string? PlayerCount { get => GetValue(PlayerCountProperty); set => SetValue(PlayerCountProperty, value); }
-    public IBrush? SignalBrush { get => GetValue(SignalBrushProperty); set => SetValue(SignalBrushProperty, value); }
-    public string? SignalHint { get => GetValue(SignalHintProperty); set => SetValue(SignalHintProperty, value); }
-    public bool IsEditable { get => GetValue(IsEditableProperty); set => SetValue(IsEditableProperty, value); }
-    public ICommand? EditCommand { get => GetValue(EditCommandProperty); set => SetValue(EditCommandProperty, value); }
+    public string? PlayerCount
+    {
+        get => GetValue(PlayerCountProperty); set
+        => SetValue(PlayerCountProperty, value);
+    }
+    public IBrush? SignalBrush
+    {
+        get => GetValue(SignalBrushProperty); set
+        => SetValue(SignalBrushProperty, value);
+    }
+    public string? SignalHint
+    {
+        get => GetValue(SignalHintProperty); set
+        => SetValue(SignalHintProperty, value);
+    }
+    public bool IsEditable
+    {
+        get => GetValue(IsEditableProperty); set
+        => SetValue(IsEditableProperty, value);
+    }
+    public ICommand? EditCommand
+    {
+        get => GetValue(EditCommandProperty); set
+        => SetValue(EditCommandProperty, value);
+    }
 
     public ServerCardView()
     {

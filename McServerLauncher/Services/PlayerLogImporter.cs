@@ -29,7 +29,9 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public static partial class PlayerLogImporter
 {
-    /// <summary>Imports the server's logs into <paramref name="store"/>, unless that was done already.</summary>
+    /// <summary>
+    /// Imports the server's logs into <paramref name="store"/>, unless that was done already.
+    /// </summary>
     /// <returns>How many events were read (duplicates included, those are dropped by the store).</returns>
     public static int ImportOnce(string serverFolder, PlayerHistoryStore store, bool serverRunning,
         CancellationToken ct = default)
@@ -53,7 +55,8 @@ public static partial class PlayerLogImporter
                 foreach (var (file, name) in archived)
                 {
                     ct.ThrowIfCancellationRequested();
-                    var day = DateTime.ParseExact(name.Groups[1].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    var day = DateTime.ParseExact(name.Groups[1].Value, "yyyy-MM-dd",
+                        CultureInfo.InvariantCulture);
                     count += ImportLines(ReadGzip(file), day, store);
                 }
 
@@ -76,7 +79,9 @@ public static partial class PlayerLogImporter
         return count;
     }
 
-    /// <summary>Records the player events in one log, whose first line is on <paramref name="startDay"/>.</summary>
+    /// <summary>
+    /// Records the player events in one log, whose first line is on <paramref name="startDay"/>.
+    /// </summary>
     internal static int ImportLines(IReadOnlyList<string> lines, DateTime startDay, PlayerHistoryStore store)
     {
         var online = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -128,7 +133,9 @@ public static partial class PlayerLogImporter
         return count;
     }
 
-    /// <summary>The time at the start of a log line, <c>[12:34:56]</c> or Paper's <c>[12:34:56 INFO]</c>.</summary>
+    /// <summary>
+    /// The time at the start of a log line, <c>[12:34:56]</c> or Paper's <c>[12:34:56 INFO]</c>.
+    /// </summary>
     internal static TimeSpan? TimeOf(string line)
     {
         var m = LineTime().Match(line);

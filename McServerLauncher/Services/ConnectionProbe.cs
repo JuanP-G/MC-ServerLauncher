@@ -20,7 +20,9 @@ public sealed record LatencyStats(IReadOnlyList<double> Samples, int Sent)
     public double Max => AnyReply ? Samples.Max() : 0;
     public double Average => AnyReply ? Samples.Average() : 0;
 
-    /// <summary>How much one round trip differs from the next, on average: what players feel as stutter.</summary>
+    /// <summary>
+    /// How much one round trip differs from the next, on average: what players feel as stutter.
+    /// </summary>
     public double Jitter =>
         Samples.Count < 2 ? 0 : Samples.Zip(Samples.Skip(1), (a, b) => Math.Abs(a - b)).Average();
 
@@ -197,7 +199,8 @@ public static class ConnectionProbe
     /// provider the speed test already talks to. Without an answer the game's default port is what
     /// a client would try, so it is what is tried here.
     /// </remarks>
-    public static async Task<(string Host, int Port)> ResolveJavaAsync(string address, CancellationToken ct = default)
+    public static async Task<(string Host, int Port)> ResolveJavaAsync(string address,
+        CancellationToken ct = default)
     {
         var text = address.Trim();
         var colon = text.LastIndexOf(':');
@@ -232,7 +235,8 @@ public static class ConnectionProbe
             {
                 if (!answer.TryGetProperty("type", out var type) || type.GetInt32() != 33) continue;
                 // "priority weight port target."
-                var parts = answer.GetProperty("data").GetString()?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var parts = answer.GetProperty("data")
+                    .GetString()?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (parts is { Length: 4 } && int.TryParse(parts[2], out var port))
                     return (parts[3].TrimEnd('.'), port);
             }
@@ -296,7 +300,8 @@ public static class ConnectionProbe
             while (true)
             {
                 var reply = await udp.ReceiveAsync(cts.Token);
-                if (reply.Buffer.Length > 0 && reply.Buffer[0] == 0x1c) return watch.Elapsed.TotalMilliseconds;
+                if (reply.Buffer.Length > 0
+                    && reply.Buffer[0] == 0x1c) return watch.Elapsed.TotalMilliseconds;
             }
         }
         catch (Exception) when (!ct.IsCancellationRequested)
@@ -308,7 +313,8 @@ public static class ConnectionProbe
     // ---------------------------------------------------------------- the line
 
     /// <summary>How long a TCP connection takes to open: one round trip, and nothing else.</summary>
-    public static async Task<double?> TcpRoundTripAsync(string host, int port, TimeSpan timeout, CancellationToken ct = default)
+    public static async Task<double?> TcpRoundTripAsync(string host, int port, TimeSpan timeout,
+        CancellationToken ct = default)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(timeout);
@@ -326,7 +332,8 @@ public static class ConnectionProbe
     }
 
     /// <summary>Downloads up to <paramref name="bytes"/>, for at most <paramref name="limit"/>.</summary>
-    public static async Task<Throughput> DownloadAsync(long bytes, TimeSpan limit, CancellationToken ct = default)
+    public static async Task<Throughput> DownloadAsync(long bytes, TimeSpan limit,
+        CancellationToken ct = default)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(limit);
@@ -350,8 +357,11 @@ public static class ConnectionProbe
         return meter.Result();
     }
 
-    /// <summary>Uploads up to <paramref name="bytes"/> of random data, for at most <paramref name="limit"/>.</summary>
-    public static async Task<Throughput> UploadAsync(long bytes, TimeSpan limit, CancellationToken ct = default)
+    /// <summary>
+    /// Uploads up to <paramref name="bytes"/> of random data, for at most <paramref name="limit"/>.
+    /// </summary>
+    public static async Task<Throughput> UploadAsync(long bytes, TimeSpan limit,
+        CancellationToken ct = default)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(limit);
@@ -406,7 +416,8 @@ public static class ConnectionProbe
     /// <summary>A body of random bytes that reports each chunk to the meter as it is sent.</summary>
     private sealed class MeteredContent(long length, Meter meter) : HttpContent
     {
-        protected override async Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context)
+        protected override async Task SerializeToStreamAsync(Stream stream,
+            System.Net.TransportContext? context)
         {
             var chunk = new byte[64 * 1024];
             Random.Shared.NextBytes(chunk);

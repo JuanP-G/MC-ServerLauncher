@@ -11,7 +11,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class UpdateLeftoversTests : IDisposable
 {
-    private readonly string _temp = Path.Combine(Path.GetTempPath(), "mcl-leftovers-" + Guid.NewGuid().ToString("N"));
+    private readonly string _temp = Path.Combine(Path.GetTempPath(), "mcl-leftovers-" + Guid.NewGuid()
+        .ToString("N"));
     private static readonly DateTime Now = new(2026, 10, 4, 12, 0, 0, DateTimeKind.Utc);
 
     public UpdateLeftoversTests() => Directory.CreateDirectory(_temp);

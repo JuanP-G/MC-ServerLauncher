@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using McServerLauncher.Localization;
 
 namespace McServerLauncher.Services;
@@ -17,10 +18,14 @@ public class WhitelistService
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
+    /// <summary>One line of whitelist.json, whose keys are the lower-case ones Minecraft reads.</summary>
     private sealed class Entry
     {
-        public string uuid { get; set; } = string.Empty;
-        public string name { get; set; } = string.Empty;
+        [JsonPropertyName("uuid")]
+        public string Uuid { get; set; } = string.Empty;
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
     }
 
     private static string PathOf(string folder) => Path.Combine(folder, "whitelist.json");
@@ -29,7 +34,7 @@ public class WhitelistService
     public List<string> ReadNames(string folder)
     {
         var entries = ReadEntries(folder);
-        return entries.Select(e => e.name).Where(n => !string.IsNullOrWhiteSpace(n)).ToList();
+        return entries.Select(e => e.Name).Where(n => !string.IsNullOrWhiteSpace(n)).ToList();
     }
 
     private List<Entry> ReadEntries(string folder)
@@ -47,13 +52,14 @@ public class WhitelistService
     }
 
     private void WriteEntries(string folder, List<Entry> entries)
-        => File.WriteAllText(PathOf(folder), JsonSerializer.Serialize(entries, JsonOptions), new UTF8Encoding(false));
+        => File.WriteAllText(PathOf(folder), JsonSerializer.Serialize(entries, JsonOptions),
+            new UTF8Encoding(false));
 
     /// <summary>Adds a player to whitelist.json (resolving their UUID). Does not duplicate.</summary>
     public async Task AddAsync(string folder, string name, bool onlineMode, CancellationToken ct = default)
     {
         var entries = ReadEntries(folder);
-        if (entries.Any(e => e.name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+        if (entries.Any(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
             return;
 
         var uuid = onlineMode
@@ -64,7 +70,7 @@ public class WhitelistService
             throw new UserFacingException(
                 string.Format(Localizer.Get("Msg_PlayerNotFoundMojang"), name));
 
-        entries.Add(new Entry { uuid = uuid, name = name });
+        entries.Add(new Entry { Uuid = uuid, Name = name });
         WriteEntries(folder, entries);
     }
 
@@ -73,7 +79,7 @@ public class WhitelistService
     {
         var entries = ReadEntries(folder);
         var before = entries.Count;
-        entries.RemoveAll(e => e.name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        entries.RemoveAll(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         if (entries.Count != before)
             WriteEntries(folder, entries);
     }

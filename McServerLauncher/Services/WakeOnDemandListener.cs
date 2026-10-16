@@ -219,7 +219,8 @@ public sealed class WakeOnDemandListener : IDisposable
 
         if (request.Value.Id == 0x00)
         {
-            Send(stream, 0x00, w => WriteString(w, BuildStatusJson(status, protocol, Favicon(status.IconPath))));
+            Send(stream, 0x00, w => WriteString(w,
+                BuildStatusJson(status, protocol, Favicon(status.IconPath))));
 
             // The ping the client uses to draw a latency bar: echo its payload back unchanged.
             var ping = ReadPacket(stream);
@@ -269,7 +270,9 @@ public sealed class WakeOnDemandListener : IDisposable
         }
     }
 
-    /// <summary>The server-list answer. Public shape so it can be checked without a Minecraft client.</summary>
+    /// <summary>
+    /// The server-list answer. Public shape so it can be checked without a Minecraft client.
+    /// </summary>
     internal static string BuildStatusJson(WakeStatus status, int protocol, string? favicon)
     {
         var json = new Dictionary<string, object>

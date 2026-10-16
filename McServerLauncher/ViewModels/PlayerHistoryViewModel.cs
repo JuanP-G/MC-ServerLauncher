@@ -19,9 +19,12 @@ public static class RelativeTime
     {
         var span = nowUtc - utc;
         if (span < TimeSpan.FromMinutes(1)) return Localizer.Get("Time_JustNow");
-        if (span < TimeSpan.FromHours(1)) return string.Format(Localizer.Get("Time_MinutesAgoFmt"), (int)span.TotalMinutes);
-        if (span < TimeSpan.FromDays(1)) return string.Format(Localizer.Get("Time_HoursAgoFmt"), (int)span.TotalHours);
-        if (span < TimeSpan.FromDays(30)) return string.Format(Localizer.Get("Time_DaysAgoFmt"), (int)span.TotalDays);
+        if (span < TimeSpan.FromHours(1)) return string.Format(Localizer.Get("Time_MinutesAgoFmt"),
+            (int)span.TotalMinutes);
+        if (span < TimeSpan.FromDays(1)) return string.Format(Localizer.Get("Time_HoursAgoFmt"),
+            (int)span.TotalHours);
+        if (span < TimeSpan.FromDays(30)) return string.Format(Localizer.Get("Time_DaysAgoFmt"),
+            (int)span.TotalDays);
         return utc.ToLocalTime().ToString("d", CultureInfo.CurrentUICulture);
     }
 
@@ -78,7 +81,8 @@ public sealed class PlayerEventRowViewModel
         {
             PlayerEventKind.Join => Localizer.Get("History_EventJoin"),
             PlayerEventKind.Leave => Localizer.Get("History_EventLeave"),
-            PlayerEventKind.Advancement => string.Format(Localizer.Get("History_EventAdvancementFmt"), e.Text),
+            PlayerEventKind.Advancement => string.Format(Localizer.Get("History_EventAdvancementFmt"),
+                e.Text),
             _ => e.Text ?? ""
         };
         IsChat = e.Kind == PlayerEventKind.Chat;
@@ -212,7 +216,9 @@ public sealed partial class PlayerDetailsViewModel : ObservableObject
     /// <summary>Blocks broken, by block. The server counts these exactly.</summary>
     public ObservableCollection<StatBarViewModel> MinedBlocks { get; } = new();
 
-    /// <summary>Items used, by item — which for a block means placed. See <see cref="PlayerStats.Used"/>.</summary>
+    /// <summary>
+    /// Items used, by item — which for a block means placed. See <see cref="PlayerStats.Used"/>.
+    /// </summary>
     public ObservableCollection<StatBarViewModel> UsedItems { get; } = new();
 
     [ObservableProperty]
@@ -243,7 +249,8 @@ public sealed partial class PlayerDetailsViewModel : ObservableObject
             : rec?.LastSeen is { } last ? $"{RelativeTime.Ago(last, now)} · {RelativeTime.Exact(last)}" : "—";
         SessionsText = rec is null ? "—" : rec.Sessions.ToString(CultureInfo.CurrentUICulture);
         var played = TimeSpan.FromSeconds(rec?.SecondsPlayed ?? 0);
-        if (rec?.OpenSince is { } open && now > open) played += now - open;   // the session in progress counts
+        if (rec?.OpenSince is { } open
+            && now > open) played += now - open;   // the session in progress counts
         PlayedText = rec is null ? "—" : RelativeTime.Duration(played);
         MessagesText = rec is null ? "—" : rec.Messages.ToString(CultureInfo.CurrentUICulture);
 
@@ -317,8 +324,10 @@ public sealed partial class PlayerDetailsViewModel : ObservableObject
         // Per hour played, which is the only way these compare between two players. They are
         // curiosities on a profile page, not a verdict about anybody.
         var hours = stats.PlayTime.TotalHours;
-        StatsBlocksPerHour = hours >= 0.1 ? (stats.BlocksMined / hours).ToString("N0", CultureInfo.CurrentUICulture) : "—";
-        StatsOresPerHour = hours >= 0.1 ? (stats.OresMined / hours).ToString("N1", CultureInfo.CurrentUICulture) : "—";
+        StatsBlocksPerHour = hours >= 0.1 ? (stats.BlocksMined / hours)
+            .ToString("N0", CultureInfo.CurrentUICulture) : "—";
+        StatsOresPerHour = hours >= 0.1 ? (stats.OresMined / hours)
+            .ToString("N1", CultureInfo.CurrentUICulture) : "—";
 
         StatsTopKill = Top(stats.Killed);
         StatsTopKiller = Top(stats.KilledBy);
@@ -566,7 +575,8 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
         Dispatcher.UIThread.Post(() =>
         {
             if (e.Kind is PlayerEventKind.Join or PlayerEventKind.Leave) RequestRefresh();
-            if (Details is { } d && string.Equals(d.Name, e.Player, StringComparison.OrdinalIgnoreCase)) d.Reload();
+            if (Details is { } d && string.Equals(d.Name, e.Player,
+                StringComparison.OrdinalIgnoreCase)) d.Reload();
         });
     }
 
@@ -578,7 +588,9 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
         _ = Task.Run(() => store.CloseOpenSessions(DateTime.UtcNow));
     }
 
-    /// <summary>The settings changed: the limits may be tighter now, and the tab may need to say it is off.</summary>
+    /// <summary>
+    /// The settings changed: the limits may be tighter now, and the tab may need to say it is off.
+    /// </summary>
     public void OnSettingsChanged()
     {
         OnPropertyChanged(nameof(IsDisabled));

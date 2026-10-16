@@ -62,7 +62,8 @@ public class SelectionMarker : SlidingIndicator
         Follow(change.OldValue as Panel, change.NewValue as Panel);
     }
 
-    private void OnItemClassesChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => Place();
+    private void OnItemClassesChanged(object? sender,
+        System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => Place();
 
     private void ApplyShape()
     {

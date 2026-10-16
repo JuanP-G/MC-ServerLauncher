@@ -21,7 +21,8 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public sealed class ContentManifestCache
 {
-    private readonly ConcurrentDictionary<string, (long Length, DateTime Written, ContentManifest.Manifest Manifest)> _known = new();
+    private readonly ConcurrentDictionary<string, (long Length, DateTime Written,
+        ContentManifest.Manifest Manifest)> _known = new();
 
     /// <summary>The jar's manifest, reading it only if this exact file has not been read already.</summary>
     public ContentManifest.Manifest Read(string path)

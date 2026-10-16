@@ -20,7 +20,9 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public static class ProcessRunner
 {
-    /// <summary>What a command left behind. <c>ExitCode</c> is -1 when it could not run or ran out of time.</summary>
+    /// <summary>
+    /// What a command left behind. <c>ExitCode</c> is -1 when it could not run or ran out of time.
+    /// </summary>
     public readonly record struct Result(int ExitCode, string Output, string Error);
 
     /// <summary>Runs <paramref name="file"/> with <paramref name="arguments"/>. Never throws.</summary>

@@ -5,7 +5,9 @@ using McServerLauncher.Services;
 
 namespace McServerLauncher.Views.ServerSettings;
 
-/// <summary>Who else can play: Bedrock players, other Java versions, and Bedrock on a modded server.</summary>
+/// <summary>
+/// Who else can play: Bedrock players, other Java versions, and Bedrock on a modded server.
+/// </summary>
 /// <remarks>
 /// The switches the type cannot do are greyed out with why. Switching them off is the draft's, not
 /// this page's (<see cref="ServerSettingsDraft"/> coerces to the type when it opens and after a

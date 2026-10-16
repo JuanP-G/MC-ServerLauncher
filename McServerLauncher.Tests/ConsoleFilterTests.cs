@@ -87,7 +87,8 @@ public class ConsoleFilterTests
         var kinds = Kinds(off: ConsoleLineKind.Chat);
 
         // Otherwise typing a word would resurrect lines the user had explicitly hidden.
-        Assert.False(ConsoleKindFilter.Matches(Line("<Alice> fabric", ConsoleLineKind.Chat), "fabric", kinds));
+        Assert.False(ConsoleKindFilter.Matches(Line("<Alice> fabric", ConsoleLineKind.Chat), "fabric",
+            kinds));
     }
 
     // --- Counting ---
@@ -148,7 +149,9 @@ public class ConsoleFilterTests
     {
         var levels = new NotificationSettings
         {
-            ColorError = "#AA0000", ColorWarning = "#BB0000", ColorInfo = "#CC0000"
+            ColorError = "#AA0000",
+            ColorWarning = "#BB0000",
+            ColorInfo = "#CC0000"
         };
 
         // Red should mean the same thing in a toast and in the console; asking somebody to pick the
@@ -210,7 +213,8 @@ public class ConsoleFilterTests
         {
             var name = m.Groups[1].Value;
             Assert.True(
-                typeof(ConsoleKindFilter).GetProperty(name, BindingFlags.Public | BindingFlags.Instance) is not null,
+                typeof(ConsoleKindFilter).GetProperty(name,
+                    BindingFlags.Public | BindingFlags.Instance) is not null,
                 $"ConsoleKindFilter no tiene ninguna propiedad «{name}», que MainWindow.axaml enlaza");
         }
     }
@@ -272,7 +276,8 @@ public class ConsoleFilterTests
     {
         var kinds = Kinds();
         var lines = new List<ConsoleLine> { Line("a"), Line("b") };
-        Assert.Equal(2, ConsoleKindFilter.VisibleLinesLeaving(lines, 99, l => ConsoleKindFilter.Matches(l, null, kinds)));
+        Assert.Equal(2, ConsoleKindFilter.VisibleLinesLeaving(lines, 99, l
+            => ConsoleKindFilter.Matches(l, null, kinds)));
     }
 
     /// <summary>

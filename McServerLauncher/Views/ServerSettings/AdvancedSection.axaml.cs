@@ -73,7 +73,7 @@ public partial class AdvancedSection : UserControl, IServerSettingsSection
 
     private void ShowHistorySize() =>
         HistorySizeText.Text = string.Format(Localizer.Get("Cfg_HistorySizeFmt"),
-            SettingsViewModel.FormatBytes(PlayerHistoryStore.SizeOf(_draft.Live.Id)));
+            ByteSize.Format(PlayerHistoryStore.SizeOf(_draft.Live.Id)));
 
     /// <remarks>
     /// Here rather than in the app's settings because that is where somebody goes looking for it:
@@ -82,7 +82,8 @@ public partial class AdvancedSection : UserControl, IServerSettingsSection
     /// </remarks>
     private void ClearHistory_Click(object? sender, RoutedEventArgs e)
     {
-        ClearHistoryQuestion.Text = string.Format(Localizer.Get("Cfg_HistoryClearConfirmFmt"), _draft.Live.Name);
+        ClearHistoryQuestion.Text = string.Format(Localizer.Get("Cfg_HistoryClearConfirmFmt"),
+            _draft.Live.Name);
         ClearHistoryConfirm.IsVisible = true;
         ClearHistoryButton.IsVisible = false;
     }

@@ -42,5 +42,6 @@ public class ProcessRunnerTests
 
     [Fact]
     public void SomethingThatCannotRunIsMinusOneAndDoesNotThrow() =>
-        Assert.Equal(-1, ProcessRunner.Run("no-such-command-mcsl", Array.Empty<string>(), TimeSpan.FromSeconds(2)).ExitCode);
+        Assert.Equal(-1, ProcessRunner.Run("no-such-command-mcsl", Array.Empty<string>(),
+            TimeSpan.FromSeconds(2)).ExitCode);
 }

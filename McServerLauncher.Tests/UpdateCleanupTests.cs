@@ -23,18 +23,26 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class UpdateCleanupTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-cleanup-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-cleanup-" + Guid.NewGuid()
+        .ToString("N"));
 
     public UpdateCleanupTests() => Directory.CreateDirectory(_dir);
 
     public void Dispose()
     {
-        try { Directory.Delete(_dir, recursive: true); } catch { /* a temp folder that outlives the run is harmless */ }
+        try
+        {
+            Directory.Delete(_dir,
+            recursive: true);
+        }
+        catch { /* a temp folder that outlives the run is harmless */ }
     }
 
     private string At(string name) => Path.Combine(_dir, name);
 
-    /// <summary>A Fabric jar that says it is <paramref name="id"/>, optionally carrying other mods inside.</summary>
+    /// <summary>
+    /// A Fabric jar that says it is <paramref name="id"/>, optionally carrying other mods inside.
+    /// </summary>
     private string FabricJar(string fileName, string? id, string? name = null, params string[] bundledIds)
     {
         var path = At(fileName);
@@ -211,7 +219,9 @@ public class UpdateCleanupTests : IDisposable
         Assert.Equal(new[] { "a.jar", "b.jar" }, FilesLeft());
     }
 
-    /// <summary>A rename that refuses the file named <paramref name="refused"/>, the way a lock does.</summary>
+    /// <summary>
+    /// A rename that refuses the file named <paramref name="refused"/>, the way a lock does.
+    /// </summary>
     private static Action<string, string> RefusingToMove(params string[] refused) => (from, to) =>
     {
         if (refused.Contains(Path.GetFileName(from))) throw new IOException("in use");
@@ -245,7 +255,8 @@ public class UpdateCleanupTests : IDisposable
         var fresh = FabricJar("c.jar", "x");
 
         var (result, _) = ContentReplacement.RemoveAllOrNothing(
-            new[] { first, held }, fresh, RefusingToMove("b.jar", "a.jar" + ContentReplacement.RemovingSuffix));
+            new[] { first, held }, fresh, RefusingToMove("b.jar",
+                "a.jar" + ContentReplacement.RemovingSuffix));
 
         Assert.Equal(ContentReplacement.RemoveResult.Locked, result);
         Assert.True(File.Exists(fresh));

@@ -159,7 +159,11 @@ mundo. No hay rutas fijas del equipo en el código.
   el mismo valor para el botón Parar, Reiniciar y cerrar o actualizar la app; al cerrar se daban
   quince segundos, menos de lo que un modpack grande necesita para guardar.
 - **`JavaService`** — detecta los Java instalados y, si ninguno es compatible, descarga el JRE
-  Temurin (Adoptium) adecuado para la arquitectura. Se usa al crear y al iniciar un servidor.
+  Temurin (Adoptium) adecuado para la arquitectura. Se usa al crear y al iniciar un servidor. Cada
+  servidor pide su propio `JavaService`, así que la descarga de una Java (por versión mayor) pasa por una
+  puerta común a todo el proceso: dos servidores que arrancaban a la vez compartían el archivo y la
+  carpeta `.partial`, y cada uno borraba lo que escribía el otro. `java -version` y `which` se lanzan con
+  `ProcessRunner`, como todo lo que ejecuta un comando corto.
 - **`MinecraftVersionService`** — lee el manifiesto de versiones de Mojang, resuelve la URL del
   `server.jar` y la versión de Java necesaria, y descarga archivos.
 - **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — hablan con Playit.gg.
@@ -181,7 +185,15 @@ mundo. No hay rutas fijas del equipo en el código.
   `server.properties` de un servidor nuevo se escribe con `white-list=false`: Minecraft 26.3 cambió su valor por
   defecto a `true`, y eso dejaba todo servidor nuevo cerrado tras una lista vacía. La pestaña Jugadores la
   enciende y apaga con `whitelist on/off` si está arrancado y en el archivo si está parado, sin tocar nunca
-  `whitelist.json`, y añadir un nombre la enciende.
+  `whitelist.json`, y añadir un nombre la enciende. Una clave verdadero/falso se lee con
+  `ServerPropertiesService.ParseBool`/`GetBool`, como la lee el servidor (solo `true` es verdadero:
+  `online-mode=yes` es un servidor sin conexión).
+- **`PlayerNames`** — cómo es un nombre de Minecraft Java (`IsValid`, y `Pattern` para sacar uno de una
+  línea). Una sola regla para los cinco sitios que guardaban cada uno su expresión regular; también es lo
+  que impide que un nombre lleve un salto de línea a un comando de consola o acabe en una ruta.
+- **`ByteSize`** y **`AppWindows`** — una sola forma de escribir un tamaño en disco (potencias de 1024; las
+  velocidades de la línea siguen en decimal, como los Mb/s que tienen al lado) y un solo sitio donde pedir
+  la ventana principal.
 - **`MinecraftIds`** — convierte `minecraft:deepslate_diamond_ore` en «Deepslate diamond ore». A propósito
   sin traducir: hay más de mil bloques, más con cada versión y cada mod, y lo que se traduce es la etiqueta
   de la lista, no el vocabulario del propio juego que va dentro. Un bloque de un mod conserva su espacio de

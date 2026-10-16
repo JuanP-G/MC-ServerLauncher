@@ -43,13 +43,15 @@ public static class ResetScrollBehavior
         listBox.PropertyChanged += (_, args) =>
         {
             if (args.Property == ItemsControl.ItemsSourceProperty)
-                Hook(listBox, args.OldValue as INotifyCollectionChanged, args.NewValue as INotifyCollectionChanged);
+                Hook(listBox, args.OldValue as INotifyCollectionChanged,
+                    args.NewValue as INotifyCollectionChanged);
         };
         Hook(listBox, null, listBox.ItemsSource as INotifyCollectionChanged);
     }
 
     // Maps a watched collection to its ListBox so the static handler can find it.
-    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<INotifyCollectionChanged, ListBox> ListBoxes = new();
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<INotifyCollectionChanged,
+        ListBox> ListBoxes = new();
 
     private static void Hook(ListBox listBox, INotifyCollectionChanged? old, INotifyCollectionChanged? @new)
     {

@@ -31,12 +31,14 @@ public class NestedJarTests : IDisposable
     }
 
     /// <summary>The bytes of a Fabric jar with this id, these depends, and these jars inside it.</summary>
-    private static byte[] FabricJar(string id, string[]? depends = null, params (string Path, byte[] Jar)[] nested)
+    private static byte[] FabricJar(string id, string[]? depends = null,
+        params (string Path, byte[] Jar)[] nested)
     {
         using var buffer = new MemoryStream();
         using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
         {
-            var dependsJson = string.Join(",", (depends ?? Array.Empty<string>()).Select(d => $"\"{d}\":\"*\""));
+            var dependsJson = string.Join(",", (depends ?? Array.Empty<string>())
+                .Select(d => $"\"{d}\":\"*\""));
             var jarsJson = string.Join(",", nested.Select(n => $"{{\"file\":\"{n.Path}\"}}"));
 
             using (var writer = new StreamWriter(zip.CreateEntry("fabric.mod.json").Open()))

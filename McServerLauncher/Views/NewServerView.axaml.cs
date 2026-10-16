@@ -90,7 +90,8 @@ public partial class NewServerView : UserControl
         // Suggest a free port that doesn't clash with existing servers.
         PortBox.Value = SuggestFreePort();
         if (_usedPorts.Count > 0)
-            PortStatus.Text = string.Format(Localizer.Get("Msg_PortsInUseByServers"), string.Join(", ", _usedPorts.OrderBy(p => p)));
+            PortStatus.Text = string.Format(Localizer.Get("Msg_PortsInUseByServers"),
+                string.Join(", ", _usedPorts.OrderBy(p => p)));
 
         NameBox.TextChanged += (_, _) => UpdateFinalPath();
         ParentFolderBox.TextChanged += (_, _) => UpdateFinalPath();
@@ -176,7 +177,8 @@ public partial class NewServerView : UserControl
     /// asking again someone whose server has run for months would be noise.
     /// </remarks>
     private bool EulaNeeded => _onDetails &&
-        (!IsExistingMode || !ServerCreationService.EulaAccepted(ExistingFolderBox.Text?.Trim() ?? string.Empty));
+        (!IsExistingMode || !ServerCreationService.EulaAccepted(ExistingFolderBox.Text?.Trim()
+            ?? string.Empty));
 
     /// <summary>Shows the box when it is needed, and keeps the button shut until it is ticked.</summary>
     /// <remarks>
@@ -194,7 +196,8 @@ public partial class NewServerView : UserControl
 
     private void EulaCheck_Changed(object? sender, RoutedEventArgs e) => UpdateEula();
 
-    private void EulaLink_Click(object? sender, RoutedEventArgs e) => BrowserLauncher.Open(AppLinks.MinecraftEula);
+    private void EulaLink_Click(object? sender, RoutedEventArgs e)
+        => BrowserLauncher.Open(AppLinks.MinecraftEula);
 
     /// <summary>The width from which the details sit in two columns instead of one.</summary>
     internal const double TwoColumnWidth = 880;
@@ -245,14 +248,16 @@ public partial class NewServerView : UserControl
     }
 
     /// <summary>Takes what a folder turned out to be and puts it on screen.</summary>
-    /// <remarks>Apart from the reading so that the screen side can be tested without waiting on a thread.</remarks>
+    /// <remarks>Apart from the reading so that the screen side can be tested without waiting on a
+    /// thread.</remarks>
     internal void ShowDetection(string folder, ServerDetection found)
     {
         _detectedFolder = folder;
         _detected = found;
         ExistingFolderBox.Text = folder;
         if (string.IsNullOrWhiteSpace(NameBox.Text))
-            NameBox.Text = Path.GetFileName(folder.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            NameBox.Text = Path.GetFileName(folder.TrimEnd(Path.DirectorySeparatorChar,
+                Path.AltDirectorySeparatorChar));
         ApplyDetection();
         UpdatePathWarning();
         UpdateEula();
@@ -310,7 +315,8 @@ public partial class NewServerView : UserControl
     {
         if (found.Type is not { } type) return string.Empty;
 
-        var parts = new List<string> { (ServerTypeCatalog.For(type).DisplayName + " " + found.GameVersion).Trim() };
+        var parts = new List<string> { (ServerTypeCatalog.For(type).DisplayName + " " + found.GameVersion)
+            .Trim() };
         if (!string.IsNullOrEmpty(found.LoaderVersion))
             parts.Add(string.Format(Localizer.Get("Cs_DetectedLoaderFmt"), found.LoaderVersion));
         if (found.Port is { } port) parts.Add(string.Format(Localizer.Get("Cs_DetectedPortFmt"), port));
@@ -338,7 +344,8 @@ public partial class NewServerView : UserControl
         if (known is { IsRelease: false } && SnapshotsCheck.IsChecked != true)
             SnapshotsCheck.IsChecked = true;   // repopulates, and lands back here
 
-        var items = (VersionCombo.ItemsSource as IEnumerable<MinecraftVersion>)?.ToList() ?? new List<MinecraftVersion>();
+        var items = (VersionCombo.ItemsSource as IEnumerable<MinecraftVersion>)?.ToList()
+            ?? new List<MinecraftVersion>();
         var match = items.FirstOrDefault(v => v.Id == id);
         if (match is null)
         {
@@ -499,8 +506,16 @@ public partial class NewServerView : UserControl
         if (maxGb < minGb) { await Warn(Localizer.Get("Msg_RamMaxMin")); return; }
 
         var port = WholeNumberConverter.ToWhole(PortBox.Value ?? 25565m);
-        if (_usedPorts.Contains(port)) { await Warn(string.Format(Localizer.Get("Msg_PortAssigned"), port)); return; }
-        if (_ports.IsPortInUse(port)) { await Warn(string.Format(Localizer.Get("Msg_PortInUseOther"), port)); return; }
+        if (_usedPorts.Contains(port))
+        {
+            await Warn(string.Format(Localizer.Get("Msg_PortAssigned"),
+            port)); return;
+        }
+        if (_ports.IsPortInUse(port))
+        {
+            await Warn(string.Format(Localizer.Get("Msg_PortInUseOther"),
+            port)); return;
+        }
 
         var folder = GetTargetFolder();
 
@@ -624,7 +639,8 @@ public partial class NewServerView : UserControl
         var found = folder == _detectedFolder && _detected is { } d ? d : ServerDetection.Nothing;
         var form = ExistingForm(folder, found.Type ?? SelectedServerType());
 
-        error = ExistingServer.Problem(form, found, _registeredFolders) is { } problem ? Localizer.Get(problem) : null;
+        error = ExistingServer.Problem(form, found, _registeredFolders) is { } problem
+            ? Localizer.Get(problem) : null;
         return error is null ? ExistingServer.ToConfig(form, found) : null;
     }
 
@@ -654,7 +670,11 @@ public partial class NewServerView : UserControl
         }
 
         var port = WholeNumberConverter.ToWhole(PortBox.Value ?? 25565m);
-        if (_usedPorts.Contains(port)) { await Warn(string.Format(Localizer.Get("Msg_PortAssigned"), port)); return; }
+        if (_usedPorts.Contains(port))
+        {
+            await Warn(string.Format(Localizer.Get("Msg_PortAssigned"),
+            port)); return;
+        }
         // Only a port the user changed is checked against the system: the one the folder already
         // uses may well be busy because this very server is running outside the app right now.
         if (port != found.Port && _ports.IsPortInUse(port))
@@ -682,8 +702,10 @@ public partial class NewServerView : UserControl
                 try
                 {
                     var details = await _versions.GetVersionDetailsAsync(version);
-                    AppendLog(string.Format(Localizer.Get("Msg_CheckingJava"), version.Id, details.JavaMajor));
-                    javaPath = await _java.EnsureJavaAsync(details.JavaMajor, new Progress<string>(AppendLog));
+                    AppendLog(string.Format(Localizer.Get("Msg_CheckingJava"), version.Id,
+                        details.JavaMajor));
+                    javaPath = await _java.EnsureJavaAsync(details.JavaMajor,
+                        new Progress<string>(AppendLog));
                 }
                 catch (Exception jex)
                 {

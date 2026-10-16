@@ -71,7 +71,8 @@ public class ConsoleLineClassifierTests
             Of("[12:34:56] [Server thread/INFO]: <Alice> mirad esto: [12:00:00 ERROR]: se rompio todo"));
 
         Assert.Equal(ConsoleLineKind.Chat, Of("[12:34:56] [Server thread/INFO]: <Alice> [ERROR] mira esto"));
-        Assert.Equal(ConsoleLineKind.Info, Of("[12:34:56] [Server thread/INFO]: loaded ERROR_HANDLER config"));
+        Assert.Equal(ConsoleLineKind.Info,
+            Of("[12:34:56] [Server thread/INFO]: loaded ERROR_HANDLER config"));
     }
 
     [Fact]

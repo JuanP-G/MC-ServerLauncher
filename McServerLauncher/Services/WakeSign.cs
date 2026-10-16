@@ -33,7 +33,8 @@ internal static class WakeSign
         Localizer.Get(starting ? "Wake_MotdStarting" : "Wake_MotdSleeping");
 
     /// <summary>Builds the two-line server-list entry: the owner's MOTD, then the notice.</summary>
-    /// <param name="rawMotd">The value of <c>motd=</c> as stored: escapes and <c>§</c> codes included.</param>
+    /// <param name="rawMotd">The value of <c>motd=</c> as stored: escapes and <c>§</c> codes
+    /// included.</param>
     /// <param name="notice">The styled line that goes underneath, from <see cref="Notice"/>.</param>
     /// <remarks>
     /// Only the owner's FIRST line is kept. The list shows two lines and no more, so a MOTD that

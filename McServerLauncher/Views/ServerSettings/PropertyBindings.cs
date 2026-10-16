@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views.ServerSettings;
@@ -18,40 +19,36 @@ namespace McServerLauncher.Views.ServerSettings;
 /// The defaults are the game's own, the same ones the old <c>server.properties</c> dialog used.
 /// </para>
 /// </remarks>
-internal sealed class PropertyBindings
+internal sealed class PropertyBindings(ServerSettingsDraft draft)
 {
-    private readonly ServerSettingsDraft _draft;
     private readonly List<Action> _loads = new();
     private bool _loading;
 
-    public PropertyBindings(ServerSettingsDraft draft) => _draft = draft;
-
     public void Toggle(ToggleSwitch toggle, string key, bool fallback)
     {
-        var raw = _draft.FileValue(key);
-        var on = raw is null ? fallback : raw.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
-        _draft.Track(key, Text(on));
+        var on = ServerPropertiesService.ParseBool(draft.FileValue(key), fallback);
+        draft.Track(key, Text(on));
 
         toggle.IsCheckedChanged += (_, _) =>
         {
-            if (!_loading) _draft.Set(key, Text(toggle.IsChecked == true));
+            if (!_loading) draft.Set(key, Text(toggle.IsChecked == true));
         };
-        _loads.Add(() => toggle.IsChecked = _draft.Get(key) == "true");
+        _loads.Add(() => toggle.IsChecked = draft.Get(key) == "true");
     }
 
     public void Number(NumericUpDown box, string key, int fallback)
     {
-        var raw = _draft.FileValue(key);
-        _draft.Track(key, (int.TryParse(raw, out var n) ? n : fallback).ToString());
+        var raw = draft.FileValue(key);
+        draft.Track(key, (int.TryParse(raw, out var n) ? n : fallback).ToString());
 
         box.ValueChanged += (_, _) =>
         {
             // Empty while somebody types: nothing to write yet. WholeNumberBoxes puts the number
             // back if they leave it like that.
             if (!_loading && box.Value is { } value)
-                _draft.Set(key, WholeNumberConverter.ToWhole(value).ToString());
+                draft.Set(key, WholeNumberConverter.ToWhole(value).ToString());
         };
-        _loads.Add(() => box.Value = int.TryParse(_draft.Get(key), out var v) ? v : fallback);
+        _loads.Add(() => box.Value = int.TryParse(draft.Get(key), out var v) ? v : fallback);
     }
 
     /// <summary>A drop-down whose items carry the value to write in their <c>Tag</c>.</summary>
@@ -70,18 +67,18 @@ internal sealed class PropertyBindings
     /// </remarks>
     public void Choice(ComboBox combo, string key, string fallback, bool numberedInOrder = false)
     {
-        var raw = _draft.FileValue(key)?.Trim() ?? fallback;
+        var raw = draft.FileValue(key)?.Trim() ?? fallback;
         var byPosition = numberedInOrder && int.TryParse(raw, out var id)
             ? Items(combo).ElementAtOrDefault(id)
             : null;
         var known = Find(combo, raw) ?? byPosition;
-        _draft.Track(key, known?.Tag as string ?? raw);
+        draft.Track(key, known?.Tag as string ?? raw);
 
         combo.SelectionChanged += (_, _) =>
         {
-            if (!_loading && combo.SelectedItem is ComboBoxItem { Tag: string tag }) _draft.Set(key, tag);
+            if (!_loading && combo.SelectedItem is ComboBoxItem { Tag: string tag }) draft.Set(key, tag);
         };
-        _loads.Add(() => combo.SelectedItem = Find(combo, _draft.Get(key)));
+        _loads.Add(() => combo.SelectedItem = Find(combo, draft.Get(key)));
     }
 
     /// <summary>Shows every control what the draft holds, without that counting as a change.</summary>

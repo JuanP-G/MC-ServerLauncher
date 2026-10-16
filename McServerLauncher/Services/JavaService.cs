@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Collections.Concurrent;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
@@ -19,15 +19,21 @@ public partial class JavaService
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(15) };
 
-    /// <summary>A Java runtime found on the machine: where its executable is, and its major version.</summary>
-    /// <param name="Path">Full path to the <c>java</c> executable, which is what a server is launched with.</param>
-    /// <param name="Major">The feature release (8, 17, 21…) — the only part a Minecraft version cares about.</param>
+    /// <summary>
+    /// A Java runtime found on the machine: where its executable is, and its major version.
+    /// </summary>
+    /// <param name="Path">Full path to the <c>java</c> executable, which is what a server is launched
+    /// with.</param>
+    /// <param name="Major">The feature release (8, 17, 21…) — the only part a Minecraft version cares
+    /// about.</param>
     public record JavaInstall(string Path, int Major);
 
     private static string ManagedRoot => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "java");
 
-    /// <summary>The java executable name for the current OS ("java.exe" on Windows, "java" elsewhere).</summary>
+    /// <summary>
+    /// The java executable name for the current OS ("java.exe" on Windows, "java" elsewhere).
+    /// </summary>
     private static string JavaExeName => OperatingSystem.IsWindows() ? "java.exe" : "java";
 
     [GeneratedRegex("version \"(\\d+)(?:\\.(\\d+))?")]
@@ -121,7 +127,8 @@ public partial class JavaService
     }
 
     /// <summary>What each Java executable answered, keyed by its path and stamped with its file.</summary>
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (long Length, DateTime Written, int Major)>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string,
+        (long Length, DateTime Written, int Major)>
         Versions = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>The major version (8, 17, 21, 25...) of a Java executable. 0 on failure.</summary>
@@ -156,43 +163,15 @@ public partial class JavaService
     /// <summary>Runs "java -version" and reads the major version out of what it prints.</summary>
     private static int AskMajorVersion(string javaExe)
     {
-        try
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = javaExe,
-                Arguments = "-version",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true
-            };
-            using var p = Process.Start(psi);
-            if (p is null) return 0;
+        // It prints to standard error; both streams are read, under a deadline that holds.
+        var result = ProcessRunner.Run(javaExe, ["-version"], TimeSpan.FromSeconds(5));
 
-            // Both streams at once, then a deadline that actually applies: reading one to the end
-            // before the other could wait forever on a process blocked writing the second, and
-            // WaitForExit after ReadToEnd never got the chance to time anything out.
-            var error = p.StandardError.ReadToEndAsync();
-            var standard = p.StandardOutput.ReadToEndAsync();
-            if (!p.WaitForExit(5000))
-            {
-                try { p.Kill(entireProcessTree: true); } catch { /* already gone */ }
-                return 0;
-            }
-            var output = error.GetAwaiter().GetResult() + standard.GetAwaiter().GetResult();
-
-            var m = VersionRegex().Match(output);
-            if (!m.Success) return 0;
-            var first = int.Parse(m.Groups[1].Value);
-            // "1.8" => Java 8
-            if (first == 1 && m.Groups[2].Success) return int.Parse(m.Groups[2].Value);
-            return first;
-        }
-        catch
-        {
-            return 0;
-        }
+        var m = VersionRegex().Match(result.Error + result.Output);
+        if (!m.Success || !int.TryParse(m.Groups[1].Value, out var first)) return 0;
+        // "1.8" => Java 8
+        if (first == 1 && m.Groups[2].Success)
+            return int.TryParse(m.Groups[2].Value, out var minor) ? minor : 0;
+        return first;
     }
 
     /// <summary>An installed Java version is valid for the required one (exact, or newer if 17+).</summary>
@@ -253,16 +232,17 @@ public partial class JavaService
             if (!Directory.Exists(root)) return null;
 
             var dirs = Directory.GetDirectories(root)
-                .OrderByDescending(d => string.Equals(Path.GetFileName(d), gameVersion, StringComparison.OrdinalIgnoreCase));
+                .OrderByDescending(d => string.Equals(Path.GetFileName(d), gameVersion,
+                    StringComparison.OrdinalIgnoreCase));
 
             // A version dir holds several jars (server-x.y.z.jar, -extra, -srg...): the plain one
             // and -extra both carry version.json; the others just return null harmlessly.
             foreach (var dir in dirs)
-            foreach (var jar in Directory.GetFiles(dir, "server-*.jar"))
-            {
-                if (GetRequiredJavaFromJar(jar) is { } major)
-                    return major;
-            }
+                foreach (var jar in Directory.GetFiles(dir, "server-*.jar"))
+                {
+                    if (GetRequiredJavaFromJar(jar) is { } major)
+                        return major;
+                }
             return null;
         }
         catch
@@ -300,7 +280,8 @@ public partial class JavaService
     /// Returns the path to a java executable compatible with the required version. If none is
     /// installed, downloads and installs the matching Temurin. Throws if it can't.
     /// </summary>
-    public async Task<string> EnsureJavaAsync(int requiredMajor, IProgress<string>? log, CancellationToken ct = default)
+    public async Task<string> EnsureJavaAsync(int requiredMajor, IProgress<string>? log,
+        CancellationToken ct = default)
     {
         // Off the caller's thread: it starts a JVM per installation found, and the caller is the UI.
         var installed = await Task.Run(DetectInstalled, ct);
@@ -316,7 +297,9 @@ public partial class JavaService
         return await DownloadAdoptiumAsync(download, log, ct);
     }
 
-    /// <summary>The Adoptium architectures to ask for, in order, on a machine of <paramref name="arch"/>.</summary>
+    /// <summary>
+    /// The Adoptium architectures to ask for, in order, on a machine of <paramref name="arch"/>.
+    /// </summary>
     /// <remarks>
     /// <para>
     /// ARM machines get a native build where there is one, and an x64 one where there is not — but
@@ -331,12 +314,13 @@ public partial class JavaService
     /// still wants a native Java if one exists.
     /// </para>
     /// </remarks>
-    internal static IReadOnlyList<string> AdoptiumArchitectures(Architecture arch, bool emulatesX64) => arch switch
-    {
-        Architecture.Arm64 => emulatesX64 ? new[] { "aarch64", "x64" } : new[] { "aarch64" },
-        Architecture.X86 => new[] { "x86" },
-        _ => new[] { "x64" }
-    };
+    internal static IReadOnlyList<string> AdoptiumArchitectures(Architecture arch, bool emulatesX64)
+        => arch switch
+        {
+            Architecture.Arm64 => emulatesX64 ? new[] { "aarch64", "x64" } : new[] { "aarch64" },
+            Architecture.X86 => new[] { "x86" },
+            _ => new[] { "x64" }
+        };
 
     /// <summary>The download link and checksum of the first package in an Adoptium answer.</summary>
     private static (string? Link, string? Checksum) FirstPackage(string json)
@@ -354,7 +338,28 @@ public partial class JavaService
         return (null, null);
     }
 
-    private async Task<string> DownloadAdoptiumAsync(int major, IProgress<string>? log, CancellationToken ct)
+    /// <summary>One download of each Java at a time, in this process.</summary>
+    private static readonly ConcurrentDictionary<int, SemaphoreSlim> DownloadGates = new();
+
+    /// <summary>Runs <paramref name="work"/> once at a time per major version of Java.</summary>
+    /// <remarks>
+    /// Two servers that need the same Java — started together with the app, or one after the other
+    /// while the first still downloads — shared one archive path and one <c>.partial</c> folder, and
+    /// each deleted what the other was writing. The second now waits, and finds the Java installed.
+    /// </remarks>
+    internal static async Task<T> OneAtATimeAsync<T>(int major, Func<Task<T>> work, CancellationToken ct)
+    {
+        var gate = DownloadGates.GetOrAdd(major, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(ct);
+        try { return await work(); }
+        finally { gate.Release(); }
+    }
+
+    private Task<string> DownloadAdoptiumAsync(int major, IProgress<string>? log, CancellationToken ct) =>
+        OneAtATimeAsync(major, () => DownloadAdoptiumCoreAsync(major, log, ct), ct);
+
+    private async Task<string> DownloadAdoptiumCoreAsync(int major, IProgress<string>? log,
+        CancellationToken ct)
     {
         var target = Path.Combine(ManagedRoot, $"jre-{major}");
 
@@ -447,29 +452,16 @@ public partial class JavaService
         await TarFile.ExtractToDirectoryAsync(gz, destDir, overwriteFiles: true, ct);
     }
 
-    /// <summary>Resolves the 'java' executable on PATH (Linux/macOS) via 'which'. Null if not found.</summary>
+    /// <summary>
+    /// Resolves the 'java' executable on PATH (Linux/macOS) via 'which'. Null if not found.
+    /// </summary>
     private static string? WhichJava()
     {
-        try
-        {
-            using var p = Process.Start(new ProcessStartInfo
-            {
-                FileName = "which",
-                Arguments = "java",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            });
-            if (p is null) return null;
-            var outp = p.StandardOutput.ReadLine();
-            p.WaitForExit(3000);
-            return !string.IsNullOrWhiteSpace(outp) && File.Exists(outp) ? outp : null;
-        }
-        catch
-        {
-            return null;
-        }
+        var result = ProcessRunner.Run("which", ["java"], TimeSpan.FromSeconds(3));
+        var path = result.Output
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault();
+        return !string.IsNullOrWhiteSpace(path) && File.Exists(path) ? path : null;
     }
 
     private static string? FindJavaExe(string root)

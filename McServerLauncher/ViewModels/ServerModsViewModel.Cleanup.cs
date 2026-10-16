@@ -128,7 +128,8 @@ public partial class ServerModsViewModel
 
                 // Asked before recording: the record is who needed it *last time*, which is the one
                 // fact that explains an orphan.
-                var orphans = CleanupAdvisor.FindOrphanLibraries(jars, record.DependentsByLibrary, storeAnswered);
+                var orphans = CleanupAdvisor.FindOrphanLibraries(jars, record.DependentsByLibrary,
+                    storeAnswered);
                 // Written only when it changed: this runs after every toggle and delete.
                 if (storeAnswered && CleanupAdvisor.RecordDependents(record, jars)) ledger.Save();
 
@@ -145,12 +146,15 @@ public partial class ServerModsViewModel
                     });
                 }
 
-                foreach (var off in CleanupAdvisor.FindLongDisabled(jars, record, now, CleanupAdvisor.DisabledThreshold))
+                foreach (var off in CleanupAdvisor.FindLongDisabled(jars, record, now,
+                    CleanupAdvisor.DisabledThreshold))
                 {
                     var key = CleanupAdvisor.DisabledKey(off.Jar);
                     if (CleanupAdvisor.IsSnoozed(record, key, now)) continue;
-                    if (rows.Any(r => string.Equals(r.Path, off.Jar.Path, StringComparison.OrdinalIgnoreCase))) continue;
-                    rows.Add(new CleanupSuggestionViewModel(off.Jar.Path, off.Jar.FileName, ReasonFor(off), key));
+                    if (rows.Any(r => string.Equals(r.Path, off.Jar.Path,
+                        StringComparison.OrdinalIgnoreCase))) continue;
+                    rows.Add(new CleanupSuggestionViewModel(off.Jar.Path, off.Jar.FileName, ReasonFor(off),
+                        key));
                 }
             }
 
@@ -189,7 +193,8 @@ public partial class ServerModsViewModel
         var categories = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         if (storeAnswered)
         {
-            var projects = await _modrinthService.GetProjectsAsync(versionByPath.Values.Select(v => v.ProjectId), ct);
+            var projects = await _modrinthService.GetProjectsAsync(versionByPath.Values.Select(v
+                => v.ProjectId), ct);
             if (projects is null) storeAnswered = false;
             else foreach (var project in projects) categories[project.Id] = project.Categories;
         }
@@ -197,10 +202,12 @@ public partial class ServerModsViewModel
         var jars = entries.Select(entry =>
         {
             versionByPath.TryGetValue(entry.Path, out var version);
-            var cats = version is not null && categories.TryGetValue(version.ProjectId, out var found) ? found : null;
+            var cats = version is not null && categories.TryGetValue(version.ProjectId, out var found) ? found
+                : null;
             var storeDeps = version?.Dependencies
                 .Where(d => d.ProjectId is not null &&
-                            !string.Equals(d.DependencyType, "incompatible", StringComparison.OrdinalIgnoreCase))
+                            !string.Equals(d.DependencyType, "incompatible",
+                                StringComparison.OrdinalIgnoreCase))
                 .Select(d => d.ProjectId!)
                 .ToList() ?? new List<string>();
 
@@ -292,8 +299,10 @@ public partial class ServerModsViewModel
 
         // After the refresh, which rewrites the status line.
         var parts = new List<string>();
-        if (removed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_RemovedFmt"), string.Join(", ", removed)));
-        if (failed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_FailedFmt"), string.Join(", ", failed)));
+        if (removed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_RemovedFmt"),
+            string.Join(", ", removed)));
+        if (failed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_FailedFmt"),
+            string.Join(", ", failed)));
         if (changed.Count > 0)
             parts.Add(string.Format(Localizer.Get("Cleanup_ChangedFmt"), string.Join(", ", changed)));
         UpdateStatus = string.Join(" ", parts);
@@ -307,7 +316,8 @@ public partial class ServerModsViewModel
         var ledger = Ledger;
         lock (ledger.Gate)
         {
-            CleanupAdvisor.RecordToggle(ledger.Current, ContentReplacement.DisplayName(filePath), nowEnabled, DateTime.UtcNow);
+            CleanupAdvisor.RecordToggle(ledger.Current, ContentReplacement.DisplayName(filePath), nowEnabled,
+                DateTime.UtcNow);
             ledger.Save();
         }
     }
@@ -320,7 +330,8 @@ public partial class ServerModsViewModel
         var ledger = Ledger;
         lock (ledger.Gate)
         {
-            CleanupAdvisor.CarryDisabledDate(ledger.Current, ContentReplacement.DisplayName(oldPath), newFileName);
+            CleanupAdvisor.CarryDisabledDate(ledger.Current, ContentReplacement.DisplayName(oldPath),
+                newFileName);
             ledger.Save();
         }
     }
@@ -332,15 +343,18 @@ public partial class ServerModsViewModel
         return orphan.Reason switch
         {
             CleanupAdvisor.OrphanReason.DependentsRemoved => string.Format(Localizer.Get(
-                orphan.FormerUsers.Count == 1 ? "Cleanup_OrphanRemovedOneFmt" : "Cleanup_OrphanRemovedManyFmt"), users),
-            CleanupAdvisor.OrphanReason.DependentsAlsoOrphan => string.Format(Localizer.Get("Cleanup_OrphanChainFmt"), users),
+                orphan.FormerUsers.Count == 1 ? "Cleanup_OrphanRemovedOneFmt"
+                    : "Cleanup_OrphanRemovedManyFmt"), users),
+            CleanupAdvisor.OrphanReason.DependentsAlsoOrphan
+                => string.Format(Localizer.Get("Cleanup_OrphanChainFmt"), users),
             _ => Localizer.Get(IsPluginBased ? "Cleanup_OrphanNoPlugin" : "Cleanup_OrphanNoMod")
         };
     }
 
     /// <summary>Why a disabled mod is on the panel.</summary>
     internal static string ReasonFor(CleanupAdvisor.LongDisabled off) =>
-        string.Format(Localizer.Get(off.SinceIsFirstSeen ? "Cleanup_DisabledAtLeastFmt" : "Cleanup_DisabledSinceFmt"),
+        string.Format(Localizer.Get(off.SinceIsFirstSeen ? "Cleanup_DisabledAtLeastFmt"
+            : "Cleanup_DisabledSinceFmt"),
             FormatDay(off.SinceUtc), off.Days);
 
     /// <summary>

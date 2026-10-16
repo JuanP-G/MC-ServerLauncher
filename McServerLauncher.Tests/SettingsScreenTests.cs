@@ -97,7 +97,8 @@ public class SettingsScreenTests
 [Collection("avalonia")]
 public class BedrockPortSettingTests(AvaloniaFixture ui) : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-bport-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-bport-" + Guid.NewGuid()
+        .ToString("N"));
 
     public void Dispose()
     {
@@ -110,11 +111,16 @@ public class BedrockPortSettingTests(AvaloniaFixture ui) : IDisposable
         File.WriteAllText(Path.Combine(_folder, "server.properties"), "server-port=25565\n");
         return new ServerConfig
         {
-            Name = "Paper", FolderPath = _folder, Type = ServerType.Paper, CrossplayEnabled = crossplay, BedrockPort = 19132,
+            Name = "Paper",
+            FolderPath = _folder,
+            Type = ServerType.Paper,
+            CrossplayEnabled = crossplay,
+            BedrockPort = 19132,
         };
     }
 
-    private static (ServerSettingsView View, Control Section) Open(ServerConfig config, Func<int, string?>? owner = null)
+    private static (ServerSettingsView View, Control Section) Open(ServerConfig config, Func<int,
+        string?>? owner = null)
     {
         var owners = new PortOwners(Java: _ => null, Bedrock: owner ?? (_ => null));
         var view = new ServerSettingsView(new ServerViewModel(config), ServerSettingsPage.Network, owners);

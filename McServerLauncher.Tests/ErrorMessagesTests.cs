@@ -89,7 +89,7 @@ public class ErrorMessagesTests
     public void AnHttpErrorSaysItsCodeAndNothingElse()
     {
         var error = new HttpRequestException("Response status code does not indicate success: 404 (Not Found).",
-            
+
             null, HttpStatusCode.NotFound);
 
         Assert.Equal(string.Format(Localizer.Get("Err_HttpStatusFmt"), 404), Describe(error));

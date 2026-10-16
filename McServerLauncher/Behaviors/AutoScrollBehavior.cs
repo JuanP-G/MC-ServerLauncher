@@ -39,7 +39,8 @@ public static class AutoScrollBehavior
         listBox.PropertyChanged += (_, args) =>
         {
             if (args.Property == ItemsControl.ItemsSourceProperty)
-                Hook(listBox, args.OldValue as INotifyCollectionChanged, args.NewValue as INotifyCollectionChanged);
+                Hook(listBox, args.OldValue as INotifyCollectionChanged,
+                    args.NewValue as INotifyCollectionChanged);
         };
         Hook(listBox, null, listBox.ItemsSource as INotifyCollectionChanged);
     }

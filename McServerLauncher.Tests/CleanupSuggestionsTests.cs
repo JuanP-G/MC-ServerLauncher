@@ -28,7 +28,8 @@ public class CleanupSuggestionsTests : IDisposable
 {
     private static readonly DateTime Now = new(2026, 10, 13, 12, 0, 0, DateTimeKind.Utc);
 
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-clean-" + Guid.NewGuid().ToString("N"));
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "mcl-clean-" + Guid.NewGuid()
+        .ToString("N"));
     private readonly string _previousLedgerRoot = ContentLedgerStore.RootDirectory;
 
     public CleanupSuggestionsTests()
@@ -44,17 +45,20 @@ public class CleanupSuggestionsTests : IDisposable
     }
 
     /// <summary>A jar as the advisor sees it.</summary>
-    private static CleanupAdvisor.Jar Jar(string id, bool library = false, bool enabled = true, string? name = null,
+    private static CleanupAdvisor.Jar Jar(string id, bool library = false, bool enabled = true,
+        string? name = null,
         string[]? refs = null, string? project = null, string[]? storeDeps = null, string[]? provides = null)
     {
         var file = Path.Combine(Path.GetTempPath(), "mods", id + ".jar" + (enabled ? "" : ".disabled"));
-        var manifest = new ContentManifest.Manifest(Path.GetFileName(file), provides ?? new[] { id }, Array.Empty<string>())
+        var manifest = new ContentManifest.Manifest(Path.GetFileName(file), provides ?? new[] { id },
+            Array.Empty<string>())
         {
             Id = id,
             Name = name,
             References = refs ?? Array.Empty<string>()
         };
-        return new CleanupAdvisor.Jar(file, enabled, manifest, project, library, storeDeps ?? Array.Empty<string>());
+        return new CleanupAdvisor.Jar(file, enabled, manifest, project, library, storeDeps
+            ?? Array.Empty<string>());
     }
 
     private static IReadOnlyList<CleanupAdvisor.Orphan> Orphans(params CleanupAdvisor.Jar[] jars) =>
@@ -113,7 +117,8 @@ public class CleanupSuggestionsTests : IDisposable
     public void ALibraryOnlyADisabledModUsesIsKept()
     {
         // The user may turn it back on, and then its library has to be there.
-        Assert.Empty(Orphans(Jar("litematica", enabled: false, refs: new[] { "malilib" }), Jar("malilib", library: true)));
+        Assert.Empty(Orphans(Jar("litematica", enabled: false, refs: new[] { "malilib" }),
+            Jar("malilib", library: true)));
     }
 
     [Fact]
@@ -140,7 +145,8 @@ public class CleanupSuggestionsTests : IDisposable
         {
             Manifest = jar.Manifest with
             {
-                Provides = new[] { id }.Concat(bundled).ToList(), OwnProvides = new[] { id }
+                Provides = new[] { id }.Concat(bundled).ToList(),
+                OwnProvides = new[] { id }
             }
         };
     }
@@ -210,7 +216,8 @@ public class CleanupSuggestionsTests : IDisposable
     {
         // Offline, the dependencies only Modrinth knows are missing, so "unused" cannot be trusted.
         Assert.Empty(CleanupAdvisor.FindOrphanLibraries(
-            new[] { Jar("malilib", library: true) }, new Dictionary<string, List<string>>(), storeAnswered: false));
+            new[] { Jar("malilib", library: true) }, new Dictionary<string, List<string>>(),
+                storeAnswered: false));
     }
 
     // --- Why ---
@@ -240,7 +247,8 @@ public class CleanupSuggestionsTests : IDisposable
     {
         var ledger = new ContentLedger();
         var a = Jar("lib-a", library: true, name: "Lib A", refs: new[] { "lib-b" });
-        CleanupAdvisor.RecordDependents(ledger, new[] { Jar("mod", refs: new[] { "lib-a" }), a, Jar("lib-b", library: true) });
+        CleanupAdvisor.RecordDependents(ledger, new[] { Jar("mod", refs: new[] { "lib-a" }), a, Jar("lib-b",
+            library: true) });
 
         var found = CleanupAdvisor.FindOrphanLibraries(new[] { a, Jar("lib-b", library: true) },
             ledger.DependentsByLibrary, storeAnswered: true);
@@ -294,10 +302,12 @@ public class CleanupSuggestionsTests : IDisposable
         var ledger = new ContentLedger();
 
         ledger.DisabledSinceUtc["shogi.jar"] = Now.AddDays(-29);
-        Assert.Empty(CleanupAdvisor.FindLongDisabled(new[] { jar }, ledger, Now, CleanupAdvisor.DisabledThreshold));
+        Assert.Empty(CleanupAdvisor.FindLongDisabled(new[] { jar }, ledger, Now,
+            CleanupAdvisor.DisabledThreshold));
 
         ledger.DisabledSinceUtc["shogi.jar"] = Now.AddDays(-31);
-        var off = Assert.Single(CleanupAdvisor.FindLongDisabled(new[] { jar }, ledger, Now, CleanupAdvisor.DisabledThreshold));
+        var off = Assert.Single(CleanupAdvisor.FindLongDisabled(new[] { jar }, ledger, Now,
+            CleanupAdvisor.DisabledThreshold));
         Assert.Equal(31, off.Days);
         Assert.False(off.SinceIsFirstSeen);
     }
@@ -307,7 +317,8 @@ public class CleanupSuggestionsTests : IDisposable
     {
         var ledger = new ContentLedger();
 
-        Assert.True(CleanupAdvisor.Reconcile(ledger, new[] { ("shogi.jar", false), ("lithium.jar", true) }, Now));
+        Assert.True(CleanupAdvisor.Reconcile(ledger, new[] { ("shogi.jar", false), ("lithium.jar", true) },
+            Now));
 
         Assert.Equal(Now, ledger.DisabledSinceUtc["shogi.jar"]);
         Assert.Contains("shogi.jar", ledger.DisabledFirstSeen);
@@ -408,10 +419,12 @@ public class CleanupSuggestionsTests : IDisposable
         {
             CultureInfo.CurrentUICulture = new CultureInfo("es-ES");
             var day = new DateTime(2026, 8, 2, 12, 0, 0, DateTimeKind.Utc);
-            Assert.Equal("2 de agosto", ServerModsViewModel.FormatDay(day, today: new DateTime(2026, 10, 14)));
+            Assert.Equal("2 de agosto", ServerModsViewModel.FormatDay(day, today: new DateTime(2026, 10,
+                14)));
 
             // A year ago is not "2 August": the year is said when it is not this one.
-            Assert.Equal("2 de agosto de 2026", ServerModsViewModel.FormatDay(day, today: new DateTime(2027, 9, 1)));
+            Assert.Equal("2 de agosto de 2026", ServerModsViewModel.FormatDay(day, today: new DateTime(2027,
+                9, 1)));
         }
         finally
         {
@@ -423,9 +436,11 @@ public class CleanupSuggestionsTests : IDisposable
     public void ADisabledModSaysSinceWhenAndHowLong()
     {
         var since = new DateTime(2026, 8, 2, 12, 0, 0, DateTimeKind.Utc);
-        var reason = ServerModsViewModel.ReasonFor(new CleanupAdvisor.LongDisabled(Jar("shogi", enabled: false), since, false, 72));
+        var reason = ServerModsViewModel.ReasonFor(new CleanupAdvisor.LongDisabled(Jar("shogi",
+            enabled: false), since, false, 72));
 
-        Assert.Equal(string.Format(Localizer.Get("Cleanup_DisabledSinceFmt"), ServerModsViewModel.FormatDay(since), 72), reason);
+        Assert.Equal(string.Format(Localizer.Get("Cleanup_DisabledSinceFmt"),
+            ServerModsViewModel.FormatDay(since), 72), reason);
     }
 
     // --- The panel ---
@@ -437,7 +452,10 @@ public class CleanupSuggestionsTests : IDisposable
         Directory.CreateDirectory(mods);
         return new ServerModsViewModel(new ServerConfig
         {
-            Name = "test", FolderPath = folder, Type = ServerType.Fabric, GameVersion = "1.21.1"
+            Name = "test",
+            FolderPath = folder,
+            Type = ServerType.Fabric,
+            GameVersion = "1.21.1"
         });
     }
 
@@ -527,7 +545,8 @@ public class CleanupSuggestionsTests : IDisposable
         var vm = Panel(out var mods);
         var file = Path.Combine(mods, "a.jar");
         File.WriteAllText(file, "");
-        vm.ShowCleanup(new[] { new CleanupSuggestionViewModel(file, "a.jar", "x", "k") { IsSelected = false } });
+        vm.ShowCleanup(new[] { new CleanupSuggestionViewModel(file, "a.jar", "x",
+            "k") { IsSelected = false } });
 
         Assert.False(vm.RemoveSelectedCleanupCommand.CanExecute(null));
     }
@@ -536,7 +555,8 @@ public class CleanupSuggestionsTests : IDisposable
     public void NotNowEmptiesThePanelAndIsRemembered()
     {
         var vm = Panel(out var mods);
-        vm.ShowCleanup(new[] { new CleanupSuggestionViewModel(Path.Combine(mods, "a.jar"), "a.jar", "x", "orphan:a") });
+        vm.ShowCleanup(new[] { new CleanupSuggestionViewModel(Path.Combine(mods, "a.jar"), "a.jar", "x",
+            "orphan:a") });
 
         vm.DismissCleanupCommand.Execute(null);
 
@@ -550,9 +570,11 @@ public class CleanupSuggestionsTests : IDisposable
     [Fact]
     public void EveryNameThePanelBindsToExists()
     {
-        var view = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "ServerModsView.axaml");
+        var view = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views",
+            "ServerModsView.axaml");
         var xaml = File.ReadAllText(view);
-        var start = xaml.IndexOf("<Border IsVisible=\"{Binding HasCleanupSuggestions}\"", StringComparison.Ordinal);
+        var start = xaml.IndexOf("<Border IsVisible=\"{Binding HasCleanupSuggestions}\"",
+            StringComparison.Ordinal);
         Assert.True(start >= 0, "el panel de limpieza ya no está en ServerModsView.axaml");
         var end = xaml.IndexOf("</Border>", start, StringComparison.Ordinal);
         var panel = xaml[start..end];
@@ -565,7 +587,8 @@ public class CleanupSuggestionsTests : IDisposable
         var rowNames = new[] { "IsSelected", "FileName", "Reason" };
         foreach (var name in names)
         {
-            var owner = rowNames.Contains(name) ? typeof(CleanupSuggestionViewModel) : typeof(ServerModsViewModel);
+            var owner = rowNames.Contains(name) ? typeof(CleanupSuggestionViewModel)
+                : typeof(ServerModsViewModel);
             Assert.True(owner.GetProperty(name, BindingFlags.Public | BindingFlags.Instance) is not null,
                 $"{owner.Name} no expone \"{name}\", al que se enlaza el panel de limpieza");
         }

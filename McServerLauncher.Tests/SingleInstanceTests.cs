@@ -161,7 +161,9 @@ public class SingleInstanceTests : IDisposable
         }
     }
 
-    /// <summary>The same name the service builds, so the test connects where it is really listening.</summary>
+    /// <summary>
+    /// The same name the service builds, so the test connects where it is really listening.
+    /// </summary>
     private static string PipeNameForTests()
     {
         var field = typeof(SingleInstance).GetProperty("PipeName",

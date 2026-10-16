@@ -47,7 +47,8 @@ public class ConnectionProbeTests
     public void AStretchIsGradedByItsAverageAndItsLoss(double ms, int lost, StepState expected)
     {
         var samples = Enumerable.Repeat(ms, 8 - lost).ToList();
-        Assert.Equal(expected, ConnectionTestViewModel.Grade(new LatencyStats(samples, 8), good: 30, fair: 100));
+        Assert.Equal(expected, ConnectionTestViewModel.Grade(new LatencyStats(samples, 8), good: 30,
+            fair: 100));
     }
 
     [Fact]
@@ -64,7 +65,8 @@ public class ConnectionProbeTests
 
     [Fact]
     public async Task AnAddressWithItsPortIsTakenAsWritten() =>
-        Assert.Equal(("play.example.org", 25570), await ConnectionProbe.ResolveJavaAsync("play.example.org:25570"));
+        Assert.Equal(("play.example.org", 25570),
+            await ConnectionProbe.ResolveJavaAsync("play.example.org:25570"));
 
     [Theory]
     [InlineData(0)]

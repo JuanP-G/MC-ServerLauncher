@@ -32,7 +32,9 @@ public static class LiveWorldBackup
     /// <summary>How long to wait for the server to confirm the flush before copying anyway.</summary>
     public static readonly TimeSpan SaveTimeout = TimeSpan.FromSeconds(30);
 
-    /// <summary>Runs the sequence above and returns the new zip's path, or null if there was nothing to copy.</summary>
+    /// <summary>
+    /// Runs the sequence above and returns the new zip's path, or null if there was nothing to copy.
+    /// </summary>
     /// <param name="service">Does the zipping and the pruning once the world is safe to read.</param>
     /// <param name="config">The server whose world is being copied.</param>
     /// <param name="trigger">Why this backup is being made; it ends up in the file's name.</param>
@@ -45,7 +47,8 @@ public static class LiveWorldBackup
     /// </param>
     /// <param name="log">Where the steps are reported, which is the server's own console.</param>
     /// <param name="ct">Cancels the copy. <c>save-on</c> is still sent.</param>
-    public static async Task<string?> RunAsync(WorldBackupService service, ServerConfig config, string trigger,
+    public static async Task<string?> RunAsync(WorldBackupService service, ServerConfig config,
+        string trigger,
         Action<string> sendCommand, Func<TimeSpan, Task<bool>> waitForSave, IProgress<string>? log = null,
         CancellationToken ct = default)
     {

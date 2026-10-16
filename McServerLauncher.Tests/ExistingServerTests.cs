@@ -17,7 +17,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class ExistingServerTests : IDisposable
 {
-    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-existing-" + Guid.NewGuid().ToString("N"));
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-existing-" + Guid.NewGuid()
+        .ToString("N"));
 
     public ExistingServerTests() => Directory.CreateDirectory(_folder);
 
@@ -27,9 +28,11 @@ public class ExistingServerTests : IDisposable
         using (var zip = ZipFile.Open(Path.Combine(_folder, "fabric-server.jar"), ZipArchiveMode.Create))
         using (var w = new StreamWriter(zip.CreateEntry("install.properties").Open()))
             w.Write("fabric-loader-version=0.16.2\ngame-version=1.21.1\n");
-        File.WriteAllText(Path.Combine(_folder, "server.properties"), "#Minecraft server properties\nmotd=hola\nserver-port=25570\n");
+        File.WriteAllText(Path.Combine(_folder, "server.properties"),
+            "#Minecraft server properties\nmotd=hola\nserver-port=25570\n");
         File.WriteAllText(Path.Combine(_folder, "eula.txt"), "eula=true\n");
-        File.WriteAllText(Path.Combine(_folder, "run.bat"), "java -Xms2G -Xmx5G -jar fabric-server.jar nogui\r\n");
+        File.WriteAllText(Path.Combine(_folder, "run.bat"),
+            "java -Xms2G -Xmx5G -jar fabric-server.jar nogui\r\n");
         Directory.CreateDirectory(Path.Combine(_folder, "world"));
         File.WriteAllText(Path.Combine(_folder, "world", "level.dat"), "not nbt");
         Directory.CreateDirectory(Path.Combine(_folder, "mods"));
@@ -123,8 +126,10 @@ public class ExistingServerTests : IDisposable
     public void AnOptionTheTypeCannotDoIsNotSaved()
     {
         // Forge has no Geyser; the checkbox is greyed out, and the config must agree with it.
-        Directory.CreateDirectory(Path.Combine(_folder, "libraries", "net", "minecraftforge", "forge", "1.20.1-47.2.0"));
-        File.WriteAllText(Path.Combine(_folder, "libraries", "net", "minecraftforge", "forge", "1.20.1-47.2.0", "win_args.txt"), "");
+        Directory.CreateDirectory(Path.Combine(_folder, "libraries", "net", "minecraftforge", "forge",
+            "1.20.1-47.2.0"));
+        File.WriteAllText(Path.Combine(_folder, "libraries", "net", "minecraftforge", "forge",
+            "1.20.1-47.2.0", "win_args.txt"), "");
         var found = new ServerDetectionService().Detect(_folder);
 
         var config = ExistingServer.ToConfig(Form(crossplay: true), found);
@@ -153,7 +158,8 @@ public class ExistingServerTests : IDisposable
     {
         var form = Form() with { Folder = Path.Combine(_folder, "no-existe") };
 
-        Assert.Equal("Cs_ExistingFolderMissing", ExistingServer.Problem(form, ServerDetection.Nothing, Array.Empty<string>()));
+        Assert.Equal("Cs_ExistingFolderMissing", ExistingServer.Problem(form, ServerDetection.Nothing,
+            Array.Empty<string>()));
     }
 
     [Fact]
@@ -164,7 +170,8 @@ public class ExistingServerTests : IDisposable
         Assert.Equal("Cs_ExistingNeedsJar",
             ExistingServer.Problem(Form(version: "1.21.1"), found, Array.Empty<string>()));
         Assert.Equal("Cs_ExistingNeedsJar",
-            ExistingServer.Problem(Form(version: "1.21.1", jar: "no-esta.jar"), found, Array.Empty<string>()));
+            ExistingServer.Problem(Form(version: "1.21.1", jar: "no-esta.jar"), found,
+                Array.Empty<string>()));
     }
 
     [Fact]
@@ -186,13 +193,17 @@ public class ExistingServerTests : IDisposable
     [Fact]
     public void EveryReasonItGivesIsTranslated()
     {
-        var source = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Services", "ExistingServer.cs"));
-        var keys = Regex.Matches(source, @"return ""([A-Za-z0-9_]+)"";").Select(m => m.Groups[1].Value).Distinct().ToList();
+        var source = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher",
+            "Services", "ExistingServer.cs"));
+        var keys = Regex.Matches(source, @"return ""([A-Za-z0-9_]+)"";").Select(m => m.Groups[1].Value)
+            .Distinct().ToList();
         Assert.NotEmpty(keys);
 
-        foreach (var file in new[] { "Strings.resx", "Strings.en.resx", "Strings.pt.resx", "Strings.fr.resx", "Strings.de.resx" })
+        foreach (var file in new[] { "Strings.resx", "Strings.en.resx", "Strings.pt.resx", "Strings.fr.resx",
+            "Strings.de.resx" })
         {
-            var names = XDocument.Load(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Resources", file))
+            var names = XDocument.Load(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher",
+                "Resources", file))
                 .Root!.Elements("data").Select(d => (string)d.Attribute("name")!).ToHashSet();
             foreach (var key in keys)
                 Assert.True(names.Contains(key), $"{file} no tiene «{key}»");

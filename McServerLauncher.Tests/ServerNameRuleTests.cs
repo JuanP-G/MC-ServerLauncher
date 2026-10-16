@@ -102,7 +102,8 @@ public class ServerNameRuleTests
         // Windows trims them silently, so the folder ends up named differently from what was saved
         // in servers.json — and the server goes missing the next time the app looks for it. Other
         // systems keep the name as given, so there is nothing to warn about.
-        var issue = ServerNameRule.Check(Path.Combine(Path.GetTempPath(), "servers", name), ServerType.Vanilla);
+        var issue = ServerNameRule.Check(Path.Combine(Path.GetTempPath(), "servers", name),
+            ServerType.Vanilla);
 
         if (OperatingSystem.IsWindows())
         {

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -400,8 +399,7 @@ public partial class ServerViewModel
     private async Task CopyBedrockAddress()
     {
         if (string.IsNullOrEmpty(BedrockHost)) return;
-        var top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-        if (top?.Clipboard is { } cb)
+        if (AppWindows.Main?.Clipboard is { } cb)
             await cb.SetTextAsync(BedrockHost!);
     }
 

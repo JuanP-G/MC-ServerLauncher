@@ -15,7 +15,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class BackupRetentionTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-keep-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-keep-" + Guid.NewGuid()
+        .ToString("N"));
 
     public BackupRetentionTests()
     {
@@ -39,7 +40,10 @@ public class BackupRetentionTests : IDisposable
 
     private ServerConfig Config(int automatic, int manual) => new()
     {
-        Name = "survival", FolderPath = _dir, BackupRetention = automatic, ManualBackupRetention = manual
+        Name = "survival",
+        FolderPath = _dir,
+        BackupRetention = automatic,
+        ManualBackupRetention = manual
     };
 
     [Fact]

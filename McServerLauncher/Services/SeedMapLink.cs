@@ -19,7 +19,9 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public static class SeedMapLink
 {
-    /// <summary>Chunkbase's Java versions, newest first: the first version each one covers, and its id.</summary>
+    /// <summary>
+    /// Chunkbase's Java versions, newest first: the first version each one covers, and its id.
+    /// </summary>
     private static readonly (Version From, string Id)[] Platforms =
     {
         (new Version(26, 3), "java_26_3"),
@@ -48,7 +50,9 @@ public static class SeedMapLink
         (new Version(1, 7), "java_1_7"),
     };
 
-    /// <summary>The seed map for <paramref name="seed"/>, on the version closest to <paramref name="gameVersion"/>.</summary>
+    /// <summary>
+    /// The seed map for <paramref name="seed"/>, on the version closest to <paramref name="gameVersion"/>.
+    /// </summary>
     public static string For(long seed, string? gameVersion)
     {
         var url = "https://www.chunkbase.com/apps/seed-map#seed=" + seed.ToString(CultureInfo.InvariantCulture);

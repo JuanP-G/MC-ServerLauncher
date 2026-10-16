@@ -69,10 +69,13 @@ public class ImageCacheBudgetTests
         Assert.Equal(new[] { "1", "2", "3", "4", "5" }, gone);   // 9 entries, keep 4
     }
 
-    private static List<(string Key, DateTime Stored, long Bytes)> Entries(params (int Minute, long Bytes)[] items) =>
+    private static List<(string Key, DateTime Stored,
+        long Bytes)> Entries(params (int Minute, long Bytes)[] items) =>
         items.Select(i => (i.Minute.ToString(), new DateTime(2026, 1, 1, 0, i.Minute, 0), i.Bytes)).ToList();
 
-    /// <summary>A minimal valid PNG whose header claims <paramref name="width"/> x <paramref name="height"/>.</summary>
+    /// <summary>
+    /// A minimal valid PNG whose header claims <paramref name="width"/> x <paramref name="height"/>.
+    /// </summary>
     private static byte[] PngClaiming(int width, int height)
     {
         using var png = new MemoryStream();

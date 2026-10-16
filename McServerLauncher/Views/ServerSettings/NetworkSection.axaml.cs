@@ -60,7 +60,8 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
         BedrockPortCard.IsVisible = CrossplayService.EffectiveBedrockPort(_draft.Live) is not null;
         _bindings.Load();
         _loading = true;
-        BedrockPortBox.Value = CrossplayService.EffectiveBedrockPort(_draft.Config) ?? CrossplayService.DefaultBedrockPort;
+        BedrockPortBox.Value = CrossplayService.EffectiveBedrockPort(_draft.Config)
+            ?? CrossplayService.DefaultBedrockPort;
         _loading = false;
     }
 

@@ -42,8 +42,15 @@ public class CreateOrAddDialogTests(AvaloniaFixture ui)
 
     private static readonly ServerDetection AFabricServer = new()
     {
-        Type = ServerType.Fabric, GameVersion = "1.21.1", LoaderVersion = "0.16.2", JarFile = "fabric-server.jar",
-        Port = 25570, MinRamGb = 3, MaxRamGb = 6, HasWorld = true, Jars = new[] { "fabric-server.jar" }
+        Type = ServerType.Fabric,
+        GameVersion = "1.21.1",
+        LoaderVersion = "0.16.2",
+        JarFile = "fabric-server.jar",
+        Port = 25570,
+        MinRamGb = 3,
+        MaxRamGb = 6,
+        HasWorld = true,
+        Jars = new[] { "fabric-server.jar" }
     };
 
     [Fact]
@@ -177,7 +184,8 @@ public class CreateOrAddDialogTests(AvaloniaFixture ui)
     {
         // Folded into one: the separate buttons and their commands are gone, and nothing may still
         // bind to a command that no longer exists — that would be a button doing nothing.
-        var markup = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views", "MainWindow.axaml"));
+        var markup = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "Views",
+            "MainWindow.axaml"));
         Assert.DoesNotContain("AddServerCommand", markup);
         Assert.DoesNotContain("CreateServerCommand", markup);
         Assert.Null(typeof(McServerLauncher.ViewModels.MainViewModel).GetProperty("AddServerCommand"));

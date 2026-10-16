@@ -27,14 +27,16 @@ public static class ContentMigrationService
     /// <param name="folder">The server folder.</param>
     /// <param name="from">The type the server was.</param>
     /// <param name="to">The type it is becoming.</param>
-    /// <param name="stamp">Used to name the archive; taken as an argument so tests are not timing-dependent.</param>
+    /// <param name="stamp">Used to name the archive; taken as an argument so tests are not
+    /// timing-dependent.</param>
     /// <returns>The name of the folder the content was moved to, or null when nothing was moved.</returns>
     /// <remarks>
     /// Does nothing when the family is unchanged (Paper to Purpur keeps its plugins, Fabric to
     /// NeoForge keeps its mods — the jars may not all work, but that is the user's call and the
     /// dialog already warns about it). Also does nothing when the folder is empty or absent.
     /// </remarks>
-    public static string? ArchiveIfFamilyChanged(string folder, ServerType from, ServerType to, DateTime stamp)
+    public static string? ArchiveIfFamilyChanged(string folder, ServerType from, ServerType to,
+        DateTime stamp)
     {
         var oldFamily = ServerTypeCatalog.For(from).Family;
         var newFamily = ServerTypeCatalog.For(to).Family;

@@ -18,7 +18,8 @@ namespace McServerLauncher.Tests;
 public class NewServerDraftTests : IDisposable
 {
     private readonly AvaloniaFixture _ui;
-    private readonly string _dataDir = Path.Combine(Path.GetTempPath(), "mcl-draft-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dataDir = Path.Combine(Path.GetTempPath(), "mcl-draft-" + Guid.NewGuid()
+        .ToString("N"));
 
     public NewServerDraftTests(AvaloniaFixture ui)
     {
@@ -26,8 +27,11 @@ public class NewServerDraftTests : IDisposable
         Directory.CreateDirectory(_dataDir);
         var servers = new[] { "uno", "dos" }.Select(name => new ServerConfig
         {
-            Id = name, Name = name, FolderPath = Directory.CreateDirectory(Path.Combine(_dataDir, name)).FullName,
-            Type = ServerType.Vanilla, GameVersion = "1.21.1"
+            Id = name,
+            Name = name,
+            FolderPath = Directory.CreateDirectory(Path.Combine(_dataDir, name)).FullName,
+            Type = ServerType.Vanilla,
+            GameVersion = "1.21.1"
         });
         File.WriteAllText(Path.Combine(_dataDir, "servers.json"), JsonSerializer.Serialize(servers));
     }

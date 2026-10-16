@@ -11,7 +11,8 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class PlayitSecretFileTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-secret-" + Guid.NewGuid().ToString("N"));
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcl-secret-" + Guid.NewGuid()
+        .ToString("N"));
     private string File_ => Path.Combine(_dir, "agent-secret");
 
     public PlayitSecretFileTests() => Directory.CreateDirectory(_dir);

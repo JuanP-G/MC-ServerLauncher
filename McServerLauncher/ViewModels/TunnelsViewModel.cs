@@ -87,13 +87,17 @@ public partial class TunnelsViewModel : ObservableObject
     /// <summary>A key that may create tunnels, or null when every key that answered can only read.</summary>
     private string? WritableKey() => _workingKeys.FirstOrDefault(k => CanWrite(k));
 
-    /// <summary>Changes Playit will not let this app make go through its website, where the account owner can.</summary>
+    /// <summary>
+    /// Changes Playit will not let this app make go through its website, where the account owner can.
+    /// </summary>
     internal void OpenWebForChange() => BrowserLauncher.Open(AppLinks.PlayitTunnels);
 
     private bool IsReadOnly(PlayitConnection.Source source) =>
         _writable.TryGetValue(source.Key, out var w) && !w;
 
-    /// <summary>True when there is any way into the account: the app's own agent, the installed one, or a saved key.</summary>
+    /// <summary>
+    /// True when there is any way into the account: the app's own agent, the installed one, or a saved key.
+    /// </summary>
     public bool IsConnected => Sources().Count > 0;
     public bool IsNotConnected => !IsConnected;
 
@@ -112,7 +116,8 @@ public partial class TunnelsViewModel : ObservableObject
         AgentRunState.Starting => Localizer.Get("Pk_Agent_Starting"),
         AgentRunState.Running => Localizer.Get("Pk_Agent_Running"),
         AgentRunState.Unsupported => Localizer.Get("Pk_Agent_Unsupported"),
-        AgentRunState.Failed => string.Format(Localizer.Get("Pk_Agent_Failed"), PlayitAgentRunner.Shared.LastError ?? ""),
+        AgentRunState.Failed => string.Format(Localizer.Get("Pk_Agent_Failed"),
+            PlayitAgentRunner.Shared.LastError ?? ""),
         _ => Localizer.Get("Pk_Agent_Stopped"),
     };
 
@@ -139,7 +144,9 @@ public partial class TunnelsViewModel : ObservableObject
         }
     }
 
-    /// <summary>One line for each way in, so it is clear which one the tunnels below were read with.</summary>
+    /// <summary>
+    /// One line for each way in, so it is clear which one the tunnels below were read with.
+    /// </summary>
     public string AccountText
     {
         get
@@ -161,7 +168,8 @@ public partial class TunnelsViewModel : ObservableObject
         }
     }
 
-    public bool CanRetryAgent => UsesAgent && PlayitAgentRunner.Shared.State is AgentRunState.Failed or AgentRunState.Stopped;
+    public bool CanRetryAgent => UsesAgent
+        && PlayitAgentRunner.Shared.State is AgentRunState.Failed or AgentRunState.Stopped;
 
     /// <summary>The system service of an agent the user installed, to start and stop it from here.</summary>
     public bool ShowService => IsConnected && !UsesAgent && PlayitManager.Shared.IsInstalled;
@@ -249,13 +257,15 @@ public partial class TunnelsViewModel : ObservableObject
     public bool HasSuggestions => Suggestions.Count > 0;
 
     /// <summary>The table's empty state, shown only once the account has actually answered.</summary>
-    public bool ShowEmpty => IsConnected && LastRead is not null && !IsLoading && Rows.Count == 0 && !HasError;
+    public bool ShowEmpty => IsConnected && LastRead is not null && !IsLoading && Rows.Count == 0
+        && !HasError;
 
     public string LastReadText => IsLoading
         ? Localizer.Get("Tun_Loading")
         : LastRead is { } at ? string.Format(Localizer.Get("Tun_LastReadFmt"), at.ToString("t")) : "";
 
-    public bool AllGood => Rows.Count > 0 && Rows.All(r => !r.IsProblem) && !Suggestions.Any(s => s.IsProblem);
+    public bool AllGood => Rows.Count > 0 && Rows.All(r => !r.IsProblem)
+        && !Suggestions.Any(s => s.IsProblem);
 
     public string SummaryText => Rows.Count == 0
         ? ""
@@ -286,13 +296,16 @@ public partial class TunnelsViewModel : ObservableObject
         CrossplayService.EffectiveBedrockPort(s.Config),
         s.Config.PlayitEnabled)).ToList();
 
-    /// <summary>Puts a reading of the account on screen: the table, the suggestions and the summary.</summary>
+    /// <summary>
+    /// Puts a reading of the account on screen: the table, the suggestions and the summary.
+    /// </summary>
     /// <remarks>Public so what the screen looks like can be checked without an account to ask.</remarks>
     public void ShowReport(TunnelReport report)
     {
         Rows.Clear();
         // Trouble first: the rows that need a decision should not be the ones scrolled out of sight.
-        foreach (var row in report.Rows.OrderBy(r => r.Health == TunnelHealth.Ok).ThenBy(r => r.Tunnel.Name, StringComparer.OrdinalIgnoreCase))
+        foreach (var row in report.Rows.OrderBy(r => r.Health == TunnelHealth.Ok)
+            .ThenBy(r => r.Tunnel.Name, StringComparer.OrdinalIgnoreCase))
             Rows.Add(new TunnelRowViewModel(this, row, CanChange(row.Tunnel.Id)));
         Suggestions.Clear();
         foreach (var s in report.Suggestions)
@@ -328,7 +341,11 @@ public partial class TunnelsViewModel : ObservableObject
         var sources = Sources().ToList();
         var answers = await Task.WhenAll(sources.Select(async source =>
         {
-            try { return ((List<PlayitApiService.PlayitTunnel>?)(await _api.GetRunDataAsync(source.Key)).Tunnels, (Exception?)null); }
+            try
+            {
+                return ((List<PlayitApiService.PlayitTunnel>?)(await _api.GetRunDataAsync(source.Key))
+                .Tunnels, (Exception?)null);
+            }
             catch (Exception ex) { return (null, ex); }
         }));
         return Merge(sources.Zip(answers, (s, a) => (s, a.Item1, a.Item2)).ToList());
@@ -340,7 +357,8 @@ public partial class TunnelsViewModel : ObservableObject
     /// and the key that read it first is the one to change it with.
     /// </remarks>
     private static Reading Merge(
-        IReadOnlyList<(PlayitConnection.Source Source, List<PlayitApiService.PlayitTunnel>? Tunnels, Exception? Error)> answers)
+        IReadOnlyList<(PlayitConnection.Source Source, List<PlayitApiService.PlayitTunnel>? Tunnels,
+            Exception? Error)> answers)
     {
         var tunnels = new List<PlayitApiService.PlayitTunnel>();
         var keyFor = new Dictionary<string, string>();
@@ -370,8 +388,10 @@ public partial class TunnelsViewModel : ObservableObject
     }
 
     /// <summary>For tests: <see cref="Merge"/> reduced to what it decides.</summary>
-    internal static (List<string> TunnelIds, Dictionary<string, string> KeyFor, List<string> Working, Exception? Error) MergeForTest(
-        IReadOnlyList<(PlayitConnection.Source Source, List<PlayitApiService.PlayitTunnel>? Tunnels, Exception? Error)> answers)
+    internal static (List<string> TunnelIds, Dictionary<string, string> KeyFor, List<string> Working,
+        Exception? Error) MergeForTest(
+        IReadOnlyList<(PlayitConnection.Source Source, List<PlayitApiService.PlayitTunnel>? Tunnels,
+            Exception? Error)> answers)
     {
         var r = Merge(answers);
         return (r.Tunnels.Select(t => t.Id).ToList(), r.KeyFor, r.WorkingKeys, r.Error);
@@ -436,7 +456,8 @@ public partial class TunnelsViewModel : ObservableObject
             foreach (var (id, key) in reading.KeyFor) _keyFor[id] = key;
             _workingKeys = reading.WorkingKeys;
             // At once too, for the same reason as the reading (cached after the first time anyway).
-            var probes = await Task.WhenAll(_workingKeys.Select(async key => (key, writable: await _api.CanManageTunnelsAsync(key))));
+            var probes = await Task.WhenAll(_workingKeys.Select(async key
+                => (key, writable: await _api.CanManageTunnelsAsync(key))));
             foreach (var (key, writable) in probes)
                 if (writable is { } w) _writable[key] = w;
 
@@ -471,13 +492,17 @@ public partial class TunnelsViewModel : ObservableObject
 
     // ---------------------------------------------------------------- what the person asks for
 
-    /// <summary>The key that can change this tunnel: the one that read it, else the first that works.</summary>
+    /// <summary>
+    /// The key that can change this tunnel: the one that read it, else the first that works.
+    /// </summary>
     private string? KeyFor(string? tunnelId) =>
         tunnelId is not null && _keyFor.TryGetValue(tunnelId, out var key)
             ? key
             : _workingKeys.FirstOrDefault() ?? Sources().FirstOrDefault()?.Key;
 
-    /// <summary>Runs a change against the account and reads the result back, reporting a failure on screen.</summary>
+    /// <summary>
+    /// Runs a change against the account and reads the result back, reporting a failure on screen.
+    /// </summary>
     private async Task ChangeAsync(Func<string, Task> change, string? tunnelId = null)
     {
         if (KeyFor(tunnelId) is not { } key) return;
@@ -527,7 +552,8 @@ public partial class TunnelsViewModel : ObservableObject
 
     internal async Task ApplyAsync(TunnelSuggestion suggestion)
     {
-        var server = suggestion.ServerId is null ? null : _servers.FirstOrDefault(s => s.Config.Id == suggestion.ServerId);
+        var server = suggestion.ServerId is null ? null
+            : _servers.FirstOrDefault(s => s.Config.Id == suggestion.ServerId);
 
         switch (suggestion.Kind)
         {
@@ -590,7 +616,8 @@ public partial class TunnelsViewModel : ObservableObject
                 var before = reading.Tunnels.First(t => t.Id == tunnelId).Name;
                 if (await _api.CanManageTunnelsAsync(reading.KeyFor[tunnelId]) == false)
                 {
-                    server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenameReadOnlyFmt"), before, newName));
+                    server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenameReadOnlyFmt"), before,
+                        newName));
                     continue;
                 }
                 try
@@ -600,7 +627,8 @@ public partial class TunnelsViewModel : ObservableObject
                 }
                 catch (Exception ex)
                 {
-                    server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenameFailFmt"), before, Describe(ex, write: true)));
+                    server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenameFailFmt"), before,
+                        Describe(ex, write: true)));
                 }
             }
 

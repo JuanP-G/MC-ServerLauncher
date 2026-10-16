@@ -48,18 +48,24 @@ public class ProjectResult
     [JsonPropertyName("project_type")]
     public string? ProjectType { get; set; }
 
-    /// <summary>Raw category slugs. Includes the loaders (fabric, paper…), not only real categories.</summary>
+    /// <summary>
+    /// Raw category slugs. Includes the loaders (fabric, paper…), not only real categories.
+    /// </summary>
     [JsonPropertyName("categories")]
     public List<string> Categories { get; set; } = new();
 
-    /// <summary>Categories Modrinth itself considers worth showing (a subset of <see cref="Categories"/>).</summary>
+    /// <summary>
+    /// Categories Modrinth itself considers worth showing (a subset of <see cref="Categories"/>).
+    /// </summary>
     [JsonPropertyName("display_categories")]
     public List<string> DisplayCategories { get; set; } = new();
 
     [JsonPropertyName("downloads")]
     public long Downloads { get; set; }
 
-    /// <summary>Followers. Named "follows" in search results and "followers" on the project endpoint.</summary>
+    /// <summary>
+    /// Followers. Named "follows" in search results and "followers" on the project endpoint.
+    /// </summary>
     [JsonPropertyName("follows")]
     public int Follows { get; set; }
 

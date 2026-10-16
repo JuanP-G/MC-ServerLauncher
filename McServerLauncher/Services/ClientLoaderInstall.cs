@@ -72,7 +72,8 @@ internal static class ClientLoaderInstall
     // The only one of the three with an installer CLI written for this: "client" installs into a
     // directory and writes a launcher profile, so the player has something to pick afterwards.
 
-    private static async Task<Plan?> FabricAsync(string gameVersion, string? loaderVersion, CancellationToken ct)
+    private static async Task<Plan?> FabricAsync(string gameVersion, string? loaderVersion,
+        CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(gameVersion)) return null;
 
@@ -102,7 +103,8 @@ internal static class ClientLoaderInstall
     // whole thing headless. Older Forge builds are the shakiest part of this; a failure there is
     // reported by the script and the mods are copied anyway.
 
-    private static async Task<Plan?> ForgeAsync(string gameVersion, string? loaderVersion, CancellationToken ct)
+    private static async Task<Plan?> ForgeAsync(string gameVersion, string? loaderVersion,
+        CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(gameVersion)) return null;
 

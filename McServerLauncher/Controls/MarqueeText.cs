@@ -52,7 +52,11 @@ public class MarqueeText : Panel
     /// <summary>How long it rests at each end, so the start and the finish can actually be read.</summary>
     internal static readonly TimeSpan Pause = TimeSpan.FromMilliseconds(700);
 
-    private readonly TextBlock _label = new() { TextTrimming = TextTrimming.CharacterEllipsis, TextWrapping = TextWrapping.NoWrap };
+    private readonly TextBlock _label = new()
+    {
+        TextTrimming = TextTrimming.CharacterEllipsis,
+        TextWrapping = TextWrapping.NoWrap
+    };
     private readonly TranslateTransform _shift = new();
     private readonly Stopwatch _clock = new();
     private DispatcherTimer? _timer;
@@ -105,7 +109,8 @@ public class MarqueeText : Panel
         _label.Measure(Size.Infinity);
         _fullWidth = _label.DesiredSize.Width;
 
-        var width = double.IsInfinity(availableSize.Width) ? _fullWidth : Math.Min(_fullWidth, availableSize.Width);
+        var width = double.IsInfinity(availableSize.Width) ? _fullWidth
+            : Math.Min(_fullWidth, availableSize.Width);
         return new Size(width, _label.DesiredSize.Height);
     }
 

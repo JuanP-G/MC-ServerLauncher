@@ -42,7 +42,8 @@ public class ServerCreationService
     }
 
     /// <summary>
-    /// Creates a run.bat equivalent to the one you would use manually (in case you want to launch it outside the app).
+    /// Creates a run.bat equivalent to the one you would use manually (in case you want to launch it outside
+    /// the app).
     /// </summary>
     public void WriteRunBat(string folder, int minGb, int maxGb, string jarFile, string javaPath = "java")
     {
@@ -103,7 +104,9 @@ public class ServerCreationService
         File.WriteAllText(path, content);
     }
 
-    /// <summary>Whether the folder already holds a generated world, which a seed can no longer change.</summary>
+    /// <summary>
+    /// Whether the folder already holds a generated world, which a seed can no longer change.
+    /// </summary>
     public static bool WorldExists(string folder)
     {
         var props = new ServerPropertiesService().Read(Path.Combine(folder, "server.properties"));
