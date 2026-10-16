@@ -63,7 +63,7 @@ public static class ImageCache
     /// <summary>Disk entries older than this are pruned; icons change, and space is not free.</summary>
     private static readonly TimeSpan MaxDiskAge = TimeSpan.FromDays(30);
 
-    private static int _pruned;
+    private static int Pruned;
 
     private sealed record Entry(Bitmap Bitmap, DateTime StoredUtc, long Bytes);
 
@@ -288,7 +288,7 @@ public static class ImageCache
 
     private static void PruneOnce()
     {
-        if (Interlocked.Exchange(ref _pruned, 1) != 0) return;
+        if (Interlocked.Exchange(ref Pruned, 1) != 0) return;
         try
         {
             if (!Directory.Exists(CacheDir)) return;

@@ -69,7 +69,7 @@ public class PlayitApiService
 
     // App-wide per-user agent secret key from the partner setup-code flow. When set, it is the
     // credential used for all Playit API calls (reads and writes), superseding playit.toml.
-    private static string? _agentKey;
+    private static string? AgentKey;
 
     /// <summary>
     /// Sets (or clears) the per-user agent secret key used for all Playit API auth. Called once at
@@ -78,14 +78,14 @@ public class PlayitApiService
     /// </summary>
     public static void SetAgentKey(string? agentSecretKey)
     {
-        lock (SecretLock) { _agentKey = string.IsNullOrWhiteSpace(agentSecretKey) ? null : agentSecretKey; }
+        lock (SecretLock) { AgentKey = string.IsNullOrWhiteSpace(agentSecretKey) ? null : agentSecretKey; }
         InvalidateTunnelCache();
     }
 
     /// <summary>The credential to read with: the partner agent key if set, else the playit.toml secret.</summary>
     private string? CurrentReadKey()
     {
-        lock (SecretLock) { if (_agentKey is not null) return _agentKey; }
+        lock (SecretLock) { if (AgentKey is not null) return AgentKey; }
         return ReadSecretKey();
     }
 
@@ -118,8 +118,8 @@ public class PlayitApiService
     // almost never changes (only when the user re-installs the agent), so a short TTL removes the
     // repeated file I/O while still picking up a new install quickly.
     private static readonly object SecretLock = new();
-    private static string? _cachedSecret;
-    private static DateTime _secretReadAtUtc = DateTime.MinValue;
+    private static string? CachedSecret;
+    private static DateTime SecretReadAtUtc = DateTime.MinValue;
     private static readonly TimeSpan SecretTtl = TimeSpan.FromSeconds(30);
 
     /// <summary>Reads the (read-only) secret_key from playit.toml (cached ~30 s). Null if not found.</summary>
@@ -127,15 +127,15 @@ public class PlayitApiService
     {
         lock (SecretLock)
         {
-            if (DateTime.UtcNow - _secretReadAtUtc < SecretTtl)
-                return _cachedSecret;
+            if (DateTime.UtcNow - SecretReadAtUtc < SecretTtl)
+                return CachedSecret;
         }
 
         var value = ReadSecretKeyUncached();
         lock (SecretLock)
         {
-            _cachedSecret = value;
-            _secretReadAtUtc = DateTime.UtcNow;
+            CachedSecret = value;
+            SecretReadAtUtc = DateTime.UtcNow;
         }
         return value;
     }
@@ -266,8 +266,8 @@ public class PlayitApiService
     // fetch serves them all: the first caller inside the TTL window pays the request, the rest
     // await the same task and just filter by their port.
     private static readonly object TunnelCacheLock = new();
-    private static Task<List<PlayitTunnel>>? _tunnelFetch;
-    private static DateTime _tunnelFetchAtUtc = DateTime.MinValue;
+    private static Task<List<PlayitTunnel>>? TunnelFetch;
+    private static DateTime TunnelFetchAtUtc = DateTime.MinValue;
     internal static readonly TimeSpan TunnelCacheTtl = TimeSpan.FromSeconds(25);
 
     /// <summary>
@@ -405,13 +405,13 @@ public class PlayitApiService
         {
             // A failed fetch also stays cached until the TTL expires: no point hammering the API
             // when it's down; the next window retries naturally.
-            if (_tunnelFetch is null ||
-                ShouldFetchTunnels(fresh, _tunnelFetchAtUtc, DateTime.UtcNow))
+            if (TunnelFetch is null ||
+                ShouldFetchTunnels(fresh, TunnelFetchAtUtc, DateTime.UtcNow))
             {
-                _tunnelFetchAtUtc = DateTime.UtcNow;
-                _tunnelFetch = StartTunnelFetch(); // detached from any single caller's ct
+                TunnelFetchAtUtc = DateTime.UtcNow;
+                TunnelFetch = StartTunnelFetch(); // detached from any single caller's ct
             }
-            fetch = _tunnelFetch;
+            fetch = TunnelFetch;
         }
 
         try { return await fetch.WaitAsync(ct); }
@@ -423,8 +423,8 @@ public class PlayitApiService
     {
         lock (TunnelCacheLock)
         {
-            _tunnelFetch = null;
-            _tunnelFetchAtUtc = DateTime.MinValue;
+            TunnelFetch = null;
+            TunnelFetchAtUtc = DateTime.MinValue;
         }
     }
 
