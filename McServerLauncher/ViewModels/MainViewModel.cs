@@ -674,17 +674,6 @@ public partial class MainViewModel : ObservableObject
             Localizer.Get("Title_ServersDamaged"), owner);
     }
 
-    partial void OnSelectedServerChanged(ServerViewModel? value)
-    {
-        // Picking a server while the new-server panel is open goes to that server. The unfinished
-        // one is kept (see NewServerPanel), not thrown away.
-        if (value is not null && IsNewServerOpen) IsNewServerOpen = false;
-
-        OnPropertyChanged(nameof(HasSelection));
-        OnPropertyChanged(nameof(ShowServerDetail));
-        OnPropertyChanged(nameof(ShowEmptyState));
-    }
-
     /// <summary>
     /// Returns the Playit credential used for tunnel management (the per-user agent secret key from
     /// the setup-code flow, or a legacy write key for users who already had one). If none is stored,
@@ -1133,8 +1122,24 @@ public partial class MainViewModel : ObservableObject
         PlayerHistoryStore.FlushAll();
     }
 
+    /// <summary>
+    /// Everything that follows from another server being picked: the panels that were open, what the
+    /// detail area shows, and which commands apply.
+    /// </summary>
+    /// <remarks>
+    /// One hook for one event: the generator offers two, and the steps were split between them a
+    /// thousand lines apart.
+    /// </remarks>
     partial void OnSelectedServerChanged(ServerViewModel? oldValue, ServerViewModel? newValue)
     {
+        // Picking a server while the new-server panel is open goes to that server. The unfinished
+        // one is kept (see NewServerPanel), not thrown away.
+        if (newValue is not null && IsNewServerOpen) IsNewServerOpen = false;
+
+        OnPropertyChanged(nameof(HasSelection));
+        OnPropertyChanged(nameof(ShowServerDetail));
+        OnPropertyChanged(nameof(ShowEmptyState));
+
         // Picking another server leaves the settings that are open — unless something on them is
         // unsaved, and then the list goes back to the server they belong to. Posted, because the
         // list is still in the middle of changing its selection when this runs.
