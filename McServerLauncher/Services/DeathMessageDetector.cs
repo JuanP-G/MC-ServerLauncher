@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace McServerLauncher.Services;
 
 /// <summary>
@@ -8,7 +6,7 @@ namespace McServerLauncher.Services;
 /// differently. Pairing a death-phrase match with a "subject is a valid player name" check keeps it
 /// from firing on chat lines (which start with a "&lt;name&gt;" tag) or other log output.
 /// </summary>
-public static partial class DeathMessageDetector
+public static class DeathMessageDetector
 {
     // Common vanilla death-message fragments (the victim is the subject at the start of the line).
     private static readonly string[] Phrases =
@@ -24,9 +22,6 @@ public static partial class DeathMessageDetector
         "was killed by magic", "was roasted in dragon's breath", "left the confines of this world",
         "didn't want to live", "experienced kinetic energy", "died"
     };
-
-    [GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]
-    private static partial Regex PlayerName();
 
     /// <summary>
     /// Returns the death message (e.g. "Alice was slain by Bob") if <paramref name="line"/> is a
@@ -44,7 +39,7 @@ public static partial class DeathMessageDetector
         var space = msg.IndexOf(' ');
         if (space <= 0) return null; // needs "<name> <phrase>"
         var subject = msg[..space];
-        if (!PlayerName().IsMatch(subject)) return null;
+        if (!PlayerNames.IsValid(subject)) return null;
 
         var rest = msg[(space + 1)..];
         foreach (var phrase in Phrases)

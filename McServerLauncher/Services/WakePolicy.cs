@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace McServerLauncher.Services;
 
 /// <summary>
@@ -22,7 +20,7 @@ namespace McServerLauncher.Services;
 /// be checked without a socket or a server folder.
 /// </para>
 /// </remarks>
-public static partial class WakePolicy
+public static class WakePolicy
 {
     /// <summary>Whether a join attempt by <paramref name="player"/> should start the server.</summary>
     /// <param name="player">The name the client sent in Login Start, or null when it sent none.</param>
@@ -36,11 +34,8 @@ public static partial class WakePolicy
         if (!whitelistOn || !onlyWhitelisted) return true;
 
         // A client that sent no name, or one Minecraft would never accept, is not on any list.
-        if (player is null || !PlayerName().IsMatch(player)) return false;
+        if (!PlayerNames.IsValid(player)) return false;
 
         return whitelist.Concat(ops).Any(n => string.Equals(n, player, StringComparison.OrdinalIgnoreCase));
     }
-
-    [GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]
-    private static partial Regex PlayerName();
 }

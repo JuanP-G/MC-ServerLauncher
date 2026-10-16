@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using McServerLauncher.Models;
 
 namespace McServerLauncher.Services;
@@ -72,7 +71,7 @@ public static class PlayerHistoryPreferences
 /// from a background one, and the settings dialog can clear everything at any moment.
 /// </para>
 /// </remarks>
-public sealed partial class PlayerHistoryStore : IDisposable
+public sealed class PlayerHistoryStore : IDisposable
 {
     /// <summary>Where every server's history lives.</summary>
     public static string RootDirectory { get; set; } = Path.Combine(
@@ -576,8 +575,5 @@ public sealed partial class PlayerHistoryStore : IDisposable
     private static string Key(string player) => player.ToLowerInvariant();
 
     // Also what keeps a name from ever becoming a path: nothing but [A-Za-z0-9_] reaches Key().
-    private static bool IsName(string? player) => player is not null && PlayerName().IsMatch(player);
-
-    [GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]
-    private static partial Regex PlayerName();
+    private static bool IsName(string? player) => PlayerNames.IsValid(player);
 }

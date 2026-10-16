@@ -151,7 +151,7 @@ public static partial class ConsoleLineClassifier
             var close = message.IndexOf('>');
             if (close <= 1) return null;
             var name = message[1..close];
-            return PlayerName().IsMatch(name) ? (name, message[(close + 1)..].TrimStart()) : null;
+            return PlayerNames.IsValid(name) ? (name, message[(close + 1)..].TrimStart()) : null;
         }
 
         if (message[0] == '[')
@@ -187,7 +187,7 @@ public static partial class ConsoleLineClassifier
     internal static bool IsServerSender(string sender) => ServerSenders.Contains(sender);
 
     private static bool IsOnline(string name, IReadOnlySet<string>? online) =>
-        online is not null && PlayerName().IsMatch(name) && online.Contains(name);
+        online is not null && PlayerNames.IsValid(name) && online.Contains(name);
 
     /// <summary>Whether somebody joined, left or died.</summary>
     internal static bool IsPlayerEvent(string text) =>
@@ -225,7 +225,7 @@ public static partial class ConsoleLineClassifier
         if (idx <= 0) return null;
 
         var name = body[..idx];
-        return PlayerName().IsMatch(name) ? name : null;
+        return PlayerNames.IsValid(name) ? name : null;
     }
 
     /// <summary>The message after the log prefix, or null when there is no prefix.</summary>
@@ -258,7 +258,4 @@ public static partial class ConsoleLineClassifier
     // [12:34:56] [Server thread/WARN]:  and  [12:34:56 WARN]:  — the two shapes in the wild.
     [GeneratedRegex(@"\[[^\]]*[\s/](INFO|WARN|WARNING|ERROR|SEVERE|FATAL)\]", RegexOptions.IgnoreCase)]
     private static partial Regex LogLevel();
-
-    [GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]
-    private static partial Regex PlayerName();
 }

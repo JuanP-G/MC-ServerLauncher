@@ -1405,9 +1405,6 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             NotificationPreferences.EffectiveFor(Config));
     }
 
-    [System.Text.RegularExpressions.GeneratedRegex("^[A-Za-z0-9_]{1,16}$")]
-    private static partial System.Text.RegularExpressions.Regex PlayerNameRegex();
-
     [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task Start()
     {
@@ -2253,8 +2250,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     /// <summary>
     /// Validates a player name before it's embedded in a console command sent over stdin or
     /// written to the whitelist/ban files. Only real Minecraft names pass
-    /// (letters/digits/underscore, 1-16 chars — the same rule <see cref="PlayerNameRegex"/>
-    /// enforces for join/leave detection): this both blocks command injection (a "\n" would add a
+    /// (letters/digits/underscore, 1-16 chars — the same rule <see cref="PlayerNames"/>
+    /// holds for join/leave detection): this both blocks command injection (a "\n" would add a
     /// second console command) and confusing extra arguments (a name with spaces would turn
     /// "ban a b" into banning "a" with reason "b"). Returns the trimmed name, or null after
     /// logging a clear message when the input isn't a valid name.
@@ -2263,7 +2260,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     {
         name = name?.Trim();
         if (string.IsNullOrEmpty(name)) return null;
-        if (PlayerNameRegex().IsMatch(name)) return name;
+        if (PlayerNames.IsValid(name)) return name;
 
         // Show what was rejected, defanged for display (no line breaks, capped length).
         var shown = name.Replace("\r", "").Replace("\n", " ");

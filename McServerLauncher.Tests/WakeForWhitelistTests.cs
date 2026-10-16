@@ -37,6 +37,15 @@ public class WakeForWhitelistTests
     public void WithTheWhitelistOffAnyoneWakesIt(string? player) =>
         Assert.True(WakePolicy.Allows(player, whitelistOn: false, onlyWhitelisted: true, None, None));
 
+    /// <summary>
+    /// A name that ends in a line break is not a name, even when the file lists it: the check used a
+    /// regex whose <c>$</c> matched before the break.
+    /// </summary>
+    [Fact]
+    public void ANameWithALineBreakIsNotAName() =>
+        Assert.False(WakePolicy.Allows("Alice\n", whitelistOn: true, onlyWhitelisted: true,
+            new[] { "Alice\n" }, None));
+
     [Fact]
     public void TheOwnerCanLetAnyoneWakeItAnyway() =>
         Assert.True(WakePolicy.Allows("Scanner", whitelistOn: true, onlyWhitelisted: false, Listed, Ops));
