@@ -50,9 +50,12 @@ haya fotos de esa antigüedad), visitas al repositorio y de dónde vienen. Los C
   propiedad desde Search Console. `web/_i18n/ping-indexnow.py` ya avisa de los cambios a Bing por IndexNow.
 - **AlternativeTo**: la ficha no tiene ninguna captura de pantalla. Sube las de `docs/screenshots/`
   (o unas nuevas, ver abajo) y la descripción con las novedades. Es lo que más cambia cómo se ve la ficha.
-- **Gestores de paquetes**: que la app se pueda instalar con `winget install`, Scoop o Chocolatey es
-  descubrimiento gratis y de confianza. Winget acepta un manifiesto por PR en
-  [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) (herramienta `wingetcreate`).
+- **Gestores de paquetes**: poder instalar con `winget install` es descubrimiento gratis y de confianza. El
+  manifiesto de la versión actual está en `installer/winget/` (validado con `winget validate`). Para
+  publicarlo, copia `manifests/` en un fork de [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs)
+  y abre un PR; cuando se acepte el primero, cada release es un comando:
+  `wingetcreate update JuanP-G.MC-ServerLauncher --version X --urls <url-del-instalador> --submit`.
+  Scoop y Chocolatey funcionan de forma parecida.
 - **Listados con tráfico propio**: Softpedia, MajorGeeks, SourceForge, Flathub (para el AppImage).
 - **Comunidades**: r/admincraft, r/Minecraft (con las normas de autopromoción de cada una), Modrinth.
 

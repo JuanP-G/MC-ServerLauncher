@@ -50,9 +50,12 @@ exist), repository views and where they come from. The CSV files (`downloads.csv
   property from Search Console. `web/_i18n/ping-indexnow.py` already notifies Bing of changes via IndexNow.
 - **AlternativeTo**: the listing has no screenshots at all. Upload the ones in `docs/screenshots/` (or new
   ones) and refresh the description with what is new.
-- **Package managers**: being installable with `winget install`, Scoop or Chocolatey is free, trusted
-  discovery. Winget takes one manifest per PR in
-  [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) (`wingetcreate` tool).
+- **Package managers**: being installable with `winget install` is free, trusted discovery. The manifest for
+  the current version lives in `installer/winget/` (validated with `winget validate`). To publish it, copy
+  `manifests/` into a fork of [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) and open a PR;
+  after the first one is accepted, each release is one command:
+  `wingetcreate update JuanP-G.MC-ServerLauncher --version X --urls <installer-url> --submit`. Scoop and
+  Chocolatey work along the same lines.
 - **Listings with their own traffic**: Softpedia, MajorGeeks, SourceForge, Flathub (for the AppImage).
 - **Communities**: r/admincraft, r/Minecraft (mind each one's self-promotion rules), Modrinth.
 
