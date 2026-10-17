@@ -1,0 +1,210 @@
+{
+  "_comment": "Guía: hostear gratis sin abrir puertos (túnel de Playit.gg). El español es la referencia estructural.",
+  "slug": {
+    "es": "hostear-servidor-minecraft-gratis-sin-abrir-puertos",
+    "en": "host-free-minecraft-server-no-port-forwarding",
+    "de": "minecraft-server-kostenlos-hosten-ohne-portfreigabe",
+    "fr": "heberger-serveur-minecraft-gratuit-sans-ouvrir-ports",
+    "pt": "alojar-servidor-minecraft-gratis-sem-abrir-portas"
+  },
+  "published": "2026-10-17",
+  "modified": "2026-10-17",
+  "minutes": 6,
+  "howto_minutes": 15,
+  "icon": "ender_pearl.png",
+
+  "es": {
+    "title": "Servidor de Minecraft gratis sin abrir puertos | MC-ServerLauncher",
+    "description": "Hostea un servidor de Minecraft gratis en tu PC y deja entrar a tus amigos sin abrir puertos del router: túnel de Playit.gg integrado, sin cuotas y sin tocar la red.",
+    "h1": "Cómo hostear un servidor de Minecraft gratis sin abrir puertos",
+    "crumb": "Gratis y sin abrir puertos",
+    "lead": "Para que tus amigos entren a tu servidor normalmente tendrías que abrir puertos en el router, algo que no siempre se puede ni se quiere. Con un túnel no hace falta: tu servidor sale a Internet por una dirección pública y no tocas la configuración de la red.",
+    "cta": "Descargar MC-ServerLauncher gratis",
+    "card_title": "Hostear un servidor de Minecraft gratis sin abrir puertos",
+    "card_desc": "Un túnel de Playit.gg integrado te da una dirección pública para compartir, sin cuotas ni tocar el router.",
+    "blocks": [
+      { "h2": "Por qué normalmente hay que abrir puertos" },
+      { "p": "Tu router reparte una sola dirección pública entre todos los aparatos de casa y bloquea lo que llega de fuera. Para que un amigo entre tendrías que redirigir el puerto 25565 al ordenador del servidor, y eso falla si tu proveedor comparte la IP entre varios clientes (CGNAT) o si no tienes acceso al router. Un <strong>túnel</strong> lo evita: tu PC abre una conexión hacia el servicio del túnel, y es ese servicio el que recibe a tus amigos y les pasa la conexión." },
+      { "p": "Alojarlo tú mismo es gratis: el servidor corre en tu ordenador, no pagas cuota mensual y no hay límites de plan en jugadores o mods. A cambio, solo está disponible mientras tu PC esté encendido y el servidor iniciado." },
+      { "h2": "Paso a paso con MC-ServerLauncher" },
+      { "steps": [
+        { "name": "Crea tu servidor", "text": "Instala la app (Windows, Linux o macOS), pulsa «Nuevo» y «Crear uno nuevo», elige el tipo y la versión, marca «Acepto el EULA de Minecraft» y crea el servidor. Si lo quieres con mods, sigue antes la <a href='{guide:mods}'>guía del servidor con mods</a>." },
+        { "name": "Conecta tu cuenta de Playit", "text": "Crea una cuenta gratuita en playit.gg. En la app, abre «Túneles» y pega el código de configuración de un solo uso que te da Playit. La app crea el túnel y ejecuta el agente de Playit por ti: no instalas nada más." },
+        { "name": "Activa el túnel en tu servidor", "text": "En los ajustes del servidor, en «Red y acceso», activa «Túnel a Internet (Playit.gg)»." },
+        { "name": "Inicia el servidor y copia la dirección", "text": "Pulsa «Iniciar». En unos segundos aparece sola la dirección pública; pulsa «Copiar» y mándasela a tus amigos." },
+        { "name": "Tus amigos entran", "text": "En Minecraft Java, ellos van a «Multijugador», «Añadir servidor» y pegan la dirección. Tienen que usar la misma versión de Minecraft que el servidor." }
+      ] },
+      { "tip": "Si algo va lento, pulsa «Probar conexión» en la tarjeta de Playit: mide por separado tu servidor, tu Internet y el túnel, y te dice en una frase de dónde viene el retraso." },
+      { "h2": "Qué limita este método" },
+      { "ul": [
+        "El servidor solo está disponible mientras tu PC esté encendido y la app abierta. Para que no gaste nada cuando no juega nadie, mira <a href='{guide:dormir}'>cómo hacer que se apague solo cuando está vacío</a>.",
+        "Tu conexión de subida marca cuántos jugadores aguantas bien: cada uno envía y recibe datos constantemente.",
+        "El plan gratuito de Playit tiene sus propias condiciones; consulta en su web las que estén vigentes.",
+        "Si compartes la dirección, activa la lista blanca para que solo entren quienes tú quieras."
+      ] }
+    ],
+    "faq": [
+      { "q": "¿Es de verdad gratis hostear un servidor de Minecraft?", "a": "Sí, si lo alojas en tu propio ordenador. MC-ServerLauncher es gratuito y de código abierto, el servidor oficial de Minecraft se descarga gratis y Playit tiene un plan gratuito. Lo único que gastas es la electricidad de tener el PC encendido." },
+      { "q": "¿Necesito abrir puertos en el router?", "a": "No. El túnel de Playit recibe a tus amigos y les pasa la conexión, así que no tocas el router. Sirve también si tu proveedor usa CGNAT, donde abrir puertos directamente no es posible." },
+      { "q": "¿Se ve la IP de mi casa?", "a": "Tus amigos se conectan a la dirección del túnel, no a la IP de tu casa, y esa es la que compartes." },
+      { "q": "¿Pueden entrar jugadores de Bedrock?", "a": "Sí, con un servidor Paper o Purpur y Geyser. La app lo prepara desde «Crossplay» en los ajustes del servidor y crea el segundo túnel que Bedrock necesita." },
+      { "q": "¿Y si prefiero un hosting de pago?", "a": "Un hosting está siempre encendido y no depende de tu PC ni de tu conexión, pero cuesta una cuota y suele limitar la RAM y los mods. Alojarlo en casa es gratis y el mundo queda en tu disco; ambas opciones valen, según lo que juegues." }
+    ]
+  },
+
+  "en": {
+    "title": "Free Minecraft server without port forwarding | MC-ServerLauncher",
+    "description": "Host a free Minecraft server on your PC and let friends join without forwarding router ports: built-in Playit.gg tunnel, no fees and no network setup.",
+    "h1": "How to host a free Minecraft server without port forwarding",
+    "crumb": "Free, no port forwarding",
+    "lead": "For friends to join your server you would normally have to forward ports on your router, which isn't always possible or wanted. A tunnel makes it unnecessary: your server reaches the Internet through a public address and you never touch your network settings.",
+    "cta": "Download MC-ServerLauncher free",
+    "card_title": "How to host a free Minecraft server without port forwarding",
+    "card_desc": "A built-in Playit.gg tunnel gives you a public address to share, with no fees and no router setup.",
+    "blocks": [
+      { "h2": "Why you normally have to forward ports" },
+      { "p": "Your router shares a single public address among everything at home and blocks whatever arrives from outside. For a friend to join you would have to redirect port 25565 to the server computer, and that fails if your provider shares one IP between several customers (CGNAT) or if you can't access the router. A <strong>tunnel</strong> avoids all of that: your PC opens a connection to the tunnel service, and that service receives your friends and hands the connection over." },
+      { "p": "Hosting it yourself is free: the server runs on your computer, you pay no monthly fee and there are no plan limits on players or mods. In return it is only available while your PC is on and the server is started." },
+      { "h2": "Step by step with MC-ServerLauncher" },
+      { "steps": [
+        { "name": "Create your server", "text": "Install the app (Windows, Linux or macOS), click “New” and “Create a new one”, pick the type and version, tick “I accept the Minecraft EULA” and create the server. If you want mods, follow the <a href='{guide:mods}'>modded server guide</a> first." },
+        { "name": "Connect your Playit account", "text": "Create a free account at playit.gg. In the app, open “Tunnels” and paste the one-time setup code Playit gives you. The app creates the tunnel and runs the Playit agent for you: you install nothing else." },
+        { "name": "Turn the tunnel on for your server", "text": "In the server settings, under “Network and access”, turn on “Internet tunnel (Playit.gg)”." },
+        { "name": "Start the server and copy the address", "text": "Click “Start”. The public address appears on its own within seconds; click “Copy” and send it to your friends." },
+        { "name": "Your friends join", "text": "In Minecraft Java, they go to “Multiplayer”, “Add Server” and paste the address. They must use the same Minecraft version as the server." }
+      ] },
+      { "tip": "If something is laggy, click “Test connection” on the Playit card: it measures your server, your Internet and the tunnel separately and tells you in one sentence where the delay comes from." },
+      { "h2": "What limits this method" },
+      { "ul": [
+        "The server is only available while your PC is on and the app is open. To make it use nothing when nobody is playing, see <a href='{guide:dormir}'>how to make a Minecraft server stop itself when it is empty</a>.",
+        "Your upload speed decides how many players you can handle well: each one constantly sends and receives data.",
+        "Playit's free plan has its own conditions; check its website for the current ones.",
+        "If you share the address, turn on the whitelist so only the people you choose can join."
+      ] }
+    ],
+    "faq": [
+      { "q": "Is hosting a Minecraft server really free?", "a": "Yes, if you host it on your own computer. MC-ServerLauncher is free and open source, the official Minecraft server downloads for free and Playit has a free plan. The only thing you spend is the electricity of keeping the PC on." },
+      { "q": "Do I need to forward ports on my router?", "a": "No. The Playit tunnel receives your friends and hands the connection over, so you never touch the router. It also works if your provider uses CGNAT, where forwarding ports directly isn't possible." },
+      { "q": "Is my home IP visible?", "a": "Your friends connect to the tunnel's address, not to your home IP, and the tunnel's address is the one you share." },
+      { "q": "Can Bedrock players join?", "a": "Yes, with a Paper or Purpur server and Geyser. The app sets it up from “Crossplay” in the server settings and creates the second tunnel Bedrock needs." },
+      { "q": "What if I prefer paid hosting?", "a": "A host is always on and doesn't depend on your PC or connection, but it costs a fee and usually limits RAM and mods. Hosting at home is free and the world stays on your disk; both are valid, depending on how much you play." }
+    ]
+  },
+
+  "de": {
+    "title": "Minecraft-Server kostenlos ohne Portfreigabe | MC-ServerLauncher",
+    "description": "Hoste einen Minecraft-Server kostenlos auf deinem PC und lass Freunde ohne Router-Portfreigabe beitreten: eingebauter Playit.gg-Tunnel, keine Gebühren, kein Netzwerk-Gefummel.",
+    "h1": "So hostest du einen Minecraft-Server kostenlos ohne Portfreigabe",
+    "crumb": "Kostenlos, ohne Portfreigabe",
+    "lead": "Damit Freunde auf deinen Server kommen, müsstest du normalerweise Ports im Router freigeben, was nicht immer geht oder gewollt ist. Mit einem Tunnel ist das unnötig: Dein Server geht über eine öffentliche Adresse ins Internet, und du fasst die Netzwerkeinstellungen nicht an.",
+    "cta": "MC-ServerLauncher kostenlos laden",
+    "card_title": "So hostest du einen Minecraft-Server kostenlos ohne Portfreigabe",
+    "card_desc": "Ein eingebauter Playit.gg-Tunnel gibt dir eine öffentliche Adresse zum Teilen, ohne Gebühren und ohne Router-Einstellungen.",
+    "blocks": [
+      { "h2": "Warum man normalerweise Ports freigeben muss" },
+      { "p": "Dein Router teilt eine einzige öffentliche Adresse auf alle Geräte im Haus auf und blockt, was von außen ankommt. Damit ein Freund beitreten kann, müsstest du den Port 25565 auf den Server-Rechner umleiten, und das scheitert, wenn dein Anbieter eine IP an mehrere Kunden verteilt (CGNAT) oder du keinen Zugriff auf den Router hast. Ein <strong>Tunnel</strong> umgeht das alles: Dein PC baut eine Verbindung zum Tunneldienst auf, und dieser Dienst empfängt deine Freunde und leitet die Verbindung weiter." },
+      { "p": "Selbst hosten kostet nichts: Der Server läuft auf deinem Computer, du zahlst keine monatliche Gebühr, und es gibt keine Tarifgrenzen bei Spielern oder Mods. Dafür ist er nur erreichbar, solange dein PC an und der Server gestartet ist." },
+      { "h2": "Schritt für Schritt mit MC-ServerLauncher" },
+      { "steps": [
+        { "name": "Deinen Server erstellen", "text": "Installiere die App (Windows, Linux oder macOS), klicke auf „Neu“ und „Neu erstellen“, wähle Typ und Version, setze den Haken bei „Ich akzeptiere die Minecraft-EULA“ und erstelle den Server. Willst du Mods, folge vorher der <a href='{guide:mods}'>Anleitung für Server mit Mods</a>." },
+        { "name": "Dein Playit-Konto verbinden", "text": "Erstelle ein kostenloses Konto auf playit.gg. Öffne in der App „Tunnel“ und füge den einmaligen Einrichtungscode ein, den Playit dir gibt. Die App legt den Tunnel an und startet den Playit-Agenten für dich: Du installierst nichts weiter." },
+        { "name": "Den Tunnel für deinen Server einschalten", "text": "Schalte in den Servereinstellungen unter „Netzwerk und Zugang“ den „Internet-Tunnel (Playit.gg)“ ein." },
+        { "name": "Server starten und die Adresse kopieren", "text": "Klicke auf „Starten“. Nach wenigen Sekunden erscheint die öffentliche Adresse von selbst; klicke auf „Kopieren“ und schick sie deinen Freunden." },
+        { "name": "Deine Freunde treten bei", "text": "In Minecraft Java gehen sie auf „Mehrspieler“, „Server hinzufügen“ und fügen die Adresse ein. Sie müssen dieselbe Minecraft-Version wie der Server verwenden." }
+      ] },
+      { "tip": "Wenn etwas ruckelt, klicke auf der Playit-Karte auf „Verbindung testen“: Es misst deinen Server, dein Internet und den Tunnel getrennt und sagt dir in einem Satz, woher die Verzögerung kommt." },
+      { "h2": "Was diese Methode begrenzt" },
+      { "ul": [
+        "Der Server ist nur erreichbar, solange dein PC läuft und die App offen ist. Damit er nichts verbraucht, wenn niemand spielt, lies <a href='{guide:dormir}'>Minecraft-Server schaltet sich bei Leerlauf selbst ab</a>.",
+        "Deine Upload-Geschwindigkeit bestimmt, wie viele Spieler gut laufen: Jeder sendet und empfängt ständig Daten.",
+        "Der kostenlose Tarif von Playit hat eigene Bedingungen; die aktuellen findest du auf der Website.",
+        "Wenn du die Adresse teilst, aktiviere die Whitelist, damit nur die Leute beitreten, die du willst."
+      ] }
+    ],
+    "faq": [
+      { "q": "Ist das Hosten eines Minecraft-Servers wirklich kostenlos?", "a": "Ja, wenn du ihn auf deinem eigenen Computer betreibst. MC-ServerLauncher ist kostenlos und Open Source, der offizielle Minecraft-Server ist gratis erhältlich und Playit hat einen kostenlosen Tarif. Kosten entstehen nur durch den Strom für den laufenden PC." },
+      { "q": "Muss ich Ports im Router freigeben?", "a": "Nein. Der Playit-Tunnel empfängt deine Freunde und leitet die Verbindung weiter, du fasst den Router nicht an. Das funktioniert auch, wenn dein Anbieter CGNAT nutzt, wo eine direkte Portfreigabe nicht möglich ist." },
+      { "q": "Ist meine Heim-IP sichtbar?", "a": "Deine Freunde verbinden sich mit der Adresse des Tunnels, nicht mit deiner Heim-IP, und die Adresse des Tunnels gibst du weiter." },
+      { "q": "Können Bedrock-Spieler beitreten?", "a": "Ja, mit einem Paper- oder Purpur-Server und Geyser. Die App richtet es unter „Crossplay“ in den Servereinstellungen ein und legt den zweiten Tunnel an, den Bedrock braucht." },
+      { "q": "Und wenn ich lieber bezahltes Hosting nutze?", "a": "Ein Hoster ist immer an und hängt nicht von deinem PC oder deiner Leitung ab, kostet aber eine Gebühr und begrenzt meist RAM und Mods. Zu Hause zu hosten ist gratis, und die Welt bleibt auf deiner Festplatte; beides ist in Ordnung, je nachdem, wie viel du spielst." }
+    ]
+  },
+
+  "fr": {
+    "title": "Serveur Minecraft gratuit sans ouvrir de ports | MC-ServerLauncher",
+    "description": "Héberge un serveur Minecraft gratuit sur ton PC et laisse tes amis entrer sans ouvrir de ports sur ta box : tunnel Playit.gg intégré, sans frais ni réglages réseau.",
+    "h1": "Comment héberger un serveur Minecraft gratuit sans ouvrir de ports",
+    "crumb": "Gratuit, sans ouvrir de ports",
+    "lead": "Pour que tes amis entrent sur ton serveur, il faudrait normalement ouvrir des ports sur ta box, ce qui n'est pas toujours possible ni souhaité. Avec un tunnel, c'est inutile : ton serveur sort sur Internet par une adresse publique et tu ne touches pas à la configuration du réseau.",
+    "cta": "Télécharger MC-ServerLauncher gratuitement",
+    "card_title": "Héberger un serveur Minecraft gratuit sans ouvrir de ports",
+    "card_desc": "Un tunnel Playit.gg intégré te donne une adresse publique à partager, sans frais ni réglages de box.",
+    "blocks": [
+      { "h2": "Pourquoi on doit normalement ouvrir des ports" },
+      { "p": "Ta box partage une seule adresse publique entre tous les appareils de la maison et bloque ce qui arrive de l'extérieur. Pour qu'un ami entre, il faudrait rediriger le port 25565 vers l'ordinateur du serveur, ce qui échoue si ton fournisseur partage l'IP entre plusieurs clients (CGNAT) ou si tu n'as pas accès à la box. Un <strong>tunnel</strong> évite tout cela : ton PC ouvre une connexion vers le service de tunnel, et c'est ce service qui reçoit tes amis et leur passe la connexion." },
+      { "p": "L'héberger toi-même est gratuit : le serveur tourne sur ton ordinateur, tu ne paies aucun abonnement mensuel et il n'y a pas de limites de formule sur les joueurs ou les mods. En contrepartie, il n'est disponible que tant que ton PC est allumé et le serveur démarré." },
+      { "h2": "Pas à pas avec MC-ServerLauncher" },
+      { "steps": [
+        { "name": "Crée ton serveur", "text": "Installe l'appli (Windows, Linux ou macOS), clique sur « Nouveau » puis « En créer un nouveau », choisis le type et la version, coche « J'accepte l'EULA de Minecraft » et crée le serveur. Si tu le veux avec des mods, suis d'abord le <a href='{guide:mods}'>guide du serveur avec mods</a>." },
+        { "name": "Connecte ton compte Playit", "text": "Crée un compte gratuit sur playit.gg. Dans l'appli, ouvre « Tunnels » et colle le code de configuration à usage unique que te donne Playit. L'appli crée le tunnel et lance l'agent Playit pour toi : tu n'installes rien d'autre." },
+        { "name": "Active le tunnel pour ton serveur", "text": "Dans les réglages du serveur, sous « Réseau et accès », active « Tunnel vers Internet (Playit.gg) »." },
+        { "name": "Démarre le serveur et copie l'adresse", "text": "Clique sur « Démarrer ». En quelques secondes, l'adresse publique apparaît toute seule ; clique sur « Copier » et envoie-la à tes amis." },
+        { "name": "Tes amis se connectent", "text": "Dans Minecraft Java, ils vont dans « Multijoueur », « Ajouter un serveur » et collent l'adresse. Ils doivent utiliser la même version de Minecraft que le serveur." }
+      ] },
+      { "tip": "Si ça rame, clique sur « Tester la connexion » sur la carte Playit : elle mesure séparément ton serveur, ton Internet et le tunnel, et t'indique en une phrase d'où vient le retard." },
+      { "h2": "Ce qui limite cette méthode" },
+      { "ul": [
+        "Le serveur n'est disponible que tant que ton PC est allumé et l'appli ouverte. Pour qu'il ne consomme rien quand personne ne joue, lis <a href='{guide:dormir}'>serveur Minecraft qui s'éteint tout seul quand il est vide</a>.",
+        "Ta vitesse d'envoi détermine combien de joueurs tu supportes bien : chacun envoie et reçoit des données en permanence.",
+        "La formule gratuite de Playit a ses propres conditions ; consulte son site pour connaître celles en vigueur.",
+        "Si tu partages l'adresse, active la liste blanche pour que seules les personnes que tu choisis puissent entrer."
+      ] }
+    ],
+    "faq": [
+      { "q": "Héberger un serveur Minecraft est-il vraiment gratuit ?", "a": "Oui, si tu l'héberges sur ton propre ordinateur. MC-ServerLauncher est gratuit et open source, le serveur officiel de Minecraft se télécharge gratuitement et Playit propose une formule gratuite. Tu ne dépenses que l'électricité du PC allumé." },
+      { "q": "Dois-je ouvrir des ports sur ma box ?", "a": "Non. Le tunnel Playit reçoit tes amis et leur passe la connexion, donc tu ne touches pas à la box. Ça marche aussi si ton fournisseur utilise le CGNAT, où ouvrir des ports directement est impossible." },
+      { "q": "Mon IP personnelle est-elle visible ?", "a": "Tes amis se connectent à l'adresse du tunnel, pas à l'IP de ta maison, et c'est l'adresse du tunnel que tu partages." },
+      { "q": "Les joueurs Bedrock peuvent-ils entrer ?", "a": "Oui, avec un serveur Paper ou Purpur et Geyser. L'appli le prépare depuis « Crossplay » dans les réglages du serveur et crée le second tunnel dont Bedrock a besoin." },
+      { "q": "Et si je préfère un hébergement payant ?", "a": "Un hébergeur est toujours allumé et ne dépend ni de ton PC ni de ta connexion, mais il coûte un abonnement et limite souvent la RAM et les mods. L'héberger chez toi est gratuit et le monde reste sur ton disque ; les deux se valent, selon combien tu joues." }
+    ]
+  },
+
+  "pt": {
+    "title": "Servidor de Minecraft grátis sem abrir portas | MC-ServerLauncher",
+    "description": "Aloja um servidor de Minecraft grátis no teu PC e deixa os teus amigos entrar sem abrir portas no router: túnel do Playit.gg integrado, sem mensalidades e sem mexer na rede.",
+    "h1": "Como alojar um servidor de Minecraft grátis sem abrir portas",
+    "crumb": "Grátis e sem abrir portas",
+    "lead": "Para os teus amigos entrarem no teu servidor, normalmente terias de abrir portas no router, o que nem sempre é possível nem desejado. Com um túnel não é preciso: o teu servidor sai para a Internet por um endereço público e não mexes na configuração da rede.",
+    "cta": "Transferir o MC-ServerLauncher grátis",
+    "card_title": "Alojar um servidor de Minecraft grátis sem abrir portas",
+    "card_desc": "Um túnel do Playit.gg integrado dá-te um endereço público para partilhar, sem mensalidades nem router.",
+    "blocks": [
+      { "h2": "Porque é que normalmente é preciso abrir portas" },
+      { "p": "O teu router reparte um único endereço público por todos os aparelhos de casa e bloqueia o que chega de fora. Para um amigo entrar, terias de redirecionar a porta 25565 para o computador do servidor, e isso falha se o teu operador partilhar o IP entre vários clientes (CGNAT) ou se não tiveres acesso ao router. Um <strong>túnel</strong> evita isso tudo: o teu PC abre uma ligação para o serviço do túnel, e é esse serviço que recebe os teus amigos e lhes passa a ligação." },
+      { "p": "Alojá-lo tu mesmo é grátis: o servidor corre no teu computador, não pagas mensalidade e não há limites de plano em jogadores ou mods. Em troca, só está disponível enquanto o teu PC estiver ligado e o servidor iniciado." },
+      { "h2": "Passo a passo com o MC-ServerLauncher" },
+      { "steps": [
+        { "name": "Cria o teu servidor", "text": "Instala a aplicação (Windows, Linux ou macOS), carrega em «Novo» e em «Criar um novo», escolhe o tipo e a versão, marca «Aceito o EULA do Minecraft» e cria o servidor. Se o queres com mods, segue primeiro o <a href='{guide:mods}'>guia do servidor com mods</a>." },
+        { "name": "Liga a tua conta do Playit", "text": "Cria uma conta gratuita em playit.gg. Na aplicação, abre «Túneis» e cola o código de configuração de utilização única que o Playit te dá. A aplicação cria o túnel e executa o agente do Playit por ti: não instalas mais nada." },
+        { "name": "Ativa o túnel no teu servidor", "text": "Nas definições do servidor, em «Rede e acesso», ativa «Túnel para a Internet (Playit.gg)»." },
+        { "name": "Inicia o servidor e copia o endereço", "text": "Carrega em «Iniciar». Em poucos segundos aparece sozinho o endereço público; carrega em «Copiar» e envia-o aos teus amigos." },
+        { "name": "Os teus amigos entram", "text": "No Minecraft Java, eles vão a «Multijogador», «Adicionar servidor» e colam o endereço. Têm de usar a mesma versão do Minecraft que o servidor." }
+      ] },
+      { "tip": "Se algo estiver lento, carrega em «Testar ligação» no cartão do Playit: mede separadamente o teu servidor, a tua Internet e o túnel, e diz-te numa frase de onde vem o atraso." },
+      { "h2": "O que limita este método" },
+      { "ul": [
+        "O servidor só está disponível enquanto o teu PC estiver ligado e a aplicação aberta. Para que não gaste nada quando ninguém joga, vê <a href='{guide:dormir}'>servidor de Minecraft que desliga sozinho quando está vazio</a>.",
+        "A tua velocidade de envio marca quantos jogadores aguentas bem: cada um envia e recebe dados constantemente.",
+        "O plano gratuito do Playit tem as suas próprias condições; consulta o site deles para ver as que estão em vigor.",
+        "Se partilhares o endereço, ativa a lista branca para que só entrem as pessoas que escolheres."
+      ] }
+    ],
+    "faq": [
+      { "q": "É mesmo grátis alojar um servidor de Minecraft?", "a": "Sim, se o alojares no teu próprio computador. O MC-ServerLauncher é gratuito e de código aberto, o servidor oficial do Minecraft descarrega-se de graça e o Playit tem um plano gratuito. Só gastas a eletricidade de ter o PC ligado." },
+      { "q": "Preciso de abrir portas no router?", "a": "Não. O túnel do Playit recebe os teus amigos e passa-lhes a ligação, por isso não mexes no router. Serve também se o teu operador usar CGNAT, onde abrir portas diretamente não é possível." },
+      { "q": "O IP da minha casa fica visível?", "a": "Os teus amigos ligam-se ao endereço do túnel, não ao IP da tua casa, e é o endereço do túnel que partilhas." },
+      { "q": "Podem entrar jogadores de Bedrock?", "a": "Sim, com um servidor Paper ou Purpur e o Geyser. A aplicação prepara isso em «Crossplay», nas definições do servidor, e cria o segundo túnel de que o Bedrock precisa." },
+      { "q": "E se eu preferir um alojamento pago?", "a": "Um alojamento está sempre ligado e não depende do teu PC nem da tua ligação, mas custa uma mensalidade e costuma limitar a RAM e os mods. Alojá-lo em casa é grátis e o mundo fica no teu disco; ambas as opções servem, conforme o quanto jogas." }
+    ]
+  }
+}

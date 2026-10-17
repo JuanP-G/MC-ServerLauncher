@@ -12,6 +12,7 @@ only the website and what GitHub already publishes are measured here.
 | --- | --- | --- |
 | Website visits, country, language, device, where visitors come from | [GoatCounter](https://www.goatcounter.com) | No cookies, no banner, no IP stored. Free for non-commercial projects. |
 | Clicks on Download (per OS), GitHub, Issues, language switch | GoatCounter events (`data-goatcounter-click` in `web/index.html`) | One counter per button, no personal data. |
+| Which guide leads to a download | Events `guia-<id>-cta`, `guia-<id>-descarga-win/linux/mac`, `guia-<id>-mas-<other>` and `guia-<id>-landing` | Same: one counter per button and per guide. |
 | Real downloads of each installer | GitHub Releases counters | Cumulative total per file. |
 | Repository views, clones and referrers | GitHub traffic API | Only the last 14 days. |
 
@@ -29,6 +30,8 @@ release counters; clicks are for comparing buttons and systems.
    branch. To save traffic as well it needs a secret: create a personal access token with write access to
    this repository and store it under *Settings → Secrets and variables → Actions* as `TRAFFIC_TOKEN`.
    The traffic API refuses the token GitHub gives to workflows.
+   To bring the website visits into the same snapshot, create a GoatCounter API token (*Settings → API*,
+   only "Read statistics", only this site) and store it as the secret `GOATCOUNTER_TOKEN`.
 3. **Run it now** instead of waiting until tomorrow: *Actions → Daily statistics snapshot → Run workflow*.
 
 ## Reading the data
@@ -58,6 +61,44 @@ exist), repository views and where they come from. The CSV files (`downloads.csv
   Chocolatey work along the same lines.
 - **Listings with their own traffic**: Softpedia, MajorGeeks, SourceForge, Flathub (for the AppImage).
 - **Communities**: r/admincraft, r/Minecraft (mind each one's self-promotion rules), Modrinth.
+
+## Guides for specific searches
+
+The landing competes for "Minecraft server", a very crowded search. The guides target long, specific
+searches, where a dedicated page can win. There are three, each in all five languages (15 pages):
+
+| Guide (`id`) | Search it answers | English |
+| --- | --- | --- |
+| `mods` | make a Minecraft server with mods | `/en/guides/make-minecraft-server-with-mods/` |
+| `gratis` | host a free server without port forwarding | `/en/guides/host-free-minecraft-server-no-port-forwarding/` |
+| `dormir` | server that stops itself when empty | `/en/guides/minecraft-server-stops-itself-when-empty/` |
+
+Spanish lives at `/guias/<slug>/` and the other languages at `/de/guides/`, `/fr/guides/` and
+`/pt/guides/`. Each page has its own title, description, `canonical`, `hreflang` (all five versions plus
+`x-default`) and structured data (`Article`, `HowTo`, `FAQPage` and `BreadcrumbList`). Google no longer
+shows the `HowTo` and `FAQPage` rich results for most sites, but the data still helps it understand the page.
+
+**Where the text lives.** Each guide is a single file, `web/_i18n/guides/<id>.json`, with all five
+languages inside; Spanish sets the structure (blocks, steps and questions). The pages are not edited by
+hand. `python web/_i18n/build.py` generates the landing, the translations and the guides in one go, and the
+template cuts the stylesheet, scene, bar, downloads and footer out of the already-translated landing, so the
+guides inherit its changes and its interface translation without repeating them.
+
+**What is checked while generating.** Generation fails, writing nothing, if a language is missing a string,
+if its structure differs from the Spanish one, if a long text is identical to the Spanish (untranslated), if
+a `title` is over 78 characters or a `description` is outside 70–175, or if an internal `{guide:id}` link
+does not exist. It also rewrites the guides' entries in `sitemap.xml` (between the `guides:start` and
+`guides:end` markers) and the cards of the landing's "Guides" section.
+
+**Adding a guide.** Create `web/_i18n/guides/<id>.json` by copying an existing one (slugs, dates, `icon` and
+the five languages), add its Spanish card to the `#guias` section of `web/index.html` (the card text is
+`card_title` / `card_desc` and the link is the Spanish slug's path) and run `python web/_i18n/build.py`.
+`ping-indexnow.py` picks it up by itself. Change `modified` only when you really edit it: the sitemap shows it.
+
+**After publishing.** In Search Console, *URL Inspection → Request indexing* with the three Spanish
+addresses (it finds the rest through the sitemap and `hreflang`), and `python web/_i18n/ping-indexnow.py` for
+Bing. Wait a few weeks and look under *Performance* at which queries bring impressions to each guide; in
+GoatCounter, which guide ends in a download click.
 
 ## When a number does not add up
 

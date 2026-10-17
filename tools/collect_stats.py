@@ -16,6 +16,9 @@ Variables de entorno:
   TRAFFIC_TOKEN    opcional. Token personal con permiso de escritura en el repositorio: la API
                    de tráfico lo exige y el token del workflow no basta. Sin él, el tráfico se
                    omite (con un aviso) y todo lo demás se guarda igualmente.
+  GOATCOUNTER_TOKEN  opcional. Token de GoatCounter con el permiso «Read statistics» (Settings →
+                   API) para guardar también las visitas de la web. Sin él se omite.
+  GOATCOUNTER_CODE opcional, código del sitio en GoatCounter. Por defecto mc-serverlauncher.
   STATS_REPO       opcional, «propietario/repositorio». Por defecto JuanP-G/MC-ServerLauncher.
 
 Solo usa la biblioteca estándar, para no instalar nada en el workflow.
@@ -28,7 +31,9 @@ import json
 import os
 import pathlib
 import sys
+import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 REPO = os.environ.get("STATS_REPO", "JuanP-G/MC-ServerLauncher")
@@ -66,12 +71,18 @@ def replace_today(path, header, today, new_rows):
     write_rows(path, header, kept + new_rows)
 
 
-def upsert_by_day(path, header, new_rows):
-    """Tráfico: GitHub devuelve 14 días con los de hoy aún incompletos; el último dato gana."""
-    merged = {r["date"]: r for r in read_rows(path)}
+def upsert(path, header, key_fields, new_rows):
+    """Series por día: las APIs devuelven una ventana móvil con el día de hoy aún incompleto;
+    para una misma clave gana el último dato, y lo que ya salió de la ventana se conserva."""
+    key = lambda row: tuple(row[f] for f in key_fields)
+    merged = {key(r): r for r in read_rows(path)}
     for row in new_rows:
-        merged[row["date"]] = row
+        merged[key(row)] = row
     write_rows(path, header, [merged[k] for k in sorted(merged)])
+
+
+def upsert_by_day(path, header, new_rows):
+    upsert(path, header, ["date"], new_rows)
 
 
 def collect_repo(out, today, token):
@@ -113,6 +124,54 @@ def collect_traffic(out, today, token):
     print("tráfico: %d días de visitas, %d de clones" % (len(views["views"]), len(clones["clones"])))
 
 
+def goatcounter_get(code, token, path, **params):
+    query = urllib.parse.urlencode(params)
+    request = urllib.request.Request(
+        "https://%s.goatcounter.com/api/v0%s?%s" % (code, path, query),
+        headers={"Authorization": "Bearer " + token, "Content-Type": "application/json",
+                 "User-Agent": "mc-serverlauncher-stats"})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            data = json.load(response)
+    except urllib.error.HTTPError as err:
+        # El código HTTP solo no dice qué petición falló ni por qué; el cuerpo de GoatCounter sí.
+        raise RuntimeError("GoatCounter %s en %s: %s" % (err.code, path, err.read()[:200].decode("utf-8", "replace"))) from err
+    time.sleep(0.3)   # el límite de GoatCounter es de 4 peticiones por segundo
+    return data
+
+
+def collect_goatcounter(out, today, code, token, days=30):
+    """Visitas de la web (GoatCounter). Se pide una ventana de `days` días en cada ejecución:
+    así un día que falle se recupera al siguiente y los datos no dependen de que corra a diario."""
+    end = datetime.datetime.now(datetime.timezone.utc)
+    window = dict(start=(end - datetime.timedelta(days=days)).strftime("%Y-%m-%dT00:00:00Z"),
+                  end=end.strftime("%Y-%m-%dT%H:00:00Z"))
+
+    total = goatcounter_get(code, token, "/stats/total", **window)
+    upsert_by_day(out / "web_visits.csv", ["date", "visitors"],
+                  [{"date": d["day"], "visitors": d.get("daily", 0)} for d in total["stats"]])
+
+    # Páginas y eventos (clics en botones) con su serie diaria.
+    hits = goatcounter_get(code, token, "/stats/hits", limit=100, group="day", **window)["hits"]
+    rows = [{"date": stat["day"], "path": hit["path"], "event": "1" if hit.get("event") else "0",
+             "visitors": stat["daily"]}
+            for hit in hits for stat in hit["stats"] if stat.get("daily")]
+    upsert(out / "web_paths.csv", ["date", "path", "event", "visitors"], ["date", "path"], rows)
+
+    # Desgloses de la ventana entera, como foto del día (GoatCounter no los da por día).
+    breakdown = []
+    for kind in ("toprefs", "browsers", "systems", "locations", "languages"):
+        try:
+            for item in goatcounter_get(code, token, "/stats/" + kind, limit=50, **window)["stats"]:
+                breakdown.append({"date": today, "kind": kind, "name": item.get("name") or "(desconocido)",
+                                  "visitors": item["count"]})
+        except RuntimeError as err:
+            print("AVISO: %s; se omite." % err)
+    replace_today(out / "web_breakdown.csv", ["date", "kind", "name", "visitors"], today, breakdown)
+    print("web: %d días, %d filas de páginas/eventos, %d de desgloses"
+          % (len(total["stats"]), len(rows), len(breakdown)))
+
+
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
@@ -127,6 +186,15 @@ def main():
     today = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
 
     collect_repo(out, today, token)
+
+    gc_token = os.environ.get("GOATCOUNTER_TOKEN")
+    if gc_token:
+        try:
+            collect_goatcounter(out, today, os.environ.get("GOATCOUNTER_CODE", "mc-serverlauncher"), gc_token)
+        except RuntimeError as err:
+            print("AVISO: %s. Revisa GOATCOUNTER_TOKEN y su permiso." % err)
+    else:
+        print("AVISO: sin GOATCOUNTER_TOKEN no se guardan las visitas de la web.")
 
     traffic_token = os.environ.get("TRAFFIC_TOKEN")
     if not traffic_token:
