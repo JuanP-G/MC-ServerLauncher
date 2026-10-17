@@ -459,6 +459,15 @@ mundo. No hay rutas fijas del equipo en el código.
   una comprobación que no encuentra nada más nuevo retira lo que ya ofrecía el banner. La verificación contra el asset `SHA256SUMS.txt` de la release es
   **obligatoria**: si el checksum falta o no se puede leer, la actualización in situ se rechaza y se
   abre la página de la release en su lugar.
+- **`ServerAccessCatalog` / `ServerAccessRules`** — quién puede hacer qué en un servidor *compartido*, sin
+  red ni pantalla todavía (fase 1 del [acceso compartido](shared-access.es.md)). `ServerGrant` (en
+  `Models/`) es lo que se guarda de una persona: un rol y los permisos añadidos o quitados. Lo que puede
+  hacer de verdad lo calcula `Effective` y nunca se guarda. El catálogo es la única tabla de permisos
+  (identificadores estables para la red, un nivel de riesgo y la plantilla de cada rol) y `Check` responde si
+  una persona puede cambiar el acceso de otra, devolviendo el motivo (`GrantDenial`). Los mods y los
+  comandos libres no están en ningún rol salvo el del propietario, porque los dos acaban en código en el
+  PC anfitrión. La nube tendrá que llegar a las mismas respuestas con su propio código, y por eso
+  `ServerAccessTests` se lee como una especificación.
 
 ### Servicios de apoyo
 

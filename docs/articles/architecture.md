@@ -447,6 +447,14 @@ are no hard-coded machine paths.
   finds nothing newer takes back an offer already in the banner. Verification against the release's `SHA256SUMS.txt` asset is
   **mandatory**: if the checksum is missing or unreadable, the in-place update is refused and the
   release page opens instead.
+- **`ServerAccessCatalog` / `ServerAccessRules`** — who may do what on a *shared* server, with no network
+  and no screen yet (phase 1 of [shared access](shared-access.md)). `ServerGrant` (in `Models/`) is
+  what is stored for a person: a role plus the permissions added or removed for them. What they can
+  really do is computed by `Effective`, never stored. The catalog is the one table of permissions
+  (stable wire ids, a risk level, each role's template) and `Check` answers whether one person may
+  change another's access, returning the reason (`GrantDenial`). Mods and free commands are in no
+  role but the owner's, because both end in code on the host PC. The cloud will have to reach the same
+  answers in its own code, which is why `ServerAccessTests` reads as a specification.
 
 ### Supporting services
 
