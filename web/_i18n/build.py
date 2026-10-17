@@ -6,6 +6,7 @@ que es la única fuente de verdad: se edita ese archivo y este script propaga.
     python web/_i18n/build.py
 
 Salida: web/en/index.html, web/de/index.html, web/fr/index.html, web/pt/index.html
+y, a continuación, las guías (web/_i18n/guides.py): web/guias/... y web/<xx>/guides/...
 
 Por qué una URL por idioma y no un selector con JavaScript: los buscadores indexan
 el HTML que reciben, así que un cambio de textos en cliente les dejaría una sola
@@ -21,6 +22,8 @@ import json
 import pathlib
 import re
 import sys
+
+import guides      # hermano de este script: genera las guías a partir de la landing ya traducida
 
 BASE_URL = "https://mc-server-launcher.vercel.app"
 
@@ -42,18 +45,24 @@ def hreflang_block(languages):
 
 
 def rewrite_language_links(html, active):
-    """Ajusta el selector de idioma: rutas relativas al subdirectorio y marca el activo."""
-    html = html.replace(' class="on" hreflang="es"', ' hreflang="es"')
-    if active != "es":
-        # Desde /xx/ hay que subir un nivel para llegar a la raíz y a los demás idiomas.
-        html = html.replace('<a href="./" hreflang="es"', '<a href="../" hreflang="es"')
-        for code in ("en", "de", "fr", "pt"):
-            html = html.replace('<a href="%s/" hreflang="%s"' % (code, code),
-                                '<a href="../%s/" hreflang="%s"' % (code, code))
-        target = '<a href="../%s/" hreflang="%s"' % (active, active)
-    else:
-        target = '<a href="./" hreflang="es"'
-    return html.replace(target, target.replace(' hreflang=', ' class="on" hreflang='), 1)
+    """Ajusta el selector de idioma: rutas relativas al subdirectorio y marca el activo.
+
+    Casa cada enlace por su atributo hreflang y no por el texto exacto de la etiqueta: los
+    enlaces llevan además atributos de analítica (data-goatcounter-*), y una sustitución de
+    texto fijo dejaba sin reescribir las rutas de las versiones traducidas (/en/fr/).
+    """
+    # Desde /xx/ hay que subir un nivel para llegar a la raíz y a los demás idiomas.
+    up = "" if active == "es" else "../"
+
+    def fix(m):
+        code = m.group(3)
+        href = up + ("" if code == "es" else code + "/") or "./"
+        rest = m.group(2).replace(' class="on"', "")
+        if code == active:
+            rest = ' class="on"' + rest
+        return '<a href="%s"%s hreflang="%s"' % (href, rest, code)
+
+    return re.sub(r'<a href="([^"]*)"([^>]*?) hreflang="(\w\w)"', fix, html)
 
 
 def localize(html, code, meta, mapping):
@@ -100,7 +109,10 @@ def main():
 
     for code in languages:
         meta = data[code]
-        mapping = meta["strings"]
+        # Las tarjetas de guía de la landing se traducen con los textos de las propias guías,
+        # para que el título de la tarjeta y el de la guía no puedan diverger.
+        mapping = dict(meta["strings"])
+        mapping.update(guides.landing_strings(code))
 
         missing = [k for k in mapping if k not in source]
         if missing:
@@ -108,6 +120,10 @@ def main():
                             % (code, len(missing), "\n    - ".join(m[:70] for m in missing)))
 
         out = localize(source, code, meta, mapping)
+        for es_href, local_href in guides.landing_hrefs(code).items():
+            if es_href not in out:
+                problems.append("[%s] la landing no enlaza a la guía %s" % (code, es_href))
+            out = out.replace(es_href, local_href)
 
         # Comprobación de que no queda español: ninguna clave traducida puede sobrevivir.
         leftovers = [k for k, v in mapping.items() if v != k and k in out]
@@ -135,7 +151,10 @@ def main():
     if problems:
         print("\n".join(problems), file=sys.stderr)
         sys.exit("\nLa generación ha fallado: corrige lo anterior.")
-    print("\nTodas las versiones generadas y verificadas.")
+    print("\nTodas las versiones generadas y verificadas.\n")
+
+    # Las guías cortan su estilo y su barra de la landing recién generada, así que van después.
+    guides.main()
 
 
 if __name__ == "__main__":

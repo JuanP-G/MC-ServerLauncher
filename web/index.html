@@ -374,6 +374,10 @@ section{position:relative; padding-block:clamp(56px,10vh,104px); scroll-margin-t
 .slot img{width:48px; height:48px; image-rendering:pixelated}
 .slot img.iso{image-rendering:auto}
 .slot:hover::after{content:""; position:absolute; inset:3px; background:rgba(255,255,255,.4)}
+/* Tarjetas que son enlaces (las guías): se iluminan como la casilla al pasar el ratón. */
+a.card{transition:filter .12s}
+a.card:hover,a.card:focus-visible{filter:brightness(1.08)}
+a.card:hover h3{color:#1B1B1B}
 /* número de la pila, en la esquina como en el inventario */
 .slot b{position:absolute; right:3px; bottom:0; font-family:var(--f-mc); font-weight:400; font-size:16px; color:#FFFFFF;
   text-shadow:2px 2px 0 var(--mc-shadow); -webkit-font-smoothing:none}
@@ -649,6 +653,21 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
           <li class="release-empty">Cargando las versiones desde GitHub…</li>
         </ol>
         <a class="all-releases" data-goatcounter-click="historial-releases" data-goatcounter-title="Historial de versiones" href="https://github.com/JuanP-G/MC-ServerLauncher/releases">Ver el historial completo en GitHub →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Las guías las genera web/_i18n/guides.py. Los textos de estas tarjetas salen de las propias
+       guías (card_title / card_desc de web/_i18n/guides/*.json): se cambian allí, no aquí. -->
+  <section id="guias">
+    <div class="wrap center">
+      <span class="eyebrow reveal">GUÍAS</span>
+      <h2 class="h2 build">Guías paso a paso</h2>
+      <p class="lead reveal">Respuestas directas a lo que más se busca al montar un servidor de Minecraft.</p>
+      <div class="grid g3">
+        <a class="card reveal" data-goatcounter-click="guia-mods-landing" data-goatcounter-title="Landing: guía mods" href="guias/crear-servidor-minecraft-con-mods/"><div class="slot"><img src="assets/mc/enchanted_book.png" alt="" width="48" height="48"></div><h3>Cómo crear un servidor de Minecraft con mods</h3><p>Fabric, Forge o NeoForge, mods de Modrinth con sus dependencias y el pack para tus amigos.</p></a>
+        <a class="card reveal" data-goatcounter-click="guia-gratis-landing" data-goatcounter-title="Landing: guía gratis" href="guias/hostear-servidor-minecraft-gratis-sin-abrir-puertos/"><div class="slot"><img src="assets/mc/ender_pearl.png" alt="" width="48" height="48"></div><h3>Hostear un servidor de Minecraft gratis sin abrir puertos</h3><p>Un túnel de Playit.gg integrado te da una dirección pública para compartir, sin cuotas ni tocar el router.</p></a>
+        <a class="card reveal" data-goatcounter-click="guia-dormir-landing" data-goatcounter-title="Landing: guía dormir" href="guias/servidor-minecraft-se-apaga-solo-cuando-esta-vacio/"><div class="slot"><img src="assets/mc/totem.png" alt="" width="48" height="48"></div><h3>Servidor de Minecraft que se apaga solo cuando está vacío</h3><p>Apagado automático por inactividad y encendido cuando alguien intenta entrar, sin gastar recursos.</p></a>
       </div>
     </div>
   </section>

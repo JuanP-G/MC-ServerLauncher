@@ -12,14 +12,20 @@ ese archivo, los avisos dejan de aceptarse.
 """
 
 import json
+import pathlib
 import sys
+import urllib.error
 import urllib.request
+
+# Las guías las enumera su propio módulo, así que una guía nueva entra en el aviso sin tocar este archivo.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import guides
 
 KEY = "7f01ac7bcf15afc35e062dd84ebe02d1"
 HOST = "mc-server-launcher.vercel.app"
 BASE = "https://" + HOST
 
-URLS = [BASE + p for p in ("/", "/en/", "/de/", "/fr/", "/pt/")]
+URLS = [BASE + p for p in ("/", "/en/", "/de/", "/fr/", "/pt/")] + guides.all_urls()
 
 payload = {
     "host": HOST,

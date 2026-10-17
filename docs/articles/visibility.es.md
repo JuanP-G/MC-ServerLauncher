@@ -12,6 +12,7 @@ mide la web y lo que GitHub ya publica.
 | --- | --- | --- |
 | Visitas a la web, país, idioma, dispositivo, de dónde llegan | [GoatCounter](https://www.goatcounter.com) | Sin cookies ni banner. No guarda la IP. Gratis para proyectos sin ánimo de lucro. |
 | Clics en Descargar (por sistema), GitHub, Issues, cambio de idioma | Eventos de GoatCounter (`data-goatcounter-click` en `web/index.html`) | Un contador por botón, sin datos personales. |
+| Qué guía lleva a una descarga | Eventos `guia-<id>-cta`, `guia-<id>-descarga-win/linux/mac`, `guia-<id>-mas-<otra>` y `guia-<id>-landing` | Igual: un contador por botón y por guía. |
 | Descargas reales de cada instalador | Contadores de GitHub Releases | Total acumulado por archivo. |
 | Visitas, clones y referrers del repositorio | API de tráfico de GitHub | Solo los últimos 14 días. |
 
@@ -55,6 +56,47 @@ haya fotos de esa antigüedad), visitas al repositorio y de dónde vienen. Los C
   [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) (herramienta `wingetcreate`).
 - **Listados con tráfico propio**: Softpedia, MajorGeeks, SourceForge, Flathub (para el AppImage).
 - **Comunidades**: r/admincraft, r/Minecraft (con las normas de autopromoción de cada una), Modrinth.
+
+## Guías para búsquedas concretas
+
+La landing compite por «servidor de Minecraft», una búsqueda muy disputada. Las guías apuntan a
+búsquedas largas y específicas, donde una página dedicada puede ganar. Hay tres, cada una en los cinco
+idiomas (15 páginas):
+
+| Guía (`id`) | Búsqueda a la que responde | Español |
+| --- | --- | --- |
+| `mods` | crear un servidor de Minecraft con mods | `/guias/crear-servidor-minecraft-con-mods/` |
+| `gratis` | hostear un servidor gratis sin abrir puertos | `/guias/hostear-servidor-minecraft-gratis-sin-abrir-puertos/` |
+| `dormir` | servidor que se apaga solo cuando está vacío | `/guias/servidor-minecraft-se-apaga-solo-cuando-esta-vacio/` |
+
+Las demás lenguas viven en `/en/guides/`, `/de/guides/`, `/fr/guides/` y `/pt/guides/`, cada una con su
+propio título, descripción, `canonical`, `hreflang` (las cinco versiones más `x-default`) y datos
+estructurados (`Article`, `HowTo`, `FAQPage` y `BreadcrumbList`). Google ya no pinta el resultado
+enriquecido de `HowTo` y `FAQPage` en la mayoría de sitios, pero los datos siguen ayudando a entender la
+página.
+
+**Dónde está el texto.** Cada guía es un único archivo, `web/_i18n/guides/<id>.json`, con los cinco
+idiomas dentro; el español marca la estructura (bloques, pasos y preguntas). Las páginas no se editan a
+mano. `python web/_i18n/build.py` genera landing, traducciones y guías de una vez, y la plantilla recorta
+la hoja de estilos, el escenario, la barra, las descargas y el pie de la propia landing ya traducida, así
+que las guías heredan sus cambios y su traducción de la interfaz sin repetirlos.
+
+**Qué se comprueba al generar.** La generación falla, sin escribir nada, si a un idioma le falta una
+cadena, si su estructura no coincide con la del español, si algún texto largo es idéntico al español (sin
+traducir), si un `title` pasa de 78 caracteres o una `description` se sale de 70–175, o si un enlace
+interno `{guide:id}` no existe. También reescribe las entradas de las guías en `sitemap.xml` (entre los
+marcadores `guides:start` y `guides:end`) y las tarjetas de la sección «Guías» de la landing.
+
+**Añadir una guía.** Crea `web/_i18n/guides/<id>.json` copiando una existente (slugs, fechas, `icon` y
+los cinco idiomas), añade su tarjeta en español a la sección `#guias` de `web/index.html` (el texto de la
+tarjeta es `card_title` / `card_desc` y la ruta es la del slug en español) y ejecuta
+`python web/_i18n/build.py`. `ping-indexnow.py` la recoge sola. Cambia `modified` cuando la edites de
+verdad: es lo que ve el sitemap.
+
+**Tras publicar.** En Search Console, *Inspección de URLs → Solicitar indexación* con las tres direcciones
+en español (las demás las descubre por el sitemap y el `hreflang`), y `python web/_i18n/ping-indexnow.py`
+para Bing. Espera unas semanas y mira en *Rendimiento* qué consultas traen impresiones a cada guía; en
+GoatCounter, qué guía acaba en un clic de descarga.
 
 ## Cuando una cifra no cuadra
 
