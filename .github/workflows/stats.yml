@@ -1,0 +1,58 @@
+name: Daily statistics snapshot
+
+# GitHub keeps only 14 days of traffic and download counters have no history, so this job saves
+# a snapshot every day as CSV files on a separate `stats` branch (main stays clean).
+# Read them with: python tools/stats_report.py   (see its header).
+#
+# Optional secret TRAFFIC_TOKEN: a personal access token with write access to this repository.
+# The traffic API (views, clones, referrers) refuses the workflow's own token. Without the
+# secret everything else (downloads, stars) is still saved.
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stats
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check out the stats branch (created on first run)
+        run: |
+          if git ls-remote --exit-code --heads origin stats >/dev/null 2>&1; then
+            git fetch origin stats
+            git worktree add stats-data origin/stats
+            git -C stats-data checkout -B stats
+          else
+            git worktree add --detach stats-data
+            git -C stats-data checkout --orphan stats
+            git -C stats-data rm -rf . >/dev/null 2>&1 || true
+          fi
+
+      - name: Collect
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRAFFIC_TOKEN: ${{ secrets.TRAFFIC_TOKEN }}
+        run: python tools/collect_stats.py --out stats-data
+
+      - name: Commit and push
+        working-directory: stats-data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+          else
+            git commit -m "stats: $(date -u +%F)"
+            git push origin stats
+          fi
