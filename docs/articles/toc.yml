@@ -8,6 +8,8 @@
       href: auditing.md
     - name: Shared access
       href: shared-access.md
+    - name: Visibility and statistics
+      href: visibility.md
 - name: 🇪🇸 Español
   items:
     - name: Arquitectura
@@ -18,3 +20,5 @@
       href: auditing.es.md
     - name: Acceso compartido
       href: shared-access.es.md
+    - name: Visibilidad y estadísticas
+      href: visibility.es.md
