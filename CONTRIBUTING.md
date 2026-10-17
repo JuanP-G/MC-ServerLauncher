@@ -16,6 +16,10 @@ the code questions) and [GitDiagram](https://gitdiagram.com/juanp-g/mc-serverlau
 diagram of the whole app). An AI writes both: they can be wrong, so when they disagree with the
 architecture page, the page wins.
 
+> [!TIP]
+> **Stuck on something in the project?** Ask the chat on [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher):
+> it knows the whole repository and answers by citing the files each thing comes from.
+
 ## The short version
 
 ```powershell
@@ -76,6 +80,10 @@ repositorio por su cuenta: [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLaun
 chat para preguntarle cosas al código) y [GitDiagram](https://gitdiagram.com/juanp-g/mc-serverlauncher) (un
 diagrama clicable de toda la app). Las escribe una IA: pueden equivocarse, así que cuando discrepen de la
 página de arquitectura, manda la página.
+
+> [!TIP]
+> **¿Atascado con algo del proyecto?** Pregúntale al chat de [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher):
+> conoce todo el repositorio y te contesta citando los archivos de donde sale cada cosa.
 
 ## La versión corta
 

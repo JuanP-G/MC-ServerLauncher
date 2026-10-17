@@ -2,13 +2,11 @@
 
 **🇬🇧 English · 🇪🇸 [Español](README.es.md)**
 
-[![Website](https://img.shields.io/badge/Website-mc--server--launcher.vercel.app-3FB950?style=for-the-badge&logo=vercel&logoColor=white)](https://mc-server-launcher.vercel.app)
-[![Documentation](https://img.shields.io/badge/Docs-API%20reference-1F6FEB?style=for-the-badge&logo=readthedocs&logoColor=white)](https://juanp-g.github.io/MC-ServerLauncher/docs/)
-[![Download](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?style=for-the-badge&label=Download&color=5CE07B)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
-[![License](https://img.shields.io/badge/License-MIT-8B949E?style=for-the-badge)](LICENSE)
-
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/JuanP-G/MC-ServerLauncher)
-[![Architecture diagram](https://gitdiagram.com/diagram-badge.svg)](https://gitdiagram.com/juanp-g/mc-serverlauncher)
+[![Release](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?label=release&color=2da44e)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-8b949e)](LICENSE)
+[![Tests](https://img.shields.io/github/actions/workflow/status/JuanP-G/MC-ServerLauncher/tests.yml?label=tests)](https://github.com/JuanP-G/MC-ServerLauncher/actions/workflows/tests.yml)
+<a href="https://deepwiki.com/JuanP-G/MC-ServerLauncher"><img src="docs/media/buttons/badge-ask-en.svg" alt="Ask the code on DeepWiki"></a>
+<a href="https://gitdiagram.com/juanp-g/mc-serverlauncher"><img src="docs/media/buttons/badge-map-en.svg" alt="Architecture map on GitDiagram"></a>
 
 Create, configure and share **Minecraft servers** on **Windows, Linux and macOS** from one app — **no `.bat`
 files, black console windows or editing config files by hand**.
@@ -18,9 +16,9 @@ files, black console windows or editing config files by hand**.
 </p>
 
 <p align="center">
-  <a href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest"><b>⬇️ Download</b></a> ·
-  <a href="https://mc-server-launcher.vercel.app/en/"><b>🌐 Website</b></a> ·
-  <a href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><b>📖 Documentation</b></a>
+  <a href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest"><img src="docs/media/buttons/download-en.svg" width="250" alt="Download for Windows, Linux and macOS"></a>
+  <a href="https://mc-server-launcher.vercel.app/en/"><img src="docs/media/buttons/website-en.svg" width="250" alt="Website"></a>
+  <a href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><img src="docs/media/buttons/docs-en.svg" width="250" alt="Documentation: guide and API reference"></a>
 </p>
 
 ## ✨ What you can do
@@ -100,9 +98,10 @@ friends. **Tunnels** shows every tunnel on your account and fixes the ones that 
 <br>
 
 Automatic backups happen by themselves. For one by hand, **Back up now** in the **Backups** tab; **Restore**
-takes the world back to that moment (with the server stopped).
+takes the world back to that moment (with the server stopped, after asking you to confirm; the current world is
+saved first, in case you change your mind).
 
-<img src="docs/media/en/backups.gif" width="900" alt="Backing up the world and the Restore button">
+<img src="docs/media/en/backups.gif" width="900" alt="Making a backup by hand, then restoring it: the confirmation and the result">
 
 </details>
 
@@ -336,6 +335,14 @@ list the files they come from and where you can ask the code questions, and
 [**GitDiagram**](https://gitdiagram.com/juanp-g/mc-serverlauncher), one clickable diagram of the whole app.
 Both are written by an AI: they can be wrong and DeepWiki's diagrams do not always render, so when they
 disagree with the architecture article, the article wins.
+
+> [!TIP]
+> **Wondering how something works?** [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) has a chat with an
+> AI that knows the whole repository and answers by citing the files each thing comes from. For example:
+>
+> - “How is a backup restored without losing the world?”
+> - “Where is it decided when a server goes to sleep?”
+> - “What do I have to touch to add a server type?”
 
 **Data:** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux and macOS):
 `servers.json`, `settings.json`, the installed `java\`, the console `logs\` (kept 14 days, at most 50 MB a day), the store's
