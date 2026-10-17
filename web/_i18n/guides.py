@@ -405,9 +405,7 @@ def build_page(gid, g, code, ui, guides, chrome):
 <meta name="twitter:description" content="%(desc)s">
 <meta name="twitter:image" content="%(og)s">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="font" type="font/woff2" href="%(up)sassets/fonts/inter-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff" href="%(up)sassets/mc/minecraft.woff" crossorigin>
 <link rel="preload" as="image" href="%(up)sassets/mc/button_hover.png">
 
@@ -478,7 +476,7 @@ def build_page(gid, g, code, ui, guides, chrome):
             '<a class="card" data-goatcounter-click="guia-%s-mas-%s" data-goatcounter-title="Guía %s: más %s" href="%s">'
             '<div class="slot"><img%s src="assets/mc/%s" alt="" width="48" height="48"></div>'
             '<h3>%s</h3><p>%s</p></a>'
-            % (gid, oid, gid, oid, rel(path, guide_path(code, og["slug"][code])), iso, og["icon"],
+            % (gid, oid, gid, oid, rel(path, guide_path(code, og["slug"][code])), iso, og["icon"].replace(".png", ".webp"),
                html.escape(og[code]["card_title"]), html.escape(og[code]["card_desc"])))
     more = """
   <section class="guide-more">
