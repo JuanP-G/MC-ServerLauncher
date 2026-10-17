@@ -51,8 +51,9 @@ haya fotos de esa antigüedad), visitas al repositorio y de dónde vienen. Los C
 - **Google Search Console**: ya verificada. Revisa *Rendimiento* para ver con qué búsquedas aparece.
 - **Bing Webmaster Tools** (lo que usa Edge): entra con la misma cuenta de Google e **importa** la
   propiedad desde Search Console. `web/_i18n/ping-indexnow.py` ya avisa de los cambios a Bing por IndexNow.
-- **AlternativeTo**: la ficha no tiene ninguna captura de pantalla. Sube las de `docs/screenshots/`
-  (o unas nuevas, ver abajo) y la descripción con las novedades. Es lo que más cambia cómo se ve la ficha.
+- **AlternativeTo**: la ficha aún muestra capturas del diseño antiguo. Sustitúyelas por las de
+  `docs/screenshots/` y actualiza la descripción con las novedades. Los cambios exigen una cuenta con
+  sesión iniciada (*Suggest changes*), así que no se pueden automatizar.
 - **Gestores de paquetes**: poder instalar con `winget install` es descubrimiento gratis y de confianza. El
   manifiesto de la versión actual está en `installer/winget/` (validado con `winget validate`). Para
   publicarlo, copia `manifests/` en un fork de [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs)
