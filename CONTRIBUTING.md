@@ -10,6 +10,12 @@ language, a server type or a release — lives in the documentation site:
 🏗️ **[Architecture](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/architecture.html)**
  · source: [`docs/articles/architecture.md`](docs/articles/architecture.md)
 
+🧭 **Get your bearings first** — the architecture page opens with two maps; two sites draw the repository by
+themselves: [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) (a wiki by topic, with a chat to ask
+the code questions) and [GitDiagram](https://gitdiagram.com/juanp-g/mc-serverlauncher) (one clickable
+diagram of the whole app). An AI writes both: they can be wrong, so when they disagree with the
+architecture page, the page wins.
+
 ## The short version
 
 ```powershell
@@ -64,6 +70,12 @@ añadir un idioma, un tipo de servidor o sacar una versión— está en el sitio
  · fuente: [`docs/articles/contributing.es.md`](docs/articles/contributing.es.md)
 🏗️ **[Arquitectura](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/architecture.es.html)**
  · fuente: [`docs/articles/architecture.es.md`](docs/articles/architecture.es.md)
+
+🧭 **Para orientarte primero** — la página de arquitectura empieza con dos mapas; dos webs dibujan el
+repositorio por su cuenta: [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) (una wiki por temas, con un
+chat para preguntarle cosas al código) y [GitDiagram](https://gitdiagram.com/juanp-g/mc-serverlauncher) (un
+diagrama clicable de toda la app). Las escribe una IA: pueden equivocarse, así que cuando discrepen de la
+página de arquitectura, manda la página.
 
 ## La versión corta
 

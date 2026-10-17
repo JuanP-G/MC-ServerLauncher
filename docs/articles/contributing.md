@@ -56,7 +56,7 @@ They come in six layers, and it is worth knowing which one a new test belongs to
 | The models on their own | `ServerConfigFormatTests`, `ModelNotificationTests` | What is written to disk; which properties announce |
 | The table | `ServerConfigEffectsTests` | That no field of the config was left undeclared |
 | View models, built for real | `ServerViewModelRefreshTests`, `MainViewModelFlowTests` | That a change to the config reaches the card, the panels and `servers.json` |
-| Real controls | `ServerSettingsViewTests`, `NewServerViewTests` | That it reaches the screen — the half a unit test cannot see |
+| Real controls | `ServerSettingsViewTests`, `NewServerCreateFormTests`, `NewServerStepsTests` | That it reaches the screen — the half a unit test cannot see |
 | Gates on the source | `StartDependencyGateTests`, `StoreHashTests`, `ExportSelectionTests` | That a promise holds in the file itself — no network, one definition |
 | The artefact, run | `InstallScriptSmokeTests` | That the script a player gets actually works — run with bash, on Linux in CI |
 

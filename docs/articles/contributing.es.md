@@ -58,7 +58,7 @@ Van en seis capas, y conviene saber a cuál pertenece una prueba nueva:
 | Los modelos solos | `ServerConfigFormatTests`, `ModelNotificationTests` | Qué se escribe en disco; qué propiedades avisan |
 | La tabla | `ServerConfigEffectsTests` | Que no se ha quedado ningún campo de la config sin declarar |
 | View models, construidos de verdad | `ServerViewModelRefreshTests`, `MainViewModelFlowTests` | Que un cambio en la config llega a la tarjeta, a los paneles y a `servers.json` |
-| Controles reales | `ServerSettingsViewTests`, `NewServerViewTests` | Que llega a la pantalla — la mitad que una prueba unitaria no ve |
+| Controles reales | `ServerSettingsViewTests`, `NewServerCreateFormTests`, `NewServerStepsTests` | Que llega a la pantalla — la mitad que una prueba unitaria no ve |
 | Puertas sobre el código | `StartDependencyGateTests`, `StoreHashTests`, `ExportSelectionTests` | Que una promesa se cumple en el propio archivo — sin red, una sola definición |
 | El artefacto, ejecutado | `InstallScriptSmokeTests` | Que el script que recibe un jugador funciona de verdad — con bash, en Linux en la CI |
 

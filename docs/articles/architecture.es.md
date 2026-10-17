@@ -7,6 +7,59 @@ MC Server Launcher es una app de escritorio en **Avalonia / .NET 9** que sigue e
 Fluent de [Avalonia](https://avaloniaui.net/) (multiplataforma). Gestiona uno o varios servidores de Minecraft sin
 archivos `.bat`, ventanas de consola ni editar configuración a mano.
 
+## Vista general
+
+Cómo encajan las piezas. Una flecha se lee *usa*, y cada caja nombra las clases reales que hacen ese
+trabajo, así que cada nombre es algo que se puede buscar. El azul es la ventana, el verde los servicios,
+el amarillo lo que se guarda en disco y el morado Internet. Las secciones siguientes explican las piezas
+una a una.
+
+```mermaid
+flowchart LR
+    win["MainWindow<br/>MainViewModel"]
+    svm["ServerViewModel<br/>uno por servidor"]
+    store[("La carpeta de datos de la app<br/>servers.json · settings.json<br/>players/")]
+    upd["UpdateService<br/>SelfUpdater"]
+    jar["ServerJarInstaller<br/>servidor nuevo, tipo nuevo"]
+    run["ServerProcessManager<br/>JavaService · PortService<br/>el proceso java"]
+    protect["BackupCoordinator<br/>WorldBackupService<br/>LiveWorldBackup"]
+    content["ModrinthService<br/>ModDependencyService<br/>CleanupAdvisor"]
+    online["PlayitApiService<br/>PlayitAgentRunner<br/>CrossplayService"]
+    wake["WakeOnDemandListener"]
+    hist["PlayerHistoryStore"]
+    folder[("La carpeta del servidor<br/>mundo · mods · copias")]
+    web["Mojang · Paper · Purpur<br/>Fabric · Forge · NeoForge<br/>Adoptium (Java)"]
+    mr["Modrinth · GeyserMC"]
+    pl["Playit.gg<br/>a través de playit-proxy"]
+    gh["Releases de GitHub"]
+
+    win --> svm
+    win --> store
+    win --> upd --> gh
+    win --> jar --> web
+    svm --> run --> folder
+    run --> web
+    svm --> protect --> folder
+    svm --> content --> mr
+    svm --> online --> pl
+    online --> mr
+    svm --> wake
+    svm --> hist --> store
+
+    classDef ui fill:#dbeafe,stroke:#2563eb,color:#0f172a
+    classDef svc fill:#dcfce7,stroke:#16a34a,color:#0f172a
+    classDef disk fill:#fef9c3,stroke:#ca8a04,color:#0f172a
+    classDef net fill:#f3e8ff,stroke:#9333ea,color:#0f172a
+    class win,svm ui
+    class upd,jar,run,protect,content,online,wake,hist svc
+    class store,folder disk
+    class web,mr,pl,gh net
+```
+
+El primer mapa partió del que [GitDiagram](https://gitdiagram.com/juanp-g/mc-serverlauncher) generó por su
+cuenta; se completaron las conexiones que dejó fuera y se comprobó cada flecha contra el código. Lo que
+pasa al arrancar un servidor tiene su propio mapa en [Arrancar un servidor](#arrancar-un-servidor).
+
 ## Capas
 
 El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
@@ -24,9 +77,23 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 | `Resources/` | `Strings*.resx` (traducciones), `app.ico` y los dos archivos de datos de la tienda (`store-tags.json`, `store-summaries.json`). |
 
 > **Los conversores de valores viven en `ViewModels/`** — no existe una carpeta `Converters/`. Son
-> cinco: `BoolOpacityConverter`, `HexBrushConverter` (de un hex de los ajustes a un brush),
+> seis: `BoolOpacityConverter`, `HexBrushConverter` (de un hex de los ajustes a un brush),
 > `ConsoleBrushConverter` y `ConsoleHighlightConverter` (el color de una línea de consola y el
-> resaltado de lo buscado) y `NoticeBrushConverter` (el fondo del aviso de instalación).
+> resaltado de lo buscado), `NoticeBrushConverter` (el fondo del aviso de instalación) y
+> `WholeNumberConverter` (un ajuste `int` hacia un `NumericUpDown`, cuyo valor es un `decimal?` que es
+> nulo mientras la caja está vacía).
+>
+> **Los view models pequeños** cuelgan de esos: `PlayerHistoryViewModel` (anota lo que hacen los
+> jugadores desde la consola del servidor y muestra a todos los que han pasado por él, con su ficha;
+> lo construye `ServerViewModel` como `History`), `TunnelRowViewModel` y `TunnelSuggestionViewModel`
+> (una línea de la tabla de Túneles y de su panel de «cosas que puedo arreglar»),
+> `CleanupSuggestionViewModel` (una fila del panel de limpieza), `ConnectionStepViewModel` y `ProbeRow`
+> (un tramo de la prueba de conexión y una fila de su tabla técnica), `ConsoleKindFilter` (un tipo de
+> línea de consola como interruptor con contador), `InstalledModFilter` (lo que coincide con el
+> buscador de la lista de instalados), `ServerIconImage` (el único sitio donde `server-icon.png` se
+> vuelve a leer como imagen), `BulkObservableCollection` (las listas de la consola, que lanzan un solo
+> `Reset` en vez de un evento por línea), `AddressRetry` (cuánto esperar entre las primeras
+> búsquedas de la dirección del túnel) y `AppSection` (lo que llena la ventana junto al menú lateral).
 >
 > La mitad sin interfaz de cada decisión de color se deja fuera de `ViewModels/` a propósito, para
 > que un ajuste que se serializa a `settings.json` no tenga que saber que Avalonia existe:
@@ -450,6 +517,10 @@ mundo. No hay rutas fijas del equipo en el código.
   reiniciar, con la misma forma que `NotificationPreferences.Global` y `ConsolePreferences`.
 - **`BrowserLauncher`** — la única manera de abrir un enlace. Solo pasan URLs http(s) absolutas,
   porque en la tienda la URL la escribe el autor de un mod, no nosotros.
+- **`AppLinks`** — los sitios a los que la app lleva a la gente (el repositorio, las releases, un issue
+  nuevo, la licencia, la web, la página de túneles de Playit, el EULA de Mojang), en una sola lista. La
+  dirección del repositorio aparecía solo dentro de las cabeceras de las peticiones y de la comprobación
+  de actualizaciones, así que la pantalla Acerca de no tenía de dónde sacarla.
 - **`MarkdownParser`** / **`MarkdownBody`** — un lector de Markdown deliberadamente parcial para las
   descripciones largas de Modrinth, y el comportamiento que convierte sus bloques en controles.
 - **`MinecraftRange`** — si una versión de Minecraft cumple el rango que declara un mod.
@@ -457,6 +528,27 @@ mundo. No hay rutas fijas del equipo en el código.
 ## Flujos importantes
 
 ### Arrancar un servidor
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 500, "nodeSpacing": 24, "rankSpacing": 26}}}%%
+flowchart TD
+    go(["Iniciar · Reiniciar · una llamada a un servidor dormido · un auto-reinicio<br/>No hace nada mientras se restaura una copia o ya hay un arranque en marcha"])
+    free["Soltar el listener del encendido (tiene el puerto del servidor)"]
+
+    subgraph prep["Preparando… · Iniciar y Restaurar no están disponibles"]
+        s1["1 · Puerto — ¿ocupado? ofrece liberarlo"]
+        s2["2 · Ruta — nombres de carpeta que Paper y Purpur rechazan"]
+        s3["3 · Geyser — repara una config que escribió una versión anterior"]
+        s4["4 · Dependencias — mods a los que les falta algo, sin red"]
+        s5["5 · Java — busca o instala un runtime compatible"]
+        s6["6 · Copia y lanzamiento — BackupCoordinator toma el mundo"]
+    end
+
+    up(["En marcha · la consola llega por lotes"])
+
+    go --> free --> s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> up
+```
+
 `ServerViewModel.Start` → `StartInternalAsync`, que se niega mientras se restaura una copia y, si no,
 primero suelta el listener del encendido bajo demanda (tiene el puerto del servidor) y después:
 
