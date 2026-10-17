@@ -2,13 +2,11 @@
 
 **🇬🇧 [English](README.md) · 🇪🇸 Español**
 
-[![Web](https://img.shields.io/badge/Web-mc--server--launcher.vercel.app-3FB950?style=for-the-badge&logo=vercel&logoColor=white)](https://mc-server-launcher.vercel.app)
-[![Documentación](https://img.shields.io/badge/Docs-Referencia%20de%20API-1F6FEB?style=for-the-badge&logo=readthedocs&logoColor=white)](https://juanp-g.github.io/MC-ServerLauncher/docs/)
-[![Descargar](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?style=for-the-badge&label=Descargar&color=5CE07B)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
-[![Licencia](https://img.shields.io/badge/Licencia-MIT-8B949E?style=for-the-badge)](LICENSE)
-
-[![Pregunta a DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/JuanP-G/MC-ServerLauncher)
-[![Diagrama de arquitectura](https://gitdiagram.com/diagram-badge.svg)](https://gitdiagram.com/juanp-g/mc-serverlauncher)
+[![Versión](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?label=versi%C3%B3n&color=2da44e)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
+[![Licencia](https://img.shields.io/badge/licencia-MIT-8b949e)](LICENSE)
+[![Pruebas](https://img.shields.io/github/actions/workflow/status/JuanP-G/MC-ServerLauncher/tests.yml?label=pruebas)](https://github.com/JuanP-G/MC-ServerLauncher/actions/workflows/tests.yml)
+<a href="https://deepwiki.com/JuanP-G/MC-ServerLauncher"><img src="docs/media/buttons/badge-ask-es.svg" alt="Pregúntale al código en DeepWiki"></a>
+<a href="https://gitdiagram.com/juanp-g/mc-serverlauncher"><img src="docs/media/buttons/badge-map-es.svg" alt="Mapa de la arquitectura en GitDiagram"></a>
 
 Crea, configura y comparte **servidores de Minecraft** en **Windows, Linux y macOS** desde una app — **sin
 archivos `.bat`, ventanas de consola ni configuraciones a mano**.
@@ -18,9 +16,9 @@ archivos `.bat`, ventanas de consola ni configuraciones a mano**.
 </p>
 
 <p align="center">
-  <a href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest"><b>⬇️ Descargar</b></a> ·
-  <a href="https://mc-server-launcher.vercel.app"><b>🌐 Página web</b></a> ·
-  <a href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><b>📖 Documentación</b></a>
+  <a href="https://github.com/JuanP-G/MC-ServerLauncher/releases/latest"><img src="docs/media/buttons/download-es.svg" width="250" alt="Descargar para Windows, Linux y macOS"></a>
+  <a href="https://mc-server-launcher.vercel.app"><img src="docs/media/buttons/website-es.svg" width="250" alt="Página web"></a>
+  <a href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><img src="docs/media/buttons/docs-es.svg" width="250" alt="Documentación: guía y referencia de API"></a>
 </p>
 
 ## ✨ Qué puedes hacer
@@ -101,9 +99,10 @@ tus amigos. **Túneles** enseña todos los túneles de tu cuenta y arregla los q
 <br>
 
 Las copias automáticas se hacen solas. Para una a mano, **Copia de seguridad ahora** en la pestaña **Copias de
-seguridad**; **Restaurar** devuelve el mundo a ese momento (con el servidor detenido).
+seguridad**; **Restaurar** devuelve el mundo a ese momento (con el servidor detenido, tras pedirte confirmación;
+antes se guarda el mundo actual, por si te arrepientes).
 
-<img src="docs/media/es/backups.gif" width="900" alt="Hacer una copia del mundo y el botón Restaurar">
+<img src="docs/media/es/backups.gif" width="900" alt="Hacer una copia a mano y restaurarla: la confirmación y el resultado">
 
 </details>
 
@@ -336,6 +335,14 @@ enumeran los archivos de los que salen y donde puedes hacerle preguntas al códi
 [**GitDiagram**](https://gitdiagram.com/juanp-g/mc-serverlauncher), un diagrama clicable de toda la app. Las dos
 las escribe una IA: pueden equivocarse y los diagramas de DeepWiki no siempre se dibujan, así que cuando
 discrepen del artículo de arquitectura, manda el artículo.
+
+> [!TIP]
+> **¿Dudas sobre cómo funciona algo?** En [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) hay un chat con
+> una IA que conoce todo el repositorio y te contesta citando los archivos de donde sale cada cosa. Por ejemplo:
+>
+> - «¿Cómo se restaura una copia sin perder el mundo?»
+> - «¿Dónde se decide cuándo se duerme un servidor?»
+> - «¿Qué tengo que tocar para añadir un tipo de servidor?»
 
 **Datos:** en `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` en Linux y macOS): `servers.json`,
 `settings.json`, el `java\` que instala la app, los `logs\` de consola (14 días, 50 MB al día como mucho), la `cache\` de la tienda, lo que recuerda
