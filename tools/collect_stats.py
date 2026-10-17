@@ -130,8 +130,12 @@ def goatcounter_get(code, token, path, **params):
         "https://%s.goatcounter.com/api/v0%s?%s" % (code, path, query),
         headers={"Authorization": "Bearer " + token, "Content-Type": "application/json",
                  "User-Agent": "mc-serverlauncher-stats"})
-    with urllib.request.urlopen(request, timeout=30) as response:
-        data = json.load(response)
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            data = json.load(response)
+    except urllib.error.HTTPError as err:
+        # El código HTTP solo no dice qué petición falló ni por qué; el cuerpo de GoatCounter sí.
+        raise RuntimeError("GoatCounter %s en %s: %s" % (err.code, path, err.read()[:200].decode("utf-8", "replace"))) from err
     time.sleep(0.3)   # el límite de GoatCounter es de 4 peticiones por segundo
     return data
 
@@ -161,8 +165,8 @@ def collect_goatcounter(out, today, code, token, days=30):
             for item in goatcounter_get(code, token, "/stats/" + kind, limit=50, **window)["stats"]:
                 breakdown.append({"date": today, "kind": kind, "name": item.get("name") or "(desconocido)",
                                   "visitors": item["count"]})
-        except urllib.error.HTTPError as err:
-            print("AVISO: GoatCounter /stats/%s respondió %s; se omite." % (kind, err.code))
+        except RuntimeError as err:
+            print("AVISO: %s; se omite." % err)
     replace_today(out / "web_breakdown.csv", ["date", "kind", "name", "visitors"], today, breakdown)
     print("web: %d días, %d filas de páginas/eventos, %d de desgloses"
           % (len(total["stats"]), len(rows), len(breakdown)))
@@ -187,8 +191,8 @@ def main():
     if gc_token:
         try:
             collect_goatcounter(out, today, os.environ.get("GOATCOUNTER_CODE", "mc-serverlauncher"), gc_token)
-        except urllib.error.HTTPError as err:
-            print("AVISO: GoatCounter respondió %s; revisa GOATCOUNTER_TOKEN y su permiso." % err.code)
+        except RuntimeError as err:
+            print("AVISO: %s. Revisa GOATCOUNTER_TOKEN y su permiso." % err)
     else:
         print("AVISO: sin GOATCOUNTER_TOKEN no se guardan las visitas de la web.")
 
