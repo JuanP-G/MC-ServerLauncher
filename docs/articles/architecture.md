@@ -7,6 +7,58 @@ MC Server Launcher is a **Avalonia / .NET 9** desktop app that follows the **MVV
 [Avalonia](https://avaloniaui.net/) Fluent theme (cross-platform). It manages one or more Minecraft servers without
 `.bat` files, console windows or editing config files by hand.
 
+## The big picture
+
+How the pieces fit. An arrow reads *uses*, and each box names the real classes that do that job, so
+every name is something you can search for. Blue is the window, green the services, yellow what is
+kept on disk and purple the internet. The sections below explain the pieces one by one.
+
+```mermaid
+flowchart LR
+    win["MainWindow<br/>MainViewModel"]
+    svm["ServerViewModel<br/>one per server"]
+    store[("The app's data folder<br/>servers.json · settings.json<br/>players/")]
+    upd["UpdateService<br/>SelfUpdater"]
+    jar["ServerJarInstaller<br/>new server, new type"]
+    run["ServerProcessManager<br/>JavaService · PortService<br/>the java process"]
+    protect["BackupCoordinator<br/>WorldBackupService<br/>LiveWorldBackup"]
+    content["ModrinthService<br/>ModDependencyService<br/>CleanupAdvisor"]
+    online["PlayitApiService<br/>PlayitAgentRunner<br/>CrossplayService"]
+    wake["WakeOnDemandListener"]
+    hist["PlayerHistoryStore"]
+    folder[("The server's folder<br/>world · mods · backups")]
+    web["Mojang · Paper · Purpur<br/>Fabric · Forge · NeoForge<br/>Adoptium (Java)"]
+    mr["Modrinth · GeyserMC"]
+    pl["Playit.gg<br/>through playit-proxy"]
+    gh["GitHub releases"]
+
+    win --> svm
+    win --> store
+    win --> upd --> gh
+    win --> jar --> web
+    svm --> run --> folder
+    run --> web
+    svm --> protect --> folder
+    svm --> content --> mr
+    svm --> online --> pl
+    online --> mr
+    svm --> wake
+    svm --> hist --> store
+
+    classDef ui fill:#dbeafe,stroke:#2563eb,color:#0f172a
+    classDef svc fill:#dcfce7,stroke:#16a34a,color:#0f172a
+    classDef disk fill:#fef9c3,stroke:#ca8a04,color:#0f172a
+    classDef net fill:#f3e8ff,stroke:#9333ea,color:#0f172a
+    class win,svm ui
+    class upd,jar,run,protect,content,online,wake,hist svc
+    class store,folder disk
+    class web,mr,pl,gh net
+```
+
+The first map started from the one [GitDiagram](https://gitdiagram.com/juanp-g/mc-serverlauncher) generated
+by itself; the wiring it left out was filled in and every arrow checked against the code. What happens
+when a server is started has its own map under [Starting a server](#starting-a-server).
+
 ## Layers
 
 The project (`McServerLauncher/`) is organized by responsibility:
@@ -23,10 +75,24 @@ The project (`McServerLauncher/`) is organized by responsibility:
 | `Styles/` | `Shared.axaml`: the styles more than one view needs (`Border.card`, `Border.tile`, the stat text, the secondary buttons…), and `Motion.axaml`: all of the app's motion. Both included from `App.axaml`. |
 | `Resources/` | `Strings*.resx` (translations), `app.ico`, and the store's two data files (`store-tags.json`, `store-summaries.json`). |
 
-> **Value converters live in `ViewModels/`** — there is no `Converters/` folder. There are five:
+> **Value converters live in `ViewModels/`** — there is no `Converters/` folder. There are six:
 > `BoolOpacityConverter`, `HexBrushConverter` (a hex string from the settings into a brush),
 > `ConsoleBrushConverter` and `ConsoleHighlightConverter` (the colour of a console line and the
-> marking of what was searched for), and `NoticeBrushConverter` (the install banner's background).
+> marking of what was searched for), `NoticeBrushConverter` (the install banner's background) and
+> `WholeNumberConverter` (an `int` setting to a `NumericUpDown`, whose value is a `decimal?` that is
+> null while the box is empty).
+>
+> **The smaller view models** hang off those: `PlayerHistoryViewModel` (records what players do from the
+> server's console and shows everyone who has been on it, with each profile; built by `ServerViewModel`
+> as `History`), `TunnelRowViewModel` and
+> `TunnelSuggestionViewModel` (one line of the Tunnels table and of its "things I can fix" panel),
+> `CleanupSuggestionViewModel` (one row of the clean-up panel), `ConnectionStepViewModel` and `ProbeRow`
+> (one stretch of the connection test and one row of its technical table), `ConsoleKindFilter` (a
+> category of console line as a toggle with a count), `InstalledModFilter` (what the installed list's
+> search box matches), `ServerIconImage` (the one place `server-icon.png` is read back as an image),
+> `BulkObservableCollection` (the console lists, which raise one `Reset` instead of one event per line),
+> `AddressRetry` (how long to wait between the first tunnel-address lookups) and `AppSection`
+> (what fills the window next to the rail).
 >
 > The UI-free half of each colour decision is kept out of `ViewModels/` on purpose, so a setting
 > that is serialized to `settings.json` never has to know Avalonia exists: `ConsoleColors` /
@@ -433,6 +499,10 @@ are no hard-coded machine paths.
   without a restart, the same shape as `NotificationPreferences.Global` and `ConsolePreferences`.
 - **`BrowserLauncher`** — the one way a link is opened. Only absolute http(s) URLs get through,
   because in the store the URL comes from a mod author rather than from us.
+- **`AppLinks`** — the places the app points people at (the repository, the releases, a new issue, the
+  licence, the website, the Playit tunnels page, Mojang's EULA), in one list. The repository address
+  used to appear only inside request headers and the update check, so the About screen had nowhere to
+  take it from.
 - **`MarkdownParser`** / **`MarkdownBody`** — a deliberately partial Markdown reader for the long
   descriptions Modrinth returns, and the behavior that turns its blocks into controls.
 - **`MinecraftRange`** — whether a Minecraft version satisfies the range a mod declares.
@@ -440,6 +510,27 @@ are no hard-coded machine paths.
 ## Important flows
 
 ### Starting a server
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 500, "nodeSpacing": 24, "rankSpacing": 26}}}%%
+flowchart TD
+    go(["Start · Restart · a knock on a sleeping server · an auto-restart<br/>Does nothing while a backup is being restored or a start is already under way"])
+    free["Let go of the wake listener (it holds the server's port)"]
+
+    subgraph prep["Preparing… · Start and Restore are unavailable"]
+        s1["1 · Port — busy? offer to free it"]
+        s2["2 · Path — folder names Paper and Purpur refuse"]
+        s3["3 · Geyser — repair a config an old version wrote"]
+        s4["4 · Dependencies — mods missing something, offline"]
+        s5["5 · Java — find or install a compatible runtime"]
+        s6["6 · Backup and launch — BackupCoordinator holds the world"]
+    end
+
+    up(["Running · the console streams back in batches"])
+
+    go --> free --> s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> up
+```
+
 `ServerViewModel.Start` → `StartInternalAsync`, which refuses while a backup is being restored and
 otherwise lets go of the wake-on-demand listener first (it holds the server's port), then:
 

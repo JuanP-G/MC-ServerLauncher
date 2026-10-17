@@ -7,6 +7,9 @@
 [![Download](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?style=for-the-badge&label=Download&color=5CE07B)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
 [![License](https://img.shields.io/badge/License-MIT-8B949E?style=for-the-badge)](LICENSE)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/JuanP-G/MC-ServerLauncher)
+[![Architecture diagram](https://gitdiagram.com/diagram-badge.svg)](https://gitdiagram.com/juanp-g/mc-serverlauncher)
+
 Create, configure and share **Minecraft servers** on **Windows, Linux and macOS** from one app — **no `.bat`
 files, black console windows or editing config files by hand**.
 
@@ -324,6 +327,15 @@ Built with **Avalonia / .NET 9**. The Windows installer is **x64 only** (Inno Se
 
 **Documentation:** architecture, contributing guide and a full **API reference**, published with DocFX at
 **https://juanp-g.github.io/MC-ServerLauncher/docs/**.
+
+**Explore the code:** to get your bearings before opening the first file, the
+[architecture article](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/architecture.html) opens with
+two maps (how the pieces fit, and what happens when a server starts), and two sites draw the repository
+by themselves: [**DeepWiki**](https://deepwiki.com/JuanP-G/MC-ServerLauncher), a wiki by topic whose pages
+list the files they come from and where you can ask the code questions, and
+[**GitDiagram**](https://gitdiagram.com/juanp-g/mc-serverlauncher), one clickable diagram of the whole app.
+Both are written by an AI: they can be wrong and DeepWiki's diagrams do not always render, so when they
+disagree with the architecture article, the article wins.
 
 **Data:** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux and macOS):
 `servers.json`, `settings.json`, the installed `java\`, the console `logs\` (kept 14 days, at most 50 MB a day), the store's
