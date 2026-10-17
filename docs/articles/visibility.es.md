@@ -30,6 +30,8 @@ salen de los contadores de las releases; los clics sirven para comparar botones 
    `stats`. Para guardar también el tráfico hace falta un secreto: crea un token personal con permiso de
    escritura en este repositorio y guárdalo en *Settings → Secrets and variables → Actions* con el
    nombre `TRAFFIC_TOKEN`. La API de tráfico no acepta el token que GitHub da a los workflows.
+   Para que las visitas de la web entren en la misma foto, crea un token de la API de GoatCounter
+   (*Settings → API*, solo «Read statistics» y solo este sitio) y guárdalo como secreto `GOATCOUNTER_TOKEN`.
 3. **Lanzarlo ya**, sin esperar a mañana: pestaña *Actions → Daily statistics snapshot → Run workflow*.
 
 ## Leer los datos
