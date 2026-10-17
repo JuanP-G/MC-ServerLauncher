@@ -374,6 +374,10 @@ section{position:relative; padding-block:clamp(56px,10vh,104px); scroll-margin-t
 .slot img{width:48px; height:48px; image-rendering:pixelated}
 .slot img.iso{image-rendering:auto}
 .slot:hover::after{content:""; position:absolute; inset:3px; background:rgba(255,255,255,.4)}
+/* Tarjetas que son enlaces (las guías): se iluminan como la casilla al pasar el ratón. */
+a.card{transition:filter .12s}
+a.card:hover,a.card:focus-visible{filter:brightness(1.08)}
+a.card:hover h3{color:#1B1B1B}
 /* número de la pila, en la esquina como en el inventario */
 .slot b{position:absolute; right:3px; bottom:0; font-family:var(--f-mc); font-weight:400; font-size:16px; color:#FFFFFF;
   text-shadow:2px 2px 0 var(--mc-shadow); -webkit-font-smoothing:none}
@@ -548,10 +552,10 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
         <svg class="chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 3h10L5 8z"/></svg></button>
       <div class="lang-list" id="langList" hidden>
         <a href="../" hreflang="es"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#C60B1E"/><rect y="3" width="16" height="5" fill="#FFC400"/></svg><b>ES</b>Español</a>
-        <a href="en/" data-goatcounter-click="idioma-en" data-goatcounter-title="Idioma en" hreflang="en"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#012169"/><path d="M0 0l16 11M16 0L0 11" stroke="#FFF" stroke-width="2.4"/><path d="M0 0l16 11M16 0L0 11" stroke="#C8102E" stroke-width="1.1"/><path d="M8 0v11M0 5.5h16" stroke="#FFF" stroke-width="3.6"/><path d="M8 0v11M0 5.5h16" stroke="#C8102E" stroke-width="2"/></svg><b>EN</b>English</a>
-        <a href="de/" data-goatcounter-click="idioma-de" data-goatcounter-title="Idioma de" hreflang="de"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#000"/><rect y="3.67" width="16" height="3.67" fill="#DD0000"/><rect y="7.34" width="16" height="3.66" fill="#FFCE00"/></svg><b>DE</b>Deutsch</a>
-        <a href="fr/" data-goatcounter-click="idioma-fr" data-goatcounter-title="Idioma fr" hreflang="fr"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#FFF"/><rect width="5.33" height="11" fill="#002395"/><rect x="10.67" width="5.33" height="11" fill="#ED2939"/></svg><b>FR</b>Français</a>
-        <a href="pt/" data-goatcounter-click="idioma-pt" data-goatcounter-title="Idioma pt" hreflang="pt"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#DA291C"/><rect width="6.4" height="11" fill="#046A38"/><circle cx="6.4" cy="5.5" r="2.1" fill="#FFE000"/><circle cx="6.4" cy="5.5" r="1.15" fill="#DA291C"/></svg><b>PT</b>Português</a>
+        <a href="../en/" data-goatcounter-click="idioma-en" data-goatcounter-title="Idioma en" hreflang="en"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#012169"/><path d="M0 0l16 11M16 0L0 11" stroke="#FFF" stroke-width="2.4"/><path d="M0 0l16 11M16 0L0 11" stroke="#C8102E" stroke-width="1.1"/><path d="M8 0v11M0 5.5h16" stroke="#FFF" stroke-width="3.6"/><path d="M8 0v11M0 5.5h16" stroke="#C8102E" stroke-width="2"/></svg><b>EN</b>English</a>
+        <a href="../de/" data-goatcounter-click="idioma-de" data-goatcounter-title="Idioma de" hreflang="de"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#000"/><rect y="3.67" width="16" height="3.67" fill="#DD0000"/><rect y="7.34" width="16" height="3.66" fill="#FFCE00"/></svg><b>DE</b>Deutsch</a>
+        <a href="../fr/" data-goatcounter-click="idioma-fr" data-goatcounter-title="Idioma fr" hreflang="fr"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#FFF"/><rect width="5.33" height="11" fill="#002395"/><rect x="10.67" width="5.33" height="11" fill="#ED2939"/></svg><b>FR</b>Français</a>
+        <a href="../pt/" class="on" data-goatcounter-click="idioma-pt" data-goatcounter-title="Idioma pt" hreflang="pt"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#DA291C"/><rect width="6.4" height="11" fill="#046A38"/><circle cx="6.4" cy="5.5" r="2.1" fill="#FFE000"/><circle cx="6.4" cy="5.5" r="1.15" fill="#DA291C"/></svg><b>PT</b>Português</a>
       </div>
     </div>
     <a class="btn btn-primary dlbtn" href="#descargas">
@@ -649,6 +653,21 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
           <li class="release-empty">A carregar as versões do GitHub…</li>
         </ol>
         <a class="all-releases" data-goatcounter-click="historial-releases" data-goatcounter-title="Historial de versiones" href="https://github.com/JuanP-G/MC-ServerLauncher/releases">Ver o histórico completo no GitHub →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Las guías las genera web/_i18n/guides.py. Los textos de estas tarjetas salen de las propias
+       guías (card_title / card_desc de web/_i18n/guides/*.json): se cambian allí, no aquí. -->
+  <section id="guias">
+    <div class="wrap center">
+      <span class="eyebrow reveal">GUIAS</span>
+      <h2 class="h2 build">Guias passo a passo</h2>
+      <p class="lead reveal">Respostas diretas ao que mais se procura ao montar um servidor de Minecraft.</p>
+      <div class="grid g3">
+        <a class="card reveal" data-goatcounter-click="guia-mods-landing" data-goatcounter-title="Landing: guía mods" href="guides/criar-servidor-minecraft-com-mods/"><div class="slot"><img src="../assets/mc/enchanted_book.png" alt="" width="48" height="48"></div><h3>Como criar um servidor de Minecraft com mods</h3><p>Fabric, Forge ou NeoForge, mods do Modrinth com as suas dependências e o pack para os teus amigos.</p></a>
+        <a class="card reveal" data-goatcounter-click="guia-gratis-landing" data-goatcounter-title="Landing: guía gratis" href="guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"><div class="slot"><img src="../assets/mc/ender_pearl.png" alt="" width="48" height="48"></div><h3>Alojar um servidor de Minecraft grátis sem abrir portas</h3><p>Um túnel do Playit.gg integrado dá-te um endereço público para partilhar, sem mensalidades nem router.</p></a>
+        <a class="card reveal" data-goatcounter-click="guia-dormir-landing" data-goatcounter-title="Landing: guía dormir" href="guides/servidor-minecraft-desliga-sozinho-quando-vazio/"><div class="slot"><img src="../assets/mc/totem.png" alt="" width="48" height="48"></div><h3>Servidor de Minecraft que desliga sozinho quando está vazio</h3><p>Desligar automático por inatividade e ligar quando alguém tenta entrar, sem gastar recursos.</p></a>
       </div>
     </div>
   </section>
