@@ -30,6 +30,8 @@ release counters; clicks are for comparing buttons and systems.
    branch. To save traffic as well it needs a secret: create a personal access token with write access to
    this repository and store it under *Settings → Secrets and variables → Actions* as `TRAFFIC_TOKEN`.
    The traffic API refuses the token GitHub gives to workflows.
+   To bring the website visits into the same snapshot, create a GoatCounter API token (*Settings → API*,
+   only "Read statistics", only this site) and store it as the secret `GOATCOUNTER_TOKEN`.
 3. **Run it now** instead of waiting until tomorrow: *Actions → Daily statistics snapshot → Run workflow*.
 
 ## Reading the data

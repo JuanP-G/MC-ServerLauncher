@@ -7,7 +7,8 @@ Resumen de las estadísticas guardadas por tools/collect_stats.py.
     python tools/stats_report.py ../stats-data
 
 Imprime descargas por sistema y por versión, cuánto han crecido en 7 y 30 días, visitas al
-repositorio y de dónde vienen. Solo biblioteca estándar.
+repositorio y de dónde vienen y, si están guardadas, las visitas de la web (GoatCounter).
+Solo biblioteca estándar.
 """
 
 import csv
@@ -83,6 +84,35 @@ def main():
         last = repo[-1]
         print("\n== Repositorio == %s estrellas · %s forks · %s siguiendo"
               % (last["stars"], last["forks"], last["watchers"]))
+
+    web = rows(folder, "web_visits.csv")
+    if web:
+        last = web[-30:]
+        print("\n== Visitas a la web (GoatCounter, %d días) ==" % len(last))
+        print("  %d visitantes en total · hoy %s · ayer %s"
+              % (sum(int(v["visitors"]) for v in last), last[-1]["visitors"],
+                 last[-2]["visitors"] if len(last) > 1 else "n/d"))
+        paths = rows(folder, "web_paths.csv")
+        for title, flag in (("Páginas más vistas", "0"), ("Clics en botones", "1")):
+            totals = defaultdict(int)
+            for r in paths:
+                if r["event"] == flag:
+                    totals[r["path"]] += int(r["visitors"])
+            if totals:
+                print("  %s:" % title)
+                for name, count in sorted(totals.items(), key=lambda kv: -kv[1])[:8]:
+                    print("    %-48s %d" % (name, count))
+        breakdown = rows(folder, "web_breakdown.csv")
+        if breakdown:
+            day = max(r["date"] for r in breakdown)
+            for kind, title in (("toprefs", "De dónde llegan"), ("locations", "Países"),
+                                ("systems", "Sistemas"), ("languages", "Idiomas")):
+                items = sorted((r for r in breakdown if r["date"] == day and r["kind"] == kind),
+                               key=lambda r: -int(r["visitors"]))[:6]
+                if items:
+                    print("  %s: %s" % (title, " · ".join("%s %s" % (r["name"], r["visitors"]) for r in items)))
+    else:
+        print("\n(Sin visitas de la web guardadas: falta el secreto GOATCOUNTER_TOKEN, ver tools/collect_stats.py)")
 
     views = rows(folder, "views.csv")
     if views:
