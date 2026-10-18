@@ -41,7 +41,7 @@
 
 <link rel="preload" as="font" type="font/woff2" href="../../assets/fonts/inter-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff" href="../../assets/mc/minecraft.woff" crossorigin>
-<link rel="preload" as="image" href="../../assets/mc/button_hover.png">
+<link rel="preload" as="image" href="../../assets/mc/button_hover.webp">
 
 <script type="application/ld+json">
 {
@@ -273,7 +273,7 @@ img{max-width:100%; display:block}
 .sun{top:-62vh}
 .moon{top:calc(62vh - 192px)}
 
-/* Nubes del juego en 3D: el mapa de nubes (clouds.png, cada píxel una nube de 12x12
+/* Nubes del juego en 3D: el mapa de nubes (clouds.webp, cada píxel una nube de 12x12
    bloques y 4 de grosor) como un techo a gran altura visto desde el suelo, igual que con
    los gráficos «Detallados». Se dibujan en un canvas por detrás del paisaje; hacia el
    horizonte se funden con el color del cielo. La cámara no se mueve: solo las nubes,
@@ -308,9 +308,9 @@ img{max-width:100%; display:block}
 /* Los sprites de la barra del juego estirados a lo ancho. El ancho lo fija el scroll en
    cada fotograma, sin transition. */
 .xpbar{position:fixed; top:0; left:0; right:0; height:10px; z-index:60;
-  background:url("../../assets/mc/xp_bg.png") 0 0/100% 100%; image-rendering:pixelated}
+  background:url("../../assets/mc/xp_bg.webp") 0 0/100% 100%; image-rendering:pixelated}
 .xpbar i{display:block; height:100%; width:var(--p,0%);
-  background:url("../../assets/mc/xp_fg.png") 0 0/100vw 100%; image-rendering:pixelated}
+  background:url("../../assets/mc/xp_fg.webp") 0 0/100vw 100%; image-rendering:pixelated}
 
 /* ---------- BOTONES ---------- */
 /* Planos con bisel, como los de la edición Bedrock: color liso, esquinas rectas, luz
@@ -336,10 +336,10 @@ img{max-width:100%; display:block}
    del ratón dejaba el botón en blanco mientras se descargaba la imagen. */
 .btn-mc{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:46px; padding:0 16px;
   color:#FFFFFF; font-family:var(--f-mc); font-size:16px; line-height:1; text-shadow:2px 2px 0 var(--mc-shadow);
-  -webkit-font-smoothing:none; border:6px solid transparent; border-image:url("../../assets/mc/button.png") 3 fill / 6px stretch;
+  -webkit-font-smoothing:none; border:6px solid transparent; border-image:url("../../assets/mc/button.webp") 3 fill / 6px stretch;
   image-rendering:pixelated}
 .btn-mc svg{width:18px; height:18px; flex:none; fill:currentColor; filter:drop-shadow(2px 2px 0 var(--mc-shadow))}
-.btn-mc:hover,.btn-mc:focus-visible{border-image-source:url("../../assets/mc/button_hover.png"); color:var(--mc-hover); outline:none}
+.btn-mc:hover,.btn-mc:focus-visible{border-image-source:url("../../assets/mc/button_hover.webp"); color:var(--mc-hover); outline:none}
 
 /* ---------- NAV ---------- */
 /* Cabecera como la de los menús del juego: franja oscura translúcida y un separador de
@@ -434,7 +434,6 @@ section{position:relative; padding-block:clamp(56px,10vh,104px); scroll-margin-t
 .shot-bar img{width:18px; height:18px; image-rendering:pixelated}
 .shot-bar b{font-size:13px; font-weight:600}
 .shot-bar i{margin-left:auto; color:var(--muted); font-style:normal; font-size:12px; letter-spacing:2px}
-.shot picture{display:block}
 .shot img.cap{width:100%; height:auto}
 
 /* ---------- PANELES DE INVENTARIO ---------- */
@@ -451,7 +450,7 @@ section{position:relative; padding-block:clamp(56px,10vh,104px); scroll-margin-t
   -webkit-font-smoothing:none}
 .card p{grid-column:1 / -1; margin-top:6px; color:#3F3F3F; font-size:15px; line-height:1.6}
 .slot{position:relative; width:60px; height:60px; display:grid; place-items:center;
-  background:url("../../assets/mc/slot.png") 0 0/100% 100%; image-rendering:pixelated}
+  background:url("../../assets/mc/slot.webp") 0 0/100% 100%; image-rendering:pixelated}
 .slot img{width:48px; height:48px; image-rendering:pixelated}
 .slot img.iso{image-rendering:auto}
 .slot:hover::after{content:""; position:absolute; inset:3px; background:rgba(255,255,255,.4)}
@@ -521,7 +520,7 @@ a.card:hover h3{color:#1B1B1B}
    en la esquina izquierda y el aviso legal en la derecha, donde el juego pone su copyright.
    Es opaco y tapa el suelo fijo del fondo al llegar al final. */
 footer{position:relative; background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.7) 45%),
-  url("../../assets/mc/dirt.png") 0 0/48px 48px; image-rendering:pixelated; box-shadow:0 -2px 0 #000, 0 -4px 0 rgba(255,255,255,.1)}
+  url("../../assets/mc/dirt.webp") 0 0/48px 48px; image-rendering:pixelated; box-shadow:0 -2px 0 #000, 0 -4px 0 rgba(255,255,255,.1)}
 footer .wrap{padding-block:30px calc(16px + env(safe-area-inset-bottom,0px))}
 footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
 .foot-bar{display:flex; justify-content:space-between; align-items:baseline; gap:6px 24px; flex-wrap:wrap; margin-top:26px}
@@ -653,7 +652,7 @@ a.card{color:var(--gui-text)}
   <div class="sky sky-day"></div>
   <div class="sky sky-dusk"></div>
   <div class="stars" id="stars"></div>
-  <div class="orbit" id="orbit"><img class="sun" src="../../assets/mc/sun.png" alt=""><img class="moon" src="../../assets/mc/moon.png" alt=""></div>
+  <div class="orbit" id="orbit"><img class="sun" src="../../assets/mc/sun.webp" alt=""><img class="moon" src="../../assets/mc/moon.webp" alt=""></div>
   <canvas class="clouds" id="clouds"></canvas>
   <div class="land" id="land"></div>
 </div>
@@ -943,7 +942,7 @@ a.card{color:var(--gui-text)}
   var img = {};
   function load(name){
     return new Promise(function(ok){
-      var i = new Image(); i.onload = function(){ img[name] = i; ok(); }; i.onerror = ok; i.src = MC + name + '.png';
+      var i = new Image(); i.onload = function(){ img[name] = i; ok(); }; i.onerror = ok; i.src = MC + name + '.webp';
     });
   }
 
@@ -1017,7 +1016,7 @@ a.card{color:var(--gui-text)}
       last = t; drawClouds(t);
     });
   };
-  clouds.src = MC + 'clouds.png';
+  clouds.src = MC + 'clouds.webp';
   addEventListener('resize', function(){ drawClouds(performance.now()); });
 
   var land = document.getElementById('land'), lastW = 0;
@@ -1127,7 +1126,7 @@ a.card{color:var(--gui-text)}
           leaf.style.bottom = ((tt - 2 + r()) * b) + 'px';
           leaf.style.setProperty('--lp', lp + 'px');
           leaf.style.setProperty('--fall', ((tt - 2 - t.h + 1) * b) + 'px');
-          leaf.style.backgroundImage = 'url(' + MC + 'leaf_particles.png)';
+          leaf.style.backgroundImage = 'url(' + MC + 'leaf_particles.webp)';
           leaf.style.backgroundSize = (lp * 12) + 'px ' + lp + 'px';
           leaf.style.backgroundPosition = (-lp * Math.floor(r() * 12)) + 'px 0';
           leaf.style.animationDuration = (6 + r() * 5).toFixed(1) + 's';
@@ -1152,7 +1151,7 @@ a.card{color:var(--gui-text)}
         w.style.bottom = ((L.base - 1) * b) + 'px';
         w.style.height = Math.round(b * 14 / 16) + 'px';      // el agua del juego no llena el bloque
         w.style.setProperty('--b', b + 'px');
-        w.style.backgroundImage = 'url(' + MC + 'water.png)';
+        w.style.backgroundImage = 'url(' + MC + 'water.webp)';
         w.style.backgroundSize = b + 'px ' + (b * 32) + 'px';
         w.style.opacity = '.85';
         overlays.push(w);
