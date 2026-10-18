@@ -80,6 +80,14 @@ public class ProjectResult
     [JsonPropertyName("server_side")]
     public string? ServerSide { get; set; }
 
+    /// <summary>
+    /// Where it runs, in the one word that replaced the pair above ("client_only",
+    /// "client_and_server", "server_only"…). The two sides are deprecated in the API; this is what
+    /// the store falls back to if they ever stop being sent.
+    /// </summary>
+    [JsonPropertyName("environment")]
+    public List<string> Environment { get; set; } = new();
+
     /// <summary>SPDX id of the licence (the project endpoint returns an object instead).</summary>
     [JsonPropertyName("license")]
     public string? License { get; set; }

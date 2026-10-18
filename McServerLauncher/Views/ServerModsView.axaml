@@ -122,6 +122,16 @@
                                                   ItemsSource="{Binding SortOptions}"
                                                   SelectedIndex="{Binding SelectedSortIndex}" />
 
+                                        <!-- Where a project runs. Not drawn on a plugin server, which
+                                             has no client to put anything on. -->
+                                        <StackPanel IsVisible="{Binding ShowsSideFilter}">
+                                            <TextBlock Classes="popupTitle" Text="{loc:Loc Side_Label}" />
+                                            <TextBlock Classes="popupHint" Text="{loc:Loc Side_Hint}" />
+                                            <ComboBox HorizontalAlignment="Stretch" Margin="0,0,0,12"
+                                                      ItemsSource="{Binding SideOptions}"
+                                                      SelectedIndex="{Binding SelectedSideIndex}" />
+                                        </StackPanel>
+
                                         <!-- Padding on the right reserves a gutter for the floating
                                              scrollbar, which in this theme draws over the content —
                                              the very problem the old chip strip had. -->
@@ -281,7 +291,14 @@
                                                                    TextTrimming="CharacterEllipsis"
                                                                    VerticalAlignment="Center" />
                                                         <!-- Client-only content installed on a server does nothing:
-                                                             say so before the download, not after. -->
+                                                             say so before the download, not after, and say where
+                                                             it will go instead. -->
+                                                        <Border CornerRadius="4" Padding="5,1" Background="{StaticResource SemanticInfo}"
+                                                                VerticalAlignment="Center"
+                                                                IsVisible="{Binding IsClientOnly}">
+                                                            <TextBlock Text="{loc:Loc Store_ClientOnlyBadge}"
+                                                                       FontSize="10" Foreground="White" />
+                                                        </Border>
                                                         <Border CornerRadius="4" Padding="5,1" Background="{StaticResource SemanticWarnPanel}"
                                                                 VerticalAlignment="Center"
                                                                 IsVisible="{Binding NeedsClient}">
@@ -331,7 +348,7 @@
 
                                                 <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
                                                     <Button Command="{Binding InstallCommand}"
-                                                            Content="{loc:Loc Install}"
+                                                            Content="{Binding InstallLabel}"
                                                             HorizontalAlignment="Stretch"
                                                             HorizontalContentAlignment="Center"
                                                             IsEnabled="{Binding !IsInstalling}" />
@@ -523,6 +540,38 @@
                          order to serve the rare one. Naming the files it left out is what makes
                          this actionable rather than unsettling, and putting them back is one click
                          over the same zip — no picker, no second dialog. -->
+                    <!-- The client-only mods added for the players. Folded by default and drawn only
+                         when there is one: it is a list the server never reads, and most servers will
+                         not have it. -->
+                    <Expander IsVisible="{Binding HasClientPack}" IsExpanded="False" Margin="0,0,0,8"
+                              HorizontalAlignment="Stretch" Padding="6,0,6,6">
+                        <Expander.Header>
+                            <TextBlock Text="{Binding ClientPackTitleText}" FontSize="12" FontWeight="SemiBold"
+                                       TextWrapping="Wrap" />
+                        </Expander.Header>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{loc:Loc PlayerPack_Hint}" FontSize="11" Opacity="0.65"
+                                       TextWrapping="Wrap" />
+                            <ItemsControl ItemsSource="{Binding ClientPackMods}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                            <TextBlock Grid.Column="0" Text="{Binding FileName}" FontSize="12"
+                                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            <Button Grid.Column="1" ToolTip.Tip="{loc:Loc PlayerPack_Remove}"
+                                                    Background="Transparent" Padding="4"
+                                                    Command="{Binding $parent[ItemsControl].DataContext.RemoveFromClientPackCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <ic:SymbolIcon Symbol="Delete" FontSize="14"
+                                                               Foreground="{StaticResource SemanticDanger}" />
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Expander>
+
                     <Border IsVisible="{Binding HasExportNotice}" Margin="0,0,0,8" Padding="10,8"
                             Background="{StaticResource SemanticWarnFill}" BorderBrush="{StaticResource SemanticWarnEdge}" BorderThickness="1" CornerRadius="6">
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">

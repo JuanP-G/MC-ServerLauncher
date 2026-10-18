@@ -24,6 +24,7 @@ namespace McServerLauncher.Tests;
 /// <em>not</em> be suggested.
 /// </para>
 /// </remarks>
+[Collection("content-ledger")]
 public class CleanupSuggestionsTests : IDisposable
 {
     private static readonly DateTime Now = new(2026, 10, 13, 12, 0, 0, DateTimeKind.Utc);

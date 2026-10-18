@@ -951,7 +951,12 @@ arranque encuentra el mundo igual que en la última copia (ver *Copias del mundo
 ### La tienda: búsqueda, etiquetas y lenguaje llano
 `ServerModsViewModel` pide a `ModrinthService` resultados ya filtrados por el cargador y la versión
 del servidor — un resultado que el servidor no puede ejecutar es peor que ninguno, porque se instala
-y luego el servidor no levanta. Cada resultado se convierte en un `StoreItem`, la forma independiente
+y luego el servidor no levanta. Dónde funciona un proyecto *no* es un filtro oculto: la tienda lista
+también los mods solo de cliente (Sodium, MaLiLib, un minimapa — cerca de un tercio de los de Fabric
+para 26.2, que un viejo facet `server_side` descartaba sin avisar), les pone insignia y ofrece una
+opción *Dónde funciona* (todos, para el servidor, solo cliente) sobre el facet `environment` de
+Modrinth. Excluir las dos palabras de solo cliente en vez de listar el resto conserva los proyectos
+que no dicen nada. Cada resultado se convierte en un `StoreItem`, la forma independiente
 del origen con la que trabaja el resto de la tienda, y entonces se le añaden dos cosas que Modrinth
 no da:
 
@@ -971,6 +976,16 @@ no da:
   desde un catálogo escrito a mano (`Resources/store-summaries.json`, generado por
   `tools/generate-store-summaries.py`) con una frase de reserva construida con lo que Modrinth sí
   dice. Es una consulta local: sin petición, sin clave, y funciona sin conexión.
+
+Un mod solo de cliente no hace nada en un servidor (Fabric lo salta; Forge y NeoForge pueden negarse
+a arrancar por él), así que instalarlo lo lleva al **paquete para jugadores**: `ClientPack` lo guarda
+en `%APPDATA%\McServerLauncher\content\<idDelServidor>\client`, junto al registro del servidor y por
+la misma razón — el servidor nunca lo lee, las copias de seguridad no lo llevan y
+`ContentLedgerStore.PruneOrphans` lo borra con el servidor. El mismo instalador hace la descarga, la
+comprobación y las dependencias (una librería que ya está en `mods/` satisface a un mod del paquete y
+no se baja dos veces), y la exportación añade los jars del paquete al zip bajo `mods/`, saltándose la
+tabla de solo servidor, que trata de los jars del servidor y no de lo que alguien puso ahí para los
+jugadores.
 
 Los dos archivos se pueden sustituir por una copia en la carpeta de datos del usuario, así que las
 etiquetas y los resúmenes se cambian sin compilar. Abrir un resultado muestra `ModDetailsViewModel` —

@@ -125,6 +125,7 @@ public static class ServerConfigEffects
             new[]
             {
                 nameof(ServerModsViewModel.IsPluginBased),
+                nameof(ServerModsViewModel.ShowsSideFilter),
                 nameof(ServerModsViewModel.ContentTabTitle),
                 nameof(ServerModsViewModel.BrowseTitle),
                 nameof(ServerModsViewModel.InstalledTitle),

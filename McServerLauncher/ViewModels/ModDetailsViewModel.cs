@@ -126,6 +126,16 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _needsClient;
 
+    /// <summary>
+    /// A client-only mod: it does nothing on a server, so installing it means adding it to the
+    /// players' pack, and the button says so.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InstallText))]
+    private bool _isClientOnly;
+
+    public string InstallText => Localizer.Get(IsClientOnly ? "Store_AddToPlayerPack" : "Install");
+
     [ObservableProperty]
     private string _sideText = string.Empty;
 
@@ -221,6 +231,7 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(HasUpdated));
 
         NeedsClient = item.NeedsClient;
+        IsClientOnly = item.Side == InstallSide.ClientOnly && !_parent.IsPluginBased;
         SideText = StoreSummaryService.SideSentence(item);
     }
 
@@ -485,7 +496,7 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
     private async Task Install()
     {
         IsInstalling = true;
-        try { await _parent.InstallModAsync(ProjectId); }
+        try { await _parent.InstallModAsync(ProjectId, toPlayerPack: IsClientOnly); }
         finally { IsInstalling = false; }
     }
 
@@ -497,7 +508,7 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
     internal async Task InstallVersionAsync(VersionResult version)
     {
         IsInstalling = true;
-        try { await _parent.InstallModAsync(ProjectId, version); }
+        try { await _parent.InstallModAsync(ProjectId, version, toPlayerPack: IsClientOnly); }
         finally { IsInstalling = false; }
     }
 
