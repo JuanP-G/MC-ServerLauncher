@@ -42,7 +42,7 @@ public sealed class StoreSummaryService
     /// Shared instance; the catalogue is read once per run. Declared after the static fields it
     /// uses: static initialisers run in the order they are written, and the constructor needs them.
     /// </summary>
-    public static StoreSummaryService Shared { get; } = new();
+    public static StoreSummaryService Shared { get; } = new(catalog: StoreCatalogService.Shared);
 
     /// <summary>By project id.</summary>
     private readonly Dictionary<string, Dictionary<string, string>> _byId;
@@ -50,8 +50,12 @@ public sealed class StoreSummaryService
     /// <summary>By slug, so a catalogue entry still matches if we only know the slug.</summary>
     private readonly Dictionary<string, Dictionary<string, string>> _bySlug;
 
-    public StoreSummaryService(string? overridePath = null)
+    /// <summary>The downloaded catalogue, which fills in for projects nobody wrote a sentence for.</summary>
+    private readonly StoreCatalogService? _catalog;
+
+    public StoreSummaryService(string? overridePath = null, StoreCatalogService? catalog = null)
     {
+        _catalog = catalog;
         var path = overridePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "McServerLauncher", "store-summaries.json");
@@ -113,6 +117,14 @@ public sealed class StoreSummaryService
         return null;
     }
 
+    /// <summary>
+    /// The sentence the downloaded catalogue has for this project, in the interface language. It
+    /// comes second, after <see cref="Curated"/>: a person's sentence is always better than a
+    /// model's, and the catalogue exists for the thousands nobody has written one for.
+    /// </summary>
+    private string? FromCatalogue(StoreItem item) =>
+        _catalog?.SummaryFor(item.Id, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+
     private Dictionary<string, string>? Lookup(StoreItem item)
     {
         if (!string.IsNullOrEmpty(item.Id) && _byId.TryGetValue(item.Id, out var byId)) return byId;
@@ -126,7 +138,7 @@ public sealed class StoreSummaryService
     /// </summary>
     public string Describe(StoreItem item, IReadOnlyList<StoreTagDefinition>? tags = null)
     {
-        var curated = Curated(item);
+        var curated = Curated(item) ?? FromCatalogue(item);
         if (!string.IsNullOrWhiteSpace(curated)) return curated;
         return (Lead(item, tags) ?? Generic(item)) + " " + SideSentence(item);
     }
@@ -154,7 +166,7 @@ public sealed class StoreSummaryService
         // Without a hand-written summary a card says what the tags say, but only when a tag was
         // earned. A project nothing could be said about shows what its author wrote — in English,
         // but true — rather than "a combat mod" for a backpack.
-        var curated = Curated(item);
+        var curated = Curated(item) ?? FromCatalogue(item);
         var summary = !string.IsNullOrWhiteSpace(curated) ? curated!
             : Lead(item, tags) ?? (author.Length > 0 ? author : Generic(item));
 

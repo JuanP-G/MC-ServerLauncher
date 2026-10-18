@@ -987,6 +987,22 @@ no se baja dos veces), y la exportación añade los jars del paquete al zip bajo
 tabla de solo servidor, que trata de los jars del servidor y no de lo que alguien puso ahí para los
 jugadores.
 
+Unas reglas que leen un título y una línea de descripción no distinguen un mod de mochilas de uno de
+armaduras, así que además hay un **catálogo hecho fuera de la app**. `tools/store-catalog/build_catalog.py`
+lista los proyectos más descargados de Modrinth para las últimas versiones de Minecraft y, por cada uno
+nuevo o cambiado, le hace a un *modelo de decisión* (Clef de Cloudflare, o cualquiera que hable el mismo
+protocolo, Jev incluido) una pregunta cerrada — ¿de cuál de los temas de la app trata? — y a un modelo de
+texto una frase en cinco idiomas, que el modelo de decisión comprueba contra el texto (¿dice algo que no
+está?, ¿cada traducción es la misma frase?). Nunca se llama desde la app: un flujo diario con la cuota
+gratuita de Workers AI publica `store-catalog.json.gz` en la rama `catalog`, y `StoreCatalogService` lo
+descarga como mucho una vez al día, con su ETag, a `cache\store-catalog.json.gz`. Es el mismo tipo de
+petición que la comprobación de actualizaciones — anónima, de solo lectura, sin nada del usuario ni del
+servidor — y la tienda funciona sin conexión con la última copia. Lo que dice nunca pasa por encima de
+una persona (`store-summaries.json` va primero) ni de la idea que la app tiene de una etiqueta (un tema
+desconocido o de otro tipo se salta), y un archivo demasiado grande, de un formato más nuevo o a medio
+romper se ignora entero. Un cambio de modelo o de preguntas se mide antes contra 190 proyectos
+etiquetados a mano (`tools/store-catalog/golden_set.json`) y no publica nada por debajo del 80 %.
+
 Los dos archivos se pueden sustituir por una copia en la carpeta de datos del usuario, así que las
 etiquetas y los resúmenes se cambian sin compilar. Abrir un resultado muestra `ModDetailsViewModel` —
 galería, versiones, dependencias, enlaces y proyectos relacionados — pintado en dos pasadas, para que

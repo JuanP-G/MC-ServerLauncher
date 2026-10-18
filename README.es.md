@@ -355,7 +355,8 @@ Jugadores, el chat; 90 días por defecto, nunca IPs) y los logs de consola de ar
 líneas —el chat y las IPs de las líneas de conexión incluidos— digan lo que digan los ajustes del historial.
 A qué servicios pide cosas la app, y qué ven además de tu IP: Mojang, Paper, Purpur, Fabric, Forge y NeoForge
 (descargas del servidor, y Mojang el nombre de un jugador cuando lo añades a la whitelist), Modrinth y GeyserMC
-(mods y plugins), Adoptium (Java), GitHub (actualizaciones), Playit (túneles, a través del proxy de la app al
+(mods y plugins), Adoptium (Java), GitHub (actualizaciones, y el catálogo de temas y resúmenes de la tienda, un
+archivo público que se baja como mucho una vez al día), Playit (túneles, a través del proxy de la app al
 vincular una cuenta) y **mc-heads.net** (el avatar de cada jugador, por su nombre, en el historial).
 
 **Flags de Java extra:** la app no tiene un campo para ellos, pero cada servidor de `servers.json` tiene
