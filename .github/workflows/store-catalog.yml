@@ -72,6 +72,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Vercel builds every branch and its project's root directory is `web`. A data branch
+          # without that folder fails there on every push ("Root Directory does not exist"); with a
+          # stub the project's ignored build step, which skips this branch, gets to run instead.
+          mkdir -p web
+          echo "Placeholder so Vercel finds its root directory. Nothing is built from this branch." > web/README.md
           git add -A
           if git diff --cached --quiet; then
             echo "Nothing changed."
