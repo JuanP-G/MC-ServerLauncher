@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Models.Modrinth;
+using McServerLauncher.Models.Store;
 
 namespace McServerLauncher.Services;
 
@@ -78,25 +79,59 @@ public class ModrinthService
     }
 
     /// <summary>
-    /// Searches Modrinth for content compatible with a server. <paramref name="extraFacetGroups"/>
-    /// adds already-formatted facet groups (e.g. <c>["categories:optimization"]</c>) that are ANDed
-    /// with the loader/version/type filter — this is what the category chips use.
+    /// The facet groups that pick which side of the game a project runs on, using Modrinth's
+    /// <c>environment</c> facet.
     /// </summary>
-    public async Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion,
-        string index = "relevance", int offset = 0, int limit = 20,
-        IReadOnlyCollection<string>? extraFacetGroups = null, CancellationToken ct = default)
+    /// <remarks>
+    /// This replaced a fixed <c>server_side:required|optional</c> filter, which hid every client-only
+    /// mod — about a third of Fabric's for 26.2, Sodium and MaLiLib among them — and with them every
+    /// project whose server side was merely not filled in. Both facets it used are deprecated in the
+    /// API. Excluding the two client-only words, instead of listing the others, keeps the projects
+    /// that say nothing ("unknown").
+    /// </remarks>
+    internal static IReadOnlyList<string> FacetGroups(ServerType loader, string mcVersion,
+        StoreSideFilter side, IReadOnlyCollection<string>? extraFacetGroups = null)
     {
         var (categoriesGroup, projectType, _) = TargetFor(loader);
         var groups = new List<string>
         {
             categoriesGroup,
             $"[\"versions:{mcVersion}\"]",
-            $"[\"project_type:{projectType}\"]",
-            "[\"server_side:required\",\"server_side:optional\"]"
+            $"[\"project_type:{projectType}\"]"
         };
+        // A plugin has no client to put it on, so a client-only result could only be a mistake.
+        groups.AddRange(SideFacets(projectType == "plugin" ? StoreSideFilter.ServerSide : side));
         if (extraFacetGroups is { Count: > 0 }) groups.AddRange(extraFacetGroups);
+        return groups;
+    }
 
-        var facets = $"[{string.Join(",", groups)}]";
+    /// <summary>The facet groups for one choice of side. See <see cref="FacetGroups"/>.</summary>
+    internal static IReadOnlyList<string> SideFacets(StoreSideFilter side) => side switch
+    {
+        StoreSideFilter.ServerSide => new[]
+        {
+            "[\"environment!=client_only\"]",
+            "[\"environment!=singleplayer_only\"]"
+        },
+        StoreSideFilter.ClientOnly => new[]
+        {
+            "[\"environment:client_only\",\"environment:singleplayer_only\"]"
+        },
+        _ => Array.Empty<string>()
+    };
+
+    /// <summary>
+    /// Searches Modrinth for content compatible with a server. <paramref name="extraFacetGroups"/>
+    /// adds already-formatted facet groups (e.g. <c>["categories:optimization"]</c>) that are ANDed
+    /// with the loader/version/type filter — this is what the category chips use.
+    /// <paramref name="side"/> picks the projects by where they run; plugins are always server-side.
+    /// </summary>
+    public async Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion,
+        string index = "relevance", int offset = 0, int limit = 20,
+        IReadOnlyCollection<string>? extraFacetGroups = null, CancellationToken ct = default,
+        StoreSideFilter side = StoreSideFilter.All)
+    {
+        var facets = $"[{string.Join(",", FacetGroups(loader, mcVersion, side, extraFacetGroups))}]";
         var url = $"{ApiBaseUrl}/search?query={Uri.EscapeDataString(query)}" +
                   $"&facets={Uri.EscapeDataString(facets)}" +
                   $"&index={Uri.EscapeDataString(index)}&offset={offset}&limit={limit}";

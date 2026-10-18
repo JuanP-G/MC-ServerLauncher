@@ -697,11 +697,27 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Store_Fallback_Mod" xml:space="preserve"><value>Um mod para o teu servidor.</value></data>
   <data name="Store_Fallback_Plugin" xml:space="preserve"><value>Um plugin para o teu servidor.</value></data>
   <data name="Store_Fallback_ModFmt" xml:space="preserve"><value>Mod de {0} para o teu servidor.</value></data>
+  <data name="Store_Fallback_ClientMod" xml:space="preserve"><value>Um mod para os teus jogadores.</value></data>
+  <data name="Store_Fallback_ClientModFmt" xml:space="preserve"><value>Mod de {0} para os teus jogadores.</value></data>
   <data name="Store_Fallback_PluginFmt" xml:space="preserve"><value>Plugin de {0} para o teu servidor.</value></data>
   <data name="Store_Side_NeedsClient" xml:space="preserve"><value>Os jogadores também terão de o instalar no seu Minecraft.</value></data>
   <data name="Store_Side_ServerOnly" xml:space="preserve"><value>Só se instala no servidor; os jogadores não precisam de nada.</value></data>
   <data name="Store_Side_ClientOptional" xml:space="preserve"><value>Instala-se no servidor; no cliente é opcional.</value></data>
   <data name="Store_NeedsClientBadge" xml:space="preserve"><value>Requer cliente</value></data>
+  <data name="Side_Label" xml:space="preserve"><value>Onde funciona</value></data>
+  <data name="Side_Hint" xml:space="preserve"><value>Os mods só de cliente não fazem nada no servidor: vão para o pacote dos jogadores.</value></data>
+  <data name="Side_All" xml:space="preserve"><value>Todos</value></data>
+  <data name="Side_Server" xml:space="preserve"><value>Para o servidor</value></data>
+  <data name="Side_ClientOnly" xml:space="preserve"><value>Só cliente</value></data>
+  <data name="Store_ClientOnlyBadge" xml:space="preserve"><value>Só cliente</value></data>
+  <data name="Store_AddToPlayerPack" xml:space="preserve"><value>Adicionar ao pacote</value></data>
+  <data name="Store_Side_ClientOnly" xml:space="preserve"><value>Só funciona no cliente: não faz nada no servidor, por isso vai para o pacote dos jogadores.</value></data>
+  <data name="Store_Side_Unknown" xml:space="preserve"><value>O Modrinth não indica se também é preciso instalá-lo no cliente.</value></data>
+  <data name="PlayerPack_TitleFmt" xml:space="preserve"><value>Pacote dos jogadores ({0})</value></data>
+  <data name="PlayerPack_Hint" xml:space="preserve"><value>Mods que só os jogadores usam. O servidor não os carrega; ficam incluídos ao exportar o pacote.</value></data>
+  <data name="PlayerPack_Remove" xml:space="preserve"><value>Remover do pacote</value></data>
+  <data name="Msg_AddedToPlayerPack" xml:space="preserve"><value>Adicionado ao pacote dos jogadores. Não é instalado no servidor.</value></data>
+  <data name="Msg_AddedToPlayerPackWithDepsFmt" xml:space="preserve"><value>Adicionado ao pacote dos jogadores. Dependências acrescentadas: {0}.</value></data>
   <data name="Store_ViewDetails" xml:space="preserve"><value>Ver detalhes</value></data>
   <data name="Store_VersionsNote" xml:space="preserve"><value>A mostrar as versões compatíveis mais recentes.</value></data>
   <data name="Filters" xml:space="preserve"><value>Filtros</value></data>

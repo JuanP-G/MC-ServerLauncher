@@ -182,14 +182,21 @@ public sealed class StoreSummaryService
             string.Equals(t.Kind, StoreTagService.TopicKind, StringComparison.OrdinalIgnoreCase));
         if (headline is null) return null;
 
-        return string.Format(
-            Localizer.Get(IsPlugin(item) ? "Store_Fallback_PluginFmt" : "Store_Fallback_ModFmt"),
+        return string.Format(Localizer.Get(FallbackKeys(item).Fmt),
             InSentence(StoreTagService.LabelFor(headline)));
     }
 
     /// <summary>The bare "a mod for your server", for a project nothing more can be said about.</summary>
-    private static string Generic(StoreItem item) =>
-        Localizer.Get(IsPlugin(item) ? "Store_Fallback_Plugin" : "Store_Fallback_Mod");
+    private static string Generic(StoreItem item) => Localizer.Get(FallbackKeys(item).Plain);
+
+    /// <summary>
+    /// Which sentence a project with nothing hand-written gets. "For your server" is wrong for a
+    /// mod that does nothing on a server, so a client-only one says who it is for instead.
+    /// </summary>
+    private static (string Plain, string Fmt) FallbackKeys(StoreItem item) =>
+        IsPlugin(item) ? ("Store_Fallback_Plugin", "Store_Fallback_PluginFmt")
+        : item.Side == InstallSide.ClientOnly ? ("Store_Fallback_ClientMod", "Store_Fallback_ClientModFmt")
+        : ("Store_Fallback_Mod", "Store_Fallback_ModFmt");
 
     private static bool IsPlugin(StoreItem item) =>
         string.Equals(item.ProjectType, "plugin", StringComparison.OrdinalIgnoreCase);
@@ -199,10 +206,18 @@ public sealed class StoreSummaryService
     /// </summary>
     public static string SideSentence(StoreItem item)
     {
+        // A mod that does nothing on a server is not "needed on the client too": it is for the
+        // client alone, and the sentence says where it goes instead.
+        if (item.Side == InstallSide.ClientOnly) return Localizer.Get("Store_Side_ClientOnly");
         if (item.NeedsClient) return Localizer.Get("Store_Side_NeedsClient");
         if (string.Equals(item.ClientSide, "unsupported", StringComparison.OrdinalIgnoreCase))
             return Localizer.Get("Store_Side_ServerOnly");
-        return Localizer.Get("Store_Side_ClientOptional");
+
+        // "Optional" is an answer; no answer is not. It used to fall through to the same sentence,
+        // which told the owner a client install was optional on the strength of nothing at all.
+        if (string.Equals(item.ClientSide, "optional", StringComparison.OrdinalIgnoreCase))
+            return Localizer.Get("Store_Side_ClientOptional");
+        return Localizer.Get("Store_Side_Unknown");
     }
 
     /// <summary>

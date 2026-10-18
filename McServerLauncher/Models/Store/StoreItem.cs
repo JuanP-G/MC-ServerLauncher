@@ -50,9 +50,51 @@ public class StoreItem
 
     public DateTimeOffset? Updated { get; init; }
 
-    /// <summary>True when players must install it too, not only the server.</summary>
+    /// <summary>Modrinth's <c>environment</c> words, when the source sent them.</summary>
+    public IReadOnlyList<string> Environment { get; init; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Where it runs. A server that says "unsupported" settles it: nothing can be done with the
+    /// project on a server, whatever the client side says. Half an answer ("required" on one side,
+    /// nothing on the other) stays <see cref="InstallSide.Unknown"/> rather than being guessed.
+    /// </summary>
+    public InstallSide Side
+    {
+        get
+        {
+            var client = Word(ClientSide);
+            var server = Word(ServerSide);
+
+            if (server == "unsupported" && client != "unsupported") return InstallSide.ClientOnly;
+            if (client == "unsupported" && server != "unsupported" && server != "unknown")
+                return InstallSide.ServerOnly;
+            if (client is "required" or "optional" && server is "required" or "optional")
+                return InstallSide.Both;
+
+            // The pair is missing or says "unknown": the single-word form, if there is one.
+            foreach (var word in Environment)
+                switch (Word(word))
+                {
+                    case "client_only" or "singleplayer_only": return InstallSide.ClientOnly;
+                    case "server_only" or "dedicated_server_only": return InstallSide.ServerOnly;
+                    case "client_and_server" or "client_only_server_optional"
+                        or "server_only_client_optional" or "client_or_server"
+                        or "client_or_server_prefers_both": return InstallSide.Both;
+                }
+
+            return InstallSide.Unknown;
+        }
+    }
+
+    private static string Word(string? value) => (value ?? string.Empty).Trim().ToLowerInvariant();
+
+    /// <summary>
+    /// True when players must install it too, not only the server. A client-only mod is not this:
+    /// it has nothing to do on the server at all and has its own badge.
+    /// </summary>
     public bool NeedsClient =>
-        string.Equals(ClientSide, "required", StringComparison.OrdinalIgnoreCase);
+        string.Equals(ClientSide, "required", StringComparison.OrdinalIgnoreCase) &&
+        Side != InstallSide.ClientOnly;
 
     /// <param name="hit">A search result.</param>
     /// <param name="projectType">
@@ -74,6 +116,7 @@ public class StoreItem
         Categories = hit.Categories,
         ClientSide = hit.ClientSide,
         ServerSide = hit.ServerSide,
+        Environment = hit.Environment,
         Updated = hit.DateModified
     };
 

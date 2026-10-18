@@ -128,7 +128,7 @@
                                         Command="{Binding InstallCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <ic:SymbolIcon Symbol="ArrowDownload" />
-                                        <TextBlock Text="{loc:Loc Install}" />
+                                        <TextBlock Text="{Binding InstallText}" />
                                     </StackPanel>
                                 </Button>
 

@@ -104,6 +104,48 @@ public partial class ServerModsViewModel : ObservableObject
         OnPropertyChanged(nameof(InstalledCountText));
     }
 
+    // --- The players' pack ---
+
+    /// <summary>
+    /// The client-only mods added for this server's players: Sodium, MaLiLib, a minimap. The server
+    /// never loads them (see <see cref="ClientPack"/>); the export puts them in the pack.
+    /// </summary>
+    public ObservableCollection<ModItem> ClientPackMods { get; } = new();
+
+    public bool HasClientPack => ClientPackMods.Count > 0;
+
+    /// <summary>"Players' pack (3)".</summary>
+    public string ClientPackTitleText => string.Format(Localizer.Get("PlayerPack_TitleFmt"),
+        ClientPackMods.Count);
+
+    private void RefreshClientPack()
+    {
+        ClientPackMods.Clear();
+        if (!IsPluginBased)
+            foreach (var file in ClientPack.Jars(_config))
+                ClientPackMods.Add(new ModItem(file, Path.GetFileName(file), isEnabled: true));
+
+        OnPropertyChanged(nameof(HasClientPack));
+        OnPropertyChanged(nameof(ClientPackTitleText));
+    }
+
+    /// <summary>
+    /// Takes a jar out of the pack. Not asked first, unlike deleting from the server: it is a copy of
+    /// something the store has, and adding it back is one click.
+    /// </summary>
+    [RelayCommand]
+    private void RemoveFromClientPack(ModItem? mod)
+    {
+        if (mod is null) return;
+        try { File.Delete(mod.FilePath); }
+        catch (Exception ex)
+        {
+            Notify(string.Format(Localizer.Get("Msg_ModDeleteError"), ErrorMessages.Describe(ex)),
+                failed: true);
+        }
+        RefreshClientPack();
+    }
+
     // --- Marketplace State ---
 
     [ObservableProperty]
@@ -114,6 +156,43 @@ public partial class ServerModsViewModel : ObservableObject
 
     [ObservableProperty]
     private string _searchStatus = string.Empty;
+
+    // --- Which side of the game the results run on ---
+
+    /// <summary>
+    /// The three ways to cut the browser by where a project runs: everything, what can run on the
+    /// server, and the client-only mods that go in the players' pack.
+    /// </summary>
+    public IReadOnlyList<string> SideOptions { get; } = new[]
+    {
+        Localizer.Get("Side_All"),
+        Localizer.Get("Side_Server"),
+        Localizer.Get("Side_ClientOnly"),
+    };
+
+    /// <summary>Index into <see cref="SideOptions"/>. Everything by default: nothing is hidden.</summary>
+    [ObservableProperty]
+    private int _selectedSideIndex;
+
+    /// <summary>
+    /// Plugins have no client side, so the choice does not exist on a Paper server and the control
+    /// is not drawn.
+    /// </summary>
+    public bool ShowsSideFilter => !IsPluginBased;
+
+    private StoreSideFilter SideFilter => IsPluginBased ? StoreSideFilter.ServerSide
+        : SelectedSideIndex switch
+        {
+            1 => StoreSideFilter.ServerSide,
+            2 => StoreSideFilter.ClientOnly,
+            _ => StoreSideFilter.All
+        };
+
+    partial void OnSelectedSideIndexChanged(int value)
+    {
+        RebuildActiveFilters();
+        if (_hasLoadedOnce) _ = LoadPageAsync(append: false, CancellationToken.None);
+    }
 
     // --- Installed mods update-check state ---
 
@@ -312,6 +391,10 @@ public partial class ServerModsViewModel : ObservableObject
         ActiveFilters.Clear();
         ActiveFilters.Add(new ActiveFilterViewModel(FilterTypeText, FilterTypeBrush, FilterTip));
         ActiveFilters.Add(new ActiveFilterViewModel(FilterVersionText, VersionChipBrush, FilterTip));
+        // Only when it narrows the results: "everything" is the absence of a filter, not a chip.
+        if (ShowsSideFilter && SelectedSideIndex > 0)
+            ActiveFilters.Add(new ActiveFilterViewModel(SideOptions[SelectedSideIndex], VersionChipBrush,
+                SideOptions[SelectedSideIndex]));
         foreach (var tag in SelectedTags)
             ActiveFilters.Add(new ActiveFilterViewModel(tag));
     }
@@ -662,6 +745,7 @@ public partial class ServerModsViewModel : ObservableObject
 
         // After the scan, so a search typed before a rescan still applies to what is there now.
         RebuildVisibleInstalled();
+        RefreshClientPack();
 
         // Whatever changed the folder may have changed what can be cleaned up.
         RescanCleanup();
@@ -929,9 +1013,12 @@ public partial class ServerModsViewModel : ObservableObject
     /// installing a second copy under a different file name is what produces the loader's
     /// "duplicate mod" failure, which is worse than the one being fixed.
     /// </remarks>
-    private async Task<List<string>> InstalledProjectIdsAsync(CancellationToken ct)
+    private async Task<List<string>> InstalledProjectIdsAsync(CancellationToken ct,
+        string? alsoFolder = null)
     {
-        var hashes = (await HashesAsync(ContentFiles(ContentManifest.FolderOf(_config)), ct)).Values.ToList();
+        var files = ContentFiles(ContentManifest.FolderOf(_config)).ToList();
+        if (alsoFolder is not null) files.AddRange(ContentFiles(alsoFolder));
+        var hashes = (await HashesAsync(files, ct)).Values.ToList();
         await LearnAsync(hashes, ct);
         return hashes.Select(Known).OfType<VersionResult>().Select(v => v.ProjectId)
             .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
@@ -964,8 +1051,15 @@ public partial class ServerModsViewModel : ObservableObject
     /// How many were installed, and any that could not be resolved at all. Zero and empty is the
     /// normal answer for a plugin or for a library mod that depends on nothing.
     /// </returns>
+    /// <remarks>
+    /// <paramref name="forPlayerPack"/> is true when <paramref name="folder"/> is the players' pack.
+    /// A library the server already has (Fabric API, nearly always) satisfies the mod and is not
+    /// downloaded again; one that is only in the pack does not satisfy a server mod, which is why
+    /// this goes one way.
+    /// </remarks>
     private async Task<(int Installed, IReadOnlyList<string> Unresolved)> InstallDependenciesAsync(
-        VersionResult version, string jarPath, string folder, CancellationToken ct = default)
+        VersionResult version, string jarPath, string folder, bool forPlayerPack = false,
+        CancellationToken ct = default)
     {
         var declared = ModDependencyService.DeclaredModIds(jarPath);
         var hasModrinthDeps = version.Dependencies.Any(d =>
@@ -976,7 +1070,7 @@ public partial class ServerModsViewModel : ObservableObject
 
         Notify(Localizer.Get("Msg_ResolvingDependencies"), failed: false, transient: true);
 
-        var installedIds = await InstalledProjectIdsAsync(ct);
+        var installedIds = await InstalledProjectIdsAsync(ct, forPlayerPack ? folder : null);
         var plan = await _dependencies.ResolveMissingAsync(
             new[] { version }, _config.Type, _config.GameVersion, installedIds, ct);
 
@@ -1000,6 +1094,7 @@ public partial class ServerModsViewModel : ObservableObject
         {
             // Read again each round: what was just downloaded may carry what the next one needs.
             var providedHere = ModIdsProvidedIn(folder);
+            if (forPlayerPack) providedHere.UnionWith(ModIdsProvidedIn(ContentManifest.FolderOf(_config)));
             pending = pending.Where(id => !providedHere.Contains(id)).ToList();
             if (pending.Count == 0) break;
 
@@ -1401,14 +1496,24 @@ public partial class ServerModsViewModel : ObservableObject
                 texts.AddRange(InstallScriptBuilder.Build(
                     _config.Name, _config.Type, _config.GameVersion, DateTime.Now, loader));
 
-            ModpackWriter.Write(
-                destination, contentFolder,
-                jars.Where(j => keep.Contains(Path.GetFileName(j))).ToList(),
-                texts);
+            // The client-only mods go in as they are: they are in the pack because somebody put
+            // them there for the players, so neither the table nor the server's folder gets a say.
+            // A name the server's jars already use is skipped: two files in one folder cannot share
+            // it, and the server's copy is the one the players need to match.
+            var included = jars.Where(j => keep.Contains(Path.GetFileName(j))).ToList();
+            var packJars = IsPluginBased
+                ? new List<string>()
+                : ClientPack.Jars(_config)
+                    .Where(j => !included.Any(i => string.Equals(Path.GetFileName(i),
+                        Path.GetFileName(j), StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
+
+            ModpackWriter.Write(destination, contentFolder, included.Concat(packJars).ToList(), texts);
 
             // "Not degraded" rather than "a request went out": packing everything needs no store
             // answer, so it is not the reduced result the offline note is there to explain.
-            return new ModpackResult(plan.Included, plan.Excluded, everything || sides.Count > 0);
+            var packed = plan.Included.Concat(packJars.Select(j => Path.GetFileName(j))).ToList();
+            return new ModpackResult(packed, plan.Excluded, everything || sides.Count > 0);
         }, ct);
     }
 
@@ -1637,7 +1742,7 @@ public partial class ServerModsViewModel : ObservableObject
         {
             var response = await _modrinthService.SearchModsAsync(
                 query, _config.Type, _config.GameVersion, index, _offset, PageSize,
-                facets.Count > 0 ? facets : null, ct);
+                facets.Count > 0 ? facets : null, ct, SideFilter);
 
             // A newer search started while this one was in flight: its results are the ones that
             // match what the interface is showing, so drop these.
@@ -1761,9 +1866,19 @@ public partial class ServerModsViewModel : ObservableObject
     /// offers the last few); without it the newest compatible one is resolved, as before.
     /// This is the only install path in the app — the details page routes through it too.
     /// </summary>
+    /// <param name="projectId">The project to install.</param>
+    /// <param name="chosen">One exact version, or null for the newest compatible one.</param>
+    /// <param name="toPlayerPack">
+    /// Put it in the players' pack instead of the server's folder: for the client-only mods, which
+    /// do nothing on a server. Everything else about the install is the same.
+    /// </param>
     /// <returns>True when the mod ended up installed.</returns>
-    public async Task<bool> InstallModAsync(string projectId, VersionResult? chosen = null)
+    public async Task<bool> InstallModAsync(string projectId, VersionResult? chosen = null,
+        bool toPlayerPack = false)
     {
+        // A plugin server has no players' pack: its content is the folder.
+        toPlayerPack &= !IsPluginBased;
+
         IsSearching = true;
         // transient: progress, not an outcome — it must not time out while the download runs.
         Notify(Localizer.Get("Msg_ResolvingVersion"), failed: false, transient: true);
@@ -1781,7 +1896,9 @@ public partial class ServerModsViewModel : ObservableObject
 
             var file = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.First();
 
-            var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
+            var modsFolder = toPlayerPack
+                ? ClientPack.FolderOf(_config)
+                : Path.Combine(_config.FolderPath, ContentFolder);
             Directory.CreateDirectory(modsFolder);
             // The file name comes from the Modrinth API, so the join goes through the one
             // place that keeps it inside the folder.
@@ -1819,7 +1936,8 @@ public partial class ServerModsViewModel : ObservableObject
             // The libraries it needs, in the same click. Almost every Fabric mod declares at least
             // fabric-api, and a mod installed without them is a server that refuses to start with a
             // list of names the user never chose and has no way to act on from here.
-            var (extra, unresolved) = await InstallDependenciesAsync(version, destPath, modsFolder);
+            var (extra, unresolved) = await InstallDependenciesAsync(version, destPath, modsFolder,
+                toPlayerPack);
             RefreshInstalledMods();
 
             // A dependency with no build for this Minecraft version is not an install failure — the
@@ -1830,8 +1948,9 @@ public partial class ServerModsViewModel : ObservableObject
                     failed: true);
             else
                 Notify(extra == 0
-                        ? Localizer.Get("Msg_ModInstalled")
-                        : string.Format(Localizer.Get("Msg_ModInstalledWithDepsFmt"), extra),
+                        ? Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPack" : "Msg_ModInstalled")
+                        : string.Format(Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPackWithDepsFmt"
+                            : "Msg_ModInstalledWithDepsFmt"), extra),
                     failed: false);
             return true;
         }
@@ -1914,6 +2033,12 @@ public partial class ModrinthProjectViewModel : ObservableObject
     /// <summary>True when players have to install it too — the one caveat worth showing up front.</summary>
     public bool NeedsClient => _item.NeedsClient;
 
+    /// <summary>True for a mod that only runs on the client: it goes to the players' pack.</summary>
+    public bool IsClientOnly => _item.Side == InstallSide.ClientOnly && !_parent.IsPluginBased;
+
+    /// <summary>What the install button says: where the mod is going, when it is not the server.</summary>
+    public string InstallLabel => Localizer.Get(IsClientOnly ? "Store_AddToPlayerPack" : "Install");
+
     [ObservableProperty]
     private bool _isInstalling;
 
@@ -1967,7 +2092,7 @@ public partial class ModrinthProjectViewModel : ObservableObject
     private async Task InstallAsync()
     {
         IsInstalling = true;
-        await _parent.InstallModAsync(Id);
+        await _parent.InstallModAsync(Id, toPlayerPack: IsClientOnly);
         IsInstalling = false;
     }
 }
