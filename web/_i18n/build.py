@@ -76,6 +76,7 @@ def localize(html, code, meta, mapping):
 
     # Las páginas viven en /xx/, así que las imágenes quedan un nivel por encima.
     out = out.replace('"assets/', '"../assets/')
+    out = out.replace(', assets/', ', ../assets/')   # el resto de URLs de un srcset
 
     out = out.replace('<html lang="es">', '<html lang="%s">' % meta["lang"])
     out = out.replace('content="es_ES"', 'content="%s"' % meta["locale"])

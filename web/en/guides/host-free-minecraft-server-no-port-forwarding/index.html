@@ -39,9 +39,7 @@
 <meta name="twitter:description" content="Host a free Minecraft server on your PC and let friends join without forwarding router ports: built-in Playit.gg tunnel, no fees and no network setup.">
 <meta name="twitter:image" content="https://mc-server-launcher.vercel.app/assets/og/en.jpg">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="font" type="font/woff2" href="../../../assets/fonts/inter-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff" href="../../../assets/mc/minecraft.woff" crossorigin>
 <link rel="preload" as="image" href="../../../assets/mc/button_hover.png">
 
@@ -204,6 +202,12 @@
    eso los titulares cambian de tamaño a escalones y no con clamp(). */
 @font-face{font-family:"Minecraft Web"; src:url("../../../assets/mc/minecraft.woff") format("woff");
   font-weight:400; font-display:swap}
+/* Inter, el subconjunto latino (cubre es, en, de, fr y pt) servido desde aquí: con Google Fonts
+   el CSS de fuentes bloqueaba el primer pintado ~0,8 s en móvil. Un solo archivo variable
+   sirve todos los pesos. Licencia OFL: https://github.com/rsms/inter/blob/master/LICENSE.txt */
+@font-face{font-family:Inter; src:url("../../../assets/fonts/inter-latin.woff2") format("woff2");
+  font-weight:400 800; font-style:normal; font-display:swap;
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
   --bg-base:#070B14; --bg-elev:#0D1524; --bg-card:#111C2E;
   --border:#1E2D45; --text:#E8F0F8; --muted:#93A4BC;
@@ -422,6 +426,7 @@ section{position:relative; padding-block:clamp(56px,10vh,104px); scroll-margin-t
 .shot-bar img{width:18px; height:18px; image-rendering:pixelated}
 .shot-bar b{font-size:13px; font-weight:600}
 .shot-bar i{margin-left:auto; color:var(--muted); font-style:normal; font-size:12px; letter-spacing:2px}
+.shot picture{display:block}
 .shot img.cap{width:100%; height:auto}
 
 /* ---------- PANELES DE INVENTARIO ---------- */
@@ -533,7 +538,9 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
 }
 /* titulares que se montan palabra a palabra, como bloques encajando */
 .build > span{display:inline-block; opacity:0; transform:translateY(-26px) rotate(-6deg)}
-.build.in > span{animation:snap .5s cubic-bezier(.2,1.6,.4,1) forwards; animation-delay:calc(var(--i) * .07s)}
+/* Más corto que antes (.5 s y .07 s por palabra): el titular es el elemento más grande de la
+   portada, y hasta que no termina de encajar no cuenta como pintado. */
+.build.in > span{animation:snap .4s cubic-bezier(.2,1.6,.4,1) forwards; animation-delay:calc(var(--i) * .05s)}
 @keyframes snap{to{opacity:1; transform:translateY(0) rotate(0)}}
 /* "carga de chunk": el bloque aparece por franjas verticales, como el terreno al generarse */
 .chunk{clip-path:inset(0 100% 0 0)}
@@ -647,7 +654,7 @@ a.card{color:var(--gui-text)}
 
 <header class="nav">
   <div class="wrap">
-    <a class="brand" href="../../"><img src="../../../assets/logo.png" alt="MC-ServerLauncher" width="40" height="40"></a>
+    <a class="brand" href="../../"><img src="../../../assets/logo-80.webp" alt="MC-ServerLauncher" width="40" height="40"></a>
     <nav id="sections">
       <a href="../../#caracteristicas">Features</a>
       <a href="../../#como-funciona">How it works</a>
@@ -740,8 +747,8 @@ a.card{color:var(--gui-text)}
       <span class="eyebrow">MORE GUIDES</span>
       <h2 class="h2">Keep reading</h2>
       <div class="grid g3">
-        <a class="card" data-goatcounter-click="guia-gratis-mas-dormir" data-goatcounter-title="Guía gratis: más dormir" href="../minecraft-server-stops-itself-when-empty/"><div class="slot"><img src="../../../assets/mc/totem.png" alt="" width="48" height="48"></div><h3>Minecraft server that stops itself when it is empty</h3><p>Automatic shutdown when idle and start-up when someone tries to join, without wasting resources.</p></a>
-        <a class="card" data-goatcounter-click="guia-gratis-mas-mods" data-goatcounter-title="Guía gratis: más mods" href="../make-minecraft-server-with-mods/"><div class="slot"><img src="../../../assets/mc/enchanted_book.png" alt="" width="48" height="48"></div><h3>How to make a Minecraft server with mods</h3><p>Fabric, Forge or NeoForge, Modrinth mods with their dependencies, and a pack for your friends.</p></a>
+        <a class="card" data-goatcounter-click="guia-gratis-mas-dormir" data-goatcounter-title="Guía gratis: más dormir" href="../minecraft-server-stops-itself-when-empty/"><div class="slot"><img src="../../../assets/mc/totem.webp" alt="" width="48" height="48"></div><h3>Minecraft server that stops itself when it is empty</h3><p>Automatic shutdown when idle and start-up when someone tries to join, without wasting resources.</p></a>
+        <a class="card" data-goatcounter-click="guia-gratis-mas-mods" data-goatcounter-title="Guía gratis: más mods" href="../make-minecraft-server-with-mods/"><div class="slot"><img src="../../../assets/mc/enchanted_book.webp" alt="" width="48" height="48"></div><h3>How to make a Minecraft server with mods</h3><p>Fabric, Forge or NeoForge, Modrinth mods with their dependencies, and a pack for your friends.</p></a>
       </div>
     </div>
   </section>
@@ -790,10 +797,19 @@ a.card{color:var(--gui-text)}
 <script>
 (function(){
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Lo decorativo (estrellas, paisaje) se dibuja cuando el navegador queda libre, no antes del
+  // primer pintado: así el titular y los botones no esperan al trabajo de los fondos.
+  var idle = window.requestIdleCallback
+    ? function(fn){ requestIdleCallback(fn, { timeout: 1200 }); }
+    : function(fn){ setTimeout(fn, 300); };
 
   // --- estrellas del cielo nocturno ---
-  var stars = document.getElementById('stars'), frag = document.createDocumentFragment();
-  for (var i = 0; i < 90; i++) {
+  var stars = document.getElementById('stars');
+  idle(function(){
+  var frag = document.createDocumentFragment();
+  // Menos estrellas en pantallas pequeñas: son 90 elementos animados y en un móvil lento
+  // solo suman trabajo de estilos.
+  for (var i = 0, n = innerWidth < 700 ? 40 : 90; i < n; i++) {
     var s = document.createElement('i');
     s.className = 'star';
     s.style.left = (Math.random() * 100) + '%';
@@ -802,6 +818,7 @@ a.card{color:var(--gui-text)}
     frag.appendChild(s);
   }
   stars.appendChild(frag);
+  });
 
   // --- titulares que se montan palabra a palabra ---
   // Recorre los nodos hijos en vez de partir el HTML en crudo: así las etiquetas
@@ -874,8 +891,14 @@ a.card{color:var(--gui-text)}
     return Math.max(0, Math.min(1, d));
   }
 
+  // Leer scrollHeight justo después de escribir estilos obliga al navegador a recalcular todo el
+  // layout de golpe (122 ms en móvil lento). Se mide aquí, fuera del scroll, con un ResizeObserver
+  // que avisa cuando el layout ya está hecho y cuando cambia el alto de la página.
+  var docMax = 0;
+  new ResizeObserver(function(){ docMax = document.body.scrollHeight - innerHeight; onScroll(); })
+    .observe(document.body);
   function onScroll(){
-    var max = document.body.scrollHeight - innerHeight;
+    var max = docMax;
     var p = max > 0 ? Math.min(scrollY / max, 1) : 0;
     // La barra de XP es un indicador de progreso, no un adorno: se actualiza siempre,
     // también con "movimiento reducido" activado.
@@ -995,7 +1018,10 @@ a.card{color:var(--gui-text)}
     if (!W) return;
     lastW = W;
     var B = small ? 32 : 48;                 // un bloque: 2 o 3 px por píxel de la textura
-    var dpr = Math.min(devicePixelRatio || 1, 2), r = rng(20261014);
+    // En pantallas pequeñas el paisaje se dibuja a 1x: el canvas ya se amplía con
+    // image-rendering:pixelated, así que los bloques salen igual de nítidos, pero son hasta 4 veces
+    // menos píxeles que rellenar en un móvil, que era la mayor parte del trabajo de arranque.
+    var dpr = small ? 1 : Math.min(devicePixelRatio || 1, 2), r = rng(20261014);
     var FLOWERS = ['poppy','dandelion','cornflower','oxeye_daisy','azure_bluet'];
 
     // Tres capas: las de atrás con bloques más pequeños y neblina del color del cielo.
@@ -1130,7 +1156,7 @@ a.card{color:var(--gui-text)}
     root.style.setProperty('--ground', (layers[2].base * B) + 'px');
   }
 
-  Promise.all(TEX.map(load)).then(drawLand);
+  Promise.all(TEX.map(load)).then(function(){ idle(drawLand); });
   // En móvil la barra de direcciones cambia el alto al hacer scroll: solo se redibuja si
   // cambia el ancho, que es lo que altera el paisaje.
   var landTimer;
@@ -1156,6 +1182,8 @@ a.card{color:var(--gui-text)}
     var cs = document.getElementById('langCur');
     cs.parentNode.insertBefore(flag, cs);
     cs.textContent = cur.getAttribute('hreflang').toUpperCase();
+    // El nombre accesible tiene que empezar por el texto visible (WCAG 2.5.3).
+    langBtn.setAttribute('aria-label', cs.textContent + ' · ' + langBtn.getAttribute('aria-label'));
   }
   function setLangs(open){ langList.hidden = !open; langBtn.setAttribute('aria-expanded', open); }
   langBtn.addEventListener('click', function(e){ e.stopPropagation(); setLangs(langList.hidden); });
