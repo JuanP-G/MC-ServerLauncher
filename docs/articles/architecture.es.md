@@ -959,7 +959,14 @@ no da:
   son gruesas (casi la mitad de los mods de servidor más usados están en "utility") y no responden a
   lo que más le importa a quien lleva un servidor — si los jugadores tienen que instalarlo también —
   así que las categorías, unas reglas por palabras clave y el lado cliente/servidor se combinan a
-  través de `Resources/store-tags.json`.
+  través de `Resources/store-tags.json`. Cada regla suma puntos y una etiqueta se aplica desde 2: una
+  categoría vale 3 (1,5 si el autor marcó más de cuatro temas, porque esos autores lo marcan todo) y
+  una palabra clave 3 en el título o 2 en la descripción. Las palabras clave son **palabras enteras**
+  (`optimiz*` admite cualquier terminación), nunca subcadenas — la versión por subcadenas encontraba
+  "sword" en "password" y "tps" en "https" — y `equipment` de Modrinth es una etiqueta propia, no
+  "combate". Una librería va primero y deja sitio a una etiqueta más, las etiquetas solo de plugin no
+  se dan a los mods, y un proyecto que no puntúa no lleva etiquetas y enseña la línea de su autor en
+  vez de una suposición (`StoreTagServiceTests` guarda los proyectos reales que salieron mal).
 - **`StoreSummaryService`** responde a "¿qué le hace esto a mi servidor?" en el idioma del usuario,
   desde un catálogo escrito a mano (`Resources/store-summaries.json`, generado por
   `tools/generate-store-summaries.py`) con una frase de reserva construida con lo que Modrinth sí

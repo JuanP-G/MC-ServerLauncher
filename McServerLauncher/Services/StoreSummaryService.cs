@@ -29,9 +29,6 @@ namespace McServerLauncher.Services;
 /// </summary>
 public sealed class StoreSummaryService
 {
-    /// <summary>Shared instance; the catalogue is read once per run.</summary>
-    public static StoreSummaryService Shared { get; } = new();
-
     private const string EmbeddedResourceName = "McServerLauncher.Resources.store-summaries.json";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -40,6 +37,12 @@ public sealed class StoreSummaryService
         ReadCommentHandling = JsonCommentHandling.Skip,
         AllowTrailingCommas = true
     };
+
+    /// <summary>
+    /// Shared instance; the catalogue is read once per run. Declared after the static fields it
+    /// uses: static initialisers run in the order they are written, and the constructor needs them.
+    /// </summary>
+    public static StoreSummaryService Shared { get; } = new();
 
     /// <summary>By project id.</summary>
     private readonly Dictionary<string, Dictionary<string, string>> _byId;
@@ -125,7 +128,7 @@ public sealed class StoreSummaryService
     {
         var curated = Curated(item);
         if (!string.IsNullOrWhiteSpace(curated)) return curated;
-        return Lead(item, tags) + " " + SideSentence(item);
+        return (Lead(item, tags) ?? Generic(item)) + " " + SideSentence(item);
     }
 
     /// <summary>
@@ -146,13 +149,19 @@ public sealed class StoreSummaryService
     /// </summary>
     public StoreBlurb Blurb(StoreItem item, IReadOnlyList<StoreTagDefinition>? tags = null)
     {
+        var author = item.Description?.Trim() ?? string.Empty;
+
+        // Without a hand-written summary a card says what the tags say, but only when a tag was
+        // earned. A project nothing could be said about shows what its author wrote — in English,
+        // but true — rather than "a combat mod" for a backpack.
         var curated = Curated(item);
-        var summary = string.IsNullOrWhiteSpace(curated) ? Lead(item, tags) : curated!;
+        var summary = !string.IsNullOrWhiteSpace(curated) ? curated!
+            : Lead(item, tags) ?? (author.Length > 0 ? author : Generic(item));
 
         // The author's line is worth a second line only when it isn't just the summary again.
-        var tagline = item.Description?.Trim() ?? string.Empty;
-        if (string.Equals(tagline, summary.Trim(), StringComparison.OrdinalIgnoreCase))
-            tagline = string.Empty;
+        var tagline = string.Equals(author, summary.Trim(), StringComparison.OrdinalIgnoreCase)
+            ? string.Empty
+            : author;
 
         return new StoreBlurb(summary, tagline);
     }
@@ -160,25 +169,30 @@ public sealed class StoreSummaryService
     /// <summary>
     /// The opening sentence built from what Modrinth tells us: the kind of project and its main
     /// topic. Classifies on demand, so a caller with no tags at hand still gets "world generation
-    /// mod" instead of the bare "a mod for your server".
+    /// mod". Null when no topic was earned: a sentence that names none says nothing, so the caller
+    /// decides what to show instead (see <see cref="Blurb"/>).
     /// </summary>
-    private static string Lead(StoreItem item, IReadOnlyList<StoreTagDefinition>? tags)
+    private static string? Lead(StoreItem item, IReadOnlyList<StoreTagDefinition>? tags)
     {
-        var isPlugin = string.Equals(item.ProjectType, "plugin", StringComparison.OrdinalIgnoreCase);
-
         // The lead-in names the main tag when there is one worth naming. Tags that describe how a
         // project is installed rather than what it does would produce "mod for server-side only",
         // so they never lead the sentence.
         tags ??= StoreTagService.Shared.Classify(item, max: 1, onlyKind: StoreTagService.TopicKind);
         var headline = tags.FirstOrDefault(t =>
             string.Equals(t.Kind, StoreTagService.TopicKind, StringComparison.OrdinalIgnoreCase));
+        if (headline is null) return null;
 
-        return headline is null
-            ? Localizer.Get(isPlugin ? "Store_Fallback_Plugin" : "Store_Fallback_Mod")
-            : string.Format(
-                Localizer.Get(isPlugin ? "Store_Fallback_PluginFmt" : "Store_Fallback_ModFmt"),
-                InSentence(StoreTagService.LabelFor(headline)));
+        return string.Format(
+            Localizer.Get(IsPlugin(item) ? "Store_Fallback_PluginFmt" : "Store_Fallback_ModFmt"),
+            InSentence(StoreTagService.LabelFor(headline)));
     }
+
+    /// <summary>The bare "a mod for your server", for a project nothing more can be said about.</summary>
+    private static string Generic(StoreItem item) =>
+        Localizer.Get(IsPlugin(item) ? "Store_Fallback_Plugin" : "Store_Fallback_Mod");
+
+    private static bool IsPlugin(StoreItem item) =>
+        string.Equals(item.ProjectType, "plugin", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// The part that actually matters for a server: does everyone have to install this, or only you?

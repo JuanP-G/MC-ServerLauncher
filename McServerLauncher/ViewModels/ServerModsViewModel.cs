@@ -479,8 +479,11 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>This server's Minecraft version.</summary>
     internal string GameVersion => _config.GameVersion;
 
-    /// <summary>What Modrinth calls this kind of content, for the tag catalogue's chip filter.</summary>
-    private string ProjectTypeName => IsPluginBased ? "plugin" : "mod";
+    /// <summary>
+    /// What this server runs, "mod" or "plugin": the tag catalogue's chip filter, and what every
+    /// <see cref="StoreItem"/> shown here is stamped with. Modrinth itself calls a plugin a "mod".
+    /// </summary>
+    internal string ProjectTypeName => IsPluginBased ? "plugin" : "mod";
 
     /// <summary>Folder where content is installed: "plugins" for Paper, "mods" otherwise.</summary>
     private string ContentFolder => ServerTypeCatalog.ContentFolder(_config.Type);
@@ -1921,7 +1924,7 @@ public partial class ModrinthProjectViewModel : ObservableObject
     public bool HasIcon => Icon is not null;
 
     public ModrinthProjectViewModel(ProjectResult project, ServerModsViewModel parent)
-        : this(StoreItem.From(project), parent)
+        : this(StoreItem.From(project, parent.ProjectTypeName), parent)
     {
     }
 
