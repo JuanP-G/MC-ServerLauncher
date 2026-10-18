@@ -27,6 +27,12 @@ namespace McServerLauncher.Services;
 /// rather than a guess.
 /// </para>
 /// <para>
+/// Where the downloaded <see cref="StoreCatalogService"/> has an answer for a project, that answer
+/// is used instead: it comes from reading the whole description with a model, which is what these
+/// rules can only approximate. The rules remain what runs for every project the catalogue has
+/// never seen, and what runs offline on a first launch.
+/// </para>
+/// <para>
 /// The catalogue is read from the embedded copy, unless
 /// <c>%APPDATA%\McServerLauncher\store-tags.json</c> exists, in which case that file is used
 /// instead. Tags can therefore be added, translated, recoloured or re-mapped without a new build.
@@ -73,9 +79,12 @@ public sealed class StoreTagService
     /// Shared instance; the catalogue is read once per run. Declared after the static fields it
     /// uses: static initialisers run in the order they are written, and the constructor needs them.
     /// </summary>
-    public static StoreTagService Shared { get; } = new();
+    public static StoreTagService Shared { get; } = new(catalog: StoreCatalogService.Shared);
 
     private readonly List<StoreTagDefinition> _tags;
+
+    /// <summary>The downloaded catalogue, or null to classify by the rules alone.</summary>
+    private readonly StoreCatalogService? _catalog;
 
     /// <summary>Each tag with its keywords already turned into the form they are matched in.</summary>
     private readonly List<(StoreTagDefinition Tag, string[] Patterns)> _compiled;
@@ -86,8 +95,10 @@ public sealed class StoreTagService
     /// <summary>Every tag in the catalogue, ordered by priority.</summary>
     public IReadOnlyList<StoreTagDefinition> All => _tags;
 
-    public StoreTagService(string? overridePath = null)
+    public StoreTagService(string? overridePath = null, StoreCatalogService? catalog = null)
     {
+        _catalog = catalog;
+
         var path = overridePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "McServerLauncher", "store-tags.json");
@@ -144,6 +155,42 @@ public sealed class StoreTagService
     {
         if (max <= 0) return Array.Empty<StoreTagDefinition>();
 
+        // The catalogue decides the topics when it has an answer. How a project has to be installed
+        // is a fact about the project and not a judgement about it, so that part is still the rules'.
+        if (onlyKind is null or TopicKind && FromCatalogue(item) is { } topics)
+        {
+            var installTags = onlyKind is null
+                ? ClassifyByRules(item, max, "install")
+                : Array.Empty<StoreTagDefinition>();
+            var all = topics.Concat(installTags).ToList();
+            return all.Count > max ? all.Take(max).ToList() : all;
+        }
+
+        return ClassifyByRules(item, max, onlyKind);
+    }
+
+    /// <summary>
+    /// The topics the downloaded catalogue gives a project: its main one, then the ones that fit
+    /// nearly as well. Null when the catalogue is absent, has nothing for the project, or was unsure
+    /// (it leaves the topic out then), so the rules answer instead.
+    /// </summary>
+    private List<StoreTagDefinition>? FromCatalogue(StoreItem item)
+    {
+        var entry = _catalog?.Find(item.Id);
+        if (entry?.Topic is not { } topicId) return null;
+
+        // An id the app does not know, or a tag that does not exist for this kind of server, is
+        // the catalogue being ahead of the app or wrong; neither is a reason to show it.
+        var found = new List<StoreTagDefinition>();
+        foreach (var id in new[] { topicId }.Concat(entry.Also))
+            if (Find(id) is { } tag && IsTopic(tag) && AppliesTo(tag, item) && !found.Contains(tag))
+                found.Add(tag);
+
+        return found.Count > 0 && found[0].Id == topicId ? found : null;
+    }
+
+    private IReadOnlyList<StoreTagDefinition> ClassifyByRules(StoreItem item, int max, string? onlyKind)
+    {
         var categories = new HashSet<string>(item.Categories, StringComparer.OrdinalIgnoreCase);
         var title = Words(item.Title);
         var description = Words(item.Description);

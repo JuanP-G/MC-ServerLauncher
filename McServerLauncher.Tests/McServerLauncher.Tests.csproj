@@ -26,4 +26,9 @@
     <ProjectReference Include="..\McServerLauncher\McServerLauncher.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Written by tools/store-catalog itself, so a test can say the app reads what the pipeline writes. -->
+    <None Update="Fixtures\store-catalog.sample.json.gz" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

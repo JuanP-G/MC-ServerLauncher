@@ -944,6 +944,22 @@ removes it with the server. The same installer does the download, the checksum a
 the pack's jars to the zip under `mods/`, past the server-only table, which is about the server's
 jars and not about what somebody put there for the players.
 
+Rules that read a title and one line of description cannot tell a backpack mod from an armour mod, so
+beyond them there is a **catalogue made outside the app**. `tools/store-catalog/build_catalog.py` lists
+the most downloaded Modrinth projects for the newest Minecraft versions and, for each new or changed
+one, asks a *decision model* (Cloudflare's Clef, or anything speaking the same protocol, Jev included)
+one closed question — which of the app's topics is this about? — and a small text model for a sentence
+in five languages, which the decision model then checks against the text (is anything in it unsupported,
+is each translation the same sentence). It never calls from the app: a daily workflow on the free
+Workers AI allowance publishes `store-catalog.json.gz` on the `catalog` branch, and
+`StoreCatalogService` downloads it at most once a day, with its ETag, to `cache\store-catalog.json.gz`.
+It is the same kind of request as the update check — anonymous, read-only, nothing about the user or
+the server in it — and the store works offline on the last copy. What it says never beats a person
+(`store-summaries.json` comes first) or the app's own idea of a tag (an unknown or wrong-kind topic is
+skipped), and a file that is too big, from a newer format or half broken is ignored whole. A change of
+model or of questions is first measured against 190 hand-labelled projects
+(`tools/store-catalog/golden_set.json`) and publishes nothing below 80 %.
+
 Both files can be overridden by a copy in the user's data folder, so tags and summaries can change
 without a new build. Opening a result shows `ModDetailsViewModel` — gallery, versions, dependencies,
 links and related projects — painted in two passes, so what the search result already carried appears

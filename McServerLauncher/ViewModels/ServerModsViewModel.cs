@@ -1681,6 +1681,11 @@ public partial class ServerModsViewModel : ObservableObject
         // be worth suggesting today.
         ArmCleanup();
 
+        // The catalogue that tags and describes the results is a file downloaded at most once a
+        // day. Asked for here, behind the first search, so that nothing waits for it: cards built
+        // before it arrives use the last copy on disk, and the next ones use the new one.
+        _ = StoreCatalogService.Shared.RefreshAsync(_lifetime.Token);
+
         if (_hasLoadedOnce) return;
         _ = LoadPageAsync(append: false, CancellationToken.None);
     }

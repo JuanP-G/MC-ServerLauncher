@@ -1,0 +1,1767 @@
+{
+ "$comment": [
+  "Hand-labelled projects the catalogue pipeline is measured against. 'primary' is the one topic a",
+  "server owner would expect to see first; 'ok' lists other topics that are just as right, so a model",
+  "that picks one of them is not marked wrong. Only the id is used to fetch the project: title and",
+  "slug are for people. Labels are the maintainers' judgement and are meant to be argued with in a PR."
+ ],
+ "version": 1,
+ "projects": [
+  {
+   "id": "P7dR8mSH",
+   "slug": "fabric-api",
+   "title": "Fabric API",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "AANobbMI",
+   "slug": "sodium",
+   "title": "Sodium",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "YL57xq9U",
+   "slug": "iris",
+   "title": "Iris Shaders",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": [
+    "performance"
+   ]
+  },
+  {
+   "id": "NNAgCjsB",
+   "slug": "entityculling",
+   "title": "Entity Culling",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "9s6osm5g",
+   "slug": "cloth-config",
+   "title": "Cloth Config API",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "uXXizFIs",
+   "slug": "ferrite-core",
+   "title": "FerriteCore",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "mOgUt4GM",
+   "slug": "modmenu",
+   "title": "Mod Menu",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "management"
+   ]
+  },
+  {
+   "id": "gvQqBUqZ",
+   "slug": "lithium",
+   "title": "Lithium",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "5ZwdcRci",
+   "slug": "immediatelyfast",
+   "title": "ImmediatelyFast",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "1eAoo2KR",
+   "slug": "yacl",
+   "title": "YetAnotherConfigLib (YACL)",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "Ha28R6CL",
+   "slug": "fabric-language-kotlin",
+   "title": "Fabric Language Kotlin",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "1bokaNcj",
+   "slug": "xaeros-minimap",
+   "title": "Xaero's Minimap",
+   "kind": "mod",
+   "primary": "exploration",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "BVzZfTc1",
+   "slug": "entitytexturefeatures",
+   "title": "[ETF] Entity Texture Features",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "lhGA9TYQ",
+   "slug": "architectury-api",
+   "title": "Architectury API",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "PtjYWJkn",
+   "slug": "sodium-extra",
+   "title": "Sodium Extra",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "NcUtCpym",
+   "slug": "xaeros-world-map",
+   "title": "Xaero's World Map",
+   "kind": "mod",
+   "primary": "exploration",
+   "ok": []
+  },
+  {
+   "id": "4I1XuqiY",
+   "slug": "entity-model-features",
+   "title": "[EMF] Entity Model Features",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "OhduvhIc",
+   "slug": "veinminer",
+   "title": "VeinMiner",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "EsAfCjCV",
+   "slug": "appleskin",
+   "title": "AppleSkin",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "food",
+    "utility"
+   ]
+  },
+  {
+   "id": "MPCX6s5C",
+   "slug": "not-enough-animations",
+   "title": "Not Enough Animations",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "Bh37bMuy",
+   "slug": "reeses-sodium-options",
+   "title": "Reese's Sodium Options",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "performance"
+   ]
+  },
+  {
+   "id": "u6dRKJwZ",
+   "slug": "jei",
+   "title": "Just Enough Items (JEI)",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "zV5r3pPn",
+   "slug": "3dskinlayers",
+   "title": "3D Skin Layers",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "1IjD5062",
+   "slug": "continuity",
+   "title": "Continuity",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "8BmcQJ2H",
+   "slug": "geckolib",
+   "title": "Geckolib",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "9eGKb6K1",
+   "slug": "simple-voice-chat",
+   "title": "Simple Voice Chat",
+   "kind": "mod",
+   "primary": "social",
+   "ok": []
+  },
+  {
+   "id": "eXts2L7r",
+   "slug": "placeholder-api",
+   "title": "Text Placeholder API",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "nvQzSEkH",
+   "slug": "jade",
+   "title": "Jade 🔍",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "51shyZVL",
+   "slug": "moreculling",
+   "title": "More Culling",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "w7ThoJFB",
+   "slug": "zoomify",
+   "title": "Zoomify (Zoom)",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "LQ3K71Q1",
+   "slug": "dynamic-fps",
+   "title": "Dynamic FPS",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "dxa0Bm8m",
+   "slug": "veinminer-client",
+   "title": "VeinMiner Hotkey",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "ohNO6lps",
+   "slug": "forge-config-api-port",
+   "title": "Forge Config API Port",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "Wq5SjeWM",
+   "slug": "fancymenu",
+   "title": "FancyMenu",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "decoration"
+   ]
+  },
+  {
+   "id": "e0M1UDsY",
+   "slug": "collective",
+   "title": "Collective",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "QAGBst4M",
+   "slug": "puzzles-lib",
+   "title": "Puzzles Lib",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "J81TRJWm",
+   "slug": "konkrete",
+   "title": "Konkrete",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "MBAkmtvl",
+   "slug": "balm",
+   "title": "Balm",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "aC3cM3Vq",
+   "slug": "mouse-tweaks",
+   "title": "Mouse Tweaks",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "storage"
+   ]
+  },
+  {
+   "id": "yBW8D80W",
+   "slug": "lambdynamiclights",
+   "title": "LambDynamicLights - Dynamic Lights",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "qQyHxfxd",
+   "slug": "no-chat-reports",
+   "title": "No Chat Reports",
+   "kind": "mod",
+   "primary": "social",
+   "ok": [
+    "management"
+   ]
+  },
+  {
+   "id": "qyVF9oeo",
+   "slug": "sound-physics-remastered",
+   "title": "Sound Physics Remastered",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "OsZiaDHq",
+   "slug": "creativecore",
+   "title": "CreativeCore",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "CVT4pFB2",
+   "slug": "melody",
+   "title": "Melody",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "Wb5oqrBJ",
+   "slug": "chat-heads",
+   "title": "Chat Heads",
+   "kind": "mod",
+   "primary": "social",
+   "ok": [
+    "decoration"
+   ]
+  },
+  {
+   "id": "ccKDOlHs",
+   "slug": "owo-lib",
+   "title": "oωo (owo-lib)",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "uy4Cnpcm",
+   "slug": "bookshelf-lib",
+   "title": "Bookshelf",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "k2ZPuTBm",
+   "slug": "essential",
+   "title": "Essential Mod",
+   "kind": "mod",
+   "primary": "social",
+   "ok": []
+  },
+  {
+   "id": "g96Z4WVZ",
+   "slug": "badoptimizations",
+   "title": "BadOptimizations",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "fQEb0iXm",
+   "slug": "krypton",
+   "title": "Krypton",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "hYykXjDp",
+   "slug": "fzzy-config",
+   "title": "Fzzy Config",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "uLbm7CG6",
+   "slug": "language-reload",
+   "title": "Language Reload",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "kkmrDlKT",
+   "slug": "terrablender",
+   "title": "TerraBlender",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "Wnxd13zP",
+   "slug": "clumps",
+   "title": "Clumps",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "O7RBXm3n",
+   "slug": "inventory-profiles-next",
+   "title": "Inventory Profiles Next",
+   "kind": "mod",
+   "primary": "storage",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "fuuu3xnx",
+   "slug": "searchables",
+   "title": "Searchables",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "xv94TkTM",
+   "slug": "controlling",
+   "title": "Controlling",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "rcTfTZr3",
+   "slug": "presence-footsteps",
+   "title": "Presence Footsteps",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "fM515JnW",
+   "slug": "ambientsounds",
+   "title": "AmbientSounds",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "VSNURh3q",
+   "slug": "c2me-fabric",
+   "title": "Concurrent Chunk Management Engine (Fabric)",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "CYQ7VYrM",
+   "slug": "toadlib",
+   "title": "ToadLib",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "FOIvwGKz",
+   "slug": "soundsbegone",
+   "title": "Sounds Be Gone!",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "Lvv4SHrK",
+   "slug": "better-than-mending",
+   "title": "Better Than Mending",
+   "kind": "mod",
+   "primary": "equipment",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "HIuqnQpi",
+   "slug": "common-network",
+   "title": "Common Network",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "6AQIaxuO",
+   "slug": "wthit",
+   "title": "WTHIT",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "Si9Uim4y",
+   "slug": "detail-armor-bar-reconstructed",
+   "title": "Detail Armor Bar Reconstructed",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "equipment"
+   ]
+  },
+  {
+   "id": "oOi0CKes",
+   "slug": "diagonal-windows",
+   "title": "Diagonal Windows",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": [
+    "building"
+   ]
+  },
+  {
+   "id": "GfoMZ9Ly",
+   "slug": "shield-statuses",
+   "title": "Shield Statuses",
+   "kind": "mod",
+   "primary": "combat",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "66VIiT1y",
+   "slug": "universal-bone-meal",
+   "title": "Universal Bone Meal",
+   "kind": "mod",
+   "primary": "farming",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "FQgc8dib",
+   "slug": "diagonal-walls",
+   "title": "Diagonal Walls",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": [
+    "building"
+   ]
+  },
+  {
+   "id": "1W98a849",
+   "slug": "minecraft-comes-alive-reborn",
+   "title": "MCA Reborn",
+   "kind": "mod",
+   "primary": "mobs",
+   "ok": [
+    "adventure"
+   ]
+  },
+  {
+   "id": "W4Ajthd2",
+   "slug": "harvest-with-ease",
+   "title": "Harvest with ease",
+   "kind": "mod",
+   "primary": "farming",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "iqK5uv72",
+   "slug": "serverpingerfixer",
+   "title": "Server Pinger Fixer",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "performance"
+   ]
+  },
+  {
+   "id": "guitPqEi",
+   "slug": "storagedrawers",
+   "title": "Storage Drawers",
+   "kind": "mod",
+   "primary": "storage",
+   "ok": []
+  },
+  {
+   "id": "x9BrsVME",
+   "slug": "macos-input-fixes",
+   "title": "MacOS Input Fixes",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "1bZhdhsH",
+   "slug": "plasmo-voice",
+   "title": "Plasmo Voice",
+   "kind": "mod",
+   "primary": "social",
+   "ok": []
+  },
+  {
+   "id": "WC4UgDcZ",
+   "slug": "grind-enchantments",
+   "title": "Grind enchantments",
+   "kind": "mod",
+   "primary": "equipment",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "w4an97C2",
+   "slug": "macaws-lights-and-lamps",
+   "title": "Macaw's Lights and Lamps",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "T9FDHbY5",
+   "slug": "statuseffecttimer",
+   "title": "Status Effect Timer",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "kzwxhsjp",
+   "slug": "accurate-block-placement-reborn",
+   "title": "Accurate Block Placement Reborn",
+   "kind": "mod",
+   "primary": "building",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "EEIwvQVo",
+   "slug": "tidal-towns",
+   "title": "Tidal Towns",
+   "kind": "mod",
+   "primary": "structures",
+   "ok": [
+    "worldgen"
+   ]
+  },
+  {
+   "id": "hg77g4Pw",
+   "slug": "no-telemetry",
+   "title": "No Telemetry",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": []
+  },
+  {
+   "id": "yjvKidNM",
+   "slug": "lighty",
+   "title": "Lighty",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": []
+  },
+  {
+   "id": "YOs4tZea",
+   "slug": "joy-of-painting",
+   "title": "Joy of Painting",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "sk4iFZGy",
+   "slug": "remove-terralith-intro-message",
+   "title": "Remove Stardust Labs Intro Message",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "KpICtuVx",
+   "slug": "in-control",
+   "title": "In Control!",
+   "kind": "mod",
+   "primary": "mobs",
+   "ok": [
+    "management"
+   ]
+  },
+  {
+   "id": "iDiIfZLX",
+   "slug": "seasonhud-fabric",
+   "title": "SeasonHud-Fabric",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "o4y0N2hu",
+   "slug": "betterhurtcam",
+   "title": "BetterHurtCam",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "bcOsQHnC",
+   "slug": "female-gender",
+   "title": "Female Gender Mod",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "z440MEwJ",
+   "slug": "no-chat-restrictions",
+   "title": "No Chat Restrictions",
+   "kind": "mod",
+   "primary": "social",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "YWVAO3wq",
+   "slug": "ati-structures-vanilla-edition",
+   "title": "ATi Structures - Vanilla Edition",
+   "kind": "mod",
+   "primary": "structures",
+   "ok": [
+    "worldgen"
+   ]
+  },
+  {
+   "id": "laNoi025",
+   "slug": "screenshot-viewer",
+   "title": "Screenshot Viewer",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "H7N61Wcl",
+   "slug": "dismount-entity",
+   "title": "Dismount Entity",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "mobs"
+   ]
+  },
+  {
+   "id": "bbGCtEvb",
+   "slug": "armor-statues",
+   "title": "Armor Statues",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": [
+    "equipment"
+   ]
+  },
+  {
+   "id": "E7ZFR7qk",
+   "slug": "faux-custom-entity-data",
+   "title": "Faux Custom Entity Data",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "Nn8Wasaq",
+   "slug": "craterlib",
+   "title": "CraterLib",
+   "kind": "mod",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "68kWHuUF",
+   "slug": "universal_ores",
+   "title": "Universal Ores",
+   "kind": "mod",
+   "primary": "worldgen",
+   "ok": []
+  },
+  {
+   "id": "9rlXSyLg",
+   "slug": "crate-delight",
+   "title": "Crate Delight",
+   "kind": "mod",
+   "primary": "food",
+   "ok": [
+    "storage"
+   ]
+  },
+  {
+   "id": "P5wB88AS",
+   "slug": "repurposed-structures-farmers-delight-compat",
+   "title": "Repurposed Structures - Farmer's Delight Compat",
+   "kind": "mod",
+   "primary": "structures",
+   "ok": [
+    "worldgen"
+   ]
+  },
+  {
+   "id": "3s19I5jr",
+   "slug": "skinshuffle",
+   "title": "Skin Shuffle",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "decoration"
+   ]
+  },
+  {
+   "id": "iKRtwScn",
+   "slug": "despawning-eggs-hatch",
+   "title": "Despawning Eggs Hatch",
+   "kind": "mod",
+   "primary": "farming",
+   "ok": [
+    "mobs"
+   ]
+  },
+  {
+   "id": "xuhPkHjq",
+   "slug": "skyblock-advancements",
+   "title": "SkyBlock Advancements",
+   "kind": "mod",
+   "primary": "adventure",
+   "ok": []
+  },
+  {
+   "id": "6zatK8W5",
+   "slug": "damagetint",
+   "title": "DamageTint (Hit Color)",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": [
+    "combat"
+   ]
+  },
+  {
+   "id": "ZORMkttv",
+   "slug": "gui-compass",
+   "title": "GUI Compass",
+   "kind": "mod",
+   "primary": "exploration",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "42tSijuX",
+   "slug": "rei-search-bar-calculations",
+   "title": "REI Search Bar Calculations",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "WnwcSeWc",
+   "slug": "respawning-animals",
+   "title": "Respawning Animals",
+   "kind": "mod",
+   "primary": "mobs",
+   "ok": []
+  },
+  {
+   "id": "IlGAhsOM",
+   "slug": "particle-tweaks",
+   "title": "Particle Tweaks",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "fYYSAh4R",
+   "slug": "real-camera",
+   "title": "Real Camera",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "8iQcgjQ2",
+   "slug": "bettercommandblockui",
+   "title": "Better Command Block UI",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "technology"
+   ]
+  },
+  {
+   "id": "Sr1HeD8z",
+   "slug": "woodwalkers",
+   "title": "woodwalkers",
+   "kind": "mod",
+   "primary": "mobs",
+   "ok": [
+    "adventure"
+   ]
+  },
+  {
+   "id": "hvqcuDMT",
+   "slug": "rp-renames",
+   "title": "RP Renames",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "eSO2d8oJ",
+   "slug": "countereds-smooth-f5",
+   "title": "Countered's Smooth F5",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "Q7VEfkvq",
+   "slug": "enhanced-skyrecipes",
+   "title": "Enhanced SkyRecipes",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "Duxl9QUS",
+   "slug": "hunger-remover",
+   "title": "Hunger Remover",
+   "kind": "mod",
+   "primary": "food",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "OKM2WWl3",
+   "slug": "attack-through-grass",
+   "title": "Attack Through Grass",
+   "kind": "mod",
+   "primary": "combat",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "YVT2lIyy",
+   "slug": "armour-durablity-hud",
+   "title": "Armour Durablity Hud",
+   "kind": "mod",
+   "primary": "equipment",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "WTVzusYD",
+   "slug": "reflex-antilag",
+   "title": "Reflex AntiLag",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "61PI8Hzj",
+   "slug": "cosy-critters",
+   "title": "Cosy Critters & Creepy Crawlies",
+   "kind": "mod",
+   "primary": "mobs",
+   "ok": [
+    "decoration"
+   ]
+  },
+  {
+   "id": "zAIE84Ch",
+   "slug": "quick-skin",
+   "title": "Quick Skin",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "decoration"
+   ]
+  },
+  {
+   "id": "dKvj0eNn",
+   "slug": "create-fly",
+   "title": "Create Fly",
+   "kind": "mod",
+   "primary": "technology",
+   "ok": []
+  },
+  {
+   "id": "4w7YR25f",
+   "slug": "default-skill-trees",
+   "title": "Default Skill Trees",
+   "kind": "mod",
+   "primary": "adventure",
+   "ok": []
+  },
+  {
+   "id": "L5dyCzCT",
+   "slug": "fullbright-forge",
+   "title": "Fullbright",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "HZGv2FlJ",
+   "slug": "archaeology-banners",
+   "title": "Archaeology Banners",
+   "kind": "mod",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "TsB0rgEK",
+   "slug": "no-darkness-effect",
+   "title": "No darkness effect",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "I70N6bTC",
+   "slug": "smuc",
+   "title": "Simple Modpack Update Checker",
+   "kind": "mod",
+   "primary": "management",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "NLV0Mnpu",
+   "slug": "vault-patcher",
+   "title": "Vault Patcher",
+   "kind": "mod",
+   "primary": "library",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "fRhq4ueb",
+   "slug": "trading-plus",
+   "title": "Villager Trading Plus",
+   "kind": "mod",
+   "primary": "qol",
+   "ok": [
+    "economy"
+   ]
+  },
+  {
+   "id": "WeytAdLH",
+   "slug": "bindcommands",
+   "title": "BindCommands",
+   "kind": "mod",
+   "primary": "utility",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "1LE7mid6",
+   "slug": "enhanced-groups",
+   "title": "Simple Voice Chat Enhanced Groups",
+   "kind": "mod",
+   "primary": "social",
+   "ok": [
+    "management"
+   ]
+  },
+  {
+   "id": "YS3ZignI",
+   "slug": "tt20",
+   "title": "TT20 (TPS Fixer)",
+   "kind": "mod",
+   "primary": "performance",
+   "ok": []
+  },
+  {
+   "id": "vE2FN5qn",
+   "slug": "lmd",
+   "title": "Let Me Despawn",
+   "kind": "plugin",
+   "primary": "performance",
+   "ok": [
+    "mobs"
+   ]
+  },
+  {
+   "id": "fALzjamp",
+   "slug": "chunky",
+   "title": "Chunky",
+   "kind": "plugin",
+   "primary": "performance",
+   "ok": [
+    "worldgen"
+   ]
+  },
+  {
+   "id": "4sP0LXxp",
+   "slug": "veinminer-enchantment",
+   "title": "VeinMiner Enchantment",
+   "kind": "plugin",
+   "primary": "equipment",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "1u6JkXh5",
+   "slug": "worldedit",
+   "title": "WorldEdit",
+   "kind": "plugin",
+   "primary": "building",
+   "ok": []
+  },
+  {
+   "id": "pZ2wrerK",
+   "slug": "emotecraft",
+   "title": "Emotecraft",
+   "kind": "plugin",
+   "primary": "social",
+   "ok": [
+    "decoration"
+   ]
+  },
+  {
+   "id": "P1OZGk5p",
+   "slug": "viaversion",
+   "title": "ViaVersion",
+   "kind": "plugin",
+   "primary": "compatibility",
+   "ok": []
+  },
+  {
+   "id": "h1E7sQNL",
+   "slug": "custom-player-models",
+   "title": "Customizable Player Models",
+   "kind": "plugin",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "dw7LChq9",
+   "slug": "patpat",
+   "title": "PatPat [Mod & Plugin]",
+   "kind": "plugin",
+   "primary": "social",
+   "ok": [
+    "decoration"
+   ]
+  },
+  {
+   "id": "Vebnzrzj",
+   "slug": "luckperms",
+   "title": "LuckPerms",
+   "kind": "plugin",
+   "primary": "permissions",
+   "ok": []
+  },
+  {
+   "id": "NpvuJQoq",
+   "slug": "viabackwards",
+   "title": "ViaBackwards",
+   "kind": "plugin",
+   "primary": "compatibility",
+   "ok": []
+  },
+  {
+   "id": "RPOSBQgq",
+   "slug": "itemswapper",
+   "title": "ItemSwapper",
+   "kind": "plugin",
+   "primary": "qol",
+   "ok": [
+    "storage"
+   ]
+  },
+  {
+   "id": "TsLS8Py5",
+   "slug": "skinsrestorer",
+   "title": "SkinsRestorer",
+   "kind": "plugin",
+   "primary": "decoration",
+   "ok": [
+    "social"
+   ]
+  },
+  {
+   "id": "wKkoqHrH",
+   "slug": "geyser",
+   "title": "Geyser",
+   "kind": "plugin",
+   "primary": "compatibility",
+   "ok": []
+  },
+  {
+   "id": "gG7VFbG0",
+   "slug": "tab-was-taken",
+   "title": "TAB",
+   "kind": "plugin",
+   "primary": "decoration",
+   "ok": [
+    "social",
+    "management"
+   ]
+  },
+  {
+   "id": "DKY9btbd",
+   "slug": "worldguard",
+   "title": "WorldGuard",
+   "kind": "plugin",
+   "primary": "protection",
+   "ok": []
+  },
+  {
+   "id": "hXiIvTyT",
+   "slug": "essentialsx",
+   "title": "EssentialsX",
+   "kind": "plugin",
+   "primary": "management",
+   "ok": [
+    "social"
+   ]
+  },
+  {
+   "id": "HYKaKraK",
+   "slug": "packetevents",
+   "title": "PacketEvents",
+   "kind": "plugin",
+   "primary": "library",
+   "ok": []
+  },
+  {
+   "id": "3wmN97b8",
+   "slug": "multiverse-core",
+   "title": "Multiverse-Core",
+   "kind": "plugin",
+   "primary": "management",
+   "ok": [
+    "worldgen"
+   ]
+  },
+  {
+   "id": "LJNGWSvH",
+   "slug": "grimac",
+   "title": "Grim Anticheat",
+   "kind": "plugin",
+   "primary": "moderation",
+   "ok": []
+  },
+  {
+   "id": "Y1ZEvtor",
+   "slug": "osc-dp",
+   "title": "Orbital Strike Cannon",
+   "kind": "plugin",
+   "primary": "combat",
+   "ok": [
+    "technology"
+   ]
+  },
+  {
+   "id": "BITzwT7B",
+   "slug": "clickvillagers",
+   "title": "Click Villagers",
+   "kind": "plugin",
+   "primary": "mobs",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "TbHIxhx5",
+   "slug": "viarewind",
+   "title": "ViaRewind",
+   "kind": "plugin",
+   "primary": "compatibility",
+   "ok": []
+  },
+  {
+   "id": "z4HZZnLr",
+   "slug": "fastasyncworldedit",
+   "title": "FastAsyncWorldEdit",
+   "kind": "plugin",
+   "primary": "building",
+   "ok": [
+    "performance"
+   ]
+  },
+  {
+   "id": "Lu3KuzdV",
+   "slug": "coreprotect",
+   "title": "CoreProtect",
+   "kind": "plugin",
+   "primary": "protection",
+   "ok": [
+    "moderation"
+   ]
+  },
+  {
+   "id": "swbUV1cr",
+   "slug": "bluemap",
+   "title": "BlueMap",
+   "kind": "plugin",
+   "primary": "exploration",
+   "ok": [
+    "management"
+   ]
+  },
+  {
+   "id": "UmLGoGij",
+   "slug": "discordsrv",
+   "title": "DiscordSRV",
+   "kind": "plugin",
+   "primary": "social",
+   "ok": []
+  },
+  {
+   "id": "FIlZB9L0",
+   "slug": "terra",
+   "title": "Terra",
+   "kind": "plugin",
+   "primary": "worldgen",
+   "ok": []
+  },
+  {
+   "id": "IAvnm8Mq",
+   "slug": "villager-in-a-bucket",
+   "title": "Villager In A Bucket",
+   "kind": "plugin",
+   "primary": "mobs",
+   "ok": [
+    "storage"
+   ]
+  },
+  {
+   "id": "2UeET9aA",
+   "slug": "tps-hud",
+   "title": "TPS HUD",
+   "kind": "plugin",
+   "primary": "utility",
+   "ok": [
+    "performance"
+   ]
+  },
+  {
+   "id": "fRQREgAc",
+   "slug": "dynmap",
+   "title": "Dynmap®",
+   "kind": "plugin",
+   "primary": "exploration",
+   "ok": [
+    "management"
+   ]
+  },
+  {
+   "id": "6DdCzpTL",
+   "slug": "mclogs",
+   "title": "mclo.gs",
+   "kind": "plugin",
+   "primary": "management",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "l8Uv7FzS",
+   "slug": "lifestealz",
+   "title": "LifeStealZ",
+   "kind": "plugin",
+   "primary": "minigames",
+   "ok": [
+    "adventure"
+   ]
+  },
+  {
+   "id": "lKEzGugV",
+   "slug": "placeholderapi",
+   "title": "PlaceholderAPI",
+   "kind": "plugin",
+   "primary": "library",
+   "ok": [
+    "utility"
+   ]
+  },
+  {
+   "id": "U6d1TJQm",
+   "slug": "string-dupers-return",
+   "title": "String Dupers Return",
+   "kind": "plugin",
+   "primary": "technology",
+   "ok": []
+  },
+  {
+   "id": "s86X568j",
+   "slug": "chunkyborder",
+   "title": "Chunky Border",
+   "kind": "plugin",
+   "primary": "management",
+   "ok": [
+    "worldgen"
+   ]
+  },
+  {
+   "id": "7pdfxYHV",
+   "slug": "infinite-villager-trading",
+   "title": "Infinite Villager Trading",
+   "kind": "plugin",
+   "primary": "qol",
+   "ok": [
+    "economy"
+   ]
+  },
+  {
+   "id": "9GdBr4p2",
+   "slug": "superharvest",
+   "title": "SuperHarvest",
+   "kind": "plugin",
+   "primary": "farming",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "GJLuArlK",
+   "slug": "simplevoice-geyser",
+   "title": "SimpleVoice-Geyser",
+   "kind": "plugin",
+   "primary": "social",
+   "ok": [
+    "compatibility"
+   ]
+  },
+  {
+   "id": "PmbD8KMt",
+   "slug": "orbital-strike-cannon-v2",
+   "title": "Orbital Strike Cannon V2",
+   "kind": "plugin",
+   "primary": "combat",
+   "ok": [
+    "technology"
+   ]
+  },
+  {
+   "id": "FEtr8Tdw",
+   "slug": "tree-cutter-plus",
+   "title": "Tree Cutter",
+   "kind": "plugin",
+   "primary": "qol",
+   "ok": [
+    "farming"
+   ]
+  },
+  {
+   "id": "Ckf7Ivhp",
+   "slug": "donutsell",
+   "title": "DonutSell",
+   "kind": "plugin",
+   "primary": "economy",
+   "ok": []
+  },
+  {
+   "id": "pyRTWAFM",
+   "slug": "dupeplus",
+   "title": "DupePlus",
+   "kind": "plugin",
+   "primary": "utility",
+   "ok": []
+  },
+  {
+   "id": "nd3r1Uep",
+   "slug": "timberreplant",
+   "title": "TimberReplant",
+   "kind": "plugin",
+   "primary": "farming",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "WuErDeI1",
+   "slug": "multiverse-signportals",
+   "title": "Multiverse-SignPortals",
+   "kind": "plugin",
+   "primary": "transportation",
+   "ok": []
+  },
+  {
+   "id": "9dkRl54Z",
+   "slug": "url-custom-discs",
+   "title": "URL Custom Discs",
+   "kind": "plugin",
+   "primary": "decoration",
+   "ok": []
+  },
+  {
+   "id": "B2oBUasq",
+   "slug": "essentialsx-gui",
+   "title": "EssentialsX-GUI",
+   "kind": "plugin",
+   "primary": "management",
+   "ok": [
+    "qol"
+   ]
+  },
+  {
+   "id": "4KA72Zn8",
+   "slug": "disky",
+   "title": "DiSky",
+   "kind": "plugin",
+   "primary": "library",
+   "ok": [
+    "social"
+   ]
+  },
+  {
+   "id": "6XhH9LqD",
+   "slug": "crowdcontrol",
+   "title": "Crowd Control",
+   "kind": "plugin",
+   "primary": "minigames",
+   "ok": [
+    "social"
+   ]
+  },
+  {
+   "id": "aRGXLvCb",
+   "slug": "tripwire-duper",
+   "title": "TripWire Duper",
+   "kind": "plugin",
+   "primary": "technology",
+   "ok": []
+  },
+  {
+   "id": "WiUMnQfl",
+   "slug": "flectonepulse",
+   "title": "FlectonePulse",
+   "kind": "plugin",
+   "primary": "social",
+   "ok": []
+  },
+  {
+   "id": "DoKOaUOC",
+   "slug": "pv-addon-priority",
+   "title": "pv-addon-priority",
+   "kind": "plugin",
+   "primary": "social",
+   "ok": []
+  },
+  {
+   "id": "Jbdvwxb0",
+   "slug": "combatlog-plus",
+   "title": "CombatLog+",
+   "kind": "plugin",
+   "primary": "combat",
+   "ok": [
+    "moderation"
+   ]
+  },
+  {
+   "id": "PzvpAa1j",
+   "slug": "viaversionstatus",
+   "title": "ViaVersionStatus",
+   "kind": "plugin",
+   "primary": "compatibility",
+   "ok": [
+    "management"
+   ]
+  },
+  {
+   "id": "MpPUdJdc",
+   "slug": "simple-tpa-vexo",
+   "title": "Simple tpa",
+   "kind": "plugin",
+   "primary": "transportation",
+   "ok": []
+  },
+  {
+   "id": "QzooIsZI",
+   "slug": "carbon",
+   "title": "Carbon Chat",
+   "kind": "plugin",
+   "primary": "social",
+   "ok": []
+  },
+  {
+   "id": "mqwRS0rH",
+   "slug": "crazyenvoys",
+   "title": "CrazyEnvoys",
+   "kind": "plugin",
+   "primary": "minigames",
+   "ok": [
+    "adventure"
+   ]
+  },
+  {
+   "id": "ZRgKHQlC",
+   "slug": "tpaa",
+   "title": "Tpa",
+   "kind": "plugin",
+   "primary": "transportation",
+   "ok": []
+  },
+  {
+   "id": "MXMlqbJb",
+   "slug": "vebastickers",
+   "title": "VebaStickers - Chat Stickers",
+   "kind": "plugin",
+   "primary": "social",
+   "ok": [
+    "decoration"
+   ]
+  },
+  {
+   "id": "LSZyW5ZK",
+   "slug": "ezcobwebs",
+   "title": "EzCobwebs",
+   "kind": "plugin",
+   "primary": "qol",
+   "ok": []
+  },
+  {
+   "id": "dXA9IZkK",
+   "slug": "free-minecraft-models",
+   "title": "Free Minecraft Models",
+   "kind": "plugin",
+   "primary": "decoration",
+   "ok": [
+    "library"
+   ]
+  },
+  {
+   "id": "LOvZJShs",
+   "slug": "interactivechat-discordsrv-addon",
+   "title": "InteractiveChat DiscordSRV Addon",
+   "kind": "plugin",
+   "primary": "social",
+   "ok": []
+  },
+  {
+   "id": "pdGDkQiy",
+   "slug": "hand-shaker",
+   "title": "Hand Shaker",
+   "kind": "plugin",
+   "primary": "management",
+   "ok": [
+    "moderation"
+   ]
+  },
+  {
+   "id": "bIUvXIcI",
+   "slug": "essxselectors",
+   "title": " EssentialsX Selectors: @a, @p, @r (Addon)",
+   "kind": "plugin",
+   "primary": "utility",
+   "ok": [
+    "management"
+   ]
+  }
+ ]
+}
