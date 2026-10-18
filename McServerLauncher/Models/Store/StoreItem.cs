@@ -54,14 +54,20 @@ public class StoreItem
     public bool NeedsClient =>
         string.Equals(ClientSide, "required", StringComparison.OrdinalIgnoreCase);
 
-    public static StoreItem From(ProjectResult hit) => new()
+    /// <param name="hit">A search result.</param>
+    /// <param name="projectType">
+    /// What the store is showing: "mod" or "plugin". Modrinth calls every search hit a "mod",
+    /// including the plugins a Paper server is shown, so the answer has to come from the server the
+    /// store is open for. Null keeps whatever the hit says.
+    /// </param>
+    public static StoreItem From(ProjectResult hit, string? projectType = null) => new()
     {
         Id = hit.ProjectId,
         Slug = hit.Slug,
         Title = hit.Title,
         Description = hit.Description,
         Author = hit.Author,
-        ProjectType = hit.ProjectType ?? string.Empty,
+        ProjectType = projectType ?? hit.ProjectType ?? string.Empty,
         IconUrl = hit.IconUrl,
         Downloads = hit.Downloads,
         Followers = hit.Follows,
@@ -71,13 +77,15 @@ public class StoreItem
         Updated = hit.DateModified
     };
 
-    public static StoreItem From(ProjectDetail project) => new()
+    /// <param name="project">A full project.</param>
+    /// <param name="projectType">See <see cref="From(ProjectResult, string?)"/>.</param>
+    public static StoreItem From(ProjectDetail project, string? projectType = null) => new()
     {
         Id = project.Id,
         Slug = project.Slug,
         Title = project.Title,
         Description = project.Description,
-        ProjectType = project.ProjectType ?? string.Empty,
+        ProjectType = projectType ?? project.ProjectType ?? string.Empty,
         IconUrl = project.IconUrl,
         Downloads = project.Downloads,
         Followers = project.Followers,

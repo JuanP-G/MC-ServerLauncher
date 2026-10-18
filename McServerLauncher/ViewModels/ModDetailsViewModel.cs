@@ -281,7 +281,7 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
 
     private void ApplyProject(ProjectDetail project)
     {
-        ApplyItem(StoreItem.From(project));
+        ApplyItem(StoreItem.From(project, _parent.ProjectTypeName));
         ModrinthUrl = BuildModrinthUrl(_item);
         OnPropertyChanged(nameof(ModrinthUrl));
 
@@ -430,7 +430,7 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
                 : Localizer.Get("Store_DepOptional");
             // A dependency used to say only "required": now it also says what it is, which is the
             // difference between "install this too" and "install this too, it's the config library".
-            Dependencies.Add(new StoreLinkViewModel(_parent, StoreItem.From(project), badge: kind));
+            Dependencies.Add(new StoreLinkViewModel(_parent, StoreItem.From(project, _parent.ProjectTypeName), badge: kind));
         }
         OnPropertyChanged(nameof(HasDependencies));
     }
@@ -459,7 +459,7 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
         foreach (var hit in response.Hits)
         {
             if (string.Equals(hit.ProjectId, ProjectId, StringComparison.Ordinal)) continue;
-            Related.Add(new StoreLinkViewModel(_parent, StoreItem.From(hit), withTagline: true));
+            Related.Add(new StoreLinkViewModel(_parent, StoreItem.From(hit, _parent.ProjectTypeName), withTagline: true));
             if (Related.Count == 6) break;
         }
         OnPropertyChanged(nameof(HasRelated));

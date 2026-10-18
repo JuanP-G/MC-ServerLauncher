@@ -51,9 +51,28 @@ public class StoreTagDefinition
     [JsonPropertyName("categories")]
     public List<string> Categories { get; set; } = new();
 
-    /// <summary>Lowercase substrings looked for in the title and the short description.</summary>
+    /// <summary>
+    /// Whole words (or phrases) looked for in the title and the short description. A trailing
+    /// <c>*</c> accepts any ending, so <c>optimiz*</c> covers "optimization" while <c>map</c> does
+    /// not cover "bitmap". See the header of <c>store-tags.json</c> for the scoring.
+    /// </summary>
     [JsonPropertyName("keywords")]
     public List<string> Keywords { get; set; } = new();
+
+    /// <summary>
+    /// A tag only worth showing when nothing better matched ("utility" is on nearly everything, so
+    /// next to a real topic it says nothing).
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public bool Fallback { get; set; }
+
+    /// <summary>
+    /// When this tag applies it goes first and leaves room for one more topic at most. A library's
+    /// other categories are the author's habit more than a description of what it does, and
+    /// "library" is the one thing a server owner needs to know about it.
+    /// </summary>
+    [JsonPropertyName("dominant")]
+    public bool Dominant { get; set; }
 
     /// <summary>Matches the project's <c>client_side</c>: required / optional / unsupported.</summary>
     [JsonPropertyName("clientSide")]
