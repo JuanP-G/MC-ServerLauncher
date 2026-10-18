@@ -407,7 +407,7 @@ def build_page(gid, g, code, ui, guides, chrome):
 
 <link rel="preload" as="font" type="font/woff2" href="%(up)sassets/fonts/inter-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff" href="%(up)sassets/mc/minecraft.woff" crossorigin>
-<link rel="preload" as="image" href="%(up)sassets/mc/button_hover.png">
+<link rel="preload" as="image" href="%(up)sassets/mc/button_hover.webp">
 
 %(ld)s
 

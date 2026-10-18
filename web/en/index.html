@@ -55,7 +55,7 @@
       imagesrcset="../assets/app-screenshot-960.webp 960w, ../assets/app-screenshot-1600.webp 1600w" imagesizes="50vw">
 <link rel="preload" as="font" type="font/woff2" href="../assets/fonts/inter-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff" href="../assets/mc/minecraft.woff" crossorigin>
-<link rel="preload" as="image" href="../assets/mc/button_hover.png">
+<link rel="preload" as="image" href="../assets/mc/button_hover.webp">
 
 <script type="application/ld+json">
 {
@@ -200,7 +200,7 @@ img{max-width:100%; display:block}
 .sun{top:-62vh}
 .moon{top:calc(62vh - 192px)}
 
-/* Nubes del juego en 3D: el mapa de nubes (clouds.png, cada píxel una nube de 12x12
+/* Nubes del juego en 3D: el mapa de nubes (clouds.webp, cada píxel una nube de 12x12
    bloques y 4 de grosor) como un techo a gran altura visto desde el suelo, igual que con
    los gráficos «Detallados». Se dibujan en un canvas por detrás del paisaje; hacia el
    horizonte se funden con el color del cielo. La cámara no se mueve: solo las nubes,
@@ -235,9 +235,9 @@ img{max-width:100%; display:block}
 /* Los sprites de la barra del juego estirados a lo ancho. El ancho lo fija el scroll en
    cada fotograma, sin transition. */
 .xpbar{position:fixed; top:0; left:0; right:0; height:10px; z-index:60;
-  background:url("../assets/mc/xp_bg.png") 0 0/100% 100%; image-rendering:pixelated}
+  background:url("../assets/mc/xp_bg.webp") 0 0/100% 100%; image-rendering:pixelated}
 .xpbar i{display:block; height:100%; width:var(--p,0%);
-  background:url("../assets/mc/xp_fg.png") 0 0/100vw 100%; image-rendering:pixelated}
+  background:url("../assets/mc/xp_fg.webp") 0 0/100vw 100%; image-rendering:pixelated}
 
 /* ---------- BOTONES ---------- */
 /* Planos con bisel, como los de la edición Bedrock: color liso, esquinas rectas, luz
@@ -263,10 +263,10 @@ img{max-width:100%; display:block}
    del ratón dejaba el botón en blanco mientras se descargaba la imagen. */
 .btn-mc{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:46px; padding:0 16px;
   color:#FFFFFF; font-family:var(--f-mc); font-size:16px; line-height:1; text-shadow:2px 2px 0 var(--mc-shadow);
-  -webkit-font-smoothing:none; border:6px solid transparent; border-image:url("../assets/mc/button.png") 3 fill / 6px stretch;
+  -webkit-font-smoothing:none; border:6px solid transparent; border-image:url("../assets/mc/button.webp") 3 fill / 6px stretch;
   image-rendering:pixelated}
 .btn-mc svg{width:18px; height:18px; flex:none; fill:currentColor; filter:drop-shadow(2px 2px 0 var(--mc-shadow))}
-.btn-mc:hover,.btn-mc:focus-visible{border-image-source:url("../assets/mc/button_hover.png"); color:var(--mc-hover); outline:none}
+.btn-mc:hover,.btn-mc:focus-visible{border-image-source:url("../assets/mc/button_hover.webp"); color:var(--mc-hover); outline:none}
 
 /* ---------- NAV ---------- */
 /* Cabecera como la de los menús del juego: franja oscura translúcida y un separador de
@@ -361,7 +361,6 @@ section{position:relative; padding-block:clamp(56px,10vh,104px); scroll-margin-t
 .shot-bar img{width:18px; height:18px; image-rendering:pixelated}
 .shot-bar b{font-size:13px; font-weight:600}
 .shot-bar i{margin-left:auto; color:var(--muted); font-style:normal; font-size:12px; letter-spacing:2px}
-.shot picture{display:block}
 .shot img.cap{width:100%; height:auto}
 
 /* ---------- PANELES DE INVENTARIO ---------- */
@@ -378,7 +377,7 @@ section{position:relative; padding-block:clamp(56px,10vh,104px); scroll-margin-t
   -webkit-font-smoothing:none}
 .card p{grid-column:1 / -1; margin-top:6px; color:#3F3F3F; font-size:15px; line-height:1.6}
 .slot{position:relative; width:60px; height:60px; display:grid; place-items:center;
-  background:url("../assets/mc/slot.png") 0 0/100% 100%; image-rendering:pixelated}
+  background:url("../assets/mc/slot.webp") 0 0/100% 100%; image-rendering:pixelated}
 .slot img{width:48px; height:48px; image-rendering:pixelated}
 .slot img.iso{image-rendering:auto}
 .slot:hover::after{content:""; position:absolute; inset:3px; background:rgba(255,255,255,.4)}
@@ -448,7 +447,7 @@ a.card:hover h3{color:#1B1B1B}
    en la esquina izquierda y el aviso legal en la derecha, donde el juego pone su copyright.
    Es opaco y tapa el suelo fijo del fondo al llegar al final. */
 footer{position:relative; background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.7) 45%),
-  url("../assets/mc/dirt.png") 0 0/48px 48px; image-rendering:pixelated; box-shadow:0 -2px 0 #000, 0 -4px 0 rgba(255,255,255,.1)}
+  url("../assets/mc/dirt.webp") 0 0/48px 48px; image-rendering:pixelated; box-shadow:0 -2px 0 #000, 0 -4px 0 rgba(255,255,255,.1)}
 footer .wrap{padding-block:30px calc(16px + env(safe-area-inset-bottom,0px))}
 footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
 .foot-bar{display:flex; justify-content:space-between; align-items:baseline; gap:6px 24px; flex-wrap:wrap; margin-top:26px}
@@ -537,7 +536,7 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
   <div class="sky sky-day"></div>
   <div class="sky sky-dusk"></div>
   <div class="stars" id="stars"></div>
-  <div class="orbit" id="orbit"><img class="sun" src="../assets/mc/sun.png" alt=""><img class="moon" src="../assets/mc/moon.png" alt=""></div>
+  <div class="orbit" id="orbit"><img class="sun" src="../assets/mc/sun.webp" alt=""><img class="moon" src="../assets/mc/moon.webp" alt=""></div>
   <canvas class="clouds" id="clouds"></canvas>
   <div class="land" id="land"></div>
 </div>
@@ -609,12 +608,9 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
         <img src="../assets/logo-80.webp" alt="" width="18" height="18">
         <b>MC Server Launcher</b><i>—  ▢  ✕</i>
       </div>
-      <picture>
-        <source type="image/webp" sizes="(min-width: 900px) 50vw, 100vw"
-                srcset="../assets/app-screenshot-640.webp 640w, ../assets/app-screenshot-960.webp 960w, ../assets/app-screenshot-1600.webp 1600w">
-        <img class="cap" src="../assets/app-screenshot.jpg" width="1600" height="900"
+      <img class="cap" src="../assets/app-screenshot-960.webp" width="1600" height="900" sizes="(min-width: 900px) 50vw, 100vw"
+           srcset="../assets/app-screenshot-640.webp 640w, ../assets/app-screenshot-960.webp 960w, ../assets/app-screenshot-1600.webp 1600w"
            alt="The MC-ServerLauncher window showing the server list, CPU and RAM stats and the live console of a Minecraft server">
-      </picture>
     </figure>
   </section>
 
@@ -625,11 +621,11 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
       <p class="lead reveal">What are normally config files, commands and loose folders are buttons here.</p>
       <div class="grid">
         <article class="card reveal"><div class="slot"><img class="iso" src="../assets/mc/iso_crafting.webp" alt="" width="48" height="48"></div><h3>Create servers in 2 minutes</h3><p>Pick a version, accept the EULA and you're done: it downloads the official JAR and generates the world for you. Vanilla, Paper, Purpur, Forge, NeoForge and Fabric.</p></article>
-        <article class="card reveal"><div class="slot"><img src="../assets/mc/enchanted_book.png" alt="" width="48" height="48"></div><h3>Mods and plugins from Modrinth</h3><p>Search and install mods without leaving the app, filtered by your version and server type. Every download is verified.</p></article>
+        <article class="card reveal"><div class="slot"><img src="../assets/mc/enchanted_book.webp" alt="" width="48" height="48"></div><h3>Mods and plugins from Modrinth</h3><p>Search and install mods without leaving the app, filtered by your version and server type. Every download is verified.</p></article>
         <article class="card reveal"><div class="slot"><img class="iso" src="../assets/mc/iso_chest.webp" alt="" width="48" height="48"></div><h3>Automatic backups</h3><p>Saves your world before every start, on stop and every hour while people are playing, without interrupting the game. Keeping as many copies as you want, with one-click restore.</p></article>
-        <article class="card reveal"><div class="slot"><img src="../assets/mc/ender_pearl.png" alt="" width="48" height="48"></div><h3>Play with friends over the Internet</h3><p>Built-in Playit.gg tunnel: share an address and they join from anywhere. No router port forwarding.</p></article>
+        <article class="card reveal"><div class="slot"><img src="../assets/mc/ender_pearl.webp" alt="" width="48" height="48"></div><h3>Play with friends over the Internet</h3><p>Built-in Playit.gg tunnel: share an address and they join from anywhere. No router port forwarding.</p></article>
         <article class="card reveal"><div class="slot"><img class="iso" src="../assets/mc/iso_command.webp" alt="" width="48" height="48"></div><h3>Console, players and stats</h3><p>Live CPU and RAM, a search box in the console, and a profile for every player: when they joined, what they said and what they have mined. Ops, bans and whitelist with buttons instead of commands.</p></article>
-        <article class="card reveal"><div class="slot"><img src="../assets/mc/totem.png" alt="" width="48" height="48"></div><h3>It recovers from crashes on its own</h3><p>If the server dies it restarts by itself and tells you why, reading the crash report. With desktop notifications.</p></article>
+        <article class="card reveal"><div class="slot"><img src="../assets/mc/totem.webp" alt="" width="48" height="48"></div><h3>It recovers from crashes on its own</h3><p>If the server dies it restarts by itself and tells you why, reading the crash report. With desktop notifications.</p></article>
       </div>
     </div>
   </section>
@@ -643,7 +639,7 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
       <div class="grid g3">
         <article class="card reveal"><div class="slot"><img class="iso" src="../assets/mc/iso_barrel.webp" alt="" width="48" height="48"><b>1</b></div><h3>Download and install</h3><p>A normal installer for Windows, an AppImage for Linux or a DMG for macOS. No Java needed up front: the app finds it or downloads it.</p></article>
         <article class="card reveal"><div class="slot"><img class="iso" src="../assets/mc/iso_grass.webp" alt="" width="48" height="48"><b>2</b></div><h3>Create your server</h3><p>Name it, pick the Minecraft version and the type. The app downloads the official files, verifies their checksum and generates the world.</p></article>
-        <article class="card reveal"><div class="slot"><img src="../assets/mc/diamond_pickaxe.png" alt="" width="48" height="48"><b>3</b></div><h3>Hit Start and play</h3><p>Share the address with your friends and manage everything from the window: console, mods, players and backups.</p></article>
+        <article class="card reveal"><div class="slot"><img src="../assets/mc/diamond_pickaxe.webp" alt="" width="48" height="48"><b>3</b></div><h3>Hit Start and play</h3><p>Share the address with your friends and manage everything from the window: console, mods, players and backups.</p></article>
       </div>
     </div>
   </section>
@@ -679,9 +675,9 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
       <h2 class="h2 build">Step-by-step guides</h2>
       <p class="lead reveal">Straight answers to what people search for most when setting up a Minecraft server.</p>
       <div class="grid g3">
-        <a class="card reveal" data-goatcounter-click="guia-mods-landing" data-goatcounter-title="Landing: guía mods" href="guides/make-minecraft-server-with-mods/"><div class="slot"><img src="../assets/mc/enchanted_book.png" alt="" width="48" height="48"></div><h3>How to make a Minecraft server with mods</h3><p>Fabric, Forge or NeoForge, Modrinth mods with their dependencies, and a pack for your friends.</p></a>
-        <a class="card reveal" data-goatcounter-click="guia-gratis-landing" data-goatcounter-title="Landing: guía gratis" href="guides/host-free-minecraft-server-no-port-forwarding/"><div class="slot"><img src="../assets/mc/ender_pearl.png" alt="" width="48" height="48"></div><h3>How to host a free Minecraft server without port forwarding</h3><p>A built-in Playit.gg tunnel gives you a public address to share, with no fees and no router setup.</p></a>
-        <a class="card reveal" data-goatcounter-click="guia-dormir-landing" data-goatcounter-title="Landing: guía dormir" href="guides/minecraft-server-stops-itself-when-empty/"><div class="slot"><img src="../assets/mc/totem.png" alt="" width="48" height="48"></div><h3>Minecraft server that stops itself when it is empty</h3><p>Automatic shutdown when idle and start-up when someone tries to join, without wasting resources.</p></a>
+        <a class="card reveal" data-goatcounter-click="guia-mods-landing" data-goatcounter-title="Landing: guía mods" href="guides/make-minecraft-server-with-mods/"><div class="slot"><img src="../assets/mc/enchanted_book.webp" alt="" width="48" height="48"></div><h3>How to make a Minecraft server with mods</h3><p>Fabric, Forge or NeoForge, Modrinth mods with their dependencies, and a pack for your friends.</p></a>
+        <a class="card reveal" data-goatcounter-click="guia-gratis-landing" data-goatcounter-title="Landing: guía gratis" href="guides/host-free-minecraft-server-no-port-forwarding/"><div class="slot"><img src="../assets/mc/ender_pearl.webp" alt="" width="48" height="48"></div><h3>How to host a free Minecraft server without port forwarding</h3><p>A built-in Playit.gg tunnel gives you a public address to share, with no fees and no router setup.</p></a>
+        <a class="card reveal" data-goatcounter-click="guia-dormir-landing" data-goatcounter-title="Landing: guía dormir" href="guides/minecraft-server-stops-itself-when-empty/"><div class="slot"><img src="../assets/mc/totem.webp" alt="" width="48" height="48"></div><h3>Minecraft server that stops itself when it is empty</h3><p>Automatic shutdown when idle and start-up when someone tries to join, without wasting resources.</p></a>
       </div>
     </div>
   </section>
@@ -877,7 +873,7 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
   var img = {};
   function load(name){
     return new Promise(function(ok){
-      var i = new Image(); i.onload = function(){ img[name] = i; ok(); }; i.onerror = ok; i.src = MC + name + '.png';
+      var i = new Image(); i.onload = function(){ img[name] = i; ok(); }; i.onerror = ok; i.src = MC + name + '.webp';
     });
   }
 
@@ -951,7 +947,7 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
       last = t; drawClouds(t);
     });
   };
-  clouds.src = MC + 'clouds.png';
+  clouds.src = MC + 'clouds.webp';
   addEventListener('resize', function(){ drawClouds(performance.now()); });
 
   var land = document.getElementById('land'), lastW = 0;
@@ -1061,7 +1057,7 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
           leaf.style.bottom = ((tt - 2 + r()) * b) + 'px';
           leaf.style.setProperty('--lp', lp + 'px');
           leaf.style.setProperty('--fall', ((tt - 2 - t.h + 1) * b) + 'px');
-          leaf.style.backgroundImage = 'url(' + MC + 'leaf_particles.png)';
+          leaf.style.backgroundImage = 'url(' + MC + 'leaf_particles.webp)';
           leaf.style.backgroundSize = (lp * 12) + 'px ' + lp + 'px';
           leaf.style.backgroundPosition = (-lp * Math.floor(r() * 12)) + 'px 0';
           leaf.style.animationDuration = (6 + r() * 5).toFixed(1) + 's';
@@ -1086,7 +1082,7 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
         w.style.bottom = ((L.base - 1) * b) + 'px';
         w.style.height = Math.round(b * 14 / 16) + 'px';      // el agua del juego no llena el bloque
         w.style.setProperty('--b', b + 'px');
-        w.style.backgroundImage = 'url(' + MC + 'water.png)';
+        w.style.backgroundImage = 'url(' + MC + 'water.webp)';
         w.style.backgroundSize = b + 'px ' + (b * 32) + 'px';
         w.style.opacity = '.85';
         overlays.push(w);
