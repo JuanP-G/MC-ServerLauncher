@@ -1,0 +1,9 @@
+node_modules/
+out/
+public/footage/
+recorder/bin/
+recorder/obj/
+public/audio/
+audio/__pycache__/
+.claude/
+skills-lock.json

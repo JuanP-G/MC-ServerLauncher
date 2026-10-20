@@ -1,0 +1,31 @@
+{
+  "bpm": 150,
+  "edits": {
+    "promo45": {
+      "width": 1920, "height": 1080, "tail": 0.2,
+      "sections": [
+        ["chaos", 16], ["click", 4], ["logo", 8],
+        ["f-create", 8], ["f-mods", 8], ["f-internet", 8], ["f-bedrock", 4], ["f-players", 4],
+        ["f-backups", 4], ["f-sleep", 8], ["f-console", 4],
+        ["dual", 8], ["community", 8], ["wall", 4], ["outro", 16]
+      ]
+    },
+    "vertical30": {
+      "width": 1080, "height": 1920, "tail": 0.2,
+      "sections": [
+        ["chaos", 8], ["click", 4], ["logo", 8],
+        ["f-create", 4], ["f-mods", 4], ["f-internet", 4], ["f-bedrock", 4], ["f-players", 4],
+        ["f-backups", 4], ["f-sleep", 4], ["f-console", 4],
+        ["dual", 8], ["community", 4], ["outro", 12]
+      ]
+    },
+    "short15": {
+      "width": 1080, "height": 1920, "tail": 0.6,
+      "sections": [
+        ["chaos", 4], ["click", 2], ["logo", 4],
+        ["f-create", 4], ["f-mods", 4], ["f-internet", 4], ["f-bedrock", 4],
+        ["outro", 10]
+      ]
+    }
+  }
+}
