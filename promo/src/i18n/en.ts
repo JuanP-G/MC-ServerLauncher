@@ -1,0 +1,63 @@
+import type { Copy } from "./types";
+
+export const en: Copy = {
+  locale: "en-US",
+  chaos: {
+    question: "Running a Minecraft server?",
+    windows: [
+      { title: "cmd.exe", lines: ["C:\\server> java -jar server.jar", "Error: Unable to access jarfile server.jar"] },
+      { title: "eula.txt", lines: ["#By changing the setting below to TRUE...", "eula=false"] },
+      { title: "run.bat", lines: ["@echo off", "java -Xmx2G -jar server.jar nogui", "pause"] },
+      { title: "cmd.exe", lines: ["[WARN] **** FAILED TO BIND TO PORT!", "Perhaps a server is already running on that port?"] },
+      { title: "Router · 192.168.1.1", lines: ["Port forwarding", "External port: 25565   Protocol: TCP/UDP", "Wrong password"] },
+      { title: "server.properties", lines: ["online-mode=true", "white-list=???", "server-ip=", "max-players=20"] },
+      { title: "cmd.exe", lines: ["'java' is not recognized as an internal", "or external command."] },
+      { title: "cmd.exe", lines: ["Exception in thread \"main\"", "java.lang.UnsupportedClassVersionError"] },
+    ],
+    stamps: [".BAT", "EULA", "JAVA", "PORTS", "ROUTER", "ERROR", "IP?", "MODS?"],
+    giveUp: "…and in the end, nobody plays.",
+  },
+  click: { now: "Now,", oneClick: "one click.", button: "Create server" },
+  logo: { tagline: "Your Minecraft server, minus the hassle." },
+  features: {
+    create: { title: "A server in 2 minutes", sub: "Vanilla, Paper, Purpur, Fabric, Forge or NeoForge. Java included." },
+    mods: { title: "Mods and plugins in one click", sub: "Modrinth inside the app, already filtered by your version." },
+    internet: { title: "Play with friends online", sub: "No port forwarding: one address and you're in." },
+    bedrock: { title: "From Bedrock too", sub: "Phone, console and Windows with a single switch." },
+    players: { title: "Every player, their story", sub: "Ops, bans, whitelist and stats." },
+    backups: { title: "Your world, kept safe", sub: "Backups on start, on stop and every hour." },
+    sleep: { title: "Sleeps when nobody's on", sub: "And wakes up as soon as someone joins." },
+    console: { title: "A console you can read", sub: "Coloured by kind, counted filters and search." },
+  },
+  sleep: {
+    motdSleeping: "Off · join to start it",
+    motdStarting: "Starting… come back in a few seconds",
+    serverName: "Survival",
+  },
+  dual: {
+    noob: "First time?",
+    noobItems: ["No commands", "Java included", "No port forwarding"],
+    pro: "Veteran?",
+    proItems: ["filtered console", "tunnels · Bedrock · ViaVersion", "backups · sleep · SHA-256"],
+  },
+  community: {
+    friends: "For your friends.",
+    community: "For your community.",
+    serverName: "Survival",
+    motd: "Season 3 · The nether hub is open!",
+    others: [
+      { name: "Skyblock", motd: "Islands · economy · events", players: "96/120" },
+      { name: "Creative", motd: "128×128 plots · WorldEdit", players: "64/100" },
+      { name: "Minigames", motd: "BedWars · SkyWars · Parkour", players: "211/250" },
+    ],
+  },
+  wall: ["Windows", "Linux", "macOS", "5 languages", "Updates itself", "SHA-256", "Open source", "Free"],
+  outro: {
+    tagline: "Your Minecraft server, minus the hassle.",
+    free: "Free and open source",
+    platforms: "Windows · Linux · macOS",
+    download: "Download for free",
+    url: "mc-server-launcher.vercel.app",
+    disclaimer: "Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.",
+  },
+};
