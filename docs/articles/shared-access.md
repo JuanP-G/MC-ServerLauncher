@@ -1,6 +1,6 @@
 # Shared access
 
-> 🇪🇸 ¿Prefieres español? Lee la versión en [español](shared-access.es.md).
+> ¿Prefieres español? Lee la versión en [español](shared-access.es.md).
 
 This page records the design decisions for letting several people manage the same servers from
 different devices: the desktop app, a website and, later, a phone. It is a decision log, not a

@@ -1,16 +1,16 @@
 # Contributing to MC Server Launcher
 
-**🇬🇧 English · 🇪🇸 [Español](#contribuir-a-mc-server-launcher)**
+**English · [Español](#contribuir-a-mc-server-launcher)**
 
 Thanks for wanting to help. The full guide — building, the test suite, the code style, how to add a
 language, a server type or a release — lives in the documentation site:
 
-📖 **[Contributing guide](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.html)**
+**[Contributing guide](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.html)**
  · source: [`docs/articles/contributing.md`](docs/articles/contributing.md)
-🏗️ **[Architecture](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/architecture.html)**
+**[Architecture](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/architecture.html)**
  · source: [`docs/articles/architecture.md`](docs/articles/architecture.md)
 
-🧭 **Get your bearings first** — the architecture page opens with two maps; two sites draw the repository by
+**Get your bearings first** — the architecture page opens with two maps; two sites draw the repository by
 themselves: [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) (a wiki by topic, with a chat to ask
 the code questions) and [GitDiagram](https://gitdiagram.com/juanp-g/mc-serverlauncher) (one clickable
 diagram of the whole app). An AI writes both: they can be wrong, so when they disagree with the
@@ -60,7 +60,7 @@ A pull request title is a commit subject; issue titles come pre-filled in the sa
 the list of types and the canonical scopes:
 **[Commits, pull requests and issues](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.html#commits-pull-requests-and-issues)**.
 
-🔒 **Found a security problem? Don't open an issue** — [`SECURITY.md`](SECURITY.md) has the private
+**Found a security problem? Don't open an issue** — [`SECURITY.md`](SECURITY.md) has the private
 channel, and lists the trade-offs that are already known and documented.
 
 ---
@@ -70,12 +70,12 @@ channel, and lists the trade-offs that are already known and documented.
 Gracias por querer echar una mano. La guía completa —compilar, las pruebas, el estilo de código, cómo
 añadir un idioma, un tipo de servidor o sacar una versión— está en el sitio de documentación:
 
-📖 **[Guía de contribución](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.es.html)**
+**[Guía de contribución](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.es.html)**
  · fuente: [`docs/articles/contributing.es.md`](docs/articles/contributing.es.md)
-🏗️ **[Arquitectura](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/architecture.es.html)**
+**[Arquitectura](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/architecture.es.html)**
  · fuente: [`docs/articles/architecture.es.md`](docs/articles/architecture.es.md)
 
-🧭 **Para orientarte primero** — la página de arquitectura empieza con dos mapas; dos webs dibujan el
+**Para orientarte primero** — la página de arquitectura empieza con dos mapas; dos webs dibujan el
 repositorio por su cuenta: [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) (una wiki por temas, con un
 chat para preguntarle cosas al código) y [GitDiagram](https://gitdiagram.com/juanp-g/mc-serverlauncher) (un
 diagrama clicable de toda la app). Las escribe una IA: pueden equivocarse, así que cuando discrepen de la
@@ -126,5 +126,5 @@ El título de un pull request es el asunto de un commit; los títulos de los iss
 forma. Las reglas completas, la lista de tipos y los ámbitos canónicos:
 **[Commits, pull requests e issues](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.es.html#commits-pull-requests-e-issues)**.
 
-🔒 **¿Has encontrado un problema de seguridad? No abras un issue** — en [`SECURITY.md`](SECURITY.md)
+**¿Has encontrado un problema de seguridad? No abras un issue** — en [`SECURITY.md`](SECURITY.md)
 está el canal privado, y la lista de compromisos que ya están asumidos y documentados.

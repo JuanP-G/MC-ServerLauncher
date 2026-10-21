@@ -1,12 +1,12 @@
 # Security Policy · Política de seguridad
 
-**🇬🇧 English · 🇪🇸 [Español](#español)**
+**English · [Español](#español)**
 
 ## Reporting a vulnerability
 
 **Please do not open a public issue.** Use GitHub's private reporting instead:
 
-👉 **[Report a vulnerability](https://github.com/JuanP-G/MC-ServerLauncher/security/advisories/new)**
+**[Report a vulnerability](https://github.com/JuanP-G/MC-ServerLauncher/security/advisories/new)**
 
 This matters more here than in most desktop apps, because MC Server Launcher **downloads and
 executes code on the user's machine**: Java runtimes from Adoptium, server jars from Mojang, Paper
@@ -50,7 +50,7 @@ ones, and the app updates itself on all three platforms.
 
 **Por favor, no abras un issue público.** Usa el canal privado de GitHub:
 
-👉 **[Informar de una vulnerabilidad](https://github.com/JuanP-G/MC-ServerLauncher/security/advisories/new)**
+**[Informar de una vulnerabilidad](https://github.com/JuanP-G/MC-ServerLauncher/security/advisories/new)**
 
 Aquí importa más que en la mayoría de aplicaciones de escritorio, porque MC Server Launcher
 **descarga y ejecuta código en la máquina del usuario**: runtimes de Java de Adoptium, jars de

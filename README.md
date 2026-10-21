@@ -1,6 +1,6 @@
-# 🎮 MC Server Launcher
+# MC Server Launcher
 
-**🇬🇧 English · 🇪🇸 [Español](README.es.md)**
+**English · [Español](README.es.md)**
 
 [![Release](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?label=release&color=2da44e)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-8b949e)](LICENSE)
@@ -21,22 +21,22 @@ files, black console windows or editing config files by hand**.
   <a href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><img src="docs/media/buttons/docs-en.svg" width="250" alt="Documentation: guide and API reference"></a>
 </p>
 
-## ✨ What you can do
+## What you can do
 
 <table>
-<tr><td width="33%">🧱 <b>A server in 2 minutes</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge or Forge. The app even brings Java.</td><td width="33%">🧩 <b>Mods and plugins from Modrinth</b><br>Already filtered by your version, each with what it needs.</td><td width="33%">🌐 <b>Play with friends online</b><br>A Playit.gg tunnel: one address, no port forwarding.</td></tr>
-<tr><td width="33%">📱 <b>From Bedrock too</b><br>Phone, console and Windows 10/11, with one checkbox.</td><td width="33%">👥 <b>Players with a profile</b><br>Ops, bans, whitelist and every player's history.</td><td width="33%">💾 <b>World backups</b><br>On start, on stop and every hour while people play.</td></tr>
-<tr><td width="33%">💤 <b>Sleeps and wakes</b><br>Stops with nobody on and starts when someone joins.</td><td width="33%">🖥️ <b>A console you can read</b><br>Coloured by kind of line, with counted filters and search.</td><td width="33%">🔄 <b>Updates itself</b><br>Every download checked against its SHA-256.</td></tr>
+<tr><td width="33%"><img src="docs/media/icons/server.svg" width="28" height="28" alt=""><br><b>A server in 2 minutes</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge or Forge. The app even brings Java.</td><td width="33%"><img src="docs/media/icons/puzzle.svg" width="28" height="28" alt=""><br><b>Mods and plugins from Modrinth</b><br>Already filtered by your version, each with what it needs.</td><td width="33%"><img src="docs/media/icons/globe.svg" width="28" height="28" alt=""><br><b>Play with friends online</b><br>A Playit.gg tunnel: one address, no port forwarding.</td></tr>
+<tr><td width="33%"><img src="docs/media/icons/smartphone.svg" width="28" height="28" alt=""><br><b>From Bedrock too</b><br>Phone, console and Windows 10/11, with one checkbox.</td><td width="33%"><img src="docs/media/icons/users.svg" width="28" height="28" alt=""><br><b>Players with a profile</b><br>Ops, bans, whitelist and every player's history.</td><td width="33%"><img src="docs/media/icons/hard-drive.svg" width="28" height="28" alt=""><br><b>World backups</b><br>On start, on stop and every hour while people play.</td></tr>
+<tr><td width="33%"><img src="docs/media/icons/moon.svg" width="28" height="28" alt=""><br><b>Sleeps and wakes</b><br>Stops with nobody on and starts when someone joins.</td><td width="33%"><img src="docs/media/icons/terminal.svg" width="28" height="28" alt=""><br><b>A console you can read</b><br>Coloured by kind of line, with counted filters and search.</td><td width="33%"><img src="docs/media/icons/refresh.svg" width="28" height="28" alt=""><br><b>Updates itself</b><br>Every download checked against its SHA-256.</td></tr>
 </table>
 
 All in **one window**, in English, Spanish, Portuguese, French and German.
 
-## 🎬 How to
+## How to
 
 Open each one to see it in action.
 
 <details>
-<summary><b>⬇️ Install the app</b></summary>
+<summary><img src="docs/media/icons/download.svg" width="20" height="20" alt="" align="absmiddle"> <b>Install the app</b></summary>
 
 <br>
 
@@ -54,7 +54,7 @@ Open each one to see it in action.
 </details>
 
 <details>
-<summary><b>🧱 Create a server</b></summary>
+<summary><img src="docs/media/icons/server.svg" width="20" height="20" alt="" align="absmiddle"> <b>Create a server</b></summary>
 
 <br>
 
@@ -69,7 +69,7 @@ nothing in it.
 </details>
 
 <details>
-<summary><b>🧩 Install mods or plugins</b></summary>
+<summary><img src="docs/media/icons/puzzle.svg" width="20" height="20" alt="" align="absmiddle"> <b>Install mods or plugins</b></summary>
 
 <br>
 
@@ -81,7 +81,7 @@ is downloaded, together with any libraries it needs.
 </details>
 
 <details>
-<summary><b>🌐 Play with friends over the Internet</b></summary>
+<summary><img src="docs/media/icons/globe.svg" width="20" height="20" alt="" align="absmiddle"> <b>Play with friends over the Internet</b></summary>
 
 <br>
 
@@ -93,7 +93,7 @@ friends. **Tunnels** shows every tunnel on your account and fixes the ones that 
 </details>
 
 <details>
-<summary><b>💾 Back up and restore</b></summary>
+<summary><img src="docs/media/icons/hard-drive.svg" width="20" height="20" alt="" align="absmiddle"> <b>Back up and restore</b></summary>
 
 <br>
 
@@ -106,7 +106,7 @@ saved first, in case you change your mind).
 </details>
 
 <details>
-<summary><b>🔄 Update the app</b></summary>
+<summary><img src="docs/media/icons/refresh.svg" width="20" height="20" alt="" align="absmiddle"> <b>Update the app</b></summary>
 
 <br>
 
@@ -117,10 +117,10 @@ When it opens again, **What's new** tells you what changed. It works the same on
 
 </details>
 
-## 📋 Every feature
+## Every feature
 
 <details>
-<summary><b>🧱 Servers</b> — create, add, types, start, appearance, seeds, sleep</summary>
+<summary><b>Servers</b> — create, add, types, start, appearance, seeds, sleep</summary>
 
 <br>
 
@@ -142,27 +142,27 @@ When it opens again, **What's new** tells you what changed. It works the same on
   **Appearance**: the image, the name and both lines of the MOTD — the 16 colours by name, recent ones,
   **gradients**, bold, italics, underline and strikethrough, and **any hex colour** on Paper and Purpur — with
   the card itself as the preview. The format bar shows what the text under the cursor already has.
-- **All of a server's settings on one page** ⚙️ — **Configure** opens them inside the window, sorted into
+- **All of a server's settings on one page** — **Configure** opens them inside the window, sorted into
   Appearance · Game (gameplay, world) · Server (type and version, performance, network, crossplay) ·
   Automatic (power, backups, notifications) · Advanced, every `server.properties` setting explained in plain
   words. Changes wait in a save bar that only appears when there is something to save, and leaving with
   unsaved changes is stopped right there. On a narrow window the index becomes a strip of chips.
-- **Seeds** 🌱 — choose one when creating a server, see the real one in its configuration, and open it on
+- **Seeds** — choose one when creating a server, see the real one in its configuration, and open it on
   Chunkbase's seed map for that server's version in one click.
-- **Sleeps and wakes on its own** 💤 — a server can **stop itself after N minutes with nobody on** and **start
+- **Sleeps and wakes on its own** — a server can **stop itself after N minutes with nobody on** and **start
   again when somebody tries to join**. While it sleeps the list shows *"Off · join to start it"* and whoever
   presses Join gets a message while it boots. There's a **countdown** to the shutdown and a grace period after
   waking. If the server has a whitelist, only names on it (or ops) wake it, so internet scanners don't — the
   name isn't verified until the server is up, which then turns away anyone borrowing one. Per server and **off by
   default**.
-- **Nothing missing before it starts** ✅ — if a mod or plugin is waiting on a dependency, you're told **when
+- **Nothing missing before it starts** — if a mod or plugin is waiting on a dependency, you're told **when
   you press Start**, with the option to install it and start. It's read from the jars themselves, so it works
   **offline**. Covers Fabric and Forge/NeoForge mods, and Paper and Purpur plugins.
 
 </details>
 
 <details>
-<summary><b>🧩 Mods and plugins</b> — store, dependencies, updates, a modpack for your friends</summary>
+<summary><b>Mods and plugins</b> — store, dependencies, updates, a modpack for your friends</summary>
 
 <br>
 
@@ -176,10 +176,10 @@ When it opens again, **What's new** tells you what changed. It works the same on
 - **Updates** — **check for updates** says what's new and which libraries are missing; update them one by one
   or with **Update all**. **No junk left behind**: the old version and any other copy of the same mod (a
   duplicate under another name, a disabled copy) are removed, offline too.
-- **Suggested clean-up** 🧹 — the app points out what is no longer needed: **libraries no mod uses** (with the
+- **Suggested clean-up** — the app points out what is no longer needed: **libraries no mod uses** (with the
   reason, e.g. "only Litematica used it, and it's gone") and **mods switched off for over a month**. It only
   suggests: you tick, press, and they go; "Not now" hides it for 30 days.
-- **Send your friends a ready-made modpack** 📦 — one button zips the mods with instructions in their language.
+- **Send your friends a ready-made modpack** — one button zips the mods with instructions in their language.
   Mods that only do anything on the server (Geyser, Floodgate, a backup mod) are **left out automatically**, and
   the app tells you which. The pack carries a **script for Windows, Linux and macOS** that finds the mods
   folders — including each Prism, MultiMC, CurseForge or Modrinth App instance — copies everything in and moves
@@ -189,7 +189,7 @@ When it opens again, **What's new** tells you what changed. It works the same on
 </details>
 
 <details>
-<summary><b>🌐 Internet, Bedrock and other versions</b> — Playit.gg, Tunnels, Geyser, ViaVersion</summary>
+<summary><b>Internet, Bedrock and other versions</b> — Playit.gg, Tunnels, Geyser, ViaVersion</summary>
 
 <br>
 
@@ -199,20 +199,20 @@ When it opens again, **What's new** tells you what changed. It works the same on
   lives in a small proxy).
 - **Tunnels** — every tunnel on your account in one table: it flags the ones that lead nowhere, the duplicates
   and the shared ports, with a button to fix each one, and lets you rename or delete them.
-- **Connection test** 📶 — **Test connection** on the Playit card measures each stretch on its own — your
+- **Connection test** — **Test connection** on the Playit card measures each stretch on its own — your
   server, your internet (latency, download and upload, via Cloudflare), the Java tunnel and the Bedrock one —
   and says in one sentence whether lag comes from your PC, your line or the tunnel. The technical details
   (min/avg/max, jitter, loss, peak throughput, samples) are one click away, with a report to copy.
-- **Play from Bedrock too** 📱 — one checkbox installs Geyser and Floodgate, picks a free UDP port, creates the
+- **Play from Bedrock too** — one checkbox installs Geyser and Floodgate, picks a free UDP port, creates the
   second (UDP) tunnel and sets the public port Geyser must advertise. The Bedrock port is changed in each
   server's settings, and two servers are never given the same one. It depends on the server type:
 
   | Type | From Bedrock | Why |
   |---|---|---|
-  | **Paper**, **Purpur** | ✅ Works | Plugins run on the server alone, so a Bedrock client needs nothing. |
-  | **Fabric** | ✅ Works | With the mod-content checkbox: Hydraulic converts what the mods add. |
-  | **NeoForge** | ⚠️ Sometimes | It connects, but any mod the client is required to have shuts Bedrock out, and Hydraulic no longer publishes for NeoForge. |
-  | **Vanilla**, **Forge** | ❌ No | Geyser publishes no build for them. |
+  | **Paper**, **Purpur** | **Works** | Plugins run on the server alone, so a Bedrock client needs nothing. |
+  | **Fabric** | **Works** | With the mod-content checkbox: Hydraulic converts what the mods add. |
+  | **NeoForge** | **Sometimes** | It connects, but any mod the client is required to have shuts Bedrock out, and Hydraulic no longer publishes for NeoForge. |
+  | **Vanilla**, **Forge** | **No** | Geyser publishes no build for them. |
 
 - **Bedrock players seeing modded content** — on **Fabric**, one more checkbox installs Hydraulic (GeyserMC's
   own) and Fabric API. Its authors call it very early development, and the app says so.
@@ -222,33 +222,33 @@ When it opens again, **What's new** tells you what changed. It works the same on
 </details>
 
 <details>
-<summary><b>👥 Players, console and notifications</b> — history, a coloured console, alerts</summary>
+<summary><b>Players, console and notifications</b> — history, a coloured console, alerts</summary>
 
 <br>
 
 - **Players** — connected (live), operators, whitelist and banned, with buttons instead of commands. The
   whitelist has its own switch: off lets anyone in and keeps the names; adding someone turns it on. New servers
   start with it off (Minecraft 26.3 turned it on by default).
-- **Player history** 📜 — everyone who has ever joined, with their last connection. Their profile: joins and
+- **Player history** — everyone who has ever joined, with their last connection. Their profile: joins and
   leaves, chat, deaths and advancements, time played, blocks broken and items used — each with its share — and
   odds and ends (jumps, damage, distance on foot, flying and by elytra). Filled from the old logs the first
   time, kept small (500 events and 90 days per player by default) and on your computer only. **IP addresses are
   never kept.**
-- **A console you can read** 🖥️ — every line coloured for what it is (errors, warnings, chat, joins and leaves,
+- **A console you can read** — every line coloured for what it is (errors, warnings, chat, joins and leaves,
   commands, and what the app says told apart from what the server says), **a filter per category with its own
   count**, and what you search for **marked inside the line**. The app **answers the start-up warnings that
   are its to answer**: it enables native access on Java 22+ and asks once whether to accept BlueMap's download.
   With a command box and a **command-help** panel.
-- **Notifications** 🔔 — when a player joins or leaves, someone dies (PvP), the server crashes, auto-restart
+- **Notifications** — when a player joins or leaves, someone dies (PvP), the server crashes, auto-restart
   gives up, or a server stops or starts by itself. Per kind, globally and **per server**.
-- **Every notification tells itself apart at a glance** 🎨 — a colour and an emoji per kind. Colours are
+- **Every notification tells itself apart at a glance** — a colour and an emoji per kind. Colours are
   changed in Settings, from a palette made for the dark background or with the full picker, which warns you
   when one would be hard to read.
 
 </details>
 
 <details>
-<summary><b>💾 Backups, settings and comfort</b></summary>
+<summary><b>Backups, settings and comfort</b></summary>
 
 <br>
 
@@ -260,7 +260,7 @@ When it opens again, **What's new** tells you what changed. It works the same on
   hand are counted separately, so the clock never deletes them. The **Backups** tab shows each pile against
   its limit, the space they take and when the next one is due, lists them by day and marks the one the next backup will replace.
   **Back up now** and one-click **Restore**.
-- **Settings, part of the window** ⚙️ — language, tray behaviour, **Add to desktop**, notifications, colours
+- **Settings, part of the window** — language, tray behaviour, **Add to desktop**, notifications, colours
   and the player history, each on its own page. Saved as you go.
 - **Stays out of the way** — minimize or close **to the system tray** and your servers keep running; launching
   the app again brings that window back instead of opening a second copy.
@@ -270,7 +270,7 @@ When it opens again, **What's new** tells you what changed. It works the same on
 
 </details>
 
-## 📸 Screenshots
+## Screenshots
 
 <details>
 <summary><b>See the screenshots</b></summary>
@@ -299,13 +299,13 @@ When it opens again, **What's new** tells you what changed. It works the same on
 
 </details>
 
-## 💻 Platform support
+## Platform support
 
 | Windows x64 | Windows ARM64 | Linux x64 | macOS (Apple Silicon & Intel) |
 |---|---|---|---|
-| ✅ `.exe` installer | ✅ Via x64 emulation | ✅ AppImage | ✅ DMG |
+| `.exe` installer | Via x64 emulation | AppImage | DMG |
 
-## 🛠️ For developers
+## For developers
 
 <details>
 <summary><b>Build, documentation, data and contributing</b></summary>
@@ -369,7 +369,7 @@ build and test, the code style, and the rule that documentation moves with the c
 
 </details>
 
-## 📄 License
+## License
 
 **[MIT](LICENSE)** — free to use, modify and redistribute, including commercially, as long as the copyright
 notice stays. Provided as is, without warranty. Third-party software is listed in [NOTICE](NOTICE).

@@ -1,6 +1,6 @@
 # Acceso compartido
 
-> 🇬🇧 Prefer English? Read the [English version](shared-access.md).
+> Prefer English? Read the [English version](shared-access.md).
 
 Este documento recoge las decisiones de diseño para que varias personas gestionen los mismos
 servidores desde distintos dispositivos: la app de escritorio, una web y, más adelante, el móvil. Es un

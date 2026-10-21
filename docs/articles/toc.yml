@@ -1,4 +1,4 @@
-- name: 🇬🇧 English
+- name: English
   items:
     - name: Architecture
       href: architecture.md
@@ -10,7 +10,7 @@
       href: shared-access.md
     - name: Visibility and statistics
       href: visibility.md
-- name: 🇪🇸 Español
+- name: Español
   items:
     - name: Arquitectura
       href: architecture.es.md

@@ -77,8 +77,8 @@ repeating, plus the ones a tool can't check:
 ~70 chars. The subject describes the **problem or the result, not the mechanism**: the diff already
 says which lines moved.
 
-- `fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban` ✅
-- `fix(bedrock): cambiar PickBedrockPort para usar accountTunnels` ❌
+- Good: `fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban`
+- Bad: `fix(bedrock): cambiar PickBedrockPort para usar accountTunnels`
 
 Types: `feat` · `fix` · `seg` (security — its own type, because "what changed about that since the
 last audit?" has to be answerable from `git log --grep '^seg'`) · `perf` · `refactor` · `docs` ·
@@ -101,6 +101,9 @@ Anything that alters behaviour alters the docs in the same commit, and **both la
 - service / flow / folder → `docs/articles/architecture.md` + `architecture.es.md`
 - convention or workflow → `docs/articles/contributing.md` + `contributing.es.md` + this file
 - user-facing string → all five `.resx` (a test enforces it)
+
+**No emoji in docs, issue forms or commits.** Mark a state with a bold word (**Works**, **No**); for
+something visual use the line icons in `docs/media/icons/`, as the README feature grid does.
 
 ## Security / correctness expectations
 - **Verify downloads** against official checksums via the shared `DownloadVerifier` (delete the file

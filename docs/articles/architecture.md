@@ -1,6 +1,6 @@
 # Architecture
 
-> 🇪🇸 ¿Prefieres español? Lee la versión en [español](architecture.es.md).
+> ¿Prefieres español? Lee la versión en [español](architecture.es.md).
 
 MC Server Launcher is a **Avalonia / .NET 9** desktop app that follows the **MVVM** pattern
 (using [CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)) with the
