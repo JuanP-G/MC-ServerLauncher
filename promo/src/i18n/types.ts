@@ -42,6 +42,30 @@ export type Copy = {
     others: { name: string; motd: string; players: string }[];
   };
   wall: string[];
+  /** The two slower brand videos. */
+  brand: {
+    /** «Bloque a bloque»: the captions, in the order they appear. */
+    blocks: { first: string; server: string; friends: string; grow: string; community: string };
+    /** «Manifiesto»: one line per shot. *Words between asterisks* are set in bold. */
+    manifesto: string[];
+    /** The line under the logo at the end of both. */
+    tagline: string;
+    /** "Music" in the credit line. */
+    music: string;
+  };
+  /** The spot «Antes de que pite». */
+  spot: {
+    clock: string;
+    /** The name of the friends' group chat. */
+    group: string;
+    twoMinutes: string;
+    you: string;
+    chat: { who?: string; text: string }[];
+    already: string;
+    ding: string;
+    gameChat: string[];
+    tagline: string;
+  };
   outro: {
     tagline: string;
     free: string;
