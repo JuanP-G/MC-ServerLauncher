@@ -1,6 +1,6 @@
 # Visibilidad y estadísticas
 
-> 🇬🇧 Read this in [English](visibility.md).
+> Read this in [English](visibility.md).
 
 Cómo se mide quién llega a la web y quién descarga la app, y dónde conviene estar para que más gente
 la encuentre. La app no lleva telemetría y no se va a añadir sin que sea opcional y explícita: aquí solo se

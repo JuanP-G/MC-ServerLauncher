@@ -1,6 +1,6 @@
 # Auditorías del código
 
-> 🇬🇧 Prefer English? Read the [English version](auditing.md).
+> Prefer English? Read the [English version](auditing.md).
 
 Cada cierto tiempo, el código que ha entrado desde la última auditoría se vuelve a leer de arriba
 abajo: una vez buscando fallos que una persona puede ver, otra buscando los que nadie ve hasta que

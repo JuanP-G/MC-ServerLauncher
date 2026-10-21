@@ -1,6 +1,6 @@
 # Visibility and statistics
 
-> 🇪🇸 ¿Prefieres español? Lee la versión en [español](visibility.es.md).
+> ¿Prefieres español? Lee la versión en [español](visibility.es.md).
 
 How we measure who reaches the website and who downloads the app, and where it is worth being listed so
 more people find it. The app has no telemetry and none will be added unless it is optional and explicit:

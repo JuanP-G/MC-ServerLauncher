@@ -1,6 +1,6 @@
-# 🎮 MC Server Launcher
+# MC Server Launcher
 
-**🇬🇧 [English](README.md) · 🇪🇸 Español**
+**[English](README.md) · Español**
 
 [![Versión](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?label=versi%C3%B3n&color=2da44e)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
 [![Licencia](https://img.shields.io/badge/licencia-MIT-8b949e)](LICENSE)
@@ -21,22 +21,22 @@ archivos `.bat`, ventanas de consola ni configuraciones a mano**.
   <a href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><img src="docs/media/buttons/docs-es.svg" width="250" alt="Documentación: guía y referencia de API"></a>
 </p>
 
-## ✨ Qué puedes hacer
+## Qué puedes hacer
 
 <table>
-<tr><td width="33%">🧱 <b>Crear un servidor en 2 minutos</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge o Forge. La app pone hasta el Java.</td><td width="33%">🧩 <b>Mods y plugins de Modrinth</b><br>Ya filtrados por tu versión, y cada uno con lo que necesita.</td><td width="33%">🌐 <b>Jugar con amigos por Internet</b><br>Túnel de Playit.gg: una dirección, sin abrir puertos.</td></tr>
-<tr><td width="33%">📱 <b>Desde Bedrock también</b><br>Móvil, consola y Windows 10/11, con una casilla.</td><td width="33%">👥 <b>Jugadores con ficha</b><br>OPs, baneos, lista blanca e historial de cada jugador.</td><td width="33%">💾 <b>Copias del mundo</b><br>Al arrancar, al parar y cada hora mientras se juega.</td></tr>
-<tr><td width="33%">💤 <b>Se duerme y se despierta</b><br>Se apaga sin nadie dentro y arranca cuando alguien entra.</td><td width="33%">🖥️ <b>Una consola que se lee</b><br>Colores por tipo de línea, filtros con contador y buscador.</td><td width="33%">🔄 <b>Se actualiza sola</b><br>Cada descarga, comprobada con su SHA-256.</td></tr>
+<tr><td width="33%"><img src="docs/media/icons/server.svg" width="28" height="28" alt=""><br><b>Crear un servidor en 2 minutos</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge o Forge. La app pone hasta el Java.</td><td width="33%"><img src="docs/media/icons/puzzle.svg" width="28" height="28" alt=""><br><b>Mods y plugins de Modrinth</b><br>Ya filtrados por tu versión, y cada uno con lo que necesita.</td><td width="33%"><img src="docs/media/icons/globe.svg" width="28" height="28" alt=""><br><b>Jugar con amigos por Internet</b><br>Túnel de Playit.gg: una dirección, sin abrir puertos.</td></tr>
+<tr><td width="33%"><img src="docs/media/icons/smartphone.svg" width="28" height="28" alt=""><br><b>Desde Bedrock también</b><br>Móvil, consola y Windows 10/11, con una casilla.</td><td width="33%"><img src="docs/media/icons/users.svg" width="28" height="28" alt=""><br><b>Jugadores con ficha</b><br>OPs, baneos, lista blanca e historial de cada jugador.</td><td width="33%"><img src="docs/media/icons/hard-drive.svg" width="28" height="28" alt=""><br><b>Copias del mundo</b><br>Al arrancar, al parar y cada hora mientras se juega.</td></tr>
+<tr><td width="33%"><img src="docs/media/icons/moon.svg" width="28" height="28" alt=""><br><b>Se duerme y se despierta</b><br>Se apaga sin nadie dentro y arranca cuando alguien entra.</td><td width="33%"><img src="docs/media/icons/terminal.svg" width="28" height="28" alt=""><br><b>Una consola que se lee</b><br>Colores por tipo de línea, filtros con contador y buscador.</td><td width="33%"><img src="docs/media/icons/refresh.svg" width="28" height="28" alt=""><br><b>Se actualiza sola</b><br>Cada descarga, comprobada con su SHA-256.</td></tr>
 </table>
 
 Todo en **una sola ventana**, en español, inglés, portugués, francés y alemán.
 
-## 🎬 Cómo se hace
+## Cómo se hace
 
 Pulsa cada apartado para verlo en marcha.
 
 <details>
-<summary><b>⬇️ Instalar la app</b></summary>
+<summary><img src="docs/media/icons/download.svg" width="20" height="20" alt="" align="absmiddle"> <b>Instalar la app</b></summary>
 
 <br>
 
@@ -55,7 +55,7 @@ Pulsa cada apartado para verlo en marcha.
 </details>
 
 <details>
-<summary><b>🧱 Crear un servidor</b></summary>
+<summary><img src="docs/media/icons/server.svg" width="20" height="20" alt="" align="absmiddle"> <b>Crear un servidor</b></summary>
 
 <br>
 
@@ -70,7 +70,7 @@ nada en ella.
 </details>
 
 <details>
-<summary><b>🧩 Instalar mods o plugins</b></summary>
+<summary><img src="docs/media/icons/puzzle.svg" width="20" height="20" alt="" align="absmiddle"> <b>Instalar mods o plugins</b></summary>
 
 <br>
 
@@ -82,7 +82,7 @@ con tu servidor, con las librerías que necesite.
 </details>
 
 <details>
-<summary><b>🌐 Jugar con amigos por Internet</b></summary>
+<summary><img src="docs/media/icons/globe.svg" width="20" height="20" alt="" align="absmiddle"> <b>Jugar con amigos por Internet</b></summary>
 
 <br>
 
@@ -94,7 +94,7 @@ tus amigos. **Túneles** enseña todos los túneles de tu cuenta y arregla los q
 </details>
 
 <details>
-<summary><b>💾 Hacer y restaurar copias</b></summary>
+<summary><img src="docs/media/icons/hard-drive.svg" width="20" height="20" alt="" align="absmiddle"> <b>Hacer y restaurar copias</b></summary>
 
 <br>
 
@@ -107,7 +107,7 @@ antes se guarda el mundo actual, por si te arrepientes).
 </details>
 
 <details>
-<summary><b>🔄 Actualizar la app</b></summary>
+<summary><img src="docs/media/icons/refresh.svg" width="20" height="20" alt="" align="absmiddle"> <b>Actualizar la app</b></summary>
 
 <br>
 
@@ -118,10 +118,10 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 
 </details>
 
-## 📋 Todas las funciones
+## Todas las funciones
 
 <details>
-<summary><b>🧱 Servidores</b> — crear, añadir, tipos, arrancar, apariencia, semillas, dormir</summary>
+<summary><b>Servidores</b> — crear, añadir, tipos, arrancar, apariencia, semillas, dormir</summary>
 
 <br>
 
@@ -143,27 +143,27 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   **Apariencia**: la imagen, el nombre y las dos líneas del MOTD —los 16 colores con su nombre, los recientes,
   **degradados**, negrita, cursiva, subrayado y tachado, y **cualquier color hex** en Paper y Purpur— con la
   propia tarjeta como vista previa. La barra de formato enseña lo que ya tiene el texto donde está el cursor.
-- **Toda la configuración de un servidor en una página** ⚙️ — **Configurar** la abre dentro de la ventana,
+- **Toda la configuración de un servidor en una página** — **Configurar** la abre dentro de la ventana,
   ordenada en Apariencia · Juego (partida, mundo) · Servidor (tipo y versión, rendimiento, red, crossplay) ·
   Automático (encendido, copias, avisos) · Avanzado, con cada ajuste de `server.properties` explicado en
   claro. Los cambios esperan en una barra que solo aparece cuando hay algo que guardar, y salir con cambios
   sin guardar se frena ahí mismo. En una ventana estrecha el índice pasa a una tira de chips.
-- **Semillas** 🌱 — elígela al crear el servidor, mira la real en su configuración y ábrela en el mapa de
+- **Semillas** — elígela al crear el servidor, mira la real en su configuración y ábrela en el mapa de
   Chunkbase, en la versión de ese servidor, con un clic.
-- **Se apaga y se enciende solo** 💤 — un servidor puede **apagarse a los N minutos sin nadie dentro** y
+- **Se apaga y se enciende solo** — un servidor puede **apagarse a los N minutos sin nadie dentro** y
   **volver a encenderse cuando alguien intenta entrar**. Mientras duerme, la lista dice *«Apagado · entra para
   encenderlo»* y quien pulse Entrar recibe un mensaje mientras arranca. Hay **cuenta atrás** hasta el apagado y
   un margen tras despertar. Si el servidor tiene lista blanca, solo lo despiertan los nombres de la lista (u ops),
   así que los escáneres de Internet no; el nombre no se verifica hasta que el servidor arranca, y entonces este
   echa a quien use uno prestado. Por servidor y **desactivado de serie**.
-- **Antes de arrancar se comprueba que no falte nada** ✅ — si a un mod o plugin le falta una dependencia, se
+- **Antes de arrancar se comprueba que no falte nada** — si a un mod o plugin le falta una dependencia, se
   avisa **al darle a Iniciar**, con la opción de instalarla y arrancar. Se lee de los propios jars, así que
   funciona **sin conexión**. Para mods de Fabric y Forge/NeoForge y plugins de Paper y Purpur.
 
 </details>
 
 <details>
-<summary><b>🧩 Mods y plugins</b> — tienda, dependencias, actualizaciones, modpack para tus amigos</summary>
+<summary><b>Mods y plugins</b> — tienda, dependencias, actualizaciones, modpack para tus amigos</summary>
 
 <br>
 
@@ -177,10 +177,10 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 - **Actualizaciones** — **buscar actualizaciones** dice qué hay nuevo y qué librerías faltan; se actualiza de
   uno en uno o con **Actualizar todas**. **No queda basura**: la versión vieja y cualquier otra copia del mismo
   mod (un duplicado con otro nombre, una copia desactivada) se borran, también sin conexión.
-- **Limpieza sugerida** 🧹 — la app avisa de lo que ya sobra: **librerías que ningún mod usa** (con el motivo,
+- **Limpieza sugerida** — la app avisa de lo que ya sobra: **librerías que ningún mod usa** (con el motivo,
   p. ej. «solo la usaba Litematica, que ya no está») y **mods apagados hace más de un mes**. Solo lo propone:
   marcas, pulsas y se quita; «Ahora no» lo esconde 30 días.
-- **Manda a tus amigos un modpack listo** 📦 — un botón comprime los mods con instrucciones en su idioma. Los
+- **Manda a tus amigos un modpack listo** — un botón comprime los mods con instrucciones en su idioma. Los
   que solo hacen algo en el servidor (Geyser, Floodgate, un mod de copias) **se dejan fuera solos**, y la app
   te dice cuáles. El paquete lleva un **script para Windows, Linux y macOS** que encuentra las carpetas de
   mods —incluida cada instancia de Prism, MultiMC, CurseForge o Modrinth App—, lo copia todo y aparta lo que
@@ -190,7 +190,7 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 </details>
 
 <details>
-<summary><b>🌐 Internet, Bedrock y otras versiones</b> — Playit.gg, Túneles, Geyser, ViaVersion</summary>
+<summary><b>Internet, Bedrock y otras versiones</b> — Playit.gg, Túneles, Geyser, ViaVersion</summary>
 
 <br>
 
@@ -200,20 +200,20 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   credencial vive en un pequeño proxy).
 - **Túneles** — todos los túneles de tu cuenta en una tabla: marca los que no llevan a nada, los repetidos y
   los puertos compartidos, con un botón para arreglar cada uno, y deja renombrarlos o borrarlos.
-- **Prueba de conexión** 📶 — **Probar conexión** en la tarjeta de Playit mide cada tramo por separado —tu
+- **Prueba de conexión** — **Probar conexión** en la tarjeta de Playit mide cada tramo por separado —tu
   servidor, tu internet (latencia, bajada y subida, con Cloudflare), el túnel de Java y el de Bedrock— y dice
   en una frase si el retraso viene de tu PC, de tu línea o del túnel. Los detalles técnicos (mín/media/máx,
   jitter, pérdida, pico de transmisión, muestras) están a un clic, con un informe para copiar.
-- **Jugar también desde Bedrock** 📱 — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea
+- **Jugar también desde Bedrock** — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea
   el segundo túnel (UDP) y configura el puerto público que Geyser debe anunciar. El puerto de Bedrock se cambia
   en la configuración de cada servidor (Red y acceso), y nunca se le da el mismo a dos. Depende del tipo de servidor:
 
   | Tipo | Desde Bedrock | Por qué |
   |---|---|---|
-  | **Paper**, **Purpur** | ✅ Funciona | Los plugins solo corren en el servidor: el cliente de Bedrock no necesita nada. |
-  | **Fabric** | ✅ Funciona | Con la casilla de contenido de mods: Hydraulic convierte lo que añaden los mods. |
-  | **NeoForge** | ⚠️ A veces | Conecta, pero cualquier mod que el cliente necesite tener deja fuera a Bedrock, y Hydraulic ya no publica para NeoForge. |
-  | **Vanilla**, **Forge** | ❌ No | Geyser no publica ninguna versión para ellos. |
+  | **Paper**, **Purpur** | **Funciona** | Los plugins solo corren en el servidor: el cliente de Bedrock no necesita nada. |
+  | **Fabric** | **Funciona** | Con la casilla de contenido de mods: Hydraulic convierte lo que añaden los mods. |
+  | **NeoForge** | **A veces** | Conecta, pero cualquier mod que el cliente necesite tener deja fuera a Bedrock, y Hydraulic ya no publica para NeoForge. |
+  | **Vanilla**, **Forge** | **No** | Geyser no publica ninguna versión para ellos. |
 
 - **Que los de Bedrock vean el contenido de los mods** — en **Fabric**, otra casilla instala Hydraulic (de
   GeyserMC) y Fabric API. Sus autores lo consideran de desarrollo muy temprano, y la app lo dice.
@@ -223,32 +223,32 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 </details>
 
 <details>
-<summary><b>👥 Jugadores, consola y avisos</b> — historial, consola de colores, notificaciones</summary>
+<summary><b>Jugadores, consola y avisos</b> — historial, consola de colores, notificaciones</summary>
 
 <br>
 
 - **Jugadores** — conectados en vivo, operadores, lista blanca y baneados, con botones en vez de comandos. La
   lista blanca tiene su propio interruptor: apagada deja entrar a cualquiera y guarda los nombres; añadir a
   alguien la enciende. Los servidores nuevos empiezan con ella apagada (Minecraft 26.3 la trae encendida).
-- **Historial de jugadores** 📜 — todos los que han entrado alguna vez, con su última conexión. Su ficha:
+- **Historial de jugadores** — todos los que han entrado alguna vez, con su última conexión. Su ficha:
   entradas y salidas, chat, muertes y logros, tiempo jugado, bloques minados y objetos usados —con su
   porcentaje— y curiosidades (saltos, daño, lo recorrido a pie, volando y con elytra). Se rellena la primera vez
   con los logs antiguos, ocupa poco (500 eventos y 90 días por jugador de serie) y se queda en tu equipo. **La IP
   no se guarda nunca.**
-- **Consola legible** 🖥️ — cada línea con su color (errores, avisos, chat, entradas y salidas, comandos, y lo
+- **Consola legible** — cada línea con su color (errores, avisos, chat, entradas y salidas, comandos, y lo
   que dice la app aparte de lo que dice el servidor), **un filtro por categoría con su contador** y lo que
   buscas **marcado dentro de la línea**. La app **resuelve los avisos de arranque que le tocan**: activa el
   acceso nativo en Java 22+ y pregunta una vez si aceptas la descarga de BlueMap. Con caja de comandos y un
   panel de **ayuda de comandos**.
-- **Notificaciones** 🔔 — cuando un jugador entra o sale, alguien muere (PvP), el servidor se cae, el reinicio
+- **Notificaciones** — cuando un jugador entra o sale, alguien muere (PvP), el servidor se cae, el reinicio
   automático se rinde, o un servidor se apaga o se enciende solo. Por tipo, de forma global y **por servidor**.
-- **Cada aviso se distingue de un vistazo** 🎨 — un color y un emoji por tipo. Los colores se cambian en
+- **Cada aviso se distingue de un vistazo** — un color y un emoji por tipo. Los colores se cambian en
   Ajustes, de una paleta pensada para el fondo oscuro o con el selector completo, que avisa si van a costar leerse.
 
 </details>
 
 <details>
-<summary><b>💾 Copias, ajustes y comodidad</b></summary>
+<summary><b>Copias, ajustes y comodidad</b></summary>
 
 <br>
 
@@ -260,7 +260,7 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   nadie no acumula copias del mismo mundo. Las que haces a mano se cuentan aparte, así que el reloj nunca las
   borra. La pestaña **Copias** enseña cada montón frente a su cupo, el espacio que ocupan y cuándo toca la
   próxima, las ordena por días y marca la que la próxima copia sustituirá. **Copia ahora** y **Restaurar** con un clic.
-- **Ajustes dentro de la ventana** ⚙️ — idioma, bandeja del sistema, **añadir al escritorio**, notificaciones,
+- **Ajustes dentro de la ventana** — idioma, bandeja del sistema, **añadir al escritorio**, notificaciones,
   colores e historial de jugadores, cada cosa en su página. Se guarda al momento.
 - **No estorba** — minimiza o cierra **a la bandeja** y tus servidores siguen; abrir la app otra vez recupera
   esa ventana en vez de abrir una segunda copia.
@@ -270,7 +270,7 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 
 </details>
 
-## 📸 Capturas
+## Capturas
 
 <details>
 <summary><b>Ver las capturas</b></summary>
@@ -299,13 +299,13 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 
 </details>
 
-## 💻 Compatibilidad
+## Compatibilidad
 
 | Windows x64 | Windows ARM64 | Linux x64 | macOS (Apple Silicon e Intel) |
 |---|---|---|---|
-| ✅ Instalador `.exe` | ✅ Por emulación x64 | ✅ AppImage | ✅ DMG |
+| Instalador `.exe` | Por emulación x64 | AppImage | DMG |
 
-## 🛠️ Para desarrolladores
+## Para desarrolladores
 
 <details>
 <summary><b>Compilar, documentación, datos y contribuir</b></summary>
@@ -371,7 +371,7 @@ dos idiomas.
 
 </details>
 
-## 📄 Licencia
+## Licencia
 
 **[MIT](LICENSE)**: úsalo, modifícalo y redistribúyelo, incluso con fines comerciales, manteniendo el aviso de
 copyright. Se ofrece tal cual, sin garantías. El software de terceros está en [NOTICE](NOTICE).

@@ -1,6 +1,6 @@
 # Contributing
 
-> 🇪🇸 ¿Prefieres español? Lee la versión en [español](contributing.es.md).
+> ¿Prefieres español? Lee la versión en [español](contributing.es.md).
 
 Thanks for wanting to help! This guide covers how to build the project and how to make the most
 common changes.
@@ -239,8 +239,8 @@ In Spanish, lower case, no full stop, about **70 characters** (90 is the ceiling
 
 | | |
 |---|---|
-| ✅ | `fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban` |
-| ❌ | `fix(bedrock): cambiar PickBedrockPort para usar accountTunnels` |
+| **Good** | `fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban` |
+| **Bad** | `fix(bedrock): cambiar PickBedrockPort para usar accountTunnels` |
 
 Two related things join with `, y`. If they will not fit in one sentence, they are two commits.
 
@@ -317,6 +317,10 @@ This repository treats the documentation as part of the change, not as follow-up
 
 The English and Spanish pages are the same document twice. Updating one and not the other is how a
 reader ends up trusting a page that is quietly a version behind.
+
+**No emoji in documentation.** Not in headings, lists, tables, issue forms or commit messages. Mark
+a state with a word in bold (**Works**, **No**), and when a page needs something visual use the
+line icons in `docs/media/icons/` (24 px, `#2da44e`), the way the feature grid in `README.md` does.
 
 ## How-to recipes
 

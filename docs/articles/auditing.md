@@ -1,6 +1,6 @@
 # Code audits
 
-> 🇪🇸 ¿Prefieres español? Lee la versión en [español](auditing.es.md).
+> ¿Prefieres español? Lee la versión en [español](auditing.es.md).
 
 Every so often the code that went in since the last audit is read again from top to bottom: once
 for bugs a person can see, once for bugs nobody sees until they cost something, and once for code

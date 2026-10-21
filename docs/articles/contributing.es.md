@@ -1,6 +1,6 @@
 # Cómo contribuir
 
-> 🇬🇧 Prefer English? Read the [English version](contributing.md).
+> Prefer English? Read the [English version](contributing.md).
 
 ¡Gracias por querer ayudar! Esta guía explica cómo compilar el proyecto y cómo hacer los cambios más
 habituales.
@@ -253,8 +253,8 @@ En español, en minúscula, sin punto final, unos **70 caracteres** (90 como top
 
 | | |
 |---|---|
-| ✅ | `fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban` |
-| ❌ | `fix(bedrock): cambiar PickBedrockPort para usar accountTunnels` |
+| **Bien** | `fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban` |
+| **Mal** | `fix(bedrock): cambiar PickBedrockPort para usar accountTunnels` |
 
 Dos cosas relacionadas se unen con `, y`. Si no caben en una frase, son dos commits.
 
@@ -332,6 +332,11 @@ En este repositorio la documentación es parte del cambio, no trabajo para despu
 
 Las páginas en inglés y en español son el mismo documento dos veces. Actualizar una y no la otra es
 justo como alguien acaba fiándose de una página que va una versión por detrás sin saberlo.
+
+**Sin emojis en la documentación.** Ni en títulos, listas, tablas, formularios de issues ni mensajes
+de commit. Un estado se marca con una palabra en negrita (**Funciona**, **No**), y cuando una página
+necesita algo visual se usan los iconos de línea de `docs/media/icons/` (24 px, `#2da44e`), como hace
+la rejilla de funciones de `README.md`.
 
 ## Recetas paso a paso
 
