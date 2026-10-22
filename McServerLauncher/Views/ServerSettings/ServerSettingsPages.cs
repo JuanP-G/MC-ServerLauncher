@@ -47,7 +47,7 @@ internal static class ServerSettingsPages
         new(ServerSettingsPage.Loader, Symbol.Box, "Sset_Loader", "Sset_LoaderHint", "Sset_GroupServer",
             [], []),
         new(ServerSettingsPage.Performance, Symbol.Gauge, "Sset_Performance", "Sset_PerformanceHint", null,
-            [nameof(ServerConfig.MinRamGb), nameof(ServerConfig.MaxRamGb),
+            [nameof(ServerConfig.MemoryMode), nameof(ServerConfig.MinRamGb), nameof(ServerConfig.MaxRamGb),
              nameof(ServerConfig.JavaPath)], []),
         new(ServerSettingsPage.Network, Symbol.PlugConnected, "Sset_Network", "Sset_NetworkHint", null,
             [nameof(ServerConfig.BedrockPort), nameof(ServerConfig.PlayitEnabled)],

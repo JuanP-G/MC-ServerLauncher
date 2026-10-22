@@ -31,6 +31,18 @@ public enum ServerType
     Purpur = 5
 }
 
+/// <summary>Who sizes a server's memory: the app, or the two numbers its owner typed.</summary>
+/// <remarks>
+/// Stored as an integer like <see cref="ServerType"/>, with the same rule: add at the end, never
+/// renumber. Automatic is zero on purpose, so the value that means "the app decides" is also the one
+/// a hand-written file with a bare 0 gets.
+/// </remarks>
+public enum MemoryMode
+{
+    Automatic = 0,
+    Manual = 1
+}
+
 /// <summary>
 /// Persisted data of a Minecraft server registered in the application.
 /// Stored in %APPDATA%\McServerLauncher\servers.json.
@@ -108,11 +120,30 @@ public partial class ServerConfig : ObservableObject
     [ObservableProperty]
     private string _javaPath = "java";
 
-    /// <summary>Minimum memory in GB (-Xms). Same default the create dialog suggests.</summary>
+    /// <summary>
+    /// Whether the app sizes the memory (<see cref="Models.MemoryMode.Automatic"/>) or uses
+    /// <see cref="MinRamGb"/> and <see cref="MaxRamGb"/> as typed.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Null on every server saved before the choice existed, and kept null rather than filled in:
+    /// that is how the app tells "never chose" from "chose Automatic". Such a server runs as
+    /// Automatic and shows a one-line notice that offers going back to its old numbers, which are
+    /// still in <see cref="MinRamGb"/> and <see cref="MaxRamGb"/> because Automatic never writes them.
+    /// </para>
+    /// <para>
+    /// The extra JVM arguments outrank it: a server whose <see cref="ExtraJvmArgs"/> already size the
+    /// heap or pick a collector runs as Manual whatever this says (<c>MemoryProfile.Effective</c>).
+    /// </para>
+    /// </remarks>
+    [ObservableProperty]
+    private MemoryMode? _memoryMode;
+
+    /// <summary>Minimum memory in GB (-Xms), used in Manual mode. Same default the create dialog suggests.</summary>
     [ObservableProperty]
     private int _minRamGb = 2;
 
-    /// <summary>Maximum memory in GB (-Xmx). Same default the create dialog suggests.</summary>
+    /// <summary>Maximum memory in GB (-Xmx), used in Manual mode. Same default the create dialog suggests.</summary>
     [ObservableProperty]
     private int _maxRamGb = 4;
 

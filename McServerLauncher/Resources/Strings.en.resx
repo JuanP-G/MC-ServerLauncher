@@ -1239,4 +1239,23 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Net_StateFair" xml:space="preserve"><value>Borderline</value></data>
   <data name="Net_StateBad" xml:space="preserve"><value>Bad</value></data>
   <data name="Net_StateSkipped" xml:space="preserve"><value>Not tested</value></data>
+  <data name="Mem_ModeAutomatic" xml:space="preserve"><value>Automatic (recommended)</value></data>
+  <data name="Mem_ModeManual" xml:space="preserve"><value>Manual</value></data>
+  <data name="Mem_PlanNowFmt" xml:space="preserve"><value>It can grow up to {0} ({1}). Java takes only what the server needs and gives the rest back when it is quiet.</value></data>
+  <data name="Mem_ReasonNoMods" xml:space="preserve"><value>no mods</value></data>
+  <data name="Mem_ReasonModsFmt" xml:space="preserve"><value>{0} mods</value></data>
+  <data name="Mem_ReasonKept" xml:space="preserve"><value>what it had before</value></data>
+  <data name="Mem_ReasonBudget" xml:space="preserve"><value>fitted to the memory set aside for servers</value></data>
+  <data name="Mem_ReasonFloor" xml:space="preserve"><value>the minimum to run well</value></data>
+  <data name="Mem_UserFlagsWarn" xml:space="preserve"><value>The Java arguments in Advanced already set the memory, so they are used as written and the app does not adjust it.</value></data>
+  <data name="Mem_NoticeText" xml:space="preserve"><value>This server now sizes its own memory and uses much less when it is quiet.</value></data>
+  <data name="Mem_NoticeTip" xml:space="preserve"><value>The app decides how much memory it may use, and Java gives back what it does not need. Your previous numbers are still saved in case you prefer them.</value></data>
+  <data name="Mem_NoticeOk" xml:space="preserve"><value>Got it</value></data>
+  <data name="Mem_NoticeManualFmt" xml:space="preserve"><value>Back to manual ({0}–{1} GB)</value></data>
+  <data name="Set_MemorySection" xml:space="preserve"><value>Server memory</value></data>
+  <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>If you don't play on this PC, servers may use all its memory but 2 GB. Otherwise, together they use at most half.</value></data>
+  <data name="Set_DedicatedPc" xml:space="preserve"><value>This PC is only for servers</value></data>
+  <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Automatic memory: it can grow up to {0} ({1}) and gives back what it does not use.</value></data>
+  <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>This Java does not accept every memory option: the server starts with the ones it does accept.</value></data>
+  <data name="Msg_Java32BitCap" xml:space="preserve"><value>This Java is 32-bit and cannot give more than 1 GB. Install a 64-bit Java to give the server more memory.</value></data>
 </root>

@@ -130,13 +130,18 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   servidor se abre en el mismo sitio, nunca en un diálogo.
 - **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Paper /
   Purpur / Fabric / NeoForge / Forge).
-- **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang), **puerto** y
-  **RAM**, y aceptas el EULA de Minecraft; la app descarga el servidor correcto, prepara `run.bat` / `server.properties` e
+- **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang) y **puerto**,
+  y aceptas el EULA de Minecraft; la app descarga el servidor correcto, prepara `run.bat` / `server.properties` e
   instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur
   usan **plugins**. El mismo panel puede **usar una carpeta que ya existe**: reconoce el tipo, la versión de
   Minecraft y del loader, el puerto y la memoria, y no cambia nada en la carpeta.
 - **Cambiar el tipo de un servidor** — a Paper/Purpur/Fabric/Forge/NeoForge o de vuelta a Vanilla,
   **conservando el mundo**, con avisos por colores de lo que puede afectar cada cambio.
+- **Memoria automática** — la app decide cuánta memoria puede usar cada servidor y le da a Java las
+  opciones para que devuelva la que no necesita: un servidor vacío medido en **1 GB en vez de 3,5-4,7 GB**,
+  con el mismo tick. Entre todos los servidores usan como mucho la mitad del PC, o todo menos 2 GB si es
+  solo para servidores. **Manual** mantiene el mínimo y el máximo que escribas, y tus propios argumentos de
+  Java siempre mandan.
 - **Iniciar / Detener / Reiniciar** con parada limpia que guarda el mundo; detecta y libera un **puerto
   ocupado**; **CPU, RAM, tiempo activo y puerto** en vivo.
 - **Tarjeta estilo Minecraft** — icono, MOTD con colores, `jugadores/máx` y señal. Su lápiz abre

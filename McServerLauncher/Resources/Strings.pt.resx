@@ -1239,4 +1239,23 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Net_StateFair" xml:space="preserve"><value>No limite</value></data>
   <data name="Net_StateBad" xml:space="preserve"><value>Mal</value></data>
   <data name="Net_StateSkipped" xml:space="preserve"><value>Não testado</value></data>
+  <data name="Mem_ModeAutomatic" xml:space="preserve"><value>Automática (recomendada)</value></data>
+  <data name="Mem_ModeManual" xml:space="preserve"><value>Manual</value></data>
+  <data name="Mem_PlanNowFmt" xml:space="preserve"><value>Pode crescer até {0} ({1}). O Java ocupa só o que o servidor precisa e devolve o resto quando está tranquilo.</value></data>
+  <data name="Mem_ReasonNoMods" xml:space="preserve"><value>sem mods</value></data>
+  <data name="Mem_ReasonModsFmt" xml:space="preserve"><value>{0} mods</value></data>
+  <data name="Mem_ReasonKept" xml:space="preserve"><value>o que tinha antes</value></data>
+  <data name="Mem_ReasonBudget" xml:space="preserve"><value>ajustado à memória reservada para servidores</value></data>
+  <data name="Mem_ReasonFloor" xml:space="preserve"><value>o mínimo para correr bem</value></data>
+  <data name="Mem_UserFlagsWarn" xml:space="preserve"><value>Os argumentos de Java em Avançado já definem a memória, por isso são usados tal como estão e a app não a ajusta.</value></data>
+  <data name="Mem_NoticeText" xml:space="preserve"><value>Este servidor agora ajusta a memória sozinho e gasta muito menos quando está tranquilo.</value></data>
+  <data name="Mem_NoticeTip" xml:space="preserve"><value>A app decide quanta memória pode usar e o Java devolve a que não precisa. Os teus números de antes continuam guardados, caso prefiras voltar a eles.</value></data>
+  <data name="Mem_NoticeOk" xml:space="preserve"><value>Entendido</value></data>
+  <data name="Mem_NoticeManualFmt" xml:space="preserve"><value>Voltar ao manual ({0}–{1} GB)</value></data>
+  <data name="Set_MemorySection" xml:space="preserve"><value>Memória dos servidores</value></data>
+  <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Se não jogas neste PC, os servidores podem usar toda a memória menos 2 GB. Caso contrário, juntos usam no máximo metade.</value></data>
+  <data name="Set_DedicatedPc" xml:space="preserve"><value>Este PC é só para servidores</value></data>
+  <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Memória automática: pode crescer até {0} ({1}) e devolve o que não usa.</value></data>
+  <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>Este Java não aceita todas as opções de memória: o servidor arranca com as que aceita.</value></data>
+  <data name="Msg_Java32BitCap" xml:space="preserve"><value>Este Java é de 32 bits e não pode dar mais de 1 GB. Instala um de 64 bits para o servidor ter mais memória.</value></data>
 </root>

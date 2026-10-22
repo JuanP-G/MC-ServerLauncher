@@ -64,7 +64,10 @@ public class ServerProcessManager
     }
 
     /// <summary>Starts the server. Equivalent to run.bat but without a console window.</summary>
-    public void Start(ServerConfig config)
+    /// <param name="config">The server to start.</param>
+    /// <param name="memoryFlags">The memory flags decided for this start (see <see cref="MemoryProfile.Plan"/>).
+    /// Null for Manual mode's <c>-Xms</c>/<c>-Xmx</c>.</param>
+    public void Start(ServerConfig config, IReadOnlyList<string>? memoryFlags = null)
     {
         lock (_lock)
         {
@@ -87,7 +90,7 @@ public class ServerProcessManager
                     config.JarFullPath));
             }
 
-            var args = BuildJavaArguments(config, new JavaService().GetMajorVersion(config.JavaPath));
+            var args = BuildJavaArguments(config, new JavaService().GetMajorVersion(config.JavaPath), memoryFlags);
 
             var psi = new ProcessStartInfo
             {
@@ -133,10 +136,13 @@ public class ServerProcessManager
 
     /// <param name="config">The server to start.</param>
     /// <param name="javaMajor">The Java it starts on. 0 when it could not be read.</param>
-    internal static string BuildJavaArguments(ServerConfig config, int javaMajor)
+    /// <param name="memoryFlags">The memory flags; null for Manual mode's <c>-Xms</c>/<c>-Xmx</c>.
+    /// They go first, so the user's extra arguments, which come after, still win.</param>
+    internal static string BuildJavaArguments(ServerConfig config, int javaMajor,
+        IReadOnlyList<string>? memoryFlags = null)
     {
         var extra = string.IsNullOrWhiteSpace(config.ExtraJvmArgs) ? "" : config.ExtraJvmArgs.Trim() + " ";
-        var mem = $"-Xms{config.MinRamGb}G -Xmx{config.MaxRamGb}G ";
+        var mem = string.Concat((memoryFlags ?? MemoryProfile.ManualFlags(config)).Select(f => f + " "));
         var implied = string.Concat(ImpliedJvmFlags(javaMajor, config.ExtraJvmArgs).Select(f => f + " "));
 
         // Modern Forge (1.17+) and every NeoForge build have no runnable server jar: they launch via

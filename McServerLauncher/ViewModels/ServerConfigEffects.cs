@@ -158,9 +158,16 @@ public static class ServerConfigEffects
             "The launch method for Forge and NeoForge, read when starting."),
         Unshown(nameof(ServerConfig.JavaPath),
             "Resolved again on every start, and shown only on the settings' Performance page."),
-        Unshown(nameof(ServerConfig.MinRamGb), "Becomes -Xms when the server starts."),
-        Unshown(nameof(ServerConfig.MaxRamGb), "Becomes -Xmx when the server starts."),
-        Unshown(nameof(ServerConfig.ExtraJvmArgs), "Appended to the JVM arguments on start."),
+        // The migration notice: whether it shows, and the numbers its way back to Manual names.
+        new(nameof(ServerConfig.MemoryMode), new[] { nameof(ServerViewModel.ShowMemoryNotice) }, None,
+            ConfigEffect.None),
+        new(nameof(ServerConfig.MinRamGb), new[] { nameof(ServerViewModel.MemoryNoticeManualText) }, None,
+            ConfigEffect.None),
+        new(nameof(ServerConfig.MaxRamGb), new[] { nameof(ServerViewModel.MemoryNoticeManualText) }, None,
+            ConfigEffect.None),
+        // Arguments that size the memory themselves make the server Manual, and the notice goes.
+        new(nameof(ServerConfig.ExtraJvmArgs), new[] { nameof(ServerViewModel.ShowMemoryNotice) }, None,
+            ConfigEffect.None),
 
         // The signal bars warn about a server published without a tunnel.
         new(nameof(ServerConfig.PlayitEnabled), None, None, ConfigEffect.RefreshSignal),

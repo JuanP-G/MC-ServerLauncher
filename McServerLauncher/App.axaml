@@ -30,6 +30,8 @@
 
         <SolidColorBrush x:Key="SemanticOkPanel" Color="#332E7D32" />
 
+        <SolidColorBrush x:Key="SemanticInfoPanel" Color="#332F6FB0" />
+
         <SolidColorBrush x:Key="SemanticDangerFill" Color="#22E05561" />
         <SolidColorBrush x:Key="SemanticDangerPanel" Color="#33E05561" />
 

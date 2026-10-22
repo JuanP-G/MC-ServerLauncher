@@ -26,6 +26,26 @@
         <Setter Property="Margin" Value="0,0,0,8" />
     </Style>
 
+    <!-- The band: one line under the server's header, for something worth knowing that must not take
+         room from what is below. Its text is cut with an ellipsis rather than wrapped, and says the
+         rest in its tooltip; its buttons are as low as the line. -->
+    <Style Selector="Border.band">
+        <Setter Property="Padding" Value="8,2" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Margin" Value="0,8,0,0" />
+    </Style>
+    <Style Selector="Border.band TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.band Button">
+        <Setter Property="Padding" Value="8,1" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
     <!-- The same card, with the margin and padding the main window's stat cards use. Only the
          spacing differs: the look is the one above, not a copy of it. -->
     <Style Selector="Border.card.stat">

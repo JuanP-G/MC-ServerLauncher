@@ -1239,4 +1239,23 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Net_StateFair" xml:space="preserve"><value>Knapp</value></data>
   <data name="Net_StateBad" xml:space="preserve"><value>Schlecht</value></data>
   <data name="Net_StateSkipped" xml:space="preserve"><value>Nicht getestet</value></data>
+  <data name="Mem_ModeAutomatic" xml:space="preserve"><value>Automatisch (empfohlen)</value></data>
+  <data name="Mem_ModeManual" xml:space="preserve"><value>Manuell</value></data>
+  <data name="Mem_PlanNowFmt" xml:space="preserve"><value>Er kann bis {0} wachsen ({1}). Java belegt nur, was der Server braucht, und gibt den Rest zurück, wenn es ruhig ist.</value></data>
+  <data name="Mem_ReasonNoMods" xml:space="preserve"><value>ohne Mods</value></data>
+  <data name="Mem_ReasonModsFmt" xml:space="preserve"><value>{0} Mods</value></data>
+  <data name="Mem_ReasonKept" xml:space="preserve"><value>so viel wie vorher</value></data>
+  <data name="Mem_ReasonBudget" xml:space="preserve"><value>an den für Server reservierten Speicher angepasst</value></data>
+  <data name="Mem_ReasonFloor" xml:space="preserve"><value>das Minimum für einen flüssigen Betrieb</value></data>
+  <data name="Mem_UserFlagsWarn" xml:space="preserve"><value>Die Java-Argumente unter Erweitert legen den Speicher bereits fest. Sie werden unverändert verwendet, und die App passt ihn nicht an.</value></data>
+  <data name="Mem_NoticeText" xml:space="preserve"><value>Dieser Server passt seinen Speicher jetzt selbst an und braucht viel weniger, wenn es ruhig ist.</value></data>
+  <data name="Mem_NoticeTip" xml:space="preserve"><value>Die App entscheidet, wie viel Speicher er nutzen darf, und Java gibt zurück, was nicht gebraucht wird. Deine bisherigen Werte bleiben gespeichert, falls du zu ihnen zurückwillst.</value></data>
+  <data name="Mem_NoticeOk" xml:space="preserve"><value>Verstanden</value></data>
+  <data name="Mem_NoticeManualFmt" xml:space="preserve"><value>Zurück zu manuell ({0}–{1} GB)</value></data>
+  <data name="Set_MemorySection" xml:space="preserve"><value>Speicher der Server</value></data>
+  <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Wenn du auf diesem PC nicht spielst, dürfen die Server den ganzen Speicher bis auf 2 GB nutzen. Sonst teilen sie sich höchstens die Hälfte.</value></data>
+  <data name="Set_DedicatedPc" xml:space="preserve"><value>Dieser PC ist nur für Server</value></data>
+  <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Automatischer Speicher: Er kann bis {0} wachsen ({1}) und gibt zurück, was nicht genutzt wird.</value></data>
+  <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>Dieses Java akzeptiert nicht alle Speicheroptionen: Der Server startet mit denen, die es annimmt.</value></data>
+  <data name="Msg_Java32BitCap" xml:space="preserve"><value>Dieses Java ist 32-Bit und kann nicht mehr als 1 GB geben. Installiere ein 64-Bit-Java, damit der Server mehr Speicher bekommt.</value></data>
 </root>

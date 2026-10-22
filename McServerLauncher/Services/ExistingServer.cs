@@ -9,7 +9,8 @@ namespace McServerLauncher.Services;
 /// <summary>What the user settled on in the create dialog for a folder that already holds a server.</summary>
 /// <remarks>
 /// <c>Type</c>, <c>GameVersion</c> and <c>JarFile</c> are what was picked by hand, and count only
-/// where the folder itself said nothing: what was detected always wins.
+/// where the folder itself said nothing: what was detected always wins. <c>Memory</c> is Automatic
+/// unless the user asked for the two numbers, which the detection fills in either way.
 /// </remarks>
 public sealed record ExistingServerForm(
     string Name,
@@ -23,7 +24,8 @@ public sealed record ExistingServerForm(
     bool Playit,
     bool Crossplay,
     bool MultiVersion,
-    bool Hydraulic);
+    bool Hydraulic,
+    MemoryMode Memory = MemoryMode.Automatic);
 
 /// <summary>
 /// Turns a folder that already holds a server into one the app manages, without touching it.
@@ -61,7 +63,7 @@ public static class ExistingServer
             && (string.IsNullOrWhiteSpace(jar) || !File.Exists(Path.Combine(form.Folder, jar))))
             return "Cs_ExistingNeedsJar";
 
-        if (form.MaxRamGb < form.MinRamGb) return "Msg_RamMaxMin";
+        if (form.Memory == MemoryMode.Manual && form.MaxRamGb < form.MinRamGb) return "Msg_RamMaxMin";
         return null;
     }
 
@@ -76,6 +78,7 @@ public static class ExistingServer
             Type = type,
             GameVersion = found.GameVersion ?? form.GameVersion ?? string.Empty,
             JavaPath = form.JavaPath,
+            MemoryMode = form.Memory,
             MinRamGb = form.MinRamGb,
             MaxRamGb = form.MaxRamGb,
             PlayitEnabled = form.Playit,

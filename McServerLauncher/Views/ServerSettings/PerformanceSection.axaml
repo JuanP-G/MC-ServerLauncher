@@ -3,6 +3,7 @@
              xmlns:vm="using:McServerLauncher.ViewModels"
              xmlns:loc="using:McServerLauncher.Localization"
              xmlns:models="using:McServerLauncher.Models"
+             xmlns:ic="using:FluentIcons.Avalonia"
              x:Class="McServerLauncher.Views.ServerSettings.PerformanceSection"
              x:DataType="models:ServerConfig">
 
@@ -12,7 +13,26 @@
             <StackPanel>
                 <TextBlock Text="{loc:Loc Sset_RamTitle}" Classes="title" />
                 <TextBlock Classes="desc" Text="{loc:Loc Sset_RamDesc}" />
-                <WrapPanel Orientation="Horizontal" Margin="0,8,0,0">
+
+                <!-- Who sizes the memory. Set and read in code-behind: MemoryMode is nullable, and a
+                     server that never chose must not become "dirty" just by opening this page. Their
+                     group name is given there too, one per page. -->
+                <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,8,0,0">
+                    <RadioButton x:Name="AutoMemory" Content="{loc:Loc Mem_ModeAutomatic}" />
+                    <RadioButton x:Name="ManualMemory" Content="{loc:Loc Mem_ModeManual}" />
+                </StackPanel>
+                <TextBlock x:Name="AutoDesc" Classes="desc" Margin="0,6,0,0" TextWrapping="Wrap" />
+
+                <!-- The extra JVM arguments already size the memory: they are used as written. -->
+                <Border x:Name="UserFlagsWarn" Margin="0,10,0,0" Padding="10" CornerRadius="6" IsVisible="False"
+                        Background="{StaticResource SemanticWarnPanel}" BorderBrush="{StaticResource SemanticWarn}" BorderThickness="1">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Warning" VerticalAlignment="Top" Margin="0,0,8,0" />
+                        <TextBlock Grid.Column="1" Text="{loc:Loc Mem_UserFlagsWarn}" TextWrapping="Wrap" FontSize="12" />
+                    </Grid>
+                </Border>
+
+                <WrapPanel x:Name="ManualBoxes" Orientation="Horizontal" Margin="0,8,0,0">
                     <StackPanel Margin="0,0,16,4">
                         <TextBlock Text="{loc:Loc Cs_RamMin}" Classes="desc" Margin="0,0,0,4" />
                         <NumericUpDown x:Name="MinRamBox" Width="140" Value="{Binding MinRamGb, Converter={x:Static vm:WholeNumberConverter.Instance}}"

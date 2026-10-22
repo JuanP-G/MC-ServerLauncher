@@ -129,13 +129,18 @@ When it opens again, **What's new** tells you what changed. It works the same on
   settings open in the same place, never in a dialog.
 - **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Paper / Purpur /
   Fabric / NeoForge / Forge).
-- **Create a server** automatically: pick the **type**, **version** (official Mojang list), **port** and
-  **RAM**, and accept the Minecraft EULA; the app downloads the right server, prepares `run.bat` / `server.properties`, and
+- **Create a server** automatically: pick the **type**, **version** (official Mojang list) and **port**,
+  and accept the Minecraft EULA; the app downloads the right server, prepares `run.bat` / `server.properties`, and
   installs the correct **Java** (Temurin) if needed. Fabric, Forge and NeoForge use **mods**; Paper and Purpur
   use **plugins**. The same panel can **use a folder that already exists**: it recognises the type, the
   Minecraft and loader versions, the port and the memory, and changes nothing in the folder.
 - **Change a server's type** — to Paper/Purpur/Fabric/Forge/NeoForge or back to Vanilla, **keeping the world**,
   with colour-coded warnings about what each change can affect.
+- **Automatic memory** — the app decides how much memory each server may use and gives Java the flags
+  that make it hand back what it does not need: an empty server measured at about **1 GB instead of
+  3.5-4.7 GB**, with the same tick time. All the servers together use at most half the PC, or all but
+  2 GB if it is only for servers. **Manual** keeps the minimum and maximum you type, and your own Java
+  arguments always win.
 - **Start / Stop / Restart** with a clean stop that saves the world; detects and frees a **busy port**; live
   **CPU, RAM, uptime and port**.
 - **Minecraft-style card** — icon, coloured MOTD, `players/max` and a reachability signal. Its pencil opens

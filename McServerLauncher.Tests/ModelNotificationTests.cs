@@ -40,6 +40,8 @@ public class ModelNotificationTests
         if (type == typeof(ServerType))
             return (ServerType)current! == ServerType.Purpur ? ServerType.Vanilla : ServerType.Purpur;
         if (type == typeof(NotificationSettings)) return new NotificationSettings();
+        if (type == typeof(MemoryMode))
+            return current is MemoryMode.Manual ? MemoryMode.Automatic : MemoryMode.Manual;
 
         throw new Xunit.Sdk.XunitException(
             $"{property.DeclaringType!.Name}.{property.Name} is a {type.Name}, which this test does " +
