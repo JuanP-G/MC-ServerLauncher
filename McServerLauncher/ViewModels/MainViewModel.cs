@@ -292,6 +292,7 @@ public partial class MainViewModel : ObservableObject
         var days = PlayerHistoryPreferences.Current.RetentionDays;
         _ = Task.Run(() => PlayerHistoryStore.PruneOrphans(liveIds, DateTime.UtcNow, days));
         _ = Task.Run(() => ContentLedgerStore.PruneOrphans(liveIds));   // and their cleanup dates
+        _ = Task.Run(() => MemoryHistoryStore.PruneOrphans(liveIds)); // and what was learned of their memory
 
         _ = CheckForUpdatesAsync();
         _ = Tunnels.PrefetchAsync();

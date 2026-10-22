@@ -142,7 +142,8 @@ When it opens again, **What's new** tells you what changed. It works the same on
   2 GB if it is only for servers. **Manual** keeps the minimum and maximum you type, and your own Java
   arguments always win.
 - **Start / Stop / Restart** with a clean stop that saves the world; detects and frees a **busy port**; live
-  **CPU, RAM, uptime and port**.
+  **CPU, RAM, uptime and port**. The RAM figure is the memory the server really holds on your PC (not Task
+  Manager's shared total), with what Java has in use under it.
 - **Minecraft-style card** — icon, coloured MOTD, `players/max` and a reachability signal. Its pencil opens
   **Appearance**: the image, the name and both lines of the MOTD — the 16 colours by name, recent ones,
   **gradients**, bold, italics, underline and strikethrough, and **any hex colour** on Paper and Purpur — with

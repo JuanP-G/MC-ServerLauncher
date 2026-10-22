@@ -16,7 +16,9 @@ public class ProcessStatsService
     /// core of the machine busy.</param>
     /// <param name="RamMb">Working set in MB.</param>
     /// <param name="Uptime">How long this run has lasted.</param>
-    public record Stats(double CpuPercent, long RamMb, TimeSpan Uptime);
+    /// <param name="PrivateMb">Memory only this process holds, in MB (see <see cref="ProcessMemory"/>).
+    /// The working set when the system will not say.</param>
+    public record Stats(double CpuPercent, long RamMb, TimeSpan Uptime, long PrivateMb = 0);
 
     /// <summary>Resets the sampling (when switching process/server).</summary>
     public void Reset()
@@ -55,7 +57,8 @@ public class ProcessStatsService
             var ramMb = process.WorkingSet64 / (1024 * 1024);
             var uptime = now - process.StartTime.ToUniversalTime();
 
-            return new Stats(Math.Clamp(cpuPercent, 0, 100), ramMb, uptime);
+            return new Stats(Math.Clamp(cpuPercent, 0, 100), ramMb, uptime,
+                ProcessMemory.PrivateMb(process) ?? ramMb);
         }
         catch
         {

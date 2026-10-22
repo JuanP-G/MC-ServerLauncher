@@ -143,7 +143,8 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   solo para servidores. **Manual** mantiene el mínimo y el máximo que escribas, y tus propios argumentos de
   Java siempre mandan.
 - **Iniciar / Detener / Reiniciar** con parada limpia que guarda el mundo; detecta y libera un **puerto
-  ocupado**; **CPU, RAM, tiempo activo y puerto** en vivo.
+  ocupado**; **CPU, RAM, tiempo activo y puerto** en vivo. La RAM es la memoria que el servidor ocupa de
+  verdad en tu PC (no el total compartido del Administrador de tareas), con lo que Java tiene en uso debajo.
 - **Tarjeta estilo Minecraft** — icono, MOTD con colores, `jugadores/máx` y señal. Su lápiz abre
   **Apariencia**: la imagen, el nombre y las dos líneas del MOTD —los 16 colores con su nombre, los recientes,
   **degradados**, negrita, cursiva, subrayado y tachado, y **cualquier color hex** en Paper y Purpur— con la

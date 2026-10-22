@@ -235,6 +235,8 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`MemoryProfile`**, **`JvmArgs`**, **`MemoryBudget`** — la memoria con la que arranca un servidor: el
   modo que rige, el techo y los flags para su Java, qué argumentos extra le quitan la decisión a la app, y
   los techos de los servidores que ya están en marcha (ver *Memoria: automática o manual*).
+- **`GcLogging`**, **`GcLogLine`**, **`GcLogTail`**, **`MemorySessionTracker`**, **`MemoryHistoryStore`**,
+  **`ProcessMemory`** — lo que la app mide de un servidor en marcha (ver *Medir la memoria de un servidor*).
 - **`MinecraftVersionService`** — lee el manifiesto de versiones de Mojang, resuelve la URL del
   `server.jar` y la versión de Java necesaria, y descarga archivos.
 - **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — hablan con Playit.gg.
@@ -640,6 +642,36 @@ una función pura, y `ServerViewModel.PlanMemory` reúne lo que necesita antes d
   `-XX:+UseZGC`, el `-XX:+AlwaysPreTouch` de Aikar…); ese servidor va en Manual diga lo que diga, y la
   página Rendimiento explica por qué. `-XX:+UseG1GC` solo no cuenta. `run.bat` y `user_jvm_args.txt`
   mantienen los números de Manual para arrancar fuera de la app.
+
+### Medir la memoria de un servidor
+Un proceso visto desde fuera dice cuánta memoria ocupa, no cuánta necesita: entre una limpieza y la
+siguiente el heap está lleno de basura. Solo el recolector sabe qué ha sobrevivido, así que la app le pide a
+la JVM un log de GC y lo lee mientras el servidor corre. Nada de esto cambia cómo arranca un servidor: es la
+evidencia con la que las fases siguientes dimensionan el techo.
+
+- **El log.** `GcLogging.FlagsFor` añade `-Xlog:gc:file=.mcserverlauncher-memory/gc.log:uptime,level,tags:
+  filecount=2,filesize=8M` en un HotSpot desde Java 11, tanto en Automática como en Manual, salvo que los
+  argumentos extra ya configuren `-Xlog`. La ruta es relativa a la carpeta del servidor (`-Xlog` separa sus
+  partes con dos puntos y una letra de unidad lo rompería), la carpeta se crea antes y se borran los archivos
+  de la ejecución anterior; si no se puede crear, el flag no se pone, porque un log que no se abre impide
+  que la JVM arranque. La carpeta oculta queda fuera del mundo, así que las copias de seguridad no la leen.
+- **Leerlo.** `GcLogLine` es un analizador puro de las pausas de G1, Serial y Parallel y de las
+  colecciones mayores de ZGC. Solo las colecciones young, mixed, full y major dicen qué está vivo; Remark y
+  Cleanup solo cuestan tiempo, y un `System.gc()` se anota pero nunca cuenta como necesidad. `GcLogTail`
+  sigue el archivo mientras la JVM lo escribe: una línea a medias espera, una rotación o un archivo más
+  corto vuelve a empezar por arriba, y cada llamada lee 256 KB como mucho, fuera del hilo de la interfaz.
+- **La cifra.** La tarjeta de RAM muestra la memoria privada del proceso (`ProcessMemory`: bytes privados
+  en Windows, las páginas privadas de `smaps_rollup` en Linux, el working set en el resto y con ZGC, cuyo
+  heap no cuentan los bytes privados), no el working set del Administrador de tareas. Debajo, *Java: X de Y*
+  es lo que está en uso tras la última limpieza y lo que Java tiene reservado al sistema.
+- **El historial.** `MemorySessionTracker` es puro y recibe las horas como argumentos. Empieza con el
+  proceso, así que los picos del arranque cuentan, y guarda el pico y el p95 de lo que siguió vivo (un
+  histograma en pasos de 1 MB, no una lista), la memoria comprometida y privada máximas, el tiempo en
+  recolección, las colecciones completas y forzadas, los fallos de evacuación, jugadores, distancias, mods,
+  el techo y cómo acabó. Cuando el servidor se detiene, `MemoryHistoryStore` guarda las últimas 30
+  ejecuciones de cada servidor en `%APPDATA%\McServerLauncher\memory\<id>\history.json`, que se poda con
+  los servidores igual que el registro de contenido. Una ejecución sin colecciones ni falta de memoria no se
+  guarda.
 
 ### La ventana: secciones, el panel de nuevo servidor y el movimiento
 La ventana principal es un **menú lateral** de cuatro secciones —Servidores, Túneles, Ajustes, Acerca

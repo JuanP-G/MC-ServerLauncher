@@ -230,6 +230,8 @@ are no hard-coded machine paths.
 - **`MemoryProfile`**, **`JvmArgs`**, **`MemoryBudget`** — the memory a server starts with: the mode in
   effect, the ceiling and the flags for its Java, which extra arguments take the decision away from the
   app, and the ceilings of the servers already running (see *Memory: automatic or manual*).
+- **`GcLogging`**, **`GcLogLine`**, **`GcLogTail`**, **`MemorySessionTracker`**, **`MemoryHistoryStore`**,
+  **`ProcessMemory`** — what the app measures of a running server (see *Measuring a server's memory*).
 - **`MinecraftVersionService`** — reads Mojang's version manifest, resolves the `server.jar`
   download URL and the required Java version, and downloads files.
 - **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — talk to Playit.gg.
@@ -615,6 +617,35 @@ Each server has a `MemoryMode`. **Automatic** (the default) lets the app size th
   `-XX:+AlwaysPreTouch`…); such a server runs Manual whatever it says, and the Performance page says why.
   `-XX:+UseG1GC` alone does not count. `run.bat` and `user_jvm_args.txt` keep the Manual numbers for
   launching outside the app.
+
+### Measuring a server's memory
+A process seen from outside says how much memory it holds, not how much it needs: between collections the
+heap is full of garbage. Only the collector knows what survived, so the app asks the JVM for a GC log and
+reads it as the run goes. Nothing here changes how a server starts; it is the evidence the later phases
+size the ceiling with.
+
+- **The log.** `GcLogging.FlagsFor` adds `-Xlog:gc:file=.mcserverlauncher-memory/gc.log:uptime,level,tags:
+  filecount=2,filesize=8M` for a HotSpot from Java 11, in Automatic and Manual alike, unless the extra
+  arguments already configure `-Xlog`. The path is relative to the server's folder (`-Xlog` splits its parts
+  on colons, so a drive letter would break it), the folder is made first and the last run's files cleared,
+  and if it cannot be made the flag is simply not given: a log that cannot be opened stops the JVM from
+  starting. The hidden folder is outside the world, so backups never read it.
+- **Reading it.** `GcLogLine` is a pure parser for the pauses of G1, Serial and Parallel and ZGC's major
+  collections. Only young, mixed, full and major collections say what is alive; Remark and Cleanup only cost
+  time, and a `System.gc()` is recorded but never counted as need. `GcLogTail` follows the file as the JVM
+  writes it: a line half written waits, a rotation or a shorter file starts again at the top, and one call
+  reads 256 KB at most, off the UI thread.
+- **The figure.** The RAM card shows the process's private memory (`ProcessMemory`: private bytes on
+  Windows, the private pages of `smaps_rollup` on Linux, the working set elsewhere and for ZGC, whose heap
+  private bytes do not count), not Task Manager's working set. Under it, *Java: X of Y* is what is in use
+  after the latest collection and what Java holds from the system.
+- **The history.** `MemorySessionTracker` is pure and takes its times as arguments. It starts when the
+  process does, so start-up peaks count, and keeps the peak and the p95 of what stayed alive (a histogram in
+  1 MB steps, not a list), the most committed and the most private memory, time in collection, full and
+  forced collections, evacuation failures, players, distances, mods, the ceiling and how the run ended. When
+  the server stops, `MemoryHistoryStore` keeps the latest 30 runs of each server in
+  `%APPDATA%\McServerLauncher\memory\<id>\history.json`, pruned with the servers like the content
+  ledger. A run with no collections and no out-of-memory is not kept.
 
 ### The window: sections, the new-server panel and motion
 The main window is a **rail** of four sections — Servers, Tunnels, Settings, About — sharing one cell

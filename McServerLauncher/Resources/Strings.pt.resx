@@ -1253,6 +1253,8 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Mem_NoticeTip" xml:space="preserve"><value>A app decide quanta memória pode usar e o Java devolve a que não precisa. Os teus números de antes continuam guardados, caso prefiras voltar a eles.</value></data>
   <data name="Mem_NoticeOk" xml:space="preserve"><value>Entendido</value></data>
   <data name="Mem_NoticeManualFmt" xml:space="preserve"><value>Voltar ao manual ({0}–{1} GB)</value></data>
+  <data name="Mem_RamJavaFmt" xml:space="preserve"><value>Java: {0} de {1}</value></data>
+  <data name="Mem_RamTip" xml:space="preserve"><value>Memória que este servidor ocupa no seu PC e que nada mais partilha. Não coincide com o Gestor de Tarefas, que conta também a partilhada. Abaixo: o que o Java tem em uso após a última limpeza e o que tem reservado no total.</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Memória dos servidores</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Se não jogas neste PC, os servidores podem usar toda a memória menos 2 GB. Caso contrário, juntos usam no máximo metade.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>Este PC é só para servidores</value></data>

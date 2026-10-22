@@ -1253,6 +1253,8 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Mem_NoticeTip" xml:space="preserve"><value>Die App entscheidet, wie viel Speicher er nutzen darf, und Java gibt zurück, was nicht gebraucht wird. Deine bisherigen Werte bleiben gespeichert, falls du zu ihnen zurückwillst.</value></data>
   <data name="Mem_NoticeOk" xml:space="preserve"><value>Verstanden</value></data>
   <data name="Mem_NoticeManualFmt" xml:space="preserve"><value>Zurück zu manuell ({0}–{1} GB)</value></data>
+  <data name="Mem_RamJavaFmt" xml:space="preserve"><value>Java: {0} von {1}</value></data>
+  <data name="Mem_RamTip" xml:space="preserve"><value>Speicher, den dieser Server auf Ihrem PC belegt und den sonst nichts teilt. Er weicht vom Task-Manager ab, der auch gemeinsam genutzten Speicher zählt. Darunter: was Java nach der letzten Bereinigung nutzt und was es insgesamt belegt.</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Speicher der Server</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Wenn du auf diesem PC nicht spielst, dürfen die Server den ganzen Speicher bis auf 2 GB nutzen. Sonst teilen sie sich höchstens die Hälfte.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>Dieser PC ist nur für Server</value></data>
