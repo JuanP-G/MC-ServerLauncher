@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- Página generada por web/_i18n/guides.py a partir de web/_i18n/guides/mods.json.
      No se edita a mano: se cambia la fuente y se vuelve a ejecutar python web/_i18n/build.py. -->
-<title>Minecraft server with mods: a step-by-step guide | MC-ServerLauncher</title>
-<meta name="description" content="Make a Minecraft server with mods on your PC: pick Fabric, Forge or NeoForge, install mods from Modrinth without touching files, and give your friends the same mods.">
+<title>How to add mods to a Minecraft server, step by step | MC-ServerLauncher</title>
+<meta name="description" content="How to add mods to a Minecraft server: pick Fabric, Forge or NeoForge, install Modrinth mods with their dependencies, and share them. Free, with MC Server Launcher.">
 <link rel="canonical" href="https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/">
 <link rel="alternate" hreflang="es" href="https://mc-server-launcher.vercel.app/guias/crear-servidor-minecraft-con-mods/">
 <link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/">
 <link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-mit-mods-erstellen/">
 <link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/creer-serveur-minecraft-avec-mods/">
-<link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/">
+<link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/">
 <link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/crear-servidor-minecraft-con-mods/">
 <meta name="theme-color" content="#070B14">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -25,18 +25,18 @@
 <meta property="og:type" content="article">
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="MC-ServerLauncher">
-<meta property="og:title" content="How to make a Minecraft server with mods">
-<meta property="og:description" content="Make a Minecraft server with mods on your PC: pick Fabric, Forge or NeoForge, install mods from Modrinth without touching files, and give your friends the same mods.">
+<meta property="og:title" content="How to add mods to a Minecraft server (or make a modded one from scratch)">
+<meta property="og:description" content="How to add mods to a Minecraft server: pick Fabric, Forge or NeoForge, install Modrinth mods with their dependencies, and share them. Free, with MC Server Launcher.">
 <meta property="og:url" content="https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/">
 <meta property="og:image" content="https://mc-server-launcher.vercel.app/assets/og/en.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="article:published_time" content="2026-10-17">
-<meta property="article:modified_time" content="2026-10-17">
+<meta property="article:modified_time" content="2026-10-22">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="How to make a Minecraft server with mods">
-<meta name="twitter:description" content="Make a Minecraft server with mods on your PC: pick Fabric, Forge or NeoForge, install mods from Modrinth without touching files, and give your friends the same mods.">
+<meta name="twitter:title" content="How to add mods to a Minecraft server (or make a modded one from scratch)">
+<meta name="twitter:description" content="How to add mods to a Minecraft server: pick Fabric, Forge or NeoForge, install Modrinth mods with their dependencies, and share them. Free, with MC Server Launcher.">
 <meta name="twitter:image" content="https://mc-server-launcher.vercel.app/assets/og/en.jpg">
 
 <link rel="preload" as="font" type="font/woff2" href="../../../assets/fonts/inter-latin.woff2" crossorigin>
@@ -47,14 +47,14 @@
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "How to make a Minecraft server with mods",
-  "description": "Make a Minecraft server with mods on your PC: pick Fabric, Forge or NeoForge, install mods from Modrinth without touching files, and give your friends the same mods.",
+  "headline": "How to add mods to a Minecraft server (or make a modded one from scratch)",
+  "description": "How to add mods to a Minecraft server: pick Fabric, Forge or NeoForge, install Modrinth mods with their dependencies, and share them. Free, with MC Server Launcher.",
   "inLanguage": "en",
   "url": "https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/",
   "mainEntityOfPage": "https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/",
   "image": "https://mc-server-launcher.vercel.app/assets/og/en.jpg",
   "datePublished": "2026-10-17",
-  "dateModified": "2026-10-17",
+  "dateModified": "2026-10-22",
   "author": {
     "@type": "Person",
     "name": "JuanP-G",
@@ -71,8 +71,8 @@
 {
   "@context": "https://schema.org",
   "@type": "HowTo",
-  "name": "How to make a Minecraft server with mods",
-  "description": "Make a Minecraft server with mods on your PC: pick Fabric, Forge or NeoForge, install mods from Modrinth without touching files, and give your friends the same mods.",
+  "name": "How to add mods to a Minecraft server (or make a modded one from scratch)",
+  "description": "How to add mods to a Minecraft server: pick Fabric, Forge or NeoForge, install Modrinth mods with their dependencies, and share them. Free, with MC Server Launcher.",
   "inLanguage": "en",
   "totalTime": "PT15M",
   "estimatedCost": {
@@ -126,6 +126,14 @@
   "@type": "FAQPage",
   "inLanguage": "en",
   "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I add mods to a Minecraft server?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Open the server in MC-ServerLauncher, go to the “Mods” tab, search for the mod on Modrinth and click “Install”; its dependencies are installed with it. The server must be Fabric, Forge or NeoForge, and the mod must be for the same Minecraft version. Restart the server so it loads the mod."
+      }
+    },
     {
       "@type": "Question",
       "name": "Which is better for mods: Fabric, Forge or NeoForge?",
@@ -197,7 +205,7 @@
     {
       "@type": "ListItem",
       "position": 3,
-      "name": "How to make a Minecraft server with mods",
+      "name": "How to add mods to a Minecraft server (or make a modded one from scratch)",
       "item": "https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/"
     }
   ]
@@ -629,6 +637,11 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
   box-shadow:inset 0 -4px 0 #1D4D13, inset 3px 3px 0 rgba(255,255,255,.22), 0 0 0 2px #000}
 .steps h3{font-size:18px; font-weight:700; line-height:1.35; margin:0 0 6px; color:#fff}
 .steps p{margin:0}
+.tbl{margin:8px 0 24px; overflow-x:auto}
+.tbl table{width:100%; border-collapse:collapse; font-size:15px; line-height:1.55}
+.tbl th,.tbl td{padding:10px 12px; text-align:left; vertical-align:top; color:#D5DEEA; border-bottom:1px solid rgba(255,255,255,.14)}
+.tbl thead th{color:#fff; font-weight:700; border-bottom:2px solid rgba(255,255,255,.3)}
+.tbl tbody th{color:#fff; font-weight:700; white-space:nowrap}
 .tip{margin:22px 0; padding:16px 20px; color:var(--gui-text); background:var(--gui);
   box-shadow:inset 4px 4px 0 var(--gui-hi), inset -4px -4px 0 var(--gui-lo), 0 0 0 2px #000}
 .tip strong{display:block; margin-bottom:4px; color:#404040; font-family:var(--f-mc); font-weight:400; font-size:16px; -webkit-font-smoothing:none}
@@ -638,7 +651,12 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
 a.card{color:var(--gui-text)}
 @media (min-width:700px){ .g-title{font-size:32px} .g-h2{font-size:24px} }
 @media (min-width:1300px) and (min-height:820px){ .g-title{font-size:40px} }
-@media (max-width:640px){ .steps li{grid-template-columns:1fr; gap:10px} .prose p,.prose li{font-size:16px} }
+@media (max-width:640px){ .steps li{grid-template-columns:1fr; gap:10px} .prose p,.prose li{font-size:16px}
+  .tbl{overflow:visible} .tbl table,.tbl tbody,.tbl tr,.tbl th,.tbl td{display:block} .tbl thead{position:absolute; left:-9999px}
+  .tbl tr{margin-bottom:14px; padding:6px 0; background:rgba(255,255,255,.05); box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+  .tbl th,.tbl td{border:0; padding:5px 14px; white-space:normal}
+  .tbl td::before{content:attr(data-label); display:block; color:#9FB4CC; font-size:12px; letter-spacing:.04em; text-transform:uppercase}
+  .tbl tbody th{font-size:17px; padding-top:8px} }
 </style>
 <noscript><style>.reveal,.build > span,.chunk{opacity:1 !important; transform:none !important; clip-path:none !important}</style></noscript>
 
@@ -680,7 +698,7 @@ a.card{color:var(--gui-text)}
         <a href="./" class="on" data-goatcounter-click="idioma-en" data-goatcounter-title="Idioma en" hreflang="en"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#012169"/><path d="M0 0l16 11M16 0L0 11" stroke="#FFF" stroke-width="2.4"/><path d="M0 0l16 11M16 0L0 11" stroke="#C8102E" stroke-width="1.1"/><path d="M8 0v11M0 5.5h16" stroke="#FFF" stroke-width="3.6"/><path d="M8 0v11M0 5.5h16" stroke="#C8102E" stroke-width="2"/></svg><b>EN</b>English</a>
         <a href="../../../de/guides/minecraft-server-mit-mods-erstellen/" data-goatcounter-click="idioma-de" data-goatcounter-title="Idioma de" hreflang="de"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#000"/><rect y="3.67" width="16" height="3.67" fill="#DD0000"/><rect y="7.34" width="16" height="3.66" fill="#FFCE00"/></svg><b>DE</b>Deutsch</a>
         <a href="../../../fr/guides/creer-serveur-minecraft-avec-mods/" data-goatcounter-click="idioma-fr" data-goatcounter-title="Idioma fr" hreflang="fr"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#FFF"/><rect width="5.33" height="11" fill="#002395"/><rect x="10.67" width="5.33" height="11" fill="#ED2939"/></svg><b>FR</b>Français</a>
-        <a href="../../../pt/guides/criar-servidor-minecraft-com-mods/" data-goatcounter-click="idioma-pt" data-goatcounter-title="Idioma pt" hreflang="pt"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#DA291C"/><rect width="6.4" height="11" fill="#046A38"/><circle cx="6.4" cy="5.5" r="2.1" fill="#FFE000"/><circle cx="6.4" cy="5.5" r="1.15" fill="#DA291C"/></svg><b>PT</b>Português</a>
+        <a href="../../../pt/guides/criar-servidor-minecraft-com-mods/" data-goatcounter-click="idioma-pt" data-goatcounter-title="Idioma pt" hreflang="pt-BR"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#009C3B"/><path d="M8 1.2L14.3 5.5 8 9.8 1.7 5.5z" fill="#FFDF00"/><circle cx="8" cy="5.5" r="2.3" fill="#002776"/></svg><b>PT</b>Português (BR)</a>
       </div>
     </div>
     <a class="btn btn-primary dlbtn" href="#descargas">
@@ -713,9 +731,9 @@ a.card{color:var(--gui-text)}
         <span aria-current="page">Server with mods</span>
       </nav>
       <span class="eyebrow">GUIDE</span>
-      <h1 class="g-title">How to make a Minecraft server with mods</h1>
+      <h1 class="g-title">How to add mods to a Minecraft server (or make a modded one from scratch)</h1>
       <p class="lead">A modded server comes down to four decisions: which server type, which version, which mods, and how your friends get them. This guide walks through them with MC-ServerLauncher, with no file editing and no commands.</p>
-      <p class="g-meta">Updated October 17, 2026 · 7 min read</p>
+      <p class="g-meta">Updated October 22, 2026 · 7 min read</p>
       <a class="btn btn-primary btn-lg" data-goatcounter-click="guia-mods-cta" data-goatcounter-title="Guía mods: descargar" href="#descargas">Download MC-ServerLauncher free</a>
     </div>
   </section>
@@ -728,11 +746,15 @@ a.card{color:var(--gui-text)}
 <p><strong>Paper</strong> and <strong>Purpur</strong> are no use for mods: they load <em>plugins</em>, which are a different thing and run on the server alone. If you want server improvements without your friends installing anything, use plugins; for new content inside the game, use mods.</p>
 <h2 class="g-h2">Create the server with the app</h2>
 <ol class="steps"><li><b class="n" aria-hidden="true">1</b><div><h3>Install MC-ServerLauncher</h3><p>Download the installer for your system from the downloads section of this page. You don't need Java installed: the app finds it or downloads it for you.</p></div></li><li><b class="n" aria-hidden="true">2</b><div><h3>Create the server</h3><p>Click “New” and “Create a new one”. Give it a name, pick the type (Fabric, Forge or NeoForge) and the Minecraft version, tick “I accept the Minecraft EULA” and create the server. The app downloads the official files, checks their checksum and gets it ready.</p></div></li><li><b class="n" aria-hidden="true">3</b><div><h3>Install the mods</h3><p>Open the “Mods” tab, search Modrinth (results are already filtered by your version and server type) and click “Install”. The libraries a mod needs, such as Fabric API, are installed along with it.</p></div></li><li><b class="n" aria-hidden="true">4</b><div><h3>Give it more memory if needed</h3><p>The more mods, the more RAM. In the server settings, under “Performance”, raise “Memory (RAM)”: 4 GB is usually enough for a few mods, and big packs ask for 6 or 8 GB or more.</p></div></li><li><b class="n" aria-hidden="true">5</b><div><h3>Start the server</h3><p>Click “Start” and watch the console: once it says the server is ready, you can join. Errors show up in red and the message usually names the mod that is failing.</p></div></li></ol>
+<h2 class="g-h2">Where to download Minecraft server mods</h2>
+<p>The safest source is <strong>Modrinth</strong>, and it is the one the app uses: each mod says which loader and Minecraft version it was made for, the app only shows the ones that fit your server, and it checks every download against its checksum. If you download mods by hand from a website, look at three things: that they are for your server's loader (Fabric, Forge or NeoForge), for the same Minecraft version, and that you also get their dependencies. A mod is code that runs on your computer, so avoid .jar files that come through Discord or from unknown sites.</p>
+<p>To add them to a server you already have, open it in the app, go to the “Mods” tab and install them from there: no need to copy files. As on any server, you can also drop a .jar by hand into the server's <code>mods</code> folder and restart it. If your server is Vanilla or Paper, change its type in its settings first (the last question below explains how).</p>
 <h2 class="g-h2">Get the mods to your friends</h2>
 <p>On a Fabric, Forge or NeoForge server, whoever joins usually needs the same mods as the server, with the same loader and the same Minecraft version. The app tells you on each mod whether it also has to be installed on the client, and it can build a <strong>mod pack</strong> for your friends: a zip with the mods they need and a script for Windows, Linux and macOS that copies them into their mods folder without deleting anything. Mods that only act on the server are left out automatically.</p>
 <aside class="tip"><strong>Tip</strong><p>Before adding lots of mods at once, make a manual backup from the backups tab. The app already copies the world before starting and when stopping, but this way you can return to this exact point if a mod breaks something.</p></aside>
 <h2 class="g-h2">Let people join from the Internet</h2>
 <p>To play with friends who are not at your home you don't need to forward any router ports: the app includes a Playit.gg tunnel. We explain it in <a href='../host-free-minecraft-server-no-port-forwarding/'>how to host a free Minecraft server without port forwarding</a>. And if you want it to use no resources while nobody is playing, see <a href='../minecraft-server-stops-itself-when-empty/'>how to make a Minecraft server stop itself when it is empty</a>.</p>
+<p>Don't have the server yet? See <a href='../download-minecraft-server-jar-official/'>how to download the Minecraft server (official jar) and an easier way</a>. And if you are torn between this app and a web panel, read the <a href='../best-minecraft-server-manager-windows/'>comparison of Minecraft server managers for Windows</a>.</p>
       </article>
     </div>
   </section>
@@ -742,6 +764,7 @@ a.card{color:var(--gui-text)}
       <span class="eyebrow">FAQ</span>
       <h2 class="h2">Common questions</h2>
       <div class="faq">
+        <details><summary>How do I add mods to a Minecraft server?</summary><p>Open the server in MC-ServerLauncher, go to the “Mods” tab, search for the mod on Modrinth and click “Install”; its dependencies are installed with it. The server must be Fabric, Forge or NeoForge, and the mod must be for the same Minecraft version. Restart the server so it loads the mod.</p></details>
         <details><summary>Which is better for mods: Fabric, Forge or NeoForge?</summary><p>It depends on the mods you want. Fabric is lighter and usually updates first; Forge and NeoForge have the biggest content mods. A mod made for one loader doesn't work on another, so choose by looking at the list of mods you want to use.</p></details>
         <details><summary>Can I put mods on a Paper server?</summary><p>No. Paper and Purpur load plugins, not Forge or Fabric mods. They are different systems and don't mix in the same folder.</p></details>
         <details><summary>Do my friends have to install the same mods?</summary><p>In most cases yes, with the same loader and Minecraft version. Some mods only act on the server and aren't needed on the client: the app marks this on each result and leaves those mods out when it builds the pack.</p></details>
@@ -757,6 +780,8 @@ a.card{color:var(--gui-text)}
       <span class="eyebrow">MORE GUIDES</span>
       <h2 class="h2">Keep reading</h2>
       <div class="grid g3">
+        <a class="card" data-goatcounter-click="guia-mods-mas-comparativa" data-goatcounter-title="Guía mods: más comparativa" href="../best-minecraft-server-manager-windows/"><div class="slot"><img src="../../../assets/mc/diamond_pickaxe.webp" alt="" width="48" height="48"></div><h3>Best Minecraft server manager for Windows</h3><p>What to look for and how it compares with Crafty Controller, Pterodactyl, AMP and MCSManager.</p></a>
+        <a class="card" data-goatcounter-click="guia-mods-mas-descargar" data-goatcounter-title="Guía mods: más descargar" href="../download-minecraft-server-jar-official/"><div class="slot"><img class="iso" src="../../../assets/mc/iso_chest.webp" alt="" width="48" height="48"></div><h3>Download the Minecraft server (official jar)</h3><p>Where to get Mojang&#x27;s official server.jar, how to run it by hand, and an easier way with no commands.</p></a>
         <a class="card" data-goatcounter-click="guia-mods-mas-dormir" data-goatcounter-title="Guía mods: más dormir" href="../minecraft-server-stops-itself-when-empty/"><div class="slot"><img src="../../../assets/mc/totem.webp" alt="" width="48" height="48"></div><h3>Minecraft server that stops itself when it is empty</h3><p>Automatic shutdown when idle and start-up when someone tries to join, without wasting resources.</p></a>
         <a class="card" data-goatcounter-click="guia-mods-mas-gratis" data-goatcounter-title="Guía mods: más gratis" href="../host-free-minecraft-server-no-port-forwarding/"><div class="slot"><img src="../../../assets/mc/ender_pearl.webp" alt="" width="48" height="48"></div><h3>How to host a free Minecraft server without port forwarding</h3><p>A built-in Playit.gg tunnel gives you a public address to share, with no fees and no router setup.</p></a>
       </div>
@@ -1191,7 +1216,7 @@ a.card{color:var(--gui-text)}
     var flag = cur.querySelector('svg').cloneNode(true); flag.setAttribute('class', 'flag');
     var cs = document.getElementById('langCur');
     cs.parentNode.insertBefore(flag, cs);
-    cs.textContent = cur.getAttribute('hreflang').toUpperCase();
+    cs.textContent = cur.getAttribute('hreflang').split('-')[0].toUpperCase();
     // El nombre accesible tiene que empezar por el texto visible (WCAG 2.5.3).
     langBtn.setAttribute('aria-label', cs.textContent + ' · ' + langBtn.getAttribute('aria-label'));
   }

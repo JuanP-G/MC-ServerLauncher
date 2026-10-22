@@ -34,11 +34,16 @@ STRINGS = pathlib.Path(__file__).resolve().parent / "strings.json"
 SPANISH = {"lang": "es", "locale": "es_ES", "label": "Español"}
 
 
+def hreflang_for(code):
+    """Etiqueta hreflang de un idioma: la URL de portugués sigue siendo /pt/, pero es portugués de Brasil."""
+    return guides.HREFLANG.get(code, code)
+
+
 def hreflang_block(languages):
     """Bloque de alternativas que debe ir en TODAS las versiones, la española incluida."""
     lines = ['<link rel="alternate" hreflang="es" href="%s/">' % BASE_URL]
     for code in languages:
-        lines.append('<link rel="alternate" hreflang="%s" href="%s/%s/">' % (code, BASE_URL, code))
+        lines.append('<link rel="alternate" hreflang="%s" href="%s/%s/">' % (hreflang_for(code), BASE_URL, code))
     # x-default: la que se sirve a quien no encaje en ningún idioma.
     lines.append('<link rel="alternate" hreflang="x-default" href="%s/">' % BASE_URL)
     return "\n".join(lines)
@@ -55,14 +60,15 @@ def rewrite_language_links(html, active):
     up = "" if active == "es" else "../"
 
     def fix(m):
-        code = m.group(3)
+        tag = m.group(3)                 # "pt-BR": el idioma de la ruta es la parte anterior al guion
+        code = tag.split("-")[0].lower()
         href = up + ("" if code == "es" else code + "/") or "./"
         rest = m.group(2).replace(' class="on"', "")
         if code == active:
             rest = ' class="on"' + rest
-        return '<a href="%s"%s hreflang="%s"' % (href, rest, code)
+        return '<a href="%s"%s hreflang="%s"' % (href, rest, tag)
 
-    return re.sub(r'<a href="([^"]*)"([^>]*?) hreflang="(\w\w)"', fix, html)
+    return re.sub(r'<a href="([^"]*)"([^>]*?) hreflang="([\w-]+)"', fix, html)
 
 
 def localize(html, code, meta, mapping):

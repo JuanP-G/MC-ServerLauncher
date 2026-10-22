@@ -1,0 +1,285 @@
+{
+  "_comment": "Guía: comparativa de gestores de servidores de Minecraft para Windows. Cada dato sale de la web oficial de cada proyecto (consultada el 2026-10-22); lo que no se pudo comprobar no se afirma. Sin HowTo (howto: false). El español es la referencia estructural.",
+  "slug": {
+    "es": "mejor-gestor-servidores-minecraft-windows",
+    "en": "best-minecraft-server-manager-windows",
+    "de": "bester-minecraft-server-manager-windows",
+    "fr": "meilleur-gestionnaire-serveur-minecraft-windows",
+    "pt": "melhor-gerenciador-servidor-minecraft-windows"
+  },
+  "published": "2026-10-22",
+  "modified": "2026-10-22",
+  "minutes": 6,
+  "howto": false,
+  "icon": "diamond_pickaxe.png",
+
+  "es": {
+    "title": "Mejor gestor de servidores de Minecraft para Windows | MC-ServerLauncher",
+    "description": "Qué mirar al elegir un gestor de servidores de Minecraft para Windows y cómo se compara MC Server Launcher con Crafty Controller, Pterodactyl, AMP y MCSManager.",
+    "h1": "Mejor gestor de servidores de Minecraft para Windows: qué mirar y cómo se compara",
+    "crumb": "Comparativa de gestores",
+    "lead": "No hay un gestor de servidores de Minecraft que sea el mejor para todos: depende de dónde vaya a correr el servidor y de cuánto quieras tocar. Esta guía te da las preguntas que importan y compara cinco opciones con datos de sus webs oficiales. Aviso: la escribe el autor de MC-ServerLauncher, así que cada dato lleva enlace para que lo contrastes.",
+    "cta": "Descargar MC-ServerLauncher gratis",
+    "card_title": "Mejor gestor de servidores de Minecraft para Windows",
+    "card_desc": "Qué mirar al elegir y cómo se compara con Crafty Controller, Pterodactyl, AMP y MCSManager.",
+    "blocks": [
+      { "h2": "Qué mirar antes de elegir" },
+      { "ul": [
+        "<strong>Dónde va a correr el servidor.</strong> En tu PC con Windows para jugar con amigos, o en una máquina Linux o un VPS encendido siempre. Esta decisión cambia casi todo lo demás.",
+        "<strong>Cuánto sabes de administración.</strong> Algunos paneles piden Linux, Docker, un dominio o una base de datos; otras herramientas se instalan como una aplicación normal.",
+        "<strong>Si es solo Minecraft.</strong> Hay paneles pensados para muchos juegos y otros centrados en Minecraft.",
+        "<strong>Cuántas personas lo administran.</strong> Un panel web admite varias cuentas con permisos; una aplicación de escritorio la maneja quien tiene delante el ordenador.",
+        "<strong>Cuánto cuesta.</strong> La mayoría son gratuitos y de código abierto; alguno es de pago."
+      ] },
+      { "h2": "Comparativa de un vistazo" },
+      { "p": "Datos tomados de la web o la documentación oficial de cada proyecto el 22 de octubre de 2026. Estas herramientas cambian, así que contrasta lo que te importe antes de decidir." },
+      { "table": {
+        "head": ["Opción", "Qué es", "Dónde se instala", "Coste y licencia"],
+        "rows": [
+          ["MC-ServerLauncher", "Aplicación de escritorio centrada en servidores de Minecraft Java", "Windows, Linux (AppImage) y macOS", "Gratis y de código abierto"],
+          ["Crafty Controller", "Panel web autoalojado para servidores de Minecraft (Java y Bedrock)", "Windows, Linux, macOS y Docker; en Windows hay una versión portable que se descomprime y se ejecuta", "Gratis, licencia GPL v3"],
+          ["Pterodactyl", "Panel web para muchos juegos: el panel más Wings, que ejecuta cada servidor en un contenedor Docker", "Máquina Linux con Docker; el panel pide además un dominio y una base de datos", "Gratis, licencia MIT"],
+          ["AMP (CubeCoders)", "Panel web comercial para muchos juegos", "Windows y Linux", "De pago, con licencia según el número de instancias; los precios vigentes están en su web"],
+          ["MCSManager", "Panel web con demonio, multiusuario y pensado para varias máquinas", "Windows y Linux (en macOS, pasos manuales); necesita Node.js", "Gratis, licencia Apache 2.0"]
+        ] } },
+      { "p": "Fuentes oficiales: <a href='https://craftycontrol.com/' rel='noopener'>Crafty Controller</a>, <a href='https://pterodactyl.io/' rel='noopener'>Pterodactyl</a>, <a href='https://cubecoders.com/AMP' rel='noopener'>AMP</a> y <a href='https://github.com/MCSManager/MCSManager' rel='noopener'>MCSManager</a>." },
+      { "h2": "Cuándo encaja cada uno" },
+      { "ul": [
+        "<strong>MC-ServerLauncher</strong>, si el servidor va en tu propio PC, lo usas tú con tus amigos y quieres crearlo, ponerle mods, hacer copias y compartirlo con un túnel sin editar archivos ni montar nada.",
+        "<strong>Crafty Controller</strong>, si prefieres un panel web, por ejemplo para entrar desde otro dispositivo o dar acceso a otras personas, y no te importa configurarlo. También funciona en Windows.",
+        "<strong>Pterodactyl</strong>, si tienes o vas a alquilar un servidor Linux y quieres gestionar muchos servidores y juegos con distintos usuarios, por ejemplo para una comunidad.",
+        "<strong>AMP</strong>, si prefieres un producto comercial multijuego y no te importa pagar la licencia.",
+        "<strong>MCSManager</strong>, si quieres un panel web que funcione en Windows o Linux y que pueda administrar varias máquinas desde un mismo sitio."
+      ] },
+      { "h2": "Lo que MC-ServerLauncher no es" },
+      { "p": "Es una aplicación de escritorio: se maneja desde el ordenador donde corre el servidor, y el servidor solo está disponible mientras ese ordenador esté encendido (para no gastar recursos, mira <a href='{guide:dormir}'>cómo hacer que se apague solo cuando está vacío</a>). No es un panel web con cuentas y permisos para varias personas, ni gestiona juegos que no sean Minecraft. Si necesitas eso, uno de los paneles de la tabla te encaja mejor." },
+      { "tip": "Probar una aplicación de escritorio lleva unos minutos; montar un panel en un servidor Linux suele llevar bastante más. Si dudas, empieza por lo sencillo y cambia cuando lo necesites." },
+      { "h2": "Cómo empezar con MC-ServerLauncher" },
+      { "p": "Si te decides por la aplicación, estas tres guías te llevan de cero a jugar: <a href='{guide:descargar}'>descargar el servidor de Minecraft (jar oficial) y una forma más fácil</a>, <a href='{guide:mods}'>añadir mods a un servidor de Minecraft</a> y <a href='{guide:gratis}'>hostear un servidor gratis sin abrir puertos</a>." }
+    ],
+    "faq": [
+      { "q": "¿Cuál es el mejor gestor de servidores de Minecraft para Windows?", "a": "Depende de dónde corra el servidor. Para uno casero en tu PC con Windows, una aplicación de escritorio como MC-ServerLauncher es lo más directo. Para uno que esté siempre encendido en una máquina Linux y lo administren varias personas, un panel web como Pterodactyl, Crafty Controller o MCSManager encaja mejor. AMP es la opción comercial." },
+      { "q": "¿Qué es un launcher de servidores de Minecraft?", "a": "Un programa que descarga el servidor, lo configura, lo inicia y lo mantiene en marcha por ti, para que no tengas que escribir comandos ni editar archivos. MC Server Launcher es uno, y los paneles web de la comparativa cumplen una función parecida." },
+      { "q": "¿Crafty Controller funciona en Windows?", "a": "Sí. Según su web, hay una versión portable para Windows que se descomprime y se ejecuta, además de versiones para Linux, macOS y Docker. Es gratuito y de código abierto (GPL v3)." },
+      { "q": "¿Necesito Pterodactyl para un servidor entre amigos?", "a": "Normalmente no. Pterodactyl está pensado para máquinas Linux con muchos servidores y usuarios, y pide un dominio y una base de datos, así que suele ser más de lo necesario para jugar con unos amigos." },
+      { "q": "¿AMP es gratis?", "a": "No: es un producto comercial con licencia de pago. Las ediciones y los precios cambian, así que mira los vigentes en la web de CubeCoders." },
+      { "q": "¿MC-ServerLauncher sustituye a un panel web?", "a": "No es lo mismo. Es una aplicación de escritorio para un servidor en tu PC, no un panel con cuentas y permisos. Si necesitas administrar el servidor entre varias personas desde el navegador, usa un panel." }
+    ]
+  },
+
+  "en": {
+    "title": "Best Minecraft server manager for Windows | MC-ServerLauncher",
+    "description": "What to look for in a Minecraft server manager for Windows, and how MC Server Launcher compares with Crafty Controller, Pterodactyl, AMP and MCSManager.",
+    "h1": "Best Minecraft server manager for Windows: what to look for and how they compare",
+    "crumb": "Server manager comparison",
+    "lead": "There is no Minecraft server manager that is best for everyone: it depends on where the server will run and how much you want to tinker. This guide gives you the questions that matter and compares five options using their official websites. A warning: it is written by the author of MC-ServerLauncher, so every fact comes with a link for you to check.",
+    "cta": "Download MC-ServerLauncher free",
+    "card_title": "Best Minecraft server manager for Windows",
+    "card_desc": "What to look for and how it compares with Crafty Controller, Pterodactyl, AMP and MCSManager.",
+    "blocks": [
+      { "h2": "What to look at before choosing" },
+      { "ul": [
+        "<strong>Where the server will run.</strong> On your Windows PC to play with friends, or on a Linux machine or a VPS that is always on. This decision changes almost everything else.",
+        "<strong>How much you know about administration.</strong> Some panels ask for Linux, Docker, a domain or a database; other tools install like a normal application.",
+        "<strong>Whether it is only Minecraft.</strong> Some panels are built for many games and others focus on Minecraft.",
+        "<strong>How many people manage it.</strong> A web panel supports several accounts with permissions; a desktop application is used by whoever is at the computer.",
+        "<strong>What it costs.</strong> Most are free and open source; one is paid."
+      ] },
+      { "h2": "The comparison at a glance" },
+      { "p": "Data taken from each project's official website or documentation on October 22, 2026. These tools change, so check what matters to you before deciding." },
+      { "table": {
+        "head": ["Option", "What it is", "Where it installs", "Cost and licence"],
+        "rows": [
+          ["MC-ServerLauncher", "Desktop application focused on Minecraft Java servers", "Windows, Linux (AppImage) and macOS", "Free and open source"],
+          ["Crafty Controller", "Self-hosted web panel for Minecraft servers (Java and Bedrock)", "Windows, Linux, macOS and Docker; on Windows there is a portable version you unzip and run", "Free, GPL v3 licence"],
+          ["Pterodactyl", "Web panel for many games: the panel plus Wings, which runs each server in a Docker container", "A Linux machine with Docker; the panel also needs a domain and a database", "Free, MIT licence"],
+          ["AMP (CubeCoders)", "Commercial web panel for many games", "Windows and Linux", "Paid, licensed by number of instances; current prices are on their website"],
+          ["MCSManager", "Web panel with a daemon, multi-user and designed for several machines", "Windows and Linux (manual steps on macOS); needs Node.js", "Free, Apache 2.0 licence"]
+        ] } },
+      { "p": "Official sources: <a href='https://craftycontrol.com/' rel='noopener'>Crafty Controller</a>, <a href='https://pterodactyl.io/' rel='noopener'>Pterodactyl</a>, <a href='https://cubecoders.com/AMP' rel='noopener'>AMP</a> and <a href='https://github.com/MCSManager/MCSManager' rel='noopener'>MCSManager</a>." },
+      { "h2": "When each one fits" },
+      { "ul": [
+        "<strong>MC-ServerLauncher</strong>, if the server runs on your own PC, you use it with friends, and you want to create it, add mods, take backups and share it through a tunnel without editing files or setting anything up.",
+        "<strong>Crafty Controller</strong>, if you prefer a web panel, for example to open it from another device or give other people access, and you don't mind configuring it. It also runs on Windows.",
+        "<strong>Pterodactyl</strong>, if you have or will rent a Linux server and want to manage many servers and games with different users, for example for a community.",
+        "<strong>AMP</strong>, if you prefer a commercial multi-game product and don't mind paying for the licence.",
+        "<strong>MCSManager</strong>, if you want a web panel that works on Windows or Linux and can manage several machines from one place."
+      ] },
+      { "h2": "What MC-ServerLauncher is not" },
+      { "p": "It is a desktop application: you use it from the computer the server runs on, and the server is only available while that computer is on (to avoid wasting resources, see <a href='{guide:dormir}'>how to make a Minecraft server stop itself when it is empty</a>). It is not a web panel with accounts and permissions for several people, and it doesn't manage games other than Minecraft. If you need that, one of the panels in the table fits you better." },
+      { "tip": "Trying a desktop application takes a few minutes; setting up a panel on a Linux server usually takes a lot longer. If in doubt, start with the simple one and switch when you need to." },
+      { "h2": "How to get started with MC-ServerLauncher" },
+      { "p": "If you go for the application, these three guides take you from zero to playing: <a href='{guide:descargar}'>download the Minecraft server (official jar) and an easier way</a>, <a href='{guide:mods}'>how to add mods to a Minecraft server</a> and <a href='{guide:gratis}'>host a free server without port forwarding</a>." }
+    ],
+    "faq": [
+      { "q": "What is the best Minecraft server manager for Windows?", "a": "It depends on where the server runs. For a home server on your Windows PC, a desktop application like MC-ServerLauncher is the most direct. For one that is always on in a Linux machine and managed by several people, a web panel such as Pterodactyl, Crafty Controller or MCSManager fits better. AMP is the commercial option." },
+      { "q": "What is a Minecraft server launcher?", "a": "A program that downloads the server, configures it, starts it and keeps it running for you, so you don't have to type commands or edit files. MC Server Launcher is one, and the web panels in the comparison do a similar job." },
+      { "q": "Does Crafty Controller work on Windows?", "a": "Yes. According to its website there is a portable Windows version you unzip and run, as well as versions for Linux, macOS and Docker. It is free and open source (GPL v3)." },
+      { "q": "Do I need Pterodactyl for a server with friends?", "a": "Usually not. Pterodactyl is built for Linux machines with many servers and users, and it asks for a domain and a database, so it is often more than you need to play with a few friends." },
+      { "q": "Is AMP free?", "a": "No: it is a commercial product with a paid licence. Editions and prices change, so check the current ones on the CubeCoders website." },
+      { "q": "Does MC-ServerLauncher replace a web panel?", "a": "It is not the same thing. It is a desktop application for a server on your PC, not a panel with accounts and permissions. If you need to manage the server with several people from the browser, use a panel." }
+    ]
+  },
+
+  "de": {
+    "title": "Der beste Minecraft-Server-Manager für Windows | MC-ServerLauncher",
+    "description": "Worauf es bei einem Minecraft-Server-Manager für Windows ankommt und wie sich MC Server Launcher mit Crafty Controller, Pterodactyl, AMP und MCSManager vergleicht.",
+    "h1": "Der beste Minecraft-Server-Manager für Windows: worauf es ankommt und wie sie sich vergleichen",
+    "crumb": "Vergleich der Manager",
+    "lead": "Es gibt keinen Minecraft-Server-Manager, der für alle der beste ist: Es hängt davon ab, wo der Server laufen soll und wie viel du selbst basteln willst. Diese Anleitung nennt dir die Fragen, auf die es ankommt, und vergleicht fünf Optionen anhand ihrer offiziellen Webseiten. Ein Hinweis: Sie stammt vom Autor von MC-ServerLauncher, deshalb hat jede Angabe einen Link zum Nachprüfen.",
+    "cta": "MC-ServerLauncher kostenlos herunterladen",
+    "card_title": "Der beste Minecraft-Server-Manager für Windows",
+    "card_desc": "Worauf es ankommt und wie er sich mit Crafty Controller, Pterodactyl, AMP und MCSManager vergleicht.",
+    "blocks": [
+      { "h2": "Worauf du vor der Wahl achten solltest" },
+      { "ul": [
+        "<strong>Wo der Server laufen soll.</strong> Auf deinem Windows-PC, um mit Freunden zu spielen, oder auf einer Linux-Maschine oder einem VPS, der immer an ist. Diese Entscheidung ändert fast alles andere.",
+        "<strong>Wie viel du von Administration verstehst.</strong> Manche Panels verlangen Linux, Docker, eine Domain oder eine Datenbank; andere Werkzeuge installierst du wie eine normale Anwendung.",
+        "<strong>Ob es nur um Minecraft geht.</strong> Manche Panels sind für viele Spiele gedacht, andere konzentrieren sich auf Minecraft.",
+        "<strong>Wie viele Personen ihn verwalten.</strong> Ein Web-Panel erlaubt mehrere Konten mit Berechtigungen; eine Desktop-Anwendung bedient, wer am Computer sitzt.",
+        "<strong>Was es kostet.</strong> Die meisten sind kostenlos und Open Source; eines ist kostenpflichtig."
+      ] },
+      { "h2": "Der Vergleich auf einen Blick" },
+      { "p": "Die Angaben stammen vom 22. Oktober 2026 aus der offiziellen Webseite oder Dokumentation des jeweiligen Projekts. Diese Werkzeuge ändern sich, prüfe also nach, was dir wichtig ist, bevor du dich entscheidest." },
+      { "table": {
+        "head": ["Option", "Was es ist", "Wo es sich installieren lässt", "Kosten und Lizenz"],
+        "rows": [
+          ["MC-ServerLauncher", "Desktop-Anwendung für Minecraft-Java-Server", "Windows, Linux (AppImage) und macOS", "Kostenlos und Open Source"],
+          ["Crafty Controller", "Selbst gehostetes Web-Panel für Minecraft-Server (Java und Bedrock)", "Windows, Linux, macOS und Docker; unter Windows gibt es eine portable Version zum Entpacken und Starten", "Kostenlos, GPL-v3-Lizenz"],
+          ["Pterodactyl", "Web-Panel für viele Spiele: das Panel plus Wings, das jeden Server in einem Docker-Container ausführt", "Linux-Maschine mit Docker; das Panel braucht zusätzlich eine Domain und eine Datenbank", "Kostenlos, MIT-Lizenz"],
+          ["AMP (CubeCoders)", "Kommerzielles Web-Panel für viele Spiele", "Windows und Linux", "Kostenpflichtig, Lizenz nach Anzahl der Instanzen; aktuelle Preise stehen auf der Webseite"],
+          ["MCSManager", "Web-Panel mit Daemon, mehrbenutzerfähig und für mehrere Maschinen gedacht", "Windows und Linux (unter macOS manuelle Schritte); braucht Node.js", "Kostenlos, Apache-2.0-Lizenz"]
+        ] } },
+      { "p": "Offizielle Quellen: <a href='https://craftycontrol.com/' rel='noopener'>Crafty Controller</a>, <a href='https://pterodactyl.io/' rel='noopener'>Pterodactyl</a>, <a href='https://cubecoders.com/AMP' rel='noopener'>AMP</a> und <a href='https://github.com/MCSManager/MCSManager' rel='noopener'>MCSManager</a>." },
+      { "h2": "Wann welches passt" },
+      { "ul": [
+        "<strong>MC-ServerLauncher</strong>, wenn der Server auf deinem eigenen PC läuft, du ihn mit Freunden nutzt und ihn erstellen, mit Mods bestücken, sichern und über einen Tunnel teilen willst, ohne Dateien zu bearbeiten oder etwas einzurichten.",
+        "<strong>Crafty Controller</strong>, wenn du ein Web-Panel bevorzugst, etwa um von einem anderen Gerät zuzugreifen oder anderen Zugang zu geben, und die Einrichtung dich nicht stört. Es läuft auch unter Windows.",
+        "<strong>Pterodactyl</strong>, wenn du einen Linux-Server hast oder mietest und viele Server und Spiele mit verschiedenen Nutzern verwalten willst, zum Beispiel für eine Community.",
+        "<strong>AMP</strong>, wenn du ein kommerzielles Multi-Game-Produkt bevorzugst und die Lizenz bezahlen willst.",
+        "<strong>MCSManager</strong>, wenn du ein Web-Panel willst, das unter Windows oder Linux läuft und mehrere Maschinen von einer Stelle aus verwalten kann."
+      ] },
+      { "h2": "Was MC-ServerLauncher nicht ist" },
+      { "p": "Es ist eine Desktop-Anwendung: Du bedienst sie an dem Computer, auf dem der Server läuft, und der Server ist nur erreichbar, solange dieser Computer an ist (damit er keine Ressourcen verbraucht, lies <a href='{guide:dormir}'>Minecraft-Server schaltet sich bei Leerlauf selbst ab</a>). Es ist kein Web-Panel mit Konten und Berechtigungen für mehrere Personen und verwaltet keine anderen Spiele als Minecraft. Brauchst du das, passt eines der Panels aus der Tabelle besser." },
+      { "tip": "Eine Desktop-Anwendung auszuprobieren dauert ein paar Minuten; ein Panel auf einem Linux-Server einzurichten dauert meist deutlich länger. Im Zweifel beginne mit dem Einfachen und wechsle, wenn du es brauchst." },
+      { "h2": "So startest du mit MC-ServerLauncher" },
+      { "p": "Entscheidest du dich für die Anwendung, bringen dich diese drei Anleitungen von null zum Spielen: <a href='{guide:descargar}'>Minecraft-Server (offizielle Jar) herunterladen und ein einfacherer Weg</a>, <a href='{guide:mods}'>Mods zu einem Minecraft-Server hinzufügen</a> und <a href='{guide:gratis}'>Minecraft-Server kostenlos hosten ohne Portfreigabe</a>." }
+    ],
+    "faq": [
+      { "q": "Was ist der beste Minecraft-Server-Manager für Windows?", "a": "Das hängt davon ab, wo der Server läuft. Für einen Server zu Hause auf deinem Windows-PC ist eine Desktop-Anwendung wie MC-ServerLauncher am direktesten. Für einen, der immer auf einer Linux-Maschine läuft und von mehreren Personen verwaltet wird, passt ein Web-Panel wie Pterodactyl, Crafty Controller oder MCSManager besser. AMP ist die kommerzielle Option." },
+      { "q": "Was ist ein Minecraft-Server-Launcher?", "a": "Ein Programm, das den Server herunterlädt, konfiguriert, startet und für dich am Laufen hält, damit du keine Befehle tippen oder Dateien bearbeiten musst. MC Server Launcher ist einer, und die Web-Panels im Vergleich erfüllen eine ähnliche Aufgabe." },
+      { "q": "Läuft Crafty Controller unter Windows?", "a": "Ja. Laut seiner Webseite gibt es eine portable Windows-Version zum Entpacken und Starten sowie Versionen für Linux, macOS und Docker. Es ist kostenlos und Open Source (GPL v3)." },
+      { "q": "Brauche ich Pterodactyl für einen Server mit Freunden?", "a": "Meist nicht. Pterodactyl ist für Linux-Maschinen mit vielen Servern und Nutzern gedacht und verlangt eine Domain und eine Datenbank, ist also oft mehr, als man zum Spielen mit ein paar Freunden braucht." },
+      { "q": "Ist AMP kostenlos?", "a": "Nein: Es ist ein kommerzielles Produkt mit kostenpflichtiger Lizenz. Editionen und Preise ändern sich, schau also die aktuellen auf der Webseite von CubeCoders nach." },
+      { "q": "Ersetzt MC-ServerLauncher ein Web-Panel?", "a": "Das ist nicht dasselbe. Es ist eine Desktop-Anwendung für einen Server auf deinem PC, kein Panel mit Konten und Berechtigungen. Wenn du den Server mit mehreren Personen über den Browser verwalten musst, nimm ein Panel." }
+    ]
+  },
+
+  "fr": {
+    "title": "Meilleur gestionnaire de serveur Minecraft pour Windows | MC-ServerLauncher",
+    "description": "Que regarder pour choisir un gestionnaire de serveur Minecraft sous Windows, et comment MC Server Launcher se compare à Crafty Controller, Pterodactyl, AMP et MCSManager.",
+    "h1": "Meilleur gestionnaire de serveur Minecraft pour Windows : que regarder et comment ils se comparent",
+    "crumb": "Comparatif des gestionnaires",
+    "lead": "Il n'existe pas un gestionnaire de serveur Minecraft qui soit le meilleur pour tout le monde : cela dépend de l'endroit où le serveur va tourner et de combien tu veux bricoler. Ce guide te donne les questions qui comptent et compare cinq options avec les données de leurs sites officiels. Précision : il est écrit par l'auteur de MC-ServerLauncher, donc chaque donnée a un lien pour que tu puisses la vérifier.",
+    "cta": "Télécharger MC-ServerLauncher gratuitement",
+    "card_title": "Meilleur gestionnaire de serveur Minecraft pour Windows",
+    "card_desc": "Que regarder pour choisir et comment il se compare à Crafty Controller, Pterodactyl, AMP et MCSManager.",
+    "blocks": [
+      { "h2": "Que regarder avant de choisir" },
+      { "ul": [
+        "<strong>Où le serveur va tourner.</strong> Sur ton PC Windows pour jouer avec des amis, ou sur une machine Linux ou un VPS toujours allumé. Cette décision change presque tout le reste.",
+        "<strong>Ce que tu sais de l'administration.</strong> Certains panels demandent Linux, Docker, un domaine ou une base de données ; d'autres outils s'installent comme une application normale.",
+        "<strong>Si c'est uniquement Minecraft.</strong> Certains panels sont pensés pour de nombreux jeux, d'autres se concentrent sur Minecraft.",
+        "<strong>Combien de personnes l'administrent.</strong> Un panel web accepte plusieurs comptes avec des permissions ; une application de bureau est utilisée par celui qui est devant l'ordinateur.",
+        "<strong>Ce que ça coûte.</strong> La plupart sont gratuits et open source ; l'un est payant."
+      ] },
+      { "h2": "Le comparatif en un coup d'œil" },
+      { "p": "Données tirées du site ou de la documentation officielle de chaque projet le 22 octobre 2026. Ces outils évoluent : vérifie ce qui compte pour toi avant de décider." },
+      { "table": {
+        "head": ["Option", "Ce que c'est", "Où l'installer", "Coût et licence"],
+        "rows": [
+          ["MC-ServerLauncher", "Application de bureau centrée sur les serveurs Minecraft Java", "Windows, Linux (AppImage) et macOS", "Gratuit et open source"],
+          ["Crafty Controller", "Panel web auto-hébergé pour serveurs Minecraft (Java et Bedrock)", "Windows, Linux, macOS et Docker ; sous Windows, une version portable à décompresser et lancer", "Gratuit, licence GPL v3"],
+          ["Pterodactyl", "Panel web pour de nombreux jeux : le panel plus Wings, qui exécute chaque serveur dans un conteneur Docker", "Machine Linux avec Docker ; le panel demande en plus un domaine et une base de données", "Gratuit, licence MIT"],
+          ["AMP (CubeCoders)", "Panel web commercial pour de nombreux jeux", "Windows et Linux", "Payant, licence selon le nombre d'instances ; les prix en vigueur sont sur leur site"],
+          ["MCSManager", "Panel web avec démon, multi-utilisateur et pensé pour plusieurs machines", "Windows et Linux (étapes manuelles sous macOS) ; demande Node.js", "Gratuit, licence Apache 2.0"]
+        ] } },
+      { "p": "Sources officielles : <a href='https://craftycontrol.com/' rel='noopener'>Crafty Controller</a>, <a href='https://pterodactyl.io/' rel='noopener'>Pterodactyl</a>, <a href='https://cubecoders.com/AMP' rel='noopener'>AMP</a> et <a href='https://github.com/MCSManager/MCSManager' rel='noopener'>MCSManager</a>." },
+      { "h2": "Quand chacun convient" },
+      { "ul": [
+        "<strong>MC-ServerLauncher</strong>, si le serveur tourne sur ton propre PC, que tu l'utilises avec tes amis et que tu veux le créer, y mettre des mods, faire des sauvegardes et le partager par un tunnel sans modifier de fichiers ni rien installer de compliqué.",
+        "<strong>Crafty Controller</strong>, si tu préfères un panel web, par exemple pour y accéder depuis un autre appareil ou donner l'accès à d'autres personnes, et que le configurer ne te gêne pas. Il fonctionne aussi sous Windows.",
+        "<strong>Pterodactyl</strong>, si tu as ou vas louer un serveur Linux et veux gérer de nombreux serveurs et jeux avec différents utilisateurs, par exemple pour une communauté.",
+        "<strong>AMP</strong>, si tu préfères un produit commercial multijeu et que payer la licence ne te dérange pas.",
+        "<strong>MCSManager</strong>, si tu veux un panel web qui fonctionne sous Windows ou Linux et peut administrer plusieurs machines depuis un même endroit."
+      ] },
+      { "h2": "Ce que MC-ServerLauncher n'est pas" },
+      { "p": "C'est une application de bureau : on l'utilise depuis l'ordinateur sur lequel tourne le serveur, et le serveur n'est disponible que tant que cet ordinateur est allumé (pour ne pas gaspiller de ressources, lis <a href='{guide:dormir}'>serveur Minecraft qui s'éteint tout seul quand il est vide</a>). Ce n'est pas un panel web avec comptes et permissions pour plusieurs personnes, et il ne gère pas d'autres jeux que Minecraft. Si tu en as besoin, un des panels du tableau te convient mieux." },
+      { "tip": "Essayer une application de bureau prend quelques minutes ; monter un panel sur un serveur Linux prend en général bien plus. Dans le doute, commence par le plus simple et change quand il le faudra." },
+      { "h2": "Comment démarrer avec MC-ServerLauncher" },
+      { "p": "Si tu choisis l'application, ces trois guides t'emmènent de zéro à jouer : <a href='{guide:descargar}'>télécharger le serveur Minecraft (jar officiel) et une façon plus simple</a>, <a href='{guide:mods}'>comment ajouter des mods à un serveur Minecraft</a> et <a href='{guide:gratis}'>héberger un serveur Minecraft gratuit sans ouvrir de ports</a>." }
+    ],
+    "faq": [
+      { "q": "Quel est le meilleur gestionnaire de serveur Minecraft pour Windows ?", "a": "Cela dépend de l'endroit où tourne le serveur. Pour un serveur à la maison sur ton PC Windows, une application de bureau comme MC-ServerLauncher est le plus direct. Pour un serveur toujours allumé sur une machine Linux et administré par plusieurs personnes, un panel web comme Pterodactyl, Crafty Controller ou MCSManager convient mieux. AMP est l'option commerciale." },
+      { "q": "Qu'est-ce qu'un launcher de serveur Minecraft ?", "a": "Un programme qui télécharge le serveur, le configure, le démarre et le garde en marche pour toi, afin que tu n'aies ni commandes à taper ni fichiers à modifier. MC Server Launcher en est un, et les panels web du comparatif remplissent un rôle semblable." },
+      { "q": "Crafty Controller fonctionne-t-il sous Windows ?", "a": "Oui. Selon son site, il existe une version portable pour Windows à décompresser et lancer, ainsi que des versions pour Linux, macOS et Docker. Il est gratuit et open source (GPL v3)." },
+      { "q": "Ai-je besoin de Pterodactyl pour un serveur entre amis ?", "a": "En général non. Pterodactyl est pensé pour des machines Linux avec de nombreux serveurs et utilisateurs, et demande un domaine et une base de données ; c'est souvent plus que nécessaire pour jouer avec quelques amis." },
+      { "q": "AMP est-il gratuit ?", "a": "Non : c'est un produit commercial avec une licence payante. Les éditions et les prix changent, consulte donc ceux en vigueur sur le site de CubeCoders." },
+      { "q": "MC-ServerLauncher remplace-t-il un panel web ?", "a": "Ce n'est pas la même chose. C'est une application de bureau pour un serveur sur ton PC, pas un panel avec comptes et permissions. Si tu dois administrer le serveur à plusieurs depuis le navigateur, utilise un panel." }
+    ]
+  },
+
+  "pt": {
+    "title": "Melhor gerenciador de servidor de Minecraft para Windows | MC-ServerLauncher",
+    "description": "O que observar ao escolher um gerenciador de servidor de Minecraft para Windows e como o MC Server Launcher se compara ao Crafty Controller, Pterodactyl, AMP e MCSManager.",
+    "h1": "Melhor gerenciador de servidor de Minecraft para Windows: o que observar e como se comparam",
+    "crumb": "Comparação de gerenciadores",
+    "lead": "Não existe um gerenciador de servidor de Minecraft que seja o melhor para todo mundo: depende de onde o servidor vai rodar e de quanto você quer mexer. Este guia traz as perguntas que importam e compara cinco opções com dados dos sites oficiais. Um aviso: ele é escrito pelo autor do MC-ServerLauncher, então cada dado tem um link para você conferir.",
+    "cta": "Baixar o MC-ServerLauncher grátis",
+    "card_title": "Melhor gerenciador de servidor de Minecraft para Windows",
+    "card_desc": "O que observar na escolha e como se compara ao Crafty Controller, Pterodactyl, AMP e MCSManager.",
+    "blocks": [
+      { "h2": "O que observar antes de escolher" },
+      { "ul": [
+        "<strong>Onde o servidor vai rodar.</strong> No seu PC com Windows, para jogar com amigos, ou em uma máquina Linux ou um VPS sempre ligado. Essa decisão muda quase tudo o resto.",
+        "<strong>O quanto você entende de administração.</strong> Alguns painéis pedem Linux, Docker, um domínio ou um banco de dados; outras ferramentas se instalam como um aplicativo comum.",
+        "<strong>Se é só Minecraft.</strong> Há painéis pensados para muitos jogos e outros focados em Minecraft.",
+        "<strong>Quantas pessoas administram.</strong> Um painel web aceita várias contas com permissões; um aplicativo de desktop é usado por quem está diante do computador.",
+        "<strong>Quanto custa.</strong> A maioria é gratuita e de código aberto; um deles é pago."
+      ] },
+      { "h2": "A comparação em resumo" },
+      { "p": "Dados retirados do site ou da documentação oficial de cada projeto em 22 de outubro de 2026. Essas ferramentas mudam, então confira o que for importante para você antes de decidir." },
+      { "table": {
+        "head": ["Opção", "O que é", "Onde se instala", "Custo e licença"],
+        "rows": [
+          ["MC-ServerLauncher", "Aplicativo de desktop focado em servidores de Minecraft Java", "Windows, Linux (AppImage) e macOS", "Grátis e de código aberto"],
+          ["Crafty Controller", "Painel web auto-hospedado para servidores de Minecraft (Java e Bedrock)", "Windows, Linux, macOS e Docker; no Windows há uma versão portátil que se descompacta e executa", "Grátis, licença GPL v3"],
+          ["Pterodactyl", "Painel web para muitos jogos: o painel mais o Wings, que executa cada servidor em um contêiner Docker", "Máquina Linux com Docker; o painel exige ainda um domínio e um banco de dados", "Grátis, licença MIT"],
+          ["AMP (CubeCoders)", "Painel web comercial para muitos jogos", "Windows e Linux", "Pago, com licença conforme o número de instâncias; os preços atuais estão no site deles"],
+          ["MCSManager", "Painel web com daemon, multiusuário e pensado para várias máquinas", "Windows e Linux (no macOS, passos manuais); exige Node.js", "Grátis, licença Apache 2.0"]
+        ] } },
+      { "p": "Fontes oficiais: <a href='https://craftycontrol.com/' rel='noopener'>Crafty Controller</a>, <a href='https://pterodactyl.io/' rel='noopener'>Pterodactyl</a>, <a href='https://cubecoders.com/AMP' rel='noopener'>AMP</a> e <a href='https://github.com/MCSManager/MCSManager' rel='noopener'>MCSManager</a>." },
+      { "h2": "Quando cada um se encaixa" },
+      { "ul": [
+        "<strong>MC-ServerLauncher</strong>, se o servidor roda no seu próprio PC, você usa com os seus amigos e quer criar, colocar mods, fazer backups e compartilhar por um túnel sem editar arquivos nem montar nada.",
+        "<strong>Crafty Controller</strong>, se você prefere um painel web, por exemplo para acessar de outro dispositivo ou dar acesso a outras pessoas, e não se importa de configurá-lo. Ele também roda no Windows.",
+        "<strong>Pterodactyl</strong>, se você tem ou vai alugar um servidor Linux e quer gerenciar muitos servidores e jogos com usuários diferentes, por exemplo para uma comunidade.",
+        "<strong>AMP</strong>, se você prefere um produto comercial para vários jogos e não se importa de pagar a licença.",
+        "<strong>MCSManager</strong>, se você quer um painel web que funcione no Windows ou no Linux e possa administrar várias máquinas de um só lugar."
+      ] },
+      { "h2": "O que o MC-ServerLauncher não é" },
+      { "p": "É um aplicativo de desktop: você o usa a partir do computador em que o servidor roda, e o servidor só fica disponível enquanto esse computador estiver ligado (para não gastar recursos, veja <a href='{guide:dormir}'>como fazer o servidor de Minecraft desligar sozinho quando está vazio</a>). Ele não é um painel web com contas e permissões para várias pessoas, nem gerencia jogos que não sejam Minecraft. Se você precisa disso, um dos painéis da tabela serve melhor." },
+      { "tip": "Testar um aplicativo de desktop leva alguns minutos; montar um painel em um servidor Linux costuma levar bem mais. Na dúvida, comece pelo simples e troque quando precisar." },
+      { "h2": "Como começar com o MC-ServerLauncher" },
+      { "p": "Se você optar pelo aplicativo, estes três guias levam você do zero ao jogo: <a href='{guide:descargar}'>baixar o servidor de Minecraft (jar oficial) e uma forma mais fácil</a>, <a href='{guide:mods}'>como adicionar mods a um servidor de Minecraft</a> e <a href='{guide:gratis}'>como hospedar um servidor de Minecraft grátis sem abrir portas</a>." }
+    ],
+    "faq": [
+      { "q": "Qual é o melhor gerenciador de servidor de Minecraft para Windows?", "a": "Depende de onde o servidor roda. Para um servidor caseiro no seu PC com Windows, um aplicativo de desktop como o MC-ServerLauncher é o mais direto. Para um que fique sempre ligado em uma máquina Linux e seja administrado por várias pessoas, um painel web como Pterodactyl, Crafty Controller ou MCSManager serve melhor. O AMP é a opção comercial." },
+      { "q": "O que é um launcher de servidor de Minecraft?", "a": "Um programa que baixa o servidor, configura, inicia e mantém funcionando para você, sem precisar digitar comandos nem editar arquivos. O MC Server Launcher é um deles, e os painéis web da comparação cumprem uma função parecida." },
+      { "q": "O Crafty Controller funciona no Windows?", "a": "Sim. Segundo o site dele, há uma versão portátil para Windows que se descompacta e executa, além de versões para Linux, macOS e Docker. É gratuito e de código aberto (GPL v3)." },
+      { "q": "Preciso do Pterodactyl para um servidor entre amigos?", "a": "Normalmente não. O Pterodactyl foi pensado para máquinas Linux com muitos servidores e usuários e exige um domínio e um banco de dados, então costuma ser mais do que o necessário para jogar com alguns amigos." },
+      { "q": "O AMP é grátis?", "a": "Não: é um produto comercial com licença paga. As edições e os preços mudam, então consulte os atuais no site da CubeCoders." },
+      { "q": "O MC-ServerLauncher substitui um painel web?", "a": "Não é a mesma coisa. Ele é um aplicativo de desktop para um servidor no seu PC, não um painel com contas e permissões. Se você precisa administrar o servidor entre várias pessoas pelo navegador, use um painel." }
+    ]
+  }
+}

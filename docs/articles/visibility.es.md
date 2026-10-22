@@ -66,18 +66,20 @@ haya fotos de esa antigüedad), visitas al repositorio y de dónde vienen. Los C
 ## Guías para búsquedas concretas
 
 La landing compite por «servidor de Minecraft», una búsqueda muy disputada. Las guías apuntan a
-búsquedas largas y específicas, donde una página dedicada puede ganar. Hay tres, cada una en los cinco
-idiomas (15 páginas):
+búsquedas largas y específicas, donde una página dedicada puede ganar. Hay cinco, cada una en los cinco
+idiomas (25 páginas):
 
 | Guía (`id`) | Búsqueda a la que responde | Español |
 | --- | --- | --- |
 | `mods` | crear un servidor de Minecraft con mods | `/guias/crear-servidor-minecraft-con-mods/` |
 | `gratis` | hostear un servidor gratis sin abrir puertos | `/guias/hostear-servidor-minecraft-gratis-sin-abrir-puertos/` |
 | `dormir` | servidor que se apaga solo cuando está vacío | `/guias/servidor-minecraft-se-apaga-solo-cuando-esta-vacio/` |
+| `descargar` | descargar el servidor de Minecraft (jar oficial) | `/guias/descargar-servidor-minecraft-jar-oficial/` |
+| `comparativa` | mejor gestor de servidores de Minecraft para Windows | `/guias/mejor-gestor-servidores-minecraft-windows/` |
 
 Las demás lenguas viven en `/en/guides/`, `/de/guides/`, `/fr/guides/` y `/pt/guides/`, cada una con su
 propio título, descripción, `canonical`, `hreflang` (las cinco versiones más `x-default`) y datos
-estructurados (`Article`, `HowTo`, `FAQPage` y `BreadcrumbList`). Google ya no pinta el resultado
+estructurados (`Article`, `HowTo`, `FAQPage` y `BreadcrumbList`; `comparativa` no lleva `HowTo` porque no es un procedimiento). Google ya no pinta el resultado
 enriquecido de `HowTo` y `FAQPage` en la mayoría de sitios, pero los datos siguen ayudando a entender la
 página.
 
@@ -93,15 +95,40 @@ traducir), si un `title` pasa de 78 caracteres o una `description` se sale de 70
 interno `{guide:id}` no existe. También reescribe las entradas de las guías en `sitemap.xml` (entre los
 marcadores `guides:start` y `guides:end`) y las tarjetas de la sección «Guías» de la landing.
 
+**Qué buscaba la gente (22 de octubre de 2026).** Search Console, últimos 28 días: 12 clics, 177 impresiones
+y posición media 16,8. Las consultas con clics son de marca (`mc server launcher`, `server launcher`); las de
+cola larga ya aparecen sin clics aún (`minecraft server mods download`, `minecraft server descargar`,
+`how to add mods to minecraft server`). En consecuencia:
+
+- `mods`: el título, el H1 y la descripción llevan «añadir mods a un servidor de Minecraft» / «how to add
+  mods to a Minecraft server», hay una sección «Dónde descargar mods para un servidor de Minecraft» y una
+  pregunta «¿Cómo añado mods…?» en las preguntas frecuentes. La URL no cambia para no perder lo ya indexado.
+- `descargar`: nueva, para «minecraft server descargar» y «download minecraft server jar».
+- `comparativa`: nueva, para «mejor gestor / launcher de servidores de Minecraft para Windows». Cada dato de
+  la tabla sale de la web oficial de cada proyecto, consultada el 22 de octubre de 2026 (Crafty Controller,
+  Pterodactyl, AMP y MCSManager). Lo que no se pudo comprobar no se afirma: de AMP solo se dice que es de pago
+  y que los precios están en su web. Si se actualiza, vuelve a mirar sus webs y cambia la fecha del texto.
+- Las tres guías antiguas llevan «MC Server Launcher» (el nombre que muestra la ventana de la app) en la
+  descripción, y enlazan a `descargar` y `comparativa` desde su última sección.
+
+**Portugués de Brasil.** La versión `/pt/` está escrita en portugués de Brasil (`pt-BR`: «você», «hospedar»,
+«baixar»), porque las búsquedas de Bing y GoatCounter en portugués son brasileñas («criar servidor de minecraft»).
+La URL sigue siendo `/pt/` y la clave interna `pt`; lo que cambia es la etiqueta: `hreflang="pt-BR"` (landing,
+guías y `sitemap.xml`), `<html lang="pt-BR">`, `og:locale` `pt_BR` y `inLanguage` en los datos estructurados.
+Esa correspondencia vive en `HREFLANG` de `guides.py`. Los nombres de botones entre «» son los de la propia app,
+que sigue en portugués de Portugal.
+
 **Añadir una guía.** Crea `web/_i18n/guides/<id>.json` copiando una existente (slugs, fechas, `icon` y
 los cinco idiomas), añade su tarjeta en español a la sección `#guias` de `web/index.html` (el texto de la
 tarjeta es `card_title` / `card_desc` y la ruta es la del slug en español) y ejecuta
-`python web/_i18n/build.py`. `ping-indexnow.py` la recoge sola. Cambia `modified` cuando la edites de
+`python web/_i18n/build.py`. `ping-indexnow.py` la recoge sola. Los bloques disponibles son `h2`, `p`, `ul`,
+`tip`, `steps` y `table` (cuatro columnas máximo; en el móvil se apila). Con `"howto": false` la guía no
+genera `HowTo`; si no, este usa su último bloque `steps`. Cambia `modified` cuando la edites de
 verdad: es lo que ve el sitemap.
 
-**Tras publicar.** En Search Console, *Inspección de URLs → Solicitar indexación* con las tres direcciones
+**Tras publicar.** En Search Console, *Inspección de URLs → Solicitar indexación* con las cinco direcciones
 en español (las demás las descubre por el sitemap y el `hreflang`), y `python web/_i18n/ping-indexnow.py`
-para Bing. Espera unas semanas y mira en *Rendimiento* qué consultas traen impresiones a cada guía; en
+para Bing, **una vez desplegado** (`--dry-run` solo lista las direcciones, sin enviar nada). Espera unas semanas y mira en *Rendimiento* qué consultas traen impresiones a cada guía; en
 GoatCounter, qué guía acaba en un clic de descarga.
 
 ## Cuando una cifra no cuadra

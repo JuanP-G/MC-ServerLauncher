@@ -31,7 +31,9 @@ import sys
 
 BASE_URL = "https://mc-server-launcher.vercel.app"
 LANGS = ["es", "en", "de", "fr", "pt"]
-LOCALES = {"es": "es_ES", "en": "en_US", "de": "de_DE", "fr": "fr_FR", "pt": "pt_PT"}
+LOCALES = {"es": "es_ES", "en": "en_US", "de": "de_DE", "fr": "fr_FR", "pt": "pt_BR"}
+# Etiqueta hreflang / atributo lang: la ruta sigue siendo /pt/, pero es portugués de Brasil.
+HREFLANG = {"pt": "pt-BR"}
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent                      # web/
@@ -125,7 +127,8 @@ def validate(ui, guides):
                 problems.append("[%s] falta el idioma %s (contenido o slug)" % (gid, code))
         if any(c not in g or c not in g.get("slug", {}) for c in LANGS):
             continue
-        for key in ("published", "modified", "minutes", "howto_minutes", "icon"):
+        needed = ("published", "modified", "minutes", "icon") + (("howto_minutes",) if g.get("howto", True) else ())
+        for key in needed:
             if key not in g:
                 problems.append("[%s] falta el campo %s" % (gid, key))
         base = shape(g["es"])
@@ -207,6 +210,16 @@ def render_blocks(blocks, ui_lang, code, gid, guides, src_path):
         elif kind == "tip":
             out.append('<aside class="tip"><strong>%s</strong><p>%s</p></aside>'
                        % (esc(ui_lang["tip"]), r(val)))
+        elif kind == "table":
+            head = val["head"]
+            rows = "".join(
+                "<tr>%s</tr>" % "".join(
+                    '<%s data-label="%s">%s</%s>' % ("th scope=\"row\"" if j == 0 else "td", esc(head[j]), r(c),
+                                                  "th" if j == 0 else "td")
+                    for j, c in enumerate(row))
+                for row in val["rows"])
+            out.append('<div class="tbl"><table><thead><tr>%s</tr></thead><tbody>%s</tbody></table></div>'
+                       % ("".join("<th scope=\"col\">%s</th>" % esc(h) for h in head), rows))
         elif kind == "steps":
             items = "".join(
                 '<li><b class="n" aria-hidden="true">%d</b><div><h3>%s</h3><p>%s</p></div></li>'
@@ -223,30 +236,21 @@ def json_ld(data):
 
 def structured_data(gid, g, code, ui_lang, guides, url, src_path):
     content = g[code]
-    steps = next(b["steps"] for b in content["blocks"] if "steps" in b)
+    steps = [b["steps"] for b in content["blocks"] if "steps" in b]
     resolve = lambda t: plain(resolve_links(t, code, gid, guides, src_path))
     image = "%s/assets/og/%s.jpg" % (BASE_URL, code)
     author = {"@type": "Person", "name": "JuanP-G", "url": "https://github.com/JuanP-G"}
-    return [
+    data = [
         {
             "@context": "https://schema.org", "@type": "Article",
             "headline": content["h1"], "description": content["description"],
-            "inLanguage": code, "url": url, "mainEntityOfPage": url, "image": image,
+            "inLanguage": HREFLANG.get(code, code), "url": url, "mainEntityOfPage": url, "image": image,
             "datePublished": g["published"], "dateModified": g["modified"],
             "author": author,
             "publisher": {"@type": "Organization", "name": "MC-ServerLauncher", "url": BASE_URL + "/"},
         },
         {
-            "@context": "https://schema.org", "@type": "HowTo",
-            "name": content["h1"], "description": content["description"], "inLanguage": code,
-            "totalTime": "PT%dM" % g["howto_minutes"],
-            "estimatedCost": {"@type": "MonetaryAmount", "currency": "EUR", "value": "0"},
-            "tool": [{"@type": "HowToTool", "name": "MC-ServerLauncher"}],
-            "step": [{"@type": "HowToStep", "position": i, "name": resolve(s["name"]),
-                      "text": resolve(s["text"])} for i, s in enumerate(steps, 1)],
-        },
-        {
-            "@context": "https://schema.org", "@type": "FAQPage", "inLanguage": code,
+            "@context": "https://schema.org", "@type": "FAQPage", "inLanguage": HREFLANG.get(code, code),
             "mainEntity": [{"@type": "Question", "name": resolve(q["q"]),
                             "acceptedAnswer": {"@type": "Answer", "text": resolve(q["a"])}}
                            for q in content["faq"]],
@@ -262,6 +266,18 @@ def structured_data(gid, g, code, ui_lang, guides, url, src_path):
             ],
         },
     ]
+    if g.get("howto", True):
+        # La guía descrita como procedimiento (HowTo) usa su último bloque de pasos, que es el de la app.
+        data.insert(1, {
+            "@context": "https://schema.org", "@type": "HowTo",
+            "name": content["h1"], "description": content["description"], "inLanguage": HREFLANG.get(code, code),
+            "totalTime": "PT%dM" % g["howto_minutes"],
+            "estimatedCost": {"@type": "MonetaryAmount", "currency": "EUR", "value": "0"},
+            "tool": [{"@type": "HowToTool", "name": "MC-ServerLauncher"}],
+            "step": [{"@type": "HowToStep", "position": i, "name": resolve(s["name"]),
+                      "text": resolve(s["text"])} for i, s in enumerate(steps[-1], 1)],
+        })
+    return data
 
 
 # CSS propio de las guías; se añade al de la landing (que ya trae el tema y los componentes).
@@ -299,6 +315,11 @@ GUIDE_CSS = """
   box-shadow:inset 0 -4px 0 #1D4D13, inset 3px 3px 0 rgba(255,255,255,.22), 0 0 0 2px #000}
 .steps h3{font-size:18px; font-weight:700; line-height:1.35; margin:0 0 6px; color:#fff}
 .steps p{margin:0}
+.tbl{margin:8px 0 24px; overflow-x:auto}
+.tbl table{width:100%; border-collapse:collapse; font-size:15px; line-height:1.55}
+.tbl th,.tbl td{padding:10px 12px; text-align:left; vertical-align:top; color:#D5DEEA; border-bottom:1px solid rgba(255,255,255,.14)}
+.tbl thead th{color:#fff; font-weight:700; border-bottom:2px solid rgba(255,255,255,.3)}
+.tbl tbody th{color:#fff; font-weight:700; white-space:nowrap}
 .tip{margin:22px 0; padding:16px 20px; color:var(--gui-text); background:var(--gui);
   box-shadow:inset 4px 4px 0 var(--gui-hi), inset -4px -4px 0 var(--gui-lo), 0 0 0 2px #000}
 .tip strong{display:block; margin-bottom:4px; color:#404040; font-family:var(--f-mc); font-weight:400; font-size:16px; -webkit-font-smoothing:none}
@@ -308,7 +329,12 @@ GUIDE_CSS = """
 a.card{color:var(--gui-text)}
 @media (min-width:700px){ .g-title{font-size:32px} .g-h2{font-size:24px} }
 @media (min-width:1300px) and (min-height:820px){ .g-title{font-size:40px} }
-@media (max-width:640px){ .steps li{grid-template-columns:1fr; gap:10px} .prose p,.prose li{font-size:16px} }
+@media (max-width:640px){ .steps li{grid-template-columns:1fr; gap:10px} .prose p,.prose li{font-size:16px}
+  .tbl{overflow:visible} .tbl table,.tbl tbody,.tbl tr,.tbl th,.tbl td{display:block} .tbl thead{position:absolute; left:-9999px}
+  .tbl tr{margin-bottom:14px; padding:6px 0; background:rgba(255,255,255,.05); box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+  .tbl th,.tbl td{border:0; padding:5px 14px; white-space:normal}
+  .tbl td::before{content:attr(data-label); display:block; color:#9FB4CC; font-size:12px; letter-spacing:.04em; text-transform:uppercase}
+  .tbl tbody th{font-size:17px; padding-top:8px} }
 """
 
 
@@ -351,16 +377,16 @@ def build_page(gid, g, code, ui, guides, chrome):
         top = top.replace('href="#%s"' % anchor, 'href="%s#%s"' % (home, anchor))
 
     def lang_href(m):
-        target = m.group(3)
+        target = m.group(3).split("-")[0].lower()
         return '<a href="%s"%s hreflang="%s"' % (
-            rel(path, guide_path(target, g["slug"][target])), m.group(2), target)
-    top = re.sub(r'<a href="([^"]*)"([^>]*?) hreflang="(\w\w)"', lang_href, top)
+            rel(path, guide_path(target, g["slug"][target])), m.group(2), m.group(3))
+    top = re.sub(r'<a href="([^"]*)"([^>]*?) hreflang="([\w-]+)"', lang_href, top)
 
     downloads = re.sub(r'data-goatcounter-click="(descarga-\w+|historial-releases)"',
                        r'data-goatcounter-click="guia-%s-\1"' % gid, chrome["downloads"])
 
     alternates = "\n".join(
-        '<link rel="alternate" hreflang="%s" href="%s/%s">' % (c, BASE_URL, guide_path(c, g["slug"][c]))
+        '<link rel="alternate" hreflang="%s" href="%s/%s">' % (HREFLANG.get(c, c), BASE_URL, guide_path(c, g["slug"][c]))
         for c in LANGS)
     alternates += '\n<link rel="alternate" hreflang="x-default" href="%s/%s">' % (
         BASE_URL, guide_path("es", g["slug"]["es"]))
@@ -370,7 +396,7 @@ def build_page(gid, g, code, ui, guides, chrome):
     desc = esc(content["description"])
 
     head = """<!doctype html>
-<html lang="%(code)s">
+<html lang="%(lang)s">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -411,7 +437,7 @@ def build_page(gid, g, code, ui, guides, chrome):
 
 %(ld)s
 
-""" % {"code": code, "gid": gid, "title": esc(content["title"]), "desc": desc, "url": url,
+""" % {"code": code, "lang": HREFLANG.get(code, code), "gid": gid, "title": esc(content["title"]), "desc": desc, "url": url,
        "alternates": alternates, "up": up, "locale": LOCALES[code], "h1": esc(content["h1"]),
        "og": og_image, "pub": g["published"], "mod": g["modified"], "ld": ld}
 
@@ -509,7 +535,7 @@ def sitemap_block(guides):
     entries = []
     for gid, g in guides.items():
         alts = "\n".join(
-            '    <xhtml:link rel="alternate" hreflang="%s" href="%s/%s"/>' % (c, BASE_URL, guide_path(c, g["slug"][c]))
+            '    <xhtml:link rel="alternate" hreflang="%s" href="%s/%s"/>' % (HREFLANG.get(c, c), BASE_URL, guide_path(c, g["slug"][c]))
             for c in LANGS)
         alts += '\n    <xhtml:link rel="alternate" hreflang="x-default" href="%s/%s"/>' % (
             BASE_URL, guide_path("es", g["slug"]["es"]))
