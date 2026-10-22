@@ -1301,6 +1301,22 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Mem_NoticeManualFmt" xml:space="preserve"><value>Volver a manual ({0}–{1} GB)</value></data>
   <data name="Mem_RamJavaFmt" xml:space="preserve"><value>Java: {0} de {1}</value></data>
   <data name="Mem_RamTip" xml:space="preserve"><value>Memoria que este servidor ocupa en tu PC y no comparte con nada más. No coincide con el Administrador de tareas, que cuenta también la compartida. Debajo, lo que Java tiene en uso tras su última limpieza y lo que tiene reservado en total.</value></data>
+  <data name="Perf_Label" xml:space="preserve"><value>Rendimiento</value></data>
+  <data name="Perf_Measuring" xml:space="preserve"><value>Midiendo…</value></data>
+  <data name="Perf_Good" xml:space="preserve"><value>Bien</value></data>
+  <data name="Perf_Tight" xml:space="preserve"><value>Justo</value></data>
+  <data name="Perf_Saturated" xml:space="preserve"><value>Saturado</value></data>
+  <data name="Perf_TpsFmt" xml:space="preserve"><value>{0} TPS</value></data>
+  <data name="Perf_WordMsptFmt" xml:space="preserve"><value>{0} · {1} ms por tick</value></data>
+  <data name="Perf_Tip" xml:space="preserve"><value>Cómo va el servidor. Los TPS son los ticks por segundo (20 es lo ideal) y los ms por tick, lo que tarda cada uno (más de 50 es no dar abasto). Se mide cada 30 s sin ensuciar la consola y solo avisa de problemas que duran: no juzga los primeros 3 minutos ni mientras se hace una copia.</value></data>
+  <data name="Perf_CauseOom" xml:space="preserve"><value>El servidor se ha quedado sin memoria.</value></data>
+  <data name="Perf_CauseTicksFmt" xml:space="preserve"><value>El servidor va lento: {0} TPS.</value></data>
+  <data name="Perf_CauseTicks" xml:space="preserve"><value>El servidor tarda demasiado en cada tick.</value></data>
+  <data name="Perf_CauseLagFmt" xml:space="preserve"><value>El servidor avisa de que no da abasto ({0} veces en 5 min).</value></data>
+  <data name="Perf_CauseCpu" xml:space="preserve"><value>El procesador va al límite.</value></data>
+  <data name="Perf_CauseMemory" xml:space="preserve"><value>Java va justo de memoria.</value></data>
+  <data name="Perf_Solutions" xml:space="preserve"><value>Ver soluciones</value></data>
+  <data name="Perf_DismissTip" xml:space="preserve"><value>Ocultar hasta el próximo arranque</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Memoria de los servidores</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Si no juegas en este PC, los servidores pueden usar toda la memoria menos 2 GB. Si no, entre todos usan como mucho la mitad.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>Este PC es solo para servidores</value></data>

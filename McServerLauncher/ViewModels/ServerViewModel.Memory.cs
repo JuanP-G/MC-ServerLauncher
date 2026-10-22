@@ -173,7 +173,9 @@ public partial class ServerViewModel
     /// <summary>Notes a console line that says the server ran out of memory.</summary>
     private void WatchForOutOfMemory(string line)
     {
-        if (line.Contains("java.lang.OutOfMemoryError", StringComparison.Ordinal)) _sawOutOfMemory = true;
+        if (!line.Contains("java.lang.OutOfMemoryError", StringComparison.Ordinal)) return;
+        _sawOutOfMemory = true;
+        RunOnUi(_perf.OutOfMemory);
     }
 
     /// <summary>

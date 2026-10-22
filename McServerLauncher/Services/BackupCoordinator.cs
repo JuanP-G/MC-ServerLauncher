@@ -124,6 +124,10 @@ internal sealed class BackupCoordinator
     /// <summary>Raised, synchronously, when <see cref="IsRestoring"/> changes.</summary>
     internal event Action? RestoringChanged;
 
+    /// <summary>A copy of the world began (true) or ended (false). Lag during one is the copy's.</summary>
+    /// <remarks>Raised on whatever thread runs the copy.</remarks>
+    internal event Action<bool>? CopyingChanged;
+
     /// <summary>For tests and the docs: whether the world counts as changed since the last backup.</summary>
     internal bool PlayedSinceBackup => _playedSinceBackup;
 
@@ -365,6 +369,7 @@ internal sealed class BackupCoordinator
         using var copying = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _copying = copying;
         _copyingTrigger = trigger;
+        CopyingChanged?.Invoke(true);
         try
         {
             var log = new Progress<string>(_host.Say);
@@ -391,6 +396,7 @@ internal sealed class BackupCoordinator
         {
             _copying = null;
             _copyingTrigger = null;
+            CopyingChanged?.Invoke(false);
         }
     }
 
