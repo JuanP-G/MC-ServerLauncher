@@ -1,0 +1,255 @@
+{
+  "_comment": "Guía: descargar el servidor de Minecraft (jar oficial de Mojang) a mano y con la app. El español es la referencia estructural; las demás lenguas deben tener los mismos bloques, pasos y preguntas.",
+  "slug": {
+    "es": "descargar-servidor-minecraft-jar-oficial",
+    "en": "download-minecraft-server-jar-official",
+    "de": "minecraft-server-herunterladen-offizielle-jar",
+    "fr": "telecharger-serveur-minecraft-jar-officiel",
+    "pt": "descarregar-servidor-minecraft-jar-oficial"
+  },
+  "published": "2026-10-22",
+  "modified": "2026-10-22",
+  "minutes": 6,
+  "howto_minutes": 10,
+  "icon": "iso_chest.png",
+
+  "es": {
+    "title": "Descargar el servidor de Minecraft (jar oficial) | MC-ServerLauncher",
+    "description": "Dónde descargar el servidor de Minecraft (el server.jar oficial de Mojang), cómo ejecutarlo a mano y cómo hacerlo en unos clics con MC Server Launcher, sin comandos.",
+    "h1": "Descargar el servidor de Minecraft (jar oficial) y una forma más fácil",
+    "crumb": "Descargar el servidor",
+    "lead": "Mojang publica gratis el servidor de Minecraft Java en un único archivo, el <code>server.jar</code>. Descargarlo es lo fácil; lo que cuesta es lo de después: elegir el Java correcto, aceptar el EULA, escribir comandos y mantenerlo en marcha. Aquí tienes las dos formas, a mano y con una app.",
+    "cta": "Descargar MC-ServerLauncher gratis",
+    "card_title": "Descargar el servidor de Minecraft (jar oficial)",
+    "card_desc": "Dónde bajar el server.jar oficial de Mojang, cómo ejecutarlo a mano y una forma más fácil, sin comandos.",
+    "blocks": [
+      { "h2": "Dónde se descarga el servidor oficial" },
+      { "p": "El sitio oficial es la página del servidor de Minecraft en minecraft.net (<code>minecraft.net/download/server</code>), que ofrece el <code>server.jar</code> de la última versión. Para una versión anterior, Mojang publica un manifiesto con todas ellas y la huella (SHA-1) de cada archivo, que es lo que usa MC-ServerLauncher. Desconfía de las webs que ofrecen un «servidor de Minecraft gratis» con instalador: el servidor de Mojang es un .jar y no necesita instalarse." },
+      { "p": "Es el servidor <em>vanilla</em>: sin mods ni plugins. Si los quieres, necesitas un servidor de Fabric, Forge o NeoForge (mods) o de Paper o Purpur (plugins). Lo explicamos en <a href='{guide:mods}'>cómo añadir mods a un servidor de Minecraft</a>." },
+      { "h2": "A mano: ejecutar el server.jar" },
+      { "steps": [
+        { "name": "Instala Java", "text": "Cada versión de Minecraft pide un Java mínimo, y las recientes piden Java 21 o superior. Descarga uno compatible e instálalo." },
+        { "name": "Descarga el server.jar", "text": "Guárdalo en una carpeta vacía solo para el servidor, por ejemplo <code>MiServidor</code>." },
+        { "name": "Ejecútalo la primera vez", "text": "Abre una terminal en esa carpeta y ejecuta <code>java -Xmx2G -jar server.jar nogui</code>. Crea sus archivos y se detiene pidiendo que aceptes el EULA." },
+        { "name": "Acepta el EULA", "text": "Abre <code>eula.txt</code>, cambia <code>eula=false</code> por <code>eula=true</code> y guarda. Con eso aceptas el EULA de Minecraft." },
+        { "name": "Vuelve a ejecutarlo", "text": "Lanza el mismo comando. Genera el mundo y, cuando la consola dice «Done», ya puedes entrar desde ese mismo PC con la dirección <code>localhost</code>." }
+      ] },
+      { "p": "Funciona, pero cada paso es tuyo: para que entren tus amigos tendrías que abrir el puerto 25565 en el router, no hay copias de seguridad automáticas y para cambiar de versión repites el proceso con otro archivo." },
+      { "h2": "Una forma más fácil: MC Server Launcher" },
+      { "p": "MC-ServerLauncher descarga ese mismo servidor oficial, comprueba su huella, detecta el Java adecuado o lo descarga, te pide aceptar el EULA y deja el servidor listo. Además trae consola, copias de seguridad, mods de Modrinth y un túnel para que entren tus amigos." },
+      { "steps": [
+        { "name": "Instala la app", "text": "Descarga el instalador para Windows, el AppImage para Linux o el DMG para macOS en la sección de descargas de esta página. No necesitas tener Java instalado." },
+        { "name": "Crea el servidor", "text": "Pulsa «Nuevo» y «Crear uno nuevo», elige el tipo (Vanilla es el servidor de Mojang tal cual) y la versión, marca «Acepto el EULA de Minecraft» y crea el servidor." },
+        { "name": "Inícialo", "text": "Pulsa «Iniciar» y mira la consola: cuando indica que el servidor está listo, ya puedes entrar desde Minecraft con la dirección <code>localhost</code>." },
+        { "name": "Compártelo con tus amigos", "text": "Activa el túnel integrado y copia la dirección pública, sin abrir puertos. Los pasos están en <a href='{guide:gratis}'>cómo hostear un servidor de Minecraft gratis sin abrir puertos</a>." }
+      ] },
+      { "tip": "El servidor que crea la app es el mismo <code>server.jar</code> de Mojang, en una carpeta normal de tu disco. Si más adelante prefieres ejecutarlo a mano, sabes dónde está." },
+      { "h2": "Cuándo conviene cada forma" },
+      { "ul": [
+        "<strong>A mano</strong>, si quieres aprender cómo funciona un servidor o necesitas una configuración muy concreta.",
+        "<strong>Con la app</strong>, si quieres tenerlo listo en minutos, con copias de seguridad, consola y amigos entrando desde Internet.",
+        "<strong>Con un panel web</strong>, si el servidor va a estar siempre encendido en una máquina Linux y lo administrarán varias personas. En la <a href='{guide:comparativa}'>comparativa de gestores de servidores de Minecraft para Windows</a> están las opciones."
+      ] }
+    ],
+    "faq": [
+      { "q": "¿Dónde descargo el servidor de Minecraft de forma gratuita y segura?", "a": "Solo en la página oficial del servidor en minecraft.net, o con una app que lo descargue de ahí y compruebe su huella, como MC-ServerLauncher. Evita los instaladores de webs desconocidas: el servidor oficial es un archivo .jar." },
+      { "q": "¿Qué versión de Java necesito para el server.jar?", "a": "Depende de la versión de Minecraft: las recientes piden Java 21 o superior. MC-ServerLauncher detecta el Java adecuado o lo descarga por ti." },
+      { "q": "¿Puedo descargar una versión antigua del servidor?", "a": "Sí. Mojang publica todas las versiones en su manifiesto. En MC-ServerLauncher eliges la versión al crear el servidor y la app descarga el archivo oficial correspondiente." },
+      { "q": "¿El server.jar sirve para Bedrock?", "a": "No. El server.jar es el servidor de Minecraft Java. Bedrock tiene su propio servidor. En MC-ServerLauncher los jugadores de Bedrock entran a un servidor Paper o Purpur con Geyser, como se explica en <a href='{guide:gratis}'>la guía del servidor gratis</a>." },
+      { "q": "¿Puedo poner mods en el server.jar de Mojang?", "a": "No directamente: el servidor vanilla no carga mods. Necesitas un servidor de Fabric, Forge o NeoForge; los pasos están en <a href='{guide:mods}'>la guía del servidor con mods</a>." },
+      { "q": "¿Es gratis el servidor de Minecraft?", "a": "Sí, descargarlo y ejecutarlo no cuesta nada, aunque aceptas el EULA de Minecraft. Para entrar a jugar sí necesitas Minecraft Java Edition." }
+    ]
+  },
+
+  "en": {
+    "title": "Download the Minecraft server (official jar) | MC-ServerLauncher",
+    "description": "Where to download the Minecraft server (Mojang's official server.jar), how to run it by hand, and how to do it in a few clicks with MC Server Launcher, with no commands.",
+    "h1": "Download the Minecraft server (official jar) and an easier way",
+    "crumb": "Download the server",
+    "lead": "Mojang publishes the Minecraft Java server for free as a single file, <code>server.jar</code>. Downloading it is the easy part; what takes effort is everything after: picking the right Java, accepting the EULA, typing commands and keeping it running. Here are both ways, by hand and with an app.",
+    "cta": "Download MC-ServerLauncher free",
+    "card_title": "Download the Minecraft server (official jar)",
+    "card_desc": "Where to get Mojang's official server.jar, how to run it by hand, and an easier way with no commands.",
+    "blocks": [
+      { "h2": "Where the official server is downloaded from" },
+      { "p": "The official place is the Minecraft server page on minecraft.net (<code>minecraft.net/download/server</code>), which offers the <code>server.jar</code> of the latest version. For an older version, Mojang publishes a manifest listing all of them with each file's checksum (SHA-1), which is what MC-ServerLauncher uses. Be wary of sites that offer a “free Minecraft server” with an installer: Mojang's server is a .jar and needs no installation." },
+      { "p": "This is the <em>vanilla</em> server: no mods and no plugins. If you want them, you need a Fabric, Forge or NeoForge server (mods) or a Paper or Purpur one (plugins). We cover it in <a href='{guide:mods}'>how to add mods to a Minecraft server</a>." },
+      { "h2": "By hand: run the server.jar" },
+      { "steps": [
+        { "name": "Install Java", "text": "Each Minecraft version asks for a minimum Java, and recent ones need Java 21 or newer. Download a compatible one and install it." },
+        { "name": "Download the server.jar", "text": "Save it in an empty folder just for the server, for example <code>MyServer</code>." },
+        { "name": "Run it the first time", "text": "Open a terminal in that folder and run <code>java -Xmx2G -jar server.jar nogui</code>. It creates its files and stops, asking you to accept the EULA." },
+        { "name": "Accept the EULA", "text": "Open <code>eula.txt</code>, change <code>eula=false</code> to <code>eula=true</code> and save. That accepts the Minecraft EULA." },
+        { "name": "Run it again", "text": "Run the same command. It generates the world and, when the console says “Done”, you can join from that same PC using the address <code>localhost</code>." }
+      ] },
+      { "p": "It works, but every step is yours: for friends to join you would have to forward port 25565 on your router, there are no automatic backups, and to change version you repeat the process with another file." },
+      { "h2": "An easier way: MC Server Launcher" },
+      { "p": "MC-ServerLauncher downloads that same official server, checks its checksum, detects the right Java or downloads it, asks you to accept the EULA and leaves the server ready. It also brings a console, backups, Modrinth mods and a tunnel so your friends can join." },
+      { "steps": [
+        { "name": "Install the app", "text": "Download the installer for Windows, the AppImage for Linux or the DMG for macOS from the downloads section of this page. You don't need Java installed." },
+        { "name": "Create the server", "text": "Click “New” and “Create a new one”, choose the type (Vanilla is Mojang's server as it is) and the version, tick “I accept the Minecraft EULA” and create the server." },
+        { "name": "Start it", "text": "Click “Start” and watch the console: when it says the server is ready, you can join from Minecraft using the address <code>localhost</code>." },
+        { "name": "Share it with your friends", "text": "Turn on the built-in tunnel and copy the public address, with no port forwarding. The steps are in <a href='{guide:gratis}'>how to host a free Minecraft server without port forwarding</a>." }
+      ] },
+      { "tip": "The server the app creates is the same Mojang <code>server.jar</code>, in a normal folder on your disk. If you later prefer to run it by hand, you know where it is." },
+      { "h2": "When each way makes sense" },
+      { "ul": [
+        "<strong>By hand</strong>, if you want to learn how a server works or need a very specific setup.",
+        "<strong>With the app</strong>, if you want it ready in minutes, with backups, a console and friends joining from the Internet.",
+        "<strong>With a web panel</strong>, if the server will be on all the time on a Linux machine and several people will manage it. The <a href='{guide:comparativa}'>comparison of Minecraft server managers for Windows</a> lists the options."
+      ] }
+    ],
+    "faq": [
+      { "q": "Where do I download the Minecraft server safely and for free?", "a": "Only from the official server page on minecraft.net, or with an app that downloads it from there and checks its checksum, like MC-ServerLauncher. Avoid installers from unknown sites: the official server is a .jar file." },
+      { "q": "Which Java version do I need for the server.jar?", "a": "It depends on the Minecraft version: recent ones need Java 21 or newer. MC-ServerLauncher detects the right Java or downloads it for you." },
+      { "q": "Can I download an older version of the server?", "a": "Yes. Mojang publishes every version in its manifest. In MC-ServerLauncher you pick the version when you create the server and the app downloads the matching official file." },
+      { "q": "Does the server.jar work for Bedrock?", "a": "No. The server.jar is the Minecraft Java server. Bedrock has its own server. In MC-ServerLauncher, Bedrock players join a Paper or Purpur server with Geyser, as explained in <a href='{guide:gratis}'>the free server guide</a>." },
+      { "q": "Can I put mods on Mojang's server.jar?", "a": "Not directly: the vanilla server doesn't load mods. You need a Fabric, Forge or NeoForge server; the steps are in <a href='{guide:mods}'>the modded server guide</a>." },
+      { "q": "Is the Minecraft server free?", "a": "Yes, downloading and running it costs nothing, although you accept the Minecraft EULA. To join and play you do need Minecraft Java Edition." }
+    ]
+  },
+
+  "de": {
+    "title": "Minecraft-Server herunterladen (offizielle Jar) | MC-ServerLauncher",
+    "description": "Wo du den Minecraft-Server (Mojangs offizielle server.jar) herunterlädst, wie du ihn von Hand startest und wie es mit MC Server Launcher in wenigen Klicks ohne Befehle geht.",
+    "h1": "Minecraft-Server herunterladen (offizielle Jar) und ein einfacherer Weg",
+    "crumb": "Server herunterladen",
+    "lead": "Mojang veröffentlicht den Minecraft-Java-Server kostenlos als einzelne Datei, die <code>server.jar</code>. Das Herunterladen ist der leichte Teil; mühsam ist alles danach: das richtige Java wählen, die EULA akzeptieren, Befehle tippen und den Server am Laufen halten. Hier sind beide Wege, von Hand und mit einer App.",
+    "cta": "MC-ServerLauncher kostenlos herunterladen",
+    "card_title": "Minecraft-Server herunterladen (offizielle Jar)",
+    "card_desc": "Wo du Mojangs offizielle server.jar bekommst, wie du sie von Hand startest und ein einfacherer Weg ohne Befehle.",
+    "blocks": [
+      { "h2": "Woher du den offiziellen Server lädst" },
+      { "p": "Die offizielle Quelle ist die Minecraft-Server-Seite auf minecraft.net (<code>minecraft.net/download/server</code>), die die <code>server.jar</code> der neuesten Version anbietet. Für eine ältere Version veröffentlicht Mojang ein Manifest mit allen Versionen und der Prüfsumme (SHA-1) jeder Datei; genau das nutzt MC-ServerLauncher. Sei misstrauisch bei Seiten, die einen „kostenlosen Minecraft-Server“ mit Installer anbieten: Mojangs Server ist eine .jar und muss nicht installiert werden." },
+      { "p": "Das ist der <em>Vanilla</em>-Server: ohne Mods und ohne Plugins. Willst du sie, brauchst du einen Fabric-, Forge- oder NeoForge-Server (Mods) oder einen Paper- oder Purpur-Server (Plugins). Das erklären wir unter <a href='{guide:mods}'>Mods zu einem Minecraft-Server hinzufügen</a>." },
+      { "h2": "Von Hand: die server.jar starten" },
+      { "steps": [
+        { "name": "Java installieren", "text": "Jede Minecraft-Version verlangt ein Mindest-Java, und neuere brauchen Java 21 oder höher. Lade ein passendes herunter und installiere es." },
+        { "name": "Die server.jar herunterladen", "text": "Speichere sie in einem leeren Ordner nur für den Server, zum Beispiel <code>MeinServer</code>." },
+        { "name": "Beim ersten Mal starten", "text": "Öffne ein Terminal in diesem Ordner und führe <code>java -Xmx2G -jar server.jar nogui</code> aus. Der Server legt seine Dateien an und hält an, weil du die EULA akzeptieren sollst." },
+        { "name": "Die EULA akzeptieren", "text": "Öffne <code>eula.txt</code>, ändere <code>eula=false</code> in <code>eula=true</code> und speichere. Damit akzeptierst du die Minecraft-EULA." },
+        { "name": "Noch einmal starten", "text": "Führe denselben Befehl aus. Er erzeugt die Welt, und sobald die Konsole „Done“ meldet, kannst du von demselben PC aus mit der Adresse <code>localhost</code> beitreten." }
+      ] },
+      { "p": "Das funktioniert, aber jeder Schritt liegt bei dir: Damit Freunde beitreten können, müsstest du den Port 25565 im Router freigeben, es gibt keine automatischen Backups, und für eine andere Version wiederholst du alles mit einer anderen Datei." },
+      { "h2": "Ein einfacherer Weg: MC Server Launcher" },
+      { "p": "MC-ServerLauncher lädt genau diesen offiziellen Server herunter, prüft seine Prüfsumme, erkennt das passende Java oder lädt es herunter, bittet dich, die EULA zu akzeptieren, und macht den Server startklar. Dazu kommen eine Konsole, Backups, Mods von Modrinth und ein Tunnel, damit deine Freunde beitreten können." },
+      { "steps": [
+        { "name": "Die App installieren", "text": "Lade das Installationsprogramm für Windows, das AppImage für Linux oder das DMG für macOS im Download-Bereich dieser Seite herunter. Du brauchst kein Java installiert zu haben." },
+        { "name": "Den Server erstellen", "text": "Klicke auf „Neu“ und „Neu erstellen“, wähle den Typ (Vanilla ist Mojangs Server, so wie er ist) und die Version, setze den Haken bei „Ich akzeptiere die Minecraft-EULA“ und erstelle den Server." },
+        { "name": "Ihn starten", "text": "Klicke auf „Starten“ und beobachte die Konsole: Sobald sie meldet, dass der Server bereit ist, kannst du in Minecraft mit der Adresse <code>localhost</code> beitreten." },
+        { "name": "Mit Freunden teilen", "text": "Aktiviere den integrierten Tunnel und kopiere die öffentliche Adresse, ganz ohne Portfreigabe. Die Schritte stehen unter <a href='{guide:gratis}'>Minecraft-Server kostenlos hosten ohne Portfreigabe</a>." }
+      ] },
+      { "tip": "Der Server, den die App erstellt, ist dieselbe <code>server.jar</code> von Mojang in einem normalen Ordner auf deiner Festplatte. Wenn du ihn später lieber von Hand startest, weißt du, wo er liegt." },
+      { "h2": "Wann welcher Weg sinnvoll ist" },
+      { "ul": [
+        "<strong>Von Hand</strong>, wenn du lernen willst, wie ein Server funktioniert, oder eine ganz bestimmte Einrichtung brauchst.",
+        "<strong>Mit der App</strong>, wenn du ihn in Minuten startklar haben willst, mit Backups, Konsole und Freunden, die über das Internet beitreten.",
+        "<strong>Mit einem Web-Panel</strong>, wenn der Server dauerhaft auf einer Linux-Maschine laufen soll und mehrere Personen ihn verwalten. Im <a href='{guide:comparativa}'>Vergleich von Minecraft-Server-Managern für Windows</a> stehen die Optionen."
+      ] }
+    ],
+    "faq": [
+      { "q": "Wo lade ich den Minecraft-Server sicher und kostenlos herunter?", "a": "Nur auf der offiziellen Server-Seite von minecraft.net oder mit einer App, die ihn von dort lädt und seine Prüfsumme prüft, wie MC-ServerLauncher. Meide Installer von unbekannten Seiten: Der offizielle Server ist eine .jar-Datei." },
+      { "q": "Welche Java-Version brauche ich für die server.jar?", "a": "Das hängt von der Minecraft-Version ab: Neuere brauchen Java 21 oder höher. MC-ServerLauncher erkennt das passende Java oder lädt es für dich herunter." },
+      { "q": "Kann ich eine ältere Version des Servers herunterladen?", "a": "Ja. Mojang veröffentlicht alle Versionen in seinem Manifest. In MC-ServerLauncher wählst du die Version beim Erstellen des Servers, und die App lädt die passende offizielle Datei." },
+      { "q": "Funktioniert die server.jar für Bedrock?", "a": "Nein. Die server.jar ist der Minecraft-Java-Server. Bedrock hat einen eigenen Server. In MC-ServerLauncher treten Bedrock-Spieler einem Paper- oder Purpur-Server mit Geyser bei, wie es in <a href='{guide:gratis}'>der Anleitung zum kostenlosen Server</a> steht." },
+      { "q": "Kann ich Mods auf Mojangs server.jar nutzen?", "a": "Nicht direkt: Der Vanilla-Server lädt keine Mods. Du brauchst einen Fabric-, Forge- oder NeoForge-Server; die Schritte stehen in <a href='{guide:mods}'>der Anleitung zum Server mit Mods</a>." },
+      { "q": "Ist der Minecraft-Server kostenlos?", "a": "Ja, Herunterladen und Starten kostet nichts, du akzeptierst aber die Minecraft-EULA. Zum Spielen brauchst du allerdings Minecraft Java Edition." }
+    ]
+  },
+
+  "fr": {
+    "title": "Télécharger le serveur Minecraft (jar officiel) | MC-ServerLauncher",
+    "description": "Où télécharger le serveur Minecraft (server.jar officiel de Mojang), comment le lancer à la main et comment le faire en quelques clics avec MC Server Launcher.",
+    "h1": "Télécharger le serveur Minecraft (jar officiel) et une façon plus simple",
+    "crumb": "Télécharger le serveur",
+    "lead": "Mojang publie gratuitement le serveur Minecraft Java dans un seul fichier, le <code>server.jar</code>. Le télécharger est la partie facile ; le plus long, c'est ce qui suit : choisir le bon Java, accepter l'EULA, taper des commandes et le garder en marche. Voici les deux façons, à la main et avec une appli.",
+    "cta": "Télécharger MC-ServerLauncher gratuitement",
+    "card_title": "Télécharger le serveur Minecraft (jar officiel)",
+    "card_desc": "Où récupérer le server.jar officiel de Mojang, comment le lancer à la main et une façon plus simple, sans commandes.",
+    "blocks": [
+      { "h2": "Où télécharger le serveur officiel" },
+      { "p": "Le site officiel est la page du serveur Minecraft sur minecraft.net (<code>minecraft.net/download/server</code>), qui propose le <code>server.jar</code> de la dernière version. Pour une version plus ancienne, Mojang publie un manifeste qui les liste toutes avec l'empreinte (SHA-1) de chaque fichier, et c'est ce qu'utilise MC-ServerLauncher. Méfie-toi des sites qui proposent un « serveur Minecraft gratuit » avec installateur : le serveur de Mojang est un .jar et n'a pas besoin d'être installé." },
+      { "p": "C'est le serveur <em>vanilla</em> : sans mods ni plugins. Si tu en veux, il te faut un serveur Fabric, Forge ou NeoForge (mods) ou Paper ou Purpur (plugins). On l'explique dans <a href='{guide:mods}'>comment ajouter des mods à un serveur Minecraft</a>." },
+      { "h2": "À la main : lancer le server.jar" },
+      { "steps": [
+        { "name": "Installe Java", "text": "Chaque version de Minecraft demande un Java minimum, et les récentes demandent Java 21 ou plus. Télécharge-en un compatible et installe-le." },
+        { "name": "Télécharge le server.jar", "text": "Enregistre-le dans un dossier vide réservé au serveur, par exemple <code>MonServeur</code>." },
+        { "name": "Lance-le une première fois", "text": "Ouvre un terminal dans ce dossier et exécute <code>java -Xmx2G -jar server.jar nogui</code>. Il crée ses fichiers et s'arrête en te demandant d'accepter l'EULA." },
+        { "name": "Accepte l'EULA", "text": "Ouvre <code>eula.txt</code>, remplace <code>eula=false</code> par <code>eula=true</code> et enregistre. Tu acceptes ainsi l'EULA de Minecraft." },
+        { "name": "Relance-le", "text": "Exécute la même commande. Il génère le monde et, quand la console affiche « Done », tu peux te connecter depuis ce même PC avec l'adresse <code>localhost</code>." }
+      ] },
+      { "p": "Ça marche, mais chaque étape est pour toi : pour que tes amis entrent, il faudrait ouvrir le port 25565 sur ta box, il n'y a pas de sauvegardes automatiques et, pour changer de version, tu refais tout avec un autre fichier." },
+      { "h2": "Une façon plus simple : MC Server Launcher" },
+      { "p": "MC-ServerLauncher télécharge ce même serveur officiel, vérifie son empreinte, détecte le bon Java ou le télécharge, te demande d'accepter l'EULA et prépare le serveur. Il apporte aussi une console, des sauvegardes, les mods de Modrinth et un tunnel pour que tes amis puissent entrer." },
+      { "steps": [
+        { "name": "Installe l'appli", "text": "Télécharge l'installateur pour Windows, l'AppImage pour Linux ou le DMG pour macOS dans la section téléchargements de cette page. Tu n'as pas besoin d'avoir Java installé." },
+        { "name": "Crée le serveur", "text": "Clique sur « Nouveau » puis « En créer un nouveau », choisis le type (Vanilla est le serveur de Mojang tel quel) et la version, coche « J'accepte l'EULA de Minecraft » et crée le serveur." },
+        { "name": "Démarre-le", "text": "Clique sur « Démarrer » et regarde la console : quand elle indique que le serveur est prêt, tu peux te connecter depuis Minecraft avec l'adresse <code>localhost</code>." },
+        { "name": "Partage-le avec tes amis", "text": "Active le tunnel intégré et copie l'adresse publique, sans ouvrir de ports. Les étapes sont dans <a href='{guide:gratis}'>héberger un serveur Minecraft gratuit sans ouvrir de ports</a>." }
+      ] },
+      { "tip": "Le serveur que crée l'appli est le même <code>server.jar</code> de Mojang, dans un dossier normal de ton disque. Si tu préfères le lancer à la main plus tard, tu sais où il est." },
+      { "h2": "Quand choisir chaque façon" },
+      { "ul": [
+        "<strong>À la main</strong>, si tu veux comprendre comment fonctionne un serveur ou si tu as besoin d'une configuration très précise.",
+        "<strong>Avec l'appli</strong>, si tu le veux prêt en quelques minutes, avec sauvegardes, console et amis qui entrent depuis Internet.",
+        "<strong>Avec un panel web</strong>, si le serveur doit tourner en permanence sur une machine Linux et être géré par plusieurs personnes. Le <a href='{guide:comparativa}'>comparatif des gestionnaires de serveur Minecraft pour Windows</a> liste les options."
+      ] }
+    ],
+    "faq": [
+      { "q": "Où télécharger le serveur Minecraft gratuitement et en sécurité ?", "a": "Uniquement sur la page officielle du serveur sur minecraft.net, ou avec une appli qui le télécharge de là et vérifie son empreinte, comme MC-ServerLauncher. Évite les installateurs de sites inconnus : le serveur officiel est un fichier .jar." },
+      { "q": "Quelle version de Java faut-il pour le server.jar ?", "a": "Ça dépend de la version de Minecraft : les récentes demandent Java 21 ou plus. MC-ServerLauncher détecte le bon Java ou le télécharge pour toi." },
+      { "q": "Puis-je télécharger une ancienne version du serveur ?", "a": "Oui. Mojang publie toutes les versions dans son manifeste. Dans MC-ServerLauncher, tu choisis la version en créant le serveur et l'appli télécharge le fichier officiel correspondant." },
+      { "q": "Le server.jar fonctionne-t-il pour Bedrock ?", "a": "Non. Le server.jar est le serveur Minecraft Java. Bedrock a son propre serveur. Dans MC-ServerLauncher, les joueurs Bedrock rejoignent un serveur Paper ou Purpur avec Geyser, comme expliqué dans <a href='{guide:gratis}'>le guide du serveur gratuit</a>." },
+      { "q": "Puis-je mettre des mods sur le server.jar de Mojang ?", "a": "Pas directement : le serveur vanilla ne charge pas de mods. Il te faut un serveur Fabric, Forge ou NeoForge ; les étapes sont dans <a href='{guide:mods}'>le guide du serveur avec mods</a>." },
+      { "q": "Le serveur Minecraft est-il gratuit ?", "a": "Oui, le télécharger et le lancer ne coûte rien, même si tu acceptes l'EULA de Minecraft. Pour jouer, il te faut en revanche Minecraft Java Edition." }
+    ]
+  },
+
+  "pt": {
+    "title": "Descarregar o servidor de Minecraft (jar oficial) | MC-ServerLauncher",
+    "description": "Onde descarregar o servidor de Minecraft (o server.jar oficial da Mojang), como executá-lo à mão e como fazê-lo em poucos cliques com o MC Server Launcher, sem comandos.",
+    "h1": "Descarregar o servidor de Minecraft (jar oficial) e uma forma mais fácil",
+    "crumb": "Descarregar o servidor",
+    "lead": "A Mojang publica gratuitamente o servidor de Minecraft Java num único ficheiro, o <code>server.jar</code>. Descarregá-lo é a parte fácil; o que dá trabalho é o que vem depois: escolher o Java certo, aceitar o EULA, escrever comandos e mantê-lo a funcionar. Aqui tens as duas formas, à mão e com uma aplicação.",
+    "cta": "Descarregar o MC-ServerLauncher grátis",
+    "card_title": "Descarregar o servidor de Minecraft (jar oficial)",
+    "card_desc": "Onde obter o server.jar oficial da Mojang, como executá-lo à mão e uma forma mais fácil, sem comandos.",
+    "blocks": [
+      { "h2": "Onde se descarrega o servidor oficial" },
+      { "p": "O sítio oficial é a página do servidor de Minecraft em minecraft.net (<code>minecraft.net/download/server</code>), que oferece o <code>server.jar</code> da última versão. Para uma versão anterior, a Mojang publica um manifesto com todas elas e a impressão digital (SHA-1) de cada ficheiro, que é o que o MC-ServerLauncher usa. Desconfia de sites que oferecem um «servidor de Minecraft grátis» com instalador: o servidor da Mojang é um .jar e não precisa de instalação." },
+      { "p": "É o servidor <em>vanilla</em>: sem mods nem plugins. Se os quiseres, precisas de um servidor Fabric, Forge ou NeoForge (mods) ou Paper ou Purpur (plugins). Explicamos isso em <a href='{guide:mods}'>como adicionar mods a um servidor de Minecraft</a>." },
+      { "h2": "À mão: executar o server.jar" },
+      { "steps": [
+        { "name": "Instala o Java", "text": "Cada versão do Minecraft pede um Java mínimo, e as recentes pedem Java 21 ou superior. Descarrega um compatível e instala-o." },
+        { "name": "Descarrega o server.jar", "text": "Guarda-o numa pasta vazia só para o servidor, por exemplo <code>MeuServidor</code>." },
+        { "name": "Executa-o pela primeira vez", "text": "Abre um terminal nessa pasta e executa <code>java -Xmx2G -jar server.jar nogui</code>. Cria os seus ficheiros e pára a pedir que aceites o EULA." },
+        { "name": "Aceita o EULA", "text": "Abre o <code>eula.txt</code>, muda <code>eula=false</code> para <code>eula=true</code> e guarda. Com isso aceitas o EULA do Minecraft." },
+        { "name": "Volta a executá-lo", "text": "Lança o mesmo comando. Gera o mundo e, quando a consola disser «Done», já podes entrar a partir desse mesmo PC com o endereço <code>localhost</code>." }
+      ] },
+      { "p": "Funciona, mas cada passo é teu: para os teus amigos entrarem terias de abrir a porta 25565 no router, não há cópias de segurança automáticas e, para mudar de versão, repetes o processo com outro ficheiro." },
+      { "h2": "Uma forma mais fácil: MC Server Launcher" },
+      { "p": "O MC-ServerLauncher descarrega esse mesmo servidor oficial, verifica a sua impressão digital, deteta o Java certo ou descarrega-o, pede-te que aceites o EULA e deixa o servidor pronto. Traz ainda consola, cópias de segurança, mods do Modrinth e um túnel para os teus amigos entrarem." },
+      { "steps": [
+        { "name": "Instala a aplicação", "text": "Descarrega o instalador para Windows, o AppImage para Linux ou o DMG para macOS na secção de transferências desta página. Não precisas de ter o Java instalado." },
+        { "name": "Cria o servidor", "text": "Carrega em «Novo» e em «Criar um novo», escolhe o tipo (Vanilla é o servidor da Mojang tal como é) e a versão, marca «Aceito o EULA do Minecraft» e cria o servidor." },
+        { "name": "Inicia-o", "text": "Carrega em «Iniciar» e olha para a consola: quando indicar que o servidor está pronto, já podes entrar a partir do Minecraft com o endereço <code>localhost</code>." },
+        { "name": "Partilha-o com os teus amigos", "text": "Ativa o túnel integrado e copia o endereço público, sem abrir portas. Os passos estão em <a href='{guide:gratis}'>alojar um servidor de Minecraft grátis sem abrir portas</a>." }
+      ] },
+      { "tip": "O servidor que a aplicação cria é o mesmo <code>server.jar</code> da Mojang, numa pasta normal do teu disco. Se mais tarde preferires executá-lo à mão, sabes onde está." },
+      { "h2": "Quando convém cada forma" },
+      { "ul": [
+        "<strong>À mão</strong>, se queres aprender como funciona um servidor ou precisas de uma configuração muito concreta.",
+        "<strong>Com a aplicação</strong>, se o queres pronto em minutos, com cópias de segurança, consola e amigos a entrar pela Internet.",
+        "<strong>Com um painel web</strong>, se o servidor vai estar sempre ligado numa máquina Linux e vai ser gerido por várias pessoas. Na <a href='{guide:comparativa}'>comparação de gestores de servidores de Minecraft para Windows</a> estão as opções."
+      ] }
+    ],
+    "faq": [
+      { "q": "Onde descarrego o servidor de Minecraft de forma gratuita e segura?", "a": "Só na página oficial do servidor em minecraft.net, ou com uma aplicação que o descarregue de lá e verifique a sua impressão digital, como o MC-ServerLauncher. Evita instaladores de sites desconhecidos: o servidor oficial é um ficheiro .jar." },
+      { "q": "Que versão do Java preciso para o server.jar?", "a": "Depende da versão do Minecraft: as recentes pedem Java 21 ou superior. O MC-ServerLauncher deteta o Java certo ou descarrega-o por ti." },
+      { "q": "Posso descarregar uma versão antiga do servidor?", "a": "Sim. A Mojang publica todas as versões no seu manifesto. No MC-ServerLauncher escolhes a versão ao criar o servidor e a aplicação descarrega o ficheiro oficial correspondente." },
+      { "q": "O server.jar serve para Bedrock?", "a": "Não. O server.jar é o servidor de Minecraft Java. O Bedrock tem o seu próprio servidor. No MC-ServerLauncher, os jogadores de Bedrock entram num servidor Paper ou Purpur com Geyser, como se explica no <a href='{guide:gratis}'>guia do servidor grátis</a>." },
+      { "q": "Posso pôr mods no server.jar da Mojang?", "a": "Não diretamente: o servidor vanilla não carrega mods. Precisas de um servidor Fabric, Forge ou NeoForge; os passos estão no <a href='{guide:mods}'>guia do servidor com mods</a>." },
+      { "q": "O servidor de Minecraft é grátis?", "a": "Sim, descarregá-lo e executá-lo não custa nada, embora aceites o EULA do Minecraft. Para entrar e jogar precisas do Minecraft Java Edition." }
+    ]
+  }
+}

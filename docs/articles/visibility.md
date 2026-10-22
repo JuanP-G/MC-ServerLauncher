@@ -66,17 +66,19 @@ exist), repository views and where they come from. The CSV files (`downloads.csv
 ## Guides for specific searches
 
 The landing competes for "Minecraft server", a very crowded search. The guides target long, specific
-searches, where a dedicated page can win. There are three, each in all five languages (15 pages):
+searches, where a dedicated page can win. There are five, each in all five languages (25 pages):
 
 | Guide (`id`) | Search it answers | English |
 | --- | --- | --- |
 | `mods` | make a Minecraft server with mods | `/en/guides/make-minecraft-server-with-mods/` |
 | `gratis` | host a free server without port forwarding | `/en/guides/host-free-minecraft-server-no-port-forwarding/` |
 | `dormir` | server that stops itself when empty | `/en/guides/minecraft-server-stops-itself-when-empty/` |
+| `descargar` | download the Minecraft server (official jar) | `/en/guides/download-minecraft-server-jar-official/` |
+| `comparativa` | best Minecraft server manager for Windows | `/en/guides/best-minecraft-server-manager-windows/` |
 
 Spanish lives at `/guias/<slug>/` and the other languages at `/de/guides/`, `/fr/guides/` and
 `/pt/guides/`. Each page has its own title, description, `canonical`, `hreflang` (all five versions plus
-`x-default`) and structured data (`Article`, `HowTo`, `FAQPage` and `BreadcrumbList`). Google no longer
+`x-default`) and structured data (`Article`, `HowTo`, `FAQPage` and `BreadcrumbList`; `comparativa` has no `HowTo` because it is not a procedure). Google no longer
 shows the `HowTo` and `FAQPage` rich results for most sites, but the data still helps it understand the page.
 
 **Where the text lives.** Each guide is a single file, `web/_i18n/guides/<id>.json`, with all five
@@ -91,14 +93,32 @@ a `title` is over 78 characters or a `description` is outside 70–175, or if an
 does not exist. It also rewrites the guides' entries in `sitemap.xml` (between the `guides:start` and
 `guides:end` markers) and the cards of the landing's "Guides" section.
 
+**What people searched for (October 22, 2026).** Search Console, last 28 days: 12 clicks, 177 impressions
+and an average position of 16.8. The queries with clicks are brand ones (`mc server launcher`, `server
+launcher`); long-tail queries already appear but without clicks yet (`minecraft server mods download`,
+`minecraft server descargar`, `how to add mods to minecraft server`). As a result:
+
+- `mods`: the title, H1 and description carry "how to add mods to a Minecraft server", there is a "Where to
+  download Minecraft server mods" section and a "How do I add mods...?" FAQ entry. The URL is unchanged so
+  what is already indexed is not lost.
+- `descargar`: new, for "minecraft server descargar" and "download minecraft server jar".
+- `comparativa`: new, for "best Minecraft server manager / launcher for Windows". Every fact in the table
+  comes from each project's official website, read on October 22, 2026 (Crafty Controller, Pterodactyl, AMP
+  and MCSManager). What could not be checked is not claimed: for AMP it only says it is paid and that prices
+  are on its website. When updating it, re-read their sites and change the date in the text.
+- The three older guides carry "MC Server Launcher" (the name the app window shows) in the description, and
+  link to `descargar` and `comparativa` from their last section.
+
 **Adding a guide.** Create `web/_i18n/guides/<id>.json` by copying an existing one (slugs, dates, `icon` and
 the five languages), add its Spanish card to the `#guias` section of `web/index.html` (the card text is
 `card_title` / `card_desc` and the link is the Spanish slug's path) and run `python web/_i18n/build.py`.
-`ping-indexnow.py` picks it up by itself. Change `modified` only when you really edit it: the sitemap shows it.
+`ping-indexnow.py` picks it up by itself. The available blocks are `h2`, `p`, `ul`, `tip`, `steps` and `table`
+(four columns at most; it stacks on mobile). With `"howto": false` the guide generates no `HowTo`; otherwise it
+uses its last `steps` block. Change `modified` only when you really edit it: the sitemap shows it.
 
-**After publishing.** In Search Console, *URL Inspection → Request indexing* with the three Spanish
+**After publishing.** In Search Console, *URL Inspection → Request indexing* with the five Spanish
 addresses (it finds the rest through the sitemap and `hreflang`), and `python web/_i18n/ping-indexnow.py` for
-Bing. Wait a few weeks and look under *Performance* at which queries bring impressions to each guide; in
+Bing, **once deployed** (`--dry-run` only lists the addresses, sending nothing). Wait a few weeks and look under *Performance* at which queries bring impressions to each guide; in
 GoatCounter, which guide ends in a download click.
 
 ## When a number does not add up

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- Página generada por web/_i18n/guides.py a partir de web/_i18n/guides/dormir.json.
      No se edita a mano: se cambia la fuente y se vuelve a ejecutar python web/_i18n/build.py. -->
-<title>Servidor de Minecraft que desliga sozinho se estiver vazio | MC-ServerLauncher</title>
-<meta name="description" content="Faz o teu servidor de Minecraft desligar sozinho quando não fica ninguém e ligar quando alguém tenta entrar, sem gastar RAM nem CPU. Guia passo a passo.">
+<title>Servidor de Minecraft que desliga sozinho quando vazio | MC-ServerLauncher</title>
+<meta name="description" content="Faz com que o teu servidor de Minecraft desligue sozinho quando já não há ninguém e arranque quando alguém tenta entrar, sem gastar RAM nem CPU. Com o MC Server Launcher.">
 <link rel="canonical" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/">
 <link rel="alternate" hreflang="es" href="https://mc-server-launcher.vercel.app/guias/servidor-minecraft-se-apaga-solo-cuando-esta-vacio/">
 <link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/minecraft-server-stops-itself-when-empty/">
@@ -26,17 +26,17 @@
 <meta property="og:locale" content="pt_PT">
 <meta property="og:site_name" content="MC-ServerLauncher">
 <meta property="og:title" content="Como fazer um servidor de Minecraft desligar sozinho quando está vazio">
-<meta property="og:description" content="Faz o teu servidor de Minecraft desligar sozinho quando não fica ninguém e ligar quando alguém tenta entrar, sem gastar RAM nem CPU. Guia passo a passo.">
+<meta property="og:description" content="Faz com que o teu servidor de Minecraft desligue sozinho quando já não há ninguém e arranque quando alguém tenta entrar, sem gastar RAM nem CPU. Com o MC Server Launcher.">
 <meta property="og:url" content="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/">
 <meta property="og:image" content="https://mc-server-launcher.vercel.app/assets/og/pt.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="article:published_time" content="2026-10-17">
-<meta property="article:modified_time" content="2026-10-17">
+<meta property="article:modified_time" content="2026-10-22">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Como fazer um servidor de Minecraft desligar sozinho quando está vazio">
-<meta name="twitter:description" content="Faz o teu servidor de Minecraft desligar sozinho quando não fica ninguém e ligar quando alguém tenta entrar, sem gastar RAM nem CPU. Guia passo a passo.">
+<meta name="twitter:description" content="Faz com que o teu servidor de Minecraft desligue sozinho quando já não há ninguém e arranque quando alguém tenta entrar, sem gastar RAM nem CPU. Com o MC Server Launcher.">
 <meta name="twitter:image" content="https://mc-server-launcher.vercel.app/assets/og/pt.jpg">
 
 <link rel="preload" as="font" type="font/woff2" href="../../../assets/fonts/inter-latin.woff2" crossorigin>
@@ -48,13 +48,13 @@
   "@context": "https://schema.org",
   "@type": "Article",
   "headline": "Como fazer um servidor de Minecraft desligar sozinho quando está vazio",
-  "description": "Faz o teu servidor de Minecraft desligar sozinho quando não fica ninguém e ligar quando alguém tenta entrar, sem gastar RAM nem CPU. Guia passo a passo.",
+  "description": "Faz com que o teu servidor de Minecraft desligue sozinho quando já não há ninguém e arranque quando alguém tenta entrar, sem gastar RAM nem CPU. Com o MC Server Launcher.",
   "inLanguage": "pt",
   "url": "https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/",
   "mainEntityOfPage": "https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/",
   "image": "https://mc-server-launcher.vercel.app/assets/og/pt.jpg",
   "datePublished": "2026-10-17",
-  "dateModified": "2026-10-17",
+  "dateModified": "2026-10-22",
   "author": {
     "@type": "Person",
     "name": "JuanP-G",
@@ -72,7 +72,7 @@
   "@context": "https://schema.org",
   "@type": "HowTo",
   "name": "Como fazer um servidor de Minecraft desligar sozinho quando está vazio",
-  "description": "Faz o teu servidor de Minecraft desligar sozinho quando não fica ninguém e ligar quando alguém tenta entrar, sem gastar RAM nem CPU. Guia passo a passo.",
+  "description": "Faz com que o teu servidor de Minecraft desligue sozinho quando já não há ninguém e arranque quando alguém tenta entrar, sem gastar RAM nem CPU. Com o MC Server Launcher.",
   "inLanguage": "pt",
   "totalTime": "PT5M",
   "estimatedCost": {
@@ -126,6 +126,14 @@
   "@type": "FAQPage",
   "inLanguage": "pt",
   "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Como desligo automaticamente um servidor de Minecraft quando não há jogadores?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Abre as definições do servidor, na secção «Ligar e desligar», escreve o tempo de espera em «Minutos sem jogadores» (0 é nunca) e marca «Ligá-lo quando alguém tentar entrar» para que arranque sozinho. Os passos detalhados estão acima."
+      }
+    },
     {
       "@type": "Question",
       "name": "Perco o progresso se o servidor desligar sozinho?",
@@ -621,6 +629,11 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
   box-shadow:inset 0 -4px 0 #1D4D13, inset 3px 3px 0 rgba(255,255,255,.22), 0 0 0 2px #000}
 .steps h3{font-size:18px; font-weight:700; line-height:1.35; margin:0 0 6px; color:#fff}
 .steps p{margin:0}
+.tbl{margin:8px 0 24px; overflow-x:auto}
+.tbl table{width:100%; border-collapse:collapse; font-size:15px; line-height:1.55}
+.tbl th,.tbl td{padding:10px 12px; text-align:left; vertical-align:top; color:#D5DEEA; border-bottom:1px solid rgba(255,255,255,.14)}
+.tbl thead th{color:#fff; font-weight:700; border-bottom:2px solid rgba(255,255,255,.3)}
+.tbl tbody th{color:#fff; font-weight:700; white-space:nowrap}
 .tip{margin:22px 0; padding:16px 20px; color:var(--gui-text); background:var(--gui);
   box-shadow:inset 4px 4px 0 var(--gui-hi), inset -4px -4px 0 var(--gui-lo), 0 0 0 2px #000}
 .tip strong{display:block; margin-bottom:4px; color:#404040; font-family:var(--f-mc); font-weight:400; font-size:16px; -webkit-font-smoothing:none}
@@ -630,7 +643,12 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
 a.card{color:var(--gui-text)}
 @media (min-width:700px){ .g-title{font-size:32px} .g-h2{font-size:24px} }
 @media (min-width:1300px) and (min-height:820px){ .g-title{font-size:40px} }
-@media (max-width:640px){ .steps li{grid-template-columns:1fr; gap:10px} .prose p,.prose li{font-size:16px} }
+@media (max-width:640px){ .steps li{grid-template-columns:1fr; gap:10px} .prose p,.prose li{font-size:16px}
+  .tbl{overflow:visible} .tbl table,.tbl tbody,.tbl tr,.tbl th,.tbl td{display:block} .tbl thead{position:absolute; left:-9999px}
+  .tbl tr{margin-bottom:14px; padding:6px 0; background:rgba(255,255,255,.05); box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+  .tbl th,.tbl td{border:0; padding:5px 14px; white-space:normal}
+  .tbl td::before{content:attr(data-label); display:block; color:#9FB4CC; font-size:12px; letter-spacing:.04em; text-transform:uppercase}
+  .tbl tbody th{font-size:17px; padding-top:8px} }
 </style>
 <noscript><style>.reveal,.build > span,.chunk{opacity:1 !important; transform:none !important; clip-path:none !important}</style></noscript>
 
@@ -707,7 +725,7 @@ a.card{color:var(--gui-text)}
       <span class="eyebrow">GUIA</span>
       <h1 class="g-title">Como fazer um servidor de Minecraft desligar sozinho quando está vazio</h1>
       <p class="lead">Um servidor ligado gasta memória, processador e eletricidade mesmo que ninguém esteja a jogar. Podes fazer com que desligue quando está vazio há algum tempo e volte a ligar assim que um amigo tentar entrar.</p>
-      <p class="g-meta">Atualizado a 17 de outubro de 2026 · 4 min de leitura</p>
+      <p class="g-meta">Atualizado a 22 de outubro de 2026 · 4 min de leitura</p>
       <a class="btn btn-primary btn-lg" data-goatcounter-click="guia-dormir-cta" data-goatcounter-title="Guía dormir: descargar" href="#descargas">Transferir o MC-ServerLauncher grátis</a>
     </div>
   </section>
@@ -725,6 +743,7 @@ a.card{color:var(--gui-text)}
 <aside class="tip"><strong>Dica</strong><p>Se usas lista branca, deixa marcado «Se a lista branca estiver ativada, ligá-lo só para jogadores da lista» (vem ativado): evita que os bots que vasculham a Internet liguem o teu servidor sem querer.</p></aside>
 <h2 class="g-h2">O que convém saber</h2>
 <ul><li>A aplicação tem de estar aberta no teu PC: é ela que vigia o servidor e fica à escuta para o acordar.</li><li>Funciona com o túnel do Playit: o endereço que partilhaste é o mesmo, por isso os teus amigos continuam a entrar por ele mesmo que o servidor durma. Como configurá-lo está em <a href='../alojar-servidor-minecraft-gratis-sem-abrir-portas/'>alojar um servidor de Minecraft grátis sem abrir portas</a>.</li><li>Os avisos são opcionais: em «Avisos» podes ativar «Desligado por inatividade» para a aplicação te avisar quando um servidor vazio desliga sozinho.</li><li>Se ninguém jogou desde a última cópia, a aplicação salta as cópias de arranque e de paragem, por isso dormir e acordar não enche a pasta de cópias idênticas.</li></ul>
+<p>Se ainda não tens o servidor, começa por <a href='../descarregar-servidor-minecraft-jar-oficial/'>descarregar o servidor de Minecraft (jar oficial)</a>. E para ver como esta aplicação se compara com um painel web, lê a <a href='../melhor-gestor-servidores-minecraft-windows/'>comparação de gestores de servidores de Minecraft</a>.</p>
       </article>
     </div>
   </section>
@@ -734,6 +753,7 @@ a.card{color:var(--gui-text)}
       <span class="eyebrow">PERGUNTAS FREQUENTES</span>
       <h2 class="h2">Dúvidas habituais</h2>
       <div class="faq">
+        <details><summary>Como desligo automaticamente um servidor de Minecraft quando não há jogadores?</summary><p>Abre as definições do servidor, na secção «Ligar e desligar», escreve o tempo de espera em «Minutos sem jogadores» (0 é nunca) e marca «Ligá-lo quando alguém tentar entrar» para que arranque sozinho. Os passos detalhados estão acima.</p></details>
         <details><summary>Perco o progresso se o servidor desligar sozinho?</summary><p>Não. Para da mesma forma que quando o paras tu: de forma segura e guardando o mundo.</p></details>
         <details><summary>Pode desligar com gente lá dentro?</summary><p>Não. A contagem decrescente só corre quando não há nenhum jogador ligado e reinicia assim que entra um.</p></details>
         <details><summary>Quanto demora a ligar quando alguém tenta entrar?</summary><p>O mesmo que um arranque normal: uns segundos num servidor leve e mais com muitos mods. A quem tenta entrar pede-se que volte a tentar daqui a uns segundos.</p></details>
@@ -748,6 +768,8 @@ a.card{color:var(--gui-text)}
       <span class="eyebrow">MAIS GUIAS</span>
       <h2 class="h2">Continua a ler</h2>
       <div class="grid g3">
+        <a class="card" data-goatcounter-click="guia-dormir-mas-comparativa" data-goatcounter-title="Guía dormir: más comparativa" href="../melhor-gestor-servidores-minecraft-windows/"><div class="slot"><img src="../../../assets/mc/diamond_pickaxe.webp" alt="" width="48" height="48"></div><h3>Melhor gestor de servidores de Minecraft para Windows</h3><p>O que ver ao escolher e como se compara ao Crafty Controller, Pterodactyl, AMP e MCSManager.</p></a>
+        <a class="card" data-goatcounter-click="guia-dormir-mas-descargar" data-goatcounter-title="Guía dormir: más descargar" href="../descarregar-servidor-minecraft-jar-oficial/"><div class="slot"><img class="iso" src="../../../assets/mc/iso_chest.webp" alt="" width="48" height="48"></div><h3>Descarregar o servidor de Minecraft (jar oficial)</h3><p>Onde obter o server.jar oficial da Mojang, como executá-lo à mão e uma forma mais fácil, sem comandos.</p></a>
         <a class="card" data-goatcounter-click="guia-dormir-mas-gratis" data-goatcounter-title="Guía dormir: más gratis" href="../alojar-servidor-minecraft-gratis-sem-abrir-portas/"><div class="slot"><img src="../../../assets/mc/ender_pearl.webp" alt="" width="48" height="48"></div><h3>Alojar um servidor de Minecraft grátis sem abrir portas</h3><p>Um túnel do Playit.gg integrado dá-te um endereço público para partilhar, sem mensalidades nem router.</p></a>
         <a class="card" data-goatcounter-click="guia-dormir-mas-mods" data-goatcounter-title="Guía dormir: más mods" href="../criar-servidor-minecraft-com-mods/"><div class="slot"><img src="../../../assets/mc/enchanted_book.webp" alt="" width="48" height="48"></div><h3>Como criar um servidor de Minecraft com mods</h3><p>Fabric, Forge ou NeoForge, mods do Modrinth com as suas dependências e o pack para os teus amigos.</p></a>
       </div>
