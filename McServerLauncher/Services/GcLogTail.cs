@@ -11,8 +11,9 @@ namespace McServerLauncher.Services;
 /// The JVM owns the file, so it is opened letting it go on writing, rotating and deleting
 /// (<c>FileShare.ReadWrite | Delete</c>). A line the JVM is half way through writing is left for
 /// the next call. When the JVM rotates the log, the file the app was reading becomes
-/// <c>gc.log.0</c> and a new <c>gc.log</c> starts; that shows as a new creation time or a shorter
-/// file, and reading starts again at the top.
+/// <c>gc.log.0</c> and a new <c>gc.log</c> starts; that shows as a shorter file or a different
+/// beginning (every JVM log opens with its own uptime stamps), and reading starts again at the top.
+/// A creation time would be simpler, but Linux filesystems often cannot tell it.
 /// </para>
 /// <para>
 /// At most <see cref="MaxBytesPerRead"/> per call, so a long-forgotten tray window catching up
@@ -25,8 +26,10 @@ public sealed class GcLogTail
     public const int MaxBytesPerRead = 256 * 1024;
 
     private readonly string _path;
+    private const int HeadBytes = 128;
+
     private long _position;
-    private DateTime _created;
+    private byte[] _head = [];
 
     public GcLogTail(string path) => _path = path;
 
@@ -38,11 +41,14 @@ public sealed class GcLogTail
             using var stream = new FileStream(_path, FileMode.Open, FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete);
 
-            var created = File.GetCreationTimeUtc(_path);
-            if (created != _created || stream.Length < _position)
+            if (_head.Length > 0 && !StillTheSameFile(stream))
             {
                 _position = 0;
-                _created = created;
+                _head = [];
+            }
+            else if (stream.Length < _position)
+            {
+                _position = 0;
             }
 
             var available = stream.Length - _position;
@@ -62,6 +68,8 @@ public sealed class GcLogTail
                 end = read - 1;
             }
 
+            if (_head.Length == 0 && _position == 0)
+                _head = buffer[..Math.Min(end + 1, HeadBytes)];
             _position += end + 1;
             return Encoding.UTF8.GetString(buffer, 0, end + 1)
                 .Split('\n', StringSplitOptions.RemoveEmptyEntries)
@@ -76,5 +84,14 @@ public sealed class GcLogTail
         {
             return [];
         }
+    }
+
+    /// <summary>True while the file still begins with what it began with when it was first read.</summary>
+    private bool StillTheSameFile(FileStream stream)
+    {
+        if (stream.Length < _position || stream.Length < _head.Length) return false;
+        var now = new byte[_head.Length];
+        stream.Seek(0, SeekOrigin.Begin);
+        return stream.Read(now, 0, now.Length) == now.Length && now.AsSpan().SequenceEqual(_head);
     }
 }
