@@ -144,6 +144,11 @@ When it opens again, **What's new** tells you what changed. It works the same on
 - **Start / Stop / Restart** with a clean stop that saves the world; detects and frees a **busy port**; live
   **CPU, RAM, uptime and port**. The RAM figure is the memory the server really holds on your PC (not Task
   Manager's shared total), with what Java has in use under it.
+- **Performance** — a fifth card says how the server is coping (TPS when they can be measured, or Good / Tight /
+  Overloaded), measured every 30 s with spark, `tick query` or Paper's `tps` without cluttering the console. A
+  one-line band appears only when something is wrong for a while, and *See solutions* offers one-click fixes:
+  lower the distances, give it more memory when that is the cause and the PC can spare it, and mods that speed
+  it up without changing the game.
 - **Minecraft-style card** — icon, coloured MOTD, `players/max` and a reachability signal. Its pencil opens
   **Appearance**: the image, the name and both lines of the MOTD — the 16 colours by name, recent ones,
   **gradients**, bold, italics, underline and strikethrough, and **any hex colour** on Paper and Purpur — with

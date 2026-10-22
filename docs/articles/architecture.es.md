@@ -237,6 +237,9 @@ mundo. No hay rutas fijas del equipo en el código.
   los techos de los servidores que ya están en marcha (ver *Memoria: automática o manual*).
 - **`GcLogging`**, **`GcLogLine`**, **`GcLogTail`**, **`MemorySessionTracker`**, **`MemoryHistoryStore`**,
   **`ProcessMemory`** — lo que la app mide de un servidor en marcha (ver *Medir la memoria de un servidor*).
+- **`PerformanceParsers`**, **`PerformanceProbe`**, **`PerformanceMonitor`**, **`PerformanceAdvice`**,
+  **`PerformancePicks`** — cómo lleva un servidor en marcha su carga y qué hacer al respecto (ver
+  *Rendimiento: la tarjeta, la banda y las soluciones*).
 - **`MinecraftVersionService`** — lee el manifiesto de versiones de Mojang, resuelve la URL del
   `server.jar` y la versión de Java necesaria, y descarga archivos.
 - **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — hablan con Playit.gg.
@@ -672,6 +675,55 @@ evidencia con la que las fases siguientes dimensionan el techo.
   ejecuciones de cada servidor en `%APPDATA%\McServerLauncher\memory\<id>\history.json`, que se poda con
   los servidores igual que el registro de contenido. Una ejecución sin colecciones ni falta de memoria no se
   guarda.
+
+### Rendimiento: la tarjeta, la banda y las soluciones
+La quinta tarjeta dice cómo lo lleva el servidor; una banda de una línea aparece bajo la cabecera solo
+mientras algo va mal durante un rato; *Ver soluciones*, en la banda, abre una página que sustituye a las
+pestañas.
+
+- **Leer la consola.** `PerformanceParsers` lee el aviso `Can't keep up!` del propio servidor y las
+  respuestas de `spark tps`, del `tick query` de vanilla y del `tps` de Paper. Todo se ancla al principio del
+  mensaje (`ConsoleLineClassifier.MessageBody`), así que un jugador que escriba lo mismo en el chat no cuenta
+  para nada. Los formatos se fijaron con salidas reales (Fabric con spark 1.10, Paper 26.2) y hay tres
+  trampas: la etiqueta `[⚡]` de spark llega como `?` o como bytes mal leídos en Windows, Paper colorea su
+  consola con secuencias ANSI dentro de la línea, y los decimales siguen la configuración regional (`20,0`).
+  Vanilla imprime las últimas líneas de `tick query` sin prefijo de log, y spark imprime los TPS con uno *o*
+  dos decimales.
+- **Preguntar.** `PerformanceProbe.Candidates` elige los comandos que pueden funcionar en el servidor, el
+  mejor primero: spark (instalado, o incluido en Paper y Purpur desde 1.21), `tick query` (1.20.3 en
+  adelante) y el `tps` de Paper. Cada 30 s (un tick de cada 15 del temporizador de 2 s, contado antes del
+  recorte con la ventana en la bandeja) el modelo de vista escribe el comando y, durante cinco segundos,
+  `OnServerLine` ofrece cada línea a la sonda *lo primero*: las que son la respuesta se tragan, así que no
+  llegan ni a la consola, ni al log en disco, ni al historial de jugadores. Un comando desconocido, o tres
+  preguntas sin respuesta, pasan al siguiente; lo que escriba el dueño desarma la sonda para que vea lo que
+  pidió. Las respuestas van al emisor de la consola, así que los operadores dentro del juego no las ven
+  (comprobado con un operador conectado a Paper).
+- **Juzgar.** `PerformanceMonitor` es puro y recibe la hora como argumento. Solo avisa de problemas que
+  duran: nada en los 3 minutos posteriores a `Done`, ni mientras se hace una copia
+  (`BackupCoordinator.CopyingChanged`) ni 30 s después. TPS por debajo de 18 o MSPT por encima de 50 es
+  Saturado, por debajo de 19,5 o por encima de 40 es Justo, tras dos lecturas malas de spark y tres de los
+  demás; tres `Can't keep up!` en 5 minutos es Saturado, uno o dos Justo, y un retraso de más de un minuto es
+  un salto de reloj (el PC despertando) y se ignora; CPU al 90 % durante 2 minutos es Saturado y al 75 %
+  durante 3 Justo; quedarse sin memoria es Saturado al momento. La memoria se juzga con el log de GC (el heap
+  casi lleno tras las limpiezas, el recolector con más del 15 % del tiempo o una limpieza completa), nunca
+  con el working set, y por sí sola solo da Justo.
+- **La tarjeta y la banda.** `ServerViewModel.Performance.cs` alimenta al monitor con la misma muestra que
+  alimenta las tarjetas de CPU y RAM (muestrear dos veces estropearía la cifra de CPU). La tarjeta muestra los
+  TPS cuando se pueden medir y una palabra (Bien, Justo, Saturado) si no; la banda es una línea de 26 px con
+  puntos suspensivos, ámbar o roja, que se cierra hasta el siguiente arranque.
+- **La página de soluciones.** `PerformanceSolutionsViewModel` sustituye a las pestañas del servidor (así
+  también sirve en Vanilla, que no tiene pestaña Mods) y ofrece, cada cosa con un botón y la nota de que se
+  aplica al reiniciar: `PerformanceAdvice` (una función pura) baja la distancia de simulación a 6 (4 si está
+  saturado) y la de visión a 10 (8), nunca por debajo de la de simulación; más memoria solo cuando la causa es
+  la memoria y el PC puede prestarla (2 GB más, dejando 2 GB libres, como mucho tres cuartas partes del
+  equipo y 32 GB; `SystemMemory.AvailableMb` lee `GlobalMemoryStatusEx` o `/proc/meminfo`). En un servidor
+  Manual la subida pasa a ser su máximo; en uno Automático es puntual para el siguiente arranque, guardada en
+  el historial de memoria (`NextStartBoostMb`) y nunca en los ajustes del servidor. Si `spigot.yml` fija una
+  distancia en Paper, `PaperDistanceOverride` lo dice en vez de ofrecer un cambio que no haría nada. Los
+  mods salen de `Resources/performance-picks.json` (lithium, ferrite-core, modernfix, krypton, scalablelux,
+  canary, chunky y spark; nada que cambie cómo se juega, y sin C2ME), filtrados por cargador, por lo
+  instalado y por conflictos, y solo se muestran si Modrinth tiene una versión para el cargador y la versión
+  del servidor. Instalar pasa por `ServerModsViewModel.InstallModAsync`, como cualquier otra instalación.
 
 ### La ventana: secciones, el panel de nuevo servidor y el movimiento
 La ventana principal es un **menú lateral** de cuatro secciones —Servidores, Túneles, Ajustes, Acerca

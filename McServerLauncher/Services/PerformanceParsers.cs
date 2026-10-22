@@ -165,7 +165,7 @@ public static partial class PerformanceParsers
     private static partial Regex SparkTag();
 
     // *20.0, *20.0, 19.8, 20.0, 20.0   (the asterisk marks a figure above the target, clamped)
-    [GeneratedRegex(@"^\*?\d+[.,]\d(?:\s*,\s*\*?\d+[.,]\d){4}\s*$")]
+    [GeneratedRegex(@"^\*?\d+[.,]\d+(?:\s*,\s*\*?\d+[.,]\d+){4}\s*$")]
     private static partial Regex SparkTpsFigures();
 
     // 12%, 13%, 13%  (system)      0%, 1%, 1%  (process)
@@ -173,7 +173,7 @@ public static partial class PerformanceParsers
     private static partial Regex SparkCpuFigures();
 
     // 0.1/0.3/0.4/14.8;  0.1/0.3/0.7/38.9
-    [GeneratedRegex(@"^\d+[.,]\d(?:/\d+[.,]\d){3};\s*\d+[.,]\d(?:/\d+[.,]\d){3}\s*$")]
+    [GeneratedRegex(@"^\d+[.,]\d+(?:/\d+[.,]\d+){3};\s*\d+[.,]\d+(?:/\d+[.,]\d+){3}\s*$")]
     private static partial Regex SparkTickFigures();
 
     // A figure with one decimal. A comma between two figures is followed by a space, so "20,0, 20,0"

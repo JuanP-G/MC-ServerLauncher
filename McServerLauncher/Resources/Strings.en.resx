@@ -1261,12 +1261,12 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Perf_Tight" xml:space="preserve"><value>Tight</value></data>
   <data name="Perf_Saturated" xml:space="preserve"><value>Overloaded</value></data>
   <data name="Perf_TpsFmt" xml:space="preserve"><value>{0} TPS</value></data>
-  <data name="Perf_WordMsptFmt" xml:space="preserve"><value>{0} · {1} ms per tick</value></data>
+  <data name="Perf_WordMsptFmt" xml:space="preserve"><value>{0} · {1} ms/tick</value></data>
   <data name="Perf_Tip" xml:space="preserve"><value>How the server is coping. TPS is ticks per second (20 is ideal) and ms per tick is how long each one takes (over 50 means it cannot keep up). It is measured every 30 s without cluttering the console and only warns about problems that last: it does not judge the first 3 minutes or while a backup runs.</value></data>
   <data name="Perf_CauseOom" xml:space="preserve"><value>The server ran out of memory.</value></data>
   <data name="Perf_CauseTicksFmt" xml:space="preserve"><value>The server is slow: {0} TPS.</value></data>
   <data name="Perf_CauseTicks" xml:space="preserve"><value>The server takes too long on each tick.</value></data>
-  <data name="Perf_CauseLagFmt" xml:space="preserve"><value>The server says it cannot keep up ({0} times in 5 min).</value></data>
+  <data name="Perf_CauseLagFmt" xml:space="preserve"><value>The server says it cannot keep up (warnings in 5 min: {0}).</value></data>
   <data name="Perf_CauseCpu" xml:space="preserve"><value>The processor is at its limit.</value></data>
   <data name="Perf_CauseMemory" xml:space="preserve"><value>Java is short of memory.</value></data>
   <data name="Perf_Solutions" xml:space="preserve"><value>See solutions</value></data>

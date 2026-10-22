@@ -232,6 +232,9 @@ are no hard-coded machine paths.
   app, and the ceilings of the servers already running (see *Memory: automatic or manual*).
 - **`GcLogging`**, **`GcLogLine`**, **`GcLogTail`**, **`MemorySessionTracker`**, **`MemoryHistoryStore`**,
   **`ProcessMemory`** — what the app measures of a running server (see *Measuring a server's memory*).
+- **`PerformanceParsers`**, **`PerformanceProbe`**, **`PerformanceMonitor`**, **`PerformanceAdvice`**,
+  **`PerformancePicks`** — how a running server is coping and what to do about it (see *Performance: the
+  card, the band and the solutions*).
 - **`MinecraftVersionService`** — reads Mojang's version manifest, resolves the `server.jar`
   download URL and the required Java version, and downloads files.
 - **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — talk to Playit.gg.
@@ -646,6 +649,51 @@ size the ceiling with.
   the server stops, `MemoryHistoryStore` keeps the latest 30 runs of each server in
   `%APPDATA%\McServerLauncher\memory\<id>\history.json`, pruned with the servers like the content
   ledger. A run with no collections and no out-of-memory is not kept.
+
+### Performance: the card, the band and the solutions
+The fifth status card says how the server is coping; a one-line band appears under the header only while
+something is wrong for a while; *See solutions* in the band opens a page that replaces the tabs.
+
+- **Reading the console.** `PerformanceParsers` reads the server's own `Can't keep up!` warning and the
+  answers of `spark tps`, vanilla's `tick query` and Paper's `tps`. Everything is anchored on the start of
+  the message (`ConsoleLineClassifier.MessageBody`), so a player typing the same words in chat counts for
+  nothing. The formats were fixed from real output (Fabric with spark 1.10, Paper 26.2) and three things in
+  it are traps: spark's `[⚡]` tag arrives as `?` or as scrambled bytes on Windows, Paper colours its console
+  with ANSI escapes inside the line, and decimals follow the machine's locale (`20,0`). Vanilla prints the
+  later lines of `tick query` with no log prefix at all, and spark prints TPS with one *or* two decimals.
+- **Asking.** `PerformanceProbe.Candidates` picks the commands that can work for the server, best first:
+  spark (installed, or bundled in Paper and Purpur from 1.21), `tick query` (1.20.3 and later), Paper's
+  `tps`. Every 30 s (one tick in 15 of the 2 s stats timer, counted before the tray throttle) the view model
+  types the command, and for five seconds `OnServerLine` offers every line to the probe *first*: the lines
+  that are the answer are swallowed, so they reach neither the console, nor the log on disk, nor the player
+  history. An unknown command, or three asks with no answer, moves on to the next; something the owner types
+  disarms the probe so they see what they asked for. The answers go to the console sender, so operators in
+  the game do not see them (checked with an operator connected to Paper).
+- **Judging.** `PerformanceMonitor` is pure and takes the time as an argument. It only reports problems that
+  last: nothing in the 3 minutes after `Done`, nor while a backup runs (`BackupCoordinator.CopyingChanged`)
+  and 30 s after. TPS under 18 or MSPT over 50 is Saturated, under 19.5 or over 40 Tight, after two bad
+  readings from spark and three from the others; three `Can't keep up!` in 5 minutes is Saturated, one or two
+  Tight, and a delay over a minute is a clock jump (the PC waking up) and is ignored; CPU at 90 % for 2
+  minutes is Saturated and 75 % for 3 Tight; running out of memory is Saturated at once. Memory is judged
+  from the GC log (the heap nearly full after collections, the collector taking over 15 % of the time, or a
+  full collection), never from the working set, and alone is only Tight.
+- **The card and the band.** `ServerViewModel.Performance.cs` feeds the monitor with the same sample that
+  feeds the CPU and RAM cards (sampling twice would break the CPU figure). The card shows TPS when they can
+  be measured and a word (Good, Tight, Overloaded) otherwise; the band is one 26 px line with an ellipsis, in
+  amber or red, closable until the next start.
+- **The solutions page.** `PerformanceSolutionsViewModel` replaces the server's tabs (so it also works on
+  Vanilla, which has no Mods tab) and offers, each with one button and a note that it applies on restart:
+  `PerformanceAdvice` (a pure function) lowers the simulation distance to 6 (4 when saturated) and the view
+  distance to 10 (8), never below the simulation distance; more memory only when memory is the cause and the
+  machine can spare it (2 GB more, 2 GB of free memory left, at most three quarters of the machine and 32 GB;
+  `SystemMemory.AvailableMb` reads `GlobalMemoryStatusEx` or `/proc/meminfo`). On a Manual server the raise
+  becomes its maximum; on an Automatic one it is a one-off for the next start, kept in the memory history
+  (`NextStartBoostMb`) and never in the server's settings. If `spigot.yml` fixes a distance on Paper,
+  `PaperDistanceOverride` says so instead of offering a change that would do nothing. The mods come from
+  `Resources/performance-picks.json` (lithium, ferrite-core, modernfix, krypton, scalablelux, canary, chunky
+  and spark; nothing that changes how the game plays, and no C2ME), filtered by loader, by what is installed
+  and by conflicts, and kept only if Modrinth has a build for the server's loader and version. Installing goes
+  through `ServerModsViewModel.InstallModAsync`, like every other install.
 
 ### The window: sections, the new-server panel and motion
 The main window is a **rail** of four sections — Servers, Tunnels, Settings, About — sharing one cell

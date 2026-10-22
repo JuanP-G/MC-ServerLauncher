@@ -49,6 +49,19 @@ public class PerformanceParsersTests
         Assert.Equal([20.0, 20, 20, 20, 20], values.Numbers);
     }
 
+    [Fact]
+    public void Sparks_figures_may_have_two_decimals_when_the_server_is_not_exactly_at_20()
+    {
+        // Copied from a real run: the one-decimal shape of an idle server was not the only one.
+        var values = Parse(Fabric + "[?]  19.97, 19.99, *20.0, *20.0, *20.0");
+        Assert.Equal(PerfLineKind.SparkTpsValues, values.Kind);
+        Assert.Equal([19.97, 19.99, 20.0, 20.0, 20.0], values.Numbers);
+
+        var ticks = Parse(Fabric + "[?]  0.12/0.31/0.45/14.83;  0.10/0.30/0.68/38.91");
+        Assert.Equal(PerfLineKind.SparkTickValues, ticks.Kind);
+        Assert.Equal(8, ticks.Numbers.Length);
+    }
+
     [Theory]
     [InlineData("[?] TPS from last 5s, 10s, 1m, 5m, 15m:")]        // Java could not write the symbol
     [InlineData("[âš¡] TPS from last 5s, 10s, 1m, 5m, 15m:")]  // its bytes read in the wrong code page
