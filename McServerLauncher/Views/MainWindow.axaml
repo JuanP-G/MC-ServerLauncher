@@ -346,12 +346,14 @@
                         <Border Grid.Row="3" Grid.ColumnSpan="2" Classes="band perf"
                                 Classes.severe="{Binding PerformanceBandIsSevere}"
                                 IsVisible="{Binding ShowPerformanceBand}">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                                 <ic:SymbolIcon Grid.Column="0" Symbol="Warning" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="{Binding PerformanceBandText}" TextWrapping="NoWrap"
                                            TextTrimming="CharacterEllipsis"
                                            ToolTip.Tip="{Binding PerformanceBandText}" />
-                                <Button Grid.Column="2" Margin="6,0,0,0" Command="{Binding DismissPerformanceBandCommand}"
+                                <Button Grid.Column="2" Margin="8,0,0,0" Content="{loc:Loc Perf_Solutions}"
+                                        Command="{Binding ShowPerformanceSolutionsCommand}" />
+                                <Button Grid.Column="3" Margin="6,0,0,0" Command="{Binding DismissPerformanceBandCommand}"
                                         ToolTip.Tip="{loc:Loc Perf_DismissTip}">
                                     <ic:SymbolIcon Symbol="Dismiss" FontSize="12" />
                                 </Button>
@@ -489,7 +491,7 @@
 
                     <!-- Tabs: Console / Players / Mods. One underline for the whole strip, sliding
                          to the picked tab (Controls/TabUnderline), drawn over it in the same cell. -->
-                    <Panel Grid.Row="3">
+                    <Panel Grid.Row="3" IsVisible="{Binding ShowingTabs}">
                     <controls:TabUnderline Tabs="{Binding #ServerTabs}" ZIndex="1" />
                     <TabControl x:Name="ServerTabs" Background="Transparent" Margin="4,0">
                         <TabItem Header="{loc:Loc Console}">
@@ -677,6 +679,15 @@
                         </TabItem>
                     </TabControl>
                     </Panel>
+
+                    <!-- "See solutions" from the performance band: replaces the tabs, with a way back. -->
+                    <ContentControl Grid.Row="3" Content="{Binding Solutions}" IsVisible="{Binding ShowingSolutions}">
+                        <ContentControl.DataTemplates>
+                            <DataTemplate DataType="vm:PerformanceSolutionsViewModel">
+                                <views:PerformanceSolutionsView />
+                            </DataTemplate>
+                        </ContentControl.DataTemplates>
+                    </ContentControl>
                 </Grid>
 
                 <!-- New server: takes the detail area while one is being made or added. -->

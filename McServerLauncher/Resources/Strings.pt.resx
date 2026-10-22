@@ -1271,6 +1271,29 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Perf_CauseMemory" xml:space="preserve"><value>O Java está com pouca memória.</value></data>
   <data name="Perf_Solutions" xml:space="preserve"><value>Ver soluções</value></data>
   <data name="Perf_DismissTip" xml:space="preserve"><value>Ocultar até ao próximo arranque</value></data>
+  <data name="Sol_Back" xml:space="preserve"><value>Voltar</value></data>
+  <data name="Sol_Title" xml:space="preserve"><value>Como ir mais leve</value></data>
+  <data name="Sol_Intro" xml:space="preserve"><value>Mudanças que costumam ajudar. Nenhuma altera a forma de jogar.</value></data>
+  <data name="Sol_SectionSettings" xml:space="preserve"><value>Definições do servidor</value></data>
+  <data name="Sol_SectionContent" xml:space="preserve"><value>Mods e plugins que ajudam</value></data>
+  <data name="Sol_SimFmt" xml:space="preserve"><value>Baixar a distância de simulação de {0} para {1}</value></data>
+  <data name="Sol_SimDetail" xml:space="preserve"><value>É até onde o jogo continua «vivo» à volta de cada jogador, e o que mais pesa em cada tick.</value></data>
+  <data name="Sol_ViewFmt" xml:space="preserve"><value>Baixar a distância de visão de {0} para {1}</value></data>
+  <data name="Sol_ViewDetail" xml:space="preserve"><value>São os chunks carregados e enviados a cada jogador.</value></data>
+  <data name="Sol_RamFmt" xml:space="preserve"><value>Subir a memória de {0} para {1}</value></data>
+  <data name="Sol_RamDetailManual" xml:space="preserve"><value>Guarda-se como memória máxima deste servidor.</value></data>
+  <data name="Sol_RamDetailAuto" xml:space="preserve"><value>Só para o próximo arranque; depois o servidor volta a ajustá-la sozinho.</value></data>
+  <data name="Sol_PaperOverride" xml:space="preserve"><value>O Paper tem esta distância fixada no spigot.yml, por isso mudá-la aqui não faria nada.</value></data>
+  <data name="Sol_Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="Sol_AppliedRestart" xml:space="preserve"><value>Feito. Aplica-se ao reiniciar.</value></data>
+  <data name="Sol_Install" xml:space="preserve"><value>Instalar</value></data>
+  <data name="Sol_Checking" xml:space="preserve"><value>A procurar uma versão compatível…</value></data>
+  <data name="Sol_InstalledRestart" xml:space="preserve"><value>Instalado. Aplica-se ao reiniciar.</value></data>
+  <data name="Sol_InstallFailed" xml:space="preserve"><value>Não foi possível instalar. Veja a mensagem no separador Mods.</value></data>
+  <data name="Sol_VanillaNote" xml:space="preserve"><value>O Vanilla não aceita mods. Mudar para Fabric ou Paper (Configurar → mudar tipo, mantendo o mundo) permite instalar os que aliviam o servidor.</value></data>
+  <data name="Sol_Nothing" xml:space="preserve"><value>Não há mais nada a sugerir por agora.</value></data>
+  <data name="Sol_RestartNote" xml:space="preserve"><value>As mudanças aplicam-se quando o servidor reinicia.</value></data>
+  <data name="Mem_ReasonBoost" xml:space="preserve"><value>um aumento que pediu</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Memória dos servidores</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Se não jogas neste PC, os servidores podem usar toda a memória menos 2 GB. Caso contrário, juntos usam no máximo metade.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>Este PC é só para servidores</value></data>

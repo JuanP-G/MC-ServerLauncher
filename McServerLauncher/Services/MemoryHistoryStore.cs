@@ -10,6 +10,13 @@ public sealed class MemoryHistory
     public int Version { get; set; } = 1;
 
     public List<MemorySession> Sessions { get; set; } = new();
+
+    /// <summary>
+    /// Memory to add to the ceiling at the next start only, in MB: the raise the Performance page
+    /// offers in Automatic mode. It lives here and not in the server's settings so that it is used
+    /// once and the server goes back to sizing itself.
+    /// </summary>
+    public long NextStartBoostMb { get; set; }
 }
 
 /// <summary>Loads and saves one server's <see cref="MemoryHistory"/>.</summary>
@@ -75,6 +82,29 @@ public sealed class MemoryHistoryStore
         get { lock (_lock) return _history.Sessions.ToList(); }
     }
 
+    /// <summary>Asks for <paramref name="mb"/> more memory at the next start, once.</summary>
+    public void SetNextStartBoost(long mb)
+    {
+        lock (_lock)
+        {
+            _history.NextStartBoostMb = Math.Max(0, mb);
+            Save();
+        }
+    }
+
+    /// <summary>The raise waiting for the next start, which it clears. 0 when there is none.</summary>
+    public long TakeNextStartBoost()
+    {
+        lock (_lock)
+        {
+            var boost = _history.NextStartBoostMb;
+            if (boost <= 0) return 0;
+            _history.NextStartBoostMb = 0;
+            Save();
+            return boost;
+        }
+    }
+
     /// <summary>Adds a finished run, drops the oldest beyond <see cref="MaxSessions"/> and saves.</summary>
     public void Add(MemorySession session)
     {
@@ -83,9 +113,13 @@ public sealed class MemoryHistoryStore
             _history.Sessions.Add(session);
             if (_history.Sessions.Count > MaxSessions)
                 _history.Sessions.RemoveRange(0, _history.Sessions.Count - MaxSessions);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-            AtomicJsonFile.Write(_path, _history);
+            Save();
         }
+    }
+
+    private void Save()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+        AtomicJsonFile.Write(_path, _history);
     }
 }

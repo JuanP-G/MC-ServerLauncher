@@ -117,6 +117,16 @@ public sealed class StoreSummaryService
         return null;
     }
 
+    /// <summary>The catalogue's title and sentence for a project known by its slug, or null.</summary>
+    /// <remarks>For lists the app writes itself, such as the Performance page's suggestions.</remarks>
+    public (string Title, string? Text)? CuratedBySlug(string slug)
+    {
+        var item = new StoreItem { Slug = slug };
+        if (Lookup(item) is not { } entry) return null;
+        return (entry.TryGetValue("title", out var title) && !string.IsNullOrWhiteSpace(title) ? title : slug,
+            Curated(item));
+    }
+
     /// <summary>
     /// The sentence the downloaded catalogue has for this project, in the interface language. It
     /// comes second, after <see cref="Curated"/>: a person's sentence is always better than a

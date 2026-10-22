@@ -166,6 +166,72 @@ public partial class ServerViewModel
         RunOnUi(() => _perf.AddLagWarning(DateTime.UtcNow, behind));
     }
 
+    // --- The solutions page ---
+
+    /// <summary>The page that replaces the tabs, or null while the tabs show.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowingSolutions), nameof(ShowingTabs))]
+    private PerformanceSolutionsViewModel? _solutions;
+
+    public bool ShowingSolutions => Solutions is not null;
+    public bool ShowingTabs => Solutions is null;
+
+    [RelayCommand]
+    private void ShowPerformanceSolutions()
+    {
+        Solutions?.Shutdown();
+        Solutions = new PerformanceSolutionsViewModel(this, _perf.Evaluate(DateTime.UtcNow));
+    }
+
+    /// <summary>Back to the tabs.</summary>
+    internal void CloseSolutions()
+    {
+        Solutions?.Shutdown();
+        Solutions = null;
+    }
+
+    internal IReadOnlyDictionary<string, string> ReadProperties() => _properties.Read(Config.PropertiesPath);
+
+    internal void WriteProperties(IDictionary<string, string> changes) =>
+        _properties.Update(Config.PropertiesPath, changes);
+
+    /// <summary>The heap ceiling the server runs with, or would: the last start's, else the saved maximum.</summary>
+    internal long CurrentCeilingMb() => MemoryPlan?.CeilingMb ?? Config.MaxRamGb * 1024L;
+
+    /// <summary>True when the memory is the app's or the owner's numbers to change, not their own JVM arguments'.</summary>
+    internal bool CanRaiseMemory => !JvmArgs.SetsMemory(Config.ExtraJvmArgs);
+
+    internal bool IsManualMemory => MemoryProfile.Effective(Config) == MemoryMode.Manual;
+
+    /// <summary>
+    /// Raises the memory. Manual servers keep it as their maximum; Automatic ones get it once, at the
+    /// next start, and go back to sizing themselves after.
+    /// </summary>
+    internal void RaiseMemory(long toMb)
+    {
+        if (IsManualMemory)
+        {
+            Config.MaxRamGb = (int)Math.Ceiling(toMb / 1024.0);
+            ConfigChanged?.Invoke();
+        }
+        else
+        {
+            MemoryHistoryStore.For(Config.Id).SetNextStartBoost(PerformanceAdvice.RaiseByMb);
+        }
+    }
+
+    /// <summary>True when the server ships spark itself (Paper and Purpur, from 1.21).</summary>
+    internal bool SparkIsBundled =>
+        Config.Type is ServerType.Paper or ServerType.Purpur
+        && PerformanceProbe.VersionAtLeast(Config.GameVersion, 1, 21, 0);
+
+    internal bool SparkAvailable => SparkIsBundled || SparkInstalled();
+
+    /// <summary>True when some command can still tell how fast the server is.</summary>
+    internal bool CanMeasureSpeed => _probe is { } probe
+        ? probe.Current is not null
+        : PerformanceProbe.Candidates(Config.Type, Config.GameVersion, SparkInstalled()).Count > 0;
+
     /// <summary>What the owner typed arrives next in the console; the probe stops waiting for its own answer.</summary>
     private void DisarmProbe() => _probe?.Disarm();
 

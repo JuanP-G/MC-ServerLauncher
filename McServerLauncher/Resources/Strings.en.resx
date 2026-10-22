@@ -1271,6 +1271,29 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Perf_CauseMemory" xml:space="preserve"><value>Java is short of memory.</value></data>
   <data name="Perf_Solutions" xml:space="preserve"><value>See solutions</value></data>
   <data name="Perf_DismissTip" xml:space="preserve"><value>Hide until the next start</value></data>
+  <data name="Sol_Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Sol_Title" xml:space="preserve"><value>Running lighter</value></data>
+  <data name="Sol_Intro" xml:space="preserve"><value>Changes that usually help. None of them changes how the game plays.</value></data>
+  <data name="Sol_SectionSettings" xml:space="preserve"><value>Server settings</value></data>
+  <data name="Sol_SectionContent" xml:space="preserve"><value>Mods and plugins that help</value></data>
+  <data name="Sol_SimFmt" xml:space="preserve"><value>Lower the simulation distance from {0} to {1}</value></data>
+  <data name="Sol_SimDetail" xml:space="preserve"><value>How far from each player the game keeps running. It weighs the most on every tick.</value></data>
+  <data name="Sol_ViewFmt" xml:space="preserve"><value>Lower the view distance from {0} to {1}</value></data>
+  <data name="Sol_ViewDetail" xml:space="preserve"><value>The chunks loaded and sent to each player.</value></data>
+  <data name="Sol_RamFmt" xml:space="preserve"><value>Raise the memory from {0} to {1}</value></data>
+  <data name="Sol_RamDetailManual" xml:space="preserve"><value>Saved as this server's maximum memory.</value></data>
+  <data name="Sol_RamDetailAuto" xml:space="preserve"><value>For the next start only; after that the server sizes it by itself again.</value></data>
+  <data name="Sol_PaperOverride" xml:space="preserve"><value>Paper has this distance fixed in spigot.yml, so changing it here would do nothing.</value></data>
+  <data name="Sol_Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Sol_AppliedRestart" xml:space="preserve"><value>Done. It takes effect on restart.</value></data>
+  <data name="Sol_Install" xml:space="preserve"><value>Install</value></data>
+  <data name="Sol_Checking" xml:space="preserve"><value>Looking for a compatible version…</value></data>
+  <data name="Sol_InstalledRestart" xml:space="preserve"><value>Installed. It takes effect on restart.</value></data>
+  <data name="Sol_InstallFailed" xml:space="preserve"><value>Could not install it. See the message on the Mods tab.</value></data>
+  <data name="Sol_VanillaNote" xml:space="preserve"><value>Vanilla cannot take mods. Switching to Fabric or Paper (Configure → change type, keeping the world) lets you install the ones that lighten the server.</value></data>
+  <data name="Sol_Nothing" xml:space="preserve"><value>There is nothing else to suggest for now.</value></data>
+  <data name="Sol_RestartNote" xml:space="preserve"><value>Changes take effect when the server restarts.</value></data>
+  <data name="Mem_ReasonBoost" xml:space="preserve"><value>a raise you asked for</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Server memory</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>If you don't play on this PC, servers may use all its memory but 2 GB. Otherwise, together they use at most half.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>This PC is only for servers</value></data>
