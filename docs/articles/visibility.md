@@ -109,6 +109,13 @@ launcher`); long-tail queries already appear but without clicks yet (`minecraft 
 - The three older guides carry "MC Server Launcher" (the name the app window shows) in the description, and
   link to `descargar` and `comparativa` from their last section.
 
+**Brazilian Portuguese.** The `/pt/` version is written in Brazilian Portuguese (`pt-BR`: "você", "hospedar",
+"baixar"), because the Portuguese-language searches seen in Bing and GoatCounter come from Brazil ("criar
+servidor de minecraft"). The URL stays `/pt/` and the internal key stays `pt`; what changes is the tag:
+`hreflang="pt-BR"` (landing, guides and `sitemap.xml`), `<html lang="pt-BR">`, `og:locale` `pt_BR` and `inLanguage`
+in the structured data. That mapping lives in `HREFLANG` in `guides.py`. The button names between quotes are the
+app's own, and the app is still in European Portuguese.
+
 **Adding a guide.** Create `web/_i18n/guides/<id>.json` by copying an existing one (slugs, dates, `icon` and
 the five languages), add its Spanish card to the `#guias` section of `web/index.html` (the card text is
 `card_title` / `card_desc` and the link is the Spanish slug's path) and run `python web/_i18n/build.py`.

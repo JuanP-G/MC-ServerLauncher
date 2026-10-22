@@ -14,7 +14,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/"/>
     <image:image>
       <image:loc>https://mc-server-launcher.vercel.app/assets/app-screenshot.jpg</image:loc>
@@ -34,7 +34,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/"/>
     <image:image>
       <image:loc>https://mc-server-launcher.vercel.app/assets/og/en.jpg</image:loc>
@@ -50,7 +50,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/"/>
     <image:image>
       <image:loc>https://mc-server-launcher.vercel.app/assets/og/de.jpg</image:loc>
@@ -66,7 +66,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/"/>
     <image:image>
       <image:loc>https://mc-server-launcher.vercel.app/assets/og/fr.jpg</image:loc>
@@ -82,7 +82,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/"/>
     <image:image>
       <image:loc>https://mc-server-launcher.vercel.app/assets/og/pt.jpg</image:loc>
@@ -100,7 +100,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/best-minecraft-server-manager-windows/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/bester-minecraft-server-manager-windows/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/meilleur-gestionnaire-serveur-minecraft-windows/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gestor-servidores-minecraft-windows/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gerenciador-servidor-minecraft-windows/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/mejor-gestor-servidores-minecraft-windows/"/>
   </url>
 
@@ -113,7 +113,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/best-minecraft-server-manager-windows/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/bester-minecraft-server-manager-windows/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/meilleur-gestionnaire-serveur-minecraft-windows/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gestor-servidores-minecraft-windows/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gerenciador-servidor-minecraft-windows/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/mejor-gestor-servidores-minecraft-windows/"/>
   </url>
 
@@ -126,7 +126,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/best-minecraft-server-manager-windows/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/bester-minecraft-server-manager-windows/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/meilleur-gestionnaire-serveur-minecraft-windows/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gestor-servidores-minecraft-windows/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gerenciador-servidor-minecraft-windows/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/mejor-gestor-servidores-minecraft-windows/"/>
   </url>
 
@@ -139,12 +139,12 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/best-minecraft-server-manager-windows/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/bester-minecraft-server-manager-windows/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/meilleur-gestionnaire-serveur-minecraft-windows/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gestor-servidores-minecraft-windows/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gerenciador-servidor-minecraft-windows/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/mejor-gestor-servidores-minecraft-windows/"/>
   </url>
 
   <url>
-    <loc>https://mc-server-launcher.vercel.app/pt/guides/melhor-gestor-servidores-minecraft-windows/</loc>
+    <loc>https://mc-server-launcher.vercel.app/pt/guides/melhor-gerenciador-servidor-minecraft-windows/</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -152,7 +152,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/best-minecraft-server-manager-windows/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/bester-minecraft-server-manager-windows/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/meilleur-gestionnaire-serveur-minecraft-windows/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gestor-servidores-minecraft-windows/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gerenciador-servidor-minecraft-windows/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/mejor-gestor-servidores-minecraft-windows/"/>
   </url>
 
@@ -165,7 +165,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/download-minecraft-server-jar-official/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-herunterladen-offizielle-jar/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/telecharger-serveur-minecraft-jar-officiel/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/descarregar-servidor-minecraft-jar-oficial/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/baixar-servidor-minecraft-jar-oficial/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/descargar-servidor-minecraft-jar-oficial/"/>
   </url>
 
@@ -178,7 +178,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/download-minecraft-server-jar-official/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-herunterladen-offizielle-jar/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/telecharger-serveur-minecraft-jar-officiel/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/descarregar-servidor-minecraft-jar-oficial/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/baixar-servidor-minecraft-jar-oficial/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/descargar-servidor-minecraft-jar-oficial/"/>
   </url>
 
@@ -191,7 +191,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/download-minecraft-server-jar-official/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-herunterladen-offizielle-jar/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/telecharger-serveur-minecraft-jar-officiel/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/descarregar-servidor-minecraft-jar-oficial/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/baixar-servidor-minecraft-jar-oficial/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/descargar-servidor-minecraft-jar-oficial/"/>
   </url>
 
@@ -204,12 +204,12 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/download-minecraft-server-jar-official/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-herunterladen-offizielle-jar/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/telecharger-serveur-minecraft-jar-officiel/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/descarregar-servidor-minecraft-jar-oficial/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/baixar-servidor-minecraft-jar-oficial/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/descargar-servidor-minecraft-jar-oficial/"/>
   </url>
 
   <url>
-    <loc>https://mc-server-launcher.vercel.app/pt/guides/descarregar-servidor-minecraft-jar-oficial/</loc>
+    <loc>https://mc-server-launcher.vercel.app/pt/guides/baixar-servidor-minecraft-jar-oficial/</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -217,7 +217,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/download-minecraft-server-jar-official/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-herunterladen-offizielle-jar/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/telecharger-serveur-minecraft-jar-officiel/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/descarregar-servidor-minecraft-jar-oficial/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/baixar-servidor-minecraft-jar-oficial/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/descargar-servidor-minecraft-jar-oficial/"/>
   </url>
 
@@ -230,7 +230,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/minecraft-server-stops-itself-when-empty/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-schaltet-sich-bei-leerlauf-ab/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/serveur-minecraft-eteint-seul-quand-vide/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/servidor-minecraft-se-apaga-solo-cuando-esta-vacio/"/>
   </url>
 
@@ -243,7 +243,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/minecraft-server-stops-itself-when-empty/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-schaltet-sich-bei-leerlauf-ab/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/serveur-minecraft-eteint-seul-quand-vide/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/servidor-minecraft-se-apaga-solo-cuando-esta-vacio/"/>
   </url>
 
@@ -256,7 +256,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/minecraft-server-stops-itself-when-empty/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-schaltet-sich-bei-leerlauf-ab/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/serveur-minecraft-eteint-seul-quand-vide/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/servidor-minecraft-se-apaga-solo-cuando-esta-vacio/"/>
   </url>
 
@@ -269,7 +269,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/minecraft-server-stops-itself-when-empty/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-schaltet-sich-bei-leerlauf-ab/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/serveur-minecraft-eteint-seul-quand-vide/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/servidor-minecraft-se-apaga-solo-cuando-esta-vacio/"/>
   </url>
 
@@ -282,7 +282,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/minecraft-server-stops-itself-when-empty/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-schaltet-sich-bei-leerlauf-ab/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/serveur-minecraft-eteint-seul-quand-vide/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/servidor-minecraft-desliga-sozinho-quando-vazio/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/servidor-minecraft-se-apaga-solo-cuando-esta-vacio/"/>
   </url>
 
@@ -295,7 +295,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/host-free-minecraft-server-no-port-forwarding/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-kostenlos-hosten-ohne-portfreigabe/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/heberger-serveur-minecraft-gratuit-sans-ouvrir-ports/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/hostear-servidor-minecraft-gratis-sin-abrir-puertos/"/>
   </url>
 
@@ -308,7 +308,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/host-free-minecraft-server-no-port-forwarding/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-kostenlos-hosten-ohne-portfreigabe/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/heberger-serveur-minecraft-gratuit-sans-ouvrir-ports/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/hostear-servidor-minecraft-gratis-sin-abrir-puertos/"/>
   </url>
 
@@ -321,7 +321,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/host-free-minecraft-server-no-port-forwarding/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-kostenlos-hosten-ohne-portfreigabe/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/heberger-serveur-minecraft-gratuit-sans-ouvrir-ports/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/hostear-servidor-minecraft-gratis-sin-abrir-puertos/"/>
   </url>
 
@@ -334,7 +334,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/host-free-minecraft-server-no-port-forwarding/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-kostenlos-hosten-ohne-portfreigabe/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/heberger-serveur-minecraft-gratuit-sans-ouvrir-ports/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/hostear-servidor-minecraft-gratis-sin-abrir-puertos/"/>
   </url>
 
@@ -347,7 +347,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/host-free-minecraft-server-no-port-forwarding/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-kostenlos-hosten-ohne-portfreigabe/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/heberger-serveur-minecraft-gratuit-sans-ouvrir-ports/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/alojar-servidor-minecraft-gratis-sem-abrir-portas/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/hostear-servidor-minecraft-gratis-sin-abrir-puertos/"/>
   </url>
 
@@ -360,7 +360,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-mit-mods-erstellen/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/creer-serveur-minecraft-avec-mods/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/crear-servidor-minecraft-con-mods/"/>
   </url>
 
@@ -373,7 +373,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-mit-mods-erstellen/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/creer-serveur-minecraft-avec-mods/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/crear-servidor-minecraft-con-mods/"/>
   </url>
 
@@ -386,7 +386,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-mit-mods-erstellen/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/creer-serveur-minecraft-avec-mods/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/crear-servidor-minecraft-con-mods/"/>
   </url>
 
@@ -399,7 +399,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-mit-mods-erstellen/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/creer-serveur-minecraft-avec-mods/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/crear-servidor-minecraft-con-mods/"/>
   </url>
 
@@ -412,7 +412,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/minecraft-server-mit-mods-erstellen/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/creer-serveur-minecraft-avec-mods/"/>
-    <xhtml:link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/criar-servidor-minecraft-com-mods/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/crear-servidor-minecraft-con-mods/"/>
   </url>
 

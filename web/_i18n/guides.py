@@ -31,7 +31,9 @@ import sys
 
 BASE_URL = "https://mc-server-launcher.vercel.app"
 LANGS = ["es", "en", "de", "fr", "pt"]
-LOCALES = {"es": "es_ES", "en": "en_US", "de": "de_DE", "fr": "fr_FR", "pt": "pt_PT"}
+LOCALES = {"es": "es_ES", "en": "en_US", "de": "de_DE", "fr": "fr_FR", "pt": "pt_BR"}
+# Etiqueta hreflang / atributo lang: la ruta sigue siendo /pt/, pero es portugués de Brasil.
+HREFLANG = {"pt": "pt-BR"}
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent                      # web/
@@ -242,13 +244,13 @@ def structured_data(gid, g, code, ui_lang, guides, url, src_path):
         {
             "@context": "https://schema.org", "@type": "Article",
             "headline": content["h1"], "description": content["description"],
-            "inLanguage": code, "url": url, "mainEntityOfPage": url, "image": image,
+            "inLanguage": HREFLANG.get(code, code), "url": url, "mainEntityOfPage": url, "image": image,
             "datePublished": g["published"], "dateModified": g["modified"],
             "author": author,
             "publisher": {"@type": "Organization", "name": "MC-ServerLauncher", "url": BASE_URL + "/"},
         },
         {
-            "@context": "https://schema.org", "@type": "FAQPage", "inLanguage": code,
+            "@context": "https://schema.org", "@type": "FAQPage", "inLanguage": HREFLANG.get(code, code),
             "mainEntity": [{"@type": "Question", "name": resolve(q["q"]),
                             "acceptedAnswer": {"@type": "Answer", "text": resolve(q["a"])}}
                            for q in content["faq"]],
@@ -268,7 +270,7 @@ def structured_data(gid, g, code, ui_lang, guides, url, src_path):
         # La guía descrita como procedimiento (HowTo) usa su último bloque de pasos, que es el de la app.
         data.insert(1, {
             "@context": "https://schema.org", "@type": "HowTo",
-            "name": content["h1"], "description": content["description"], "inLanguage": code,
+            "name": content["h1"], "description": content["description"], "inLanguage": HREFLANG.get(code, code),
             "totalTime": "PT%dM" % g["howto_minutes"],
             "estimatedCost": {"@type": "MonetaryAmount", "currency": "EUR", "value": "0"},
             "tool": [{"@type": "HowToTool", "name": "MC-ServerLauncher"}],
@@ -375,16 +377,16 @@ def build_page(gid, g, code, ui, guides, chrome):
         top = top.replace('href="#%s"' % anchor, 'href="%s#%s"' % (home, anchor))
 
     def lang_href(m):
-        target = m.group(3)
+        target = m.group(3).split("-")[0].lower()
         return '<a href="%s"%s hreflang="%s"' % (
-            rel(path, guide_path(target, g["slug"][target])), m.group(2), target)
-    top = re.sub(r'<a href="([^"]*)"([^>]*?) hreflang="(\w\w)"', lang_href, top)
+            rel(path, guide_path(target, g["slug"][target])), m.group(2), m.group(3))
+    top = re.sub(r'<a href="([^"]*)"([^>]*?) hreflang="([\w-]+)"', lang_href, top)
 
     downloads = re.sub(r'data-goatcounter-click="(descarga-\w+|historial-releases)"',
                        r'data-goatcounter-click="guia-%s-\1"' % gid, chrome["downloads"])
 
     alternates = "\n".join(
-        '<link rel="alternate" hreflang="%s" href="%s/%s">' % (c, BASE_URL, guide_path(c, g["slug"][c]))
+        '<link rel="alternate" hreflang="%s" href="%s/%s">' % (HREFLANG.get(c, c), BASE_URL, guide_path(c, g["slug"][c]))
         for c in LANGS)
     alternates += '\n<link rel="alternate" hreflang="x-default" href="%s/%s">' % (
         BASE_URL, guide_path("es", g["slug"]["es"]))
@@ -394,7 +396,7 @@ def build_page(gid, g, code, ui, guides, chrome):
     desc = esc(content["description"])
 
     head = """<!doctype html>
-<html lang="%(code)s">
+<html lang="%(lang)s">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -435,7 +437,7 @@ def build_page(gid, g, code, ui, guides, chrome):
 
 %(ld)s
 
-""" % {"code": code, "gid": gid, "title": esc(content["title"]), "desc": desc, "url": url,
+""" % {"code": code, "lang": HREFLANG.get(code, code), "gid": gid, "title": esc(content["title"]), "desc": desc, "url": url,
        "alternates": alternates, "up": up, "locale": LOCALES[code], "h1": esc(content["h1"]),
        "og": og_image, "pub": g["published"], "mod": g["modified"], "ld": ld}
 
@@ -533,7 +535,7 @@ def sitemap_block(guides):
     entries = []
     for gid, g in guides.items():
         alts = "\n".join(
-            '    <xhtml:link rel="alternate" hreflang="%s" href="%s/%s"/>' % (c, BASE_URL, guide_path(c, g["slug"][c]))
+            '    <xhtml:link rel="alternate" hreflang="%s" href="%s/%s"/>' % (HREFLANG.get(c, c), BASE_URL, guide_path(c, g["slug"][c]))
             for c in LANGS)
         alts += '\n    <xhtml:link rel="alternate" hreflang="x-default" href="%s/%s"/>' % (
             BASE_URL, guide_path("es", g["slug"]["es"]))

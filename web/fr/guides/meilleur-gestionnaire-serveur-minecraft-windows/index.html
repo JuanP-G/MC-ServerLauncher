@@ -12,7 +12,7 @@
 <link rel="alternate" hreflang="en" href="https://mc-server-launcher.vercel.app/en/guides/best-minecraft-server-manager-windows/">
 <link rel="alternate" hreflang="de" href="https://mc-server-launcher.vercel.app/de/guides/bester-minecraft-server-manager-windows/">
 <link rel="alternate" hreflang="fr" href="https://mc-server-launcher.vercel.app/fr/guides/meilleur-gestionnaire-serveur-minecraft-windows/">
-<link rel="alternate" hreflang="pt" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gestor-servidores-minecraft-windows/">
+<link rel="alternate" hreflang="pt-BR" href="https://mc-server-launcher.vercel.app/pt/guides/melhor-gerenciador-servidor-minecraft-windows/">
 <link rel="alternate" hreflang="x-default" href="https://mc-server-launcher.vercel.app/guias/mejor-gestor-servidores-minecraft-windows/">
 <meta name="theme-color" content="#070B14">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -637,7 +637,7 @@ a.card{color:var(--gui-text)}
         <a href="../../../en/guides/best-minecraft-server-manager-windows/" data-goatcounter-click="idioma-en" data-goatcounter-title="Idioma en" hreflang="en"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#012169"/><path d="M0 0l16 11M16 0L0 11" stroke="#FFF" stroke-width="2.4"/><path d="M0 0l16 11M16 0L0 11" stroke="#C8102E" stroke-width="1.1"/><path d="M8 0v11M0 5.5h16" stroke="#FFF" stroke-width="3.6"/><path d="M8 0v11M0 5.5h16" stroke="#C8102E" stroke-width="2"/></svg><b>EN</b>English</a>
         <a href="../../../de/guides/bester-minecraft-server-manager-windows/" data-goatcounter-click="idioma-de" data-goatcounter-title="Idioma de" hreflang="de"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#000"/><rect y="3.67" width="16" height="3.67" fill="#DD0000"/><rect y="7.34" width="16" height="3.66" fill="#FFCE00"/></svg><b>DE</b>Deutsch</a>
         <a href="./" class="on" data-goatcounter-click="idioma-fr" data-goatcounter-title="Idioma fr" hreflang="fr"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#FFF"/><rect width="5.33" height="11" fill="#002395"/><rect x="10.67" width="5.33" height="11" fill="#ED2939"/></svg><b>FR</b>Français</a>
-        <a href="../../../pt/guides/melhor-gestor-servidores-minecraft-windows/" data-goatcounter-click="idioma-pt" data-goatcounter-title="Idioma pt" hreflang="pt"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#DA291C"/><rect width="6.4" height="11" fill="#046A38"/><circle cx="6.4" cy="5.5" r="2.1" fill="#FFE000"/><circle cx="6.4" cy="5.5" r="1.15" fill="#DA291C"/></svg><b>PT</b>Português</a>
+        <a href="../../../pt/guides/melhor-gerenciador-servidor-minecraft-windows/" data-goatcounter-click="idioma-pt" data-goatcounter-title="Idioma pt" hreflang="pt-BR"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#009C3B"/><path d="M8 1.2L14.3 5.5 8 9.8 1.7 5.5z" fill="#FFDF00"/><circle cx="8" cy="5.5" r="2.3" fill="#002776"/></svg><b>PT</b>Português (BR)</a>
       </div>
     </div>
     <a class="btn btn-primary dlbtn" href="#descargas">
@@ -1153,7 +1153,7 @@ a.card{color:var(--gui-text)}
     var flag = cur.querySelector('svg').cloneNode(true); flag.setAttribute('class', 'flag');
     var cs = document.getElementById('langCur');
     cs.parentNode.insertBefore(flag, cs);
-    cs.textContent = cur.getAttribute('hreflang').toUpperCase();
+    cs.textContent = cur.getAttribute('hreflang').split('-')[0].toUpperCase();
     // El nombre accesible tiene que empezar por el texto visible (WCAG 2.5.3).
     langBtn.setAttribute('aria-label', cs.textContent + ' · ' + langBtn.getAttribute('aria-label'));
   }

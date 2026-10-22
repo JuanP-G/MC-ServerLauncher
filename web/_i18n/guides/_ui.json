@@ -63,14 +63,14 @@
     "guide": "GUIA",
     "home": "Início",
     "guides": "Guias",
-    "crumbs": "Caminho de navegação",
-    "updated": "Atualizado a {date}",
+    "crumbs": "Trilha de navegação",
+    "updated": "Atualizado em {date}",
     "read": "{n} min de leitura",
     "tip": "Dica",
     "faq_eyebrow": "PERGUNTAS FREQUENTES",
-    "faq_title": "Dúvidas habituais",
+    "faq_title": "Dúvidas frequentes",
     "more_eyebrow": "MAIS GUIAS",
-    "more_title": "Continua a ler",
+    "more_title": "Continue lendo",
     "date": "{d} de {month} de {y}",
     "months": ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
   }

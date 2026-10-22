@@ -111,6 +111,13 @@ cola larga ya aparecen sin clics aún (`minecraft server mods download`, `minecr
 - Las tres guías antiguas llevan «MC Server Launcher» (el nombre que muestra la ventana de la app) en la
   descripción, y enlazan a `descargar` y `comparativa` desde su última sección.
 
+**Portugués de Brasil.** La versión `/pt/` está escrita en portugués de Brasil (`pt-BR`: «você», «hospedar»,
+«baixar»), porque las búsquedas de Bing y GoatCounter en portugués son brasileñas («criar servidor de minecraft»).
+La URL sigue siendo `/pt/` y la clave interna `pt`; lo que cambia es la etiqueta: `hreflang="pt-BR"` (landing,
+guías y `sitemap.xml`), `<html lang="pt-BR">`, `og:locale` `pt_BR` y `inLanguage` en los datos estructurados.
+Esa correspondencia vive en `HREFLANG` de `guides.py`. Los nombres de botones entre «» son los de la propia app,
+que sigue en portugués de Portugal.
+
 **Añadir una guía.** Crea `web/_i18n/guides/<id>.json` copiando una existente (slugs, fechas, `icon` y
 los cinco idiomas), añade su tarjeta en español a la sección `#guias` de `web/index.html` (el texto de la
 tarjeta es `card_title` / `card_desc` y la ruta es la del slug en español) y ejecuta
