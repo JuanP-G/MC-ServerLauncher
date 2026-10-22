@@ -1255,6 +1255,45 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Mem_NoticeManualFmt" xml:space="preserve"><value>Zurück zu manuell ({0}–{1} GB)</value></data>
   <data name="Mem_RamJavaFmt" xml:space="preserve"><value>Java: {0} von {1}</value></data>
   <data name="Mem_RamTip" xml:space="preserve"><value>Speicher, den dieser Server auf Ihrem PC belegt und den sonst nichts teilt. Er weicht vom Task-Manager ab, der auch gemeinsam genutzten Speicher zählt. Darunter: was Java nach der letzten Bereinigung nutzt und was es insgesamt belegt.</value></data>
+  <data name="Perf_Label" xml:space="preserve"><value>Leistung</value></data>
+  <data name="Perf_Measuring" xml:space="preserve"><value>Messe…</value></data>
+  <data name="Perf_Good" xml:space="preserve"><value>Gut</value></data>
+  <data name="Perf_Tight" xml:space="preserve"><value>Knapp</value></data>
+  <data name="Perf_Saturated" xml:space="preserve"><value>Überlastet</value></data>
+  <data name="Perf_TpsFmt" xml:space="preserve"><value>{0} TPS</value></data>
+  <data name="Perf_WordMsptFmt" xml:space="preserve"><value>{0} · {1} ms/Tick</value></data>
+  <data name="Perf_Tip" xml:space="preserve"><value>Wie gut der Server zurechtkommt. TPS sind Ticks pro Sekunde (20 ist ideal), ms pro Tick die Dauer eines Ticks (über 50 reicht es nicht mehr). Gemessen wird alle 30 s ohne die Konsole zu füllen, und nur anhaltende Probleme werden gemeldet: Die ersten 3 Minuten und Sicherungen zählen nicht.</value></data>
+  <data name="Perf_CauseOom" xml:space="preserve"><value>Dem Server ist der Speicher ausgegangen.</value></data>
+  <data name="Perf_CauseTicksFmt" xml:space="preserve"><value>Der Server ist langsam: {0} TPS.</value></data>
+  <data name="Perf_CauseTicks" xml:space="preserve"><value>Der Server braucht für jeden Tick zu lange.</value></data>
+  <data name="Perf_CauseLagFmt" xml:space="preserve"><value>Der Server meldet, nicht mitzukommen (Warnungen in 5 Min: {0}).</value></data>
+  <data name="Perf_CauseCpu" xml:space="preserve"><value>Der Prozessor ist am Limit.</value></data>
+  <data name="Perf_CauseMemory" xml:space="preserve"><value>Java hat zu wenig Speicher.</value></data>
+  <data name="Perf_Solutions" xml:space="preserve"><value>Lösungen ansehen</value></data>
+  <data name="Perf_DismissTip" xml:space="preserve"><value>Bis zum nächsten Start ausblenden</value></data>
+  <data name="Sol_Back" xml:space="preserve"><value>Zurück</value></data>
+  <data name="Sol_Title" xml:space="preserve"><value>Leichter laufen</value></data>
+  <data name="Sol_Intro" xml:space="preserve"><value>Änderungen, die meist helfen. Keine verändert das Spiel.</value></data>
+  <data name="Sol_SectionSettings" xml:space="preserve"><value>Servereinstellungen</value></data>
+  <data name="Sol_SectionContent" xml:space="preserve"><value>Mods und Plugins, die helfen</value></data>
+  <data name="Sol_SimFmt" xml:space="preserve"><value>Simulationsdistanz von {0} auf {1} senken</value></data>
+  <data name="Sol_SimDetail" xml:space="preserve"><value>So weit um jeden Spieler läuft das Spiel weiter. Das wiegt bei jedem Tick am meisten.</value></data>
+  <data name="Sol_ViewFmt" xml:space="preserve"><value>Sichtweite von {0} auf {1} senken</value></data>
+  <data name="Sol_ViewDetail" xml:space="preserve"><value>Die Chunks, die geladen und an jeden Spieler gesendet werden.</value></data>
+  <data name="Sol_RamFmt" xml:space="preserve"><value>Speicher von {0} auf {1} erhöhen</value></data>
+  <data name="Sol_RamDetailManual" xml:space="preserve"><value>Wird als maximaler Speicher dieses Servers gespeichert.</value></data>
+  <data name="Sol_RamDetailAuto" xml:space="preserve"><value>Nur für den nächsten Start; danach stellt der Server ihn wieder selbst ein.</value></data>
+  <data name="Sol_PaperOverride" xml:space="preserve"><value>Paper hat diese Distanz in spigot.yml festgelegt, eine Änderung hier würde nichts bewirken.</value></data>
+  <data name="Sol_Apply" xml:space="preserve"><value>Anwenden</value></data>
+  <data name="Sol_AppliedRestart" xml:space="preserve"><value>Erledigt. Gilt nach dem Neustart.</value></data>
+  <data name="Sol_Install" xml:space="preserve"><value>Installieren</value></data>
+  <data name="Sol_Checking" xml:space="preserve"><value>Suche eine kompatible Version…</value></data>
+  <data name="Sol_InstalledRestart" xml:space="preserve"><value>Installiert. Gilt nach dem Neustart.</value></data>
+  <data name="Sol_InstallFailed" xml:space="preserve"><value>Installation fehlgeschlagen. Siehe die Meldung im Tab Mods.</value></data>
+  <data name="Sol_VanillaNote" xml:space="preserve"><value>Vanilla unterstützt keine Mods. Der Wechsel zu Fabric oder Paper (Konfigurieren → Typ ändern, Welt bleibt) erlaubt die Mods, die den Server entlasten.</value></data>
+  <data name="Sol_Nothing" xml:space="preserve"><value>Im Moment gibt es nichts weiter vorzuschlagen.</value></data>
+  <data name="Sol_RestartNote" xml:space="preserve"><value>Änderungen gelten nach dem Neustart des Servers.</value></data>
+  <data name="Mem_ReasonBoost" xml:space="preserve"><value>eine von dir angeforderte Erhöhung</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Speicher der Server</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Wenn du auf diesem PC nicht spielst, dürfen die Server den ganzen Speicher bis auf 2 GB nutzen. Sonst teilen sie sich höchstens die Hälfte.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>Dieser PC ist nur für Server</value></data>

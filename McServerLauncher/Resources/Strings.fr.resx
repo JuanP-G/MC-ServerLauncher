@@ -1255,6 +1255,45 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Mem_NoticeManualFmt" xml:space="preserve"><value>Revenir au manuel ({0}–{1} Go)</value></data>
   <data name="Mem_RamJavaFmt" xml:space="preserve"><value>Java : {0} sur {1}</value></data>
   <data name="Mem_RamTip" xml:space="preserve"><value>Mémoire que ce serveur occupe sur votre PC et que rien d'autre ne partage. Elle diffère du Gestionnaire des tâches, qui compte aussi la mémoire partagée. Dessous : ce que Java utilise après son dernier nettoyage et ce qu'il détient au total.</value></data>
+  <data name="Perf_Label" xml:space="preserve"><value>Performances</value></data>
+  <data name="Perf_Measuring" xml:space="preserve"><value>Mesure…</value></data>
+  <data name="Perf_Good" xml:space="preserve"><value>Bien</value></data>
+  <data name="Perf_Tight" xml:space="preserve"><value>Juste</value></data>
+  <data name="Perf_Saturated" xml:space="preserve"><value>Saturé</value></data>
+  <data name="Perf_TpsFmt" xml:space="preserve"><value>{0} TPS</value></data>
+  <data name="Perf_WordMsptFmt" xml:space="preserve"><value>{0} · {1} ms/tick</value></data>
+  <data name="Perf_Tip" xml:space="preserve"><value>Comment le serveur tient le coup. Les TPS sont les ticks par seconde (20 est l'idéal) et les ms par tick, le temps de chacun (plus de 50, il ne suit plus). C'est mesuré toutes les 30 s sans encombrer la console et ne signale que les problèmes durables : pas de jugement les 3 premières minutes ni pendant une sauvegarde.</value></data>
+  <data name="Perf_CauseOom" xml:space="preserve"><value>Le serveur a manqué de mémoire.</value></data>
+  <data name="Perf_CauseTicksFmt" xml:space="preserve"><value>Le serveur est lent : {0} TPS.</value></data>
+  <data name="Perf_CauseTicks" xml:space="preserve"><value>Le serveur met trop de temps à chaque tick.</value></data>
+  <data name="Perf_CauseLagFmt" xml:space="preserve"><value>Le serveur indique ne plus suivre (avertissements en 5 min : {0}).</value></data>
+  <data name="Perf_CauseCpu" xml:space="preserve"><value>Le processeur est à sa limite.</value></data>
+  <data name="Perf_CauseMemory" xml:space="preserve"><value>Java manque de mémoire.</value></data>
+  <data name="Perf_Solutions" xml:space="preserve"><value>Voir les solutions</value></data>
+  <data name="Perf_DismissTip" xml:space="preserve"><value>Masquer jusqu'au prochain démarrage</value></data>
+  <data name="Sol_Back" xml:space="preserve"><value>Retour</value></data>
+  <data name="Sol_Title" xml:space="preserve"><value>Tourner plus léger</value></data>
+  <data name="Sol_Intro" xml:space="preserve"><value>Des changements qui aident en général. Aucun ne modifie la façon de jouer.</value></data>
+  <data name="Sol_SectionSettings" xml:space="preserve"><value>Réglages du serveur</value></data>
+  <data name="Sol_SectionContent" xml:space="preserve"><value>Mods et plugins qui aident</value></data>
+  <data name="Sol_SimFmt" xml:space="preserve"><value>Baisser la distance de simulation de {0} à {1}</value></data>
+  <data name="Sol_SimDetail" xml:space="preserve"><value>C'est la distance autour de chaque joueur où le jeu continue de tourner, ce qui pèse le plus à chaque tick.</value></data>
+  <data name="Sol_ViewFmt" xml:space="preserve"><value>Baisser la distance de vue de {0} à {1}</value></data>
+  <data name="Sol_ViewDetail" xml:space="preserve"><value>Ce sont les chunks chargés et envoyés à chaque joueur.</value></data>
+  <data name="Sol_RamFmt" xml:space="preserve"><value>Augmenter la mémoire de {0} à {1}</value></data>
+  <data name="Sol_RamDetailManual" xml:space="preserve"><value>Enregistré comme mémoire maximale de ce serveur.</value></data>
+  <data name="Sol_RamDetailAuto" xml:space="preserve"><value>Pour le prochain démarrage seulement ; ensuite le serveur la règle de nouveau seul.</value></data>
+  <data name="Sol_PaperOverride" xml:space="preserve"><value>Paper fixe cette distance dans spigot.yml, donc la changer ici ne ferait rien.</value></data>
+  <data name="Sol_Apply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="Sol_AppliedRestart" xml:space="preserve"><value>Fait. Pris en compte au redémarrage.</value></data>
+  <data name="Sol_Install" xml:space="preserve"><value>Installer</value></data>
+  <data name="Sol_Checking" xml:space="preserve"><value>Recherche d'une version compatible…</value></data>
+  <data name="Sol_InstalledRestart" xml:space="preserve"><value>Installé. Pris en compte au redémarrage.</value></data>
+  <data name="Sol_InstallFailed" xml:space="preserve"><value>Installation impossible. Voir le message de l'onglet Mods.</value></data>
+  <data name="Sol_VanillaNote" xml:space="preserve"><value>Vanilla n'accepte pas les mods. Passer à Fabric ou Paper (Configurer → changer le type, en gardant le monde) permet d'installer ceux qui allègent le serveur.</value></data>
+  <data name="Sol_Nothing" xml:space="preserve"><value>Rien d'autre à suggérer pour l'instant.</value></data>
+  <data name="Sol_RestartNote" xml:space="preserve"><value>Les changements sont pris en compte au redémarrage du serveur.</value></data>
+  <data name="Mem_ReasonBoost" xml:space="preserve"><value>une augmentation demandée</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Mémoire des serveurs</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Si tu ne joues pas sur ce PC, les serveurs peuvent utiliser toute sa mémoire sauf 2 Go. Sinon, ensemble, ils en utilisent au plus la moitié.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>Ce PC sert uniquement aux serveurs</value></data>

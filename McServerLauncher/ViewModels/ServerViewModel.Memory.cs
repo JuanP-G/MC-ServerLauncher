@@ -53,8 +53,9 @@ public partial class ServerViewModel
         var config = Config;
         var java = _java.GetRuntime(config.JavaPath);
         var mods = MemoryProfile.CountMods(config);
+        var boost = MemoryHistoryStore.For(config.Id).TakeNextStartBoost();
         var plan = MemoryProfile.Plan(new MemoryInputs(config, java, mods, SystemMemory.TotalMb(),
-            MemoryBudget.ReservedByOthersMb(config.Id), MemoryPreferences.DedicatedMachine));
+            MemoryBudget.ReservedByOthersMb(config.Id), MemoryPreferences.DedicatedMachine, boost));
 
         _runJavaMajor = java.Major;
         _runModCount = mods;
@@ -92,6 +93,7 @@ public partial class ServerViewModel
     {
         MemoryCeilingReason.KeptPrevious => Localizer.Get("Mem_ReasonKept"),
         MemoryCeilingReason.Budget => Localizer.Get("Mem_ReasonBudget"),
+        MemoryCeilingReason.Boosted => Localizer.Get("Mem_ReasonBoost"),
         MemoryCeilingReason.Floor => Localizer.Get("Mem_ReasonFloor"),
         _ when modCount > 0 => string.Format(Localizer.Get("Mem_ReasonModsFmt"), modCount),
         _ => Localizer.Get("Mem_ReasonNoMods")
@@ -173,7 +175,9 @@ public partial class ServerViewModel
     /// <summary>Notes a console line that says the server ran out of memory.</summary>
     private void WatchForOutOfMemory(string line)
     {
-        if (line.Contains("java.lang.OutOfMemoryError", StringComparison.Ordinal)) _sawOutOfMemory = true;
+        if (!line.Contains("java.lang.OutOfMemoryError", StringComparison.Ordinal)) return;
+        _sawOutOfMemory = true;
+        RunOnUi(_perf.OutOfMemory);
     }
 
     /// <summary>

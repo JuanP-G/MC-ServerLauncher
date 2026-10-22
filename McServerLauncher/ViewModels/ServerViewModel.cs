@@ -439,6 +439,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
         BackupCoordinator = new BackupCoordinator(this, new WorldBackupService());
         BackupCoordinator.RestoringChanged += () => RunOnUi(OnRestoringChanged);
+        InitPerformance();
 
         // Before RefreshInfo, which refreshes the player lists and with them this.
         History = new PlayerHistoryViewModel(this);
@@ -561,6 +562,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         // Before the throttle below, on purpose: the whole point of stopping an empty server is to
         // stop it while nobody is watching, which is exactly when the window is in the tray.
         CheckIdleShutdown();
+        ProbePerformance();
 
         if (MainWindowHidden && ++_hiddenStatsTicks % 10 != 0) return;
         UpdateStats();
@@ -1055,6 +1057,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         {
             _stats.Reset();
             _statsTimer.Start();
+            BeginPerformanceWatch();
             _lastRunningAtUtc = DateTime.UtcNow;
 
             // The interval starts now: the pre-start backup already covers the world as it is.
@@ -1065,6 +1068,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         {
             _statsTimer.Stop();
             _autoBackupTimer.Stop();
+            EndPerformanceWatch();
             MemoryBudget.Release(Config.Id);
 
             // From Stopping, the app or the console asked for it; from anything else, it ended by itself.
@@ -1128,6 +1132,10 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     /// <summary>A line from the server process, classified by where it came from.</summary>
     private void OnServerLine(string line, ConsoleSource source)
     {
+        // First of all: the answer to the speed probe is not for the console, nor the log on disk,
+        // nor the player history, so nothing below may see it.
+        if (SwallowProbeAnswer(line)) return;
+
         // Only standard output's own previous line: standard error arrives on another thread, and
         // a JVM warning landing between two lines of the mod list must not decide what they are.
         var kind = ConsoleLineClassifier.Classify(line, source,
@@ -1146,6 +1154,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         if (kind == ConsoleLineKind.Chat) return;
 
         WatchForOutOfMemory(line);
+        WatchForLag(line);
 
         // The server's own answer to "seed": remembered in case the world's files cannot be read.
         if (source == ConsoleSource.Stdout && WorldSeed.FromConsoleLine(line) is { } seed)
@@ -1976,6 +1985,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     {
         var cmd = CommandText.Trim();
         if (cmd.Length == 0) return;
+        DisarmProbe();   // what they asked for must reach them, not the probe
         OnConsoleLine("> " + cmd, ConsoleLineKind.Command);
         _process.SendCommand(cmd);
         if (WorldCommand.Touches(cmd)) BackupCoordinator.NoteWorldTouched();   // a /fill, with nobody on
@@ -2355,6 +2365,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         var ramMb = MemoryReadout.OwnMb(sample, _memTracker?.Collector ?? GcCollector.Unknown);
         _memTracker?.AddSample(sample.PrivateMb, ConnectedPlayers.Count);
         PumpGcLog();
+        FeedPerformance(sample);
 
         CpuText = $"{sample.CpuPercent:0.#} %";
         RamText = $"{ramMb} MB";

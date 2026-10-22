@@ -19,7 +19,10 @@ public enum MemoryCeilingReason
     Budget,
 
     /// <summary>Not even the minimum fit in the budget; the minimum is used anyway.</summary>
-    Floor
+    Floor,
+
+    /// <summary>The estimate plus the one-off raise the Performance page applied for this start.</summary>
+    Boosted
 }
 
 /// <summary>Everything the memory decision depends on, gathered before a server starts.</summary>
@@ -29,13 +32,15 @@ public enum MemoryCeilingReason
 /// <param name="TotalRamMb">The machine's memory. 0 when unknown, which disables the budget.</param>
 /// <param name="ReservedByOthersMb">Ceilings of the other servers running right now.</param>
 /// <param name="Dedicated">The machine is only for servers ("Este PC es solo para servidores").</param>
+/// <param name="BoostMb">A one-off raise for this start, asked for from the Performance page. Never saved as the server's ceiling.</param>
 public sealed record MemoryInputs(
     ServerConfig Config,
     JavaService.JavaRuntime Java,
     int ModCount,
     long TotalRamMb,
     long ReservedByOthersMb,
-    bool Dedicated);
+    bool Dedicated,
+    long BoostMb = 0);
 
 /// <summary>What a server starts with.</summary>
 /// <param name="Mode">The mode in effect, which can differ from the one saved (see <see cref="MemoryProfile.Effective"/>).</param>
@@ -183,6 +188,12 @@ public static class MemoryProfile
         {
             ceiling = config.MaxRamGb * 1024L;
             reason = MemoryCeilingReason.KeptPrevious;
+        }
+
+        if (inputs.BoostMb > 0)
+        {
+            ceiling += inputs.BoostMb;
+            reason = MemoryCeilingReason.Boosted;
         }
 
         var budget = BudgetMb(inputs.TotalRamMb, inputs.Dedicated);

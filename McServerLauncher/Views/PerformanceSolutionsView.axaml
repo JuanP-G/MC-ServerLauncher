@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:McServerLauncher.ViewModels"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="760" d:DesignHeight="500"
+             x:Class="McServerLauncher.Views.PerformanceSolutionsView"
+             x:DataType="vm:PerformanceSolutionsViewModel"
+             x:CompileBindings="False">
+
+    <!-- Replaces the server's tabs, the way a mod's page replaces the store's list: a way back at the
+         top, the content in the middle and what happens next at the bottom. -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="4,8,4,0">
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,10">
+            <Button Grid.Column="0" Command="{Binding BackCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ic:SymbolIcon Symbol="ArrowLeft" />
+                    <TextBlock Text="{loc:Loc Sol_Back}" />
+                </StackPanel>
+            </Button>
+            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="{loc:Loc Sol_Title}" Classes="section" />
+                <TextBlock Text="{Binding Cause}" Classes="desc" IsVisible="{Binding HasCause}" />
+            </StackPanel>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="10" Margin="0,0,8,0">
+
+                <TextBlock Classes="desc" Text="{loc:Loc Sol_Intro}" Margin="0,0,0,2" />
+
+                <!-- Settings and memory -->
+                <StackPanel IsVisible="{Binding HasSettings}" Spacing="8">
+                    <TextBlock Classes="title" Text="{loc:Loc Sol_SectionSettings}" />
+                    <ItemsControl ItemsSource="{Binding Settings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Classes="card stat" Margin="0,0,0,6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Classes="title" Text="{Binding Title}" TextWrapping="Wrap" />
+                                            <TextBlock Classes="desc" Text="{Binding Detail}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"
+                                                Content="{Binding ButtonText}" Command="{Binding ApplyCommand}"
+                                                IsVisible="{Binding ShowButton}" />
+                                        <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"
+                                                   MaxWidth="260" TextWrapping="Wrap" Opacity="0.85"
+                                                   Text="{Binding State}" IsVisible="{Binding HasState}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Mods or plugins -->
+                <StackPanel IsVisible="{Binding HasContent}" Spacing="8">
+                    <TextBlock Classes="title"
+                               Text="{loc:Loc Sol_SectionContent}" />
+                    <ItemsControl ItemsSource="{Binding Content}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Classes="card stat" Margin="0,0,0,6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Classes="title" Text="{Binding Title}" TextWrapping="Wrap" />
+                                            <TextBlock Classes="desc" Text="{Binding Detail}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"
+                                                Content="{Binding ButtonText}" Command="{Binding ApplyCommand}"
+                                                IsVisible="{Binding ShowButton}" />
+                                        <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"
+                                                   MaxWidth="260" TextWrapping="Wrap" Opacity="0.85"
+                                                   Text="{Binding State}" IsVisible="{Binding HasState}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Vanilla cannot take mods -->
+                <Border Classes="card stat" IsVisible="{Binding IsVanilla}">
+                    <TextBlock Classes="desc" Text="{loc:Loc Sol_VanillaNote}" />
+                </Border>
+
+                <TextBlock Classes="desc" Text="{loc:Loc Sol_Nothing}" IsVisible="{Binding NothingToSuggest}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Always there: nothing here takes effect before the server restarts. -->
+        <Border Grid.Row="2" Classes="band" Background="{StaticResource SemanticInfoPanel}"
+                BorderBrush="{StaticResource SemanticInfo}">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <ic:SymbolIcon Grid.Column="0" Symbol="Info" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{loc:Loc Sol_RestartNote}" TextTrimming="CharacterEllipsis" />
+                <Button Grid.Column="2" Margin="8,0,0,0" Command="{Binding RestartCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ic:SymbolIcon Symbol="ArrowClockwise" FontSize="12" />
+                        <TextBlock Text="{loc:Loc Restart}" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

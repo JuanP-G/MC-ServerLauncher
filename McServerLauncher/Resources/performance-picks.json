@@ -1,0 +1,14 @@
+{
+ "$comment": "Mods and plugins the Performance page may suggest. 'slug' is the Modrinth project; 'modIds' are the ids its jar answers to (to know it is already installed); 'loaders' are ServerType names; 'helps' are the causes it relieves (Ticks, LagWarnings, Cpu, Memory); 'conflicts' are slugs that must not be installed with it; 'skipWhenBundled' hides it where the server already ships it. Nothing here changes how the game plays, and C2ME is left out on purpose.",
+ "version": 1,
+ "picks": [
+  { "slug": "lithium", "modIds": ["lithium"], "loaders": ["Fabric", "NeoForge"], "helps": ["Ticks", "LagWarnings", "Cpu"], "conflicts": ["canary"] },
+  { "slug": "ferrite-core", "modIds": ["ferritecore"], "loaders": ["Fabric", "NeoForge", "Forge"], "helps": ["Memory"], "conflicts": [] },
+  { "slug": "modernfix", "modIds": ["modernfix"], "loaders": ["Fabric", "NeoForge", "Forge"], "helps": ["Memory", "Ticks", "LagWarnings"], "conflicts": [] },
+  { "slug": "krypton", "modIds": ["krypton"], "loaders": ["Fabric"], "helps": ["Cpu", "LagWarnings"], "conflicts": [] },
+  { "slug": "scalablelux", "modIds": ["scalablelux"], "loaders": ["Fabric"], "helps": ["Ticks", "LagWarnings", "Cpu"], "conflicts": [] },
+  { "slug": "canary", "modIds": ["canary"], "loaders": ["Forge"], "helps": ["Ticks", "LagWarnings", "Cpu"], "conflicts": ["lithium"] },
+  { "slug": "chunky", "modIds": ["chunky"], "loaders": ["Fabric", "NeoForge", "Forge", "Paper", "Purpur"], "helps": ["Ticks", "LagWarnings", "Cpu"], "conflicts": [] },
+  { "slug": "spark", "modIds": ["spark"], "loaders": ["Fabric", "NeoForge", "Forge", "Paper", "Purpur"], "helps": [], "conflicts": [], "skipWhenBundled": true }
+ ]
+}

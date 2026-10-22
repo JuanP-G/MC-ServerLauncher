@@ -1255,6 +1255,45 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Mem_NoticeManualFmt" xml:space="preserve"><value>Back to manual ({0}–{1} GB)</value></data>
   <data name="Mem_RamJavaFmt" xml:space="preserve"><value>Java: {0} of {1}</value></data>
   <data name="Mem_RamTip" xml:space="preserve"><value>Memory this server holds on your PC that nothing else shares. It differs from Task Manager, which also counts shared memory. Below: what Java has in use after its latest cleanup, and what it holds in total.</value></data>
+  <data name="Perf_Label" xml:space="preserve"><value>Performance</value></data>
+  <data name="Perf_Measuring" xml:space="preserve"><value>Measuring…</value></data>
+  <data name="Perf_Good" xml:space="preserve"><value>Good</value></data>
+  <data name="Perf_Tight" xml:space="preserve"><value>Tight</value></data>
+  <data name="Perf_Saturated" xml:space="preserve"><value>Overloaded</value></data>
+  <data name="Perf_TpsFmt" xml:space="preserve"><value>{0} TPS</value></data>
+  <data name="Perf_WordMsptFmt" xml:space="preserve"><value>{0} · {1} ms/tick</value></data>
+  <data name="Perf_Tip" xml:space="preserve"><value>How the server is coping. TPS is ticks per second (20 is ideal) and ms per tick is how long each one takes (over 50 means it cannot keep up). It is measured every 30 s without cluttering the console and only warns about problems that last: it does not judge the first 3 minutes or while a backup runs.</value></data>
+  <data name="Perf_CauseOom" xml:space="preserve"><value>The server ran out of memory.</value></data>
+  <data name="Perf_CauseTicksFmt" xml:space="preserve"><value>The server is slow: {0} TPS.</value></data>
+  <data name="Perf_CauseTicks" xml:space="preserve"><value>The server takes too long on each tick.</value></data>
+  <data name="Perf_CauseLagFmt" xml:space="preserve"><value>The server says it cannot keep up (warnings in 5 min: {0}).</value></data>
+  <data name="Perf_CauseCpu" xml:space="preserve"><value>The processor is at its limit.</value></data>
+  <data name="Perf_CauseMemory" xml:space="preserve"><value>Java is short of memory.</value></data>
+  <data name="Perf_Solutions" xml:space="preserve"><value>See solutions</value></data>
+  <data name="Perf_DismissTip" xml:space="preserve"><value>Hide until the next start</value></data>
+  <data name="Sol_Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Sol_Title" xml:space="preserve"><value>Running lighter</value></data>
+  <data name="Sol_Intro" xml:space="preserve"><value>Changes that usually help. None of them changes how the game plays.</value></data>
+  <data name="Sol_SectionSettings" xml:space="preserve"><value>Server settings</value></data>
+  <data name="Sol_SectionContent" xml:space="preserve"><value>Mods and plugins that help</value></data>
+  <data name="Sol_SimFmt" xml:space="preserve"><value>Lower the simulation distance from {0} to {1}</value></data>
+  <data name="Sol_SimDetail" xml:space="preserve"><value>How far from each player the game keeps running. It weighs the most on every tick.</value></data>
+  <data name="Sol_ViewFmt" xml:space="preserve"><value>Lower the view distance from {0} to {1}</value></data>
+  <data name="Sol_ViewDetail" xml:space="preserve"><value>The chunks loaded and sent to each player.</value></data>
+  <data name="Sol_RamFmt" xml:space="preserve"><value>Raise the memory from {0} to {1}</value></data>
+  <data name="Sol_RamDetailManual" xml:space="preserve"><value>Saved as this server's maximum memory.</value></data>
+  <data name="Sol_RamDetailAuto" xml:space="preserve"><value>For the next start only; after that the server sizes it by itself again.</value></data>
+  <data name="Sol_PaperOverride" xml:space="preserve"><value>Paper has this distance fixed in spigot.yml, so changing it here would do nothing.</value></data>
+  <data name="Sol_Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Sol_AppliedRestart" xml:space="preserve"><value>Done. It takes effect on restart.</value></data>
+  <data name="Sol_Install" xml:space="preserve"><value>Install</value></data>
+  <data name="Sol_Checking" xml:space="preserve"><value>Looking for a compatible version…</value></data>
+  <data name="Sol_InstalledRestart" xml:space="preserve"><value>Installed. It takes effect on restart.</value></data>
+  <data name="Sol_InstallFailed" xml:space="preserve"><value>Could not install it. See the message on the Mods tab.</value></data>
+  <data name="Sol_VanillaNote" xml:space="preserve"><value>Vanilla cannot take mods. Switching to Fabric or Paper (Configure → change type, keeping the world) lets you install the ones that lighten the server.</value></data>
+  <data name="Sol_Nothing" xml:space="preserve"><value>There is nothing else to suggest for now.</value></data>
+  <data name="Sol_RestartNote" xml:space="preserve"><value>Changes take effect when the server restarts.</value></data>
+  <data name="Mem_ReasonBoost" xml:space="preserve"><value>a raise you asked for</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Server memory</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>If you don't play on this PC, servers may use all its memory but 2 GB. Otherwise, together they use at most half.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>This PC is only for servers</value></data>

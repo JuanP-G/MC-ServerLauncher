@@ -1866,6 +1866,32 @@ public partial class ServerModsViewModel : ObservableObject
         return timer;
     }
 
+    /// <summary>The newest build of a project for this server's loader and version, or null when there is none.</summary>
+    /// <remarks>For the Performance page, which only offers what can actually be installed.</remarks>
+    internal async Task<VersionResult?> FindCompatibleAsync(string slug, CancellationToken ct = default)
+    {
+        try
+        {
+            return await _modrinthService.GetLatestProjectVersionAsync(slug, _config.Type, _config.GameVersion, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return null;   // offline: nothing can be offered, and nothing is claimed
+        }
+    }
+
+    /// <summary>
+    /// The ids the installed jars answer to and their file names, for recognising what is already there.
+    /// </summary>
+    internal (HashSet<string> Ids, List<string> Files) InstalledContent()
+    {
+        var folder = Path.Combine(_config.FolderPath, ContentFolder);
+        var files = Directory.Exists(folder)
+            ? Directory.EnumerateFiles(folder, "*.jar").Select(Path.GetFileName).OfType<string>().ToList()
+            : [];
+        return (ModIdsProvidedIn(folder), files);
+    }
+
     /// <summary>
     /// Installs a project. <paramref name="chosen"/> installs that exact version (the details page
     /// offers the last few); without it the newest compatible one is resolved, as before.

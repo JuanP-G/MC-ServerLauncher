@@ -145,6 +145,11 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 - **Iniciar / Detener / Reiniciar** con parada limpia que guarda el mundo; detecta y libera un **puerto
   ocupado**; **CPU, RAM, tiempo activo y puerto** en vivo. La RAM es la memoria que el servidor ocupa de
   verdad en tu PC (no el total compartido del Administrador de tareas), con lo que Java tiene en uso debajo.
+- **Rendimiento** — una quinta tarjeta dice cómo lo lleva el servidor (TPS cuando se pueden medir, o Bien /
+  Justo / Saturado), medido cada 30 s con spark, `tick query` o el `tps` de Paper sin ensuciar la consola. Una
+  banda de una línea aparece solo cuando algo va mal durante un rato, y *Ver soluciones* ofrece arreglos con un
+  clic: bajar las distancias, darle más memoria si es la causa y el PC puede, y mods que lo aceleran sin
+  cambiar el juego.
 - **Tarjeta estilo Minecraft** — icono, MOTD con colores, `jugadores/máx` y señal. Su lápiz abre
   **Apariencia**: la imagen, el nombre y las dos líneas del MOTD —los 16 colores con su nombre, los recientes,
   **degradados**, negrita, cursiva, subrayado y tachado, y **cualquier color hex** en Paper y Purpur— con la

@@ -97,6 +97,7 @@ public sealed class MemorySessionTracker
     private int _gcCount;
     private int _fullGcs;
     private int _explicitGcs;
+    private int _forcedFullGcs;
     private int _players;
     private bool _evacuationFailures;
     private bool _outOfMemory;
@@ -111,6 +112,15 @@ public sealed class MemorySessionTracker
 
     /// <summary>Heap the JVM held at the latest collection that says, in MB. 0 before the first.</summary>
     public long CommittedMb { get; private set; }
+
+    /// <summary>The heap ceiling this run started with, in MB.</summary>
+    public long CeilingMb => _start.CeilingMb;
+
+    /// <summary>All the time the application has been paused for collection, in ms.</summary>
+    public double TotalPauseMs => _pauseMs;
+
+    /// <summary>Full collections so far, not counting ones somebody forced.</summary>
+    public int FullGcsNotForced => _fullGcs - _forcedFullGcs;
 
     /// <summary>True once the server has reported running out of memory.</summary>
     public bool OutOfMemory => _outOfMemory;
@@ -128,6 +138,7 @@ public sealed class MemorySessionTracker
         _pauseMs += e.PauseMs;
         if (e.Kind == GcKind.Full) _fullGcs++;
         if (e.Explicit) _explicitGcs++;
+        if (e.Explicit && e.Kind == GcKind.Full) _forcedFullGcs++;
         if (e.EvacuationFailure) _evacuationFailures = true;
 
         if (e.CommittedBytes > 0)

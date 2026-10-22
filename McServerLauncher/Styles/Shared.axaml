@@ -35,6 +35,15 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Margin" Value="0,8,0,0" />
     </Style>
+    <!-- The performance band: amber while the server is close to its limit, red once it is over. -->
+    <Style Selector="Border.band.perf">
+        <Setter Property="Background" Value="{StaticResource SemanticWarnPanel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource SemanticWarn}" />
+    </Style>
+    <Style Selector="Border.band.perf.severe">
+        <Setter Property="Background" Value="{StaticResource SemanticDangerPanel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource SemanticDanger}" />
+    </Style>
     <Style Selector="Border.band TextBlock">
         <Setter Property="FontSize" Value="12" />
         <Setter Property="VerticalAlignment" Value="Center" />
