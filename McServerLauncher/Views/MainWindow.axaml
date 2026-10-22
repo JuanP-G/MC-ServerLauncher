@@ -353,10 +353,12 @@
                                                     Stroke="{StaticResource SemanticOk}" />
                             </StackPanel>
                         </Border>
-                        <Border Classes="card stat">
+                        <Border Classes="card stat" ToolTip.Tip="{loc:Loc Mem_RamTip}">
                             <StackPanel>
                                 <TextBlock Text="RAM" Classes="statLabel" />
                                 <TextBlock Text="{Binding RamText}" Classes="statValue" />
+                                <TextBlock Text="{Binding RamDetailText}" Classes="statLabel"
+                                           IsVisible="{Binding HasRamDetail}" TextTrimming="CharacterEllipsis" />
                                 <controls:Sparkline Height="22" Margin="0,4,0,0"
                                                     Values="{Binding RamSeries}"
                                                     Stroke="{StaticResource SparklineRam}" />

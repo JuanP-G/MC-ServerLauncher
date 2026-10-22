@@ -1253,6 +1253,8 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Mem_NoticeTip" xml:space="preserve"><value>The app decides how much memory it may use, and Java gives back what it does not need. Your previous numbers are still saved in case you prefer them.</value></data>
   <data name="Mem_NoticeOk" xml:space="preserve"><value>Got it</value></data>
   <data name="Mem_NoticeManualFmt" xml:space="preserve"><value>Back to manual ({0}–{1} GB)</value></data>
+  <data name="Mem_RamJavaFmt" xml:space="preserve"><value>Java: {0} of {1}</value></data>
+  <data name="Mem_RamTip" xml:space="preserve"><value>Memory this server holds on your PC that nothing else shares. It differs from Task Manager, which also counts shared memory. Below: what Java has in use after its latest cleanup, and what it holds in total.</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Server memory</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>If you don't play on this PC, servers may use all its memory but 2 GB. Otherwise, together they use at most half.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>This PC is only for servers</value></data>

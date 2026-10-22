@@ -1046,6 +1046,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
     private void OnServerStateChanged(ServerState state) => RunOnUi(() =>
     {
+        var previous = State;
         State = state;
         ShowStatus();
         UpdateSignal();
@@ -1065,6 +1066,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             _statsTimer.Stop();
             _autoBackupTimer.Stop();
             MemoryBudget.Release(Config.Id);
+
+            // From Stopping, the app or the console asked for it; from anything else, it ended by itself.
+            _ = FinishMemoryRunAsync(previous == ServerState.Stopping ? SessionEnd.Stopped : SessionEnd.Crashed);
 
             // Explicitly, not just by waiting for the next CheckIdleShutdown: that runs off the
             // stats timer, which has just been stopped, so a server that went straight from Running
@@ -1140,6 +1144,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         // each detector is anchored on its own, and this keeps one that is not — or a future one —
         // from being driven by whatever somebody types.
         if (kind == ConsoleLineKind.Chat) return;
+
+        WatchForOutOfMemory(line);
 
         // The server's own answer to "seed": remembered in case the world's files cannot be read.
         if (source == ConsoleSource.Stdout && WorldSeed.FromConsoleLine(line) is { } seed)
@@ -1508,6 +1514,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             {
                 if (shutdowns != _shutdowns) return;
                 MemoryBudget.Reserve(Config.Id, plan.CeilingMb);
+                BeginMemoryRun(plan);
                 try
                 {
                     _process.Start(Config, plan.Flags);
@@ -1515,6 +1522,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
                 catch
                 {
                     MemoryBudget.Release(Config.Id);
+                    AbandonMemoryRun();
                     throw;
                 }
             });
@@ -2343,13 +2351,18 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             return;
         }
 
+        // The memory only this server holds, not the working set Task Manager shows (see ProcessMemory).
+        var ramMb = MemoryReadout.OwnMb(sample, _memTracker?.Collector ?? GcCollector.Unknown);
+        _memTracker?.AddSample(sample.PrivateMb, ConnectedPlayers.Count);
+        PumpGcLog();
+
         CpuText = $"{sample.CpuPercent:0.#} %";
-        RamText = $"{sample.RamMb} MB";
+        RamText = $"{ramMb} MB";
         UptimeText = FormatUptime(sample.Uptime);
 
         // Feed the mini charts; snapshots because the Sparkline control re-renders per assignment.
         _cpuHistory.Add(sample.CpuPercent);
-        _ramHistory.Add(sample.RamMb);
+        _ramHistory.Add(ramMb);
         if (_cpuHistory.Count > MaxStatSamples) _cpuHistory.RemoveAt(0);
         if (_ramHistory.Count > MaxStatSamples) _ramHistory.RemoveAt(0);
         CpuSeries = _cpuHistory.ToArray();
@@ -2394,6 +2407,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         // closing, so the Stopped event may never run to note it.
         Func<Task>? stop = _process.IsRunning ? () => _process.StopAsync(StopTimeout) : null;
         await BackupCoordinator.ShutdownAsync(stop);
+        await FinishMemoryRunAsync(SessionEnd.AppClosed);  // the Stopped event may never get to run
     }
 
     ServerConfig IBackupHost.Config => Config;
