@@ -8,14 +8,14 @@
     "pt": "servidor-minecraft-desliga-sozinho-quando-vazio"
   },
   "published": "2026-10-17",
-  "modified": "2026-10-17",
+  "modified": "2026-10-22",
   "minutes": 4,
   "howto_minutes": 5,
   "icon": "totem.png",
 
   "es": {
-    "title": "Servidor de Minecraft que se apaga solo si está vacío | MC-ServerLauncher",
-    "description": "Haz que tu servidor de Minecraft se apague solo cuando no queda nadie y se encienda cuando alguien intenta entrar, sin gastar RAM ni CPU. Guía paso a paso.",
+    "title": "Servidor de Minecraft que se apaga solo y vuelve al entrar | MC-ServerLauncher",
+    "description": "Haz que tu servidor de Minecraft se apague solo cuando no queda nadie y arranque cuando alguien intenta entrar, sin gastar RAM ni CPU. Paso a paso con MC Server Launcher.",
     "h1": "Cómo hacer que un servidor de Minecraft se apague solo cuando está vacío",
     "crumb": "Apagado automático",
     "lead": "Un servidor encendido gasta memoria, procesador y electricidad aunque no haya nadie jugando. Puedes hacer que se apague cuando lleva un rato vacío y que vuelva a encenderse en cuanto un amigo intente entrar.",
@@ -43,9 +43,11 @@
         "Funciona con el túnel de Playit: la dirección que compartiste es la misma, así que tus amigos siguen entrando por ella aunque el servidor duerma. Cómo configurarlo está en <a href='{guide:gratis}'>hostear un servidor de Minecraft gratis sin abrir puertos</a>.",
         "Los avisos son opcionales: en «Avisos» puedes activar «Apagado por inactividad» para que la app te avise cuando un servidor vacío se apaga solo.",
         "Si nadie ha jugado desde la última copia, la app se salta las copias de arranque y de parada, así que dormir y despertar no llena la carpeta de copias idénticas."
-      ] }
+      ] },
+      { "p": "Si todavía no tienes el servidor, empieza por <a href='{guide:descargar}'>descargar el servidor de Minecraft (jar oficial)</a>. Y para ver cómo se compara esta app con un panel web, mira la <a href='{guide:comparativa}'>comparativa de gestores de servidores de Minecraft</a>." }
     ],
     "faq": [
+      { "q": "¿Cómo apago automáticamente un servidor de Minecraft cuando no hay jugadores?", "a": "Abre los ajustes del servidor, en el apartado «Encendido», escribe cuántos minutos debe esperar en «Minutos sin jugadores» (0 es nunca) y marca «Encenderlo cuando alguien intente entrar» para que arranque solo. Los pasos detallados están más arriba." },
       { "q": "¿Pierdo el progreso si el servidor se apaga solo?", "a": "No. Se detiene igual que cuando lo paras tú: de forma segura y guardando el mundo." },
       { "q": "¿Puede apagarse con gente dentro?", "a": "No. La cuenta atrás solo corre cuando no hay ningún jugador conectado y se reinicia en cuanto entra uno." },
       { "q": "¿Cuánto tarda en encenderse cuando alguien intenta entrar?", "a": "Lo mismo que un arranque normal: unos segundos en un servidor ligero y más con muchos mods. A quien intenta entrar se le pide que vuelva a probar en unos segundos." },
@@ -55,8 +57,8 @@
   },
 
   "en": {
-    "title": "Minecraft server that stops itself when empty | MC-ServerLauncher",
-    "description": "Make your Minecraft server stop on its own when nobody is left and start again when someone tries to join, without wasting RAM or CPU. Step-by-step guide.",
+    "title": "Auto-stop a Minecraft server when empty, start on join | MC-ServerLauncher",
+    "description": "Make your Minecraft server stop on its own when nobody is left and start again when someone tries to join, saving RAM and CPU. Step by step with MC Server Launcher.",
     "h1": "How to make a Minecraft server stop itself when it is empty",
     "crumb": "Automatic shutdown",
     "lead": "A running server uses memory, processor and electricity even when nobody is playing. You can have it stop once it has been empty for a while, and start again as soon as a friend tries to join.",
@@ -84,9 +86,11 @@
         "It works with the Playit tunnel: the address you shared stays the same, so your friends keep joining through it while the server sleeps. How to set it up is in <a href='{guide:gratis}'>how to host a free Minecraft server without port forwarding</a>.",
         "Notifications are optional: under “Notifications” you can turn on “Stopped after being empty” so the app tells you when an empty server stops itself.",
         "If nobody has played since the last backup, the app skips the start and stop backups, so sleeping and waking doesn't fill the folder with identical copies."
-      ] }
+      ] },
+      { "p": "If you don't have the server yet, start with <a href='{guide:descargar}'>how to download the Minecraft server (official jar)</a>. To see how this app compares with a web panel, read the <a href='{guide:comparativa}'>comparison of Minecraft server managers</a>." }
     ],
     "faq": [
+      { "q": "How do I automatically stop a Minecraft server when there are no players?", "a": "Open the server settings, go to the “Power” section, enter how long to wait in “Minutes with no players” (0 means never), and tick “Start it when someone tries to join” so it boots on its own. The detailed steps are above." },
       { "q": "Do I lose progress if the server stops itself?", "a": "No. It stops the same way as when you stop it yourself: safely, saving the world." },
       { "q": "Can it stop with people inside?", "a": "No. The countdown only runs when no player is connected and resets as soon as one joins." },
       { "q": "How long does it take to start when someone tries to join?", "a": "The same as a normal start: a few seconds on a light server and longer with many mods. Whoever tries to join is asked to try again in a few seconds." },
@@ -96,8 +100,8 @@
   },
 
   "de": {
-    "title": "Minecraft-Server, der sich bei Leerlauf selbst abschaltet | MC-ServerLauncher",
-    "description": "Lass deinen Minecraft-Server sich selbst abschalten, wenn niemand mehr da ist, und starten, wenn jemand beitreten will – ohne RAM und CPU zu verschwenden.",
+    "title": "Minecraft-Server schaltet sich bei Leerlauf selbst ab | MC-ServerLauncher",
+    "description": "So schaltet sich dein Minecraft-Server selbst ab, wenn niemand online ist, und startet, sobald jemand beitreten will. Spart RAM und CPU. Mit MC Server Launcher.",
     "h1": "So schaltet sich dein Minecraft-Server bei Leerlauf von selbst ab",
     "crumb": "Automatisches Abschalten",
     "lead": "Ein laufender Server verbraucht Arbeitsspeicher, Prozessorleistung und Strom, auch wenn niemand spielt. Du kannst ihn so einstellen, dass er stoppt, sobald er eine Weile leer ist, und wieder startet, wenn ein Freund beitreten will.",
@@ -125,9 +129,11 @@
         "Es funktioniert mit dem Playit-Tunnel: Die Adresse, die du geteilt hast, bleibt dieselbe, deine Freunde treten also weiter darüber bei, auch wenn der Server schläft. Die Einrichtung steht unter <a href='{guide:gratis}'>Minecraft-Server kostenlos hosten ohne Portfreigabe</a>.",
         "Benachrichtigungen sind optional: Unter „Benachrichtigungen“ kannst du „Wegen Leerlauf gestoppt“ aktivieren, damit die App dir meldet, wenn sich ein leerer Server selbst abschaltet.",
         "Hat seit dem letzten Backup niemand gespielt, überspringt die App die Backups beim Start und beim Beenden – Schlafen und Aufwachen füllt den Ordner also nicht mit identischen Kopien."
-      ] }
+      ] },
+      { "p": "Hast du den Server noch nicht, beginne mit <a href='{guide:descargar}'>Minecraft-Server (offizielle Jar) herunterladen</a>. Und wie sich diese App im Vergleich zu einem Web-Panel schlägt, steht im <a href='{guide:comparativa}'>Vergleich von Minecraft-Server-Managern</a>." }
     ],
     "faq": [
+      { "q": "Wie schalte ich einen Minecraft-Server automatisch ab, wenn keine Spieler online sind?", "a": "Öffne die Servereinstellungen, gehe zum Abschnitt „Ein- und Ausschalten“, trage bei „Minuten ohne Spieler“ die Wartezeit ein (0 heißt nie) und setze den Haken bei „Starten, wenn jemand beitreten will“, damit er von selbst hochfährt. Die ausführlichen Schritte stehen oben." },
       { "q": "Verliere ich Fortschritt, wenn sich der Server selbst abschaltet?", "a": "Nein. Er wird genauso gestoppt, als würdest du es selbst tun: sicher und mit gespeicherter Welt." },
       { "q": "Kann er sich abschalten, wenn noch Leute drin sind?", "a": "Nein. Der Countdown läuft nur, wenn kein Spieler verbunden ist, und startet neu, sobald einer beitritt." },
       { "q": "Wie lange dauert der Start, wenn jemand beitreten will?", "a": "So lange wie ein normaler Start: ein paar Sekunden bei einem leichten Server, länger mit vielen Mods. Wer beitreten will, wird gebeten, es in ein paar Sekunden erneut zu versuchen." },
@@ -138,7 +144,7 @@
 
   "fr": {
     "title": "Serveur Minecraft qui s'éteint seul quand il est vide | MC-ServerLauncher",
-    "description": "Fais en sorte que ton serveur Minecraft s'éteigne seul quand il ne reste personne et redémarre quand quelqu'un essaie de se connecter, sans gaspiller RAM ni CPU.",
+    "description": "Ton serveur Minecraft s'éteint seul quand il n'y a plus personne et redémarre quand quelqu'un tente d'entrer, sans gaspiller RAM ni CPU. Avec MC Server Launcher.",
     "h1": "Comment faire qu'un serveur Minecraft s'éteigne seul quand il est vide",
     "crumb": "Arrêt automatique",
     "lead": "Un serveur allumé consomme de la mémoire, du processeur et de l'électricité même quand personne ne joue. Tu peux faire en sorte qu'il s'éteigne après un moment sans joueurs et se rallume dès qu'un ami essaie de se connecter.",
@@ -166,9 +172,11 @@
         "Ça marche avec le tunnel Playit : l'adresse que tu as partagée reste la même, donc tes amis continuent d'entrer par là même quand le serveur dort. La mise en place est expliquée dans <a href='{guide:gratis}'>héberger un serveur Minecraft gratuit sans ouvrir de ports</a>.",
         "Les notifications sont facultatives : dans « Notifications », tu peux activer « Arrêt pour inactivité » pour que l'appli te prévienne quand un serveur vide s'arrête seul.",
         "Si personne n'a joué depuis la dernière sauvegarde, l'appli saute les sauvegardes de démarrage et d'arrêt : dormir et se réveiller ne remplit donc pas le dossier de copies identiques."
-      ] }
+      ] },
+      { "p": "Si tu n'as pas encore le serveur, commence par <a href='{guide:descargar}'>télécharger le serveur Minecraft (jar officiel)</a>. Et pour voir comment cette appli se compare à un panel web, lis le <a href='{guide:comparativa}'>comparatif des gestionnaires de serveur Minecraft</a>." }
     ],
     "faq": [
+      { "q": "Comment éteindre automatiquement un serveur Minecraft quand il n'y a aucun joueur ?", "a": "Ouvre les réglages du serveur, section « Allumage », indique le délai dans « Minutes sans joueurs » (0 = jamais) et coche « Le démarrer quand quelqu'un essaie de se connecter » pour qu'il redémarre seul. Les étapes détaillées sont plus haut." },
       { "q": "Est-ce que je perds ma progression si le serveur s'éteint seul ?", "a": "Non. Il s'arrête comme quand tu l'arrêtes toi-même : proprement, en sauvegardant le monde." },
       { "q": "Peut-il s'éteindre avec des joueurs dedans ?", "a": "Non. Le compte à rebours ne tourne que lorsqu'aucun joueur n'est connecté et repart de zéro dès que quelqu'un entre." },
       { "q": "Combien de temps met-il à démarrer quand quelqu'un essaie d'entrer ?", "a": "Autant qu'un démarrage normal : quelques secondes sur un serveur léger, plus avec beaucoup de mods. On demande à celui qui essaie d'entrer de réessayer dans quelques secondes." },
@@ -178,43 +186,45 @@
   },
 
   "pt": {
-    "title": "Servidor de Minecraft que desliga sozinho se estiver vazio | MC-ServerLauncher",
-    "description": "Faz o teu servidor de Minecraft desligar sozinho quando não fica ninguém e ligar quando alguém tenta entrar, sem gastar RAM nem CPU. Guia passo a passo.",
+    "title": "Servidor de Minecraft que desliga sozinho quando vazio | MC-ServerLauncher",
+    "description": "Faça o seu servidor de Minecraft desligar sozinho quando não sobrar ninguém e ligar quando alguém tentar entrar, sem gastar RAM nem CPU. Com o MC Server Launcher.",
     "h1": "Como fazer um servidor de Minecraft desligar sozinho quando está vazio",
-    "crumb": "Desligar automaticamente",
-    "lead": "Um servidor ligado gasta memória, processador e eletricidade mesmo que ninguém esteja a jogar. Podes fazer com que desligue quando está vazio há algum tempo e volte a ligar assim que um amigo tentar entrar.",
-    "cta": "Transferir o MC-ServerLauncher grátis",
+    "crumb": "Desligamento automático",
+    "lead": "Um servidor ligado gasta memória, processador e energia mesmo que ninguém esteja jogando. Você pode fazer com que ele desligue quando fica um tempo vazio e volte a ligar assim que um amigo tentar entrar.",
+    "cta": "Baixar o MC-ServerLauncher grátis",
     "card_title": "Servidor de Minecraft que desliga sozinho quando está vazio",
-    "card_desc": "Desligar automático por inatividade e ligar quando alguém tenta entrar, sem gastar recursos.",
+    "card_desc": "Desligamento automático por inatividade e ligação quando alguém tenta entrar, sem gastar recursos.",
     "blocks": [
-      { "h2": "O que faz exatamente" },
-      { "p": "O MC-ServerLauncher conta há quanto tempo o servidor está sem jogadores. A contagem começa quando sai o último e reinicia assim que entra alguém, por isso nunca desliga com gente lá dentro. Ao chegar a zero, para o servidor de forma segura, guardando o mundo." },
-      { "p": "São duas opções independentes que se complementam: <strong>desligar ao ficar vazio</strong> e <strong>ligar quando alguém tenta entrar</strong>. Juntas, o servidor «dorme» quando não se usa e acorda a pedido." },
+      { "h2": "O que ele faz exatamente" },
+      { "p": "O MC-ServerLauncher conta quanto tempo o servidor está sem jogadores. A contagem começa quando o último sai e reinicia assim que alguém entra, então ele nunca desliga com gente dentro. Ao chegar a zero, ele para o servidor com segurança, salvando o mundo." },
+      { "p": "São duas opções independentes que se complementam: <strong>desligar ao ficar vazio</strong> e <strong>ligar quando alguém tenta entrar</strong>. Juntas, o servidor «dorme» quando não está em uso e acorda sob demanda." },
       { "h2": "Como ativar" },
       { "steps": [
-        { "name": "Abre as definições do servidor", "text": "Seleciona o servidor e abre as suas definições. A secção que procuras chama-se «Ligar e desligar»." },
-        { "name": "Escolhe os minutos sem jogadores", "text": "Em «Minutos sem jogadores» escreve quanto deve esperar. Entre 10 e 15 é um bom ponto de partida: tempo de sobra para alguém reiniciar o jogo sem o servidor desligar. Com 0 nunca desliga, que é o valor por defeito." },
-        { "name": "Ativa o ligar a pedido", "text": "Marca «Ligá-lo quando alguém tentar entrar». Enquanto o servidor está desligado, a aplicação continua à escuta na porta dele: quem tentar entrar recebe uma mensagem a dizer que está a ligar, e o servidor arranca." },
-        { "name": "Guarda as alterações", "text": "Guarda. Se o servidor estava ligado, as alterações aplicam-se quando reiniciar." },
-        { "name": "Olha para a contagem decrescente", "text": "Quando o servidor fica vazio, a janela mostra «Desliga em 9:41». Se entrar alguém, desaparece." }
+        { "name": "Abra as configurações do servidor", "text": "Selecione o servidor e abra as configurações dele. A seção que você procura se chama «Ligar e desligar»." },
+        { "name": "Escolha os minutos sem jogadores", "text": "Em «Minutos sem jogadores», digite quanto ele deve esperar. Entre 10 e 15 é um bom ponto de partida: tempo de sobra para alguém reiniciar o jogo sem o servidor desligar. Com 0 ele nunca desliga, que é o valor padrão." },
+        { "name": "Ative a ligação sob demanda", "text": "Marque «Ligá-lo quando alguém tentar entrar». Enquanto o servidor está desligado, o aplicativo continua escutando na porta dele: quem tentar entrar recebe uma mensagem dizendo que ele está ligando, e o servidor inicia." },
+        { "name": "Salve as alterações", "text": "Salve. Se o servidor estava ligado, as alterações valem quando ele for reiniciado." },
+        { "name": "Acompanhe a contagem regressiva", "text": "Quando o servidor fica vazio, a janela mostra «Desliga em 9:41». Se alguém entrar, ela some." }
       ] },
-      { "h2": "O que vê um amigo" },
-      { "p": "Na lista de servidores do Minecraft aparece «Desligado · entra para o acordar». Ao tentar entrar recebe «O servidor estava desligado e está a arrancar. Tenta entrar outra vez daqui a uns segundos». Quando o servidor acaba de arrancar, entra normalmente. O tempo depende do teu PC e dos mods: uns segundos, ou mais com packs grandes." },
-      { "tip": "Se usas lista branca, deixa marcado «Se a lista branca estiver ativada, ligá-lo só para jogadores da lista» (vem ativado): evita que os bots que vasculham a Internet liguem o teu servidor sem querer." },
-      { "h2": "O que convém saber" },
+      { "h2": "Como o seu amigo vê" },
+      { "p": "Na lista de servidores do Minecraft aparece «Desligado · entra para o acordar». Ao tentar entrar, ele recebe «O servidor estava desligado e está a arrancar. Tenta entrar outra vez daqui a uns segundos». Quando o servidor termina de iniciar, ele entra normalmente. O tempo depende do seu PC e dos mods: alguns segundos, ou mais com pacotes grandes." },
+      { "tip": "Se você usa whitelist, deixe marcada «Se a lista branca estiver ativada, ligá-lo só para jogadores da lista» (já vem ativada): isso evita que os bots que varrem a Internet liguem o seu servidor sem querer." },
+      { "h2": "O que vale saber" },
       { "ul": [
-        "A aplicação tem de estar aberta no teu PC: é ela que vigia o servidor e fica à escuta para o acordar.",
-        "Funciona com o túnel do Playit: o endereço que partilhaste é o mesmo, por isso os teus amigos continuam a entrar por ele mesmo que o servidor durma. Como configurá-lo está em <a href='{guide:gratis}'>alojar um servidor de Minecraft grátis sem abrir portas</a>.",
-        "Os avisos são opcionais: em «Avisos» podes ativar «Desligado por inatividade» para a aplicação te avisar quando um servidor vazio desliga sozinho.",
-        "Se ninguém jogou desde a última cópia, a aplicação salta as cópias de arranque e de paragem, por isso dormir e acordar não enche a pasta de cópias idênticas."
-      ] }
+        "O aplicativo precisa estar aberto no seu PC: é ele que vigia o servidor e escuta para acordá-lo.",
+        "Funciona com o túnel do Playit: o endereço que você compartilhou continua o mesmo, então os seus amigos seguem entrando por ele mesmo com o servidor dormindo. Como configurar está em <a href='{guide:gratis}'>como hospedar um servidor de Minecraft grátis sem abrir portas</a>.",
+        "Os avisos são opcionais: em «Avisos» você pode ativar «Desligado por inatividade» para o aplicativo avisar quando um servidor vazio desligar sozinho.",
+        "Se ninguém jogou desde o último backup, o aplicativo pula os backups de inicialização e de parada, então dormir e acordar não enche a pasta de backups idênticos."
+      ] },
+      { "p": "Se você ainda não tem o servidor, comece por <a href='{guide:descargar}'>baixar o servidor de Minecraft (jar oficial)</a>. E para ver como este aplicativo se compara a um painel web, veja a <a href='{guide:comparativa}'>comparação de gerenciadores de servidor de Minecraft</a>." }
     ],
     "faq": [
-      { "q": "Perco o progresso se o servidor desligar sozinho?", "a": "Não. Para da mesma forma que quando o paras tu: de forma segura e guardando o mundo." },
-      { "q": "Pode desligar com gente lá dentro?", "a": "Não. A contagem decrescente só corre quando não há nenhum jogador ligado e reinicia assim que entra um." },
-      { "q": "Quanto demora a ligar quando alguém tenta entrar?", "a": "O mesmo que um arranque normal: uns segundos num servidor leve e mais com muitos mods. A quem tenta entrar pede-se que volte a tentar daqui a uns segundos." },
-      { "q": "Funciona se os meus amigos entrarem pela Internet?", "a": "Sim. Com o túnel do Playit, o endereço que já partilhaste continua válido enquanto o servidor dorme." },
-      { "q": "E se eu quiser que nunca desligue?", "a": "Deixa «Minutos sem jogadores» em 0, que é o valor por defeito: o servidor nunca desliga, e os servidores que já tinhas continuam a comportar-se como antes." }
+      { "q": "Como desligar automaticamente um servidor de Minecraft quando não há jogadores?", "a": "Abra as configurações do servidor, na seção «Ligar e desligar», digite quanto tempo ele deve esperar em «Minutos sem jogadores» (0 é nunca) e marque «Ligá-lo quando alguém tentar entrar» para que ele ligue sozinho. Os passos detalhados estão acima." },
+      { "q": "Perco o progresso se o servidor desligar sozinho?", "a": "Não. Ele para do mesmo jeito que quando você mesmo o para: com segurança e salvando o mundo." },
+      { "q": "Ele pode desligar com gente dentro?", "a": "Não. A contagem regressiva só corre quando não há nenhum jogador conectado e reinicia assim que um entra." },
+      { "q": "Quanto tempo leva para ligar quando alguém tenta entrar?", "a": "O mesmo que uma inicialização normal: alguns segundos em um servidor leve e mais com muitos mods. Quem tenta entrar é avisado para tentar de novo em alguns segundos." },
+      { "q": "Funciona se os meus amigos entram pela Internet?", "a": "Sim. Com o túnel do Playit, o endereço que você já compartilhou continua valendo enquanto o servidor dorme." },
+      { "q": "E se eu quiser que ele nunca desligue?", "a": "Deixe «Minutos sem jogadores» em 0, que é o valor padrão: o servidor nunca desliga, e os servidores que você já tinha continuam se comportando como antes." }
     ]
   }
 }

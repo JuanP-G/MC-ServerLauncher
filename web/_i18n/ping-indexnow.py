@@ -4,7 +4,8 @@ Avisa a los buscadores que admiten IndexNow (Bing, DuckDuckGo, Yandex, Naver, Se
 de que las páginas han cambiado, en lugar de esperar a que pasen a rastrear por su
 cuenta. Google NO participa en IndexNow: allí el aviso lo da el sitemap.
 
-    python web/_i18n/ping-indexnow.py
+    python web/_i18n/ping-indexnow.py              # envía el aviso (hazlo DESPUÉS de desplegar)
+    python web/_i18n/ping-indexnow.py --dry-run    # solo lista las direcciones, sin enviar nada
 
 La clave vive en un archivo de texto en la raíz del sitio, con el mismo nombre que su
 contenido: así el buscador comprueba que quien avisa controla el dominio. Si se borra
@@ -26,6 +27,12 @@ HOST = "mc-server-launcher.vercel.app"
 BASE = "https://" + HOST
 
 URLS = [BASE + p for p in ("/", "/en/", "/de/", "/fr/", "/pt/")] + guides.all_urls()
+
+if "--dry-run" in sys.argv or "--help" in sys.argv or "-h" in sys.argv:
+    print("Sin enviar nada. Se avisaría de %d direcciones:" % len(URLS))
+    for u in URLS:
+        print("  ", u)
+    sys.exit(0)
 
 payload = {
     "host": HOST,
