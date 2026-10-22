@@ -230,7 +230,11 @@ mundo. No hay rutas fijas del equipo en el código.
   servidor pide su propio `JavaService`, así que la descarga de una Java (por versión mayor) pasa por una
   puerta común a todo el proceso: dos servidores que arrancaban a la vez compartían el archivo y la
   carpeta `.partial`, y cada uno borraba lo que escribía el otro. `java -version` y `which` se lanzan con
-  `ProcessRunner`, como todo lo que ejecuta un comando corto.
+  `ProcessRunner`, como todo lo que ejecuta un comando corto. `GetRuntime` recuerda la versión, la VM y
+  los bits de cada Java junto a su archivo, y `AcceptsFlags` si acepta un juego de flags.
+- **`MemoryProfile`**, **`JvmArgs`**, **`MemoryBudget`** — la memoria con la que arranca un servidor: el
+  modo que rige, el techo y los flags para su Java, qué argumentos extra le quitan la decisión a la app, y
+  los techos de los servidores que ya están en marcha (ver *Memoria: automática o manual*).
 - **`MinecraftVersionService`** — lee el manifiesto de versiones de Mojang, resuelve la URL del
   `server.jar` y la versión de Java necesaria, y descarga archivos.
 - **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — hablan con Playit.gg.
@@ -572,13 +576,16 @@ primero suelta el listener del encendido bajo demanda (tiene el puerto del servi
    avisan antes de arrancar, no como un crash después.
 5. **Java** — `EnsureCompatibleJavaAsync` (usa `JavaService` para leer el Java requerido del jar e
    instalarlo si hace falta).
-6. **Copia y lanzamiento** — se lee la versión de Java fuera del hilo de la interfaz, y
+6. **Memoria, copia y lanzamiento** — fuera del hilo de la interfaz, `PlanMemory` le pregunta a la
+   Java qué es y decide los flags de memoria (ver *Memoria: automática o manual* más abajo); después
    `BackupCoordinator.StartAsync` toma el mundo (esperando a cualquier copia que siga leyéndolo), hace
-   la copia de arranque si las copias están activadas y el mundo ya no es el de la última copia, y
-   llama a `ServerProcessManager.Start` **sin soltarlo**, para que ninguna copia se cuele entre medias.
-   Si la copia falla, se dice en la consola y el servidor arranca igualmente. La línea de comandos es `-Xms`/`-Xmx`, los flags que añade la propia app (`ImpliedJvmFlags`), los
-   `ExtraJvmArgs` del servidor y el jar (o el fichero de argumentos de Forge/NeoForge modernos). Un
-   arranque que aún se preparaba cuando la app empieza a cerrarse ya no lanza nada.
+   la copia de arranque si las copias están activadas y el mundo ya no es el de la última copia, reserva
+   el techo en `MemoryBudget` y llama a `ServerProcessManager.Start` **sin soltarlo**, para que ninguna
+   copia se cuele entre medias. Si la copia falla, se dice en la consola y el servidor arranca
+   igualmente. La línea de comandos es los flags de memoria, los flags que añade la propia app
+   (`ImpliedJvmFlags`), los `ExtraJvmArgs` del servidor y el jar (o el fichero de argumentos de
+   Forge/NeoForge modernos); los argumentos extra van detrás de los de la app, así que los valores del
+   usuario ganan. Un arranque que aún se preparaba cuando la app empieza a cerrarse ya no lanza nada.
 
 Todo ello puede durar minutos con un mundo grande que copiar, y el estado sigue siendo Detenido mientras
 tanto, así que `IsPreparing` está activo del primer paso al último: la lista y la cabecera dicen
@@ -592,6 +599,47 @@ los hilos del proceso se encolan y una sola tarea del dispatcher se lleva todas 
 ejecutarse, con un único `AddRange` (un modpack cargando imprime miles, y una tarea por línea hacía que la
 ventana fuera a tirones). Las líneas de la propia app se escriben en el hilo de la interfaz y aparecen al
 instante (`ConsoleBatchingTests`).
+
+### Memoria: automática o manual
+Cada servidor tiene un `MemoryMode`. **Automática** (la de serie) deja que la app dimensione el heap;
+**Manual** pasa `-Xms{MinRamGb}G -Xmx{MaxRamGb}G` igual que siempre. La decisión es `MemoryProfile.Plan`,
+una función pura, y `ServerViewModel.PlanMemory` reúne lo que necesita antes de cada arranque.
+
+- **Por qué.** Un `-Xms`/`-Xmx` fijo compromete todo lo que el heap llegó a ocupar y se lo queda: medido
+  con bots en la 26.2, un servidor vacío se quedaba en 3,5-4,7 GB. Con un heap inicial pequeño, el GC
+  periódico de G1 y márgenes de heap libre bajos, los mismos servidores volvían a 0,9-1,1 GB con el mismo
+  tick.
+- **Los flags**, cada uno solo desde la Java en la que es definitivo, porque una JVM se niega a arrancar
+  con una opción que no conoce:
+
+  | Java | Automática añade |
+  |---|---|
+  | desconocida, 8-11, OpenJ9 | `-Xms128M -Xmx{C}M` |
+  | 12-24 | + `-XX:G1PeriodicGCInterval=15000 -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=30` |
+  | 25+ | + `-XX:+UseCompactObjectHeaders` |
+
+  `JavaService.GetRuntime` lee la versión, la VM (OpenJ9 recibe solo el tamaño del heap) y si es de 32
+  bits (techo de 1 GB, avisado en la consola). `JavaService.AcceptsFlags` ejecuta `java <flags> -version`
+  una vez por Java y juego de flags; si los rechaza, se quitan primero las cabeceras compactas y luego las
+  opciones de G1, y la consola lo dice.
+- **El techo** (`C`) es un límite, no una reserva: solo se compromete lo que se usa. Es holgado a propósito
+  (con 768 MB el servidor de prueba se quedó sin memoria, con 1 GB el tick sufrió): 4 GB hasta 30 mods
+  (Vanilla, Paper y Purpur cuentan como ninguno), 6 GB hasta 100 y 8 GB por encima. Un servidor pasado por
+  la actualización conserva su `MaxRamGb` antiguo si es mayor.
+- **El presupuesto.** `MemoryBudget` guarda los techos de los servidores en marcha; entre todos pueden usar
+  la mitad del equipo (`SystemMemory.TotalMb`), o todo menos 2 GB con *Este PC es solo para servidores* en
+  Ajustes (`MemoryPreferences.DedicatedMachine`). Un servidor que no cabe recibe lo que queda, nunca menos
+  de un suelo (1,5 GB, 2,5 GB con mods), y nunca se le impide arrancar. Los servidores en Manual reservan su
+  `MaxRamGb`.
+- **Migración.** `MemoryMode` admite null: null es un servidor guardado antes de que existiera la elección.
+  Funciona en Automática y enseña una banda de una línea en su cabecera (`ShowMemoryNotice`) con
+  *Entendido* y *Volver a manual (mín–máx GB)*; Automática nunca escribe `MinRamGb`/`MaxRamGb`, así que la
+  vuelta atrás es solo cambiar el modo.
+- **Los argumentos del usuario mandan sobre el modo.** `JvmArgs.SetsMemory` encuentra argumentos extra que
+  fijan el heap, eligen un recolector distinto de G1 o ajustan cómo se devuelve la memoria (`-Xmx`,
+  `-XX:+UseZGC`, el `-XX:+AlwaysPreTouch` de Aikar…); ese servidor va en Manual diga lo que diga, y la
+  página Rendimiento explica por qué. `-XX:+UseG1GC` solo no cuenta. `run.bat` y `user_jvm_args.txt`
+  mantienen los números de Manual para arrancar fuera de la app.
 
 ### La ventana: secciones, el panel de nuevo servidor y el movimiento
 La ventana principal es un **menú lateral** de cuatro secciones —Servidores, Túneles, Ajustes, Acerca
@@ -876,6 +924,10 @@ leen a través de `WindowBehavior`:
   en la bandeja en vez de dejarla en la barra de tareas.
 - **Cerrar a la bandeja** (`CloseToTray`, **desactivado** por defecto): la **X** oculta la ventana en
   vez de salir. Desactivado, la X sale tras parar los servidores limpiamente.
+
+Junto a ellos, **Este PC es solo para servidores** (`DedicatedServerMachine`, **desactivado** por defecto)
+deja que los servidores con memoria Automática compartan toda la memoria del equipo menos 2 GB, en vez de
+la mitad.
 
 En ambos casos los servidores siguen corriendo con la ventana oculta. Donde no hay bandeja desde la que
 volver (`App.TrayAvailable` es falso), los dos se ignoran. El menú de la bandeja restaura la ventana

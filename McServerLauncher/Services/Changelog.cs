@@ -14,6 +14,7 @@ public static class Changelog
     // Newest first. Each version's notes live in a localized resx key.
     private static readonly (Version Version, string Key)[] Entries =
     {
+        (new Version(1, 20, 0), "Whatsnew_1_20_0"),
         (new Version(1, 19, 2), "Whatsnew_1_19_2"),
         (new Version(1, 19, 1), "Whatsnew_1_19_1"),
         (new Version(1, 19, 0), "Whatsnew_1_19_0"),

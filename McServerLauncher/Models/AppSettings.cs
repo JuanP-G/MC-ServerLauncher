@@ -67,6 +67,12 @@ public class AppSettings
     /// </remarks>
     public bool ReceiveBetas { get; set; }
 
+    /// <summary>
+    /// The machine is only for servers, so together they may use all its memory but 2 GB. Off by
+    /// default: then they share at most half, leaving the rest for a game played on the same PC.
+    /// </summary>
+    public bool DedicatedServerMachine { get; set; }
+
     /// <summary>What the player history keeps, and for how long.</summary>
     /// <remarks>
     /// Shared with the copy <see cref="ShallowCopy"/> makes, which is harmless: Settings replaces it

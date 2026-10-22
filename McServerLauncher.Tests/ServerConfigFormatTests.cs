@@ -34,7 +34,7 @@ public class ServerConfigFormatTests : IDisposable
     private static readonly string[] ExpectedKeys =
     {
         "Id", "Name", "FolderPath", "JarFile", "Type", "GameVersion", "ModLoaderVersion", "ForgeArgs",
-        "JavaPath", "MinRamGb", "MaxRamGb", "ExtraJvmArgs", "PlayitEnabled", "TunnelAddress",
+        "JavaPath", "MemoryMode", "MinRamGb", "MaxRamGb", "ExtraJvmArgs", "PlayitEnabled", "TunnelAddress",
         "BackupsEnabled", "BackupRetention", "AutoBackupEnabled", "BackupIntervalMinutes",
         "ManualBackupRetention", "IdleShutdownMinutes", "WakeOnDemand", "WakeOnlyForWhitelist",
             "CrossplayEnabled",
@@ -60,6 +60,7 @@ public class ServerConfigFormatTests : IDisposable
         ModLoaderVersion = "0.16.2",
         ForgeArgs = "1.20.1-47.2.0",
         JavaPath = "C:\\java\\bin\\java.exe",
+        MemoryMode = MemoryMode.Manual,   // its default is null
         MinRamGb = 3,
         MaxRamGb = 6,
         ExtraJvmArgs = "-XX:+UseG1GC",
@@ -145,6 +146,7 @@ public class ServerConfigFormatTests : IDisposable
         Assert.Equal(original.ModLoaderVersion, loaded.ModLoaderVersion);
         Assert.Equal(original.ForgeArgs, loaded.ForgeArgs);
         Assert.Equal(original.JavaPath, loaded.JavaPath);
+        Assert.Equal(original.MemoryMode, loaded.MemoryMode);
         Assert.Equal(original.MinRamGb, loaded.MinRamGb);
         Assert.Equal(original.MaxRamGb, loaded.MaxRamGb);
         Assert.Equal(original.ExtraJvmArgs, loaded.ExtraJvmArgs);
@@ -220,6 +222,10 @@ public class ServerConfigFormatTests : IDisposable
         Assert.True(loaded.AutoBackupEnabled);
         Assert.Equal(60, loaded.BackupIntervalMinutes);
         Assert.Equal(5, loaded.ManualBackupRetention);
+
+        // And no memory mode: null is how the app tells a server that never chose from one that
+        // chose Automatic, and only the first kind shows the notice that offers its old numbers back.
+        Assert.Null(loaded.MemoryMode);
 
         Assert.Null(loaded.TunnelAddress);
         Assert.Null(loaded.Notifications);

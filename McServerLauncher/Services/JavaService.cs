@@ -126,12 +126,26 @@ public partial class JavaService
         return result;
     }
 
+    /// <summary>What a Java executable is, as far as the command line the app builds cares.</summary>
+    /// <param name="Major">The feature release (8, 17, 21, 25…). 0 when it could not be read.</param>
+    /// <param name="IsOpenJ9">An Eclipse OpenJ9 VM (IBM Semeru) rather than HotSpot: it rejects
+    /// HotSpot's <c>-XX:</c> tuning options, so the memory profile gives it only the heap size.</param>
+    /// <param name="Is64Bit">False for a 32-bit JVM, which cannot have a heap much above 1 GB.</param>
+    public record JavaRuntime(int Major, bool IsOpenJ9, bool Is64Bit)
+    {
+        /// <summary>A Java that could not be asked: no extra flags, no cap.</summary>
+        public static readonly JavaRuntime Unknown = new(0, false, true);
+    }
+
     /// <summary>What each Java executable answered, keyed by its path and stamped with its file.</summary>
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<string,
-        (long Length, DateTime Written, int Major)>
+        (long Length, DateTime Written, JavaRuntime Runtime)>
         Versions = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>The major version (8, 17, 21, 25...) of a Java executable. 0 on failure.</summary>
+    public int GetMajorVersion(string javaExe) => GetRuntime(javaExe).Major;
+
+    /// <summary>The version, VM and word size of a Java executable. <see cref="JavaRuntime.Unknown"/> on failure.</summary>
     /// <remarks>
     /// <para>
     /// Asking means starting a JVM, a fraction of a second to more than one on a slow disk, and it
@@ -144,34 +158,79 @@ public partial class JavaService
     /// A bare "java" resolved through the PATH has no file to stamp and is not remembered.
     /// </para>
     /// </remarks>
-    public int GetMajorVersion(string javaExe)
+    public JavaRuntime GetRuntime(string javaExe)
     {
-        FileInfo? file = null;
-        try { file = File.Exists(javaExe) ? new FileInfo(javaExe) : null; }
-        catch { /* an unusable path: asked, not remembered */ }
-
+        var file = StampOf(javaExe);
         if (file is not null && Versions.TryGetValue(file.FullName, out var known)
             && known.Length == file.Length && known.Written == file.LastWriteTimeUtc)
-            return known.Major;
+            return known.Runtime;
 
-        var major = AskMajorVersion(javaExe);
-        if (file is not null && major > 0)
-            Versions[file.FullName] = (file.Length, file.LastWriteTimeUtc, major);
-        return major;
-    }
-
-    /// <summary>Runs "java -version" and reads the major version out of what it prints.</summary>
-    private static int AskMajorVersion(string javaExe)
-    {
         // It prints to standard error; both streams are read, under a deadline that holds.
         var result = ProcessRunner.Run(javaExe, ["-version"], TimeSpan.FromSeconds(5));
+        var runtime = ParseRuntime(result.Error + result.Output);
+        if (file is not null && runtime.Major > 0)
+            Versions[file.FullName] = (file.Length, file.LastWriteTimeUtc, runtime);
+        return runtime;
+    }
 
-        var m = VersionRegex().Match(result.Error + result.Output);
-        if (!m.Success || !int.TryParse(m.Groups[1].Value, out var first)) return 0;
+    /// <summary>The file behind a Java path, to stamp what it answered with. Null for a bare "java".</summary>
+    private static FileInfo? StampOf(string javaExe)
+    {
+        try { return File.Exists(javaExe) ? new FileInfo(javaExe) : null; }
+        catch { return null; /* an unusable path: asked, not remembered */ }
+    }
+
+    /// <summary>Reads what <c>java -version</c> printed.</summary>
+    /// <remarks>
+    /// Every 64-bit JVM says so on its VM line ("64-Bit Server VM", OpenJ9's "amd64-64-Bit"); a
+    /// 32-bit one names its VM ("Client VM", "Server VM") without it. Output with no VM line at all
+    /// is not taken as 32-bit: capping a heap on a guess would do more harm than not capping it.
+    /// </remarks>
+    internal static JavaRuntime ParseRuntime(string versionOutput)
+    {
+        var m = VersionRegex().Match(versionOutput);
+        if (!m.Success || !int.TryParse(m.Groups[1].Value, out var major)) return JavaRuntime.Unknown;
         // "1.8" => Java 8
-        if (first == 1 && m.Groups[2].Success)
-            return int.TryParse(m.Groups[2].Value, out var minor) ? minor : 0;
-        return first;
+        if (major == 1 && m.Groups[2].Success)
+            major = int.TryParse(m.Groups[2].Value, out var minor) ? minor : 0;
+
+        var openJ9 = versionOutput.Contains("OpenJ9", StringComparison.OrdinalIgnoreCase)
+                     || versionOutput.Contains("J9 VM", StringComparison.OrdinalIgnoreCase);
+        var is64 = versionOutput.Contains("64-Bit", StringComparison.OrdinalIgnoreCase)
+                   || !VmLineRegex().IsMatch(versionOutput);
+        return new JavaRuntime(major, openJ9, is64);
+    }
+
+    [GeneratedRegex(@"\bVM\b")]
+    private static partial Regex VmLineRegex();
+
+    /// <summary>What each Java said about a set of flags, keyed by its stamp and the flags.</summary>
+    private static readonly ConcurrentDictionary<string, bool> FlagAnswers = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Whether this Java starts with <paramref name="flags"/>: <c>java &lt;flags&gt; -version</c>
+    /// exits cleanly.
+    /// </summary>
+    /// <remarks>
+    /// A JVM refuses to start at all over an option it does not know, or one that needs an unlock
+    /// flag it was not given. The memory profile only uses options that are final in the versions it
+    /// gives them to, but a vendor build can still differ, and the price of being wrong is a server
+    /// that does not start. Asking costs one short JVM run per Java and set of flags; the answer is
+    /// remembered against the file like the version is, and for a bare "java" for as long as the app
+    /// runs.
+    /// </remarks>
+    public bool AcceptsFlags(string javaExe, IReadOnlyList<string> flags)
+    {
+        var file = StampOf(javaExe);
+        var key = (file is null ? javaExe : $"{file.FullName}|{file.Length}|{file.LastWriteTimeUtc.Ticks}")
+                  + "|" + string.Join(' ', flags);
+        if (FlagAnswers.TryGetValue(key, out var known)) return known;
+
+        var result = ProcessRunner.Run(javaExe, [.. flags, "-version"], TimeSpan.FromSeconds(10));
+        var accepted = result.ExitCode == 0;
+        // A Java that could not run at all says nothing about the flags; asked again next time.
+        if (result.ExitCode != -1) FlagAnswers[key] = accepted;
+        return accepted;
     }
 
     /// <summary>An installed Java version is valid for the required one (exact, or newer if 17+).</summary>

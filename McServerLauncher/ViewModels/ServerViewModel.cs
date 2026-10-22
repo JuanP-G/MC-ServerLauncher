@@ -1064,6 +1064,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         {
             _statsTimer.Stop();
             _autoBackupTimer.Stop();
+            MemoryBudget.Release(Config.Id);
 
             // Explicitly, not just by waiting for the next CheckIdleShutdown: that runs off the
             // stats timer, which has just been stopped, so a server that went straight from Running
@@ -1491,10 +1492,12 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             // Make sure the configured Java is compatible with this server's version.
             await EnsureCompatibleJavaAsync();
 
-            // Asked here, in the background, so the one Start asks for the JVM flags is answered
-            // from memory instead of starting a JVM on the UI thread.
-            var javaPath = Config.JavaPath;
-            await Task.Run(() => _java.GetMajorVersion(javaPath));
+            // The memory this run gets. Decided in the background because it asks the Java what it
+            // is, which also leaves the version remembered for the one Start asks when building the
+            // command line, instead of starting a JVM on the UI thread.
+            var (plan, notes) = await Task.Run(PlanMemory);
+            foreach (var note in notes) OnConsoleLine(note);
+            MemoryPlan = plan;
 
             // Back up the world right before touching it again: the safety net that matters most,
             // since it covers every start path (manual, Restart, and auto-restart after a crash).
@@ -1503,7 +1506,17 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             // BackupCoordinator.StartAsync.
             await BackupCoordinator.StartAsync(() =>
             {
-                if (shutdowns == _shutdowns) _process.Start(Config);
+                if (shutdowns != _shutdowns) return;
+                MemoryBudget.Reserve(Config.Id, plan.CeilingMb);
+                try
+                {
+                    _process.Start(Config, plan.Flags);
+                }
+                catch
+                {
+                    MemoryBudget.Release(Config.Id);
+                    throw;
+                }
             });
             // Playit already runs as a background service: we don't launch another agent.
             Backups.RefreshIfLoaded();

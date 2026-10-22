@@ -198,6 +198,21 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    /// <summary>Whether the servers may use all the machine's memory but 2 GB, instead of half.</summary>
+    /// <remarks>Read at each start: a server already running keeps the ceiling it started with.</remarks>
+    public bool DedicatedServerMachine
+    {
+        get => _settings.DedicatedServerMachine;
+        set
+        {
+            if (_settings.DedicatedServerMachine == value) return;
+            _settings.DedicatedServerMachine = value;
+            MemoryPreferences.DedicatedMachine = value;
+            OnPropertyChanged();
+            Persist();
+        }
+    }
+
     [ObservableProperty]
     private string? _shortcutStatus;
 

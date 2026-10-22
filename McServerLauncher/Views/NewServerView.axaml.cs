@@ -83,6 +83,19 @@ public partial class NewServerView : UserControl
         _usedPorts = new HashSet<int>(usedPorts ?? Enumerable.Empty<int>());
         _registeredFolders = (registeredFolders ?? Enumerable.Empty<string>()).ToList();
         _log = new LogBatcher(ProgressLog);
+        // A group of its own: radio buttons sharing a name are one group across every panel using it.
+        // And each one clears the other itself: the group only acts while the panel is in a window,
+        // and the two must never both read as chosen.
+        AutoMemoryRadio.GroupName = ManualMemoryRadio.GroupName = "NewServerMemory-" + Guid.NewGuid().ToString("N");
+        AutoMemoryRadio.IsCheckedChanged += (_, _) =>
+        {
+            if (AutoMemoryRadio.IsChecked == true) ManualMemoryRadio.IsChecked = false;
+        };
+        ManualMemoryRadio.IsCheckedChanged += (_, _) =>
+        {
+            if (ManualMemoryRadio.IsChecked == true) AutoMemoryRadio.IsChecked = false;
+            ManualRamBoxes.IsVisible = ManualMemoryRadio.IsChecked == true;
+        };
 
         ParentFolderBox.Text = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
@@ -503,7 +516,7 @@ public partial class NewServerView : UserControl
 
         var minGb = WholeNumberConverter.ToWhole(MinRamBox.Value ?? 2m);
         var maxGb = WholeNumberConverter.ToWhole(MaxRamBox.Value ?? 4m);
-        if (maxGb < minGb) { await Warn(Localizer.Get("Msg_RamMaxMin")); return; }
+        if (ChosenMemory == MemoryMode.Manual && maxGb < minGb) { await Warn(Localizer.Get("Msg_RamMaxMin")); return; }
 
         var port = WholeNumberConverter.ToWhole(PortBox.Value ?? 25565m);
         if (_usedPorts.Contains(port))
@@ -592,6 +605,7 @@ public partial class NewServerView : UserControl
                 ModLoaderVersion = loaderVersion,
                 ForgeArgs = forgeArgs,
                 JavaPath = javaPath,
+                MemoryMode = ChosenMemory,
                 MinRamGb = minGb,
                 MaxRamGb = maxGb,
                 PlayitEnabled = PlayitCheck.IsChecked == true,
@@ -629,7 +643,11 @@ public partial class NewServerView : UserControl
         Playit: PlayitCheck.IsChecked == true,
         Crossplay: CrossplayCheck.IsChecked == true,
         MultiVersion: MultiVersionCheck.IsChecked == true,
-        Hydraulic: HydraulicCheck.IsChecked == true);
+        Hydraulic: HydraulicCheck.IsChecked == true,
+        Memory: ChosenMemory);
+
+    /// <summary>The memory mode picked. Automatic unless the user asked for the two numbers.</summary>
+    private MemoryMode ChosenMemory => ManualMemoryRadio.IsChecked == true ? MemoryMode.Manual : MemoryMode.Automatic;
 
     /// <summary>The server the form would take over, or null with the reason it cannot yet.</summary>
     /// <remarks>Without touching the disk: what the Add button checks before anything is written.</remarks>

@@ -211,7 +211,15 @@
                                      fit in a third of the column. -->
                                 <TextBlock Classes="field" Text="{loc:Loc Port}" />
                                 <NumericUpDown x:Name="PortBox" Value="25565" Minimum="1" Maximum="65535" Increment="1" FormatString="0" />
-                                <Grid ColumnDefinitions="*,12,*" Margin="0,10,0,0">
+                                <!-- Memory: the app sizes it, or the two numbers below. -->
+                                <TextBlock Classes="field" Text="{loc:Loc Sset_RamTitle}" Margin="0,10,0,0" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <!-- Their group name is given in code-behind, one per panel. -->
+                                    <RadioButton x:Name="AutoMemoryRadio" IsChecked="True"
+                                                 Margin="0,0,12,0" Content="{loc:Loc Mem_ModeAutomatic}" />
+                                    <RadioButton x:Name="ManualMemoryRadio" Content="{loc:Loc Mem_ModeManual}" />
+                                </WrapPanel>
+                                <Grid x:Name="ManualRamBoxes" ColumnDefinitions="*,12,*" Margin="0,6,0,0" IsVisible="False">
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Classes="field" Text="{loc:Loc Cs_RamMin}" />
                                         <NumericUpDown x:Name="MinRamBox" Value="2" Minimum="1" Maximum="64" Increment="1" FormatString="0" />

@@ -202,7 +202,8 @@ public sealed class ServerSettingsDraft
         if (string.IsNullOrWhiteSpace(Config.Name))
             problems.Add(new(ServerSettingsPage.Appearance, Localizer.Get("Msg_NameEmpty")));
 
-        if (Config.MaxRamGb < Config.MinRamGb)
+        // Only where the two numbers are used: in Automatic mode they wait, untouched, for a way back.
+        if (MemoryProfile.Effective(Config) == MemoryMode.Manual && Config.MaxRamGb < Config.MinRamGb)
             problems.Add(new(ServerSettingsPage.Performance, Localizer.Get("Msg_RamMaxMin")));
 
         if (!Same(Config, _baseline, nameof(ServerConfig.BedrockPort))

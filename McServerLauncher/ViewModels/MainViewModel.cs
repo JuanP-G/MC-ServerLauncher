@@ -240,6 +240,7 @@ public partial class MainViewModel : ObservableObject
         // Make the saved notification preferences the app-wide defaults for this session.
         NotificationPreferences.Global = _appSettings.Notifications;
         PlayerHistoryPreferences.Current = _appSettings.PlayerHistory.Clamped();
+        MemoryPreferences.DedicatedMachine = _appSettings.DedicatedServerMachine;
         ApplyConsoleColours();
         ApplyWindowBehavior();
 

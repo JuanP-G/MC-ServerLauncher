@@ -225,7 +225,11 @@ are no hard-coded machine paths.
   server. Each server asks its own `JavaService`, so the download of a given Java (by major version)
   goes through one process-wide gate: two servers starting together used to share one archive path and
   one `.partial` folder and delete what the other was writing. It runs `java -version` and `which`
-  through `ProcessRunner`, like everything else that runs a short command.
+  through `ProcessRunner`, like everything else that runs a short command. `GetRuntime` remembers each
+  Java's version, VM and word size against its file, and `AcceptsFlags` whether it takes a set of flags.
+- **`MemoryProfile`**, **`JvmArgs`**, **`MemoryBudget`** — the memory a server starts with: the mode in
+  effect, the ceiling and the flags for its Java, which extra arguments take the decision away from the
+  app, and the ceilings of the servers already running (see *Memory: automatic or manual*).
 - **`MinecraftVersionService`** — reads Mojang's version manifest, resolves the `server.jar`
   download URL and the required Java version, and downloads files.
 - **`PlayitApiService`** / **`PlayitPartnerService`** / **`PlayitManager`** — talk to Playit.gg.
@@ -553,13 +557,16 @@ otherwise lets go of the wake-on-demand listener first (it holds the server's po
    reported before the server starts, not as a crash afterwards.
 5. **Java** — `EnsureCompatibleJavaAsync` (uses `JavaService` to read the required Java from the jar
    and install it if needed).
-6. **Backup and launch** — the Java version is read off the UI thread, then
+6. **Memory, backup and launch** — off the UI thread, `PlanMemory` asks the Java what it is and
+   decides the memory flags (see *Memory: automatic or manual* below), then
    `BackupCoordinator.StartAsync` takes the world (waiting for any copy still reading it), makes the
-   start backup when backups are on and the world is not the last backup's, and calls
-   `ServerProcessManager.Start` **while still holding it**, so no copy slips in between. A backup that
-   fails is said in the console and the server starts anyway. The command line is `-Xms`/`-Xmx`, the flags the app adds itself (`ImpliedJvmFlags`), the server's
-   `ExtraJvmArgs` and the jar (or a modern Forge/NeoForge args file). A start still getting ready when
-   the app begins closing does not launch at all.
+   start backup when backups are on and the world is not the last backup's, reserves the ceiling in
+   `MemoryBudget` and calls `ServerProcessManager.Start` **while still holding it**, so no copy slips
+   in between. A backup that fails is said in the console and the server starts anyway. The command
+   line is the memory flags, the flags the app adds itself (`ImpliedJvmFlags`), the server's
+   `ExtraJvmArgs` and the jar (or a modern Forge/NeoForge args file); the extra arguments come after
+   the app's, so the user's own values win. A start still getting ready when the app begins closing
+   does not launch at all.
 
 All of it can take minutes with a big world to back up, and the state is still Stopped meanwhile, so
 `IsPreparing` is on from the first step to the last: the list and the header say *Preparing…* in
@@ -570,6 +577,44 @@ streams back through the `OutputReceived` event into `ConsoleLines`, **in batche
 process's threads are queued and one dispatcher job takes all that arrived before it ran, appending them
 with a single `AddRange` (a loading modpack prints thousands, and one job per line made the window
 stutter). The app's own lines are written on the UI thread and appear at once (`ConsoleBatchingTests`).
+
+### Memory: automatic or manual
+Each server has a `MemoryMode`. **Automatic** (the default) lets the app size the heap; **Manual** passes
+`-Xms{MinRamGb}G -Xmx{MaxRamGb}G` exactly as the app always did. The decision is
+`MemoryProfile.Plan`, a pure function, gathered by `ServerViewModel.PlanMemory` before each start.
+
+- **Why.** A fixed `-Xms`/`-Xmx` commits whatever the heap ever reached and keeps it: measured with bots
+  on 26.2, an empty server sat on 3.5-4.7 GB. With a small initial heap, G1's periodic collection and low
+  free-heap margins, the same servers came back to 0.9-1.1 GB with the same tick time.
+- **The flags**, each only from the Java where it is final, because a JVM refuses to start over an
+  option it does not know:
+
+  | Java | Automatic adds |
+  |---|---|
+  | unknown, 8-11, OpenJ9 | `-Xms128M -Xmx{C}M` |
+  | 12-24 | + `-XX:G1PeriodicGCInterval=15000 -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=30` |
+  | 25+ | + `-XX:+UseCompactObjectHeaders` |
+
+  `JavaService.GetRuntime` reads the version, the VM (OpenJ9 gets only the heap size) and whether it is
+  32-bit (capped at 1 GB, said in the console). `JavaService.AcceptsFlags` runs `java <flags> -version`
+  once per Java and set of flags; if it refuses, compact headers go first, then the G1 options, and the
+  console says so.
+- **The ceiling** (`C`) is a limit, not a reservation: only what is used is committed. It is generous on
+  purpose (at 768 MB the test server ran out of memory, at 1 GB its tick suffered): 4 GB for up to 30 mods
+  (Vanilla, Paper and Purpur count as none), 6 GB up to 100, 8 GB beyond. A server moved over by the update
+  keeps its old `MaxRamGb` when that is larger.
+- **The budget.** `MemoryBudget` holds the ceilings of the servers running now; together they may use half
+  the machine (`SystemMemory.TotalMb`), or all but 2 GB with *This PC is only for servers* in Settings
+  (`MemoryPreferences.DedicatedMachine`). A server that does not fit gets what is left, never less than a
+  floor (1.5 GB, 2.5 GB with mods), and is never refused. Manual servers reserve their `MaxRamGb`.
+- **Migration.** `MemoryMode` is nullable: null is a server saved before the choice existed. It runs
+  Automatic and shows a one-line band in its header (`ShowMemoryNotice`) with *Got it* and *Back to manual
+  (min–max GB)*; Automatic never writes `MinRamGb`/`MaxRamGb`, so the way back is just the mode.
+- **The user's arguments outrank the mode.** `JvmArgs.SetsMemory` finds extra arguments that size the heap,
+  pick a collector other than G1 or tune how memory is returned (`-Xmx`, `-XX:+UseZGC`, Aikar's
+  `-XX:+AlwaysPreTouch`…); such a server runs Manual whatever it says, and the Performance page says why.
+  `-XX:+UseG1GC` alone does not count. `run.bat` and `user_jvm_args.txt` keep the Manual numbers for
+  launching outside the app.
 
 ### The window: sections, the new-server panel and motion
 The main window is a **rail** of four sections — Servers, Tunnels, Settings, About — sharing one cell
@@ -839,6 +884,9 @@ through `WindowBehavior`:
   instead of leaving it on the taskbar.
 - **Close to tray** (`CloseToTray`, **off** by default): the **X** hides the window instead of
   quitting. Off, the X quits after stopping the servers cleanly.
+
+Next to them, **This PC is only for servers** (`DedicatedServerMachine`, **off** by default) lets the
+servers in Automatic memory share all the machine's memory but 2 GB instead of half.
 
 Either way the servers keep running while the window is hidden. Where there is no tray to come back
 from (`App.TrayAvailable` is false), both are ignored. The tray menu restores the window (**Show**) or

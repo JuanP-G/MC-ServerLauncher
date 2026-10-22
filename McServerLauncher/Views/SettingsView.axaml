@@ -111,6 +111,19 @@
                     <Border Classes="card" Margin="0">
                         <StackPanel Spacing="6">
                             <StackPanel>
+                                <TextBlock Text="{loc:Loc Set_MemorySection}" Classes="title" />
+                                <TextBlock Text="{loc:Loc Set_DedicatedPcDesc}" Classes="desc" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Set_DedicatedPc}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding DedicatedServerMachine, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card" Margin="0">
+                        <StackPanel Spacing="6">
+                            <StackPanel>
                                 <TextBlock Text="{loc:Loc Upd_SettingsSection}" Classes="title" />
                                 <TextBlock Text="{loc:Loc Upd_BetasIntro}" Classes="desc" />
                             </StackPanel>
