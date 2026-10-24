@@ -10,6 +10,8 @@
       href: shared-access.md
     - name: Visibility and statistics
       href: visibility.md
+    - name: Signed updates
+      href: signing.md
 - name: Español
   items:
     - name: Arquitectura
@@ -22,3 +24,5 @@
       href: shared-access.es.md
     - name: Visibilidad y estadísticas
       href: visibility.es.md
+    - name: Actualizaciones firmadas
+      href: signing.es.md

@@ -377,15 +377,18 @@ line icons in `docs/media/icons/` (24 px, `#2da44e`), the way the feature grid i
    - The matching `Whatsnew_x_y_z` key in **all five** `.resx` files (Spanish text in the neutral
      `Strings.resx`, translations in the rest). See *Add a translatable text* above.
 3. Run `publish.ps1`. It publishes the self-contained `win-x64` build, builds the Inno Setup installer
-   in `dist/`, **and** writes `dist/SHA256SUMS.txt` next to it.
-4. Create the release with **both** assets and **bilingual** notes:
+   in `dist/`, writes `dist/SHA256SUMS.txt` next to it, **and** signs the installer
+   (`dist/…Setup-X.Y.Z.exe.sig`; it asks for the signing key's password). Without the key it warns
+   and skips the signature — see [Signed updates](signing.md).
+4. Create the release with **all three** assets and **bilingual** notes:
    ```powershell
-   gh release create vX.Y.Z dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt
+   gh release create vX.Y.Z dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt dist/MC-ServerLauncher-Setup-X.Y.Z.exe.sig
    ```
-   - The in-app updater looks for the `.exe` asset (so always attach it) **and** for
+   - The in-app updater looks for the `.exe` asset (so always attach it), for
      `SHA256SUMS.txt`, which it uses to verify the installer before running it
-     (`UpdateService.CheckAsync`). Verification is **mandatory**: without that file the updater
-     refuses the silent install and just opens the release page — so never skip it.
+     (`UpdateService.CheckAsync`), **and** for the `.sig`, which proves the publisher made it.
+     Both checks are **mandatory**: without either file the updater refuses the silent install and
+     just opens the release page — so never skip them.
 > **Before changing how versions are numbered, check what the installed version can parse.** A
 > release whose tag has a shape older clients do not understand is invisible to them, however
 > correct the new code is — and the code that understands it ships *inside* that release. It has
@@ -409,6 +412,10 @@ line icons in `docs/media/icons/` (24 px, `#2da44e`), the way the feature grid i
 6. Publishing the release automatically triggers the **Linux** (`release-linux.yml`) and **macOS**
    (`release-macos.yml`) workflows, which build and attach the `.AppImage` and the two `.dmg`s. Don't
    upload those by hand — just wait for the workflows to finish.
+7. **Then sign them**: `tools\signing\sign-release.ps1 -Tag vX.Y.Z`. The workflows cannot — the key
+   must not live on GitHub — so this script waits for the packages, checks each against its
+   `.sha256`, signs them with your local key and uploads the `.sig` files. Until it has run,
+   Linux and macOS users who press Update are sent to the release page instead.
 
 ## Documentation site (GitHub Pages)
 

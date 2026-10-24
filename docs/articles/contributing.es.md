@@ -398,16 +398,18 @@ la rejilla de funciones de `README.md`.
      en el neutral `Strings.resx`, las traducciones en el resto). Mira *Añadir un texto traducible*
      más arriba.
 3. Ejecuta `publish.ps1`. Publica el build self-contained `win-x64`, genera el instalador de Inno
-   Setup en `dist/` **y** escribe `dist/SHA256SUMS.txt` junto a él.
-4. Crea la release con **ambos** assets y notas **bilingües**:
+   Setup en `dist/`, escribe `dist/SHA256SUMS.txt` junto a él **y** firma el instalador
+   (`dist/…Setup-X.Y.Z.exe.sig`; pide la contraseña de la clave de firma). Sin la clave avisa y se
+   salta la firma — ver [Actualizaciones firmadas](signing.es.md).
+4. Crea la release con **los tres** assets y notas **bilingües**:
    ```powershell
-   gh release create vX.Y.Z dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt
+   gh release create vX.Y.Z dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt dist/MC-ServerLauncher-Setup-X.Y.Z.exe.sig
    ```
-   - El actualizador de la app busca el asset `.exe` (así que adjúntalo siempre) **y** el
+   - El actualizador de la app busca el asset `.exe` (así que adjúntalo siempre), el
      `SHA256SUMS.txt`, que usa para verificar el instalador antes de ejecutarlo
-     (`UpdateService.CheckAsync`). La verificación es **obligatoria**: sin ese archivo el
-     actualizador rechaza la instalación silenciosa y solo abre la página de la release — no lo
-     omitas nunca.
+     (`UpdateService.CheckAsync`), **y** el `.sig`, que prueba que lo hizo quien publica. Las dos
+     comprobaciones son **obligatorias**: sin cualquiera de esos archivos el actualizador rechaza la
+     instalación silenciosa y solo abre la página de la release — no los omitas nunca.
 > **Antes de cambiar cómo se numeran las versiones, comprueba qué sabe leer la versión instalada.**
 > Una release cuyo tag tiene una forma que los clientes antiguos no entienden es invisible para
 > ellos por muy correcto que sea el código nuevo — y el código que la entiende viaja *dentro* de esa
@@ -432,6 +434,10 @@ la rejilla de funciones de `README.md`.
 6. Publicar la release dispara automáticamente los workflows de **Linux** (`release-linux.yml`) y
    **macOS** (`release-macos.yml`), que generan y adjuntan el `.AppImage` y los dos `.dmg`. No los
    subas a mano — basta con esperar a que terminen los workflows.
+7. **Después, fírmalos**: `tools\signing\sign-release.ps1 -Tag vX.Y.Z`. Los workflows no pueden — la
+   clave no debe vivir en GitHub — así que este script espera a los paquetes, comprueba cada uno
+   contra su `.sha256`, los firma con tu clave local y sube los `.sig`. Hasta que se ejecute, quien
+   pulse Actualizar en Linux o macOS irá a la página de la release.
 
 ## Sitio de documentación (GitHub Pages)
 

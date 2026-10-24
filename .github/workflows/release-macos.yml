@@ -109,6 +109,9 @@ jobs:
         run: |
           shasum -a 256 "MC-ServerLauncher-${{ matrix.arch }}.dmg" \
             > "MC-ServerLauncher-${{ matrix.arch }}.dmg.sha256"
+          # Also in the log: the package is signed by hand afterwards (tools/signing/sign-release.ps1),
+          # and this is the hash the person signing can compare against.
+          cat "MC-ServerLauncher-${{ matrix.arch }}.dmg.sha256"
 
       - name: Upload to release
         env:

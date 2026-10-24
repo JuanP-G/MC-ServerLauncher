@@ -198,6 +198,7 @@ public partial class MainViewModel : ObservableObject
     private string? _packageUrl;
     private string? _packageName;
     private string? _checksumUrl;
+    private string? _signatureUrl;
 
     /// <summary>One entry of the language selector.</summary>
     /// <param name="Code">The culture code stored in <c>AppSettings.Language</c> (es, en, pt, fr,
@@ -478,7 +479,7 @@ public partial class MainViewModel : ObservableObject
         if (state == UpdateCheckState.UpToDate && UpdateAvailable)
         {
             UpdateAvailable = false;
-            _packageUrl = _packageName = _checksumUrl = null;
+            _packageUrl = _packageName = _checksumUrl = _signatureUrl = null;
         }
 
         if (info is null) return;
@@ -487,6 +488,7 @@ public partial class MainViewModel : ObservableObject
         _packageUrl = info.PackageUrl;
         _packageName = info.PackageName;
         _checksumUrl = info.ChecksumUrl;
+        _signatureUrl = info.SignatureUrl;
         // A beta says so before the button, not after installing.
         UpdateText = string.Format(
             Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
@@ -586,10 +588,27 @@ public partial class MainViewModel : ObservableObject
             if (string.IsNullOrEmpty(expectedSha256))
                 throw new UserFacingException(Localizer.Get("Msg_UpdateNoChecksum"));
 
+            // The checksum comes from the same release as the package, so it only proves the
+            // download is whole. The signature is what proves the publisher made it, and it is just
+            // as mandatory: a release without one, or with one that does not read, is not installed.
+            var signature = string.IsNullOrEmpty(_signatureUrl)
+                ? null
+                : await updateService.GetSignatureAsync(_signatureUrl);
+            if (string.IsNullOrEmpty(signature))
+                throw new UserFacingException(Localizer.Get("Msg_UpdateNoSignature"));
+
             await updateService.DownloadInstallerAsync(_packageUrl, dest);
 
             UpdateText = Localizer.Get("Msg_VerifyingChecksum");
             await DownloadVerifier.VerifyAsync(dest, expectedSha256, HashAlgorithmName.SHA256);
+
+            UpdateText = Localizer.Get("Msg_VerifyingSignature");
+            if (!await Task.Run(() => UpdateSignature.Verify(dest, signature)))
+            {
+                // A package that failed this is not left lying where the next step could find it.
+                try { File.Delete(dest); } catch { /* the temporary folder is swept later */ }
+                throw new UserFacingException(Localizer.Get("Msg_UpdateBadSignature"));
+            }
 
             UpdateText = Localizer.Get("Update_Installing");
             await ShutdownAllAsync();

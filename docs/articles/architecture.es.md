@@ -467,7 +467,10 @@ mundo. No hay rutas fijas del equipo en el código.
   beta la conserva hasta la siguiente estable, que la supera. Cambiarlo vuelve a comprobar en el acto, y
   una comprobación que no encuentra nada más nuevo retira lo que ya ofrecía el banner. La verificación contra el asset `SHA256SUMS.txt` de la release es
   **obligatoria**: si el checksum falta o no se puede leer, la actualización in situ se rechaza y se
-  abre la página de la release en su lugar.
+  abre la página de la release en su lugar. También lo es la **firma** (`UpdateSignature`): el
+  checksum viene de la misma release que el paquete y solo prueba que la descarga está entera,
+  mientras que el asset `<paquete>.sig` se comprueba contra claves públicas incluidas en la app y
+  hechas con una clave privada que no vive en GitHub. Ver [Actualizaciones firmadas](signing.es.md).
 - **`ServerAccessCatalog` / `ServerAccessRules`** — quién puede hacer qué en un servidor *compartido*, sin
   red ni pantalla todavía (fase 1 del [acceso compartido](shared-access.es.md)). `ServerGrant` (en
   `Models/`) es lo que se guarda de una persona: un rol y los permisos añadidos o quitados. Lo que puede
