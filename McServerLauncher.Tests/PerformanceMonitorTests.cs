@@ -208,54 +208,53 @@ public class PerformanceMonitorTests
         Assert.Equal(PerformanceLevel.Saturated, m.Evaluate(now.AddSeconds(120)).Level);
     }
 
-    // --- memory ---
+    // --- memory (the rules themselves are in MemoryPressureTests) ---
+
+    private const long MB = 1024 * 1024;
+
+    private static GcEvent Gc(long liveMb, GcKind kind = GcKind.Young, double pauseMs = 10, bool forced = false) =>
+        new(1, 0, kind, liveMb * 2 * MB, liveMb * MB, 4096 * MB, pauseMs, forced, false);
 
     [Fact]
-    public void A_heap_nearly_full_for_five_minutes_is_tight_and_never_more()
+    public void A_heap_nearly_full_for_two_minutes_is_tight_and_never_more()
     {
-        var (m, now) = Settled();
-        for (var s = 0; s <= 300; s += 30) m.AddMemory(now.AddSeconds(s), 3800, 4096, 100, 0);
+        var m = new PerformanceMonitor();
+        m.Ready(Start, 4096);
+        var now = Start + PerformanceMonitor.Grace + TimeSpan.FromSeconds(1);
+        for (var s = 0; s <= 150; s += 15) m.AddGc(now.AddSeconds(s), Gc(3500));
 
-        var status = m.Evaluate(now.AddSeconds(300));
+        var status = m.Evaluate(now.AddSeconds(150));
 
         Assert.Equal(PerformanceLevel.Tight, status.Level);
         Assert.Equal(PerformanceCause.Memory, status.Cause);
+        Assert.Equal(MemoryPressureReason.HeapNearlyFull, status.MemoryReason);
     }
 
     [Fact]
-    public void A_heap_nearly_full_for_a_moment_is_nothing()
+    public void A_full_collection_is_tight_with_its_reason()
     {
-        var (m, now) = Settled();
-        m.AddMemory(now, 3800, 4096, 100, 0);
-        m.AddMemory(now.AddSeconds(30), 1200, 4096, 150, 0);
-        for (var s = 60; s <= 400; s += 30) m.AddMemory(now.AddSeconds(s), 1200, 4096, 200, 0);
+        var m = new PerformanceMonitor();
+        m.Ready(Start, 4096);
+        var now = Start + PerformanceMonitor.Grace + TimeSpan.FromSeconds(1);
+        m.AddGc(now, Gc(900, GcKind.Full, pauseMs: 800));
 
-        Assert.Equal(PerformanceLevel.Good, m.Evaluate(now.AddSeconds(400)).Level);
+        var status = m.Evaluate(now.AddSeconds(5));
+
+        Assert.Equal(PerformanceCause.Memory, status.Cause);
+        Assert.Equal(MemoryPressureReason.FullGc, status.MemoryReason);
     }
 
     [Fact]
-    public void A_collector_taking_a_sixth_of_the_time_counts_as_pressure_even_with_room_left()
+    public void Collections_during_a_backup_are_the_backups_and_say_nothing()
     {
-        var (m, now) = Settled();
-        double pause = 0;
-        for (var s = 0; s <= 330; s += 30)
-        {
-            m.AddMemory(now.AddSeconds(s), 1000, 8192, pause, 0);
-            pause += 30_000 * 0.2;    // 20 % of every interval
-        }
+        var m = new PerformanceMonitor();
+        m.Ready(Start, 4096);
+        var now = Start + PerformanceMonitor.Grace + TimeSpan.FromSeconds(1);
+        m.BackupStarted();
+        m.AddGc(now, Gc(900, GcKind.Full, pauseMs: 800));
+        m.BackupEnded(now.AddSeconds(5));
 
-        Assert.Equal(PerformanceCause.Memory, m.Evaluate(now.AddSeconds(330)).Cause);
-    }
-
-    [Fact]
-    public void A_full_collection_keeps_the_pressure_on_for_a_minute()
-    {
-        var (m, now) = Settled();
-        m.AddMemory(now, 1000, 8192, 100, 0);
-        m.AddMemory(now.AddSeconds(30), 1000, 8192, 200, 1);      // a full GC
-        for (var s = 60; s <= 330; s += 30) m.AddMemory(now.AddSeconds(s), 1000, 8192, 250, 1);
-
-        Assert.Equal(PerformanceLevel.Good, m.Evaluate(now.AddSeconds(330)).Level);
+        Assert.Equal(PerformanceLevel.Good, m.Evaluate(now.AddMinutes(1)).Level);
     }
 
     // --- out of memory ---

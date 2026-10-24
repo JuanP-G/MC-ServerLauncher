@@ -1310,11 +1310,15 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Perf_WordMsptFmt" xml:space="preserve"><value>{0} · {1} ms/tick</value></data>
   <data name="Perf_Tip" xml:space="preserve"><value>Cómo va el servidor. Los TPS son los ticks por segundo (20 es lo ideal) y los ms por tick, lo que tarda cada uno (más de 50 es no dar abasto). Se mide cada 30 s sin ensuciar la consola y solo avisa de problemas que duran: no juzga los primeros 3 minutos ni mientras se hace una copia.</value></data>
   <data name="Perf_CauseOom" xml:space="preserve"><value>El servidor se ha quedado sin memoria.</value></data>
+  <data name="Perf_CauseMemoryFmt" xml:space="preserve"><value>Al servidor le falta memoria; al reiniciar tendrá {0}.</value></data>
+  <data name="Perf_CauseMemoryManual" xml:space="preserve"><value>Al servidor le falta memoria. Puedes subirla en Ver soluciones.</value></data>
+  <data name="Perf_CauseOomFmt" xml:space="preserve"><value>El servidor se ha quedado sin memoria; al reiniciar tendrá {0}.</value></data>
+  <data name="Mem_ReasonLearned" xml:space="preserve"><value>lo que ha necesitado este servidor en sus últimas sesiones</value></data>
+  <data name="Mem_ReasonPressure" xml:space="preserve"><value>se quedó corto la última vez</value></data>
   <data name="Perf_CauseTicksFmt" xml:space="preserve"><value>El servidor va lento: {0} TPS.</value></data>
   <data name="Perf_CauseTicks" xml:space="preserve"><value>El servidor tarda demasiado en cada tick.</value></data>
   <data name="Perf_CauseLagFmt" xml:space="preserve"><value>El servidor avisa de que no da abasto (avisos en 5 min: {0}).</value></data>
   <data name="Perf_CauseCpu" xml:space="preserve"><value>El procesador va al límite.</value></data>
-  <data name="Perf_CauseMemory" xml:space="preserve"><value>Java va justo de memoria.</value></data>
   <data name="Perf_Solutions" xml:space="preserve"><value>Ver soluciones</value></data>
   <data name="Perf_DismissTip" xml:space="preserve"><value>Ocultar hasta el próximo arranque</value></data>
   <data name="Sol_Back" xml:space="preserve"><value>Volver</value></data>

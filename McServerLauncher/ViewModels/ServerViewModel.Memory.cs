@@ -53,9 +53,12 @@ public partial class ServerViewModel
         var config = Config;
         var java = _java.GetRuntime(config.JavaPath);
         var mods = MemoryProfile.CountMods(config);
-        var boost = MemoryHistoryStore.For(config.Id).TakeNextStartBoost();
+        var history = MemoryHistoryStore.For(config.Id);
+        var boost = history.TakeNextStartBoost();
+        var learned = MemoryLearner.Next(history.Sessions, MemoryProfile.FloorMb(mods),
+            MemoryProfile.EstimateCeilingMb(mods));
         var plan = MemoryProfile.Plan(new MemoryInputs(config, java, mods, SystemMemory.TotalMb(),
-            MemoryBudget.ReservedByOthersMb(config.Id), MemoryPreferences.DedicatedMachine, boost));
+            MemoryBudget.ReservedByOthersMb(config.Id), MemoryPreferences.DedicatedMachine, boost, learned));
 
         _runJavaMajor = java.Major;
         _runModCount = mods;
@@ -94,6 +97,8 @@ public partial class ServerViewModel
         MemoryCeilingReason.KeptPrevious => Localizer.Get("Mem_ReasonKept"),
         MemoryCeilingReason.Budget => Localizer.Get("Mem_ReasonBudget"),
         MemoryCeilingReason.Boosted => Localizer.Get("Mem_ReasonBoost"),
+        MemoryCeilingReason.Learned => Localizer.Get("Mem_ReasonLearned"),
+        MemoryCeilingReason.RaisedAfterPressure => Localizer.Get("Mem_ReasonPressure"),
         MemoryCeilingReason.Floor => Localizer.Get("Mem_ReasonFloor"),
         _ when modCount > 0 => string.Format(Localizer.Get("Mem_ReasonModsFmt"), modCount),
         _ => Localizer.Get("Mem_ReasonNoMods")
@@ -107,6 +112,12 @@ public partial class ServerViewModel
     private MemorySessionTracker? _memTracker;
     private GcLogTail? _gcTail;
     private Task _gcPump = Task.CompletedTask;
+
+    /// <summary>
+    /// The end of the last run being written to the history. The next start waits for it: a server
+    /// that crashed out of memory restarts at once, and its next ceiling is decided from that run.
+    /// </summary>
+    private Task _memoryFinish = Task.CompletedTask;
     private volatile bool _sawOutOfMemory;
     private int _runJavaMajor;
     private int _runModCount;
@@ -157,11 +168,15 @@ public partial class ServerViewModel
         if (ReferenceEquals(tracker, _memTracker)) ShowJavaHeap(tracker);
     }
 
-    private static void Apply(MemorySessionTracker tracker, IReadOnlyList<string> lines)
+    private void Apply(MemorySessionTracker tracker, IReadOnlyList<string> lines)
     {
         foreach (var line in lines)
         {
-            if (GcLogLine.TryParse(line, out var gc)) tracker.Add(gc);
+            if (GcLogLine.TryParse(line, out var gc))
+            {
+                tracker.Add(gc);
+                _perf.AddGc(DateTime.UtcNow, gc);
+            }
             else if (GcLogLine.TryParseCollector(line, out var collector)) tracker.NoteCollector(collector);
         }
     }
