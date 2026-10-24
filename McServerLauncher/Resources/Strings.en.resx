@@ -1301,6 +1301,12 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Server memory</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>If you don't play on this PC, servers may use all its memory but 2 GB. Otherwise, together they use at most half.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>This PC is only for servers</value></data>
+  <data name="Msg_AgentOn" xml:space="preserve"><value>Memory agent on: it will tighten the heap if the PC runs short of free memory.</value></data>
+  <data name="Msg_AgentTight" xml:space="preserve"><value>The PC is low on free memory: the server gives back what it does not use sooner.</value></data>
+  <data name="Msg_AgentRelaxed" xml:space="preserve"><value>Free memory is back: the server returns to its normal margins.</value></data>
+  <data name="Msg_AgentFailed" xml:space="preserve"><value>Java could not load the memory agent. It is noted for this Java version and the server starts without it.</value></data>
+  <data name="Set_MemoryAgent" xml:space="preserve"><value>Adjust memory live</value></data>
+  <data name="Set_MemoryAgentDesc" xml:space="preserve"><value>A tiny agent inside the server makes it give memory back sooner while the PC is low on free memory, starting with servers nobody is on. It touches nothing else and opens no connections.</value></data>
   <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Automatic memory: it can grow up to {0} ({1}) and gives back what it does not use.</value></data>
   <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>This Java does not accept every memory option: the server starts with the ones it does accept.</value></data>
   <data name="Msg_Java32BitCap" xml:space="preserve"><value>This Java is 32-bit and cannot give more than 1 GB. Install a 64-bit Java to give the server more memory.</value></data>

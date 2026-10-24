@@ -213,6 +213,21 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    /// <summary>Whether the memory agent may hold a server's heap tighter while the PC is short of memory.</summary>
+    /// <remarks>Read at each start: a server already running keeps the agent it started with.</remarks>
+    public bool MemoryAgentEnabled
+    {
+        get => _settings.MemoryAgentEnabled;
+        set
+        {
+            if (_settings.MemoryAgentEnabled == value) return;
+            _settings.MemoryAgentEnabled = value;
+            MemoryPreferences.AgentEnabled = value;
+            OnPropertyChanged();
+            Persist();
+        }
+    }
+
     [ObservableProperty]
     private string? _shortcutStatus;
 

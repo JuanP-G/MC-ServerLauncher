@@ -1301,6 +1301,12 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Speicher der Server</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Wenn du auf diesem PC nicht spielst, dürfen die Server den ganzen Speicher bis auf 2 GB nutzen. Sonst teilen sie sich höchstens die Hälfte.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>Dieser PC ist nur für Server</value></data>
+  <data name="Msg_AgentOn" xml:space="preserve"><value>Speicher-Agent aktiv: er strafft den Heap, wenn dem PC der freie Speicher ausgeht.</value></data>
+  <data name="Msg_AgentTight" xml:space="preserve"><value>Dem PC fehlt freier Speicher: Der Server gibt Ungenutztes schneller zurück.</value></data>
+  <data name="Msg_AgentRelaxed" xml:space="preserve"><value>Wieder genug freier Speicher: Der Server kehrt zu seinen normalen Abständen zurück.</value></data>
+  <data name="Msg_AgentFailed" xml:space="preserve"><value>Java konnte den Speicher-Agent nicht laden. Das wird für diese Java-Version vermerkt, der Server startet ohne ihn.</value></data>
+  <data name="Set_MemoryAgent" xml:space="preserve"><value>Speicher im Betrieb anpassen</value></data>
+  <data name="Set_MemoryAgentDesc" xml:space="preserve"><value>Ein winziger Agent im Server lässt ihn Speicher schneller zurückgeben, solange dem PC freier Speicher fehlt, zuerst bei Servern ohne Spieler. Er berührt sonst nichts und öffnet keine Verbindungen.</value></data>
   <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Automatischer Speicher: Er kann bis {0} wachsen ({1}) und gibt zurück, was nicht genutzt wird.</value></data>
   <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>Dieses Java akzeptiert nicht alle Speicheroptionen: Der Server startet mit denen, die es annimmt.</value></data>
   <data name="Msg_Java32BitCap" xml:space="preserve"><value>Dieses Java ist 32-Bit und kann nicht mehr als 1 GB geben. Installiere ein 64-Bit-Java, damit der Server mehr Speicher bekommt.</value></data>

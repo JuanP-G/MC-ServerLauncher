@@ -118,6 +118,11 @@
                                 <TextBlock Text="{loc:Loc Set_DedicatedPc}" VerticalAlignment="Center" TextWrapping="Wrap" />
                                 <ToggleSwitch Grid.Column="1" IsChecked="{Binding DedicatedServerMachine, Mode=TwoWay}" />
                             </Grid>
+                            <TextBlock Text="{loc:Loc Set_MemoryAgentDesc}" Classes="desc" Margin="0,6,0,0" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{loc:Loc Set_MemoryAgent}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding MemoryAgentEnabled, Mode=TwoWay}" />
+                            </Grid>
                         </StackPanel>
                     </Border>
 

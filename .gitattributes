@@ -41,3 +41,6 @@
 # Generated or vendored: keep them out of the diff view and out of the language stats.
 docs/_site/**               linguist-generated=true
 McServerLauncher/Resources/store-summaries.json  linguist-generated=true
+
+# The memory agent is a binary built reproducibly from agent/; never normalise its bytes.
+*.jar      binary

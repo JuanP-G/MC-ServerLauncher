@@ -1,0 +1,36 @@
+name: Memory agent
+
+# The memory agent (agent/) ships inside the app as a jar, so nothing downloads it and publishing needs
+# no JDK. That only works if the jar in the repository is exactly what its source builds to: a jar
+# nobody can rebuild is a binary nobody can review. This rebuilds it from source and fails if the bytes
+# differ from the committed jar and its recorded SHA-256.
+#
+# The build is deterministic across JDKs (see agent/build.py), so the runner's own JDK 21 is enough.
+
+on:
+  push:
+    paths:
+      - 'agent/**'
+      - 'McServerLauncher/Resources/agent/**'
+      - '.github/workflows/agent.yml'
+  pull_request:
+    paths:
+      - 'agent/**'
+      - 'McServerLauncher/Resources/agent/**'
+      - '.github/workflows/agent.yml'
+  workflow_dispatch:
+
+jobs:
+  reproducible:
+    name: The jar rebuilds to the committed bytes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Rebuild and compare
+        run: |
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          python3 agent/build.py --check
+
+      - name: The copy inside the app is the same file
+        run: cmp agent/mcsl-agent.jar McServerLauncher/Resources/agent/mcsl-agent.jar

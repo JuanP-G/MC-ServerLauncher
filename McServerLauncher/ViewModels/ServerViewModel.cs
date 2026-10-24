@@ -1155,6 +1155,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
         WatchForOutOfMemory(line);
         WatchForLag(line);
+        WatchForAgentError(line);
 
         // The server's own answer to "seed": remembered in case the world's files cannot be read.
         if (source == ConsoleSource.Stdout && WorldSeed.FromConsoleLine(line) is { } seed)
@@ -1568,6 +1569,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     {
         try
         {
+            // A start that dies over the memory agent is the agent's doing, not a crash to count.
+            if (TryRecoverFromAgentFailure()) return;
+
             var reason = _crashReports.FindRecentCrashReason(Config.FolderPath, _process.StartedAtUtc);
             var codeText = exitCode?.ToString() ?? "?";
             OnConsoleLine(reason is not null
@@ -2366,6 +2370,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         var ramMb = MemoryReadout.OwnMb(sample, _memTracker?.Collector ?? GcCollector.Unknown);
         _memTracker?.AddSample(sample.PrivateMb, ConnectedPlayers.Count);
         PumpGcLog();
+        AdjustAgent();
         FeedPerformance(sample);
 
         CpuText = $"{sample.CpuPercent:0.#} %";
