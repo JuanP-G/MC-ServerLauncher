@@ -222,11 +222,13 @@ public class ServerProcessManager
     private void OnStandardOutput(object sender, DataReceivedEventArgs e)
     {
         if (e.Data is null) return;
+        // Paper colours its output with ANSI sequences, which hide a player's name from every detector.
+        var line = AnsiEscapes.Strip(e.Data);
         // Vanilla/Fabric/Forge/Paper all log a line like
         // `[12:00:00] [Server thread/INFO]: Done (3.2s)! For help, type "help"` when ready.
-        if (State == ServerState.Starting && e.Data.Contains("Done (", StringComparison.Ordinal))
+        if (State == ServerState.Starting && line.Contains("Done (", StringComparison.Ordinal))
             State = ServerState.Running;
-        OutputReceived?.Invoke(e.Data, ConsoleSource.Stdout);
+        OutputReceived?.Invoke(line, ConsoleSource.Stdout);
     }
 
     /// <summary>
@@ -239,7 +241,7 @@ public class ServerProcessManager
     private void OnStandardError(object sender, DataReceivedEventArgs e)
     {
         if (e.Data is null) return;
-        OutputReceived?.Invoke(e.Data, ConsoleSource.Stderr);
+        OutputReceived?.Invoke(AnsiEscapes.Strip(e.Data), ConsoleSource.Stderr);
     }
 
     private void OnProcessExited(object? sender, EventArgs e)

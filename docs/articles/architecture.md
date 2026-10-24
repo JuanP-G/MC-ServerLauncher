@@ -620,6 +620,23 @@ Each server has a `MemoryMode`. **Automatic** (the default) lets the app size th
   `-XX:+AlwaysPreTouch`…); such a server runs Manual whatever it says, and the Performance page says why.
   `-XX:+UseG1GC` alone does not count. `run.bat` and `user_jvm_args.txt` keep the Manual numbers for
   launching outside the app.
+- **The ceiling learns.** The estimate is only where a server starts. `MemoryLearner` (pure) reads the
+  server's last runs from its memory history and works out the next ceiling: a run counts when it lasted 20
+  minutes, had a player on and its live heap stayed under 85 % of its ceiling (one that reached 85 % was held
+  back by the ceiling, so it shows the ceiling and not the need, and counts as pressure); the next ceiling is
+  1.6 × the p95 of the peak live heap of the last ten that count, rounded up to 512 MB and never below the
+  floor. It goes **down** only with at least three counting runs and by at most 1 GB per start; it goes
+  **up** at once: ×1.5 after running out of memory, 1 GB or ×1.25 (the larger) after any other pressure,
+  including the restart after a crash (the next start waits for the history of the run that just ended to be
+  written). Only Automatic runs are learned from, and the budget still has the last word. A one-off raise from
+  the Performance page goes on top.
+- **Pressure.** `MemoryPressure` (pure, with the time given by the caller) says a server is short of memory
+  from the GC log, after 3 minutes of grace: over 75 % of the ceiling alive after every collection for 2
+  minutes (at least three), the collector pausing the server for over 10 % of the last 2 minutes, a full
+  collection nobody asked for (held for 5 minutes), or running out of memory. A forced `System.gc()` counts
+  for nothing. It feeds the Performance card and the band, which says how much memory the server will have
+  after a restart (the same plan the start will use), and the run is saved as `Pressured`, which the learner
+  reads.
 
 ### Measuring a server's memory
 A process seen from outside says how much memory it holds, not how much it needs: between collections the
@@ -675,8 +692,8 @@ something is wrong for a while; *See solutions* in the band opens a page that re
   readings from spark and three from the others; three `Can't keep up!` in 5 minutes is Saturated, one or two
   Tight, and a delay over a minute is a clock jump (the PC waking up) and is ignored; CPU at 90 % for 2
   minutes is Saturated and 75 % for 3 Tight; running out of memory is Saturated at once. Memory is judged
-  from the GC log (the heap nearly full after collections, the collector taking over 15 % of the time, or a
-  full collection), never from the working set, and alone is only Tight.
+  from the GC log by `MemoryPressure` (see *Memory: automatic or manual*), never from the working set, and
+  alone is only Tight.
 - **The card and the band.** `ServerViewModel.Performance.cs` feeds the monitor with the same sample that
   feeds the CPU and RAM cards (sampling twice would break the CPU figure). The card shows TPS when they can
   be measured and a word (Good, Tight, Overloaded) otherwise; the band is one 26 px line with an ellipsis, in
