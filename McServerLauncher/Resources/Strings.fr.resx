@@ -1301,6 +1301,12 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Mémoire des serveurs</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Si tu ne joues pas sur ce PC, les serveurs peuvent utiliser toute sa mémoire sauf 2 Go. Sinon, ensemble, ils en utilisent au plus la moitié.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>Ce PC sert uniquement aux serveurs</value></data>
+  <data name="Msg_AgentOn" xml:space="preserve"><value>Agent mémoire actif : il resserrera le heap si le PC manque de mémoire libre.</value></data>
+  <data name="Msg_AgentTight" xml:space="preserve"><value>Le PC manque de mémoire libre : le serveur rend plus vite celle qu'il n'utilise pas.</value></data>
+  <data name="Msg_AgentRelaxed" xml:space="preserve"><value>La mémoire libre est revenue : le serveur retrouve ses marges normales.</value></data>
+  <data name="Msg_AgentFailed" xml:space="preserve"><value>Java n'a pas pu charger l'agent mémoire. C'est noté pour cette version de Java et le serveur démarre sans lui.</value></data>
+  <data name="Set_MemoryAgent" xml:space="preserve"><value>Ajuster la mémoire à chaud</value></data>
+  <data name="Set_MemoryAgentDesc" xml:space="preserve"><value>Un agent minuscule dans le serveur lui fait rendre la mémoire plus vite tant que le PC en manque, en commençant par les serveurs sans joueurs. Il ne touche à rien d'autre et n'ouvre aucune connexion.</value></data>
   <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Mémoire automatique : elle peut monter jusqu'à {0} ({1}) et rend ce qu'elle n'utilise pas.</value></data>
   <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>Ce Java n'accepte pas toutes les options de mémoire : le serveur démarre avec celles qu'il accepte.</value></data>
   <data name="Msg_Java32BitCap" xml:space="preserve"><value>Ce Java est en 32 bits et ne peut pas donner plus de 1 Go. Installe un Java 64 bits pour donner plus de mémoire au serveur.</value></data>

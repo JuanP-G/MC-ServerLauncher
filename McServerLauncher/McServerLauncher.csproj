@@ -38,6 +38,7 @@
     <EmbeddedResource Include="Resources\store-tags.json" />
     <EmbeddedResource Include="Resources\store-summaries.json" />
     <EmbeddedResource Include="Resources\performance-picks.json" />
+    <EmbeddedResource Include="Resources\agent\mcsl-agent.jar" LogicalName="McServerLauncher.Resources.agent.mcsl-agent.jar" />
 
     <!-- The install scripts the modpack carries. Shape here, wording in the .resx files: a couple
          of hundred lines of shell inside a resx <value> would be escaped XML, unreviewable in a diff, and

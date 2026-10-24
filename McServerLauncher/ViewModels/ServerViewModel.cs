@@ -564,6 +564,10 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         CheckIdleShutdown();
         ProbePerformance();
 
+        // Also before the throttle: a PC short of memory is the case where the window is most likely
+        // to be in the tray, and a check every hundred seconds instead of ten would come too late.
+        AdjustAgent();
+
         if (MainWindowHidden && ++_hiddenStatsTicks % 10 != 0) return;
         UpdateStats();
     }
@@ -1155,6 +1159,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
         WatchForOutOfMemory(line);
         WatchForLag(line);
+        WatchForAgentError(line);
 
         // The server's own answer to "seed": remembered in case the world's files cannot be read.
         if (source == ConsoleSource.Stdout && WorldSeed.FromConsoleLine(line) is { } seed)
@@ -1568,6 +1573,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     {
         try
         {
+            // A start that dies over the memory agent is the agent's doing, not a crash to count.
+            if (TryRecoverFromAgentFailure()) return;
+
             var reason = _crashReports.FindRecentCrashReason(Config.FolderPath, _process.StartedAtUtc);
             var codeText = exitCode?.ToString() ?? "?";
             OnConsoleLine(reason is not null

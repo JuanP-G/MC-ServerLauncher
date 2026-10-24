@@ -1347,6 +1347,12 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Set_MemorySection" xml:space="preserve"><value>Memoria de los servidores</value></data>
   <data name="Set_DedicatedPcDesc" xml:space="preserve"><value>Si no juegas en este PC, los servidores pueden usar toda la memoria menos 2 GB. Si no, entre todos usan como mucho la mitad.</value></data>
   <data name="Set_DedicatedPc" xml:space="preserve"><value>Este PC es solo para servidores</value></data>
+  <data name="Msg_AgentOn" xml:space="preserve"><value>Agente de memoria activo: ajustará el heap si al PC le falta memoria libre.</value></data>
+  <data name="Msg_AgentTight" xml:space="preserve"><value>Al PC le queda poca memoria libre: el servidor devuelve la que no usa más rápido.</value></data>
+  <data name="Msg_AgentRelaxed" xml:space="preserve"><value>Vuelve a haber memoria libre: el servidor recupera sus márgenes normales.</value></data>
+  <data name="Msg_AgentFailed" xml:space="preserve"><value>Java no ha podido cargar el agente de memoria. Se anota para esta versión de Java y el servidor arranca sin él.</value></data>
+  <data name="Set_MemoryAgent" xml:space="preserve"><value>Ajustar la memoria en caliente</value></data>
+  <data name="Set_MemoryAgentDesc" xml:space="preserve"><value>Un agente diminuto dentro del servidor le hace devolver memoria más rápido mientras al PC le quede poca libre, empezando por los servidores sin jugadores. No toca nada más ni abre conexiones.</value></data>
   <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Memoria automática: puede crecer hasta {0} ({1}) y devuelve lo que no usa.</value></data>
   <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>Esta Java no acepta todas las opciones de memoria: el servidor arranca con las que sí acepta.</value></data>
   <data name="Msg_Java32BitCap" xml:space="preserve"><value>Esta Java es de 32 bits y no puede dar más de 1 GB. Instala una de 64 bits para que el servidor tenga más memoria.</value></data>

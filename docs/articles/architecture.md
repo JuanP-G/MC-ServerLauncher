@@ -637,6 +637,34 @@ Each server has a `MemoryMode`. **Automatic** (the default) lets the app size th
   for nothing. It feeds the Performance card and the band, which says how much memory the server will have
   after a restart (the same plan the start will use), and the run is saved as `Pressured`, which the learner
   reads.
+- **The memory agent.** Under 15 % of the PC's memory free, an Automatic server can be asked to give memory
+  back sooner. `agent/` holds a dependency-free Java 8 agent (one class, about 10 KB) that the app embeds as
+  `Resources/agent/mcsl-agent.jar` and copies into the server's hidden memory folder
+  (`MemoryAgent.Install`, which checks its SHA-256) and loads with the relative flag
+  `-javaagent:.mcserverlauncher-memory/mcsl-agent.jar=.mcserverlauncher-memory`. **The app decides, the agent
+  only carries out:** every 10 s `MemoryAgentPolicy` (pure) compares the machine's free memory with 15 % and
+  25 % and writes `control` (at most 1 KB of `key=value`; only `MinHeapFreeRatio`, `MaxHeapFreeRatio` and
+  `G1PeriodicGCInterval`, each validated, and a maximum below the minimum drops both). A server with nobody on
+  tightens under 15 % free (5/15 % margins, a periodic collection every 5 s); one with players waits until
+  10 %; everything goes back to 10/30 % and 15 s above 25 %. The agent reads `control` every 5 s, applies it
+  with `HotSpotDiagnosticMXBean.setVMOption` (by reflection, through the exported interface, so it also loads
+  where that module is missing) and writes `status.json` (heap held and in use, what was alive after the last
+  collections, the options in effect, the last error) by writing a temporary file and renaming it; the RAM
+  card prefers that report to the GC log when it is recent. It opens no socket, never calls `System.gc()`,
+  and `premain` catches every `Throwable`, because one escaping would stop the server from starting.
+  **It can be turned off three ways:** a Manual server (or one whose own arguments size the memory) never
+  gets it, nor does a Java that is not HotSpot or is older than 12; the setting *Adjust memory live* in
+  Settings; and `MCSL_NO_AGENT=1` in the environment. If the JVM cannot load it (the three messages it prints
+  are matched at the start of the line, which a player's chat never is) and the server dies within a minute,
+  the pair of that Java and this agent is written to `%APPDATA%\McServerLauncher\memory-agent-failures.json`,
+  the console says so, and the server starts again without it, now and at every later start.
+- **Building the agent.** `python agent/build.py` (or `agent/build.ps1`, `agent/build.sh`) compiles with
+  `--release 8` and writes the jar with a small deterministic zip (stored, fixed dates and permissions,
+  entries in a fixed order): the JDK's own `jar` writes a `Created-By` line with its version, so two JDKs gave
+  two jars. The class file itself is byte-identical on JDK 21 and 25. The jar and its SHA-256 are committed,
+  `.github/workflows/agent.yml` rebuilds it and fails if the bytes differ, and a test compares the copy
+  embedded in the app with `agent/mcsl-agent.jar.sha256`; so neither `publish.ps1` nor the release workflows
+  need a JDK.
 
 ### Measuring a server's memory
 A process seen from outside says how much memory it holds, not how much it needs: between collections the

@@ -8,4 +8,7 @@ public static class MemoryPreferences
 {
     /// <summary>The machine is only for servers, so they may share everything but 2 GB.</summary>
     public static bool DedicatedMachine { get; set; }
+
+    /// <summary>The memory agent may be used (see <see cref="MemoryAgent"/>).</summary>
+    public static bool AgentEnabled { get; set; } = true;
 }
