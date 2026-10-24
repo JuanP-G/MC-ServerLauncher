@@ -456,7 +456,7 @@ are no hard-coded machine paths.
   finds nothing newer takes back an offer already in the banner. Verification against the release's `SHA256SUMS.txt` asset is
   **mandatory**: if the checksum is missing or unreadable, the in-place update is refused and the
   release page opens instead. So is the **signature** (`UpdateSignature`): the checksum comes from
-  the same release as the package and only proves the download is whole, while the `<package>.sig`
+  the same release as the package and only proves the download is whole, while the `<package>.sig2`
   asset is checked against public keys built into the app and made with a private key that does not
   live on GitHub. See [Signed updates](signing.md).
 - **`ServerAccessCatalog` / `ServerAccessRules`** — who may do what on a *shared* server, with no network

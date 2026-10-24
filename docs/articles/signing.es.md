@@ -20,8 +20,8 @@ Una firma cierra ese hueco porque la clave que la hace **no vive en GitHub**.
 | | |
 | --- | --- |
 | Algoritmo | ECDSA sobre P-256 con SHA-256 |
-| Qué se firma | Los bytes del paquete: el `.exe`, el `.AppImage` o cada `.dmg` |
-| Dónde está la firma | Un asset `<paquete>.sig` en la misma release: la firma DER, en base64, como texto |
+| Qué se firma | Un mensaje corto con el formato, la **versión**, el **nombre del archivo** y el SHA-256 del paquete (más abajo), para el `.exe`, el `.AppImage` y cada `.dmg` |
+| Dónde está la firma | Un asset `<paquete>.sig2` en la misma release: la firma DER, en base64, como texto |
 | Dónde está la clave pública | En la app: `UpdateSignature.TrustedKeys` (SubjectPublicKeyInfo, base64) |
 | Dónde está la clave privada | En el equipo de quien mantiene el proyecto, cifrada, fuera del repositorio y de GitHub |
 
@@ -39,15 +39,40 @@ En `MainViewModel.UpdateNow`, antes de instalar nada:
 `Verify` nunca lanza una excepción por una entrada mala: el archivo de firma se descarga del mismo sitio
 donde escribiría un atacante, y un fallo sería una forma de saltarse la comprobación.
 
+### El mensaje firmado
+
+La firma no es de los bytes del paquete solos sino de cuatro líneas, unidas con `\n` y sin nada después de
+la última (`UpdateSignature.SignedMessage` y `tools\signing\sign-package.ps1` arman el mismo texto):
+
+```
+mcsl-update-v1
+1.21.2
+MC-ServerLauncher-Setup-1.21.2.exe
+<el SHA-256 del paquete, en minúsculas>
+```
+
+Con la versión dentro, una release antigua que se firmó bien en su día no verifica cuando se vuelve a
+ofrecer bajo una etiqueta más nueva (la etiqueta la elige quien tiene permiso de escritura), y con el
+nombre del archivo dentro, la firma del `.dmg` no vale como la del `.exe`. La primera línea nombra el
+formato, para que un formato posterior no se confunda con este.
+
+### Dos formatos mientras quede alguien en la 1.21.1
+
+Las apps en la 1.21.1 leen `<paquete>.sig`, una firma de los bytes del paquete solos, y no saben nada de
+`.sig2`. Por eso cada release publica **los dos**: `.sig` para que esas apps puedan actualizarse y `.sig2`
+para todas las posteriores. Las apps posteriores a la 1.21.1 leen solo `.sig2` y nunca recurren a `.sig`:
+si lo hicieran, quitar un asset rebajaría la comprobación a la más débil. Cuando ya no quede nadie en la
+1.21.1, `sign-package.ps1 -NoLegacy` deja de escribir `.sig`.
+
 ## Publicar una release
 
-1. `publish.ps1` construye el instalador y, si existe la clave, lo firma: `dist/…Setup-X.Y.Z.exe.sig`.
-   Adjúntalo a la release junto al `.exe` y al `SHA256SUMS.txt`.
+1. `publish.ps1` construye el instalador y, si existe la clave, lo firma: `dist/…Setup-X.Y.Z.exe.sig2` y
+   `.sig`. Adjunta los dos a la release junto al `.exe` y al `SHA256SUMS.txt`.
 2. Publicar la release dispara los workflows de Linux y macOS, que adjuntan el AppImage, los dos `.dmg` y
    sus `.sha256`. **No pueden firmar**: eso pondría la clave en GitHub.
 3. Cuando terminen, ejecuta `tools\signing\sign-release.ps1 -Tag vX.Y.Z`. Espera a los paquetes, los
    descarga, comprueba cada uno contra su `.sha256`, imprime los hashes, pide una vez la contraseña de la
-   clave, los firma y sube los `.sig`.
+   clave, los firma y sube los `.sig2` y `.sig`.
 
 Entre el paso 2 y el 3 (unos cinco minutos) quien pulse Actualizar en Linux o macOS irá a la página de
 la release en vez de actualizarse: el fallo seguro.
@@ -89,9 +114,9 @@ clave va cifrada y fuera de GitHub.
 - **Las versiones anteriores a la primera firmada** (la 1.21.1, publicada el 2026-10-24, es la primera)
   no comprueban nada. La protección empieza con la actualización *posterior* a la que lleva la clave;
   instalar esa primera sigue dependiendo del checksum.
-- **Volver a una versión vieja.** Una release antigua, bien firmada, sigue estando bien firmada. El
-  actualizador solo ofrece versiones más nuevas que la que corre, pero no ata la firma a un número de
-  versión.
+- **Volver a una versión vieja, en la 1.21.1.** Las apps en la 1.21.1 comprueban el `.sig` anterior, que
+  no va atado a ninguna versión, así que una release antigua bien firmada sigue pasando para ellas. Las
+  apps que leen `.sig2` no se ven afectadas.
 - **Authenticode** (firmar el `.exe` de Windows con un certificado de código, lo que además quita el aviso
   de SmartScreen) es un paso aparte y opcional que **no está hecho**. Necesita un certificado que no es
   gratuito, salvo programas para proyectos de código abierto.
@@ -106,8 +131,10 @@ Con la clave pública escrita en un PEM (`BEGIN PUBLIC KEY`, el base64 de `Updat
 líneas de 64 columnas, `END PUBLIC KEY`):
 
 ```bash
-base64 -d MC-ServerLauncher-x86_64.AppImage.sig > sig.der
-openssl dgst -sha256 -verify public.pem -signature sig.der MC-ServerLauncher-x86_64.AppImage
+V=1.21.2; F=MC-ServerLauncher-x86_64.AppImage
+printf 'mcsl-update-v1\n%s\n%s\n%s' "$V" "$F" "$(sha256sum "$F" | cut -d' ' -f1)" > message.txt
+base64 -d "$F.sig2" > sig.der
+openssl dgst -sha256 -verify public.pem -signature sig.der message.txt
 ```
 
-Imprime `Verified OK` cuando el paquete es el que se firmó.
+Imprime `Verified OK` cuando el paquete es el que se firmó, para esa versión y ese nombre.

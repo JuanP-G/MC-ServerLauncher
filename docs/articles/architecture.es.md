@@ -469,7 +469,7 @@ mundo. No hay rutas fijas del equipo en el código.
   **obligatoria**: si el checksum falta o no se puede leer, la actualización in situ se rechaza y se
   abre la página de la release en su lugar. También lo es la **firma** (`UpdateSignature`): el
   checksum viene de la misma release que el paquete y solo prueba que la descarga está entera,
-  mientras que el asset `<paquete>.sig` se comprueba contra claves públicas incluidas en la app y
+  mientras que el asset `<paquete>.sig2` se comprueba contra claves públicas incluidas en la app y
   hechas con una clave privada que no vive en GitHub. Ver [Actualizaciones firmadas](signing.es.md).
 - **`ServerAccessCatalog` / `ServerAccessRules`** — quién puede hacer qué en un servidor *compartido*, sin
   red ni pantalla todavía (fase 1 del [acceso compartido](shared-access.es.md)). `ServerGrant` (en

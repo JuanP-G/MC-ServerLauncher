@@ -9,9 +9,10 @@ namespace McServerLauncher.Tests;
 /// <remarks>
 /// <para>
 /// Every case here is one way the check could say "yes" to something it should refuse, or blow up
-/// instead of saying "no": a package changed after it was signed, a signature by somebody else, a
-/// key list that is empty or half broken, and input that is not a signature at all. The last one
-/// matters most — the signature file is downloaded from the same place an attacker would write to.
+/// instead of saying "no": a package changed after it was signed, a signature by somebody else, the
+/// signature of another version or of another file, a key list that is empty or half broken, and
+/// input that is not a signature at all. The last one matters most — the signature file is
+/// downloaded from the same place an attacker would write to.
 /// </para>
 /// <para>
 /// The keys are generated per test, so the real public key is never needed and no private key lives
@@ -20,6 +21,9 @@ namespace McServerLauncher.Tests;
 /// </remarks>
 public class UpdateSignatureTests : IDisposable
 {
+    private const string Version = "1.21.2";
+    private const string FileName = "MC-ServerLauncher-Setup-1.21.2.exe";
+
     private readonly string _dir = Path.Combine(Path.GetTempPath(), "mcsl-sigtests-" + Path.GetRandomFileName());
 
     public UpdateSignatureTests() => Directory.CreateDirectory(_dir);
@@ -40,13 +44,18 @@ public class UpdateSignatureTests : IDisposable
     private static string PublicKey(ECDsa key) =>
         Convert.ToBase64String(key.ExportSubjectPublicKeyInfo());
 
-    /// <summary>What <c>openssl dgst -sha256 -sign</c> writes, as the .sig asset holds it.</summary>
-    private static string Sign(ECDsa key, string packagePath)
+    /// <summary>What the signing script writes into the .sig2 asset.</summary>
+    private static string Sign(ECDsa key, string packagePath, string version = Version,
+        string fileName = FileName)
     {
-        using var stream = File.OpenRead(packagePath);
-        return Convert.ToBase64String(
-            key.SignData(stream, HashAlgorithmName.SHA256, DSASignatureFormat.Rfc3279DerSequence));
+        var hash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(packagePath)));
+        return Convert.ToBase64String(key.SignData(
+            UpdateSignature.SignedMessage(version, fileName, hash),
+            HashAlgorithmName.SHA256, DSASignatureFormat.Rfc3279DerSequence));
     }
+
+    private static bool Verify(string package, string? signature, params string[] keys) =>
+        UpdateSignature.Verify(package, Version, FileName, signature, keys);
 
     [Fact]
     public void TheKeysBuiltIntoTheAppAreUsable()
@@ -69,7 +78,7 @@ public class UpdateSignatureTests : IDisposable
         using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         var package = Package();
 
-        Assert.True(UpdateSignature.Verify(package, Sign(key, package), [PublicKey(key)]));
+        Assert.True(Verify(package, Sign(key, package), PublicKey(key)));
     }
 
     [Fact]
@@ -82,7 +91,45 @@ public class UpdateSignatureTests : IDisposable
         // The one-byte difference an attacker with write access to the release would make.
         File.WriteAllText(package, "the real installer, plus something extra");
 
-        Assert.False(UpdateSignature.Verify(package, signature, [PublicKey(key)]));
+        Assert.False(Verify(package, signature, PublicKey(key)));
+    }
+
+    [Fact]
+    public void AnOldReleaseOfferedAsANewerOneIsRefused()
+    {
+        // The reason the version is in the message: 1.21.1 was signed correctly and still is. Offered
+        // again as 1.99.0 — the tag is the one thing a person with write access chooses — it must not
+        // pass as that.
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var package = Package();
+        var signedAs121 = Sign(key, package, version: "1.21.1");
+
+        Assert.False(UpdateSignature.Verify(package, "1.99.0", FileName, signedAs121, [PublicKey(key)]));
+        Assert.True(UpdateSignature.Verify(package, "1.21.1", FileName, signedAs121, [PublicKey(key)]));
+    }
+
+    [Fact]
+    public void ASignatureForAnotherFileIsRefused()
+    {
+        // The .dmg and the .exe of one release share a version and a key. Their signatures must not
+        // be interchangeable, or swapping one asset for another would go unnoticed.
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var package = Package();
+        var signedAsDmg = Sign(key, package, fileName: "MC-ServerLauncher-Intel.dmg");
+
+        Assert.False(Verify(package, signedAsDmg, PublicKey(key)));
+    }
+
+    [Fact]
+    public void AFolderInTheFileNameDoesNotMatter()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var package = Package();
+
+        // Built with the platform's own separator: a Windows path means nothing to Path.GetFileName
+        // on Linux, which is where this first failed.
+        Assert.True(UpdateSignature.Verify(package, Version, Path.Combine("some", "folder", FileName),
+            Sign(key, package), [PublicKey(key)]));
     }
 
     [Fact]
@@ -92,7 +139,7 @@ public class UpdateSignatureTests : IDisposable
         using var attacker = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         var package = Package();
 
-        Assert.False(UpdateSignature.Verify(package, Sign(attacker, package), [PublicKey(publisher)]));
+        Assert.False(Verify(package, Sign(attacker, package), PublicKey(publisher)));
     }
 
     [Fact]
@@ -103,8 +150,8 @@ public class UpdateSignatureTests : IDisposable
         var package = Package();
         string[] trusted = [PublicKey(newKey), PublicKey(oldKey)];
 
-        Assert.True(UpdateSignature.Verify(package, Sign(oldKey, package), trusted));
-        Assert.True(UpdateSignature.Verify(package, Sign(newKey, package), trusted));
+        Assert.True(Verify(package, Sign(oldKey, package), trusted));
+        Assert.True(Verify(package, Sign(newKey, package), trusted));
     }
 
     [Fact]
@@ -113,7 +160,7 @@ public class UpdateSignatureTests : IDisposable
         using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         var package = Package();
 
-        Assert.False(UpdateSignature.Verify(package, Sign(key, package), []));
+        Assert.False(Verify(package, Sign(key, package)));
     }
 
     [Fact]
@@ -122,8 +169,7 @@ public class UpdateSignatureTests : IDisposable
         using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         var package = Package();
 
-        Assert.True(UpdateSignature.Verify(package, Sign(key, package),
-            ["not a key at all", "AAAA", PublicKey(key)]));
+        Assert.True(Verify(package, Sign(key, package), "not a key at all", "AAAA", PublicKey(key)));
     }
 
     [Fact]
@@ -134,7 +180,7 @@ public class UpdateSignatureTests : IDisposable
         using var key = ECDsa.Create(ECCurve.NamedCurves.nistP384);
         var package = Package();
 
-        Assert.False(UpdateSignature.Verify(package, Sign(key, package), [PublicKey(key)]));
+        Assert.False(Verify(package, Sign(key, package), PublicKey(key)));
     }
 
     [Theory]
@@ -148,16 +194,40 @@ public class UpdateSignatureTests : IDisposable
     {
         using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
 
-        Assert.False(UpdateSignature.Verify(Package(), signature, [PublicKey(key)]));
+        Assert.False(Verify(Package(), signature, PublicKey(key)));
+    }
+
+    [Theory]
+    [InlineData("", FileName)]
+    [InlineData("  ", FileName)]
+    [InlineData(Version, "")]
+    public void AMissingVersionOrFileNameIsRefused(string version, string fileName)
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var package = Package();
+
+        Assert.False(UpdateSignature.Verify(package, version, fileName, Sign(key, package),
+            [PublicKey(key)]));
     }
 
     [Fact]
     public void TheSignatureFileMayEndInANewline()
     {
-        // `base64 file.der > file.sig` and most editors leave one; the asset still has to work.
+        // `base64 file.der > file.sig2` and most editors leave one; the asset still has to work.
         using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         var package = Package();
 
-        Assert.True(UpdateSignature.Verify(package, Sign(key, package) + "\r\n", [PublicKey(key)]));
+        Assert.True(Verify(package, Sign(key, package) + "\r\n", PublicKey(key)));
+    }
+
+    [Fact]
+    public void TheMessageIsExactlyWhatTheSigningScriptBuilds()
+    {
+        // tools/signing/sign-package.ps1 writes these same bytes before signing. If this changes, that
+        // script has to change with it, or every release after would be refused by the app.
+        var message = System.Text.Encoding.UTF8.GetString(
+            UpdateSignature.SignedMessage("1.21.2", "pkg.exe", "ABCDEF"));
+
+        Assert.Equal("mcsl-update-v1\n1.21.2\npkg.exe\nabcdef", message);
     }
 }

@@ -56,9 +56,10 @@ try {
     }
 
     $files = $wanted | ForEach-Object { Join-Path $work $_ }
-    & "$PSScriptRoot\sign-package.ps1" -Path $files
+    & "$PSScriptRoot\sign-package.ps1" -Path $files -Version $Tag.TrimStart('v', 'V')
 
-    $sigs = $wanted | ForEach-Object { Join-Path $work "$_.sig" }
+    # .sig2 (versión, nombre y hash) y .sig (el formato de la 1.21.1): ver sign-package.ps1.
+    $sigs = $wanted | ForEach-Object { Join-Path $work "$_.sig2"; Join-Path $work "$_.sig" }
     gh release upload $Tag @sigs --clobber --repo $Repo
     Write-Host "==> Firmas subidas a $Tag." -ForegroundColor Green
 } finally {

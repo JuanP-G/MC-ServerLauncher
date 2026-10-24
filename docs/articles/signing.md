@@ -20,8 +20,8 @@ A signature closes that gap because the key that makes it **does not live on Git
 | | |
 | --- | --- |
 | Algorithm | ECDSA over P-256 with SHA-256 |
-| What is signed | The bytes of the package: the `.exe`, the `.AppImage` or each `.dmg` |
-| Where the signature is | A `<package>.sig` asset in the same release: the DER signature, in base64, as text |
+| What is signed | A short message with the format, the **version**, the **file name** and the package's SHA-256 (below), for the `.exe`, the `.AppImage` and each `.dmg` |
+| Where the signature is | A `<package>.sig2` asset in the same release: the DER signature, in base64, as text |
 | Where the public key is | In the app: `UpdateSignature.TrustedKeys` (SubjectPublicKeyInfo, base64) |
 | Where the private key is | On the maintainer's machine, encrypted, outside the repository and outside GitHub |
 
@@ -39,15 +39,40 @@ In `MainViewModel.UpdateNow`, before anything is installed:
 `Verify` never throws on bad input: a signature file is downloaded from the same place an attacker would
 write to, and a crash would be a way around the check.
 
+### The signed message
+
+The signature is not of the package bytes alone but of four lines, joined by `\n` with nothing after the
+last (`UpdateSignature.SignedMessage` and `tools\signing\sign-package.ps1` build the same text):
+
+```
+mcsl-update-v1
+1.21.2
+MC-ServerLauncher-Setup-1.21.2.exe
+<the package's SHA-256, lowercase>
+```
+
+With the version inside, an old release that was signed correctly in its day does not verify when it is
+offered again under a newer tag (the tag is what a person with write access chooses), and with the file
+name inside, the `.dmg`'s signature does not verify as the `.exe`'s. The first line names the format, so a
+later layout cannot be mistaken for this one.
+
+### Two formats while 1.21.1 is around
+
+Apps on 1.21.1 read `<package>.sig`, a signature of the package bytes alone, and know nothing of `.sig2`.
+So every release publishes **both**: `.sig` so those apps can update, `.sig2` for everyone after. Apps
+newer than 1.21.1 read only `.sig2` and never fall back to `.sig`: if they did, removing one asset would
+downgrade the check to the weaker one. When nobody is left on 1.21.1, `sign-package.ps1 -NoLegacy` stops
+writing `.sig`.
+
 ## Publishing a release
 
-1. `publish.ps1` builds the installer and, if the key exists, signs it: `dist/…Setup-X.Y.Z.exe.sig`.
-   Attach it to the release next to the `.exe` and `SHA256SUMS.txt`.
+1. `publish.ps1` builds the installer and, if the key exists, signs it: `dist/…Setup-X.Y.Z.exe.sig2` and
+   `.sig`. Attach both to the release next to the `.exe` and `SHA256SUMS.txt`.
 2. Publishing the release triggers the Linux and macOS workflows, which attach the AppImage, the two
    `.dmg`s and their `.sha256`. **They cannot sign**: that would put the key on GitHub.
 3. When they finish, run `tools\signing\sign-release.ps1 -Tag vX.Y.Z`. It waits for the packages,
    downloads them, checks each against its `.sha256`, prints the hashes, asks for the key's password
-   once, signs them and uploads the `.sig` files.
+   once, signs them and uploads the `.sig2` and `.sig` files.
 
 Between steps 2 and 3 (about five minutes) anyone who presses Update on Linux or macOS is sent to the
 release page instead of being updated: the safe failure.
@@ -87,8 +112,8 @@ fast; publish a security advisory as well. This is why the key stays encrypted a
 - **Versions before the first signed one** (1.21.1, published on 2026-10-24, is the first) do not
   check anything. The protection starts with the update *after* the one that carries the key;
   installing that first one still relies on the checksum.
-- **Downgrade.** An old release, correctly signed, is still correctly signed. The updater only offers
-  versions newer than the one running, but it does not tie the signature to a version number.
+- **Downgrade, on 1.21.1.** Apps on 1.21.1 check the older `.sig`, which is tied to no version, so an
+  old release correctly signed still passes for them. Apps that read `.sig2` are not affected.
 - **Authenticode** (signing the Windows `.exe` with a code-signing certificate, which also removes the
   SmartScreen warning) is a separate, optional step and is **not done**. It needs a certificate that is
   not free, apart from programmes for open-source projects.
@@ -103,8 +128,10 @@ With the public key written as a PEM file (`BEGIN PUBLIC KEY`, the base64 from `
 wrapped at 64 columns, `END PUBLIC KEY`):
 
 ```bash
-base64 -d MC-ServerLauncher-x86_64.AppImage.sig > sig.der
-openssl dgst -sha256 -verify public.pem -signature sig.der MC-ServerLauncher-x86_64.AppImage
+V=1.21.2; F=MC-ServerLauncher-x86_64.AppImage
+printf 'mcsl-update-v1\n%s\n%s\n%s' "$V" "$F" "$(sha256sum "$F" | cut -d' ' -f1)" > message.txt
+base64 -d "$F.sig2" > sig.der
+openssl dgst -sha256 -verify public.pem -signature sig.der message.txt
 ```
 
-It prints `Verified OK` when the package is the one that was signed.
+It prints `Verified OK` when the package is the one that was signed, for that version and that name.

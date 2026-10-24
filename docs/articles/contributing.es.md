@@ -425,15 +425,15 @@ la rejilla de funciones de `README.md`.
      más arriba.
 3. Ejecuta `publish.ps1`. Publica el build self-contained `win-x64`, genera el instalador de Inno
    Setup en `dist/`, escribe `dist/SHA256SUMS.txt` junto a él **y** firma el instalador
-   (`dist/…Setup-X.Y.Z.exe.sig`; pide la contraseña de la clave de firma). Sin la clave avisa y se
+   (`dist/…Setup-X.Y.Z.exe.sig2` y `.sig`; pide la contraseña de la clave de firma). Sin la clave avisa y se
    salta la firma — ver [Actualizaciones firmadas](signing.es.md).
-4. Crea la release con **los tres** assets y notas **bilingües**:
+4. Crea la release con **los cuatro** assets y notas **bilingües**:
    ```powershell
-   gh release create vX.Y.Z dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt dist/MC-ServerLauncher-Setup-X.Y.Z.exe.sig
+   gh release create vX.Y.Z dist/MC-ServerLauncher-Setup-X.Y.Z.exe dist/SHA256SUMS.txt dist/MC-ServerLauncher-Setup-X.Y.Z.exe.sig2 dist/MC-ServerLauncher-Setup-X.Y.Z.exe.sig
    ```
    - El actualizador de la app busca el asset `.exe` (así que adjúntalo siempre), el
      `SHA256SUMS.txt`, que usa para verificar el instalador antes de ejecutarlo
-     (`UpdateService.CheckAsync`), **y** el `.sig`, que prueba que lo hizo quien publica. Las dos
+     (`UpdateService.CheckAsync`), **y** el `.sig2`, que prueba que lo hizo quien publica (el `.sig` es para las apps que aún estén en la 1.21.1). Las dos
      comprobaciones son **obligatorias**: sin cualquiera de esos archivos el actualizador rechaza la
      instalación silenciosa y solo abre la página de la release — no los omitas nunca.
 > **Antes de cambiar cómo se numeran las versiones, comprueba qué sabe leer la versión instalada.**
@@ -462,7 +462,7 @@ la rejilla de funciones de `README.md`.
    subas a mano — basta con esperar a que terminen los workflows.
 7. **Después, fírmalos**: `tools\signing\sign-release.ps1 -Tag vX.Y.Z`. Los workflows no pueden — la
    clave no debe vivir en GitHub — así que este script espera a los paquetes, comprueba cada uno
-   contra su `.sha256`, los firma con tu clave local y sube los `.sig`. Hasta que se ejecute, quien
+   contra su `.sha256`, los firma con tu clave local y sube los `.sig2` y `.sig`. Hasta que se ejecute, quien
    pulse Actualizar en Linux o macOS irá a la página de la release.
 
 ## Sitio de documentación (GitHub Pages)
