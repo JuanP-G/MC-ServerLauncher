@@ -1072,7 +1072,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             MemoryBudget.Release(Config.Id);
 
             // From Stopping, the app or the console asked for it; from anything else, it ended by itself.
-            _ = FinishMemoryRunAsync(previous == ServerState.Stopping ? SessionEnd.Stopped : SessionEnd.Crashed);
+            _memoryFinish = FinishMemoryRunAsync(previous == ServerState.Stopping ? SessionEnd.Stopped : SessionEnd.Crashed);
 
             // Explicitly, not just by waiting for the next CheckIdleShutdown: that runs off the
             // stats timer, which has just been stopped, so a server that went straight from Running
@@ -1510,6 +1510,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             // The memory this run gets. Decided in the background because it asks the Java what it
             // is, which also leaves the version remembered for the one Start asks when building the
             // command line, instead of starting a JVM on the UI thread.
+            await _memoryFinish;
             var (plan, notes) = await Task.Run(PlanMemory);
             foreach (var note in notes) OnConsoleLine(note);
             MemoryPlan = plan;

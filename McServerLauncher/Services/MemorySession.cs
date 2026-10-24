@@ -63,6 +63,13 @@ public sealed record MemorySession
     /// <summary>The server reported running out of memory.</summary>
     public bool OutOfMemory { get; init; }
 
+    /// <summary>
+    /// The app found the server short of memory during the run (see <see cref="MemoryPressure"/>). Short
+    /// of memory is not the same as out of it, and a run that was never reached 85 % of its ceiling can
+    /// still have been.
+    /// </summary>
+    public bool Pressured { get; init; }
+
     public SessionEnd End { get; init; }
 }
 
@@ -101,6 +108,7 @@ public sealed class MemorySessionTracker
     private int _players;
     private bool _evacuationFailures;
     private bool _outOfMemory;
+    private bool _pressured;
 
     public MemorySessionTracker(MemorySessionStart start) => _start = start;
 
@@ -167,6 +175,12 @@ public sealed class MemorySessionTracker
     /// <summary>Notes that the server reported running out of memory.</summary>
     public void NoteOutOfMemory() => _outOfMemory = true;
 
+    /// <summary>Notes that the server was found short of memory.</summary>
+    public void NotePressure() => _pressured = true;
+
+    /// <summary>True once the server was found short of memory.</summary>
+    public bool Pressured => _pressured;
+
     /// <summary>The run, as it will be remembered.</summary>
     public MemorySession Finish(DateTime endUtc, SessionEnd end)
     {
@@ -194,6 +208,7 @@ public sealed class MemorySessionTracker
             ExplicitGcs = _explicitGcs,
             EvacuationFailures = _evacuationFailures,
             OutOfMemory = _outOfMemory,
+            Pressured = _pressured,
             End = end
         };
     }

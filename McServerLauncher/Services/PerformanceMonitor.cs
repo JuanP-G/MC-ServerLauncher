@@ -46,8 +46,10 @@ public enum TickSource { Spark, TickQuery, PaperTps }
 /// <param name="Tps">The latest ticks per second, when the server could be asked.</param>
 /// <param name="Mspt">The latest milliseconds per tick, when the server could be asked.</param>
 /// <param name="LagWarnings">"Can't keep up!" warnings in the last five minutes.</param>
+/// <param name="MemoryReason">Whether, and why, the server is short of memory: independent of which cause is named.</param>
 public sealed record PerformanceStatus(
-    PerformanceLevel Level, PerformanceCause Cause, double? Tps, double? Mspt, int LagWarnings);
+    PerformanceLevel Level, PerformanceCause Cause, double? Tps, double? Mspt, int LagWarnings,
+    MemoryPressureReason MemoryReason = MemoryPressureReason.None);
 
 /// <summary>
 /// Decides from several signals whether a server is coping, and says which one convinced it.
@@ -68,9 +70,9 @@ public sealed record PerformanceStatus(
 /// minute is a clock jump (the PC waking from sleep), not lag.</item>
 /// <item>CPU: 90 % for two minutes is Saturated, 75 % for three is Tight. Measured in time, not in
 /// samples, because a window in the tray samples every 20 s.</item>
-/// <item>Memory: the heap nearly full after collections, or the collector taking a large share of the
-/// time, for five minutes is Tight and never more on its own. The process's memory cannot say this: a
-/// healthy Java process looks full.</item>
+/// <item>Memory: judged from the GC log by <see cref="MemoryPressure"/> (the heap nearly full after
+/// collections, the collector taking over a tenth of the time, a full collection), and on its own only
+/// Tight. The process's memory cannot say this: a healthy Java process looks full.</item>
 /// <item>Out of memory is Saturated at once.</item>
 /// </list>
 /// </remarks>
@@ -83,7 +85,6 @@ public sealed class PerformanceMonitor
     public static readonly TimeSpan AfterBackup = TimeSpan.FromSeconds(30);
 
     private static readonly TimeSpan LagWindow = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan MemoryHold = TimeSpan.FromMinutes(5);
 
     /// <summary>A delay longer than this is the clock jumping, not the server lagging.</summary>
     private static readonly TimeSpan ClockJump = TimeSpan.FromSeconds(60);
@@ -103,12 +104,12 @@ public sealed class PerformanceMonitor
     private DateTime? _cpuTightSince;
     private DateTime? _cpuSaturatedSince;
 
-    private DateTime? _memoryPressureSince;
-    private DateTime? _memoryHoldUntil;
-    private (DateTime At, double PauseMs, int FullGcs)? _lastGc;
+    private readonly MemoryPressure _memory = new();
 
     /// <summary>The server finished starting. Resets everything the last run left.</summary>
-    public void Ready(DateTime now)
+    /// <param name="now">When.</param>
+    /// <param name="ceilingMb">The heap ceiling it runs with, for judging how full the heap is. 0 when unknown.</param>
+    public void Ready(DateTime now, long ceilingMb = 0)
     {
         _readyAt = now;
         _backupRunning = false;
@@ -119,12 +120,15 @@ public sealed class PerformanceMonitor
         _tps = _mspt = null;
         _lag.Clear();
         _cpuTightSince = _cpuSaturatedSince = null;
-        _memoryPressureSince = _memoryHoldUntil = null;
-        _lastGc = null;
+        _memory.Ready(now, ceilingMb);
     }
 
     /// <summary>The server stopped. It is not judged until the next <see cref="Ready"/>.</summary>
-    public void Stopped() => _readyAt = null;
+    public void Stopped()
+    {
+        _readyAt = null;
+        _memory.Stopped();
+    }
 
     /// <summary>A backup began.</summary>
     public void BackupStarted() => _backupRunning = true;
@@ -137,7 +141,11 @@ public sealed class PerformanceMonitor
     }
 
     /// <summary>The server ran out of memory.</summary>
-    public void OutOfMemory() => _outOfMemory = true;
+    public void OutOfMemory()
+    {
+        _outOfMemory = true;
+        _memory.OutOfMemory();
+    }
 
     /// <summary>A reading from the server itself. Either figure may be missing.</summary>
     public void AddTickReading(DateTime now, TickSource source, double? tps, double? mspt)
@@ -182,34 +190,10 @@ public sealed class PerformanceMonitor
         _cpuTightSince = percent >= 75 ? _cpuTightSince ?? now : null;
     }
 
-    /// <summary>
-    /// One reading of the collector. The totals count from the start of the run.
-    /// </summary>
-    /// <param name="now">When.</param>
-    /// <param name="liveMb">Heap in use after the latest collection.</param>
-    /// <param name="ceilingMb">The heap ceiling.</param>
-    /// <param name="totalPauseMs">All time spent paused for collection so far.</param>
-    /// <param name="fullGcs">Full collections so far, not counting ones somebody forced.</param>
-    public void AddMemory(DateTime now, long liveMb, long ceilingMb, double totalPauseMs, int fullGcs)
+    /// <summary>One collection from the GC log. See <see cref="MemoryPressure"/> for what counts.</summary>
+    public void AddGc(DateTime now, GcEvent e)
     {
-        var last = _lastGc;
-        _lastGc = (now, totalPauseMs, fullGcs);
-        if (!Judging(now))
-        {
-            _memoryPressureSince = _memoryHoldUntil = null;
-            return;
-        }
-
-        var pressured = ceilingMb > 0 && liveMb >= ceilingMb * 0.9;
-        if (last is { } l)
-        {
-            var elapsed = (now - l.At).TotalMilliseconds;
-            if (elapsed > 0 && (totalPauseMs - l.PauseMs) / elapsed > 0.15) pressured = true;
-            if (fullGcs > l.FullGcs) _memoryHoldUntil = now.AddMinutes(1);
-        }
-        if (_memoryHoldUntil is { } hold && now <= hold) pressured = true;
-
-        _memoryPressureSince = pressured ? _memoryPressureSince ?? now : null;
+        if (Judging(now)) _memory.AddGc(now, e);
     }
 
     /// <summary>The verdict at <paramref name="now"/>.</summary>
@@ -219,7 +203,8 @@ public sealed class PerformanceMonitor
         var lag = _lag.Count;
 
         if (_outOfMemory)
-            return new PerformanceStatus(PerformanceLevel.Saturated, PerformanceCause.OutOfMemory, _tps, _mspt, lag);
+            return new PerformanceStatus(PerformanceLevel.Saturated, PerformanceCause.OutOfMemory, _tps, _mspt, lag,
+                MemoryPressureReason.OutOfMemory);
         if (_readyAt is null || !Judging(now))
             return new PerformanceStatus(PerformanceLevel.Unknown, PerformanceCause.None, _tps, _mspt, lag);
 
@@ -236,11 +221,12 @@ public sealed class PerformanceMonitor
         Consider(_cpuSaturatedSince is { } s && now - s >= TimeSpan.FromMinutes(2) ? PerformanceLevel.Saturated
             : _cpuTightSince is { } t && now - t >= TimeSpan.FromMinutes(3) ? PerformanceLevel.Tight
             : PerformanceLevel.Good, PerformanceCause.Cpu);
-        Consider(_memoryPressureSince is { } m && now - m >= MemoryHold ? PerformanceLevel.Tight : PerformanceLevel.Good,
+        var memory = _memory.Evaluate(now);
+        Consider(memory != MemoryPressureReason.None ? PerformanceLevel.Tight : PerformanceLevel.Good,
             PerformanceCause.Memory);
 
         return new PerformanceStatus(level, level == PerformanceLevel.Good ? PerformanceCause.None : cause,
-            _tps, _mspt, lag);
+            _tps, _mspt, lag, memory);
     }
 
     /// <summary>False while the server is settling, stopped or being backed up.</summary>

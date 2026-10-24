@@ -141,7 +141,9 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   opciones para que devuelva la que no necesita: un servidor vacío medido en **1 GB en vez de 3,5-4,7 GB**,
   con el mismo tick. Entre todos los servidores usan como mucho la mitad del PC, o todo menos 2 GB si es
   solo para servidores. **Manual** mantiene el mínimo y el máximo que escribas, y tus propios argumentos de
-  Java siempre mandan.
+  Java siempre mandan. En Automática el techo **aprende**: baja despacio según lo que el servidor demuestra
+  necesitar (nunca más de 1 GB por arranque, y solo tras tres sesiones de verdad) y sube al momento cuando se
+  queda corto, y la banda dice cuánta memoria tendrá tras reiniciar.
 - **Iniciar / Detener / Reiniciar** con parada limpia que guarda el mundo; detecta y libera un **puerto
   ocupado**; **CPU, RAM, tiempo activo y puerto** en vivo. La RAM es la memoria que el servidor ocupa de
   verdad en tu PC (no el total compartido del Administrador de tareas), con lo que Java tiene en uso debajo.

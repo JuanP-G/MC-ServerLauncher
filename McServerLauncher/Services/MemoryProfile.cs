@@ -22,7 +22,13 @@ public enum MemoryCeilingReason
     Floor,
 
     /// <summary>The estimate plus the one-off raise the Performance page applied for this start.</summary>
-    Boosted
+    Boosted,
+
+    /// <summary>What the server needed over its last runs (see <see cref="MemoryLearner"/>).</summary>
+    Learned,
+
+    /// <summary>More than last time, because the last run was short of memory.</summary>
+    RaisedAfterPressure
 }
 
 /// <summary>Everything the memory decision depends on, gathered before a server starts.</summary>
@@ -33,6 +39,7 @@ public enum MemoryCeilingReason
 /// <param name="ReservedByOthersMb">Ceilings of the other servers running right now.</param>
 /// <param name="Dedicated">The machine is only for servers ("Este PC es solo para servidores").</param>
 /// <param name="BoostMb">A one-off raise for this start, asked for from the Performance page. Never saved as the server's ceiling.</param>
+/// <param name="Learned">What the server's history says it needs, or null while it says nothing.</param>
 public sealed record MemoryInputs(
     ServerConfig Config,
     JavaService.JavaRuntime Java,
@@ -40,7 +47,8 @@ public sealed record MemoryInputs(
     long TotalRamMb,
     long ReservedByOthersMb,
     bool Dedicated,
-    long BoostMb = 0);
+    long BoostMb = 0,
+    LearnedCeiling? Learned = null);
 
 /// <summary>What a server starts with.</summary>
 /// <param name="Mode">The mode in effect, which can differ from the one saved (see <see cref="MemoryProfile.Effective"/>).</param>
@@ -188,6 +196,14 @@ public static class MemoryProfile
         {
             ceiling = config.MaxRamGb * 1024L;
             reason = MemoryCeilingReason.KeptPrevious;
+        }
+
+        // What the server has shown it needs replaces the estimate, and the owner's old numbers too:
+        // those were kept only "until the app knows better".
+        if (inputs.Learned is { } learned)
+        {
+            ceiling = learned.CeilingMb;
+            reason = learned.Reason;
         }
 
         if (inputs.BoostMb > 0)

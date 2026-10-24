@@ -1264,11 +1264,15 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Perf_WordMsptFmt" xml:space="preserve"><value>{0} · {1} ms/tick</value></data>
   <data name="Perf_Tip" xml:space="preserve"><value>Comment le serveur tient le coup. Les TPS sont les ticks par seconde (20 est l'idéal) et les ms par tick, le temps de chacun (plus de 50, il ne suit plus). C'est mesuré toutes les 30 s sans encombrer la console et ne signale que les problèmes durables : pas de jugement les 3 premières minutes ni pendant une sauvegarde.</value></data>
   <data name="Perf_CauseOom" xml:space="preserve"><value>Le serveur a manqué de mémoire.</value></data>
+  <data name="Perf_CauseMemoryFmt" xml:space="preserve"><value>Le serveur manque de mémoire ; au redémarrage il aura {0}.</value></data>
+  <data name="Perf_CauseMemoryManual" xml:space="preserve"><value>Le serveur manque de mémoire. Vous pouvez l'augmenter dans Voir les solutions.</value></data>
+  <data name="Perf_CauseOomFmt" xml:space="preserve"><value>Le serveur a manqué de mémoire ; au redémarrage il aura {0}.</value></data>
+  <data name="Mem_ReasonLearned" xml:space="preserve"><value>ce dont ce serveur a eu besoin lors de ses dernières sessions</value></data>
+  <data name="Mem_ReasonPressure" xml:space="preserve"><value>il en a manqué la dernière fois</value></data>
   <data name="Perf_CauseTicksFmt" xml:space="preserve"><value>Le serveur est lent : {0} TPS.</value></data>
   <data name="Perf_CauseTicks" xml:space="preserve"><value>Le serveur met trop de temps à chaque tick.</value></data>
   <data name="Perf_CauseLagFmt" xml:space="preserve"><value>Le serveur indique ne plus suivre (avertissements en 5 min : {0}).</value></data>
   <data name="Perf_CauseCpu" xml:space="preserve"><value>Le processeur est à sa limite.</value></data>
-  <data name="Perf_CauseMemory" xml:space="preserve"><value>Java manque de mémoire.</value></data>
   <data name="Perf_Solutions" xml:space="preserve"><value>Voir les solutions</value></data>
   <data name="Perf_DismissTip" xml:space="preserve"><value>Masquer jusqu'au prochain démarrage</value></data>
   <data name="Sol_Back" xml:space="preserve"><value>Retour</value></data>
