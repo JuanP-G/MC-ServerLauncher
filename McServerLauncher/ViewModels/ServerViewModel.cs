@@ -564,6 +564,10 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         CheckIdleShutdown();
         ProbePerformance();
 
+        // Also before the throttle: a PC short of memory is the case where the window is most likely
+        // to be in the tray, and a check every hundred seconds instead of ten would come too late.
+        AdjustAgent();
+
         if (MainWindowHidden && ++_hiddenStatsTicks % 10 != 0) return;
         UpdateStats();
     }
@@ -2370,7 +2374,6 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         var ramMb = MemoryReadout.OwnMb(sample, _memTracker?.Collector ?? GcCollector.Unknown);
         _memTracker?.AddSample(sample.PrivateMb, ConnectedPlayers.Count);
         PumpGcLog();
-        AdjustAgent();
         FeedPerformance(sample);
 
         CpuText = $"{sample.CpuPercent:0.#} %";

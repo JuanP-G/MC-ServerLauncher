@@ -32,6 +32,16 @@ public sealed class MemoryAgentTests : IDisposable
 
     private static string None(string _) => "";
 
+    // --- the setting ---
+
+    [Fact]
+    public void The_setting_is_on_by_default_and_a_settings_file_without_it_reads_as_on()
+    {
+        Assert.True(new AppSettings().MemoryAgentEnabled);
+        Assert.True(System.Text.Json.JsonSerializer.Deserialize<AppSettings>("{}")!.MemoryAgentEnabled);
+        Assert.False(System.Text.Json.JsonSerializer.Deserialize<AppSettings>("{\"MemoryAgentEnabled\":false}")!.MemoryAgentEnabled);
+    }
+
     // --- the policy ---
 
     [Theory]
