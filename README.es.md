@@ -46,7 +46,7 @@ Pulsa cada apartado para verlo en marcha.
 
 <img src="docs/media/es/install.gif" width="612" alt="El instalador: carpeta de destino, acceso directo, listo para instalar y terminado">
 
-> La primera vez, Windows puede mostrar un aviso de SmartScreen (app nueva sin firma): pulsa
+> La primera vez, Windows puede mostrar un aviso de SmartScreen (app nueva, aún sin certificado de firma de Windows): pulsa
 > *Más información → Ejecutar de todas formas*.
 >
 > **Linux:** descarga el `.AppImage` de la misma versión. **macOS:** el `.dmg`; como aún no está firmada por

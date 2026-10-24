@@ -625,10 +625,10 @@ public partial class MainViewModel : ObservableObject
         catch (InvalidOperationException ex)
         {
             RecoverFromFailedUpdate(offer, updateDir, stoppedEverything);
-            // Security-relevant refusals land here: either DownloadVerifier's mismatch (the
-            // downloaded installer doesn't match the release's checksum) or the release publishing
-            // no usable SHA256SUMS.txt at all. Tell the user explicitly instead of silently
-            // falling back to the browser.
+            // Security-relevant refusals land here: DownloadVerifier's mismatch (the downloaded
+            // installer doesn't match the release's checksum), a release publishing no usable
+            // SHA256SUMS.txt, or a missing or invalid publisher signature. Tell the user explicitly
+            // instead of silently falling back to the browser.
             await MessageBox.ShowAsync(ErrorMessages.Describe(ex), Localizer.Get("Update_Now"), Owner);
             OpenRelease();
         }

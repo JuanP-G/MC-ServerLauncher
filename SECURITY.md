@@ -34,7 +34,7 @@ owns it (see [Architecture](https://juanp-g.github.io/MC-ServerLauncher/docs/art
   made with a private key that does not live on GitHub and checked against the public keys built into
   the app; without a valid one nothing is installed. The limits are in
   [Signed updates](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/signing.html): versions
-  before the first signed one check nothing, an old release that was correctly signed is still
+  before the first signed one (1.21.1) check nothing, an old release that was correctly signed is still
   correctly signed, and a signature proves who published a package, not that the build was clean.
   Windows `.exe` code signing (Authenticode) is not done.
 - **The memory agent** is code that runs *inside* the JVM of every Automatic server. It is ours (one
@@ -90,7 +90,7 @@ servicio que lo aplica (ver [Arquitectura](https://juanp-g.github.io/MC-ServerLa
   **firma** (`<paquete>.sig`), hecha con una clave privada que no vive en GitHub y comprobada contra
   las claves públicas incluidas en la app; sin una válida no se instala nada. Los límites están en
   [Actualizaciones firmadas](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/signing.es.html):
-  las versiones anteriores a la primera firmada no comprueban nada, una release antigua bien firmada
+  las versiones anteriores a la primera firmada (la 1.21.1) no comprueban nada, una release antigua bien firmada
   sigue estando bien firmada, y una firma prueba quién publicó un paquete, no que la build estuviera
   limpia. La firma de código del `.exe` de Windows (Authenticode) no está hecha.
 - **El agente de memoria** es código que se ejecuta *dentro* de la JVM de cada servidor Automático. Es

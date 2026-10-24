@@ -84,8 +84,9 @@ fast; publish a security advisory as well. This is why the key stays encrypted a
 
 ## What this does not cover
 
-- **Versions before the first signed one** do not check anything. The protection starts with the update
-  *after* the one that carries the key; installing that first one still relies on the checksum.
+- **Versions before the first signed one** (1.21.1, published on 2026-10-24, is the first) do not
+  check anything. The protection starts with the update *after* the one that carries the key;
+  installing that first one still relies on the checksum.
 - **Downgrade.** An old release, correctly signed, is still correctly signed. The updater only offers
   versions newer than the one running, but it does not tie the signature to a version number.
 - **Authenticode** (signing the Windows `.exe` with a code-signing certificate, which also removes the

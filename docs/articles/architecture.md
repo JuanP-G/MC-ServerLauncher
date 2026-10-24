@@ -876,12 +876,13 @@ report it copies is in the app's language.
 ### In-app update + what's-new
 On startup `MainViewModel.CheckForUpdatesAsync` asks `UpdateService` for the newest release and the
 asset for this platform. The **Update** button (`UpdateNowCommand`) downloads it, verifies it against
-the release's `SHA256SUMS.txt`, stops the servers and hands it to `SelfUpdater`.
+the release's `SHA256SUMS.txt` **and** the publisher's signature (`UpdateSignature`, see
+[Signed updates](signing.md)), stops the servers and hands it to `SelfUpdater`.
 
 **Every platform updates itself; only the mechanism differs.** Windows runs the silent installer,
 Linux swaps the AppImage file the app is running from, and macOS mounts the `.dmg` and replaces the
-`.app` bundle. What they share is the shape: nothing is touched until a complete, checksum-verified
-package is on disk, and any failure leaves the current install working. Some installs cannot replace
+`.app` bundle. What they share is the shape: nothing is touched until a complete, checksum- and
+signature-verified package is on disk, and any failure leaves the current install working. Some installs cannot replace
 themselves at all — an AppImage moved into `/opt` by root, a bundle in a read-only location, the app
 started from `dotnet run` — and `SelfUpdater.Blocker` says so; those, and a release that ships nothing
 for this platform, fall back to opening the release page.

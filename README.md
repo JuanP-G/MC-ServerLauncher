@@ -46,7 +46,7 @@ Open each one to see it in action.
 
 <img src="docs/media/en/install.gif" width="612" alt="The installer: destination folder, shortcut, ready to install and done">
 
-> The first time, Windows SmartScreen may warn (new, unsigned app): click *More info → Run anyway*.
+> The first time, Windows SmartScreen may warn (new app, no Windows code-signing certificate yet): click *More info → Run anyway*.
 >
 > **Linux:** grab the `.AppImage` from the same release. **macOS:** the `.dmg`; it isn't Apple-signed yet, so
 > the first time **right-click the app → Open**.
