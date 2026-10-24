@@ -126,7 +126,9 @@ public class UpdateSignatureTests : IDisposable
         using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         var package = Package();
 
-        Assert.True(UpdateSignature.Verify(package, Version, @"C:\temp\" + FileName,
+        // Built with the platform's own separator: a Windows path means nothing to Path.GetFileName
+        // on Linux, which is where this first failed.
+        Assert.True(UpdateSignature.Verify(package, Version, Path.Combine("some", "folder", FileName),
             Sign(key, package), [PublicKey(key)]));
     }
 
