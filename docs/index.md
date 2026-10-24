@@ -19,5 +19,7 @@ This site has two parts:
 | Contributing | [English](articles/contributing.md) · [Español](articles/contributing.es.md) |
 | Code audits | [English](articles/auditing.md) · [Español](articles/auditing.es.md) |
 | Shared access | [English](articles/shared-access.md) · [Español](articles/shared-access.es.md) |
+| Visibility and statistics | [English](articles/visibility.md) · [Español](articles/visibility.es.md) |
+| Signed updates | [English](articles/signing.md) · [Español](articles/signing.es.md) |
 | API Reference | [Browse the API](xref:McServerLauncher) |
 | Source code | [github.com/JuanP-G/MC-ServerLauncher](https://github.com/JuanP-G/MC-ServerLauncher) |

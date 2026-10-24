@@ -362,8 +362,10 @@ discrepen del artículo de arquitectura, manda el artículo.
 
 **Datos:** en `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` en Linux y macOS): `servers.json`,
 `settings.json`, el `java\` que instala la app, los `logs\` de consola (14 días, 50 MB al día como mucho), la `cache\` de la tienda, lo que recuerda
-el panel de limpieza en `content\`, el agente en `playit-agent\`, el `instance.lock` que mantiene una sola copia abierta y, en Linux/macOS,
-`.secret.key`. Cada servidor guarda sus copias en su carpeta `backups\`.
+el panel de limpieza en `content\`, lo que la app ha aprendido de la memoria de cada servidor en `memory\` (sus últimas 30 sesiones, y en `memory-agent-failures.json` las versiones de Java que rechazaron el agente de memoria), el agente en `playit-agent\`, el `instance.lock` que mantiene una sola copia abierta y, en Linux/macOS,
+`.secret.key`. Cada servidor guarda sus copias en su carpeta `backups\`, y una carpeta oculta `.mcserverlauncher-memory\`
+junto a su mundo con el log de GC (dos archivos rotativos, 16 MB como mucho) y el jar del agente de memoria con dos archivos pequeños; la copia
+del mundo nunca la lee.
 
 **Privacidad:** no se envía nada a ningún sitio para recogerlo — no hay telemetría. Lo que queda en este
 equipo: el historial de jugadores (entradas, salidas, muertes, logros y, salvo que lo desactives en Ajustes →
@@ -376,9 +378,11 @@ archivo público que se baja como mucho una vez al día), Playit (túneles, a tr
 vincular una cuenta) y **mc-heads.net** (el avatar de cada jugador, por su nombre, en el historial).
 
 **Flags de Java extra:** la app no tiene un campo para ellos, pero cada servidor de `servers.json` tiene
-una entrada `ExtraJvmArgs` (vacía por defecto) que se añade a la línea de comandos de Java tras
-`-Xms`/`-Xmx`, para flags como los de Aikar. Edítala con la app cerrada, porque la app reescribe el
-fichero mientras funciona.
+una entrada `ExtraJvmArgs` (vacía por defecto) que se añade a la línea de comandos de Java tras los flags
+de memoria, para flags como los de Aikar. Si fijan la memoria (`-Xmx`, un recolector distinto de G1, cómo se
+devuelve la memoria) el servidor va en modo de memoria **Manual** y la app no toca su memoria, y si configuran
+`-Xlog` la app no pide su propio log de GC. Edítala con la app cerrada, porque la app reescribe el fichero
+mientras funciona.
 
 **Contribuir:** los pull requests son bienvenidos. Empieza por **[CONTRIBUTING.md](CONTRIBUTING.md)**, la
 versión corta de la [guía completa](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.es.html):

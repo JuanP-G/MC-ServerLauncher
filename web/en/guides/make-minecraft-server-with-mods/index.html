@@ -33,7 +33,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="article:published_time" content="2026-10-17">
-<meta property="article:modified_time" content="2026-10-22">
+<meta property="article:modified_time" content="2026-10-24">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="How to add mods to a Minecraft server (or make a modded one from scratch)">
 <meta name="twitter:description" content="How to add mods to a Minecraft server: pick Fabric, Forge or NeoForge, install Modrinth mods with their dependencies, and share them. Free, with MC Server Launcher.">
@@ -54,7 +54,7 @@
   "mainEntityOfPage": "https://mc-server-launcher.vercel.app/en/guides/make-minecraft-server-with-mods/",
   "image": "https://mc-server-launcher.vercel.app/assets/og/en.jpg",
   "datePublished": "2026-10-17",
-  "dateModified": "2026-10-22",
+  "dateModified": "2026-10-24",
   "author": {
     "@type": "Person",
     "name": "JuanP-G",
@@ -108,8 +108,8 @@
     {
       "@type": "HowToStep",
       "position": 4,
-      "name": "Give it more memory if needed",
-      "text": "The more mods, the more RAM. In the server settings, under “Performance”, raise “Memory (RAM)”: 4 GB is usually enough for a few mods, and big packs ask for 6 or 8 GB or more."
+      "name": "The memory adjusts itself",
+      "text": "The more mods, the more RAM, and the app takes that into account: it sets the maximum from your mods (4, 6 or 8 GB) and Java gives back the memory it does not use. If you would rather set it yourself, choose “Manual” under Configure → “Performance”."
     },
     {
       "@type": "HowToStep",
@@ -163,7 +163,7 @@
       "name": "How much RAM does a modded server need?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "A few light mods usually fit in 4 GB; big packs ask for 6 or 8 GB or more. You change it in the server settings, under “Performance”, and it applies on the next start."
+        "text": "The app decides it by itself: it sets the maximum at 4 GB up to 30 mods, 6 GB up to 100 and 8 GB beyond that (a limit, not a reservation) and adjusts it to what your server really needs. If you would rather set it yourself, choose “Manual” under Configure → “Performance”; it applies on the next start."
       }
     },
     {
@@ -733,7 +733,7 @@ a.card{color:var(--gui-text)}
       <span class="eyebrow">GUIDE</span>
       <h1 class="g-title">How to add mods to a Minecraft server (or make a modded one from scratch)</h1>
       <p class="lead">A modded server comes down to four decisions: which server type, which version, which mods, and how your friends get them. This guide walks through them with MC-ServerLauncher, with no file editing and no commands.</p>
-      <p class="g-meta">Updated October 22, 2026 · 7 min read</p>
+      <p class="g-meta">Updated October 24, 2026 · 7 min read</p>
       <a class="btn btn-primary btn-lg" data-goatcounter-click="guia-mods-cta" data-goatcounter-title="Guía mods: descargar" href="#descargas">Download MC-ServerLauncher free</a>
     </div>
   </section>
@@ -745,7 +745,7 @@ a.card{color:var(--gui-text)}
 <p>A mod only works on the loader it was made for, so this is the one choice worth getting right. <strong>Fabric</strong> is light and gets new Minecraft versions quickly; <strong>Forge</strong> and <strong>NeoForge</strong> are home to the big content mods (machinery, dimensions, magic). If you already know which mods you want, check on their Modrinth page which loader and version they exist for, and pick the combination that covers all of them.</p>
 <p><strong>Paper</strong> and <strong>Purpur</strong> are no use for mods: they load <em>plugins</em>, which are a different thing and run on the server alone. If you want server improvements without your friends installing anything, use plugins; for new content inside the game, use mods.</p>
 <h2 class="g-h2">Create the server with the app</h2>
-<ol class="steps"><li><b class="n" aria-hidden="true">1</b><div><h3>Install MC-ServerLauncher</h3><p>Download the installer for your system from the downloads section of this page. You don't need Java installed: the app finds it or downloads it for you.</p></div></li><li><b class="n" aria-hidden="true">2</b><div><h3>Create the server</h3><p>Click “New” and “Create a new one”. Give it a name, pick the type (Fabric, Forge or NeoForge) and the Minecraft version, tick “I accept the Minecraft EULA” and create the server. The app downloads the official files, checks their checksum and gets it ready.</p></div></li><li><b class="n" aria-hidden="true">3</b><div><h3>Install the mods</h3><p>Open the “Mods” tab, search Modrinth (results are already filtered by your version and server type) and click “Install”. The libraries a mod needs, such as Fabric API, are installed along with it.</p></div></li><li><b class="n" aria-hidden="true">4</b><div><h3>Give it more memory if needed</h3><p>The more mods, the more RAM. In the server settings, under “Performance”, raise “Memory (RAM)”: 4 GB is usually enough for a few mods, and big packs ask for 6 or 8 GB or more.</p></div></li><li><b class="n" aria-hidden="true">5</b><div><h3>Start the server</h3><p>Click “Start” and watch the console: once it says the server is ready, you can join. Errors show up in red and the message usually names the mod that is failing.</p></div></li></ol>
+<ol class="steps"><li><b class="n" aria-hidden="true">1</b><div><h3>Install MC-ServerLauncher</h3><p>Download the installer for your system from the downloads section of this page. You don't need Java installed: the app finds it or downloads it for you.</p></div></li><li><b class="n" aria-hidden="true">2</b><div><h3>Create the server</h3><p>Click “New” and “Create a new one”. Give it a name, pick the type (Fabric, Forge or NeoForge) and the Minecraft version, tick “I accept the Minecraft EULA” and create the server. The app downloads the official files, checks their checksum and gets it ready.</p></div></li><li><b class="n" aria-hidden="true">3</b><div><h3>Install the mods</h3><p>Open the “Mods” tab, search Modrinth (results are already filtered by your version and server type) and click “Install”. The libraries a mod needs, such as Fabric API, are installed along with it.</p></div></li><li><b class="n" aria-hidden="true">4</b><div><h3>The memory adjusts itself</h3><p>The more mods, the more RAM, and the app takes that into account: it sets the maximum from your mods (4, 6 or 8 GB) and Java gives back the memory it does not use. If you would rather set it yourself, choose “Manual” under Configure → “Performance”.</p></div></li><li><b class="n" aria-hidden="true">5</b><div><h3>Start the server</h3><p>Click “Start” and watch the console: once it says the server is ready, you can join. Errors show up in red and the message usually names the mod that is failing.</p></div></li></ol>
 <h2 class="g-h2">Where to download Minecraft server mods</h2>
 <p>The safest source is <strong>Modrinth</strong>, and it is the one the app uses: each mod says which loader and Minecraft version it was made for, the app only shows the ones that fit your server, and it checks every download against its checksum. If you download mods by hand from a website, look at three things: that they are for your server's loader (Fabric, Forge or NeoForge), for the same Minecraft version, and that you also get their dependencies. A mod is code that runs on your computer, so avoid .jar files that come through Discord or from unknown sites.</p>
 <p>To add them to a server you already have, open it in the app, go to the “Mods” tab and install them from there: no need to copy files. As on any server, you can also drop a .jar by hand into the server's <code>mods</code> folder and restart it. If your server is Vanilla or Paper, change its type in its settings first (the last question below explains how).</p>
@@ -768,7 +768,7 @@ a.card{color:var(--gui-text)}
         <details><summary>Which is better for mods: Fabric, Forge or NeoForge?</summary><p>It depends on the mods you want. Fabric is lighter and usually updates first; Forge and NeoForge have the biggest content mods. A mod made for one loader doesn't work on another, so choose by looking at the list of mods you want to use.</p></details>
         <details><summary>Can I put mods on a Paper server?</summary><p>No. Paper and Purpur load plugins, not Forge or Fabric mods. They are different systems and don't mix in the same folder.</p></details>
         <details><summary>Do my friends have to install the same mods?</summary><p>In most cases yes, with the same loader and Minecraft version. Some mods only act on the server and aren't needed on the client: the app marks this on each result and leaves those mods out when it builds the pack.</p></details>
-        <details><summary>How much RAM does a modded server need?</summary><p>A few light mods usually fit in 4 GB; big packs ask for 6 or 8 GB or more. You change it in the server settings, under “Performance”, and it applies on the next start.</p></details>
+        <details><summary>How much RAM does a modded server need?</summary><p>The app decides it by itself: it sets the maximum at 4 GB up to 30 mods, 6 GB up to 100 and 8 GB beyond that (a limit, not a reservation) and adjusts it to what your server really needs. If you would rather set it yourself, choose “Manual” under Configure → “Performance”; it applies on the next start.</p></details>
         <details><summary>Can I turn a server I already have into a modded one?</summary><p>Yes. In the server settings, under “Type and version”, you can change the type (for example from Vanilla to Fabric). Back up the world first, just in case.</p></details>
         <details><summary>Is a modded server free?</summary><p>Yes. MC-ServerLauncher is free and open source, and Modrinth, where the mods come from, is free too. The server runs on your own computer, so there is no subscription.</p></details>
       </div>

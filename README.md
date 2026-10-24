@@ -336,7 +336,8 @@ dotnet run --project McServerLauncher
 dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 ```
 
-Built with **Avalonia / .NET 9**. The Windows installer is **x64 only** (Inno Setup
+Built with **Avalonia / .NET 9**. The small Java agent that helps servers give memory back (`agent/`) is
+embedded as a jar and rebuilt byte for byte with `python agent/build.py`; publishing the app needs no JDK. The Windows installer is **x64 only** (Inno Setup
 `ArchitecturesAllowed=x64compatible`); there's no separate x86 or native ARM64 build.
 
 **Documentation:** architecture, contributing guide and a full **API reference**, published with DocFX at
@@ -361,8 +362,10 @@ disagree with the architecture article, the article wins.
 
 **Data:** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux and macOS):
 `servers.json`, `settings.json`, the installed `java\`, the console `logs\` (kept 14 days, at most 50 MB a day), the store's
-`cache\`, what the clean-up panel remembers in `content\`, the `playit-agent\` binary, the `instance.lock` that keeps the app to one running copy, and, on
-Linux/macOS, `.secret.key`. Each server keeps its backups in its own `backups\` folder.
+`cache\`, what the clean-up panel remembers in `content\`, what the app has learned about each server's memory in `memory\` (its last 30 sessions, and the Java versions that refused the memory agent in `memory-agent-failures.json`), the `playit-agent\` binary, the `instance.lock` that keeps the app to one running copy, and, on
+Linux/macOS, `.secret.key`. Each server keeps its backups in its own `backups\` folder, and a hidden `.mcserverlauncher-memory\` folder
+beside its world with the GC log (two rotating files, 16 MB at most) and the memory agent's jar and two small files; the world backup
+never reads it.
 
 **Privacy:** nothing is sent anywhere to be collected — there is no telemetry. What stays on this computer:
 the player history (joins, leaves, deaths, advancements and, unless you turn it off in Settings → Players,
@@ -375,8 +378,10 @@ downloaded at most once a day), Playit (tunnels, through the app's proxy when li
 account) and **mc-heads.net** (each player's avatar, by name, in the player history).
 
 **Extra Java flags:** there is no field for them in the app, but each server in `servers.json` has an
-`ExtraJvmArgs` entry (empty by default) that is added to the Java command line after `-Xms`/`-Xmx`, for
-flags such as Aikar's. Edit it with the app closed, since the app rewrites the file as it runs.
+`ExtraJvmArgs` entry (empty by default) that is added to the Java command line after the memory flags, for
+flags such as Aikar's. If they set the memory (`-Xmx`, a collector other than G1, how memory is returned) the
+server runs in **Manual** memory mode and the app leaves its memory alone, and if they configure `-Xlog` the app
+does not ask for its own GC log. Edit it with the app closed, since the app rewrites the file as it runs.
 
 **Contributing:** pull requests are welcome. Start with **[CONTRIBUTING.md](CONTRIBUTING.md)** — the short
 version of the [full guide](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/contributing.html): how to

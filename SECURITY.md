@@ -37,6 +37,13 @@ owns it (see [Architecture](https://juanp-g.github.io/MC-ServerLauncher/docs/art
   before the first signed one check nothing, an old release that was correctly signed is still
   correctly signed, and a signature proves who published a package, not that the build was clean.
   Windows `.exe` code signing (Authenticode) is not done.
+- **The memory agent** is code that runs *inside* the JVM of every Automatic server. It is ours (one
+  class, about 10 KB, no dependencies), embedded in the app instead of downloaded, and rebuilt byte for
+  byte from `agent/` by a CI check; its SHA-256 is verified each time it is copied into a server's
+  folder, and a JVM that cannot load it makes the app start the server without it. It opens no
+  connection and reads only a 1 KB `control` file in the server's own hidden folder, applying three
+  heap options after validating them. Whoever can write there can already run anything as the server,
+  so the file is not a new boundary. It can be turned off in Settings or with `MCSL_NO_AGENT=1`.
 
 A report that one of these is not a cryptographic guarantee is already known. A report that one of
 them is *not being enforced at all* is a real finding.
@@ -86,6 +93,14 @@ servicio que lo aplica (ver [Arquitectura](https://juanp-g.github.io/MC-ServerLa
   las versiones anteriores a la primera firmada no comprueban nada, una release antigua bien firmada
   sigue estando bien firmada, y una firma prueba quién publicó un paquete, no que la build estuviera
   limpia. La firma de código del `.exe` de Windows (Authenticode) no está hecha.
+- **El agente de memoria** es código que se ejecuta *dentro* de la JVM de cada servidor Automático. Es
+  nuestro (una clase, unos 10 KB, sin dependencias), va incrustado en la app en vez de descargarse, y una
+  comprobación de la CI lo recompila byte a byte desde `agent/`; su SHA-256 se verifica cada vez que se
+  copia a la carpeta de un servidor, y si una JVM no puede cargarlo la app arranca el servidor sin él. No
+  abre ninguna conexión y solo lee un archivo `control` de 1 KB en la carpeta oculta del propio servidor,
+  y aplica tres opciones de heap tras validarlas. Quien pueda escribir ahí ya puede ejecutar lo que quiera
+  como el servidor, así que el archivo no es una frontera nueva. Se apaga en Ajustes o con
+  `MCSL_NO_AGENT=1`.
 
 Un informe que diga que esto no es una garantía criptográfica ya se sabe. Un informe que diga que
 alguno de ellos **no se está comprobando** sí es un hallazgo.

@@ -43,7 +43,6 @@
       "Juega con amigos por Internet": "Play with friends over the Internet",
       "Túnel de Playit.gg integrado: comparte una dirección y entran desde cualquier sitio. Sin abrir puertos del router.": "Built-in Playit.gg tunnel: share an address and they join from anywhere. No router port forwarding.",
       "Consola, jugadores y estadísticas": "Console, players and stats",
-      "CPU y RAM en vivo, buscador en la consola, y la ficha de cada jugador: cuándo entró, qué dijo y qué ha minado. OPs, baneos y whitelist con botones en vez de comandos.": "Live CPU and RAM, a search box in the console, and a profile for every player: when they joined, what they said and what they have mined. Ops, bans and whitelist with buttons instead of commands.",
       "Se recupera solo de las caídas": "It recovers from crashes on its own",
       "Si el servidor casca, se reinicia solo y te dice por qué, leyendo el informe de error. Con avisos de escritorio.": "If the server dies it restarts by itself and tells you why, reading the crash report. With desktop notifications.",
       "CÓMO FUNCIONA": "HOW IT WORKS",
@@ -97,7 +96,14 @@
       "/assets/og/es.jpg": "/assets/og/en.jpg",
       "GUÍAS": "GUIDES",
       "Guías paso a paso": "Step-by-step guides",
-      "Respuestas directas a lo que más se busca al montar un servidor de Minecraft.": "Straight answers to what people search for most when setting up a Minecraft server."
+      "Respuestas directas a lo que más se busca al montar un servidor de Minecraft.": "Straight answers to what people search for most when setting up a Minecraft server.",
+      "Gasta solo la memoria que necesita": "It uses only the memory it needs",
+      "La app decide cuánta RAM puede usar cada servidor y Java devuelve la que le sobra: un servidor vacío pasa de 3,5-4,7 GB a alrededor de 1 GB. Aprende de cómo lo usas y, si al PC le falta memoria, aprieta antes.": "The app decides how much RAM each server may use and Java gives back what it does not need: an empty server goes from 3.5-4.7 GB to about 1 GB. It learns from how you use it and, if the PC runs short of memory, tightens sooner.",
+      "Te avisa cuando va al límite": "It warns you when it is at its limit",
+      "Una tarjeta muestra los TPS del servidor y una banda salta solo cuando algo va mal durante un rato. «Ver soluciones» te ofrece arreglos con un clic: bajar distancias, más memoria o mods que lo aceleran.": "A card shows the server’s TPS and a band appears only when something is wrong for a while. “See solutions” offers one-click fixes: lower the distances, more memory, or mods that speed it up.",
+      "Se apaga solo cuando está vacío": "It stops by itself when empty",
+      "Para el servidor cuando no queda nadie y lo arranca cuando un amigo intenta entrar, sin gastar RAM ni CPU de más.": "It stops the server when nobody is left and starts it when a friend tries to join, without wasting RAM or CPU.",
+      "La memoria real que ocupa el servidor y sus TPS en vivo, buscador en la consola, y la ficha de cada jugador: cuándo entró, qué dijo y qué ha minado. OPs, baneos y whitelist con botones en vez de comandos.": "The memory the server really holds and its live TPS, a console search, and each player’s profile: when they joined, what they said and what they mined. OPs, bans and whitelist with buttons instead of commands."
     }
   },
   "de": {
@@ -143,7 +149,6 @@
       "Juega con amigos por Internet": "Mit Freunden über das Internet spielen",
       "Túnel de Playit.gg integrado: comparte una dirección y entran desde cualquier sitio. Sin abrir puertos del router.": "Integrierter Playit.gg-Tunnel: Adresse teilen und sie treten von überall bei. Ohne Portfreigabe im Router.",
       "Consola, jugadores y estadísticas": "Konsole, Spieler und Statistiken",
-      "CPU y RAM en vivo, buscador en la consola, y la ficha de cada jugador: cuándo entró, qué dijo y qué ha minado. OPs, baneos y whitelist con botones en vez de comandos.": "CPU und RAM live, Suche in der Konsole und ein Profil für jeden Spieler: wann er kam, was er sagte und was er abgebaut hat. Ops, Banns und Whitelist mit Knöpfen statt Befehlen.",
       "Se recupera solo de las caídas": "Erholt sich selbst von Abstürzen",
       "Si el servidor casca, se reinicia solo y te dice por qué, leyendo el informe de error. Con avisos de escritorio.": "Stürzt der Server ab, startet er selbst neu und nennt dir den Grund aus dem Absturzbericht. Mit Desktop-Benachrichtigungen.",
       "CÓMO FUNCIONA": "SO FUNKTIONIERT ES",
@@ -197,7 +202,14 @@
       "/assets/og/es.jpg": "/assets/og/de.jpg",
       "GUÍAS": "ANLEITUNGEN",
       "Guías paso a paso": "Anleitungen Schritt für Schritt",
-      "Respuestas directas a lo que más se busca al montar un servidor de Minecraft.": "Direkte Antworten auf das, wonach man beim Einrichten eines Minecraft-Servers am häufigsten sucht."
+      "Respuestas directas a lo que más se busca al montar un servidor de Minecraft.": "Direkte Antworten auf das, wonach man beim Einrichten eines Minecraft-Servers am häufigsten sucht.",
+      "Gasta solo la memoria que necesita": "Verbraucht nur den Speicher, den er braucht",
+      "La app decide cuánta RAM puede usar cada servidor y Java devuelve la que le sobra: un servidor vacío pasa de 3,5-4,7 GB a alrededor de 1 GB. Aprende de cómo lo usas y, si al PC le falta memoria, aprieta antes.": "Die App entscheidet, wie viel RAM jeder Server nutzen darf, und Java gibt zurück, was es nicht braucht: Ein leerer Server sinkt von 3,5-4,7 GB auf etwa 1 GB. Sie lernt aus der Nutzung und zieht früher an, wenn dem PC der Speicher ausgeht.",
+      "Te avisa cuando va al límite": "Warnt dich, wenn er am Limit ist",
+      "Una tarjeta muestra los TPS del servidor y una banda salta solo cuando algo va mal durante un rato. «Ver soluciones» te ofrece arreglos con un clic: bajar distancias, más memoria o mods que lo aceleran.": "Eine Karte zeigt die TPS des Servers, und ein Band erscheint nur, wenn etwas eine Weile schiefläuft. „Lösungen ansehen“ bietet Korrekturen mit einem Klick: Distanzen senken, mehr Speicher oder Mods, die ihn beschleunigen.",
+      "Se apaga solo cuando está vacío": "Schaltet sich von selbst ab, wenn er leer ist",
+      "Para el servidor cuando no queda nadie y lo arranca cuando un amigo intenta entrar, sin gastar RAM ni CPU de más.": "Stoppt den Server, wenn niemand mehr da ist, und startet ihn, wenn ein Freund beitreten will, ohne RAM oder CPU zu verschwenden.",
+      "La memoria real que ocupa el servidor y sus TPS en vivo, buscador en la consola, y la ficha de cada jugador: cuándo entró, qué dijo y qué ha minado. OPs, baneos y whitelist con botones en vez de comandos.": "Der Speicher, den der Server wirklich belegt, und seine TPS live, eine Suche in der Konsole und das Profil jedes Spielers: wann er beigetreten ist, was er gesagt und was er abgebaut hat. OPs, Banns und Whitelist mit Buttons statt Befehlen."
     }
   },
   "fr": {
@@ -243,7 +255,6 @@
       "Juega con amigos por Internet": "Joue avec tes amis par Internet",
       "Túnel de Playit.gg integrado: comparte una dirección y entran desde cualquier sitio. Sin abrir puertos del router.": "Tunnel Playit.gg intégré : partage une adresse et ils rejoignent de n'importe où. Sans ouvrir de ports sur la box.",
       "Consola, jugadores y estadísticas": "Console, joueurs et statistiques",
-      "CPU y RAM en vivo, buscador en la consola, y la ficha de cada jugador: cuándo entró, qué dijo y qué ha minado. OPs, baneos y whitelist con botones en vez de comandos.": "CPU et RAM en direct, une recherche dans la console, et une fiche par joueur : quand il est arrivé, ce qu'il a dit et ce qu'il a miné. Ops, bannissements et liste blanche avec des boutons au lieu de commandes.",
       "Se recupera solo de las caídas": "Il se relève tout seul des plantages",
       "Si el servidor casca, se reinicia solo y te dice por qué, leyendo el informe de error. Con avisos de escritorio.": "Si le serveur plante, il redémarre tout seul et t'explique pourquoi en lisant le rapport d'erreur. Avec des notifications sur le bureau.",
       "CÓMO FUNCIONA": "COMMENT ÇA MARCHE",
@@ -297,7 +308,14 @@
       "/assets/og/es.jpg": "/assets/og/fr.jpg",
       "GUÍAS": "GUIDES",
       "Guías paso a paso": "Guides pas à pas",
-      "Respuestas directas a lo que más se busca al montar un servidor de Minecraft.": "Des réponses directes à ce qu'on cherche le plus en montant un serveur Minecraft."
+      "Respuestas directas a lo que más se busca al montar un servidor de Minecraft.": "Des réponses directes à ce qu'on cherche le plus en montant un serveur Minecraft.",
+      "Gasta solo la memoria que necesita": "N’utilise que la mémoire dont il a besoin",
+      "La app decide cuánta RAM puede usar cada servidor y Java devuelve la que le sobra: un servidor vacío pasa de 3,5-4,7 GB a alrededor de 1 GB. Aprende de cómo lo usas y, si al PC le falta memoria, aprieta antes.": "L’app décide combien de RAM chaque serveur peut utiliser et Java rend ce dont il n’a pas besoin : un serveur vide passe de 3,5-4,7 Go à environ 1 Go. Elle apprend de votre usage et, si le PC manque de mémoire, resserre plus tôt.",
+      "Te avisa cuando va al límite": "Vous prévient quand il est à la limite",
+      "Una tarjeta muestra los TPS del servidor y una banda salta solo cuando algo va mal durante un rato. «Ver soluciones» te ofrece arreglos con un clic: bajar distancias, más memoria o mods que lo aceleran.": "Une carte affiche les TPS du serveur et un bandeau n’apparaît que lorsque quelque chose va mal pendant un moment. « Voir les solutions » propose des correctifs en un clic : baisser les distances, plus de mémoire ou des mods qui l’accélèrent.",
+      "Se apaga solo cuando está vacío": "S’arrête tout seul quand il est vide",
+      "Para el servidor cuando no queda nadie y lo arranca cuando un amigo intenta entrar, sin gastar RAM ni CPU de más.": "Arrête le serveur quand il n’y a plus personne et le démarre quand un ami essaie d’entrer, sans gaspiller de RAM ni de CPU.",
+      "La memoria real que ocupa el servidor y sus TPS en vivo, buscador en la consola, y la ficha de cada jugador: cuándo entró, qué dijo y qué ha minado. OPs, baneos y whitelist con botones en vez de comandos.": "La mémoire que le serveur occupe vraiment et ses TPS en direct, une recherche dans la console et la fiche de chaque joueur : quand il est arrivé, ce qu’il a dit et ce qu’il a miné. OP, bannissements et whitelist avec des boutons au lieu de commandes."
     }
   },
   "pt": {
@@ -343,7 +361,6 @@
       "Juega con amigos por Internet": "Jogue com amigos pela Internet",
       "Túnel de Playit.gg integrado: comparte una dirección y entran desde cualquier sitio. Sin abrir puertos del router.": "Túnel do Playit.gg integrado: compartilhe um endereço e eles entram de qualquer lugar. Sem abrir portas do roteador.",
       "Consola, jugadores y estadísticas": "Console, jogadores e estatísticas",
-      "CPU y RAM en vivo, buscador en la consola, y la ficha de cada jugador: cuándo entró, qué dijo y qué ha minado. OPs, baneos y whitelist con botones en vez de comandos.": "CPU e RAM ao vivo, busca no console e a ficha de cada jogador: quando entrou, o que disse e o que minerou. OPs, banimentos e whitelist com botões em vez de comandos.",
       "Se recupera solo de las caídas": "Se recupera sozinho de quedas",
       "Si el servidor casca, se reinicia solo y te dice por qué, leyendo el informe de error. Con avisos de escritorio.": "Se o servidor cair, ele reinicia sozinho e diz por quê, lendo o relatório de erro. Com avisos na área de trabalho.",
       "CÓMO FUNCIONA": "COMO FUNCIONA",
@@ -397,7 +414,14 @@
       "/assets/og/es.jpg": "/assets/og/pt.jpg",
       "GUÍAS": "GUIAS",
       "Guías paso a paso": "Guias passo a passo",
-      "Respuestas directas a lo que más se busca al montar un servidor de Minecraft.": "Respostas diretas ao que mais se procura ao criar um servidor de Minecraft."
+      "Respuestas directas a lo que más se busca al montar un servidor de Minecraft.": "Respostas diretas ao que mais se procura ao criar um servidor de Minecraft.",
+      "Gasta solo la memoria que necesita": "Usa só a memória de que precisa",
+      "La app decide cuánta RAM puede usar cada servidor y Java devuelve la que le sobra: un servidor vacío pasa de 3,5-4,7 GB a alrededor de 1 GB. Aprende de cómo lo usas y, si al PC le falta memoria, aprieta antes.": "O aplicativo decide quanta RAM cada servidor pode usar e o Java devolve a que não precisa: um servidor vazio passa de 3,5-4,7 GB para cerca de 1 GB. Ele aprende com o seu uso e, se o PC ficar sem memória, aperta mais cedo.",
+      "Te avisa cuando va al límite": "Avisa quando está no limite",
+      "Una tarjeta muestra los TPS del servidor y una banda salta solo cuando algo va mal durante un rato. «Ver soluciones» te ofrece arreglos con un clic: bajar distancias, más memoria o mods que lo aceleran.": "Um cartão mostra os TPS do servidor e uma faixa só aparece quando algo vai mal por algum tempo. «Ver soluções» oferece correções em um clique: reduzir as distâncias, mais memória ou mods que o aceleram.",
+      "Se apaga solo cuando está vacío": "Desliga sozinho quando está vazio",
+      "Para el servidor cuando no queda nadie y lo arranca cuando un amigo intenta entrar, sin gastar RAM ni CPU de más.": "Para o servidor quando não sobra ninguém e o inicia quando um amigo tenta entrar, sem gastar RAM nem CPU à toa.",
+      "La memoria real que ocupa el servidor y sus TPS en vivo, buscador en la consola, y la ficha de cada jugador: cuándo entró, qué dijo y qué ha minado. OPs, baneos y whitelist con botones en vez de comandos.": "A memória que o servidor realmente ocupa e os seus TPS ao vivo, busca no console e a ficha de cada jogador: quando entrou, o que disse e o que minerou. OPs, banimentos e whitelist com botões em vez de comandos."
     }
   }
 }

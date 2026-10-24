@@ -28,6 +28,7 @@ cd MC-ServerLauncher
 dotnet run --project McServerLauncher                                  # run it
 dotnet test McServerLauncher.Tests/McServerLauncher.Tests.csproj       # test it
 dotnet format McServerLauncher.sln                                     # match the house style
+python agent/build.py                                                  # only after changing agent/src (needs a JDK)
 ```
 
 Five things a reviewer will always check:
@@ -93,6 +94,7 @@ cd MC-ServerLauncher
 dotnet run --project McServerLauncher                                  # ejecutarlo
 dotnet test McServerLauncher.Tests/McServerLauncher.Tests.csproj       # probarlo
 dotnet format McServerLauncher.sln                                     # dejarlo con el estilo de la casa
+python agent/build.py                                                  # solo tras tocar agent/src (necesita un JDK)
 ```
 
 Cinco cosas que se miran siempre en una revisión:

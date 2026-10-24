@@ -123,7 +123,15 @@ something visual use the line icons in `docs/media/icons/`, as the README featur
 - **State that must survive a rebuild lives outside what gets rebuilt** (pending mod updates are kept
   by `ServerModsViewModel`, not only on the rows it throws away after every update).
 - **JVM options the app adds are gated by the Java version** (`ServerProcessManager.ImpliedJvmFlags`):
-  an unrecognised option stops the JVM from starting.
+  an unrecognised option stops the JVM from starting. The same for the memory flags (`MemoryProfile`),
+  the GC log (`GcLogging`) and `-javaagent` (`MemoryAgent`: only with its jar in place, and never again
+  on a Java that refused it).
+- **Console detectors read from the start of the message, after `AnsiEscapes.Strip`** (applied once, in
+  `ServerProcessManager`): Paper colours join and leave lines even on a pipe. Fix a console or command
+  format with a line captured from a real server, not from memory.
+- **The memory agent jar is built with `python agent/build.py`, never with `jar`**; commit the jar and
+  its `.sha256` together (`agent.yml` and a test compare them with what the source builds to).
+- **A fake shared between tests returns snapshots**, not the live list the code under test is writing.
 - **Read what the loader reads**: jars inside jars (`META-INF/jars/`, `META-INF/jarjar/`) and
   libraries the loader bundles (`mixinextras`) count as installed.
 - **Never show `ex.Message`**: throw `UserFacingException` for a .resx sentence, and show failures with
