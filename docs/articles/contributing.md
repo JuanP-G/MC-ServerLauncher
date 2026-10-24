@@ -10,6 +10,9 @@ common changes.
 - **Windows**, **Linux** or **macOS** (the UI uses Avalonia, which is cross-platform).
 - **.NET 9 SDK**.
 - *(Only to build the installer)* **Inno Setup 6**.
+- *(Only to rebuild the memory agent)* a **JDK 8 or later** (`JAVA_HOME` or `javac` on the `PATH`) and
+  **Python 3**: `python agent/build.py`. The tests that start a real JVM use the Java in `JAVA_HOME` or on
+  the `PATH` (12 or later); without one they have nothing to run and pass, which the CI runners never hit.
 
 ## Build and run
 
@@ -49,7 +52,7 @@ the whole run — Avalonia can only be initialized once per process, and its con
 from the thread that initialized it. It exists because a bug shipped twice that nothing else could
 catch: the type picker reporting the *previous* selection inside its own change event.
 
-They come in six layers, and it is worth knowing which one a new test belongs to:
+They come in seven layers, and it is worth knowing which one a new test belongs to:
 
 | Layer | Example | What it can see |
 |---|---|---|
@@ -59,6 +62,7 @@ They come in six layers, and it is worth knowing which one a new test belongs to
 | Real controls | `ServerSettingsViewTests`, `NewServerCreateFormTests`, `NewServerStepsTests` | That it reaches the screen — the half a unit test cannot see |
 | Gates on the source | `StartDependencyGateTests`, `StoreHashTests`, `ExportSelectionTests` | That a promise holds in the file itself — no network, one definition |
 | The artefact, run | `InstallScriptSmokeTests` | That the script a player gets actually works — run with bash, on Linux in CI |
+| A real JVM | `MemoryAgentIntegrationTests` | That the agent does what it says inside a Java the way the app starts one |
 
 `ServerViewModel` and `MainViewModel` take a data folder and start nothing until `Activate()`, so a
 test can own one without touching `%APPDATA%`, Playit or the network. Tests never call `Activate()`.
@@ -193,6 +197,25 @@ Each of these is here because breaking it shipped a bug that no test caught at t
 - **A JVM option the app adds is gated by the Java version.** An option the JVM does not recognise
   stops it from starting at all, which is worse than any warning it was meant to silence. See
   `ServerProcessManager.ImpliedJvmFlags`, and never override what the user put in their extra arguments.
+  The same goes for the memory flags and for `-javaagent`: `MemoryProfile` gives each only to the Java
+  that knows it, `GcLogging` only when its folder could be made, and `MemoryAgent` only when its jar is
+  in place and this Java has not refused it before.
+- **Read a server's console from the start of the message, after removing its colours.** Every detector
+  anchors on what follows the log prefix (a player can type anything into the chat), and Paper wraps join
+  and leave lines in ANSI escapes even on a pipe, so a name that begins with one is not a name: players
+  joined and the app never saw them. `AnsiEscapes.Strip` runs once where the output enters
+  (`ServerProcessManager`); nothing downstream should ever see an escape.
+- **Fix a format with a line from a real server.** The speed probe's parsers were first written from
+  memory of what spark prints, and a real run showed it prints two decimals in some lines and one in
+  others, a mangled `[⚡]` on Windows, and the decimal comma of a Spanish machine. Capture the output,
+  put the lines in the test, and run the code against a live server before calling it done.
+- **The memory agent is built with `agent/build.py`, never with the JDK's `jar`.** `jar` writes a
+  `Created-By` line with its own version, so two machines give two jars; the script writes a
+  deterministic zip, and `agent.yml` plus a test fail if the committed jar and its SHA-256 stop matching
+  what the source builds to. After changing `agent/src/`, run it and commit both files.
+- **A fake that tests share must hand out copies.** `FakeBackupHost.Lines` was the live list, and a test
+  that enumerated it while a copy was still reporting progress failed now and then with "Collection was
+  modified". A property that a test reads while the code under test is still writing returns a snapshot.
 - **Whatever reads or replaces the world holds it from beginning to end.** Backups, restores, and
   starting or stopping the JVM all go through `BackupCoordinator`'s one gate, and each holds it for
   the whole operation, not only for "the backup" part. Taking it only around the zip let Stop send

@@ -10,6 +10,10 @@ habituales.
 - **Windows**, **Linux** o **macOS** (la interfaz usa Avalonia, multiplataforma).
 - **.NET 9 SDK**.
 - *(Solo para generar el instalador)* **Inno Setup 6**.
+- *(Solo para recompilar el agente de memoria)* un **JDK 8 o posterior** (`JAVA_HOME` o `javac` en el
+  `PATH`) y **Python 3**: `python agent/build.py`. Las pruebas que arrancan una JVM de verdad usan la Java de
+  `JAVA_HOME` o del `PATH` (12 o posterior); sin una no tienen nada que ejecutar y pasan, cosa que los
+  runners de la CI nunca sufren.
 
 ## Compilar y ejecutar
 
@@ -51,7 +55,7 @@ sus controles hay que tocarlos desde el hilo que la inicializó. Existe porque u
 veces y nada más lo pillaba: el selector de tipo informando de la selección *anterior* dentro de su
 propio evento de cambio.
 
-Van en seis capas, y conviene saber a cuál pertenece una prueba nueva:
+Van en siete capas, y conviene saber a cuál pertenece una prueba nueva:
 
 | Capa | Ejemplo | Qué ve |
 |---|---|---|
@@ -61,6 +65,7 @@ Van en seis capas, y conviene saber a cuál pertenece una prueba nueva:
 | Controles reales | `ServerSettingsViewTests`, `NewServerCreateFormTests`, `NewServerStepsTests` | Que llega a la pantalla — la mitad que una prueba unitaria no ve |
 | Puertas sobre el código | `StartDependencyGateTests`, `StoreHashTests`, `ExportSelectionTests` | Que una promesa se cumple en el propio archivo — sin red, una sola definición |
 | El artefacto, ejecutado | `InstallScriptSmokeTests` | Que el script que recibe un jugador funciona de verdad — con bash, en Linux en la CI |
+| Una JVM de verdad | `MemoryAgentIntegrationTests` | Que el agente hace lo que dice dentro de una Java, arrancada como la arranca la app |
 
 `ServerViewModel` y `MainViewModel` aceptan una carpeta de datos y no arrancan nada hasta
 `Activate()`, así que una prueba puede tener uno sin tocar `%APPDATA%`, Playit ni la red. Las pruebas
@@ -204,7 +209,28 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
 - **Una opción de la JVM que añade la app va condicionada a la versión de Java.** Una opción que la
   JVM no reconoce le impide arrancar, que es peor que cualquier aviso que se quisiera callar. Ver
   `ServerProcessManager.ImpliedJvmFlags`, y nunca por encima de lo que el usuario puso en sus
-  argumentos extra.
+  argumentos extra. Lo mismo vale para los flags de memoria y para `-javaagent`: `MemoryProfile` da cada
+  uno solo a la Java que lo conoce, `GcLogging` solo si se pudo crear su carpeta y `MemoryAgent` solo si
+  su jar está en su sitio y esa Java no lo ha rechazado antes.
+- **Lee la consola de un servidor desde el principio del mensaje, después de quitarle los colores.**
+  Todos los detectores se anclan en lo que sigue al prefijo del log (un jugador puede escribir cualquier
+  cosa en el chat), y Paper envuelve las líneas de entrada y salida en secuencias ANSI incluso por una
+  tubería, así que un nombre que empieza con un escape no es un nombre: entraban jugadores y la app no los
+  veía. `AnsiEscapes.Strip` se ejecuta una vez, donde entra la salida (`ServerProcessManager`); nada
+  aguas abajo debería ver nunca un escape.
+- **Arregla un formato con una línea de un servidor de verdad.** Los analizadores de la sonda de
+  velocidad se escribieron primero de memoria de lo que imprime spark, y una ejecución real mostró que
+  imprime dos decimales en unas líneas y uno en otras, un `[⚡]` mal codificado en Windows y la coma
+  decimal de un equipo en español. Captura la salida, pon las líneas en la prueba y ejecuta el código
+  contra un servidor vivo antes de darlo por hecho.
+- **El agente de memoria se compila con `agent/build.py`, nunca con el `jar` del JDK.** `jar` escribe una
+  línea `Created-By` con su propia versión, así que dos máquinas dan dos jars; el script escribe un zip
+  determinista, y `agent.yml` más una prueba fallan si el jar del repositorio y su SHA-256 dejan de
+  coincidir con lo que compila el código. Tras tocar `agent/src/`, ejecútalo y sube los dos archivos.
+- **Un doble que comparten las pruebas entrega copias.** `FakeBackupHost.Lines` era la lista viva, y una
+  prueba que la recorría mientras una copia aún informaba de su progreso fallaba de vez en cuando con
+  «Collection was modified». Una propiedad que una prueba lee mientras el código probado aún escribe
+  devuelve una instantánea.
 - **Lo que lee o reemplaza el mundo lo sostiene de principio a fin.** Las copias, las restauraciones
   y el arranque y la parada de la JVM pasan por la única puerta de `BackupCoordinator`, y cada uno la
   sostiene durante toda la operación, no solo en la parte de «la copia». Cogerla solo alrededor del
