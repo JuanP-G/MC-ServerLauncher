@@ -157,4 +157,6 @@ a new annotated tag on the reviewed commit and a row in that page's log.
 ## Releases
 See `docs/articles/contributing.md` → "Release a new version" for the full checklist (bump the version
 in csproj + `.iss`, add the `Changelog` entry + `Whatsnew_x_y_z` keys, run `publish.ps1`, attach the
-`.exe` **and** `SHA256SUMS.txt`). Don't skip the changelog or the checksum file.
+`.exe`, `SHA256SUMS.txt` **and** the `.sig` that `publish.ps1` makes; after the Linux/macOS workflows
+finish, run `tools\signing\sign-release.ps1`). Don't skip the changelog, the checksum file or the
+signature: the updater refuses to install without them.

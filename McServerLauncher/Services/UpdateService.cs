@@ -31,6 +31,8 @@ public class UpdateService
     /// .dmg for this architecture — and are null when the release ships nothing usable here.
     /// <see cref="ChecksumUrl"/> is the asset that carries its SHA-256, used to verify the download
     /// before it is installed; null on releases published before that existed.
+    /// <see cref="SignatureUrl"/> is the asset with the publisher's signature of the package (see
+    /// <see cref="UpdateSignature"/>); null when the release has not been signed (yet).
     /// </summary>
     /// <remarks>
     /// <c>IsPreRelease</c> exists so nobody can be moved onto a beta without being told: it is what
@@ -38,7 +40,7 @@ public class UpdateService
     /// after.
     /// </remarks>
     public record UpdateInfo(string Version, string Url, string? PackageUrl, string? PackageName,
-        string? ChecksumUrl, bool IsPreRelease = false);
+        string? ChecksumUrl, bool IsPreRelease = false, string? SignatureUrl = null);
 
     /// <summary>
     /// Returns the latest version if it is newer than <paramref name="current"/>; otherwise null.
@@ -77,8 +79,12 @@ public class UpdateService
         // the .dmg files are built afterwards, by three workflows running at the same time, so each
         // publishes its own "<package>.sha256" rather than racing to append to one shared file.
         string? checksumUrl = null;
+        string? signatureUrl = null;
         if (packageName is not null)
         {
+            // The same name on every platform: the signature is of the package, not of a list.
+            assets.TryGetValue(packageName + ".sig", out signatureUrl);
+
             if (packageName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 assets.TryGetValue("SHA256SUMS.txt", out checksumUrl);
             else
@@ -86,7 +92,7 @@ public class UpdateService
         }
 
         return new UpdateInfo(tag.TrimStart('v', 'V'), url, packageUrl, packageName, checksumUrl,
-            isPreRelease);
+            isPreRelease, signatureUrl);
     }
 
     /// <summary>
@@ -213,6 +219,24 @@ public class UpdateService
             // Best-effort: an unreachable or malformed sums file just means no verification.
         }
         return null;
+    }
+
+    /// <summary>
+    /// Reads the publisher's signature asset. Null if it is unreachable or not the few hundred bytes
+    /// a signature is — the in-app updater treats that as a refusal to install, like a missing
+    /// checksum.
+    /// </summary>
+    public async Task<string?> GetSignatureAsync(string signatureUrl, CancellationToken ct = default)
+    {
+        try
+        {
+            var text = await Http.GetStringAsync(signatureUrl, ct);
+            return text.Length is > 0 and <= 1024 ? text.Trim() : null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>

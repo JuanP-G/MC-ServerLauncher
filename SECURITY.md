@@ -28,11 +28,15 @@ owns it (see [Architecture](https://juanp-g.github.io/MC-ServerLauncher/docs/art
   hash is there to catch a truncated download.
 - **Forge** publishes a `.sha1` from the same server as the artifact, so the check protects against
   corruption, not against that server being compromised. Same for NeoForge with a `.sha256`.
-- **The app's own updates** are checked against `SHA256SUMS.txt` (`<package>.sha256` on Linux and
-  macOS), which comes from the same GitHub release as the package. That catches a corrupted
-  download, not a compromised account or release: whoever can publish the package can publish its
-  hash too. Signing the packages with a key that does not live on GitHub is planned in
-  [#33](https://github.com/JuanP-G/MC-ServerLauncher/issues/33).
+- **The app's own updates** are checked twice. `SHA256SUMS.txt` (`<package>.sha256` on Linux and
+  macOS) comes from the same GitHub release as the package, so it only catches a corrupted download.
+  What protects against a compromised account or release is the **signature** (`<package>.sig`),
+  made with a private key that does not live on GitHub and checked against the public keys built into
+  the app; without a valid one nothing is installed. The limits are in
+  [Signed updates](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/signing.html): versions
+  before the first signed one check nothing, an old release that was correctly signed is still
+  correctly signed, and a signature proves who published a package, not that the build was clean.
+  Windows `.exe` code signing (Authenticode) is not done.
 
 A report that one of these is not a cryptographic guarantee is already known. A report that one of
 them is *not being enforced at all* is a real finding.
@@ -73,11 +77,15 @@ servicio que lo aplica (ver [Arquitectura](https://juanp-g.github.io/MC-ServerLa
 - **Forge** publica un `.sha1` desde el mismo servidor que el artefacto, así que la comprobación
   protege de una corrupción, no de que ese servidor esté comprometido. Lo mismo con NeoForge y su
   `.sha256`.
-- **Las actualizaciones de la propia app** se comprueban contra `SHA256SUMS.txt` (`<paquete>.sha256`
-  en Linux y macOS), que viene de la misma release de GitHub que el paquete. Eso detecta una
-  descarga dañada, no una cuenta o una release comprometidas: quien pueda publicar el paquete puede
-  publicar también su hash. Firmar los paquetes con una clave que no viva en GitHub está previsto en
-  [#33](https://github.com/JuanP-G/MC-ServerLauncher/issues/33).
+- **Las actualizaciones de la propia app** se comprueban dos veces. `SHA256SUMS.txt`
+  (`<paquete>.sha256` en Linux y macOS) viene de la misma release de GitHub que el paquete, así que
+  solo detecta una descarga dañada. Lo que protege de una cuenta o una release comprometidas es la
+  **firma** (`<paquete>.sig`), hecha con una clave privada que no vive en GitHub y comprobada contra
+  las claves públicas incluidas en la app; sin una válida no se instala nada. Los límites están en
+  [Actualizaciones firmadas](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/signing.es.html):
+  las versiones anteriores a la primera firmada no comprueban nada, una release antigua bien firmada
+  sigue estando bien firmada, y una firma prueba quién publicó un paquete, no que la build estuviera
+  limpia. La firma de código del `.exe` de Windows (Authenticode) no está hecha.
 
 Un informe que diga que esto no es una garantía criptográfica ya se sabe. Un informe que diga que
 alguno de ellos **no se está comprobando** sí es un hallazgo.

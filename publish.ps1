@@ -50,6 +50,18 @@ if ($iscc) {
         $hash = (Get-FileHash $setupPath -Algorithm SHA256).Hash.ToLower()
         "$hash  $setup" | Out-File -FilePath "$root\dist\SHA256SUMS.txt" -Encoding ascii -NoNewline
         Write-Host "==> SHA256SUMS.txt generado para $setup" -ForegroundColor Green
+
+        # La firma: el checksum de arriba sale de la misma release que el instalador, así que solo
+        # prueba que la descarga está entera. Esto prueba que lo hizo quien publica la app, con una
+        # clave que no vive en GitHub. Sin ella, la app no instalará esta versión por sí sola.
+        # Los paquetes de Linux y macOS los construye GitHub Actions: se firman después con
+        # tools\signing\sign-release.ps1 (docs/articles/signing.md).
+        . "$root\tools\signing\common.ps1"
+        if (Test-Path $script:PrivateKeyPath) {
+            & "$root\tools\signing\sign-package.ps1" -Path $setupPath
+        } else {
+            Write-Host "AVISO: no hay clave de firma; $setup.sig no se generó y la app no podrá instalar esta versión sola. Crea la clave con tools\signing\new-key.ps1." -ForegroundColor Yellow
+        }
     } else {
         Write-Host "AVISO: no encontré $setup en dist\; no se generó SHA256SUMS.txt." -ForegroundColor Yellow
     }

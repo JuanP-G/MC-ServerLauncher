@@ -114,7 +114,11 @@ jobs:
       # ones run in parallel, and three writers on one asset would race. The app needs it because
       # the in-app updater refuses to install anything it cannot verify.
       - name: Checksum
-        run: sha256sum MC-ServerLauncher-x86_64.AppImage > MC-ServerLauncher-x86_64.AppImage.sha256
+        run: |
+          sha256sum MC-ServerLauncher-x86_64.AppImage > MC-ServerLauncher-x86_64.AppImage.sha256
+          # Also in the log: the package is signed by hand afterwards (tools/signing/sign-release.ps1),
+          # and this is the hash the person signing can compare against.
+          cat MC-ServerLauncher-x86_64.AppImage.sha256
 
       - name: Upload to release
         env:
