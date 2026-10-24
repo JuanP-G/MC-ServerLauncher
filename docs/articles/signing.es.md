@@ -86,8 +86,9 @@ clave va cifrada y fuera de GitHub.
 
 ## Lo que esto no cubre
 
-- **Las versiones anteriores a la primera firmada** no comprueban nada. La protección empieza con la
-  actualización *posterior* a la que lleva la clave; instalar esa primera sigue dependiendo del checksum.
+- **Las versiones anteriores a la primera firmada** (la 1.21.1, publicada el 2026-10-24, es la primera)
+  no comprueban nada. La protección empieza con la actualización *posterior* a la que lleva la clave;
+  instalar esa primera sigue dependiendo del checksum.
 - **Volver a una versión vieja.** Una release antigua, bien firmada, sigue estando bien firmada. El
   actualizador solo ofrece versiones más nuevas que la que corre, pero no ata la firma a un número de
   versión.

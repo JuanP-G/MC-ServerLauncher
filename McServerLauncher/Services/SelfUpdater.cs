@@ -12,7 +12,8 @@ namespace McServerLauncher.Services;
 /// Each platform ships differently, so each is applied differently: Windows runs the silent
 /// installer, Linux swaps the AppImage file the app is running from, and macOS mounts the .dmg and
 /// replaces the .app bundle. What they share is the shape: nothing is touched until a complete,
-/// checksum-verified package exists on disk, and any failure leaves the current install working.
+/// package, verified by checksum and by the publisher's signature, exists on disk, and any failure
+/// leaves the current install working.
 /// </para>
 /// </summary>
 public static class SelfUpdater
@@ -88,7 +89,7 @@ public static class SelfUpdater
 
     /// <summary>
     /// Applies <paramref name="packagePath"/> and relaunches. The caller must have verified its
-    /// checksum and stopped the servers first.
+    /// checksum and signature and stopped the servers first.
     /// </summary>
     public static void Apply(string packagePath)
     {

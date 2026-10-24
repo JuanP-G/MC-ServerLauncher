@@ -912,12 +912,13 @@ nombre. El informe que copia va en el idioma de la app.
 ### Actualización in-app + novedades
 Al arrancar, `MainViewModel.CheckForUpdatesAsync` pide a `UpdateService` la release más nueva y el
 asset de esta plataforma. El botón **Actualizar** (`UpdateNowCommand`) lo descarga, lo verifica
-contra el `SHA256SUMS.txt` de la release, detiene los servidores y se lo pasa a `SelfUpdater`.
+contra el `SHA256SUMS.txt` de la release **y** contra la firma de quien publica (`UpdateSignature`, ver
+[Actualizaciones firmadas](signing.es.md)), detiene los servidores y se lo pasa a `SelfUpdater`.
 
 **Todas las plataformas se actualizan solas; lo que cambia es el mecanismo.** Windows ejecuta el
 instalador en silencio, Linux sustituye el AppImage desde el que está corriendo la app y macOS monta
 el `.dmg` y reemplaza el bundle `.app`. Lo que comparten es la forma: no se toca nada hasta que hay
-en disco un paquete completo y verificado por checksum, y cualquier fallo deja la instalación actual
+en disco un paquete completo y verificado por checksum y por firma, y cualquier fallo deja la instalación actual
 funcionando. Hay instalaciones que no pueden sustituirse a sí mismas — un AppImage que root movió a
 `/opt`, un bundle en una ubicación de solo lectura, la app arrancada con `dotnet run` — y
 `SelfUpdater.Blocker` lo dice; esas, y una release que no traiga nada para esta plataforma, caen en
