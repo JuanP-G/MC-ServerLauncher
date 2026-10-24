@@ -75,8 +75,9 @@ public partial class ServerViewModel
     private void BeginPerformanceWatch()
     {
         var now = DateTime.UtcNow;
-        _perf.Ready(now);
+        _perf.Ready(now, CurrentCeilingMb());
         _bandDismissed = false;
+        _previewedCeilingMb = null;
         _probeTicks = 0;
         _probe = new PerformanceProbe(PerformanceProbe.Candidates(Config.Type, Config.GameVersion, SparkInstalled()));
         ApplyPerformance(now);
@@ -117,8 +118,6 @@ public partial class ServerViewModel
     {
         var now = DateTime.UtcNow;
         _perf.AddCpu(now, sample.CpuPercent);
-        if (_memTracker is { Collector: not GcCollector.Unknown } tracker && tracker.LiveMb > 0)
-            _perf.AddMemory(now, tracker.LiveMb, tracker.CeilingMb, tracker.TotalPauseMs, tracker.FullGcsNotForced);
         ApplyPerformance(now);
     }
 
@@ -246,6 +245,7 @@ public partial class ServerViewModel
     {
         if (State != ServerState.Running) return;
         var status = _perf.Evaluate(now);
+        if (status.MemoryReason != MemoryPressureReason.None) _memTracker?.NotePressure();
         var reading = _lastReading;
         var tps = status.Tps;
 
@@ -290,16 +290,56 @@ public partial class ServerViewModel
         ShowPerformanceBand = problem && !_bandDismissed;
     }
 
-    /// <summary>The reason for the verdict, in a few words.</summary>
-    private static string CauseText(PerformanceStatus status) => status.Cause switch
+    private long? _previewedCeilingMb;
+    private bool _previewedAfterOom;
+
+    /// <summary>
+    /// What a start from now would give this server, now that it has been found short of memory: the
+    /// number the band promises. Worked out with the same plan the start uses, once per cause.
+    /// </summary>
+    private long PreviewNextCeilingMb(bool outOfMemory)
     {
-        PerformanceCause.OutOfMemory => Localizer.Get("Perf_CauseOom"),
+        if (_previewedCeilingMb is { } known && _previewedAfterOom == outOfMemory) return known;
+
+        var raised = MemoryLearner.AfterPressure(CurrentCeilingMb(), outOfMemory);
+        long next;
+        try
+        {
+            var mods = MemoryProfile.CountMods(Config);
+            next = MemoryProfile.Plan(new MemoryInputs(Config, _java.GetRuntime(Config.JavaPath), mods,
+                SystemMemory.TotalMb(), MemoryBudget.ReservedByOthersMb(Config.Id), MemoryPreferences.DedicatedMachine,
+                Learned: new LearnedCeiling(raised, MemoryCeilingReason.RaisedAfterPressure))).CeilingMb;
+        }
+        catch
+        {
+            next = raised;
+        }
+        _previewedAfterOom = outOfMemory;
+        return (_previewedCeilingMb = next).Value;
+    }
+
+    /// <summary>The band's line for a server short of memory, with the memory it will have next time.</summary>
+    private string MemoryCauseText(PerformanceStatus status)
+    {
+        // A Manual server's memory is the owner's to change; the page offers it.
+        var outOfMemory = status.MemoryReason == MemoryPressureReason.OutOfMemory;
+        if (IsManualMemory)
+            return Localizer.Get(outOfMemory ? "Perf_CauseOom" : "Perf_CauseMemoryManual");
+        var next = PreviewNextCeilingMb(outOfMemory);
+        return string.Format(Localizer.Get(outOfMemory ? "Perf_CauseOomFmt" : "Perf_CauseMemoryFmt"),
+            ByteSize.Format(next * 1024 * 1024));
+    }
+
+    /// <summary>The reason for the verdict, in a few words.</summary>
+    private string CauseText(PerformanceStatus status) => status.Cause switch
+    {
+        PerformanceCause.OutOfMemory => MemoryCauseText(status),
         PerformanceCause.Ticks => status.Tps is { } tps
             ? string.Format(Localizer.Get("Perf_CauseTicksFmt"), Math.Min(tps, 20).ToString("0.0", CultureInfo.CurrentCulture))
             : Localizer.Get("Perf_CauseTicks"),
         PerformanceCause.LagWarnings => string.Format(Localizer.Get("Perf_CauseLagFmt"), status.LagWarnings),
         PerformanceCause.Cpu => Localizer.Get("Perf_CauseCpu"),
-        PerformanceCause.Memory => Localizer.Get("Perf_CauseMemory"),
+        PerformanceCause.Memory => MemoryCauseText(status),
         _ => ""
     };
 }

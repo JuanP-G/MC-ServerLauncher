@@ -53,9 +53,12 @@ public partial class ServerViewModel
         var config = Config;
         var java = _java.GetRuntime(config.JavaPath);
         var mods = MemoryProfile.CountMods(config);
-        var boost = MemoryHistoryStore.For(config.Id).TakeNextStartBoost();
+        var history = MemoryHistoryStore.For(config.Id);
+        var boost = history.TakeNextStartBoost();
+        var learned = MemoryLearner.Next(history.Sessions, MemoryProfile.FloorMb(mods),
+            MemoryProfile.EstimateCeilingMb(mods));
         var plan = MemoryProfile.Plan(new MemoryInputs(config, java, mods, SystemMemory.TotalMb(),
-            MemoryBudget.ReservedByOthersMb(config.Id), MemoryPreferences.DedicatedMachine, boost));
+            MemoryBudget.ReservedByOthersMb(config.Id), MemoryPreferences.DedicatedMachine, boost, learned));
 
         _runJavaMajor = java.Major;
         _runModCount = mods;
@@ -78,7 +81,14 @@ public partial class ServerViewModel
             ByteSize.Format(plan.CeilingMb * 1024 * 1024), ReasonText(plan.Reason, mods)));
         if (plan.CappedTo32Bit)
             notes.Add(Localizer.Get("Msg_Java32BitCap"));
-        return (WithGcLog(plan, java), notes);
+        plan = WithGcLog(plan, java);
+        if (MemoryAgent.ShouldUse(config, java, MemoryPreferences.AgentEnabled) && MemoryAgent.Install(config.FolderPath))
+        {
+            plan = plan with { Flags = plan.Flags.Concat([MemoryAgent.Flag]).ToList() };
+            notes.Add(Localizer.Get("Msg_AgentOn"));
+        }
+        _runJavaMajorForAgent = java.Major;
+        return (plan, notes);
     }
 
     /// <summary>The plan with the GC log flag after its memory flags, when the Java takes it.</summary>
@@ -94,6 +104,8 @@ public partial class ServerViewModel
         MemoryCeilingReason.KeptPrevious => Localizer.Get("Mem_ReasonKept"),
         MemoryCeilingReason.Budget => Localizer.Get("Mem_ReasonBudget"),
         MemoryCeilingReason.Boosted => Localizer.Get("Mem_ReasonBoost"),
+        MemoryCeilingReason.Learned => Localizer.Get("Mem_ReasonLearned"),
+        MemoryCeilingReason.RaisedAfterPressure => Localizer.Get("Mem_ReasonPressure"),
         MemoryCeilingReason.Floor => Localizer.Get("Mem_ReasonFloor"),
         _ when modCount > 0 => string.Format(Localizer.Get("Mem_ReasonModsFmt"), modCount),
         _ => Localizer.Get("Mem_ReasonNoMods")
@@ -107,9 +119,26 @@ public partial class ServerViewModel
     private MemorySessionTracker? _memTracker;
     private GcLogTail? _gcTail;
     private Task _gcPump = Task.CompletedTask;
+
+    /// <summary>
+    /// The end of the last run being written to the history. The next start waits for it: a server
+    /// that crashed out of memory restarts at once, and its next ceiling is decided from that run.
+    /// </summary>
+    private Task _memoryFinish = Task.CompletedTask;
     private volatile bool _sawOutOfMemory;
     private int _runJavaMajor;
     private int _runModCount;
+
+    // --- the memory agent ---
+
+    private int _runJavaMajorForAgent;
+    private bool _agentRun;
+    private volatile bool _sawAgentLoadError;
+    private HeapMargins _margins = HeapMargins.Relaxed;
+    private int _agentTicks;
+
+    /// <summary>One check of the machine's free memory in this many ticks of the 2 s stats timer: every 10 s.</summary>
+    private const int AgentEveryTicks = 5;
 
     /// <summary>The line under the RAM figure: what Java has in use and what it holds, or empty.</summary>
     [ObservableProperty]
@@ -124,6 +153,10 @@ public partial class ServerViewModel
     {
         var props = _properties.Read(Config.PropertiesPath);
         _sawOutOfMemory = false;
+        _agentRun = plan.Flags.Contains(MemoryAgent.Flag);
+        _sawAgentLoadError = false;
+        _margins = HeapMargins.Relaxed;
+        _agentTicks = 0;
         _memTracker = new MemorySessionTracker(new MemorySessionStart(
             DateTime.UtcNow, plan.Mode, plan.CeilingMb, _runJavaMajor, _runModCount,
             Distance(props, "view-distance"), Distance(props, "simulation-distance")));
@@ -152,25 +185,88 @@ public partial class ServerViewModel
 
     private async Task ReadGcLogAsync(MemorySessionTracker tracker, GcLogTail tail)
     {
-        var lines = await Task.Run(tail.ReadNewLines);
+        var folder = Config.FolderPath;
+        var useAgent = _agentRun;
+        var (lines, status) = await Task.Run(() => (tail.ReadNewLines(),
+            useAgent ? MemoryAgent.ReadStatus(folder, DateTime.UtcNow, TimeSpan.FromSeconds(20)) : null));
         Apply(tracker, lines);
-        if (ReferenceEquals(tracker, _memTracker)) ShowJavaHeap(tracker);
+        if (ReferenceEquals(tracker, _memTracker)) ShowJavaHeap(tracker, status);
     }
 
-    private static void Apply(MemorySessionTracker tracker, IReadOnlyList<string> lines)
+    private void Apply(MemorySessionTracker tracker, IReadOnlyList<string> lines)
     {
         foreach (var line in lines)
         {
-            if (GcLogLine.TryParse(line, out var gc)) tracker.Add(gc);
+            if (GcLogLine.TryParse(line, out var gc))
+            {
+                tracker.Add(gc);
+                _perf.AddGc(DateTime.UtcNow, gc);
+            }
             else if (GcLogLine.TryParseCollector(line, out var collector)) tracker.NoteCollector(collector);
         }
     }
 
-    private void ShowJavaHeap(MemorySessionTracker tracker) =>
-        RamDetailText = tracker.CommittedMb > 0
-            ? string.Format(Localizer.Get("Mem_RamJavaFmt"),
-                ByteSize.Format(tracker.LiveMb * 1024 * 1024), ByteSize.Format(tracker.CommittedMb * 1024 * 1024))
+    /// <summary>
+    /// The line under the RAM figure. The agent's own report, when it is recent, is preferred to the GC
+    /// log: it comes from inside the JVM, a few seconds old at most, instead of from the last collection.
+    /// </summary>
+    private void ShowJavaHeap(MemorySessionTracker tracker, AgentStatus? status = null)
+    {
+        const long Mb = 1024 * 1024;
+        var live = status?.LiveAfterGc is { } l ? l : tracker.LiveMb * Mb;
+        var held = status is { HeapCommitted: > 0 } ? status.HeapCommitted : tracker.CommittedMb * Mb;
+        RamDetailText = held > 0
+            ? string.Format(Localizer.Get("Mem_RamJavaFmt"), ByteSize.Format(live), ByteSize.Format(held))
             : "";
+    }
+
+    /// <summary>
+    /// Holds the heap tighter while the machine is short of memory, and lets it go once it is not.
+    /// The app decides here; the agent in the server only carries out what the control file says.
+    /// </summary>
+    private void AdjustAgent()
+    {
+        if (!_agentRun || ++_agentTicks % AgentEveryTicks != 0) return;
+
+        var total = SystemMemory.TotalMb();
+        var free = SystemMemory.AvailableMb();
+        var share = total > 0 && free > 0 ? (double)free / total : -1;
+        var next = MemoryAgentPolicy.Decide(_margins, share, ConnectedPlayers.Count);
+        if (next == _margins) return;
+
+        try
+        {
+            MemoryAgent.WriteControl(Config.FolderPath, next);
+        }
+        catch
+        {
+            return;   // tried again at the next check
+        }
+        _margins = next;
+        OnConsoleLine(Localizer.Get(next == HeapMargins.Tight ? "Msg_AgentTight" : "Msg_AgentRelaxed"));
+    }
+
+    /// <summary>
+    /// If the server died at its start over the agent, notes the pair of this Java and this agent so no
+    /// start uses it again, and starts the server without it. True when that is what happened.
+    /// </summary>
+    private bool TryRecoverFromAgentFailure()
+    {
+        if (!_agentRun || !_sawAgentLoadError || DateTime.UtcNow - _process.StartedAtUtc > MemoryAgent.StartupWindow)
+            return false;
+
+        MemoryAgent.RecordFailure(_runJavaMajorForAgent, MemoryAgent.EmbeddedHash);
+        _agentRun = false;
+        OnConsoleLine(Localizer.Get("Msg_AgentFailed"));
+        if (CanStart) _ = StartInternalAsync(isAutoRestart: true);
+        return true;
+    }
+
+    /// <summary>Notes a console line that says the JVM could not load the agent.</summary>
+    private void WatchForAgentError(string line)
+    {
+        if (_agentRun && MemoryAgent.IsLoadError(line)) _sawAgentLoadError = true;
+    }
 
     /// <summary>Notes a console line that says the server ran out of memory.</summary>
     private void WatchForOutOfMemory(string line)

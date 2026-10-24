@@ -564,6 +564,10 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         CheckIdleShutdown();
         ProbePerformance();
 
+        // Also before the throttle: a PC short of memory is the case where the window is most likely
+        // to be in the tray, and a check every hundred seconds instead of ten would come too late.
+        AdjustAgent();
+
         if (MainWindowHidden && ++_hiddenStatsTicks % 10 != 0) return;
         UpdateStats();
     }
@@ -1072,7 +1076,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             MemoryBudget.Release(Config.Id);
 
             // From Stopping, the app or the console asked for it; from anything else, it ended by itself.
-            _ = FinishMemoryRunAsync(previous == ServerState.Stopping ? SessionEnd.Stopped : SessionEnd.Crashed);
+            _memoryFinish = FinishMemoryRunAsync(previous == ServerState.Stopping ? SessionEnd.Stopped : SessionEnd.Crashed);
 
             // Explicitly, not just by waiting for the next CheckIdleShutdown: that runs off the
             // stats timer, which has just been stopped, so a server that went straight from Running
@@ -1155,6 +1159,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
         WatchForOutOfMemory(line);
         WatchForLag(line);
+        WatchForAgentError(line);
 
         // The server's own answer to "seed": remembered in case the world's files cannot be read.
         if (source == ConsoleSource.Stdout && WorldSeed.FromConsoleLine(line) is { } seed)
@@ -1510,6 +1515,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             // The memory this run gets. Decided in the background because it asks the Java what it
             // is, which also leaves the version remembered for the one Start asks when building the
             // command line, instead of starting a JVM on the UI thread.
+            await _memoryFinish;
             var (plan, notes) = await Task.Run(PlanMemory);
             foreach (var note in notes) OnConsoleLine(note);
             MemoryPlan = plan;
@@ -1567,6 +1573,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     {
         try
         {
+            // A start that dies over the memory agent is the agent's doing, not a crash to count.
+            if (TryRecoverFromAgentFailure()) return;
+
             var reason = _crashReports.FindRecentCrashReason(Config.FolderPath, _process.StartedAtUtc);
             var codeText = exitCode?.ToString() ?? "?";
             OnConsoleLine(reason is not null

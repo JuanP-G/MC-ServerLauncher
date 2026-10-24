@@ -242,6 +242,7 @@ public partial class MainViewModel : ObservableObject
         NotificationPreferences.Global = _appSettings.Notifications;
         PlayerHistoryPreferences.Current = _appSettings.PlayerHistory.Clamped();
         MemoryPreferences.DedicatedMachine = _appSettings.DedicatedServerMachine;
+        MemoryPreferences.AgentEnabled = _appSettings.MemoryAgentEnabled;
         ApplyConsoleColours();
         ApplyWindowBehavior();
 

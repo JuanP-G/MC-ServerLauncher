@@ -648,6 +648,52 @@ una función pura, y `ServerViewModel.PlanMemory` reúne lo que necesita antes d
   `-XX:+UseZGC`, el `-XX:+AlwaysPreTouch` de Aikar…); ese servidor va en Manual diga lo que diga, y la
   página Rendimiento explica por qué. `-XX:+UseG1GC` solo no cuenta. `run.bat` y `user_jvm_args.txt`
   mantienen los números de Manual para arrancar fuera de la app.
+- **El techo aprende.** La estimación es solo por dónde empieza un servidor. `MemoryLearner` (puro) lee las
+  últimas ejecuciones del historial de memoria y calcula el siguiente techo: una ejecución cuenta si duró 20
+  minutos, tuvo un jugador y su heap vivo se quedó por debajo del 85 % de su techo (la que llegó al 85 % la
+  frenó el techo, así que enseña el techo y no la necesidad, y cuenta como presión); el siguiente techo es 1,6
+  × el p95 del pico vivo de las últimas diez que cuentan, redondeado hacia arriba a 512 MB y nunca por debajo
+  del suelo. **Baja** solo con al menos tres ejecuciones que cuentan y como mucho 1 GB por arranque; **sube**
+  al momento: ×1,5 tras quedarse sin memoria, 1 GB o ×1,25 (lo que sea mayor) tras otra presión, también en
+  el reinicio tras un crash (el siguiente arranque espera a que se escriba el historial de la ejecución que
+  acaba de terminar). Solo se aprende de ejecuciones en Automático y el presupuesto sigue teniendo la última
+  palabra. Una subida puntual desde la página de Rendimiento se suma encima.
+- **Presión.** `MemoryPressure` (puro, con la hora dada por quien llama) dice que un servidor va corto de
+  memoria a partir del log de GC, tras 3 minutos de gracia: más del 75 % del techo vivo tras cada limpieza
+  durante 2 minutos (al menos tres), el recolector con el servidor parado más del 10 % de los últimos 2
+  minutos, una limpieza completa que nadie pidió (se mantiene 5 minutos) o quedarse sin memoria. Un
+  `System.gc()` forzado no cuenta. Alimenta la tarjeta Rendimiento y la banda, que dice cuánta memoria tendrá
+  el servidor tras reiniciar (con el mismo plan que usará el arranque), y la ejecución se guarda como
+  `Pressured`, que es lo que lee el aprendiz.
+- **El agente de memoria.** Con menos del 15 % de la memoria del PC libre, a un servidor Automático se le puede
+  pedir que devuelva memoria antes. `agent/` contiene un agente de Java 8 sin dependencias (una clase, unos 10
+  KB) que la app incrusta como `Resources/agent/mcsl-agent.jar`, copia a la carpeta oculta de memoria del
+  servidor (`MemoryAgent.Install`, que comprueba su SHA-256) y carga con el flag relativo
+  `-javaagent:.mcserverlauncher-memory/mcsl-agent.jar=.mcserverlauncher-memory`. **La app decide y el agente
+  solo ejecuta:** cada 10 s `MemoryAgentPolicy` (pura) compara la memoria libre del equipo con el 15 % y el
+  25 % y escribe `control` (como mucho 1 KB de `clave=valor`; solo `MinHeapFreeRatio`, `MaxHeapFreeRatio` y
+  `G1PeriodicGCInterval`, cada uno validado, y un máximo por debajo del mínimo descarta los dos). Un servidor
+  sin nadie aprieta por debajo del 15 % libre (márgenes 5/15 %, una limpieza periódica cada 5 s); con jugadores
+  espera al 10 %; todo vuelve a 10/30 % y 15 s por encima del 25 %. El agente lee `control` cada 5 s, lo aplica
+  con `HotSpotDiagnosticMXBean.setVMOption` (por reflexión, a través de la interfaz exportada, así que también
+  carga donde ese módulo falta) y escribe `status.json` (heap reservado y en uso, lo vivo tras las últimas
+  limpiezas, las opciones vigentes, el último error) escribiendo un archivo temporal y renombrándolo; la
+  tarjeta de RAM prefiere ese informe al log de GC cuando es reciente. No abre sockets, nunca llama a
+  `System.gc()`, y `premain` atrapa cualquier `Throwable`, porque uno que escapara impediría arrancar el
+  servidor. **Se puede apagar de tres maneras:** un servidor Manual (o con argumentos propios que fijan la
+  memoria) nunca lo lleva, ni una Java que no sea HotSpot o sea anterior a la 12; el ajuste *Ajustar la memoria
+  en caliente* en Ajustes; y `MCSL_NO_AGENT=1` en el entorno. Si la JVM no puede cargarlo (los tres mensajes que
+  escribe se buscan al principio de la línea, que el chat de un jugador nunca ocupa) y el servidor muere en el
+  primer minuto, el par de esa Java y este agente se anota en
+  `%APPDATA%\McServerLauncher\memory-agent-failures.json`, la consola lo dice y el servidor arranca de nuevo
+  sin él, ahora y en cada arranque posterior.
+- **Compilar el agente.** `python agent/build.py` (o `agent/build.ps1`, `agent/build.sh`) compila con
+  `--release 8` y escribe el jar con un zip determinista pequeño (sin comprimir, fechas y permisos fijos,
+  entradas en orden fijo): el `jar` del JDK escribe una línea `Created-By` con su versión, así que dos JDK daban
+  dos jars. La clase en sí es idéntica byte a byte en JDK 21 y 25. El jar y su SHA-256 están en el repositorio,
+  `.github/workflows/agent.yml` lo recompila y falla si los bytes difieren, y una prueba compara la copia
+  incrustada en la app con `agent/mcsl-agent.jar.sha256`; así ni `publish.ps1` ni los workflows de release
+  necesitan un JDK.
 
 ### Medir la memoria de un servidor
 Un proceso visto desde fuera dice cuánta memoria ocupa, no cuánta necesita: entre una limpieza y la
@@ -707,9 +753,8 @@ pestañas.
   Saturado, por debajo de 19,5 o por encima de 40 es Justo, tras dos lecturas malas de spark y tres de los
   demás; tres `Can't keep up!` en 5 minutos es Saturado, uno o dos Justo, y un retraso de más de un minuto es
   un salto de reloj (el PC despertando) y se ignora; CPU al 90 % durante 2 minutos es Saturado y al 75 %
-  durante 3 Justo; quedarse sin memoria es Saturado al momento. La memoria se juzga con el log de GC (el heap
-  casi lleno tras las limpiezas, el recolector con más del 15 % del tiempo o una limpieza completa), nunca
-  con el working set, y por sí sola solo da Justo.
+  durante 3 Justo; quedarse sin memoria es Saturado al momento. La memoria se juzga con el log de GC mediante
+  `MemoryPressure` (ver *Memoria: automática o manual*), nunca con el working set, y por sí sola solo da Justo.
 - **La tarjeta y la banda.** `ServerViewModel.Performance.cs` alimenta al monitor con la misma muestra que
   alimenta las tarjetas de CPU y RAM (muestrear dos veces estropearía la cifra de CPU). La tarjeta muestra los
   TPS cuando se pueden medir y una palabra (Bien, Justo, Saturado) si no; la banda es una línea de 26 px con

@@ -140,7 +140,11 @@ When it opens again, **What's new** tells you what changed. It works the same on
   that make it hand back what it does not need: an empty server measured at about **1 GB instead of
   3.5-4.7 GB**, with the same tick time. All the servers together use at most half the PC, or all but
   2 GB if it is only for servers. **Manual** keeps the minimum and maximum you type, and your own Java
-  arguments always win.
+  arguments always win. In Automatic the ceiling **learns**: it goes down slowly as the server shows it needs
+  less (never more than 1 GB per start, and only after three real sessions) and up at once when it falls
+  short, and the band says how much memory it will have after a restart. If the PC itself runs short of free
+  memory, a tiny agent inside the server (embedded in the app, no download) makes it hand memory back sooner,
+  empty servers first, and lets go once the PC has room again; it is a switch in Settings.
 - **Start / Stop / Restart** with a clean stop that saves the world; detects and frees a **busy port**; live
   **CPU, RAM, uptime and port**. The RAM figure is the memory the server really holds on your PC (not Task
   Manager's shared total), with what Java has in use under it.

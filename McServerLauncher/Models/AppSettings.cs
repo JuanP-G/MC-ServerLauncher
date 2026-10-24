@@ -73,6 +73,12 @@ public class AppSettings
     /// </summary>
     public bool DedicatedServerMachine { get; set; }
 
+    /// <summary>
+    /// Lets the app hold an Automatic server's heap tighter while the PC is short of memory, through a
+    /// small agent in the server's JVM. On by default; off keeps every server exactly as it starts.
+    /// </summary>
+    public bool MemoryAgentEnabled { get; set; } = true;
+
     /// <summary>What the player history keeps, and for how long.</summary>
     /// <remarks>
     /// Shared with the copy <see cref="ShallowCopy"/> makes, which is harmless: Settings replaces it

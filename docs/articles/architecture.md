@@ -623,6 +623,51 @@ Each server has a `MemoryMode`. **Automatic** (the default) lets the app size th
   `-XX:+AlwaysPreTouch`…); such a server runs Manual whatever it says, and the Performance page says why.
   `-XX:+UseG1GC` alone does not count. `run.bat` and `user_jvm_args.txt` keep the Manual numbers for
   launching outside the app.
+- **The ceiling learns.** The estimate is only where a server starts. `MemoryLearner` (pure) reads the
+  server's last runs from its memory history and works out the next ceiling: a run counts when it lasted 20
+  minutes, had a player on and its live heap stayed under 85 % of its ceiling (one that reached 85 % was held
+  back by the ceiling, so it shows the ceiling and not the need, and counts as pressure); the next ceiling is
+  1.6 × the p95 of the peak live heap of the last ten that count, rounded up to 512 MB and never below the
+  floor. It goes **down** only with at least three counting runs and by at most 1 GB per start; it goes
+  **up** at once: ×1.5 after running out of memory, 1 GB or ×1.25 (the larger) after any other pressure,
+  including the restart after a crash (the next start waits for the history of the run that just ended to be
+  written). Only Automatic runs are learned from, and the budget still has the last word. A one-off raise from
+  the Performance page goes on top.
+- **Pressure.** `MemoryPressure` (pure, with the time given by the caller) says a server is short of memory
+  from the GC log, after 3 minutes of grace: over 75 % of the ceiling alive after every collection for 2
+  minutes (at least three), the collector pausing the server for over 10 % of the last 2 minutes, a full
+  collection nobody asked for (held for 5 minutes), or running out of memory. A forced `System.gc()` counts
+  for nothing. It feeds the Performance card and the band, which says how much memory the server will have
+  after a restart (the same plan the start will use), and the run is saved as `Pressured`, which the learner
+  reads.
+- **The memory agent.** Under 15 % of the PC's memory free, an Automatic server can be asked to give memory
+  back sooner. `agent/` holds a dependency-free Java 8 agent (one class, about 10 KB) that the app embeds as
+  `Resources/agent/mcsl-agent.jar` and copies into the server's hidden memory folder
+  (`MemoryAgent.Install`, which checks its SHA-256) and loads with the relative flag
+  `-javaagent:.mcserverlauncher-memory/mcsl-agent.jar=.mcserverlauncher-memory`. **The app decides, the agent
+  only carries out:** every 10 s `MemoryAgentPolicy` (pure) compares the machine's free memory with 15 % and
+  25 % and writes `control` (at most 1 KB of `key=value`; only `MinHeapFreeRatio`, `MaxHeapFreeRatio` and
+  `G1PeriodicGCInterval`, each validated, and a maximum below the minimum drops both). A server with nobody on
+  tightens under 15 % free (5/15 % margins, a periodic collection every 5 s); one with players waits until
+  10 %; everything goes back to 10/30 % and 15 s above 25 %. The agent reads `control` every 5 s, applies it
+  with `HotSpotDiagnosticMXBean.setVMOption` (by reflection, through the exported interface, so it also loads
+  where that module is missing) and writes `status.json` (heap held and in use, what was alive after the last
+  collections, the options in effect, the last error) by writing a temporary file and renaming it; the RAM
+  card prefers that report to the GC log when it is recent. It opens no socket, never calls `System.gc()`,
+  and `premain` catches every `Throwable`, because one escaping would stop the server from starting.
+  **It can be turned off three ways:** a Manual server (or one whose own arguments size the memory) never
+  gets it, nor does a Java that is not HotSpot or is older than 12; the setting *Adjust memory live* in
+  Settings; and `MCSL_NO_AGENT=1` in the environment. If the JVM cannot load it (the three messages it prints
+  are matched at the start of the line, which a player's chat never is) and the server dies within a minute,
+  the pair of that Java and this agent is written to `%APPDATA%\McServerLauncher\memory-agent-failures.json`,
+  the console says so, and the server starts again without it, now and at every later start.
+- **Building the agent.** `python agent/build.py` (or `agent/build.ps1`, `agent/build.sh`) compiles with
+  `--release 8` and writes the jar with a small deterministic zip (stored, fixed dates and permissions,
+  entries in a fixed order): the JDK's own `jar` writes a `Created-By` line with its version, so two JDKs gave
+  two jars. The class file itself is byte-identical on JDK 21 and 25. The jar and its SHA-256 are committed,
+  `.github/workflows/agent.yml` rebuilds it and fails if the bytes differ, and a test compares the copy
+  embedded in the app with `agent/mcsl-agent.jar.sha256`; so neither `publish.ps1` nor the release workflows
+  need a JDK.
 
 ### Measuring a server's memory
 A process seen from outside says how much memory it holds, not how much it needs: between collections the
@@ -678,8 +723,8 @@ something is wrong for a while; *See solutions* in the band opens a page that re
   readings from spark and three from the others; three `Can't keep up!` in 5 minutes is Saturated, one or two
   Tight, and a delay over a minute is a clock jump (the PC waking up) and is ignored; CPU at 90 % for 2
   minutes is Saturated and 75 % for 3 Tight; running out of memory is Saturated at once. Memory is judged
-  from the GC log (the heap nearly full after collections, the collector taking over 15 % of the time, or a
-  full collection), never from the working set, and alone is only Tight.
+  from the GC log by `MemoryPressure` (see *Memory: automatic or manual*), never from the working set, and
+  alone is only Tight.
 - **The card and the band.** `ServerViewModel.Performance.cs` feeds the monitor with the same sample that
   feeds the CPU and RAM cards (sampling twice would break the CPU figure). The card shows TPS when they can
   be measured and a word (Good, Tight, Overloaded) otherwise; the band is one 26 px line with an ellipsis, in
