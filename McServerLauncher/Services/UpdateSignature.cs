@@ -33,10 +33,13 @@ public static class UpdateSignature
     /// current key; the rest are for a rotation in progress.
     /// </summary>
     /// <remarks>
-    /// Empty means no update can be installed from inside the app — the safe failure, and the reason
-    /// a build made before the first key existed falls back to the release page.
+    /// Empty would mean no update can be installed from inside the app — the safe failure, but one a
+    /// release must never ship with; a test pins that the list holds at least one usable P-256 key.
     /// </remarks>
-    internal static readonly IReadOnlyList<string> TrustedKeys = [];
+    internal static readonly IReadOnlyList<string> TrustedKeys =
+    [
+        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEDy6PYAuIYV9i1Z5tLuFY1uEWgt+DURiQqzLq8Ltw7KLnuXRpprTroUkmI8KpJbl0YF3bdHd5Rcm33fG+5u2GSw=="
+    ];
 
     /// <summary>
     /// Whether <paramref name="signatureBase64"/> is a valid signature of the file at

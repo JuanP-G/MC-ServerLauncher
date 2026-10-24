@@ -49,6 +49,21 @@ public class UpdateSignatureTests : IDisposable
     }
 
     [Fact]
+    public void TheKeysBuiltIntoTheAppAreUsable()
+    {
+        // A release with an empty or mistyped list would refuse every update from inside the app, and
+        // nothing else would say so until somebody pressed the button. Each key has to parse and be
+        // the P-256 one the signing scripts make.
+        Assert.NotEmpty(UpdateSignature.TrustedKeys);
+        foreach (var key in UpdateSignature.TrustedKeys)
+        {
+            using var ecdsa = ECDsa.Create();
+            ecdsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(key), out _);
+            Assert.Equal(256, ecdsa.KeySize);
+        }
+    }
+
+    [Fact]
     public void ASignatureMadeWithATrustedKeyIsAccepted()
     {
         using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
