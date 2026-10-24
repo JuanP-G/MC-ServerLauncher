@@ -58,9 +58,9 @@ if ($iscc) {
         # tools\signing\sign-release.ps1 (docs/articles/signing.md).
         . "$root\tools\signing\common.ps1"
         if (Test-Path $script:PrivateKeyPath) {
-            & "$root\tools\signing\sign-package.ps1" -Path $setupPath
+            & "$root\tools\signing\sign-package.ps1" -Path $setupPath -Version $version
         } else {
-            Write-Host "AVISO: no hay clave de firma; $setup.sig no se generó y la app no podrá instalar esta versión sola. Crea la clave con tools\signing\new-key.ps1." -ForegroundColor Yellow
+            Write-Host "AVISO: no hay clave de firma; $setup.sig2 no se generó y la app no podrá instalar esta versión sola. Crea la clave con tools\signing\new-key.ps1." -ForegroundColor Yellow
         }
     } else {
         Write-Host "AVISO: no encontré $setup en dist\; no se generó SHA256SUMS.txt." -ForegroundColor Yellow

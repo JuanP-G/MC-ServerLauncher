@@ -30,12 +30,11 @@ owns it (see [Architecture](https://juanp-g.github.io/MC-ServerLauncher/docs/art
   corruption, not against that server being compromised. Same for NeoForge with a `.sha256`.
 - **The app's own updates** are checked twice. `SHA256SUMS.txt` (`<package>.sha256` on Linux and
   macOS) comes from the same GitHub release as the package, so it only catches a corrupted download.
-  What protects against a compromised account or release is the **signature** (`<package>.sig`),
+  What protects against a compromised account or release is the **signature** (`<package>.sig2`, tied to the version and the file name),
   made with a private key that does not live on GitHub and checked against the public keys built into
   the app; without a valid one nothing is installed. The limits are in
   [Signed updates](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/signing.html): versions
-  before the first signed one (1.21.1) check nothing, an old release that was correctly signed is still
-  correctly signed, and a signature proves who published a package, not that the build was clean.
+  before the first signed one (1.21.1) check nothing, apps on 1.21.1 still read an older signature that is tied to no version, and a signature proves who published a package, not that the build was clean.
   Windows `.exe` code signing (Authenticode) is not done.
 - **The memory agent** is code that runs *inside* the JVM of every Automatic server. It is ours (one
   class, about 10 KB, no dependencies), embedded in the app instead of downloaded, and rebuilt byte for
@@ -87,11 +86,10 @@ servicio que lo aplica (ver [Arquitectura](https://juanp-g.github.io/MC-ServerLa
 - **Las actualizaciones de la propia app** se comprueban dos veces. `SHA256SUMS.txt`
   (`<paquete>.sha256` en Linux y macOS) viene de la misma release de GitHub que el paquete, así que
   solo detecta una descarga dañada. Lo que protege de una cuenta o una release comprometidas es la
-  **firma** (`<paquete>.sig`), hecha con una clave privada que no vive en GitHub y comprobada contra
+  **firma** (`<paquete>.sig2`, atada a la versión y al nombre del archivo), hecha con una clave privada que no vive en GitHub y comprobada contra
   las claves públicas incluidas en la app; sin una válida no se instala nada. Los límites están en
   [Actualizaciones firmadas](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/signing.es.html):
-  las versiones anteriores a la primera firmada (la 1.21.1) no comprueban nada, una release antigua bien firmada
-  sigue estando bien firmada, y una firma prueba quién publicó un paquete, no que la build estuviera
+  las versiones anteriores a la primera firmada (la 1.21.1) no comprueban nada, las apps en la 1.21.1 aún leen una firma anterior que no va atada a ninguna versión, y una firma prueba quién publicó un paquete, no que la build estuviera
   limpia. La firma de código del `.exe` de Windows (Authenticode) no está hecha.
 - **El agente de memoria** es código que se ejecuta *dentro* de la JVM de cada servidor Automático. Es
   nuestro (una clase, unos 10 KB, sin dependencias), va incrustado en la app en vez de descargarse, y una

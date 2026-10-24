@@ -82,8 +82,11 @@ public class UpdateService
         string? signatureUrl = null;
         if (packageName is not null)
         {
-            // The same name on every platform: the signature is of the package, not of a list.
-            assets.TryGetValue(packageName + ".sig", out signatureUrl);
+            // The same name on every platform: the signature is of the package, not of a list. ".sig"
+            // is the older layout (the package bytes alone) that 1.21.1 reads; this version reads
+            // only ".sig2", and does not fall back to ".sig", or removing the one would downgrade to
+            // the other.
+            assets.TryGetValue(packageName + ".sig2", out signatureUrl);
 
             if (packageName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 assets.TryGetValue("SHA256SUMS.txt", out checksumUrl);

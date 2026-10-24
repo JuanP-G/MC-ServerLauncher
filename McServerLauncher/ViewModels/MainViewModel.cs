@@ -199,6 +199,7 @@ public partial class MainViewModel : ObservableObject
     private string? _packageName;
     private string? _checksumUrl;
     private string? _signatureUrl;
+    private string? _updateVersion;
 
     /// <summary>One entry of the language selector.</summary>
     /// <param name="Code">The culture code stored in <c>AppSettings.Language</c> (es, en, pt, fr,
@@ -480,7 +481,7 @@ public partial class MainViewModel : ObservableObject
         if (state == UpdateCheckState.UpToDate && UpdateAvailable)
         {
             UpdateAvailable = false;
-            _packageUrl = _packageName = _checksumUrl = _signatureUrl = null;
+            _packageUrl = _packageName = _checksumUrl = _signatureUrl = _updateVersion = null;
         }
 
         if (info is null) return;
@@ -490,6 +491,7 @@ public partial class MainViewModel : ObservableObject
         _packageName = info.PackageName;
         _checksumUrl = info.ChecksumUrl;
         _signatureUrl = info.SignatureUrl;
+        _updateVersion = info.Version;
         // A beta says so before the button, not after installing.
         UpdateText = string.Format(
             Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
@@ -603,8 +605,11 @@ public partial class MainViewModel : ObservableObject
             UpdateText = Localizer.Get("Msg_VerifyingChecksum");
             await DownloadVerifier.VerifyAsync(dest, expectedSha256, HashAlgorithmName.SHA256);
 
+            // The version and the name are the ones the release is offered under, so a package
+            // signed as another version or another file does not pass as this one.
             UpdateText = Localizer.Get("Msg_VerifyingSignature");
-            if (!await Task.Run(() => UpdateSignature.Verify(dest, signature)))
+            if (!await Task.Run(() =>
+                    UpdateSignature.Verify(dest, _updateVersion ?? "", _packageName ?? "", signature)))
             {
                 // A package that failed this is not left lying where the next step could find it.
                 try { File.Delete(dest); } catch { /* the temporary folder is swept later */ }
