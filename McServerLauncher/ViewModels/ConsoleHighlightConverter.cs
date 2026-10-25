@@ -4,6 +4,7 @@ using System.Globalization;
 using Avalonia.Controls.Documents;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
+using McServerLauncher.Services;
 
 namespace McServerLauncher.ViewModels;
 
@@ -32,7 +33,7 @@ public class ConsoleHighlightConverter : IMultiValueConverter
     /// and recolouring a match would destroy that meaning exactly where the user is looking hardest.
     /// A highlight behind the letters adds a signal instead of replacing one.
     /// </remarks>
-    private static readonly IBrush MatchBackground = new SolidColorBrush(Color.Parse("#66E3A82B"));
+    private static readonly IBrush MatchBackground = new SolidColorBrush(Color.Parse("#66" + NotificationPalette.DefaultWarning[1..]));
 
     public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {

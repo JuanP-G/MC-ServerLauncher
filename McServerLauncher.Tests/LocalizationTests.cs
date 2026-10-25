@@ -184,4 +184,30 @@ public class LocalizationTests
             }
         }
     }
+
+    [Fact]
+    public void NoTextTheInterfaceShowsCarriesAnEmojiOrAPictograph()
+    {
+        // The notices were made sober: a mark is an icon drawn by the interface, and a state is a
+        // colour and a word, not a tick or a warning sign typed into the string. Arrows and bullets are
+        // typography and are left alone. The "what's new" notes are history — they describe what
+        // earlier versions did, emoji included — so they are not held to this.
+        var offenders = new List<string>();
+
+        foreach (var file in Files)
+            foreach (var (key, value) in Load(file))
+            {
+                if (key.StartsWith("Whatsnew_", StringComparison.Ordinal)) continue;
+
+                foreach (var rune in value.EnumerateRunes())
+                    if (rune.Value is >= 0x1F300 and <= 0x1FAFF or >= 0x2600 and <= 0x27BF or 0x2B50)
+                    {
+                        offenders.Add($"{file}: {key} (U+{rune.Value:X4})");
+                        break;
+                    }
+            }
+
+        Assert.True(offenders.Count == 0,
+            "textos con emoji o pictogramas, que ahora los dibuja la interfaz: " + string.Join(", ", offenders));
+    }
 }

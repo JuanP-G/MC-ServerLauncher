@@ -11,29 +11,38 @@
          easier than finding the right existing one, which is how a palette stops meaning
          anything.
 
-         Same values as before, to the digit: this is where they live, not a redesign. The
-         translucent variants are the fills and edges of the notice panels; they are named for
-         what they are used for rather than for their alpha, because "the amber panel" is the
-         decision and 0x22 is only how it is spelled.
+         They are muted on purpose — legible on the dark window at a glance, never a shout — and
+         the same four as the defaults of the notification colours (NotificationPalette): a
+         toast, a panel and a console line say "something broke" in one red, not three. The
+         translucent variants are the fills and edges of the notice panels, the same hue at a
+         low alpha; they are named for what they are used for rather than for their alpha,
+         because "the amber panel" is the decision and 0x22 is only how it is spelled.
 
-         The defaults for the notification colours the user can change are NOT here: those are
-         a setting, they live in NotificationPalette, and they happen to start on these. -->
+         The notification colours the user can change are NOT here: those are a setting, they
+         live in NotificationPalette, and they happen to start on these. -->
     <Application.Resources>
-        <SolidColorBrush x:Key="SemanticOk" Color="#3FB950" />
-        <SolidColorBrush x:Key="SemanticInfo" Color="#2F6FB0" />
-        <SolidColorBrush x:Key="SemanticWarn" Color="#E3A82B" />
-        <SolidColorBrush x:Key="SemanticDanger" Color="#E05561" />
+        <SolidColorBrush x:Key="SemanticOk" Color="#6FB57F" />
+        <SolidColorBrush x:Key="SemanticInfo" Color="#7BA6CE" />
+        <SolidColorBrush x:Key="SemanticWarn" Color="#D9B665" />
+        <SolidColorBrush x:Key="SemanticDanger" Color="#DB7A79" />
 
-        <SolidColorBrush x:Key="SemanticWarnFill" Color="#22E3A82B" />
-        <SolidColorBrush x:Key="SemanticWarnPanel" Color="#33E3A82B" />
-        <SolidColorBrush x:Key="SemanticWarnEdge" Color="#55E3A82B" />
+        <SolidColorBrush x:Key="SemanticWarnFill" Color="#22D9B665" />
+        <SolidColorBrush x:Key="SemanticWarnPanel" Color="#33D9B665" />
+        <SolidColorBrush x:Key="SemanticWarnEdge" Color="#55D9B665" />
 
-        <SolidColorBrush x:Key="SemanticOkPanel" Color="#332E7D32" />
+        <SolidColorBrush x:Key="SemanticOkPanel" Color="#336FB57F" />
 
-        <SolidColorBrush x:Key="SemanticInfoPanel" Color="#332F6FB0" />
+        <SolidColorBrush x:Key="SemanticInfoPanel" Color="#337BA6CE" />
+        <!-- The ring round the icon of the update banner: the info blue, half faded. -->
+        <SolidColorBrush x:Key="SemanticInfoRing" Color="#887BA6CE" />
 
-        <SolidColorBrush x:Key="SemanticDangerFill" Color="#22E05561" />
-        <SolidColorBrush x:Key="SemanticDangerPanel" Color="#33E05561" />
+        <SolidColorBrush x:Key="SemanticDangerFill" Color="#22DB7A79" />
+        <SolidColorBrush x:Key="SemanticDangerPanel" Color="#33DB7A79" />
+
+        <!-- The install banner over the mod list: a solid, darker take on the red and the green, so
+             it stays readable over whatever scrolls underneath it. NoticeBrushConverter picks them. -->
+        <SolidColorBrush x:Key="SemanticDangerBanner" Color="#4B2E2F" />
+        <SolidColorBrush x:Key="SemanticOkBanner" Color="#2D4234" />
 
         <!-- ===================== SURFACES =====================
              Translucent white over the dark background. Named for the ROLE they play, not for their
@@ -92,11 +101,11 @@
              is the colour something is WARNED about in, and these are what a button that DELETES is
              painted with. Two reds here is deliberate; the seven that were scattered across the
              views were not. -->
-        <SolidColorBrush x:Key="DangerButton" Color="#C42B1C" />
-        <SolidColorBrush x:Key="DangerEdge" Color="#D13438" />
-        <SolidColorBrush x:Key="DangerPanel" Color="#33D13438" />
-        <SolidColorBrush x:Key="DangerIcon" Color="#FF8A8A" />
-        <SolidColorBrush x:Key="DangerText" Color="#FFC9C9" />
+        <SolidColorBrush x:Key="DangerButton" Color="#B5453F" />
+        <SolidColorBrush x:Key="DangerEdge" Color="#D0615F" />
+        <SolidColorBrush x:Key="DangerPanel" Color="#33DB7A79" />
+        <SolidColorBrush x:Key="DangerIcon" Color="#E8908F" />
+        <SolidColorBrush x:Key="DangerText" Color="#F2CBCA" />
 
         <!-- ===================== THE MINECRAFT LOOK =====================
              This is NOT the app's theme: it is Minecraft's own server list, imitated on purpose so

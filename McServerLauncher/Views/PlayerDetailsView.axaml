@@ -211,7 +211,8 @@
                                 <Grid ColumnDefinitions="Auto,24,*" Margin="0,2">
                                     <TextBlock Grid.Column="0" Text="{Binding TimeText}" Opacity="0.6" FontSize="12"
                                                VerticalAlignment="Top" Margin="0,1,10,0" MinWidth="110" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Icon}" VerticalAlignment="Top" />
+                                    <ic:SymbolIcon Grid.Column="1" Symbol="{Binding Icon}" FontSize="14" Opacity="0.75"
+                                                   HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,2,0,0" />
                                     <SelectableTextBlock Grid.Column="2" Text="{Binding Text}" TextWrapping="Wrap" />
                                 </Grid>
                             </DataTemplate>

@@ -323,7 +323,8 @@ public partial class NewServerView : UserControl
         DetectionMissing.Text = missing ?? string.Empty;
     }
 
-    /// <summary>"✔ Fabric 1.21.1 · loader 0.16.2 · port 25565 · 4 GB · with a world".</summary>
+    /// <summary>"Fabric 1.21.1 · loader 0.16.2 · port 25565 · 4 GB · with a world".</summary>
+    /// <remarks>No tick in front: the line is drawn in the "fine" colour, which already says it.</remarks>
     internal static string Summary(ServerDetection found)
     {
         if (found.Type is not { } type) return string.Empty;
@@ -335,7 +336,7 @@ public partial class NewServerView : UserControl
         if (found.Port is { } port) parts.Add(string.Format(Localizer.Get("Cs_DetectedPortFmt"), port));
         if (found.MaxRamGb is { } max) parts.Add(max + " GB");
         parts.Add(Localizer.Get(found.HasWorld ? "Cs_DetectedWorld" : "Cs_DetectedNoWorld"));
-        return "✔ " + string.Join(" · ", parts);
+        return string.Join(" · ", parts);
     }
 
     private static string? Missing(ServerDetection found, bool needsJar)

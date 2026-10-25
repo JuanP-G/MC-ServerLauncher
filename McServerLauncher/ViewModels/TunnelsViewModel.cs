@@ -33,10 +33,10 @@ namespace McServerLauncher.ViewModels;
 /// </remarks>
 public partial class TunnelsViewModel : ObservableObject
 {
-    private static readonly IBrush Green = new ImmutableSolidColorBrush(Color.Parse("#3FB950"));
+    private static readonly IBrush Green = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultSuccess));
     private static readonly IBrush Grey = new ImmutableSolidColorBrush(Color.Parse("#8B949E"));
-    private static readonly IBrush Red = new ImmutableSolidColorBrush(Color.Parse("#F85149"));
-    private static readonly IBrush Amber = new ImmutableSolidColorBrush(Color.Parse("#E3A82B"));
+    private static readonly IBrush Red = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultError));
+    private static readonly IBrush Amber = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultWarning));
 
     private readonly ObservableCollection<ServerViewModel> _servers;
     private readonly AppSettings _appSettings;

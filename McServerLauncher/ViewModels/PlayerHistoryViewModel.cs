@@ -71,11 +71,11 @@ public sealed class PlayerEventRowViewModel
         TimeText = RelativeTime.Exact(e.At);
         Icon = e.Kind switch
         {
-            PlayerEventKind.Join => "→",
-            PlayerEventKind.Leave => "←",
-            PlayerEventKind.Chat => "💬",
-            PlayerEventKind.Death => "☠",
-            _ => "★"
+            PlayerEventKind.Join => FluentIcons.Common.Symbol.PersonAdd,
+            PlayerEventKind.Leave => FluentIcons.Common.Symbol.SignOut,
+            PlayerEventKind.Chat => FluentIcons.Common.Symbol.Chat,
+            PlayerEventKind.Death => FluentIcons.Common.Symbol.PersonDelete,
+            _ => FluentIcons.Common.Symbol.Trophy
         };
         Text = e.Kind switch
         {
@@ -90,7 +90,8 @@ public sealed class PlayerEventRowViewModel
 
     public PlayerEventKind Kind { get; }
     public string TimeText { get; }
-    public string Icon { get; }
+    /// <summary>The mark beside the line: the same ones the notifications use for the same events.</summary>
+    public FluentIcons.Common.Symbol Icon { get; }
     public string Text { get; }
     public bool IsChat { get; }
 }
