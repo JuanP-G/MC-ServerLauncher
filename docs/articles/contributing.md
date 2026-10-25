@@ -142,6 +142,11 @@ the name's fault the other half — prefer fixing the name.
   Avalonia brushes beside it in `ViewModels/` — `ConsoleColors`/`ConsolePalette`,
   `NotificationPalette`/`NotificationBrushes`, `ServerTypeCatalog`/`ServerTypeBrushes`. A colour that
   ends up in `settings.json` must not need a type that knows Avalonia exists.
+- **The four status colours (fine, info, warning, error) have one source.** In XAML they are the
+  `Semantic*` brushes in `App.axaml`; in C# they are `NotificationPalette.Default*`. Do not type the hex
+  again — the notices, panels, status dots and console lines are meant to say "something broke" in the
+  same red. And **no emoji or tick and warning characters in interface text**: a mark is an icon
+  (`SymbolIcon`, `FluentIcons.Common.Symbol`), a state is a colour and a word. `LocalizationTests` checks it.
 - Styles that more than one view needs live in `Styles/Shared.axaml`, not in a view's own
   `<Window.Styles>`. **Give a shared style a name that means one thing:** two views once had a
   `Border.card` each, meaning two different things, and Avalonia kept them apart only because they

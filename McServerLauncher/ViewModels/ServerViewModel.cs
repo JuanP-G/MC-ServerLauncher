@@ -349,10 +349,10 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private string _newWhitelistName = string.Empty;
 
     // Colors per state (status text/dot and the card's signal bars).
-    private static readonly IBrush BrushGreen = Frozen("#3FB950");
+    private static readonly IBrush BrushGreen = Frozen(NotificationPalette.DefaultSuccess);
     private static readonly IBrush BrushSignalGreen = Frozen("#55FF55");
-    private static readonly IBrush BrushAmber = Frozen("#E3A82B");
-    private static readonly IBrush BrushRed = Frozen("#E05561");
+    private static readonly IBrush BrushAmber = Frozen(NotificationPalette.DefaultWarning);
+    private static readonly IBrush BrushRed = Frozen(NotificationPalette.DefaultError);
     private static readonly IBrush BrushGray = Frozen("#6E7681");
 
     [ObservableProperty]

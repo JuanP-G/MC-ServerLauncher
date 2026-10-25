@@ -37,8 +37,8 @@ public enum SettingsPage
 /// </remarks>
 public partial class SettingsViewModel : ObservableObject
 {
-    private static readonly IBrush Good = new ImmutableSolidColorBrush(Color.Parse("#3FB950"));
-    private static readonly IBrush Bad = new ImmutableSolidColorBrush(Color.Parse("#E05561"));
+    private static readonly IBrush Good = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultSuccess));
+    private static readonly IBrush Bad = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultError));
 
     private readonly MainViewModel? _main;
     private readonly AppSettings _settings;

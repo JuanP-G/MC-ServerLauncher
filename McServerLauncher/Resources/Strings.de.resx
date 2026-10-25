@@ -596,11 +596,11 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Msg_UpdatesFoundFmt" xml:space="preserve"><value>{0} Update(s) verfügbar</value></data>
   <data name="Msg_UpdatesCheckFailed" xml:space="preserve"><value>Modrinth war nicht erreichbar, daher weiß ich nicht, ob es Updates gibt. Versuche es mit Verbindung erneut.</value></data>
   <data name="Msg_NoUpdates" xml:space="preserve"><value>Alles ist aktuell</value></data>
-  <data name="Msg_ModUpdated" xml:space="preserve"><value>Aktualisiert ✔</value></data>
+  <data name="Msg_ModUpdated" xml:space="preserve"><value>Aktualisiert</value></data>
   <data name="Mods_UpdateAllFmt" xml:space="preserve"><value>Alle aktualisieren ({0})</value></data>
-  <data name="Msg_ModUpdatedRemainingFmt" xml:space="preserve"><value>Aktualisiert ✔ Noch {0} zu aktualisieren.</value></data>
+  <data name="Msg_ModUpdatedRemainingFmt" xml:space="preserve"><value>Aktualisiert. Noch {0} zu aktualisieren.</value></data>
   <data name="Msg_UpdatingNofMFmt" xml:space="preserve"><value>Aktualisiere {0} von {1}: {2}…</value></data>
-  <data name="Msg_UpdateAllDoneFmt" xml:space="preserve"><value>{0} aktualisiert ✔</value></data>
+  <data name="Msg_UpdateAllDoneFmt" xml:space="preserve"><value>{0} aktualisiert</value></data>
   <data name="Msg_UpdateAllPartialFmt" xml:space="preserve"><value>{0} aktualisiert; {1} ging nicht: {2}. Sie bleiben in der Liste für einen neuen Versuch.</value></data>
   <data name="Msg_UpdateAllStoppedFmt" xml:space="preserve"><value>{0} aktualisiert. Stoppe den Server, um den Rest zu aktualisieren: die Dateien sind in Benutzung.</value></data>
   <data name="Cleanup_Title" xml:space="preserve"><value>Der Server braucht das nicht mehr. Entfernen hält ihn sauber und lässt ihn schneller starten.</value></data>
@@ -1071,8 +1071,8 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Col_Customize" xml:space="preserve"><value>Anpassen</value></data>
   <data name="Col_Before" xml:space="preserve"><value>Vorher</value></data>
   <data name="Col_After" xml:space="preserve"><value>Jetzt</value></data>
-  <data name="Col_ReadsWell" xml:space="preserve"><value>✓ Auf dem dunklen Hintergrund gut lesbar</value></data>
-  <data name="Col_TooDark" xml:space="preserve"><value>⚠ Zu dunkel: auf dem dunklen Hintergrund schwer lesbar</value></data>
+  <data name="Col_ReadsWell" xml:space="preserve"><value>Auf dem dunklen Hintergrund gut lesbar</value></data>
+  <data name="Col_TooDark" xml:space="preserve"><value>Zu dunkel: auf dem dunklen Hintergrund schwer lesbar</value></data>
   <data name="Sset_Back" xml:space="preserve"><value>Zurück zum Server</value></data>
   <data name="Sset_Discard" xml:space="preserve"><value>Verwerfen</value></data>
   <data name="Sset_Unsaved" xml:space="preserve"><value>Du hast ungespeicherte Änderungen</value></data>

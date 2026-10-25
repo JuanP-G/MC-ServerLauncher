@@ -15,10 +15,10 @@ namespace McServerLauncher.ViewModels;
 /// </remarks>
 public partial class TunnelRowViewModel : ObservableObject
 {
-    private static readonly IBrush Ok = new ImmutableSolidColorBrush(Color.Parse("#3FB950"));
-    private static readonly IBrush Warn = new ImmutableSolidColorBrush(Color.Parse("#E3A82B"));
+    private static readonly IBrush Ok = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultSuccess));
+    private static readonly IBrush Warn = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultWarning));
     private static readonly IBrush NoTint = Brushes.Transparent;
-    private static readonly IBrush WarnTint = new ImmutableSolidColorBrush(Color.Parse("#22E3A82B"));
+    private static readonly IBrush WarnTint = new ImmutableSolidColorBrush(Color.Parse("#22" + NotificationPalette.DefaultWarning[1..]));
 
     private readonly TunnelsViewModel _owner;
     private readonly TunnelRow _row;

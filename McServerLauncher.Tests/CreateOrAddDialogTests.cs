@@ -172,7 +172,7 @@ public class CreateOrAddDialogTests(AvaloniaFixture ui)
     {
         var text = NewServerView.Summary(AFabricServer);
 
-        Assert.StartsWith("✔ Fabric 1.21.1", text);
+        Assert.StartsWith("Fabric 1.21.1", text);
         Assert.Contains("0.16.2", text);
         Assert.Contains("25570", text);
         Assert.Contains("6 GB", text);

@@ -17,6 +17,10 @@ when suggesting or writing code.
   `ConsoleColors`/`ConsolePalette`, `NotificationPalette`/`NotificationBrushes`,
   `ServerTypeCatalog`/`ServerTypeBrushes`. A colour that ends up in `settings.json` must not need a
   type that knows Avalonia exists.
+- **The four status colours have one source**: the `Semantic*` brushes in `App.axaml` for XAML,
+  `NotificationPalette.Default*` for C# — never the hex typed again. **No emoji or tick/warning characters
+  in interface text**: a mark is an icon (`SymbolIcon`, `FluentIcons.Common.Symbol`), a state a colour and a
+  word (`LocalizationTests` enforces it).
 
 ## Localization (important)
 - **No user-facing text is hard-coded.** Every string goes through the localization system.

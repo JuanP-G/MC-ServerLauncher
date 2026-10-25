@@ -141,8 +141,8 @@ public partial class ModDetailsViewModel : ObservableObject, IDisposable
 
     public IBrush CompatibilityBrush => IsCompatible ? CompatibleBrush : IncompatibleBrush;
 
-    private static readonly IBrush CompatibleBrush = new ImmutableSolidColorBrush(Color.Parse("#3FB950"));
-    private static readonly IBrush IncompatibleBrush = new ImmutableSolidColorBrush(Color.Parse("#E3A82B"));
+    private static readonly IBrush CompatibleBrush = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultSuccess));
+    private static readonly IBrush IncompatibleBrush = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultWarning));
 
     // --- Collections ---
 
@@ -702,9 +702,9 @@ public partial class ModVersionViewModel : ObservableObject
     [ObservableProperty]
     private bool _isInstalling;
 
-    private static readonly IBrush ReleaseBrush = new ImmutableSolidColorBrush(Color.Parse("#3FB950"));
-    private static readonly IBrush BetaBrush = new ImmutableSolidColorBrush(Color.Parse("#E3A82B"));
-    private static readonly IBrush AlphaBrush = new ImmutableSolidColorBrush(Color.Parse("#E05561"));
+    private static readonly IBrush ReleaseBrush = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultSuccess));
+    private static readonly IBrush BetaBrush = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultWarning));
+    private static readonly IBrush AlphaBrush = new ImmutableSolidColorBrush(Color.Parse(NotificationPalette.DefaultError));
 
     public ModVersionViewModel(ModDetailsViewModel parent, VersionResult version)
     {

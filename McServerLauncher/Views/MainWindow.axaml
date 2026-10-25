@@ -91,13 +91,20 @@
     <Grid RowDefinitions="Auto,*">
 
         <!-- Update-available banner -->
-        <Border Grid.Row="0" Background="{StaticResource SemanticInfo}" Padding="14,8" IsVisible="{Binding UpdateAvailable}">
+        <!-- A dark strip like the toasts: the icon in a ring is the one touch of colour, so it reads
+             as a notice without being the loudest thing on screen. -->
+        <Border Grid.Row="0" Background="{StaticResource GroundPopup}" BorderBrush="{StaticResource SurfaceEdge}"
+                BorderThickness="0,0,0,1" Padding="14,8" IsVisible="{Binding UpdateAvailable}">
             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                <ic:SymbolIcon Grid.Column="0" Symbol="ArrowDownload" Foreground="White"
-                               VerticalAlignment="Center" Margin="0,0,10,0" />
-                <TextBlock Grid.Column="1" Text="{Binding UpdateText}" Foreground="White" VerticalAlignment="Center" />
+                <Border Grid.Column="0" Width="30" Height="30" CornerRadius="15" BorderThickness="1.5"
+                        BorderBrush="{StaticResource SemanticInfoRing}" VerticalAlignment="Center"
+                        Margin="0,0,12,0">
+                    <ic:SymbolIcon Symbol="ArrowDownload" FontSize="15" Foreground="{StaticResource SemanticInfo}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <TextBlock Grid.Column="1" Text="{Binding UpdateText}" VerticalAlignment="Center" />
                 <Button Grid.Column="2" Content="{loc:Loc Update_Now}" Margin="0,0,8,0" Command="{Binding UpdateNowCommand}" />
-                <Button Grid.Column="3" Background="Transparent" Foreground="White"
+                <Button Grid.Column="3" Background="Transparent"
                         Command="{Binding DismissUpdateCommand}" ToolTip.Tip="{loc:Loc Tip_Hide}">
                     <ic:SymbolIcon Symbol="Dismiss" />
                 </Button>
