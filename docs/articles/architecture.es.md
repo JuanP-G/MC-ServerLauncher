@@ -366,10 +366,12 @@ mundo. No hay rutas fijas del equipo en el código.
   Iniciar, y las llamadas de Modrinth que responderían a lo mismo se tragan los errores y devuelven vacío, así
   que sin conexión dirían que no falta nada justo donde equivocarse impide arrancar. Una prueba prohíbe que
   esos dos ficheros mencionen `HttpClient` o `ModrinthService`.
-- **`NotificationCatalog` / `NotificationPalette`** — qué nivel y qué emoji le toca a cada tipo de aviso, y
+- **`NotificationCatalog` / `NotificationPalette`** — qué nivel y qué icono le toca a cada tipo de aviso, y
   cuáles son los colores por defecto. Misma separación que `ServerTypeCatalog` y `ServerTypeBrushes`: los datos
   sin nada de UI aquí, las brochas de Avalonia en `NotificationBrushes`. Los colores que el usuario cambia
-  viven en `NotificationSettings`, que se serializa a `settings.json`.
+  viven en `NotificationSettings`, que se serializa a `settings.json`. Los valores por defecto fueron más
+  saturados; `NotificationPalette.ModerniseColours` pasa al nuevo un color guardado que aún sea igual a uno
+  antiguo cuando se cargan `settings.json` y `servers.json`, y deja en paz cualquier otro valor.
 - **`ConsoleLineClassifier` / `ConsoleColors`** — de qué va cada línea de consola y de qué color se pinta. El
   origen manda sobre el texto: los mensajes de la app se etiquetan donde se emiten, porque su texto está
   traducido —los prefijos `[Launcher]`, `[Error]` y `[Players]` viven *dentro* de los valores del resx— y un
@@ -441,8 +443,11 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`ProcessStatsService`** — muestrea CPU/RAM del proceso `java` en marcha para las estadísticas en
   vivo y las mini-gráficas `Sparkline`.
 - **`ToastService`** — muestra notificaciones emergentes propias — ventanas de Avalonia siempre
-  encima en la esquina inferior derecha (con el nombre del servidor como título), solo cuando la app
-  no tiene el foco; funcionan aunque el SO no soporte notificaciones.
+  encima en la esquina inferior derecha, solo cuando la app no tiene el foco; funcionan aunque el SO no
+  soporte notificaciones. Una tarjeta lleva un icono en un anillo, lo ocurrido como cabecera de color, el
+  nombre del servidor en pequeño junto a la hora y una barra en la base que se vacía según se acaba el
+  tiempo. **`ToastLifetime`** es su reloj, sin ventana: cuánto dura (más si es un error), la pausa mientras
+  el puntero está sobre la tarjeta y el fundido de cada extremo. Una prueba lo comprueba sin interfaz.
 - **`NotificationPreferences`** — decide qué notificaciones se muestran, combinando los ajustes
   globales (interruptor maestro + por tipo: entra, sale, muerte/baja, caída, reinicio agotado) con
   una posible anulación por servidor (`ServerConfig.UseCustomNotifications`). Las anulaciones por

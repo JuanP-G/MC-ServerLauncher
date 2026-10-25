@@ -207,6 +207,14 @@
   <data name="Notif_PlayerLeftFmt" xml:space="preserve"><value>{0} left the server.</value></data>
   <data name="Notif_Crashed" xml:space="preserve"><value>The server exited unexpectedly.</value></data>
   <data name="Notif_GaveUp" xml:space="preserve"><value>It has crashed several times in a row; it won't be restarted automatically anymore.</value></data>
+  <data name="Notif_Head_PlayerJoined" xml:space="preserve"><value>Player joined</value></data>
+  <data name="Notif_Head_PlayerLeft" xml:space="preserve"><value>Player left</value></data>
+  <data name="Notif_Head_PlayerDeath" xml:space="preserve"><value>Player died</value></data>
+  <data name="Notif_Head_ServerCrashed" xml:space="preserve"><value>Server crashed</value></data>
+  <data name="Notif_Head_AutoRestartGaveUp" xml:space="preserve"><value>Restart abandoned</value></data>
+  <data name="Notif_Head_IdleShutdown" xml:space="preserve"><value>Server stopped</value></data>
+  <data name="Notif_Head_WokeOnDemand" xml:space="preserve"><value>Server started</value></data>
+  <data name="Notif_Head_Update" xml:space="preserve"><value>Update available</value></data>
   <data name="Notif_Intro" xml:space="preserve"><value>Choose which alerts you get when you're not looking at the app. They pop up in the corner of the screen with the server's name.</value></data>
   <data name="Shortcut_Section" xml:space="preserve"><value>Desktop shortcut</value></data>
   <data name="Shortcut_Intro" xml:space="preserve"><value>Put a shortcut on your desktop so the app is one double-click away.</value></data>
@@ -234,7 +242,7 @@
   <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
   <data name="Settings_LangRestart" xml:space="preserve"><value>The language change takes effect when the app restarts.</value></data>
   <data name="Notif_Colors" xml:space="preserve"><value>Notification colours</value></data>
-  <data name="Notif_ColorsIntro" xml:space="preserve"><value>One colour per level, not per kind. Each notification also carries its own emoji, which tells them apart even if the colours do not. Type a colour as #RRGGBB.</value></data>
+  <data name="Notif_ColorsIntro" xml:space="preserve"><value>One colour per level, not per kind. Each notification also carries its own icon, which tells them apart even if the colours do not. Type a colour as #RRGGBB.</value></data>
   <data name="Notif_LevelSuccess" xml:space="preserve"><value>Going well</value></data>
   <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutral</value></data>
   <data name="Notif_LevelWarning" xml:space="preserve"><value>Stopped on purpose</value></data>

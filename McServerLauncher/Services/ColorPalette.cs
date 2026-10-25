@@ -38,7 +38,7 @@ public static class ColorPalette
         // pastel
         "#FCA5A5", "#FDBA74", "#FDE68A", "#BBF7D0", "#99F6E4", "#BAE6FD", "#C7D7FE", "#E9D5FF",
         // the app's own defaults, and two neutrals
-        "#3FB950", "#2F6FB0", "#E3A82B", "#E05561", "#9CDCFE", "#C5A5F5", "#FFFFFF", "#B0B0B0",
+        "#6FB57F", "#7BA6CE", "#D9B665", "#DB7A79", "#9CDCFE", "#C5A5F5", "#FFFFFF", "#B0B0B0",
     };
 
     /// <summary>How many swatches a row has.</summary>

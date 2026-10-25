@@ -36,6 +36,9 @@ public class AppSettingsService
             var (loaded, _) = AtomicJsonFile.Load<AppSettings>(_filePath, JsonOptions);
             var settings = loaded ?? new AppSettings();
 
+            // A file from before the notices were toned down still holds the old default colours.
+            NotificationPalette.ModerniseColours(settings.Notifications);
+
             // Playit secrets are stored encrypted (DPAPI on Windows, AES elsewhere); callers always
             // see the plaintext. A plaintext secret written by an older version is migrated
             // (re-saved encrypted) right away — but only if encryption actually works right now:

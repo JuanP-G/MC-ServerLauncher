@@ -256,9 +256,10 @@ When it opens again, **What's new** tells you what changed. It works the same on
   With a command box and a **command-help** panel.
 - **Notifications** — when a player joins or leaves, someone dies (PvP), the server crashes, auto-restart
   gives up, or a server stops or starts by itself. Per kind, globally and **per server**.
-- **Every notification tells itself apart at a glance** — a colour and an emoji per kind. Colours are
-  changed in Settings, from a palette made for the dark background or with the full picker, which warns you
-  when one would be hard to read.
+- **Every notification tells itself apart at a glance** — a muted colour and an icon per kind, with what
+  happened in the heading and the server in small print beside the time. A bar along the bottom shows how long
+  is left; resting the pointer on the card pauses it. Colours are changed in Settings, from a palette made for
+  the dark background or with the full picker, which warns you when one would be hard to read.
 
 </details>
 

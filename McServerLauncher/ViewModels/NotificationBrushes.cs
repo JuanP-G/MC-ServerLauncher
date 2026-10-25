@@ -27,12 +27,13 @@ public static class NotificationBrushes
         return Color.TryParse(hex, out var colour) ? colour : Colors.Gray;
     }
 
-    /// <summary>The accent for a level: the border of the toast and its mark.</summary>
+    /// <summary>The accent for a level: the heading, the icon and the bar of the toast.</summary>
     public static IBrush BrushFor(NotificationSettings? settings, NotificationLevel level) =>
         new SolidColorBrush(ColorFor(settings, level));
 
     /// <summary>
-    /// The same colour faded, for a surface the text has to stay readable against.
+    /// The same colour faded, for a line that has to stay quieter than the text beside it: the ring
+    /// round the icon.
     /// </summary>
     /// <remarks>
     /// Derived from the accent rather than configured on its own. Two colours per level would be

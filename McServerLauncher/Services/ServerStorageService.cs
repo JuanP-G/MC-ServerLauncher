@@ -51,6 +51,12 @@ public class ServerStorageService
     {
         var (list, outcome) = AtomicJsonFile.Load<List<ServerConfig>>(_filePath, JsonOptions);
         LastLoadOutcome = outcome;
+
+        // A server with its own notification settings holds a frozen copy of the colours the app had
+        // when it was opened, so it carries the old defaults too.
+        foreach (var server in list ?? new List<ServerConfig>())
+            NotificationPalette.ModerniseColours(server.Notifications);
+
         return list ?? new List<ServerConfig>();
     }
 

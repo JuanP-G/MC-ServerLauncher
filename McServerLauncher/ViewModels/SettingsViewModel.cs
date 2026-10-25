@@ -310,9 +310,10 @@ public partial class SettingsViewModel : ObservableObject
             var sample = NotificationCatalog.All.FirstOrDefault(x => x.Level == level);
             ToastService.Shared.Notify(
                 Localizer.Get("Notif_Level" + level),
+                Localizer.Get("Notif_UpdateTitle"),
                 Localizer.Get("Notif_TestBody"),
+                sample?.Icon ?? FluentIcons.Common.Symbol.Alert,
                 level,
-                sample?.Emoji ?? string.Empty,
                 _settings.Notifications);
         }
     }
