@@ -1419,7 +1419,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     /// <summary>
     /// Raises a toast for <paramref name="kind"/> if it's enabled (global + per-server settings) and
     /// nobody is looking at the app — if you're watching the console you already saw the line. The
-    /// toast title is the server name, so it's always clear which server it came from.
+    /// toast names the server beside the time, so it's always clear which one it came from.
     /// </summary>
     private void NotifyIf(NotificationKind kind, string message)
     {
@@ -1429,8 +1429,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         // The look comes from the kind, through the one table that holds it. Working it out here
         // would put a second opinion about what "crashed" means next to the first.
         var entry = NotificationCatalog.For(kind);
-        ToastService.Shared.Notify(Name, message, entry.Level, entry.Emoji,
-            NotificationPreferences.EffectiveFor(Config));
+        ToastService.Shared.Notify(Localizer.Get(NotificationCatalog.HeadingKey(kind)), Name, message,
+            entry.Icon, entry.Level, NotificationPreferences.EffectiveFor(Config));
     }
 
     [RelayCommand(CanExecute = nameof(CanStart))]

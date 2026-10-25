@@ -357,10 +357,12 @@ are no hard-coded machine paths.
   is pressed, and the Modrinth calls that would answer the same question swallow their errors and return empty,
   so offline they would report nothing missing on the one screen where being wrong stops the server coming up.
   A test forbids those two files from mentioning `HttpClient` or `ModrinthService`.
-- **`NotificationCatalog` / `NotificationPalette`** — which level and which emoji each kind of notification
+- **`NotificationCatalog` / `NotificationPalette`** — which level and which icon each kind of notification
   gets, and what the default colours are. The same split as `ServerTypeCatalog` and `ServerTypeBrushes`: the
   UI-free data here, the Avalonia brushes in `NotificationBrushes`. The colours the user can change live in
-  `NotificationSettings`, which is serialized to `settings.json`.
+  `NotificationSettings`, which is serialized to `settings.json`. The defaults were once more saturated;
+  `NotificationPalette.ModerniseColours` moves a stored colour that still equals an old default to the new
+  one when `settings.json` and `servers.json` are loaded, and leaves any other value alone.
 - **`ConsoleLineClassifier` / `ConsoleColors`** — what each console line is about and what colour it is drawn
   in. The source outranks the text: the app's own messages are tagged where they are raised, because their text
   is localized — the `[Launcher]`, `[Error]` and `[Players]` prefixes live *inside* the resx values — so a
@@ -430,8 +432,11 @@ are no hard-coded machine paths.
 - **`ProcessStatsService`** — samples CPU/RAM of the running `java` process for the live stats and the
   `Sparkline` mini-charts.
 - **`ToastService`** — shows the app's own pop-up notifications — always-on-top Avalonia windows in
-  the bottom-right corner (titled with the server's name), shown only when the app isn't in focus;
-  they work even without OS notification support.
+  the bottom-right corner, shown only when the app isn't in focus; they work even without OS notification
+  support. A card has an icon in a ring, what happened as a coloured heading, the server's name in small print
+  beside the time, and a bar along the bottom that empties as the toast runs out. **`ToastLifetime`** is its
+  clock, with no window in it: how long it stays (longer for errors), the pause while the pointer is on the
+  card, and the fade at each end. A test checks it without a UI.
 - **`NotificationPreferences`** — decides which notifications are shown, combining the global
   settings (master switch + per-kind: join, leave, death/kill, crash, auto-restart-gave-up) with an
   optional per-server override (`ServerConfig.UseCustomNotifications`). Per-server overrides are

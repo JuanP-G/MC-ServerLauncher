@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
+using FluentIcons.Avalonia;
+using FluentIcons.Common;
 using McServerLauncher.Models;
+using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
 
 namespace McServerLauncher.Views;
@@ -14,18 +19,29 @@ namespace McServerLauncher.Views;
 /// <summary>
 /// Small toast notifications drawn as borderless always-on-top windows in the bottom-right corner
 /// of the screen (pure Avalonia, no external dependencies, works even while the main window is
-/// hidden in the tray). They never steal focus, auto-dismiss after a few seconds, and clicking one
-/// restores the main window. Used for "player joined" / "server crashed" style events.
+/// hidden in the tray). They never steal focus, close by themselves after a few seconds — a bar
+/// along the bottom shows how many are left, and the pointer resting on a card stops the clock —
+/// and clicking one restores the main window. Used for "player joined" / "server crashed" style
+/// events.
 /// </summary>
 public sealed class ToastService
 {
     public static readonly ToastService Shared = new();
 
     private const int MaxVisible = 4;
-    private const double ToastWidth = 340;
-    private const double ToastHeight = 84;
+    private const double ToastWidth = 360;
+    private const double ToastHeight = 88;
     private const double Spacing = 10;
-    private static readonly TimeSpan AutoClose = TimeSpan.FromSeconds(6);
+    private const double BarHeight = 2;
+    private const double RingSize = 38;
+    private static readonly TimeSpan Frame = TimeSpan.FromMilliseconds(33);
+
+    // The card is the same dark neutral whatever the event; only the ring, the heading and the bar
+    // carry the level's colour. These are not the user's to configure.
+    private static readonly IBrush CardBackground = new SolidColorBrush(Color.Parse("#F0252526"));
+    private static readonly IBrush CardBorder = new SolidColorBrush(Color.Parse("#3A3A3D"));
+    private static readonly IBrush MessageText = new SolidColorBrush(Color.Parse("#ECECEE"));
+    private static readonly IBrush QuietText = new SolidColorBrush(Color.Parse("#85858C"));
 
     private readonly List<Window> _visible = new();
 
@@ -49,20 +65,25 @@ public sealed class ToastService
     /// <summary>
     /// Shows a toast (thread-safe; marshals to the UI thread).
     /// </summary>
+    /// <param name="heading">What happened, in a few words: the coloured line at the top.</param>
+    /// <param name="source">Where it came from — the server's name — kept small beside the time.</param>
+    /// <param name="message">The detail.</param>
+    /// <param name="icon">The mark inside the ring.</param>
+    /// <param name="level">How serious it is, which decides the colour and how long it stays.</param>
+    /// <param name="colours">The colours to draw the level with; the defaults when null.</param>
     /// <remarks>
     /// The level and the mark are passed in rather than worked out here, because what a toast means
     /// is not something the window that draws it can know. Every toast used to look identical — the
     /// same panel with the same faint green border whether somebody had joined or the server had
     /// died — so the only way to tell them apart was to stop and read.
     /// </remarks>
-    public void Notify(string title, string message,
+    public void Notify(string heading, string source, string message, Symbol icon,
         NotificationLevel level = NotificationLevel.Info,
-        string emoji = "",
         NotificationSettings? colours = null) =>
-        Dispatcher.UIThread.Post(() => Show(title, message, level, emoji, colours));
+        Dispatcher.UIThread.Post(() => Show(heading, source, message, icon, level, colours));
 
-    private void Show(string title, string message, NotificationLevel level, string emoji,
-        NotificationSettings? colours)
+    private void Show(string heading, string source, string message, Symbol icon,
+        NotificationLevel level, NotificationSettings? colours)
     {
         try
         {
@@ -73,15 +94,48 @@ public sealed class ToastService
                 oldest.Close();
             }
 
-            var toast = BuildWindow(title, message, level, emoji, colours);
-            _visible.Add(toast);
-            toast.Closed += (_, _) => { _visible.Remove(toast); Reposition(); };
+            var life = new ToastLifetime(level);
+            var bar = new Border
+            {
+                Height = BarHeight,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Background = NotificationBrushes.BrushFor(colours, level)
+            };
 
+            var toast = BuildWindow(heading, source, message, icon, level, colours, bar);
+            toast.Opacity = 0;
+            _visible.Add(toast);
+
+            // One clock per toast, ticking until the window goes — whichever way it goes. The timer
+            // used to be a one-shot nothing could stop, so a toast closed by a click left it running.
+            var timer = new DispatcherTimer { Interval = Frame };
+            var stopwatch = Stopwatch.StartNew();
+            var last = TimeSpan.Zero;
+            timer.Tick += (_, _) =>
+            {
+                var now = stopwatch.Elapsed;
+                life.Advance(now - last);
+                last = now;
+
+                bar.Width = (ToastWidth - 2) * life.Remaining;
+                toast.Opacity = life.Opacity;
+
+                if (life.Expired) toast.Close();
+            };
+
+            toast.PointerEntered += (_, _) => life.Paused = true;
+            toast.PointerExited += (_, _) => life.Paused = false;
+            toast.Closed += (_, _) =>
+            {
+                timer.Stop();
+                _visible.Remove(toast);
+                Reposition();
+            };
+
+            bar.Width = ToastWidth - 2;
             toast.Show();
             Reposition();
-
-            var timer = new DispatcherTimer { Interval = AutoClose };
-            timer.Tick += (_, _) => { timer.Stop(); toast.Close(); };
             timer.Start();
         }
         catch
@@ -90,8 +144,8 @@ public sealed class ToastService
         }
     }
 
-    private Window BuildWindow(string title, string message, NotificationLevel level, string emoji,
-        NotificationSettings? colours)
+    private static Window BuildWindow(string heading, string source, string message, Symbol icon,
+        NotificationLevel level, NotificationSettings? colours, Border bar)
     {
         var toast = new Window
         {
@@ -108,25 +162,86 @@ public sealed class ToastService
 
         var accent = NotificationBrushes.BrushFor(colours, level);
 
-        var text = new StackPanel
+        // The ring is what the eye lands on: the one shape on the card, and the one place the colour
+        // is drawn round and not as text. It still has to work for somebody who cannot tell this red
+        // from this green, which is what the icon inside it is for — no two kinds share one.
+        var ring = new Border
         {
-            Spacing = 4,
+            Width = RingSize,
+            Height = RingSize,
+            CornerRadius = new CornerRadius(RingSize / 2),
+            BorderThickness = new Thickness(1.5),
+            BorderBrush = NotificationBrushes.FadedBrushFor(colours, level, 0x88),
             VerticalAlignment = VerticalAlignment.Center,
+            Child = new SymbolIcon
+            {
+                Symbol = icon,
+                FontSize = 19,
+                Foreground = accent,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            }
+        };
+
+        // What happened leads and carries the colour; where it happened is small and grey on the
+        // other side of the line, beside the time. With a handful of servers the name is a detail;
+        // it does not need to out-shout the event.
+        var header = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("Auto,*"),
             Children =
             {
                 new TextBlock
                 {
-                    Text = title,
-                    FontWeight = FontWeight.SemiBold,
-                    FontSize = 14,
-                    Foreground = Brushes.White,
-                    TextTrimming = TextTrimming.CharacterEllipsis
+                    Text = heading,
+                    FontSize = 12,
+                    FontWeight = FontWeight.Medium,
+                    Foreground = accent,
+                    VerticalAlignment = VerticalAlignment.Center
                 },
+                // The name gives way, never the time: a long server name is cut with an ellipsis and
+                // the hour beside it stays whole.
+                new Grid
+                {
+                    ColumnDefinitions = new ColumnDefinitions("*,Auto"),
+                    Margin = new Thickness(10, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = source,
+                            FontSize = 11,
+                            Foreground = QuietText,
+                            TextAlignment = TextAlignment.Right,
+                            TextTrimming = TextTrimming.CharacterEllipsis
+                        },
+                        new TextBlock
+                        {
+                            Text = " · " + DateTime.Now.ToString("t", CultureInfo.CurrentCulture),
+                            FontSize = 11,
+                            Foreground = QuietText
+                        }
+                    }
+                }
+            }
+        };
+        var when = (Grid)header.Children[1];
+        Grid.SetColumn(when, 1);
+        Grid.SetColumn(when.Children[1], 1);
+
+        var text = new StackPanel
+        {
+            Spacing = 3,
+            VerticalAlignment = VerticalAlignment.Center,
+            Children =
+            {
+                header,
                 new TextBlock
                 {
                     Text = message,
-                    FontSize = 13,
-                    Foreground = new SolidColorBrush(Color.Parse("#DDDDDD")),
+                    FontSize = 14,
+                    Foreground = MessageText,
                     TextWrapping = TextWrapping.Wrap,
                     MaxLines = 2,
                     TextTrimming = TextTrimming.CharacterEllipsis
@@ -134,39 +249,23 @@ public sealed class ToastService
             }
         };
 
-        // Three marks of the same thing, on purpose. The stripe down the left edge is what the eye
-        // catches from across a room; the emoji is what still works for somebody who cannot tell
-        // this red from this green; the border ties it together. Colour alone would carry none of
-        // it to a third of a percent of players, and shape alone would be quieter than it needs to.
         var body = new Grid
         {
-            ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*"),
-            Children =
-            {
-                new Border { Width = 4, CornerRadius = new CornerRadius(2), Background = accent },
-                new TextBlock
-                {
-                    Text = emoji,
-                    FontSize = 20,
-                    Margin = new Thickness(10, 0, 10, 0),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    IsVisible = !string.IsNullOrEmpty(emoji)
-                },
-                text
-            }
+            ColumnDefinitions = new ColumnDefinitions("Auto,*"),
+            Margin = new Thickness(14, 12, 14, 14),
+            Children = { ring, text }
         };
-
-        Grid.SetColumn(body.Children[1], 1);
-        Grid.SetColumn(body.Children[2], 2);
+        text.Margin = new Thickness(12, 0, 0, 0);
+        Grid.SetColumn(text, 1);
 
         toast.Content = new Border
         {
-            Background = new SolidColorBrush(Color.Parse("#F0252526")),
-            BorderBrush = NotificationBrushes.FadedBrushFor(colours, level),
+            Background = CardBackground,
+            BorderBrush = CardBorder,
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(8),
-            Padding = new Thickness(12, 10),
-            Child = body
+            ClipToBounds = true,
+            Child = new Grid { Children = { body, bar } }
         };
 
         // Clicking a toast opens the app on the server that produced the event's console.

@@ -63,6 +63,7 @@ public class LocalizationTests
         "Net_Local",       // ConnectionTestViewModel.Judge: prefix + state + "Detail"
         "Net_Tunnel",
         "Net_Bedrock",
+        "Notif_Head_",     // NotificationCatalog.HeadingKey: "Notif_Head_" + the kind
         "Notif_Level",     // SettingsViewModel: "Notif_Level" + the level
     };
 

@@ -253,6 +253,14 @@
   <data name="Notif_PlayerLeftFmt" xml:space="preserve"><value>{0} ha salido del servidor.</value></data>
   <data name="Notif_Crashed" xml:space="preserve"><value>El servidor se ha cerrado inesperadamente.</value></data>
   <data name="Notif_GaveUp" xml:space="preserve"><value>Se ha caído varias veces seguidas; no se reiniciará automáticamente más.</value></data>
+  <data name="Notif_Head_PlayerJoined" xml:space="preserve"><value>Jugador conectado</value></data>
+  <data name="Notif_Head_PlayerLeft" xml:space="preserve"><value>Jugador desconectado</value></data>
+  <data name="Notif_Head_PlayerDeath" xml:space="preserve"><value>Jugador muerto</value></data>
+  <data name="Notif_Head_ServerCrashed" xml:space="preserve"><value>Servidor caído</value></data>
+  <data name="Notif_Head_AutoRestartGaveUp" xml:space="preserve"><value>Reinicio abandonado</value></data>
+  <data name="Notif_Head_IdleShutdown" xml:space="preserve"><value>Servidor detenido</value></data>
+  <data name="Notif_Head_WokeOnDemand" xml:space="preserve"><value>Servidor encendido</value></data>
+  <data name="Notif_Head_Update" xml:space="preserve"><value>Actualización disponible</value></data>
   <data name="Notif_Intro" xml:space="preserve"><value>Elige qué avisos quieres recibir cuando no estás mirando la app. Aparecen en la esquina de la pantalla con el nombre del servidor.</value></data>
   <data name="Shortcut_Section" xml:space="preserve"><value>Acceso directo</value></data>
   <data name="Shortcut_Intro" xml:space="preserve"><value>Crea un acceso directo en tu escritorio para abrir la app de un doble clic.</value></data>
@@ -280,7 +288,7 @@
   <data name="Settings_Title" xml:space="preserve"><value>Ajustes</value></data>
   <data name="Settings_LangRestart" xml:space="preserve"><value>El cambio de idioma se aplica al reiniciar la app.</value></data>
   <data name="Notif_Colors" xml:space="preserve"><value>Colores de los avisos</value></data>
-  <data name="Notif_ColorsIntro" xml:space="preserve"><value>Un color por nivel, no por tipo de aviso. Cada aviso lleva además su propio emoji, que se distingue aunque no distingas los colores. Escribe un color en formato #RRGGBB.</value></data>
+  <data name="Notif_ColorsIntro" xml:space="preserve"><value>Un color por nivel, no por tipo de aviso. Cada aviso lleva además su propio icono, que se distingue aunque no distingas los colores. Escribe un color en formato #RRGGBB.</value></data>
   <data name="Notif_LevelSuccess" xml:space="preserve"><value>Va bien</value></data>
   <data name="Notif_LevelInfo" xml:space="preserve"><value>Sin más</value></data>
   <data name="Notif_LevelWarning" xml:space="preserve"><value>Parado a propósito</value></data>

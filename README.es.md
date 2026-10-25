@@ -258,8 +258,10 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   panel de **ayuda de comandos**.
 - **Notificaciones** — cuando un jugador entra o sale, alguien muere (PvP), el servidor se cae, el reinicio
   automático se rinde, o un servidor se apaga o se enciende solo. Por tipo, de forma global y **por servidor**.
-- **Cada aviso se distingue de un vistazo** — un color y un emoji por tipo. Los colores se cambian en
-  Ajustes, de una paleta pensada para el fondo oscuro o con el selector completo, que avisa si van a costar leerse.
+- **Cada aviso se distingue de un vistazo** — un color apagado y un icono por tipo, con lo ocurrido en la
+  cabecera y el servidor en pequeño junto a la hora. Una barra en la base marca lo que queda; si dejas el
+  puntero sobre la tarjeta, se detiene. Los colores se cambian en Ajustes, de una paleta pensada para el fondo
+  oscuro o con el selector completo, que avisa si van a costar leerse.
 
 </details>
 

@@ -207,6 +207,14 @@
   <data name="Notif_PlayerLeftFmt" xml:space="preserve"><value>{0} hat den Server verlassen.</value></data>
   <data name="Notif_Crashed" xml:space="preserve"><value>Der Server wurde unerwartet beendet.</value></data>
   <data name="Notif_GaveUp" xml:space="preserve"><value>Er ist mehrmals hintereinander abgestürzt; er wird nicht mehr automatisch neu gestartet.</value></data>
+  <data name="Notif_Head_PlayerJoined" xml:space="preserve"><value>Spieler beigetreten</value></data>
+  <data name="Notif_Head_PlayerLeft" xml:space="preserve"><value>Spieler gegangen</value></data>
+  <data name="Notif_Head_PlayerDeath" xml:space="preserve"><value>Spieler gestorben</value></data>
+  <data name="Notif_Head_ServerCrashed" xml:space="preserve"><value>Server abgestürzt</value></data>
+  <data name="Notif_Head_AutoRestartGaveUp" xml:space="preserve"><value>Neustart aufgegeben</value></data>
+  <data name="Notif_Head_IdleShutdown" xml:space="preserve"><value>Server gestoppt</value></data>
+  <data name="Notif_Head_WokeOnDemand" xml:space="preserve"><value>Server gestartet</value></data>
+  <data name="Notif_Head_Update" xml:space="preserve"><value>Update verfügbar</value></data>
   <data name="Notif_Intro" xml:space="preserve"><value>Wähle, welche Hinweise du erhältst, wenn du nicht auf die App schaust. Sie erscheinen in der Bildschirmecke mit dem Servernamen.</value></data>
   <data name="Shortcut_Section" xml:space="preserve"><value>Verknüpfung</value></data>
   <data name="Shortcut_Intro" xml:space="preserve"><value>Lege eine Verknüpfung auf dem Desktop an, damit die App mit einem Doppelklick startet.</value></data>
@@ -234,7 +242,7 @@
   <data name="Settings_Title" xml:space="preserve"><value>Einstellungen</value></data>
   <data name="Settings_LangRestart" xml:space="preserve"><value>Die Sprachänderung wird beim Neustart der App wirksam.</value></data>
   <data name="Notif_Colors" xml:space="preserve"><value>Farben der Benachrichtigungen</value></data>
-  <data name="Notif_ColorsIntro" xml:space="preserve"><value>Eine Farbe pro Stufe, nicht pro Art. Jede Benachrichtigung trägt zusätzlich ihr Emoji, das sie auch dann unterscheidet, wenn die Farben es nicht tun. Gib eine Farbe als #RRGGBB ein.</value></data>
+  <data name="Notif_ColorsIntro" xml:space="preserve"><value>Eine Farbe pro Stufe, nicht pro Art. Jede Benachrichtigung trägt zusätzlich ihr eigenes Symbol, das sie auch dann unterscheidet, wenn die Farben es nicht tun. Gib eine Farbe als #RRGGBB ein.</value></data>
   <data name="Notif_LevelSuccess" xml:space="preserve"><value>Läuft gut</value></data>
   <data name="Notif_LevelInfo" xml:space="preserve"><value>Neutral</value></data>
   <data name="Notif_LevelWarning" xml:space="preserve"><value>Absichtlich gestoppt</value></data>

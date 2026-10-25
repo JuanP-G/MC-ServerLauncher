@@ -29,17 +29,24 @@ public class NotificationLookTests
     }
 
     [Fact]
-    public void EveryKindHasAMark()
+    public void EveryKindHasAHeadingInEveryLanguage()
     {
+        // "Notif_Head_" + kind is assembled at run time, so LocalizationTests cannot see these: it
+        // only scans string literals. The heading is the line that says what happened.
         foreach (var kind in Enum.GetValues<NotificationKind>())
-            Assert.False(string.IsNullOrWhiteSpace(NotificationCatalog.EmojiOf(kind)),
-                $"{kind} no tiene emoji, así que solo se distingue por el color");
+        {
+            var key = NotificationCatalog.HeadingKey(kind);
+            var text = Localizer.Get(key);
+
+            Assert.NotEqual(key, text);   // Localizer.Get returns the key itself when it is missing
+            Assert.False(string.IsNullOrWhiteSpace(text));
+        }
     }
 
     [Fact]
     public void TheMarksAreAllDifferent()
     {
-        var marks = NotificationCatalog.All.Select(e => e.Emoji).ToList();
+        var marks = NotificationCatalog.All.Select(e => e.Icon).ToList();
 
         // Two kinds sharing a mark is the same as neither having one: the whole point is that the
         // shape says which it is before the colour does.
@@ -243,7 +250,7 @@ public class NotificationLookTests
         {
             var xaml = File.ReadAllText(view);
             foreach (Match match in Regex.Matches(xaml,
-                "\"#(?:[0-9A-Fa-f]{2})?(3FB950|E3A82B|E05561|2F6FB0)\""))
+                "\"#(?:[0-9A-Fa-f]{2})?(3FB950|E3A82B|E05561|2F6FB0|6FB57F|D9B665|DB7A79|7BA6CE)\""))
                 offenders.Add($"{Path.GetFileName(view)}: {match.Value}");
         }
 

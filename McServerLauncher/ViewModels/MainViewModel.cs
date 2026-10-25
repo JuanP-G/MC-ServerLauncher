@@ -542,8 +542,9 @@ public partial class MainViewModel : ObservableObject
         // server, so there is no kind to look up and no per-server override to consult. Info and a
         // download arrow, said here rather than left to the default, so adding a level later cannot
         // silently move it.
-        ToastService.Shared.Notify(Localizer.Get("Notif_UpdateTitle"), message,
-            NotificationLevel.Info, "\U0001F4E5", NotificationPreferences.Global);
+        ToastService.Shared.Notify(Localizer.Get("Notif_Head_Update"), Localizer.Get("Notif_UpdateTitle"),
+            message, FluentIcons.Common.Symbol.ArrowDownload, NotificationLevel.Info,
+            NotificationPreferences.Global);
     }
 
     private bool CanUpdateNow => !IsUpdating;
