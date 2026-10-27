@@ -43,3 +43,29 @@ date,kind,name,visitors
 2026-10-23,locations,France,3
 2026-10-23,locations,United States,3
 2026-10-23,languages,(unknown),18
+2026-10-27,toprefs,(desconocido),28
+2026-10-27,toprefs,www.bing.com,4
+2026-10-27,toprefs,chatgpt.com,3
+2026-10-27,toprefs,Google,2
+2026-10-27,toprefs,bing.com,1
+2026-10-27,toprefs,www.ecosia.org,1
+2026-10-27,toprefs,www.youtube.com,1
+2026-10-27,toprefs,github.com/JuanP-G/MC-ServerLauncher,1
+2026-10-27,browsers,Chrome,31
+2026-10-27,browsers,Firefox,6
+2026-10-27,browsers,Safari,4
+2026-10-27,systems,Windows,32
+2026-10-27,systems,Linux,4
+2026-10-27,systems,macOS,3
+2026-10-27,systems,Android,1
+2026-10-27,systems,iOS,1
+2026-10-27,locations,France,9
+2026-10-27,locations,Spain,8
+2026-10-27,locations,Argentina,6
+2026-10-27,locations,Mexico,5
+2026-10-27,locations,United States,4
+2026-10-27,locations,Uzbekistan,4
+2026-10-27,locations,Brazil,3
+2026-10-27,locations,Hong Kong,1
+2026-10-27,locations,Senegal,1
+2026-10-27,languages,(unknown),41
