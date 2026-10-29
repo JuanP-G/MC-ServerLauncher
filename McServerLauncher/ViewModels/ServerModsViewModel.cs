@@ -51,7 +51,9 @@ public partial class ServerModsViewModel : ObservableObject
 {
     private readonly ServerConfig _config;
     private readonly ModrinthService _modrinthService = new();
-    private readonly ModDependencyService _dependencies;
+
+    /// <summary>Finds and downloads the libraries the content needs; see <see cref="ModDependencyInstaller"/>.</summary>
+    private readonly ModDependencyInstaller _dependencyInstaller;
 
     /// <summary>Builds the zip a server's owner hands to their players.</summary>
     private readonly ModpackExporter _exporter;
@@ -547,9 +549,10 @@ public partial class ServerModsViewModel : ObservableObject
     {
         _config = config;
         _pendingUpdates = new PendingUpdateStore(config);
-        // Shares the HTTP client and the store cache with everything else the panel asks for.
-        _dependencies = new ModDependencyService(_modrinthService);
         _index = new InstalledContentIndex(_modrinthService);
+        // Shares the HTTP client and the store cache with everything else the panel asks for.
+        _dependencyInstaller = new ModDependencyInstaller(config, _modrinthService,
+            new ModDependencyService(_modrinthService), _index);
         _exporter = new ModpackExporter(config, _index, _modrinthService, () => HowToPlaySteps);
         BuildTags();
         RebuildActiveFilters();
@@ -798,32 +801,9 @@ public partial class ServerModsViewModel : ObservableObject
     private async Task ScanForMissingDependenciesAsync(IEnumerable<string> sha1Hashes, CancellationToken ct)
     {
         ClearMissingDependencies();
-
-        // What each installed jar *is* — the update endpoint answers what could replace it, and the
-        // dependencies that matter are the ones declared by the file actually on disk.
-        var hashes = sha1Hashes.ToList();
-        await _index.LearnAsync(hashes, ct);
-        var roots = hashes.Select(_index.Known).OfType<VersionResult>().ToList();
-        if (roots.Count == 0) return;
-
-        var installedIds = roots.Select(r => r.ProjectId).ToList();
-
-        var plan = await _dependencies.ResolveMissingAsync(
-            roots, _config.Type, _config.GameVersion, installedIds, ct);
-
-        // And what the jars ask for themselves, which is how a mod whose Modrinth page lists no
-        // dependencies at all still turns out to need fabric-api.
-        var known = installedIds.Concat(plan.Install.Select(i => i.ProjectId)).ToList();
-
-        var providedHere = ModIdsProvidedIn(Path.Combine(_config.FolderPath, ContentFolder));
-
-        var fromJars = await _dependencies.ResolveByModIdAsync(
-            InstalledMods.SelectMany(m => ModDependencyService.DeclaredModIds(m.FilePath))
-                .Where(id => !providedHere.Contains(id)),
-            _config.Type, _config.GameVersion, known, ct);
-
-        ShowMissingDependencies(new ModDependencyService.Plan(
-            plan.Install.Concat(fromJars.Install).ToList(), plan.Unresolved));
+        var plan = await _dependencyInstaller.FindMissingAsync(sha1Hashes,
+            InstalledMods.Select(m => m.FilePath).ToList(), ct);
+        if (plan is not null) ShowMissingDependencies(plan);
     }
 
     /// <summary>Puts a resolved plan on screen. Separated from the scan so it can be shown a plan.</summary>
@@ -866,32 +846,7 @@ public partial class ServerModsViewModel : ObservableObject
     public async Task InstallMissingAsync(IEnumerable<string> ids, IProgress<string>? log = null,
         CancellationToken ct = default)
     {
-        var wanted = ids.ToList();
-        if (wanted.Count == 0) return;
-
-        log?.Report(Localizer.Get("Msg_ResolvingDependencies"));
-
-        var plan = await _dependencies.ResolveByModIdAsync(
-            wanted, _config.Type, _config.GameVersion,
-            await InstalledProjectIdsAsync(ct), ct);
-
-        if (plan.Install.Count == 0)
-        {
-            log?.Report(Localizer.Get("Msg_DepsNoneResolved"));
-            return;
-        }
-
-        var folder = Path.Combine(_config.FolderPath, ContentFolder);
-        Directory.CreateDirectory(folder);
-
-        foreach (var needed in plan.Install)
-        {
-            ct.ThrowIfCancellationRequested();
-            log?.Report(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label));
-            await DownloadDependencyAsync(needed, folder, ct);
-        }
-
-        log?.Report(string.Format(Localizer.Get("Msg_DepsInstalledFmt"), plan.Install.Count));
+        if (!await _dependencyInstaller.InstallByIdAsync(ids, log, ct)) return;
 
         // The list backs an ItemsControl, so it has to be rebuilt on the UI thread — and this is
         // called from the start flow, which may be anywhere by the time the downloads finish.
@@ -908,14 +863,9 @@ public partial class ServerModsViewModel : ObservableObject
         IsInstallingDependencies = true;
         try
         {
-            var folder = Path.Combine(_config.FolderPath, ContentFolder);
-            Directory.CreateDirectory(folder);
-
-            foreach (var needed in _missingDependencies)
-            {
-                UpdateStatus = string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label);
-                await DownloadDependencyAsync(needed, folder, ct);
-            }
+            // Inline, not posted: the line below must not be overtaken by a late "downloading".
+            await _dependencyInstaller.InstallListedAsync(_missingDependencies,
+                new InlineProgress<string>(message => UpdateStatus = message), ct);
 
             UpdateStatus = string.Format(Localizer.Get("Msg_DepsInstalledFmt"), _missingDependencies.Count);
             ClearMissingDependencies();
@@ -945,89 +895,11 @@ public partial class ServerModsViewModel : ObservableObject
     private Task<List<string>> InstalledProjectIdsAsync(CancellationToken ct, string? alsoFolder = null) =>
         _index.InstalledProjectIdsAsync(ContentManifest.FolderOf(_config), alsoFolder, ct);
 
-    /// <summary>
-    /// Installs the required dependencies of <paramref name="version"/> that are not there yet.
-    /// </summary>
-    /// <returns>
-    /// How many were installed, and any that could not be resolved at all. Zero and empty is the
-    /// normal answer for a plugin or for a library mod that depends on nothing.
-    /// </returns>
-    /// <remarks>
-    /// <paramref name="forPlayerPack"/> is true when <paramref name="folder"/> is the players' pack.
-    /// A library the server already has (Fabric API, nearly always) satisfies the mod and is not
-    /// downloaded again; one that is only in the pack does not satisfy a server mod, which is why
-    /// this goes one way.
-    /// </remarks>
-    private async Task<(int Installed, IReadOnlyList<string> Unresolved)> InstallDependenciesAsync(
-        VersionResult version, string jarPath, string folder, bool forPlayerPack = false,
-        CancellationToken ct = default)
-    {
-        var declared = ModDependencyService.DeclaredModIds(jarPath);
-        var hasModrinthDeps = version.Dependencies.Any(d =>
-            string.Equals(d.DependencyType, "required", StringComparison.OrdinalIgnoreCase));
-
-        // A plugin, or a mod that genuinely needs nothing: no request, and no hash of the folder.
-        if (!hasModrinthDeps && declared.Count == 0) return (0, Array.Empty<string>());
-
-        Notify(Localizer.Get("Msg_ResolvingDependencies"), failed: false, transient: true);
-
-        var installedIds = await InstalledProjectIdsAsync(ct, forPlayerPack ? folder : null);
-        var plan = await _dependencies.ResolveMissingAsync(
-            new[] { version }, _config.Type, _config.GameVersion, installedIds, ct);
-
-        var installed = 0;
-        foreach (var needed in plan.Install)
-        {
-            Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label),
-                failed: false, transient: true);
-            await DownloadDependencyAsync(needed, folder, ct);
-            installed++;
-        }
-
-        // Now what the jars themselves ask for, which Modrinth does not always know: Explorify lists
-        // no dependencies there and its own metadata requires fabric-api. Rounds rather than one
-        // pass, because a library pulled in this way can declare its own.
-        var known = new List<string>(installedIds);
-        known.AddRange(plan.Install.Select(i => i.ProjectId));
-        var pending = new List<string>(declared);
-
-        for (var round = 0; round < 3 && pending.Count > 0; round++)
-        {
-            // Read again each round: what was just downloaded may carry what the next one needs.
-            var providedHere = ModIdsProvidedIn(folder);
-            if (forPlayerPack) providedHere.UnionWith(ModIdsProvidedIn(ContentManifest.FolderOf(_config)));
-            pending = pending.Where(id => !providedHere.Contains(id)).ToList();
-            if (pending.Count == 0) break;
-
-            var extra = await _dependencies.ResolveByModIdAsync(
-                pending, _config.Type, _config.GameVersion, known, ct);
-            if (extra.Install.Count == 0) break;
-
-            pending = new List<string>();
-            foreach (var needed in extra.Install)
-            {
-                Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label),
-                    failed: false, transient: true);
-                var written = AtomicDownload.PathIn(folder, needed.File.Filename);
-                await DownloadDependencyAsync(needed, folder, ct);
-
-                known.Add(needed.ProjectId);
-                installed++;
-                pending.AddRange(ModDependencyService.DeclaredModIds(written));
-            }
-        }
-
-        return (installed, plan.Unresolved);
-    }
-
-    /// <summary>One dependency onto disk, verified, with the same path safety as any other install.</summary>
-    private Task DownloadDependencyAsync(ModDependencyService.Needed needed, string folder,
-        CancellationToken ct)
-    {
-        var path = AtomicDownload.PathIn(folder, needed.File.Filename);
-        return _modrinthService.DownloadModAsync(needed.File.Url, path,
-            needed.File.Hashes?.Sha512, needed.File.Hashes?.Sha1, ct: ct);
-    }
+    /// <summary>Installs what <paramref name="version"/> requires, telling the install banner as it goes.</summary>
+    private Task<(int Installed, IReadOnlyList<string> Unresolved)> InstallDependenciesAsync(
+        VersionResult version, string jarPath, string folder, bool forPlayerPack = false) =>
+        _dependencyInstaller.InstallForAsync(version, jarPath, folder, forPlayerPack,
+            new InlineProgress<string>(message => Notify(message, failed: false, transient: true)));
 
     /// <summary>
     /// Downloads the newer version flagged by <see cref="CheckUpdates"/> and replaces the old jar.
