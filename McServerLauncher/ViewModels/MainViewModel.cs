@@ -339,7 +339,7 @@ public partial class MainViewModel : ObservableObject
 
     private async Task AskRestartAsync()
     {
-        if (await MessageBox.ConfirmAsync(Localizer.Get("RestartNeeded"), Localizer.Get("Language")))
+        if (await Dialogs.Current.ConfirmAsync(Localizer.Get("RestartNeeded"), Localizer.Get("Language")))
             await RestartAppAsync();
     }
 
@@ -558,7 +558,7 @@ public partial class MainViewModel : ObservableObject
         {
             var blocker = _offer is { PackageUrl.Length: > 0 } ? SelfUpdater.Blocker : null;
             if (!string.IsNullOrEmpty(blocker))
-                await MessageBox.ShowAsync(blocker, Localizer.Get("Update_Now"), Owner);
+                await Dialogs.Current.ShowAsync(blocker, Localizer.Get("Update_Now"), Owner);
             OpenRelease();
             return;
         }
@@ -594,7 +594,7 @@ public partial class MainViewModel : ObservableObject
             // installer doesn't match the release's checksum), a release publishing no usable
             // SHA256SUMS.txt, or a missing or invalid publisher signature. Tell the user explicitly
             // instead of silently falling back to the browser.
-            await MessageBox.ShowAsync(ErrorMessages.Describe(ex), Localizer.Get("Update_Now"), Owner);
+            await Dialogs.Current.ShowAsync(ErrorMessages.Describe(ex), Localizer.Get("Update_Now"), Owner);
             OpenRelease();
         }
         catch
@@ -679,7 +679,7 @@ public partial class MainViewModel : ObservableObject
         var key = outcome == AtomicJsonFile.LoadOutcome.RecoveredFromBackup
             ? "Msg_ServersRecoveredFmt"
             : "Msg_ServersCorruptFmt";
-        await MessageBox.ShowAsync(
+        await Dialogs.Current.ShowAsync(
             string.Format(Localizer.Get(key), _storage.QuarantinedFilePath),
             Localizer.Get("Title_ServersDamaged"), owner);
     }
@@ -1049,60 +1049,71 @@ public partial class MainViewModel : ObservableObject
 
         await ForgetServerAsync(server);
 
-        // Not "&& port.HasValue". The Java port comes from server.properties, which can be
-        // unreadable or already gone, and hanging the whole block on it took the Bedrock tunnel
-        // down with it — even though that one is identified by Config.BedrockPort, which lives in
-        // servers.json and needs no file on disk. The result was an orphan UDP tunnel that nothing
-        // would ever clean up, sitting on a port the next server would be handed as free.
         if (dialog.DeleteTunnel)
+            await DeleteTunnelsOfRemovedServerAsync(port, bedrockPort);
+
+        if (dialog.DeleteFiles)
+            await DeleteFolderOfRemovedServerAsync(folder);
+    }
+
+    /// <summary>
+    /// Deletes the Playit tunnels a removed server had, and says so when one could not be found.
+    /// </summary>
+    /// <remarks>
+    /// Not "&amp;&amp; port.HasValue". The Java port comes from server.properties, which can be
+    /// unreadable or already gone, and hanging the whole block on it took the Bedrock tunnel
+    /// down with it — even though that one is identified by Config.BedrockPort, which lives in
+    /// servers.json and needs no file on disk. The result was an orphan UDP tunnel that nothing
+    /// would ever clean up, sitting on a port the next server would be handed as free.
+    /// </remarks>
+    private async Task DeleteTunnelsOfRemovedServerAsync(int? port, int? bedrockPort)
+    {
+        var key = await EnsurePlayitAgentAsync();
+        // The user didn't provide a key; the tunnel is not deleted.
+        if (key is null) return;
+
+        try
         {
-            var key = await EnsurePlayitAgentAsync();
-            try
-            {
-                var api = new PlayitApiService();
-                // Java is TCP, Bedrock is UDP. Naming the protocol is what keeps this from
-                // deleting somebody else's tunnel that happens to share the port number.
-                bool? javaDeleted = null;
-                if (key is not null && port.HasValue)
-                    javaDeleted = await api.DeleteTunnelForPortAsync(key, port.Value, udp: false);
+            var api = new PlayitApiService();
+            // Java is TCP, Bedrock is UDP. Naming the protocol is what keeps this from
+            // deleting somebody else's tunnel that happens to share the port number.
+            bool? javaDeleted = null;
+            if (port.HasValue)
+                javaDeleted = await api.DeleteTunnelForPortAsync(key, port.Value, udp: false);
 
-                if (key is not null && PlayitApiService.ShouldDeleteBedrockTunnel(dialog.DeleteTunnel,
-                    bedrockPort))
-                    await api.DeleteTunnelForPortAsync(key, bedrockPort!.Value, udp: true);
+            if (PlayitApiService.ShouldDeleteBedrockTunnel(userAskedToDelete: true, bedrockPort))
+                await api.DeleteTunnelForPortAsync(key, bedrockPort!.Value, udp: true);
 
-                if (key is null)
-                {
-                    // The user didn't provide a key; the tunnel is not deleted.
-                }
-                else if (!port.HasValue)
-                    await MessageBox.ShowAsync(
-                        Localizer.Get("Msg_JavaTunnelPortUnknown"),
-                        Localizer.Get("Title_DeleteTunnel"));
-                else if (javaDeleted == false)
-                    await MessageBox.ShowAsync(
-                        string.Format(Localizer.Get("Msg_NoTunnelForPort"), port),
-                        Localizer.Get("Title_DeleteTunnel"));
-            }
-            catch (Exception ex)
-            {
-                await MessageBox.ShowAsync(
-                    string.Format(Localizer.Get("Msg_TunnelDeleteError"), ErrorMessages.Describe(ex)),
+            if (!port.HasValue)
+                await Dialogs.Current.ShowAsync(
+                    Localizer.Get("Msg_JavaTunnelPortUnknown"),
                     Localizer.Get("Title_DeleteTunnel"));
-            }
+            else if (javaDeleted == false)
+                await Dialogs.Current.ShowAsync(
+                    string.Format(Localizer.Get("Msg_NoTunnelForPort"), port),
+                    Localizer.Get("Title_DeleteTunnel"));
         }
-
-        if (dialog.DeleteFiles && Directory.Exists(folder))
+        catch (Exception ex)
         {
-            try
-            {
-                Directory.Delete(folder, recursive: true);
-            }
-            catch (Exception ex)
-            {
-                await MessageBox.ShowAsync(
-                    string.Format(Localizer.Get("Msg_FilesDeleteError"), ErrorMessages.Describe(ex)),
-                    Localizer.Get("Title_DeleteFiles"));
-            }
+            await Dialogs.Current.ShowAsync(
+                string.Format(Localizer.Get("Msg_TunnelDeleteError"), ErrorMessages.Describe(ex)),
+                Localizer.Get("Title_DeleteTunnel"));
+        }
+    }
+
+    /// <summary>Deletes a removed server's folder, telling the user if it could not be.</summary>
+    private static async Task DeleteFolderOfRemovedServerAsync(string folder)
+    {
+        if (!Directory.Exists(folder)) return;
+        try
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+        catch (Exception ex)
+        {
+            await Dialogs.Current.ShowAsync(
+                string.Format(Localizer.Get("Msg_FilesDeleteError"), ErrorMessages.Describe(ex)),
+                Localizer.Get("Title_DeleteFiles"));
         }
     }
 

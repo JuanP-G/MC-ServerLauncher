@@ -258,7 +258,7 @@ public partial class ServerBackupsViewModel : ObservableObject
     {
         if (item is null) return;
 
-        var confirmed = await MessageBox.ConfirmAsync(
+        var confirmed = await Dialogs.Current.ConfirmAsync(
             string.Format(Localizer.Get("Backup_ConfirmRestoreFmt"), item.FileName),
             Localizer.Get("Backup_RestoreTitle"));
         if (!confirmed) return;
@@ -295,7 +295,7 @@ public partial class ServerBackupsViewModel : ObservableObject
     {
         if (item is null) return;
 
-        var confirmed = await MessageBox.ConfirmAsync(
+        var confirmed = await Dialogs.Current.ConfirmAsync(
             string.Format(Localizer.Get("Backup_ConfirmDeleteFmt"), item.FileName),
             Localizer.Get("Tip_Delete"));
         if (!confirmed) return;

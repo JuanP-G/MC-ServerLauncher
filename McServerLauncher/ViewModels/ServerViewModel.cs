@@ -1197,7 +1197,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     {
         if (BlueMapConsent.FindConfig(Config.FolderPath) is not { } path) return;
 
-        if (!await MessageBox.ConfirmAsync(Localizer.Get("BlueMap_ConsentText"), "BlueMap"))
+        if (!await Dialogs.Current.ConfirmAsync(Localizer.Get("BlueMap_ConsentText"), "BlueMap"))
         {
             OnConsoleLine(Localizer.Get("Msg_BlueMapDeclined"));
             return;
@@ -1809,7 +1809,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             return false;
         }
 
-        var accepted = await MessageBox.ConfirmAsync(
+        var accepted = await Dialogs.Current.ConfirmAsync(
             string.Format(Localizer.Get("Msg_BukkitPathRenameConfirm"),
                 bad, Path.GetFileName(Config.FolderPath), Path.GetFileName(suggestion)),
             Localizer.Get("Msg_BukkitPathRenameTitle"));
@@ -1870,7 +1870,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         var question = string.Format(Localizer.Get("Msg_PortBusyConfirm"), port, procDesc);
         if (isJava) question += Environment.NewLine + Environment.NewLine + Localizer.Get("Msg_PortBusyJavaNote");
 
-        var accepted = await MessageBox.ConfirmAsync(question, Localizer.Get("Msg_PortBusyTitle"));
+        var accepted = await Dialogs.Current.ConfirmAsync(question, Localizer.Get("Msg_PortBusyTitle"));
 
         if (!accepted)
         {

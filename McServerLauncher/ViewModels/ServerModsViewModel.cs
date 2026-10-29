@@ -1315,7 +1315,7 @@ public partial class ServerModsViewModel : ObservableObject
 
         // Asked first, like deleting a backup: the file is gone for good, not to the recycle bin,
         // and the button sits one row from the switch that only disables a mod.
-        if (!await MessageBox.ConfirmAsync(
+        if (!await Dialogs.Current.ConfirmAsync(
                 string.Format(Localizer.Get("Mods_ConfirmDeleteFmt"), mod.FileName), ContentTabTitle))
             return;
 
@@ -1326,7 +1326,7 @@ public partial class ServerModsViewModel : ObservableObject
         catch (Exception ex)
         {
             // Typically the file is locked because the server is running.
-            await MessageBox.ShowAsync(
+            await Dialogs.Current.ShowAsync(
                 string.Format(Localizer.Get("Msg_ModDeleteError"),
                     ErrorMessages.Describe(ex)), ContentTabTitle);
         }
@@ -1369,7 +1369,7 @@ public partial class ServerModsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await MessageBox.ShowAsync(
+            await Dialogs.Current.ShowAsync(
                 string.Format(Localizer.Get("Msg_ExportError"),
                     ErrorMessages.Describe(ex)), Localizer.Get("Export_Modpack"));
         }
@@ -1668,7 +1668,7 @@ public partial class ServerModsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await MessageBox.ShowAsync(
+            await Dialogs.Current.ShowAsync(
                 string.Format(Localizer.Get("Msg_ExportError"),
                     ErrorMessages.Describe(ex)), Localizer.Get("Export_Modpack"));
         }

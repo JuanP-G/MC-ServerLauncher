@@ -535,7 +535,7 @@ public partial class TunnelsViewModel : ObservableObject
     internal async Task DeleteAsync(string tunnelId, string name)
     {
         var owner = _owner();
-        if (!await MessageBox.ConfirmAsync(
+        if (!await Dialogs.Current.ConfirmAsync(
                 string.Format(Localizer.Get("Tun_DeleteConfirmFmt"), name),
                 Localizer.Get("Title_DeleteTunnel"), owner))
             return;
