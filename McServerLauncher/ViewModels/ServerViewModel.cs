@@ -48,6 +48,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
 
     /// <summary>What an owner can do to the players: op, ban, kick, whitelist.</summary>
     private readonly PlayerAdmin _admin;
+
+    /// <summary>Finds the public address of this server's Playit tunnel, and makes the tunnel.</summary>
+    private readonly TunnelAddressTracker _tunnel;
     private readonly DispatcherTimer _playitTimer;
     private readonly DispatcherTimer _autoBackupTimer;
 
@@ -439,6 +442,13 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
 
         _admin = new PlayerAdmin(this, _properties, _whitelist, _players);
 
+        _tunnel = new TunnelAddressTracker(config, _properties, _playitApi, new TunnelHost(
+            State: () => TunnelState,
+            SetState: state => TunnelState = state,
+            SetAddress: address => TunnelAddress = address,
+            Say: line => OnConsoleLine(line),
+            RunOnUi: RunOnUi));
+
         _idle = new IdleShutdownController(new IdleHost(
             Minutes: () => Config.IdleShutdownMinutes,
             IsRunning: () => State == ServerState.Running,
@@ -566,7 +576,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         // refreshed it before we subscribed), in which case no change event will fire.
         RefreshPlayit();
 
-        _ = RefreshTunnelAddressAsync();
+        _ = _tunnel.RefreshAsync();
 
         // Crossplay is a remembered setting, so it gets checked rather than assumed: the tunnel's
         // public port can change, and Geyser has to be re-pointed at it or the server quietly stops
@@ -637,157 +647,33 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         // Every ~30 s (10 ticks of 3 s; ~5 min while in the tray) refresh the tunnel address.
         if (++_playitTickCounter % 10 == 0)
         {
-            _ = RefreshTunnelAddressAsync();
+            _ = _tunnel.RefreshAsync();
             _ = RefreshBedrockAddressAsync();   // no-op unless this server does crossplay
         }
     }
 
-    /// <summary>
-    /// Gets the tunnel address from the playit API, matching by port and protocol.
-    /// </summary>
-    /// <remarks>
-    /// Every path out of here sets a state. It used to return empty-handed in three different
-    /// situations and say nothing about any of them, which is the whole of the "the address takes
-    /// for ever to appear" report: most of the time it had appeared on playit's side and the app
-    /// was simply not going to ask again for another half minute.
-    /// </remarks>
-    /// <param name="fresh">Skips the shared tunnel cache. Used by the burst after a tunnel is made.</param>
-    private async Task RefreshTunnelAddressAsync(bool fresh = false)
-    {
-        try
-        {
-            var port = _properties.GetServerPort(Config.PropertiesPath);
-            if (!port.HasValue)
-            {
-                // No server.properties yet, so no port to match a tunnel against. There is nothing
-                // to wait for, which is what the user needs told — not another blank box.
-                RunOnUi(() => TunnelState = TunnelAddressState.NoTunnel);
-                return;
-            }
-            if (!Config.PlayitEnabled) return;
-
-            // Asked as a list, not for one tunnel, so "could not ask" and "the account has no tunnel
-            // on this port" stay apart. The second clears the address: kept on screen after a port
-            // move, the old one was as often as not another server's tunnel.
-            var tunnels = await _playitApi.TryGetTunnelsAsync(fresh);
-            if (TunnelAddressSync.Java(tunnels, port.Value) is not { } found)
-            {
-                RunOnUi(() => TunnelState = TunnelAddressState.Failed);
-                return;
-            }
-
-            RunOnUi(() =>
-            {
-                // A tunnel still waiting for its address keeps nothing stale either: it is new.
-                TunnelAddress = found.Address;
-                TunnelState = found.State;
-            });
-        }
-        catch
-        {
-            // Best-effort: if the API fails, the saved address is kept — but no longer in silence.
-            RunOnUi(() => TunnelState = TunnelAddressState.Failed);
-        }
-    }
-
-    /// <summary>
-    /// Looks the address up a few times with a growing wait, then leaves it to the ordinary refresh.
-    /// </summary>
-    /// <remarks>
-    /// The Bedrock side has had this since crossplay was written; Java never did, and waited for the
-    /// 30-second timer instead. With an arbitrary phase that is anything up to a minute of empty
-    /// box — five with the window in the tray — starting from the moment the console says the
-    /// address is seconds away.
-    /// </remarks>
-    private async Task PollForTunnelAddressAsync()
-    {
-        foreach (var seconds in AddressRetry.DelaysSeconds)
-        {
-            if (TunnelState == TunnelAddressState.Ready) return;
-            await Task.Delay(TimeSpan.FromSeconds(seconds));
-
-            // fresh: the tunnel list is shared behind a 25-second cache, and without this most of
-            // these would be answered by the empty list the first one stored.
-            await RefreshTunnelAddressAsync(fresh: true);
-        }
-    }
-
-    /// <summary>
-    /// The tunnel data-plane state as the UI should see it: our embedded agent when the user has
-    /// connected their account (the model this app uses), otherwise the legacy system service.
-    /// </summary>
-    private PlayitState EffectivePlayitState => _agent.HasSecret
-        ? _agent.State switch
-        {
-            AgentRunState.Running => PlayitState.Running,
-            AgentRunState.Downloading or AgentRunState.Starting => PlayitState.Starting,
-            _ => PlayitState.Stopped
-        }
-        : _playit.State;
-
     /// <summary>Recomputes the tunnel status/signal from whichever data-plane is in play.</summary>
     private void RefreshPlayit()
     {
-        PlayitState = EffectivePlayitState;
-        UpdatePlayitStatusText();
+        PlayitState = PlayitStatus.Effective(_agent.HasSecret, _agent.State, _playit.State);
+        PlayitStatusText = PlayitStatus.Text(_agent.HasSecret, _agent.State, PlayitState, _playit.IsInstalled);
         UpdateSignal();
     }
 
-    private void UpdatePlayitStatusText()
-    {
-        // Embedded-agent model: report what the agent is actually doing (this is what forwards
-        // traffic — the system "service" is irrelevant here and mustn't say "not installed").
-        if (_agent.HasSecret)
-        {
-            PlayitStatusText = _agent.State switch
-            {
-                AgentRunState.Running => Localizer.Get("Playit_Active"),
-                AgentRunState.Downloading => Localizer.Get("Pk_Agent_Downloading"),
-                AgentRunState.Starting => Localizer.Get("Status_Starting"),
-                AgentRunState.Failed => Localizer.Get("Playit_AgentFailed"),
-                AgentRunState.Unsupported => Localizer.Get("Pk_Agent_Unsupported"),
-                _ => Localizer.Get("Playit_AgentStopped")
-            };
-            return;
-        }
-
-        PlayitStatusText = PlayitState switch
-        {
-            PlayitState.Running => Localizer.Get(_playit.IsInstalled ? "Playit_ActiveBg" : "Playit_Active"),
-            PlayitState.Starting => Localizer.Get("Status_Starting"),
-            _ => Localizer.Get(_playit.IsInstalled ? "Playit_Stopped" : "Playit_NotInstalled")
-        };
-    }
-
-    /// <summary>
-    /// Computes the "signal" (real reachability): green only if the server is running and, when
-    /// using Playit, the tunnel is active. If running without a tunnel, red + warning.
-    /// </summary>
+    /// <summary>Shows how reachable the server is: see <see cref="ReachabilitySignal"/>.</summary>
     private void UpdateSignal()
     {
-        var running = State == ServerState.Running;
-        var transitioning = State is ServerState.Starting or ServerState.Stopping;
+        var signal = ReachabilitySignal.For(State, Config.PlayitEnabled, PlayitState);
 
-        if (!running)
+        SignalBrush = signal.Kind switch
         {
-            SignalBrush = transitioning ? BrushAmber : BrushGray;
-            SignalHint = Localizer.Get(transitioning ? "Signal_Transition" : "Signal_Off");
-            ShowTunnelWarning = false;
-            return;
-        }
-
-        if (Config.PlayitEnabled && PlayitState != PlayitState.Running)
-        {
-            SignalBrush = BrushRed;
-            SignalHint = Localizer.Get("Signal_NoTunnel");
-            ShowTunnelWarning = true;
-        }
-        else
-        {
-            SignalBrush = BrushSignalGreen;
-            SignalHint = Localizer.Get("Signal_Accessible");
-            ShowTunnelWarning = false;
-        }
+            SignalKind.Transition => BrushAmber,
+            SignalKind.Off => BrushGray,
+            SignalKind.NoTunnel => BrushRed,
+            _ => BrushSignalGreen
+        };
+        SignalHint = Localizer.Get(signal.HintKey);
+        ShowTunnelWarning = signal.ShowTunnelWarning;
     }
 
     public bool IsRunning => State is ServerState.Running or ServerState.Starting or ServerState.Stopping;
@@ -1528,7 +1414,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
     /// <summary>Re-reads this server's tunnel addresses now, instead of waiting for the 30 s timer.</summary>
     public async Task RefreshTunnelInfoAsync()
     {
-        await RefreshTunnelAddressAsync();
+        await _tunnel.RefreshAsync();
         await RefreshBedrockAddressAsync();   // no-op unless this server does crossplay
     }
 
@@ -1565,35 +1451,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
     /// Creates (if it doesn't exist) the Playit tunnel for this server's port, using the write
     /// key. Messages are shown in the server's console.
     /// </summary>
-    public async Task CreateTunnelAsync(string writeKey)
-    {
-        var port = _properties.GetServerPort(Config.PropertiesPath);
-        if (!port.HasValue)
-        {
-            OnConsoleLine(Localizer.Get("Msg_PortUnknown"));
-            return;
-        }
-
-        try
-        {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_CreatingTunnel"), port));
-            var created = await _playitApi.EnsureMinecraftTunnelAsync(writeKey, Name, port.Value);
-            OnConsoleLine(created
-                ? Localizer.Get("Msg_TunnelCreated")
-                : string.Format(Localizer.Get("Msg_TunnelExists"), port));
-
-            // The tunnel was made seconds ago, so this first lookup almost always comes back with
-            // no address — which is now shown as "waiting" rather than as nothing at all — and the
-            // burst picks it up as soon as playit publishes it.
-            await RefreshTunnelAddressAsync(fresh: true);
-            _ = PollForTunnelAddressAsync();
-        }
-        catch (Exception ex)
-        {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ErrorMessages.Describe(ex)));
-        }
-    }
-
+    public Task CreateTunnelAsync(string writeKey) => _tunnel.CreateAsync(writeKey, Name);
 
     private void RefreshPort()
     {
