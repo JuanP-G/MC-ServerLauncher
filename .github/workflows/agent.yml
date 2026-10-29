@@ -20,6 +20,9 @@ on:
       - '.github/workflows/agent.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   reproducible:
     name: The jar rebuilds to the committed bytes
