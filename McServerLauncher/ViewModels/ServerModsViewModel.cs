@@ -281,6 +281,9 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>Asks the store for pages and keeps track of which search counts; see <see cref="StoreBrowser"/>.</summary>
     private readonly StoreBrowser _browser;
 
+    /// <summary>Works out what the clean-up panel lists; see <see cref="CleanupScanner"/>.</summary>
+    private readonly CleanupScanner _cleanupScanner;
+
     /// <summary>
     /// The results, flat. Replaced in one go rather than emptied and refilled: a list that sits
     /// empty across a network round trip makes the whole panel blink out and back.
@@ -557,6 +560,7 @@ public partial class ServerModsViewModel : ObservableObject
         _updater = new ModUpdater(config, _modrinthService, _index, _pendingUpdates, CarryDisabledDate);
         _installer = new ModInstaller(config, _modrinthService, _index, _dependencyInstaller);
         _browser = new StoreBrowser(config, _modrinthService);
+        _cleanupScanner = new CleanupScanner(config, _modrinthService, _index, () => Ledger);
         _exporter = new ModpackExporter(config, _index, _modrinthService, () => HowToPlaySteps);
         BuildTags();
         RebuildActiveFilters();
