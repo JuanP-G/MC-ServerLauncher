@@ -18,7 +18,7 @@ namespace McServerLauncher.ViewModels;
 /// Represents a server in the UI: its configuration, live state, embedded
 /// console, command sending and Playit integration.
 /// </summary>
-public partial class ServerViewModel : ObservableObject, IBackupHost
+public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdminHost
 {
     private const int MaxConsoleLines = 2000;
     private const int ConsoleTrimBlock = 200;
@@ -45,6 +45,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
     /// <summary>The checks, and the offers to fix them, that come before the JVM is launched.</summary>
     private readonly StartPreflight _preflight;
+
+    /// <summary>What an owner can do to the players: op, ban, kick, whitelist.</summary>
+    private readonly PlayerAdmin _admin;
     private readonly DispatcherTimer _playitTimer;
     private readonly DispatcherTimer _autoBackupTimer;
 
@@ -433,6 +436,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             // isAutoRestart: nobody is sitting in front of the app to answer a dialog.
             StartServer: () => _ = StartInternalAsync(isAutoRestart: true),
             RunOnUi: RunOnUi), _properties, _whitelist, _players);
+
+        _admin = new PlayerAdmin(this, _properties, _whitelist, _players);
 
         _idle = new IdleShutdownController(new IdleHost(
             Minutes: () => Config.IdleShutdownMinutes,
@@ -908,7 +913,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
             _wake.Start();
-            _savedWhileRunning.Clear();   // the next start reads the file as it is
+            _admin.ServerStopped();   // the next start reads the file as it is
 
             // However it stopped — a crash, "stop" typed in the console. A stop the app asked for
             // notes the world itself, holding it; this one waits until nothing else is reading it.
@@ -1633,128 +1638,23 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     [RelayCommand]
     private async Task AddToWhitelist()
     {
-        var name = ValidPlayerNameOrWarn(NewWhitelistName);
-        if (name is null) return;
-
-        try
-        {
-            if (_process.IsRunning)
-            {
-                OnConsoleLine($"> whitelist add {name}", ConsoleLineKind.Command);
-                _process.SendCommand($"whitelist add {name}");
-                await Task.Delay(500);
-            }
-            else
-            {
-                var props = _properties.Read(Config.PropertiesPath);
-                var online = ServerPropertiesService.GetBool(props, "online-mode", fallback: true);
-                await _whitelist.AddAsync(Config.FolderPath, name, online);
-            }
+        if (await _admin.AddToWhitelistAsync(NewWhitelistName))
             NewWhitelistName = string.Empty;
-            RefreshWhitelist();
-
-            // Somebody adding a name means they want a list that counts. Before, the name went in
-            // and nothing changed until they also found the switch in Configurar.
-            if (!WhitelistEnabled) await SetWhitelistAsync(true);
-        }
-        catch (Exception ex)
-        {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ErrorMessages.Describe(ex)));
-        }
     }
 
     /// <summary>The switch on the whitelist card: turns it off without emptying it, or back on.</summary>
     [RelayCommand]
-    private Task ToggleWhitelist() => SetWhitelistAsync(!WhitelistEnabled);
-
-    /// <summary>What the settings page saved into server.properties while the server ran.</summary>
-    private readonly PropertiesSavedWhileRunning _savedWhileRunning = new();
+    private Task ToggleWhitelist() => _admin.SetWhitelistAsync(!WhitelistEnabled);
 
     /// <summary>
-    /// The settings page wrote <paramref name="changes"/> into server.properties. With the server
-    /// running they are remembered, and a whitelist switch among them goes to the server as a command.
+    /// The settings page wrote <paramref name="changes"/> into server.properties; see
+    /// <see cref="PlayerAdmin.FollowSavedPropertiesAsync"/>.
     /// </summary>
-    /// <remarks>
-    /// Written to the file, a whitelist switch only took effect on the next start, while the Players
-    /// tab's switch takes effect at once: the same setting behaved two ways. And the command makes the
-    /// server rewrite the whole file from what it loaded, which is why the rest is remembered — see
-    /// <see cref="PropertiesSavedWhileRunning"/>.
-    /// </remarks>
-    internal async Task FollowSavedPropertiesAsync(IReadOnlyDictionary<string, string> changes)
-    {
-        if (!_process.IsRunning || changes.Count == 0) return;
-
-        _savedWhileRunning.Note(changes);
-        if (changes.ContainsKey("white-list"))
-            await SetWhitelistAsync(ServerPropertiesService.GetBool(changes, "white-list", fallback: false));
-    }
-
-    /// <summary>Switches the whitelist on or off, keeping whoever is on it.</summary>
-    /// <remarks>
-    /// While the server runs, through its own command, which applies it at once and writes
-    /// server.properties itself — from the values it loaded at start, so whatever was saved since is
-    /// written again after it. While it is stopped, straight into the file. whitelist.json is never
-    /// touched, so switching it off and on again gives back the same list.
-    /// </remarks>
-    private async Task SetWhitelistAsync(bool on)
-    {
-        try
-        {
-            if (_process.IsRunning)
-            {
-                var command = on ? "whitelist on" : "whitelist off";
-                OnConsoleLine("> " + command, ConsoleLineKind.Command);
-                _process.SendCommand(command);
-                await Task.Delay(500);
-
-                if (_savedWhileRunning.ToRestore() is { Count: > 0 } owed)
-                    _properties.Update(Config.PropertiesPath, owed);
-            }
-            else
-            {
-                _properties.Update(Config.PropertiesPath,
-                    new Dictionary<string, string> { ["white-list"] = on ? "true" : "false" });
-            }
-            RefreshWhitelist();
-
-            // The server writes the file when it gets to it; what was asked is what it will be.
-            if (_process.IsRunning) WhitelistEnabled = on;
-        }
-        catch (Exception ex)
-        {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ErrorMessages.Describe(ex)));
-        }
-        finally
-        {
-            // The switch flips itself when clicked; this puts it back on the real state if that failed.
-            OnPropertyChanged(nameof(WhitelistEnabled));
-        }
-    }
+    internal Task FollowSavedPropertiesAsync(IReadOnlyDictionary<string, string> changes) =>
+        _admin.FollowSavedPropertiesAsync(changes);
 
     [RelayCommand]
-    private async Task RemoveFromWhitelist(string? name)
-    {
-        if ((name = ValidPlayerNameOrWarn(name)) is null) return;
-
-        try
-        {
-            if (_process.IsRunning)
-            {
-                OnConsoleLine($"> whitelist remove {name}", ConsoleLineKind.Command);
-                _process.SendCommand($"whitelist remove {name}");
-                await Task.Delay(500);
-            }
-            else
-            {
-                _whitelist.Remove(Config.FolderPath, name);
-            }
-            RefreshWhitelist();
-        }
-        catch (Exception ex)
-        {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_WhitelistError"), ErrorMessages.Describe(ex)));
-        }
-    }
+    private Task RemoveFromWhitelist(string? name) => _admin.RemoveFromWhitelistAsync(name);
 
     // The icon players see in the server list is server-icon.png (root, 64x64).
     private void LoadIcon() => ServerIcon = ServerIconImage.Load(Config.FolderPath);
@@ -1778,89 +1678,20 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private static void ReplaceAll(BulkObservableCollection<string> target, IEnumerable<string> items) =>
         target.ReplaceAll(items);
 
-    private bool EnsureRunning(string action)
-    {
-        if (_process.IsRunning) return true;
-        OnConsoleLine(string.Format(Localizer.Get("Msg_NeedRunningFor"), action));
-        return false;
-    }
-
-    private async Task PlayerCommandAsync(string command)
-    {
-        OnConsoleLine("> " + command, ConsoleLineKind.Command);
-        _process.SendCommand(command);
-        await Task.Delay(450);
-        RefreshPlayers();
-    }
-
-    /// <summary>
-    /// Validates a player name before it's embedded in a console command sent over stdin or
-    /// written to the whitelist/ban files. Only real Minecraft names pass
-    /// (letters/digits/underscore, 1-16 chars — the same rule <see cref="PlayerNames"/>
-    /// holds for join/leave detection): this both blocks command injection (a "\n" would add a
-    /// second console command) and confusing extra arguments (a name with spaces would turn
-    /// "ban a b" into banning "a" with reason "b"). Returns the trimmed name, or null after
-    /// logging a clear message when the input isn't a valid name.
-    /// </summary>
-    private string? ValidPlayerNameOrWarn(string? name)
-    {
-        name = name?.Trim();
-        if (string.IsNullOrEmpty(name)) return null;
-        if (PlayerNames.IsValid(name)) return name;
-
-        // Show what was rejected, defanged for display (no line breaks, capped length).
-        var shown = name.Replace("\r", "").Replace("\n", " ");
-        if (shown.Length > 32) shown = shown[..32] + "…";
-        OnConsoleLine(string.Format(Localizer.Get("Msg_InvalidPlayerNameFmt"), shown));
-        return null;
-    }
+    [RelayCommand]
+    private Task OpPlayer(string? name) => _admin.OpAsync(name);
 
     [RelayCommand]
-    private async Task OpPlayer(string? name)
-    {
-        if ((name = ValidPlayerNameOrWarn(name)) is null
-            || !EnsureRunning(Localizer.Get("Action_Op"))) return;
-        await PlayerCommandAsync($"op {name}");
-    }
+    private Task DeopPlayer(string? name) => _admin.DeopAsync(name);
 
     [RelayCommand]
-    private async Task DeopPlayer(string? name)
-    {
-        if ((name = ValidPlayerNameOrWarn(name)) is null
-            || !EnsureRunning(Localizer.Get("Action_Deop"))) return;
-        await PlayerCommandAsync($"deop {name}");
-    }
+    private Task KickPlayer(string? name) => _admin.KickAsync(name);
 
     [RelayCommand]
-    private async Task KickPlayer(string? name)
-    {
-        if ((name = ValidPlayerNameOrWarn(name)) is null
-            || !EnsureRunning(Localizer.Get("Action_Kick"))) return;
-        await PlayerCommandAsync($"kick {name}");
-    }
+    private Task BanPlayer(string? name) => _admin.BanAsync(name);
 
     [RelayCommand]
-    private async Task BanPlayer(string? name)
-    {
-        if ((name = ValidPlayerNameOrWarn(name)) is null
-            || !EnsureRunning(Localizer.Get("Action_Ban"))) return;
-        await PlayerCommandAsync($"ban {name}");
-    }
-
-    [RelayCommand]
-    private async Task PardonPlayer(string? name)
-    {
-        if ((name = ValidPlayerNameOrWarn(name)) is null) return;
-        if (_process.IsRunning)
-        {
-            await PlayerCommandAsync($"pardon {name}");
-        }
-        else
-        {
-            _players.Unban(Config.FolderPath, name);
-            RefreshPlayers();
-        }
-    }
+    private Task PardonPlayer(string? name) => _admin.PardonAsync(name);
 
     private void UpdateStats()
     {
@@ -1930,6 +1761,17 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         await BackupCoordinator.ShutdownAsync(stop);
         await FinishMemoryRunAsync(SessionEnd.AppClosed);  // the Stopped event may never get to run
     }
+
+    ServerConfig IPlayerAdminHost.Config => Config;
+    bool IPlayerAdminHost.IsProcessRunning => _process.IsRunning;
+    bool IPlayerAdminHost.WhitelistEnabled => WhitelistEnabled;
+    void IPlayerAdminHost.SendToConsole(string command) => _process.SendCommand(command);
+    void IPlayerAdminHost.Echo(string command) => OnConsoleLine("> " + command, ConsoleLineKind.Command);
+    void IPlayerAdminHost.Say(string line) => OnConsoleLine(line);
+    void IPlayerAdminHost.RefreshWhitelist() => RefreshWhitelist();
+    void IPlayerAdminHost.RefreshPlayers() => RefreshPlayers();
+    void IPlayerAdminHost.ShowWhitelistEnabled(bool on) => WhitelistEnabled = on;
+    void IPlayerAdminHost.ResyncWhitelistSwitch() => OnPropertyChanged(nameof(WhitelistEnabled));
 
     ServerConfig IBackupHost.Config => Config;
     bool IBackupHost.IsProcessRunning => _process.IsRunning;
