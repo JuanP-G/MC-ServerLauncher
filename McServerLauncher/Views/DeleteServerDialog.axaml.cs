@@ -22,7 +22,7 @@ public partial class DeleteServerDialog : Window
     public DeleteServerDialog(string serverName, string folderPath)
     {
         InitializeComponent();
-        MessageText.Text = string.Format(Localizer.Get("Del_ConfirmFmt"), serverName);
+        MessageText.Text = Localizer.Format("Del_ConfirmFmt", serverName);
         FolderText.Text = $"{Localizer.Get("Ae_Folder")}: {folderPath}";
     }
 

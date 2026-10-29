@@ -347,12 +347,12 @@ public partial class JavaService
         var match = installed.FirstOrDefault(i => IsCompatible(i.Major, requiredMajor));
         if (match is not null)
         {
-            log?.Report(string.Format(Localizer.Get("Msg_JavaCompatibleFound"), match.Major));
+            log?.Report(Localizer.Format("Msg_JavaCompatibleFound", match.Major));
             return match.Path;
         }
 
         var download = DownloadableMajor(requiredMajor);
-        log?.Report(string.Format(Localizer.Get("Msg_JavaNotCompatibleDownloading"), download));
+        log?.Report(Localizer.Format("Msg_JavaNotCompatibleDownloading", download));
         return await DownloadAdoptiumAsync(download, log, ct);
     }
 
@@ -440,7 +440,7 @@ public partial class JavaService
         // Make sure the java binary is executable on Unix (tar usually preserves this, but be safe).
         FileModes.TryMakeExecutable(javaExe);
 
-        log?.Report(string.Format(Localizer.Get("Msg_JavaInstalled"), major));
+        log?.Report(Localizer.Format("Msg_JavaInstalled", major));
         return javaExe;
     }
 
@@ -473,7 +473,7 @@ public partial class JavaService
             if (!string.IsNullOrEmpty(link)) break;
         }
         if (string.IsNullOrEmpty(link))
-            throw new UserFacingException(string.Format(Localizer.Get("Msg_JavaNoDownloadFmt"),
+            throw new UserFacingException(Localizer.Format("Msg_JavaNoDownloadFmt",
                 major, $"{os}/{string.Join("/", archs)}"));
 
         // No checksum, no Java. This archive is extracted and then EXECUTED to run the user's

@@ -64,7 +64,7 @@ public partial class ConsoleKindFilter : ObservableObject
     partial void OnCountChanged(int value) => OnPropertyChanged(nameof(Tip));
 
     /// <summary>The tooltip: what this is, and how much of it there is.</summary>
-    public string Tip => string.Format(Localizer.Get("Console_KindTipFmt"), Label, Count);
+    public string Tip => Localizer.Format("Console_KindTipFmt", Label, Count);
 
     /// <summary>
     /// Whether a line survives the search box and the category switches.

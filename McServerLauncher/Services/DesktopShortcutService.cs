@@ -343,7 +343,7 @@ public static class DesktopShortcutService
 
         if (!p.HasExited || p.ExitCode != 0)
             throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_ShortcutFailedFmt"), error.Trim()));
+                Localizer.Format("Msg_ShortcutFailedFmt", error.Trim()));
     }
 
     /// <summary>Quotes a path for a .desktop <c>Exec=</c> line, where spaces separate arguments.</summary>

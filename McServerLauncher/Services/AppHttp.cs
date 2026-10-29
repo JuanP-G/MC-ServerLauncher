@@ -106,7 +106,7 @@ public static class AppHttp
     {
         if (IsAllowedUrl(url, hosts)) return;
         var shown = Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.Host : url ?? string.Empty;
-        throw new UserFacingException(string.Format(Localizer.Get("Msg_DownloadHostRefusedFmt"), shown));
+        throw new UserFacingException(Localizer.Format("Msg_DownloadHostRefusedFmt", shown));
     }
 
     /// <summary>A client with this app's User-Agent and the given overall timeout.</summary>

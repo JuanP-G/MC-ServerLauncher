@@ -245,7 +245,7 @@ public partial class ServerBackupsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusText = string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex));
+            StatusText = Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex));
         }
         finally
         {
@@ -259,7 +259,7 @@ public partial class ServerBackupsViewModel : ObservableObject
         if (item is null) return;
 
         var confirmed = await Dialogs.Current.ConfirmAsync(
-            string.Format(Localizer.Get("Backup_ConfirmRestoreFmt"), item.FileName),
+            Localizer.Format("Backup_ConfirmRestoreFmt", item.FileName),
             Localizer.Get("Backup_RestoreTitle"));
         if (!confirmed) return;
 
@@ -282,7 +282,7 @@ public partial class ServerBackupsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusText = string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex));
+            StatusText = Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex));
         }
         finally
         {
@@ -296,7 +296,7 @@ public partial class ServerBackupsViewModel : ObservableObject
         if (item is null) return;
 
         var confirmed = await Dialogs.Current.ConfirmAsync(
-            string.Format(Localizer.Get("Backup_ConfirmDeleteFmt"), item.FileName),
+            Localizer.Format("Backup_ConfirmDeleteFmt", item.FileName),
             Localizer.Get("Tip_Delete"));
         if (!confirmed) return;
 

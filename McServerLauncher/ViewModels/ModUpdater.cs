@@ -119,16 +119,16 @@ internal sealed class ModUpdater
     /// </remarks>
     public static string StatusText(bool couldAsk, int updates) =>
         !couldAsk ? Localizer.Get("Msg_UpdatesCheckFailed")
-        : updates > 0 ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), updates)
+        : updates > 0 ? Localizer.Format("Msg_UpdatesFoundFmt", updates)
         : Localizer.Get("Msg_NoUpdates");
 
     /// <summary>The line "update all" leaves behind.</summary>
     public static string AllSummary(AllResult result) =>
         result.StoppedByServer
-            ? string.Format(Localizer.Get("Msg_UpdateAllStoppedFmt"), result.Updated)
+            ? Localizer.Format("Msg_UpdateAllStoppedFmt", result.Updated)
             : result.Failed.Count == 0
-                ? string.Format(Localizer.Get("Msg_UpdateAllDoneFmt"), result.Updated)
-                : string.Format(Localizer.Get("Msg_UpdateAllPartialFmt"),
+                ? Localizer.Format("Msg_UpdateAllDoneFmt", result.Updated)
+                : Localizer.Format("Msg_UpdateAllPartialFmt",
                     result.Updated, result.Failed.Count, string.Join(", ", result.Failed));
 
     /// <summary>Updates every row in <paramref name="queue"/>, one after another.</summary>
@@ -163,7 +163,7 @@ internal sealed class ModUpdater
             // copy of is up to date now, and updating this one too would bring the duplicate back.
             if (!File.Exists(mod.FilePath)) continue;
 
-            status.Report(string.Format(Localizer.Get("Msg_UpdatingNofMFmt"), i + 1, queue.Count, mod.FileName));
+            status.Report(Localizer.Format("Msg_UpdatingNofMFmt", i + 1, queue.Count, mod.FileName));
 
             var result = await UpdateOneAsync(mod, ct, projects);
             if (result.Outcome == ContentReplacement.UpdateOutcome.Updated)

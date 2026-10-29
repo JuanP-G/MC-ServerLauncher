@@ -18,7 +18,7 @@ public partial class WhatsNewDialog : Window
 
     public WhatsNewDialog(string version, IReadOnlyList<Changelog.Section> sections) : this()
     {
-        HeaderText.Text = string.Format(Localizer.Get("Whatsnew_HeaderFmt"), version);
+        HeaderText.Text = Localizer.Format("Whatsnew_HeaderFmt", version);
 
         // Only label each section with its version when there is more than one (a single update
         // already shows the version in the header).

@@ -112,7 +112,7 @@ internal sealed class ModInstaller
             // still holds only what the user had.
             var projectByPath = await _index.ProjectByPathAsync(folder, ct);
 
-            progress.Report(string.Format(Localizer.Get("Msg_DownloadingMod"), file.Filename));
+            progress.Report(Localizer.Format("Msg_DownloadingMod", file.Filename));
 
             // Mods are third-party jars chosen by the user: verify against Modrinth's own checksum.
             await _store.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct);

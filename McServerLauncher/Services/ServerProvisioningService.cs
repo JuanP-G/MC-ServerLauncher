@@ -68,13 +68,13 @@ public sealed class ServerProvisioningService
         var progress = new Progress<string>(log);
         Directory.CreateDirectory(plan.Folder);
 
-        log(string.Format(Localizer.Get("Msg_Resolving"), plan.Version.Id));
+        log(Localizer.Format("Msg_Resolving", plan.Version.Id));
         var details = await _versions.GetVersionDetailsAsync(plan.Version);
 
         // The Java this version needs goes first: the Forge installer requires a compatible one to run.
-        log(string.Format(Localizer.Get("Msg_CheckingJava"), plan.Version.Id, details.JavaMajor));
+        log(Localizer.Format("Msg_CheckingJava", plan.Version.Id, details.JavaMajor));
         var javaPath = await EnsureJavaOrSystemAsync(details.JavaMajor, progress, log,
-            ex => string.Format(Localizer.Get("Msg_JavaPrepareFail"), details.JavaMajor, ErrorMessages.Describe(ex)));
+            ex => Localizer.Format("Msg_JavaPrepareFail", details.JavaMajor, ErrorMessages.Describe(ex)));
 
         var installed = await _installer.InstallAsync(
             plan.Type, plan.Folder, plan.Version.Id, details, javaPath, plan.MinRamGb, plan.MaxRamGb, progress);
@@ -104,7 +104,7 @@ public sealed class ServerProvisioningService
             : "java";
 
         if (ExistingServer.ApplyPort(form.Folder, found.Port, port))
-            log(string.Format(Localizer.Get("Cs_ExistingPortWrittenFmt"), port));
+            log(Localizer.Format("Cs_ExistingPortWrittenFmt", port));
 
         // Only when the box was there to tick: a folder that had accepted it already is left alone.
         if (writeEula)
@@ -121,12 +121,12 @@ public sealed class ServerProvisioningService
         try
         {
             var details = await _versions.GetVersionDetailsAsync(version);
-            log(string.Format(Localizer.Get("Msg_CheckingJava"), version.Id, details.JavaMajor));
+            log(Localizer.Format("Msg_CheckingJava", version.Id, details.JavaMajor));
             return await _java.EnsureJavaAsync(details.JavaMajor, new Progress<string>(log));
         }
         catch (Exception ex)
         {
-            log(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            log(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
             log(Localizer.Get("Msg_UseSystemJava"));
             return "java";
         }

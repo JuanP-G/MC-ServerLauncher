@@ -76,7 +76,7 @@ public partial class TunnelRowViewModel : ObservableObject
     public string? SuggestedName => _row.NameDiffers ? _row.SuggestedName : null;
 
     public bool ShowSuggestion => SuggestedName is not null && !IsEditing && CanEdit;
-    public string SuggestionText => string.Format(Localizer.Get("Tun_UseNameFmt"), SuggestedName);
+    public string SuggestionText => Localizer.Format("Tun_UseNameFmt", SuggestedName);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowSuggestion), nameof(IsNotEditing))]

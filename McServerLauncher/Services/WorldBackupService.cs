@@ -169,8 +169,8 @@ public class WorldBackupService
         {
             // Said and skipped rather than thrown: this runs before every start, and a backup that
             // cannot be made is not a reason to keep the server down.
-            log?.Report(string.Format(Localizer.Get("Msg_ErrorFmt"),
-                string.Format(Localizer.Get("Msg_BackupBadLevelNameFmt"), levelName)));
+            log?.Report(Localizer.Format("Msg_ErrorFmt",
+                Localizer.Format("Msg_BackupBadLevelNameFmt", levelName)));
             return null;
         }
 
@@ -186,7 +186,7 @@ public class WorldBackupService
         var fileName = $"{Path.GetFileName(worldDir)}-{DateTime.Now:yyyyMMdd-HHmmss}--{trigger}.zip";
         var zipPath = Path.Combine(dir, fileName);
 
-        log?.Report(string.Format(Localizer.Get("Msg_BackupCreatingFmt"), levelName));
+        log?.Report(Localizer.Format("Msg_BackupCreatingFmt", levelName));
 
         // Taken before the copy, not after: by then a running server may already have written to
         // the world again, and the record would describe a world this zip does not hold — one the
@@ -197,7 +197,7 @@ public class WorldBackupService
         await Task.Run(() => CreateZipWithRetry(worldDir, dimensions, zipPath, ct), ct);
 
         var sizeMb = new FileInfo(zipPath).Length / (1024.0 * 1024.0);
-        log?.Report(string.Format(Localizer.Get("Msg_BackupCreatedFmt"), sizeMb.ToString("0.#")));
+        log?.Report(Localizer.Format("Msg_BackupCreatedFmt", sizeMb.ToString("0.#")));
 
         WriteState(config, new BackupState(fileName, fingerprint));
         PruneOldBackups(config, protectFromPruning);
@@ -559,7 +559,7 @@ public class WorldBackupService
         // to be read — included.
         var worldDir = WorldFolderFor(config.FolderPath, levelName)
             ?? throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_BackupBadLevelNameFmt"), levelName));
+                Localizer.Format("Msg_BackupBadLevelNameFmt", levelName));
 
         if (Directory.Exists(worldDir))
         {

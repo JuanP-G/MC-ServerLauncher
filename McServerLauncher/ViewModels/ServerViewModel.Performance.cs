@@ -273,9 +273,9 @@ public partial class ServerViewModel
         else if (tps is { } t)
         {
             // The figure is the TPS, because that is what people know; the word says how to read it.
-            PerformanceText = string.Format(Localizer.Get("Perf_TpsFmt"), Math.Min(t, 20).ToString("0.0", CultureInfo.CurrentCulture));
+            PerformanceText = Localizer.Format("Perf_TpsFmt", Math.Min(t, 20).ToString("0.0", CultureInfo.CurrentCulture));
             PerformanceSubText = reading?.Mspt is { } mspt
-                ? string.Format(Localizer.Get("Perf_WordMsptFmt"), word, mspt.ToString("0.0", CultureInfo.CurrentCulture))
+                ? Localizer.Format("Perf_WordMsptFmt", word, mspt.ToString("0.0", CultureInfo.CurrentCulture))
                 : word;
         }
         else
@@ -326,7 +326,7 @@ public partial class ServerViewModel
         if (IsManualMemory)
             return Localizer.Get(outOfMemory ? "Perf_CauseOom" : "Perf_CauseMemoryManual");
         var next = PreviewNextCeilingMb(outOfMemory);
-        return string.Format(Localizer.Get(outOfMemory ? "Perf_CauseOomFmt" : "Perf_CauseMemoryFmt"),
+        return Localizer.Format(outOfMemory ? "Perf_CauseOomFmt" : "Perf_CauseMemoryFmt",
             ByteSize.Format(next * 1024 * 1024));
     }
 
@@ -335,9 +335,9 @@ public partial class ServerViewModel
     {
         PerformanceCause.OutOfMemory => MemoryCauseText(status),
         PerformanceCause.Ticks => status.Tps is { } tps
-            ? string.Format(Localizer.Get("Perf_CauseTicksFmt"), Math.Min(tps, 20).ToString("0.0", CultureInfo.CurrentCulture))
+            ? Localizer.Format("Perf_CauseTicksFmt", Math.Min(tps, 20).ToString("0.0", CultureInfo.CurrentCulture))
             : Localizer.Get("Perf_CauseTicks"),
-        PerformanceCause.LagWarnings => string.Format(Localizer.Get("Perf_CauseLagFmt"), status.LagWarnings),
+        PerformanceCause.LagWarnings => Localizer.Format("Perf_CauseLagFmt", status.LagWarnings),
         PerformanceCause.Cpu => Localizer.Get("Perf_CauseCpu"),
         PerformanceCause.Memory => MemoryCauseText(status),
         _ => ""

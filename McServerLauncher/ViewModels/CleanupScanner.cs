@@ -173,11 +173,11 @@ internal sealed class CleanupScanner
         var users = string.Join(", ", orphan.FormerUsers);
         return orphan.Reason switch
         {
-            CleanupAdvisor.OrphanReason.DependentsRemoved => string.Format(Localizer.Get(
+            CleanupAdvisor.OrphanReason.DependentsRemoved => Localizer.Format(
                 orphan.FormerUsers.Count == 1 ? "Cleanup_OrphanRemovedOneFmt"
-                    : "Cleanup_OrphanRemovedManyFmt"), users),
+                    : "Cleanup_OrphanRemovedManyFmt", users),
             CleanupAdvisor.OrphanReason.DependentsAlsoOrphan
-                => string.Format(Localizer.Get("Cleanup_OrphanChainFmt"), users),
+                => Localizer.Format("Cleanup_OrphanChainFmt", users),
             _ => Localizer.Get(ServerTypeCatalog.IsPluginBased(_config.Type) ? "Cleanup_OrphanNoPlugin"
                 : "Cleanup_OrphanNoMod")
         };
@@ -185,8 +185,8 @@ internal sealed class CleanupScanner
 
     /// <summary>Why a disabled mod is on the panel.</summary>
     public static string ReasonFor(CleanupAdvisor.LongDisabled off) =>
-        string.Format(Localizer.Get(off.SinceIsFirstSeen ? "Cleanup_DisabledAtLeastFmt"
-            : "Cleanup_DisabledSinceFmt"),
+        Localizer.Format(off.SinceIsFirstSeen ? "Cleanup_DisabledAtLeastFmt"
+            : "Cleanup_DisabledSinceFmt",
             FormatDay(off.SinceUtc), off.Days);
 
     /// <summary>

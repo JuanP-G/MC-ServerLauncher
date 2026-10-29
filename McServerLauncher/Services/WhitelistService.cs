@@ -68,7 +68,7 @@ public class WhitelistService
 
         if (uuid is null)
             throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_PlayerNotFoundMojang"), name));
+                Localizer.Format("Msg_PlayerNotFoundMojang", name));
 
         entries.Add(new Entry { Uuid = uuid, Name = name });
         WriteEntries(folder, entries);

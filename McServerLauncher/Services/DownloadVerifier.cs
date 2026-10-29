@@ -34,7 +34,7 @@ public static class DownloadVerifier
         {
             FileCleanup.TryDelete(filePath);
             throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_ChecksumRequiredFmt"), AtomicDownload.DisplayName(filePath)));
+                Localizer.Format("Msg_ChecksumRequiredFmt", AtomicDownload.DisplayName(filePath)));
         }
 
         var actualHex = await ComputeHashAsync(filePath, algorithm, ct);
@@ -42,7 +42,7 @@ public static class DownloadVerifier
         {
             FileCleanup.TryDelete(filePath);
             throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_ChecksumMismatchFmt"),
+                Localizer.Format("Msg_ChecksumMismatchFmt",
                     AtomicDownload.DisplayName(filePath)));
         }
     }

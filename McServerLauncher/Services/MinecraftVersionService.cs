@@ -64,7 +64,7 @@ public class MinecraftVersionService
             url.GetString() is not { Length: > 0 } serverUrl)
         {
             throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_NoServerDownload"), version.Id));
+                Localizer.Format("Msg_NoServerDownload", version.Id));
         }
 
         // Java recommended by Mojang (if missing, assume Java 8 for very old versions).

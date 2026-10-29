@@ -50,13 +50,13 @@ internal static class RemovedServerLeftovers
                     Localizer.Get("Title_DeleteTunnel"));
             else if (javaDeleted == false)
                 await Dialogs.Current.ShowAsync(
-                    string.Format(Localizer.Get("Msg_NoTunnelForPort"), port),
+                    Localizer.Format("Msg_NoTunnelForPort", port),
                     Localizer.Get("Title_DeleteTunnel"));
         }
         catch (Exception ex)
         {
             await Dialogs.Current.ShowAsync(
-                string.Format(Localizer.Get("Msg_TunnelDeleteError"), ErrorMessages.Describe(ex)),
+                Localizer.Format("Msg_TunnelDeleteError", ErrorMessages.Describe(ex)),
                 Localizer.Get("Title_DeleteTunnel"));
         }
     }
@@ -72,7 +72,7 @@ internal static class RemovedServerLeftovers
         catch (Exception ex)
         {
             await Dialogs.Current.ShowAsync(
-                string.Format(Localizer.Get("Msg_FilesDeleteError"), ErrorMessages.Describe(ex)),
+                Localizer.Format("Msg_FilesDeleteError", ErrorMessages.Describe(ex)),
                 Localizer.Get("Title_DeleteFiles"));
         }
     }

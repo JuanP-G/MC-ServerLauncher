@@ -122,11 +122,11 @@ public sealed class TunnelAddressTracker
 
         try
         {
-            _host.Say(string.Format(Localizer.Get("Msg_CreatingTunnel"), port));
+            _host.Say(Localizer.Format("Msg_CreatingTunnel", port));
             var created = await _api.EnsureMinecraftTunnelAsync(writeKey, serverName, port.Value);
             _host.Say(created
                 ? Localizer.Get("Msg_TunnelCreated")
-                : string.Format(Localizer.Get("Msg_TunnelExists"), port));
+                : Localizer.Format("Msg_TunnelExists", port));
 
             // The tunnel was made seconds ago, so this first lookup almost always comes back with
             // no address — which is now shown as "waiting" rather than as nothing at all — and the
@@ -136,7 +136,7 @@ public sealed class TunnelAddressTracker
         }
         catch (Exception ex)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_TunnelCreateError"), ErrorMessages.Describe(ex)));
+            _host.Say(Localizer.Format("Msg_TunnelCreateError", ErrorMessages.Describe(ex)));
         }
     }
 }

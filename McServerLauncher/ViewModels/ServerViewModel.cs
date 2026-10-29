@@ -448,9 +448,9 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
             ShowCountdown: text => IdleCountdownText = text,
             AnnounceStop: minutes =>
             {
-                OnConsoleLine(string.Format(Localizer.Get("Msg_IdleShutdownFmt"), minutes));
+                OnConsoleLine(Localizer.Format("Msg_IdleShutdownFmt", minutes));
                 NotifyIf(NotificationKind.IdleShutdown,
-                    string.Format(Localizer.Get("Notif_IdleStopped"), minutes));
+                    Localizer.Format("Notif_IdleStopped", minutes));
             },
             StopAsync: Stop,
             ReportError: line => OnConsoleLine(line)));
@@ -879,7 +879,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         {
             if (BlueMapConsent.Accept(await File.ReadAllTextAsync(path)) is not { } accepted)
             {
-                OnConsoleLine(string.Format(Localizer.Get("Msg_BlueMapCouldNotAcceptFmt"), path));
+                OnConsoleLine(Localizer.Format("Msg_BlueMapCouldNotAcceptFmt", path));
                 return;
             }
 
@@ -891,7 +891,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            OnConsoleLine(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
         }
     }
 
@@ -952,7 +952,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         _startFailureIsFinal = true;
         var bad = BukkitPathRule.OffendingCharacter(Config.FolderPath);
         OnConsoleLine(bad is { } c
-            ? string.Format(Localizer.Get("Msg_BukkitPathFmt"), c)
+            ? Localizer.Format("Msg_BukkitPathFmt", c)
             : Localizer.Get("Msg_BukkitPathUnknown"));
     }
 
@@ -1005,7 +1005,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
             History.RequestRefresh();
             UpdatePlayerCount();
             NotifyIf(NotificationKind.PlayerJoined,
-                string.Format(Localizer.Get("Notif_PlayerJoinedFmt"), joined));
+                Localizer.Format("Notif_PlayerJoinedFmt", joined));
             return;
         }
 
@@ -1016,7 +1016,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
             SnapshotOnline();
             History.RequestRefresh();
             UpdatePlayerCount();
-            NotifyIf(NotificationKind.PlayerLeft, string.Format(Localizer.Get("Notif_PlayerLeftFmt"), left));
+            NotifyIf(NotificationKind.PlayerLeft, Localizer.Format("Notif_PlayerLeftFmt", left));
             return;
         }
 
@@ -1096,7 +1096,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            OnConsoleLine(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
         }
         finally
         {
@@ -1231,8 +1231,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
             var reason = _crashReports.FindRecentCrashReason(Config.FolderPath, _process.StartedAtUtc);
             var codeText = exitCode?.ToString() ?? "?";
             OnConsoleLine(reason is not null
-                ? string.Format(Localizer.Get("Msg_ServerCrashedReasonFmt"), codeText, reason)
-                : string.Format(Localizer.Get("Msg_ServerCrashedFmt"), codeText));
+                ? Localizer.Format("Msg_ServerCrashedReasonFmt", codeText, reason)
+                : Localizer.Format("Msg_ServerCrashedFmt", codeText));
             NotifyIf(NotificationKind.ServerCrashed, Localizer.Get("Notif_Crashed"));
 
             if (_startFailureIsFinal)
@@ -1251,12 +1251,12 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
 
             if (_consecutiveCrashes > MaxAutoRestarts)
             {
-                OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartGaveUpFmt"), MaxAutoRestarts));
+                OnConsoleLine(Localizer.Format("Msg_AutoRestartGaveUpFmt", MaxAutoRestarts));
                 NotifyIf(NotificationKind.AutoRestartGaveUp, Localizer.Get("Notif_GaveUp"));
                 return;
             }
 
-            OnConsoleLine(string.Format(Localizer.Get("Msg_AutoRestartingFmt"), _consecutiveCrashes,
+            OnConsoleLine(Localizer.Format("Msg_AutoRestartingFmt", _consecutiveCrashes,
                 MaxAutoRestarts));
             await Task.Delay(AutoRestartDelay);
 
@@ -1267,7 +1267,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            OnConsoleLine(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
         }
     }
 
@@ -1287,7 +1287,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            OnConsoleLine(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
         }
         finally
         {
@@ -1325,7 +1325,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         catch (Exception ex)
         {
             // A failed backup must never take the server down with it.
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            OnConsoleLine(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
         }
     }
 

@@ -246,7 +246,7 @@ public class PlayitManager : IDisposable
         // English, or in the system's language, whatever the app's is.
         ConsoleLogService.Shared.Log("Playit", $"systemctl {action} {unit}: " +
                                                (string.IsNullOrWhiteSpace(r.Error) ? r.Output : r.Error));
-        throw new UserFacingException(string.Format(Localizer.Get("Msg_SystemctlFailedFmt"), r.ExitCode));
+        throw new UserFacingException(Localizer.Format("Msg_SystemctlFailedFmt", r.ExitCode));
     }
 
     /// <summary>Runs a command and returns its exit code and captured output. Never throws.</summary>

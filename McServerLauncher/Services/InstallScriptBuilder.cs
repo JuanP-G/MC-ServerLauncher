@@ -128,8 +128,8 @@ internal static class InstallScriptBuilder
     private static Dictionary<string, string> TranslatedValues(
         string serverName, ServerType type, string gameVersion, DateTime builtAtLocal)
     {
-        var header = string.Format(Localizer.Get("Script_HeaderFmt"), serverName, gameVersion, type);
-        var noLoader = string.Format(Localizer.Get("Script_NoLoaderFmt"), type, LoaderSite(type));
+        var header = Localizer.Format("Script_HeaderFmt", serverName, gameVersion, type);
+        var noLoader = Localizer.Format("Script_NoLoaderFmt", type, LoaderSite(type));
 
         return new Dictionary<string, string>(StringComparer.Ordinal)
         {

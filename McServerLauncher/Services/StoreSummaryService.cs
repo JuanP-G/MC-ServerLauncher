@@ -202,7 +202,7 @@ public sealed class StoreSummaryService
             string.Equals(t.Kind, StoreTagService.TopicKind, StringComparison.OrdinalIgnoreCase));
         if (headline is null) return null;
 
-        return string.Format(Localizer.Get(FallbackKeys(item).Fmt),
+        return Localizer.Format(FallbackKeys(item).Fmt,
             InSentence(StoreTagService.LabelFor(headline)));
     }
 

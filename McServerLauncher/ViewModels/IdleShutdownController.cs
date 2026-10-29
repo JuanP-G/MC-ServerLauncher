@@ -112,8 +112,8 @@ public sealed class IdleShutdownController : IDisposable
     {
         if (_emptySinceUtc is null) { StopCountdown(); return; }
 
-        _host.ShowCountdown(string.Format(
-            Localizer.Get("Idle_CountdownFmt"),
+        _host.ShowCountdown(Localizer.Format(
+            "Idle_CountdownFmt",
             IdlePolicy.FormatCountdown(IdlePolicy.IdleRemaining(_host.Minutes(), _emptySinceUtc.Value, _utcNow()))));
     }
 
@@ -130,7 +130,7 @@ public sealed class IdleShutdownController : IDisposable
         try { await _host.StopAsync(); }
         catch (Exception ex)
         {
-            _host.ReportError(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            _host.ReportError(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
         }
         finally
         {

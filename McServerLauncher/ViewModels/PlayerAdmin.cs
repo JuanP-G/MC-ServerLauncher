@@ -98,7 +98,7 @@ internal sealed class PlayerAdmin
         // Show what was rejected, defanged for display (no line breaks, capped length).
         var shown = name.Replace("\r", "").Replace("\n", " ");
         if (shown.Length > 32) shown = shown[..32] + "…";
-        _host.Say(string.Format(Localizer.Get("Msg_InvalidPlayerNameFmt"), shown));
+        _host.Say(Localizer.Format("Msg_InvalidPlayerNameFmt", shown));
         return null;
     }
 
@@ -134,7 +134,7 @@ internal sealed class PlayerAdmin
         }
         catch (Exception ex)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_WhitelistError"), ErrorMessages.Describe(ex)));
+            _host.Say(Localizer.Format("Msg_WhitelistError", ErrorMessages.Describe(ex)));
             return false;
         }
     }
@@ -160,7 +160,7 @@ internal sealed class PlayerAdmin
         }
         catch (Exception ex)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_WhitelistError"), ErrorMessages.Describe(ex)));
+            _host.Say(Localizer.Format("Msg_WhitelistError", ErrorMessages.Describe(ex)));
         }
     }
 
@@ -216,7 +216,7 @@ internal sealed class PlayerAdmin
         }
         catch (Exception ex)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_WhitelistError"), ErrorMessages.Describe(ex)));
+            _host.Say(Localizer.Format("Msg_WhitelistError", ErrorMessages.Describe(ex)));
         }
         finally
         {
@@ -263,7 +263,7 @@ internal sealed class PlayerAdmin
     private bool EnsureRunning(string action)
     {
         if (_host.IsProcessRunning) return true;
-        _host.Say(string.Format(Localizer.Get("Msg_NeedRunningFor"), action));
+        _host.Say(Localizer.Format("Msg_NeedRunningFor", action));
         return false;
     }
 

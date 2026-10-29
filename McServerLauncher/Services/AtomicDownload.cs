@@ -53,7 +53,7 @@ public static class AtomicDownload
         var name = Path.GetFileName(remoteFileName);
         if (string.IsNullOrWhiteSpace(name))
             throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_BadRemoteFileNameFmt"), remoteFileName));
+                Localizer.Format("Msg_BadRemoteFileNameFmt", remoteFileName));
 
         return Path.Combine(folder, name);
     }
@@ -119,7 +119,7 @@ public static class AtomicDownload
     }
 
     private static UserFacingException TooLarge(string destPath, long maxBytes) =>
-        new(string.Format(Localizer.Get("Msg_DownloadTooLargeFmt"), DisplayName(destPath),
+        new(Localizer.Format("Msg_DownloadTooLargeFmt", DisplayName(destPath),
             $"{maxBytes / (1024.0 * 1024.0):0} MB"));
 
     /// <summary>The name to show the user for a file being downloaded to <paramref name="path"/>.</summary>

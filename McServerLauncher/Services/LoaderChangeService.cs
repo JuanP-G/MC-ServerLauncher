@@ -64,10 +64,10 @@ public sealed class LoaderChangeService
     {
         var progress = new Progress<string>(log);
 
-        log(string.Format(Localizer.Get("Msg_Resolving"), change.Version.Id));
+        log(Localizer.Format("Msg_Resolving", change.Version.Id));
         var details = await _versions.GetVersionDetailsAsync(change.Version);
 
-        log(string.Format(Localizer.Get("Msg_CheckingJava"), change.Version.Id, details.JavaMajor));
+        log(Localizer.Format("Msg_CheckingJava", change.Version.Id, details.JavaMajor));
         var javaPath = await EnsureJavaOrKeepAsync(details.JavaMajor, change.CurrentJavaPath, progress, log);
 
         // Forge and NeoForge installers overwrite run.bat. Keep the user's copy if they asked,
@@ -81,7 +81,7 @@ public sealed class LoaderChangeService
         var archived = ContentMigrationService.ArchiveIfFamilyChanged(
             change.Folder, change.From, change.To, DateTime.Now);
         if (archived is not null)
-            log(string.Format(Localizer.Get("Msg_ContentArchivedFmt"), archived));
+            log(Localizer.Format("Msg_ContentArchivedFmt", archived));
 
         var installed = await _installer.InstallAsync(
             change.To, change.Folder, change.Version.Id, details, javaPath,
@@ -110,7 +110,7 @@ public sealed class LoaderChangeService
         }
         catch (Exception ex)
         {
-            log(string.Format(Localizer.Get("Msg_JavaPrepareFail"), major, ErrorMessages.Describe(ex)));
+            log(Localizer.Format("Msg_JavaPrepareFail", major, ErrorMessages.Describe(ex)));
             log(Localizer.Get("Msg_UseSystemJava"));
             return current;
         }

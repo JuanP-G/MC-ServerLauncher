@@ -97,7 +97,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
 
     /// <summary>"12", or "3 of 12" while searching.</summary>
     public string InstalledCountText => IsInstalledFiltered
-        ? string.Format(Localizer.Get("Mods_InstalledCountFmt"), VisibleInstalledMods.Count,
+        ? Localizer.Format("Mods_InstalledCountFmt", VisibleInstalledMods.Count,
             InstalledMods.Count)
         : InstalledMods.Count.ToString(System.Globalization.CultureInfo.CurrentUICulture);
 
@@ -123,7 +123,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
     public bool HasClientPack => ClientPackMods.Count > 0;
 
     /// <summary>"Players' pack (3)".</summary>
-    public string ClientPackTitleText => string.Format(Localizer.Get("PlayerPack_TitleFmt"),
+    public string ClientPackTitleText => Localizer.Format("PlayerPack_TitleFmt",
         ClientPackMods.Count);
 
     private void RefreshClientPack()
@@ -148,7 +148,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         try { File.Delete(mod.FilePath); }
         catch (Exception ex)
         {
-            Notify(string.Format(Localizer.Get("Msg_ModDeleteError"), ErrorMessages.Describe(ex)),
+            Notify(Localizer.Format("Msg_ModDeleteError", ErrorMessages.Describe(ex)),
                 failed: true);
         }
         RefreshClientPack();
@@ -226,7 +226,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
     public bool HasPendingUpdates => PendingUpdateCount > 0;
 
     /// <summary>The label of the button that updates them all, with how many there are.</summary>
-    public string UpdateAllText => string.Format(Localizer.Get("Mods_UpdateAllFmt"), PendingUpdateCount);
+    public string UpdateAllText => Localizer.Format("Mods_UpdateAllFmt", PendingUpdateCount);
 
     private void NotifyPendingUpdatesChanged()
     {
@@ -553,11 +553,11 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
     /// <summary>Instructions to play: install the loader client (mods) or just join (plugins).</summary>
     public string HowToPlaySteps => _config.Type switch
     {
-        ServerType.Fabric => string.Format(Localizer.Get("HowToPlay_FabricFmt"), _config.GameVersion),
-        ServerType.Forge => string.Format(Localizer.Get("HowToPlay_ForgeFmt"), _config.GameVersion),
-        ServerType.NeoForge => string.Format(Localizer.Get("HowToPlay_NeoForgeFmt"), _config.GameVersion),
+        ServerType.Fabric => Localizer.Format("HowToPlay_FabricFmt", _config.GameVersion),
+        ServerType.Forge => Localizer.Format("HowToPlay_ForgeFmt", _config.GameVersion),
+        ServerType.NeoForge => Localizer.Format("HowToPlay_NeoForgeFmt", _config.GameVersion),
         ServerType.Paper or ServerType.Purpur =>
-            string.Format(Localizer.Get("HowToPlay_PaperFmt"), _config.GameVersion),
+            Localizer.Format("HowToPlay_PaperFmt", _config.GameVersion),
         _ => string.Empty
     };
 
@@ -705,7 +705,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         // The line under the list follows what is actually still pending, instead of being blanked
         // because the rows had lost track of it.
         UpdateStatus = PendingUpdateCount > 0
-            ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), PendingUpdateCount)
+            ? Localizer.Format("Msg_UpdatesFoundFmt", PendingUpdateCount)
             : string.Empty;
         NotifyPendingUpdatesChanged();
 
@@ -749,7 +749,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            UpdateStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ErrorMessages.Describe(ex));
+            UpdateStatus = Localizer.Format("Msg_ModErrorFmt", ErrorMessages.Describe(ex));
         }
         finally
         {
@@ -796,7 +796,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         }
 
         _missingDependencies = plan.Install;
-        MissingDependencyText = string.Format(Localizer.Get("Msg_MissingDepsFoundFmt"),
+        MissingDependencyText = Localizer.Format("Msg_MissingDepsFoundFmt",
             plan.Install.Count, string.Join(", ", plan.Install.Select(d => d.Label)));
         OnPropertyChanged(nameof(HasMissingDependencies));
     }
@@ -847,13 +847,13 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
             await _dependencyInstaller.InstallListedAsync(_missingDependencies,
                 new InlineProgress<string>(message => UpdateStatus = message), ct);
 
-            UpdateStatus = string.Format(Localizer.Get("Msg_DepsInstalledFmt"), _missingDependencies.Count);
+            UpdateStatus = Localizer.Format("Msg_DepsInstalledFmt", _missingDependencies.Count);
             ClearMissingDependencies();
             RefreshInstalledMods();
         }
         catch (Exception ex)
         {
-            UpdateStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ErrorMessages.Describe(ex));
+            UpdateStatus = Localizer.Format("Msg_ModErrorFmt", ErrorMessages.Describe(ex));
         }
         finally
         {
@@ -893,10 +893,10 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         UpdateStatus = result.Outcome switch
         {
             ContentReplacement.UpdateOutcome.Updated when PendingUpdateCount > 0 =>
-                string.Format(Localizer.Get("Msg_ModUpdatedRemainingFmt"), PendingUpdateCount),
+                Localizer.Format("Msg_ModUpdatedRemainingFmt", PendingUpdateCount),
             ContentReplacement.UpdateOutcome.Updated => Localizer.Get("Msg_ModUpdated"),
             ContentReplacement.UpdateOutcome.NeedsStop => Localizer.Get("Msg_UpdateNeedsStop"),
-            _ => string.Format(Localizer.Get("Msg_UpdateErrorFmt"), result.Error)
+            _ => Localizer.Format("Msg_UpdateErrorFmt", result.Error)
         };
 
         // Only "updated". The old version and any other copy going with it is what updating means,
@@ -957,7 +957,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         // Asked first, like deleting a backup: the file is gone for good, not to the recycle bin,
         // and the button sits one row from the switch that only disables a mod.
         if (!await Dialogs.Current.ConfirmAsync(
-                string.Format(Localizer.Get("Mods_ConfirmDeleteFmt"), mod.FileName), ContentTabTitle))
+                Localizer.Format("Mods_ConfirmDeleteFmt", mod.FileName), ContentTabTitle))
             return;
 
         try
@@ -968,7 +968,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         {
             // Typically the file is locked because the server is running.
             await Dialogs.Current.ShowAsync(
-                string.Format(Localizer.Get("Msg_ModDeleteError"),
+                Localizer.Format("Msg_ModDeleteError",
                     ErrorMessages.Describe(ex)), ContentTabTitle);
         }
         RefreshInstalledMods();
@@ -1011,7 +1011,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             await Dialogs.Current.ShowAsync(
-                string.Format(Localizer.Get("Msg_ExportError"),
+                Localizer.Format("Msg_ExportError",
                     ErrorMessages.Describe(ex)), Localizer.Get("Export_Modpack"));
         }
     }
@@ -1077,7 +1077,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             await Dialogs.Current.ShowAsync(
-                string.Format(Localizer.Get("Msg_ExportError"),
+                Localizer.Format("Msg_ExportError",
                     ErrorMessages.Describe(ex)), Localizer.Get("Export_Modpack"));
         }
     }
@@ -1152,7 +1152,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
                 SetResults(response.Hits.Select(hit => new ModrinthProjectViewModel(hit, this)), append);
                 CanLoadMore = response.Hits.Count > 0 && SearchResults.Count < response.TotalHits;
                 SearchStatus = SearchResults.Count > 0
-                    ? string.Format(Localizer.Get("Msg_ModsFoundFmt"), response.TotalHits)
+                    ? Localizer.Format("Msg_ModsFoundFmt", response.TotalHits)
                     : Localizer.Get("Msg_NoModsFound");
                 break;
 
@@ -1164,7 +1164,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
                 break;
 
             case StoreBrowser.Kind.Failed:
-                SearchStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), result.Error);
+                SearchStatus = Localizer.Format("Msg_ModErrorFmt", result.Error);
                 break;
         }
     }
@@ -1317,11 +1317,11 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
             case ModInstaller.Outcome.InUse:
                 // An install, not an update: say which copy is in the way, not "before updating".
                 RefreshInstalledMods();
-                Notify(string.Format(Localizer.Get("Msg_ContentInUseFmt"), result.BlockingCopy), failed: true);
+                Notify(Localizer.Format("Msg_ContentInUseFmt", result.BlockingCopy), failed: true);
                 return false;
 
             case ModInstaller.Outcome.Failed:
-                Notify(string.Format(Localizer.Get("Msg_InstallErrorFmt"), result.Error), failed: true);
+                Notify(Localizer.Format("Msg_InstallErrorFmt", result.Error), failed: true);
                 return false;
         }
 
@@ -1331,13 +1331,13 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         // mod is on disk — but it is the reason the server will not start, so it stays on screen
         // instead of fading away with the success message.
         if (result.UnresolvedLibraries is { Count: > 0 } unresolved)
-            Notify(string.Format(Localizer.Get("Msg_DepUnresolvedFmt"), string.Join(", ", unresolved)),
+            Notify(Localizer.Format("Msg_DepUnresolvedFmt", string.Join(", ", unresolved)),
                 failed: true);
         else
             Notify(result.Libraries == 0
                     ? Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPack" : "Msg_ModInstalled")
-                    : string.Format(Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPackWithDepsFmt"
-                        : "Msg_ModInstalledWithDepsFmt"), result.Libraries),
+                    : Localizer.Format(toPlayerPack ? "Msg_AddedToPlayerPackWithDepsFmt"
+                        : "Msg_ModInstalledWithDepsFmt", result.Libraries),
                 failed: false);
         return true;
     }

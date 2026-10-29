@@ -54,7 +54,7 @@ public partial class ModItem : ObservableObject
 
     public string UpdateTooltip => Update is null
         ? string.Empty
-        : string.Format(Localizer.Get("Tip_UpdateToFmt"), Update.VersionNumber);
+        : Localizer.Format("Tip_UpdateToFmt", Update.VersionNumber);
 
     public ModItem(string filePath, string fileName, bool isEnabled)
     {

@@ -39,7 +39,7 @@ public static class VerifiedJarDownload
 
         var totalMb = (resp.Content.Headers.ContentLength ?? 0) / (1024.0 * 1024.0);
         log?.Report(totalMb > 0
-            ? string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#"))
+            ? Localizer.Format("Msg_DownloadingJarSize", totalMb.ToString("0.#"))
             : Localizer.Get("Msg_DownloadingJar"));
 
         await AtomicDownload.ToFileAsync(resp.Content, destPath,

@@ -87,7 +87,7 @@ public partial class PerformanceSection : UserControl, IServerSettingsSection
         var mods = MemoryProfile.CountMods(config);
         var plan = MemoryProfile.Plan(new MemoryInputs(config, JavaService.JavaRuntime.Unknown, mods,
             SystemMemory.TotalMb(), MemoryBudget.ReservedByOthersMb(config.Id), MemoryPreferences.DedicatedMachine));
-        return string.Format(Localizer.Get("Mem_PlanNowFmt"), ByteSize.Format(plan.CeilingMb * 1024 * 1024),
+        return Localizer.Format("Mem_PlanNowFmt", ByteSize.Format(plan.CeilingMb * 1024 * 1024),
             ServerViewModel.ReasonText(plan.Reason, mods));
     }
 

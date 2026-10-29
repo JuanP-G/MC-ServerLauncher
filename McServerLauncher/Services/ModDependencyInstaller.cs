@@ -123,11 +123,11 @@ public sealed class ModDependencyInstaller
         foreach (var needed in plan.Install)
         {
             ct.ThrowIfCancellationRequested();
-            log?.Report(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label));
+            log?.Report(Localizer.Format("Msg_DownloadingMod", needed.Label));
             await DownloadAsync(needed, folder, ct);
         }
 
-        log?.Report(string.Format(Localizer.Get("Msg_DepsInstalledFmt"), plan.Install.Count));
+        log?.Report(Localizer.Format("Msg_DepsInstalledFmt", plan.Install.Count));
         return true;
     }
 
@@ -140,7 +140,7 @@ public sealed class ModDependencyInstaller
 
         foreach (var needed in missing)
         {
-            progress.Report(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label));
+            progress.Report(Localizer.Format("Msg_DownloadingMod", needed.Label));
             await DownloadAsync(needed, folder, ct);
         }
     }
@@ -179,7 +179,7 @@ public sealed class ModDependencyInstaller
         var installed = 0;
         foreach (var needed in plan.Install)
         {
-            progress.Report(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label));
+            progress.Report(Localizer.Format("Msg_DownloadingMod", needed.Label));
             await DownloadAsync(needed, folder, ct);
             installed++;
         }
@@ -221,7 +221,7 @@ public sealed class ModDependencyInstaller
             pending = new List<string>();
             foreach (var needed in extra.Install)
             {
-                progress.Report(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label));
+                progress.Report(Localizer.Format("Msg_DownloadingMod", needed.Label));
                 var written = AtomicDownload.PathIn(folder, needed.File.Filename);
                 await DownloadAsync(needed, folder, ct);
 

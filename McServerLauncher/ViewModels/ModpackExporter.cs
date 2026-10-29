@@ -174,22 +174,22 @@ public sealed class ModpackExporter
     /// <summary>The instructions and install scripts that travel in the pack.</summary>
     private List<ModpackWriter.TextFile> BuildTexts(ExportSelection.Plan plan, ClientLoaderInstall.Plan? loader)
     {
-        var instructions = string.Format(Localizer.Get("Export_InstructionsFmt"),
+        var instructions = Localizer.Format("Export_InstructionsFmt",
             _config.Name, _config.Type, _config.GameVersion, _howToPlay(), ContentFolder);
 
         // The pack has to explain itself to whoever receives it, not only to whoever made it:
         // a player who counts the jars and finds three missing deserves to read why here.
         if (plan.Excluded.Count == 1)
-            instructions += "\n\n" + string.Format(
-                Localizer.Get("Export_LeftOutOneFmt"), plan.Excluded[0]);
+            instructions += "\n\n" + Localizer.Format(
+                "Export_LeftOutOneFmt", plan.Excluded[0]);
         else if (plan.LeftSomethingOut)
-            instructions += "\n\n" + string.Format(Localizer.Get("Export_LeftOutFmt"),
+            instructions += "\n\n" + Localizer.Format("Export_LeftOutFmt",
                 plan.Excluded.Count, string.Join(", ", plan.Excluded));
 
         // The script names are not translated — see InstallScriptBuilder — so the
         // instructions, which are, have to be where the player reads what they are for.
         if (!IsPluginBased)
-            instructions += "\n\n" + string.Format(Localizer.Get("Export_ScriptsFmt"),
+            instructions += "\n\n" + Localizer.Format("Export_ScriptsFmt",
                 InstallScriptBuilder.WindowsName, InstallScriptBuilder.UnixName);
 
         var texts = new List<ModpackWriter.TextFile>
@@ -286,10 +286,10 @@ public sealed class ModpackExporter
         // its own way instead of the count being pasted into a plural sentence.
         var text = result.Excluded.Count switch
         {
-            0 => string.Format(Localizer.Get("Export_NoticeAllFmt"), result.Included.Count),
-            1 => string.Format(Localizer.Get("Export_NoticeOneFmt"),
+            0 => Localizer.Format("Export_NoticeAllFmt", result.Included.Count),
+            1 => Localizer.Format("Export_NoticeOneFmt",
                 result.Included.Count, result.Excluded[0]),
-            _ => string.Format(Localizer.Get("Export_NoticeFmt"),
+            _ => Localizer.Format("Export_NoticeFmt",
                 result.Included.Count, result.Excluded.Count, string.Join(", ", result.Excluded))
         };
 

@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using McServerLauncher.Localization;
 
 namespace McServerLauncher.Tests;
 
@@ -128,7 +130,8 @@ public class LocalizationTests
     {
         // Localizer.Get returns the key itself when it is missing — no exception, no warning. So a
         // typo or a forgotten resx entry ships as literal "Msg_NeoForgeBetaWarning" on screen, and
-        // nothing catches it before a user does. This walks the source instead.
+        // nothing catches it before a user does. This walks the source instead. Localizer.Format
+        // asks the same way, so a key typed into one fails as quietly as one typed into the other.
         var neutral = Load("Strings.resx");
         var source = Path.Combine(RepoRoot(), "McServerLauncher");
 
@@ -143,7 +146,7 @@ public class LocalizationTests
             // one typed into C# — it renders as its own name — and nothing else looks at it.
             var pattern = Path.GetExtension(file).ToLowerInvariant() switch
             {
-                ".cs" => @"Localizer\.Get\(""([A-Za-z0-9_]+)""\)",
+                ".cs" => @"Localizer\.(?:Get|Format)\(\s*""([A-Za-z0-9_]+)""\s*[,)]",
                 ".axaml" => @"\{loc:Loc\s+([A-Za-z0-9_]+)\s*\}",
                 _ => null
             };
@@ -182,6 +185,43 @@ public class LocalizationTests
                     Assert.True(value.Contains(token) == translated.Contains(token),
                         $"{file}: '{key}' no coincide en {token}");
             }
+        }
+    }
+
+    [Theory]
+    [InlineData("es", "es-ES")]
+    [InlineData("en", "en-US")]
+    [InlineData("pt", "pt-PT")]
+    [InlineData("fr", "fr-FR")]
+    [InlineData("de", "de-DE")]
+    public void FormatGivesWhatStringFormatOfTheTextWouldGive(string ui, string culture)
+    {
+        // Format keeps each template parsed instead of parsing it on every call. That is only a
+        // saving if the text is the same text, in every language and with the culture's own number
+        // formatting, so this holds every template that has a placeholder to exactly that.
+        var before = (CultureInfo.CurrentUICulture, CultureInfo.CurrentCulture);
+        try
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo(ui);
+            CultureInfo.CurrentCulture = new CultureInfo(culture);
+
+            var checkedCount = 0;
+            foreach (var key in Load("Strings.resx").Keys)
+            {
+                var template = Localizer.Get(key);
+                var indexes = Regex.Matches(template, @"\{(\d+)").Select(m => int.Parse(m.Groups[1].Value)).ToList();
+                if (indexes.Count == 0) continue;
+
+                var args = Enumerable.Range(0, indexes.Max() + 1).Select(i => (object)(1234.5 + i)).ToArray();
+                Assert.Equal(string.Format(template, args), Localizer.Format(key, args));
+                checkedCount++;
+            }
+
+            Assert.True(checkedCount > 50, $"solo se comprobaron {checkedCount} textos con marcador");
+        }
+        finally
+        {
+            (CultureInfo.CurrentUICulture, CultureInfo.CurrentCulture) = before;
         }
     }
 

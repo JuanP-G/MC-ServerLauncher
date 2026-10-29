@@ -369,13 +369,13 @@ public partial class ConnectionTestViewModel : ObservableObject, IDisposable
     {
         var series = run.Tunnel.AnyReply ? run.Tunnel : run.Local;
         SamplesSeries = series.Samples.ToList();
-        SamplesTitle = string.Format(Localizer.Get(run.Tunnel.AnyReply ? "Net_SamplesTunnelFmt"
-            : "Net_SamplesLocalFmt"),
+        SamplesTitle = Localizer.Format(run.Tunnel.AnyReply ? "Net_SamplesTunnelFmt"
+            : "Net_SamplesLocalFmt",
             series.Received);
 
         if (run.Status is not null)
             // Not its protocol number: some servers report back whatever the ping asked with.
-            run.Addresses.Add(string.Format(Localizer.Get("Net_ServerInfoFmt"), run.Status.Version,
+            run.Addresses.Add(Localizer.Format("Net_ServerInfoFmt", run.Status.Version,
                 run.Status.Online, run.Status.Max));
         AddressesText = string.Join("   ·   ", run.Addresses);
     }
@@ -452,12 +452,12 @@ public partial class ConnectionTestViewModel : ObservableObject, IDisposable
         var (title, detail) = state switch
         {
             StepState.Good => ("Net_InternetGood",
-                string.Format(Localizer.Get("Net_InternetGoodDetailFmt"), players)),
+                Localizer.Format("Net_InternetGoodDetailFmt", players)),
             // Nothing went up: the line was not measured, which is not the same as lag.
             StepState.Fair when up.Mbps <= 0 && byLatency == StepState.Good =>
                 ("Net_InternetNoSpeed", Localizer.Get("Net_InternetNoSpeedDetail")),
             StepState.Fair when byUpload >= byLatency && up.Mbps > 0 =>
-                ("Net_InternetFair", string.Format(Localizer.Get("Net_InternetSlowUpFmt"), players)),
+                ("Net_InternetFair", Localizer.Format("Net_InternetSlowUpFmt", players)),
             StepState.Fair => ("Net_InternetFair", Localizer.Get("Net_InternetLaggyDetail")),
             _ => ("Net_InternetBad", Localizer.Get("Net_InternetBadDetail")),
         };
@@ -477,7 +477,7 @@ public partial class ConnectionTestViewModel : ObservableObject, IDisposable
             return;
         }
         VerdictState = worst.State;
-        Verdict = string.Format(Localizer.Get("Net_VerdictFmt"), worst.Title, worst.Detail);
+        Verdict = Localizer.Format("Net_VerdictFmt", worst.Title, worst.Detail);
     }
 
     // ---------------------------------------------------------------- report

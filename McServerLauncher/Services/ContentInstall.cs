@@ -41,7 +41,7 @@ internal static class ContentInstall
     {
         if (!supported)
             throw new UserFacingException(
-                string.Format(Localizer.Get(unsupportedFmtKey), config.Type));
+                Localizer.Format(unsupportedFmtKey, config.Type));
 
         var folder = ContentManifest.FolderOf(config);
         Directory.CreateDirectory(folder);
@@ -93,7 +93,7 @@ internal static class ContentInstall
         string folder, string projectId, string display, IProgress<string>? log, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), display));
+        log?.Report(Localizer.Format("Msg_CrossplayResolvingFmt", display));
 
         var version = await modrinth.GetLatestProjectVersionAsync(projectId, config.Type, config.GameVersion,
             ct);
@@ -101,10 +101,10 @@ internal static class ContentInstall
         // sources jar beside it, and the first file listed is not always the right one.
         var file = version?.Files.FirstOrDefault(f => f.Primary) ?? version?.Files.FirstOrDefault();
         if (file is null)
-            throw new UserFacingException(string.Format(
-                Localizer.Get("Msg_CrossplayNoVersionFmt"), display, config.GameVersion, config.Type));
+            throw new UserFacingException(Localizer.Format(
+                "Msg_CrossplayNoVersionFmt", display, config.GameVersion, config.Type));
 
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), display,
+        log?.Report(Localizer.Format("Msg_CrossplayInstallingFmt", display,
             version!.VersionNumber));
         await InstallReplacingAsync(folder, file.Filename, display, path =>
             modrinth.DownloadModAsync(file.Url, path, file.Hashes?.Sha512, file.Hashes?.Sha1, ct: ct));
@@ -154,7 +154,7 @@ internal static class ContentInstall
 
         var (result, removed) = ContentReplacement.RemoveAllOrNothing(others, canRollBack ? newJar : null);
         if (result == ContentReplacement.RemoveResult.Locked)
-            throw new UserFacingException(string.Format(Localizer.Get("Msg_ContentInUseFmt"), display));
+            throw new UserFacingException(Localizer.Format("Msg_ContentInUseFmt", display));
 
         return removed;
     }

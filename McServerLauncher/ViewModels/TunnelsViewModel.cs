@@ -116,7 +116,7 @@ public partial class TunnelsViewModel : ObservableObject
         AgentRunState.Starting => Localizer.Get("Pk_Agent_Starting"),
         AgentRunState.Running => Localizer.Get("Pk_Agent_Running"),
         AgentRunState.Unsupported => Localizer.Get("Pk_Agent_Unsupported"),
-        AgentRunState.Failed => string.Format(Localizer.Get("Pk_Agent_Failed"),
+        AgentRunState.Failed => Localizer.Format("Pk_Agent_Failed",
             PlayitAgentRunner.Shared.LastError ?? ""),
         _ => Localizer.Get("Pk_Agent_Stopped"),
     };
@@ -174,7 +174,7 @@ public partial class TunnelsViewModel : ObservableObject
     /// <summary>The system service of an agent the user installed, to start and stop it from here.</summary>
     public bool ShowService => IsConnected && !UsesAgent && PlayitManager.Shared.IsInstalled;
 
-    public string ServiceText => string.Format(Localizer.Get("Tun_ServiceFmt"),
+    public string ServiceText => Localizer.Format("Tun_ServiceFmt",
         Localizer.Get(PlayitManager.Shared.IsRunning ? "Playit_Active" : "Playit_Stopped"));
 
     private void RaiseAccount()
@@ -230,7 +230,7 @@ public partial class TunnelsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorText = string.Format(Localizer.Get("Msg_PlayitServiceChangeFail"),
+            ErrorText = Localizer.Format("Msg_PlayitServiceChangeFail",
                 ErrorMessages.Describe(ex));
         }
         RaiseAccount();
@@ -262,7 +262,7 @@ public partial class TunnelsViewModel : ObservableObject
 
     public string LastReadText => IsLoading
         ? Localizer.Get("Tun_Loading")
-        : LastRead is { } at ? string.Format(Localizer.Get("Tun_LastReadFmt"), at.ToString("t")) : "";
+        : LastRead is { } at ? Localizer.Format("Tun_LastReadFmt", at.ToString("t")) : "";
 
     public bool AllGood => Rows.Count > 0 && Rows.All(r => !r.IsProblem)
         && !Suggestions.Any(s => s.IsProblem);
@@ -270,7 +270,7 @@ public partial class TunnelsViewModel : ObservableObject
     public string SummaryText => Rows.Count == 0
         ? ""
         : Suggestions.Count(s => s.IsProblem) is var n and > 0
-            ? string.Format(Localizer.Get("Tun_Summary_ProblemsFmt"), n)
+            ? Localizer.Format("Tun_Summary_ProblemsFmt", n)
             : Localizer.Get("Tun_Summary_Ok");
 
     public IBrush SummaryBrush => AllGood ? Green : Amber;
@@ -528,7 +528,7 @@ public partial class TunnelsViewModel : ObservableObject
                 // Said as what to do next, not as what the API said: renaming is the one change here
                 // that a key may be refused for even though it can read, and playit.gg can always do it.
                 throw new UserFacingException(
-                    string.Format(Localizer.Get("Tun_RenameFailFmt"), Describe(ex, write: true)), ex);
+                    Localizer.Format("Tun_RenameFailFmt", Describe(ex, write: true)), ex);
             }
         }, tunnelId);
 
@@ -536,7 +536,7 @@ public partial class TunnelsViewModel : ObservableObject
     {
         var owner = _owner();
         if (!await Dialogs.Current.ConfirmAsync(
-                string.Format(Localizer.Get("Tun_DeleteConfirmFmt"), name),
+                Localizer.Format("Tun_DeleteConfirmFmt", name),
                 Localizer.Get("Title_DeleteTunnel"), owner))
             return;
 
@@ -616,18 +616,18 @@ public partial class TunnelsViewModel : ObservableObject
                 var before = reading.Tunnels.First(t => t.Id == tunnelId).Name;
                 if (await _api.CanManageTunnelsAsync(reading.KeyFor[tunnelId]) == false)
                 {
-                    server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenameReadOnlyFmt"), before,
+                    server.LogLauncher(Localizer.Format("Tun_AutoRenameReadOnlyFmt", before,
                         newName));
                     continue;
                 }
                 try
                 {
                     await _api.RenameTunnelAsync(reading.KeyFor[tunnelId], tunnelId, newName);
-                    server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenamedFmt"), before, newName));
+                    server.LogLauncher(Localizer.Format("Tun_AutoRenamedFmt", before, newName));
                 }
                 catch (Exception ex)
                 {
-                    server.LogLauncher(string.Format(Localizer.Get("Tun_AutoRenameFailFmt"), before,
+                    server.LogLauncher(Localizer.Format("Tun_AutoRenameFailFmt", before,
                         Describe(ex, write: true)));
                 }
             }

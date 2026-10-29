@@ -169,7 +169,7 @@ public sealed partial class PerformanceSolutionsViewModel : ObservableObject, ID
     private SolutionRow DistanceRow(string key, Advice advice, bool overriddenByPaper, string titleKey,
         string detailKey)
     {
-        var title = string.Format(Localizer.Get(titleKey), advice.From, advice.To);
+        var title = Localizer.Format(titleKey, advice.From, advice.To);
         var detail = Localizer.Get(detailKey);
         if (overriddenByPaper)
         {
@@ -191,7 +191,7 @@ public sealed partial class PerformanceSolutionsViewModel : ObservableObject, ID
         var to = ByteSize.Format((advice.To ?? 0) * 1024 * 1024);
         var manual = _host.IsManualMemory;
         return new SolutionRow(
-            string.Format(Localizer.Get("Sol_RamFmt"), from, to),
+            Localizer.Format("Sol_RamFmt", from, to),
             Localizer.Get(manual ? "Sol_RamDetailManual" : "Sol_RamDetailAuto"),
             Localizer.Get("Sol_Apply"),
             () =>

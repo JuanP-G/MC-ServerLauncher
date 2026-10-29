@@ -109,7 +109,7 @@ public class PlayitPartnerService
             if (!resp.IsSuccessStatusCode)
             {
                 var err = ExtractError(json);
-                throw new UserFacingException(string.Format(Localizer.Get("Msg_SetupCodeFailedFmt"),
+                throw new UserFacingException(Localizer.Format("Msg_SetupCodeFailedFmt",
                     err is null ? $"HTTP {(int)resp.StatusCode}" : DescribeFail(err)));
             }
         }
@@ -119,7 +119,7 @@ public class PlayitPartnerService
         }
         catch (Exception ex)
         {
-            throw new UserFacingException(string.Format(Localizer.Get("Msg_SetupCodeFailedFmt"),
+            throw new UserFacingException(Localizer.Format("Msg_SetupCodeFailedFmt",
                 ErrorMessages.Describe(ex)));
         }
 
@@ -143,8 +143,8 @@ public class PlayitPartnerService
             && o.ValueKind == JsonValueKind.True;
 
         if (string.IsNullOrEmpty(secret) || string.IsNullOrEmpty(agentId))
-            throw new UserFacingException(string.Format(
-                Localizer.Get("Msg_SetupCodeFailedFmt"), Localizer.Get("Msg_SetupCodeNoAgent")));
+            throw new UserFacingException(Localizer.Format(
+                "Msg_SetupCodeFailedFmt", Localizer.Get("Msg_SetupCodeNoAgent")));
 
         return new CreateAgentResult(accountId, agentId, secret, overLimit);
     }
@@ -155,7 +155,7 @@ public class PlayitPartnerService
         if (root.TryGetProperty("status", out var status) && root.TryGetProperty("data", out var data))
         {
             if (status.GetString() != "success")
-                throw new UserFacingException(string.Format(Localizer.Get("Msg_SetupCodeFailedFmt"),
+                throw new UserFacingException(Localizer.Format("Msg_SetupCodeFailedFmt",
                     DescribeFail(ExtractError(data.GetRawText()) ?? status.GetString() ?? "error")));
             return data;
         }

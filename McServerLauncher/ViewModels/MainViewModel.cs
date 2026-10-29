@@ -123,7 +123,7 @@ public partial class MainViewModel : ObservableObject
     public string UpdateCheckText => UpdateCheckState switch
     {
         UpdateCheckState.Checking => Localizer.Get("Upd_Checking"),
-        UpdateCheckState.UpToDate => string.Format(Localizer.Get("Upd_UpToDateFmt"), LastCheckClock()),
+        UpdateCheckState.UpToDate => Localizer.Format("Upd_UpToDateFmt", LastCheckClock()),
         UpdateCheckState.Available => UpdateText,
         UpdateCheckState.Failed => Localizer.Get("Upd_Failed"),
         _ => Localizer.Get("Upd_NotChecked"),
@@ -137,7 +137,7 @@ public partial class MainViewModel : ObservableObject
             ?? new Version(0, 0));
 
     /// <summary>"Version 1.12.1 · MIT", under the name in About.</summary>
-    public string VersionLineText => string.Format(Localizer.Get("About_VersionFmt"), VersionText);
+    public string VersionLineText => Localizer.Format("About_VersionFmt", VersionText);
 
     // ---- Sections ----
 
@@ -488,8 +488,8 @@ public partial class MainViewModel : ObservableObject
 
         _offer = info;
         // A beta says so before the button, not after installing.
-        UpdateText = string.Format(
-            Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
+        UpdateText = Localizer.Format(
+            info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt",
             info.Version);
         UpdateAvailable = true;
         OnPropertyChanged(nameof(UpdateCheckText));
@@ -531,7 +531,7 @@ public partial class MainViewModel : ObservableObject
             ? (AnyServerRunning ? "Notif_UpdateBetaWhileRunningFmt" : "Notif_UpdateBetaFmt")
             : (AnyServerRunning ? "Notif_UpdateWhileRunningFmt" : "Notif_UpdateFmt");
 
-        var message = string.Format(Localizer.Get(key), version);
+        var message = Localizer.Format(key, version);
 
         // The one notification with no NotificationKind behind it: it belongs to the app, not to a
         // server, so there is no kind to look up and no per-server override to consult. Info and a
@@ -680,7 +680,7 @@ public partial class MainViewModel : ObservableObject
             ? "Msg_ServersRecoveredFmt"
             : "Msg_ServersCorruptFmt";
         await Dialogs.Current.ShowAsync(
-            string.Format(Localizer.Get(key), _storage.QuarantinedFilePath),
+            Localizer.Format(key, _storage.QuarantinedFilePath),
             Localizer.Get("Title_ServersDamaged"), owner);
     }
 
@@ -937,7 +937,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            panel.ReportProblem(string.Format(Localizer.Get("Msg_ConfigSaveError"),
+            panel.ReportProblem(Localizer.Format("Msg_ConfigSaveError",
                 ErrorMessages.Describe(ex)));
         }
     }

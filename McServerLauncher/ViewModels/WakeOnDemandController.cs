@@ -69,7 +69,7 @@ public sealed class WakeOnDemandController : IDisposable
         if (port is null) return;
 
         if (!_listener.Start(port.Value, BuildStatus, OnJoinAttempt))
-            _host.Say(string.Format(Localizer.Get("Msg_WakePortBusyFmt"), port.Value));
+            _host.Say(Localizer.Format("Msg_WakePortBusyFmt", port.Value));
     }
 
     /// <summary>Frees the port: the server is starting, the world is being swapped, or the app is closing.</summary>

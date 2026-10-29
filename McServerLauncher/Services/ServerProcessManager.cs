@@ -88,12 +88,12 @@ public class ServerProcessManager : IDisposable
             if (isForgeArgs)
             {
                 if (ResolveForgeArgsFile(config) is null)
-                    throw new UserFacingException(string.Format(Localizer.Get("Msg_ForgeArgsMissingFmt"),
+                    throw new UserFacingException(Localizer.Format("Msg_ForgeArgsMissingFmt",
                         Path.Combine(config.FolderPath, "libraries")));
             }
             else if (!File.Exists(config.JarFullPath))
             {
-                throw new UserFacingException(string.Format(Localizer.Get("Msg_ServerJarMissingFmt"),
+                throw new UserFacingException(Localizer.Format("Msg_ServerJarMissingFmt",
                     config.JarFullPath));
             }
 
@@ -122,7 +122,7 @@ public class ServerProcessManager : IDisposable
 
             State = ServerState.Starting;
             _startedAtUtc = DateTime.UtcNow;
-            OutputReceived?.Invoke(string.Format(Localizer.Get("Msg_LauncherStarting"), config.JavaPath,
+            OutputReceived?.Invoke(Localizer.Format("Msg_LauncherStarting", config.JavaPath,
                 JavaCommandLine.Display(args)), ConsoleSource.Launcher);
 
             try

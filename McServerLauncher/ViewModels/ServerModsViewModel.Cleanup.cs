@@ -49,7 +49,7 @@ public partial class ServerModsViewModel
     /// <summary>"Quitar 1 seleccionado" / "Quitar 3 seleccionados".</summary>
     public string RemoveSelectedText => SelectedCleanupCount == 1
         ? Localizer.Get("Cleanup_RemoveSelectedOne")
-        : string.Format(Localizer.Get("Cleanup_RemoveSelectedFmt"), SelectedCleanupCount);
+        : Localizer.Format("Cleanup_RemoveSelectedFmt", SelectedCleanupCount);
 
     /// <summary>Set once the tab has been shown; until then, nothing reads or writes the ledger.</summary>
     private bool _cleanupArmed;
@@ -203,12 +203,12 @@ public partial class ServerModsViewModel
 
         // After the refresh, which rewrites the status line.
         var parts = new List<string>();
-        if (removed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_RemovedFmt"),
+        if (removed.Count > 0) parts.Add(Localizer.Format("Cleanup_RemovedFmt",
             string.Join(", ", removed)));
-        if (failed.Count > 0) parts.Add(string.Format(Localizer.Get("Cleanup_FailedFmt"),
+        if (failed.Count > 0) parts.Add(Localizer.Format("Cleanup_FailedFmt",
             string.Join(", ", failed)));
         if (changed.Count > 0)
-            parts.Add(string.Format(Localizer.Get("Cleanup_ChangedFmt"), string.Join(", ", changed)));
+            parts.Add(Localizer.Format("Cleanup_ChangedFmt", string.Join(", ", changed)));
         UpdateStatus = string.Join(" ", parts);
     }
 

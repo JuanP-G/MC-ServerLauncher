@@ -177,7 +177,7 @@ public static class SelfUpdater
             // The AppImage in use was never touched, so the app still runs: say why and let the
             // caller offer the download page instead.
             throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_UpdateCannotReplaceFmt"),
+                Localizer.Format("Msg_UpdateCannotReplaceFmt",
                     target, ErrorMessages.Describe(ex)), ex);
         }
 

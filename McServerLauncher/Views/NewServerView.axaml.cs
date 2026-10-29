@@ -101,7 +101,7 @@ public partial class NewServerView : UserControl
         // Suggest a free port that doesn't clash with existing servers.
         PortBox.Value = SuggestFreePort();
         if (_usedPorts.Count > 0)
-            PortStatus.Text = string.Format(Localizer.Get("Msg_PortsInUseByServers"),
+            PortStatus.Text = Localizer.Format("Msg_PortsInUseByServers",
                 string.Join(", ", _usedPorts.OrderBy(p => p)));
 
         NameBox.TextChanged += (_, _) => UpdateFinalPath();
@@ -330,8 +330,8 @@ public partial class NewServerView : UserControl
         var parts = new List<string> { (ServerTypeCatalog.For(type).DisplayName + " " + found.GameVersion)
             .Trim() };
         if (!string.IsNullOrEmpty(found.LoaderVersion))
-            parts.Add(string.Format(Localizer.Get("Cs_DetectedLoaderFmt"), found.LoaderVersion));
-        if (found.Port is { } port) parts.Add(string.Format(Localizer.Get("Cs_DetectedPortFmt"), port));
+            parts.Add(Localizer.Format("Cs_DetectedLoaderFmt", found.LoaderVersion));
+        if (found.Port is { } port) parts.Add(Localizer.Format("Cs_DetectedPortFmt", port));
         if (found.MaxRamGb is { } max) parts.Add(max + " GB");
         parts.Add(Localizer.Get(found.HasWorld ? "Cs_DetectedWorld" : "Cs_DetectedNoWorld"));
         return string.Join(" · ", parts);
@@ -391,11 +391,11 @@ public partial class NewServerView : UserControl
             _latestRelease = latest;
             _allVersions = list;
             PopulateVersions();
-            VersionStatus.Text = string.Format(Localizer.Get("Msg_LatestRelease"), latest);
+            VersionStatus.Text = Localizer.Format("Msg_LatestRelease", latest);
         }
         catch (Exception ex)
         {
-            VersionStatus.Text = string.Format(Localizer.Get("Msg_VersionsLoadError"),
+            VersionStatus.Text = Localizer.Format("Msg_VersionsLoadError",
                 ErrorMessages.Describe(ex));
         }
     }
@@ -449,19 +449,19 @@ public partial class NewServerView : UserControl
     /// <summary>Turns a rule violation into something worth reading, with the fix in it.</summary>
     private static string Describe(NameIssue issue, string folder) => issue.Kind switch
     {
-        NameIssueKind.InvalidCharacter => string.Format(
-            Localizer.Get("Msg_NameInvalidCharFmt"), issue.Detail,
+        NameIssueKind.InvalidCharacter => Localizer.Format(
+            "Msg_NameInvalidCharFmt", issue.Detail,
             ServerNameRule.Clean(Path.GetFileName(folder))),
 
-        NameIssueKind.ReservedName => string.Format(
-            Localizer.Get("Msg_NameReservedFmt"), issue.Detail),
+        NameIssueKind.ReservedName => Localizer.Format(
+            "Msg_NameReservedFmt", issue.Detail),
 
         NameIssueKind.TrailingDotOrSpace => Localizer.Get("Msg_NameTrailingDot"),
 
-        NameIssueKind.ServerRejectsParentCharacter => string.Format(
-            Localizer.Get("Msg_BukkitPathParentFmt"), issue.Detail),
+        NameIssueKind.ServerRejectsParentCharacter => Localizer.Format(
+            "Msg_BukkitPathParentFmt", issue.Detail),
 
-        _ => string.Format(Localizer.Get("Msg_BukkitPathFmt"), issue.Detail)
+        _ => Localizer.Format("Msg_BukkitPathFmt", issue.Detail)
     };
 
     /// <summary>
@@ -525,8 +525,8 @@ public partial class NewServerView : UserControl
         }
         catch (Exception ex)
         {
-            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
-            await Warn(string.Format(Localizer.Get("Msg_CreateServerError"), ErrorMessages.Describe(ex)));
+            AppendLog(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
+            await Warn(Localizer.Format("Msg_CreateServerError", ErrorMessages.Describe(ex)));
             SetBusy(false);
         }
     }
@@ -549,12 +549,12 @@ public partial class NewServerView : UserControl
         var port = WholeNumberConverter.ToWhole(PortBox.Value ?? 25565m);
         if (_usedPorts.Contains(port))
         {
-            await Warn(string.Format(Localizer.Get("Msg_PortAssigned"), port));
+            await Warn(Localizer.Format("Msg_PortAssigned", port));
             return null;
         }
         if (_ports.IsPortInUse(port))
         {
-            await Warn(string.Format(Localizer.Get("Msg_PortInUseOther"), port));
+            await Warn(Localizer.Format("Msg_PortInUseOther", port));
             return null;
         }
 
@@ -573,7 +573,7 @@ public partial class NewServerView : UserControl
         if (Directory.Exists(folder) && Directory.EnumerateFileSystemEntries(folder).Any())
         {
             var ok = await MessageBox.ConfirmAsync(
-                string.Format(Localizer.Get("Msg_FolderExists"), folder),
+                Localizer.Format("Msg_FolderExists", folder),
                 Localizer.Get("Title_FolderExists"), Owner);
             if (!ok) return null;
         }
@@ -666,12 +666,12 @@ public partial class NewServerView : UserControl
     /// <summary>Why the port cannot be given to the server being taken over, or null if it can.</summary>
     private string? PortProblem(int port, ServerDetection found)
     {
-        if (_usedPorts.Contains(port)) return string.Format(Localizer.Get("Msg_PortAssigned"), port);
+        if (_usedPorts.Contains(port)) return Localizer.Format("Msg_PortAssigned", port);
 
         // Only a port the user changed is checked against the system: the one the folder already
         // uses may well be busy because this very server is running outside the app right now.
         if (port != found.Port && _ports.IsPortInUse(port))
-            return string.Format(Localizer.Get("Msg_PortInUseOther"), port);
+            return Localizer.Format("Msg_PortInUseOther", port);
 
         return null;
     }
@@ -696,8 +696,8 @@ public partial class NewServerView : UserControl
         }
         catch (Exception ex)
         {
-            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
-            await Warn(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            AppendLog(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
+            await Warn(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
             SetBusy(false);
         }
     }

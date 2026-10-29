@@ -238,7 +238,7 @@ internal sealed class BackupCoordinator : IDisposable
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    _host.Say(string.Format(Localizer.Get("Msg_BackupFailedStartingAnywayFmt"),
+                    _host.Say(Localizer.Format("Msg_BackupFailedStartingAnywayFmt",
                         ErrorMessages.Describe(ex)));
                     _playedSinceBackup = true;
                 }

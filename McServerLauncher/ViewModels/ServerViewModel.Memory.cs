@@ -26,7 +26,7 @@ public partial class ServerViewModel
 
     /// <summary>The notice's way back, with the numbers it goes back to.</summary>
     public string MemoryNoticeManualText =>
-        string.Format(Localizer.Get("Mem_NoticeManualFmt"), Config.MinRamGb, Config.MaxRamGb);
+        Localizer.Format("Mem_NoticeManualFmt", Config.MinRamGb, Config.MaxRamGb);
 
     /// <summary>Stays Automatic, which is a choice now, so the notice goes.</summary>
     [RelayCommand]
@@ -77,7 +77,7 @@ public partial class ServerViewModel
         if (dropped && _java.AcceptsFlags(config.JavaPath, plan.Flags))
             notes.Add(Localizer.Get("Msg_MemoryFlagsFallback"));
 
-        notes.Add(string.Format(Localizer.Get("Msg_MemoryPlanFmt"),
+        notes.Add(Localizer.Format("Msg_MemoryPlanFmt",
             ByteSize.Format(plan.CeilingMb * 1024 * 1024), ReasonText(plan.Reason, mods)));
         if (plan.CappedTo32Bit)
             notes.Add(Localizer.Get("Msg_Java32BitCap"));
@@ -107,7 +107,7 @@ public partial class ServerViewModel
         MemoryCeilingReason.Learned => Localizer.Get("Mem_ReasonLearned"),
         MemoryCeilingReason.RaisedAfterPressure => Localizer.Get("Mem_ReasonPressure"),
         MemoryCeilingReason.Floor => Localizer.Get("Mem_ReasonFloor"),
-        _ when modCount > 0 => string.Format(Localizer.Get("Mem_ReasonModsFmt"), modCount),
+        _ when modCount > 0 => Localizer.Format("Mem_ReasonModsFmt", modCount),
         _ => Localizer.Get("Mem_ReasonNoMods")
     };
 
@@ -216,7 +216,7 @@ public partial class ServerViewModel
         var live = status?.LiveAfterGc is { } l ? l : tracker.LiveMb * Mb;
         var held = status is { HeapCommitted: > 0 } ? status.HeapCommitted : tracker.CommittedMb * Mb;
         RamDetailText = held > 0
-            ? string.Format(Localizer.Get("Mem_RamJavaFmt"), ByteSize.Format(live), ByteSize.Format(held))
+            ? Localizer.Format("Mem_RamJavaFmt", ByteSize.Format(live), ByteSize.Format(held))
             : "";
     }
 

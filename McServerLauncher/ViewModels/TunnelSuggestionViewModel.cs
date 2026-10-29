@@ -28,14 +28,14 @@ public sealed partial class TunnelSuggestionViewModel
     public string Text => _suggestion.Kind switch
     {
         TunnelSuggestionKind.DeleteOrphan =>
-            string.Format(Localizer.Get("Tun_Fix_OrphanFmt"), _suggestion.Subject),
+            Localizer.Format("Tun_Fix_OrphanFmt", _suggestion.Subject),
         TunnelSuggestionKind.DeleteDuplicate =>
-            string.Format(Localizer.Get("Tun_Fix_DuplicateFmt"), _suggestion.Subject, _suggestion.Other),
+            Localizer.Format("Tun_Fix_DuplicateFmt", _suggestion.Subject, _suggestion.Other),
         TunnelSuggestionKind.SharedPort =>
-            string.Format(Localizer.Get("Tun_Fix_SharedFmt"), _suggestion.Other, _suggestion.Subject),
+            Localizer.Format("Tun_Fix_SharedFmt", _suggestion.Other, _suggestion.Subject),
         TunnelSuggestionKind.CreateJava =>
-            string.Format(Localizer.Get("Tun_Fix_CreateJavaFmt"), _suggestion.Subject, _suggestion.Port),
-        _ => string.Format(Localizer.Get("Tun_Fix_CreateBedrockFmt"), _suggestion.Subject, _suggestion.Port),
+            Localizer.Format("Tun_Fix_CreateJavaFmt", _suggestion.Subject, _suggestion.Port),
+        _ => Localizer.Format("Tun_Fix_CreateBedrockFmt", _suggestion.Subject, _suggestion.Port),
     };
 
     public string ButtonText => !CanFixHere ? Localizer.Get("Tun_Fix_OnWeb") : _suggestion.Kind switch
@@ -45,8 +45,8 @@ public sealed partial class TunnelSuggestionViewModel
         // A shared Bedrock port is not in the server's properties, so "change the port" has nothing to
         // open: the app moves it to a free one itself.
         TunnelSuggestionKind.SharedPort when _suggestion.Udp =>
-            string.Format(Localizer.Get("Tun_Fix_MoveBedrockFmt"), _suggestion.Subject),
-        TunnelSuggestionKind.SharedPort => string.Format(Localizer.Get("Tun_Fix_ChangePortFmt"),
+            Localizer.Format("Tun_Fix_MoveBedrockFmt", _suggestion.Subject),
+        TunnelSuggestionKind.SharedPort => Localizer.Format("Tun_Fix_ChangePortFmt",
             _suggestion.Subject),
         TunnelSuggestionKind.CreateJava => Localizer.Get("Tun_Fix_Create"),
         _ => Localizer.Get("Tun_Fix_CreateBedrock"),

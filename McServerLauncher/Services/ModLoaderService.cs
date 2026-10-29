@@ -78,7 +78,7 @@ public class ModLoaderService
         var totalMb = (resp.Content.Headers.ContentLength ?? 0) / (1024.0 * 1024.0);
         if (totalMb > 0)
         {
-            log?.Report(string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#")));
+            log?.Report(Localizer.Format("Msg_DownloadingJarSize", totalMb.ToString("0.#")));
         }
 
         // Atomic: the structural check below rejects by deleting, so writing in place would let a
@@ -112,8 +112,8 @@ public class ModLoaderService
             !string.Equals(loader, expectedLoaderVersion, StringComparison.OrdinalIgnoreCase))
         {
             FileCleanup.TryDelete(jarPath);
-            throw new UserFacingException(string.Format(
-                Localizer.Get("Msg_FabricJarInvalidFmt"), expectedGameVersion, expectedLoaderVersion));
+            throw new UserFacingException(Localizer.Format(
+                "Msg_FabricJarInvalidFmt", expectedGameVersion, expectedLoaderVersion));
         }
     }
 
@@ -157,7 +157,7 @@ public class ModLoaderService
             $"https://maven.minecraftforge.net/net/minecraftforge/forge/{fullId}/forge-{fullId}-installer.jar";
         var installerPath = Path.Combine(folder, $"forge-{fullId}-installer.jar");
 
-        log?.Report(string.Format(Localizer.Get("Msg_ForgeDownloadingInstaller"), forgeVersion));
+        log?.Report(Localizer.Format("Msg_ForgeDownloadingInstaller", forgeVersion));
         using (var resp = await Http.GetAsync(installerUrl, HttpCompletionOption.ResponseHeadersRead, ct))
         {
             resp.EnsureSuccessStatusCode();
@@ -259,7 +259,7 @@ public class ModLoaderService
         var installerUrl = $"{NeoForgeMaven}/{neoForgeVersion}/neoforge-{neoForgeVersion}-installer.jar";
         var installerPath = Path.Combine(folder, $"neoforge-{neoForgeVersion}-installer.jar");
 
-        log?.Report(string.Format(Localizer.Get("Msg_NeoForgeDownloadingInstaller"), neoForgeVersion));
+        log?.Report(Localizer.Format("Msg_NeoForgeDownloadingInstaller", neoForgeVersion));
         using (var resp = await Http.GetAsync(installerUrl, HttpCompletionOption.ResponseHeadersRead, ct))
         {
             resp.EnsureSuccessStatusCode();
@@ -337,7 +337,7 @@ public class ModLoaderService
         }
 
         if (p.ExitCode != 0)
-            throw new UserFacingException(string.Format(Localizer.Get("Msg_ForgeInstallerFailed"),
+            throw new UserFacingException(Localizer.Format("Msg_ForgeInstallerFailed",
                 p.ExitCode));
     }
 

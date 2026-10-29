@@ -212,7 +212,7 @@ public sealed partial class ModDetailsViewModel : ObservableObject, IDisposable
         // The project endpoint returns a team id instead of a name, so an empty author there must
         // not erase the one the search result already gave us.
         if (!string.IsNullOrWhiteSpace(item.Author))
-            AuthorText = string.Format(Localizer.Get("Store_ByFmt"), item.Author);
+            AuthorText = Localizer.Format("Store_ByFmt", item.Author);
 
         // Six is as many chips as the header row holds without wrapping into a wall; the install
         // side is left out because the compatibility section below states it in a full sentence.
@@ -377,7 +377,7 @@ public sealed partial class ModDetailsViewModel : ObservableObject, IDisposable
         if (IsCompatible)
         {
             CompatibilityText = Localizer.Get("Store_Compatible");
-            CompatibilityDetail = string.Format(Localizer.Get("Store_CompatibleDetailFmt"),
+            CompatibilityDetail = Localizer.Format("Store_CompatibleDetailFmt",
                 _parent.ServerType, _parent.GameVersion);
 
             foreach (var version in versions!.Take(10))
@@ -386,7 +386,7 @@ public sealed partial class ModDetailsViewModel : ObservableObject, IDisposable
         else
         {
             CompatibilityText = Localizer.Get("Store_NotCompatible");
-            CompatibilityDetail = string.Format(Localizer.Get("Store_NotCompatibleDetailFmt"),
+            CompatibilityDetail = Localizer.Format("Store_NotCompatibleDetailFmt",
                 _parent.ServerType, _parent.GameVersion);
         }
 
@@ -408,7 +408,7 @@ public sealed partial class ModDetailsViewModel : ObservableObject, IDisposable
             .ToList();
 
         if (names.Count > 0)
-            AuthorText = string.Format(Localizer.Get("Store_ByFmt"), string.Join(", ", names));
+            AuthorText = Localizer.Format("Store_ByFmt", string.Join(", ", names));
     }
 
     /// <summary>

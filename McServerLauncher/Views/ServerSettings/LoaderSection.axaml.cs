@@ -106,7 +106,7 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
     public void Reload()
     {
         var config = _draft.Live;
-        CurrentText.Text = string.Format(Localizer.Get("Loader_CurrentFmt"),
+        CurrentText.Text = Localizer.Format("Loader_CurrentFmt",
             ServerTypeCatalog.For(config.Type).DisplayName, config.GameVersion);
         UpdateWarning();
         UpdateInstallable();
@@ -174,12 +174,12 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
             _allVersions = list;
             PopulateVersions();
             VersionStatus.Text = _detectedVersion is not null
-                ? string.Format(Localizer.Get("Loader_DetectedFmt"), _detectedVersion)
-                : string.Format(Localizer.Get("Msg_LatestRelease"), latest);
+                ? Localizer.Format("Loader_DetectedFmt", _detectedVersion)
+                : Localizer.Format("Msg_LatestRelease", latest);
         }
         catch (Exception ex)
         {
-            VersionStatus.Text = string.Format(Localizer.Get("Msg_VersionsLoadError"),
+            VersionStatus.Text = Localizer.Format("Msg_VersionsLoadError",
                 ErrorMessages.Describe(ex));
         }
     }
@@ -228,7 +228,7 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
         }
         catch (Exception ex)
         {
-            ShowError(string.Format(Localizer.Get("Msg_ConfigSaveError"), ErrorMessages.Describe(ex)));
+            ShowError(Localizer.Format("Msg_ConfigSaveError", ErrorMessages.Describe(ex)));
         }
     }
 
@@ -247,7 +247,7 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
         // Converting to Paper in a folder it refuses to run from produces a server that installs
         // perfectly and never starts.
         if (BukkitPathRule.Rejects(folder, target))
-            return string.Format(Localizer.Get("Msg_BukkitPathFmt"), BukkitPathRule.OffendingCharacter(folder)!.Value);
+            return Localizer.Format("Msg_BukkitPathFmt", BukkitPathRule.OffendingCharacter(folder)!.Value);
 
         version = chosen;
         return null;
@@ -281,8 +281,8 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
         }
         catch (Exception ex)
         {
-            AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
-            ShowError(string.Format(Localizer.Get("Loader_Error"), ErrorMessages.Describe(ex)));
+            AppendLog(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
+            ShowError(Localizer.Format("Loader_Error", ErrorMessages.Describe(ex)));
             return false;
         }
         finally

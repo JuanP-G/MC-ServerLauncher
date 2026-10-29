@@ -68,7 +68,7 @@ public sealed class StartPreflight
 
         if (isAutoRestart)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_AutoRestartPortBusyFmt"), port.Value));
+            _host.Say(Localizer.Format("Msg_AutoRestartPortBusyFmt", port.Value));
             return false;
         }
         return await TryFreePortAsync(port.Value);
@@ -101,8 +101,8 @@ public sealed class StartPreflight
             return;
 
         _host.Say(current > 0
-            ? string.Format(Localizer.Get("Msg_NeedsJavaCurrentPreparing"), required, current)
-            : string.Format(Localizer.Get("Msg_NeedsJavaPreparing"), required));
+            ? Localizer.Format("Msg_NeedsJavaCurrentPreparing", required, current)
+            : Localizer.Format("Msg_NeedsJavaPreparing", required));
         try
         {
             var path = await _java.EnsureJavaAsync(required.Value, new Progress<string>(_host.Say));
@@ -110,12 +110,12 @@ public sealed class StartPreflight
             {
                 Config.JavaPath = path;
                 _host.ConfigChanged();
-                _host.Say(string.Format(Localizer.Get("Msg_JavaConfigured"), path));
+                _host.Say(Localizer.Format("Msg_JavaConfigured", path));
             }
         }
         catch (Exception ex)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_JavaPrepareFailStart"),
+            _host.Say(Localizer.Format("Msg_JavaPrepareFailStart",
                 required, ErrorMessages.Describe(ex)));
         }
     }
@@ -176,14 +176,14 @@ public sealed class StartPreflight
             // A check that cannot run is not a reason to refuse a start: the server may well be
             // fine, and the loader will say so far better than a guess would. Said out loud, though
             // — a silent skip here is how the old code came to claim nothing was ever missing.
-            _host.Say(string.Format(Localizer.Get("Msg_DepsCheckFailedFmt"), ErrorMessages.Describe(ex)));
+            _host.Say(Localizer.Format("Msg_DepsCheckFailedFmt", ErrorMessages.Describe(ex)));
             return true;
         }
 
         if (missing.Count == 0) return true;
 
         var summary = string.Join(", ", missing.Select(m => m.Id));
-        _host.Say(string.Format(Localizer.Get("Msg_DepsMissingFmt"), missing.Count, summary));
+        _host.Say(Localizer.Format("Msg_DepsMissingFmt", missing.Count, summary));
 
         if (!ContentDependencyCheck.ShouldAsk(missing.Count, isAutoRestart))
         {
@@ -209,7 +209,7 @@ public sealed class StartPreflight
                 // Starting while still claiming it was handled is the one outcome worth avoiding.
                 var left = ContentDependencyCheck.CheckServer(Config);
                 if (left.Count > 0)
-                    _host.Say(string.Format(Localizer.Get("Msg_DepsStillMissingFmt"),
+                    _host.Say(Localizer.Format("Msg_DepsStillMissingFmt",
                         string.Join(", ", left.Select(m => m.Id))));
                 return true;
 
@@ -259,18 +259,18 @@ public sealed class StartPreflight
 
         if (suggestion is null || isAutoRestart)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+            _host.Say(Localizer.Format("Msg_BukkitPathFmt", bad));
             return false;
         }
 
         var accepted = await Dialogs.Current.ConfirmAsync(
-            string.Format(Localizer.Get("Msg_BukkitPathRenameConfirm"),
+            Localizer.Format("Msg_BukkitPathRenameConfirm",
                 bad, Path.GetFileName(Config.FolderPath), Path.GetFileName(suggestion)),
             Localizer.Get("Msg_BukkitPathRenameTitle"));
 
         if (!accepted)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_BukkitPathFmt"), bad));
+            _host.Say(Localizer.Format("Msg_BukkitPathFmt", bad));
             return false;
         }
 
@@ -279,8 +279,8 @@ public sealed class StartPreflight
             // Refuse rather than merge into something that already exists: a folder of that name
             // may be another server, and Directory.Move would fail halfway or bury it.
             if (Directory.Exists(suggestion) || File.Exists(suggestion))
-                throw new IOException(string.Format(
-                    Localizer.Get("Msg_BukkitPathRenameExists"), Path.GetFileName(suggestion)));
+                throw new IOException(Localizer.Format(
+                    "Msg_BukkitPathRenameExists", Path.GetFileName(suggestion)));
 
             Directory.Move(Config.FolderPath, suggestion);
             // Announces on its own now, which is what re-reads the port, the MOTD, the icon, the
@@ -289,12 +289,12 @@ public sealed class StartPreflight
             Config.FolderPath = suggestion;
             _host.ConfigChanged();      // persists the new path before anything else runs
 
-            _host.Say(string.Format(Localizer.Get("Msg_BukkitPathRenamedFmt"), suggestion));
+            _host.Say(Localizer.Format("Msg_BukkitPathRenamedFmt", suggestion));
             return true;
         }
         catch (Exception ex)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            _host.Say(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
             return false;
         }
     }
@@ -310,14 +310,14 @@ public sealed class StartPreflight
         // A Java holding the port is most likely a server left running when the app closed badly,
         // with players' progress not yet saved. Killing it is still offered — it may be the only
         // way — but not without saying what it costs.
-        var question = string.Format(Localizer.Get("Msg_PortBusyConfirm"), port, procDesc);
+        var question = Localizer.Format("Msg_PortBusyConfirm", port, procDesc);
         if (isJava) question += Environment.NewLine + Environment.NewLine + Localizer.Get("Msg_PortBusyJavaNote");
 
         var accepted = await Dialogs.Current.ConfirmAsync(question, Localizer.Get("Msg_PortBusyTitle"));
 
         if (!accepted)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_PortBusyNotStarted"), port, procDesc));
+            _host.Say(Localizer.Format("Msg_PortBusyNotStarted", port, procDesc));
             return false;
         }
 
@@ -362,17 +362,17 @@ public sealed class StartPreflight
             }
             if (currentPid != pid)
             {
-                _host.Say(string.Format(Localizer.Get("Msg_PortOwnerChangedFmt"), port));
+                _host.Say(Localizer.Format("Msg_PortOwnerChangedFmt", port));
                 return false;
             }
 
             System.Diagnostics.Process.GetProcessById(pid.Value).Kill(entireProcessTree: true);
-            _host.Say(string.Format(Localizer.Get("Msg_ClosedPortProcess"), port, procDesc));
+            _host.Say(Localizer.Format("Msg_ClosedPortProcess", port, procDesc));
             return true;
         }
         catch (Exception ex)
         {
-            _host.Say(string.Format(Localizer.Get("Msg_CannotKill"), ErrorMessages.Describe(ex)));
+            _host.Say(Localizer.Format("Msg_CannotKill", ErrorMessages.Describe(ex)));
             return false;
         }
     }
@@ -385,7 +385,7 @@ public sealed class StartPreflight
 
         if (_ports.IsPortInUse(port))
         {
-            _host.Say(string.Format(Localizer.Get("Msg_PortStillBusy"), port));
+            _host.Say(Localizer.Format("Msg_PortStillBusy", port));
             return false;
         }
         return true;
