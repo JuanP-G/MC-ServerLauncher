@@ -110,7 +110,7 @@ internal static class UpdateHelper
         }
         catch (Exception ex)
         {
-            log($"Update helper: could not run the installer: {ex.Message}");
+            log($"Update helper: could not run the installer: {ErrorMessages.Describe(ex)}");
             relaunch();
             return Failed;
         }
