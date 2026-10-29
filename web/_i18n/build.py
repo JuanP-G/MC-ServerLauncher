@@ -18,6 +18,8 @@ que se cambió el español y se olvidó actualizar la traducción) o si queda te
 español sin traducir en la salida.
 """
 
+import base64
+import hashlib
 import json
 import pathlib
 import re
@@ -92,6 +94,58 @@ def localize(html, code, meta, mapping):
     return rewrite_language_links(out, code)
 
 
+# Política de contenido de cada página. Es una etiqueta <meta> porque el hosting no se configura
+# desde el repositorio; frame-ancestors, report-uri y sandbox no funcionan en una etiqueta, así que
+# no se incluyen.
+#
+#   script-src   el propio sitio, el contador (GoatCounter) y el script en línea, por su hash: así
+#                un script inyectado en la página no se ejecuta aunque llegue a escribirse en ella.
+#   connect-src  la API de GitHub (el listado de versiones) y el contador.
+#   style-src    'unsafe-inline': la página lleva estilos en línea y atributos style; los estilos no
+#                ejecutan código, y quitarlos sería reescribir el diseño.
+#   base-uri, form-action, object-src, default-src 'none': nada de lo que la página no usa.
+CSP = ("default-src 'none'; "
+       "script-src 'self' {hashes} https://gc.zgo.at; "
+       "connect-src https://api.github.com https://mc-serverlauncher.goatcounter.com; "
+       "img-src 'self' data: https://mc-serverlauncher.goatcounter.com https://gc.zgo.at; "
+       "style-src 'self' 'unsafe-inline'; "
+       "font-src 'self'; "
+       "manifest-src 'self'; "
+       "base-uri 'none'; form-action 'none'; object-src 'none'")
+
+CSP_TAG = re.compile(r'\n?<meta http-equiv="Content-Security-Policy"[^>]*>')
+
+
+def inline_script_hashes(html):
+    """Hash (sha256, base64) de cada <script> en línea. El JSON-LD no es código y no se cuenta."""
+    hashes = []
+    for body in re.findall(r"<script>(.*?)</script>", html, re.DOTALL):
+        digest = base64.b64encode(hashlib.sha256(body.encode("utf-8")).digest()).decode("ascii")
+        hashes.append("'sha256-%s'" % digest)
+    return hashes
+
+
+def apply_csp(html):
+    """Pone (o actualiza) la política de la página. El hash depende del script de cada versión."""
+    html = CSP_TAG.sub("", html)
+    tag = '<meta http-equiv="Content-Security-Policy" content="%s">' % CSP.format(
+        hashes=" ".join(inline_script_hashes(html)))
+    if '<meta charset="utf-8">' not in html:
+        sys.exit("ERROR: una página no tiene <meta charset> donde poner la política de contenido")
+    return html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n' + tag, 1)
+
+
+def apply_csp_everywhere():
+    """Todas las páginas generadas, la landing española incluida; se ejecuta la última."""
+    count = 0
+    for page in sorted(ROOT.rglob("index.html")):
+        if any(part.startswith("_") for part in page.relative_to(ROOT).parts):
+            continue
+        page.write_text(apply_csp(page.read_text(encoding="utf-8")), encoding="utf-8")
+        count += 1
+    print("Content-Security-Policy -> %d páginas" % count)
+
+
 def main():
     source = SOURCE.read_text(encoding="utf-8")
     data = json.loads(STRINGS.read_text(encoding="utf-8"))
@@ -162,6 +216,9 @@ def main():
 
     # Las guías cortan su estilo y su barra de la landing recién generada, así que van después.
     guides.main()
+
+    # Lo último: el hash del script de cada página es el de su texto ya traducido y definitivo.
+    apply_csp_everywhere()
 
 
 if __name__ == "__main__":

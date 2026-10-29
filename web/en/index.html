@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-5MaiVFKEOLe9tgc1ukKEvGuV0JSIiUrSCXBdKCxqCWo=' https://gc.zgo.at; connect-src https://api.github.com https://mc-serverlauncher.goatcounter.com; img-src 'self' data: https://mc-serverlauncher.goatcounter.com https://gc.zgo.at; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- ================================================================================
      DIRECCIÓN DEL SITIO — es la de Vercel, que es la versión canónica.
@@ -1196,7 +1197,10 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
         var tag = document.createElement('span');
         tag.className = 'rel-tag'; tag.textContent = rel.tag_name;
         var name = document.createElement('a');
-        name.className = 'rel-name'; name.href = rel.html_url;
+        name.className = 'rel-name';
+        // La dirección viene de la respuesta de la API: solo se sigue si es de GitHub y por https.
+        name.href = /^https:\/\/github\.com\//.test(rel.html_url)
+          ? rel.html_url : 'https://github.com/' + REPO + '/releases';
         // Muchos títulos repiten el número de versión al principio; nos quedamos con la parte útil.
         name.textContent = (rel.name || rel.tag_name).replace(/^MC Server Launcher\s*[\d.]*\s*[—-]\s*/, '');
         var date = document.createElement('span');
@@ -1235,6 +1239,6 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
      «mc-serverlauncher» en https://mc-serverlauncher.goatcounter.com. Los clics con
      data-goatcounter-click se cuentan como eventos; el panel puede hacerse público en
      Settings → «Allow adding visitors to this site...». -->
-<script data-goatcounter="https://mc-serverlauncher.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script data-goatcounter="https://mc-serverlauncher.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>
