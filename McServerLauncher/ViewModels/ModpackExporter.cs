@@ -42,27 +42,23 @@ public sealed class ModpackExporter
         EmptySides = new Dictionary<string, (ExportSelection.StoreSide, ExportSelection.StoreSide)>();
 
     private readonly ServerConfig _config;
-    private readonly FileHashCache _hashes;
+    private readonly InstalledContentIndex _index;
     private readonly ModrinthService _store;
-    private readonly Func<IEnumerable<string>, CancellationToken, Task> _learn;
-    private readonly Func<string, string?> _projectIdOf;
     private readonly Func<string> _howToPlay;
 
     /// <param name="config">The server whose content is packed.</param>
-    /// <param name="hashes">Shared with the update scan: hashing a jar is the expensive part.</param>
+    /// <param name="index">
+    /// Shared with the update scan and the installs: hashing a jar is the expensive part, and what the
+    /// store said a jar is is the same answer for all of them.
+    /// </param>
     /// <param name="store">Asked for each project's client and server support.</param>
-    /// <param name="learn">Resolves jar hashes to store versions (so <paramref name="projectIdOf"/> can answer).</param>
-    /// <param name="projectIdOf">The store project a jar hash is known to belong to, if any.</param>
     /// <param name="howToPlay">The instructions for joining, depending on the server's type.</param>
-    public ModpackExporter(ServerConfig config, FileHashCache hashes, ModrinthService store,
-        Func<IEnumerable<string>, CancellationToken, Task> learn, Func<string, string?> projectIdOf,
+    public ModpackExporter(ServerConfig config, InstalledContentIndex index, ModrinthService store,
         Func<string> howToPlay)
     {
         _config = config;
-        _hashes = hashes;
+        _index = index;
         _store = store;
-        _learn = learn;
-        _projectIdOf = projectIdOf;
         _howToPlay = howToPlay;
     }
 
@@ -235,14 +231,14 @@ public sealed class ModpackExporter
             var hashByName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var path in jarPaths)
             {
-                try { hashByName[Path.GetFileName(path)] = await _hashes.Sha1Async(path, budget.Token); }
+                try { hashByName[Path.GetFileName(path)] = await _index.Hashes.Sha1Async(path, budget.Token); }
                 catch { /* unreadable or locked: that jar simply gets no store answer */ }
             }
 
-            await _learn(hashByName.Values, budget.Token);
+            await _index.LearnAsync(hashByName.Values, budget.Token);
 
             var ids = hashByName.Values
-                .Select(_projectIdOf)
+                .Select(h => _index.Known(h)?.ProjectId)
                 .Where(id => !string.IsNullOrEmpty(id))
                 .Select(id => id!)
                 .Distinct(StringComparer.Ordinal)
@@ -261,7 +257,7 @@ public sealed class ModpackExporter
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
 
             foreach (var (name, hash) in hashByName)
-                if (_projectIdOf(hash) is { } id && byId.TryGetValue(id, out var project))
+                if (_index.Known(hash)?.ProjectId is { } id && byId.TryGetValue(id, out var project))
                     byName[name] = (StoreSideOf(project.ClientSide), StoreSideOf(project.ServerSide));
         }
         catch

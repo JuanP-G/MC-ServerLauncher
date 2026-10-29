@@ -56,14 +56,11 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>Builds the zip a server's owner hands to their players.</summary>
     private readonly ModpackExporter _exporter;
 
-    /// <summary>Identifying a jar means hashing it, and both scans want the same answers.</summary>
-    private readonly FileHashCache _hashes = new();
+    /// <summary>What the store says each jar is, shared by the scans, the installs and the export.</summary>
+    private readonly InstalledContentIndex _index;
 
     /// <summary>Cancelled when the app closes: downloads and store questions stop with it.</summary>
     private CancellationTokenSource _lifetime = new();
-
-    /// <summary>What each jar says about itself, for finding the other copies of a mod.</summary>
-    private readonly ContentManifestCache _manifests = new();
 
 
     // --- Local Mods State ---
@@ -552,8 +549,8 @@ public partial class ServerModsViewModel : ObservableObject
         _pendingUpdates = new PendingUpdateStore(config);
         // Shares the HTTP client and the store cache with everything else the panel asks for.
         _dependencies = new ModDependencyService(_modrinthService);
-        _exporter = new ModpackExporter(config, _hashes, _modrinthService,
-            LearnAsync, hash => Known(hash)?.ProjectId, () => HowToPlaySteps);
+        _index = new InstalledContentIndex(_modrinthService);
+        _exporter = new ModpackExporter(config, _index, _modrinthService, () => HowToPlaySteps);
         BuildTags();
         RebuildActiveFilters();
         RefreshInstalledMods();
@@ -665,10 +662,10 @@ public partial class ServerModsViewModel : ObservableObject
             ContentReplacement.SweepLeftovers(modsFolder);
 
             // Include disabled mods (.jar.disabled) so they can be re-enabled from the app.
-            var files = ContentFiles(modsFolder)
+            var files = InstalledContentIndex.ContentFiles(modsFolder)
                 .OrderBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            _manifests.ForgetAllBut(files);
+            _index.Manifests.ForgetAllBut(files);
 
             foreach (var file in files)
             {
@@ -724,7 +721,7 @@ public partial class ServerModsViewModel : ObservableObject
                 mod.Update = null;
                 try
                 {
-                    byHash[await _hashes.Sha1Async(mod.FilePath, ct)] = mod;
+                    byHash[await _index.Hashes.Sha1Async(mod.FilePath, ct)] = mod;
                 }
                 catch { /* unreadable/locked file: skip it */ }
             }
@@ -805,8 +802,8 @@ public partial class ServerModsViewModel : ObservableObject
         // What each installed jar *is* — the update endpoint answers what could replace it, and the
         // dependencies that matter are the ones declared by the file actually on disk.
         var hashes = sha1Hashes.ToList();
-        await LearnAsync(hashes, ct);
-        var roots = hashes.Select(Known).OfType<VersionResult>().ToList();
+        await _index.LearnAsync(hashes, ct);
+        var roots = hashes.Select(_index.Known).OfType<VersionResult>().ToList();
         if (roots.Count == 0) return;
 
         var installedIds = roots.Select(r => r.ProjectId).ToList();
@@ -902,22 +899,6 @@ public partial class ServerModsViewModel : ObservableObject
         else Dispatcher.UIThread.Post(RefreshInstalledMods);
     }
 
-    /// <summary>
-    /// Which Modrinth project each jar in <paramref name="folder"/> is, by path. Jars the store does
-    /// not know, and files that are not a version's main one, are left out.
-    /// </summary>
-    private async Task<Dictionary<string, string>> ProjectByPathAsync(string folder,
-        CancellationToken ct = default)
-    {
-        var hashByPath = await HashesAsync(ContentFiles(folder), ct);
-        await LearnAsync(hashByPath.Values, ct);
-
-        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (path, hash) in hashByPath)
-            if (ProjectOf(hash) is { } projectId) result[path] = projectId;
-        return result;
-    }
-
     /// <summary>Downloads the library mods the scan found missing.</summary>
     [RelayCommand]
     private async Task InstallMissingDependencies(CancellationToken ct)
@@ -950,45 +931,19 @@ public partial class ServerModsViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// The project id of every installed jar Modrinth recognises.
-    /// </summary>
-    /// <remarks>
-    /// This is what makes "already installed" a real answer rather than a filename comparison.
-    /// Modrinth's dependencies carry no version range, so a project that is present satisfies them;
-    /// installing a second copy under a different file name is what produces the loader's
-    /// "duplicate mod" failure, which is worse than the one being fixed.
-    /// </remarks>
-    private async Task<List<string>> InstalledProjectIdsAsync(CancellationToken ct,
-        string? alsoFolder = null)
-    {
-        var files = ContentFiles(ContentManifest.FolderOf(_config)).ToList();
-        if (alsoFolder is not null) files.AddRange(ContentFiles(alsoFolder));
-        var hashes = (await HashesAsync(files, ct)).Values.ToList();
-        await LearnAsync(hashes, ct);
-        return hashes.Select(Known).OfType<VersionResult>().Select(v => v.ProjectId)
-            .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    /// <summary>
-    /// Every id the enabled jars in a folder answer to, the ones carried inside them included.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Whatever is in here is not missing, and asking the store for it either finds nothing —
-    /// fabric-api's forty-odd modules are not projects — or offers a second copy of a library
-    /// that is already loaded because it ships inside the mod next to it.
-    /// </para>
-    /// <para>
-    /// One answer for both places that ask. The scan and the install used to work it out
-    /// differently, and the scan also counted disabled jars as providing things, which the start
-    /// check rightly does not: a <c>.jar.disabled</c> loads nothing.
-    /// </para>
-    /// </remarks>
+    /// <summary>The ids the enabled jars in a folder answer to; see <see cref="InstalledContentIndex"/>.</summary>
     internal static HashSet<string> ModIdsProvidedIn(string folder) =>
-        ContentManifest.ReadFolder(folder)
-            .SelectMany(m => m.Provides)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        InstalledContentIndex.ModIdsProvidedIn(folder);
+
+    /// <summary>Whether a jar is the main file of its version; see <see cref="InstalledContentIndex"/>.</summary>
+    internal static bool IsPrimaryFile(VersionResult version, string sha1) =>
+        InstalledContentIndex.IsPrimaryFile(version, sha1);
+
+    private Task<Dictionary<string, string>> ProjectByPathAsync(string folder, CancellationToken ct = default) =>
+        _index.ProjectByPathAsync(folder, ct);
+
+    private Task<List<string>> InstalledProjectIdsAsync(CancellationToken ct, string? alsoFolder = null) =>
+        _index.InstalledProjectIdsAsync(ContentManifest.FolderOf(_config), alsoFolder, ct);
 
     /// <summary>
     /// Installs the required dependencies of <paramref name="version"/> that are not there yet.
@@ -1215,7 +1170,7 @@ public partial class ServerModsViewModel : ObservableObject
                 ct: _lifetime.Token);
 
             var (outcome, removed) = ContentReplacement.ApplyDownloadedUpdate(modsFolder, enabledPath,
-                mod.FilePath, wasDisabled, replacesAFile, update.ProjectId, projectByPath, _manifests.Read);
+                mod.FilePath, wasDisabled, replacesAFile, update.ProjectId, projectByPath, _index.Manifests.Read);
 
             if (outcome == ContentReplacement.UpdateOutcome.Updated)
             {
@@ -1665,7 +1620,7 @@ public partial class ServerModsViewModel : ObservableObject
             // one, one the store does not know — the way an update does; and like an update, a jar
             // the running server holds open means nothing changes.
             var others = ContentReplacement.OthersOf(modsFolder, destPath, version.ProjectId, projectByPath,
-                _manifests.Read);
+                _index.Manifests.Read);
             var (result, removed) = ContentReplacement.RemoveAllOrNothing(others, replacesAFile ? null
                 : destPath);
             if (result == ContentReplacement.RemoveResult.Locked)

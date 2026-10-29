@@ -109,7 +109,7 @@ public partial class ServerModsViewModel
         try
         {
             var now = DateTime.UtcNow;
-            var entries = await Task.Run(() => ContentManifest.ReadAll(folder, _manifests.Read), ct);
+            var entries = await Task.Run(() => ContentManifest.ReadAll(folder, _index.Manifests.Read), ct);
 
             var ledger = Ledger;
             lock (ledger.Gate)
@@ -178,12 +178,12 @@ public partial class ServerModsViewModel
     private async Task<(IReadOnlyList<CleanupAdvisor.Jar> Jars, bool StoreAnswered)> IdentifyAsync(
         IReadOnlyList<ContentManifest.Entry> entries, CancellationToken ct)
     {
-        var hashByPath = await HashesAsync(entries.Select(e => e.Path), ct);
-        await LearnAsync(hashByPath.Values, ct);
+        var hashByPath = await _index.HashesAsync(entries.Select(e => e.Path), ct);
+        await _index.LearnAsync(hashByPath.Values, ct);
 
         var versionByPath = hashByPath
-            .Where(kv => Known(kv.Value) is not null)
-            .ToDictionary(kv => kv.Key, kv => Known(kv.Value)!, StringComparer.OrdinalIgnoreCase);
+            .Where(kv => _index.Known(kv.Value) is not null)
+            .ToDictionary(kv => kv.Key, kv => _index.Known(kv.Value)!, StringComparer.OrdinalIgnoreCase);
 
         // "Answered" means it recognised something here. GetVersionsByHashAsync swallows every error
         // and returns an empty map, so an empty answer cannot be told apart from being offline — and
