@@ -13,7 +13,7 @@ namespace McServerLauncher.Services;
 /// - On Windows the agent is a Windows service ("playitd"), managed via <see cref="ServiceController"/>.
 /// - On Linux it is typically a systemd unit, managed via <c>systemctl</c> (start/stop may need privileges).
 /// </summary>
-public class PlayitManager : IDisposable
+public sealed class PlayitManager : IDisposable
 {
     /// <summary>
     /// Shared instance: the agent is machine-wide state, so every ServerViewModel polls this one

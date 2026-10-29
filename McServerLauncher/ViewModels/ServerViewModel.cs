@@ -18,7 +18,7 @@ namespace McServerLauncher.ViewModels;
 /// Represents a server in the UI: its configuration, live state, embedded
 /// console, command sending and Playit integration.
 /// </summary>
-public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdminHost, IDisposable
+public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdminHost, IDisposable
 {
 
     private readonly ServerProcessManager _process = new();
@@ -1589,6 +1589,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         Mods.Dispose();
         _connectionTest?.Dispose();
         Solutions?.Dispose();
+        _idle.Dispose();
         GC.SuppressFinalize(this);
     }
 

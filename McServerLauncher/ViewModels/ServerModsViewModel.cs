@@ -47,7 +47,7 @@ namespace McServerLauncher.ViewModels;
 /// compatible or how a file is verified, which stays in <see cref="ModrinthService"/>.
 /// </para>
 /// </remarks>
-public partial class ServerModsViewModel : ObservableObject, IDisposable
+public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
 {
     private readonly ServerConfig _config;
     private readonly ModrinthService _modrinthService = new();
@@ -487,6 +487,7 @@ public partial class ServerModsViewModel : ObservableObject, IDisposable
         _lifetime.Dispose();
         _cleanupScan?.Dispose();
         _cleanupScan = null;
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>Closes the details page and forgets the trail back, dropping what it was fetching.</summary>

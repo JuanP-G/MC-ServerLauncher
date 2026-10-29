@@ -21,7 +21,7 @@ public enum AgentRunState { Stopped, Downloading, Starting, Running, Failed, Uns
 /// setup-code flow. One agent serves all of the user's tunnels; it
 /// runs while the app is open and connected, and is stopped on shutdown. App-wide singleton.
 /// </summary>
-public class PlayitAgentRunner : IDisposable
+public sealed class PlayitAgentRunner : IDisposable
 {
     public static PlayitAgentRunner Shared { get; } = new();
 
@@ -303,6 +303,7 @@ public class PlayitAgentRunner : IDisposable
     /// <summary>Lets go of the start gate. The shared runner lives as long as the app, so nothing calls this.</summary>
     public void Dispose()
     {
+        _process?.Dispose();
         _startGate.Dispose();
         GC.SuppressFinalize(this);
     }

@@ -27,7 +27,7 @@ namespace McServerLauncher.ViewModels;
 /// server and run again. It never starts it by itself.
 /// </para>
 /// </remarks>
-public partial class ConnectionTestViewModel : ObservableObject, IDisposable
+public sealed partial class ConnectionTestViewModel : ObservableObject, IDisposable
 {
     private const int Samples = 8;
     private static readonly TimeSpan Gap = TimeSpan.FromMilliseconds(150);
@@ -389,6 +389,7 @@ public partial class ConnectionTestViewModel : ObservableObject, IDisposable
         Cancel();
         _cts?.Dispose();
         _cts = null;
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>Cancels what was running and hands out the token for what runs next.</summary>

@@ -11,7 +11,7 @@ namespace McServerLauncher.Services;
 /// startup, clean shutdown (sending "stop" over stdin), command sending and
 /// re-emitting the console output in real time.
 /// </summary>
-public class ServerProcessManager : IDisposable
+public sealed class ServerProcessManager : IDisposable
 {
     private Process? _process;
     private readonly object _lock = new();
