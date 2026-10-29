@@ -221,7 +221,7 @@ public class WorldBackupService
     private static void SweepPartials(string backupsDir)
     {
         foreach (var partial in Directory.EnumerateFiles(backupsDir, "*.zip" + PartialSuffix))
-            TryDeleteZip(partial);
+            FileCleanup.TryDelete(partial);
     }
 
     /// <summary>
@@ -248,7 +248,7 @@ public class WorldBackupService
             {
                 // Antivirus-style transient locks surface as either exception type depending on how
                 // the scanner holds the file, so both take the retry path.
-                TryDeleteZip(partial);
+                FileCleanup.TryDelete(partial);
                 Thread.Sleep(1000);
                 ZipWorld(worldDir, dimensions, partial, ct);
             }
@@ -258,7 +258,7 @@ public class WorldBackupService
         }
         catch
         {
-            TryDeleteZip(partial);
+            FileCleanup.TryDelete(partial);
             throw;
         }
     }
@@ -358,11 +358,6 @@ public class WorldBackupService
     /// <remarks>Virtual so a test can make one file fail halfway through a copy.</remarks>
     internal virtual Stream OpenForCopy(string path) =>
         new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-
-    private static void TryDeleteZip(string zipPath)
-    {
-        try { File.Delete(zipPath); } catch { /* best-effort */ }
-    }
 
     /// <summary>
     /// Which backup the world on disk is a copy of, as far as anybody playing could tell.

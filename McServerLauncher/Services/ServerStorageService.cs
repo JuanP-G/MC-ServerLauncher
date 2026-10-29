@@ -26,9 +26,7 @@ public class ServerStorageService
     /// </remarks>
     public ServerStorageService(string? dataDir = null)
     {
-        _dataDir = dataDir ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "McServerLauncher");
+        _dataDir = dataDir ?? AppPaths.DataDir;
         _filePath = Path.Combine(_dataDir, "servers.json");
     }
 

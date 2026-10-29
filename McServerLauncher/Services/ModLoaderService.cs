@@ -32,13 +32,8 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public class ModLoaderService
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(10));
 
-    static ModLoaderService()
-    {
-        // Some CDNs (Forge's maven included) reject requests without a User-Agent.
-        Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-    }
 
     public async Task<string> GetLatestFabricLoaderVersionAsync(CancellationToken ct = default)
     {
@@ -112,7 +107,7 @@ public class ModLoaderService
         if (!string.Equals(game, expectedGameVersion, StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(loader, expectedLoaderVersion, StringComparison.OrdinalIgnoreCase))
         {
-            TryDelete(jarPath);
+            FileCleanup.TryDelete(jarPath);
             throw new UserFacingException(string.Format(
                 Localizer.Get("Msg_FabricJarInvalidFmt"), expectedGameVersion, expectedLoaderVersion));
         }
@@ -194,9 +189,9 @@ public class ModLoaderService
         await RunForgeInstallerAsync(installerPath, folder, javaPath, log, ct);
 
         // Clean up the installer and its logs.
-        TryDelete(installerPath);
-        TryDelete(installerPath + ".log");
-        TryDelete(Path.Combine(folder, "installer.log"));
+        FileCleanup.TryDelete(installerPath);
+        FileCleanup.TryDelete(installerPath + ".log");
+        FileCleanup.TryDelete(Path.Combine(folder, "installer.log"));
 
         // Modern Forge: an args file under libraries/.
         var argName = OperatingSystem.IsWindows() ? "win_args.txt" : "unix_args.txt";
@@ -283,9 +278,9 @@ public class ModLoaderService
         log?.Report(Localizer.Get("Msg_NeoForgeRunningInstaller"));
         await RunForgeInstallerAsync(installerPath, folder, javaPath, log, ct);
 
-        TryDelete(installerPath);
-        TryDelete(installerPath + ".log");
-        TryDelete(Path.Combine(folder, "installer.log"));
+        FileCleanup.TryDelete(installerPath);
+        FileCleanup.TryDelete(installerPath + ".log");
+        FileCleanup.TryDelete(Path.Combine(folder, "installer.log"));
 
         // Looked for rather than assumed: if NeoForge ever changes its layout, the caller gets a
         // clear "no args file" instead of a server that installs and then will not start.
@@ -363,7 +358,7 @@ public class ModLoaderService
 
         if (!looksLikeInstaller)
         {
-            TryDelete(jarPath);
+            FileCleanup.TryDelete(jarPath);
             throw new UserFacingException(Localizer.Get("Msg_ForgeInstallerInvalid"));
         }
     }
@@ -376,12 +371,6 @@ public class ModLoaderService
         var text = sr.ReadToEnd();
         return text.Contains("Main-Class", StringComparison.OrdinalIgnoreCase) &&
                text.Contains("installer", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static void TryDelete(string path)
-    {
-        try { if (File.Exists(path)) File.Delete(path); }
-        catch { /* best-effort cleanup */ }
     }
 
     /// <summary>

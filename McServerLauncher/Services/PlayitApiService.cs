@@ -62,7 +62,7 @@ public class PlayitApiException : Exception
 public class PlayitApiService
 {
     private const string BaseUrl = "https://api.playit.gg";
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromSeconds(20));
 
     // Auth schemes tried in order. The per-user agent secret key authenticates as "agent-key"; a
     // legacy account write key as "Api-Key" (with "Agent-Key" as a last resort). Only auth errors

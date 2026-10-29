@@ -35,12 +35,8 @@ public static class GeyserDownloadsApi
     /// </remarks>
     private const int BuildsToTry = 10;
 
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(5));
 
-    static GeyserDownloadsApi()
-    {
-        Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-    }
 
     /// <summary>One published artifact: which build it came from, and how to verify it.</summary>
     public record Artifact(string Version, int Build, string FileName, string Url, string Sha256);

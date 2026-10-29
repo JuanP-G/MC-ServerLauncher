@@ -17,7 +17,7 @@ namespace McServerLauncher.Services;
 /// </summary>
 public partial class JavaService
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(15) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(15));
 
     /// <summary>
     /// A Java runtime found on the machine: where its executable is, and its major version.
@@ -28,8 +28,7 @@ public partial class JavaService
     /// about.</param>
     public record JavaInstall(string Path, int Major);
 
-    private static string ManagedRoot => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "java");
+    private static string ManagedRoot => AppPaths.In("java");
 
     /// <summary>
     /// The java executable name for the current OS ("java.exe" on Windows, "java" elsewhere).
@@ -488,17 +487,7 @@ public partial class JavaService
             ?? throw new UserFacingException(Localizer.Get("Msg_JavaExeNotFound"));
 
         // Make sure the java binary is executable on Unix (tar usually preserves this, but be safe).
-        if (!OperatingSystem.IsWindows())
-        {
-            try
-            {
-                File.SetUnixFileMode(javaExe,
-                    UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                    UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-                    UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-            }
-            catch { /* best-effort */ }
-        }
+        FileModes.TryMakeExecutable(javaExe);
 
         log?.Report(string.Format(Localizer.Get("Msg_JavaInstalled"), major));
         return javaExe;

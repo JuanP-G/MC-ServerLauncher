@@ -58,8 +58,7 @@ public sealed class ContentLedger
 public sealed class ContentLedgerStore
 {
     /// <summary>Where every server's ledger lives. Settable so tests can point it at a temp folder.</summary>
-    public static string RootDirectory { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "content");
+    public static string RootDirectory { get; set; } = AppPaths.In("content");
 
     private static readonly ConcurrentDictionary<string,
         ContentLedgerStore> Open = new(StringComparer.Ordinal);

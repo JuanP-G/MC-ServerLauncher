@@ -76,8 +76,7 @@ public static class PlayerHistoryPreferences
 public sealed class PlayerHistoryStore : IDisposable
 {
     /// <summary>Where every server's history lives.</summary>
-    public static string RootDirectory { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "players");
+    public static string RootDirectory { get; set; } = AppPaths.In("players");
 
     private static readonly ConcurrentDictionary<string,
         PlayerHistoryStore> Open = new(StringComparer.Ordinal);
@@ -299,7 +298,7 @@ public sealed class PlayerHistoryStore : IDisposable
         {
             var key = Key(player);
             _index.Players.Remove(key);
-            TryDelete(EventsPath(key));
+            FileCleanup.TryDelete(EventsPath(key));
             _dirty = true;
         }
         Flush();
@@ -338,7 +337,7 @@ public sealed class PlayerHistoryStore : IDisposable
                 if ((rec.LastSeen ?? rec.FirstSeen ?? DateTime.MinValue) < cutoff && rec.OpenSince is null)
                 {
                     _index.Players.Remove(key);
-                    TryDelete(EventsPath(key));
+                    FileCleanup.TryDelete(EventsPath(key));
                     _dirty = true;
                     continue;
                 }
@@ -364,7 +363,7 @@ public sealed class PlayerHistoryStore : IDisposable
 
         if (kept.Count != lines.Count)
         {
-            if (kept.Count == 0) TryDelete(EventsPath(key));
+            if (kept.Count == 0) FileCleanup.TryDelete(EventsPath(key));
             else File.WriteAllText(EventsPath(key), string.Join("\n", kept) + "\n", Utf8);
             _dirty = true;
         }
@@ -576,11 +575,6 @@ public sealed class PlayerHistoryStore : IDisposable
             // A damaged index starts over rather than taking the Players tab down with it.
         }
         return new Index();
-    }
-
-    private static void TryDelete(string path)
-    {
-        try { if (File.Exists(path)) File.Delete(path); } catch { /* best-effort */ }
     }
 
     /// <summary>

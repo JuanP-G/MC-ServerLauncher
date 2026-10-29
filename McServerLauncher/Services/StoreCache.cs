@@ -43,9 +43,7 @@ public sealed class StoreCache
 
     public StoreCache(string? cacheDir = null)
     {
-        _dir = cacheDir ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "McServerLauncher", "cache", "store");
+        _dir = cacheDir ?? AppPaths.In("cache", "store");
     }
 
     /// <summary>

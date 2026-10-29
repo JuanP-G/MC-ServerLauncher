@@ -15,7 +15,7 @@ namespace McServerLauncher.Services;
 /// </summary>
 public class WhitelistService
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromSeconds(15));
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     /// <summary>One line of whitelist.json, whose keys are the lower-case ones Minecraft reads.</summary>

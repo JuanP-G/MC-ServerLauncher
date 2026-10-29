@@ -29,7 +29,7 @@ namespace McServerLauncher.Services;
 /// </remarks>
 internal static class ClientLoaderInstall
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromSeconds(20));
 
     /// <summary>Everything the script needs to fetch, verify and run one installer.</summary>
     /// <param name="Url">The installer jar, on the loader's own maven.</param>

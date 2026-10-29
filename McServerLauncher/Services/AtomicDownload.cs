@@ -104,7 +104,7 @@ public static class AtomicDownload
         }
         catch
         {
-            TryDelete(partPath);
+            FileCleanup.TryDelete(partPath);
             throw;
         }
     }
@@ -120,11 +120,5 @@ public static class AtomicDownload
         return name.EndsWith(PartSuffix, StringComparison.Ordinal)
             ? name[..^PartSuffix.Length]
             : name;
-    }
-
-    private static void TryDelete(string path)
-    {
-        try { if (File.Exists(path)) File.Delete(path); }
-        catch { /* best-effort cleanup */ }
     }
 }

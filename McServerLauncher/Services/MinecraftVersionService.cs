@@ -16,7 +16,7 @@ public class MinecraftVersionService
     private const string ManifestUrl =
         "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
 
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(10));
 
     /// <summary>Downloads the manifest and returns (latest release version, list of versions).</summary>
     public async Task<(string LatestRelease, List<MinecraftVersion> Versions)> GetVersionsAsync(

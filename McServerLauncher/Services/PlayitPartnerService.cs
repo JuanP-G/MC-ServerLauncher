@@ -37,7 +37,7 @@ public class PlayitPartnerService
     // PlayitAgentRunner (with its pinned hashes) and reused here, so the two can't drift apart.
     private const string VariantId = "308943e8-faef-4835-a2ba-270351f72aa3";
 
-    private static readonly HttpClient SharedHttp = new() { Timeout = TimeSpan.FromSeconds(30) };
+    private static readonly HttpClient SharedHttp = AppHttp.Create(TimeSpan.FromSeconds(30));
 
     private readonly string _baseUrl;
     private readonly HttpClient _http;

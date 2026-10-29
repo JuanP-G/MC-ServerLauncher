@@ -15,12 +15,8 @@ namespace McServerLauncher.Services;
 public class PurpurService
 {
     private const string ApiBase = "https://api.purpurmc.org/v2/purpur";
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(10));
 
-    static PurpurService()
-    {
-        Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-    }
 
     /// <summary>A build of Purpur, and the hash their API publishes for it.</summary>
     /// <remarks>

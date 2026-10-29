@@ -27,7 +27,7 @@ namespace McServerLauncher.Services;
 /// </summary>
 public static class ImageCache
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromSeconds(20));
 
     /// <summary>Generous cap for a project icon (they're typically a few KB).</summary>
     public const int MaxIconBytes = 2 * 1024 * 1024;
@@ -60,9 +60,7 @@ public static class ImageCache
     private static readonly ConcurrentDictionary<string, Entry> Memory = new();
     private static readonly ConcurrentDictionary<string, Task<Bitmap?>> InFlight = new();
 
-    private static readonly string CacheDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "McServerLauncher", "cache", "images");
+    private static readonly string CacheDir = AppPaths.In("cache", "images");
 
     /// <summary>Disk entries older than this are pruned; icons change, and space is not free.</summary>
     private static readonly TimeSpan MaxDiskAge = TimeSpan.FromDays(30);
@@ -70,11 +68,6 @@ public static class ImageCache
     private static int Pruned;
 
     private sealed record Entry(Bitmap Bitmap, DateTime StoredUtc, long Bytes);
-
-    static ImageCache()
-    {
-        Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-    }
 
     /// <summary>
     /// Returns the decoded image for <paramref name="url"/>, from memory, then disk, then the

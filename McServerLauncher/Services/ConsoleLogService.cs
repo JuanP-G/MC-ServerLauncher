@@ -35,8 +35,7 @@ public sealed class ConsoleLogService : IDisposable
     /// <summary>How much one day's file may hold. Far beyond any healthy server's day.</summary>
     internal const long DefaultMaxBytesPerDay = 50L * 1024 * 1024;
 
-    private static string DefaultLogsDir => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "logs");
+    private static string DefaultLogsDir => AppPaths.In("logs");
 
     private readonly string _logsDir;
     private readonly Func<DateTime> _now;

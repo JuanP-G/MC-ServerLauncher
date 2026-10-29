@@ -47,9 +47,7 @@ public static partial class MemoryAgent
     public static readonly TimeSpan StartupWindow = TimeSpan.FromSeconds(60);
 
     /// <summary>Where the failures are remembered. Settable so tests can point it at a temp folder.</summary>
-    public static string FailuresPath { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher",
-        "memory-agent-failures.json");
+    public static string FailuresPath { get; set; } = AppPaths.In("memory-agent-failures.json");
 
     /// <summary>The environment variable that turns the agent off for everything started from here.</summary>
     public const string DisableVariable = "MCSL_NO_AGENT";

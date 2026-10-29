@@ -43,8 +43,7 @@ public sealed class SingleInstance : IDisposable
     /// <c>instance-tests-*.lock</c> in the real data folder of whoever ran it — hundreds of them.
     /// </remarks>
     private static string Dir => Scope is null
-        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "McServerLauncher")
+        ? AppPaths.DataDir
         : Path.Combine(Path.GetTempPath(), "mcsl-instance-tests");
 
     /// <summary>

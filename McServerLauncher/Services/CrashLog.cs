@@ -24,8 +24,7 @@ public static class CrashLog
     internal const int Keep = 20;
 
     /// <summary>Where they go. Settable so a test can point it somewhere else.</summary>
-    internal static string Folder { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "logs");
+    internal static string Folder { get; set; } = AppPaths.In("logs");
 
     /// <summary>
     /// Records <paramref name="error"/>. Returns the file, or null if it could not be written.

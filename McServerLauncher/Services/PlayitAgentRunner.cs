@@ -50,7 +50,7 @@ public class PlayitAgentRunner
         ["playit-linux-aarch64"] = "4c0db3e7b3a8158e249441c2f0b73f54e83429395890c7b1ca45fd7a6303d763",
     };
 
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(5));
 
     private readonly object _lock = new();
     private readonly SemaphoreSlim _startGate = new(1,
@@ -85,9 +85,7 @@ public class PlayitAgentRunner
         StateChanged?.Invoke(s);
     }
 
-    private static string AgentDir => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher",
-            "playit-agent");
+    private static string AgentDir => AppPaths.In("playit-agent");
 
     /// <summary>
     /// The release asset for this OS/arch, or null if Playit ships no binary for it (e.g. macOS).
@@ -426,44 +424,26 @@ public class PlayitAgentRunner
             var cachedHash = await DownloadVerifier.ComputeHashAsync(path, HashAlgorithmName.SHA256);
             if (string.Equals(cachedHash, expectedHash, StringComparison.OrdinalIgnoreCase))
                 return path;
-            TryDeleteFile(path); // stale or tampered — re-download and re-verify
+            FileCleanup.TryDelete(path); // stale or tampered — re-download and re-verify
         }
 
         SetState(AgentRunState.Downloading);
         Directory.CreateDirectory(AgentDir);
         var url = $"https://github.com/playit-cloud/playit-agent/releases/download/{AgentVersion}/{AssetName}";
 
-        var tmp = path + ".download";
         using (var resp = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
         {
             resp.EnsureSuccessStatusCode();
-            await using var fs = File.Create(tmp);
-            await resp.Content.CopyToAsync(fs);
+
+            // Verified on the ".part" copy BEFORE it replaces anything or is ever executed: a
+            // mismatch deletes it and throws. It used to be written and moved by hand here, which
+            // left the half-file behind whenever the download itself failed.
+            await AtomicDownload.ToFileAsync(resp.Content, path,
+                verifyAsync: (part, token) =>
+                    DownloadVerifier.VerifyAsync(part, expectedHash, HashAlgorithmName.SHA256, token));
         }
 
-        // Verify BEFORE it is ever moved into place / executed: deletes tmp and throws on mismatch.
-        await DownloadVerifier.VerifyAsync(tmp, expectedHash, HashAlgorithmName.SHA256);
-
-        if (File.Exists(path)) File.Delete(path);
-        File.Move(tmp, path);
-
-        if (!OperatingSystem.IsWindows())
-        {
-            try
-            {
-                File.SetUnixFileMode(path,
-                    UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                    UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-                    UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-            }
-            catch { /* best-effort */ }
-        }
+        FileModes.TryMakeExecutable(path);
         return path;
-    }
-
-    private static void TryDeleteFile(string p)
-    {
-        try { if (File.Exists(p)) File.Delete(p); }
-        catch { /* best-effort */ }
     }
 }

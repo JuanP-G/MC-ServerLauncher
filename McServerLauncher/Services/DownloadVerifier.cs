@@ -24,7 +24,7 @@ public static class DownloadVerifier
         var actualHex = await ComputeHashAsync(filePath, algorithm, ct);
         if (!string.Equals(actualHex, expectedHex, StringComparison.OrdinalIgnoreCase))
         {
-            TryDelete(filePath);
+            FileCleanup.TryDelete(filePath);
             throw new UserFacingException(
                 string.Format(Localizer.Get("Msg_ChecksumMismatchFmt"),
                     AtomicDownload.DisplayName(filePath)));
@@ -46,11 +46,5 @@ public static class DownloadVerifier
             hasher.AppendData(buffer, 0, read);
 
         return Convert.ToHexString(hasher.GetHashAndReset());
-    }
-
-    private static void TryDelete(string path)
-    {
-        try { if (File.Exists(path)) File.Delete(path); }
-        catch { /* best-effort cleanup */ }
     }
 }

@@ -22,8 +22,8 @@ public class UpdateService
     /// it — and of having to say clearly, everywhere it is offered, that it is a beta.
     /// </remarks>
     private const string ApiUrl = "https://api.github.com/repos/JuanP-G/MC-ServerLauncher/releases?per_page=20";
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
-    private static readonly HttpClient DownloadHttp = new() { Timeout = TimeSpan.FromMinutes(10) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromSeconds(15));
+    private static readonly HttpClient DownloadHttp = AppHttp.Create(TimeSpan.FromMinutes(10));
 
     /// <summary>
     /// Update data. <see cref="PackageUrl"/>/<see cref="PackageName"/> are the package for the
@@ -52,7 +52,6 @@ public class UpdateService
         CancellationToken ct = default)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
-        req.Headers.UserAgent.ParseAdd("MC-ServerLauncher");
         req.Headers.Accept.ParseAdd("application/vnd.github+json");
 
         using var resp = await Http.SendAsync(req, ct);
@@ -249,7 +248,6 @@ public class UpdateService
         CancellationToken ct = default)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
-        req.Headers.UserAgent.ParseAdd("MC-ServerLauncher");
 
         using var resp = await DownloadHttp.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();

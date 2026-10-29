@@ -32,8 +32,7 @@ public sealed class MemoryHistoryStore
     public const int MaxSessions = 30;
 
     /// <summary>Where every server's history lives. Settable so tests can point it at a temp folder.</summary>
-    public static string RootDirectory { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "memory");
+    public static string RootDirectory { get; set; } = AppPaths.In("memory");
 
     private static readonly ConcurrentDictionary<string,
         MemoryHistoryStore> Open = new(StringComparer.Ordinal);

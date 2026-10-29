@@ -70,7 +70,7 @@ public static class ConnectionProbe
     public const string SpeedHost = "speed.cloudflare.com";
     public const string LatencyHost = "1.1.1.1";
 
-    private static readonly HttpClient Http = new() { Timeout = Timeout.InfiniteTimeSpan };
+    private static readonly HttpClient Http = AppHttp.Create(Timeout.InfiniteTimeSpan);
 
     // ---------------------------------------------------------------- sampling
 

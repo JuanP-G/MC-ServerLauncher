@@ -42,13 +42,9 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public class ModrinthService
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(10));
     private const string ApiBaseUrl = "https://api.modrinth.com/v2";
 
-    static ModrinthService()
-    {
-        Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-    }
 
     // --- How long each kind of answer stays usable ---
     // A project's description and links change rarely; its version list changes when the author

@@ -23,9 +23,7 @@ public static class SecretProtector
     private const int TagSize = 16;   // AES-GCM standard tag
 
     /// <summary>Key file next to settings.json (%APPDATA%/.config equivalent per platform).</summary>
-    private static string KeyFilePath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "McServerLauncher", ".secret.key");
+    private static string KeyFilePath => AppPaths.In(".secret.key");
 
     /// <summary>True if <paramref name="stored"/> is a protected blob written by us.</summary>
     public static bool IsProtected(string? stored) =>

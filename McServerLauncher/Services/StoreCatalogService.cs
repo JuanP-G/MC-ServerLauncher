@@ -63,7 +63,7 @@ public sealed class StoreCatalogService
     private static readonly TimeSpan RetryEvery = TimeSpan.FromHours(1);
     private static readonly string[] Languages = { "es", "en", "de", "fr", "pt" };
 
-    private static readonly HttpClient SharedHttp = CreateHttp();
+    private static readonly HttpClient SharedHttp = AppHttp.Create(TimeSpan.FromSeconds(30));
 
     /// <summary>
     /// Shared instance. Declared after the static fields it uses: static initialisers run in the
@@ -86,20 +86,12 @@ public sealed class StoreCatalogService
     public StoreCatalogService(string? cacheFolder = null, HttpClient? http = null, string? url = null,
         Func<DateTimeOffset>? clock = null)
     {
-        _folder = cacheFolder ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "McServerLauncher", "cache");
+        _folder = cacheFolder ?? AppPaths.In("cache");
         _http = http ?? SharedHttp;
         _url = url ?? DefaultUrl;
         _clock = clock ?? (() => DateTimeOffset.UtcNow);
     }
 
-    private static HttpClient CreateHttp()
-    {
-        var http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-        http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-        return http;
-    }
 
     /// <summary>How many projects the catalogue covers. Zero until one has been downloaded.</summary>
     public int Count => Entries.Count;

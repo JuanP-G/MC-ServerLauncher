@@ -56,9 +56,7 @@ public sealed class StoreSummaryService
     public StoreSummaryService(string? overridePath = null, StoreCatalogService? catalog = null)
     {
         _catalog = catalog;
-        var path = overridePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "McServerLauncher", "store-summaries.json");
+        var path = overridePath ?? AppPaths.In("store-summaries.json");
 
         _byId = Load(path);
         _bySlug = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);

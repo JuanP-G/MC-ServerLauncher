@@ -150,10 +150,7 @@ public static class SelfUpdater
         try
         {
             File.Copy(package, staged, overwrite: true);
-            File.SetUnixFileMode(staged,
-                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-                UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+            FileModes.MakeExecutable(staged);
 
             File.Move(staged, target, overwrite: true);
         }
