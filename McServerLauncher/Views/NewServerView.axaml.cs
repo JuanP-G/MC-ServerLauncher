@@ -646,16 +646,9 @@ public partial class NewServerView : UserControl
         }
 
         var port = WholeNumberConverter.ToWhole(PortBox.Value ?? 25565m);
-        if (_usedPorts.Contains(port))
+        if (PortProblem(port, found) is { } portProblem)
         {
-            await Warn(string.Format(Localizer.Get("Msg_PortAssigned"),
-            port)); return;
-        }
-        // Only a port the user changed is checked against the system: the one the folder already
-        // uses may well be busy because this very server is running outside the app right now.
-        if (port != found.Port && _ports.IsPortInUse(port))
-        {
-            await Warn(string.Format(Localizer.Get("Msg_PortInUseOther"), port));
+            await Warn(portProblem);
             return;
         }
 
@@ -667,6 +660,25 @@ public partial class NewServerView : UserControl
                 Localizer.Get("New_Title"), Owner))
             return;
 
+        await AdoptAsync(form, found, port);
+    }
+
+    /// <summary>Why the port cannot be given to the server being taken over, or null if it can.</summary>
+    private string? PortProblem(int port, ServerDetection found)
+    {
+        if (_usedPorts.Contains(port)) return string.Format(Localizer.Get("Msg_PortAssigned"), port);
+
+        // Only a port the user changed is checked against the system: the one the folder already
+        // uses may well be busy because this very server is running outside the app right now.
+        if (port != found.Port && _ports.IsPortInUse(port))
+            return string.Format(Localizer.Get("Msg_PortInUseOther"), port);
+
+        return null;
+    }
+
+    /// <summary>Takes the folder over and hands the new server to whoever opened the panel.</summary>
+    private async Task AdoptAsync(ExistingServerForm form, ServerDetection found, int port)
+    {
         SetBusy(true);
         try
         {
