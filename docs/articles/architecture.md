@@ -183,6 +183,40 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > before the split, constructing one started three timers, opened a socket and called the network,
 > so nothing that touched them could be tested except through its pure pieces.
 
+> **The big view models are facades over small classes.** `ServerViewModel` (2,400 lines at its
+> peak) and `ServerModsViewModel` used to hold every rule of their screens in one class. The rules
+> now live in plain classes that raise events, and the view model keeps what the XAML binds to —
+> the properties and commands — as one-line forwarders, because the bindings are by name
+> (`CompileBindings=False`) and renaming one breaks the screen without a compiler error.
+>
+> - **What a running server decides for itself.** `IdleShutdownController` (with `IdlePolicy`, the
+>   pure rules: when the countdown runs, when it is long enough, the wake grace),
+>   `WakeOnDemandController`, `StartPreflight` (the checks before a start), `PlayerAdmin` (op, ban,
+>   whitelist and kick through the console), `TunnelAddressTracker` (looking the public address up
+>   and keeping it) and `ConsoleBuffer` (the lines, their filters and their counts).
+> - **How they talk to the view model.** Each takes a small *host*: a record of delegates
+>   (`IdleHost`, `WakeHost`, `PreflightHost`, `TunnelHost`) or, for `PlayerAdmin`,
+>   `IPlayerAdminHost`, implemented explicitly by `ServerViewModel`. None of them knows Avalonia,
+>   so each is tested alone with a fake host and, where time matters, an injected clock
+>   (`IdleShutdownControllerTests`, `StartPreflightTests`, `PlayerAdminTests`…).
+> - **Mods.** `ModpackExporter` builds the pack and `PendingUpdateStore` keeps the newer versions the
+>   last check found, apart from the rows that show them.
+> - **Services used by more than one screen.** `ServerProvisioningService` (create a server or adopt
+>   a folder: the new-server panel only reads its form), `LoaderChangeService` (convert a server to
+>   another loader) and `AppUpdateCoordinator` (download, verify and stage an update behind
+>   `IUpdateSource`, so the window only reports phases). `PlayitStatus` and `ReachabilitySignal` are
+>   the pure answers to "what does the tunnel look like" and "can people reach this".
+> - **Small shared helpers.** `AppPaths` (the data folders), `AppHttp` (the one place an
+>   `HttpClient` is made), `FileCleanup` (delete without throwing) and `FileModes` (make a file executable).
+> - **Dialogs.** Code that has to ask a question goes through `Dialogs.Current`
+>   (`IDialogService`), which is `MessageBox` in the app and a fake in tests. It is still a modal
+>   window, as before; nothing was added that opens outside the app.
+>
+> The longer methods that remained were split the same way — into named steps that each read at one
+> level (`ConnectionTestViewModel.RunAsync`, `PlayitAgentRunner.StartAsync`,
+> `ServerJarInstaller.InstallAsync`, the Adoptium download, the `mods.toml` reader, the toast and
+> message-box builders, the Markdown renderer). Behaviour is unchanged.
+
 Data lives **per user** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux
 and macOS):
 
@@ -1061,7 +1095,7 @@ user's language by `CrossplayDiagnostics`.
 ### Sleeping when empty, waking when someone joins
 Two halves, both per server and both off by default.
 
-**Sleeping** is `ServerViewModel.CheckIdleShutdown`, run off the same tick that refreshes the player
+**Sleeping** is `IdleShutdownController.Check` (the rules are `IdlePolicy`), called from the same tick that refreshes the player
 list: once a running server has had nobody on it for `ServerConfig.IdleShutdownMinutes` it stops
 itself, announcing it in the console and as a notification. The window shows a live countdown
 (`IdleCountdownText`), and a server that has just been woken gets a grace period so it can never be
@@ -1181,8 +1215,8 @@ old edit dialog was the first fix; it is gone too, because leaving it would mean
 mechanism that replaced it.
 
 ### Handing the mod list to your players
-`ServerModsViewModel.ExportModpack` is the file picker and nothing else; `BuildModpackAsync` takes a
-path, so the part worth testing runs without a window. `ModpackWriter` builds the zip entry by entry,
+`ServerModsViewModel.ExportModpack` is the file picker and nothing else; `ModpackExporter.BuildAsync`
+(which `BuildModpackAsync` forwards to) takes a path, so the part worth testing runs without a window. `ModpackWriter` builds the zip entry by entry,
 reading each jar where it already sits — it used to assemble a copy of the whole pack under `%TEMP%`
 first — and writing each text file with its own line endings. The pack carries the jars and a
 localized instructions file naming the server, its type, its Minecraft version and the steps for that

@@ -187,6 +187,43 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > una prueba: antes del corte, construir uno arrancaba tres timers, abría un socket y llamaba a la
 > red, así que nada que los tocara se podía probar salvo por sus piezas puras.
 
+> **Los view models grandes son fachadas sobre clases pequeñas.** `ServerViewModel` (2.400 líneas en
+> su momento más grande) y `ServerModsViewModel` guardaban todas las reglas de su pantalla en una
+> sola clase. Ahora las reglas viven en clases simples que lanzan eventos, y el view model conserva
+> lo que el XAML enlaza —propiedades y comandos— como reenvíos de una línea, porque los enlaces son
+> por nombre (`CompileBindings=False`) y renombrar uno rompe la pantalla sin que el compilador avise.
+>
+> - **Lo que un servidor en marcha decide por sí mismo.** `IdleShutdownController` (con
+>   `IdlePolicy`, las reglas puras: cuándo corre la cuenta atrás, cuándo es suficiente, la gracia
+>   tras despertar), `WakeOnDemandController`, `StartPreflight` (las comprobaciones antes de
+>   arrancar), `PlayerAdmin` (op, ban, whitelist y expulsar por la consola), `TunnelAddressTracker`
+>   (buscar la dirección pública y conservarla) y `ConsoleBuffer` (las líneas, sus filtros y sus
+>   cuentas).
+> - **Cómo hablan con el view model.** Cada una recibe un pequeño *host*: un record de delegados
+>   (`IdleHost`, `WakeHost`, `PreflightHost`, `TunnelHost`) o, en `PlayerAdmin`, `IPlayerAdminHost`,
+>   que `ServerViewModel` implementa de forma explícita. Ninguna conoce Avalonia, así que cada una
+>   se prueba sola con un host falso y, donde importa el tiempo, un reloj inyectado
+>   (`IdleShutdownControllerTests`, `StartPreflightTests`, `PlayerAdminTests`…).
+> - **Mods.** `ModpackExporter` monta el paquete y `PendingUpdateStore` guarda las versiones
+>   nuevas que encontró la última comprobación, aparte de las filas que las enseñan.
+> - **Servicios que usa más de una pantalla.** `ServerProvisioningService` (crear un servidor o
+>   adoptar una carpeta: el panel de nuevo servidor solo lee su formulario), `LoaderChangeService`
+>   (convertir un servidor a otro cargador) y `AppUpdateCoordinator` (descargar, verificar y dejar
+>   lista una actualización detrás de `IUpdateSource`, de modo que la ventana solo cuenta las
+>   fases). `PlayitStatus` y `ReachabilitySignal` son las respuestas puras a «cómo se ve el túnel» y
+>   «¿pueden entrar?».
+> - **Ayudas compartidas.** `AppPaths` (las carpetas de datos), `AppHttp` (el único sitio donde se crea un
+>   `HttpClient`), `FileCleanup` (borrar sin lanzar) y `FileModes` (hacer ejecutable un archivo).
+> - **Diálogos.** El código que tiene que preguntar pasa por `Dialogs.Current` (`IDialogService`),
+>   que en la app es `MessageBox` y en las pruebas un doble. Sigue siendo una ventana modal, como
+>   antes; no se ha añadido nada que se abra fuera de la app.
+>
+> Los métodos largos que quedaban se partieron igual, en pasos con nombre que se leen a un solo nivel
+> (`ConnectionTestViewModel.RunAsync`, `PlayitAgentRunner.StartAsync`,
+> `ServerJarInstaller.InstallAsync`, la descarga de Adoptium, el lector de `mods.toml`, los
+> constructores del aviso y del cuadro de mensaje, el renderizador de Markdown). El comportamiento es
+> el mismo.
+
 Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`
 (`~/.config/McServerLauncher/` en Linux y macOS):
 
@@ -1107,7 +1144,7 @@ sin mods de Geyser — al menos se reconoce en la consola y se explica en el idi
 ### Dormirse vacío y despertar cuando alguien entra
 Dos mitades, las dos por servidor y las dos desactivadas por defecto.
 
-**Dormirse** es `ServerViewModel.CheckIdleShutdown`, ejecutado en el mismo tick que refresca la lista
+**Dormirse** es `IdleShutdownController.Check` (las reglas son `IdlePolicy`), llamado desde el mismo tick que refresca la lista
 de jugadores: en cuanto un servidor lleva `ServerConfig.IdleShutdownMinutes` sin nadie dentro, se
 detiene solo, anunciándolo en la consola y como notificación. La ventana enseña una cuenta atrás en
 vivo (`IdleCountdownText`), y un servidor recién despertado tiene un periodo de gracia para que nunca
@@ -1235,8 +1272,8 @@ refresco general al cerrar el antiguo diálogo de editar fue el primer arreglo; 
 significaría que la app nunca ejerce el mecanismo que lo sustituyó.
 
 ### Darle la lista de mods a tus jugadores
-`ServerModsViewModel.ExportModpack` es el selector de archivos y nada más; `BuildModpackAsync` recibe
-una ruta, así que la parte que merece pruebas corre sin ventana. `ModpackWriter` monta el zip entrada
+`ServerModsViewModel.ExportModpack` es el selector de archivos y nada más; `ModpackExporter.BuildAsync`
+(al que reenvía `BuildModpackAsync`) recibe una ruta, así que la parte que merece pruebas corre sin ventana. `ModpackWriter` monta el zip entrada
 a entrada, leyendo cada jar de donde ya está —antes montaba una copia del paquete entero bajo
 `%TEMP%`— y escribiendo cada archivo de texto con sus propios finales de línea. El paquete lleva los
 jars y un archivo de instrucciones traducido que nombra el servidor, su tipo y su versión de
