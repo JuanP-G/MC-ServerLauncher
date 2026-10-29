@@ -15,8 +15,7 @@ public class AppSettingsService
     /// <summary>Default constructor uses %APPDATA%; <paramref name="dataDir"/> is for tests.</summary>
     public AppSettingsService(string? dataDir = null)
     {
-        _dataDir = dataDir ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher");
+        _dataDir = dataDir ?? AppPaths.DataDir;
         _filePath = Path.Combine(_dataDir, "settings.json");
     }
 

@@ -65,9 +65,7 @@ public sealed class PerformancePicks
 
     public PerformancePicks(string? overridePath = null)
     {
-        var path = overridePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher",
-            "performance-picks.json");
+        var path = overridePath ?? AppPaths.In("performance-picks.json");
         _picks = Load(path);
     }
 

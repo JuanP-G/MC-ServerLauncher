@@ -137,7 +137,7 @@ public class MemoryProfileTests
 
         Assert.Equal("-Xms128M -Xmx4096M -XX:G1PeriodicGCInterval=15000 -XX:MinHeapFreeRatio=10 " +
                      "-XX:MaxHeapFreeRatio=30 -XX:+UseCompactObjectHeaders --enable-native-access=ALL-UNNAMED " +
-                     "-jar \"fabric-server.jar\" nogui", args);
+                     "-jar fabric-server.jar nogui", args);
     }
 
     [Fact]

@@ -65,19 +65,23 @@
   <ItemGroup>
     <!-- Cross-platform reference: compiles everywhere, only used at runtime on Windows (guarded with
          OperatingSystem.IsWindows()). On Linux Playit is managed via systemctl instead. -->
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.14" />
     <!-- DPAPI to store the Playit API key encrypted at rest. Windows-only at runtime (guarded with
          OperatingSystem.IsWindows()); on Linux/macOS the key is kept as-is. -->
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.14" />
     <PackageReference Include="Avalonia" Version="11.2.3" />
     <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
     <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.2.3" />
     <PackageReference Include="Avalonia.Diagnostics" Version="11.2.3" Condition="'$(Configuration)' == 'Debug'" />
+    <!-- Avalonia 11.2.3 pulls in Tmds.DBus.Protocol 0.20.0 on Linux, which has CVE-2026-39959
+         (GHSA-xrw6-gwf8-vvr9, CVSS 7.1): another process on the same D-Bus can forge signals or take the
+         app down. Pinned here so the fixed version wins; drop it once Avalonia ships with one. -->
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
     <PackageReference Include="FluentIcons.Avalonia" Version="1.1.265" />
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
 
 </Project>

@@ -43,9 +43,9 @@ public class BackupCoordinatorTests : IDisposable
         public List<string> Events { get; } = new();
 
         public override async Task<string?> CreateBackupAsync(ServerConfig config, string trigger,
-            IProgress<string>? log = null, CancellationToken ct = default, string? protectFromPruning = null)
+            IProgress<string>? log = null, string? protectFromPruning = null, CancellationToken ct = default)
         {
-            var zip = await base.CreateBackupAsync(config, trigger, log, ct, protectFromPruning);
+            var zip = await base.CreateBackupAsync(config, trigger, log, protectFromPruning, ct);
             lock (Events) Events.Add("zip:" + trigger);
             return zip;
         }
@@ -60,8 +60,8 @@ public class BackupCoordinatorTests : IDisposable
     private sealed class ThrowingService : WorldBackupService
     {
         public override Task<string?> CreateBackupAsync(ServerConfig config, string trigger,
-            IProgress<string>? log = null, CancellationToken ct = default,
-                string? protectFromPruning = null) =>
+            IProgress<string>? log = null, string? protectFromPruning = null,
+                CancellationToken ct = default) =>
             throw new IOException("There is not enough space on the disk.",
                 OperatingSystem.IsWindows() ? unchecked((int)0x80070070) : 28);   // ENOSPC elsewhere
     }

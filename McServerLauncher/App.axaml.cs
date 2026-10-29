@@ -47,8 +47,9 @@ public partial class App : Application
                 CultureInfo.CurrentUICulture = ci;
                 CultureInfo.DefaultThreadCurrentUICulture = ci;
             }
-            catch
+            catch (Exception ex)
             {
+                Safe.Note("Launcher", "the saved language is not valid, using the system's", ex);
                 // Invalid language code: fall back to the system one.
             }
         }

@@ -16,12 +16,8 @@ namespace McServerLauncher.Services;
 public class PaperService
 {
     private const string ApiBase = "https://fill.papermc.io/v3/projects/paper";
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(10));
 
-    static PaperService()
-    {
-        Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-    }
 
     /// <summary>One Paper build, resolved to something downloadable.</summary>
     /// <param name="Build">Paper's own build number for the Minecraft version.</param>

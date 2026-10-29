@@ -186,6 +186,9 @@
   <data name="Msg_DownloadComplete" xml:space="preserve"><value>Download concluído.</value></data>
   <data name="Msg_VerifyingChecksum" xml:space="preserve"><value>A verificar a integridade do ficheiro descarregado...</value></data>
   <data name="Msg_ChecksumMismatchFmt" xml:space="preserve"><value>O ficheiro descarregado ({0}) não corresponde ao checksum oficial e foi eliminado. O download pode ter sido corrompido ou adulterado; tenta novamente.</value></data>
+  <data name="Msg_DownloadTooLargeFmt" xml:space="preserve"><value>{0} excede o tamanho máximo esperado ({1}); o download foi cancelado.</value></data>
+  <data name="Msg_ChecksumRequiredFmt" xml:space="preserve"><value>Não existe um checksum oficial para verificar {0}, por isso não foi guardado.</value></data>
+  <data name="Msg_DownloadHostRefusedFmt" xml:space="preserve"><value>O endereço de download ({0}) não é de um site de confiança para este download e não foi usado.</value></data>
   <data name="Msg_NoServerDownload" xml:space="preserve"><value>A versão {0} não tem um servidor disponível para download.</value></data>
   <data name="Msg_MissingWriteKey" xml:space="preserve"><value>Falta a chave de escrita do Playit.</value></data>
   <data name="Msg_PlayitAuthFail" xml:space="preserve"><value>Não foi possível autenticar no Playit para ler os túneis.</value></data>

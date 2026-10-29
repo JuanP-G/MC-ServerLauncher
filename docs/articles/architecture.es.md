@@ -187,6 +187,58 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > una prueba: antes del corte, construir uno arrancaba tres timers, abría un socket y llamaba a la
 > red, así que nada que los tocara se podía probar salvo por sus piezas puras.
 
+> **Los view models grandes son fachadas sobre clases pequeñas.** `ServerViewModel` (2.400 líneas en
+> su momento más grande) y `ServerModsViewModel` (2.100) guardaban todas las reglas de su pantalla en una
+> sola clase. Ahora las reglas viven en clases simples que lanzan eventos, y el view model conserva
+> lo que el XAML enlaza —propiedades y comandos— como reenvíos de una línea, porque los enlaces son
+> por nombre (`CompileBindings=False`) y renombrar uno rompe la pantalla sin que el compilador avise.
+>
+> - **Lo que un servidor en marcha decide por sí mismo.** `IdleShutdownController` (con
+>   `IdlePolicy`, las reglas puras: cuándo corre la cuenta atrás, cuándo es suficiente, la gracia
+>   tras despertar), `WakeOnDemandController`, `StartPreflight` (las comprobaciones antes de
+>   arrancar), `PlayerAdmin` (op, ban, whitelist y expulsar por la consola), `TunnelAddressTracker`
+>   (buscar la dirección pública y conservarla) y `ConsoleBuffer` (las líneas, sus filtros y sus
+>   cuentas).
+> - **Cómo hablan con el view model.** Cada una recibe un pequeño *host*: un record de delegados
+>   (`IdleHost`, `WakeHost`, `PreflightHost`, `TunnelHost`) o, en `PlayerAdmin`, `IPlayerAdminHost`,
+>   que `ServerViewModel` implementa de forma explícita. Ninguna conoce Avalonia, así que cada una
+>   se prueba sola con un host falso y, donde importa el tiempo, un reloj inyectado
+>   (`IdleShutdownControllerTests`, `StartPreflightTests`, `PlayerAdminTests`…).
+> - **Mods.** `ServerModsViewModel` guarda lo que enlaza la pestaña y reparte cada tarea en una
+> clase propia: `InstalledContentIndex` (qué es cada archivo instalado, una respuesta por SHA-1
+> compartida por todas), `ModDependencyInstaller` (buscar e instalar lo que un mod necesita),
+> `ModInstaller` (instalar un mod y quitar las copias viejas), `ModUpdater` (comprobar y
+> actualizar), `StoreBrowser` (la consulta de la página de la tienda y cuál respuesta es la
+> vigente), `CleanupScanner` (los datos del panel de limpieza), `ModpackExporter` (el paquete para
+> los jugadores) y `PendingUpdateStore` (las versiones nuevas de la última comprobación). Reciben
+> un token en cada llamada y nunca lo guardan, porque `Shutdown()` cambia el del view model. La
+> tienda es `ModrinthService`, con los métodos `virtual` para que los tests pongan uno falso en su
+> lugar (`FakeModrinthStore`): instalar y actualizar, que no tenían ningún test, ahora los tienen
+> (`ModInstallerTests`, `ModUpdaterTests`, `StoreBrowserTests`).
+> - **Lo que queda en las vistas de la ventana.** `MainViewModel` le pasa la actualización a
+> `AppUpdateCoordinator` y lo que deja un servidor quitado a `RemovedServerLeftovers`; lo que
+> queda es el estado propio de la ventana (secciones, paneles, lista de servidores). Las copias
+> automáticas las decide `BackupCoordinator.ClockTick` y el muestreo del proceso es
+> `ProcessStatsService`; lo que conserva `ServerViewModel` de ellos es el temporizador y los
+> textos que enlaza la pantalla.
+> - **Servicios que usa más de una pantalla.** `ServerProvisioningService` (crear un servidor o
+>   adoptar una carpeta: el panel de nuevo servidor solo lee su formulario), `LoaderChangeService`
+>   (convertir un servidor a otro cargador) y `AppUpdateCoordinator` (descargar, verificar y dejar
+>   lista una actualización detrás de `IUpdateSource`, de modo que la ventana solo cuenta las
+>   fases). `PlayitStatus` y `ReachabilitySignal` son las respuestas puras a «cómo se ve el túnel» y
+>   «¿pueden entrar?».
+> - **Ayudas compartidas.** `AppPaths` (las carpetas de datos), `AppHttp` (el único sitio donde se crea un
+>   `HttpClient`), `FileCleanup` (borrar sin lanzar) y `FileModes` (hacer ejecutable un archivo).
+> - **Diálogos.** El código que tiene que preguntar pasa por `Dialogs.Current` (`IDialogService`),
+>   que en la app es `MessageBox` y en las pruebas un doble. Sigue siendo una ventana modal, como
+>   antes; no se ha añadido nada que se abra fuera de la app.
+>
+> Los métodos largos que quedaban se partieron igual, en pasos con nombre que se leen a un solo nivel
+> (`ConnectionTestViewModel.RunAsync`, `PlayitAgentRunner.StartAsync`,
+> `ServerJarInstaller.InstallAsync`, la descarga de Adoptium, el lector de `mods.toml`, los
+> constructores del aviso y del cuadro de mensaje, el renderizador de Markdown). El comportamiento es
+> el mismo.
+
 Los datos se guardan **por usuario** en `%APPDATA%\McServerLauncher\`
 (`~/.config/McServerLauncher/` en Linux y macOS):
 
@@ -224,7 +276,18 @@ mundo. No hay rutas fijas del equipo en el código.
   de consola), redirige stdin/stdout/stderr, reemite cada línea por un evento y lo detiene de forma
   limpia enviando `stop` (con kill de respaldo). El kill espera `ServerViewModel.StopTimeout` (60 s),
   el mismo valor para el botón Parar, Reiniciar y cerrar o actualizar la app; al cerrar se daban
-  quince segundos, menos de lo que un modpack grande necesita para guardar.
+  quince segundos, menos de lo que un modpack grande necesita para guardar. Lo que se escribe al servidor
+  pasa por `SendCommand`, que solo encola la línea: un único lector la escribe en la entrada del proceso, en
+  orden y con un flush por línea, y `StopAsync` encola su `stop` detrás y espera esa escritura. Una JVM
+  congelada que no lee congelaba con ella la ventana, porque la escritura ocurría en el hilo de quien llamaba.
+- **Quién libera qué.** Cerrar no es el final: tras una actualización fallida la app vuelve con los mismos
+  view models, así que `ShutdownAsync` / `Shutdown()` paran el trabajo pero no sueltan nada. La liberación
+  ocurre en el único camino terminal, `MainViewModel.ForgetServerAsync` → `ServerViewModel.Dispose()`, que
+  libera el gestor de proceso, el coordinador de copias, las páginas de Mods y de soluciones de rendimiento, la
+  prueba de conexión y el temporizador de inactividad. `PlayitManager` y `PlayitAgentRunner` son compartidos por
+  todos los servidores y viven lo que la app, así que ningún servidor los libera. Los fallos que la app sobrevive
+  a propósito (una entrada de caché corrupta, una consulta de puertos que no se pudo hacer) van al registro con
+  `Safe.Note(area, qué, error)` en vez de un `catch` vacío.
 - **`JavaService`** — detecta los Java instalados y, si ninguno es compatible, descarga el JRE
   Temurin (Adoptium) adecuado para la arquitectura. Se usa al crear y al iniciar un servidor. Cada
   servidor pide su propio `JavaService`, así que la descarga de una Java (por versión mayor) pasa por una
@@ -458,9 +521,28 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`SecretProtector`** — cifra los secretos en reposo (DPAPI en Windows, AES-GCM + `.secret.key` en
   Linux/macOS), usado para la clave de agente por usuario de Playit (y la clave de escritura heredada). Si el cifrado falla, la clave **no** se
   persiste (nunca llega texto plano al disco): sigue funcionando durante la sesión, el fallo queda
-  en el log diario y se avisa al usuario una vez.
+  en el log diario y se avisa al usuario una vez. El archivo de la clave AES se crea con permisos solo
+  para el propietario y se lee con un modo de compartición que tolera al proceso que lo está creando,
+  de modo que dos partes de la app que piden la clave a la vez reciben la misma.
 - **`DownloadVerifier`** — el verificador de checksums compartido para las descargas (Mojang SHA-1,
-  Adoptium/Paper SHA-256, Modrinth SHA-512/SHA-1), que borra el archivo si no cuadra.
+  Adoptium/Paper SHA-256, Modrinth SHA-512/SHA-1), que borra el archivo si no cuadra. `VerifyAsync`
+  **rechaza un archivo sin hash con el que compararlo**; la única salida es la explícita
+  `VerifyIfProvidedAsync`, que solo usa `VerifiedJarDownload` para jars de servidor, donde una fuente
+  puede no publicar checksum.
+- **Límites de red (`AppHttp`, `AtomicDownload`)** — todo lo que llega de la red se acota antes de
+  creérselo. `AppHttp.ReadCappedAsync` lee las respuestas de API y de texto hasta un tope (8 MiB para
+  las API, 64 KiB para los archivos pequeños que llevan un checksum o una firma) y `AtomicDownload`
+  corta un paquete en su límite (1 GiB por defecto; 500 MiB el instalador, 400 MiB un JRE, 400 MiB un
+  jar de servidor, 300 MiB un instalador de loader) y borra el `.part`. Los enlaces de la actualización
+  y del JRE deben ser `https` en el propio host del editor, así que una respuesta hostil de la API no
+  puede mandar a la app a otro servidor.
+- **`JavaCommandLine`** — Java se lanza con una **lista** de argumentos, nunca con una cadena, de modo
+  que un nombre de archivo con comillas o espacios no puede cambiar cuántos argumentos hay. La casilla
+  *Argumentos JVM extra* se corta con las mismas reglas que usa el sistema operativo (`Split`) y la
+  línea que muestra la consola sale de `Display`, para que lo que se ve sea lo que se leería de vuelta.
+- **Bibliotecas del sistema** — las pocas funciones de Win32 que llama la app (`PortService`,
+  `SingleInstance`, `SystemMemory`) llevan `DefaultDllImportSearchPaths(System32)`, así que una
+  biblioteca colocada junto al ejecutable o en el directorio de trabajo nunca es la que se carga.
 - **`Changelog`** — las notas de "novedades" por versión que se muestran tras actualizar (ver el
   flujo más abajo).
 - **`UpdateService`** / **`SelfUpdater`** — `UpdateService` pregunta a GitHub si hay una release más
@@ -548,7 +630,9 @@ mundo. No hay rutas fijas del equipo en el código.
   dirección del repositorio aparecía solo dentro de las cabeceras de las peticiones y de la comprobación
   de actualizaciones, así que la pantalla Acerca de no tenía de dónde sacarla.
 - **`MarkdownParser`** / **`MarkdownBody`** — un lector de Markdown deliberadamente parcial para las
-  descripciones largas de Modrinth, y el comportamiento que convierte sus bloques en controles.
+  descripciones largas de Modrinth, y el comportamiento que convierte sus bloques en controles. El
+  lector va línea a línea con un método por tipo de bloque; el orden en que `BlockReader.Read` los
+  prueba es lo que decide cómo se lee una línea, y `MarkdownParserTests` lo fija.
 - **`MinecraftRange`** — si una versión de Minecraft cumple el rango que declara un mod.
 
 ## Flujos importantes
@@ -929,6 +1013,23 @@ funcionando. Hay instalaciones que no pueden sustituirse a sí mismas — un App
 `SelfUpdater.Blocker` lo dice; esas, y una release que no traiga nada para esta plataforma, caen en
 abrir la página de la release.
 
+**El paquete se comprueba otra vez en el momento de usarlo.** Entre que se verifica y que se ejecuta
+está en la carpeta temporal, y un programa que ya corra como este usuario podría cambiarlo por otro que
+luego se ejecutaría con los derechos que pide el instalador. Por eso `AppUpdateCoordinator` entrega un
+`VerifiedPackage` (la ruta **y** el SHA-256 con el que cuadró) y cada plataforma lo comprueba una vez más:
+
+- **Windows** — ya no se escribe ningún script junto al instalador. `SelfUpdater` arranca una segunda
+  copia de la app (`--apply-update <pid> <sha256> <instalador>`, que atiende `UpdateHelper` al principio
+  de `Program.Main`, antes del bloqueo de instancia única). Vive en la carpeta de instalación, donde solo
+  un administrador puede escribir; espera a que la app salga, acepta solo un archivo dentro de una de las
+  carpetas de descarga `mcsl-…` de la propia app, lo abre de forma que nadie pueda escribir, renombrar ni
+  borrarlo, calcula su hash por ese mismo manejador y lo lanza **sin soltarlo**, así que los bytes que se
+  comprobaron son los que se ejecutan. Si algo no cuadra (otro archivo, el usuario rechaza el aviso) vuelve
+  a arrancar la app.
+- **Linux** — se calcula el hash de la copia que va a sustituir al AppImage, no el del original.
+- **macOS** — no se repite: el script corre como el usuario y reemplaza una app que el usuario ya puede
+  reemplazar, así que un archivo cambiado no gana ningún privilegio.
+
 Tras actualizar,
 `MainWindow.Loaded` llama a `ShowWhatsNewIfUpdated`, que compara la versión en ejecución con
 `AppSettings.LastVersionSeen` y muestra `WhatsNewDialog` (traducido) con las notas de `Changelog` de
@@ -1107,7 +1208,7 @@ sin mods de Geyser — al menos se reconoce en la consola y se explica en el idi
 ### Dormirse vacío y despertar cuando alguien entra
 Dos mitades, las dos por servidor y las dos desactivadas por defecto.
 
-**Dormirse** es `ServerViewModel.CheckIdleShutdown`, ejecutado en el mismo tick que refresca la lista
+**Dormirse** es `IdleShutdownController.Check` (las reglas son `IdlePolicy`), llamado desde el mismo tick que refresca la lista
 de jugadores: en cuanto un servidor lleva `ServerConfig.IdleShutdownMinutes` sin nadie dentro, se
 detiene solo, anunciándolo en la consola y como notificación. La ventana enseña una cuenta atrás en
 vivo (`IdleCountdownText`), y un servidor recién despertado tiene un periodo de gracia para que nunca
@@ -1139,7 +1240,7 @@ Dormirse y despertarse sin que nadie entre **no deja copias**: la parada ve que 
 arranque encuentra el mundo igual que en la última copia (ver *Copias del mundo*).
 
 ### La tienda: búsqueda, etiquetas y lenguaje llano
-`ServerModsViewModel` pide a `ModrinthService` resultados ya filtrados por el cargador y la versión
+`ServerModsViewModel` (con `StoreBrowser`, que arma la consulta y sabe cuál respuesta es la vigente) pide a `ModrinthService` resultados ya filtrados por el cargador y la versión
 del servidor — un resultado que el servidor no puede ejecutar es peor que ninguno, porque se instala
 y luego el servidor no levanta. Dónde funciona un proyecto *no* es un filtro oculto: la tienda lista
 también los mods solo de cliente (Sodium, MaLiLib, un minimapa — cerca de un tercio de los de Fabric
@@ -1235,8 +1336,8 @@ refresco general al cerrar el antiguo diálogo de editar fue el primer arreglo; 
 significaría que la app nunca ejerce el mecanismo que lo sustituyó.
 
 ### Darle la lista de mods a tus jugadores
-`ServerModsViewModel.ExportModpack` es el selector de archivos y nada más; `BuildModpackAsync` recibe
-una ruta, así que la parte que merece pruebas corre sin ventana. `ModpackWriter` monta el zip entrada
+`ServerModsViewModel.ExportModpack` es el selector de archivos y nada más; `ModpackExporter.BuildAsync`
+(al que reenvía `BuildModpackAsync`) recibe una ruta, así que la parte que merece pruebas corre sin ventana. `ModpackWriter` monta el zip entrada
 a entrada, leyendo cada jar de donde ya está —antes montaba una copia del paquete entero bajo
 `%TEMP%`— y escribiendo cada archivo de texto con sus propios finales de línea. El paquete lleva los
 jars y un archivo de instrucciones traducido que nombra el servidor, su tipo y su versión de
@@ -1316,7 +1417,7 @@ tiene corriendo, y pulsar Iniciar entonces significa dos JVM escribiendo sobre l
 mundo.
 
 ### Buscar actualizaciones de mods/plugins
-`ServerModsViewModel` pide a `ModrinthService` identificar cada archivo instalado en Modrinth y marcar
+`ModUpdater` (con `InstalledContentIndex` para saber qué es cada archivo) pide a `ModrinthService` identificar cada archivo instalado en Modrinth y marcar
 los que tienen una versión más nueva; el usuario actualiza cada uno con un clic (descarga verificada
 con checksum vía `DownloadVerifier`, conservando su estado activado/desactivado).
 
@@ -1362,7 +1463,7 @@ del mismo nombre, o que alguna no se haya podido devolver, porque entonces es la
 quede renombrado lo barre el siguiente refresco (`SweepLeftovers`). Las rutas se comparan como las compara el
 sistema (`FilePaths`): Linux distingue `Sodium.jar` de `sodium.jar`.
 
-Lo que la tienda dice que es cada jar sale de un solo sitio, `ServerModsViewModel.Identify.cs`: una respuesta por
+Lo que la tienda dice que es cada jar sale de un solo sitio, `InstalledContentIndex`: una respuesta por
 SHA-1 para la sesión, «desconocido» apuntado solo cuando la tienda sí contestó, y un jar cuenta como su proyecto
 solo si es el archivo principal de su versión — si no, un módulo o un jar de fuentes publicado al lado se
 borraría al instalar el principal. El aviso solo dice que se ha actualizado: quitar las copias viejas es lo que significa actualizar, no una noticia. Los instaladores de Crossplay, Hydraulic y
@@ -1379,7 +1480,7 @@ propone**: las filas vienen marcadas y esperan al botón —salvo «ningún mod 
 más débil, que viene sin marcar— y «Ahora no» las esconde 30 días. Se pliega a su línea de título. Una fila
 solo quita su archivo si sigue siendo el que vio la búsqueda (mismo tamaño y fecha), y no se quita nada
 mientras corre **Actualizar todas**. `CleanupAdvisor` decide
-(puro, probado sin red); la parte del panel (`ServerModsViewModel.Cleanup.cs`) reúne los datos y lo pinta.
+(puro, probado sin red); los datos los reúne `CleanupScanner` y la parte del panel (`ServerModsViewModel.Cleanup.cs`) pinta la respuesta.
 
 - **Librerías que nadie usa.** Una librería es lo que está en una lista escrita a mano (`KnownLibraryIds`) o lo
   que Modrinth clasifica *solo* como `library`. La categoría sola no vale: JEI y malilib están las dos en
@@ -1404,7 +1505,9 @@ mientras corre **Actualizar todas**. `CleanupAdvisor` decide
 
 Todo el texto visible está en `Resources/Strings.resx` (español, idioma neutral/base) más los
 archivos satélite `Strings.en.resx`, `Strings.pt.resx`, `Strings.fr.resx`, `Strings.de.resx`. El
-código los lee con `Localizer.Get("Clave")` (y `string.Format` para parámetros); el XAML usa la
+código los lee con `Localizer.Get("Clave")`, o `Localizer.Format("Clave", args)` si el texto lleva huecos `{0}`
+(la plantilla se analiza una vez y se guarda por su propio texto, así que un cambio de idioma en marcha sigue
+cogiendo la correcta; el resultado es el de `string.Format(Localizer.Get("Clave"), args)`); el XAML usa la
 extensión de marcado `{loc:Loc Clave}`. El idioma activo viene de `AppSettings.Language` y se aplica
 en `App.OnFrameworkInitializationCompleted` antes de crear ninguna ventana, por eso cambiar de idioma
 requiere reiniciar.

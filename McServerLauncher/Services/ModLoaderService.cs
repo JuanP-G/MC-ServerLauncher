@@ -32,13 +32,11 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public class ModLoaderService
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(10));
 
-    static ModLoaderService()
-    {
-        // Some CDNs (Forge's maven included) reject requests without a User-Agent.
-        Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-    }
+    /// <summary>A Fabric server jar or a Forge installer is a few MB; this only stops a download that never ends.</summary>
+    private const long MaxLoaderBytes = 300L << 20;
+
 
     public async Task<string> GetLatestFabricLoaderVersionAsync(CancellationToken ct = default)
     {
@@ -80,7 +78,7 @@ public class ModLoaderService
         var totalMb = (resp.Content.Headers.ContentLength ?? 0) / (1024.0 * 1024.0);
         if (totalMb > 0)
         {
-            log?.Report(string.Format(Localizer.Get("Msg_DownloadingJarSize"), totalMb.ToString("0.#")));
+            log?.Report(Localizer.Format("Msg_DownloadingJarSize", totalMb.ToString("0.#")));
         }
 
         // Atomic: the structural check below rejects by deleting, so writing in place would let a
@@ -92,7 +90,8 @@ public class ModLoaderService
                 ValidateFabricServerJar(part, gameVersion, loaderVersion);
                 return Task.CompletedTask;
             },
-            ct: ct);
+            ct: ct,
+            maxBytes: MaxLoaderBytes);
 
         log?.Report(Localizer.Get("Msg_DownloadComplete"));
     }
@@ -112,9 +111,9 @@ public class ModLoaderService
         if (!string.Equals(game, expectedGameVersion, StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(loader, expectedLoaderVersion, StringComparison.OrdinalIgnoreCase))
         {
-            TryDelete(jarPath);
-            throw new UserFacingException(string.Format(
-                Localizer.Get("Msg_FabricJarInvalidFmt"), expectedGameVersion, expectedLoaderVersion));
+            FileCleanup.TryDelete(jarPath);
+            throw new UserFacingException(Localizer.Format(
+                "Msg_FabricJarInvalidFmt", expectedGameVersion, expectedLoaderVersion));
         }
     }
 
@@ -158,7 +157,7 @@ public class ModLoaderService
             $"https://maven.minecraftforge.net/net/minecraftforge/forge/{fullId}/forge-{fullId}-installer.jar";
         var installerPath = Path.Combine(folder, $"forge-{fullId}-installer.jar");
 
-        log?.Report(string.Format(Localizer.Get("Msg_ForgeDownloadingInstaller"), forgeVersion));
+        log?.Report(Localizer.Format("Msg_ForgeDownloadingInstaller", forgeVersion));
         using (var resp = await Http.GetAsync(installerUrl, HttpCompletionOption.ResponseHeadersRead, ct))
         {
             resp.EnsureSuccessStatusCode();
@@ -187,16 +186,17 @@ public class ModLoaderService
                     log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
                     ValidateForgeInstallerJar(part);
                 },
-                ct: ct);
+                ct: ct,
+                maxBytes: MaxLoaderBytes);
         }
 
         log?.Report(Localizer.Get("Msg_ForgeRunningInstaller"));
         await RunForgeInstallerAsync(installerPath, folder, javaPath, log, ct);
 
         // Clean up the installer and its logs.
-        TryDelete(installerPath);
-        TryDelete(installerPath + ".log");
-        TryDelete(Path.Combine(folder, "installer.log"));
+        FileCleanup.TryDelete(installerPath);
+        FileCleanup.TryDelete(installerPath + ".log");
+        FileCleanup.TryDelete(Path.Combine(folder, "installer.log"));
 
         // Modern Forge: an args file under libraries/.
         var argName = OperatingSystem.IsWindows() ? "win_args.txt" : "unix_args.txt";
@@ -259,7 +259,7 @@ public class ModLoaderService
         var installerUrl = $"{NeoForgeMaven}/{neoForgeVersion}/neoforge-{neoForgeVersion}-installer.jar";
         var installerPath = Path.Combine(folder, $"neoforge-{neoForgeVersion}-installer.jar");
 
-        log?.Report(string.Format(Localizer.Get("Msg_NeoForgeDownloadingInstaller"), neoForgeVersion));
+        log?.Report(Localizer.Format("Msg_NeoForgeDownloadingInstaller", neoForgeVersion));
         using (var resp = await Http.GetAsync(installerUrl, HttpCompletionOption.ResponseHeadersRead, ct))
         {
             resp.EnsureSuccessStatusCode();
@@ -277,15 +277,16 @@ public class ModLoaderService
                     log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
                     ValidateForgeInstallerJar(part);
                 },
-                ct: ct);
+                ct: ct,
+                maxBytes: MaxLoaderBytes);
         }
 
         log?.Report(Localizer.Get("Msg_NeoForgeRunningInstaller"));
         await RunForgeInstallerAsync(installerPath, folder, javaPath, log, ct);
 
-        TryDelete(installerPath);
-        TryDelete(installerPath + ".log");
-        TryDelete(Path.Combine(folder, "installer.log"));
+        FileCleanup.TryDelete(installerPath);
+        FileCleanup.TryDelete(installerPath + ".log");
+        FileCleanup.TryDelete(Path.Combine(folder, "installer.log"));
 
         // Looked for rather than assumed: if NeoForge ever changes its layout, the caller gets a
         // clear "no args file" instead of a server that installs and then will not start.
@@ -336,7 +337,7 @@ public class ModLoaderService
         }
 
         if (p.ExitCode != 0)
-            throw new UserFacingException(string.Format(Localizer.Get("Msg_ForgeInstallerFailed"),
+            throw new UserFacingException(Localizer.Format("Msg_ForgeInstallerFailed",
                 p.ExitCode));
     }
 
@@ -363,7 +364,7 @@ public class ModLoaderService
 
         if (!looksLikeInstaller)
         {
-            TryDelete(jarPath);
+            FileCleanup.TryDelete(jarPath);
             throw new UserFacingException(Localizer.Get("Msg_ForgeInstallerInvalid"));
         }
     }
@@ -376,12 +377,6 @@ public class ModLoaderService
         var text = sr.ReadToEnd();
         return text.Contains("Main-Class", StringComparison.OrdinalIgnoreCase) &&
                text.Contains("installer", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static void TryDelete(string path)
-    {
-        try { if (File.Exists(path)) File.Delete(path); }
-        catch { /* best-effort cleanup */ }
     }
 
     /// <summary>

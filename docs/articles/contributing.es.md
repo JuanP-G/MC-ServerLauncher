@@ -381,7 +381,7 @@ la rejilla de funciones de `README.md`.
 ### Añadir un texto traducible
 1. Añade la misma entrada `<data name="MiClave">` a **los cinco** archivos `.resx` con la traducción.
 2. Úsalo desde XAML como `{loc:Loc MiClave}`, o desde código como `Localizer.Get("MiClave")`
-   (usa `string.Format(Localizer.Get("MiClave"), arg)` si tiene huecos `{0}`).
+   (usa `Localizer.Format("MiClave", arg)` si tiene huecos `{0}`).
 
 ### Añadir un ajuste de `server.properties` a la configuración del servidor
 1. Añade el control + etiqueta/descripción en la página que le toca dentro de `Views/ServerSettings`

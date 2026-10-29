@@ -215,14 +215,14 @@ public sealed class ServerSettingsDraft
                     nameof(ServerConfig.BedrockPort)));
             else if (_portOwners.Bedrock(wanted) is { } owner)
                 problems.Add(new(ServerSettingsPage.Network,
-                    string.Format(Localizer.Get("Cfg_BedrockPortTakenFmt"), owner),
+                    Localizer.Format("Cfg_BedrockPortTakenFmt", owner),
                     nameof(ServerConfig.BedrockPort)));
         }
 
         if (PropertyChanged("server-port") && int.TryParse(Get("server-port"), out var javaPort)
             && _portOwners.Java(javaPort) is { } javaOwner)
             problems.Add(new(ServerSettingsPage.Network,
-                string.Format(Localizer.Get("Cfg_JavaPortTakenFmt"), javaOwner), "server-port"));
+                Localizer.Format("Cfg_JavaPortTakenFmt", javaOwner), "server-port"));
 
         if (!Same(Config, _baseline, nameof(ServerConfig.FolderPath)) && !Directory.Exists(Config.FolderPath))
             problems.Add(new(ServerSettingsPage.Advanced, Localizer.Get("Msg_FolderNotExist")));

@@ -23,9 +23,7 @@ public static class SecretProtector
     private const int TagSize = 16;   // AES-GCM standard tag
 
     /// <summary>Key file next to settings.json (%APPDATA%/.config equivalent per platform).</summary>
-    private static string KeyFilePath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "McServerLauncher", ".secret.key");
+    private static string KeyFilePath => AppPaths.In(".secret.key");
 
     /// <summary>True if <paramref name="stored"/> is a protected blob written by us.</summary>
     public static bool IsProtected(string? stored) =>
@@ -93,7 +91,7 @@ public static class SecretProtector
 
     private static byte[] EncryptAesGcm(string plain)
     {
-        var key = GetOrCreateKey();
+        var key = GetOrCreateKey(KeyFilePath);
         var plainBytes = Encoding.UTF8.GetBytes(plain);
         var nonce = RandomNumberGenerator.GetBytes(NonceSize);
         var tag = new byte[TagSize];
@@ -114,7 +112,7 @@ public static class SecretProtector
         if (payload.Length < NonceSize + TagSize)
             throw new CryptographicException("Payload too short.");
 
-        var key = ReadKey() ?? throw new CryptographicException("Key file not found.");
+        var key = ReadKey(KeyFilePath) ?? throw new CryptographicException("Key file not found.");
         var nonce = payload.AsSpan(0, NonceSize);
         var tag = payload.AsSpan(NonceSize, TagSize);
         var cipher = payload.AsSpan(NonceSize + TagSize);
@@ -125,27 +123,69 @@ public static class SecretProtector
         return Encoding.UTF8.GetString(plain);
     }
 
-    private static byte[]? ReadKey()
+    /// <summary>The key in the file, or null if there is none, it is the wrong size, or it is being written.</summary>
+    /// <remarks>
+    /// Opened allowing writers: <c>File.ReadAllBytes</c> refuses a file somebody else has open for
+    /// writing, which is exactly the state of a key another process is creating right now, and the
+    /// exception it threw there was worse than finding nothing yet.
+    /// </remarks>
+    private static byte[]? ReadKey(string keyFile)
     {
-        if (!File.Exists(KeyFilePath)) return null;
-        var key = File.ReadAllBytes(KeyFilePath);
-        return key.Length == KeySize ? key : null;
+        try
+        {
+            using var fs = new FileStream(keyFile, FileMode.Open, FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete);
+            if (fs.Length != KeySize) return null;
+
+            var key = new byte[KeySize];
+            fs.ReadExactly(key);
+            return key;
+        }
+        catch (IOException)   // no such file (a subclass), or one that is still being written
+        {
+            return null;
+        }
     }
 
-    private static byte[] GetOrCreateKey()
+    /// <summary>The key in <paramref name="keyFile"/>, created first if there is none. A path for the tests.</summary>
+    internal static byte[] GetOrCreateKey(string keyFile)
     {
-        if (ReadKey() is { } existing) return existing;
+        if (ReadKey(keyFile) is { } existing) return existing;
 
-        Directory.CreateDirectory(Path.GetDirectoryName(KeyFilePath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(keyFile)!);
         var key = RandomNumberGenerator.GetBytes(KeySize);
 
-        // Create the file readable/writable by the current user only (0600 on Unix; on Windows
-        // this path is normally not reached because DPAPI is used instead).
-        var options = new FileStreamOptions { Mode = FileMode.Create, Access = FileAccess.Write };
+        // CreateNew, not Create: Create truncates, so a second process creating the key at the same
+        // moment would overwrite the first one's, and everything the first had already encrypted
+        // would never decrypt again. With CreateNew the loser fails and reads the winner's key.
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            try
+            {
+                WriteKey(keyFile, key, FileMode.CreateNew);
+                return key;
+            }
+            catch (IOException) when (File.Exists(keyFile))
+            {
+                if (ReadKey(keyFile) is { } created) return created;
+                Thread.Sleep(20);   // the winner may still be writing it
+            }
+        }
+
+        // Still unreadable after that: the file is damaged, not being written. Nothing it encrypted
+        // can be recovered either way, so replace it, as before.
+        WriteKey(keyFile, key, FileMode.Create);
+        return key;
+    }
+
+    /// <summary>Writes the key readable and writable by the current user only (0600 on Unix).</summary>
+    /// <remarks>On Windows this path is normally not reached, because DPAPI is used instead.</remarks>
+    private static void WriteKey(string keyFile, byte[] key, FileMode mode)
+    {
+        var options = new FileStreamOptions { Mode = mode, Access = FileAccess.Write };
         if (!OperatingSystem.IsWindows())
             options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
-        using (var fs = new FileStream(KeyFilePath, options))
-            fs.Write(key);
-        return key;
+        using var fs = new FileStream(keyFile, options);
+        fs.Write(key);
     }
 }

@@ -144,6 +144,7 @@ public sealed class ToastService
         }
     }
 
+    /// <summary>The toast's window: borderless, on top, and never taking focus.</summary>
     private static Window BuildWindow(string heading, string source, string message, Symbol icon,
         NotificationLevel level, NotificationSettings? colours, Border bar)
     {
@@ -161,31 +162,59 @@ public sealed class ToastService
         };
 
         var accent = NotificationBrushes.BrushFor(colours, level);
+        var body = BuildBody(BuildRing(icon, colours, level, accent), BuildText(heading, source, message, accent));
 
-        // The ring is what the eye lands on: the one shape on the card, and the one place the colour
-        // is drawn round and not as text. It still has to work for somebody who cannot tell this red
-        // from this green, which is what the icon inside it is for — no two kinds share one.
-        var ring = new Border
+        toast.Content = new Border
         {
-            Width = RingSize,
-            Height = RingSize,
-            CornerRadius = new CornerRadius(RingSize / 2),
-            BorderThickness = new Thickness(1.5),
-            BorderBrush = NotificationBrushes.FadedBrushFor(colours, level, 0x88),
-            VerticalAlignment = VerticalAlignment.Center,
-            Child = new SymbolIcon
-            {
-                Symbol = icon,
-                FontSize = 19,
-                Foreground = accent,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
-            }
+            Background = CardBackground,
+            BorderBrush = CardBorder,
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            ClipToBounds = true,
+            Child = new Grid { Children = { body, bar } }
         };
 
-        // What happened leads and carries the colour; where it happened is small and grey on the
-        // other side of the line, beside the time. With a handful of servers the name is a detail;
-        // it does not need to out-shout the event.
+        // Clicking a toast opens the app on the server that produced the event's console.
+        toast.PointerPressed += (_, _) =>
+        {
+            App.RestoreMainWindow();
+            toast.Close();
+        };
+
+        return toast;
+    }
+
+    /// <summary>
+    /// The ring is what the eye lands on: the one shape on the card, and the one place the colour
+    /// is drawn round and not as text. It still has to work for somebody who cannot tell this red
+    /// from this green, which is what the icon inside it is for — no two kinds share one.
+    /// </summary>
+    private static Border BuildRing(Symbol icon, NotificationSettings? colours, NotificationLevel level,
+        IBrush accent) => new()
+    {
+        Width = RingSize,
+        Height = RingSize,
+        CornerRadius = new CornerRadius(RingSize / 2),
+        BorderThickness = new Thickness(1.5),
+        BorderBrush = NotificationBrushes.FadedBrushFor(colours, level, 0x88),
+        VerticalAlignment = VerticalAlignment.Center,
+        Child = new SymbolIcon
+        {
+            Symbol = icon,
+            FontSize = 19,
+            Foreground = accent,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        }
+    };
+
+    /// <summary>
+    /// What happened leads and carries the colour; where it happened is small and grey on the
+    /// other side of the line, beside the time. With a handful of servers the name is a detail;
+    /// it does not need to out-shout the event.
+    /// </summary>
+    private static Grid BuildHeader(string heading, string source, IBrush accent)
+    {
         var header = new Grid
         {
             ColumnDefinitions = new ColumnDefinitions("Auto,*"),
@@ -229,26 +258,32 @@ public sealed class ToastService
         var when = (Grid)header.Children[1];
         Grid.SetColumn(when, 1);
         Grid.SetColumn(when.Children[1], 1);
+        return header;
+    }
 
-        var text = new StackPanel
+    /// <summary>The heading line over the message, which is cut at two lines.</summary>
+    private static StackPanel BuildText(string heading, string source, string message, IBrush accent) => new()
+    {
+        Spacing = 3,
+        VerticalAlignment = VerticalAlignment.Center,
+        Children =
         {
-            Spacing = 3,
-            VerticalAlignment = VerticalAlignment.Center,
-            Children =
+            BuildHeader(heading, source, accent),
+            new TextBlock
             {
-                header,
-                new TextBlock
-                {
-                    Text = message,
-                    FontSize = 14,
-                    Foreground = MessageText,
-                    TextWrapping = TextWrapping.Wrap,
-                    MaxLines = 2,
-                    TextTrimming = TextTrimming.CharacterEllipsis
-                }
+                Text = message,
+                FontSize = 14,
+                Foreground = MessageText,
+                TextWrapping = TextWrapping.Wrap,
+                MaxLines = 2,
+                TextTrimming = TextTrimming.CharacterEllipsis
             }
-        };
+        }
+    };
 
+    /// <summary>The ring on the left, the text on the right.</summary>
+    private static Grid BuildBody(Border ring, StackPanel text)
+    {
         var body = new Grid
         {
             ColumnDefinitions = new ColumnDefinitions("Auto,*"),
@@ -257,25 +292,7 @@ public sealed class ToastService
         };
         text.Margin = new Thickness(12, 0, 0, 0);
         Grid.SetColumn(text, 1);
-
-        toast.Content = new Border
-        {
-            Background = CardBackground,
-            BorderBrush = CardBorder,
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(8),
-            ClipToBounds = true,
-            Child = new Grid { Children = { body, bar } }
-        };
-
-        // Clicking a toast opens the app on the server that produced the event's console.
-        toast.PointerPressed += (_, _) =>
-        {
-            App.RestoreMainWindow();
-            toast.Close();
-        };
-
-        return toast;
+        return body;
     }
 
     /// <summary>Stacks the visible toasts upwards from the bottom-right corner of the work area.</summary>

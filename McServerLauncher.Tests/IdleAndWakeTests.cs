@@ -7,7 +7,7 @@ namespace McServerLauncher.Tests;
 /// The rules that decide when a server stops itself and what a player sees while it sleeps.
 /// </summary>
 /// <remarks>
-/// These are pure functions on purpose. Getting <see cref="ServerViewModel.ShouldCountIdle"/> wrong
+/// These are pure functions on purpose. Getting <see cref="IdlePolicy.ShouldCountIdle"/> wrong
 /// does not produce a wrong pixel somewhere — it shuts down a server with people playing on it, so
 /// every branch is pinned here rather than trusted.
 /// </remarks>
@@ -19,19 +19,19 @@ public class IdleAndWakeTests
 
     [Fact]
     public void ZeroMinutesMeansNeverStop() =>
-        Assert.False(ServerViewModel.ShouldCountIdle(0, running: true, playerCount: 0));
+        Assert.False(IdlePolicy.ShouldCountIdle(0, running: true, playerCount: 0));
 
     [Fact]
     public void NeverCountsWithPlayersOn() =>
-        Assert.False(ServerViewModel.ShouldCountIdle(30, running: true, playerCount: 1));
+        Assert.False(IdlePolicy.ShouldCountIdle(30, running: true, playerCount: 1));
 
     [Fact]
     public void NeverCountsWhileStopped() =>
-        Assert.False(ServerViewModel.ShouldCountIdle(30, running: false, playerCount: 0));
+        Assert.False(IdlePolicy.ShouldCountIdle(30, running: false, playerCount: 0));
 
     [Fact]
     public void CountsWhenRunningAndEmpty() =>
-        Assert.True(ServerViewModel.ShouldCountIdle(30, running: true, playerCount: 0));
+        Assert.True(IdlePolicy.ShouldCountIdle(30, running: true, playerCount: 0));
 
     // --- when it has been long enough ---
 
@@ -40,7 +40,7 @@ public class IdleAndWakeTests
     [InlineData(30, true)]
     [InlineData(90, true)]
     public void StopsOnlyOnceTheWaitHasElapsed(int minutesElapsed, bool expected) =>
-        Assert.Equal(expected, ServerViewModel.IsIdleLongEnough(30, T0, T0.AddMinutes(minutesElapsed)));
+        Assert.Equal(expected, IdlePolicy.IsIdleLongEnough(30, T0, T0.AddMinutes(minutesElapsed)));
 
     // --- the grace period after being woken ---
 
@@ -49,11 +49,11 @@ public class IdleAndWakeTests
     [InlineData(4, true)]
     [InlineData(6, false)]
     public void FreshlyWokenServerIsProtected(int minutesAgo, bool expected) =>
-        Assert.Equal(expected, ServerViewModel.IsWithinWakeGrace(T0.AddMinutes(-minutesAgo), T0));
+        Assert.Equal(expected, IdlePolicy.IsWithinWakeGrace(T0.AddMinutes(-minutesAgo), T0));
 
     [Fact]
     public void GraceDoesNotApplyIfItNeverWoke() =>
-        Assert.False(ServerViewModel.IsWithinWakeGrace(null, T0));
+        Assert.False(IdlePolicy.IsWithinWakeGrace(null, T0));
 
     // --- the countdown ---
 
@@ -64,7 +64,7 @@ public class IdleAndWakeTests
     [InlineData(45, 0)]      // past the mark: clamped, never negative
     public void RemainingIsClampedAtZero(int elapsed, int expectedMinutes) =>
         Assert.Equal(TimeSpan.FromMinutes(expectedMinutes),
-            ServerViewModel.IdleRemaining(30, T0, T0.AddMinutes(elapsed)));
+            IdlePolicy.IdleRemaining(30, T0, T0.AddMinutes(elapsed)));
 
     [Theory]
     [InlineData(754, "12:34")]
@@ -72,15 +72,15 @@ public class IdleAndWakeTests
     [InlineData(3723, "1:02:03")]
     [InlineData(0, "0:00")]
     public void CountdownIsFormattedForReading(int seconds, string expected) =>
-        Assert.Equal(expected, ServerViewModel.FormatCountdown(TimeSpan.FromSeconds(seconds)));
+        Assert.Equal(expected, IdlePolicy.FormatCountdown(TimeSpan.FromSeconds(seconds)));
 
     [Fact]
     public void CountdownRoundsUpSoItNeverLooksStuck()
     {
         // Truncating would park the display on 0:00 for up to a second while the server is still
         // perfectly alive, which reads as a broken clock rather than an imminent shutdown.
-        Assert.Equal("0:01", ServerViewModel.FormatCountdown(TimeSpan.FromMilliseconds(400)));
-        Assert.Equal("1:00", ServerViewModel.FormatCountdown(TimeSpan.FromSeconds(59.5)));
+        Assert.Equal("0:01", IdlePolicy.FormatCountdown(TimeSpan.FromMilliseconds(400)));
+        Assert.Equal("1:00", IdlePolicy.FormatCountdown(TimeSpan.FromSeconds(59.5)));
     }
 
     // --- the notice in the server list ---

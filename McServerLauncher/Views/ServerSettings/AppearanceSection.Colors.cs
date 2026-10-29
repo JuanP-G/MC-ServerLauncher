@@ -153,7 +153,7 @@ public partial class AppearanceSection
         HexWarn.IsVisible = !_hexOk && _doc.HasHex;
         ColorHint.Text = _gradient
             ? Localizer.Get(_pickingTo ? "Look_GradientPickTo" : "Look_GradientPickFrom")
-            : string.Format(Localizer.Get("Look_ColorHintFmt"), NameOf(style));
+            : Localizer.Format("Look_ColorHintFmt", NameOf(style));
     }
 
     // ---------------------------------------------------------------- swatches

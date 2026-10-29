@@ -63,7 +63,7 @@ public sealed class StoreCatalogService
     private static readonly TimeSpan RetryEvery = TimeSpan.FromHours(1);
     private static readonly string[] Languages = { "es", "en", "de", "fr", "pt" };
 
-    private static readonly HttpClient SharedHttp = CreateHttp();
+    private static readonly HttpClient SharedHttp = AppHttp.Create(TimeSpan.FromSeconds(30));
 
     /// <summary>
     /// Shared instance. Declared after the static fields it uses: static initialisers run in the
@@ -86,20 +86,12 @@ public sealed class StoreCatalogService
     public StoreCatalogService(string? cacheFolder = null, HttpClient? http = null, string? url = null,
         Func<DateTimeOffset>? clock = null)
     {
-        _folder = cacheFolder ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "McServerLauncher", "cache");
+        _folder = cacheFolder ?? AppPaths.In("cache");
         _http = http ?? SharedHttp;
         _url = url ?? DefaultUrl;
         _clock = clock ?? (() => DateTimeOffset.UtcNow);
     }
 
-    private static HttpClient CreateHttp()
-    {
-        var http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-        http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-        return http;
-    }
 
     /// <summary>How many projects the catalogue covers. Zero until one has been downloaded.</summary>
     public int Count => Entries.Count;
@@ -136,8 +128,9 @@ public sealed class StoreCatalogService
             var path = Path.Combine(_folder, FileName);
             if (File.Exists(path)) return Parse(File.ReadAllBytes(path));
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Store", "the saved catalogue could not be read, going without it", ex);
             // Unreadable or from a format this build does not know: no catalogue, never a crash.
         }
 
@@ -180,7 +173,7 @@ public sealed class StoreCatalogService
             if (!response.IsSuccessStatusCode) return false;
             if (response.Content.Headers.ContentLength > MaxDownloadBytes) return false;
 
-            var bytes = await ReadCappedAsync(response.Content, MaxDownloadBytes, ct);
+            var bytes = await AppHttp.ReadCappedAsync(response.Content, MaxDownloadBytes, ct);
             var parsed = Parse(bytes);      // before anything is written: a bad file replaces nothing
 
             Directory.CreateDirectory(_folder);
@@ -223,20 +216,6 @@ public sealed class StoreCatalogService
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, etag + "\n" + at.ToString("O"));
-    }
-
-    private static async Task<byte[]> ReadCappedAsync(HttpContent content, long limit, CancellationToken ct)
-    {
-        await using var stream = await content.ReadAsStreamAsync(ct);
-        using var buffer = new MemoryStream();
-        var chunk = new byte[81920];
-        int read;
-        while ((read = await stream.ReadAsync(chunk, ct)) > 0)
-        {
-            if (buffer.Length + read > limit) throw new InvalidDataException("catalogue too large");
-            buffer.Write(chunk, 0, read);
-        }
-        return buffer.ToArray();
     }
 
     /// <summary>

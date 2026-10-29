@@ -158,8 +158,9 @@ public class ModDependencyService
             // that knows about mixinextras. This file used to keep a second, shorter list of its own.
             return ContentManifest.Read(jarPath).Requires;
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Mods", "a jar's own dependency list could not be read, going by the store's", ex);
             // Unreadable metadata is not a reason to refuse the install: the jar is already
             // verified and on disk, and Modrinth's own dependency list still applies.
             return Array.Empty<string>();

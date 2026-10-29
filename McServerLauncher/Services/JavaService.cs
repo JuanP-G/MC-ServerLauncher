@@ -17,7 +17,7 @@ namespace McServerLauncher.Services;
 /// </summary>
 public partial class JavaService
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(15) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(15));
 
     /// <summary>
     /// A Java runtime found on the machine: where its executable is, and its major version.
@@ -28,8 +28,7 @@ public partial class JavaService
     /// about.</param>
     public record JavaInstall(string Path, int Major);
 
-    private static string ManagedRoot => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "McServerLauncher", "java");
+    private static string ManagedRoot => AppPaths.In("java");
 
     /// <summary>
     /// The java executable name for the current OS ("java.exe" on Windows, "java" elsewhere).
@@ -44,78 +43,13 @@ public partial class JavaService
     {
         var candidates = new List<string>();
 
-        void AddFrom(string root)
-        {
-            try
-            {
-                if (!Directory.Exists(root)) return;
-                foreach (var dir in Directory.GetDirectories(root))
-                {
-                    var exe = Path.Combine(dir, "bin", JavaExeName);
-                    if (File.Exists(exe)) candidates.Add(exe);
-                }
-            }
-            catch { /* ignore */ }
-        }
-
         if (OperatingSystem.IsWindows())
-        {
-            foreach (var pf in new[]
-                     {
-                         Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                         Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                     })
-            {
-                if (string.IsNullOrEmpty(pf)) continue;
-                AddFrom(Path.Combine(pf, "Eclipse Adoptium"));
-                AddFrom(Path.Combine(pf, "Java"));
-                AddFrom(Path.Combine(pf, "Microsoft"));
-                AddFrom(Path.Combine(pf, "Zulu"));
-                AddFrom(Path.Combine(pf, "Amazon Corretto"));
-            }
-        }
+            AddWindowsCandidates(candidates);
         else
-        {
-            // Common JVM locations on Linux.
-            AddFrom("/usr/lib/jvm");
-            AddFrom("/usr/java");
-            AddFrom("/opt/java");
-            AddFrom("/opt");
+            AddUnixCandidates(candidates);
 
-            if (OperatingSystem.IsMacOS())
-            {
-                // macOS JDK bundles keep the JRE under <bundle>/Contents/Home.
-                void AddMacFrom(string root)
-                {
-                    try
-                    {
-                        if (!Directory.Exists(root)) return;
-                        foreach (var dir in Directory.GetDirectories(root))
-                        {
-                            var exe = Path.Combine(dir, "Contents", "Home", "bin", "java");
-                            if (File.Exists(exe)) candidates.Add(exe);
-                        }
-                    }
-                    catch { /* ignore */ }
-                }
-
-                AddMacFrom("/Library/Java/JavaVirtualMachines");
-                AddMacFrom(Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    "Library", "Java", "JavaVirtualMachines"));
-            }
-
-            var onPath = WhichJava();
-            if (onPath is not null) candidates.Add(onPath);
-        }
-        AddFrom(ManagedRoot);
-
-        var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
-        if (!string.IsNullOrWhiteSpace(javaHome))
-        {
-            var exe = Path.Combine(javaHome, "bin", JavaExeName);
-            if (File.Exists(exe)) candidates.Add(exe);
-        }
+        AddJdksIn(ManagedRoot, candidates);
+        AddJavaHome(candidates);
 
         var result = new List<JavaInstall>();
         foreach (var exe in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
@@ -124,6 +58,72 @@ public partial class JavaService
             if (major > 0) result.Add(new JavaInstall(exe, major));
         }
         return result;
+    }
+
+    /// <summary>The vendors' folders under Program Files, where their installers put a JDK per version.</summary>
+    private static void AddWindowsCandidates(List<string> candidates)
+    {
+        foreach (var pf in new[]
+                 {
+                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                 })
+        {
+            if (string.IsNullOrEmpty(pf)) continue;
+            AddJdksIn(Path.Combine(pf, "Eclipse Adoptium"), candidates);
+            AddJdksIn(Path.Combine(pf, "Java"), candidates);
+            AddJdksIn(Path.Combine(pf, "Microsoft"), candidates);
+            AddJdksIn(Path.Combine(pf, "Zulu"), candidates);
+            AddJdksIn(Path.Combine(pf, "Amazon Corretto"), candidates);
+        }
+    }
+
+    private void AddUnixCandidates(List<string> candidates)
+    {
+        // Common JVM locations on Linux.
+        AddJdksIn("/usr/lib/jvm", candidates);
+        AddJdksIn("/usr/java", candidates);
+        AddJdksIn("/opt/java", candidates);
+        AddJdksIn("/opt", candidates);
+
+        if (OperatingSystem.IsMacOS())
+        {
+            // macOS JDK bundles keep the JRE under <bundle>/Contents/Home.
+            AddJdksIn("/Library/Java/JavaVirtualMachines", candidates, "Contents", "Home");
+            AddJdksIn(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Library", "Java", "JavaVirtualMachines"), candidates, "Contents", "Home");
+        }
+
+        var onPath = WhichJava();
+        if (onPath is not null) candidates.Add(onPath);
+    }
+
+    /// <summary>
+    /// Adds the Java of each JDK folder under <paramref name="root"/>; <paramref name="inside"/> is the
+    /// path from a JDK's folder to the one that holds its <c>bin</c> (none, except in a macOS bundle).
+    /// </summary>
+    private static void AddJdksIn(string root, List<string> candidates, params string[] inside)
+    {
+        try
+        {
+            if (!Directory.Exists(root)) return;
+            foreach (var dir in Directory.GetDirectories(root))
+            {
+                var exe = Path.Combine([dir, .. inside, "bin", JavaExeName]);
+                if (File.Exists(exe)) candidates.Add(exe);
+            }
+        }
+        catch { /* ignore */ }
+    }
+
+    private static void AddJavaHome(List<string> candidates)
+    {
+        var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
+        if (string.IsNullOrWhiteSpace(javaHome)) return;
+
+        var exe = Path.Combine(javaHome, "bin", JavaExeName);
+        if (File.Exists(exe)) candidates.Add(exe);
     }
 
     /// <summary>What a Java executable is, as far as the command line the app builds cares.</summary>
@@ -347,12 +347,12 @@ public partial class JavaService
         var match = installed.FirstOrDefault(i => IsCompatible(i.Major, requiredMajor));
         if (match is not null)
         {
-            log?.Report(string.Format(Localizer.Get("Msg_JavaCompatibleFound"), match.Major));
+            log?.Report(Localizer.Format("Msg_JavaCompatibleFound", match.Major));
             return match.Path;
         }
 
         var download = DownloadableMajor(requiredMajor);
-        log?.Report(string.Format(Localizer.Get("Msg_JavaNotCompatibleDownloading"), download));
+        log?.Report(Localizer.Format("Msg_JavaNotCompatibleDownloading", download));
         return await DownloadAdoptiumAsync(download, log, ct);
     }
 
@@ -426,6 +426,38 @@ public partial class JavaService
         var existing = FindJavaExe(target);
         if (existing is not null) return existing;
 
+        var package = await FindAdoptiumPackageAsync(major, ct);
+        Directory.CreateDirectory(ManagedRoot);
+        var isZip = OperatingSystem.IsWindows();
+        var archivePath = Path.Combine(ManagedRoot, $"jre-{major}" + (isZip ? ".zip" : ".tar.gz"));
+
+        await DownloadVerifiedArchiveAsync(package, archivePath, log, ct);
+        await UnpackIntoPlaceAsync(archivePath, target, isZip, log, ct);
+
+        var javaExe = FindJavaExe(target)
+            ?? throw new UserFacingException(Localizer.Get("Msg_JavaExeNotFound"));
+
+        // Make sure the java binary is executable on Unix (tar usually preserves this, but be safe).
+        FileModes.TryMakeExecutable(javaExe);
+
+        log?.Report(Localizer.Format("Msg_JavaInstalled", major));
+        return javaExe;
+    }
+
+    /// <summary>Where Adoptium's builds are served from: GitHub releases, or its own site.</summary>
+    private static readonly string[] AdoptiumDownloadHosts = ["github.com", "adoptium.net"];
+
+    /// <summary>A JRE is under 100 MB; this only stops a download that never ends.</summary>
+    private const long MaxJreBytes = 400L << 20;
+
+    /// <summary>Where a JRE can be had, and the checksum it must match.</summary>
+    private sealed record AdoptiumPackage(string Link, string Checksum);
+
+    /// <summary>
+    /// Asks Adoptium for this major's JRE for this machine, trying each architecture it can run.
+    /// </summary>
+    private async Task<AdoptiumPackage> FindAdoptiumPackageAsync(int major, CancellationToken ct)
+    {
         var os = OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsMacOS() ? "mac" : "linux";
         var archs = AdoptiumArchitectures(RuntimeInformation.OSArchitecture,
             emulatesX64: OperatingSystem.IsWindows() || OperatingSystem.IsMacOS());
@@ -436,16 +468,13 @@ public partial class JavaService
         {
             var apiUrl = $"https://api.adoptium.net/v3/assets/latest/{major}/hotspot" +
                          $"?architecture={arch}&image_type=jre&os={os}&vendor=eclipse";
-            (link, checksum) = FirstPackage(await Http.GetStringAsync(apiUrl, ct));
+            (link, checksum) = FirstPackage(
+                await AppHttp.GetStringCappedAsync(Http, apiUrl, AppHttp.MaxApiBytes, ct));
             if (!string.IsNullOrEmpty(link)) break;
         }
         if (string.IsNullOrEmpty(link))
-            throw new UserFacingException(string.Format(Localizer.Get("Msg_JavaNoDownloadFmt"),
+            throw new UserFacingException(Localizer.Format("Msg_JavaNoDownloadFmt",
                 major, $"{os}/{string.Join("/", archs)}"));
-
-        Directory.CreateDirectory(ManagedRoot);
-        var isZip = OperatingSystem.IsWindows();
-        var archivePath = Path.Combine(ManagedRoot, $"jre-{major}" + (isZip ? ".zip" : ".tar.gz"));
 
         // No checksum, no Java. This archive is extracted and then EXECUTED to run the user's
         // servers, so verifying it cannot be best-effort the way it was: a response without the
@@ -455,23 +484,38 @@ public partial class JavaService
         if (string.IsNullOrEmpty(checksum))
             throw new UserFacingException(Localizer.Get("Msg_JavaNoChecksum"));
 
-        log?.Report(Localizer.Get("Msg_JavaDownloading"));
-        using (var resp = await Http.GetAsync(link, HttpCompletionOption.ResponseHeadersRead, ct))
-        {
-            resp.EnsureSuccessStatusCode();
-            await AtomicDownload.ToFileAsync(resp.Content, archivePath,
-                verifyAsync: async (part, token) =>
-                {
-                    log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
-                    await DownloadVerifier.VerifyAsync(part, checksum, HashAlgorithmName.SHA256, token);
-                },
-                ct: ct);
-        }
+        // The link comes out of the response, and what it points at is about to be unpacked and
+        // run: it has to be on the host Adoptium publishes its builds from.
+        AppHttp.RequireAllowedUrl(link, AdoptiumDownloadHosts);
 
+        return new AdoptiumPackage(link, checksum);
+    }
+
+    /// <summary>Downloads the archive to <paramref name="archivePath"/>, keeping it only if its SHA-256 matches.</summary>
+    private async Task DownloadVerifiedArchiveAsync(AdoptiumPackage package, string archivePath,
+        IProgress<string>? log, CancellationToken ct)
+    {
+        log?.Report(Localizer.Get("Msg_JavaDownloading"));
+        using var resp = await Http.GetAsync(package.Link, HttpCompletionOption.ResponseHeadersRead, ct);
+        resp.EnsureSuccessStatusCode();
+        await AtomicDownload.ToFileAsync(resp.Content, archivePath,
+            verifyAsync: async (part, token) =>
+            {
+                log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+                await DownloadVerifier.VerifyAsync(part, package.Checksum, HashAlgorithmName.SHA256, token);
+            },
+            ct: ct,
+            maxBytes: MaxJreBytes);
+    }
+
+    /// <summary>Unpacks the archive beside <paramref name="target"/> and moves the result into place whole.</summary>
+    private static async Task UnpackIntoPlaceAsync(string archivePath, string target, bool isZip,
+        IProgress<string>? log, CancellationToken ct)
+    {
         log?.Report(Localizer.Get("Msg_JavaInstalling"));
         // Unpacked beside the target and moved into place whole. Unpacking straight into it left a
         // half-extracted runtime after an interruption, and since an existing jre-N folder with a
-        // java in it counts as installed (above), that broken runtime was used from then on.
+        // java in it counts as installed, that broken runtime was used from then on.
         var partial = target + ".partial";
         if (Directory.Exists(partial)) Directory.Delete(partial, true);
         Directory.CreateDirectory(partial);
@@ -483,25 +527,6 @@ public partial class JavaService
         if (Directory.Exists(target)) Directory.Delete(target, true);
         Directory.Move(partial, target);
         try { File.Delete(archivePath); } catch { /* doesn't matter */ }
-
-        var javaExe = FindJavaExe(target)
-            ?? throw new UserFacingException(Localizer.Get("Msg_JavaExeNotFound"));
-
-        // Make sure the java binary is executable on Unix (tar usually preserves this, but be safe).
-        if (!OperatingSystem.IsWindows())
-        {
-            try
-            {
-                File.SetUnixFileMode(javaExe,
-                    UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                    UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-                    UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-            }
-            catch { /* best-effort */ }
-        }
-
-        log?.Report(string.Format(Localizer.Get("Msg_JavaInstalled"), major));
-        return javaExe;
     }
 
     private static async Task ExtractTarGzAsync(string targzPath, string destDir, CancellationToken ct)

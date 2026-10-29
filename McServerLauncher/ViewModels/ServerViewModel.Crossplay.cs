@@ -81,7 +81,7 @@ public partial class ServerViewModel
     {
         if (!HydraulicService.CanEnable(Config.Type))
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_HydraulicUnsupportedFmt"), Config.Type));
+            OnConsoleLine(Localizer.Format("Msg_HydraulicUnsupportedFmt", Config.Type));
             return;
         }
 
@@ -98,7 +98,7 @@ public partial class ServerViewModel
             // offered to install it again next time while servers.json still claimed it was there.
             Config.BedrockModContentEnabled = false;
             ConfigChanged?.Invoke();
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            OnConsoleLine(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
         }
         finally
         {
@@ -117,7 +117,7 @@ public partial class ServerViewModel
     {
         if (!MultiVersionService.CanEnable(Config.Type))
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_MultiVersionUnsupportedFmt"), Config.Type));
+            OnConsoleLine(Localizer.Format("Msg_MultiVersionUnsupportedFmt", Config.Type));
             return;
         }
 
@@ -133,7 +133,7 @@ public partial class ServerViewModel
             // Same as above: the failure has to survive the run that produced it.
             Config.MultiVersionEnabled = false;   // it did not happen; do not claim that it did
             ConfigChanged?.Invoke();
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            OnConsoleLine(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
         }
         finally
         {
@@ -155,7 +155,7 @@ public partial class ServerViewModel
     {
         if (!CrossplayService.CanEnable(Config.Type))
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_CrossplayUnsupportedFmt"), Config.Type));
+            OnConsoleLine(Localizer.Format("Msg_CrossplayUnsupportedFmt", Config.Type));
             return;
         }
 
@@ -208,7 +208,7 @@ public partial class ServerViewModel
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
+            OnConsoleLine(Localizer.Format("Msg_ErrorFmt", ErrorMessages.Describe(ex)));
         }
         finally
         {
@@ -276,7 +276,7 @@ public partial class ServerViewModel
         // taken, something is wrong that another round will not fix.
         for (var attempt = 0; attempt < 2; attempt++)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_CrossplayTunnelFmt"), Config.BedrockPort));
+            OnConsoleLine(Localizer.Format("Msg_CrossplayTunnelFmt", Config.BedrockPort));
 
             var created = await _playitApi.EnsureMinecraftTunnelAsync(
                 playitKey, BedrockTunnelName, Config.BedrockPort,
@@ -291,18 +291,18 @@ public partial class ServerViewModel
             var existing = await FindBedrockTunnelAsync();
             if (existing is null || IsOurBedrockTunnel(existing, portWasAlreadyOurs && attempt == 0))
             {
-                OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelExists"), Config.BedrockPort));
+                OnConsoleLine(Localizer.Format("Msg_TunnelExists", Config.BedrockPort));
                 break;
             }
 
             if (attempt > 0)
             {
-                OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelForeignFmt"),
+                OnConsoleLine(Localizer.Format("Msg_TunnelForeignFmt",
                     Config.BedrockPort, existing.Name));
                 break;
             }
 
-            OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelForeignMovingFmt"),
+            OnConsoleLine(Localizer.Format("Msg_TunnelForeignMovingFmt",
                 Config.BedrockPort, existing.Name));
             Config.BedrockPort = await PickBedrockPortAsync(log);
             ConfigChanged?.Invoke();
@@ -421,7 +421,7 @@ public partial class ServerViewModel
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_TunnelCreateError"), ErrorMessages.Describe(ex)));
+            OnConsoleLine(Localizer.Format("Msg_TunnelCreateError", ErrorMessages.Describe(ex)));
         }
     }
 
@@ -450,7 +450,7 @@ public partial class ServerViewModel
             var next = await PickBedrockPortAsync(log);
             if (next == old)
             {
-                OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockAlreadyFreeFmt"), old));
+                OnConsoleLine(Localizer.Format("Msg_BedrockAlreadyFreeFmt", old));
                 return;
             }
 
@@ -459,7 +459,7 @@ public partial class ServerViewModel
             Config.BedrockPort = next;   // the config announces it; the panel follows
             ConfigChanged?.Invoke();
             _crossplay.WriteConfig(Config, null);
-            OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockMovedFmt"), old, next));
+            OnConsoleLine(Localizer.Format("Msg_BedrockMovedFmt", old, next));
 
             if (Config.PlayitEnabled && !string.IsNullOrEmpty(playitKey))
             {
@@ -468,7 +468,7 @@ public partial class ServerViewModel
             }
             else if (Config.PlayitEnabled)
             {
-                OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockNeedTunnelFmt"), next));
+                OnConsoleLine(Localizer.Format("Msg_BedrockNeedTunnelFmt", next));
             }
 
             // Geyser reads its port when it starts; a running server keeps the old one until then.
@@ -478,7 +478,7 @@ public partial class ServerViewModel
         }
         catch (Exception ex)
         {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_BedrockMoveFailedFmt"),
+            OnConsoleLine(Localizer.Format("Msg_BedrockMoveFailedFmt",
                 ErrorMessages.Describe(ex)));
         }
     }

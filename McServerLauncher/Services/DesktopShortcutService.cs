@@ -188,8 +188,9 @@ public static class DesktopShortcutService
             TryRefreshIconCache();
             return installed;
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Shortcut", "the icon could not be installed in the icon theme, using the mount path", ex);
             // Couldn't write to the icon theme: the mount path is still better than nothing for
             // this session, and the shortcut itself will work either way.
             return source;
@@ -231,8 +232,9 @@ public static class DesktopShortcutService
             MakeIconReadable(installed);
             TryRefreshIconCache();
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Shortcut", "the icon could not be refreshed, leaving the old one", ex);
             // Cosmetic to the last: an icon that stays stale is a far better outcome than an app
             // that will not start.
         }
@@ -341,7 +343,7 @@ public static class DesktopShortcutService
 
         if (!p.HasExited || p.ExitCode != 0)
             throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_ShortcutFailedFmt"), error.Trim()));
+                Localizer.Format("Msg_ShortcutFailedFmt", error.Trim()));
     }
 
     /// <summary>Quotes a path for a .desktop <c>Exec=</c> line, where spaces separate arguments.</summary>

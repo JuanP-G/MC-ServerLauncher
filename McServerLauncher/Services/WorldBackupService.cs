@@ -162,15 +162,15 @@ public class WorldBackupService
     /// </summary>
     public virtual async Task<string?> CreateBackupAsync(ServerConfig config, string trigger,
         IProgress<string>? log = null,
-        CancellationToken ct = default, string? protectFromPruning = null)
+        string? protectFromPruning = null, CancellationToken ct = default)
     {
         var levelName = GetLevelName(config);
         if (WorldFolderFor(config.FolderPath, levelName) is not { } worldDir)
         {
             // Said and skipped rather than thrown: this runs before every start, and a backup that
             // cannot be made is not a reason to keep the server down.
-            log?.Report(string.Format(Localizer.Get("Msg_ErrorFmt"),
-                string.Format(Localizer.Get("Msg_BackupBadLevelNameFmt"), levelName)));
+            log?.Report(Localizer.Format("Msg_ErrorFmt",
+                Localizer.Format("Msg_BackupBadLevelNameFmt", levelName)));
             return null;
         }
 
@@ -186,7 +186,7 @@ public class WorldBackupService
         var fileName = $"{Path.GetFileName(worldDir)}-{DateTime.Now:yyyyMMdd-HHmmss}--{trigger}.zip";
         var zipPath = Path.Combine(dir, fileName);
 
-        log?.Report(string.Format(Localizer.Get("Msg_BackupCreatingFmt"), levelName));
+        log?.Report(Localizer.Format("Msg_BackupCreatingFmt", levelName));
 
         // Taken before the copy, not after: by then a running server may already have written to
         // the world again, and the record would describe a world this zip does not hold — one the
@@ -197,7 +197,7 @@ public class WorldBackupService
         await Task.Run(() => CreateZipWithRetry(worldDir, dimensions, zipPath, ct), ct);
 
         var sizeMb = new FileInfo(zipPath).Length / (1024.0 * 1024.0);
-        log?.Report(string.Format(Localizer.Get("Msg_BackupCreatedFmt"), sizeMb.ToString("0.#")));
+        log?.Report(Localizer.Format("Msg_BackupCreatedFmt", sizeMb.ToString("0.#")));
 
         WriteState(config, new BackupState(fileName, fingerprint));
         PruneOldBackups(config, protectFromPruning);
@@ -221,7 +221,7 @@ public class WorldBackupService
     private static void SweepPartials(string backupsDir)
     {
         foreach (var partial in Directory.EnumerateFiles(backupsDir, "*.zip" + PartialSuffix))
-            TryDeleteZip(partial);
+            FileCleanup.TryDelete(partial);
     }
 
     /// <summary>
@@ -248,7 +248,7 @@ public class WorldBackupService
             {
                 // Antivirus-style transient locks surface as either exception type depending on how
                 // the scanner holds the file, so both take the retry path.
-                TryDeleteZip(partial);
+                FileCleanup.TryDelete(partial);
                 Thread.Sleep(1000);
                 ZipWorld(worldDir, dimensions, partial, ct);
             }
@@ -258,7 +258,7 @@ public class WorldBackupService
         }
         catch
         {
-            TryDeleteZip(partial);
+            FileCleanup.TryDelete(partial);
             throw;
         }
     }
@@ -359,11 +359,6 @@ public class WorldBackupService
     internal virtual Stream OpenForCopy(string path) =>
         new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
 
-    private static void TryDeleteZip(string zipPath)
-    {
-        try { File.Delete(zipPath); } catch { /* best-effort */ }
-    }
-
     /// <summary>
     /// Which backup the world on disk is a copy of, as far as anybody playing could tell.
     /// </summary>
@@ -440,8 +435,9 @@ public class WorldBackupService
             var fingerprint = Fingerprint(worldDir, DimensionsBeside(config.FolderPath, levelName));
             WriteState(config, state with { Fingerprint = fingerprint });
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Backup", "the world's fingerprint could not be saved, the next start copies again", ex);
             // Best-effort: the next start just makes the copy it would have made anyway.
         }
     }
@@ -467,8 +463,9 @@ public class WorldBackupService
             File.WriteAllText(tmp, JsonSerializer.Serialize(state));
             File.Move(tmp, path, overwrite: true);
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Backup", "the backup state file could not be written, one extra copy may be made", ex);
             // Best-effort: without it the next start or stop makes one copy too many, nothing worse.
         }
     }
@@ -562,12 +559,12 @@ public class WorldBackupService
         // to be read — included.
         var worldDir = WorldFolderFor(config.FolderPath, levelName)
             ?? throw new UserFacingException(
-                string.Format(Localizer.Get("Msg_BackupBadLevelNameFmt"), levelName));
+                Localizer.Format("Msg_BackupBadLevelNameFmt", levelName));
 
         if (Directory.Exists(worldDir))
         {
             log?.Report(Localizer.Get("Msg_BackupSafetyNet"));
-            await CreateBackupAsync(config, "before-restore", log, ct, protectFromPruning: zipPath);
+            await CreateBackupAsync(config, "before-restore", log, protectFromPruning: zipPath, ct: ct);
         }
 
         log?.Report(Localizer.Get("Msg_BackupRestoring"));
@@ -612,54 +609,15 @@ public class WorldBackupService
             DeleteFolder(unit + ".replaced");
         }
 
-        var incoming = worldDir + ".restoring";
         var swapped = new List<string>();
         try
         {
-            Directory.CreateDirectory(incoming);
-            ZipFile.ExtractToDirectory(zipPath, incoming, overwriteFiles: true);
-
-            // The dimensions come out of the world's folder to sit beside it, as Paper expects them.
-            var dimensions = Path.Combine(incoming, DimensionsRoot);
-            var present = new List<string> { worldDir };
-            foreach (var suffix in DimensionSuffixes)
-            {
-                var packed = Path.Combine(dimensions, suffix);
-                if (!Directory.Exists(packed)) continue;
-                Directory.Move(packed, worldDir + suffix + ".restoring");
-                present.Add(worldDir + suffix);
-            }
-            DeleteFolder(dimensions);
-
-            foreach (var unit in present)
-            {
-                if (Directory.Exists(unit)) Directory.Move(unit, unit + ".replaced");
-                Directory.Move(unit + ".restoring", unit);
-                swapped.Add(unit);
-            }
+            var present = UnpackWithDimensions(worldDir, zipPath);
+            SwapIn(present, swapped);
         }
         catch
         {
-            // Every part back as it was, newest first; a part that never moved is still in place.
-            foreach (var unit in units.Where(u => !swapped.Contains(u)))
-            {
-                try
-                {
-                    if (!Directory.Exists(unit) && Directory.Exists(unit + ".replaced"))
-                        Directory.Move(unit + ".replaced", unit);
-                }
-                catch { /* best-effort: the before-restore backup still has it */ }
-            }
-            for (var i = swapped.Count - 1; i >= 0; i--)
-            {
-                try
-                {
-                    DeleteFolder(swapped[i]);
-                    if (Directory.Exists(swapped[i] + ".replaced"))
-                        Directory.Move(swapped[i] + ".replaced", swapped[i]);
-                }
-                catch { /* best-effort: the before-restore backup still has it */ }
-            }
+            RollBack(units, swapped);
             throw;
         }
         finally
@@ -674,6 +632,69 @@ public class WorldBackupService
         foreach (var unit in swapped)
         {
             try { DeleteFolder(unit + ".replaced"); } catch { /* cleared by the next restore */ }
+        }
+    }
+
+    /// <summary>
+    /// Unpacks the zip into <c>&lt;world&gt;.restoring</c> and moves its dimensions out beside it, each
+    /// into its own <c>.restoring</c> folder, as Paper expects them. Returns the units to swap in: the
+    /// world, and each dimension the zip carried.
+    /// </summary>
+    private static List<string> UnpackWithDimensions(string worldDir, string zipPath)
+    {
+        var incoming = worldDir + ".restoring";
+        Directory.CreateDirectory(incoming);
+        ZipFile.ExtractToDirectory(zipPath, incoming, overwriteFiles: true);
+
+        // The dimensions come out of the world's folder to sit beside it, as Paper expects them.
+        var dimensions = Path.Combine(incoming, DimensionsRoot);
+        var present = new List<string> { worldDir };
+        foreach (var suffix in DimensionSuffixes)
+        {
+            var packed = Path.Combine(dimensions, suffix);
+            if (!Directory.Exists(packed)) continue;
+            Directory.Move(packed, worldDir + suffix + ".restoring");
+            present.Add(worldDir + suffix);
+        }
+        DeleteFolder(dimensions);
+        return present;
+    }
+
+    /// <summary>
+    /// Puts each unpacked unit in place of the one on disk, which is kept as <c>.replaced</c>.
+    /// <paramref name="swapped"/> grows as it goes, so a failure halfway knows what to undo.
+    /// </summary>
+    private static void SwapIn(List<string> present, List<string> swapped)
+    {
+        foreach (var unit in present)
+        {
+            if (Directory.Exists(unit)) Directory.Move(unit, unit + ".replaced");
+            Directory.Move(unit + ".restoring", unit);
+            swapped.Add(unit);
+        }
+    }
+
+    /// <summary>Every part back as it was, newest first; a part that never moved is still in place.</summary>
+    private static void RollBack(List<string> units, List<string> swapped)
+    {
+        foreach (var unit in units.Where(u => !swapped.Contains(u)))
+        {
+            try
+            {
+                if (!Directory.Exists(unit) && Directory.Exists(unit + ".replaced"))
+                    Directory.Move(unit + ".replaced", unit);
+            }
+            catch { /* best-effort: the before-restore backup still has it */ }
+        }
+        for (var i = swapped.Count - 1; i >= 0; i--)
+        {
+            try
+            {
+                DeleteFolder(swapped[i]);
+                if (Directory.Exists(swapped[i] + ".replaced"))
+                    Directory.Move(swapped[i] + ".replaced", swapped[i]);
+            }
+            catch { /* best-effort: the before-restore backup still has it */ }
         }
     }
 

@@ -70,7 +70,7 @@ public static class ConnectionProbe
     public const string SpeedHost = "speed.cloudflare.com";
     public const string LatencyHost = "1.1.1.1";
 
-    private static readonly HttpClient Http = new() { Timeout = Timeout.InfiniteTimeSpan };
+    private static readonly HttpClient Http = AppHttp.Create(Timeout.InfiniteTimeSpan);
 
     // ---------------------------------------------------------------- sampling
 
@@ -119,7 +119,7 @@ public static class ConnectionProbe
     /// answers with its own, so the local ping finds out what the tunnel ping then sends.
     /// </param>
     public static async Task<SlpReply?> PingJavaAsync(string host, int port, TimeSpan timeout,
-        CancellationToken ct = default, int protocol = FallbackProtocol)
+        int protocol = FallbackProtocol, CancellationToken ct = default)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(timeout);

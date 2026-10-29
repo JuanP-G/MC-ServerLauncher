@@ -75,7 +75,7 @@ public sealed partial class SolutionRow : ObservableObject
 /// says so at the bottom with a button for it, because a change made on a running server that
 /// appears to do nothing is the quickest way to make somebody stop trusting the page.
 /// </remarks>
-public sealed partial class PerformanceSolutionsViewModel : ObservableObject
+public sealed partial class PerformanceSolutionsViewModel : ObservableObject, IDisposable
 {
     private readonly ServerViewModel _host;
     private readonly CancellationTokenSource _lifetime = new();
@@ -122,6 +122,13 @@ public sealed partial class PerformanceSolutionsViewModel : ObservableObject
     /// <summary>Stops the lookups the page started.</summary>
     public void Shutdown() => _lifetime.Cancel();
 
+    /// <summary>Stops the lookups and lets go of their token. The page is not used after this.</summary>
+    public void Dispose()
+    {
+        Shutdown();
+        _lifetime.Dispose();
+    }
+
     private void Build(PerformanceStatus status, long totalRamMb, long availableRamMb)
     {
         var config = _host.Config;
@@ -162,7 +169,7 @@ public sealed partial class PerformanceSolutionsViewModel : ObservableObject
     private SolutionRow DistanceRow(string key, Advice advice, bool overriddenByPaper, string titleKey,
         string detailKey)
     {
-        var title = string.Format(Localizer.Get(titleKey), advice.From, advice.To);
+        var title = Localizer.Format(titleKey, advice.From, advice.To);
         var detail = Localizer.Get(detailKey);
         if (overriddenByPaper)
         {
@@ -184,7 +191,7 @@ public sealed partial class PerformanceSolutionsViewModel : ObservableObject
         var to = ByteSize.Format((advice.To ?? 0) * 1024 * 1024);
         var manual = _host.IsManualMemory;
         return new SolutionRow(
-            string.Format(Localizer.Get("Sol_RamFmt"), from, to),
+            Localizer.Format("Sol_RamFmt", from, to),
             Localizer.Get(manual ? "Sol_RamDetailManual" : "Sol_RamDetailAuto"),
             Localizer.Get("Sol_Apply"),
             () =>

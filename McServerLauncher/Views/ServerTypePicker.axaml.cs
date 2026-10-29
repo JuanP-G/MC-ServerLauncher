@@ -99,6 +99,65 @@ public partial class ServerTypePicker : UserControl
     {
         var accent = new ImmutableSolidColorBrush(Color.Parse(entry.BadgeColor));
 
+        var card = new RadioButton
+        {
+            GroupName = _groupName,
+            Content = CardContent(entry, accent),
+            // The enum value itself, never its name as a string. Nothing in the app reads it back
+            // — the picker keeps its own dictionary — but it is how the tests identify a card,
+            // and it is the obvious place to look for a card's identity when debugging.
+            Tag = entry.Type,
+            Theme = (ControlTheme?)Resources["TypeCardTheme"],
+            Width = 176,
+            // One height for every card, so the rows line up. Left to fit their content they came
+            // out at three different heights and the grid read as broken rather than compact.
+            Height = 104,
+            Margin = new Avalonia.Thickness(0, 0, 8, 8),
+            Padding = new Avalonia.Thickness(11, 9),
+            VerticalContentAlignment = VerticalAlignment.Top
+        };
+        ToolTip.SetTip(card, CardTip(entry));
+
+        Paint(card, accent, picked: false);
+        card.IsCheckedChanged += (_, _) =>
+        {
+            Paint(card, accent, picked: card.IsChecked == true);
+            if (card.IsChecked != true) return;
+
+            // Before the event, so every handler sees the type that was just picked.
+            _selected = entry.Type;
+            if (!_suppress) SelectionChanged?.Invoke(this, EventArgs.Empty);
+        };
+
+        return card;
+    }
+
+    /// <summary>What a card shows: the name, one line about the type, and its badges.</summary>
+    private static StackPanel CardContent(ServerTypeCatalog.Entry entry, IBrush accent)
+    {
+        var content = new StackPanel { Spacing = 3 };
+        content.Children.Add(new TextBlock
+        {
+            Text = entry.DisplayName,
+            FontWeight = FontWeight.SemiBold,
+            FontSize = 14
+        });
+        content.Children.Add(new TextBlock
+        {
+            Text = Localizer.Get(entry.DescriptionKey),
+            FontSize = 11,
+            Opacity = 0.65,
+            TextWrapping = TextWrapping.Wrap,
+            MaxWidth = 150
+        });
+
+        var badges = CardBadges(entry, accent);
+        if (badges.Children.Count > 0) content.Children.Add(badges);
+        return content;
+    }
+
+    private static StackPanel CardBadges(ServerTypeCatalog.Entry entry, IBrush accent)
+    {
         var badges = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
         if (entry.Family != ServerFamily.None)
             badges.Children.Add(Badge(
@@ -115,59 +174,16 @@ public partial class ServerTypePicker : UserControl
                 Localizer.Get(full ? "Badge_Bedrock" : "Badge_BedrockPartial"),
                 new ImmutableSolidColorBrush(Color.Parse(full ? "#3E8AC0" : "#B07A2B"))));
         }
+        return badges;
+    }
 
-        var content = new StackPanel { Spacing = 3 };
-        content.Children.Add(new TextBlock
-        {
-            Text = entry.DisplayName,
-            FontWeight = FontWeight.SemiBold,
-            FontSize = 14
-        });
-        content.Children.Add(new TextBlock
-        {
-            Text = Localizer.Get(entry.DescriptionKey),
-            FontSize = 11,
-            Opacity = 0.65,
-            TextWrapping = TextWrapping.Wrap,
-            MaxWidth = 150
-        });
-        if (badges.Children.Count > 0) content.Children.Add(badges);
-
-        var card = new RadioButton
-        {
-            GroupName = _groupName,
-            Content = content,
-            // The enum value itself, never its name as a string. Nothing in the app reads it back
-            // — the picker keeps its own dictionary — but it is how the tests identify a card,
-            // and it is the obvious place to look for a card's identity when debugging.
-            Tag = entry.Type,
-            Theme = (ControlTheme?)Resources["TypeCardTheme"],
-            Width = 176,
-            // One height for every card, so the rows line up. Left to fit their content they came
-            // out at three different heights and the grid read as broken rather than compact.
-            Height = 104,
-            Margin = new Avalonia.Thickness(0, 0, 8, 8),
-            Padding = new Avalonia.Thickness(11, 9),
-            VerticalContentAlignment = VerticalAlignment.Top
-        };
-        // The card has room for a badge, not for the caveat behind it. The tooltip carries the rest.
+    /// <summary>The card has room for a badge, not for the caveat behind it. The tooltip carries the rest.</summary>
+    private static string CardTip(ServerTypeCatalog.Entry entry)
+    {
         var tip = Localizer.Get(entry.DescriptionKey);
         if (entry.Crossplay == CrossplayLevel.Partial)
             tip += "\n\n" + Localizer.Get("Crossplay_PartialNote");
-        ToolTip.SetTip(card, tip);
-
-        Paint(card, accent, picked: false);
-        card.IsCheckedChanged += (_, _) =>
-        {
-            Paint(card, accent, picked: card.IsChecked == true);
-            if (card.IsChecked != true) return;
-
-            // Before the event, so every handler sees the type that was just picked.
-            _selected = entry.Type;
-            if (!_suppress) SelectionChanged?.Invoke(this, EventArgs.Empty);
-        };
-
-        return card;
+        return tip;
     }
 
     /// <summary>

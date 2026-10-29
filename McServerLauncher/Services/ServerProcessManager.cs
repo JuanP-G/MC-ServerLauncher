@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Channels;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 
@@ -10,10 +11,16 @@ namespace McServerLauncher.Services;
 /// startup, clean shutdown (sending "stop" over stdin), command sending and
 /// re-emitting the console output in real time.
 /// </summary>
-public class ServerProcessManager
+public sealed class ServerProcessManager : IDisposable
 {
     private Process? _process;
     private readonly object _lock = new();
+
+    /// <summary>What the server is told, in order; null when no process is running.</summary>
+    private ChannelWriter<StdinLine>? _commands;
+
+    /// <summary>One line for the server's console, and who is waiting to know it was written.</summary>
+    private sealed record StdinLine(string Text, TaskCompletionSource? Written = null);
     private DateTime _startedAtUtc;
 
     /// <summary>
@@ -81,21 +88,20 @@ public class ServerProcessManager
             if (isForgeArgs)
             {
                 if (ResolveForgeArgsFile(config) is null)
-                    throw new UserFacingException(string.Format(Localizer.Get("Msg_ForgeArgsMissingFmt"),
+                    throw new UserFacingException(Localizer.Format("Msg_ForgeArgsMissingFmt",
                         Path.Combine(config.FolderPath, "libraries")));
             }
             else if (!File.Exists(config.JarFullPath))
             {
-                throw new UserFacingException(string.Format(Localizer.Get("Msg_ServerJarMissingFmt"),
+                throw new UserFacingException(Localizer.Format("Msg_ServerJarMissingFmt",
                     config.JarFullPath));
             }
 
-            var args = BuildJavaArguments(config, new JavaService().GetMajorVersion(config.JavaPath), memoryFlags);
+            var args = BuildJavaArgumentList(config, new JavaService().GetMajorVersion(config.JavaPath), memoryFlags);
 
             var psi = new ProcessStartInfo
             {
                 FileName = config.JavaPath,
-                Arguments = args,
                 WorkingDirectory = config.FolderPath,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -106,6 +112,9 @@ public class ServerProcessManager
                 StandardErrorEncoding = System.Text.Encoding.UTF8
             };
 
+            // One argument each, never one string to be cut up again: see JavaCommandLine.
+            foreach (var arg in args) psi.ArgumentList.Add(arg);
+
             _process = new Process { StartInfo = psi, EnableRaisingEvents = true };
             _process.OutputDataReceived += OnStandardOutput;
             _process.ErrorDataReceived += OnStandardError;
@@ -113,14 +122,15 @@ public class ServerProcessManager
 
             State = ServerState.Starting;
             _startedAtUtc = DateTime.UtcNow;
-            OutputReceived?.Invoke(string.Format(Localizer.Get("Msg_LauncherStarting"), config.JavaPath,
-                args), ConsoleSource.Launcher);
+            OutputReceived?.Invoke(Localizer.Format("Msg_LauncherStarting", config.JavaPath,
+                JavaCommandLine.Display(args)), ConsoleSource.Launcher);
 
             try
             {
                 _process.Start();
                 _process.BeginOutputReadLine();
                 _process.BeginErrorReadLine();
+                StartCommandPump(_process);
                 // The server stays "Starting" until it reports it finished loading;
                 // OnOutputData promotes it to Running when it sees the "Done (...)!" line.
             }
@@ -138,20 +148,32 @@ public class ServerProcessManager
     /// <param name="javaMajor">The Java it starts on. 0 when it could not be read.</param>
     /// <param name="memoryFlags">The memory flags; null for Manual mode's <c>-Xms</c>/<c>-Xmx</c>.
     /// They go first, so the user's extra arguments, which come after, still win.</param>
-    internal static string BuildJavaArguments(ServerConfig config, int javaMajor,
+    internal static List<string> BuildJavaArgumentList(ServerConfig config, int javaMajor,
         IReadOnlyList<string>? memoryFlags = null)
     {
-        var extra = string.IsNullOrWhiteSpace(config.ExtraJvmArgs) ? "" : config.ExtraJvmArgs.Trim() + " ";
-        var mem = string.Concat((memoryFlags ?? MemoryProfile.ManualFlags(config)).Select(f => f + " "));
-        var implied = string.Concat(ImpliedJvmFlags(javaMajor, config.ExtraJvmArgs).Select(f => f + " "));
+        var args = new List<string>();
+        args.AddRange(memoryFlags ?? MemoryProfile.ManualFlags(config));
+        args.AddRange(ImpliedJvmFlags(javaMajor, config.ExtraJvmArgs));
+        args.AddRange(JavaCommandLine.Split(config.ExtraJvmArgs));
 
         // Modern Forge (1.17+) and every NeoForge build have no runnable server jar: they launch via
         // an args file the installer generates (win_args.txt on Windows, unix_args.txt elsewhere).
         if (!string.IsNullOrWhiteSpace(config.ForgeArgs) && ResolveForgeArgsFile(config) is { } argsFile)
-            return $"{mem}{implied}{extra}@{argsFile} nogui";
+            args.Add("@" + argsFile);
+        else
+        {
+            args.Add("-jar");
+            args.Add(config.JarFile);
+        }
 
-        return $"{mem}{implied}{extra}-jar \"{config.JarFile}\" nogui";
+        args.Add("nogui");
+        return args;
     }
+
+    /// <summary>The same arguments as one line, as the console shows them.</summary>
+    internal static string BuildJavaArguments(ServerConfig config, int javaMajor,
+        IReadOnlyList<string>? memoryFlags = null) =>
+        JavaCommandLine.Display(BuildJavaArgumentList(config, javaMajor, memoryFlags));
 
     /// <summary>
     /// JVM flags the app adds by itself, because the warning they answer is its to fix.
@@ -257,6 +279,7 @@ public class ServerProcessManager
         OutputReceived?.Invoke(Localizer.Get("Msg_ServerStopped"), ConsoleSource.Launcher);
         lock (_lock)
         {
+            EndCommandPump();
             _process?.Dispose();
             _process = null;
         }
@@ -267,15 +290,78 @@ public class ServerProcessManager
     }
 
     /// <summary>Sends an arbitrary command over stdin (like typing it into the console).</summary>
+    /// <remarks>
+    /// Returns at once: the line is queued and written in order by <see cref="PumpCommandsAsync"/>.
+    /// This used to write to the pipe itself, on whatever thread asked — the window's, for a command
+    /// typed into the console — and a JVM that was frozen and not reading would have frozen the window
+    /// with it, since the pipe's buffer is finite.
+    /// </remarks>
     public void SendCommand(string command)
     {
         lock (_lock)
         {
             if (_process is null || _process.HasExited)
                 return;
-            _process.StandardInput.WriteLine(command);
-            _process.StandardInput.Flush();
+            _commands?.TryWrite(new StdinLine(command));
         }
+    }
+
+    /// <summary>Starts writing what <see cref="SendCommand"/> queues, for the process just started.</summary>
+    private void StartCommandPump(Process process)
+    {
+        var queue = Channel.CreateUnbounded<StdinLine>(new UnboundedChannelOptions { SingleReader = true });
+        _commands = queue.Writer;
+        _ = PumpCommandsAsync(process, queue.Reader);
+    }
+
+    /// <summary>Closes the queue: the process is gone or going. Under <see cref="_lock"/>.</summary>
+    private void EndCommandPump()
+    {
+        _commands?.TryComplete();
+        _commands = null;
+    }
+
+    /// <summary>
+    /// The one writer to the server's input: lines go out in the order they were queued, each
+    /// flushed, and whoever waits for one is told how it went.
+    /// </summary>
+    private static async Task PumpCommandsAsync(Process process, ChannelReader<StdinLine> lines)
+    {
+        try
+        {
+            await foreach (var line in lines.ReadAllAsync())
+            {
+                try
+                {
+                    await process.StandardInput.WriteLineAsync(line.Text);
+                    await process.StandardInput.FlushAsync();
+                    line.Written?.TrySetResult();
+                }
+                catch (Exception ex)
+                {
+                    line.Written?.TrySetException(ex);
+                    throw;
+                }
+            }
+        }
+        catch (Exception ex) when (ex is IOException or ObjectDisposedException or InvalidOperationException)
+        {
+            // The server went away under us, so there is nobody left to tell. Whoever was waiting for
+            // a line has been told; the ones queued behind it are dropped with the process.
+        }
+    }
+
+    /// <summary>Lets go of the process handle. Does not stop the server: <see cref="StopAsync"/> first.</summary>
+    /// <remarks>Only for a manager that is being thrown away; a stopped one is started again as it is.</remarks>
+    public void Dispose()
+    {
+        lock (_lock)
+        {
+            EndCommandPump();
+            _process?.Dispose();
+            _process = null;
+        }
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -285,9 +371,11 @@ public class ServerProcessManager
     public async Task StopAsync(TimeSpan timeout)
     {
         Process? proc;
+        ChannelWriter<StdinLine>? commands;
         lock (_lock)
         {
             proc = _process;
+            commands = _commands;
             if (proc is null || proc.HasExited)
                 return;
             State = ServerState.Stopping;
@@ -296,8 +384,13 @@ public class ServerProcessManager
         try
         {
             OutputReceived?.Invoke(Localizer.Get("Msg_StoppingSaving"), ConsoleSource.Launcher);
-            proc.StandardInput.WriteLine("stop");
-            proc.StandardInput.Flush();
+
+            // Behind whatever was queued ahead of it, and awaited: a pipe that cannot be written to
+            // goes straight to the kill below instead of waiting out the whole timeout.
+            var written = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            if (commands is null || !commands.TryWrite(new StdinLine("stop", written)))
+                throw new InvalidOperationException("The server's input is closed.");
+            await written.Task;
 
             using var cts = new CancellationTokenSource(timeout);
             await proc.WaitForExitAsync(cts.Token);

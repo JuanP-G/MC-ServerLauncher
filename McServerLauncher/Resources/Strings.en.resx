@@ -186,6 +186,9 @@
   <data name="Msg_DownloadComplete" xml:space="preserve"><value>Download complete.</value></data>
   <data name="Msg_VerifyingChecksum" xml:space="preserve"><value>Verifying the downloaded file's integrity...</value></data>
   <data name="Msg_ChecksumMismatchFmt" xml:space="preserve"><value>The downloaded file ({0}) didn't match the official checksum and was deleted. The download may have been corrupted or tampered with; try again.</value></data>
+  <data name="Msg_DownloadTooLargeFmt" xml:space="preserve"><value>{0} is larger than the maximum expected size ({1}); the download was cancelled.</value></data>
+  <data name="Msg_ChecksumRequiredFmt" xml:space="preserve"><value>There is no official checksum to verify {0} against, so it was not kept.</value></data>
+  <data name="Msg_DownloadHostRefusedFmt" xml:space="preserve"><value>The download address ({0}) is not from a site trusted for this download and was not used.</value></data>
   <data name="Msg_NoServerDownload" xml:space="preserve"><value>Version {0} has no downloadable server available.</value></data>
   <data name="Msg_MissingWriteKey" xml:space="preserve"><value>The Playit write key is missing.</value></data>
   <data name="Msg_PlayitAuthFail" xml:space="preserve"><value>Could not authenticate with Playit to read the tunnels.</value></data>

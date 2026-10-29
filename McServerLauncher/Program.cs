@@ -63,6 +63,10 @@ public static class Program
             e.SetObserved();
         };
 
+        // The copy that runs the Windows installer once the app has exited (see UpdateHelper): it
+        // must not claim the app, build a window or touch the settings, so it is decided first.
+        if (UpdateHelper.IsHelper(args)) { Environment.Exit(UpdateHelper.Run(args)); return; }
+
         // Before Avalonia, on purpose: a second launch must not build a window, a tray icon or a
         // set of ViewModels — each of which would start timers and wake listeners of its own —
         // only to tear them all down again.

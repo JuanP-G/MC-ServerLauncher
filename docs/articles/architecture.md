@@ -183,6 +183,54 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > before the split, constructing one started three timers, opened a socket and called the network,
 > so nothing that touched them could be tested except through its pure pieces.
 
+> **The big view models are facades over small classes.** `ServerViewModel` (2,400 lines at its
+> peak) and `ServerModsViewModel` (2,100) used to hold every rule of their screens in one class. The rules
+> now live in plain classes that raise events, and the view model keeps what the XAML binds to —
+> the properties and commands — as one-line forwarders, because the bindings are by name
+> (`CompileBindings=False`) and renaming one breaks the screen without a compiler error.
+>
+> - **What a running server decides for itself.** `IdleShutdownController` (with `IdlePolicy`, the
+>   pure rules: when the countdown runs, when it is long enough, the wake grace),
+>   `WakeOnDemandController`, `StartPreflight` (the checks before a start), `PlayerAdmin` (op, ban,
+>   whitelist and kick through the console), `TunnelAddressTracker` (looking the public address up
+>   and keeping it) and `ConsoleBuffer` (the lines, their filters and their counts).
+> - **How they talk to the view model.** Each takes a small *host*: a record of delegates
+>   (`IdleHost`, `WakeHost`, `PreflightHost`, `TunnelHost`) or, for `PlayerAdmin`,
+>   `IPlayerAdminHost`, implemented explicitly by `ServerViewModel`. None of them knows Avalonia,
+>   so each is tested alone with a fake host and, where time matters, an injected clock
+>   (`IdleShutdownControllerTests`, `StartPreflightTests`, `PlayerAdminTests`…).
+> - **Mods.** `ServerModsViewModel` keeps what the tab binds to and hands each job to a class of
+> its own: `InstalledContentIndex` (what every installed file is, one answer per SHA-1 shared by
+> all of them), `ModDependencyInstaller` (find and install what a mod needs), `ModInstaller`
+> (install one mod and take the old copies out), `ModUpdater` (check and update), `StoreBrowser`
+> (the query behind the store page, and which answer is the current one), `CleanupScanner`
+> (the facts behind the clean-up panel), `ModpackExporter` (the pack for the players) and
+> `PendingUpdateStore` (the newer versions the last check found). They take a token on every
+> call and never keep one, because `Shutdown()` replaces the view model's. The store itself is
+> `ModrinthService`, whose methods are `virtual` so the tests can put a fake in its place
+> (`FakeModrinthStore`): installing and updating, which had no test before, now have
+> (`ModInstallerTests`, `ModUpdaterTests`, `StoreBrowserTests`).
+> - **What is left in the shell views.** `MainViewModel` hands the update to `AppUpdateCoordinator`
+> and what a removed server leaves behind to `RemovedServerLeftovers`; what stays is the
+> window's own state (sections, panels, the server list). Automatic backups are decided by
+> `BackupCoordinator.ClockTick`, and the process sampling is `ProcessStatsService`; what
+> `ServerViewModel` keeps of them is the timer and the strings the screen binds to.
+> - **Services used by more than one screen.** `ServerProvisioningService` (create a server or adopt
+>   a folder: the new-server panel only reads its form), `LoaderChangeService` (convert a server to
+>   another loader) and `AppUpdateCoordinator` (download, verify and stage an update behind
+>   `IUpdateSource`, so the window only reports phases). `PlayitStatus` and `ReachabilitySignal` are
+>   the pure answers to "what does the tunnel look like" and "can people reach this".
+> - **Small shared helpers.** `AppPaths` (the data folders), `AppHttp` (the one place an
+>   `HttpClient` is made), `FileCleanup` (delete without throwing) and `FileModes` (make a file executable).
+> - **Dialogs.** Code that has to ask a question goes through `Dialogs.Current`
+>   (`IDialogService`), which is `MessageBox` in the app and a fake in tests. It is still a modal
+>   window, as before; nothing was added that opens outside the app.
+>
+> The longer methods that remained were split the same way — into named steps that each read at one
+> level (`ConnectionTestViewModel.RunAsync`, `PlayitAgentRunner.StartAsync`,
+> `ServerJarInstaller.InstallAsync`, the Adoptium download, the `mods.toml` reader, the toast and
+> message-box builders, the Markdown renderer). Behaviour is unchanged.
+
 Data lives **per user** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux
 and macOS):
 
@@ -219,7 +267,18 @@ are no hard-coded machine paths.
   redirects stdin/stdout/stderr, re-emits each output line via an event, and stops it cleanly by
   sending `stop` (with a kill fallback). The kill waits `ServerViewModel.StopTimeout` (60 s), one
   value for the Stop button, Restart and closing or updating the app — closing used to allow fifteen
-  seconds, less than a large modpack needs to save.
+  seconds, less than a large modpack needs to save. Whatever is typed to the server goes through
+  `SendCommand`, which only queues the line: a single reader writes the queue to the process's input in
+  order and flushes each line, and `StopAsync` queues its `stop` behind them and waits for that write. A JVM
+  that is frozen and not reading used to freeze the window with it, because the write happened on the caller's
+  thread.
+- **Who disposes what.** Shutting down is not the end: after a failed update the app comes back with the same
+  view models, so `ShutdownAsync` / `Shutdown()` stop work but release nothing. Disposal happens on the one
+  terminal path, `MainViewModel.ForgetServerAsync` → `ServerViewModel.Dispose()`, which releases the process
+  manager, the backup coordinator, the Mods and Performance-solutions pages, the connection test and the idle
+  timer. `PlayitManager` and `PlayitAgentRunner` are shared by every server and live as long as the app, so
+  no server disposes them. Failures the app survives on purpose (a corrupt cache entry, a port query that did
+  not run) go to the log through `Safe.Note(area, what, error)` instead of an empty `catch`.
 - **`JavaService`** — detects installed Java versions and, if none is compatible, downloads the
   right Temurin (Adoptium) JRE for the architecture. Used both when creating and when starting a
   server. Each server asks its own `JavaService`, so the download of a given Java (by major version)
@@ -447,9 +506,27 @@ are no hard-coded machine paths.
 - **`SecretProtector`** — encrypts secrets at rest (DPAPI on Windows, AES-GCM + `.secret.key` on
   Linux/macOS), used for the Playit per-user agent secret key (and the legacy write key). If encryption ever fails, the key is **not**
   persisted (plaintext never lands on disk): it keeps working for the session, the failure goes to
-  the daily log, and the user is warned once.
+  the daily log, and the user is warned once. The AES key file is created with owner-only permissions
+  and read with a sharing mode that tolerates the process that is creating it, so two parts of the
+  app asking for the key at once get the same one.
 - **`DownloadVerifier`** — the shared checksum verifier for downloads (Mojang SHA-1, Adoptium/Paper
-  SHA-256, Modrinth SHA-512/SHA-1), deleting the file on mismatch.
+  SHA-256, Modrinth SHA-512/SHA-1), deleting the file on mismatch. `VerifyAsync` **refuses a file
+  with no hash to compare**; the one way around it is the explicit `VerifyIfProvidedAsync`, used only
+  by `VerifiedJarDownload` for server jars, where a source may not publish a checksum.
+- **Network limits (`AppHttp`, `AtomicDownload`)** — everything that comes off the network is bounded
+  before it is believed. `AppHttp.ReadCappedAsync` reads API and text responses up to a cap (8 MiB
+  for APIs, 64 KiB for the small files that hold a checksum or a signature), and `AtomicDownload`
+  stops a package at its limit (1 GiB by default; 500 MiB for the installer, 400 MiB for a JRE, 400 MiB
+  for a server jar, 300 MiB for a loader installer) and deletes the `.part`. The update and JRE links
+  must be `https` on the publisher's own host, so a hostile API response can't point the app at
+  another server.
+- **`JavaCommandLine`** — Java is started with an argument **list**, never a string, so a file name
+  with a quote or a space in it can't change how many arguments there are. The *Extra JVM arguments*
+  box is cut by the same rules the operating system uses (`Split`), and the line shown in the console
+  is produced by `Display` so that what is shown is what would be read back.
+- **System libraries** — the few Win32 functions the app calls (`PortService`, `SingleInstance`,
+  `SystemMemory`) carry `DefaultDllImportSearchPaths(System32)`, so a library planted next to the
+  executable or in the working directory is never the one loaded.
 - **`Changelog`** — the per-version "what's new" notes shown after an update (see the flow below).
 - **`UpdateService`** / **`SelfUpdater`** — `UpdateService` asks GitHub for a newer release and picks
   the asset for *this* platform and architecture (the Windows installer, the Linux AppImage, the
@@ -529,7 +606,9 @@ are no hard-coded machine paths.
   used to appear only inside request headers and the update check, so the About screen had nowhere to
   take it from.
 - **`MarkdownParser`** / **`MarkdownBody`** — a deliberately partial Markdown reader for the long
-  descriptions Modrinth returns, and the behavior that turns its blocks into controls.
+  descriptions Modrinth returns, and the behavior that turns its blocks into controls. The parser
+  is a line reader with one method per kind of block; the order in which `BlockReader.Read` tries
+  them is what decides how a line is read, and `MarkdownParserTests` pins it.
 - **`MinecraftRange`** — whether a Minecraft version satisfies the range a mod declares.
 
 ## Important flows
@@ -892,6 +971,22 @@ themselves at all — an AppImage moved into `/opt` by root, a bundle in a read-
 started from `dotnet run` — and `SelfUpdater.Blocker` says so; those, and a release that ships nothing
 for this platform, fall back to opening the release page.
 
+**The package is checked again at the point of use.** It sits in the temporary folder between the
+moment it is verified and the moment it runs, and a program already running as this user could swap
+it for one that then runs with the rights the installer asks for. So `AppUpdateCoordinator` hands on a
+`VerifiedPackage` (the path *and* the SHA-256 it matched), and each platform checks once more:
+
+- **Windows** — no script is written next to the installer any more. `SelfUpdater` starts a second
+  copy of the app (`--apply-update <pid> <sha256> <installer>`, handled by `UpdateHelper` at the top of
+  `Program.Main`, before the single-instance lock). It lives in the install folder, which only an
+  administrator can write; it waits for the app to exit, accepts only a file inside one of the app's own
+  `mcsl-…` download folders, opens it so nobody can write to, rename or delete it, hashes it through that
+  same handle and starts it **without letting go**, so the bytes that were hashed are the bytes that run.
+  If anything is off (another file, the user declining the prompt) it starts the app again.
+- **Linux** — the copy that is about to replace the AppImage is hashed, not the original.
+- **macOS** — not repeated: the script runs as the user and replaces an app the user can already
+  replace, so a swapped file gains no privilege.
+
 After an update, `MainWindow.Loaded` calls `ShowWhatsNewIfUpdated`, which compares the running version
 with `AppSettings.LastVersionSeen` and shows `WhatsNewDialog` (localized) with the notes from
 `Changelog` for every version the user hadn't seen yet.
@@ -1061,7 +1156,7 @@ user's language by `CrossplayDiagnostics`.
 ### Sleeping when empty, waking when someone joins
 Two halves, both per server and both off by default.
 
-**Sleeping** is `ServerViewModel.CheckIdleShutdown`, run off the same tick that refreshes the player
+**Sleeping** is `IdleShutdownController.Check` (the rules are `IdlePolicy`), called from the same tick that refreshes the player
 list: once a running server has had nobody on it for `ServerConfig.IdleShutdownMinutes` it stops
 itself, announcing it in the console and as a notification. The window shows a live countdown
 (`IdleCountdownText`), and a server that has just been woken gets a grace period so it can never be
@@ -1091,7 +1186,7 @@ A sleep and a wake with nobody coming in leave **no backups**: the stop sees nob
 start finds the world still the last backup's (see *World backups*).
 
 ### The store: search, tags and plain language
-`ServerModsViewModel` asks `ModrinthService` for results already filtered by the server's loader and
+`ServerModsViewModel` (through `StoreBrowser`, which builds the query and knows which answer is the current one) asks `ModrinthService` for results already filtered by the server's loader and
 game version — a result the server cannot run is worse than no result, because it installs and then
 the server does not come up. Where a project runs is *not* a hidden filter: the store lists the
 client-only mods too (Sodium, MaLiLib, a minimap — about a third of Fabric's for 26.2, which an old
@@ -1181,8 +1276,8 @@ old edit dialog was the first fix; it is gone too, because leaving it would mean
 mechanism that replaced it.
 
 ### Handing the mod list to your players
-`ServerModsViewModel.ExportModpack` is the file picker and nothing else; `BuildModpackAsync` takes a
-path, so the part worth testing runs without a window. `ModpackWriter` builds the zip entry by entry,
+`ServerModsViewModel.ExportModpack` is the file picker and nothing else; `ModpackExporter.BuildAsync`
+(which `BuildModpackAsync` forwards to) takes a path, so the part worth testing runs without a window. `ModpackWriter` builds the zip entry by entry,
 reading each jar where it already sits — it used to assemble a copy of the whole pack under `%TEMP%`
 first — and writing each text file with its own line endings. The pack carries the jars and a
 localized instructions file naming the server, its type, its Minecraft version and the steps for that
@@ -1259,7 +1354,7 @@ processes, wake listeners and idle timers, shows a server as stopped while the f
 and pressing Start then means two JVMs writing one world folder.
 
 ### Checking mods/plugins for updates
-`ServerModsViewModel` asks `ModrinthService` to identify each installed file on Modrinth and flag the
+`ModUpdater` (with `InstalledContentIndex` for what each file is) asks `ModrinthService` to identify each installed file on Modrinth and flag the
 ones with a newer version; the user updates each with one click (checksum-verified download via
 `DownloadVerifier`, preserving its enabled/disabled state).
 
@@ -1303,7 +1398,7 @@ could not be put back, since it is then the only copy in place. Anything left re
 refresh (`SweepLeftovers`). Paths are compared the way the system does (`FilePaths`): Linux tells `Sodium.jar`
 from `sodium.jar`.
 
-What the store says each jar is comes from one place, `ServerModsViewModel.Identify.cs`: one answer per SHA-1
+What the store says each jar is comes from one place, `InstalledContentIndex`: one answer per SHA-1
 for the session, "unknown" remembered only when the store did answer, and a jar counts as its project only when
 it is that version's main file — a module or a sources jar published beside it would otherwise be deleted by
 installing the main one. The notice only says
@@ -1322,8 +1417,8 @@ suggests**: rows come ticked and wait for the button — except "nothing install
 reason, which comes unticked — and "Not now" hides it for 30 days. It folds to its title line. A row removes
 its file only if it is still the one the scan saw (same size and write time), and nothing is removed while
 **Update all** runs.
-`CleanupAdvisor` decides (pure, tested without a network); the panel half (`ServerModsViewModel.Cleanup.cs`)
-gathers the facts and shows the answer.
+`CleanupAdvisor` decides (pure, tested without a network); the facts it needs are gathered by `CleanupScanner`, and the panel half
+(`ServerModsViewModel.Cleanup.cs`) shows the answer.
 
 - **Libraries nothing uses.** A library is what is on a hand-written list (`KnownLibraryIds`) or what Modrinth
   files *only* under `library`. The category alone will not do: JEI and malilib are both "library, utility",
@@ -1347,7 +1442,9 @@ gathers the facts and shows the answer.
 
 All user-facing text lives in `Resources/Strings.resx` (Spanish, the neutral/base language) plus
 satellite files `Strings.en.resx`, `Strings.pt.resx`, `Strings.fr.resx`, `Strings.de.resx`. Code
-reads them with `Localizer.Get("Key")` (and `string.Format` for parameters); XAML uses the
+reads them with `Localizer.Get("Key")`, or `Localizer.Format("Key", args)` for a text with `{0}` placeholders
+(the template is parsed once and kept by its own text, so a language change at run time still gets the right
+one; the result is what `string.Format(Localizer.Get("Key"), args)` gives); XAML uses the
 `{loc:Loc Key}` markup extension. The active language comes from `AppSettings.Language` and is
 applied in `App.OnFrameworkInitializationCompleted` before any window is created, so changing the
 language requires a restart. See [Contributing](contributing.md) for how to add a language or a new string.

@@ -43,9 +43,7 @@ public sealed class StoreCache
 
     public StoreCache(string? cacheDir = null)
     {
-        _dir = cacheDir ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "McServerLauncher", "cache", "store");
+        _dir = cacheDir ?? AppPaths.In("cache", "store");
     }
 
     /// <summary>
@@ -177,8 +175,9 @@ public sealed class StoreCache
             var value = JsonSerializer.Deserialize<T>(File.ReadAllText(path), JsonOptions);
             return (value, storedUtc);
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Store", "a cache entry could not be read, treating it as a miss", ex);
             // Corrupt or unreadable cache entry: treat it as a miss (and let it be overwritten).
             return (null, default);
         }

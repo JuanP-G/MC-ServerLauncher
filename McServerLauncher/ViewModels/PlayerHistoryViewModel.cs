@@ -19,11 +19,11 @@ public static class RelativeTime
     {
         var span = nowUtc - utc;
         if (span < TimeSpan.FromMinutes(1)) return Localizer.Get("Time_JustNow");
-        if (span < TimeSpan.FromHours(1)) return string.Format(Localizer.Get("Time_MinutesAgoFmt"),
+        if (span < TimeSpan.FromHours(1)) return Localizer.Format("Time_MinutesAgoFmt",
             (int)span.TotalMinutes);
-        if (span < TimeSpan.FromDays(1)) return string.Format(Localizer.Get("Time_HoursAgoFmt"),
+        if (span < TimeSpan.FromDays(1)) return Localizer.Format("Time_HoursAgoFmt",
             (int)span.TotalHours);
-        if (span < TimeSpan.FromDays(30)) return string.Format(Localizer.Get("Time_DaysAgoFmt"),
+        if (span < TimeSpan.FromDays(30)) return Localizer.Format("Time_DaysAgoFmt",
             (int)span.TotalDays);
         return utc.ToLocalTime().ToString("d", CultureInfo.CurrentUICulture);
     }
@@ -36,8 +36,8 @@ public static class RelativeTime
     {
         var hours = (long)span.TotalHours;
         return hours > 0
-            ? string.Format(Localizer.Get("Time_HoursMinutesFmt"), hours, span.Minutes)
-            : string.Format(Localizer.Get("Time_MinutesFmt"), span.Minutes);
+            ? Localizer.Format("Time_HoursMinutesFmt", hours, span.Minutes)
+            : Localizer.Format("Time_MinutesFmt", span.Minutes);
     }
 }
 
@@ -81,7 +81,7 @@ public sealed class PlayerEventRowViewModel
         {
             PlayerEventKind.Join => Localizer.Get("History_EventJoin"),
             PlayerEventKind.Leave => Localizer.Get("History_EventLeave"),
-            PlayerEventKind.Advancement => string.Format(Localizer.Get("History_EventAdvancementFmt"),
+            PlayerEventKind.Advancement => Localizer.Format("History_EventAdvancementFmt",
                 e.Text),
             _ => e.Text ?? ""
         };
@@ -356,9 +356,9 @@ public sealed partial class PlayerDetailsViewModel : ObservableObject
         UsedItems.Clear();
         foreach (var e in stats.Used.Take(take)) UsedItems.Add(new StatBarViewModel(e, usedTotal));
 
-        MinedTotalText = string.Format(Localizer.Get("PlayerDetails_BlocksTotalFmt"),
+        MinedTotalText = Localizer.Format("PlayerDetails_BlocksTotalFmt",
             minedTotal.ToString("N0", CultureInfo.CurrentUICulture));
-        UsedTotalText = string.Format(Localizer.Get("PlayerDetails_BlocksTotalFmt"),
+        UsedTotalText = Localizer.Format("PlayerDetails_BlocksTotalFmt",
             usedTotal.ToString("N0", CultureInfo.CurrentUICulture));
         HasMoreBars = !_allBars && (stats.Mined.Count > BarsShown || stats.Used.Count > BarsShown);
     }

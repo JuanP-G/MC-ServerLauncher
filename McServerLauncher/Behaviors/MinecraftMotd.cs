@@ -41,70 +41,98 @@ public static partial class MinecraftMotd
         var text = Unescape(e.NewValue as string ?? string.Empty);
         if (text.Length == 0) return;
 
-        var color = Default;
-        bool bold = false, italic = false, underline = false, strike = false;
-        var sb = new StringBuilder();
-
-        void Flush()
-        {
-            if (sb.Length == 0) return;
-            var run = new Run(sb.ToString()) { Foreground = new SolidColorBrush(color) };
-            if (bold) run.FontWeight = FontWeight.Bold;
-            if (italic) run.FontStyle = FontStyle.Italic;
-            if (underline || strike)
-            {
-                var dec = new TextDecorationCollection();
-                if (underline) dec.Add(new TextDecoration { Location = TextDecorationLocation.Underline });
-                if (strike) dec.Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
-                run.TextDecorations = dec;
-            }
-            inlines.Add(run);
-            sb.Clear();
-        }
-
+        var runs = new RunBuilder(inlines);
         for (var i = 0; i < text.Length; i++)
         {
             var c = text[i];
             // The long RGB form Paper reads: §x§R§R§G§G§B§B.
             if (c == '§' && Services.MotdDocument.TryReadHex(text, i, out var rgb))
             {
-                Flush();
-                color = Color.FromUInt32(0xFF000000 | (uint)rgb);
-                bold = italic = underline = strike = false;
+                runs.SetColor(Color.FromUInt32(0xFF000000 | (uint)rgb));
                 i += 13;
-                continue;
             }
-
-            if ((c == '§' || c == '&') && i + 1 < text.Length)
+            else if ((c == '§' || c == '&') && i + 1 < text.Length)
             {
-                Flush();
-                var code = char.ToLowerInvariant(text[++i]);
-                if (Palette.TryGetValue(code, out var col))
-                {
-                    color = col; // a color resets the formatting (as in Minecraft)
-                    bold = italic = underline = strike = false;
-                }
-                else switch (code)
-                    {
-                        case 'l': bold = true; break;
-                        case 'o': italic = true; break;
-                        case 'n': underline = true; break;
-                        case 'm': strike = true; break;
-                        case 'k': break; // obfuscated: shown as normal text
-                        case 'r': color = Default; bold = italic = underline = strike = false; break;
-                    }
+                runs.Apply(char.ToLowerInvariant(text[++i]));
             }
             else if (c == '\n')
             {
-                Flush();
-                inlines.Add(new LineBreak());
+                runs.LineBreak();
             }
             else
             {
-                sb.Append(c);
+                runs.Add(c);
             }
         }
-        Flush();
+        runs.Flush();
+    }
+
+    /// <summary>
+    /// Turns the MOTD's characters into runs: the text collected so far is closed into a run
+    /// whenever the colour or the style changes, in the colour and style it was written in.
+    /// </summary>
+    private sealed class RunBuilder
+    {
+        private readonly InlineCollection _inlines;
+        private readonly StringBuilder _text = new();
+        private Color _color = Default;
+        private bool _bold, _italic, _underline, _strike;
+
+        public RunBuilder(InlineCollection inlines) => _inlines = inlines;
+
+        public void Add(char c) => _text.Append(c);
+
+        public void LineBreak()
+        {
+            Flush();
+            _inlines.Add(new LineBreak());
+        }
+
+        /// <summary>A colour, which resets the formatting (as in Minecraft).</summary>
+        public void SetColor(Color color)
+        {
+            Flush();
+            _color = color;
+            _bold = _italic = _underline = _strike = false;
+        }
+
+        /// <summary>The code after a § or &amp;: a colour, a style, or reset.</summary>
+        public void Apply(char code)
+        {
+            Flush();
+            if (Palette.TryGetValue(code, out var col))
+            {
+                SetColor(col);
+                return;
+            }
+
+            switch (code)
+            {
+                case 'l': _bold = true; break;
+                case 'o': _italic = true; break;
+                case 'n': _underline = true; break;
+                case 'm': _strike = true; break;
+                case 'k': break; // obfuscated: shown as normal text
+                case 'r': SetColor(Default); break;
+            }
+        }
+
+        public void Flush()
+        {
+            if (_text.Length == 0) return;
+            var run = new Run(_text.ToString()) { Foreground = new SolidColorBrush(_color) };
+            if (_bold) run.FontWeight = FontWeight.Bold;
+            if (_italic) run.FontStyle = FontStyle.Italic;
+            if (_underline || _strike)
+            {
+                var dec = new TextDecorationCollection();
+                if (_underline) dec.Add(new TextDecoration { Location = TextDecorationLocation.Underline });
+                if (_strike) dec.Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
+                run.TextDecorations = dec;
+            }
+            _inlines.Add(run);
+            _text.Clear();
+        }
     }
 
     /// <summary>Converts Java properties escape sequences (\n and \uXXXX) to their real characters.</summary>

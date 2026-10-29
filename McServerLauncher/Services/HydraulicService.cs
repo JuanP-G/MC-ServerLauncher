@@ -85,11 +85,11 @@ public class HydraulicService
                 "Fabric API", log, ct);
         }
 
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Hydraulic"));
+        log?.Report(Localizer.Format("Msg_CrossplayResolvingFmt", "Hydraulic"));
         var build = await GetLatestBuildAsync(ct)
             ?? throw new UserFacingException(Localizer.Get("Msg_HydraulicNoBuild"));
 
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Hydraulic",
+        log?.Report(Localizer.Format("Msg_CrossplayInstallingFmt", "Hydraulic",
             "b" + build.Build));
 
         // Its downloads API has no per-Minecraft-version dimension: there is one line of builds and the
@@ -98,8 +98,8 @@ public class HydraulicService
         {
             var required = ReadRequiredMinecraft(part);
             if (required is not null && !MinecraftRange.Satisfies(config.GameVersion, required))
-                throw new UserFacingException(string.Format(
-                    Localizer.Get("Msg_HydraulicWrongVersionFmt"), config.GameVersion, required));
+                throw new UserFacingException(Localizer.Format(
+                    "Msg_HydraulicWrongVersionFmt", config.GameVersion, required));
             return Task.CompletedTask;
         }, ct);
 
@@ -135,8 +135,9 @@ public class HydraulicService
                 ? mc.GetString()
                 : null;
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Hydraulic", "the mod's metadata could not be read, letting the file through", ex);
             // Unreadable metadata is not proof of a mismatch; the checksum already proved the file
             // arrived intact, so let it through rather than blocking on a parsing detail.
             return null;

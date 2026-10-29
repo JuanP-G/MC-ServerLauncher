@@ -356,7 +356,7 @@ public partial class ServerSettingsView : UserControl
         }
         catch (Exception ex)
         {
-            ShowBarProblem(string.Format(Localizer.Get("Msg_ConfigSaveError"), ErrorMessages.Describe(ex)));
+            ShowBarProblem(Localizer.Format("Msg_ConfigSaveError", ErrorMessages.Describe(ex)));
             return false;
         }
 

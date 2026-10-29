@@ -116,7 +116,7 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnHistoryRetentionDaysChanged(decimal value) => ApplyHistory();
 
     /// <summary>How much the history takes on disk, for every server together.</summary>
-    public string HistorySizeText => string.Format(Localizer.Get("History_SizeFmt"),
+    public string HistorySizeText => Localizer.Format("History_SizeFmt",
         ByteSize.Format(PlayerHistoryStore.SizeOnDisk()));
 
     /// <summary>
@@ -243,7 +243,7 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             var path = DesktopShortcutService.Create();
-            ShortcutStatus = string.Format(Localizer.Get("Shortcut_DoneFmt"), Path.GetFileName(path));
+            ShortcutStatus = Localizer.Format("Shortcut_DoneFmt", Path.GetFileName(path));
             ShortcutStatusBrush = Good;
         }
         catch (Exception ex)

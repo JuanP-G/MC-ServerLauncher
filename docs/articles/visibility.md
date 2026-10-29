@@ -87,6 +87,14 @@ hand. `python web/_i18n/build.py` generates the landing, the translations and th
 template cuts the stylesheet, scene, bar, downloads and footer out of the already-translated landing, so the
 guides inherit its changes and its interface translation without repeating them.
 
+**Styles and script are files.** The landing's CSS and JavaScript are `web/assets/site.css` and
+`web/assets/site.js`, and the guides' own CSS is `web/assets/guide.css` (generated from `GUIDE_CSS` in
+`guides.py`); the pages link them, so each page is about 35 KB instead of 90 and the browser keeps one copy.
+`build.py` puts `?v=<hash>` on those URLs, so a change reaches visitors at once. What changes with the language
+(the "LATEST" badge, the date locale, the "could not load the list" notice) travels in `data-` attributes on the
+script tag, translated through `strings.json` like any other text. The content-security policy therefore needs
+no script hashes (`script-src 'self'` plus GoatCounter), and generation fails if a page carries inline code.
+
 **What is checked while generating.** Generation fails, writing nothing, if a language is missing a string,
 if its structure differs from the Spanish one, if a long text is identical to the Spanish (untranslated), if
 a `title` is over 78 characters or a `description` is outside 70–175, or if an internal `{guide:id}` link

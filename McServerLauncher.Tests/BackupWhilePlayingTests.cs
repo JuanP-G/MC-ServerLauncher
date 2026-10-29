@@ -78,8 +78,8 @@ public class BackupWhilePlayingTests : IDisposable
     private sealed class ThrowingBackupService : WorldBackupService
     {
         public override Task<string?> CreateBackupAsync(ServerConfig config, string trigger,
-            IProgress<string>? log = null, CancellationToken ct = default,
-                string? protectFromPruning = null) =>
+            IProgress<string>? log = null, string? protectFromPruning = null,
+                CancellationToken ct = default) =>
             throw new IOException("el disco dijo que no");
     }
 

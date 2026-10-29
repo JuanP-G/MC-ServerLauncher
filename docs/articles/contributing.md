@@ -361,7 +361,7 @@ line icons in `docs/media/icons/` (24 px, `#2da44e`), the way the feature grid i
 ### Add a translatable text
 1. Add the same `<data name="MyKey">` entry to **all five** `.resx` files with the translation.
 2. Use it from XAML as `{loc:Loc MyKey}`, or from code as `Localizer.Get("MyKey")`
-   (use `string.Format(Localizer.Get("MyKey"), arg)` when it has `{0}` placeholders).
+   (use `Localizer.Format("MyKey", arg)` when it has `{0}` placeholders).
 
 ### Add a `server.properties` setting to a server's settings
 1. Add the control + label/description to the page it belongs to under `Views/ServerSettings`

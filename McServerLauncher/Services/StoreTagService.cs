@@ -99,9 +99,7 @@ public sealed class StoreTagService
     {
         _catalog = catalog;
 
-        var path = overridePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "McServerLauncher", "store-tags.json");
+        var path = overridePath ?? AppPaths.In("store-tags.json");
 
         _tags = Load(path)
             .Where(t => !string.IsNullOrWhiteSpace(t.Id))

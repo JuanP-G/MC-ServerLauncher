@@ -10,7 +10,7 @@ namespace McServerLauncher.Services;
 /// <summary>
 /// Checks the GitHub Releases for a version newer than the installed one.
 /// </summary>
-public class UpdateService
+public class UpdateService : IUpdateSource
 {
     /// <summary>
     /// The release list, not <c>/releases/latest</c>.
@@ -22,8 +22,14 @@ public class UpdateService
     /// it — and of having to say clearly, everywhere it is offered, that it is a beta.
     /// </remarks>
     private const string ApiUrl = "https://api.github.com/repos/JuanP-G/MC-ServerLauncher/releases?per_page=20";
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
-    private static readonly HttpClient DownloadHttp = new() { Timeout = TimeSpan.FromMinutes(10) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromSeconds(15));
+    private static readonly HttpClient DownloadHttp = AppHttp.Create(TimeSpan.FromMinutes(10));
+
+    /// <summary>Where release assets are served from: the release page and every download link are on it.</summary>
+    private static readonly string[] ReleaseHosts = ["github.com"];
+
+    /// <summary>No installer of this app is near this; it only stops a download that never ends.</summary>
+    private const long MaxInstallerBytes = 500L << 20;
 
     /// <summary>
     /// Update data. <see cref="PackageUrl"/>/<see cref="PackageName"/> are the package for the
@@ -52,13 +58,12 @@ public class UpdateService
         CancellationToken ct = default)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
-        req.Headers.UserAgent.ParseAdd("MC-ServerLauncher");
         req.Headers.Accept.ParseAdd("application/vnd.github+json");
 
         using var resp = await Http.SendAsync(req, ct);
         if (!resp.IsSuccessStatusCode) return null;
 
-        var json = await resp.Content.ReadAsStringAsync(ct);
+        var json = await AppHttp.ReadCappedStringAsync(resp.Content, AppHttp.MaxApiBytes, ct);
         using var doc = JsonDocument.Parse(json);
         if (doc.RootElement.ValueKind != JsonValueKind.Array) return null;
 
@@ -67,7 +72,8 @@ public class UpdateService
 
         var tag = release.TryGetProperty("tag_name", out var t) ? t.GetString() : null;
         var url = release.TryGetProperty("html_url", out var u) ? u.GetString() : null;
-        if (tag is null || url is null) return null;
+        // Both links go to the user's browser or the downloader, and both come from the response.
+        if (tag is null || url is null || !AppHttp.IsAllowedUrl(url, ReleaseHosts)) return null;
 
         var isPreRelease = release.TryGetProperty("prerelease", out var pre)
             && pre.ValueKind == JsonValueKind.True;
@@ -141,7 +147,7 @@ public class UpdateService
         return best;
     }
 
-    private static Dictionary<string, string> ReadAssets(JsonElement root)
+    internal static Dictionary<string, string> ReadAssets(JsonElement root)
     {
         var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (!root.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array)
@@ -151,7 +157,9 @@ public class UpdateService
         {
             var name = a.TryGetProperty("name", out var n) ? n.GetString() : null;
             var downloadUrl = a.TryGetProperty("browser_download_url", out var d) ? d.GetString() : null;
-            if (name is not null && downloadUrl is not null) map[name] = downloadUrl;
+            // An asset whose link is not https on GitHub is as good as absent: the update then
+            // simply has no package here, and the release page is offered instead.
+            if (name is not null && AppHttp.IsAllowedUrl(downloadUrl, ReleaseHosts)) map[name] = downloadUrl!;
         }
         return map;
     }
@@ -201,7 +209,8 @@ public class UpdateService
     {
         try
         {
-            var text = await Http.GetStringAsync(sha256SumsUrl, ct);
+            AppHttp.RequireAllowedUrl(sha256SumsUrl, ReleaseHosts);
+            var text = await AppHttp.GetStringCappedAsync(Http, sha256SumsUrl, AppHttp.MaxSmallTextBytes, ct);
             foreach (var rawLine in text.Split('\n'))
             {
                 var line = rawLine.Trim();
@@ -217,8 +226,9 @@ public class UpdateService
                     return hash;
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Update", "the checksums file could not be read, so there is nothing to verify against", ex);
             // Best-effort: an unreachable or malformed sums file just means no verification.
         }
         return null;
@@ -233,7 +243,10 @@ public class UpdateService
     {
         try
         {
-            var text = await Http.GetStringAsync(signatureUrl, ct);
+            AppHttp.RequireAllowedUrl(signatureUrl, ReleaseHosts);
+            // Never read more than a few KB: a signature is a few hundred bytes, and 1024 below is
+            // the real limit; this one only stops the reading itself from being unbounded.
+            var text = await AppHttp.GetStringCappedAsync(Http, signatureUrl, 4096, ct);
             return text.Length is > 0 and <= 1024 ? text.Trim() : null;
         }
         catch
@@ -248,15 +261,15 @@ public class UpdateService
     public async Task<string> DownloadInstallerAsync(string url, string destPath,
         CancellationToken ct = default)
     {
+        AppHttp.RequireAllowedUrl(url, ReleaseHosts);
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
-        req.Headers.UserAgent.ParseAdd("MC-ServerLauncher");
 
         using var resp = await DownloadHttp.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();
 
         // Atomic, so an interrupted download can't leave a plausible-looking half installer where
         // the real one should be (the caller verifies it against SHA256SUMS.txt afterwards).
-        await AtomicDownload.ToFileAsync(resp.Content, destPath, ct: ct);
+        await AtomicDownload.ToFileAsync(resp.Content, destPath, maxBytes: MaxInstallerBytes, ct: ct);
 
         return destPath;
     }

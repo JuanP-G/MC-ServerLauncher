@@ -61,12 +61,12 @@ public partial class MissingDependenciesDialog : Window
     {
         InitializeComponent();
 
-        MessageText.Text = string.Format(Localizer.Get("Deps_StartMessageFmt"), serverName, missing.Count);
+        MessageText.Text = Localizer.Format("Deps_StartMessageFmt", serverName, missing.Count);
         HintText.Text = Localizer.Get("Deps_StartHint");
 
         MissingList.ItemsSource = missing
             .Select(m => new MissingDependencyRow(m.Id,
-                string.Format(Localizer.Get("Deps_NeededByFmt"), string.Join(", ", m.NeededBy))))
+                Localizer.Format("Deps_NeededByFmt", string.Join(", ", m.NeededBy))))
             .ToList();
 
     }

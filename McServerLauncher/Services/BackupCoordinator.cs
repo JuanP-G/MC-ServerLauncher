@@ -75,7 +75,7 @@ internal enum RestoreResult
 /// task. No UI types: the host is an interface, so the protocol is tested without Avalonia.
 /// </para>
 /// </remarks>
-internal sealed class BackupCoordinator
+internal sealed class BackupCoordinator : IDisposable
 {
     private readonly IBackupHost _host;
     private readonly WorldBackupService _service;
@@ -238,7 +238,7 @@ internal sealed class BackupCoordinator
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    _host.Say(string.Format(Localizer.Get("Msg_BackupFailedStartingAnywayFmt"),
+                    _host.Say(Localizer.Format("Msg_BackupFailedStartingAnywayFmt",
                         ErrorMessages.Describe(ex)));
                     _playedSinceBackup = true;
                 }
@@ -280,6 +280,15 @@ internal sealed class BackupCoordinator
             _stopHolding = false;
             _world.Release();
         }
+    }
+
+    /// <summary>Lets go of the world's gate and the copy's token, for a server that is being removed.</summary>
+    /// <remarks>After <see cref="ShutdownAsync"/>, never instead of it: the gate is not used again.</remarks>
+    public void Dispose()
+    {
+        _copying?.Dispose();
+        _copying = null;
+        _world.Dispose();
     }
 
     /// <summary>
@@ -374,7 +383,7 @@ internal sealed class BackupCoordinator
         {
             var log = new Progress<string>(_host.Say);
             if (!_host.IsProcessRunning)
-                return await _service.CreateBackupAsync(Config, trigger, log, copying.Token);
+                return await _service.CreateBackupAsync(Config, trigger, log, ct: copying.Token);
 
             // Cleared before the copy rather than after, so that somebody joining while it zips
             // still counts; anybody already on is still playing, so it is not cleared for them.

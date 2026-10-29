@@ -42,13 +42,9 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public class ModrinthService
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
+    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(10));
     private const string ApiBaseUrl = "https://api.modrinth.com/v2";
 
-    static ModrinthService()
-    {
-        Http.DefaultRequestHeaders.Add("User-Agent", "JuanP-G/MC-ServerLauncher");
-    }
 
     // --- How long each kind of answer stays usable ---
     // A project's description and links change rarely; its version list changes when the author
@@ -126,10 +122,10 @@ public class ModrinthService
     /// with the loader/version/type filter — this is what the category chips use.
     /// <paramref name="side"/> picks the projects by where they run; plugins are always server-side.
     /// </summary>
-    public async Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion,
+    public virtual async Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion,
         string index = "relevance", int offset = 0, int limit = 20,
-        IReadOnlyCollection<string>? extraFacetGroups = null, CancellationToken ct = default,
-        StoreSideFilter side = StoreSideFilter.All)
+        IReadOnlyCollection<string>? extraFacetGroups = null, StoreSideFilter side = StoreSideFilter.All,
+        CancellationToken ct = default)
     {
         var facets = $"[{string.Join(",", FacetGroups(loader, mcVersion, side, extraFacetGroups))}]";
         var url = $"{ApiBaseUrl}/search?query={Uri.EscapeDataString(query)}" +
@@ -229,7 +225,7 @@ public class ModrinthService
     /// on disk. That is what makes it possible to tell a server that is missing a library mod from
     /// one that is complete. Jars Modrinth does not know are simply absent from the result.
     /// </remarks>
-    public async Task<Dictionary<string, VersionResult>> GetVersionsByHashAsync(
+    public virtual async Task<Dictionary<string, VersionResult>> GetVersionsByHashAsync(
         IEnumerable<string> sha1Hashes, CancellationToken ct = default)
     {
         var hashes = ApiHashes(sha1Hashes);
@@ -268,7 +264,7 @@ public class ModrinthService
         StoreCache.Shared.GetOrFetchAsync($"team:{teamId}", TeamTtl,
             token => GetJsonAsync<List<TeamMember>>($"{ApiBaseUrl}/team/{Uri.EscapeDataString(teamId)}/members", token), ct);
 
-    public async Task<VersionResult?> GetLatestProjectVersionAsync(string projectId, ServerType loader,
+    public virtual async Task<VersionResult?> GetLatestProjectVersionAsync(string projectId, ServerType loader,
         string mcVersion, CancellationToken ct = default)
     {
         // The API returns them sorted by newest first.
@@ -303,7 +299,7 @@ public class ModrinthService
     /// news is one nobody ever reports. The upper-case hashes fixed in 1.12.3 hid for exactly that
     /// reason, and "no connection" was taking the same way out.
     /// </returns>
-    public async Task<Dictionary<string, VersionResult>?> GetLatestVersionsByHashAsync(
+    public virtual async Task<Dictionary<string, VersionResult>?> GetLatestVersionsByHashAsync(
         IEnumerable<string> sha1Hashes, ServerType loader, string mcVersion, CancellationToken ct = default)
     {
         var hashes = ApiHashes(sha1Hashes);
@@ -358,13 +354,13 @@ public class ModrinthService
     /// (see <see cref="VerifiedJarDownload"/>) was "no checksum, no install", while this went ahead
     /// and installed the jar unverified.
     /// </remarks>
-    public async Task DownloadModAsync(string downloadUrl, string destinationPath,
+    public virtual async Task DownloadModAsync(string downloadUrl, string destinationPath,
         string? expectedSha512 = null,
         string? expectedSha1 = null, IProgress<double>? progress = null, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(expectedSha512) && string.IsNullOrEmpty(expectedSha1))
-            throw new UserFacingException(string.Format(
-                Localizer.Get("Msg_ModNoChecksumFmt"), AtomicDownload.DisplayName(destinationPath)));
+            throw new UserFacingException(Localizer.Format(
+                "Msg_ModNoChecksumFmt", AtomicDownload.DisplayName(destinationPath)));
 
         using var response = await Http.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, ct);
         response.EnsureSuccessStatusCode();

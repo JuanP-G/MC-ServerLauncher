@@ -128,7 +128,7 @@ public class CrossplayService
         if (!systemPortsRead)
             log?.Report(Localizer.Get("Msg_UdpTableUnreadable"));
         else if (port != DefaultBedrockPort && fromAccount.Contains(DefaultBedrockPort))
-            log?.Report(string.Format(Localizer.Get("Msg_BedrockPortTakenByTunnelFmt"),
+            log?.Report(Localizer.Format("Msg_BedrockPortTakenByTunnelFmt",
                 DefaultBedrockPort, port));
 
         return port;
@@ -214,13 +214,13 @@ public class CrossplayService
         CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayResolvingFmt"), "Floodgate"));
+        log?.Report(Localizer.Format("Msg_CrossplayResolvingFmt", "Floodgate"));
 
         var artifact = await GeyserDownloadsApi.LatestAsync("floodgate", "spigot", ct)
-            ?? throw new UserFacingException(string.Format(
-                Localizer.Get("Msg_CrossplayNoVersionFmt"), "Floodgate", "?", ServerType.Paper));
+            ?? throw new UserFacingException(Localizer.Format(
+                "Msg_CrossplayNoVersionFmt", "Floodgate", "?", ServerType.Paper));
 
-        log?.Report(string.Format(Localizer.Get("Msg_CrossplayInstallingFmt"), "Floodgate",
+        log?.Report(Localizer.Format("Msg_CrossplayInstallingFmt", "Floodgate",
             $"{artifact.Version}-b{artifact.Build}"));
 
         await ContentInstall.InstallFromGeyserAsync(artifact, folder, "Floodgate", alsoCheck: null, ct);
@@ -285,7 +285,7 @@ public class CrossplayService
 
         if (!AtomicTextFile.WriteIfChanged(path, after)) return null;
 
-        return string.Format(Localizer.Get("Msg_GeyserConfigRepairedFmt"),
+        return Localizer.Format("Msg_GeyserConfigRepairedFmt",
             floodgate ? "floodgate" : "online");
     }
 

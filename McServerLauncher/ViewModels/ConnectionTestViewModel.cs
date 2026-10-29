@@ -27,7 +27,7 @@ namespace McServerLauncher.ViewModels;
 /// server and run again. It never starts it by itself.
 /// </para>
 /// </remarks>
-public partial class ConnectionTestViewModel : ObservableObject
+public sealed partial class ConnectionTestViewModel : ObservableObject, IDisposable
 {
     private const int Samples = 8;
     private static readonly TimeSpan Gap = TimeSpan.FromMilliseconds(150);
@@ -194,142 +194,36 @@ public partial class ConnectionTestViewModel : ObservableObject
         }
     }
 
+    /// <summary>What the stretches of one run hand on to the next and to the report.</summary>
+    private sealed class RunState
+    {
+        public bool ServerRunning;
+        public int Port;
+        public SlpReply? Status;
+        public LatencyStats Local = LatencyStats.None;
+        public LatencyStats Tunnel = LatencyStats.None;
+        public Throughput Down = Throughput.None;
+        public Throughput Up = Throughput.None;
+        public readonly List<string> Addresses = new();
+    }
+
     /// <summary>Runs every stretch in turn.</summary>
     internal async Task RunAsync()
     {
         if (IsTesting) return;
         var ct = Renew();
 
-        // Crossplay may have been switched on or off since the last run.
-        if (_server.IsCrossplayOn && !Steps.Contains(BedrockStep)) Steps.Add(BedrockStep);
-        if (!_server.IsCrossplayOn) Steps.Remove(BedrockStep);
-
-        IsTesting = true;
-        Reset();
-        Rows.Clear();
-        DownloadText = UploadText = PeakText = "—";
-        SamplesSeries = Array.Empty<double>();
-        _report.Clear();
-        CopyText = Localizer.Get("Net_CopyReport");
-
-        var running = _server.State == ServerState.Running;
-        ServerWasOff = !running;
-        var port = _properties.GetServerPort(_server.Config.PropertiesPath) ?? 25565;
-        var addresses = new List<string> { $"{Localizer.Get("Net_RowLocal")}: 127.0.0.1:{port}" };
-        _report.AppendLine($"MC Server Launcher — {_server.Name} — {DateTime.Now:g}");
-
+        var run = BeginRun();
         try
         {
-            // ---- The server alone ----
-            LatencyStats local = LatencyStats.None;
-            SlpReply? status = null;
-            if (!running)
-            {
-                LocalStep.Set(StepState.Skipped, Localizer.Get("Net_LocalOff"),
-                    Localizer.Get("Net_LocalOffDetail"));
-            }
-            else
-            {
-                LocalStep.Set(StepState.Running, Localizer.Get("Net_StepLocal"),
-                    Localizer.Get("Net_Measuring"));
-                local = await ConnectionProbe.SampleAsync(async c =>
-                {
-                    var reply = await ConnectionProbe.PingJavaAsync("127.0.0.1", port, Wait, c);
-                    status ??= reply;
-                    return reply?.LatencyMs;
-                }, Samples, Gap, Live(LocalStep), ct);
-                Judge(LocalStep, local, good: 30, fair: 100, "Net_Local");
-                Rows.Add(ProbeRow.From(Localizer.Get("Net_RowLocal"), local));
-            }
+            await TestLocalServerAsync(run, ct);
+            await TestInternetAsync(run, ct);
+            await TestJavaTunnelAsync(run, ct);
+            await TestBedrockTunnelAsync(run, ct);
 
-            // ---- This machine's internet ----
-            InternetStep.Set(StepState.Running, Localizer.Get("Net_StepInternet"),
-                Localizer.Get("Net_Measuring"));
-            var internet = await ConnectionProbe.SampleAsync(
-                c => ConnectionProbe.TcpRoundTripAsync(ConnectionProbe.LatencyHost, 443, Wait, c),
-                Samples, TimeSpan.FromMilliseconds(100), Live(InternetStep), ct);
-            Rows.Add(ProbeRow.From(Localizer.Get("Net_RowInternet"), internet));
-
-            Throughput down = Throughput.None, up = Throughput.None;
-            if (internet.AnyReply)
-            {
-                InternetStep.Detail = Localizer.Get("Net_MeasuringDown");
-                down = await ConnectionProbe.DownloadAsync(25_000_000, TimeSpan.FromSeconds(6), ct);
-                DownloadText = Mbps(down);
-                InternetStep.Badge = "↓ " + DownloadText;
-                InternetStep.Detail = Localizer.Get("Net_MeasuringUp");
-                up = await ConnectionProbe.UploadAsync(10_000_000, TimeSpan.FromSeconds(6), ct);
-                UploadText = Mbps(up);
-                PeakText = Bytes(up.PeakBytesPerSecond) + "/s";
-            }
-            JudgeInternet(internet, up);
-
-            // ---- The Java tunnel ----
-            LatencyStats tunnel = LatencyStats.None;
-            var address = _server.Config.PlayitEnabled ? _server.TunnelAddress : null;
-            if (string.IsNullOrWhiteSpace(address))
-                TunnelStep.Set(StepState.Skipped, Localizer.Get("Net_NoTunnel"),
-                    Localizer.Get("Net_NoTunnelDetail"));
-            else if (!running)
-                TunnelStep.Set(StepState.Skipped, Localizer.Get("Net_StepTunnel"),
-                    Localizer.Get("Net_NeedsServer"));
-            else
-            {
-                TunnelStep.Set(StepState.Running, Localizer.Get("Net_StepTunnel"),
-                    Localizer.Get("Net_Measuring"));
-                var (host, publicPort) = await ConnectionProbe.ResolveJavaAsync(address, ct);
-                addresses.Add($"{Localizer.Get("Net_RowTunnel")}: {address} → {host}:{publicPort}");
-                // The server's own protocol number: Playit's edge refuses the -1 status tools send.
-                var protocol = status?.Protocol is > 0 and var known ? known
-                    : ConnectionProbe.FallbackProtocol;
-                tunnel = await ConnectionProbe.SampleAsync(async c =>
-                    (await ConnectionProbe.PingJavaAsync(host, publicPort, Wait, c, protocol))?.LatencyMs,
-                    Samples, Gap, Live(TunnelStep), ct);
-                Judge(TunnelStep, tunnel, good: 80, fair: 180, "Net_Tunnel");
-                Rows.Add(ProbeRow.From(Localizer.Get("Net_RowTunnel"), tunnel));
-            }
-
-            // ---- The Bedrock tunnel ----
-            if (Steps.Contains(BedrockStep))
-            {
-                var host = _server.BedrockHost;
-                if (string.IsNullOrWhiteSpace(host)
-                    || !int.TryParse(_server.BedrockPortText, out var bedrockPort))
-                    BedrockStep.Set(StepState.Skipped, Localizer.Get("Net_NoBedrock"),
-                        Localizer.Get("Net_NoBedrockDetail"));
-                else if (!running)
-                    BedrockStep.Set(StepState.Skipped, Localizer.Get("Net_StepBedrock"),
-                        Localizer.Get("Net_NeedsServer"));
-                else
-                {
-                    BedrockStep.Set(StepState.Running, Localizer.Get("Net_StepBedrock"),
-                        Localizer.Get("Net_Measuring"));
-                    addresses.Add($"{Localizer.Get("Net_RowBedrock")}: {host}:{bedrockPort}");
-                    // A name that does not resolve is a tunnel nobody can reach: every ping lost.
-                    var bedrock = await ConnectionProbe.ResolveAsync(host, ct) is { } ip
-                        ? await ConnectionProbe.SampleAsync(
-                            c => ConnectionProbe.PingBedrockAsync(new IPEndPoint(ip, bedrockPort), Wait, c),
-                            Samples, Gap, Live(BedrockStep), ct)
-                        : new LatencyStats(Array.Empty<double>(), Samples);
-                    Judge(BedrockStep, bedrock, good: 80, fair: 180, "Net_Bedrock");
-                    Rows.Add(ProbeRow.From(Localizer.Get("Net_RowBedrock"), bedrock));
-                }
-            }
-
-            var series = tunnel.AnyReply ? tunnel : local;
-            SamplesSeries = series.Samples.ToList();
-            SamplesTitle = string.Format(Localizer.Get(tunnel.AnyReply ? "Net_SamplesTunnelFmt"
-                : "Net_SamplesLocalFmt"),
-                series.Received);
-
-            if (status is not null)
-                // Not its protocol number: some servers report back whatever the ping asked with.
-                addresses.Add(string.Format(Localizer.Get("Net_ServerInfoFmt"), status.Version,
-                    status.Online, status.Max));
-            AddressesText = string.Join("   ·   ", addresses);
-
+            ShowSamples(run);
             Conclude();
-            WriteReport(addresses, down, up);
+            WriteReport(run.Addresses, run.Down, run.Up);
         }
         catch (OperationCanceledException)
         {
@@ -342,8 +236,161 @@ public partial class ConnectionTestViewModel : ObservableObject
         }
     }
 
+    /// <summary>Clears the last run from the screen and notes what this one starts from.</summary>
+    private RunState BeginRun()
+    {
+        // Crossplay may have been switched on or off since the last run.
+        if (_server.IsCrossplayOn && !Steps.Contains(BedrockStep)) Steps.Add(BedrockStep);
+        if (!_server.IsCrossplayOn) Steps.Remove(BedrockStep);
+
+        IsTesting = true;
+        Reset();
+        Rows.Clear();
+        DownloadText = UploadText = PeakText = "—";
+        SamplesSeries = Array.Empty<double>();
+        _report.Clear();
+        CopyText = Localizer.Get("Net_CopyReport");
+
+        var run = new RunState
+        {
+            ServerRunning = _server.State == ServerState.Running,
+            Port = _properties.GetServerPort(_server.Config.PropertiesPath) ?? 25565
+        };
+        ServerWasOff = !run.ServerRunning;
+        run.Addresses.Add($"{Localizer.Get("Net_RowLocal")}: 127.0.0.1:{run.Port}");
+        _report.AppendLine($"MC Server Launcher — {_server.Name} — {DateTime.Now:g}");
+        return run;
+    }
+
+    /// <summary>The server alone: pings it on this machine, which also tells its protocol number.</summary>
+    private async Task TestLocalServerAsync(RunState run, CancellationToken ct)
+    {
+        if (!run.ServerRunning)
+        {
+            LocalStep.Set(StepState.Skipped, Localizer.Get("Net_LocalOff"),
+                Localizer.Get("Net_LocalOffDetail"));
+            return;
+        }
+
+        LocalStep.Set(StepState.Running, Localizer.Get("Net_StepLocal"), Localizer.Get("Net_Measuring"));
+        run.Local = await ConnectionProbe.SampleAsync(async c =>
+        {
+            var reply = await ConnectionProbe.PingJavaAsync("127.0.0.1", run.Port, Wait, ct: c);
+            run.Status ??= reply;
+            return reply?.LatencyMs;
+        }, Samples, Gap, Live(LocalStep), ct);
+        Judge(LocalStep, run.Local, good: 30, fair: 100, "Net_Local");
+        Rows.Add(ProbeRow.From(Localizer.Get("Net_RowLocal"), run.Local));
+    }
+
+    /// <summary>This machine's internet: latency, then download and upload if anything answered.</summary>
+    private async Task TestInternetAsync(RunState run, CancellationToken ct)
+    {
+        InternetStep.Set(StepState.Running, Localizer.Get("Net_StepInternet"), Localizer.Get("Net_Measuring"));
+        var internet = await ConnectionProbe.SampleAsync(
+            c => ConnectionProbe.TcpRoundTripAsync(ConnectionProbe.LatencyHost, 443, Wait, c),
+            Samples, TimeSpan.FromMilliseconds(100), Live(InternetStep), ct);
+        Rows.Add(ProbeRow.From(Localizer.Get("Net_RowInternet"), internet));
+
+        if (internet.AnyReply)
+        {
+            InternetStep.Detail = Localizer.Get("Net_MeasuringDown");
+            run.Down = await ConnectionProbe.DownloadAsync(25_000_000, TimeSpan.FromSeconds(6), ct);
+            DownloadText = Mbps(run.Down);
+            InternetStep.Badge = "↓ " + DownloadText;
+            InternetStep.Detail = Localizer.Get("Net_MeasuringUp");
+            run.Up = await ConnectionProbe.UploadAsync(10_000_000, TimeSpan.FromSeconds(6), ct);
+            UploadText = Mbps(run.Up);
+            PeakText = Bytes(run.Up.PeakBytesPerSecond) + "/s";
+        }
+        JudgeInternet(internet, run.Up);
+    }
+
+    /// <summary>The Java tunnel: pings the public address the way a player's game would.</summary>
+    private async Task TestJavaTunnelAsync(RunState run, CancellationToken ct)
+    {
+        var address = _server.Config.PlayitEnabled ? _server.TunnelAddress : null;
+        if (string.IsNullOrWhiteSpace(address))
+        {
+            TunnelStep.Set(StepState.Skipped, Localizer.Get("Net_NoTunnel"), Localizer.Get("Net_NoTunnelDetail"));
+            return;
+        }
+        if (!run.ServerRunning)
+        {
+            TunnelStep.Set(StepState.Skipped, Localizer.Get("Net_StepTunnel"), Localizer.Get("Net_NeedsServer"));
+            return;
+        }
+
+        TunnelStep.Set(StepState.Running, Localizer.Get("Net_StepTunnel"), Localizer.Get("Net_Measuring"));
+        var (host, publicPort) = await ConnectionProbe.ResolveJavaAsync(address, ct);
+        run.Addresses.Add($"{Localizer.Get("Net_RowTunnel")}: {address} → {host}:{publicPort}");
+
+        // The server's own protocol number: Playit's edge refuses the -1 status tools send.
+        var protocol = run.Status?.Protocol is > 0 and var known ? known : ConnectionProbe.FallbackProtocol;
+        run.Tunnel = await ConnectionProbe.SampleAsync(async c =>
+            (await ConnectionProbe.PingJavaAsync(host, publicPort, Wait, protocol, c))?.LatencyMs,
+            Samples, Gap, Live(TunnelStep), ct);
+        Judge(TunnelStep, run.Tunnel, good: 80, fair: 180, "Net_Tunnel");
+        Rows.Add(ProbeRow.From(Localizer.Get("Net_RowTunnel"), run.Tunnel));
+    }
+
+    /// <summary>The Bedrock tunnel, on a crossplay server: a UDP ping to the public address.</summary>
+    private async Task TestBedrockTunnelAsync(RunState run, CancellationToken ct)
+    {
+        if (!Steps.Contains(BedrockStep)) return;
+
+        var host = _server.BedrockHost;
+        if (string.IsNullOrWhiteSpace(host) || !int.TryParse(_server.BedrockPortText, out var bedrockPort))
+        {
+            BedrockStep.Set(StepState.Skipped, Localizer.Get("Net_NoBedrock"), Localizer.Get("Net_NoBedrockDetail"));
+            return;
+        }
+        if (!run.ServerRunning)
+        {
+            BedrockStep.Set(StepState.Skipped, Localizer.Get("Net_StepBedrock"), Localizer.Get("Net_NeedsServer"));
+            return;
+        }
+
+        BedrockStep.Set(StepState.Running, Localizer.Get("Net_StepBedrock"), Localizer.Get("Net_Measuring"));
+        run.Addresses.Add($"{Localizer.Get("Net_RowBedrock")}: {host}:{bedrockPort}");
+
+        // A name that does not resolve is a tunnel nobody can reach: every ping lost.
+        var bedrock = await ConnectionProbe.ResolveAsync(host, ct) is { } ip
+            ? await ConnectionProbe.SampleAsync(
+                c => ConnectionProbe.PingBedrockAsync(new IPEndPoint(ip, bedrockPort), Wait, c),
+                Samples, Gap, Live(BedrockStep), ct)
+            : new LatencyStats(Array.Empty<double>(), Samples);
+        Judge(BedrockStep, bedrock, good: 80, fair: 180, "Net_Bedrock");
+        Rows.Add(ProbeRow.From(Localizer.Get("Net_RowBedrock"), bedrock));
+    }
+
+    /// <summary>The chart of round trips, and the one line saying what the server is.</summary>
+    private void ShowSamples(RunState run)
+    {
+        var series = run.Tunnel.AnyReply ? run.Tunnel : run.Local;
+        SamplesSeries = series.Samples.ToList();
+        SamplesTitle = Localizer.Format(run.Tunnel.AnyReply ? "Net_SamplesTunnelFmt"
+            : "Net_SamplesLocalFmt",
+            series.Received);
+
+        if (run.Status is not null)
+            // Not its protocol number: some servers report back whatever the ping asked with.
+            run.Addresses.Add(Localizer.Format("Net_ServerInfoFmt", run.Status.Version,
+                run.Status.Online, run.Status.Max));
+        AddressesText = string.Join("   ·   ", run.Addresses);
+    }
+
     /// <summary>Stops a test in progress: the page is going away.</summary>
     internal void Cancel() => _cts?.Cancel();
+
+    /// <summary>Stops a test in progress and lets go of its token, for a server that is being removed.</summary>
+    public void Dispose()
+    {
+        Cancel();
+        _cts?.Dispose();
+        _cts = null;
+        GC.SuppressFinalize(this);
+    }
 
     /// <summary>Cancels what was running and hands out the token for what runs next.</summary>
     private CancellationToken Renew()
@@ -406,12 +453,12 @@ public partial class ConnectionTestViewModel : ObservableObject
         var (title, detail) = state switch
         {
             StepState.Good => ("Net_InternetGood",
-                string.Format(Localizer.Get("Net_InternetGoodDetailFmt"), players)),
+                Localizer.Format("Net_InternetGoodDetailFmt", players)),
             // Nothing went up: the line was not measured, which is not the same as lag.
             StepState.Fair when up.Mbps <= 0 && byLatency == StepState.Good =>
                 ("Net_InternetNoSpeed", Localizer.Get("Net_InternetNoSpeedDetail")),
             StepState.Fair when byUpload >= byLatency && up.Mbps > 0 =>
-                ("Net_InternetFair", string.Format(Localizer.Get("Net_InternetSlowUpFmt"), players)),
+                ("Net_InternetFair", Localizer.Format("Net_InternetSlowUpFmt", players)),
             StepState.Fair => ("Net_InternetFair", Localizer.Get("Net_InternetLaggyDetail")),
             _ => ("Net_InternetBad", Localizer.Get("Net_InternetBadDetail")),
         };
@@ -431,7 +478,7 @@ public partial class ConnectionTestViewModel : ObservableObject
             return;
         }
         VerdictState = worst.State;
-        Verdict = string.Format(Localizer.Get("Net_VerdictFmt"), worst.Title, worst.Detail);
+        Verdict = Localizer.Format("Net_VerdictFmt", worst.Title, worst.Detail);
     }
 
     // ---------------------------------------------------------------- report

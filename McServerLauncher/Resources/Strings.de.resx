@@ -186,6 +186,9 @@
   <data name="Msg_DownloadComplete" xml:space="preserve"><value>Download abgeschlossen.</value></data>
   <data name="Msg_VerifyingChecksum" xml:space="preserve"><value>Integrität der heruntergeladenen Datei wird geprüft...</value></data>
   <data name="Msg_ChecksumMismatchFmt" xml:space="preserve"><value>Die heruntergeladene Datei ({0}) stimmte nicht mit der offiziellen Prüfsumme überein und wurde gelöscht. Der Download könnte beschädigt oder manipuliert worden sein; versuche es erneut.</value></data>
+  <data name="Msg_DownloadTooLargeFmt" xml:space="preserve"><value>{0} ist größer als die erwartete Höchstgröße ({1}); der Download wurde abgebrochen.</value></data>
+  <data name="Msg_ChecksumRequiredFmt" xml:space="preserve"><value>Für {0} gibt es keine offizielle Prüfsumme zur Überprüfung, daher wurde die Datei nicht behalten.</value></data>
+  <data name="Msg_DownloadHostRefusedFmt" xml:space="preserve"><value>Die Download-Adresse ({0}) stammt nicht von einer für diesen Download vertrauenswürdigen Seite und wurde nicht verwendet.</value></data>
   <data name="Msg_NoServerDownload" xml:space="preserve"><value>Für Version {0} ist kein herunterladbarer Server verfügbar.</value></data>
   <data name="Msg_MissingWriteKey" xml:space="preserve"><value>Der Playit-Schreibschlüssel fehlt.</value></data>
   <data name="Msg_PlayitAuthFail" xml:space="preserve"><value>Authentifizierung bei Playit zum Lesen der Tunnel fehlgeschlagen.</value></data>

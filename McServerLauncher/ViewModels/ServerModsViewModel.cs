@@ -47,20 +47,28 @@ namespace McServerLauncher.ViewModels;
 /// compatible or how a file is verified, which stays in <see cref="ModrinthService"/>.
 /// </para>
 /// </remarks>
-public partial class ServerModsViewModel : ObservableObject
+public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
 {
     private readonly ServerConfig _config;
     private readonly ModrinthService _modrinthService = new();
-    private readonly ModDependencyService _dependencies;
 
-    /// <summary>Identifying a jar means hashing it, and both scans want the same answers.</summary>
-    private readonly FileHashCache _hashes = new();
+    /// <summary>Finds and downloads the libraries the content needs; see <see cref="ModDependencyInstaller"/>.</summary>
+    private readonly ModDependencyInstaller _dependencyInstaller;
+
+    /// <summary>Checks for newer versions and replaces jars with them.</summary>
+    private readonly ModUpdater _updater;
+
+    /// <summary>Installs one project from the store; see <see cref="ModInstaller"/>.</summary>
+    private readonly ModInstaller _installer;
+
+    /// <summary>Builds the zip a server's owner hands to their players.</summary>
+    private readonly ModpackExporter _exporter;
+
+    /// <summary>What the store says each jar is, shared by the scans, the installs and the export.</summary>
+    private readonly InstalledContentIndex _index;
 
     /// <summary>Cancelled when the app closes: downloads and store questions stop with it.</summary>
     private CancellationTokenSource _lifetime = new();
-
-    /// <summary>What each jar says about itself, for finding the other copies of a mod.</summary>
-    private readonly ContentManifestCache _manifests = new();
 
 
     // --- Local Mods State ---
@@ -89,7 +97,7 @@ public partial class ServerModsViewModel : ObservableObject
 
     /// <summary>"12", or "3 of 12" while searching.</summary>
     public string InstalledCountText => IsInstalledFiltered
-        ? string.Format(Localizer.Get("Mods_InstalledCountFmt"), VisibleInstalledMods.Count,
+        ? Localizer.Format("Mods_InstalledCountFmt", VisibleInstalledMods.Count,
             InstalledMods.Count)
         : InstalledMods.Count.ToString(System.Globalization.CultureInfo.CurrentUICulture);
 
@@ -115,7 +123,7 @@ public partial class ServerModsViewModel : ObservableObject
     public bool HasClientPack => ClientPackMods.Count > 0;
 
     /// <summary>"Players' pack (3)".</summary>
-    public string ClientPackTitleText => string.Format(Localizer.Get("PlayerPack_TitleFmt"),
+    public string ClientPackTitleText => Localizer.Format("PlayerPack_TitleFmt",
         ClientPackMods.Count);
 
     private void RefreshClientPack()
@@ -140,7 +148,7 @@ public partial class ServerModsViewModel : ObservableObject
         try { File.Delete(mod.FilePath); }
         catch (Exception ex)
         {
-            Notify(string.Format(Localizer.Get("Msg_ModDeleteError"), ErrorMessages.Describe(ex)),
+            Notify(Localizer.Format("Msg_ModDeleteError", ErrorMessages.Describe(ex)),
                 failed: true);
         }
         RefreshClientPack();
@@ -202,34 +210,8 @@ public partial class ServerModsViewModel : ObservableObject
     [ObservableProperty]
     private string _updateStatus = string.Empty;
 
-    /// <summary>
-    /// The newer versions the last update check found, kept here rather than on the rows.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// They used to live only on each <see cref="ModItem"/>, and the list is rebuilt from disk after
-    /// every update, every enable or disable, every delete. So updating one mod out of five threw
-    /// away the other four, and the only way to get their buttons back was to check again.
-    /// </para>
-    /// <para>
-    /// Keyed by the jar's enabled path, so disabling a mod — which renames it to
-    /// <c>.jar.disabled</c> — keeps its update. Stamped with the size and write time the check saw,
-    /// so a jar replaced by hand is not offered an update found for the file it used to be.
-    /// </para>
-    /// </remarks>
-    private readonly Dictionary<string,
-        PendingUpdate> _pendingUpdates = new(StringComparer.OrdinalIgnoreCase);
-
-    /// <summary>The loader and Minecraft version the pending updates were found for.</summary>
-    /// <remarks>
-    /// A check answers "newest compatible with this server as it is now". Convert the server or move
-    /// it to another Minecraft version and every answer is for something else, so they are dropped
-    /// rather than offered — installing them is how a server ends up with mods it cannot load.
-    /// </remarks>
-    private (ServerType Type, string GameVersion) _pendingFor;
-
-    /// <summary>One newer version, and the file it was found for.</summary>
-    private sealed record PendingUpdate(ModUpdateInfo Info, long Length, DateTime WrittenUtc);
+    /// <summary>The newer versions the last update check found; see <see cref="PendingUpdateStore"/>.</summary>
+    private readonly PendingUpdateStore _pendingUpdates;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(UpdateAllCommand))]
@@ -244,7 +226,7 @@ public partial class ServerModsViewModel : ObservableObject
     public bool HasPendingUpdates => PendingUpdateCount > 0;
 
     /// <summary>The label of the button that updates them all, with how many there are.</summary>
-    public string UpdateAllText => string.Format(Localizer.Get("Mods_UpdateAllFmt"), PendingUpdateCount);
+    public string UpdateAllText => Localizer.Format("Mods_UpdateAllFmt", PendingUpdateCount);
 
     private void NotifyPendingUpdatesChanged()
     {
@@ -255,50 +237,16 @@ public partial class ServerModsViewModel : ObservableObject
     }
 
     /// <summary>The key a jar's pending update is kept under: its path with any .disabled removed.</summary>
-    internal static string PendingKey(string filePath) =>
-        filePath.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase)
-            ? filePath[..^".disabled".Length]
-            : filePath;
+    internal static string PendingKey(string filePath) => PendingUpdateStore.KeyFor(filePath);
 
     /// <summary>Starts a fresh set of pending updates, for the server as it is now.</summary>
-    /// <remarks>A new check replaces whatever the last one found.</remarks>
-    internal void BeginPendingUpdates()
-    {
-        _pendingUpdates.Clear();
-        _pendingFor = (_config.Type, _config.GameVersion);
-    }
+    internal void BeginPendingUpdates() => _pendingUpdates.Begin();
 
     /// <summary>Remembers a newer version for a jar, as the check saw it.</summary>
-    internal void RememberUpdate(string filePath, ModUpdateInfo info)
-    {
-        var file = new FileInfo(filePath);
-        _pendingUpdates[PendingKey(filePath)] = new PendingUpdate(info, file.Length, file.LastWriteTimeUtc);
-    }
+    internal void RememberUpdate(string filePath, ModUpdateInfo info) => _pendingUpdates.Remember(filePath, info);
 
-    /// <summary>
-    /// The update still waiting for this jar, or null. Drops what no longer applies on the way.
-    /// </summary>
-    internal ModUpdateInfo? PendingUpdateFor(string filePath)
-    {
-        if (_pendingFor != (_config.Type, _config.GameVersion))
-        {
-            _pendingUpdates.Clear();
-            return null;
-        }
-
-        var key = PendingKey(filePath);
-        if (!_pendingUpdates.TryGetValue(key, out var pending)) return null;
-
-        var file = new FileInfo(filePath);
-        if (!file.Exists || file.Length != pending.Length || file.LastWriteTimeUtc != pending.WrittenUtc)
-        {
-            // Not the file the check looked at any more: replaced by hand, or already updated.
-            _pendingUpdates.Remove(key);
-            return null;
-        }
-
-        return pending.Info;
-    }
+    /// <summary>The update still waiting for this jar, or null.</summary>
+    internal ModUpdateInfo? PendingUpdateFor(string filePath) => _pendingUpdates.For(filePath);
 
     // --- Missing library mods ---
     //
@@ -328,19 +276,19 @@ public partial class ServerModsViewModel : ObservableObject
     [ObservableProperty]
     private bool _canLoadMore;
 
-    private int _offset;
-    private int _totalHits;
     private bool _hasLoadedOnce;
-    private const int PageSize = 20;
+
+    /// <summary>Asks the store for pages and keeps track of which search counts; see <see cref="StoreBrowser"/>.</summary>
+    private readonly StoreBrowser _browser;
+
+    /// <summary>Works out what the clean-up panel lists; see <see cref="CleanupScanner"/>.</summary>
+    private readonly CleanupScanner _cleanupScanner;
 
     /// <summary>
     /// The results, flat. Replaced in one go rather than emptied and refilled: a list that sits
     /// empty across a network round trip makes the whole panel blink out and back.
     /// </summary>
     public BulkObservableCollection<ModrinthProjectViewModel> SearchResults { get; } = new();
-
-    /// <summary>Cancels the search in flight when a newer one starts.</summary>
-    private CancellationTokenSource? _reload;
 
     // --- Browsing by category ---
 
@@ -523,12 +471,23 @@ public partial class ServerModsViewModel : ObservableObject
         _lifetime = new CancellationTokenSource();
         _cleanupScan?.Cancel();
 
-        try { _reload?.Cancel(); } catch { /* already disposed */ }
-        _reload?.Dispose();
-        _reload = null;
+        _browser.CancelPending();
 
         _noticeTimer?.Stop();
         _noticeTimer = null;
+    }
+
+    /// <summary>
+    /// Shuts down for good and lets go of the tokens, for a server that is being removed.
+    /// <see cref="Shutdown"/> is the one for an app that may carry on.
+    /// </summary>
+    public void Dispose()
+    {
+        Shutdown();
+        _lifetime.Dispose();
+        _cleanupScan?.Dispose();
+        _cleanupScan = null;
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>Closes the details page and forgets the trail back, dropping what it was fetching.</summary>
@@ -595,19 +554,27 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>Instructions to play: install the loader client (mods) or just join (plugins).</summary>
     public string HowToPlaySteps => _config.Type switch
     {
-        ServerType.Fabric => string.Format(Localizer.Get("HowToPlay_FabricFmt"), _config.GameVersion),
-        ServerType.Forge => string.Format(Localizer.Get("HowToPlay_ForgeFmt"), _config.GameVersion),
-        ServerType.NeoForge => string.Format(Localizer.Get("HowToPlay_NeoForgeFmt"), _config.GameVersion),
+        ServerType.Fabric => Localizer.Format("HowToPlay_FabricFmt", _config.GameVersion),
+        ServerType.Forge => Localizer.Format("HowToPlay_ForgeFmt", _config.GameVersion),
+        ServerType.NeoForge => Localizer.Format("HowToPlay_NeoForgeFmt", _config.GameVersion),
         ServerType.Paper or ServerType.Purpur =>
-            string.Format(Localizer.Get("HowToPlay_PaperFmt"), _config.GameVersion),
+            Localizer.Format("HowToPlay_PaperFmt", _config.GameVersion),
         _ => string.Empty
     };
 
     public ServerModsViewModel(ServerConfig config)
     {
         _config = config;
+        _pendingUpdates = new PendingUpdateStore(config);
+        _index = new InstalledContentIndex(_modrinthService);
         // Shares the HTTP client and the store cache with everything else the panel asks for.
-        _dependencies = new ModDependencyService(_modrinthService);
+        _dependencyInstaller = new ModDependencyInstaller(config, _modrinthService,
+            new ModDependencyService(_modrinthService), _index);
+        _updater = new ModUpdater(config, _modrinthService, _index, _pendingUpdates, CarryDisabledDate);
+        _installer = new ModInstaller(config, _modrinthService, _index, _dependencyInstaller);
+        _browser = new StoreBrowser(config, _modrinthService);
+        _cleanupScanner = new CleanupScanner(config, _modrinthService, _index, () => Ledger);
+        _exporter = new ModpackExporter(config, _index, _modrinthService, () => HowToPlaySteps);
         BuildTags();
         RebuildActiveFilters();
         RefreshInstalledMods();
@@ -719,10 +686,10 @@ public partial class ServerModsViewModel : ObservableObject
             ContentReplacement.SweepLeftovers(modsFolder);
 
             // Include disabled mods (.jar.disabled) so they can be re-enabled from the app.
-            var files = ContentFiles(modsFolder)
+            var files = InstalledContentIndex.ContentFiles(modsFolder)
                 .OrderBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            _manifests.ForgetAllBut(files);
+            _index.Manifests.ForgetAllBut(files);
 
             foreach (var file in files)
             {
@@ -739,7 +706,7 @@ public partial class ServerModsViewModel : ObservableObject
         // The line under the list follows what is actually still pending, instead of being blanked
         // because the rows had lost track of it.
         UpdateStatus = PendingUpdateCount > 0
-            ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), PendingUpdateCount)
+            ? Localizer.Format("Msg_UpdatesFoundFmt", PendingUpdateCount)
             : string.Empty;
         NotifyPendingUpdatesChanged();
 
@@ -769,54 +736,21 @@ public partial class ServerModsViewModel : ObservableObject
         UpdateStatus = Localizer.Get("Msg_CheckingUpdates");
         try
         {
-            BeginPendingUpdates();
-
-            // Map each jar's SHA-1 to its ModItem (disabled ones included) and clear any prior flag.
-            var byHash = new Dictionary<string, ModItem>(StringComparer.OrdinalIgnoreCase);
-            foreach (var mod in InstalledMods)
-            {
-                mod.Update = null;
-                try
-                {
-                    byHash[await _hashes.Sha1Async(mod.FilePath, ct)] = mod;
-                }
-                catch { /* unreadable/locked file: skip it */ }
-            }
-
-            var latest = await _modrinthService.GetLatestVersionsByHashAsync(byHash.Keys, _config.Type,
-                _config.GameVersion, ct);
-            if (latest is null)
+            var check = await _updater.CheckAsync(InstalledMods, ct);
+            if (!check.CouldAsk)
             {
                 UpdateStatus = UpdateStatusText(couldAsk: false, updates: 0);
                 return;
             }
 
-            var updates = 0;
-            foreach (var (installedHash, version) in latest)
-            {
-                if (!byHash.TryGetValue(installedHash, out var mod)) continue;
-                var file = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.FirstOrDefault();
-                if (file is null) continue;
-
-                // If the latest compatible version's file differs from the installed one, it's an update.
-                if (!string.Equals(file.Hashes?.Sha1, installedHash, StringComparison.OrdinalIgnoreCase))
-                {
-                    mod.Update = new ModUpdateInfo(version.VersionNumber, file.Url,
-                        Path.GetFileName(file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1,
-                            version.ProjectId);
-                    RememberUpdate(mod.FilePath, mod.Update);
-                    updates++;
-                }
-            }
-
-            UpdateStatus = UpdateStatusText(couldAsk: true, updates);
+            UpdateStatus = UpdateStatusText(couldAsk: true, check.Updates);
             NotifyPendingUpdatesChanged();
 
-            await ScanForMissingDependenciesAsync(byHash.Keys, ct);
+            await ScanForMissingDependenciesAsync(check.Hashes, ct);
         }
         catch (Exception ex)
         {
-            UpdateStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ErrorMessages.Describe(ex));
+            UpdateStatus = Localizer.Format("Msg_ModErrorFmt", ErrorMessages.Describe(ex));
         }
         finally
         {
@@ -826,16 +760,9 @@ public partial class ServerModsViewModel : ObservableObject
 
     private bool CanCheckUpdates => !IsCheckingUpdates && !IsUpdatingAll;
 
-    /// <summary>The line the update check leaves under the list.</summary>
-    /// <remarks>
-    /// "Everything is up to date" only when the store actually said so. Offline it used to print
-    /// exactly that, which is a claim about every mod on the server made on the strength of no
-    /// answer at all — and the one message nobody thinks to question.
-    /// </remarks>
+    /// <summary>The line the update check leaves under the list; see <see cref="ModUpdater.StatusText"/>.</summary>
     internal static string UpdateStatusText(bool couldAsk, int updates) =>
-        !couldAsk ? Localizer.Get("Msg_UpdatesCheckFailed")
-        : updates > 0 ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), updates)
-        : Localizer.Get("Msg_NoUpdates");
+        ModUpdater.StatusText(couldAsk, updates);
 
     partial void OnIsCheckingUpdatesChanged(bool value)
     {
@@ -855,32 +782,9 @@ public partial class ServerModsViewModel : ObservableObject
     private async Task ScanForMissingDependenciesAsync(IEnumerable<string> sha1Hashes, CancellationToken ct)
     {
         ClearMissingDependencies();
-
-        // What each installed jar *is* — the update endpoint answers what could replace it, and the
-        // dependencies that matter are the ones declared by the file actually on disk.
-        var hashes = sha1Hashes.ToList();
-        await LearnAsync(hashes, ct);
-        var roots = hashes.Select(Known).OfType<VersionResult>().ToList();
-        if (roots.Count == 0) return;
-
-        var installedIds = roots.Select(r => r.ProjectId).ToList();
-
-        var plan = await _dependencies.ResolveMissingAsync(
-            roots, _config.Type, _config.GameVersion, installedIds, ct);
-
-        // And what the jars ask for themselves, which is how a mod whose Modrinth page lists no
-        // dependencies at all still turns out to need fabric-api.
-        var known = installedIds.Concat(plan.Install.Select(i => i.ProjectId)).ToList();
-
-        var providedHere = ModIdsProvidedIn(Path.Combine(_config.FolderPath, ContentFolder));
-
-        var fromJars = await _dependencies.ResolveByModIdAsync(
-            InstalledMods.SelectMany(m => ModDependencyService.DeclaredModIds(m.FilePath))
-                .Where(id => !providedHere.Contains(id)),
-            _config.Type, _config.GameVersion, known, ct);
-
-        ShowMissingDependencies(new ModDependencyService.Plan(
-            plan.Install.Concat(fromJars.Install).ToList(), plan.Unresolved));
+        var plan = await _dependencyInstaller.FindMissingAsync(sha1Hashes,
+            InstalledMods.Select(m => m.FilePath).ToList(), ct);
+        if (plan is not null) ShowMissingDependencies(plan);
     }
 
     /// <summary>Puts a resolved plan on screen. Separated from the scan so it can be shown a plan.</summary>
@@ -893,7 +797,7 @@ public partial class ServerModsViewModel : ObservableObject
         }
 
         _missingDependencies = plan.Install;
-        MissingDependencyText = string.Format(Localizer.Get("Msg_MissingDepsFoundFmt"),
+        MissingDependencyText = Localizer.Format("Msg_MissingDepsFoundFmt",
             plan.Install.Count, string.Join(", ", plan.Install.Select(d => d.Label)));
         OnPropertyChanged(nameof(HasMissingDependencies));
     }
@@ -923,53 +827,12 @@ public partial class ServerModsViewModel : ObservableObject
     public async Task InstallMissingAsync(IEnumerable<string> ids, IProgress<string>? log = null,
         CancellationToken ct = default)
     {
-        var wanted = ids.ToList();
-        if (wanted.Count == 0) return;
-
-        log?.Report(Localizer.Get("Msg_ResolvingDependencies"));
-
-        var plan = await _dependencies.ResolveByModIdAsync(
-            wanted, _config.Type, _config.GameVersion,
-            await InstalledProjectIdsAsync(ct), ct);
-
-        if (plan.Install.Count == 0)
-        {
-            log?.Report(Localizer.Get("Msg_DepsNoneResolved"));
-            return;
-        }
-
-        var folder = Path.Combine(_config.FolderPath, ContentFolder);
-        Directory.CreateDirectory(folder);
-
-        foreach (var needed in plan.Install)
-        {
-            ct.ThrowIfCancellationRequested();
-            log?.Report(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label));
-            await DownloadDependencyAsync(needed, folder, ct);
-        }
-
-        log?.Report(string.Format(Localizer.Get("Msg_DepsInstalledFmt"), plan.Install.Count));
+        if (!await _dependencyInstaller.InstallByIdAsync(ids, log, ct)) return;
 
         // The list backs an ItemsControl, so it has to be rebuilt on the UI thread — and this is
         // called from the start flow, which may be anywhere by the time the downloads finish.
         if (Dispatcher.UIThread.CheckAccess()) RefreshInstalledMods();
         else Dispatcher.UIThread.Post(RefreshInstalledMods);
-    }
-
-    /// <summary>
-    /// Which Modrinth project each jar in <paramref name="folder"/> is, by path. Jars the store does
-    /// not know, and files that are not a version's main one, are left out.
-    /// </summary>
-    private async Task<Dictionary<string, string>> ProjectByPathAsync(string folder,
-        CancellationToken ct = default)
-    {
-        var hashByPath = await HashesAsync(ContentFiles(folder), ct);
-        await LearnAsync(hashByPath.Values, ct);
-
-        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (path, hash) in hashByPath)
-            if (ProjectOf(hash) is { } projectId) result[path] = projectId;
-        return result;
     }
 
     /// <summary>Downloads the library mods the scan found missing.</summary>
@@ -981,22 +844,17 @@ public partial class ServerModsViewModel : ObservableObject
         IsInstallingDependencies = true;
         try
         {
-            var folder = Path.Combine(_config.FolderPath, ContentFolder);
-            Directory.CreateDirectory(folder);
+            // Inline, not posted: the line below must not be overtaken by a late "downloading".
+            await _dependencyInstaller.InstallListedAsync(_missingDependencies,
+                new InlineProgress<string>(message => UpdateStatus = message), ct);
 
-            foreach (var needed in _missingDependencies)
-            {
-                UpdateStatus = string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label);
-                await DownloadDependencyAsync(needed, folder, ct);
-            }
-
-            UpdateStatus = string.Format(Localizer.Get("Msg_DepsInstalledFmt"), _missingDependencies.Count);
+            UpdateStatus = Localizer.Format("Msg_DepsInstalledFmt", _missingDependencies.Count);
             ClearMissingDependencies();
             RefreshInstalledMods();
         }
         catch (Exception ex)
         {
-            UpdateStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ErrorMessages.Describe(ex));
+            UpdateStatus = Localizer.Format("Msg_ModErrorFmt", ErrorMessages.Describe(ex));
         }
         finally
         {
@@ -1004,129 +862,19 @@ public partial class ServerModsViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// The project id of every installed jar Modrinth recognises.
-    /// </summary>
-    /// <remarks>
-    /// This is what makes "already installed" a real answer rather than a filename comparison.
-    /// Modrinth's dependencies carry no version range, so a project that is present satisfies them;
-    /// installing a second copy under a different file name is what produces the loader's
-    /// "duplicate mod" failure, which is worse than the one being fixed.
-    /// </remarks>
-    private async Task<List<string>> InstalledProjectIdsAsync(CancellationToken ct,
-        string? alsoFolder = null)
-    {
-        var files = ContentFiles(ContentManifest.FolderOf(_config)).ToList();
-        if (alsoFolder is not null) files.AddRange(ContentFiles(alsoFolder));
-        var hashes = (await HashesAsync(files, ct)).Values.ToList();
-        await LearnAsync(hashes, ct);
-        return hashes.Select(Known).OfType<VersionResult>().Select(v => v.ProjectId)
-            .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    /// <summary>
-    /// Every id the enabled jars in a folder answer to, the ones carried inside them included.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Whatever is in here is not missing, and asking the store for it either finds nothing —
-    /// fabric-api's forty-odd modules are not projects — or offers a second copy of a library
-    /// that is already loaded because it ships inside the mod next to it.
-    /// </para>
-    /// <para>
-    /// One answer for both places that ask. The scan and the install used to work it out
-    /// differently, and the scan also counted disabled jars as providing things, which the start
-    /// check rightly does not: a <c>.jar.disabled</c> loads nothing.
-    /// </para>
-    /// </remarks>
+    /// <summary>The ids the enabled jars in a folder answer to; see <see cref="InstalledContentIndex"/>.</summary>
     internal static HashSet<string> ModIdsProvidedIn(string folder) =>
-        ContentManifest.ReadFolder(folder)
-            .SelectMany(m => m.Provides)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        InstalledContentIndex.ModIdsProvidedIn(folder);
 
-    /// <summary>
-    /// Installs the required dependencies of <paramref name="version"/> that are not there yet.
-    /// </summary>
-    /// <returns>
-    /// How many were installed, and any that could not be resolved at all. Zero and empty is the
-    /// normal answer for a plugin or for a library mod that depends on nothing.
-    /// </returns>
-    /// <remarks>
-    /// <paramref name="forPlayerPack"/> is true when <paramref name="folder"/> is the players' pack.
-    /// A library the server already has (Fabric API, nearly always) satisfies the mod and is not
-    /// downloaded again; one that is only in the pack does not satisfy a server mod, which is why
-    /// this goes one way.
-    /// </remarks>
-    private async Task<(int Installed, IReadOnlyList<string> Unresolved)> InstallDependenciesAsync(
-        VersionResult version, string jarPath, string folder, bool forPlayerPack = false,
-        CancellationToken ct = default)
-    {
-        var declared = ModDependencyService.DeclaredModIds(jarPath);
-        var hasModrinthDeps = version.Dependencies.Any(d =>
-            string.Equals(d.DependencyType, "required", StringComparison.OrdinalIgnoreCase));
+    /// <summary>Whether a jar is the main file of its version; see <see cref="InstalledContentIndex"/>.</summary>
+    internal static bool IsPrimaryFile(VersionResult version, string sha1) =>
+        InstalledContentIndex.IsPrimaryFile(version, sha1);
 
-        // A plugin, or a mod that genuinely needs nothing: no request, and no hash of the folder.
-        if (!hasModrinthDeps && declared.Count == 0) return (0, Array.Empty<string>());
+    private Task<Dictionary<string, string>> ProjectByPathAsync(string folder, CancellationToken ct = default) =>
+        _index.ProjectByPathAsync(folder, ct);
 
-        Notify(Localizer.Get("Msg_ResolvingDependencies"), failed: false, transient: true);
-
-        var installedIds = await InstalledProjectIdsAsync(ct, forPlayerPack ? folder : null);
-        var plan = await _dependencies.ResolveMissingAsync(
-            new[] { version }, _config.Type, _config.GameVersion, installedIds, ct);
-
-        var installed = 0;
-        foreach (var needed in plan.Install)
-        {
-            Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label),
-                failed: false, transient: true);
-            await DownloadDependencyAsync(needed, folder, ct);
-            installed++;
-        }
-
-        // Now what the jars themselves ask for, which Modrinth does not always know: Explorify lists
-        // no dependencies there and its own metadata requires fabric-api. Rounds rather than one
-        // pass, because a library pulled in this way can declare its own.
-        var known = new List<string>(installedIds);
-        known.AddRange(plan.Install.Select(i => i.ProjectId));
-        var pending = new List<string>(declared);
-
-        for (var round = 0; round < 3 && pending.Count > 0; round++)
-        {
-            // Read again each round: what was just downloaded may carry what the next one needs.
-            var providedHere = ModIdsProvidedIn(folder);
-            if (forPlayerPack) providedHere.UnionWith(ModIdsProvidedIn(ContentManifest.FolderOf(_config)));
-            pending = pending.Where(id => !providedHere.Contains(id)).ToList();
-            if (pending.Count == 0) break;
-
-            var extra = await _dependencies.ResolveByModIdAsync(
-                pending, _config.Type, _config.GameVersion, known, ct);
-            if (extra.Install.Count == 0) break;
-
-            pending = new List<string>();
-            foreach (var needed in extra.Install)
-            {
-                Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), needed.Label),
-                    failed: false, transient: true);
-                var written = AtomicDownload.PathIn(folder, needed.File.Filename);
-                await DownloadDependencyAsync(needed, folder, ct);
-
-                known.Add(needed.ProjectId);
-                installed++;
-                pending.AddRange(ModDependencyService.DeclaredModIds(written));
-            }
-        }
-
-        return (installed, plan.Unresolved);
-    }
-
-    /// <summary>One dependency onto disk, verified, with the same path safety as any other install.</summary>
-    private Task DownloadDependencyAsync(ModDependencyService.Needed needed, string folder,
-        CancellationToken ct)
-    {
-        var path = AtomicDownload.PathIn(folder, needed.File.Filename);
-        return _modrinthService.DownloadModAsync(needed.File.Url, path,
-            needed.File.Hashes?.Sha512, needed.File.Hashes?.Sha1, ct: ct);
-    }
+    private Task<List<string>> InstalledProjectIdsAsync(CancellationToken ct, string? alsoFolder = null) =>
+        _index.InstalledProjectIdsAsync(ContentManifest.FolderOf(_config), alsoFolder, ct);
 
     /// <summary>
     /// Downloads the newer version flagged by <see cref="CheckUpdates"/> and replaces the old jar.
@@ -1138,31 +886,25 @@ public partial class ServerModsViewModel : ObservableObject
         // race it for the same folder.
         if (mod?.Update is null || mod.IsUpdating || IsUpdatingAll) return;
 
-        var (outcome, error, _) = await UpdateOneAsync(mod);
+        var result = await _updater.UpdateOneAsync(mod, _lifetime.Token);
         RefreshInstalledMods();
 
         // Set after the refresh, which rewrites the line with what is still pending — before, the
         // refresh wiped "updated" the instant it was written, so it was never seen.
-        UpdateStatus = outcome switch
+        UpdateStatus = result.Outcome switch
         {
             ContentReplacement.UpdateOutcome.Updated when PendingUpdateCount > 0 =>
-                string.Format(Localizer.Get("Msg_ModUpdatedRemainingFmt"), PendingUpdateCount),
+                Localizer.Format("Msg_ModUpdatedRemainingFmt", PendingUpdateCount),
             ContentReplacement.UpdateOutcome.Updated => Localizer.Get("Msg_ModUpdated"),
             ContentReplacement.UpdateOutcome.NeedsStop => Localizer.Get("Msg_UpdateNeedsStop"),
-            _ => string.Format(Localizer.Get("Msg_UpdateErrorFmt"), error)
+            _ => Localizer.Format("Msg_UpdateErrorFmt", result.Error)
         };
 
         // Only "updated". The old version and any other copy going with it is what updating means,
         // not news: listing the files deleted read as if the app had done something unusual.
     }
 
-    /// <summary>Updates every mod the last check found a newer version for, one after another.</summary>
-    /// <remarks>
-    /// One after another rather than all at once: each is a verified download followed by a file
-    /// swap in the same folder, and doing them in parallel buys a few seconds at the cost of a
-    /// progress line nobody could follow. A failure does not stop the rest — except a jar in use,
-    /// which means the server is running and every other one would fail the same way.
-    /// </remarks>
+    /// <summary>Updates every mod the last check found a newer version for; see <see cref="ModUpdater.UpdateAllAsync"/>.</summary>
     [RelayCommand(CanExecute = nameof(CanUpdateAll))]
     private async Task UpdateAll()
     {
@@ -1170,40 +912,12 @@ public partial class ServerModsViewModel : ObservableObject
         if (queue.Count == 0) return;
 
         IsUpdatingAll = true;
-        var updated = 0;
-        var failed = new List<string>();
-        var stoppedByServer = false;
-
+        ModUpdater.AllResult result;
         try
         {
-            // Asked once, before the first download, rather than once per mod: the answer is about
-            // the jars that were already here, and those are the only ones an update replaces.
-            var folder = Path.Combine(_config.FolderPath, ContentFolder);
-            var projects = Directory.Exists(folder)
-                ? await ProjectByPathAsync(folder, _lifetime.Token)
-                : null;
-
-            for (var i = 0; i < queue.Count; i++)
-            {
-                var mod = queue[i];
-
-                // Already gone as another copy of a mod updated earlier in this run: what it was a
-                // copy of is up to date now, and updating this one too would bring the duplicate back.
-                if (!File.Exists(mod.FilePath)) continue;
-
-                UpdateStatus = string.Format(
-                    Localizer.Get("Msg_UpdatingNofMFmt"), i + 1, queue.Count, mod.FileName);
-
-                var (outcome, _, _) = await UpdateOneAsync(mod, projects);
-                if (outcome == ContentReplacement.UpdateOutcome.Updated)
-                {
-                    updated++;
-                    continue;
-                }
-
-                failed.Add(mod.FileName);
-                if (outcome == ContentReplacement.UpdateOutcome.NeedsStop) { stoppedByServer = true; break; }
-            }
+            // Inline, not posted: the summary below must not be overtaken by a late "updating 3 of 5".
+            result = await _updater.UpdateAllAsync(queue,
+                new InlineProgress<string>(message => UpdateStatus = message), _lifetime.Token);
         }
         finally
         {
@@ -1211,86 +925,14 @@ public partial class ServerModsViewModel : ObservableObject
             RefreshInstalledMods();
         }
 
-        UpdateStatus = UpdateAllSummary(updated, failed, stoppedByServer);
+        UpdateStatus = ModUpdater.AllSummary(result);
     }
 
     private bool CanUpdateAll => HasPendingUpdates && !IsUpdatingAll && !IsCheckingUpdates;
 
-    /// <summary>The line "update all" leaves behind.</summary>
-    /// <param name="updated">How many mods were updated.</param>
-    /// <param name="failed">The ones that could not be.</param>
-    /// <param name="stoppedByServer">Whether it stopped because the server holds the files.</param>
-    internal static string UpdateAllSummary(int updated, IReadOnlyList<string> failed, bool stoppedByServer)
-    {
-        return stoppedByServer
-            ? string.Format(Localizer.Get("Msg_UpdateAllStoppedFmt"), updated)
-            : failed.Count == 0
-                ? string.Format(Localizer.Get("Msg_UpdateAllDoneFmt"), updated)
-                : string.Format(Localizer.Get("Msg_UpdateAllPartialFmt"),
-                    updated, failed.Count, string.Join(", ", failed));
-    }
-
-    /// <summary>
-    /// Replaces one jar with its newer version. Never leaves two versions of a mod, or none.
-    /// </summary>
-    /// <remarks>
-    /// Shared by the row's button and by "update all", so there is one way a mod gets updated. It
-    /// does not refresh the list — the callers do, once, when they are finished — because a
-    /// refresh halfway through "update all" would rebuild the very rows it is walking.
-    /// </remarks>
-    /// <param name="mod">The row to update.</param>
-    /// <param name="projectByPath">
-    /// Which store project each jar already here is. "Update all" asks once and passes it to every
-    /// mod; a single update asks for itself.
-    /// </param>
-    private async Task<(ContentReplacement.UpdateOutcome Outcome, string? Error,
-        IReadOnlyList<string> Removed)> UpdateOneAsync(ModItem mod,
-        IReadOnlyDictionary<string, string>? projectByPath = null)
-    {
-        if (mod.Update is not { } update)
-            return (ContentReplacement.UpdateOutcome.Failed, null, Array.Empty<string>());
-
-        mod.IsUpdating = true;
-        try
-        {
-            var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
-            Directory.CreateDirectory(modsFolder);
-            var wasDisabled = !mod.IsEnabled;
-
-            // Asked before downloading, while the folder still holds only what the user had.
-            if (projectByPath is null && update.ProjectId is not null)
-                projectByPath = await ProjectByPathAsync(modsFolder, _lifetime.Token);
-
-            // Download+verify the new jar under its own (enabled) name first, so a failure never
-            // destroys the currently installed one.
-            var enabledPath = AtomicDownload.PathIn(modsFolder, update.FileName);
-            var replacesAFile = File.Exists(enabledPath);
-            await _modrinthService.DownloadModAsync(update.Url, enabledPath, update.Sha512, update.Sha1,
-                ct: _lifetime.Token);
-
-            var (outcome, removed) = ContentReplacement.ApplyDownloadedUpdate(modsFolder, enabledPath,
-                mod.FilePath, wasDisabled, replacesAFile, update.ProjectId, projectByPath, _manifests.Read);
-
-            if (outcome == ContentReplacement.UpdateOutcome.Updated)
-            {
-                _pendingUpdates.Remove(PendingKey(mod.FilePath));
-                mod.Update = null;
-
-                // The month it has been off does not start again because it was updated meanwhile.
-                if (wasDisabled) CarryDisabledDate(mod.FilePath, update.FileName);
-            }
-            return (outcome, null, removed);
-        }
-        catch (Exception ex)
-        {
-            return (ContentReplacement.UpdateOutcome.Failed, ErrorMessages.Describe(ex),
-                Array.Empty<string>());
-        }
-        finally
-        {
-            mod.IsUpdating = false;
-        }
-    }
+    /// <summary>The line "update all" leaves behind; see <see cref="ModUpdater.AllSummary"/>.</summary>
+    internal static string UpdateAllSummary(int updated, IReadOnlyList<string> failed, bool stoppedByServer) =>
+        ModUpdater.AllSummary(new ModUpdater.AllResult(updated, failed, stoppedByServer));
 
     [RelayCommand]
     private void ToggleMod(ModItem? mod)
@@ -1315,8 +957,8 @@ public partial class ServerModsViewModel : ObservableObject
 
         // Asked first, like deleting a backup: the file is gone for good, not to the recycle bin,
         // and the button sits one row from the switch that only disables a mod.
-        if (!await MessageBox.ConfirmAsync(
-                string.Format(Localizer.Get("Mods_ConfirmDeleteFmt"), mod.FileName), ContentTabTitle))
+        if (!await Dialogs.Current.ConfirmAsync(
+                Localizer.Format("Mods_ConfirmDeleteFmt", mod.FileName), ContentTabTitle))
             return;
 
         try
@@ -1326,8 +968,8 @@ public partial class ServerModsViewModel : ObservableObject
         catch (Exception ex)
         {
             // Typically the file is locked because the server is running.
-            await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_ModDeleteError"),
+            await Dialogs.Current.ShowAsync(
+                Localizer.Format("Msg_ModDeleteError",
                     ErrorMessages.Describe(ex)), ContentTabTitle);
         }
         RefreshInstalledMods();
@@ -1365,240 +1007,28 @@ public partial class ServerModsViewModel : ObservableObject
                 CancellationToken.None);
             _lastExportPath = file.Path.LocalPath;
             _lastExportLeftSomethingOut = result.Excluded.Count > 0;
-            ExportNotice = NoticeFor(result);
+            ExportNotice = ModpackExporter.NoticeFor(result);
         }
         catch (Exception ex)
         {
-            await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_ExportError"),
+            await Dialogs.Current.ShowAsync(
+                Localizer.Format("Msg_ExportError",
                     ErrorMessages.Describe(ex)), Localizer.Get("Export_Modpack"));
         }
     }
 
-    /// <summary>What one export put into the pack, and what it left out.</summary>
-    /// <param name="Included">File names of the jars written, in the order they were written.</param>
-    /// <param name="Excluded">File names left out as server-only.</param>
-    /// <param name="AskedTheStore">False when the pack was built on the jars alone.</param>
-    internal sealed record ModpackResult(
-        IReadOnlyList<string> Included, IReadOnlyList<string> Excluded, bool AskedTheStore);
+    /// <summary>Builds the pack at <paramref name="destination"/>; see <see cref="ModpackExporter"/>.</summary>
+    internal Task<ModpackResult> BuildModpackAsync(string destination, bool includeEverything, CancellationToken ct) =>
+        _exporter.BuildAsync(destination, includeEverything, ct);
 
-    /// <summary>
-    /// Builds the pack at <paramref name="destination"/>, replacing whatever was there.
-    /// </summary>
-    /// <remarks>
-    /// Takes a path rather than opening a picker, which is the whole point: this is the part worth
-    /// testing, and until now none of it was reachable without a main window.
-    /// </remarks>
-    /// <param name="destination">Where to write the zip.</param>
-    /// <param name="includeEverything">Skip the reasoning and pack the folder as it stands.</param>
-    /// <param name="ct">Cancels the build.</param>
-    internal async Task<ModpackResult> BuildModpackAsync(
-        string destination, bool includeEverything, CancellationToken ct)
-    {
-        // Plugins never go anywhere near a player's machine, so there is nothing to work out: the
-        // pack is the folder. The button is hidden on those servers, and this is the same answer
-        // arrived at without relying on that.
-        var everything = includeEverything || IsPluginBased;
-        var sides = everything ? EmptySides : await StoreSidesAsync(JarsInContentFolder(), ct);
-
-        // Worked out here so the script the player runs has no version to resolve and no choice to
-        // make. Null on any failure — offline, a slow maven, a loader with no published checksum —
-        // and the pack then only tells them what to install, which is worse but not broken.
-        var loader = IsPluginBased
-            ? null
-            : await ClientLoaderInstall.ResolveAsync(
-                _config.Type, _config.GameVersion, _config.ModLoaderVersion, ct);
-
-        return await BuildModpackWithSidesAsync(destination, sides, includeEverything, loader, ct);
-    }
-
-    /// <summary>Every enabled jar in this server's content folder, in a stable order.</summary>
-    private List<string> JarsInContentFolder()
-    {
-        var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
-
-        return Directory.Exists(modsFolder)
-            ? Directory.EnumerateFiles(modsFolder, "*.jar")
-                .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
-                .ToList()
-            : new List<string>();
-    }
-
-    /// <summary>
-    /// The half that decides and writes, with whatever the store had to say already in hand.
-    /// </summary>
-    /// <remarks>
-    /// Split from the fetching so the decision can be tested against real jars on disk and a real
-    /// zip coming out, without a test ever reaching api.modrinth.com — which would make the result
-    /// depend on a third party's uptime and on data anyone can edit.
-    /// </remarks>
-    /// <param name="destination">Where to write the zip.</param>
-    /// <param name="storeSides">Per file name, what the store said. Empty means it was not asked.</param>
-    /// <param name="includeEverything">Skip the reasoning and pack the folder as it stands.</param>
-    /// <param name="ct">Cancels the build.</param>
-    /// <param name="loader">The client installer to offer, or null to only warn about it.</param>
+    /// <summary>The half of the export that decides and writes, with the store's answers in hand.</summary>
     internal Task<ModpackResult> BuildModpackWithSidesAsync(
         string destination,
-        IReadOnlyDictionary<string, (ExportSelection.StoreSide Client,
-            ExportSelection.StoreSide Server)> storeSides,
+        IReadOnlyDictionary<string, (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)> storeSides,
         bool includeEverything,
         ClientLoaderInstall.Plan? loader,
-        CancellationToken ct)
-    {
-        var contentFolder = ContentFolder;
-        var jars = JarsInContentFolder();
-        var everything = includeEverything || IsPluginBased;
-        var sides = storeSides;
-
-        return Task.Run(() =>
-        {
-            var candidates = jars
-                .Select(path =>
-                {
-                    var manifest = ContentManifest.Read(path);
-                    return sides.TryGetValue(manifest.FileName, out var side)
-                        ? new ExportSelection.Candidate(manifest, side.Client, side.Server)
-                        : new ExportSelection.Candidate(manifest);
-                })
-                .ToList();
-
-            var plan = ExportSelection.Decide(candidates, everything);
-            var keep = plan.Included.ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            var instructions = string.Format(Localizer.Get("Export_InstructionsFmt"),
-                _config.Name, _config.Type, _config.GameVersion, HowToPlaySteps, contentFolder);
-
-            // The pack has to explain itself to whoever receives it, not only to whoever made it:
-            // a player who counts the jars and finds three missing deserves to read why here.
-            if (plan.Excluded.Count == 1)
-                instructions += "\n\n" + string.Format(
-                    Localizer.Get("Export_LeftOutOneFmt"), plan.Excluded[0]);
-            else if (plan.LeftSomethingOut)
-                instructions += "\n\n" + string.Format(Localizer.Get("Export_LeftOutFmt"),
-                    plan.Excluded.Count, string.Join(", ", plan.Excluded));
-
-            // The script names are not translated — see InstallScriptBuilder — so the
-            // instructions, which are, have to be where the player reads what they are for.
-            if (!IsPluginBased)
-                instructions += "\n\n" + string.Format(Localizer.Get("Export_ScriptsFmt"),
-                    InstallScriptBuilder.WindowsName, InstallScriptBuilder.UnixName);
-
-            var texts = new List<ModpackWriter.TextFile>
-            {
-                // CRLF whatever built the pack: this one is opened in Notepad more often than
-                // anywhere else, and every other editor reads CRLF without complaining.
-                new(Localizer.Get("Export_InstructionsFile"), instructions, Newline: "\r\n")
-            };
-
-            // Plugins go on a server, by hand, by whoever runs it. Nothing to install on a
-            // client, so no script — and the export button is not offered on those servers.
-            if (!IsPluginBased)
-                texts.AddRange(InstallScriptBuilder.Build(
-                    _config.Name, _config.Type, _config.GameVersion, DateTime.Now, loader));
-
-            // The client-only mods go in as they are: they are in the pack because somebody put
-            // them there for the players, so neither the table nor the server's folder gets a say.
-            // A name the server's jars already use is skipped: two files in one folder cannot share
-            // it, and the server's copy is the one the players need to match.
-            var included = jars.Where(j => keep.Contains(Path.GetFileName(j))).ToList();
-            var packJars = IsPluginBased
-                ? new List<string>()
-                : ClientPack.Jars(_config)
-                    .Where(j => !included.Any(i => string.Equals(Path.GetFileName(i),
-                        Path.GetFileName(j), StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
-
-            ModpackWriter.Write(destination, contentFolder, included.Concat(packJars).ToList(), texts);
-
-            // "Not degraded" rather than "a request went out": packing everything needs no store
-            // answer, so it is not the reduced result the offline note is there to explain.
-            var packed = plan.Included.Concat(packJars.Select(j => Path.GetFileName(j))).ToList();
-            return new ModpackResult(packed, plan.Excluded, everything || sides.Count > 0);
-        }, ct);
-    }
-
-    /// <summary>How long the store gets to answer before the pack is built without it.</summary>
-    /// <remarks>
-    /// A few seconds, because what the store adds is an improvement and not a requirement: without
-    /// it the table falls back to what the jars themselves declare, which excludes strictly less.
-    /// Nobody should watch a progress bar because Modrinth is having a slow afternoon.
-    /// </remarks>
-    private static readonly TimeSpan StoreLookupBudget = TimeSpan.FromSeconds(4);
-
-    private static readonly IReadOnlyDictionary<string,
-        (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)>
-        EmptySides = new Dictionary<string, (ExportSelection.StoreSide, ExportSelection.StoreSide)>();
-
-    /// <summary>
-    /// What the store says about each jar's sides, by file name. Empty when it could not be asked.
-    /// </summary>
-    /// <remarks>
-    /// Two hops, because a hash lookup alone does not carry the side fields: SHA-1 to project id
-    /// (memoised, and usually already known from the update check), then the project itself, which
-    /// the store service caches for six hours with a copy on disk.
-    /// </remarks>
-    private async Task<IReadOnlyDictionary<string,
-        (ExportSelection.StoreSide Client, ExportSelection.StoreSide Server)>>
-        StoreSidesAsync(IReadOnlyList<string> jarPaths, CancellationToken ct)
-    {
-        var byName = new Dictionary<string, (ExportSelection.StoreSide, ExportSelection.StoreSide)>(
-            StringComparer.OrdinalIgnoreCase);
-        if (jarPaths.Count == 0) return byName;
-
-        using var budget = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        budget.CancelAfter(StoreLookupBudget);
-
-        try
-        {
-            var hashByName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var path in jarPaths)
-            {
-                try { hashByName[Path.GetFileName(path)] = await _hashes.Sha1Async(path, budget.Token); }
-                catch { /* unreadable or locked: that jar simply gets no store answer */ }
-            }
-
-            await LearnAsync(hashByName.Values, budget.Token);
-
-            var ids = hashByName.Values
-                .Select(h => Known(h)?.ProjectId)
-                .Where(id => !string.IsNullOrEmpty(id))
-                .Select(id => id!)
-                .Distinct(StringComparer.Ordinal)
-                .ToList();
-
-            if (ids.Count == 0) return byName;
-
-            var projects = await _modrinthService.GetProjectsAsync(ids, budget.Token);
-            if (projects is null) return byName;
-
-            // Grouped rather than ToDictionary: a duplicate id in the response would throw, and
-            // taking the store down with an export is not a trade worth making.
-            var byId = projects
-                .Where(project => !string.IsNullOrEmpty(project.Id))
-                .GroupBy(project => project.Id, StringComparer.Ordinal)
-                .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
-
-            foreach (var (name, hash) in hashByName)
-                if (Known(hash)?.ProjectId is { } id && byId.TryGetValue(id, out var project))
-                    byName[name] = (StoreSideOf(project.ClientSide), StoreSideOf(project.ServerSide));
-        }
-        catch
-        {
-            // Offline, out of time, or Modrinth having a bad day. The table falls back to the jars
-            // alone, which excludes fewer of them, and the notice says the pack was built that way.
-        }
-
-        return byName;
-    }
-
-    /// <summary>Modrinth's word for how well a side is supported, as the table understands it.</summary>
-    private static ExportSelection.StoreSide StoreSideOf(string? value) => value?.ToLowerInvariant() switch
-    {
-        "required" => ExportSelection.StoreSide.Required,
-        "optional" => ExportSelection.StoreSide.Optional,
-        "unsupported" => ExportSelection.StoreSide.Unsupported,
-        _ => ExportSelection.StoreSide.Unknown
-    };
+        CancellationToken ct) =>
+        _exporter.BuildWithSidesAsync(destination, storeSides, includeEverything, loader, ct);
 
     // --- The notice the export leaves behind ---
 
@@ -1626,27 +1056,6 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>True while there is something to put back, which is what the button hangs off.</summary>
     public bool CanIncludeExcludedAnyway => _lastExportLeftSomethingOut && _lastExportPath is not null;
 
-    /// <summary>The sentence the notice shows for one finished export.</summary>
-    internal static string NoticeFor(ModpackResult result)
-    {
-        // One excluded file is the common case — a lone Geyser or Floodgate — and "1 archivos" is
-        // the sort of thing that makes an app look machine-written. Each language gets to say it
-        // its own way instead of the count being pasted into a plural sentence.
-        var text = result.Excluded.Count switch
-        {
-            0 => string.Format(Localizer.Get("Export_NoticeAllFmt"), result.Included.Count),
-            1 => string.Format(Localizer.Get("Export_NoticeOneFmt"),
-                result.Included.Count, result.Excluded[0]),
-            _ => string.Format(Localizer.Get("Export_NoticeFmt"),
-                result.Included.Count, result.Excluded.Count, string.Join(", ", result.Excluded))
-        };
-
-        // Said out loud rather than hidden: the pack does come out different without a connection,
-        // and a difference the user can see is one they can decide about.
-        if (!result.AskedTheStore) text += " " + Localizer.Get("Export_NoticeOffline");
-        return text;
-    }
-
     [RelayCommand]
     private void DismissExportNotice() => ExportNotice = null;
 
@@ -1664,12 +1073,12 @@ public partial class ServerModsViewModel : ObservableObject
         {
             var result = await BuildModpackAsync(path, includeEverything: true, CancellationToken.None);
             _lastExportLeftSomethingOut = false;
-            ExportNotice = NoticeFor(result);
+            ExportNotice = ModpackExporter.NoticeFor(result);
         }
         catch (Exception ex)
         {
-            await MessageBox.ShowAsync(
-                string.Format(Localizer.Get("Msg_ExportError"),
+            await Dialogs.Current.ShowAsync(
+                Localizer.Format("Msg_ExportError",
                     ErrorMessages.Describe(ex)), Localizer.Get("Export_Modpack"));
         }
     }
@@ -1710,7 +1119,7 @@ public partial class ServerModsViewModel : ObservableObject
     /// </summary>
     private async Task LoadPageAsync(bool append, CancellationToken ct)
     {
-        if (_config.Type == ServerType.Vanilla || string.IsNullOrEmpty(_config.GameVersion))
+        if (!_browser.CanSearch)
         {
             SearchStatus = Localizer.Get("Msg_ModBrowserNeedsLoader");
             SetResults(Array.Empty<ModrinthProjectViewModel>(), append: false);
@@ -1718,75 +1127,46 @@ public partial class ServerModsViewModel : ObservableObject
             return;
         }
 
-        // Every new search supersedes the one before it. Without this, two quick clicks on two
-        // chips race: both responses land on the same list, the paging offset is advanced twice
-        // and "load more" silently skips a page.
-        CancellationTokenSource? mine = null;
-        if (!append)
-        {
-            _reload?.Cancel();
-            _reload?.Dispose();
-            mine = _reload = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            ct = mine.Token;
-            _offset = 0;
-        }
-
         IsSearching = true;
         _hasLoadedOnce = true;
-        var index = SelectedSortIndex == 1 ? "downloads" : "relevance";
 
-        // Facet-backed categories stack into separate groups, which Modrinth ANDs. The ones with
-        // no facet contribute their words to the query instead (only ever one of those at a time).
-        var facets = SelectedTags.SelectMany(t => t.Definition.Facets).ToList();
-        var query = SearchQuery ?? string.Empty;
-        foreach (var loose in SelectedTags.Where(t => t.Definition.Facets.Count == 0))
-            if (loose.Definition.Query is { Length: > 0 } words)
-                query = string.IsNullOrWhiteSpace(query) ? words : query + " " + words;
-
+        var result = await _browser.LoadAsync(SearchQuery, SelectedTags.Select(t => t.Definition).ToList(),
+            SelectedSortIndex, SideFilter, append, ct);
         try
         {
-            var response = await _modrinthService.SearchModsAsync(
-                query, _config.Type, _config.GameVersion, index, _offset, PageSize,
-                facets.Count > 0 ? facets : null, ct, SideFilter);
-
-            // A newer search started while this one was in flight: its results are the ones that
-            // match what the interface is showing, so drop these.
-            if (ct.IsCancellationRequested || (mine is not null && !ReferenceEquals(_reload, mine)))
-                return;
-
-            if (response != null)
-            {
-                var page = response.Hits.Select(hit => new ModrinthProjectViewModel(hit, this));
-                SetResults(page, append);
-
-                _totalHits = response.TotalHits;
-                _offset += response.Hits.Count;
-                CanLoadMore = response.Hits.Count > 0 && SearchResults.Count < _totalHits;
-
-                SearchStatus = SearchResults.Count > 0
-                    ? string.Format(Localizer.Get("Msg_ModsFoundFmt"), _totalHits)
-                    : Localizer.Get("Msg_NoModsFound");
-            }
-            else if (!append)
-            {
-                // Keep whatever was on screen: an empty panel says less than the old results plus
-                // an explanation of why they didn't refresh.
-                SearchStatus = Localizer.Get("Msg_NoModsFound");
-                CanLoadMore = false;
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Superseded by a newer search; the one that replaced it owns the UI now.
-        }
-        catch (Exception ex)
-        {
-            SearchStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ErrorMessages.Describe(ex));
+            ShowSearchResult(result, append);
         }
         finally
         {
             // Only the search still in charge may clear the spinner.
-            if (append || mine is null || ReferenceEquals(_reload, mine)) IsSearching = false;
+            if (result.StillInCharge) IsSearching = false;
+        }
+    }
+
+    /// <summary>Draws what a load found: the page, or the line that says why there is none.</summary>
+    private void ShowSearchResult(StoreBrowser.LoadResult result, bool append)
+    {
+        switch (result.Kind)
+        {
+            case StoreBrowser.Kind.Page:
+                var response = result.Response!;
+                SetResults(response.Hits.Select(hit => new ModrinthProjectViewModel(hit, this)), append);
+                CanLoadMore = response.Hits.Count > 0 && SearchResults.Count < response.TotalHits;
+                SearchStatus = SearchResults.Count > 0
+                    ? Localizer.Format("Msg_ModsFoundFmt", response.TotalHits)
+                    : Localizer.Get("Msg_NoModsFound");
+                break;
+
+            case StoreBrowser.Kind.NoAnswer when !append:
+                // Keep whatever was on screen: an empty panel says less than the old results plus
+                // an explanation of why they didn't refresh.
+                SearchStatus = Localizer.Get("Msg_NoModsFound");
+                CanLoadMore = false;
+                break;
+
+            case StoreBrowser.Kind.Failed:
+                SearchStatus = Localizer.Format("Msg_ModErrorFmt", result.Error);
+                break;
         }
     }
 
@@ -1911,219 +1291,55 @@ public partial class ServerModsViewModel : ObservableObject
         toPlayerPack &= !IsPluginBased;
 
         IsSearching = true;
-        // transient: progress, not an outcome — it must not time out while the download runs.
-        Notify(Localizer.Get("Msg_ResolvingVersion"), failed: false, transient: true);
-
         try
         {
-            var version = chosen
-                ?? await _modrinthService.GetLatestProjectVersionAsync(projectId, _config.Type,
-                    _config.GameVersion);
-            if (version == null || version.Files.Count == 0)
-            {
-                Notify(Localizer.Get("Msg_NoCompatibleVersion"), failed: true);
-                return false;
-            }
-
-            var file = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.First();
-
-            var modsFolder = toPlayerPack
-                ? ClientPack.FolderOf(_config)
-                : Path.Combine(_config.FolderPath, ContentFolder);
-            Directory.CreateDirectory(modsFolder);
-            // The file name comes from the Modrinth API, so the join goes through the one
-            // place that keeps it inside the folder.
-            var destPath = AtomicDownload.PathIn(modsFolder, file.Filename);
-            var replacesAFile = File.Exists(destPath);
-
-            // Which project each jar already here is. Found before downloading, while the folder
-            // still holds only what the user had.
-            var projectByPath = await ProjectByPathAsync(modsFolder, _lifetime.Token);
-
-            Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), file.Filename),
-                failed: false, transient: true);
-
-            // Mods are third-party jars chosen by the user: verify against Modrinth's own checksum.
-            await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512,
-                file.Hashes?.Sha1, ct: _lifetime.Token);
-
-            // Installing a second version beside the first made the loader refuse to start with
-            // "duplicate mod". The new one replaces every other copy — another version, a disabled
-            // one, one the store does not know — the way an update does; and like an update, a jar
-            // the running server holds open means nothing changes.
-            var others = ContentReplacement.OthersOf(modsFolder, destPath, version.ProjectId, projectByPath,
-                _manifests.Read);
-            var (result, removed) = ContentReplacement.RemoveAllOrNothing(others, replacesAFile ? null
-                : destPath);
-            if (result == ContentReplacement.RemoveResult.Locked)
-            {
-                // An install, not an update: say which copy is in the way, not "before updating".
-                RefreshInstalledMods();
-                Notify(string.Format(Localizer.Get("Msg_ContentInUseFmt"),
-                    ContentReplacement.DisplayName(others[0])), failed: true);
-                return false;
-            }
-
-            // The libraries it needs, in the same click. Almost every Fabric mod declares at least
-            // fabric-api, and a mod installed without them is a server that refuses to start with a
-            // list of names the user never chose and has no way to act on from here.
-            var (extra, unresolved) = await InstallDependenciesAsync(version, destPath, modsFolder,
-                toPlayerPack);
-            RefreshInstalledMods();
-
-            // A dependency with no build for this Minecraft version is not an install failure — the
-            // mod is on disk — but it is the reason the server will not start, so it stays on screen
-            // instead of fading away with the success message.
-            if (unresolved.Count > 0)
-                Notify(string.Format(Localizer.Get("Msg_DepUnresolvedFmt"), string.Join(", ", unresolved)),
-                    failed: true);
-            else
-                Notify(extra == 0
-                        ? Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPack" : "Msg_ModInstalled")
-                        : string.Format(Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPackWithDepsFmt"
-                            : "Msg_ModInstalledWithDepsFmt"), extra),
-                    failed: false);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Notify(string.Format(Localizer.Get("Msg_InstallErrorFmt"),
-                ErrorMessages.Describe(ex)), failed: true);
-            return false;
+            // transient: progress, not an outcome — it must not time out while the download runs.
+            var result = await _installer.InstallAsync(projectId, chosen, toPlayerPack,
+                new InlineProgress<string>(message => Notify(message, failed: false, transient: true)),
+                _lifetime.Token);
+            return ShowInstallResult(result, toPlayerPack);
         }
         finally
         {
             IsSearching = false;
         }
     }
-}
 
-/// <summary>
-/// One chip in the "what is filtering right now" row. Some of them are the server's own loader and
-/// version, which are not the user's to remove; the rest are categories, which are.
-/// </summary>
-public class ActiveFilterViewModel
-{
-    public string Label { get; }
-
-    public IBrush Brush { get; }
-
-    public string Tip { get; }
-
-    /// <summary>The tag behind the chip, or null for the fixed loader/version chips.</summary>
-    public StoreTagViewModel? Tag { get; }
-
-    public bool CanRemove => Tag is not null;
-
-    public ActiveFilterViewModel(string label, IBrush brush, string tip)
+    /// <summary>Puts what an install did in the banner, and brings the list up to date with the folder.</summary>
+    /// <returns>True when the mod ended up installed.</returns>
+    private bool ShowInstallResult(ModInstaller.Result result, bool toPlayerPack)
     {
-        Label = label;
-        Brush = brush;
-        Tip = tip;
-    }
+        switch (result.Outcome)
+        {
+            case ModInstaller.Outcome.NoCompatibleVersion:
+                Notify(Localizer.Get("Msg_NoCompatibleVersion"), failed: true);
+                return false;
 
-    public ActiveFilterViewModel(StoreTagViewModel tag)
-    {
-        Tag = tag;
-        Label = tag.Label;
-        Brush = tag.Brush;
-        Tip = tag.Label;
-    }
-}
+            case ModInstaller.Outcome.InUse:
+                // An install, not an update: say which copy is in the way, not "before updating".
+                RefreshInstalledMods();
+                Notify(Localizer.Format("Msg_ContentInUseFmt", result.BlockingCopy), failed: true);
+                return false;
 
-/// <summary>One card in the browser: a store item, its tags, and the two buttons it offers.</summary>
-public partial class ModrinthProjectViewModel : ObservableObject
-{
-    private readonly ServerModsViewModel _parent;
-    private readonly StoreItem _item;
+            case ModInstaller.Outcome.Failed:
+                Notify(Localizer.Format("Msg_InstallErrorFmt", result.Error), failed: true);
+                return false;
+        }
 
-    public string Id => _item.Id;
-    public string Title => _item.Title;
-    public string Author => _item.Author;
-    public long Downloads => _item.Downloads;
-    public string DownloadsText { get; }
-    public string? IconUrl => _item.IconUrl;
+        RefreshInstalledMods();
 
-    /// <summary>What the project does, in the user's language.</summary>
-    public string Description { get; }
-
-    /// <summary>
-    /// The author's own line, shown small underneath. It is the only English left on a card, and
-    /// only when the catalogue has nothing for this project — dropping it entirely would trade a
-    /// wrong language for less information.
-    /// </summary>
-    public string Tagline { get; }
-
-    public bool HasTagline => !string.IsNullOrEmpty(Tagline);
-
-    /// <summary>The few tags that fit on a card, most important first.</summary>
-    public IReadOnlyList<StoreTagViewModel> Tags { get; }
-
-    public bool HasTags => Tags.Count > 0;
-
-    /// <summary>True when players have to install it too — the one caveat worth showing up front.</summary>
-    public bool NeedsClient => _item.NeedsClient;
-
-    /// <summary>True for a mod that only runs on the client: it goes to the players' pack.</summary>
-    public bool IsClientOnly => _item.Side == InstallSide.ClientOnly && !_parent.IsPluginBased;
-
-    /// <summary>What the install button says: where the mod is going, when it is not the server.</summary>
-    public string InstallLabel => Localizer.Get(IsClientOnly ? "Store_AddToPlayerPack" : "Install");
-
-    [ObservableProperty]
-    private bool _isInstalling;
-
-    /// <summary>Mod icon, loaded asynchronously through the shared image cache (best-effort).</summary>
-    [ObservableProperty]
-    private Bitmap? _icon;
-
-    public bool HasIcon => Icon is not null;
-
-    public ModrinthProjectViewModel(ProjectResult project, ServerModsViewModel parent)
-        : this(StoreItem.From(project, parent.ProjectTypeName), parent)
-    {
-    }
-
-    public ModrinthProjectViewModel(StoreItem item, ServerModsViewModel parent)
-    {
-        _parent = parent;
-        _item = item;
-        DownloadsText = ModDetailsViewModel.FormatCount(item.Downloads);
-
-        var blurb = StoreSummaryService.Shared.Blurb(item);
-        Description = blurb.Summary;
-        Tagline = blurb.Tagline;
-
-        // Three fits one line on a card. The install side isn't among them: the card shows that as
-        // its own badge next to the download count.
-        Tags = StoreTagService.Shared.Classify(item, max: 3, onlyKind: StoreTagService.TopicKind)
-            .Select(t => new StoreTagViewModel(t))
-            .ToList();
-
-        _ = LoadIconAsync(item.IconUrl);
-    }
-
-    partial void OnIconChanged(Bitmap? value) => OnPropertyChanged(nameof(HasIcon));
-
-    private async Task LoadIconAsync(string? url)
-    {
-        // Size- and content-type-guarded, cached in memory and on disk (see ImageCache): a huge or
-        // mislabeled icon_url can't balloon memory, and scrolling back up costs no request.
-        var bitmap = await ImageCache.GetAsync(url);
-        if (bitmap is null) return;
-        if (Dispatcher.UIThread.CheckAccess()) Icon = bitmap;
-        else Dispatcher.UIThread.Post(() => Icon = bitmap);
-    }
-
-    /// <summary>Opens the full details page for this project.</summary>
-    [RelayCommand]
-    private void Open() => _parent.ShowDetails(_item);
-
-    [RelayCommand]
-    private async Task InstallAsync()
-    {
-        IsInstalling = true;
-        await _parent.InstallModAsync(Id, toPlayerPack: IsClientOnly);
-        IsInstalling = false;
+        // A dependency with no build for this Minecraft version is not an install failure — the
+        // mod is on disk — but it is the reason the server will not start, so it stays on screen
+        // instead of fading away with the success message.
+        if (result.UnresolvedLibraries is { Count: > 0 } unresolved)
+            Notify(Localizer.Format("Msg_DepUnresolvedFmt", string.Join(", ", unresolved)),
+                failed: true);
+        else
+            Notify(result.Libraries == 0
+                    ? Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPack" : "Msg_ModInstalled")
+                    : Localizer.Format(toPlayerPack ? "Msg_AddedToPlayerPackWithDepsFmt"
+                        : "Msg_ModInstalledWithDepsFmt", result.Libraries),
+                failed: false);
+        return true;
     }
 }

@@ -39,6 +39,13 @@ En `MainViewModel.UpdateNow`, antes de instalar nada:
 `Verify` nunca lanza una excepción por una entrada mala: el archivo de firma se descarga del mismo sitio
 donde escribiría un atacante, y un fallo sería una forma de saltarse la comprobación.
 
+La verificación se hace al descargar el paquete, y el archivo espera después en una carpeta temporal donde
+el usuario puede escribir. Por eso el checksum con el que cuadró viaja con él (`VerifiedPackage`) y se
+comprueba otra vez en el momento de ejecutarlo: en Windows lo hace `UpdateHelper`, que mantiene el
+instalador abierto mientras calcula el hash y lo lanza, y en Linux sobre la copia que se va a instalar. La
+firma no se repite ahí: demuestra quién publicó la release, y la segunda comprobación demuestra que el
+archivo que se ejecuta es el que se demostró. Ver [Arquitectura](architecture.es.md).
+
 ### El mensaje firmado
 
 La firma no es de los bytes del paquete solos sino de cuatro líneas, unidas con `\n` y sin nada después de
