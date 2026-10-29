@@ -62,7 +62,7 @@ public class ConsoleSelfFixTests : IDisposable
 
         var args = ServerProcessManager.BuildJavaArguments(config, javaMajor: 25);
 
-        Assert.Equal("-Xms4G -Xmx6G --enable-native-access=ALL-UNNAMED -jar \"fabric-server.jar\" nogui",
+        Assert.Equal("-Xms4G -Xmx6G --enable-native-access=ALL-UNNAMED -jar fabric-server.jar nogui",
             args);
     }
 

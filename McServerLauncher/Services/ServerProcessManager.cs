@@ -90,12 +90,11 @@ public class ServerProcessManager
                     config.JarFullPath));
             }
 
-            var args = BuildJavaArguments(config, new JavaService().GetMajorVersion(config.JavaPath), memoryFlags);
+            var args = BuildJavaArgumentList(config, new JavaService().GetMajorVersion(config.JavaPath), memoryFlags);
 
             var psi = new ProcessStartInfo
             {
                 FileName = config.JavaPath,
-                Arguments = args,
                 WorkingDirectory = config.FolderPath,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -106,6 +105,9 @@ public class ServerProcessManager
                 StandardErrorEncoding = System.Text.Encoding.UTF8
             };
 
+            // One argument each, never one string to be cut up again: see JavaCommandLine.
+            foreach (var arg in args) psi.ArgumentList.Add(arg);
+
             _process = new Process { StartInfo = psi, EnableRaisingEvents = true };
             _process.OutputDataReceived += OnStandardOutput;
             _process.ErrorDataReceived += OnStandardError;
@@ -114,7 +116,7 @@ public class ServerProcessManager
             State = ServerState.Starting;
             _startedAtUtc = DateTime.UtcNow;
             OutputReceived?.Invoke(string.Format(Localizer.Get("Msg_LauncherStarting"), config.JavaPath,
-                args), ConsoleSource.Launcher);
+                JavaCommandLine.Display(args)), ConsoleSource.Launcher);
 
             try
             {
@@ -138,20 +140,32 @@ public class ServerProcessManager
     /// <param name="javaMajor">The Java it starts on. 0 when it could not be read.</param>
     /// <param name="memoryFlags">The memory flags; null for Manual mode's <c>-Xms</c>/<c>-Xmx</c>.
     /// They go first, so the user's extra arguments, which come after, still win.</param>
-    internal static string BuildJavaArguments(ServerConfig config, int javaMajor,
+    internal static List<string> BuildJavaArgumentList(ServerConfig config, int javaMajor,
         IReadOnlyList<string>? memoryFlags = null)
     {
-        var extra = string.IsNullOrWhiteSpace(config.ExtraJvmArgs) ? "" : config.ExtraJvmArgs.Trim() + " ";
-        var mem = string.Concat((memoryFlags ?? MemoryProfile.ManualFlags(config)).Select(f => f + " "));
-        var implied = string.Concat(ImpliedJvmFlags(javaMajor, config.ExtraJvmArgs).Select(f => f + " "));
+        var args = new List<string>();
+        args.AddRange(memoryFlags ?? MemoryProfile.ManualFlags(config));
+        args.AddRange(ImpliedJvmFlags(javaMajor, config.ExtraJvmArgs));
+        args.AddRange(JavaCommandLine.Split(config.ExtraJvmArgs));
 
         // Modern Forge (1.17+) and every NeoForge build have no runnable server jar: they launch via
         // an args file the installer generates (win_args.txt on Windows, unix_args.txt elsewhere).
         if (!string.IsNullOrWhiteSpace(config.ForgeArgs) && ResolveForgeArgsFile(config) is { } argsFile)
-            return $"{mem}{implied}{extra}@{argsFile} nogui";
+            args.Add("@" + argsFile);
+        else
+        {
+            args.Add("-jar");
+            args.Add(config.JarFile);
+        }
 
-        return $"{mem}{implied}{extra}-jar \"{config.JarFile}\" nogui";
+        args.Add("nogui");
+        return args;
     }
+
+    /// <summary>The same arguments as one line, as the console shows them.</summary>
+    internal static string BuildJavaArguments(ServerConfig config, int javaMajor,
+        IReadOnlyList<string>? memoryFlags = null) =>
+        JavaCommandLine.Display(BuildJavaArgumentList(config, javaMajor, memoryFlags));
 
     /// <summary>
     /// JVM flags the app adds by itself, because the warning they answer is its to fix.

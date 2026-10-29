@@ -123,11 +123,28 @@ public static class SecretProtector
         return Encoding.UTF8.GetString(plain);
     }
 
+    /// <summary>The key in the file, or null if there is none, it is the wrong size, or it is being written.</summary>
+    /// <remarks>
+    /// Opened allowing writers: <c>File.ReadAllBytes</c> refuses a file somebody else has open for
+    /// writing, which is exactly the state of a key another process is creating right now, and the
+    /// exception it threw there was worse than finding nothing yet.
+    /// </remarks>
     private static byte[]? ReadKey(string keyFile)
     {
-        if (!File.Exists(keyFile)) return null;
-        var key = File.ReadAllBytes(keyFile);
-        return key.Length == KeySize ? key : null;
+        try
+        {
+            using var fs = new FileStream(keyFile, FileMode.Open, FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete);
+            if (fs.Length != KeySize) return null;
+
+            var key = new byte[KeySize];
+            fs.ReadExactly(key);
+            return key;
+        }
+        catch (IOException)   // no such file (a subclass), or one that is still being written
+        {
+            return null;
+        }
     }
 
     /// <summary>The key in <paramref name="keyFile"/>, created first if there is none. A path for the tests.</summary>
