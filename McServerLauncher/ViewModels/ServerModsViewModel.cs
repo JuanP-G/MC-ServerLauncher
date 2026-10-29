@@ -58,6 +58,9 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>Checks for newer versions and replaces jars with them.</summary>
     private readonly ModUpdater _updater;
 
+    /// <summary>Installs one project from the store; see <see cref="ModInstaller"/>.</summary>
+    private readonly ModInstaller _installer;
+
     /// <summary>Builds the zip a server's owner hands to their players.</summary>
     private readonly ModpackExporter _exporter;
 
@@ -557,6 +560,7 @@ public partial class ServerModsViewModel : ObservableObject
         _dependencyInstaller = new ModDependencyInstaller(config, _modrinthService,
             new ModDependencyService(_modrinthService), _index);
         _updater = new ModUpdater(config, _modrinthService, _index, _pendingUpdates, CarryDisabledDate);
+        _installer = new ModInstaller(config, _modrinthService, _index, _dependencyInstaller);
         _exporter = new ModpackExporter(config, _index, _modrinthService, () => HowToPlaySteps);
         BuildTags();
         RebuildActiveFilters();
@@ -858,12 +862,6 @@ public partial class ServerModsViewModel : ObservableObject
 
     private Task<List<string>> InstalledProjectIdsAsync(CancellationToken ct, string? alsoFolder = null) =>
         _index.InstalledProjectIdsAsync(ContentManifest.FolderOf(_config), alsoFolder, ct);
-
-    /// <summary>Installs what <paramref name="version"/> requires, telling the install banner as it goes.</summary>
-    private Task<(int Installed, IReadOnlyList<string> Unresolved)> InstallDependenciesAsync(
-        VersionResult version, string jarPath, string folder, bool forPlayerPack = false) =>
-        _dependencyInstaller.InstallForAsync(version, jarPath, folder, forPlayerPack,
-            new InlineProgress<string>(message => Notify(message, failed: false, transient: true)));
 
     /// <summary>
     /// Downloads the newer version flagged by <see cref="CheckUpdates"/> and replaces the old jar.
@@ -1309,89 +1307,55 @@ public partial class ServerModsViewModel : ObservableObject
         toPlayerPack &= !IsPluginBased;
 
         IsSearching = true;
-        // transient: progress, not an outcome — it must not time out while the download runs.
-        Notify(Localizer.Get("Msg_ResolvingVersion"), failed: false, transient: true);
-
         try
         {
-            var version = chosen
-                ?? await _modrinthService.GetLatestProjectVersionAsync(projectId, _config.Type,
-                    _config.GameVersion);
-            if (version == null || version.Files.Count == 0)
-            {
-                Notify(Localizer.Get("Msg_NoCompatibleVersion"), failed: true);
-                return false;
-            }
-
-            var file = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.First();
-
-            var modsFolder = toPlayerPack
-                ? ClientPack.FolderOf(_config)
-                : Path.Combine(_config.FolderPath, ContentFolder);
-            Directory.CreateDirectory(modsFolder);
-            // The file name comes from the Modrinth API, so the join goes through the one
-            // place that keeps it inside the folder.
-            var destPath = AtomicDownload.PathIn(modsFolder, file.Filename);
-            var replacesAFile = File.Exists(destPath);
-
-            // Which project each jar already here is. Found before downloading, while the folder
-            // still holds only what the user had.
-            var projectByPath = await ProjectByPathAsync(modsFolder, _lifetime.Token);
-
-            Notify(string.Format(Localizer.Get("Msg_DownloadingMod"), file.Filename),
-                failed: false, transient: true);
-
-            // Mods are third-party jars chosen by the user: verify against Modrinth's own checksum.
-            await _modrinthService.DownloadModAsync(file.Url, destPath, file.Hashes?.Sha512,
-                file.Hashes?.Sha1, ct: _lifetime.Token);
-
-            // Installing a second version beside the first made the loader refuse to start with
-            // "duplicate mod". The new one replaces every other copy — another version, a disabled
-            // one, one the store does not know — the way an update does; and like an update, a jar
-            // the running server holds open means nothing changes.
-            var others = ContentReplacement.OthersOf(modsFolder, destPath, version.ProjectId, projectByPath,
-                _index.Manifests.Read);
-            var (result, removed) = ContentReplacement.RemoveAllOrNothing(others, replacesAFile ? null
-                : destPath);
-            if (result == ContentReplacement.RemoveResult.Locked)
-            {
-                // An install, not an update: say which copy is in the way, not "before updating".
-                RefreshInstalledMods();
-                Notify(string.Format(Localizer.Get("Msg_ContentInUseFmt"),
-                    ContentReplacement.DisplayName(others[0])), failed: true);
-                return false;
-            }
-
-            // The libraries it needs, in the same click. Almost every Fabric mod declares at least
-            // fabric-api, and a mod installed without them is a server that refuses to start with a
-            // list of names the user never chose and has no way to act on from here.
-            var (extra, unresolved) = await InstallDependenciesAsync(version, destPath, modsFolder,
-                toPlayerPack);
-            RefreshInstalledMods();
-
-            // A dependency with no build for this Minecraft version is not an install failure — the
-            // mod is on disk — but it is the reason the server will not start, so it stays on screen
-            // instead of fading away with the success message.
-            if (unresolved.Count > 0)
-                Notify(string.Format(Localizer.Get("Msg_DepUnresolvedFmt"), string.Join(", ", unresolved)),
-                    failed: true);
-            else
-                Notify(extra == 0
-                        ? Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPack" : "Msg_ModInstalled")
-                        : string.Format(Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPackWithDepsFmt"
-                            : "Msg_ModInstalledWithDepsFmt"), extra),
-                    failed: false);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Notify(string.Format(Localizer.Get("Msg_InstallErrorFmt"),
-                ErrorMessages.Describe(ex)), failed: true);
-            return false;
+            // transient: progress, not an outcome — it must not time out while the download runs.
+            var result = await _installer.InstallAsync(projectId, chosen, toPlayerPack,
+                new InlineProgress<string>(message => Notify(message, failed: false, transient: true)),
+                _lifetime.Token);
+            return ShowInstallResult(result, toPlayerPack);
         }
         finally
         {
             IsSearching = false;
         }
+    }
+
+    /// <summary>Puts what an install did in the banner, and brings the list up to date with the folder.</summary>
+    /// <returns>True when the mod ended up installed.</returns>
+    private bool ShowInstallResult(ModInstaller.Result result, bool toPlayerPack)
+    {
+        switch (result.Outcome)
+        {
+            case ModInstaller.Outcome.NoCompatibleVersion:
+                Notify(Localizer.Get("Msg_NoCompatibleVersion"), failed: true);
+                return false;
+
+            case ModInstaller.Outcome.InUse:
+                // An install, not an update: say which copy is in the way, not "before updating".
+                RefreshInstalledMods();
+                Notify(string.Format(Localizer.Get("Msg_ContentInUseFmt"), result.BlockingCopy), failed: true);
+                return false;
+
+            case ModInstaller.Outcome.Failed:
+                Notify(string.Format(Localizer.Get("Msg_InstallErrorFmt"), result.Error), failed: true);
+                return false;
+        }
+
+        RefreshInstalledMods();
+
+        // A dependency with no build for this Minecraft version is not an install failure — the
+        // mod is on disk — but it is the reason the server will not start, so it stays on screen
+        // instead of fading away with the success message.
+        if (result.UnresolvedLibraries is { Count: > 0 } unresolved)
+            Notify(string.Format(Localizer.Get("Msg_DepUnresolvedFmt"), string.Join(", ", unresolved)),
+                failed: true);
+        else
+            Notify(result.Libraries == 0
+                    ? Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPack" : "Msg_ModInstalled")
+                    : string.Format(Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPackWithDepsFmt"
+                        : "Msg_ModInstalledWithDepsFmt"), result.Libraries),
+                failed: false);
+        return true;
     }
 }
