@@ -110,151 +110,199 @@ public static partial class MarkdownParser
         var blocks = new List<MarkdownBlock>();
         if (string.IsNullOrWhiteSpace(markdown)) return blocks;
 
+        var reader = new BlockReader(blocks);
+        foreach (var rawLine in CleanLines(markdown))
+        {
+            if (blocks.Count >= MaxBlocks) break;
+            reader.Read(rawLine.TrimEnd());
+        }
+        reader.Finish();
+
+        return CapLinks(blocks);
+    }
+
+    /// <summary>The description cut to size, stripped of what must never reach the renderer, as lines.</summary>
+    /// <remarks>
+    /// Explicit HTML breaks become real ones, so a description written mostly in HTML still splits
+    /// into readable lines.
+    /// </remarks>
+    private static string[] CleanLines(string markdown)
+    {
         var text = markdown.Length > MaxCharacters ? markdown[..MaxCharacters] : markdown;
 
-        // Strip what must never reach the renderer, and turn explicit HTML breaks into real ones
-        // so a description written mostly in HTML still splits into readable lines.
         text = ScriptOrStyleRegex().Replace(text, string.Empty);
         text = HtmlCommentRegex().Replace(text, string.Empty);
         text = LineBreakTagRegex().Replace(text, "\n");
 
-        var lines = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
-        var paragraph = new StringBuilder();
-        var inFence = false;
-        var fence = new StringBuilder();
+        return text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+    }
 
-        void FlushParagraph()
+    /// <summary>
+    /// Reads the description a line at a time. A line either belongs to what is being collected (a
+    /// code fence, a paragraph) or starts a block of its own; the order of the checks in
+    /// <see cref="Read"/> is the order that decides which, so it is kept in one place.
+    /// </summary>
+    private sealed class BlockReader
+    {
+        private readonly List<MarkdownBlock> _blocks;
+        private readonly StringBuilder _paragraph = new();
+        private readonly StringBuilder _fence = new();
+        private bool _inFence;
+
+        public BlockReader(List<MarkdownBlock> blocks) => _blocks = blocks;
+
+        /// <summary>Takes one line (already trimmed at the end).</summary>
+        public void Read(string line)
         {
-            if (paragraph.Length == 0) return;
-            var spans = ParseInline(paragraph.ToString());
-            if (spans.Count > 0) blocks.Add(new MarkdownBlock(MarkdownBlockKind.Paragraph, spans));
-            paragraph.Clear();
-        }
-
-        foreach (var rawLine in lines)
-        {
-            if (blocks.Count >= MaxBlocks) break;
-            var line = rawLine.TrimEnd();
-
-            if (line.TrimStart().StartsWith("```", StringComparison.Ordinal))
-            {
-                if (inFence)
-                {
-                    blocks.Add(new MarkdownBlock(MarkdownBlockKind.Code,
-                        new[] { new MarkdownSpan(fence.ToString().TrimEnd(), Code: true) }));
-                    fence.Clear();
-                    inFence = false;
-                }
-                else
-                {
-                    FlushParagraph();
-                    inFence = true;
-                }
-                continue;
-            }
-
-            if (inFence)
-            {
-                if (fence.Length < 4000) fence.Append(line).Append('\n');
-                continue;
-            }
+            if (ReadFence(line)) return;
 
             if (line.Trim().Length == 0)
             {
                 FlushParagraph();
-                continue;
+                return;
             }
 
-            // A line of = or - directly under text is a setext heading, not a rule. Modrinth
-            // descriptions use them a lot, and treating them as rules turns every section title
-            // into a stray horizontal line.
-            if (paragraph.Length > 0 && SetextRegex().IsMatch(line))
-            {
-                var spans = ParseInline(paragraph.ToString());
-                paragraph.Clear();
-                if (spans.Count > 0)
-                    blocks.Add(new MarkdownBlock(
-                        line.TrimStart().StartsWith("=", StringComparison.Ordinal)
-                            ? MarkdownBlockKind.Heading1
-                            : MarkdownBlockKind.Heading2,
-                        spans));
-                continue;
-            }
+            // The order matters: a setext underline would otherwise be read as a rule, a bullet
+            // before an ordered item, and a table row last because the pipes are common in text.
+            if (ReadSetext(line) || ReadRule(line) || ReadHeading(line) || ReadQuote(line)
+                || ReadBullet(line) || ReadOrdered(line) || ReadTable(line))
+                return;
 
-            if (RuleRegex().IsMatch(line))
-            {
-                FlushParagraph();
-                blocks.Add(new MarkdownBlock(MarkdownBlockKind.Rule, Array.Empty<MarkdownSpan>()));
-                continue;
-            }
-
-            var heading = HeadingRegex().Match(line);
-            if (heading.Success)
-            {
-                FlushParagraph();
-                var level = Math.Min(3, heading.Groups["hashes"].Value.Length);
-                var kind = level switch
-                {
-                    1 => MarkdownBlockKind.Heading1,
-                    2 => MarkdownBlockKind.Heading2,
-                    _ => MarkdownBlockKind.Heading3
-                };
-                var spans = ParseInline(heading.Groups["text"].Value);
-                if (spans.Count > 0) blocks.Add(new MarkdownBlock(kind, spans));
-                continue;
-            }
-
-            var quote = QuoteRegex().Match(line);
-            if (quote.Success)
-            {
-                FlushParagraph();
-                var spans = ParseInline(quote.Groups["text"].Value);
-                if (spans.Count > 0) blocks.Add(new MarkdownBlock(MarkdownBlockKind.Quote, spans));
-                continue;
-            }
-
-            var bullet = BulletRegex().Match(line);
-            if (bullet.Success)
-            {
-                FlushParagraph();
-                var spans = ParseInline(bullet.Groups["text"].Value);
-                if (spans.Count > 0) blocks.Add(new MarkdownBlock(MarkdownBlockKind.Bullet, spans));
-                continue;
-            }
-
-            var ordered = OrderedRegex().Match(line);
-            if (ordered.Success)
-            {
-                FlushParagraph();
-                var spans = ParseInline(ordered.Groups["text"].Value);
-                if (spans.Count > 0)
-                    blocks.Add(new MarkdownBlock(MarkdownBlockKind.Ordered, spans,
-                        int.TryParse(ordered.Groups["n"].Value, out var n) ? n : 0));
-                continue;
-            }
-
-            // Tables are rendered as their plain rows: the separator carries nothing, and the cell
-            // pipes read better as spaces than as a broken grid.
-            if (TableSeparatorRegex().IsMatch(line) && line.Contains('|')) continue;
-            if (line.Contains('|') && line.TrimStart().StartsWith("|", StringComparison.Ordinal))
-            {
-                FlushParagraph();
-                var row = line.Trim().Trim('|').Replace("|", "   ");
-                var spans = ParseInline(row);
-                if (spans.Count > 0) blocks.Add(new MarkdownBlock(MarkdownBlockKind.Paragraph, spans));
-                continue;
-            }
-
-            if (paragraph.Length > 0) paragraph.Append(' ');
-            paragraph.Append(line.Trim());
+            if (_paragraph.Length > 0) _paragraph.Append(' ');
+            _paragraph.Append(line.Trim());
         }
 
-        if (inFence && fence.Length > 0)
-            blocks.Add(new MarkdownBlock(MarkdownBlockKind.Code,
-                new[] { new MarkdownSpan(fence.ToString().TrimEnd(), Code: true) }));
-        FlushParagraph();
+        /// <summary>Ends the description: an unclosed fence is still code, and the last paragraph counts.</summary>
+        public void Finish()
+        {
+            if (_inFence && _fence.Length > 0) AddCode();
+            FlushParagraph();
+        }
 
-        return CapLinks(blocks);
+        private void FlushParagraph()
+        {
+            if (_paragraph.Length == 0) return;
+            var spans = ParseInline(_paragraph.ToString());
+            if (spans.Count > 0) _blocks.Add(new MarkdownBlock(MarkdownBlockKind.Paragraph, spans));
+            _paragraph.Clear();
+        }
+
+        private void AddCode() =>
+            _blocks.Add(new MarkdownBlock(MarkdownBlockKind.Code,
+                new[] { new MarkdownSpan(_fence.ToString().TrimEnd(), Code: true) }));
+
+        /// <summary>Ends the paragraph being collected, then adds <paramref name="text"/> as a block of its own.</summary>
+        private void AddInlineBlock(MarkdownBlockKind kind, string text, int number = 0)
+        {
+            FlushParagraph();
+            var spans = ParseInline(text);
+            if (spans.Count > 0) _blocks.Add(new MarkdownBlock(kind, spans, number));
+        }
+
+        /// <summary>The fence lines themselves, and everything between them.</summary>
+        private bool ReadFence(string line)
+        {
+            if (line.TrimStart().StartsWith("```", StringComparison.Ordinal))
+            {
+                if (_inFence)
+                {
+                    AddCode();
+                    _fence.Clear();
+                    _inFence = false;
+                }
+                else
+                {
+                    FlushParagraph();
+                    _inFence = true;
+                }
+                return true;
+            }
+
+            if (!_inFence) return false;
+            if (_fence.Length < 4000) _fence.Append(line).Append('\n');
+            return true;
+        }
+
+        /// <summary>
+        /// A line of = or - directly under text is a setext heading, not a rule. Modrinth
+        /// descriptions use them a lot, and treating them as rules turns every section title
+        /// into a stray horizontal line.
+        /// </summary>
+        private bool ReadSetext(string line)
+        {
+            if (_paragraph.Length == 0 || !SetextRegex().IsMatch(line)) return false;
+
+            var spans = ParseInline(_paragraph.ToString());
+            _paragraph.Clear();
+            if (spans.Count > 0)
+                _blocks.Add(new MarkdownBlock(
+                    line.TrimStart().StartsWith("=", StringComparison.Ordinal)
+                        ? MarkdownBlockKind.Heading1
+                        : MarkdownBlockKind.Heading2,
+                    spans));
+            return true;
+        }
+
+        private bool ReadRule(string line)
+        {
+            if (!RuleRegex().IsMatch(line)) return false;
+            FlushParagraph();
+            _blocks.Add(new MarkdownBlock(MarkdownBlockKind.Rule, Array.Empty<MarkdownSpan>()));
+            return true;
+        }
+
+        private bool ReadHeading(string line)
+        {
+            var heading = HeadingRegex().Match(line);
+            if (!heading.Success) return false;
+
+            var kind = Math.Min(3, heading.Groups["hashes"].Value.Length) switch
+            {
+                1 => MarkdownBlockKind.Heading1,
+                2 => MarkdownBlockKind.Heading2,
+                _ => MarkdownBlockKind.Heading3
+            };
+            AddInlineBlock(kind, heading.Groups["text"].Value);
+            return true;
+        }
+
+        private bool ReadQuote(string line)
+        {
+            var quote = QuoteRegex().Match(line);
+            if (!quote.Success) return false;
+            AddInlineBlock(MarkdownBlockKind.Quote, quote.Groups["text"].Value);
+            return true;
+        }
+
+        private bool ReadBullet(string line)
+        {
+            var bullet = BulletRegex().Match(line);
+            if (!bullet.Success) return false;
+            AddInlineBlock(MarkdownBlockKind.Bullet, bullet.Groups["text"].Value);
+            return true;
+        }
+
+        private bool ReadOrdered(string line)
+        {
+            var ordered = OrderedRegex().Match(line);
+            if (!ordered.Success) return false;
+            AddInlineBlock(MarkdownBlockKind.Ordered, ordered.Groups["text"].Value,
+                int.TryParse(ordered.Groups["n"].Value, out var n) ? n : 0);
+            return true;
+        }
+
+        /// <summary>
+        /// Tables are rendered as their plain rows: the separator carries nothing, and the cell
+        /// pipes read better as spaces than as a broken grid.
+        /// </summary>
+        private bool ReadTable(string line)
+        {
+            if (TableSeparatorRegex().IsMatch(line) && line.Contains('|')) return true;
+            if (!line.Contains('|') || !line.TrimStart().StartsWith("|", StringComparison.Ordinal)) return false;
+
+            AddInlineBlock(MarkdownBlockKind.Paragraph, line.Trim().Trim('|').Replace("|", "   "));
+            return true;
+        }
     }
 
     /// <summary>
