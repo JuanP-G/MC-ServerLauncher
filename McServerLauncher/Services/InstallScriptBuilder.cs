@@ -98,12 +98,40 @@ internal static class InstallScriptBuilder
         string serverName, ServerType type, string gameVersion, DateTime builtAtLocal,
         ClientLoaderInstall.Plan? loader = null)
     {
-        // Composed here, never in the script: every placeholder is resolved by string.Format on this
-        // side, so the templates only ever echo a literal and a variable of their own.
+        var values = TranslatedValues(serverName, type, gameVersion, builtAtLocal);
+        var wiring = Wiring(loader);
+
+        return new[]
+        {
+            new ModpackWriter.TextFile(
+                WindowsName,
+                Fill(Template("install-mods-windows.bat.in"), values, BatchSafe, wiring),
+                Newline: "\r\n"),
+
+            new ModpackWriter.TextFile(
+                UnixName,
+                Fill(Template("install-mods-unix.sh.in"), values, ShellSafe, wiring),
+                // LF, and it is not a preference: a shell script with CRLF fails on its first line
+                // with «$'\r': command not found», which to the player reads as a broken pack.
+                Newline: "\n",
+                Executable: true)
+        };
+    }
+
+    /// <summary>
+    /// Every translated line the scripts print, by the token it replaces.
+    /// </summary>
+    /// <remarks>
+    /// Composed here, never in the script: every placeholder is resolved by string.Format on this
+    /// side, so the templates only ever echo a literal and a variable of their own.
+    /// </remarks>
+    private static Dictionary<string, string> TranslatedValues(
+        string serverName, ServerType type, string gameVersion, DateTime builtAtLocal)
+    {
         var header = string.Format(Localizer.Get("Script_HeaderFmt"), serverName, gameVersion, type);
         var noLoader = string.Format(Localizer.Get("Script_NoLoaderFmt"), type, LoaderSite(type));
 
-        var values = new Dictionary<string, string>(StringComparer.Ordinal)
+        return new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["HEADER"] = header,
             ["NO_LOADER"] = noLoader,
@@ -138,12 +166,17 @@ internal static class InstallScriptBuilder
             ["LOADER_INSTALLED"] = Localizer.Get("Script_LoaderInstalled"),
             ["INSTALL_FAILED"] = Localizer.Get("Script_InstallFailed")
         };
+    }
 
+    /// <summary>
+    /// Shell and batch the builder wrote itself, never anything anybody translated. An empty URL is
+    /// how the templates are told there is nothing to offer.
+    /// </summary>
+    private static (string Token, string Raw)[] Wiring(ClientLoaderInstall.Plan? loader)
+    {
         var yes = YesWords();
 
-        // Shell and batch the builder wrote itself, never anything anybody translated. An empty URL
-        // is how the templates are told there is nothing to offer.
-        var wiring = new (string Token, string Raw)[]
+        return new (string Token, string Raw)[]
         {
             ("INSTALLER_URL", loader?.Url ?? string.Empty),
             ("INSTALLER_SHA", loader?.Sha ?? string.Empty),
@@ -157,22 +190,6 @@ internal static class InstallScriptBuilder
             ("YES_NO_KEYS", yes[0] + "n"),
             ("YES_PATTERN", string.Join("|", yes.SelectMany(w => new[] { w, w.ToUpperInvariant() })
                 .Distinct()))
-        };
-
-        return new[]
-        {
-            new ModpackWriter.TextFile(
-                WindowsName,
-                Fill(Template("install-mods-windows.bat.in"), values, BatchSafe, wiring),
-                Newline: "\r\n"),
-
-            new ModpackWriter.TextFile(
-                UnixName,
-                Fill(Template("install-mods-unix.sh.in"), values, ShellSafe, wiring),
-                // LF, and it is not a preference: a shell script with CRLF fails on its first line
-                // with «$'\r': command not found», which to the player reads as a broken pack.
-                Newline: "\n",
-                Executable: true)
         };
     }
 

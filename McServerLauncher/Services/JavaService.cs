@@ -43,78 +43,13 @@ public partial class JavaService
     {
         var candidates = new List<string>();
 
-        void AddFrom(string root)
-        {
-            try
-            {
-                if (!Directory.Exists(root)) return;
-                foreach (var dir in Directory.GetDirectories(root))
-                {
-                    var exe = Path.Combine(dir, "bin", JavaExeName);
-                    if (File.Exists(exe)) candidates.Add(exe);
-                }
-            }
-            catch { /* ignore */ }
-        }
-
         if (OperatingSystem.IsWindows())
-        {
-            foreach (var pf in new[]
-                     {
-                         Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                         Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                     })
-            {
-                if (string.IsNullOrEmpty(pf)) continue;
-                AddFrom(Path.Combine(pf, "Eclipse Adoptium"));
-                AddFrom(Path.Combine(pf, "Java"));
-                AddFrom(Path.Combine(pf, "Microsoft"));
-                AddFrom(Path.Combine(pf, "Zulu"));
-                AddFrom(Path.Combine(pf, "Amazon Corretto"));
-            }
-        }
+            AddWindowsCandidates(candidates);
         else
-        {
-            // Common JVM locations on Linux.
-            AddFrom("/usr/lib/jvm");
-            AddFrom("/usr/java");
-            AddFrom("/opt/java");
-            AddFrom("/opt");
+            AddUnixCandidates(candidates);
 
-            if (OperatingSystem.IsMacOS())
-            {
-                // macOS JDK bundles keep the JRE under <bundle>/Contents/Home.
-                void AddMacFrom(string root)
-                {
-                    try
-                    {
-                        if (!Directory.Exists(root)) return;
-                        foreach (var dir in Directory.GetDirectories(root))
-                        {
-                            var exe = Path.Combine(dir, "Contents", "Home", "bin", "java");
-                            if (File.Exists(exe)) candidates.Add(exe);
-                        }
-                    }
-                    catch { /* ignore */ }
-                }
-
-                AddMacFrom("/Library/Java/JavaVirtualMachines");
-                AddMacFrom(Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    "Library", "Java", "JavaVirtualMachines"));
-            }
-
-            var onPath = WhichJava();
-            if (onPath is not null) candidates.Add(onPath);
-        }
-        AddFrom(ManagedRoot);
-
-        var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
-        if (!string.IsNullOrWhiteSpace(javaHome))
-        {
-            var exe = Path.Combine(javaHome, "bin", JavaExeName);
-            if (File.Exists(exe)) candidates.Add(exe);
-        }
+        AddJdksIn(ManagedRoot, candidates);
+        AddJavaHome(candidates);
 
         var result = new List<JavaInstall>();
         foreach (var exe in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
@@ -123,6 +58,72 @@ public partial class JavaService
             if (major > 0) result.Add(new JavaInstall(exe, major));
         }
         return result;
+    }
+
+    /// <summary>The vendors' folders under Program Files, where their installers put a JDK per version.</summary>
+    private static void AddWindowsCandidates(List<string> candidates)
+    {
+        foreach (var pf in new[]
+                 {
+                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                 })
+        {
+            if (string.IsNullOrEmpty(pf)) continue;
+            AddJdksIn(Path.Combine(pf, "Eclipse Adoptium"), candidates);
+            AddJdksIn(Path.Combine(pf, "Java"), candidates);
+            AddJdksIn(Path.Combine(pf, "Microsoft"), candidates);
+            AddJdksIn(Path.Combine(pf, "Zulu"), candidates);
+            AddJdksIn(Path.Combine(pf, "Amazon Corretto"), candidates);
+        }
+    }
+
+    private void AddUnixCandidates(List<string> candidates)
+    {
+        // Common JVM locations on Linux.
+        AddJdksIn("/usr/lib/jvm", candidates);
+        AddJdksIn("/usr/java", candidates);
+        AddJdksIn("/opt/java", candidates);
+        AddJdksIn("/opt", candidates);
+
+        if (OperatingSystem.IsMacOS())
+        {
+            // macOS JDK bundles keep the JRE under <bundle>/Contents/Home.
+            AddJdksIn("/Library/Java/JavaVirtualMachines", candidates, "Contents", "Home");
+            AddJdksIn(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Library", "Java", "JavaVirtualMachines"), candidates, "Contents", "Home");
+        }
+
+        var onPath = WhichJava();
+        if (onPath is not null) candidates.Add(onPath);
+    }
+
+    /// <summary>
+    /// Adds the Java of each JDK folder under <paramref name="root"/>; <paramref name="inside"/> is the
+    /// path from a JDK's folder to the one that holds its <c>bin</c> (none, except in a macOS bundle).
+    /// </summary>
+    private static void AddJdksIn(string root, List<string> candidates, params string[] inside)
+    {
+        try
+        {
+            if (!Directory.Exists(root)) return;
+            foreach (var dir in Directory.GetDirectories(root))
+            {
+                var exe = Path.Combine([dir, .. inside, "bin", JavaExeName]);
+                if (File.Exists(exe)) candidates.Add(exe);
+            }
+        }
+        catch { /* ignore */ }
+    }
+
+    private static void AddJavaHome(List<string> candidates)
+    {
+        var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
+        if (string.IsNullOrWhiteSpace(javaHome)) return;
+
+        var exe = Path.Combine(javaHome, "bin", JavaExeName);
+        if (File.Exists(exe)) candidates.Add(exe);
     }
 
     /// <summary>What a Java executable is, as far as the command line the app builds cares.</summary>
