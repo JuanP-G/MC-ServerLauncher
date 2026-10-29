@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Versioning;
+using System.Security.Cryptography;
 using McServerLauncher.Localization;
 
 namespace McServerLauncher.Services;
@@ -88,38 +89,41 @@ public static class SelfUpdater
             : Path.GetFileName(assetName);
 
     /// <summary>
-    /// Applies <paramref name="packagePath"/> and relaunches. The caller must have verified its
-    /// checksum and signature and stopped the servers first.
+    /// Applies <paramref name="package"/> and relaunches. The caller must have verified its
+    /// checksum and signature (that is what <see cref="AppUpdateCoordinator.VerifiedPackage"/> is)
+    /// and stopped the servers first.
     /// </summary>
-    public static void Apply(string packagePath)
+    /// <remarks>
+    /// The package sat on disk between that verification and now, in a folder the user can write to,
+    /// so each platform checks it once more at the point of use: Windows in the helper that runs the
+    /// installer (see <see cref="UpdateHelper"/>), Linux on the copy it is about to move into place.
+    /// macOS does not: its script runs as the user and replaces an app the user can already replace,
+    /// so there is no privilege for a swapped file to gain.
+    /// </remarks>
+    public static async Task ApplyAsync(AppUpdateCoordinator.VerifiedPackage package)
     {
-        if (OperatingSystem.IsWindows()) ApplyWindows(packagePath);
-        else if (OperatingSystem.IsLinux()) ApplyLinux(packagePath);
-        else if (OperatingSystem.IsMacOS()) ApplyMacOs(packagePath);
+        if (OperatingSystem.IsWindows()) ApplyWindows(package);
+        else if (OperatingSystem.IsLinux()) await ApplyLinuxAsync(package);
+        else if (OperatingSystem.IsMacOS()) ApplyMacOs(package.Path);
         else throw new PlatformNotSupportedException();
     }
 
     // --- Windows -------------------------------------------------------------------------------
 
-    private static void ApplyWindows(string installer)
+    private static void ApplyWindows(AppUpdateCoordinator.VerifiedPackage package)
     {
-        // A helper that waits for THIS app to exit before running the installer: closing too soon
-        // raced with UAC elevation and the silent install never applied.
-        var helper = Path.Combine(Path.GetDirectoryName(installer)!, "mcsl-update.cmd");
-        File.WriteAllText(helper,
-            "@echo off\r\n" +
-            ":wait\r\n" +
-            "tasklist /FI \"IMAGENAME eq McServerLauncher.exe\" 2>nul | find /I \"McServerLauncher.exe\" >nul\r\n" +
-            "if not errorlevel 1 ( timeout /t 1 /nobreak >nul & goto wait )\r\n" +
-            "\"" + installer + "\" /SILENT /SUPPRESSMSGBOXES /NORESTART\r\n");
+        // A second copy of this app waits for THIS one to exit before running the installer, which
+        // is what keeps the installer from racing the elevation prompt, and runs it holding the file
+        // after checking it again: see UpdateHelper for why this is not a script in the temp folder.
+        var (file, leading) = UpdateHelper.SelfCommand();
+        var psi = new ProcessStartInfo { FileName = file, UseShellExecute = false, CreateNoWindow = true };
+        foreach (var arg in leading) psi.ArgumentList.Add(arg);
+        psi.ArgumentList.Add(UpdateHelper.Switch);
+        psi.ArgumentList.Add(Environment.ProcessId.ToString());
+        psi.ArgumentList.Add(package.Sha256);
+        psi.ArgumentList.Add(package.Path);
 
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "cmd.exe",
-            Arguments = "/c \"" + helper + "\"",
-            UseShellExecute = false,
-            CreateNoWindow = true
-        });
+        Process.Start(psi);
     }
 
     // --- Linux ---------------------------------------------------------------------------------
@@ -136,8 +140,9 @@ public static class SelfUpdater
     }
 
     [SupportedOSPlatform("linux")]
-    private static void ApplyLinux(string package)
+    private static async Task ApplyLinuxAsync(AppUpdateCoordinator.VerifiedPackage verified)
     {
+        var package = verified.Path;
         var target = AppImagePath ?? throw new UserFacingException(Localizer.Get("Msg_UpdateNotAppImage"));
 
         // Renaming over a running AppImage is safe: the running process keeps the old inode alive
@@ -150,9 +155,20 @@ public static class SelfUpdater
         try
         {
             File.Copy(package, staged, overwrite: true);
+
+            // The copy is what gets installed, so it is the copy that is checked: a package swapped
+            // after it was verified is caught here, and what was verified is not read again.
+            await DownloadVerifier.VerifyAsync(staged, verified.Sha256, HashAlgorithmName.SHA256);
             FileModes.MakeExecutable(staged);
 
             File.Move(staged, target, overwrite: true);
+        }
+        catch (UserFacingException)
+        {
+            // The checksum no longer matches: VerifyAsync deleted the copy, and the AppImage in
+            // use was never touched.
+            try { if (File.Exists(staged)) File.Delete(staged); } catch { /* best-effort */ }
+            throw;
         }
         catch (Exception ex)
         {

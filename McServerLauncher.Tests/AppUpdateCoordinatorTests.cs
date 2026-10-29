@@ -86,7 +86,7 @@ public class AppUpdateCoordinatorTests : IDisposable
     [Fact]
     public async Task APackageThatMatchesAndIsSignedComesBackAsAPath()
     {
-        var path = await Coordinator(GoodSource()).DownloadAndVerifyAsync(Offer(), Folder());
+        var path = (await Coordinator(GoodSource()).DownloadAndVerifyAsync(Offer(), Folder())).Path;
 
         Assert.Equal(Path.Combine(Folder(), PackageName), path);
         Assert.Equal(Content, await File.ReadAllTextAsync(path));

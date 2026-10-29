@@ -584,7 +584,7 @@ public partial class MainViewModel : ObservableObject
             // hand the .dmg to a script that replaces the bundle once we are gone. The claim on
             // being the running copy goes first, so the new one does not hand itself over to this.
             McServerLauncher.Program.ReleaseInstance();
-            SelfUpdater.Apply(package);
+            await SelfUpdater.ApplyAsync(package);
             Environment.Exit(0);
         }
         catch (InvalidOperationException ex)

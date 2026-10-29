@@ -30,6 +30,13 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public sealed class AppUpdateCoordinator
 {
+    /// <summary>A package that passed both checks: where it is, and the SHA-256 it was verified as.</summary>
+    /// <remarks>
+    /// The hash travels with the path because it is what the installer is checked against once more,
+    /// at the moment it runs, by <see cref="SelfUpdater"/>: the file sat on disk in between.
+    /// </remarks>
+    public sealed record VerifiedPackage(string Path, string Sha256);
+
     /// <summary>A step the user can be told about while it runs.</summary>
     public enum Phase
     {
@@ -64,7 +71,7 @@ public sealed class AppUpdateCoordinator
 
     /// <summary>
     /// Downloads the package of <paramref name="offer"/> into <paramref name="folder"/> and returns
-    /// its path once the checksum and the signature both hold.
+    /// it, with the checksum it matched, once the checksum and the signature both hold.
     /// </summary>
     /// <param name="offer">The release being installed.</param>
     /// <param name="folder">Where the package is saved; see <see cref="NewPackageFolder"/>.</param>
@@ -74,7 +81,7 @@ public sealed class AppUpdateCoordinator
     /// With a message for the user: the release has no readable checksum or signature, the download
     /// does not match the checksum, or the signature is not the publisher's.
     /// </exception>
-    public async Task<string> DownloadAndVerifyAsync(UpdateService.UpdateInfo offer, string folder,
+    public async Task<VerifiedPackage> DownloadAndVerifyAsync(UpdateService.UpdateInfo offer, string folder,
         Action<Phase>? onPhase = null, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(offer.PackageUrl))
@@ -104,7 +111,7 @@ public sealed class AppUpdateCoordinator
             throw new UserFacingException(Localizer.Get("Msg_UpdateBadSignature"));
         }
 
-        return dest;
+        return new VerifiedPackage(dest, expectedSha256);
     }
 
     /// <summary>
