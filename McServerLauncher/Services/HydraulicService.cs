@@ -135,8 +135,9 @@ public class HydraulicService
                 ? mc.GetString()
                 : null;
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Hydraulic", "the mod's metadata could not be read, letting the file through", ex);
             // Unreadable metadata is not proof of a mismatch; the checksum already proved the file
             // arrived intact, so let it through rather than blocking on a parsing detail.
             return null;

@@ -62,7 +62,7 @@ public static class LiveWorldBackup
             if (!await saved)
                 log?.Report(Localizer.Get("Msg_BackupSaveNotConfirmed"));
 
-            return await service.CreateBackupAsync(config, trigger, log, ct);
+            return await service.CreateBackupAsync(config, trigger, log, ct: ct);
         }
         finally
         {

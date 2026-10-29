@@ -76,8 +76,8 @@ public static class AtomicDownload
     public static async Task ToFileAsync(HttpContent content, string destPath,
         Func<string, CancellationToken, Task>? verifyAsync = null,
         IProgress<double>? progress = null,
-        CancellationToken ct = default,
-        long maxBytes = DefaultMaxBytes)
+        long maxBytes = DefaultMaxBytes,
+        CancellationToken ct = default)
     {
         var dir = Path.GetDirectoryName(destPath);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);

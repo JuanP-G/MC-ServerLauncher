@@ -74,7 +74,7 @@ public sealed class LoaderChangeService
         // and leave user_jvm_args.txt alone in that case too: their script reads it, and
         // rewriting the memory settings would quietly undo whatever they had set.
         var runBatPath = Path.Combine(change.Folder, "run.bat");
-        var keptRunBat = change.KeepRunBat && File.Exists(runBatPath) ? File.ReadAllText(runBatPath) : null;
+        var keptRunBat = change.KeepRunBat && File.Exists(runBatPath) ? await File.ReadAllTextAsync(runBatPath) : null;
 
         // Before the config says the new type: the old family's folder has to be found under
         // the name the OLD type used.
@@ -88,7 +88,7 @@ public sealed class LoaderChangeService
             change.MinRamGb, change.MaxRamGb, progress, writeLoaderJvmArgs: !change.KeepRunBat);
 
         if (keptRunBat is not null)
-            File.WriteAllText(runBatPath, keptRunBat);
+            await File.WriteAllTextAsync(runBatPath, keptRunBat);
         else if (!change.KeepRunBat && !installed.LaunchesViaArgsFile)
             _creation.WriteRunBat(change.Folder, change.MinRamGb, change.MaxRamGb, installed.JarFile, javaPath);
 

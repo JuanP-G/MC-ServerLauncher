@@ -133,7 +133,7 @@ internal sealed class StoreBrowser
         try
         {
             var response = await _store.SearchModsAsync(query, _config.Type, _config.GameVersion,
-                SortIndex(selectedSort), _offset, PageSize, facets.Count > 0 ? facets : null, ct, side);
+                SortIndex(selectedSort), _offset, PageSize, facets.Count > 0 ? facets : null, side, ct);
 
             // A newer search started while this one was in flight: its results are the ones that
             // match what the interface is showing, so drop these.

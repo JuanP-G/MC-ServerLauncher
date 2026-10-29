@@ -31,8 +31,8 @@ internal sealed class FakeModrinthStore : ModrinthService
 
     public override Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion,
         string index = "relevance", int offset = 0, int limit = 20,
-        IReadOnlyCollection<string>? extraFacetGroups = null, CancellationToken ct = default,
-        StoreSideFilter side = StoreSideFilter.All) =>
+        IReadOnlyCollection<string>? extraFacetGroups = null, StoreSideFilter side = StoreSideFilter.All,
+        CancellationToken ct = default) =>
         OnSearch?.Invoke(query, offset, extraFacetGroups) ?? Task.FromResult<SearchResponse?>(null);
 
     public List<string> Downloaded { get; } = new();

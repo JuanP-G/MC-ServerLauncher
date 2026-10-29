@@ -162,7 +162,7 @@ public class WorldBackupService
     /// </summary>
     public virtual async Task<string?> CreateBackupAsync(ServerConfig config, string trigger,
         IProgress<string>? log = null,
-        CancellationToken ct = default, string? protectFromPruning = null)
+        string? protectFromPruning = null, CancellationToken ct = default)
     {
         var levelName = GetLevelName(config);
         if (WorldFolderFor(config.FolderPath, levelName) is not { } worldDir)
@@ -435,8 +435,9 @@ public class WorldBackupService
             var fingerprint = Fingerprint(worldDir, DimensionsBeside(config.FolderPath, levelName));
             WriteState(config, state with { Fingerprint = fingerprint });
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Backup", "the world's fingerprint could not be saved, the next start copies again", ex);
             // Best-effort: the next start just makes the copy it would have made anyway.
         }
     }
@@ -462,8 +463,9 @@ public class WorldBackupService
             File.WriteAllText(tmp, JsonSerializer.Serialize(state));
             File.Move(tmp, path, overwrite: true);
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Backup", "the backup state file could not be written, one extra copy may be made", ex);
             // Best-effort: without it the next start or stop makes one copy too many, nothing worse.
         }
     }
@@ -562,7 +564,7 @@ public class WorldBackupService
         if (Directory.Exists(worldDir))
         {
             log?.Report(Localizer.Get("Msg_BackupSafetyNet"));
-            await CreateBackupAsync(config, "before-restore", log, ct, protectFromPruning: zipPath);
+            await CreateBackupAsync(config, "before-restore", log, protectFromPruning: zipPath, ct: ct);
         }
 
         log?.Report(Localizer.Get("Msg_BackupRestoring"));

@@ -463,7 +463,7 @@ public sealed partial class ModDetailsViewModel : ObservableObject, IDisposable
         var response = await _modrinth.SearchModsAsync(
             tag.Facets.Count > 0 ? string.Empty : tag.Query!,
             _parent.ServerType, _parent.GameVersion, "downloads", 0, 12,
-            tag.Facets.Count > 0 ? tag.Facets : null, ct);
+            tag.Facets.Count > 0 ? tag.Facets : null, ct: ct);
 
         if (ct.IsCancellationRequested || response is null) return;
 

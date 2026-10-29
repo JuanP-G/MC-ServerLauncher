@@ -124,8 +124,8 @@ public class ModrinthService
     /// </summary>
     public virtual async Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion,
         string index = "relevance", int offset = 0, int limit = 20,
-        IReadOnlyCollection<string>? extraFacetGroups = null, CancellationToken ct = default,
-        StoreSideFilter side = StoreSideFilter.All)
+        IReadOnlyCollection<string>? extraFacetGroups = null, StoreSideFilter side = StoreSideFilter.All,
+        CancellationToken ct = default)
     {
         var facets = $"[{string.Join(",", FacetGroups(loader, mcVersion, side, extraFacetGroups))}]";
         var url = $"{ApiBaseUrl}/search?query={Uri.EscapeDataString(query)}" +

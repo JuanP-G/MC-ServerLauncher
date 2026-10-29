@@ -275,7 +275,7 @@ public partial class ConnectionTestViewModel : ObservableObject, IDisposable
         LocalStep.Set(StepState.Running, Localizer.Get("Net_StepLocal"), Localizer.Get("Net_Measuring"));
         run.Local = await ConnectionProbe.SampleAsync(async c =>
         {
-            var reply = await ConnectionProbe.PingJavaAsync("127.0.0.1", run.Port, Wait, c);
+            var reply = await ConnectionProbe.PingJavaAsync("127.0.0.1", run.Port, Wait, ct: c);
             run.Status ??= reply;
             return reply?.LatencyMs;
         }, Samples, Gap, Live(LocalStep), ct);
@@ -328,7 +328,7 @@ public partial class ConnectionTestViewModel : ObservableObject, IDisposable
         // The server's own protocol number: Playit's edge refuses the -1 status tools send.
         var protocol = run.Status?.Protocol is > 0 and var known ? known : ConnectionProbe.FallbackProtocol;
         run.Tunnel = await ConnectionProbe.SampleAsync(async c =>
-            (await ConnectionProbe.PingJavaAsync(host, publicPort, Wait, c, protocol))?.LatencyMs,
+            (await ConnectionProbe.PingJavaAsync(host, publicPort, Wait, protocol, c))?.LatencyMs,
             Samples, Gap, Live(TunnelStep), ct);
         Judge(TunnelStep, run.Tunnel, good: 80, fair: 180, "Net_Tunnel");
         Rows.Add(ProbeRow.From(Localizer.Get("Net_RowTunnel"), run.Tunnel));

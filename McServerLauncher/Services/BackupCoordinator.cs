@@ -383,7 +383,7 @@ internal sealed class BackupCoordinator : IDisposable
         {
             var log = new Progress<string>(_host.Say);
             if (!_host.IsProcessRunning)
-                return await _service.CreateBackupAsync(Config, trigger, log, copying.Token);
+                return await _service.CreateBackupAsync(Config, trigger, log, ct: copying.Token);
 
             // Cleared before the copy rather than after, so that somebody joining while it zips
             // still counts; anybody already on is still playing, so it is not cleared for them.

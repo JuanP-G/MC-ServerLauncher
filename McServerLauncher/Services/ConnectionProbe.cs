@@ -119,7 +119,7 @@ public static class ConnectionProbe
     /// answers with its own, so the local ping finds out what the tunnel ping then sends.
     /// </param>
     public static async Task<SlpReply?> PingJavaAsync(string host, int port, TimeSpan timeout,
-        CancellationToken ct = default, int protocol = FallbackProtocol)
+        int protocol = FallbackProtocol, CancellationToken ct = default)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(timeout);

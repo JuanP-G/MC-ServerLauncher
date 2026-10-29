@@ -226,8 +226,9 @@ public class UpdateService : IUpdateSource
                     return hash;
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Update", "the checksums file could not be read, so there is nothing to verify against", ex);
             // Best-effort: an unreachable or malformed sums file just means no verification.
         }
         return null;
@@ -268,7 +269,7 @@ public class UpdateService : IUpdateSource
 
         // Atomic, so an interrupted download can't leave a plausible-looking half installer where
         // the real one should be (the caller verifies it against SHA256SUMS.txt afterwards).
-        await AtomicDownload.ToFileAsync(resp.Content, destPath, ct: ct, maxBytes: MaxInstallerBytes);
+        await AtomicDownload.ToFileAsync(resp.Content, destPath, maxBytes: MaxInstallerBytes, ct: ct);
 
         return destPath;
     }

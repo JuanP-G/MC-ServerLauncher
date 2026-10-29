@@ -128,8 +128,9 @@ public sealed class StoreCatalogService
             var path = Path.Combine(_folder, FileName);
             if (File.Exists(path)) return Parse(File.ReadAllBytes(path));
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Store", "the saved catalogue could not be read, going without it", ex);
             // Unreadable or from a format this build does not know: no catalogue, never a crash.
         }
 

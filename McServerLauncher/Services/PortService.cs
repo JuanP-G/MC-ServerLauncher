@@ -20,8 +20,9 @@ public class PortService
             var listeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners();
             return listeners.Any(ep => ep.Port == port);
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Ports", "the TCP listeners could not be listed, not blocking the port", ex);
             // If it can't be queried, don't block to be safe.
             return false;
         }
@@ -70,8 +71,9 @@ public class PortService
             var listeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
             return listeners.Any(ep => ep.Port == port);
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Ports", "the UDP listeners could not be listed, not blocking the port", ex);
             // Same choice as the TCP one: if it can't be queried, don't block.
             return false;
         }

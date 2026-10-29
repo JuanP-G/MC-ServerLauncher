@@ -570,8 +570,9 @@ public sealed class PlayerHistoryStore : IDisposable
                 return loaded;
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Players", "the player history index could not be read, starting it over", ex);
             // A damaged index starts over rather than taking the Players tab down with it.
         }
         return new Index();

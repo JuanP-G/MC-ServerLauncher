@@ -74,8 +74,9 @@ public static class SelfUpdater
                 catch { /* in use, or not ours to delete after all */ }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Safe.Note("Update", "old update folders could not be listed for cleaning", ex);
             // A temporary folder that cannot be listed is not worth failing a start over.
         }
     }
