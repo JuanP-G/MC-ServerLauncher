@@ -43,10 +43,8 @@ public sealed record NewServerResult(ServerConfig Config, bool IsNew, bool AutoS
 public partial class NewServerView : UserControl
 {
     private readonly MinecraftVersionService _versions = new();
-    private readonly ServerJarInstaller _installer = new();
-    private readonly ServerCreationService _creation = new();
+    private readonly ServerProvisioningService _provisioning = new();
     private readonly PortService _ports = new();
-    private readonly JavaService _java = new();
     private List<MinecraftVersion> _allVersions = new();
     private string _latestRelease = string.Empty;
     private bool _versionsRequested;
@@ -510,110 +508,12 @@ public partial class NewServerView : UserControl
             return;
         }
 
-        var name = NameBox.Text?.Trim() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(name)) { await Warn(Localizer.Get("Msg_NameRequired")); return; }
-        if (!Directory.Exists(ParentFolderBox.Text)) { await Warn(Localizer.Get("Msg_FolderNotExistCreate")); return; }
-        if (VersionCombo.SelectedItem is not MinecraftVersion version) { await Warn(Localizer.Get("Msg_SelectVersion")); return; }
-
-        var minGb = WholeNumberConverter.ToWhole(MinRamBox.Value ?? 2m);
-        var maxGb = WholeNumberConverter.ToWhole(MaxRamBox.Value ?? 4m);
-        if (ChosenMemory == MemoryMode.Manual && maxGb < minGb) { await Warn(Localizer.Get("Msg_RamMaxMin")); return; }
-
-        var port = WholeNumberConverter.ToWhole(PortBox.Value ?? 25565m);
-        if (_usedPorts.Contains(port))
-        {
-            await Warn(string.Format(Localizer.Get("Msg_PortAssigned"),
-            port)); return;
-        }
-        if (_ports.IsPortInUse(port))
-        {
-            await Warn(string.Format(Localizer.Get("Msg_PortInUseOther"),
-            port)); return;
-        }
-
-        var folder = GetTargetFolder();
-
-        // Refused rather than warned about: depending on which rule it breaks, the folder either
-        // cannot be created at all or produces a server that installs fine and then exits on every
-        // start without ever reaching the world.
-        if (ServerNameRule.Check(folder, SelectedServerType()) is { } issue)
-        {
-            await Warn(Describe(issue, folder));
-            return;
-        }
-
-        if (Directory.Exists(folder) && Directory.EnumerateFileSystemEntries(folder).Any())
-        {
-            var ok = await MessageBox.ConfirmAsync(
-                string.Format(Localizer.Get("Msg_FolderExists"), folder),
-                Localizer.Get("Title_FolderExists"), Owner);
-            if (!ok) return;
-        }
+        if (await ReadNewServerPlanAsync() is not { } plan) return;
 
         SetBusy(true);
-        var progress = new Progress<string>(AppendLog);
-
         try
         {
-            Directory.CreateDirectory(folder);
-
-            AppendLog(string.Format(Localizer.Get("Msg_Resolving"), version.Id));
-            var details = await _versions.GetVersionDetailsAsync(version);
-
-            var serverType = SelectedServerType();
-
-            // Install/locate the Java this Minecraft version needs first: the Forge installer also
-            // requires a compatible Java to run.
-            AppendLog(string.Format(Localizer.Get("Msg_CheckingJava"), version.Id, details.JavaMajor));
-            var javaPath = "java";
-            try
-            {
-                javaPath = await _java.EnsureJavaAsync(details.JavaMajor, progress);
-            }
-            catch (Exception jex)
-            {
-                AppendLog(string.Format(Localizer.Get("Msg_JavaPrepareFail"),
-                    details.JavaMajor, ErrorMessages.Describe(jex)));
-                AppendLog(Localizer.Get("Msg_UseSystemJava"));
-            }
-
-            var installed = await _installer.InstallAsync(
-                serverType, folder, version.Id, details, javaPath, minGb, maxGb, progress);
-
-            var jarName = installed.JarFile;
-            var loaderVersion = installed.LoaderVersion;
-            var forgeArgs = installed.ForgeArgs;
-
-            AppendLog(Localizer.Get("Msg_WritingEula"));
-            _creation.WriteEula(folder);
-            // Modern Forge ships its own run.bat (no single jar); only write ours when there is a jar.
-            if (!string.IsNullOrEmpty(jarName))
-                _creation.WriteRunBat(folder, minGb, maxGb, jarName, javaPath);
-            var seed = SeedBox.Text?.Trim();
-            if (!string.IsNullOrEmpty(seed) && ServerCreationService.WorldExists(folder))
-                AppendLog(Localizer.Get("Msg_SeedIgnoredWorldExists"));
-            _creation.WriteInitialProperties(folder, port, $"{name} - MC Server Launcher", seed);
-
-            var config = new ServerConfig
-            {
-                Name = name,
-                FolderPath = folder,
-                JarFile = string.IsNullOrEmpty(jarName) ? "server.jar" : jarName,
-                Type = serverType,
-                MultiVersionEnabled = MultiVersionCheck.IsChecked == true,
-                BedrockModContentEnabled = HydraulicCheck.IsChecked == true,
-                GameVersion = version.Id,
-                ModLoaderVersion = loaderVersion,
-                ForgeArgs = forgeArgs,
-                JavaPath = javaPath,
-                MemoryMode = ChosenMemory,
-                MinRamGb = minGb,
-                MaxRamGb = maxGb,
-                PlayitEnabled = PlayitCheck.IsChecked == true,
-                CrossplayEnabled = CrossplayCheck.IsChecked == true && CrossplayService.CanEnable(serverType)
-            };
-
-            AppendLog(Localizer.Get("Msg_ServerCreated"));
+            var config = await _provisioning.CreateAsync(plan, AppendLog);
             _log.Stop();
 
             // The tunnel creation is done by MainViewModel on the already-added server, so the
@@ -629,6 +529,63 @@ public partial class NewServerView : UserControl
             await Warn(string.Format(Localizer.Get("Msg_CreateServerError"), ErrorMessages.Describe(ex)));
             SetBusy(false);
         }
+    }
+
+    /// <summary>
+    /// Reads and checks the form for a new server. Returns null — after saying why — when anything
+    /// is missing or refused, so nothing is written to disk for a form that cannot work.
+    /// </summary>
+    private async Task<NewServerPlan?> ReadNewServerPlanAsync()
+    {
+        var name = NameBox.Text?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(name)) { await Warn(Localizer.Get("Msg_NameRequired")); return null; }
+        if (!Directory.Exists(ParentFolderBox.Text)) { await Warn(Localizer.Get("Msg_FolderNotExistCreate")); return null; }
+        if (VersionCombo.SelectedItem is not MinecraftVersion version) { await Warn(Localizer.Get("Msg_SelectVersion")); return null; }
+
+        var minGb = WholeNumberConverter.ToWhole(MinRamBox.Value ?? 2m);
+        var maxGb = WholeNumberConverter.ToWhole(MaxRamBox.Value ?? 4m);
+        if (ChosenMemory == MemoryMode.Manual && maxGb < minGb) { await Warn(Localizer.Get("Msg_RamMaxMin")); return null; }
+
+        var port = WholeNumberConverter.ToWhole(PortBox.Value ?? 25565m);
+        if (_usedPorts.Contains(port))
+        {
+            await Warn(string.Format(Localizer.Get("Msg_PortAssigned"), port));
+            return null;
+        }
+        if (_ports.IsPortInUse(port))
+        {
+            await Warn(string.Format(Localizer.Get("Msg_PortInUseOther"), port));
+            return null;
+        }
+
+        var folder = GetTargetFolder();
+        var serverType = SelectedServerType();
+
+        // Refused rather than warned about: depending on which rule it breaks, the folder either
+        // cannot be created at all or produces a server that installs fine and then exits on every
+        // start without ever reaching the world.
+        if (ServerNameRule.Check(folder, serverType) is { } issue)
+        {
+            await Warn(Describe(issue, folder));
+            return null;
+        }
+
+        if (Directory.Exists(folder) && Directory.EnumerateFileSystemEntries(folder).Any())
+        {
+            var ok = await MessageBox.ConfirmAsync(
+                string.Format(Localizer.Get("Msg_FolderExists"), folder),
+                Localizer.Get("Title_FolderExists"), Owner);
+            if (!ok) return null;
+        }
+
+        return new NewServerPlan(
+            Name: name, Folder: folder, Type: serverType, Version: version,
+            Memory: ChosenMemory, MinRamGb: minGb, MaxRamGb: maxGb, Port: port,
+            Seed: SeedBox.Text?.Trim(),
+            MultiVersion: MultiVersionCheck.IsChecked == true,
+            Hydraulic: HydraulicCheck.IsChecked == true,
+            Playit: PlayitCheck.IsChecked == true,
+            Crossplay: CrossplayCheck.IsChecked == true);
     }
 
     /// <summary>What the form says about the folder being taken over.</summary>
@@ -713,37 +670,12 @@ public partial class NewServerView : UserControl
         SetBusy(true);
         try
         {
-            // The Java this Minecraft needs, as when creating — when the version is one Mojang's
-            // list knows. Otherwise the start does it: it checks the Java every time anyway.
-            var javaPath = "java";
-            if (VersionCombo.SelectedItem is MinecraftVersion { Url.Length: > 0 } version)
-            {
-                try
-                {
-                    var details = await _versions.GetVersionDetailsAsync(version);
-                    AppendLog(string.Format(Localizer.Get("Msg_CheckingJava"), version.Id,
-                        details.JavaMajor));
-                    javaPath = await _java.EnsureJavaAsync(details.JavaMajor,
-                        new Progress<string>(AppendLog));
-                }
-                catch (Exception jex)
-                {
-                    AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(jex)));
-                    AppendLog(Localizer.Get("Msg_UseSystemJava"));
-                }
-            }
-
-            if (ExistingServer.ApplyPort(folder, found.Port, port))
-                AppendLog(string.Format(Localizer.Get("Cs_ExistingPortWrittenFmt"), port));
-
-            // Only when the box was there to tick: a folder that had accepted it already is left alone.
-            if (EulaPanel.IsVisible && EulaCheck.IsChecked == true)
-            {
-                _creation.WriteEula(folder);
-                AppendLog(Localizer.Get("Cs_ExistingEulaWritten"));
-            }
-
-            var config = ExistingServer.ToConfig(form with { JavaPath = javaPath }, found);
+            var config = await _provisioning.AdoptAsync(
+                form, found, port,
+                VersionCombo.SelectedItem as MinecraftVersion,
+                // Only when the box was there to tick: a folder that had accepted it already is left alone.
+                writeEula: EulaPanel.IsVisible && EulaCheck.IsChecked == true,
+                log: AppendLog);
             _log.Stop();
             Completed?.Invoke(new NewServerResult(
                 config, IsNew: false,
