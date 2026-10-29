@@ -37,8 +37,11 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private int _playitTickCounter;
     private readonly DispatcherTimer _statsTimer;
 
-    /// <summary>Refreshes the idle countdown once a second. Runs only while one is on screen.</summary>
-    private readonly DispatcherTimer _idleCountdownTimer;
+    /// <summary>Stops the server once it has been empty long enough, and shows the countdown.</summary>
+    private readonly IdleShutdownController _idle;
+
+    /// <summary>Answers on the port while the server sleeps and wakes it when somebody knocks.</summary>
+    private readonly WakeOnDemandController _wake;
     private readonly DispatcherTimer _playitTimer;
     private readonly DispatcherTimer _autoBackupTimer;
 
@@ -321,7 +324,6 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     private int _maxPlayers = 20;
 
     private readonly PlayersService _players = new();
-    private readonly WakeOnDemandListener _wake = new();
 
     /// <summary>Players connected right now (live, read from the console).</summary>
     public BulkObservableCollection<string> ConnectedPlayers { get; } = new();
@@ -418,10 +420,31 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         _onPlayitStateChanged = _ => RunOnUi(RefreshPlayit);
         _onAgentStateChanged = _ => RunOnUi(RefreshPlayit);
 
-        // Built here, started in Activate. A timer that exists is inert, and these two are started
-        // and stopped later anyway by the server's own state.
-        _idleCountdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        _idleCountdownTimer.Tick += (_, _) => UpdateIdleCountdown();
+        _wake = new WakeOnDemandController(config, new WakeHost(
+            IsStarting: () => State != ServerState.Stopped,
+            Motd: () => MotdText,
+            MaxPlayers: () => _maxPlayers,
+            CanStart: () => CanStart,
+            Say: line => OnConsoleLine(line),
+            Notify: NotifyIf,
+            // isAutoRestart: nobody is sitting in front of the app to answer a dialog.
+            StartServer: () => _ = StartInternalAsync(isAutoRestart: true),
+            RunOnUi: RunOnUi), _properties, _whitelist, _players);
+
+        _idle = new IdleShutdownController(new IdleHost(
+            Minutes: () => Config.IdleShutdownMinutes,
+            IsRunning: () => State == ServerState.Running,
+            PlayerCount: () => ConnectedPlayers.Count,
+            WokeAtUtc: () => _wake.WokeAtUtc,
+            ShowCountdown: text => IdleCountdownText = text,
+            AnnounceStop: minutes =>
+            {
+                OnConsoleLine(string.Format(Localizer.Get("Msg_IdleShutdownFmt"), minutes));
+                NotifyIf(NotificationKind.IdleShutdown,
+                    string.Format(Localizer.Get("Notif_IdleStopped"), minutes));
+            },
+            StopAsync: Stop,
+            ReportError: line => OnConsoleLine(line)));
 
         _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _statsTimer.Tick += (_, _) => OnStatsTimerTick();
@@ -490,7 +513,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         if (row.Effects.HasFlag(ConfigEffect.RefreshSignal)) UpdateSignal();
         // The listener holds a real socket on the server's port, so switching it on has to open one
         // now. It used to wait for the next stop, i.e. until the server had been run once.
-        if (row.Effects.HasFlag(ConfigEffect.RestartWakeListener)) StartWakeListener();
+        if (row.Effects.HasFlag(ConfigEffect.RestartWakeListener)) _wake.Start();
         if (row.Effects.HasFlag(ConfigEffect.ReloadBackups)) Backups.RefreshIfLoaded();
 
         if (row.ModsProperties.Length > 0 || row.Effects != ConfigEffect.None)
@@ -538,7 +561,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         // Also here, not only on the transition to Stopped: opening the app finds every server
         // already stopped and fires no state change, so waiting for one would mean wake-on-demand
         // never starting until you had run and stopped a server by hand first.
-        StartWakeListener();
+        _wake.Start();
 
         // Prunes and, the first time ever, imports the server's old logs — in the background.
         History.Start();
@@ -561,7 +584,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     {
         // Before the throttle below, on purpose: the whole point of stopping an empty server is to
         // stop it while nobody is watching, which is exactly when the window is in the tray.
-        CheckIdleShutdown();
+        _idle.Check();
         ProbePerformance();
 
         // Also before the throttle: a PC short of memory is the case where the window is most likely
@@ -571,125 +594,6 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         if (MainWindowHidden && ++_hiddenStatsTicks % 10 != 0) return;
         UpdateStats();
     }
-
-    // --- Stopping an empty server ---
-
-    /// <summary>Since when nobody has been connected, or null while someone is on.</summary>
-    private DateTime? _emptySinceUtc;
-
-    /// <summary>Set while the idle stop is running, so one timeout can't queue several stops.</summary>
-    private bool _idleStopping;
-
-    /// <summary>
-    /// Stops the server once it has been empty for <see cref="ServerConfig.IdleShutdownMinutes"/>.
-    /// </summary>
-    /// <remarks>
-    /// The clock starts when the last player leaves — or when the server finishes starting, if
-    /// nobody ever joins — and is reset by anyone connecting, so a server in use is never stopped
-    /// out from under its players.
-    /// </remarks>
-    private void CheckIdleShutdown()
-    {
-        if (_idleStopping) return;
-
-        var now = DateTime.UtcNow;
-        var minutes = Config.IdleShutdownMinutes;
-        var counting = ShouldCountIdle(minutes, State == ServerState.Running, ConnectedPlayers.Count)
-                       && !IsWithinWakeGrace(_wokeAtUtc, now);
-        if (!counting)
-        {
-            _emptySinceUtc = null;
-            StopIdleCountdown();
-            return;
-        }
-
-        _emptySinceUtc ??= now;
-        UpdateIdleCountdown();
-        _idleCountdownTimer.Start();    // no-op when it is already running
-
-        if (!IsIdleLongEnough(minutes, _emptySinceUtc.Value, now)) return;
-
-        _idleStopping = true;
-        StopIdleCountdown();
-        OnConsoleLine(string.Format(Localizer.Get("Msg_IdleShutdownFmt"), minutes));
-        NotifyIf(NotificationKind.IdleShutdown,
-            string.Format(Localizer.Get("Notif_IdleStopped"), minutes));
-        _ = StopBecauseIdleAsync();
-    }
-
-    // --- Showing the countdown ---
-    // This check runs off the 2 s stats timer, which is the right cadence for deciding when to stop
-    // but the wrong one for a clock: a seconds display driven by it would skip every other second.
-    // Rather than speed up the stats timer (its 2 s cadence is what makes the CPU/RAM history worth
-    // ~5 minutes) the countdown gets its own, which only runs while there is something to count.
-
-    private void UpdateIdleCountdown()
-    {
-        if (_emptySinceUtc is null) { StopIdleCountdown(); return; }
-
-        IdleCountdownText = string.Format(
-            Localizer.Get("Idle_CountdownFmt"),
-            FormatCountdown(IdleRemaining(Config.IdleShutdownMinutes, _emptySinceUtc.Value,
-                DateTime.UtcNow)));
-    }
-
-    private void StopIdleCountdown()
-    {
-        _idleCountdownTimer.Stop();
-        IdleCountdownText = null;
-    }
-
-    /// <summary>How long is left before an empty server stops itself. Never negative.</summary>
-    internal static TimeSpan IdleRemaining(int minutes, DateTime emptySinceUtc, DateTime nowUtc)
-    {
-        var left = TimeSpan.FromMinutes(minutes) - (nowUtc - emptySinceUtc);
-        return left > TimeSpan.Zero ? left : TimeSpan.Zero;
-    }
-
-    /// <summary>
-    /// Formats the countdown, rounding seconds <em>up</em>.
-    /// </summary>
-    /// <remarks>
-    /// Truncating would park the display on 0:00 for up to a second while the server is still
-    /// perfectly alive, which reads as a stuck clock. Rounding up means it shows 0:01 until the
-    /// moment it really is zero.
-    /// </remarks>
-    internal static string FormatCountdown(TimeSpan left)
-    {
-        var t = TimeSpan.FromSeconds(Math.Ceiling(left.TotalSeconds));
-        return t.TotalHours >= 1
-            ? $"{(int)t.TotalHours}:{t.Minutes:00}:{t.Seconds:00}"
-            : $"{t.Minutes}:{t.Seconds:00}";
-    }
-
-    /// <summary>Whether the empty-server clock should be running at all.</summary>
-    /// <remarks>
-    /// Pulled out as a plain function so the rule can be checked directly. Getting it wrong means
-    /// either a server that never stops or — far worse — one that stops while people are playing.
-    /// </remarks>
-    internal static bool ShouldCountIdle(int minutes, bool running, int playerCount) =>
-        minutes > 0 && running && playerCount == 0;
-
-    /// <summary>Whether it has been empty long enough to stop.</summary>
-    internal static bool IsIdleLongEnough(int minutes, DateTime emptySinceUtc, DateTime nowUtc) =>
-        nowUtc - emptySinceUtc >= TimeSpan.FromMinutes(minutes);
-
-    // --- Waking the server when somebody knocks ---
-
-    /// <summary>When the server was last started by someone trying to join, if ever.</summary>
-    private DateTime? _wokeAtUtc;
-
-    /// <summary>
-    /// How long after waking the idle timer is ignored, so a player has time to actually get in.
-    /// </summary>
-    /// <remarks>
-    /// Without this, a server set to stop after a minute would wake, find itself still empty while
-    /// the world loads, and shut down before the player finished connecting — over and over.
-    /// </remarks>
-    private static readonly TimeSpan WakeGrace = TimeSpan.FromMinutes(5);
-
-    internal static bool IsWithinWakeGrace(DateTime? wokeAtUtc, DateTime nowUtc) =>
-        wokeAtUtc is not null && nowUtc - wokeAtUtc.Value < WakeGrace;
 
     /// <summary>
     /// <c>server-port</c> changed on disk: the wake-on-demand listener moves with it, if the server
@@ -704,105 +608,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
     internal void FollowPortChange()
     {
         if (_process.IsRunning || IsPreparing || IsRestoring) return;
-        StartWakeListener();
-    }
-
-    /// <summary>Answers on the server's port while it is stopped, if the owner asked for it.</summary>
-    private void StartWakeListener()
-    {
-        if (!Config.WakeOnDemand) { _wake.Stop(); return; }
-
-        var port = _properties.GetServerPort(Config.PropertiesPath);
-        if (port is null) return;
-
-        if (!_wake.Start(port.Value, BuildWakeStatus, OnJoinAttempt))
-            OnConsoleLine(string.Format(Localizer.Get("Msg_WakePortBusyFmt"), port.Value));
-    }
-
-    /// <summary>What a client sees while the server sleeps: its own MOTD plus what is going on.</summary>
-    private WakeStatus BuildWakeStatus()
-    {
-        var starting = State != ServerState.Stopped;
-        var icon = Path.Combine(Config.FolderPath, ServerIconService.FileName);
-
-        return new WakeStatus(
-            Description: WakeSign.Compose(MotdText, WakeSign.Notice(starting)),
-            VersionName: string.IsNullOrWhiteSpace(Config.GameVersion) ? "?" : Config.GameVersion,
-            MaxPlayers: _maxPlayers,
-            IconPath: File.Exists(icon) ? icon : null,
-            DisconnectMessage: WakeSign.KickStyle + Localizer.Get(starting ? "Wake_KickStarting"
-                : "Wake_KickWaking"),
-            RefusedMessage: WakeSign.KickStyle + Localizer.Get("Wake_KickNotWhitelisted"));
-    }
-
-    /// <summary>
-    /// Somebody pressed Join on a sleeping server. Returns whether it is being woken for them.
-    /// </summary>
-    /// <remarks>
-    /// Runs on the listener's thread, so reading the server's files here never holds up the UI;
-    /// only the start itself goes to the UI thread.
-    /// </remarks>
-    private bool OnJoinAttempt(string? player)
-    {
-        if (!MayWake(player)) return false;
-
-        RunOnUi(() =>
-        {
-            if (!CanStart) return;   // already coming up from an earlier knock, or being restored
-
-            _wokeAtUtc = DateTime.UtcNow;
-            OnConsoleLine(Localizer.Get("Msg_WakeStarting"));
-            NotifyIf(NotificationKind.WokeOnDemand, Localizer.Get("Notif_Woke"));
-
-            // isAutoRestart: nobody is sitting in front of the app to answer a dialog, which is
-            // exactly what that flag already means everywhere else.
-            _ = StartInternalAsync(isAutoRestart: true);
-        });
-        return true;
-    }
-
-    /// <summary>
-    /// Whether <paramref name="player"/> may wake this server. See <see cref="WakePolicy"/>.
-    /// </summary>
-    /// <remarks>
-    /// Nothing is said in the console about a refusal: the ones worth refusing are scanners, and
-    /// they come by the hundred.
-    /// </remarks>
-    private bool MayWake(string? player)
-    {
-        try
-        {
-            var props = _properties.Read(Config.PropertiesPath);
-            var whitelistOn = ServerPropertiesService.GetBool(props, "white-list", fallback: false);
-
-            // The two lists are only read when they can change the answer.
-            if (!whitelistOn || !Config.WakeOnlyForWhitelist) return true;
-
-            return WakePolicy.Allows(player, whitelistOn, Config.WakeOnlyForWhitelist,
-                _whitelist.ReadNames(Config.FolderPath), _players.ReadOps(Config.FolderPath));
-        }
-        catch
-        {
-            // The files could not be read this instant: behave as before this rule existed rather
-            // than lock everybody out of their own server.
-            return true;
-        }
-    }
-
-    private async Task StopBecauseIdleAsync()
-    {
-        // Through the normal Stop, so an automatic shutdown saves the world exactly like a manual
-        // one — the last thing anyone wants from an unattended stop is a missing backup.
-        try { await Stop(); }
-        catch (Exception ex)
-        {
-            OnConsoleLine(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
-        }
-        finally
-        {
-            _idleStopping = false;
-            _emptySinceUtc = null;
-        }
+        _wake.Start();
     }
 
     private void OnPlayitTimerTick(object? sender, EventArgs e)
@@ -1017,7 +823,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
         OnPropertyChanged(nameof(IsRestoring));
         NotifyCommandStates();
         if (IsRestoring) _wake.Stop();
-        else if (!_process.IsRunning) StartWakeListener();
+        else if (!_process.IsRunning) _wake.Start();
     }
     public bool CanStop => State is ServerState.Running or ServerState.Starting;
 
@@ -1078,11 +884,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             // From Stopping, the app or the console asked for it; from anything else, it ended by itself.
             _memoryFinish = FinishMemoryRunAsync(previous == ServerState.Stopping ? SessionEnd.Stopped : SessionEnd.Crashed);
 
-            // Explicitly, not just by waiting for the next CheckIdleShutdown: that runs off the
-            // stats timer, which has just been stopped, so a server that went straight from Running
-            // to Stopped between two ticks would leave a countdown ticking away on a dead server.
-            _emptySinceUtc = null;
-            StopIdleCountdown();
+            // Explicitly, not just by waiting for the next check: see IdleShutdownController.Reset.
+            _idle.Reset();
 
             CpuText = RamText = UptimeText = "—";
             _cpuHistory.Clear();
@@ -1094,7 +897,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             History.OnServerStopped();
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
-            StartWakeListener();
+            _wake.Start();
             _savedWhileRunning.Clear();   // the next start reads the file as it is
 
             // However it stopped — a crash, "stop" typed in the console. A stop the app asked for
@@ -1555,7 +1358,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
             // busy port, a path Paper refuses, a dependency check cancelled) left a server with
             // wake-on-demand asleep and deaf until the app was restarted. Starting it twice is
             // harmless: Start lets go of the old socket first.
-            if (!_process.IsRunning) StartWakeListener();
+            if (!_process.IsRunning) _wake.Start();
 
             IsPreparing = false;
         }
@@ -2414,7 +2217,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost
 
         Config.PropertyChanged -= OnConfigPropertyChanged;
         _statsTimer.Stop();
-        _idleCountdownTimer.Stop();
+        _idle.Dispose();
         _playitTimer.Stop();
         _autoBackupTimer.Stop();
         Mods.Shutdown();                               // cancels anything the store was fetching
