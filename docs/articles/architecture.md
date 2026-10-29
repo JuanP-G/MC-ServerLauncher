@@ -481,9 +481,27 @@ are no hard-coded machine paths.
 - **`SecretProtector`** — encrypts secrets at rest (DPAPI on Windows, AES-GCM + `.secret.key` on
   Linux/macOS), used for the Playit per-user agent secret key (and the legacy write key). If encryption ever fails, the key is **not**
   persisted (plaintext never lands on disk): it keeps working for the session, the failure goes to
-  the daily log, and the user is warned once.
+  the daily log, and the user is warned once. The AES key file is created with owner-only permissions
+  and read with a sharing mode that tolerates the process that is creating it, so two parts of the
+  app asking for the key at once get the same one.
 - **`DownloadVerifier`** — the shared checksum verifier for downloads (Mojang SHA-1, Adoptium/Paper
-  SHA-256, Modrinth SHA-512/SHA-1), deleting the file on mismatch.
+  SHA-256, Modrinth SHA-512/SHA-1), deleting the file on mismatch. `VerifyAsync` **refuses a file
+  with no hash to compare**; the one way around it is the explicit `VerifyIfProvidedAsync`, used only
+  by `VerifiedJarDownload` for server jars, where a source may not publish a checksum.
+- **Network limits (`AppHttp`, `AtomicDownload`)** — everything that comes off the network is bounded
+  before it is believed. `AppHttp.ReadCappedAsync` reads API and text responses up to a cap (8 MiB
+  for APIs, 64 KiB for the small files that hold a checksum or a signature), and `AtomicDownload`
+  stops a package at its limit (1 GiB by default; 500 MiB for the installer, 400 MiB for a JRE, 400 MiB
+  for a server jar, 300 MiB for a loader installer) and deletes the `.part`. The update and JRE links
+  must be `https` on the publisher's own host, so a hostile API response can't point the app at
+  another server.
+- **`JavaCommandLine`** — Java is started with an argument **list**, never a string, so a file name
+  with a quote or a space in it can't change how many arguments there are. The *Extra JVM arguments*
+  box is cut by the same rules the operating system uses (`Split`), and the line shown in the console
+  is produced by `Display` so that what is shown is what would be read back.
+- **System libraries** — the few Win32 functions the app calls (`PortService`, `SingleInstance`,
+  `SystemMemory`) carry `DefaultDllImportSearchPaths(System32)`, so a library planted next to the
+  executable or in the working directory is never the one loaded.
 - **`Changelog`** — the per-version "what's new" notes shown after an update (see the flow below).
 - **`UpdateService`** / **`SelfUpdater`** — `UpdateService` asks GitHub for a newer release and picks
   the asset for *this* platform and architecture (the Windows installer, the Linux AppImage, the
@@ -925,6 +943,22 @@ signature-verified package is on disk, and any failure leaves the current instal
 themselves at all — an AppImage moved into `/opt` by root, a bundle in a read-only location, the app
 started from `dotnet run` — and `SelfUpdater.Blocker` says so; those, and a release that ships nothing
 for this platform, fall back to opening the release page.
+
+**The package is checked again at the point of use.** It sits in the temporary folder between the
+moment it is verified and the moment it runs, and a program already running as this user could swap
+it for one that then runs with the rights the installer asks for. So `AppUpdateCoordinator` hands on a
+`VerifiedPackage` (the path *and* the SHA-256 it matched), and each platform checks once more:
+
+- **Windows** — no script is written next to the installer any more. `SelfUpdater` starts a second
+  copy of the app (`--apply-update <pid> <sha256> <installer>`, handled by `UpdateHelper` at the top of
+  `Program.Main`, before the single-instance lock). It lives in the install folder, which only an
+  administrator can write; it waits for the app to exit, accepts only a file inside one of the app's own
+  `mcsl-…` download folders, opens it so nobody can write to, rename or delete it, hashes it through that
+  same handle and starts it **without letting go**, so the bytes that were hashed are the bytes that run.
+  If anything is off (another file, the user declining the prompt) it starts the app again.
+- **Linux** — the copy that is about to replace the AppImage is hashed, not the original.
+- **macOS** — not repeated: the script runs as the user and replaces an app the user can already
+  replace, so a swapped file gains no privilege.
 
 After an update, `MainWindow.Loaded` calls `ShowWhatsNewIfUpdated`, which compares the running version
 with `AppSettings.LastVersionSeen` and shows `WhatsNewDialog` (localized) with the notes from

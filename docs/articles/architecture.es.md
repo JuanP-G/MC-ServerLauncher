@@ -495,9 +495,28 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`SecretProtector`** — cifra los secretos en reposo (DPAPI en Windows, AES-GCM + `.secret.key` en
   Linux/macOS), usado para la clave de agente por usuario de Playit (y la clave de escritura heredada). Si el cifrado falla, la clave **no** se
   persiste (nunca llega texto plano al disco): sigue funcionando durante la sesión, el fallo queda
-  en el log diario y se avisa al usuario una vez.
+  en el log diario y se avisa al usuario una vez. El archivo de la clave AES se crea con permisos solo
+  para el propietario y se lee con un modo de compartición que tolera al proceso que lo está creando,
+  de modo que dos partes de la app que piden la clave a la vez reciben la misma.
 - **`DownloadVerifier`** — el verificador de checksums compartido para las descargas (Mojang SHA-1,
-  Adoptium/Paper SHA-256, Modrinth SHA-512/SHA-1), que borra el archivo si no cuadra.
+  Adoptium/Paper SHA-256, Modrinth SHA-512/SHA-1), que borra el archivo si no cuadra. `VerifyAsync`
+  **rechaza un archivo sin hash con el que compararlo**; la única salida es la explícita
+  `VerifyIfProvidedAsync`, que solo usa `VerifiedJarDownload` para jars de servidor, donde una fuente
+  puede no publicar checksum.
+- **Límites de red (`AppHttp`, `AtomicDownload`)** — todo lo que llega de la red se acota antes de
+  creérselo. `AppHttp.ReadCappedAsync` lee las respuestas de API y de texto hasta un tope (8 MiB para
+  las API, 64 KiB para los archivos pequeños que llevan un checksum o una firma) y `AtomicDownload`
+  corta un paquete en su límite (1 GiB por defecto; 500 MiB el instalador, 400 MiB un JRE, 400 MiB un
+  jar de servidor, 300 MiB un instalador de loader) y borra el `.part`. Los enlaces de la actualización
+  y del JRE deben ser `https` en el propio host del editor, así que una respuesta hostil de la API no
+  puede mandar a la app a otro servidor.
+- **`JavaCommandLine`** — Java se lanza con una **lista** de argumentos, nunca con una cadena, de modo
+  que un nombre de archivo con comillas o espacios no puede cambiar cuántos argumentos hay. La casilla
+  *Argumentos JVM extra* se corta con las mismas reglas que usa el sistema operativo (`Split`) y la
+  línea que muestra la consola sale de `Display`, para que lo que se ve sea lo que se leería de vuelta.
+- **Bibliotecas del sistema** — las pocas funciones de Win32 que llama la app (`PortService`,
+  `SingleInstance`, `SystemMemory`) llevan `DefaultDllImportSearchPaths(System32)`, así que una
+  biblioteca colocada junto al ejecutable o en el directorio de trabajo nunca es la que se carga.
 - **`Changelog`** — las notas de "novedades" por versión que se muestran tras actualizar (ver el
   flujo más abajo).
 - **`UpdateService`** / **`SelfUpdater`** — `UpdateService` pregunta a GitHub si hay una release más
@@ -965,6 +984,23 @@ funcionando. Hay instalaciones que no pueden sustituirse a sí mismas — un App
 `/opt`, un bundle en una ubicación de solo lectura, la app arrancada con `dotnet run` — y
 `SelfUpdater.Blocker` lo dice; esas, y una release que no traiga nada para esta plataforma, caen en
 abrir la página de la release.
+
+**El paquete se comprueba otra vez en el momento de usarlo.** Entre que se verifica y que se ejecuta
+está en la carpeta temporal, y un programa que ya corra como este usuario podría cambiarlo por otro que
+luego se ejecutaría con los derechos que pide el instalador. Por eso `AppUpdateCoordinator` entrega un
+`VerifiedPackage` (la ruta **y** el SHA-256 con el que cuadró) y cada plataforma lo comprueba una vez más:
+
+- **Windows** — ya no se escribe ningún script junto al instalador. `SelfUpdater` arranca una segunda
+  copia de la app (`--apply-update <pid> <sha256> <instalador>`, que atiende `UpdateHelper` al principio
+  de `Program.Main`, antes del bloqueo de instancia única). Vive en la carpeta de instalación, donde solo
+  un administrador puede escribir; espera a que la app salga, acepta solo un archivo dentro de una de las
+  carpetas de descarga `mcsl-…` de la propia app, lo abre de forma que nadie pueda escribir, renombrar ni
+  borrarlo, calcula su hash por ese mismo manejador y lo lanza **sin soltarlo**, así que los bytes que se
+  comprobaron son los que se ejecutan. Si algo no cuadra (otro archivo, el usuario rechaza el aviso) vuelve
+  a arrancar la app.
+- **Linux** — se calcula el hash de la copia que va a sustituir al AppImage, no el del original.
+- **macOS** — no se repite: el script corre como el usuario y reemplaza una app que el usuario ya puede
+  reemplazar, así que un archivo cambiado no gana ningún privilegio.
 
 Tras actualizar,
 `MainWindow.Loaded` llama a `ShowWhatsNewIfUpdated`, que compara la versión en ejecución con

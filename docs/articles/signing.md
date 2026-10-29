@@ -39,6 +39,13 @@ In `MainViewModel.UpdateNow`, before anything is installed:
 `Verify` never throws on bad input: a signature file is downloaded from the same place an attacker would
 write to, and a crash would be a way around the check.
 
+Verification happens when the package is downloaded, and the file then waits in a temporary folder the
+user can write to. So the checksum it matched travels with it (`VerifiedPackage`) and is checked again
+at the moment the package runs: on Windows by `UpdateHelper`, which holds the installer open while it
+hashes and starts it, and on Linux on the copy that is about to be installed. The signature is not
+repeated there: it proves who published the release, and the second check proves that the file that
+runs is the file that was proved. See [Architecture](architecture.md).
+
 ### The signed message
 
 The signature is not of the package bytes alone but of four lines, joined by `\n` with nothing after the
