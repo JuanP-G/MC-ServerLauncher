@@ -462,54 +462,70 @@ public static class ContentManifest
         if (entry is null) return null;
 
         using var reader = new StreamReader(entry.Open());
-        var lines = reader.ReadToEnd().Split('\n');
+        var scan = new ModsTomlScan();
+        foreach (var raw in reader.ReadToEnd().Split('\n')) scan.Feed(raw.Trim());
+        scan.Finish();
 
-        var provides = new List<string>();
-        var requires = new List<string>();
-        var references = new List<string>();
-        var side = ContentSide.Unspecified;
-
-        // The first [[mods]] entry is the jar itself; any further ones are mods it also carries.
-        string? ownId = null;
-        string? display = null;
-
-        // A tiny state machine over the two table headers that matter. Everything else is skipped,
-        // including values spanning lines, which none of the keys read here ever do.
-        var inMods = false;
-        var inDependency = false;
-        string? dependencyId = null;
-        var dependencyRequired = true;   // both formats default a dependency to mandatory
-        var dependencyRefused = false;   // NeoForge's "incompatible" and "discouraged"
-
-        void FlushDependency()
+        return Build(fileName, scan.Provides, scan.Requires) with
         {
-            if (dependencyId is { Length: > 0 } && dependencyRequired) requires.Add(dependencyId);
-            if (dependencyId is { Length: > 0 } && !dependencyRefused) references.Add(dependencyId);
-            dependencyId = null;
-            dependencyRequired = true;
-            dependencyRefused = false;
-        }
+            Side = scan.Side,
+            Id = Clean(scan.OwnId),
+            Name = Clean(scan.DisplayName),
+            References = CleanList(scan.References)
+        };
+    }
 
-        foreach (var raw in lines)
+    /// <summary>
+    /// A tiny state machine over the two table headers of a mods.toml that matter, fed one trimmed
+    /// line at a time. Everything else is skipped, including values spanning lines, which none of
+    /// the keys read here ever do.
+    /// </summary>
+    private sealed class ModsTomlScan
+    {
+        public readonly List<string> Provides = new();
+        public readonly List<string> Requires = new();
+        public readonly List<string> References = new();
+        public ContentSide Side = ContentSide.Unspecified;
+
+        /// <summary>The first [[mods]] entry is the jar itself; any further ones are mods it also carries.</summary>
+        public string? OwnId;
+        public string? DisplayName;
+
+        private bool _inMods;
+        private bool _inDependency;
+        private string? _dependencyId;
+        private bool _dependencyRequired = true;   // both formats default a dependency to mandatory
+        private bool _dependencyRefused;           // NeoForge's "incompatible" and "discouraged"
+
+        /// <summary>Reads one line: a table header moves the state, a key inside a table is taken.</summary>
+        public void Feed(string line)
         {
-            var line = raw.Trim();
-            if (line.Length == 0 || line.StartsWith('#')) continue;
+            if (line.Length == 0 || line.StartsWith('#')) return;
 
             if (line.StartsWith('['))
             {
                 FlushDependency();
-                inMods = line.StartsWith("[[mods]]", StringComparison.OrdinalIgnoreCase);
-                inDependency = line.StartsWith("[[dependencies.", StringComparison.OrdinalIgnoreCase);
-                continue;
+                _inMods = line.StartsWith("[[mods]]", StringComparison.OrdinalIgnoreCase);
+                _inDependency = line.StartsWith("[[dependencies.", StringComparison.OrdinalIgnoreCase);
+                return;
             }
 
-            if (inMods && TomlKey(line, "modId") is { } own)
+            if (_inMods) ReadModKey(line);
+            if (_inDependency) ReadDependencyKey(line);
+        }
+
+        /// <summary>Closes the dependency still open when the file ends.</summary>
+        public void Finish() => FlushDependency();
+
+        private void ReadModKey(string line)
+        {
+            if (TomlKey(line, "modId") is { } own)
             {
-                provides.Add(own);
-                ownId ??= own;
+                Provides.Add(own);
+                OwnId ??= own;
             }
 
-            if (inMods && display is null && TomlKey(line, "displayName") is { } shown) display = shown;
+            if (DisplayName is null && TomlKey(line, "displayName") is { } shown) DisplayName = shown;
 
             // Only inside [[mods]]. "side" appears in [[dependencies.x]] as well, where it means
             // which side that dependency is needed on — read there, a mod that merely requires a
@@ -518,39 +534,40 @@ public static class ContentManifest
             // displayTest is not read, on purpose. It controls the version handshake, not where the
             // mod loads; it correlates with being server-side without ever asserting it, and acting
             // on a correlation is the one mistake this function cannot afford to make.
-            if (inMods && TomlKey(line, "side") is { } declared)
-                side = declared.ToUpperInvariant() switch
+            if (TomlKey(line, "side") is { } declared)
+                Side = declared.ToUpperInvariant() switch
                 {
                     "CLIENT" => ContentSide.Client,
                     "SERVER" => ContentSide.Server,
                     "BOTH" => ContentSide.Both,
                     _ => ContentSide.Unspecified
                 };
+        }
 
-            if (!inDependency) continue;
-
-            if (TomlKey(line, "modId") is { } needed) dependencyId = needed;
+        private void ReadDependencyKey(string line)
+        {
+            if (TomlKey(line, "modId") is { } needed) _dependencyId = needed;
 
             // NeoForge writes type = "required"; older Forge writes mandatory = true. Both appear
             // in the wild, and a jar built for either has to be read correctly by the same code.
             if (TomlKey(line, "type") is { } type)
             {
-                dependencyRequired = type.Equals("required", StringComparison.OrdinalIgnoreCase);
-                dependencyRefused = type.Equals("incompatible", StringComparison.OrdinalIgnoreCase)
-                                    || type.Equals("discouraged", StringComparison.OrdinalIgnoreCase);
+                _dependencyRequired = type.Equals("required", StringComparison.OrdinalIgnoreCase);
+                _dependencyRefused = type.Equals("incompatible", StringComparison.OrdinalIgnoreCase)
+                                     || type.Equals("discouraged", StringComparison.OrdinalIgnoreCase);
             }
             else if (TomlBool(line, "mandatory") is { } mandatory)
-                dependencyRequired = mandatory;
+                _dependencyRequired = mandatory;
         }
 
-        FlushDependency();
-        return Build(fileName, provides, requires) with
+        private void FlushDependency()
         {
-            Side = side,
-            Id = Clean(ownId),
-            Name = Clean(display),
-            References = CleanList(references)
-        };
+            if (_dependencyId is { Length: > 0 } && _dependencyRequired) Requires.Add(_dependencyId);
+            if (_dependencyId is { Length: > 0 } && !_dependencyRefused) References.Add(_dependencyId);
+            _dependencyId = null;
+            _dependencyRequired = true;
+            _dependencyRefused = false;
+        }
     }
 
     // --- Shared ---
