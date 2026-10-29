@@ -205,34 +205,8 @@ public partial class ServerModsViewModel : ObservableObject
     [ObservableProperty]
     private string _updateStatus = string.Empty;
 
-    /// <summary>
-    /// The newer versions the last update check found, kept here rather than on the rows.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// They used to live only on each <see cref="ModItem"/>, and the list is rebuilt from disk after
-    /// every update, every enable or disable, every delete. So updating one mod out of five threw
-    /// away the other four, and the only way to get their buttons back was to check again.
-    /// </para>
-    /// <para>
-    /// Keyed by the jar's enabled path, so disabling a mod — which renames it to
-    /// <c>.jar.disabled</c> — keeps its update. Stamped with the size and write time the check saw,
-    /// so a jar replaced by hand is not offered an update found for the file it used to be.
-    /// </para>
-    /// </remarks>
-    private readonly Dictionary<string,
-        PendingUpdate> _pendingUpdates = new(StringComparer.OrdinalIgnoreCase);
-
-    /// <summary>The loader and Minecraft version the pending updates were found for.</summary>
-    /// <remarks>
-    /// A check answers "newest compatible with this server as it is now". Convert the server or move
-    /// it to another Minecraft version and every answer is for something else, so they are dropped
-    /// rather than offered — installing them is how a server ends up with mods it cannot load.
-    /// </remarks>
-    private (ServerType Type, string GameVersion) _pendingFor;
-
-    /// <summary>One newer version, and the file it was found for.</summary>
-    private sealed record PendingUpdate(ModUpdateInfo Info, long Length, DateTime WrittenUtc);
+    /// <summary>The newer versions the last update check found; see <see cref="PendingUpdateStore"/>.</summary>
+    private readonly PendingUpdateStore _pendingUpdates;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(UpdateAllCommand))]
@@ -258,50 +232,16 @@ public partial class ServerModsViewModel : ObservableObject
     }
 
     /// <summary>The key a jar's pending update is kept under: its path with any .disabled removed.</summary>
-    internal static string PendingKey(string filePath) =>
-        filePath.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase)
-            ? filePath[..^".disabled".Length]
-            : filePath;
+    internal static string PendingKey(string filePath) => PendingUpdateStore.KeyFor(filePath);
 
     /// <summary>Starts a fresh set of pending updates, for the server as it is now.</summary>
-    /// <remarks>A new check replaces whatever the last one found.</remarks>
-    internal void BeginPendingUpdates()
-    {
-        _pendingUpdates.Clear();
-        _pendingFor = (_config.Type, _config.GameVersion);
-    }
+    internal void BeginPendingUpdates() => _pendingUpdates.Begin();
 
     /// <summary>Remembers a newer version for a jar, as the check saw it.</summary>
-    internal void RememberUpdate(string filePath, ModUpdateInfo info)
-    {
-        var file = new FileInfo(filePath);
-        _pendingUpdates[PendingKey(filePath)] = new PendingUpdate(info, file.Length, file.LastWriteTimeUtc);
-    }
+    internal void RememberUpdate(string filePath, ModUpdateInfo info) => _pendingUpdates.Remember(filePath, info);
 
-    /// <summary>
-    /// The update still waiting for this jar, or null. Drops what no longer applies on the way.
-    /// </summary>
-    internal ModUpdateInfo? PendingUpdateFor(string filePath)
-    {
-        if (_pendingFor != (_config.Type, _config.GameVersion))
-        {
-            _pendingUpdates.Clear();
-            return null;
-        }
-
-        var key = PendingKey(filePath);
-        if (!_pendingUpdates.TryGetValue(key, out var pending)) return null;
-
-        var file = new FileInfo(filePath);
-        if (!file.Exists || file.Length != pending.Length || file.LastWriteTimeUtc != pending.WrittenUtc)
-        {
-            // Not the file the check looked at any more: replaced by hand, or already updated.
-            _pendingUpdates.Remove(key);
-            return null;
-        }
-
-        return pending.Info;
-    }
+    /// <summary>The update still waiting for this jar, or null.</summary>
+    internal ModUpdateInfo? PendingUpdateFor(string filePath) => _pendingUpdates.For(filePath);
 
     // --- Missing library mods ---
     //
@@ -609,6 +549,7 @@ public partial class ServerModsViewModel : ObservableObject
     public ServerModsViewModel(ServerConfig config)
     {
         _config = config;
+        _pendingUpdates = new PendingUpdateStore(config);
         // Shares the HTTP client and the store cache with everything else the panel asks for.
         _dependencies = new ModDependencyService(_modrinthService);
         _exporter = new ModpackExporter(config, _hashes, _modrinthService,
@@ -1278,7 +1219,7 @@ public partial class ServerModsViewModel : ObservableObject
 
             if (outcome == ContentReplacement.UpdateOutcome.Updated)
             {
-                _pendingUpdates.Remove(PendingKey(mod.FilePath));
+                _pendingUpdates.Forget(mod.FilePath);
                 mod.Update = null;
 
                 // The month it has been off does not start again because it was updated meanwhile.
