@@ -460,6 +460,11 @@ def sfx():
     n9 = secs(0.6)
     t9 = np.arange(n9) / SR
     out["ding"] = sum(np.sin(2 * np.pi * midi_hz(m) * t9) * np.exp(-t9 * 6) * a for m, a in ((88, 0.3), (100, 0.12)))
+    # The microwave's bell: two struck tones, a little detuned, ringing out.
+    n10 = secs(1.6)
+    t10 = np.arange(n10) / SR
+    bell = sum(np.sin(2 * np.pi * f * t10) * np.exp(-t10 * d) * a for f, d, a in ((1318.5, 2.2, 0.5), (1325, 2.4, 0.3), (2637, 4.5, 0.18), (3951, 7, 0.08)))
+    out["microwave"] = bell * env_adsr(n10, 0.002, 0.05, 1.0, 0.2) * 0.8
     return out
 
 

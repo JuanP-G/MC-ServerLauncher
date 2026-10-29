@@ -7,3 +7,4 @@ public/audio/
 audio/__pycache__/
 .claude/
 skills-lock.json
+public/music/
