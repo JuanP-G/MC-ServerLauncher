@@ -20,8 +20,6 @@ namespace McServerLauncher.ViewModels;
 /// </summary>
 public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdminHost
 {
-    private const int MaxConsoleLines = 2000;
-    private const int ConsoleTrimBlock = 200;
 
     private readonly ServerProcessManager _process = new();
     private readonly PlayitManager _playit = PlayitManager.Shared;
@@ -113,85 +111,40 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
 
     public ServerConfig Config { get; }
 
+    /// <summary>The lines of the console, what is shown after the filters, and how they arrive.</summary>
+    private readonly ConsoleBuffer _console = new();
+
     /// <summary>Lines of the embedded console (server stdout/stderr + the launcher's own).</summary>
-    public BulkObservableCollection<ConsoleLine> ConsoleLines { get; } = new();
+    public BulkObservableCollection<ConsoleLine> ConsoleLines => _console.Lines;
 
     /// <summary>
     /// The lines currently shown in the console UI: all of <see cref="ConsoleLines"/> when nothing
     /// is filtered, or the matching subset (kept in order, updated incrementally as new lines
     /// arrive) while a search is typed or a category is switched off.
     /// </summary>
-    public BulkObservableCollection<ConsoleLine> VisibleConsoleLines { get; } = new();
+    public BulkObservableCollection<ConsoleLine> VisibleConsoleLines => _console.Visible;
 
     [ObservableProperty]
     private string _consoleFilter = string.Empty;
 
-    partial void OnConsoleFilterChanged(string value) => RebuildVisibleConsole();
+    partial void OnConsoleFilterChanged(string value) => _console.Filter = value;
 
-    /// <summary>
-    /// One switch per kind of line, in the order they appear along the top of the console.
-    /// </summary>
-    /// <remarks>
-    /// Ordered by how much they matter rather than by the enum, so the two that make somebody open
-    /// the console at all come first and are never the ones that wrap out of sight.
-    /// </remarks>
-    public IReadOnlyList<ConsoleKindFilter> ConsoleKinds { get; } = new[]
-    {
-        ConsoleLineKind.Error, ConsoleLineKind.Warn, ConsoleLineKind.Chat, ConsoleLineKind.Players,
-        ConsoleLineKind.Command, ConsoleLineKind.Launcher, ConsoleLineKind.Info
-    }.Select(k => new ConsoleKindFilter(k)).ToList();
-
-    private readonly Dictionary<ConsoleLineKind, ConsoleKindFilter> _kindFilters;
+    /// <summary>One switch per kind of line, in the order they appear along the top of the console.</summary>
+    public IReadOnlyList<ConsoleKindFilter> ConsoleKinds => _console.Kinds;
 
     /// <summary>True while anything at all is being hidden, so the UI can offer to undo it.</summary>
-    public bool IsConsoleFiltered =>
-        !string.IsNullOrWhiteSpace(ConsoleFilter) || ConsoleKinds.Any(k => !k.IsOn);
-
-    private bool MatchesConsoleFilter(ConsoleLine line) =>
-        ConsoleKindFilter.Matches(line, ConsoleFilter, _kindFilters);
-
-    private void RebuildVisibleConsole()
-    {
-        VisibleConsoleLines.ReplaceAll(ConsoleLines.Where(MatchesConsoleFilter));
-        OnPropertyChanged(nameof(IsConsoleFiltered));
-    }
-
-    private void OnConsoleKindChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        // Only the switch itself: Count and HasUnseen change constantly while a server runs, and
-        // rebuilding the visible list on every arriving line would undo the whole point of adding
-        // lines incrementally.
-        if (e.PropertyName == nameof(ConsoleKindFilter.IsOn))
-            RebuildVisibleConsole();
-    }
+    public bool IsConsoleFiltered => _console.IsFiltered;
 
     /// <summary>Switches every category back on and clears the search.</summary>
     [RelayCommand]
     private void ShowAllConsoleKinds()
     {
-        foreach (var filter in ConsoleKinds) filter.IsOn = true;
+        _console.ShowAllKinds();
         ConsoleFilter = string.Empty;
-        RebuildVisibleConsole();
     }
 
-    /// <summary>
-    /// Repaints the console and its switches after the colours change in the settings.
-    /// </summary>
-    /// <remarks>
-    /// The lines themselves get their colour through a converter, so nothing here has to hold a
-    /// brush per line. Rebuilding the visible list is what makes them ask again: it is a single
-    /// Reset, the items are re-created, and the converter runs with the new settings.
-    /// </remarks>
-    public void RefreshConsoleColours()
-    {
-        var brushes = ConsolePalette.All(
-            NotificationPreferences.Global, ConsolePreferences.ChatColor, ConsolePreferences.PlayersColor);
-
-        foreach (var filter in ConsoleKinds)
-            filter.Brush = brushes[filter.Kind];
-
-        RebuildVisibleConsole();
-    }
+    /// <summary>Repaints the console and its switches after the colours change in the settings.</summary>
+    public void RefreshConsoleColours() => _console.RefreshColours();
 
     [ObservableProperty]
     private string _name;
@@ -414,10 +367,8 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         _name = config.Name;
         _tunnelAddress = config.TunnelAddress;
 
-        _kindFilters = ConsoleKinds.ToDictionary(k => k.Kind);
-        foreach (var filter in ConsoleKinds)
-            filter.PropertyChanged += OnConsoleKindChanged;
-        RefreshConsoleColours();
+        _console.Rebuilt += () => OnPropertyChanged(nameof(IsConsoleFiltered));
+        _console.Flushed += OnConsoleFlushed;
 
         _process.OutputReceived += OnServerLine;
         _process.StateChanged += OnServerStateChanged;
@@ -939,75 +890,12 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         // plain text — the kind is a way of looking at the console, not part of the record.
         ConsoleLogService.Shared.Log(Name, text);
 
-        _pendingLines.Enqueue(new ConsoleLine(text, kind));
-
-        // The app's own lines are written on the UI thread and appear at once, in order with
-        // whatever the server had already queued.
-        if (Dispatcher.UIThread.CheckAccess())
-        {
-            FlushConsole();
-            return;
-        }
-
-        // The server's arrive on its output threads, sometimes thousands in a few seconds while a
-        // modpack loads. One trip to the UI thread for however many arrive before it runs, instead
-        // of one per line: that is what made the window stutter while a big server started.
-        if (Interlocked.Exchange(ref _flushScheduled, 1) == 0)
-            Dispatcher.UIThread.Post(FlushConsole, DispatcherPriority.Background);
+        _console.Enqueue(new ConsoleLine(text, kind));
     }
 
-    /// <summary>
-    /// Lines waiting for the UI thread. See <see cref="OnConsoleLine(string, ConsoleLineKind)"/>.
-    /// </summary>
-    private readonly System.Collections.Concurrent.ConcurrentQueue<ConsoleLine> _pendingLines = new();
-
-    /// <summary>1 while a flush is posted and has not run yet.</summary>
-    private int _flushScheduled;
-
-    /// <summary>Puts every waiting line on screen, with one notification per list.</summary>
-    private void FlushConsole()
+    /// <summary>What reacts to the content of the lines that just went on screen.</summary>
+    private void OnConsoleFlushed(IReadOnlyList<ConsoleLine> batch)
     {
-        // Cleared before taking the lines, so one arriving meanwhile schedules a flush of its own.
-        Interlocked.Exchange(ref _flushScheduled, 0);
-
-        var batch = new List<ConsoleLine>();
-        while (_pendingLines.TryDequeue(out var queued)) batch.Add(queued);
-        if (batch.Count == 0) return;
-
-        var visible = new List<ConsoleLine>(batch.Count);
-        foreach (var line in batch)
-        {
-            if (_kindFilters.TryGetValue(line.Kind, out var filter))
-            {
-                filter.Count++;
-                // Arriving while its own switch is off would otherwise be completely invisible:
-                // filtered out of the list, with nothing on screen changing.
-                if (!filter.IsOn) filter.HasUnseen = true;
-            }
-
-            if (MatchesConsoleFilter(line)) visible.Add(line);
-        }
-
-        ConsoleLines.AddRange(batch);
-        VisibleConsoleLines.AddRange(visible);
-
-        // Trim in blocks (EFI-4): one RemoveAt(0) per line was an O(n) shift plus a UI
-        // notification for EVERY line once the cap was reached. Letting the list overshoot by
-        // ConsoleTrimBlock and cutting back to the cap in a single bulk operation makes the
-        // per-line cost amortized O(1), at the price of momentarily holding up to 2200 lines.
-        if (ConsoleLines.Count > MaxConsoleLines + ConsoleTrimBlock)
-        {
-            var excess = ConsoleLines.Count - MaxConsoleLines;
-
-            // Counted before the lines are gone; see VisibleLinesLeaving for why the visible
-            // list is trimmed rather than rebuilt.
-            var leaving = ConsoleKindFilter.VisibleLinesLeaving(ConsoleLines, excess, MatchesConsoleFilter);
-
-            ConsoleLines.RemoveFromStart(excess);
-            ConsoleKindFilter.Recount(ConsoleLines, ConsoleKinds); // lines fell off the top
-            VisibleConsoleLines.RemoveFromStart(leaving);
-        }
-
         foreach (var line in batch)
         {
             // Only what the server says about itself. Chat is typed by players, and the app's own
@@ -1440,12 +1328,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
     }
 
     [RelayCommand]
-    private void ClearConsole()
-    {
-        ConsoleLines.Clear();
-        VisibleConsoleLines.Clear();
-        foreach (var filter in ConsoleKinds) { filter.Count = 0; filter.HasUnseen = false; }
-    }
+    private void ClearConsole() => _console.Clear();
 
     /// <summary>
     /// Creates (if it doesn't exist) the Playit tunnel for this server's port, using the write
