@@ -184,7 +184,7 @@ The project (`McServerLauncher/`) is organized by responsibility:
 > so nothing that touched them could be tested except through its pure pieces.
 
 > **The big view models are facades over small classes.** `ServerViewModel` (2,400 lines at its
-> peak) and `ServerModsViewModel` used to hold every rule of their screens in one class. The rules
+> peak) and `ServerModsViewModel` (2,100) used to hold every rule of their screens in one class. The rules
 > now live in plain classes that raise events, and the view model keeps what the XAML binds to —
 > the properties and commands — as one-line forwarders, because the bindings are by name
 > (`CompileBindings=False`) and renaming one breaks the screen without a compiler error.
@@ -199,8 +199,22 @@ The project (`McServerLauncher/`) is organized by responsibility:
 >   `IPlayerAdminHost`, implemented explicitly by `ServerViewModel`. None of them knows Avalonia,
 >   so each is tested alone with a fake host and, where time matters, an injected clock
 >   (`IdleShutdownControllerTests`, `StartPreflightTests`, `PlayerAdminTests`…).
-> - **Mods.** `ModpackExporter` builds the pack and `PendingUpdateStore` keeps the newer versions the
->   last check found, apart from the rows that show them.
+> - **Mods.** `ServerModsViewModel` keeps what the tab binds to and hands each job to a class of
+> its own: `InstalledContentIndex` (what every installed file is, one answer per SHA-1 shared by
+> all of them), `ModDependencyInstaller` (find and install what a mod needs), `ModInstaller`
+> (install one mod and take the old copies out), `ModUpdater` (check and update), `StoreBrowser`
+> (the query behind the store page, and which answer is the current one), `CleanupScanner`
+> (the facts behind the clean-up panel), `ModpackExporter` (the pack for the players) and
+> `PendingUpdateStore` (the newer versions the last check found). They take a token on every
+> call and never keep one, because `Shutdown()` replaces the view model's. The store itself is
+> `ModrinthService`, whose methods are `virtual` so the tests can put a fake in its place
+> (`FakeModrinthStore`): installing and updating, which had no test before, now have
+> (`ModInstallerTests`, `ModUpdaterTests`, `StoreBrowserTests`).
+> - **What is left in the shell views.** `MainViewModel` hands the update to `AppUpdateCoordinator`
+> and what a removed server leaves behind to `RemovedServerLeftovers`; what stays is the
+> window's own state (sections, panels, the server list). Automatic backups are decided by
+> `BackupCoordinator.ClockTick`, and the process sampling is `ProcessStatsService`; what
+> `ServerViewModel` keeps of them is the timer and the strings the screen binds to.
 > - **Services used by more than one screen.** `ServerProvisioningService` (create a server or adopt
 >   a folder: the new-server panel only reads its form), `LoaderChangeService` (convert a server to
 >   another loader) and `AppUpdateCoordinator` (download, verify and stage an update behind
@@ -581,7 +595,9 @@ are no hard-coded machine paths.
   used to appear only inside request headers and the update check, so the About screen had nowhere to
   take it from.
 - **`MarkdownParser`** / **`MarkdownBody`** — a deliberately partial Markdown reader for the long
-  descriptions Modrinth returns, and the behavior that turns its blocks into controls.
+  descriptions Modrinth returns, and the behavior that turns its blocks into controls. The parser
+  is a line reader with one method per kind of block; the order in which `BlockReader.Read` tries
+  them is what decides how a line is read, and `MarkdownParserTests` pins it.
 - **`MinecraftRange`** — whether a Minecraft version satisfies the range a mod declares.
 
 ## Important flows
@@ -1371,7 +1387,7 @@ could not be put back, since it is then the only copy in place. Anything left re
 refresh (`SweepLeftovers`). Paths are compared the way the system does (`FilePaths`): Linux tells `Sodium.jar`
 from `sodium.jar`.
 
-What the store says each jar is comes from one place, `ServerModsViewModel.Identify.cs`: one answer per SHA-1
+What the store says each jar is comes from one place, `InstalledContentIndex`: one answer per SHA-1
 for the session, "unknown" remembered only when the store did answer, and a jar counts as its project only when
 it is that version's main file — a module or a sources jar published beside it would otherwise be deleted by
 installing the main one. The notice only says
@@ -1390,8 +1406,8 @@ suggests**: rows come ticked and wait for the button — except "nothing install
 reason, which comes unticked — and "Not now" hides it for 30 days. It folds to its title line. A row removes
 its file only if it is still the one the scan saw (same size and write time), and nothing is removed while
 **Update all** runs.
-`CleanupAdvisor` decides (pure, tested without a network); the panel half (`ServerModsViewModel.Cleanup.cs`)
-gathers the facts and shows the answer.
+`CleanupAdvisor` decides (pure, tested without a network); the facts it needs are gathered by `CleanupScanner`, and the panel half
+(`ServerModsViewModel.Cleanup.cs`) shows the answer.
 
 - **Libraries nothing uses.** A library is what is on a hand-written list (`KnownLibraryIds`) or what Modrinth
   files *only* under `library`. The category alone will not do: JEI and malilib are both "library, utility",

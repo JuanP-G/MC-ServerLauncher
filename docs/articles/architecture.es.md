@@ -188,7 +188,7 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 > red, así que nada que los tocara se podía probar salvo por sus piezas puras.
 
 > **Los view models grandes son fachadas sobre clases pequeñas.** `ServerViewModel` (2.400 líneas en
-> su momento más grande) y `ServerModsViewModel` guardaban todas las reglas de su pantalla en una
+> su momento más grande) y `ServerModsViewModel` (2.100) guardaban todas las reglas de su pantalla en una
 > sola clase. Ahora las reglas viven en clases simples que lanzan eventos, y el view model conserva
 > lo que el XAML enlaza —propiedades y comandos— como reenvíos de una línea, porque los enlaces son
 > por nombre (`CompileBindings=False`) y renombrar uno rompe la pantalla sin que el compilador avise.
@@ -204,8 +204,23 @@ El proyecto (`McServerLauncher/`) está organizado por responsabilidad:
 >   que `ServerViewModel` implementa de forma explícita. Ninguna conoce Avalonia, así que cada una
 >   se prueba sola con un host falso y, donde importa el tiempo, un reloj inyectado
 >   (`IdleShutdownControllerTests`, `StartPreflightTests`, `PlayerAdminTests`…).
-> - **Mods.** `ModpackExporter` monta el paquete y `PendingUpdateStore` guarda las versiones
->   nuevas que encontró la última comprobación, aparte de las filas que las enseñan.
+> - **Mods.** `ServerModsViewModel` guarda lo que enlaza la pestaña y reparte cada tarea en una
+> clase propia: `InstalledContentIndex` (qué es cada archivo instalado, una respuesta por SHA-1
+> compartida por todas), `ModDependencyInstaller` (buscar e instalar lo que un mod necesita),
+> `ModInstaller` (instalar un mod y quitar las copias viejas), `ModUpdater` (comprobar y
+> actualizar), `StoreBrowser` (la consulta de la página de la tienda y cuál respuesta es la
+> vigente), `CleanupScanner` (los datos del panel de limpieza), `ModpackExporter` (el paquete para
+> los jugadores) y `PendingUpdateStore` (las versiones nuevas de la última comprobación). Reciben
+> un token en cada llamada y nunca lo guardan, porque `Shutdown()` cambia el del view model. La
+> tienda es `ModrinthService`, con los métodos `virtual` para que los tests pongan uno falso en su
+> lugar (`FakeModrinthStore`): instalar y actualizar, que no tenían ningún test, ahora los tienen
+> (`ModInstallerTests`, `ModUpdaterTests`, `StoreBrowserTests`).
+> - **Lo que queda en las vistas de la ventana.** `MainViewModel` le pasa la actualización a
+> `AppUpdateCoordinator` y lo que deja un servidor quitado a `RemovedServerLeftovers`; lo que
+> queda es el estado propio de la ventana (secciones, paneles, lista de servidores). Las copias
+> automáticas las decide `BackupCoordinator.ClockTick` y el muestreo del proceso es
+> `ProcessStatsService`; lo que conserva `ServerViewModel` de ellos es el temporizador y los
+> textos que enlaza la pantalla.
 > - **Servicios que usa más de una pantalla.** `ServerProvisioningService` (crear un servidor o
 >   adoptar una carpeta: el panel de nuevo servidor solo lee su formulario), `LoaderChangeService`
 >   (convertir un servidor a otro cargador) y `AppUpdateCoordinator` (descargar, verificar y dejar
@@ -604,7 +619,9 @@ mundo. No hay rutas fijas del equipo en el código.
   dirección del repositorio aparecía solo dentro de las cabeceras de las peticiones y de la comprobación
   de actualizaciones, así que la pantalla Acerca de no tenía de dónde sacarla.
 - **`MarkdownParser`** / **`MarkdownBody`** — un lector de Markdown deliberadamente parcial para las
-  descripciones largas de Modrinth, y el comportamiento que convierte sus bloques en controles.
+  descripciones largas de Modrinth, y el comportamiento que convierte sus bloques en controles. El
+  lector va línea a línea con un método por tipo de bloque; el orden en que `BlockReader.Read` los
+  prueba es lo que decide cómo se lee una línea, y `MarkdownParserTests` lo fija.
 - **`MinecraftRange`** — si una versión de Minecraft cumple el rango que declara un mod.
 
 ## Flujos importantes
@@ -1435,7 +1452,7 @@ del mismo nombre, o que alguna no se haya podido devolver, porque entonces es la
 quede renombrado lo barre el siguiente refresco (`SweepLeftovers`). Las rutas se comparan como las compara el
 sistema (`FilePaths`): Linux distingue `Sodium.jar` de `sodium.jar`.
 
-Lo que la tienda dice que es cada jar sale de un solo sitio, `ServerModsViewModel.Identify.cs`: una respuesta por
+Lo que la tienda dice que es cada jar sale de un solo sitio, `InstalledContentIndex`: una respuesta por
 SHA-1 para la sesión, «desconocido» apuntado solo cuando la tienda sí contestó, y un jar cuenta como su proyecto
 solo si es el archivo principal de su versión — si no, un módulo o un jar de fuentes publicado al lado se
 borraría al instalar el principal. El aviso solo dice que se ha actualizado: quitar las copias viejas es lo que significa actualizar, no una noticia. Los instaladores de Crossplay, Hydraulic y
@@ -1452,7 +1469,7 @@ propone**: las filas vienen marcadas y esperan al botón —salvo «ningún mod 
 más débil, que viene sin marcar— y «Ahora no» las esconde 30 días. Se pliega a su línea de título. Una fila
 solo quita su archivo si sigue siendo el que vio la búsqueda (mismo tamaño y fecha), y no se quita nada
 mientras corre **Actualizar todas**. `CleanupAdvisor` decide
-(puro, probado sin red); la parte del panel (`ServerModsViewModel.Cleanup.cs`) reúne los datos y lo pinta.
+(puro, probado sin red); los datos los reúne `CleanupScanner` y la parte del panel (`ServerModsViewModel.Cleanup.cs`) pinta la respuesta.
 
 - **Librerías que nadie usa.** Una librería es lo que está en una lista escrita a mano (`KnownLibraryIds`) o lo
   que Modrinth clasifica *solo* como `library`. La categoría sola no vale: JEI y malilib están las dos en
