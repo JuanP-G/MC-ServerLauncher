@@ -267,7 +267,18 @@ are no hard-coded machine paths.
   redirects stdin/stdout/stderr, re-emits each output line via an event, and stops it cleanly by
   sending `stop` (with a kill fallback). The kill waits `ServerViewModel.StopTimeout` (60 s), one
   value for the Stop button, Restart and closing or updating the app — closing used to allow fifteen
-  seconds, less than a large modpack needs to save.
+  seconds, less than a large modpack needs to save. Whatever is typed to the server goes through
+  `SendCommand`, which only queues the line: a single reader writes the queue to the process's input in
+  order and flushes each line, and `StopAsync` queues its `stop` behind them and waits for that write. A JVM
+  that is frozen and not reading used to freeze the window with it, because the write happened on the caller's
+  thread.
+- **Who disposes what.** Shutting down is not the end: after a failed update the app comes back with the same
+  view models, so `ShutdownAsync` / `Shutdown()` stop work but release nothing. Disposal happens on the one
+  terminal path, `MainViewModel.ForgetServerAsync` → `ServerViewModel.Dispose()`, which releases the process
+  manager, the backup coordinator, the Mods and Performance-solutions pages, the connection test and the idle
+  timer. `PlayitManager` and `PlayitAgentRunner` are shared by every server and live as long as the app, so
+  no server disposes them. Failures the app survives on purpose (a corrupt cache entry, a port query that did
+  not run) go to the log through `Safe.Note(area, what, error)` instead of an empty `catch`.
 - **`JavaService`** — detects installed Java versions and, if none is compatible, downloads the
   right Temurin (Adoptium) JRE for the architecture. Used both when creating and when starting a
   server. Each server asks its own `JavaService`, so the download of a given Java (by major version)
@@ -1431,7 +1442,9 @@ its file only if it is still the one the scan saw (same size and write time), an
 
 All user-facing text lives in `Resources/Strings.resx` (Spanish, the neutral/base language) plus
 satellite files `Strings.en.resx`, `Strings.pt.resx`, `Strings.fr.resx`, `Strings.de.resx`. Code
-reads them with `Localizer.Get("Key")` (and `string.Format` for parameters); XAML uses the
+reads them with `Localizer.Get("Key")`, or `Localizer.Format("Key", args)` for a text with `{0}` placeholders
+(the template is parsed once and kept by its own text, so a language change at run time still gets the right
+one; the result is what `string.Format(Localizer.Get("Key"), args)` gives); XAML uses the
 `{loc:Loc Key}` markup extension. The active language comes from `AppSettings.Language` and is
 applied in `App.OnFrameworkInitializationCompleted` before any window is created, so changing the
 language requires a restart. See [Contributing](contributing.md) for how to add a language or a new string.

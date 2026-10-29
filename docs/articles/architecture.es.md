@@ -276,7 +276,18 @@ mundo. No hay rutas fijas del equipo en el código.
   de consola), redirige stdin/stdout/stderr, reemite cada línea por un evento y lo detiene de forma
   limpia enviando `stop` (con kill de respaldo). El kill espera `ServerViewModel.StopTimeout` (60 s),
   el mismo valor para el botón Parar, Reiniciar y cerrar o actualizar la app; al cerrar se daban
-  quince segundos, menos de lo que un modpack grande necesita para guardar.
+  quince segundos, menos de lo que un modpack grande necesita para guardar. Lo que se escribe al servidor
+  pasa por `SendCommand`, que solo encola la línea: un único lector la escribe en la entrada del proceso, en
+  orden y con un flush por línea, y `StopAsync` encola su `stop` detrás y espera esa escritura. Una JVM
+  congelada que no lee congelaba con ella la ventana, porque la escritura ocurría en el hilo de quien llamaba.
+- **Quién libera qué.** Cerrar no es el final: tras una actualización fallida la app vuelve con los mismos
+  view models, así que `ShutdownAsync` / `Shutdown()` paran el trabajo pero no sueltan nada. La liberación
+  ocurre en el único camino terminal, `MainViewModel.ForgetServerAsync` → `ServerViewModel.Dispose()`, que
+  libera el gestor de proceso, el coordinador de copias, las páginas de Mods y de soluciones de rendimiento, la
+  prueba de conexión y el temporizador de inactividad. `PlayitManager` y `PlayitAgentRunner` son compartidos por
+  todos los servidores y viven lo que la app, así que ningún servidor los libera. Los fallos que la app sobrevive
+  a propósito (una entrada de caché corrupta, una consulta de puertos que no se pudo hacer) van al registro con
+  `Safe.Note(area, qué, error)` en vez de un `catch` vacío.
 - **`JavaService`** — detecta los Java instalados y, si ninguno es compatible, descarga el JRE
   Temurin (Adoptium) adecuado para la arquitectura. Se usa al crear y al iniciar un servidor. Cada
   servidor pide su propio `JavaService`, así que la descarga de una Java (por versión mayor) pasa por una
@@ -1494,7 +1505,9 @@ mientras corre **Actualizar todas**. `CleanupAdvisor` decide
 
 Todo el texto visible está en `Resources/Strings.resx` (español, idioma neutral/base) más los
 archivos satélite `Strings.en.resx`, `Strings.pt.resx`, `Strings.fr.resx`, `Strings.de.resx`. El
-código los lee con `Localizer.Get("Clave")` (y `string.Format` para parámetros); el XAML usa la
+código los lee con `Localizer.Get("Clave")`, o `Localizer.Format("Clave", args)` si el texto lleva huecos `{0}`
+(la plantilla se analiza una vez y se guarda por su propio texto, así que un cambio de idioma en marcha sigue
+cogiendo la correcta; el resultado es el de `string.Format(Localizer.Get("Clave"), args)`); el XAML usa la
 extensión de marcado `{loc:Loc Clave}`. El idioma activo viene de `AppSettings.Language` y se aplica
 en `App.OnFrameworkInitializationCompleted` antes de crear ninguna ventana, por eso cambiar de idioma
 requiere reiniciar.

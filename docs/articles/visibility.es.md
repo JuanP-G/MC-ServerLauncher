@@ -89,6 +89,15 @@ mano. `python web/_i18n/build.py` genera landing, traducciones y guías de una v
 la hoja de estilos, el escenario, la barra, las descargas y el pie de la propia landing ya traducida, así
 que las guías heredan sus cambios y su traducción de la interfaz sin repetirlos.
 
+**Estilos y script son archivos.** El CSS y el JavaScript de la landing son `web/assets/site.css` y
+`web/assets/site.js`, y el CSS propio de las guías es `web/assets/guide.css` (se genera desde `GUIDE_CSS` en
+`guides.py`); las páginas los enlazan, así que cada una pesa unos 35 KB en lugar de 90 y el navegador guarda una
+sola copia. `build.py` pone `?v=<resumen>` en esas URLs, de modo que un cambio llega a los visitantes en el acto.
+Lo que cambia con el idioma (la etiqueta «ÚLTIMA», el formato de las fechas, el aviso de listado no disponible)
+viaja en atributos `data-` de la etiqueta del script, traducidos con `strings.json` como cualquier otro texto. La
+política de contenido ya no necesita hashes de script (`script-src 'self'` más GoatCounter), y la generación falla
+si una página lleva código en línea.
+
 **Qué se comprueba al generar.** La generación falla, sin escribir nada, si a un idioma le falta una
 cadena, si su estructura no coincide con la del español, si algún texto largo es idéntico al español (sin
 traducir), si un `title` pasa de 78 caracteres o una `description` se sale de 70–175, o si un enlace
