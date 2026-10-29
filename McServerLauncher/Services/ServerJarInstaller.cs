@@ -79,7 +79,7 @@ public class ServerJarInstaller
     /// the memory settings it reads would quietly undo their edit.
     /// </para>
     /// </remarks>
-    public async Task<InstallResult> InstallAsync(
+    public Task<InstallResult> InstallAsync(
         ServerType type, string folder, string mcVersion, MinecraftVersionService.VersionDetails details,
         string javaPath, int minRamGb, int maxRamGb, IProgress<string>? log,
         bool writeLoaderJvmArgs = true, CancellationToken ct = default)
@@ -87,100 +87,113 @@ public class ServerJarInstaller
         switch (type)
         {
             case ServerType.Fabric:
-                {
-                    log?.Report(Localizer.Get("Msg_FabricResolving"));
-                    var loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync(ct);
-                    // Named apart from the vanilla jar on purpose: ServerDetectionService recognises a
-                    // Fabric server by finding exactly this file, so renaming it makes older servers
-                    // come back as Vanilla.
-                    const string jarName = "fabric-server.jar";
-                    await _mods.DownloadFabricServerAsync(mcVersion, loaderVersion,
-                        Path.Combine(folder, jarName), log, ct);
-                    return new InstallResult(jarName, loaderVersion, string.Empty);
-                }
-
+                return InstallFabricAsync(folder, mcVersion, log, ct);
             case ServerType.Paper:
-                {
-                    log?.Report(Localizer.Get("Msg_PaperResolving"));
-                    var build = await _paper.GetLatestBuildAsync(mcVersion, ct)
-                        ?? throw new UserFacingException(string.Format(Localizer.Get("Msg_PaperNoBuild"),
-                            mcVersion));
-
-                    const string jarName = "paper-server.jar";
-                    await _paper.DownloadPaperServerAsync(build, Path.Combine(folder, jarName), log, ct);
-                    return new InstallResult(jarName, build.Build.ToString(), string.Empty);
-                }
-
+                return InstallPaperAsync(folder, mcVersion, log, ct);
             case ServerType.Purpur:
-                {
-                    log?.Report(Localizer.Get("Msg_PurpurResolving"));
-                    var build = await _purpur.GetLatestBuildAsync(mcVersion, ct)
-                        ?? throw new UserFacingException(string.Format(Localizer.Get("Msg_PurpurNoBuild"),
-                            mcVersion));
-
-                    const string jarName = "purpur-server.jar";
-                    await _purpur.DownloadPurpurServerAsync(build, Path.Combine(folder, jarName), log, ct);
-                    return new InstallResult(jarName, build.Build, string.Empty);
-                }
-
+                return InstallPurpurAsync(folder, mcVersion, log, ct);
             case ServerType.Forge:
-                {
-                    log?.Report(Localizer.Get("Msg_ForgeResolving"));
-                    var forgeVersion = await _mods.GetRecommendedForgeVersionAsync(mcVersion, ct);
-                    if (string.IsNullOrEmpty(forgeVersion))
-                        throw new UserFacingException(string.Format(Localizer.Get("Msg_ForgeNoVersion"),
-                            mcVersion));
-
-                    var forge = await _mods.InstallForgeServerAsync(folder, mcVersion, forgeVersion, javaPath,
-                        log, ct);
-
-                    if (forge.ArgsId is not null)
-                    {
-                        // Its own run script reads user_jvm_args.txt, so the RAM settings go there.
-                        if (writeLoaderJvmArgs) _creation.WriteForgeUserJvmArgs(folder, minRamGb, maxRamGb);
-                        return new InstallResult(string.Empty, forgeVersion, forge.ArgsId);
-                    }
-
-                    if (!string.IsNullOrEmpty(forge.JarFile))
-                        return new InstallResult(forge.JarFile!, forgeVersion, string.Empty);   // old Forge
-
-                    throw new UserFacingException(Localizer.Get("Msg_ForgeInstallNoOutput"));
-                }
-
+                return InstallForgeAsync(folder, mcVersion, javaPath, minRamGb, maxRamGb, writeLoaderJvmArgs,
+                    log, ct);
             case ServerType.NeoForge:
-                {
-                    log?.Report(Localizer.Get("Msg_NeoForgeResolving"));
-                    var choice = await _mods.GetNeoForgeVersionAsync(mcVersion, ct)
-                        ?? throw new UserFacingException(
-                            string.Format(Localizer.Get("Msg_NeoForgeNoVersion"), mcVersion));
-
-                    // Said before installing, not after: for six Minecraft versions a pre-release was
-                    // the only NeoForge there had ever been, and that is worth knowing up front.
-                    if (choice.IsBeta)
-                        log?.Report(string.Format(Localizer.Get("Msg_NeoForgeBetaWarning"), choice.Version));
-
-                    var neo = await _mods.InstallNeoForgeServerAsync(folder, choice.Version, javaPath, log,
-                        ct);
-                    if (neo.ArgsId is null)
-                        throw new UserFacingException(Localizer.Get("Msg_NeoForgeInstallNoOutput"));
-
-                    if (writeLoaderJvmArgs) _creation.WriteForgeUserJvmArgs(folder, minRamGb, maxRamGb);
-                    return new InstallResult(string.Empty, choice.Version, neo.ArgsId);
-                }
-
+                return InstallNeoForgeAsync(folder, mcVersion, javaPath, minRamGb, maxRamGb, writeLoaderJvmArgs,
+                    log, ct);
             case ServerType.Vanilla:
-                {
-                    const string jarName = "server.jar";
-                    await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(folder, jarName), log,
-                        details.Sha1, ct);
-                    return new InstallResult(jarName, string.Empty, string.Empty);
-                }
-
+                return InstallVanillaAsync(folder, details, log, ct);
             default:
                 // Reached only by a type added to the enum and not here. Saying so beats installing
                 // the vanilla jar and letting the user find out their pick was ignored.
                 throw new UserFacingException(
                     string.Format(Localizer.Get("Msg_TypeNotInstallableFmt"), type));
         }
+    }
+
+    private async Task<InstallResult> InstallFabricAsync(string folder, string mcVersion,
+        IProgress<string>? log, CancellationToken ct)
+    {
+        log?.Report(Localizer.Get("Msg_FabricResolving"));
+        var loaderVersion = await _mods.GetLatestFabricLoaderVersionAsync(ct);
+        // Named apart from the vanilla jar on purpose: ServerDetectionService recognises a
+        // Fabric server by finding exactly this file, so renaming it makes older servers
+        // come back as Vanilla.
+        const string jarName = "fabric-server.jar";
+        await _mods.DownloadFabricServerAsync(mcVersion, loaderVersion, Path.Combine(folder, jarName), log, ct);
+        return new InstallResult(jarName, loaderVersion, string.Empty);
+    }
+
+    private async Task<InstallResult> InstallPaperAsync(string folder, string mcVersion,
+        IProgress<string>? log, CancellationToken ct)
+    {
+        log?.Report(Localizer.Get("Msg_PaperResolving"));
+        var build = await _paper.GetLatestBuildAsync(mcVersion, ct)
+            ?? throw new UserFacingException(string.Format(Localizer.Get("Msg_PaperNoBuild"), mcVersion));
+
+        const string jarName = "paper-server.jar";
+        await _paper.DownloadPaperServerAsync(build, Path.Combine(folder, jarName), log, ct);
+        return new InstallResult(jarName, build.Build.ToString(), string.Empty);
+    }
+
+    private async Task<InstallResult> InstallPurpurAsync(string folder, string mcVersion,
+        IProgress<string>? log, CancellationToken ct)
+    {
+        log?.Report(Localizer.Get("Msg_PurpurResolving"));
+        var build = await _purpur.GetLatestBuildAsync(mcVersion, ct)
+            ?? throw new UserFacingException(string.Format(Localizer.Get("Msg_PurpurNoBuild"), mcVersion));
+
+        const string jarName = "purpur-server.jar";
+        await _purpur.DownloadPurpurServerAsync(build, Path.Combine(folder, jarName), log, ct);
+        return new InstallResult(jarName, build.Build, string.Empty);
+    }
+
+    private async Task<InstallResult> InstallForgeAsync(string folder, string mcVersion, string javaPath,
+        int minRamGb, int maxRamGb, bool writeLoaderJvmArgs, IProgress<string>? log, CancellationToken ct)
+    {
+        log?.Report(Localizer.Get("Msg_ForgeResolving"));
+        var forgeVersion = await _mods.GetRecommendedForgeVersionAsync(mcVersion, ct);
+        if (string.IsNullOrEmpty(forgeVersion))
+            throw new UserFacingException(string.Format(Localizer.Get("Msg_ForgeNoVersion"), mcVersion));
+
+        var forge = await _mods.InstallForgeServerAsync(folder, mcVersion, forgeVersion, javaPath, log, ct);
+
+        if (forge.ArgsId is not null)
+        {
+            // Its own run script reads user_jvm_args.txt, so the RAM settings go there.
+            if (writeLoaderJvmArgs) _creation.WriteForgeUserJvmArgs(folder, minRamGb, maxRamGb);
+            return new InstallResult(string.Empty, forgeVersion, forge.ArgsId);
+        }
+
+        if (!string.IsNullOrEmpty(forge.JarFile))
+            return new InstallResult(forge.JarFile!, forgeVersion, string.Empty);   // old Forge
+
+        throw new UserFacingException(Localizer.Get("Msg_ForgeInstallNoOutput"));
+    }
+
+    private async Task<InstallResult> InstallNeoForgeAsync(string folder, string mcVersion, string javaPath,
+        int minRamGb, int maxRamGb, bool writeLoaderJvmArgs, IProgress<string>? log, CancellationToken ct)
+    {
+        log?.Report(Localizer.Get("Msg_NeoForgeResolving"));
+        var choice = await _mods.GetNeoForgeVersionAsync(mcVersion, ct)
+            ?? throw new UserFacingException(string.Format(Localizer.Get("Msg_NeoForgeNoVersion"), mcVersion));
+
+        // Said before installing, not after: for six Minecraft versions a pre-release was
+        // the only NeoForge there had ever been, and that is worth knowing up front.
+        if (choice.IsBeta)
+            log?.Report(string.Format(Localizer.Get("Msg_NeoForgeBetaWarning"), choice.Version));
+
+        var neo = await _mods.InstallNeoForgeServerAsync(folder, choice.Version, javaPath, log, ct);
+        if (neo.ArgsId is null)
+            throw new UserFacingException(Localizer.Get("Msg_NeoForgeInstallNoOutput"));
+
+        if (writeLoaderJvmArgs) _creation.WriteForgeUserJvmArgs(folder, minRamGb, maxRamGb);
+        return new InstallResult(string.Empty, choice.Version, neo.ArgsId);
+    }
+
+    private async Task<InstallResult> InstallVanillaAsync(string folder,
+        MinecraftVersionService.VersionDetails details, IProgress<string>? log, CancellationToken ct)
+    {
+        const string jarName = "server.jar";
+        await _versions.DownloadFileAsync(details.ServerUrl, Path.Combine(folder, jarName), log,
+            details.Sha1, ct);
+        return new InstallResult(jarName, string.Empty, string.Empty);
     }
 }

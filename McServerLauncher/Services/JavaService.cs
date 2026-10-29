@@ -425,6 +425,32 @@ public partial class JavaService
         var existing = FindJavaExe(target);
         if (existing is not null) return existing;
 
+        var package = await FindAdoptiumPackageAsync(major, ct);
+        Directory.CreateDirectory(ManagedRoot);
+        var isZip = OperatingSystem.IsWindows();
+        var archivePath = Path.Combine(ManagedRoot, $"jre-{major}" + (isZip ? ".zip" : ".tar.gz"));
+
+        await DownloadVerifiedArchiveAsync(package, archivePath, log, ct);
+        await UnpackIntoPlaceAsync(archivePath, target, isZip, log, ct);
+
+        var javaExe = FindJavaExe(target)
+            ?? throw new UserFacingException(Localizer.Get("Msg_JavaExeNotFound"));
+
+        // Make sure the java binary is executable on Unix (tar usually preserves this, but be safe).
+        FileModes.TryMakeExecutable(javaExe);
+
+        log?.Report(string.Format(Localizer.Get("Msg_JavaInstalled"), major));
+        return javaExe;
+    }
+
+    /// <summary>Where a JRE can be had, and the checksum it must match.</summary>
+    private sealed record AdoptiumPackage(string Link, string Checksum);
+
+    /// <summary>
+    /// Asks Adoptium for this major's JRE for this machine, trying each architecture it can run.
+    /// </summary>
+    private async Task<AdoptiumPackage> FindAdoptiumPackageAsync(int major, CancellationToken ct)
+    {
         var os = OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsMacOS() ? "mac" : "linux";
         var archs = AdoptiumArchitectures(RuntimeInformation.OSArchitecture,
             emulatesX64: OperatingSystem.IsWindows() || OperatingSystem.IsMacOS());
@@ -442,10 +468,6 @@ public partial class JavaService
             throw new UserFacingException(string.Format(Localizer.Get("Msg_JavaNoDownloadFmt"),
                 major, $"{os}/{string.Join("/", archs)}"));
 
-        Directory.CreateDirectory(ManagedRoot);
-        var isZip = OperatingSystem.IsWindows();
-        var archivePath = Path.Combine(ManagedRoot, $"jre-{major}" + (isZip ? ".zip" : ".tar.gz"));
-
         // No checksum, no Java. This archive is extracted and then EXECUTED to run the user's
         // servers, so verifying it cannot be best-effort the way it was: a response without the
         // field meant downloading, unpacking and running a JRE that nothing had checked. Adoptium
@@ -454,23 +476,33 @@ public partial class JavaService
         if (string.IsNullOrEmpty(checksum))
             throw new UserFacingException(Localizer.Get("Msg_JavaNoChecksum"));
 
-        log?.Report(Localizer.Get("Msg_JavaDownloading"));
-        using (var resp = await Http.GetAsync(link, HttpCompletionOption.ResponseHeadersRead, ct))
-        {
-            resp.EnsureSuccessStatusCode();
-            await AtomicDownload.ToFileAsync(resp.Content, archivePath,
-                verifyAsync: async (part, token) =>
-                {
-                    log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
-                    await DownloadVerifier.VerifyAsync(part, checksum, HashAlgorithmName.SHA256, token);
-                },
-                ct: ct);
-        }
+        return new AdoptiumPackage(link, checksum);
+    }
 
+    /// <summary>Downloads the archive to <paramref name="archivePath"/>, keeping it only if its SHA-256 matches.</summary>
+    private async Task DownloadVerifiedArchiveAsync(AdoptiumPackage package, string archivePath,
+        IProgress<string>? log, CancellationToken ct)
+    {
+        log?.Report(Localizer.Get("Msg_JavaDownloading"));
+        using var resp = await Http.GetAsync(package.Link, HttpCompletionOption.ResponseHeadersRead, ct);
+        resp.EnsureSuccessStatusCode();
+        await AtomicDownload.ToFileAsync(resp.Content, archivePath,
+            verifyAsync: async (part, token) =>
+            {
+                log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+                await DownloadVerifier.VerifyAsync(part, package.Checksum, HashAlgorithmName.SHA256, token);
+            },
+            ct: ct);
+    }
+
+    /// <summary>Unpacks the archive beside <paramref name="target"/> and moves the result into place whole.</summary>
+    private static async Task UnpackIntoPlaceAsync(string archivePath, string target, bool isZip,
+        IProgress<string>? log, CancellationToken ct)
+    {
         log?.Report(Localizer.Get("Msg_JavaInstalling"));
         // Unpacked beside the target and moved into place whole. Unpacking straight into it left a
         // half-extracted runtime after an interruption, and since an existing jre-N folder with a
-        // java in it counts as installed (above), that broken runtime was used from then on.
+        // java in it counts as installed, that broken runtime was used from then on.
         var partial = target + ".partial";
         if (Directory.Exists(partial)) Directory.Delete(partial, true);
         Directory.CreateDirectory(partial);
@@ -482,15 +514,6 @@ public partial class JavaService
         if (Directory.Exists(target)) Directory.Delete(target, true);
         Directory.Move(partial, target);
         try { File.Delete(archivePath); } catch { /* doesn't matter */ }
-
-        var javaExe = FindJavaExe(target)
-            ?? throw new UserFacingException(Localizer.Get("Msg_JavaExeNotFound"));
-
-        // Make sure the java binary is executable on Unix (tar usually preserves this, but be safe).
-        FileModes.TryMakeExecutable(javaExe);
-
-        log?.Report(string.Format(Localizer.Get("Msg_JavaInstalled"), major));
-        return javaExe;
     }
 
     private static async Task ExtractTarGzAsync(string targzPath, string destDir, CancellationToken ct)
