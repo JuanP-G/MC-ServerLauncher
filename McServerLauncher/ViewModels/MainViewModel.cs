@@ -194,12 +194,12 @@ public partial class MainViewModel : ObservableObject
         Section = AppSection.About;
     }
 
-    private string? _releaseUrl;
-    private string? _packageUrl;
-    private string? _packageName;
-    private string? _checksumUrl;
-    private string? _signatureUrl;
-    private string? _updateVersion;
+    /// <summary>The release being offered: its page, its package, its checksum and signature.</summary>
+    /// <remarks>Null until a check has found one, and again once a check says there is nothing newer.</remarks>
+    private UpdateService.UpdateInfo? _offer;
+
+    /// <summary>Downloads and verifies the package of <see cref="_offer"/>.</summary>
+    private readonly AppUpdateCoordinator _updates = new();
 
     /// <summary>One entry of the language selector.</summary>
     /// <param name="Code">The culture code stored in <c>AppSettings.Language</c> (es, en, pt, fr,
@@ -481,17 +481,12 @@ public partial class MainViewModel : ObservableObject
         if (state == UpdateCheckState.UpToDate && UpdateAvailable)
         {
             UpdateAvailable = false;
-            _packageUrl = _packageName = _checksumUrl = _signatureUrl = _updateVersion = null;
+            _offer = null;
         }
 
         if (info is null) return;
 
-        _releaseUrl = info.Url;
-        _packageUrl = info.PackageUrl;
-        _packageName = info.PackageName;
-        _checksumUrl = info.ChecksumUrl;
-        _signatureUrl = info.SignatureUrl;
-        _updateVersion = info.Version;
+        _offer = info;
         // A beta says so before the button, not after installing.
         UpdateText = string.Format(
             Localizer.Get(info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt"),
@@ -559,9 +554,9 @@ public partial class MainViewModel : ObservableObject
         // Every platform updates itself now; only the mechanism differs (see SelfUpdater). The
         // release page stays as the fallback for when this release ships nothing for us, or when
         // this particular install can't be replaced in place — an AppImage under /opt, say.
-        if (string.IsNullOrEmpty(_packageUrl) || !SelfUpdater.CanUpdateInPlace)
+        if (_offer is not { PackageUrl.Length: > 0 } offer || !SelfUpdater.CanUpdateInPlace)
         {
-            var blocker = string.IsNullOrEmpty(_packageUrl) ? null : SelfUpdater.Blocker;
+            var blocker = _offer is { PackageUrl.Length: > 0 } ? SelfUpdater.Blocker : null;
             if (!string.IsNullOrEmpty(blocker))
                 await MessageBox.ShowAsync(blocker, Localizer.Get("Update_Now"), Owner);
             OpenRelease();
@@ -569,53 +564,17 @@ public partial class MainViewModel : ObservableObject
         }
 
         IsUpdating = true;
-        var offer = UpdateText;
+        var bannerText = UpdateText;
         UpdateText = Localizer.Get("Update_Downloading");
 
-        // Random per-run folder: fixed names in %TEMP% could be pre-planted/replaced by
-        // another local process between download and execution.
-        var updateDir = Path.Combine(Path.GetTempPath(),
-            SelfUpdater.PackageFolderPrefix + Path.GetRandomFileName());
+        var updateDir = AppUpdateCoordinator.NewPackageFolder();
         var stoppedEverything = false;
         try
         {
-            var dest = Path.Combine(updateDir, SelfUpdater.PackageFileName(_packageName));
-            var updateService = new UpdateService();
-
-            // The package is about to become the app itself, so its checksum is REQUIRED, not
-            // best-effort. A missing or unreadable one means a broken (or tampered) release:
-            // refuse and send the user to the release page rather than install an unverified
-            // Resolved before the download so a refusal doesn't cost the ~35 MB transfer.
-            var expectedSha256 = string.IsNullOrEmpty(_checksumUrl) || string.IsNullOrEmpty(_packageName)
-                ? null
-                : await updateService.GetExpectedSha256Async(_checksumUrl, _packageName);
-            if (string.IsNullOrEmpty(expectedSha256))
-                throw new UserFacingException(Localizer.Get("Msg_UpdateNoChecksum"));
-
-            // The checksum comes from the same release as the package, so it only proves the
-            // download is whole. The signature is what proves the publisher made it, and it is just
-            // as mandatory: a release without one, or with one that does not read, is not installed.
-            var signature = string.IsNullOrEmpty(_signatureUrl)
-                ? null
-                : await updateService.GetSignatureAsync(_signatureUrl);
-            if (string.IsNullOrEmpty(signature))
-                throw new UserFacingException(Localizer.Get("Msg_UpdateNoSignature"));
-
-            await updateService.DownloadInstallerAsync(_packageUrl, dest);
-
-            UpdateText = Localizer.Get("Msg_VerifyingChecksum");
-            await DownloadVerifier.VerifyAsync(dest, expectedSha256, HashAlgorithmName.SHA256);
-
-            // The version and the name are the ones the release is offered under, so a package
-            // signed as another version or another file does not pass as this one.
-            UpdateText = Localizer.Get("Msg_VerifyingSignature");
-            if (!await Task.Run(() =>
-                    UpdateSignature.Verify(dest, _updateVersion ?? "", _packageName ?? "", signature)))
-            {
-                // A package that failed this is not left lying where the next step could find it.
-                try { File.Delete(dest); } catch { /* the temporary folder is swept later */ }
-                throw new UserFacingException(Localizer.Get("Msg_UpdateBadSignature"));
-            }
+            // Everything that decides whether this package is installed is in the coordinator: a
+            // release without a checksum or a signature, a download that does not match, or a
+            // signature that is not the publisher's all end here with a message for the user.
+            var package = await _updates.DownloadAndVerifyAsync(offer, updateDir, ShowUpdatePhase);
 
             UpdateText = Localizer.Get("Update_Installing");
             await ShutdownAllAsync();
@@ -625,12 +584,12 @@ public partial class MainViewModel : ObservableObject
             // hand the .dmg to a script that replaces the bundle once we are gone. The claim on
             // being the running copy goes first, so the new one does not hand itself over to this.
             McServerLauncher.Program.ReleaseInstance();
-            SelfUpdater.Apply(dest);
+            SelfUpdater.Apply(package);
             Environment.Exit(0);
         }
         catch (InvalidOperationException ex)
         {
-            RecoverFromFailedUpdate(offer, updateDir, stoppedEverything);
+            RecoverFromFailedUpdate(bannerText, updateDir, stoppedEverything);
             // Security-relevant refusals land here: DownloadVerifier's mismatch (the downloaded
             // installer doesn't match the release's checksum), a release publishing no usable
             // SHA256SUMS.txt, or a missing or invalid publisher signature. Tell the user explicitly
@@ -640,11 +599,20 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
-            RecoverFromFailedUpdate(offer, updateDir, stoppedEverything);
+            RecoverFromFailedUpdate(bannerText, updateDir, stoppedEverything);
             // If the download/install fails, let the user open the page manually.
             OpenRelease();
         }
     }
+
+    /// <summary>Tells the banner which step of the update is running.</summary>
+    private void ShowUpdatePhase(AppUpdateCoordinator.Phase phase) =>
+        UpdateText = Localizer.Get(phase switch
+        {
+            AppUpdateCoordinator.Phase.Downloading => "Update_Downloading",
+            AppUpdateCoordinator.Phase.VerifyingChecksum => "Msg_VerifyingChecksum",
+            _ => "Msg_VerifyingSignature",
+        });
 
     /// <summary>Puts the app back the way it was when an update could not be applied.</summary>
     /// <remarks>
@@ -652,26 +620,25 @@ public partial class MainViewModel : ObservableObject
     /// agent stopped after a failure on Linux or macOS, where everything had already been shut down
     /// for the swap, and leave the downloaded package in a temporary folder for good.
     /// </remarks>
-    private void RecoverFromFailedUpdate(string offer, string updateDir, bool stoppedEverything)
+    private void RecoverFromFailedUpdate(string bannerText, string updateDir, bool stoppedEverything)
     {
         McServerLauncher.Program.ReacquireInstance();   // still the running copy after all
         IsUpdating = false;
-        UpdateText = offer;
+        UpdateText = bannerText;
 
         // The servers stay stopped: starting them is the user's call. The tunnels are not a
         // decision anybody made, and without the agent every one of them is down.
         if (stoppedEverything && !string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
             _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
 
-        try { if (Directory.Exists(updateDir)) Directory.Delete(updateDir, recursive: true); }
-        catch { /* cleared at a later start, see SelfUpdater.DeleteOldPackages */ }
+        AppUpdateCoordinator.DiscardFolder(updateDir);
     }
 
-    // Through BrowserLauncher, not Process.Start directly: _releaseUrl is the html_url the GitHub
-    // API returned, i.e. a remote value, and UseShellExecute hands whatever it gets to the shell.
-    // The guard that rejects anything but absolute http(s) already exists for exactly this — it was
-    // simply not being used here.
-    private void OpenRelease() => BrowserLauncher.Open(_releaseUrl);
+    // Through BrowserLauncher, not Process.Start directly: the release's page is the html_url the
+    // GitHub API returned, i.e. a remote value, and UseShellExecute hands whatever it gets to the
+    // shell. The guard that rejects anything but absolute http(s) already exists for exactly this —
+    // it was simply not being used here.
+    private void OpenRelease() => BrowserLauncher.Open(_offer?.Url);
 
     [RelayCommand]
     private void DismissUpdate() => UpdateAvailable = false;

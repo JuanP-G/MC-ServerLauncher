@@ -10,7 +10,7 @@ namespace McServerLauncher.Services;
 /// <summary>
 /// Checks the GitHub Releases for a version newer than the installed one.
 /// </summary>
-public class UpdateService
+public class UpdateService : IUpdateSource
 {
     /// <summary>
     /// The release list, not <c>/releases/latest</c>.
