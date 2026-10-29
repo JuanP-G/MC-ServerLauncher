@@ -44,7 +44,7 @@ public class ConsoleBufferTests(AvaloniaFixture ui)
     }
 
     [Fact]
-    public void LinesFromAnotherThreadWaitForTheUiThreadAndArriveTogether()
+    public async Task LinesFromAnotherThreadWaitForTheUiThreadAndArriveTogether()
     {
         ConsoleBuffer buffer = null!;
         var batches = new List<int>();
@@ -54,10 +54,10 @@ public class ConsoleBufferTests(AvaloniaFixture ui)
             buffer.Flushed += b => batches.Add(b.Count);
         });
 
-        Task.Run(() =>
+        await Task.Run(() =>
         {
             for (var i = 0; i < 50; i++) buffer.Enqueue(Line("line " + i));
-        }).Wait();
+        });
 
         // Nothing has reached the screen yet: the UI thread has not been given a turn.
         ui.Run(() =>

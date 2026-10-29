@@ -76,7 +76,7 @@ public class ModpackExportTests : IDisposable
         entry.Write("{" + fields + "}");
     }
 
-    private Task<ServerModsViewModel.ModpackResult> Build(
+    private Task<ModpackResult> Build(
         ServerModsViewModel mods,
         bool includeEverything = false,
         IReadOnlyDictionary<string, (Store Client, Store Server)>? sides = null) =>
@@ -315,7 +315,7 @@ public class ModpackExportTests : IDisposable
     {
         // Naming them is what makes it actionable instead of unsettling: "3 files were left out" on
         // its own is something to worry about; three file names is something to check.
-        var notice = ServerModsViewModel.NoticeFor(new ServerModsViewModel.ModpackResult(
+        var notice = ModpackExporter.NoticeFor(new ModpackResult(
             new[] { "sodium.jar" }, new[] { "geyser.jar", "floodgate.jar" }, AskedTheStore: true));
 
         Assert.Contains("geyser.jar", notice);
@@ -331,7 +331,7 @@ public class ModpackExportTests : IDisposable
         // machine-written, and one excluded file is the common case — a server usually carries a
         // lone Geyser or Floodgate. Each language says it its own way rather than having the count
         // pasted into a plural sentence.
-        var one = ServerModsViewModel.NoticeFor(new ServerModsViewModel.ModpackResult(
+        var one = ModpackExporter.NoticeFor(new ModpackResult(
             new[] { "sodium.jar" }, new[] { "floodgate.jar" }, AskedTheStore: true));
 
         Assert.Contains("floodgate.jar", one);
@@ -360,7 +360,7 @@ public class ModpackExportTests : IDisposable
     {
         // The pack does come out different offline — fewer jars are left out. Said out loud,
         // because a difference the user can see is one they can decide about.
-        var notice = ServerModsViewModel.NoticeFor(new ServerModsViewModel.ModpackResult(
+        var notice = ModpackExporter.NoticeFor(new ModpackResult(
             new[] { "sodium.jar" }, Array.Empty<string>(), AskedTheStore: false));
 
         Assert.Contains(Localizer.Get("Export_NoticeOffline"), notice);
@@ -369,7 +369,7 @@ public class ModpackExportTests : IDisposable
     [Fact]
     public void AnExportThatLeftNothingOutStillSaysSo()
     {
-        var notice = ServerModsViewModel.NoticeFor(new ServerModsViewModel.ModpackResult(
+        var notice = ModpackExporter.NoticeFor(new ModpackResult(
             new[] { "a.jar", "b.jar" }, Array.Empty<string>(), AskedTheStore: true));
 
         Assert.False(string.IsNullOrWhiteSpace(notice));
