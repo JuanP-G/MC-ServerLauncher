@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Channels;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 
@@ -14,6 +15,12 @@ public class ServerProcessManager : IDisposable
 {
     private Process? _process;
     private readonly object _lock = new();
+
+    /// <summary>What the server is told, in order; null when no process is running.</summary>
+    private ChannelWriter<StdinLine>? _commands;
+
+    /// <summary>One line for the server's console, and who is waiting to know it was written.</summary>
+    private sealed record StdinLine(string Text, TaskCompletionSource? Written = null);
     private DateTime _startedAtUtc;
 
     /// <summary>
@@ -123,6 +130,7 @@ public class ServerProcessManager : IDisposable
                 _process.Start();
                 _process.BeginOutputReadLine();
                 _process.BeginErrorReadLine();
+                StartCommandPump(_process);
                 // The server stays "Starting" until it reports it finished loading;
                 // OnOutputData promotes it to Running when it sees the "Done (...)!" line.
             }
@@ -271,6 +279,7 @@ public class ServerProcessManager : IDisposable
         OutputReceived?.Invoke(Localizer.Get("Msg_ServerStopped"), ConsoleSource.Launcher);
         lock (_lock)
         {
+            EndCommandPump();
             _process?.Dispose();
             _process = null;
         }
@@ -281,14 +290,64 @@ public class ServerProcessManager : IDisposable
     }
 
     /// <summary>Sends an arbitrary command over stdin (like typing it into the console).</summary>
+    /// <remarks>
+    /// Returns at once: the line is queued and written in order by <see cref="PumpCommandsAsync"/>.
+    /// This used to write to the pipe itself, on whatever thread asked — the window's, for a command
+    /// typed into the console — and a JVM that was frozen and not reading would have frozen the window
+    /// with it, since the pipe's buffer is finite.
+    /// </remarks>
     public void SendCommand(string command)
     {
         lock (_lock)
         {
             if (_process is null || _process.HasExited)
                 return;
-            _process.StandardInput.WriteLine(command);
-            _process.StandardInput.Flush();
+            _commands?.TryWrite(new StdinLine(command));
+        }
+    }
+
+    /// <summary>Starts writing what <see cref="SendCommand"/> queues, for the process just started.</summary>
+    private void StartCommandPump(Process process)
+    {
+        var queue = Channel.CreateUnbounded<StdinLine>(new UnboundedChannelOptions { SingleReader = true });
+        _commands = queue.Writer;
+        _ = PumpCommandsAsync(process, queue.Reader);
+    }
+
+    /// <summary>Closes the queue: the process is gone or going. Under <see cref="_lock"/>.</summary>
+    private void EndCommandPump()
+    {
+        _commands?.TryComplete();
+        _commands = null;
+    }
+
+    /// <summary>
+    /// The one writer to the server's input: lines go out in the order they were queued, each
+    /// flushed, and whoever waits for one is told how it went.
+    /// </summary>
+    private static async Task PumpCommandsAsync(Process process, ChannelReader<StdinLine> lines)
+    {
+        try
+        {
+            await foreach (var line in lines.ReadAllAsync())
+            {
+                try
+                {
+                    await process.StandardInput.WriteLineAsync(line.Text);
+                    await process.StandardInput.FlushAsync();
+                    line.Written?.TrySetResult();
+                }
+                catch (Exception ex)
+                {
+                    line.Written?.TrySetException(ex);
+                    throw;
+                }
+            }
+        }
+        catch (Exception ex) when (ex is IOException or ObjectDisposedException or InvalidOperationException)
+        {
+            // The server went away under us, so there is nobody left to tell. Whoever was waiting for
+            // a line has been told; the ones queued behind it are dropped with the process.
         }
     }
 
@@ -298,6 +357,7 @@ public class ServerProcessManager : IDisposable
     {
         lock (_lock)
         {
+            EndCommandPump();
             _process?.Dispose();
             _process = null;
         }
@@ -311,9 +371,11 @@ public class ServerProcessManager : IDisposable
     public async Task StopAsync(TimeSpan timeout)
     {
         Process? proc;
+        ChannelWriter<StdinLine>? commands;
         lock (_lock)
         {
             proc = _process;
+            commands = _commands;
             if (proc is null || proc.HasExited)
                 return;
             State = ServerState.Stopping;
@@ -322,8 +384,13 @@ public class ServerProcessManager : IDisposable
         try
         {
             OutputReceived?.Invoke(Localizer.Get("Msg_StoppingSaving"), ConsoleSource.Launcher);
-            proc.StandardInput.WriteLine("stop");
-            proc.StandardInput.Flush();
+
+            // Behind whatever was queued ahead of it, and awaited: a pipe that cannot be written to
+            // goes straight to the kill below instead of waiting out the whole timeout.
+            var written = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            if (commands is null || !commands.TryWrite(new StdinLine("stop", written)))
+                throw new InvalidOperationException("The server's input is closed.");
+            await written.Task;
 
             using var cts = new CancellationTokenSource(timeout);
             await proc.WaitForExitAsync(cts.Token);
