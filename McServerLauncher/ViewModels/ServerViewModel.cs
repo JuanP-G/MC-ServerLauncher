@@ -18,7 +18,7 @@ namespace McServerLauncher.ViewModels;
 /// Represents a server in the UI: its configuration, live state, embedded
 /// console, command sending and Playit integration.
 /// </summary>
-public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdminHost
+public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdminHost, IDisposable
 {
 
     private readonly ServerProcessManager _process = new();
@@ -1571,6 +1571,25 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         Func<Task>? stop = _process.IsRunning ? () => _process.StopAsync(StopTimeout) : null;
         await BackupCoordinator.ShutdownAsync(stop);
         await FinishMemoryRunAsync(SessionEnd.AppClosed);  // the Stopped event may never get to run
+    }
+
+    /// <summary>
+    /// Lets go of what this server owns, once it is off the list for good.
+    /// </summary>
+    /// <remarks>
+    /// After <see cref="ShutdownAsync"/>, and only for a server that is being forgotten: shutting down
+    /// is not the end (a failed update brings the same view models back), so it keeps everything
+    /// usable and this is the one that does not.
+    /// </remarks>
+    public void Dispose()
+    {
+        _wake.Dispose();
+        _process.Dispose();
+        BackupCoordinator.Dispose();
+        Mods.Dispose();
+        _connectionTest?.Dispose();
+        Solutions?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     ServerConfig IPlayerAdminHost.Config => Config;

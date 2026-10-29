@@ -13,7 +13,7 @@ namespace McServerLauncher.Services;
 /// - On Windows the agent is a Windows service ("playitd"), managed via <see cref="ServiceController"/>.
 /// - On Linux it is typically a systemd unit, managed via <c>systemctl</c> (start/stop may need privileges).
 /// </summary>
-public class PlayitManager
+public class PlayitManager : IDisposable
 {
     /// <summary>
     /// Shared instance: the agent is machine-wide state, so every ServerViewModel polls this one
@@ -72,6 +72,13 @@ public class PlayitManager
     /// the throttle, e.g. right after starting/stopping the service.
     /// </summary>
     public void RefreshState(bool force = false) => _ = RefreshStateAsync(force);
+
+    /// <summary>Lets go of the probe gate. The shared manager lives as long as the app, so nothing calls this.</summary>
+    public void Dispose()
+    {
+        _probeGate.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     /// <summary>
     /// Same as <see cref="RefreshState"/>, awaitable — for callers that need the state updated

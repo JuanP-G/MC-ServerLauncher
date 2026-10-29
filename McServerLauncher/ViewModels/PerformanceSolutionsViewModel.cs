@@ -75,7 +75,7 @@ public sealed partial class SolutionRow : ObservableObject
 /// says so at the bottom with a button for it, because a change made on a running server that
 /// appears to do nothing is the quickest way to make somebody stop trusting the page.
 /// </remarks>
-public sealed partial class PerformanceSolutionsViewModel : ObservableObject
+public sealed partial class PerformanceSolutionsViewModel : ObservableObject, IDisposable
 {
     private readonly ServerViewModel _host;
     private readonly CancellationTokenSource _lifetime = new();
@@ -121,6 +121,13 @@ public sealed partial class PerformanceSolutionsViewModel : ObservableObject
 
     /// <summary>Stops the lookups the page started.</summary>
     public void Shutdown() => _lifetime.Cancel();
+
+    /// <summary>Stops the lookups and lets go of their token. The page is not used after this.</summary>
+    public void Dispose()
+    {
+        Shutdown();
+        _lifetime.Dispose();
+    }
 
     private void Build(PerformanceStatus status, long totalRamMb, long availableRamMb)
     {

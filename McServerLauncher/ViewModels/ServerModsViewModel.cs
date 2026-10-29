@@ -47,7 +47,7 @@ namespace McServerLauncher.ViewModels;
 /// compatible or how a file is verified, which stays in <see cref="ModrinthService"/>.
 /// </para>
 /// </remarks>
-public partial class ServerModsViewModel : ObservableObject
+public partial class ServerModsViewModel : ObservableObject, IDisposable
 {
     private readonly ServerConfig _config;
     private readonly ModrinthService _modrinthService = new();
@@ -475,6 +475,18 @@ public partial class ServerModsViewModel : ObservableObject
 
         _noticeTimer?.Stop();
         _noticeTimer = null;
+    }
+
+    /// <summary>
+    /// Shuts down for good and lets go of the tokens, for a server that is being removed.
+    /// <see cref="Shutdown"/> is the one for an app that may carry on.
+    /// </summary>
+    public void Dispose()
+    {
+        Shutdown();
+        _lifetime.Dispose();
+        _cleanupScan?.Dispose();
+        _cleanupScan = null;
     }
 
     /// <summary>Closes the details page and forgets the trail back, dropping what it was fetching.</summary>

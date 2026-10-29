@@ -27,7 +27,7 @@ namespace McServerLauncher.ViewModels;
 /// server and run again. It never starts it by itself.
 /// </para>
 /// </remarks>
-public partial class ConnectionTestViewModel : ObservableObject
+public partial class ConnectionTestViewModel : ObservableObject, IDisposable
 {
     private const int Samples = 8;
     private static readonly TimeSpan Gap = TimeSpan.FromMilliseconds(150);
@@ -382,6 +382,14 @@ public partial class ConnectionTestViewModel : ObservableObject
 
     /// <summary>Stops a test in progress: the page is going away.</summary>
     internal void Cancel() => _cts?.Cancel();
+
+    /// <summary>Stops a test in progress and lets go of its token, for a server that is being removed.</summary>
+    public void Dispose()
+    {
+        Cancel();
+        _cts?.Dispose();
+        _cts = null;
+    }
 
     /// <summary>Cancels what was running and hands out the token for what runs next.</summary>
     private CancellationToken Renew()

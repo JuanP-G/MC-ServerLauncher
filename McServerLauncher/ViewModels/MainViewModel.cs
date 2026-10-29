@@ -1070,6 +1070,7 @@ public partial class MainViewModel : ObservableObject
         if (SelectedServer is null || ReferenceEquals(SelectedServer, server))
             SelectedServer = Servers.FirstOrDefault();
         Save();
+        server.Dispose();
     }
 
     [RelayCommand]

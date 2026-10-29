@@ -28,7 +28,7 @@ namespace McServerLauncher.ViewModels;
 /// a version is compatible or how a file is installed: both come from the existing services.
 /// </para>
 /// </summary>
-public partial class ModDetailsViewModel : ObservableObject, IDisposable
+public sealed partial class ModDetailsViewModel : ObservableObject, IDisposable
 {
     private readonly ServerModsViewModel _parent;
     private readonly ModrinthService _modrinth;

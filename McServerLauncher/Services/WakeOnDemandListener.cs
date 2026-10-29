@@ -129,7 +129,7 @@ public sealed class WakeOnDemandListener : IDisposable
         _cts?.Dispose();
         _cts = null;
 
-        try { _listener?.Stop(); } catch { /* never started */ }
+        try { _listener?.Dispose(); } catch { /* never started */ }
         _listener = null;
         _status = null;
         _onJoinAttempt = null;

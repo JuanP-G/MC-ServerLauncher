@@ -75,7 +75,7 @@ internal enum RestoreResult
 /// task. No UI types: the host is an interface, so the protocol is tested without Avalonia.
 /// </para>
 /// </remarks>
-internal sealed class BackupCoordinator
+internal sealed class BackupCoordinator : IDisposable
 {
     private readonly IBackupHost _host;
     private readonly WorldBackupService _service;
@@ -280,6 +280,15 @@ internal sealed class BackupCoordinator
             _stopHolding = false;
             _world.Release();
         }
+    }
+
+    /// <summary>Lets go of the world's gate and the copy's token, for a server that is being removed.</summary>
+    /// <remarks>After <see cref="ShutdownAsync"/>, never instead of it: the gate is not used again.</remarks>
+    public void Dispose()
+    {
+        _copying?.Dispose();
+        _copying = null;
+        _world.Dispose();
     }
 
     /// <summary>

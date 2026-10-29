@@ -10,7 +10,7 @@ namespace McServerLauncher.Services;
 /// startup, clean shutdown (sending "stop" over stdin), command sending and
 /// re-emitting the console output in real time.
 /// </summary>
-public class ServerProcessManager
+public class ServerProcessManager : IDisposable
 {
     private Process? _process;
     private readonly object _lock = new();
@@ -290,6 +290,18 @@ public class ServerProcessManager
             _process.StandardInput.WriteLine(command);
             _process.StandardInput.Flush();
         }
+    }
+
+    /// <summary>Lets go of the process handle. Does not stop the server: <see cref="StopAsync"/> first.</summary>
+    /// <remarks>Only for a manager that is being thrown away; a stopped one is started again as it is.</remarks>
+    public void Dispose()
+    {
+        lock (_lock)
+        {
+            _process?.Dispose();
+            _process = null;
+        }
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>

@@ -178,14 +178,14 @@ public partial class ServerViewModel
     [RelayCommand]
     private void ShowPerformanceSolutions()
     {
-        Solutions?.Shutdown();
+        Solutions?.Dispose();
         Solutions = new PerformanceSolutionsViewModel(this, _perf.Evaluate(DateTime.UtcNow));
     }
 
     /// <summary>Back to the tabs.</summary>
     internal void CloseSolutions()
     {
-        Solutions?.Shutdown();
+        Solutions?.Dispose();
         Solutions = null;
     }
 
