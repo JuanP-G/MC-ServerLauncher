@@ -305,18 +305,7 @@ public sealed class StartPreflight
     private async Task<bool> TryFreePortAsync(int port)
     {
         var pid = _ports.GetListeningPid(port);
-        string procDesc = Localizer.Get("Msg_OtherApp");
-        var isJava = false;
-        if (pid.HasValue)
-        {
-            try
-            {
-                var name = System.Diagnostics.Process.GetProcessById(pid.Value).ProcessName;
-                procDesc = $"\"{name}\" (PID {pid})";
-                isJava = name.StartsWith("java", StringComparison.OrdinalIgnoreCase);
-            }
-            catch { procDesc = $"PID {pid}"; }
-        }
+        var (procDesc, isJava) = DescribeHolder(pid);
 
         // A Java holding the port is most likely a server left running when the app closed badly,
         // with players' progress not yet saved. Killing it is still offered — it may be the only
@@ -332,38 +321,65 @@ public sealed class StartPreflight
             return false;
         }
 
+        if (!CloseHolder(pid, port, procDesc))
+            return false;
+
+        return await WaitForFreeAsync(port);
+    }
+
+    /// <summary>Who holds the port, as the question to the user words it, and whether it is a Java.</summary>
+    private static (string Description, bool IsJava) DescribeHolder(int? pid)
+    {
+        var description = Localizer.Get("Msg_OtherApp");
+        if (!pid.HasValue) return (description, false);
+
         try
         {
-            if (pid.HasValue)
+            var name = System.Diagnostics.Process.GetProcessById(pid.Value).ProcessName;
+            return ($"\"{name}\" (PID {pid})", name.StartsWith("java", StringComparison.OrdinalIgnoreCase));
+        }
+        catch { return ($"PID {pid}", false); }
+    }
+
+    /// <summary>
+    /// Closes the process the user agreed to close. False when it must not go on, after saying why.
+    /// </summary>
+    private bool CloseHolder(int? pid, int port, string procDesc)
+    {
+        try
+        {
+            if (!pid.HasValue) return true;
+
+            // The confirmation dialog may have stayed open for a while: re-check that the SAME
+            // process still holds the port right before killing. If the original one died in
+            // the meantime, the OS can reuse its PID — killing blindly (with entireProcessTree)
+            // could take down an innocent process the user never approved.
+            var currentPid = _ports.GetListeningPid(port);
+            if (currentPid is null)
             {
-                // The confirmation dialog may have stayed open for a while: re-check that the SAME
-                // process still holds the port right before killing. If the original one died in
-                // the meantime, the OS can reuse its PID — killing blindly (with entireProcessTree)
-                // could take down an innocent process the user never approved.
-                var currentPid = _ports.GetListeningPid(port);
-                if (currentPid is null)
-                {
-                    // Nobody is listening anymore: nothing to kill, fall through to the free check.
-                }
-                else if (currentPid != pid)
-                {
-                    _host.Say(string.Format(Localizer.Get("Msg_PortOwnerChangedFmt"), port));
-                    return false;
-                }
-                else
-                {
-                    System.Diagnostics.Process.GetProcessById(pid.Value).Kill(entireProcessTree: true);
-                    _host.Say(string.Format(Localizer.Get("Msg_ClosedPortProcess"), port, procDesc));
-                }
+                // Nobody is listening anymore: nothing to kill, fall through to the free check.
+                return true;
             }
+            if (currentPid != pid)
+            {
+                _host.Say(string.Format(Localizer.Get("Msg_PortOwnerChangedFmt"), port));
+                return false;
+            }
+
+            System.Diagnostics.Process.GetProcessById(pid.Value).Kill(entireProcessTree: true);
+            _host.Say(string.Format(Localizer.Get("Msg_ClosedPortProcess"), port, procDesc));
+            return true;
         }
         catch (Exception ex)
         {
             _host.Say(string.Format(Localizer.Get("Msg_CannotKill"), ErrorMessages.Describe(ex)));
             return false;
         }
+    }
 
-        // Wait for the port to become free.
+    /// <summary>Waits a few seconds for the port to be released; false (after saying so) if it is not.</summary>
+    private async Task<bool> WaitForFreeAsync(int port)
+    {
         for (var i = 0; i < 12 && _ports.IsPortInUse(port); i++)
             await Task.Delay(300);
 

@@ -211,32 +211,56 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
         var folder = config.FolderPath;
         var target = SelectedLoader();
 
-        if (ServerIsUp)
+        if (InstallBlocker(folder, target, out var version) is { } blocker)
         {
-            ShowError(Localizer.Get("Loader_StopServerFirst"));
-            return;
-        }
-        if (!Directory.Exists(folder))
-        {
-            ShowError(Localizer.Get("Msg_FolderNotExist"));
-            return;
-        }
-        if (VersionCombo.SelectedItem is not MinecraftVersion version)
-        {
-            ShowError(Localizer.Get("Msg_SelectVersion"));
+            ShowError(blocker);
             return;
         }
 
-        // Checked before anything is downloaded or moved: converting to Paper in a folder it
-        // refuses to run from produces a server that installs perfectly and never starts.
+        if (!await ConvertAsync(config, folder, target, version!)) return;
+
+        // Outside the install's try: what the page and the window do with a finished install
+        // (taking the new type in, saving servers.json) failing is not the install failing, and the
+        // log had just said it was done.
+        try
+        {
+            Installed?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            ShowError(string.Format(Localizer.Get("Msg_ConfigSaveError"), ErrorMessages.Describe(ex)));
+        }
+    }
+
+    /// <summary>
+    /// Why the install cannot start, or null when it can (and then <paramref name="version"/> is the
+    /// one chosen). Checked before anything is downloaded or moved.
+    /// </summary>
+    private string? InstallBlocker(string folder, ServerType target, out MinecraftVersion? version)
+    {
+        version = null;
+
+        if (ServerIsUp) return Localizer.Get("Loader_StopServerFirst");
+        if (!Directory.Exists(folder)) return Localizer.Get("Msg_FolderNotExist");
+        if (VersionCombo.SelectedItem is not MinecraftVersion chosen) return Localizer.Get("Msg_SelectVersion");
+
+        // Converting to Paper in a folder it refuses to run from produces a server that installs
+        // perfectly and never starts.
         if (BukkitPathRule.Rejects(folder, target))
-        {
-            ShowError(string.Format(Localizer.Get("Msg_BukkitPathFmt"), BukkitPathRule.OffendingCharacter(folder)!.Value));
-            return;
-        }
+            return string.Format(Localizer.Get("Msg_BukkitPathFmt"), BukkitPathRule.OffendingCharacter(folder)!.Value);
 
+        version = chosen;
+        return null;
+    }
+
+    /// <summary>
+    /// Runs the conversion and, if it worked, takes its result into the server's config. True when the
+    /// install finished; false when it failed, after saying so on the page.
+    /// </summary>
+    private async Task<bool> ConvertAsync(ServerConfig config, string folder, ServerType target,
+        MinecraftVersion version)
+    {
         SetBusy(true);
-        var done = false;
         try
         {
             var result = await _loaderChange.ConvertAsync(
@@ -253,29 +277,17 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
             config.JavaPath = result.JavaPath;
 
             AppendLog(Localizer.Get("Loader_Done"));
-            done = true;
+            return true;
         }
         catch (Exception ex)
         {
             AppendLog(string.Format(Localizer.Get("Msg_ErrorFmt"), ErrorMessages.Describe(ex)));
             ShowError(string.Format(Localizer.Get("Loader_Error"), ErrorMessages.Describe(ex)));
+            return false;
         }
         finally
         {
             SetBusy(false, keepLog: true);
-        }
-
-        // Outside the install's try: what the page and the window do with a finished install
-        // (taking the new type in, saving servers.json) failing is not the install failing, and the
-        // log had just said it was done.
-        if (!done) return;
-        try
-        {
-            Installed?.Invoke();
-        }
-        catch (Exception ex)
-        {
-            ShowError(string.Format(Localizer.Get("Msg_ConfigSaveError"), ErrorMessages.Describe(ex)));
         }
     }
 

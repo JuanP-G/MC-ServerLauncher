@@ -607,54 +607,15 @@ public class WorldBackupService
             DeleteFolder(unit + ".replaced");
         }
 
-        var incoming = worldDir + ".restoring";
         var swapped = new List<string>();
         try
         {
-            Directory.CreateDirectory(incoming);
-            ZipFile.ExtractToDirectory(zipPath, incoming, overwriteFiles: true);
-
-            // The dimensions come out of the world's folder to sit beside it, as Paper expects them.
-            var dimensions = Path.Combine(incoming, DimensionsRoot);
-            var present = new List<string> { worldDir };
-            foreach (var suffix in DimensionSuffixes)
-            {
-                var packed = Path.Combine(dimensions, suffix);
-                if (!Directory.Exists(packed)) continue;
-                Directory.Move(packed, worldDir + suffix + ".restoring");
-                present.Add(worldDir + suffix);
-            }
-            DeleteFolder(dimensions);
-
-            foreach (var unit in present)
-            {
-                if (Directory.Exists(unit)) Directory.Move(unit, unit + ".replaced");
-                Directory.Move(unit + ".restoring", unit);
-                swapped.Add(unit);
-            }
+            var present = UnpackWithDimensions(worldDir, zipPath);
+            SwapIn(present, swapped);
         }
         catch
         {
-            // Every part back as it was, newest first; a part that never moved is still in place.
-            foreach (var unit in units.Where(u => !swapped.Contains(u)))
-            {
-                try
-                {
-                    if (!Directory.Exists(unit) && Directory.Exists(unit + ".replaced"))
-                        Directory.Move(unit + ".replaced", unit);
-                }
-                catch { /* best-effort: the before-restore backup still has it */ }
-            }
-            for (var i = swapped.Count - 1; i >= 0; i--)
-            {
-                try
-                {
-                    DeleteFolder(swapped[i]);
-                    if (Directory.Exists(swapped[i] + ".replaced"))
-                        Directory.Move(swapped[i] + ".replaced", swapped[i]);
-                }
-                catch { /* best-effort: the before-restore backup still has it */ }
-            }
+            RollBack(units, swapped);
             throw;
         }
         finally
@@ -669,6 +630,69 @@ public class WorldBackupService
         foreach (var unit in swapped)
         {
             try { DeleteFolder(unit + ".replaced"); } catch { /* cleared by the next restore */ }
+        }
+    }
+
+    /// <summary>
+    /// Unpacks the zip into <c>&lt;world&gt;.restoring</c> and moves its dimensions out beside it, each
+    /// into its own <c>.restoring</c> folder, as Paper expects them. Returns the units to swap in: the
+    /// world, and each dimension the zip carried.
+    /// </summary>
+    private static List<string> UnpackWithDimensions(string worldDir, string zipPath)
+    {
+        var incoming = worldDir + ".restoring";
+        Directory.CreateDirectory(incoming);
+        ZipFile.ExtractToDirectory(zipPath, incoming, overwriteFiles: true);
+
+        // The dimensions come out of the world's folder to sit beside it, as Paper expects them.
+        var dimensions = Path.Combine(incoming, DimensionsRoot);
+        var present = new List<string> { worldDir };
+        foreach (var suffix in DimensionSuffixes)
+        {
+            var packed = Path.Combine(dimensions, suffix);
+            if (!Directory.Exists(packed)) continue;
+            Directory.Move(packed, worldDir + suffix + ".restoring");
+            present.Add(worldDir + suffix);
+        }
+        DeleteFolder(dimensions);
+        return present;
+    }
+
+    /// <summary>
+    /// Puts each unpacked unit in place of the one on disk, which is kept as <c>.replaced</c>.
+    /// <paramref name="swapped"/> grows as it goes, so a failure halfway knows what to undo.
+    /// </summary>
+    private static void SwapIn(List<string> present, List<string> swapped)
+    {
+        foreach (var unit in present)
+        {
+            if (Directory.Exists(unit)) Directory.Move(unit, unit + ".replaced");
+            Directory.Move(unit + ".restoring", unit);
+            swapped.Add(unit);
+        }
+    }
+
+    /// <summary>Every part back as it was, newest first; a part that never moved is still in place.</summary>
+    private static void RollBack(List<string> units, List<string> swapped)
+    {
+        foreach (var unit in units.Where(u => !swapped.Contains(u)))
+        {
+            try
+            {
+                if (!Directory.Exists(unit) && Directory.Exists(unit + ".replaced"))
+                    Directory.Move(unit + ".replaced", unit);
+            }
+            catch { /* best-effort: the before-restore backup still has it */ }
+        }
+        for (var i = swapped.Count - 1; i >= 0; i--)
+        {
+            try
+            {
+                DeleteFolder(swapped[i]);
+                if (Directory.Exists(swapped[i] + ".replaced"))
+                    Directory.Move(swapped[i] + ".replaced", swapped[i]);
+            }
+            catch { /* best-effort: the before-restore backup still has it */ }
         }
     }
 
