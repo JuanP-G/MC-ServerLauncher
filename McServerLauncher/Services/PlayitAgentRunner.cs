@@ -160,103 +160,11 @@ public class PlayitAgentRunner
         await _startGate.WaitAsync();
         try
         {
-            lock (_lock)
-            {
-                if (_process is { HasExited: false })
-                {
-                    if (_runningSecret == secretKey) return; // already running with this secret
-                    TryKill();                                // secret changed (reconnect): restart
-                }
-            }
+            if (AlreadyRunningWith(secretKey)) return;
 
-            int myGen;
             try
             {
-                LastError = null;
-                lock (_lock) { _reachedRunning = false; _recentOutput.Clear(); myGen = ++_generation; }
-                var exe = await EnsureBinaryAsync();
-
-                // A playitd from a previous session (ungraceful exit, app killed, closed to tray then
-                // terminated…) may still be listening on our private pipe; playitd would then refuse
-                // to start with "another instance is already running". It runs from our own path, so
-                // it's safe to reclaim — this never touches a system-wide Playit the user installed.
-                KillStrayAgents();
-
-                var psi = new ProcessStartInfo
-                {
-                    FileName = exe,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                };
-                // --secret-path, never --secret: see SecretPath for why the key must not appear in the
-                // process command line.
-                WriteSecretFile(secretKey);
-                psi.ArgumentList.Add("--secret-path");
-                psi.ArgumentList.Add(SecretPath);
-                psi.ArgumentList.Add("--socket-path");
-                psi.ArgumentList.Add(SocketPath);
-
-                var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
-                proc.OutputDataReceived += OnAgentLine;
-                proc.ErrorDataReceived += OnAgentLine;
-                proc.Exited += (sender, _) =>
-                {
-                    var exitCode = sender is Process p && p.HasExited ? p.ExitCode : (int?)null;
-                    bool startupFailure;
-                    lock (_lock)
-                    {
-                        // A newer start (or Stop) bumped the generation: this process was replaced or
-                        // killed on purpose — ignore its exit entirely.
-                        if (myGen != _generation) return;
-                        _process = null;
-                        _runningSecret = null;
-                        // The agent that needed it is gone. Only Stop used to remove the file, so an
-                        // agent that died on its own left the plaintext key behind until next time.
-                        DeleteSecretFile();
-                        // Exiting before it ever came up = a startup failure (bad/expired secret, port,
-                        // conflicting agent…).
-                        startupFailure = !_reachedRunning;
-                    }
-                    if (!startupFailure) { SetState(AgentRunState.Stopped); return; }
-
-                    // Exited can fire before the last stdout/stderr callbacks do; give them a moment to
-                    // drain so we can surface playitd's own last words as the failure reason.
-                    Task.Delay(400).ContinueWith(t =>
-                    {
-                        List<string> lines;
-                        lock (_lock)
-                        {
-                            if (myGen != _generation) return; // a new start began meanwhile
-                            lines = new List<string>(_recentOutput);
-                        }
-                        LastError = BuildFailureReason(lines, exitCode);
-                        SetState(AgentRunState.Failed);
-                    });
-                };
-
-                lock (_lock)
-                {
-                    _process = proc;
-                    _runningSecret = secretKey;
-                }
-                SetState(AgentRunState.Starting);
-                proc.Start();
-                proc.BeginOutputReadLine();
-                proc.BeginErrorReadLine();
-
-                // Consider it running once it stays up briefly (it keeps a persistent control connection).
-                _ = Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(_ =>
-                {
-                    bool up;
-                    lock (_lock)
-                    {
-                        up = myGen == _generation && _process is { HasExited: false };
-                        if (up) _reachedRunning = true;
-                    }
-                    if (up) SetState(AgentRunState.Running);
-                });
+                await LaunchAsync(secretKey);
             }
             catch (Exception ex)
             {
@@ -270,6 +178,127 @@ public class PlayitAgentRunner
             _startGate.Release();
         }
     }
+
+    /// <summary>
+    /// True when an agent is already up with this secret. One running with another secret is killed
+    /// here (a reconnect with a different account), so the start that follows replaces it.
+    /// </summary>
+    private bool AlreadyRunningWith(string secretKey)
+    {
+        lock (_lock)
+        {
+            if (_process is not { HasExited: false }) return false;
+            if (_runningSecret == secretKey) return true;   // already running with this secret
+
+            TryKill();                                      // secret changed (reconnect): restart
+            return false;
+        }
+    }
+
+    /// <summary>Downloads the binary if needed, starts the agent, and arranges to notice how it ends.</summary>
+    private async Task LaunchAsync(string secretKey)
+    {
+        int myGen;
+        LastError = null;
+        lock (_lock) { _reachedRunning = false; _recentOutput.Clear(); myGen = ++_generation; }
+        var exe = await EnsureBinaryAsync();
+
+        // A playitd from a previous session (ungraceful exit, app killed, closed to tray then
+        // terminated…) may still be listening on our private pipe; playitd would then refuse
+        // to start with "another instance is already running". It runs from our own path, so
+        // it's safe to reclaim — this never touches a system-wide Playit the user installed.
+        KillStrayAgents();
+
+        // --secret-path, never --secret: see SecretPath for why the key must not appear in the
+        // process command line.
+        WriteSecretFile(secretKey);
+
+        var proc = new Process { StartInfo = BuildStartInfo(exe), EnableRaisingEvents = true };
+        proc.OutputDataReceived += OnAgentLine;
+        proc.ErrorDataReceived += OnAgentLine;
+        proc.Exited += (sender, _) => OnAgentExited(sender, myGen);
+
+        lock (_lock)
+        {
+            _process = proc;
+            _runningSecret = secretKey;
+        }
+        SetState(AgentRunState.Starting);
+        proc.Start();
+        proc.BeginOutputReadLine();
+        proc.BeginErrorReadLine();
+
+        ConsiderRunningOnceItStaysUp(myGen);
+    }
+
+    /// <summary>How the agent is launched: its output captured, no window, secret by file.</summary>
+    private static ProcessStartInfo BuildStartInfo(string exe)
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = exe,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        psi.ArgumentList.Add("--secret-path");
+        psi.ArgumentList.Add(SecretPath);
+        psi.ArgumentList.Add("--socket-path");
+        psi.ArgumentList.Add(SocketPath);
+        return psi;
+    }
+
+    /// <summary>What to do when the agent process ends: forget it, and say why if it never came up.</summary>
+    /// <param name="sender">The process that exited.</param>
+    /// <param name="myGen">The generation the process was started in.</param>
+    private void OnAgentExited(object? sender, int myGen)
+    {
+        var exitCode = sender is Process p && p.HasExited ? p.ExitCode : (int?)null;
+        bool startupFailure;
+        lock (_lock)
+        {
+            // A newer start (or Stop) bumped the generation: this process was replaced or
+            // killed on purpose — ignore its exit entirely.
+            if (myGen != _generation) return;
+            _process = null;
+            _runningSecret = null;
+            // The agent that needed it is gone. Only Stop used to remove the file, so an
+            // agent that died on its own left the plaintext key behind until next time.
+            DeleteSecretFile();
+            // Exiting before it ever came up = a startup failure (bad/expired secret, port,
+            // conflicting agent…).
+            startupFailure = !_reachedRunning;
+        }
+        if (!startupFailure) { SetState(AgentRunState.Stopped); return; }
+
+        // Exited can fire before the last stdout/stderr callbacks do; give them a moment to
+        // drain so we can surface playitd's own last words as the failure reason.
+        _ = Task.Delay(400).ContinueWith(_ =>
+        {
+            List<string> lines;
+            lock (_lock)
+            {
+                if (myGen != _generation) return; // a new start began meanwhile
+                lines = new List<string>(_recentOutput);
+            }
+            LastError = BuildFailureReason(lines, exitCode);
+            SetState(AgentRunState.Failed);
+        });
+    }
+
+    /// <summary>Consider it running once it stays up briefly (it keeps a persistent control connection).</summary>
+    private void ConsiderRunningOnceItStaysUp(int myGen) =>
+        _ = Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(_ =>
+        {
+            bool up;
+            lock (_lock)
+            {
+                up = myGen == _generation && _process is { HasExited: false };
+                if (up) _reachedRunning = true;
+            }
+            if (up) SetState(AgentRunState.Running);
+        });
 
     /// <summary>Stops the agent process (called on app shutdown or disconnect).</summary>
     public void Stop()
