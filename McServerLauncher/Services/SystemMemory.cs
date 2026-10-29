@@ -76,6 +76,8 @@ public static partial class SystemMemory
         public ulong AvailExtendedVirtual;
     }
 
+    // System DLL, looked up in System32 only: never beside the exe or on PATH, where one could be planted.
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GlobalMemoryStatusEx(ref MemoryStatusEx status);

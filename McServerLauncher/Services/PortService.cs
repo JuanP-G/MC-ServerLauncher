@@ -134,14 +134,21 @@ public class PortService
         public uint OwningPid;
     }
 
+    // System DLL, looked up in System32 only: never beside the exe or on PATH, where one could be planted.
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [DllImport("iphlpapi.dll", SetLastError = true)]
     private static extern uint GetExtendedTcpTable(IntPtr pTcpTable, ref int pdwSize, bool bOrder,
         int ulAf, int tableClass, int reserved);
 
     private const int AF_INET = 2;
+    private const uint ErrorInsufficientBuffer = 122;
     private const int TCP_TABLE_OWNER_PID_LISTENER = 3;
 
     /// <summary>PID of the process listening (LISTEN) on that TCP port, or null.</summary>
+    /// <remarks>
+    /// Null also means "could not tell" (the table could not be read, <c>ss</c> is missing): it is
+    /// only ever used to describe a port already known to be busy, never to decide a port is free.
+    /// </remarks>
     public int? GetListeningPid(int port)
     {
         if (OperatingSystem.IsWindows()) return GetListeningPidWindows(port);
@@ -175,8 +182,12 @@ public class PortService
     [SupportedOSPlatform("windows")]
     private static int? GetListeningPidWindows(int port)
     {
+        // The first call only asks how big the table is; "buffer too small" is its normal answer.
+        // Any other failure means the table cannot be read at all.
         var size = 0;
-        GetExtendedTcpTable(IntPtr.Zero, ref size, true, AF_INET, TCP_TABLE_OWNER_PID_LISTENER, 0);
+        var probe = GetExtendedTcpTable(IntPtr.Zero, ref size, true, AF_INET, TCP_TABLE_OWNER_PID_LISTENER, 0);
+        if (probe != ErrorInsufficientBuffer || size <= 0) return null;
+
         var buffer = Marshal.AllocHGlobal(size);
         try
         {

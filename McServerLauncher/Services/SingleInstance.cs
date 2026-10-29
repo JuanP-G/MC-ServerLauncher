@@ -166,6 +166,8 @@ public sealed class SingleInstance : IDisposable
     /// <summary>Lets any process take the foreground from this one. See SignalExistingInstance.</summary>
     private const int AsfwAny = -1;
 
+    // System DLL, looked up in System32 only: never beside the exe or on PATH, where one could be planted.
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool AllowSetForegroundWindow(int dwProcessId);
