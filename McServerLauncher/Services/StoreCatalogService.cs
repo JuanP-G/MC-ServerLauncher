@@ -172,7 +172,7 @@ public sealed class StoreCatalogService
             if (!response.IsSuccessStatusCode) return false;
             if (response.Content.Headers.ContentLength > MaxDownloadBytes) return false;
 
-            var bytes = await ReadCappedAsync(response.Content, MaxDownloadBytes, ct);
+            var bytes = await AppHttp.ReadCappedAsync(response.Content, MaxDownloadBytes, ct);
             var parsed = Parse(bytes);      // before anything is written: a bad file replaces nothing
 
             Directory.CreateDirectory(_folder);
@@ -215,20 +215,6 @@ public sealed class StoreCatalogService
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, etag + "\n" + at.ToString("O"));
-    }
-
-    private static async Task<byte[]> ReadCappedAsync(HttpContent content, long limit, CancellationToken ct)
-    {
-        await using var stream = await content.ReadAsStreamAsync(ct);
-        using var buffer = new MemoryStream();
-        var chunk = new byte[81920];
-        int read;
-        while ((read = await stream.ReadAsync(chunk, ct)) > 0)
-        {
-            if (buffer.Length + read > limit) throw new InvalidDataException("catalogue too large");
-            buffer.Write(chunk, 0, read);
-        }
-        return buffer.ToArray();
     }
 
     /// <summary>

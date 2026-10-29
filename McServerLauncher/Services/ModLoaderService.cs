@@ -34,6 +34,9 @@ public class ModLoaderService
 {
     private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(10));
 
+    /// <summary>A Fabric server jar or a Forge installer is a few MB; this only stops a download that never ends.</summary>
+    private const long MaxLoaderBytes = 300L << 20;
+
 
     public async Task<string> GetLatestFabricLoaderVersionAsync(CancellationToken ct = default)
     {
@@ -87,7 +90,8 @@ public class ModLoaderService
                 ValidateFabricServerJar(part, gameVersion, loaderVersion);
                 return Task.CompletedTask;
             },
-            ct: ct);
+            ct: ct,
+            maxBytes: MaxLoaderBytes);
 
         log?.Report(Localizer.Get("Msg_DownloadComplete"));
     }
@@ -182,7 +186,8 @@ public class ModLoaderService
                     log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
                     ValidateForgeInstallerJar(part);
                 },
-                ct: ct);
+                ct: ct,
+                maxBytes: MaxLoaderBytes);
         }
 
         log?.Report(Localizer.Get("Msg_ForgeRunningInstaller"));
@@ -272,7 +277,8 @@ public class ModLoaderService
                     log?.Report(Localizer.Get("Msg_VerifyingJarStructure"));
                     ValidateForgeInstallerJar(part);
                 },
-                ct: ct);
+                ct: ct,
+                maxBytes: MaxLoaderBytes);
         }
 
         log?.Report(Localizer.Get("Msg_NeoForgeRunningInstaller"));

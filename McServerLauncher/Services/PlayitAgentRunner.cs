@@ -469,7 +469,8 @@ public class PlayitAgentRunner
             // left the half-file behind whenever the download itself failed.
             await AtomicDownload.ToFileAsync(resp.Content, path,
                 verifyAsync: (part, token) =>
-                    DownloadVerifier.VerifyAsync(part, expectedHash, HashAlgorithmName.SHA256, token));
+                    DownloadVerifier.VerifyAsync(part, expectedHash, HashAlgorithmName.SHA256, token),
+                maxBytes: 150L << 20);   // the agent is about 10 MB
         }
 
         FileModes.TryMakeExecutable(path);

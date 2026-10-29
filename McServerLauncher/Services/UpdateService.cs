@@ -25,6 +25,12 @@ public class UpdateService : IUpdateSource
     private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromSeconds(15));
     private static readonly HttpClient DownloadHttp = AppHttp.Create(TimeSpan.FromMinutes(10));
 
+    /// <summary>Where release assets are served from: the release page and every download link are on it.</summary>
+    private static readonly string[] ReleaseHosts = ["github.com"];
+
+    /// <summary>No installer of this app is near this; it only stops a download that never ends.</summary>
+    private const long MaxInstallerBytes = 500L << 20;
+
     /// <summary>
     /// Update data. <see cref="PackageUrl"/>/<see cref="PackageName"/> are the package for the
     /// platform this app is running on — the Windows installer, the Linux AppImage or the macOS
@@ -57,7 +63,7 @@ public class UpdateService : IUpdateSource
         using var resp = await Http.SendAsync(req, ct);
         if (!resp.IsSuccessStatusCode) return null;
 
-        var json = await resp.Content.ReadAsStringAsync(ct);
+        var json = await AppHttp.ReadCappedStringAsync(resp.Content, AppHttp.MaxApiBytes, ct);
         using var doc = JsonDocument.Parse(json);
         if (doc.RootElement.ValueKind != JsonValueKind.Array) return null;
 
@@ -66,7 +72,8 @@ public class UpdateService : IUpdateSource
 
         var tag = release.TryGetProperty("tag_name", out var t) ? t.GetString() : null;
         var url = release.TryGetProperty("html_url", out var u) ? u.GetString() : null;
-        if (tag is null || url is null) return null;
+        // Both links go to the user's browser or the downloader, and both come from the response.
+        if (tag is null || url is null || !AppHttp.IsAllowedUrl(url, ReleaseHosts)) return null;
 
         var isPreRelease = release.TryGetProperty("prerelease", out var pre)
             && pre.ValueKind == JsonValueKind.True;
@@ -140,7 +147,7 @@ public class UpdateService : IUpdateSource
         return best;
     }
 
-    private static Dictionary<string, string> ReadAssets(JsonElement root)
+    internal static Dictionary<string, string> ReadAssets(JsonElement root)
     {
         var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (!root.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array)
@@ -150,7 +157,9 @@ public class UpdateService : IUpdateSource
         {
             var name = a.TryGetProperty("name", out var n) ? n.GetString() : null;
             var downloadUrl = a.TryGetProperty("browser_download_url", out var d) ? d.GetString() : null;
-            if (name is not null && downloadUrl is not null) map[name] = downloadUrl;
+            // An asset whose link is not https on GitHub is as good as absent: the update then
+            // simply has no package here, and the release page is offered instead.
+            if (name is not null && AppHttp.IsAllowedUrl(downloadUrl, ReleaseHosts)) map[name] = downloadUrl!;
         }
         return map;
     }
@@ -200,7 +209,8 @@ public class UpdateService : IUpdateSource
     {
         try
         {
-            var text = await Http.GetStringAsync(sha256SumsUrl, ct);
+            AppHttp.RequireAllowedUrl(sha256SumsUrl, ReleaseHosts);
+            var text = await AppHttp.GetStringCappedAsync(Http, sha256SumsUrl, AppHttp.MaxSmallTextBytes, ct);
             foreach (var rawLine in text.Split('\n'))
             {
                 var line = rawLine.Trim();
@@ -232,7 +242,10 @@ public class UpdateService : IUpdateSource
     {
         try
         {
-            var text = await Http.GetStringAsync(signatureUrl, ct);
+            AppHttp.RequireAllowedUrl(signatureUrl, ReleaseHosts);
+            // Never read more than a few KB: a signature is a few hundred bytes, and 1024 below is
+            // the real limit; this one only stops the reading itself from being unbounded.
+            var text = await AppHttp.GetStringCappedAsync(Http, signatureUrl, 4096, ct);
             return text.Length is > 0 and <= 1024 ? text.Trim() : null;
         }
         catch
@@ -247,6 +260,7 @@ public class UpdateService : IUpdateSource
     public async Task<string> DownloadInstallerAsync(string url, string destPath,
         CancellationToken ct = default)
     {
+        AppHttp.RequireAllowedUrl(url, ReleaseHosts);
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
 
         using var resp = await DownloadHttp.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
@@ -254,7 +268,7 @@ public class UpdateService : IUpdateSource
 
         // Atomic, so an interrupted download can't leave a plausible-looking half installer where
         // the real one should be (the caller verifies it against SHA256SUMS.txt afterwards).
-        await AtomicDownload.ToFileAsync(resp.Content, destPath, ct: ct);
+        await AtomicDownload.ToFileAsync(resp.Content, destPath, ct: ct, maxBytes: MaxInstallerBytes);
 
         return destPath;
     }

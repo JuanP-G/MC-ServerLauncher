@@ -443,6 +443,12 @@ public partial class JavaService
         return javaExe;
     }
 
+    /// <summary>Where Adoptium's builds are served from: GitHub releases, or its own site.</summary>
+    private static readonly string[] AdoptiumDownloadHosts = ["github.com", "adoptium.net"];
+
+    /// <summary>A JRE is under 100 MB; this only stops a download that never ends.</summary>
+    private const long MaxJreBytes = 400L << 20;
+
     /// <summary>Where a JRE can be had, and the checksum it must match.</summary>
     private sealed record AdoptiumPackage(string Link, string Checksum);
 
@@ -461,7 +467,8 @@ public partial class JavaService
         {
             var apiUrl = $"https://api.adoptium.net/v3/assets/latest/{major}/hotspot" +
                          $"?architecture={arch}&image_type=jre&os={os}&vendor=eclipse";
-            (link, checksum) = FirstPackage(await Http.GetStringAsync(apiUrl, ct));
+            (link, checksum) = FirstPackage(
+                await AppHttp.GetStringCappedAsync(Http, apiUrl, AppHttp.MaxApiBytes, ct));
             if (!string.IsNullOrEmpty(link)) break;
         }
         if (string.IsNullOrEmpty(link))
@@ -475,6 +482,10 @@ public partial class JavaService
         // normal condition — the same rule the Forge installer already follows.
         if (string.IsNullOrEmpty(checksum))
             throw new UserFacingException(Localizer.Get("Msg_JavaNoChecksum"));
+
+        // The link comes out of the response, and what it points at is about to be unpacked and
+        // run: it has to be on the host Adoptium publishes its builds from.
+        AppHttp.RequireAllowedUrl(link, AdoptiumDownloadHosts);
 
         return new AdoptiumPackage(link, checksum);
     }
@@ -492,7 +503,8 @@ public partial class JavaService
                 log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
                 await DownloadVerifier.VerifyAsync(part, package.Checksum, HashAlgorithmName.SHA256, token);
             },
-            ct: ct);
+            ct: ct,
+            maxBytes: MaxJreBytes);
     }
 
     /// <summary>Unpacks the archive beside <paramref name="target"/> and moves the result into place whole.</summary>

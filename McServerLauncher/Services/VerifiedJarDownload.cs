@@ -27,6 +27,9 @@ namespace McServerLauncher.Services;
 /// </remarks>
 public static class VerifiedJarDownload
 {
+    /// <summary>No server jar is anywhere near this; it only stops one that never ends.</summary>
+    private const long MaxJarBytes = 400L << 20;
+
     public static async Task ToFileAsync(HttpClient http, string url, string destPath,
         string? expectedHash, HashAlgorithmName algorithm, IProgress<string>? log,
         CancellationToken ct = default)
@@ -42,11 +45,11 @@ public static class VerifiedJarDownload
         await AtomicDownload.ToFileAsync(resp.Content, destPath,
             verifyAsync: async (part, token) =>
             {
-                if (string.IsNullOrEmpty(expectedHash)) return;
-                log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
-                await DownloadVerifier.VerifyAsync(part, expectedHash, algorithm, token);
+                if (!string.IsNullOrEmpty(expectedHash)) log?.Report(Localizer.Get("Msg_VerifyingChecksum"));
+                await DownloadVerifier.VerifyIfProvidedAsync(part, expectedHash, algorithm, token);
             },
-            ct: ct);
+            ct: ct,
+            maxBytes: MaxJarBytes);
 
         log?.Report(Localizer.Get("Msg_DownloadComplete"));
     }

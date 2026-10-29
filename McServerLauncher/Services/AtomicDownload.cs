@@ -24,6 +24,13 @@ public static class AtomicDownload
     private const string PartSuffix = ".part";
 
     /// <summary>
+    /// How big a download may be unless its caller knows better: a mod, the biggest thing the app
+    /// fetches, is far below it. Callers whose file has a known order of magnitude (a JRE, an
+    /// installer, a server jar) pass a lower one.
+    /// </summary>
+    public const long DefaultMaxBytes = 1L << 30;
+
+    /// <summary>
     /// Where a file named by a remote server is allowed to land: inside
     /// <paramref name="folder"/>, always.
     /// </summary>
@@ -60,11 +67,17 @@ public static class AtomicDownload
     /// opens with <c>FileShare.None</c> and a reader would otherwise hit a sharing violation on
     /// Windows. Throwing from it aborts the download and leaves the destination untouched.
     /// </para>
+    /// <para>
+    /// <paramref name="maxBytes"/> is a ceiling, not a size check: a server that never stops sending
+    /// would otherwise fill the disk. A file announced as larger is refused before a byte is
+    /// written, and one that turns out larger than it said is cut off and removed.
+    /// </para>
     /// </summary>
     public static async Task ToFileAsync(HttpContent content, string destPath,
         Func<string, CancellationToken, Task>? verifyAsync = null,
         IProgress<double>? progress = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        long maxBytes = DefaultMaxBytes)
     {
         var dir = Path.GetDirectoryName(destPath);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
@@ -76,25 +89,21 @@ public static class AtomicDownload
         try
         {
             var total = content.Headers.ContentLength;
+            if (total > maxBytes) throw TooLarge(destPath, maxBytes);
 
             await using (var file = File.Create(partPath))
             await using (var source = await content.ReadAsStreamAsync(ct))
             {
-                if (progress is null || total is null || total.Value <= 0)
+                var buffer = new byte[81920];
+                long received = 0;
+                int read;
+                while ((read = await source.ReadAsync(buffer, ct)) > 0)
                 {
-                    await source.CopyToAsync(file, ct);
-                }
-                else
-                {
-                    var buffer = new byte[81920];
-                    long received = 0;
-                    int read;
-                    while ((read = await source.ReadAsync(buffer, ct)) > 0)
-                    {
-                        await file.WriteAsync(buffer.AsMemory(0, read), ct);
-                        received += read;
-                        progress.Report((double)received / total.Value);
-                    }
+                    received += read;
+                    if (received > maxBytes) throw TooLarge(destPath, maxBytes);
+
+                    await file.WriteAsync(buffer.AsMemory(0, read), ct);
+                    if (progress is not null && total is > 0) progress.Report((double)received / total.Value);
                 }
             }
 
@@ -108,6 +117,10 @@ public static class AtomicDownload
             throw;
         }
     }
+
+    private static UserFacingException TooLarge(string destPath, long maxBytes) =>
+        new(string.Format(Localizer.Get("Msg_DownloadTooLargeFmt"), DisplayName(destPath),
+            $"{maxBytes / (1024.0 * 1024.0):0} MB"));
 
     /// <summary>The name to show the user for a file being downloaded to <paramref name="path"/>.</summary>
     /// <remarks>
