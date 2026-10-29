@@ -376,7 +376,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         // Keep a reference to the handler: the manager is shared, so it must be unsubscribed
         // in ShutdownAsync or replaced view models would leak.
         // Both the legacy system service (PlayitManager) and our embedded agent (PlayitAgentRunner)
-        // can drive the tunnel; the panel reflects whichever is in play (see EffectivePlayitState).
+        // can drive the tunnel; the panel reflects whichever is in play (see PlayitStatus.Effective).
         _onPlayitStateChanged = _ => RunOnUi(RefreshPlayit);
         _onAgentStateChanged = _ => RunOnUi(RefreshPlayit);
 
