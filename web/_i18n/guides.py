@@ -280,7 +280,7 @@ def structured_data(gid, g, code, ui_lang, guides, url, src_path):
     return data
 
 
-# CSS propio de las guías; se añade al de la landing (que ya trae el tema y los componentes).
+# CSS propio de las guías, en assets/guide.css; va después de assets/site.css (el tema y los componentes).
 GUIDE_CSS = """
 /* ---------- GUÍAS ---------- */
 /* Texto largo sobre el cielo: va en un panel oscuro como el chat del juego, para que se lea
@@ -347,8 +347,14 @@ def cut_chrome(landing):
             fail("no se encontró %s en la landing: ¿ha cambiado su estructura?" % what)
         return landing[i:j + (len(end) if include_end else 0)]
 
+    def stylesheet_link():
+        m = re.search(r'<link rel="stylesheet" href="[^"]*assets/site\.css[^"]*">', landing)
+        if m is None:
+            fail("no se encontró el enlace a la hoja de estilos en la landing: ¿ha cambiado su estructura?")
+        return m.group(0)
+
     return {
-        "css": between("<style>", "</style>", "la hoja de estilos", True),
+        "css": stylesheet_link(),
         "noscript": between("<noscript>", "</noscript>", "el bloque noscript", True),
         "top": between("<body>", "<main>", "la cabecera")[len("<body>"):],
         "downloads": between('<section id="descargas">', "</section>", "la sección de descargas", True),
@@ -441,8 +447,8 @@ def build_page(gid, g, code, ui, guides, chrome):
        "alternates": alternates, "up": up, "locale": LOCALES[code], "h1": esc(content["h1"]),
        "og": og_image, "pub": g["published"], "mod": g["modified"], "ld": ld}
 
-    css = chrome["css"].replace("</style>", GUIDE_CSS + "</style>")
-    css = fix_assets(css, up)
+    # La hoja de la landing y, después, la de las guías: el orden es el de la cascada.
+    css = fix_assets(chrome["css"], up) + '\n<link rel="stylesheet" href="%sassets/guide.css">' % up
 
     # Cabecera de la guía: ruta de navegación, titular, entradilla, fecha y botón de descarga.
     meta = "%s · %s" % (ui_lang["updated"].format(date=format_date(g["modified"], ui_lang)),
@@ -586,6 +592,11 @@ def landing_file(code):
 def main():
     ui, guides = load()
     validate(ui, guides)
+
+    # Se escribe aquí y no a mano: vive en este archivo, junto a las plantillas que usan sus clases.
+    (ROOT / "assets" / "guide.css").write_text(
+        "/* Estilos propios de las guías. Lo genera web/_i18n/guides.py (GUIDE_CSS): no se edita aquí. */\n"
+        + GUIDE_CSS.lstrip("\n"), encoding="utf-8", newline="\n")
 
     chromes = {}
     for code in LANGS:

@@ -18,7 +18,6 @@ que se cambió el español y se olvidó actualizar la traducción) o si queda te
 español sin traducir en la salida.
 """
 
-import base64
 import hashlib
 import json
 import pathlib
@@ -98,14 +97,15 @@ def localize(html, code, meta, mapping):
 # desde el repositorio; frame-ancestors, report-uri y sandbox no funcionan en una etiqueta, así que
 # no se incluyen.
 #
-#   script-src   el propio sitio, el contador (GoatCounter) y el script en línea, por su hash: así
-#                un script inyectado en la página no se ejecuta aunque llegue a escribirse en ella.
+#   script-src   el propio sitio y el contador (GoatCounter). La página ya no lleva código en línea
+#                (todo está en assets/site.js), así que no hace falta ningún hash y un script
+#                inyectado en la página no se ejecuta aunque llegue a escribirse en ella.
 #   connect-src  la API de GitHub (el listado de versiones) y el contador.
 #   style-src    'unsafe-inline': la página lleva estilos en línea y atributos style; los estilos no
 #                ejecutan código, y quitarlos sería reescribir el diseño.
 #   base-uri, form-action, object-src, default-src 'none': nada de lo que la página no usa.
 CSP = ("default-src 'none'; "
-       "script-src 'self' {hashes} https://gc.zgo.at; "
+       "script-src 'self' https://gc.zgo.at; "
        "connect-src https://api.github.com https://mc-serverlauncher.goatcounter.com; "
        "img-src 'self' data: https://mc-serverlauncher.goatcounter.com https://gc.zgo.at; "
        "style-src 'self' 'unsafe-inline'; "
@@ -116,20 +116,34 @@ CSP = ("default-src 'none'; "
 CSP_TAG = re.compile(r'\n?<meta http-equiv="Content-Security-Policy"[^>]*>')
 
 
-def inline_script_hashes(html):
-    """Hash (sha256, base64) de cada <script> en línea. El JSON-LD no es código y no se cuenta."""
-    hashes = []
-    for body in re.findall(r"<script>(.*?)</script>", html, re.DOTALL):
-        digest = base64.b64encode(hashlib.sha256(body.encode("utf-8")).digest()).decode("ascii")
-        hashes.append("'sha256-%s'" % digest)
-    return hashes
+# Un <script> con código escrito dentro. El JSON-LD no es código, y los que llevan src son archivos.
+INLINE_SCRIPT = re.compile(r'<script(?![^>]*\bsrc=)(?![^>]*type="application/ld\+json")[^>]*>')
+
+# Los archivos que cambian con el sitio llevan en la URL un resumen de su contenido: un navegador
+# o una caché intermedia que guardó la versión anterior pide la nueva en cuanto cambia.
+VERSIONED_ASSETS = ("site.css", "site.js", "guide.css")
+VERSIONED_URL = re.compile(r'assets/(%s)(?:\?v=[0-9a-f]+)?"' % "|".join(re.escape(a) for a in VERSIONED_ASSETS))
 
 
-def apply_csp(html):
-    """Pone (o actualiza) la política de la página. El hash depende del script de cada versión."""
+def asset_versions():
+    """Primeros 10 caracteres del sha256 de cada archivo versionado."""
+    return {name: hashlib.sha256((ROOT / "assets" / name).read_bytes()).hexdigest()[:10]
+            for name in VERSIONED_ASSETS}
+
+
+def stamp_assets(html, versions):
+    """Pone (o actualiza) ?v=<resumen> en los enlaces a los archivos versionados."""
+    return VERSIONED_URL.sub(lambda m: 'assets/%s?v=%s"' % (m.group(1), versions[m.group(1)]), html)
+
+
+def apply_csp(html, versions):
+    """Pone (o actualiza) la política de la página y la versión de sus archivos."""
     html = CSP_TAG.sub("", html)
-    tag = '<meta http-equiv="Content-Security-Policy" content="%s">' % CSP.format(
-        hashes=" ".join(inline_script_hashes(html)))
+    if INLINE_SCRIPT.search(html):
+        sys.exit("ERROR: una página lleva un <script> en línea; la política de contenido no lo permite "
+                 "(ponlo en web/assets/site.js)")
+    html = stamp_assets(html, versions)
+    tag = '<meta http-equiv="Content-Security-Policy" content="%s">' % CSP
     if '<meta charset="utf-8">' not in html:
         sys.exit("ERROR: una página no tiene <meta charset> donde poner la política de contenido")
     return html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n' + tag, 1)
@@ -138,12 +152,13 @@ def apply_csp(html):
 def apply_csp_everywhere():
     """Todas las páginas generadas, la landing española incluida; se ejecuta la última."""
     count = 0
+    versions = asset_versions()
     for page in sorted(ROOT.rglob("index.html")):
         if any(part.startswith("_") for part in page.relative_to(ROOT).parts):
             continue
-        page.write_text(apply_csp(page.read_text(encoding="utf-8")), encoding="utf-8")
+        page.write_text(apply_csp(page.read_text(encoding="utf-8"), versions), encoding="utf-8")
         count += 1
-    print("Content-Security-Policy -> %d páginas" % count)
+    print("Content-Security-Policy y versión de los archivos -> %d páginas" % count)
 
 
 def main():
@@ -217,7 +232,7 @@ def main():
     # Las guías cortan su estilo y su barra de la landing recién generada, así que van después.
     guides.main()
 
-    # Lo último: el hash del script de cada página es el de su texto ya traducido y definitivo.
+    # Lo último: la política y la versión de los archivos, con las páginas ya definitivas.
     apply_csp_everywhere()
 
 
