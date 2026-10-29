@@ -122,7 +122,7 @@ public class ModrinthService
     /// with the loader/version/type filter — this is what the category chips use.
     /// <paramref name="side"/> picks the projects by where they run; plugins are always server-side.
     /// </summary>
-    public async Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion,
+    public virtual async Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion,
         string index = "relevance", int offset = 0, int limit = 20,
         IReadOnlyCollection<string>? extraFacetGroups = null, CancellationToken ct = default,
         StoreSideFilter side = StoreSideFilter.All)

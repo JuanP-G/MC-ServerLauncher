@@ -276,19 +276,16 @@ public partial class ServerModsViewModel : ObservableObject
     [ObservableProperty]
     private bool _canLoadMore;
 
-    private int _offset;
-    private int _totalHits;
     private bool _hasLoadedOnce;
-    private const int PageSize = 20;
+
+    /// <summary>Asks the store for pages and keeps track of which search counts; see <see cref="StoreBrowser"/>.</summary>
+    private readonly StoreBrowser _browser;
 
     /// <summary>
     /// The results, flat. Replaced in one go rather than emptied and refilled: a list that sits
     /// empty across a network round trip makes the whole panel blink out and back.
     /// </summary>
     public BulkObservableCollection<ModrinthProjectViewModel> SearchResults { get; } = new();
-
-    /// <summary>Cancels the search in flight when a newer one starts.</summary>
-    private CancellationTokenSource? _reload;
 
     // --- Browsing by category ---
 
@@ -471,9 +468,7 @@ public partial class ServerModsViewModel : ObservableObject
         _lifetime = new CancellationTokenSource();
         _cleanupScan?.Cancel();
 
-        try { _reload?.Cancel(); } catch { /* already disposed */ }
-        _reload?.Dispose();
-        _reload = null;
+        _browser.CancelPending();
 
         _noticeTimer?.Stop();
         _noticeTimer = null;
@@ -561,6 +556,7 @@ public partial class ServerModsViewModel : ObservableObject
             new ModDependencyService(_modrinthService), _index);
         _updater = new ModUpdater(config, _modrinthService, _index, _pendingUpdates, CarryDisabledDate);
         _installer = new ModInstaller(config, _modrinthService, _index, _dependencyInstaller);
+        _browser = new StoreBrowser(config, _modrinthService);
         _exporter = new ModpackExporter(config, _index, _modrinthService, () => HowToPlaySteps);
         BuildTags();
         RebuildActiveFilters();
@@ -1106,7 +1102,7 @@ public partial class ServerModsViewModel : ObservableObject
     /// </summary>
     private async Task LoadPageAsync(bool append, CancellationToken ct)
     {
-        if (_config.Type == ServerType.Vanilla || string.IsNullOrEmpty(_config.GameVersion))
+        if (!_browser.CanSearch)
         {
             SearchStatus = Localizer.Get("Msg_ModBrowserNeedsLoader");
             SetResults(Array.Empty<ModrinthProjectViewModel>(), append: false);
@@ -1114,75 +1110,46 @@ public partial class ServerModsViewModel : ObservableObject
             return;
         }
 
-        // Every new search supersedes the one before it. Without this, two quick clicks on two
-        // chips race: both responses land on the same list, the paging offset is advanced twice
-        // and "load more" silently skips a page.
-        CancellationTokenSource? mine = null;
-        if (!append)
-        {
-            _reload?.Cancel();
-            _reload?.Dispose();
-            mine = _reload = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            ct = mine.Token;
-            _offset = 0;
-        }
-
         IsSearching = true;
         _hasLoadedOnce = true;
-        var index = SelectedSortIndex == 1 ? "downloads" : "relevance";
 
-        // Facet-backed categories stack into separate groups, which Modrinth ANDs. The ones with
-        // no facet contribute their words to the query instead (only ever one of those at a time).
-        var facets = SelectedTags.SelectMany(t => t.Definition.Facets).ToList();
-        var query = SearchQuery ?? string.Empty;
-        foreach (var loose in SelectedTags.Where(t => t.Definition.Facets.Count == 0))
-            if (loose.Definition.Query is { Length: > 0 } words)
-                query = string.IsNullOrWhiteSpace(query) ? words : query + " " + words;
-
+        var result = await _browser.LoadAsync(SearchQuery, SelectedTags.Select(t => t.Definition).ToList(),
+            SelectedSortIndex, SideFilter, append, ct);
         try
         {
-            var response = await _modrinthService.SearchModsAsync(
-                query, _config.Type, _config.GameVersion, index, _offset, PageSize,
-                facets.Count > 0 ? facets : null, ct, SideFilter);
-
-            // A newer search started while this one was in flight: its results are the ones that
-            // match what the interface is showing, so drop these.
-            if (ct.IsCancellationRequested || (mine is not null && !ReferenceEquals(_reload, mine)))
-                return;
-
-            if (response != null)
-            {
-                var page = response.Hits.Select(hit => new ModrinthProjectViewModel(hit, this));
-                SetResults(page, append);
-
-                _totalHits = response.TotalHits;
-                _offset += response.Hits.Count;
-                CanLoadMore = response.Hits.Count > 0 && SearchResults.Count < _totalHits;
-
-                SearchStatus = SearchResults.Count > 0
-                    ? string.Format(Localizer.Get("Msg_ModsFoundFmt"), _totalHits)
-                    : Localizer.Get("Msg_NoModsFound");
-            }
-            else if (!append)
-            {
-                // Keep whatever was on screen: an empty panel says less than the old results plus
-                // an explanation of why they didn't refresh.
-                SearchStatus = Localizer.Get("Msg_NoModsFound");
-                CanLoadMore = false;
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Superseded by a newer search; the one that replaced it owns the UI now.
-        }
-        catch (Exception ex)
-        {
-            SearchStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), ErrorMessages.Describe(ex));
+            ShowSearchResult(result, append);
         }
         finally
         {
             // Only the search still in charge may clear the spinner.
-            if (append || mine is null || ReferenceEquals(_reload, mine)) IsSearching = false;
+            if (result.StillInCharge) IsSearching = false;
+        }
+    }
+
+    /// <summary>Draws what a load found: the page, or the line that says why there is none.</summary>
+    private void ShowSearchResult(StoreBrowser.LoadResult result, bool append)
+    {
+        switch (result.Kind)
+        {
+            case StoreBrowser.Kind.Page:
+                var response = result.Response!;
+                SetResults(response.Hits.Select(hit => new ModrinthProjectViewModel(hit, this)), append);
+                CanLoadMore = response.Hits.Count > 0 && SearchResults.Count < response.TotalHits;
+                SearchStatus = SearchResults.Count > 0
+                    ? string.Format(Localizer.Get("Msg_ModsFoundFmt"), response.TotalHits)
+                    : Localizer.Get("Msg_NoModsFound");
+                break;
+
+            case StoreBrowser.Kind.NoAnswer when !append:
+                // Keep whatever was on screen: an empty panel says less than the old results plus
+                // an explanation of why they didn't refresh.
+                SearchStatus = Localizer.Get("Msg_NoModsFound");
+                CanLoadMore = false;
+                break;
+
+            case StoreBrowser.Kind.Failed:
+                SearchStatus = string.Format(Localizer.Get("Msg_ModErrorFmt"), result.Error);
+                break;
         }
     }
 

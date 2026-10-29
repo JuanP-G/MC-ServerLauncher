@@ -9,8 +9,11 @@ namespace McServerLauncher.Tests;
 /// Installing one project: the version it picks, where the file goes, what happens to the copies
 /// already there, and what it reports. Run against a store that answers from memory.
 /// </summary>
+[Collection("content-ledger")]   // the players' pack lives under the ledger's root, which is static
 public class ModInstallerTests : IDisposable
 {
+    private readonly string _previousLedgerRoot = ContentLedgerStore.RootDirectory;
+
     private readonly string _folder = Path.Combine(
         Path.GetTempPath(), "mcl-installer-" + Guid.NewGuid().ToString("N"));
 
@@ -29,6 +32,7 @@ public class ModInstallerTests : IDisposable
             GameVersion = "1.21.1",
         };
         Directory.CreateDirectory(Path.Combine(_folder, "mods"));
+        ContentLedgerStore.RootDirectory = Path.Combine(_folder, "content");
 
         var index = new InstalledContentIndex(_store);
         _installer = new ModInstaller(_config, _store, index,
@@ -155,6 +159,7 @@ public class ModInstallerTests : IDisposable
 
     public void Dispose()
     {
+        ContentLedgerStore.RootDirectory = _previousLedgerRoot;
         try { Directory.Delete(_folder, true); } catch { /* temp */ }
     }
 }

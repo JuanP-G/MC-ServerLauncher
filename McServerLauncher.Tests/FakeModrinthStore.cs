@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using McServerLauncher.Models;
 using McServerLauncher.Models.Modrinth;
+using McServerLauncher.Models.Store;
 using McServerLauncher.Services;
 
 namespace McServerLauncher.Tests;
@@ -24,6 +25,15 @@ internal sealed class FakeModrinthStore : ModrinthService
     public Exception? DownloadFails { get; set; }
 
     public int LatestCalls { get; private set; }
+
+    /// <summary>Answers a search; receives (query, offset, facets). Null means "could not ask".</summary>
+    public Func<string, int, IReadOnlyCollection<string>?, Task<SearchResponse?>>? OnSearch { get; set; }
+
+    public override Task<SearchResponse?> SearchModsAsync(string query, ServerType loader, string mcVersion,
+        string index = "relevance", int offset = 0, int limit = 20,
+        IReadOnlyCollection<string>? extraFacetGroups = null, CancellationToken ct = default,
+        StoreSideFilter side = StoreSideFilter.All) =>
+        OnSearch?.Invoke(query, offset, extraFacetGroups) ?? Task.FromResult<SearchResponse?>(null);
 
     public List<string> Downloaded { get; } = new();
 
