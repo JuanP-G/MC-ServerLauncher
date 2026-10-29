@@ -55,6 +55,9 @@ public partial class ServerModsViewModel : ObservableObject
     /// <summary>Finds and downloads the libraries the content needs; see <see cref="ModDependencyInstaller"/>.</summary>
     private readonly ModDependencyInstaller _dependencyInstaller;
 
+    /// <summary>Checks for newer versions and replaces jars with them.</summary>
+    private readonly ModUpdater _updater;
+
     /// <summary>Builds the zip a server's owner hands to their players.</summary>
     private readonly ModpackExporter _exporter;
 
@@ -553,6 +556,7 @@ public partial class ServerModsViewModel : ObservableObject
         // Shares the HTTP client and the store cache with everything else the panel asks for.
         _dependencyInstaller = new ModDependencyInstaller(config, _modrinthService,
             new ModDependencyService(_modrinthService), _index);
+        _updater = new ModUpdater(config, _modrinthService, _index, _pendingUpdates, CarryDisabledDate);
         _exporter = new ModpackExporter(config, _index, _modrinthService, () => HowToPlaySteps);
         BuildTags();
         RebuildActiveFilters();
@@ -715,50 +719,17 @@ public partial class ServerModsViewModel : ObservableObject
         UpdateStatus = Localizer.Get("Msg_CheckingUpdates");
         try
         {
-            BeginPendingUpdates();
-
-            // Map each jar's SHA-1 to its ModItem (disabled ones included) and clear any prior flag.
-            var byHash = new Dictionary<string, ModItem>(StringComparer.OrdinalIgnoreCase);
-            foreach (var mod in InstalledMods)
-            {
-                mod.Update = null;
-                try
-                {
-                    byHash[await _index.Hashes.Sha1Async(mod.FilePath, ct)] = mod;
-                }
-                catch { /* unreadable/locked file: skip it */ }
-            }
-
-            var latest = await _modrinthService.GetLatestVersionsByHashAsync(byHash.Keys, _config.Type,
-                _config.GameVersion, ct);
-            if (latest is null)
+            var check = await _updater.CheckAsync(InstalledMods, ct);
+            if (!check.CouldAsk)
             {
                 UpdateStatus = UpdateStatusText(couldAsk: false, updates: 0);
                 return;
             }
 
-            var updates = 0;
-            foreach (var (installedHash, version) in latest)
-            {
-                if (!byHash.TryGetValue(installedHash, out var mod)) continue;
-                var file = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.FirstOrDefault();
-                if (file is null) continue;
-
-                // If the latest compatible version's file differs from the installed one, it's an update.
-                if (!string.Equals(file.Hashes?.Sha1, installedHash, StringComparison.OrdinalIgnoreCase))
-                {
-                    mod.Update = new ModUpdateInfo(version.VersionNumber, file.Url,
-                        Path.GetFileName(file.Filename), file.Hashes?.Sha512, file.Hashes?.Sha1,
-                            version.ProjectId);
-                    RememberUpdate(mod.FilePath, mod.Update);
-                    updates++;
-                }
-            }
-
-            UpdateStatus = UpdateStatusText(couldAsk: true, updates);
+            UpdateStatus = UpdateStatusText(couldAsk: true, check.Updates);
             NotifyPendingUpdatesChanged();
 
-            await ScanForMissingDependenciesAsync(byHash.Keys, ct);
+            await ScanForMissingDependenciesAsync(check.Hashes, ct);
         }
         catch (Exception ex)
         {
@@ -772,16 +743,9 @@ public partial class ServerModsViewModel : ObservableObject
 
     private bool CanCheckUpdates => !IsCheckingUpdates && !IsUpdatingAll;
 
-    /// <summary>The line the update check leaves under the list.</summary>
-    /// <remarks>
-    /// "Everything is up to date" only when the store actually said so. Offline it used to print
-    /// exactly that, which is a claim about every mod on the server made on the strength of no
-    /// answer at all — and the one message nobody thinks to question.
-    /// </remarks>
+    /// <summary>The line the update check leaves under the list; see <see cref="ModUpdater.StatusText"/>.</summary>
     internal static string UpdateStatusText(bool couldAsk, int updates) =>
-        !couldAsk ? Localizer.Get("Msg_UpdatesCheckFailed")
-        : updates > 0 ? string.Format(Localizer.Get("Msg_UpdatesFoundFmt"), updates)
-        : Localizer.Get("Msg_NoUpdates");
+        ModUpdater.StatusText(couldAsk, updates);
 
     partial void OnIsCheckingUpdatesChanged(bool value)
     {
@@ -911,31 +875,25 @@ public partial class ServerModsViewModel : ObservableObject
         // race it for the same folder.
         if (mod?.Update is null || mod.IsUpdating || IsUpdatingAll) return;
 
-        var (outcome, error, _) = await UpdateOneAsync(mod);
+        var result = await _updater.UpdateOneAsync(mod, _lifetime.Token);
         RefreshInstalledMods();
 
         // Set after the refresh, which rewrites the line with what is still pending — before, the
         // refresh wiped "updated" the instant it was written, so it was never seen.
-        UpdateStatus = outcome switch
+        UpdateStatus = result.Outcome switch
         {
             ContentReplacement.UpdateOutcome.Updated when PendingUpdateCount > 0 =>
                 string.Format(Localizer.Get("Msg_ModUpdatedRemainingFmt"), PendingUpdateCount),
             ContentReplacement.UpdateOutcome.Updated => Localizer.Get("Msg_ModUpdated"),
             ContentReplacement.UpdateOutcome.NeedsStop => Localizer.Get("Msg_UpdateNeedsStop"),
-            _ => string.Format(Localizer.Get("Msg_UpdateErrorFmt"), error)
+            _ => string.Format(Localizer.Get("Msg_UpdateErrorFmt"), result.Error)
         };
 
         // Only "updated". The old version and any other copy going with it is what updating means,
         // not news: listing the files deleted read as if the app had done something unusual.
     }
 
-    /// <summary>Updates every mod the last check found a newer version for, one after another.</summary>
-    /// <remarks>
-    /// One after another rather than all at once: each is a verified download followed by a file
-    /// swap in the same folder, and doing them in parallel buys a few seconds at the cost of a
-    /// progress line nobody could follow. A failure does not stop the rest — except a jar in use,
-    /// which means the server is running and every other one would fail the same way.
-    /// </remarks>
+    /// <summary>Updates every mod the last check found a newer version for; see <see cref="ModUpdater.UpdateAllAsync"/>.</summary>
     [RelayCommand(CanExecute = nameof(CanUpdateAll))]
     private async Task UpdateAll()
     {
@@ -943,40 +901,12 @@ public partial class ServerModsViewModel : ObservableObject
         if (queue.Count == 0) return;
 
         IsUpdatingAll = true;
-        var updated = 0;
-        var failed = new List<string>();
-        var stoppedByServer = false;
-
+        ModUpdater.AllResult result;
         try
         {
-            // Asked once, before the first download, rather than once per mod: the answer is about
-            // the jars that were already here, and those are the only ones an update replaces.
-            var folder = Path.Combine(_config.FolderPath, ContentFolder);
-            var projects = Directory.Exists(folder)
-                ? await ProjectByPathAsync(folder, _lifetime.Token)
-                : null;
-
-            for (var i = 0; i < queue.Count; i++)
-            {
-                var mod = queue[i];
-
-                // Already gone as another copy of a mod updated earlier in this run: what it was a
-                // copy of is up to date now, and updating this one too would bring the duplicate back.
-                if (!File.Exists(mod.FilePath)) continue;
-
-                UpdateStatus = string.Format(
-                    Localizer.Get("Msg_UpdatingNofMFmt"), i + 1, queue.Count, mod.FileName);
-
-                var (outcome, _, _) = await UpdateOneAsync(mod, projects);
-                if (outcome == ContentReplacement.UpdateOutcome.Updated)
-                {
-                    updated++;
-                    continue;
-                }
-
-                failed.Add(mod.FileName);
-                if (outcome == ContentReplacement.UpdateOutcome.NeedsStop) { stoppedByServer = true; break; }
-            }
+            // Inline, not posted: the summary below must not be overtaken by a late "updating 3 of 5".
+            result = await _updater.UpdateAllAsync(queue,
+                new InlineProgress<string>(message => UpdateStatus = message), _lifetime.Token);
         }
         finally
         {
@@ -984,86 +914,14 @@ public partial class ServerModsViewModel : ObservableObject
             RefreshInstalledMods();
         }
 
-        UpdateStatus = UpdateAllSummary(updated, failed, stoppedByServer);
+        UpdateStatus = ModUpdater.AllSummary(result);
     }
 
     private bool CanUpdateAll => HasPendingUpdates && !IsUpdatingAll && !IsCheckingUpdates;
 
-    /// <summary>The line "update all" leaves behind.</summary>
-    /// <param name="updated">How many mods were updated.</param>
-    /// <param name="failed">The ones that could not be.</param>
-    /// <param name="stoppedByServer">Whether it stopped because the server holds the files.</param>
-    internal static string UpdateAllSummary(int updated, IReadOnlyList<string> failed, bool stoppedByServer)
-    {
-        return stoppedByServer
-            ? string.Format(Localizer.Get("Msg_UpdateAllStoppedFmt"), updated)
-            : failed.Count == 0
-                ? string.Format(Localizer.Get("Msg_UpdateAllDoneFmt"), updated)
-                : string.Format(Localizer.Get("Msg_UpdateAllPartialFmt"),
-                    updated, failed.Count, string.Join(", ", failed));
-    }
-
-    /// <summary>
-    /// Replaces one jar with its newer version. Never leaves two versions of a mod, or none.
-    /// </summary>
-    /// <remarks>
-    /// Shared by the row's button and by "update all", so there is one way a mod gets updated. It
-    /// does not refresh the list — the callers do, once, when they are finished — because a
-    /// refresh halfway through "update all" would rebuild the very rows it is walking.
-    /// </remarks>
-    /// <param name="mod">The row to update.</param>
-    /// <param name="projectByPath">
-    /// Which store project each jar already here is. "Update all" asks once and passes it to every
-    /// mod; a single update asks for itself.
-    /// </param>
-    private async Task<(ContentReplacement.UpdateOutcome Outcome, string? Error,
-        IReadOnlyList<string> Removed)> UpdateOneAsync(ModItem mod,
-        IReadOnlyDictionary<string, string>? projectByPath = null)
-    {
-        if (mod.Update is not { } update)
-            return (ContentReplacement.UpdateOutcome.Failed, null, Array.Empty<string>());
-
-        mod.IsUpdating = true;
-        try
-        {
-            var modsFolder = Path.Combine(_config.FolderPath, ContentFolder);
-            Directory.CreateDirectory(modsFolder);
-            var wasDisabled = !mod.IsEnabled;
-
-            // Asked before downloading, while the folder still holds only what the user had.
-            if (projectByPath is null && update.ProjectId is not null)
-                projectByPath = await ProjectByPathAsync(modsFolder, _lifetime.Token);
-
-            // Download+verify the new jar under its own (enabled) name first, so a failure never
-            // destroys the currently installed one.
-            var enabledPath = AtomicDownload.PathIn(modsFolder, update.FileName);
-            var replacesAFile = File.Exists(enabledPath);
-            await _modrinthService.DownloadModAsync(update.Url, enabledPath, update.Sha512, update.Sha1,
-                ct: _lifetime.Token);
-
-            var (outcome, removed) = ContentReplacement.ApplyDownloadedUpdate(modsFolder, enabledPath,
-                mod.FilePath, wasDisabled, replacesAFile, update.ProjectId, projectByPath, _index.Manifests.Read);
-
-            if (outcome == ContentReplacement.UpdateOutcome.Updated)
-            {
-                _pendingUpdates.Forget(mod.FilePath);
-                mod.Update = null;
-
-                // The month it has been off does not start again because it was updated meanwhile.
-                if (wasDisabled) CarryDisabledDate(mod.FilePath, update.FileName);
-            }
-            return (outcome, null, removed);
-        }
-        catch (Exception ex)
-        {
-            return (ContentReplacement.UpdateOutcome.Failed, ErrorMessages.Describe(ex),
-                Array.Empty<string>());
-        }
-        finally
-        {
-            mod.IsUpdating = false;
-        }
-    }
+    /// <summary>The line "update all" leaves behind; see <see cref="ModUpdater.AllSummary"/>.</summary>
+    internal static string UpdateAllSummary(int updated, IReadOnlyList<string> failed, bool stoppedByServer) =>
+        ModUpdater.AllSummary(new ModUpdater.AllResult(updated, failed, stoppedByServer));
 
     [RelayCommand]
     private void ToggleMod(ModItem? mod)
