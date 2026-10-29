@@ -367,12 +367,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         _name = config.Name;
         _tunnelAddress = config.TunnelAddress;
 
-        _console.Rebuilt += () => OnPropertyChanged(nameof(IsConsoleFiltered));
-        _console.Flushed += OnConsoleFlushed;
-
-        _process.OutputReceived += OnServerLine;
-        _process.StateChanged += OnServerStateChanged;
-        _process.UnexpectedExit += OnUnexpectedExit;
+        WireConsoleAndProcess();
         // Keep a reference to the handler: the manager is shared, so it must be unsubscribed
         // in ShutdownAsync or replaced view models would leak.
         // Both the legacy system service (PlayitManager) and our embedded agent (PlayitAgentRunner)
@@ -380,7 +375,52 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         _onPlayitStateChanged = _ => RunOnUi(RefreshPlayit);
         _onAgentStateChanged = _ => RunOnUi(RefreshPlayit);
 
-        _wake = new WakeOnDemandController(config, new WakeHost(
+        _wake = CreateWakeOnDemand(config);
+        _admin = new PlayerAdmin(this, _properties, _whitelist, _players);
+        _tunnel = CreateTunnelTracker(config);
+        _idle = CreateIdleShutdown();
+
+        _statsTimer = NewTimer(TimeSpan.FromSeconds(2), (_, _) => OnStatsTimerTick());
+        // The Playit service runs in the background; we poll its state periodically, and the
+        // tunnel address (via the playit API) less often.
+        _playitTimer = NewTimer(TimeSpan.FromSeconds(3), OnPlayitTimerTick);
+        // Ticks every minute and asks the clock whether the interval has run out, rather than being
+        // rescheduled whenever the interval is changed: one less thing to keep in step with the
+        // config, and changing the interval takes effect without restarting anything.
+        _autoBackupTimer = NewTimer(TimeSpan.FromMinutes(1), (_, _) => OnAutoBackupTick());
+
+        BackupCoordinator = new BackupCoordinator(this, new WorldBackupService());
+        BackupCoordinator.RestoringChanged += () => RunOnUi(OnRestoringChanged);
+        InitPerformance();
+
+        // Before RefreshInfo, which refreshes the player lists and with them this.
+        History = new PlayerHistoryViewModel(this);
+
+        RefreshPort();
+        RefreshInfo();
+        Mods = new ServerModsViewModel(config);
+
+        _preflight = CreatePreflight(config);
+        Backups = new ServerBackupsViewModel(this);
+
+        // The dialogs write straight into this instance. Listening is what makes every derived
+        // property correct without anyone having to remember to ask.
+        Config.PropertyChanged += OnConfigPropertyChanged;
+    }
+
+    /// <summary>Hooks the console buffer and the server process to this view model.</summary>
+    private void WireConsoleAndProcess()
+    {
+        _console.Rebuilt += () => OnPropertyChanged(nameof(IsConsoleFiltered));
+        _console.Flushed += OnConsoleFlushed;
+
+        _process.OutputReceived += OnServerLine;
+        _process.StateChanged += OnServerStateChanged;
+        _process.UnexpectedExit += OnUnexpectedExit;
+    }
+
+    private WakeOnDemandController CreateWakeOnDemand(ServerConfig config) =>
+        new(config, new WakeHost(
             IsStarting: () => State != ServerState.Stopped,
             Motd: () => MotdText,
             MaxPlayers: () => _maxPlayers,
@@ -391,16 +431,16 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
             StartServer: () => _ = StartInternalAsync(isAutoRestart: true),
             RunOnUi: RunOnUi), _properties, _whitelist, _players);
 
-        _admin = new PlayerAdmin(this, _properties, _whitelist, _players);
-
-        _tunnel = new TunnelAddressTracker(config, _properties, _playitApi, new TunnelHost(
+    private TunnelAddressTracker CreateTunnelTracker(ServerConfig config) =>
+        new(config, _properties, _playitApi, new TunnelHost(
             State: () => TunnelState,
             SetState: state => TunnelState = state,
             SetAddress: address => TunnelAddress = address,
             Say: line => OnConsoleLine(line),
             RunOnUi: RunOnUi));
 
-        _idle = new IdleShutdownController(new IdleHost(
+    private IdleShutdownController CreateIdleShutdown() =>
+        new(new IdleHost(
             Minutes: () => Config.IdleShutdownMinutes,
             IsRunning: () => State == ServerState.Running,
             PlayerCount: () => ConnectedPlayers.Count,
@@ -415,42 +455,19 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
             StopAsync: Stop,
             ReportError: line => OnConsoleLine(line)));
 
-        _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-        _statsTimer.Tick += (_, _) => OnStatsTimerTick();
-
-        // The Playit service runs in the background; we poll its state periodically, and the
-        // tunnel address (via the playit API) less often.
-        _playitTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
-        _playitTimer.Tick += OnPlayitTimerTick;
-
-        // Ticks every minute and asks the clock whether the interval has run out, rather than being
-        // rescheduled whenever the interval is changed: one less thing to keep in step with the
-        // config, and changing the interval takes effect without restarting anything.
-        _autoBackupTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
-        _autoBackupTimer.Tick += (_, _) => OnAutoBackupTick();
-
-        BackupCoordinator = new BackupCoordinator(this, new WorldBackupService());
-        BackupCoordinator.RestoringChanged += () => RunOnUi(OnRestoringChanged);
-        InitPerformance();
-
-        // Before RefreshInfo, which refreshes the player lists and with them this.
-        History = new PlayerHistoryViewModel(this);
-
-        RefreshPort();
-        RefreshInfo();
-        Mods = new ServerModsViewModel(config);
-
-        _preflight = new StartPreflight(config, new PreflightHost(
+    private StartPreflight CreatePreflight(ServerConfig config) =>
+        new(config, new PreflightHost(
             Name: () => Name,
             Say: line => OnConsoleLine(line),
             ConfigChanged: () => ConfigChanged?.Invoke(),
             InstallMissing: (ids, progress) => Mods.InstallMissingAsync(ids, progress)),
             _java, _ports, _properties);
-        Backups = new ServerBackupsViewModel(this);
 
-        // The dialogs write straight into this instance. Listening is what makes every derived
-        // property correct without anyone having to remember to ask.
-        Config.PropertyChanged += OnConfigPropertyChanged;
+    private static DispatcherTimer NewTimer(TimeSpan interval, EventHandler tick)
+    {
+        var timer = new DispatcherTimer { Interval = interval };
+        timer.Tick += tick;
+        return timer;
     }
 
     /// <summary>Applies the row of <see cref="ServerConfigEffects"/> for the field that changed.</summary>
