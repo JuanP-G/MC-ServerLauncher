@@ -1229,7 +1229,7 @@ Dormirse y despertarse sin que nadie entre **no deja copias**: la parada ve que 
 arranque encuentra el mundo igual que en la última copia (ver *Copias del mundo*).
 
 ### La tienda: búsqueda, etiquetas y lenguaje llano
-`ServerModsViewModel` pide a `ModrinthService` resultados ya filtrados por el cargador y la versión
+`ServerModsViewModel` (con `StoreBrowser`, que arma la consulta y sabe cuál respuesta es la vigente) pide a `ModrinthService` resultados ya filtrados por el cargador y la versión
 del servidor — un resultado que el servidor no puede ejecutar es peor que ninguno, porque se instala
 y luego el servidor no levanta. Dónde funciona un proyecto *no* es un filtro oculto: la tienda lista
 también los mods solo de cliente (Sodium, MaLiLib, un minimapa — cerca de un tercio de los de Fabric
@@ -1406,7 +1406,7 @@ tiene corriendo, y pulsar Iniciar entonces significa dos JVM escribiendo sobre l
 mundo.
 
 ### Buscar actualizaciones de mods/plugins
-`ServerModsViewModel` pide a `ModrinthService` identificar cada archivo instalado en Modrinth y marcar
+`ModUpdater` (con `InstalledContentIndex` para saber qué es cada archivo) pide a `ModrinthService` identificar cada archivo instalado en Modrinth y marcar
 los que tienen una versión más nueva; el usuario actualiza cada uno con un clic (descarga verificada
 con checksum vía `DownloadVerifier`, conservando su estado activado/desactivado).
 

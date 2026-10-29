@@ -1175,7 +1175,7 @@ A sleep and a wake with nobody coming in leave **no backups**: the stop sees nob
 start finds the world still the last backup's (see *World backups*).
 
 ### The store: search, tags and plain language
-`ServerModsViewModel` asks `ModrinthService` for results already filtered by the server's loader and
+`ServerModsViewModel` (through `StoreBrowser`, which builds the query and knows which answer is the current one) asks `ModrinthService` for results already filtered by the server's loader and
 game version — a result the server cannot run is worse than no result, because it installs and then
 the server does not come up. Where a project runs is *not* a hidden filter: the store lists the
 client-only mods too (Sodium, MaLiLib, a minimap — about a third of Fabric's for 26.2, which an old
@@ -1343,7 +1343,7 @@ processes, wake listeners and idle timers, shows a server as stopped while the f
 and pressing Start then means two JVMs writing one world folder.
 
 ### Checking mods/plugins for updates
-`ServerModsViewModel` asks `ModrinthService` to identify each installed file on Modrinth and flag the
+`ModUpdater` (with `InstalledContentIndex` for what each file is) asks `ModrinthService` to identify each installed file on Modrinth and flag the
 ones with a newer version; the user updates each with one click (checksum-verified download via
 `DownloadVerifier`, preserving its enabled/disabled state).
 
