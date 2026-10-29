@@ -1052,18 +1052,21 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         await StartInternalAsync(isAutoRestart: false);
     }
 
+    /// <summary>
+    /// Starts the server: checks that nothing else is using it, that it can run here, decides its
+    /// memory, takes the backup and launches the JVM.
+    /// </summary>
+    /// <remarks>
+    /// The order of the decisions is this method; what each step does is in the one it calls. A
+    /// start that stops at any step is abandoned quietly, because every step that refuses has
+    /// already said why in the console.
+    /// </remarks>
+    /// <param name="isAutoRestart">
+    /// True when nobody is sitting in front of the app, so no step may wait for an answer.
+    /// </param>
     internal async Task StartInternalAsync(bool isAutoRestart)
     {
-        if (IsRestoring)
-        {
-            OnConsoleLine(Localizer.Get("Msg_StartWaitsForRestore"));
-            return;
-        }
-        if (IsConverting)
-        {
-            OnConsoleLine(Localizer.Get("Msg_StartWaitsForLoader"));
-            return;
-        }
+        if (StartMustWait()) return;
 
         // One start at a time (see IsPreparing). Said nowhere: the one already under way is the
         // answer to this one too.
@@ -1071,14 +1074,7 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
         IsPreparing = true;
         var shutdowns = _shutdowns;
 
-        // A new run starts a new console story: the first line must not inherit the colour of the
-        // last line of a crash, and a question declined last time is asked again.
-        _lastStdoutKind = null;
-        _blueMapAsked = false;
-
-        // Judged fresh on every attempt: whether THIS run stays up long enough to "forgive" a
-        // previous crash streak must not be based on a stale timestamp from an earlier run/session.
-        _lastRunningAtUtc = null;
+        ForgetLastRun();
 
         try
         {
@@ -1089,57 +1085,12 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
             RefreshPort();
             RefreshInfo();
 
-            // If the port is busy, offer to close the process holding it.
-            if (!await _preflight.PortIsFreeAsync(isAutoRestart))
+            if (!await PassPreflightAsync(isAutoRestart))
                 return;
 
-            // Paper and Purpur refuse to run from a path with "+" or "!" in it. Checked here
-            // rather than left to fail: the server would exit cleanly on every attempt, which reads
-            // as a crash and burns the whole auto-restart budget on something a retry cannot change.
-            if (!await _preflight.TryFixRejectedPathAsync(isAutoRestart))
-                return;
+            var plan = await DecideMemoryAsync();
 
-            // Correct a Geyser config the app wrote before it knew better. Cheap, and it is the
-            // only thing that fixes a server already sitting on the wrong authentication.
-            if (Config.CrossplayEnabled && _crossplay.RepairConfig(Config) is { } repaired)
-                OnConsoleLine(repaired);
-
-            // Everything the mods and plugins need is there — or the user has decided about it.
-            if (!await _preflight.CheckContentDependenciesAsync(isAutoRestart))
-                return;
-
-            // Make sure the configured Java is compatible with this server's version.
-            await _preflight.EnsureCompatibleJavaAsync();
-
-            // The memory this run gets. Decided in the background because it asks the Java what it
-            // is, which also leaves the version remembered for the one Start asks when building the
-            // command line, instead of starting a JVM on the UI thread.
-            await _memoryFinish;
-            var (plan, notes) = await Task.Run(PlanMemory);
-            foreach (var note in notes) OnConsoleLine(note);
-            MemoryPlan = plan;
-
-            // Back up the world right before touching it again: the safety net that matters most,
-            // since it covers every start path (manual, Restart, and auto-restart after a crash).
-            // Never while another copy is still reading the world, skipped when the world is still
-            // the last backup's, and the JVM launched before anything else may read it: see
-            // BackupCoordinator.StartAsync.
-            await BackupCoordinator.StartAsync(() =>
-            {
-                if (shutdowns != _shutdowns) return;
-                MemoryBudget.Reserve(Config.Id, plan.CeilingMb);
-                BeginMemoryRun(plan);
-                try
-                {
-                    _process.Start(Config, plan.Flags);
-                }
-                catch
-                {
-                    MemoryBudget.Release(Config.Id);
-                    AbandonMemoryRun();
-                    throw;
-                }
-            });
+            await LaunchAsync(plan, shutdowns);
             // Playit already runs as a background service: we don't launch another agent.
             Backups.RefreshIfLoaded();
         }
@@ -1159,6 +1110,108 @@ public partial class ServerViewModel : ObservableObject, IBackupHost, IPlayerAdm
             IsPreparing = false;
         }
     }
+
+    /// <summary>Whether a restore or a loader change has the server's files, which a start must not race.</summary>
+    private bool StartMustWait()
+    {
+        if (IsRestoring)
+        {
+            OnConsoleLine(Localizer.Get("Msg_StartWaitsForRestore"));
+            return true;
+        }
+        if (IsConverting)
+        {
+            OnConsoleLine(Localizer.Get("Msg_StartWaitsForLoader"));
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>What a new run must not inherit from the last one.</summary>
+    private void ForgetLastRun()
+    {
+        // A new run starts a new console story: the first line must not inherit the colour of the
+        // last line of a crash, and a question declined last time is asked again.
+        _lastStdoutKind = null;
+        _blueMapAsked = false;
+
+        // Judged fresh on every attempt: whether THIS run stays up long enough to "forgive" a
+        // previous crash streak must not be based on a stale timestamp from an earlier run/session.
+        _lastRunningAtUtc = null;
+    }
+
+    /// <summary>
+    /// The checks that decide whether this server can start at all. False when one refused, after
+    /// saying why.
+    /// </summary>
+    private async Task<bool> PassPreflightAsync(bool isAutoRestart)
+    {
+        // If the port is busy, offer to close the process holding it.
+        if (!await _preflight.PortIsFreeAsync(isAutoRestart))
+            return false;
+
+        // Paper and Purpur refuse to run from a path with "+" or "!" in it. Checked here
+        // rather than left to fail: the server would exit cleanly on every attempt, which reads
+        // as a crash and burns the whole auto-restart budget on something a retry cannot change.
+        if (!await _preflight.TryFixRejectedPathAsync(isAutoRestart))
+            return false;
+
+        // Correct a Geyser config the app wrote before it knew better. Cheap, and it is the
+        // only thing that fixes a server already sitting on the wrong authentication.
+        if (Config.CrossplayEnabled && _crossplay.RepairConfig(Config) is { } repaired)
+            OnConsoleLine(repaired);
+
+        // Everything the mods and plugins need is there — or the user has decided about it.
+        if (!await _preflight.CheckContentDependenciesAsync(isAutoRestart))
+            return false;
+
+        // Make sure the configured Java is compatible with this server's version.
+        await _preflight.EnsureCompatibleJavaAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// The memory this run gets. Decided in the background because it asks the Java what it is,
+    /// which also leaves the version remembered for the one Start asks when building the command
+    /// line, instead of starting a JVM on the UI thread.
+    /// </summary>
+    private async Task<MemoryPlan> DecideMemoryAsync()
+    {
+        await _memoryFinish;
+        var (plan, notes) = await Task.Run(PlanMemory);
+        foreach (var note in notes) OnConsoleLine(note);
+        MemoryPlan = plan;
+        return plan;
+    }
+
+    /// <summary>
+    /// Backs up the world right before touching it again, and launches the JVM.
+    /// </summary>
+    /// <remarks>
+    /// The backup is the safety net that matters most, since it covers every start path (manual,
+    /// Restart, and auto-restart after a crash). Never while another copy is still reading the
+    /// world, skipped when the world is still the last backup's, and the JVM launched before
+    /// anything else may read it: see <see cref="BackupCoordinator.StartAsync"/>.
+    /// </remarks>
+    /// <param name="plan">The memory the run was given.</param>
+    /// <param name="shutdowns">The shutdown count seen when the start began; a changed one means the app is closing.</param>
+    private Task LaunchAsync(MemoryPlan plan, int shutdowns) =>
+        BackupCoordinator.StartAsync(() =>
+        {
+            if (shutdowns != _shutdowns) return;
+            MemoryBudget.Reserve(Config.Id, plan.CeilingMb);
+            BeginMemoryRun(plan);
+            try
+            {
+                _process.Start(Config, plan.Flags);
+            }
+            catch
+            {
+                MemoryBudget.Release(Config.Id);
+                AbandonMemoryRun();
+                throw;
+            }
+        });
 
     /// <summary>
     /// Reacts to the server process ending on its own (crash, killed externally, JVM exit). Shows
