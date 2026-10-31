@@ -32,6 +32,8 @@ public class InstallStateCardTests : IDisposable
 
     public InstallStateCardTests()
     {
+        // The panel's notice timer and refresh go through Avalonia's dispatcher: see EnsureStarted.
+        AvaloniaFixture.EnsureStarted();
         _config = new ServerConfig
         {
             Name = "test",

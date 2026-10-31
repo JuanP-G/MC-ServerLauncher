@@ -20,36 +20,52 @@ namespace McServerLauncher.Tests;
 /// and the manual harness that did does not run in CI.
 /// </para>
 /// </remarks>
-public sealed class AvaloniaFixture : IDisposable
+public sealed class AvaloniaFixture
 {
-    private readonly Thread _ui;
-    private readonly CancellationTokenSource _stop = new();
+    private static readonly Lazy<bool> Started = new(Start);
 
-    public AvaloniaFixture()
+    public AvaloniaFixture() => EnsureStarted();
+
+    /// <summary>
+    /// Sets Avalonia up, once, before anything else in the process touches its dispatcher.
+    /// </summary>
+    /// <remarks>
+    /// Whoever asks for <c>Dispatcher.UIThread</c> first decides what it is. A test that reaches it
+    /// from an ordinary thread — the store's notice timer does — before the UI thread has set Avalonia
+    /// up leaves a dispatcher that cannot run a loop, and the fixture's thread then dies with
+    /// "PlatformNotSupportedException" and takes the whole test host with it. Collections run in
+    /// parallel, so it depended on timing. Tests that exercise code which uses the dispatcher call this
+    /// first; it is the same one-time setup, never a second application.
+    /// </remarks>
+    public static void EnsureStarted() => _ = Started.Value;
+
+    private static bool Start()
     {
         var ready = new TaskCompletionSource();
 
         // Its own thread with a running dispatcher: controls raise property changes through it, and
-        // without one nothing that posts to the UI thread would ever run.
-        _ui = new Thread(() =>
+        // without one nothing that posts to the UI thread would ever run. It lives as long as the
+        // process (a background thread), so a test that comes after the collection still has one.
+        var ui = new Thread(() =>
         {
             AppBuilder.Configure<McServerLauncher.App>()
                 .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = true })
                 .SetupWithoutStarting();
 
             ready.SetResult();
-            Dispatcher.UIThread.MainLoop(_stop.Token);
+            Dispatcher.UIThread.MainLoop(CancellationToken.None);
         })
         { IsBackground = true, Name = "avalonia-tests" };
 
         // Windows only: on Linux this throws PlatformNotSupportedException ("COM Interop is not
         // supported"), which took the whole Linux CI leg down with it. Avalonia does not need an
         // STA thread there; it is a Windows COM requirement.
-        if (OperatingSystem.IsWindows()) _ui.SetApartmentState(ApartmentState.STA);
-        _ui.Start();
+        if (OperatingSystem.IsWindows()) ui.SetApartmentState(ApartmentState.STA);
+        ui.Start();
 
         if (!ready.Task.Wait(TimeSpan.FromSeconds(30)))
             throw new XunitException("Avalonia headless no arrancó en 30 s");
+        return true;
     }
 
     /// <summary>Runs <paramref name="action"/> on the UI thread and rethrows what it throws there.</summary>
@@ -101,7 +117,6 @@ public sealed class AvaloniaFixture : IDisposable
         }
     }
 
-    public void Dispose() => _stop.Cancel();
 }
 
 /// <summary>Groups the UI tests so they share one application and never run in parallel.</summary>
