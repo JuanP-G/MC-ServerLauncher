@@ -13,8 +13,12 @@ using McServerLauncher.Services;
 
 namespace McServerLauncher.ViewModels;
 
-/// <summary>One card in the browser: a store item, its tags, and the two buttons it offers.</summary>
-public partial class ModrinthProjectViewModel : ObservableObject
+/// <summary>
+/// One card in the browser: a store item, its tags, and the two buttons it offers — the one that
+/// installs, updates or switches on according to <see cref="InstallStateViewModel.State"/>, and the one
+/// that opens the details.
+/// </summary>
+public partial class ModrinthProjectViewModel : InstallStateViewModel
 {
     private readonly ServerModsViewModel _parent;
     private readonly StoreItem _item;
@@ -50,7 +54,7 @@ public partial class ModrinthProjectViewModel : ObservableObject
     public bool IsClientOnly => _item.Side == InstallSide.ClientOnly && !_parent.IsPluginBased;
 
     /// <summary>What the install button says: where the mod is going, when it is not the server.</summary>
-    public string InstallLabel => Localizer.Get(IsClientOnly ? "Store_AddToPlayerPack" : "Install");
+    public override string InstallLabel => Localizer.Get(IsClientOnly ? "Store_AddToPlayerPack" : "Install");
 
     [ObservableProperty]
     private bool _isInstalling;
@@ -82,6 +86,10 @@ public partial class ModrinthProjectViewModel : ObservableObject
             .Select(t => new StoreTagViewModel(t))
             .ToList();
 
+        // A card made after the state is known — "load more", a new search — starts out right
+        // rather than saying Install until the next check gets round to it.
+        ApplyState(parent.StateOf(item.Id, IsClientOnly));
+
         _ = LoadIconAsync(item.IconUrl);
     }
 
@@ -105,7 +113,24 @@ public partial class ModrinthProjectViewModel : ObservableObject
     private async Task InstallAsync()
     {
         IsInstalling = true;
-        await _parent.InstallModAsync(Id, toPlayerPack: IsClientOnly);
-        IsInstalling = false;
+        try { await _parent.InstallModAsync(Id, toPlayerPack: IsClientOnly); }
+        finally { IsInstalling = false; }
     }
+
+    /// <summary>
+    /// Installs the build the update check named, not "whatever the newest is now": the two are asked
+    /// of different endpoints, and a card that installed one while the state was computed from the
+    /// other would offer the update again for ever.
+    /// </summary>
+    [RelayCommand]
+    private async Task UpdateAsync()
+    {
+        IsInstalling = true;
+        try { await _parent.InstallModAsync(Id, Newer, toPlayerPack: IsClientOnly, isUpdate: true); }
+        finally { IsInstalling = false; }
+    }
+
+    /// <summary>Switches a disabled mod back on, the same way the installed list does.</summary>
+    [RelayCommand]
+    private void Enable() => _parent.EnableFromCard(Id);
 }

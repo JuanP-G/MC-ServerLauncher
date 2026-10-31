@@ -50,7 +50,7 @@ namespace McServerLauncher.ViewModels;
 public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
 {
     private readonly ServerConfig _config;
-    private readonly ModrinthService _modrinthService = new();
+    private readonly ModrinthService _modrinthService;
 
     /// <summary>Finds and downloads the libraries the content needs; see <see cref="ModDependencyInstaller"/>.</summary>
     private readonly ModDependencyInstaller _dependencyInstaller;
@@ -66,6 +66,9 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
 
     /// <summary>What the store says each jar is, shared by the scans, the installs and the export.</summary>
     private readonly InstalledContentIndex _index;
+
+    /// <summary>What the browser's buttons say about each project in the folder; see <see cref="InstallStateResolver"/>.</summary>
+    private readonly InstallStateResolver _states;
 
     /// <summary>Cancelled when the app closes: downloads and store questions stop with it.</summary>
     private CancellationTokenSource _lifetime = new();
@@ -470,6 +473,7 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
         _lifetime.Dispose();
         _lifetime = new CancellationTokenSource();
         _cleanupScan?.Cancel();
+        _stateCheck?.Cancel();
 
         _browser.CancelPending();
 
@@ -487,6 +491,8 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
         _lifetime.Dispose();
         _cleanupScan?.Dispose();
         _cleanupScan = null;
+        _stateCheck?.Dispose();
+        _stateCheck = null;
         GC.SuppressFinalize(this);
     }
 
@@ -507,6 +513,7 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
         // Disposed after the swap so its cancellation can't race the new page's requests.
         previous?.Dispose();
         _ = page.LoadAsync();
+        RefreshInstallStates();
     }
 
     partial void OnDetailsChanged(ModDetailsViewModel? value) => OnPropertyChanged(nameof(IsBrowsing));
@@ -562,11 +569,19 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
         _ => string.Empty
     };
 
-    public ServerModsViewModel(ServerConfig config)
+    public ServerModsViewModel(ServerConfig config) : this(config, new ModrinthService())
+    {
+    }
+
+    /// <param name="config">The server this tab belongs to.</param>
+    /// <param name="store">The one store everything in the panel asks; the tests hand it a fake.</param>
+    internal ServerModsViewModel(ServerConfig config, ModrinthService store)
     {
         _config = config;
+        _modrinthService = store;
         _pendingUpdates = new PendingUpdateStore(config);
         _index = new InstalledContentIndex(_modrinthService);
+        _states = new InstallStateResolver(config, _modrinthService, _index);
         // Shares the HTTP client and the store cache with everything else the panel asks for.
         _dependencyInstaller = new ModDependencyInstaller(config, _modrinthService,
             new ModDependencyService(_modrinthService), _index);
@@ -716,6 +731,10 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
 
         // Whatever changed the folder may have changed what can be cleaned up.
         RescanCleanup();
+
+        // ...and what the store's buttons should say: this runs after every install, update, switch
+        // and delete, which is exactly when they go stale.
+        RefreshInstallStates();
     }
 
     /// <summary>
@@ -1095,6 +1114,9 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
         // before it arrives use the last copy on disk, and the next ones use the new one.
         _ = StoreCatalogService.Shared.RefreshAsync(_lifetime.Token);
 
+        // Alongside the first search, so the first cards are already right when they appear.
+        RefreshInstallStates(force: true);
+
         if (_hasLoadedOnce) return;
         _ = LoadPageAsync(append: false, CancellationToken.None);
     }
@@ -1151,6 +1173,7 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
             case StoreBrowser.Kind.Page:
                 var response = result.Response!;
                 SetResults(response.Hits.Select(hit => new ModrinthProjectViewModel(hit, this)), append);
+                RefreshInstallStates();
                 CanLoadMore = response.Hits.Count > 0 && SearchResults.Count < response.TotalHits;
                 SearchStatus = SearchResults.Count > 0
                     ? Localizer.Format("Msg_ModsFoundFmt", response.TotalHits)
@@ -1283,9 +1306,13 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
     /// Put it in the players' pack instead of the server's folder: for the client-only mods, which
     /// do nothing on a server. Everything else about the install is the same.
     /// </param>
+    /// <param name="isUpdate">
+    /// The mod is already here and <paramref name="chosen"/> is the newer build the state check
+    /// found: the banner says "updated" rather than "installed", and that build is the newest one.
+    /// </param>
     /// <returns>True when the mod ended up installed.</returns>
     public async Task<bool> InstallModAsync(string projectId, VersionResult? chosen = null,
-        bool toPlayerPack = false)
+        bool toPlayerPack = false, bool isUpdate = false)
     {
         // A plugin server has no players' pack: its content is the folder.
         toPlayerPack &= !IsPluginBased;
@@ -1297,7 +1324,7 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
             var result = await _installer.InstallAsync(projectId, chosen, toPlayerPack,
                 new InlineProgress<string>(message => Notify(message, failed: false, transient: true)),
                 _lifetime.Token);
-            return ShowInstallResult(result, toPlayerPack);
+            return ShowInstallResult(result, toPlayerPack, isUpdate, isNewest: chosen is null || isUpdate);
         }
         finally
         {
@@ -1307,7 +1334,8 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
 
     /// <summary>Puts what an install did in the banner, and brings the list up to date with the folder.</summary>
     /// <returns>True when the mod ended up installed.</returns>
-    private bool ShowInstallResult(ModInstaller.Result result, bool toPlayerPack)
+    private bool ShowInstallResult(ModInstaller.Result result, bool toPlayerPack, bool isUpdate,
+        bool isNewest)
     {
         switch (result.Outcome)
         {
@@ -1326,6 +1354,11 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
                 return false;
         }
 
+        // Before the refresh below re-reads the folder: the cards take what was just written from
+        // here, not from a second round trip that may fail.
+        if (result.Version is { } installed && result.Sha1 is { Length: > 0 } sha1)
+            _states.NoteInstalled(sha1, installed, isNewest);
+
         RefreshInstalledMods();
 
         // A dependency with no build for this Minecraft version is not an install failure — the
@@ -1336,7 +1369,8 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
                 failed: true);
         else
             Notify(result.Libraries == 0
-                    ? Localizer.Get(toPlayerPack ? "Msg_AddedToPlayerPack" : "Msg_ModInstalled")
+                    ? Localizer.Get(isUpdate ? "Msg_ModUpdated"
+                        : toPlayerPack ? "Msg_AddedToPlayerPack" : "Msg_ModInstalled")
                     : Localizer.Format(toPlayerPack ? "Msg_AddedToPlayerPackWithDepsFmt"
                         : "Msg_ModInstalledWithDepsFmt", result.Libraries),
                 failed: false);

@@ -784,6 +784,10 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_AddedToPlayerPack" xml:space="preserve"><value>Añadido al paquete para jugadores. No se instala en el servidor.</value></data>
   <data name="Msg_AddedToPlayerPackWithDepsFmt" xml:space="preserve"><value>Añadido al paquete para jugadores. Dependencias añadidas: {0}.</value></data>
   <data name="Store_ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Store_Installed" xml:space="preserve"><value>Instalado</value></data>
+  <data name="Store_Update" xml:space="preserve"><value>Actualizar</value></data>
+  <data name="Store_Disabled" xml:space="preserve"><value>Desactivado</value></data>
+  <data name="Store_EnableTip" xml:space="preserve"><value>Pulsa para activarlo</value></data>
   <data name="Store_VersionsNote" xml:space="preserve"><value>Se muestran las versiones compatibles más recientes.</value></data>
   <data name="Filters" xml:space="preserve"><value>Filtros</value></data>
   <data name="Filters_Clear" xml:space="preserve"><value>Limpiar</value></data>

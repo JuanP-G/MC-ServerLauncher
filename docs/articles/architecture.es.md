@@ -1474,6 +1474,15 @@ archivo principal de la versión como hace la tienda, e `InstallFromGeyserAsync`
 publica GeyserMC— y la pestaña de Mods se recarga salgan bien o no. `ContentManifestCache` guarda lo leído de cada jar por ruta, tamaño y fecha, como
 `FileHashCache`, para no reabrir toda la carpeta en cada mod de **Actualizar todas**.
 
+Lo que dice el botón de cada resultado de la tienda (**Instalar**, **Instalado**, **Actualizar**, o un pequeño
+**Instalado** apagado para un mod desactivado) sale de `InstallStateResolver`: calcula el hash de los jars de la
+carpeta, averigua qué son con `InstalledContentIndex` y pregunta a la tienda una sola vez por la última versión
+de los activos (se recuerda diez minutos y se descarta si cambia el tipo o la versión del servidor). Un jar que
+la tienda no conoce sigue mostrando **Instalar**. `ServerModsViewModel.InstallState.cs` lo ejecuta tras cada
+refresco de la lista de instalados y tras cada búsqueda, y la tarjeta y la página de detalles comparten un solo
+control, `InstallStateButton`. **Actualizar** instala exactamente la versión que encontró la comprobación, y una
+instalación nueva se apunta en el índice al instante, así que el botón cambia sin esperar a otra consulta.
+
 ### Limpieza sugerida
 Un panel ámbar encima de la lista de instalados ofrece quitar lo que el servidor ya no necesita. **Solo lo
 propone**: las filas vienen marcadas y esperan al botón —salvo «ningún mod instalado la necesita», el motivo

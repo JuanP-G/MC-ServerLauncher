@@ -1,0 +1,106 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             x:Class="McServerLauncher.Views.InstallStateButton"
+             x:CompileBindings="False">
+
+    <!-- The one control that says where a project stands: Install, Update, Installed, or Disabled.
+         It binds to InstallStateViewModel, so the card in the results and the details page both
+         use it and cannot drift apart. The four are told apart by colour and icon as well as by
+         the word, so the answer is there at a glance without reading. -->
+    <UserControl.Styles>
+        <!-- Fluent forces its own colours onto a disabled Button, which would turn "Installed" grey
+             like everything else. So that one is not a Button at all: it does nothing, and a
+             Border keeps its green. -->
+        <Style Selector="Border.installed">
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Padding" Value="8,5,8,6" />
+            <Setter Property="Background" Value="{StaticResource SemanticOkPanel}" />
+        </Style>
+        <Style Selector="Button.stateaction">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="Button.update">
+            <Setter Property="Foreground" Value="{StaticResource SemanticWarn}" />
+            <Setter Property="Background" Value="{StaticResource SemanticWarnPanel}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticWarnEdge}" />
+        </Style>
+        <Style Selector="Button.update:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SemanticWarnEdge}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticWarn}" />
+            <Setter Property="Foreground" Value="{StaticResource SemanticWarn}" />
+        </Style>
+        <Style Selector="Button.update:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SemanticWarnEdge}" />
+            <Setter Property="Foreground" Value="{StaticResource SemanticWarn}" />
+        </Style>
+
+        <!-- Switched off: the same slot, smaller and quieter than any of the others, and still clickable. -->
+        <Style Selector="Button.off">
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceEdge}" />
+        </Style>
+        <Style Selector="Button.off:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+        </Style>
+
+        <!-- The details page's button is the big one. -->
+        <Style Selector="Panel.large Button.stateaction">
+            <Setter Property="Padding" Value="16,7" />
+        </Style>
+        <Style Selector="Panel.large Border.installed">
+            <Setter Property="Padding" Value="16,7" />
+        </Style>
+    </UserControl.Styles>
+
+    <Panel x:Name="Root">
+        <Button x:Name="InstallButton" Classes="stateaction"
+                Command="{Binding InstallCommand}" IsVisible="{Binding IsNotInstalled}">
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                <ic:SymbolIcon Symbol="ArrowDownload" />
+                <TextBlock Text="{Binding InstallLabel}" />
+            </StackPanel>
+        </Button>
+
+        <Button Classes="stateaction statelook update"
+                Command="{Binding UpdateCommand}" IsVisible="{Binding IsUpdatable}">
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                <ic:SymbolIcon Symbol="ArrowSync" />
+                <TextBlock Text="{loc:Loc Store_Update}" />
+            </StackPanel>
+        </Button>
+
+        <Border Classes="installed" IsVisible="{Binding IsInstalled}">
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center"
+                        VerticalAlignment="Center" TextElement.Foreground="{StaticResource SemanticOk}">
+                <ic:SymbolIcon Symbol="CheckmarkCircle" />
+                <TextBlock Text="{loc:Loc Store_Installed}" />
+            </StackPanel>
+        </Border>
+
+        <!-- It is there, so it reads "Installed"; it is off, so it is small, grey and ends in a power
+             icon, which is also the way to switch it on. The tooltip says so in words. -->
+        <Button Classes="stateaction statelook off"
+                Command="{Binding EnableCommand}" IsVisible="{Binding IsDisabled}">
+            <ToolTip.Tip>
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Store_Disabled}" FontWeight="SemiBold" />
+                    <TextBlock Text="{loc:Loc Store_EnableTip}" />
+                </StackPanel>
+            </ToolTip.Tip>
+            <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center">
+                <ic:SymbolIcon Symbol="CheckmarkCircle" FontSize="14" />
+                <TextBlock Text="{loc:Loc Store_Installed}" />
+                <ic:SymbolIcon Symbol="Power" FontSize="12" />
+            </StackPanel>
+        </Button>
+    </Panel>
+</UserControl>

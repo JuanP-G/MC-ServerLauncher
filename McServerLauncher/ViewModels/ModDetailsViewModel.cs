@@ -28,7 +28,7 @@ namespace McServerLauncher.ViewModels;
 /// a version is compatible or how a file is installed: both come from the existing services.
 /// </para>
 /// </summary>
-public sealed partial class ModDetailsViewModel : ObservableObject, IDisposable
+public sealed partial class ModDetailsViewModel : InstallStateViewModel, IDisposable
 {
     private readonly ServerModsViewModel _parent;
     private readonly ModrinthService _modrinth;
@@ -131,10 +131,16 @@ public sealed partial class ModDetailsViewModel : ObservableObject, IDisposable
     /// players' pack, and the button says so.
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(InstallText))]
+    [NotifyPropertyChangedFor(nameof(InstallLabel))]
     private bool _isClientOnly;
 
-    public string InstallText => Localizer.Get(IsClientOnly ? "Store_AddToPlayerPack" : "Install");
+    public override string InstallLabel => Localizer.Get(IsClientOnly ? "Store_AddToPlayerPack" : "Install");
+
+    /// <summary>
+    /// Where a client-only mod is installed is the players' pack, not the server, so which folder to
+    /// look in for it — and so what the button says — changes the moment that is known.
+    /// </summary>
+    partial void OnIsClientOnlyChanged(bool value) => ApplyState(_parent.StateOf(ProjectId, value));
 
     [ObservableProperty]
     private string _sideText = string.Empty;
@@ -190,7 +196,11 @@ public sealed partial class ModDetailsViewModel : ObservableObject, IDisposable
         ModrinthUrl = BuildModrinthUrl(seed);
 
         ApplyItem(seed);
+        RefreshState();
     }
+
+    /// <summary>Takes the panel's current answer for this project, after the panel re-checked.</summary>
+    internal void RefreshState() => ApplyState(_parent.StateOf(ProjectId, IsClientOnly));
 
     /// <summary>What this page is showing, so the browser can push it onto its history.</summary>
     public StoreItem CurrentItem => _item;
@@ -502,7 +512,27 @@ public sealed partial class ModDetailsViewModel : ObservableObject, IDisposable
 
     private bool CanInstall => IsCompatible && !IsInstalling;
 
-    partial void OnIsInstallingChanged(bool value) => InstallCommand.NotifyCanExecuteChanged();
+    /// <summary>Installs the build the state check named; see <see cref="ModrinthProjectViewModel"/>.</summary>
+    [RelayCommand(CanExecute = nameof(CanAct))]
+    private async Task Update()
+    {
+        IsInstalling = true;
+        try { await _parent.InstallModAsync(ProjectId, Newer, toPlayerPack: IsClientOnly, isUpdate: true); }
+        finally { IsInstalling = false; }
+    }
+
+    /// <summary>Switches a disabled mod back on.</summary>
+    [RelayCommand(CanExecute = nameof(CanAct))]
+    private void Enable() => _parent.EnableFromCard(ProjectId);
+
+    private bool CanAct => !IsInstalling;
+
+    partial void OnIsInstallingChanged(bool value)
+    {
+        InstallCommand.NotifyCanExecuteChanged();
+        UpdateCommand.NotifyCanExecuteChanged();
+        EnableCommand.NotifyCanExecuteChanged();
+    }
 
     /// <summary>Installs one specific version, again through the existing installer.</summary>
     internal async Task InstallVersionAsync(VersionResult version)
