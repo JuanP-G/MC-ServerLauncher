@@ -77,6 +77,9 @@ public sealed class InstalledContentIndex
             foreach (var hash in unasked) _answers.TryAdd(hash, null);
     }
 
+    /// <summary>Records what a file is without asking, for one that was just downloaded from the store.</summary>
+    public void Remember(string sha1, VersionResult version) => _answers[sha1] = version;
+
     /// <summary>The version the store said <paramref name="hash"/> is, or null.</summary>
     public VersionResult? Known(string hash) =>
         _answers.TryGetValue(hash, out var version) ? version : null;

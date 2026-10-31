@@ -49,9 +49,15 @@ internal sealed class FakeModrinthStore : ModrinthService
         Task.FromResult(sha1Hashes.Where(ByHash.ContainsKey)
             .ToDictionary(h => h, h => ByHash[h], StringComparer.OrdinalIgnoreCase));
 
+    /// <summary>How many times <see cref="GetLatestVersionsByHashAsync"/> was asked.</summary>
+    public int LatestByHashCalls { get; private set; }
+
     public override Task<Dictionary<string, VersionResult>?> GetLatestVersionsByHashAsync(
-        IEnumerable<string> sha1Hashes, ServerType loader, string mcVersion, CancellationToken ct = default) =>
-        Task.FromResult(LatestByHash);
+        IEnumerable<string> sha1Hashes, ServerType loader, string mcVersion, CancellationToken ct = default)
+    {
+        LatestByHashCalls++;
+        return Task.FromResult(LatestByHash);
+    }
 
     public override Task DownloadModAsync(string downloadUrl, string destinationPath, string? expectedSha512 = null,
         string? expectedSha1 = null, IProgress<double>? progress = null, CancellationToken ct = default)

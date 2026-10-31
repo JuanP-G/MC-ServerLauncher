@@ -347,11 +347,8 @@
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
-                                                    <Button Command="{Binding InstallCommand}"
-                                                            Content="{Binding InstallLabel}"
-                                                            HorizontalAlignment="Stretch"
-                                                            HorizontalContentAlignment="Center"
-                                                            IsEnabled="{Binding !IsInstalling}" />
+                                                    <!-- Install, Update, Installed or switch on: see InstallStateButton. -->
+                                                    <views:InstallStateButton />
                                                     <Button Command="{Binding OpenCommand}"
                                                             HorizontalAlignment="Stretch"
                                                             HorizontalContentAlignment="Center"

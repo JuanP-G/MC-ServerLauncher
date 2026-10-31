@@ -307,7 +307,8 @@ public static class ContentManifest
     public static bool IsContentFile(string path) =>
         path.EndsWith(".jar", StringComparison.OrdinalIgnoreCase) || IsDisabled(path);
 
-    private static bool IsDisabled(string path) =>
+    /// <summary>A <c>.jar.disabled</c>: switched off, kept in the folder.</summary>
+    public static bool IsDisabled(string path) =>
         path.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>The content folder of a server, whether it takes mods or plugins.</summary>
