@@ -1411,6 +1411,15 @@ reloads whether they succeed or not.
 `ContentManifestCache` keeps what was read from each jar by path, size and write time, like `FileHashCache`, so
 **Update all** does not reopen the whole folder for every mod.
 
+What each store result's button says (**Install**, **Installed**, **Update**, or a small greyed **Installed** for a
+mod that is switched off) comes from `InstallStateResolver`: it hashes the jars in the folder, learns what they
+are through `InstalledContentIndex`, and asks the store once for the newest build of the enabled ones
+(remembered for ten minutes, and dropped when the server's type or version changes). A jar the store does not
+know still shows **Install**. `ServerModsViewModel.InstallState.cs` runs it after every installed-list refresh
+and after each search, and the card and the details page share one control, `InstallStateButton`. **Update**
+installs exactly the build the check found, and a fresh install is noted in the index at once, so the button
+turns without waiting for a second round trip.
+
 ### Suggested clean-up
 An amber panel above the installed list offers to remove what the server no longer needs. **It only
 suggests**: rows come ticked and wait for the button — except "nothing installed needs it", the weakest

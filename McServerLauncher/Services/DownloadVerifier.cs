@@ -61,15 +61,21 @@ public static class DownloadVerifier
     /// <summary>
     /// Computes the hex-encoded hash of a file in a streaming fashion (no full read into memory).
     /// </summary>
+    /// <remarks>
+    /// Opened so that reading it does not get in anyone's way: <see cref="File.OpenRead"/> refuses to
+    /// share with a writer and makes a rename or a delete wait for it, which is how a hash taken in
+    /// the background could make a mod's switch fail, or an update report the old jar as in use.
+    /// </remarks>
     public static async Task<string> ComputeHashAsync(string filePath, HashAlgorithmName algorithm,
         CancellationToken ct = default)
     {
         using var hasher = IncrementalHash.CreateHash(algorithm);
-        await using var stream = File.OpenRead(filePath);
+        await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete, bufferSize: 81920, useAsync: true);
 
         var buffer = new byte[81920];
         int read;
-        while ((read = await stream.ReadAsync(buffer, ct)) > 0)
+        while ((read = await stream.ReadAsync(buffer, ct).ConfigureAwait(false)) > 0)
             hasher.AppendData(buffer, 0, read);
 
         return Convert.ToHexString(hasher.GetHashAndReset());

@@ -51,8 +51,11 @@ internal sealed class ModInstaller
     /// <param name="UnresolvedLibraries">Libraries with no build for this Minecraft version.</param>
     /// <param name="BlockingCopy">The file name in the way, for <see cref="Outcome.InUse"/>.</param>
     /// <param name="Error">The description of the error, for <see cref="Outcome.Failed"/>.</param>
+    /// <param name="Version">The version that was written, for <see cref="Outcome.Installed"/>.</param>
+    /// <param name="Sha1">The SHA-1 the store published for the file that was written.</param>
     public sealed record Result(Outcome Outcome, int Libraries = 0,
-        IReadOnlyList<string>? UnresolvedLibraries = null, string? BlockingCopy = null, string? Error = null);
+        IReadOnlyList<string>? UnresolvedLibraries = null, string? BlockingCopy = null, string? Error = null,
+        VersionResult? Version = null, string? Sha1 = null);
 
     private readonly ServerConfig _config;
     private readonly ModrinthService _store;
@@ -126,7 +129,8 @@ internal sealed class ModInstaller
             // list of names the user never chose and has no way to act on from here.
             var (libraries, unresolved) = await _dependencies.InstallForAsync(version, destPath, folder,
                 toPlayerPack, progress, ct);
-            return new Result(Outcome.Installed, libraries, unresolved);
+            return new Result(Outcome.Installed, libraries, unresolved, Version: version,
+                Sha1: file.Hashes?.Sha1);
         }
         catch (Exception ex)
         {

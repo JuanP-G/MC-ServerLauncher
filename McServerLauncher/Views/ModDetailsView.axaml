@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:McServerLauncher.ViewModels"
+             xmlns:views="using:McServerLauncher.Views"
              xmlns:loc="using:McServerLauncher.Localization"
              xmlns:b="using:McServerLauncher.Behaviors"
              xmlns:ic="using:FluentIcons.Avalonia"
@@ -124,13 +125,9 @@
 
                             <!-- Install + the numbers -->
                             <Grid ColumnDefinitions="Auto,*" Margin="0,8,0,0">
-                                <Button Grid.Column="0" Classes="accent" Padding="16,7"
-                                        Command="{Binding InstallCommand}">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <ic:SymbolIcon Symbol="ArrowDownload" />
-                                        <TextBlock Text="{Binding InstallText}" />
-                                    </StackPanel>
-                                </Button>
+                                <!-- Install, Update, Installed or switch on: see InstallStateButton. -->
+                                <views:InstallStateButton Grid.Column="0" Large="True"
+                                                          VerticalAlignment="Center" />
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="18"
                                             VerticalAlignment="Center" Margin="18,0,0,0">
