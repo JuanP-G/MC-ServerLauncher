@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
+PackageIdentifier: JuanP-G.MC-ServerLauncher
+PackageVersion: 1.21.4
+InstallerType: inno
+Scope: machine
+MinimumOSVersion: 10.0.0.0
+UpgradeBehavior: install
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/JuanP-G/MC-ServerLauncher/releases/download/v1.21.4/MC-ServerLauncher-Setup-1.21.4.exe
+    InstallerSha256: AAA3796FCFAD1B8BF43B691BF901999D1E26E45FA3C38B4165D5F53F405A2E3C
+    ProductCode: '{B8E7A3C1-2F4D-4A9B-9C1E-7D5F6A8B0C23}_is1'
+ManifestType: installer
+ManifestVersion: 1.10.0
