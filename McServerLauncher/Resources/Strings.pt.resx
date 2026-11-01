@@ -731,6 +731,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Side_ClientOnly" xml:space="preserve"><value>Só cliente</value></data>
   <data name="Store_ClientOnlyBadge" xml:space="preserve"><value>Só cliente</value></data>
   <data name="Store_AddToPlayerPack" xml:space="preserve"><value>Adicionar ao pacote</value></data>
+  <data name="Store_ToPlayerPack" xml:space="preserve"><value>Ao pacote</value></data>
   <data name="Store_Side_ClientOnly" xml:space="preserve"><value>Só funciona no cliente: não faz nada no servidor, por isso vai para o pacote dos jogadores.</value></data>
   <data name="Store_Side_Unknown" xml:space="preserve"><value>O Modrinth não indica se também é preciso instalá-lo no cliente.</value></data>
   <data name="PlayerPack_TitleFmt" xml:space="preserve"><value>Pacote dos jogadores ({0})</value></data>

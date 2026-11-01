@@ -235,6 +235,21 @@ public class InstallStateCardTests : IDisposable
     }
 
     [Fact]
+    public void TheButtonOfAClientOnlyModIsShortAndItsTooltipSaysWhereItGoes()
+    {
+        // The four buttons are one fixed size, and "Add to the players' pack" does not fit in it: the
+        // label is the short form and the sentence moves to the tooltip. A plain install needs none.
+        var panel = Panel();
+        var pack = Card(panel, "sodium", clientOnly: true);
+        var plain = Card(panel, "lithium");
+
+        Assert.Equal(Localizer.Get("Store_ToPlayerPack"), pack.InstallLabel);
+        Assert.Equal(Localizer.Get("Store_AddToPlayerPack"), pack.InstallTip);
+        Assert.Equal(Localizer.Get("Install"), plain.InstallLabel);
+        Assert.Null(plain.InstallTip);
+    }
+
+    [Fact]
     public async Task APluginServerLooksInThePluginsFolder()
     {
         var paper = new ServerConfig

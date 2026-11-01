@@ -226,6 +226,30 @@ public class LocalizationTests
     }
 
     [Fact]
+    public void TheLabelsOfTheStoreButtonsFitItsFixedWidth()
+    {
+        // The install/update/installed button is one fixed width (136 px) so the list does not jump
+        // when a state changes, and anything longer is cut off by the button, not wrapped. The longest
+        // label that fits with its icon is "Aktualizieren" / "Mettre à jour" (13), measured on screen;
+        // a longer one is what shipped in 1.21.4 for client-only mods ("Añadir al paquete") and was
+        // clipped. Say it shorter and put the rest in the tooltip.
+        const int MaxLabel = 14;
+        string[] labels = { "Install", "Store_ToPlayerPack", "Store_Update", "Store_Installed" };
+
+        var offenders = new List<string>();
+        foreach (var file in Files)
+        {
+            var strings = Load(file);
+            foreach (var key in labels)
+                if (strings[key].Length > MaxLabel)
+                    offenders.Add($"{file}: {key} = '{strings[key]}' ({strings[key].Length})");
+        }
+
+        Assert.True(offenders.Count == 0,
+            "etiquetas de botón más largas que lo que cabe: " + string.Join(", ", offenders));
+    }
+
+    [Fact]
     public void NoTextTheInterfaceShowsCarriesAnEmojiOrAPictograph()
     {
         // The notices were made sober: a mark is an icon drawn by the interface, and a state is a

@@ -132,9 +132,12 @@ public sealed partial class ModDetailsViewModel : InstallStateViewModel, IDispos
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(InstallLabel))]
+    [NotifyPropertyChangedFor(nameof(InstallTip))]
     private bool _isClientOnly;
 
-    public override string InstallLabel => Localizer.Get(IsClientOnly ? "Store_AddToPlayerPack" : "Install");
+    public override string InstallLabel => Localizer.Get(IsClientOnly ? "Store_ToPlayerPack" : "Install");
+
+    public override string? InstallTip => IsClientOnly ? Localizer.Get("Store_AddToPlayerPack") : null;
 
     /// <summary>
     /// Where a client-only mod is installed is the players' pack, not the server, so which folder to

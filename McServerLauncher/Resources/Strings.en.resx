@@ -731,6 +731,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Side_ClientOnly" xml:space="preserve"><value>Client only</value></data>
   <data name="Store_ClientOnlyBadge" xml:space="preserve"><value>Client only</value></data>
   <data name="Store_AddToPlayerPack" xml:space="preserve"><value>Add to pack</value></data>
+  <data name="Store_ToPlayerPack" xml:space="preserve"><value>To pack</value></data>
   <data name="Store_Side_ClientOnly" xml:space="preserve"><value>It only works on the client: it does nothing on the server, so it goes in the players' pack.</value></data>
   <data name="Store_Side_Unknown" xml:space="preserve"><value>Modrinth does not say whether it also has to be installed on the client.</value></data>
   <data name="PlayerPack_TitleFmt" xml:space="preserve"><value>Players' pack ({0})</value></data>

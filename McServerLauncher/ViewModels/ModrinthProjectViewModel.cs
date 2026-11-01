@@ -54,7 +54,9 @@ public partial class ModrinthProjectViewModel : InstallStateViewModel
     public bool IsClientOnly => _item.Side == InstallSide.ClientOnly && !_parent.IsPluginBased;
 
     /// <summary>What the install button says: where the mod is going, when it is not the server.</summary>
-    public override string InstallLabel => Localizer.Get(IsClientOnly ? "Store_AddToPlayerPack" : "Install");
+    public override string InstallLabel => Localizer.Get(IsClientOnly ? "Store_ToPlayerPack" : "Install");
+
+    public override string? InstallTip => IsClientOnly ? Localizer.Get("Store_AddToPlayerPack") : null;
 
     [ObservableProperty]
     private bool _isInstalling;

@@ -777,6 +777,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Side_ClientOnly" xml:space="preserve"><value>Solo cliente</value></data>
   <data name="Store_ClientOnlyBadge" xml:space="preserve"><value>Solo cliente</value></data>
   <data name="Store_AddToPlayerPack" xml:space="preserve"><value>Añadir al paquete</value></data>
+  <data name="Store_ToPlayerPack" xml:space="preserve"><value>Al paquete</value></data>
   <data name="Store_Side_ClientOnly" xml:space="preserve"><value>Solo funciona en el cliente: no hace nada en el servidor, así que va al paquete para jugadores.</value></data>
   <data name="Store_Side_Unknown" xml:space="preserve"><value>Modrinth no indica si hay que instalarlo también en el cliente.</value></data>
   <data name="PlayerPack_TitleFmt" xml:space="preserve"><value>Paquete para jugadores ({0})</value></data>
