@@ -36,6 +36,12 @@ public abstract partial class InstallStateViewModel : ObservableObject
     /// <summary>What the install button says: where it is going, when that is not the server.</summary>
     public abstract string InstallLabel { get; }
 
+    /// <summary>
+    /// The longer way of saying <see cref="InstallLabel"/>, for the tooltip. Null when the label already
+    /// says it all: the button is one fixed size, so a destination does not fit in its words.
+    /// </summary>
+    public abstract string? InstallTip { get; }
+
     /// <summary>Takes the panel's answer. The build goes first so a button never fires with the old one.</summary>
     internal void ApplyState(ProjectState state)
     {

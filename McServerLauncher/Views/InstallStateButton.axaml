@@ -71,9 +71,13 @@
 
     <Panel x:Name="Root">
         <Button x:Name="InstallButton" Classes="stateaction"
-                Command="{Binding InstallCommand}" IsVisible="{Binding IsNotInstalled}">
+                Command="{Binding InstallCommand}" IsVisible="{Binding IsNotInstalled}"
+                ToolTip.Tip="{Binding InstallTip}">
             <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                <ic:SymbolIcon Symbol="ArrowDownload" />
+                <!-- A client-only mod goes to the players' pack, not the server: a pack icon says so at
+                     a glance, and the tooltip carries the full sentence the label has no room for. -->
+                <ic:SymbolIcon Symbol="ArrowDownload" IsVisible="{Binding !IsClientOnly}" />
+                <ic:SymbolIcon Symbol="BoxMultiple" IsVisible="{Binding IsClientOnly}" />
                 <TextBlock Text="{Binding InstallLabel}" />
             </StackPanel>
         </Button>
