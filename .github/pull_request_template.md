@@ -1,27 +1,36 @@
 <!--
-TÍTULO: la misma forma que un commit — tipo(ámbito): qué cambia, en español y en minúscula.
-  feat(consola): colores por categoría, filtros con contador y resaltado
-  fix(bedrock): el puerto que no aparecía, y los túneles que se pisaban
-Tipos: feat · fix · seg · perf · refactor · docs · test · ci · chore · release
-Guía completa: docs/articles/contributing.md — Full guide: same file, in English below it.
+WRITE THE TITLE AND THE DESCRIPTION OF THIS PULL REQUEST IN ENGLISH. Always, and no matter what
+language the issue, the commits or the conversation were in. Anyone who reads the project should
+understand a pull request; this applies to people and to AI assistants alike.
+(Commit messages stay in Spanish: the history keeps one voice. Only the pull request is English.)
+
+TITLE: same shape as a commit — type(scope): what changes, lower case, in English.
+  feat(console): colours by category, filters with a counter and highlighting
+  fix(bedrock): the port that did not show up, and the tunnels that overwrote each other
+Types: feat · fix · seg · perf · refactor · docs · test · ci · chore · release
+Scope: the feature area in English (console, mods, store, players, server, types, crossplay,
+bedrock, playit, java, paper, forge, fabric, ports, backups, notifications, colours, updates,
+settings, names, security, data, ui, web, tests, ci, wake, memory). Reuse one before inventing one.
+Full guide: docs/articles/contributing.md ("Pull requests").
 -->
 
-## Qué cambia · What this changes
+## What this changes
 
 <!--
-Tres párrafos como mucho, en el mismo orden que el cuerpo de un commit:
-  1. Qué pasaba antes y por qué era un problema de verdad.
-  2. Qué hace ahora.
-  3. Por qué así — y qué se descartó.
-Si arregla un issue: "Closes #123".
+Three paragraphs at most, in the same order as the body of a commit:
+  1. What happened before, and why it was a real problem.
+  2. What it does now.
+  3. Why this way — and what was rejected.
+If it fixes an issue: "Closes #123".
 -->
 
-## Cómo lo has probado · How you tested it
+## How you tested it
 
-<!-- Qué ejecutaste y en qué plataforma. Si no se puede probar automáticamente, dilo. -->
+<!-- What you ran and on which platform. If it cannot be tested automatically, say so. -->
 
 ## Checklist
 
+- [ ] **The title and this description are in English**
 - [ ] `dotnet format McServerLauncher.sln` run, so the diff is the change and not the formatting
 - [ ] `dotnet test McServerLauncher.Tests/McServerLauncher.Tests.csproj` passes
 - [ ] Naming follows the house style: `_camelCase` private instance fields, `PascalCase` private
@@ -35,13 +44,13 @@ Si arregla un issue: "Closes #123".
 
 - [ ] New or changed feature → `README.md` **and** `README.es.md`
 - [ ] New service, flow or folder → `docs/articles/architecture.md` **and** `architecture.es.md`
-- [ ] New convention or workflow → `docs/articles/contributing.md`, `contributing.es.md` **and**
-      `.github/copilot-instructions.md`
+- [ ] New convention or workflow → `docs/articles/contributing.md`, `contributing.es.md`,
+      `.github/copilot-instructions.md` **and** `CLAUDE.md`
 - [ ] Nothing above applies — this changes no behaviour anyone documents
 
 <!--
 If you ticked nothing in that last block and the change does alter behaviour, it is not ready:
 a page that is quietly a version behind is worse than no page.
 
-¿Es un problema de seguridad? No lo abras aquí: SECURITY.md explica el canal privado.
+Is it a security problem? Do not open it here: SECURITY.md explains the private channel.
 -->

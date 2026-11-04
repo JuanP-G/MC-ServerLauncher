@@ -335,11 +335,21 @@ Los pies son `Closes #12`, `Refs #12`, o `BREAKING CHANGE:` con qué se rompe y 
 
 ### Pull requests
 
-- **El título es el asunto de un commit** — mismos tipos, mismos ámbitos, mismo español.
+- **El título y la descripción se escriben en inglés. Siempre.** Da igual el idioma del issue, de los
+  commits o de la conversación: un pull request tiene que poder leerlo cualquiera que siga el
+  proyecto, y eso incluye a los asistentes de IA, que deben cumplir la misma regla. (Los mensajes de
+  commit siguen en español; solo el pull request va en inglés.)
+- **El título tiene la forma del asunto de un commit** — mismos tipos, con el ámbito en inglés:
+  `feat(wake): a Bedrock player now wakes the server too`. El ámbito es el área de la funcionalidad
+  (`console`, `mods`, `store`, `players`, `server`, `types`, `crossplay`, `bedrock`, `playit`, `java`,
+  `paper`, `forge`, `fabric`, `ports`, `backups`, `notifications`, `colours`, `updates`, `settings`,
+  `names`, `security`, `data`, `ui`, `web`, `tests`, `ci`, `wake`, `memory`); usa uno que ya exista.
   `.github/pull_request_template.md` rellena el resto, la lista de comprobación incluida.
 - La descripción es el cuerpo del commit que habrías escrito para toda la rama.
-- Una idea por pull request. El commit de mezcla es
-  `Merge pull request #N: <título corto> (versión si aplica)`.
+- Una idea por pull request. El commit de mezcla es `Merge pull request #N from ...`, con el título
+  como cuerpo, así que el título es la línea que queda en `git log`.
+- Los pull requests abiertos antes de esta regla se tradujeron después; los commits de mezcla que ya
+  están en el historial conservan su redacción original.
 
 ### Issues
 
@@ -358,8 +368,8 @@ En este repositorio la documentación es parte del cambio, no trabajo para despu
 - Una **función** nueva o distinta → `README.md` y `README.es.md`, los dos.
 - Un **servicio, flujo o carpeta** nuevos → `docs/articles/architecture.md` y `architecture.es.md`.
 - Una **convención o flujo de trabajo** nuevos → este archivo y `contributing.es.md`, y
-  `.github/copilot-instructions.md` para que los asistentes de IA sugieran lo mismo que pediría una
-  revisión.
+  `.github/copilot-instructions.md` y `CLAUDE.md` para que los asistentes de IA sugieran lo mismo que
+  pediría una revisión.
 - Un **texto nuevo visible para el usuario** → los cinco `.resx` (esto lo comprueba una prueba).
 
 Las páginas en inglés y en español son el mismo documento dos veces. Actualizar una y no la otra es
