@@ -117,7 +117,9 @@ CSP_TAG = re.compile(r'\n?<meta http-equiv="Content-Security-Policy"[^>]*>')
 
 
 # Un <script> con código escrito dentro. El JSON-LD no es código, y los que llevan src son archivos.
-INLINE_SCRIPT = re.compile(r'<script(?![^>]*\bsrc=)(?![^>]*type="application/ld\+json")[^>]*>')
+# HTML no distingue mayúsculas: <SCRIPT> también cuenta (y es lo que marcaba CodeQL).
+INLINE_SCRIPT = re.compile(r'<script(?![^>]*\bsrc=)(?![^>]*type="application/ld\+json")[^>]*>',
+                           re.IGNORECASE)
 
 # Los archivos que cambian con el sitio llevan en la URL un resumen de su contenido: un navegador
 # o una caché intermedia que guardó la versión anterior pide la nueva en cuanto cambia.
