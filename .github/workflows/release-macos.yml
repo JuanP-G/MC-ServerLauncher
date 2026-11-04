@@ -86,7 +86,7 @@ jobs:
             <key>CFBundleExecutable</key><string>McServerLauncher</string>
             <key>CFBundleIconFile</key><string>app.icns</string>
             <key>CFBundlePackageType</key><string>APPL</string>
-            <key>LSMinimumSystemVersion</key><string>11.0</string>
+            <key>LSMinimumSystemVersion</key><string>15.0</string>
             <key>NSHighResolutionCapable</key><true/>
           </dict>
           </plist>
