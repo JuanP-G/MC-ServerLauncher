@@ -8,7 +8,7 @@ habituales.
 ## Requisitos
 
 - **Windows**, **Linux** o **macOS** (la interfaz usa Avalonia, multiplataforma).
-- **.NET 9 SDK**.
+- **.NET 10 SDK**.
 - *(Solo para generar el instalador)* **Inno Setup 6**.
 - *(Solo para recompilar el agente de memoria)* un **JDK 8 o posterior** (`JAVA_HOME` o `javac` en el
   `PATH`) y **Python 3**: `python agent/build.py`. Las pruebas que arrancan una JVM de verdad usan la Java de
