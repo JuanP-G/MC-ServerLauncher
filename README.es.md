@@ -75,9 +75,10 @@ nada en ella.
 <br>
 
 En la pestaña **Mods** (o **Plugins**), busca, pulsa **Instalar** y ya está: se descarga la versión que encaja
-con tu servidor, con las librerías que necesite.
+con tu servidor, con las librerías que necesite. El botón pasa entonces a **Instalado**, así siempre ves qué hay ya
+en el servidor.
 
-<img src="docs/media/es/mods.gif" width="900" alt="Buscar Lithium en Modrinth e instalarlo">
+<img src="docs/media/es/mods.gif" width="900" alt="Buscar Lithium en Modrinth, instalarlo y ver cómo el botón pasa a Instalado">
 
 </details>
 
@@ -188,6 +189,11 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   además hay que instalarlo en el cliente. La **ficha completa** (galería, versiones, dependencias, enlaces y
   mods relacionados) se abre sin salir de la app, y el **panel de Filtros** combina varias categorías.
   **Instala** con un clic y **activa/desactiva** o borra lo instalado; lo instalado tiene su propio buscador.
+- **Cada resultado enseña lo que ya tienes** — el botón dice **Instalar**, **Instalado** (en verde, nada que
+  hacer), **Actualizar** (hay una versión más nueva que encaja con tu servidor; un clic instala justo esa) o, si
+  lo apagaste, un **Instalado** tenue con un icono de encendido que lo vuelve a activar. Funciona incluso con un
+  jar que copiaste a mano, porque se reconoce por su huella. Un mod que solo funciona en el cliente dice **Al
+  paquete**: va al paquete de tus jugadores, no al servidor.
 - **Instalar un mod trae lo que necesita** — las librerías de las que depende (Fabric API y compañía) se
   instalan con él, también las de sus dependencias. Solo las *obligatorias*, y nunca una segunda copia.
 - **Actualizaciones** — **buscar actualizaciones** dice qué hay nuevo y qué librerías faltan; se actualiza de
@@ -305,7 +311,7 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 
 **Buscador de mods y plugins**
 
-![Buscador de mods y plugins](docs/screenshots/mods-plugins.png)
+![Buscador de mods y plugins, con el estado de cada resultado: Instalado, Al paquete, Actualizar, Instalar y apagado](docs/screenshots/mods-plugins.png)
 
 **Gestión de jugadores**
 

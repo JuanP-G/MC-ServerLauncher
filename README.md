@@ -74,9 +74,10 @@ nothing in it.
 <br>
 
 In the **Mods** (or **Plugins**) tab, search, click **Install** and that's it: the build that fits your server
-is downloaded, together with any libraries it needs.
+is downloaded, together with any libraries it needs. The button then turns into **Installed**, so you always see what
+is already on the server.
 
-<img src="docs/media/en/mods.gif" width="900" alt="Searching Modrinth for Lithium and installing it">
+<img src="docs/media/en/mods.gif" width="900" alt="Searching Modrinth for Lithium, installing it, and the button turning into Installed">
 
 </details>
 
@@ -186,6 +187,11 @@ When it opens again, **What's new** tells you what changed. It works the same on
   to be installed on the client. The **details page** (gallery, versions, dependencies, links and related mods)
   opens without leaving the app, and the **Filters panel** combines several categories. One-click **Install**,
   and **enable/disable** or delete installed items; the installed list has its own search box.
+- **Every result shows what you already have** — the button says **Install**, **Installed** (green, nothing to
+  do), **Update** (a newer build fits your server; one click installs exactly that one) or, for something you
+  switched off, a dim **Installed** with a power icon that turns it back on. It works even for a jar you copied
+  in by hand, because it is recognised by its hash. A mod that only runs on the client says **To pack**: it goes
+  to your players' pack, not to the server.
 - **Installing a mod brings what it needs** — the libraries it depends on (Fabric API and the rest) are
   installed with it, transitively. Only *required* ones, and never a second copy.
 - **Updates** — **check for updates** says what's new and which libraries are missing; update them one by one
@@ -303,7 +309,7 @@ When it opens again, **What's new** tells you what changed. It works the same on
 
 **Mods & plugins browser**
 
-![Mods and plugins browser](docs/screenshots/mods-plugins.png)
+![Mods and plugins browser, with each result's state: Installed, To pack, Update, Install and switched off](docs/screenshots/mods-plugins.png)
 
 **Player management**
 
