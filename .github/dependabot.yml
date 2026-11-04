@@ -34,6 +34,11 @@ updates:
       - dependency-name: "Avalonia*"
       - dependency-name: "FluentIcons.Avalonia"
       - dependency-name: "SkiaSharp*"
+      # Tmds.DBus.Protocol lo fija el csproj a la versión que pide Avalonia.FreeDesktop
+      # (0.21.3). La 0.95.x quita tipos (Connection, IMethodHandler) y Avalonia no carga
+      # en Linux: la bandeja y los diálogos de archivo dejarían de funcionar, y los tests
+      # no lo ven porque ninguno toca D-Bus. Se sube a mano cuando Avalonia lo soporte.
+      - dependency-name: "Tmds.DBus.Protocol"
       # Cualquier otro salto mayor, a mano.
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
