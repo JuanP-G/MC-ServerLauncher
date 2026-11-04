@@ -37,7 +37,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 10.0.x
 
       - name: Publish (${{ matrix.rid }}, self-contained)
         run: |
@@ -86,7 +86,7 @@ jobs:
             <key>CFBundleExecutable</key><string>McServerLauncher</string>
             <key>CFBundleIconFile</key><string>app.icns</string>
             <key>CFBundlePackageType</key><string>APPL</string>
-            <key>LSMinimumSystemVersion</key><string>11.0</string>
+            <key>LSMinimumSystemVersion</key><string>15.0</string>
             <key>NSHighResolutionCapable</key><true/>
           </dict>
           </plist>

@@ -8,7 +8,7 @@ common changes.
 ## Requirements
 
 - **Windows**, **Linux** or **macOS** (the UI uses Avalonia, which is cross-platform).
-- **.NET 9 SDK**.
+- **.NET 10 SDK**.
 - *(Only to build the installer)* **Inno Setup 6**.
 - *(Only to rebuild the memory agent)* a **JDK 8 or later** (`JAVA_HOME` or `javac` on the `PATH`) and
   **Python 3**: `python agent/build.py`. The tests that start a real JVM use the Java in `JAVA_HOME` or on
@@ -317,11 +317,21 @@ Footers are `Closes #12`, `Refs #12`, or `BREAKING CHANGE:` with what breaks and
 
 ### Pull requests
 
-- **The title is a commit subject** — same types, same scopes, same Spanish. `.github/pull_request_template.md`
-  fills in the rest, including the checklist.
+- **Title and description are written in English. Always.** Whatever language the issue, the commits
+  or the conversation were in — a pull request has to be readable by anyone who follows the project,
+  and that includes AI assistants, who have to follow the same rule. (Commit messages stay in
+  Spanish; only the pull request is English.)
+- **The title has the shape of a commit subject** — same types, with the scope in English:
+  `feat(wake): a Bedrock player now wakes the server too`. The scope is the feature area (`console`,
+  `mods`, `store`, `players`, `server`, `types`, `crossplay`, `bedrock`, `playit`, `java`, `paper`,
+  `forge`, `fabric`, `ports`, `backups`, `notifications`, `colours`, `updates`, `settings`, `names`,
+  `security`, `data`, `ui`, `web`, `tests`, `ci`, `wake`, `memory`); use one that exists.
+  `.github/pull_request_template.md` fills in the rest, including the checklist.
 - The description is the body of the commit you would have written for the whole branch.
-- One idea per pull request. The merge commit is
-  `Merge pull request #N: <título corto> (versión si aplica)`.
+- One idea per pull request. The merge commit is `Merge pull request #N from ...`, with the title as
+  its body, so the title is the line that stays in `git log`.
+- The pull requests opened before this rule were translated afterwards; the merge commits already in
+  the history keep their original wording.
 
 ### Issues
 
@@ -340,7 +350,8 @@ This repository treats the documentation as part of the change, not as follow-up
 - A new or changed **feature** → both `README.md` and `README.es.md`.
 - A new **service, flow or folder** → both `docs/articles/architecture.md` and `architecture.es.md`.
 - A new **convention or workflow** → this file and `contributing.es.md`, and
-  `.github/copilot-instructions.md` so AI assistants suggest the same thing a reviewer would ask for.
+  `.github/copilot-instructions.md` and `CLAUDE.md` so AI assistants suggest the same thing a
+  reviewer would ask for.
 - A new **user-facing string** → all five `.resx` files (a test enforces this one).
 
 The English and Spanish pages are the same document twice. Updating one and not the other is how a

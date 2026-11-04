@@ -165,4 +165,17 @@ public class ServerConfigEffectsTests
         Assert.True(row.Effects.HasFlag(ConfigEffect.ReloadBackups));
         Assert.True(row.Effects.HasFlag(ConfigEffect.RestartWakeListener));
     }
+
+    [Theory]
+    [InlineData(nameof(ServerConfig.CrossplayEnabled))]
+    [InlineData(nameof(ServerConfig.BedrockPort))]
+    public void CrossplayAndGeysersPortMoveTheBedrockListener(string property)
+    {
+        // The listener on Geyser's port exists only with crossplay on and sits on whatever port is
+        // set. Both are changed while the app is open, and until the next stop nothing would have
+        // opened or moved the socket: the first Bedrock player would still get a refused connection.
+        var row = ServerConfigEffects.For(property)!;
+
+        Assert.True(row.Effects.HasFlag(ConfigEffect.RestartWakeListener));
+    }
 }

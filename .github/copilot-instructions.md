@@ -1,7 +1,19 @@
 # Copilot / AI assistant instructions — MC Server Launcher
 
-Conventions for this repo (a cross-platform **Avalonia / .NET 9** desktop app, MVVM). Follow them
+Conventions for this repo (a cross-platform **Avalonia / .NET 10** desktop app, MVVM). Follow them
 when suggesting or writing code.
+
+## Pull requests are written in English — always
+**Every pull request title and description is in English.** No exceptions for the language of the
+issue, of the commits or of the conversation you are in: a reader of the project has to be able to
+understand a pull request, and Spanish excludes many of them. This binds AI assistants as much as
+people. Concretely, before you run `gh pr create` (or write any PR text):
+- the **title** is `type(scope): what changes` in English, lower case, with an English scope
+  (`feat(wake): a Bedrock player now wakes the server too`);
+- the **description** follows `.github/pull_request_template.md`, in English;
+- **commit messages stay in Spanish** (see below) — only the pull request is English;
+- the same goes for replies to issues and comments on a pull request.
+If you are about to open a PR with Spanish text, translate it first.
 
 ## Architecture
 - **MVVM, strictly layered:** logic goes in `Services/` (UI-free, small focused classes), bindable
@@ -95,7 +107,8 @@ Body: Spanish, 80 columns, on anything non-trivial — what happened before and 
 problem, what it does now, why this way and what was rejected. `.gitmessage` is the template
 (`git config commit.template .gitmessage`).
 
-A **PR title is a commit subject**, and its description is that commit's body. Issue titles come
+A **PR title has the shape of a commit subject** (same types), and its description that of a commit
+body — but **in English**, with an English scope, unlike the commits themselves. Issue titles come
 pre-filled in the same shape by the forms in `.github/ISSUE_TEMPLATE/`. Security never goes in a
 public issue — see `SECURITY.md`.
 
@@ -103,7 +116,7 @@ public issue — see `SECURITY.md`.
 Anything that alters behaviour alters the docs in the same commit, and **both languages every time**:
 - feature → `README.md` + `README.es.md`
 - service / flow / folder → `docs/articles/architecture.md` + `architecture.es.md`
-- convention or workflow → `docs/articles/contributing.md` + `contributing.es.md` + this file
+- convention or workflow → `docs/articles/contributing.md` + `contributing.es.md` + this file + `CLAUDE.md`
 - user-facing string → all five `.resx` (a test enforces it)
 
 **No emoji in docs, issue forms or commits.** Mark a state with a bold word (**Works**, **No**); for

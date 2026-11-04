@@ -2,7 +2,7 @@
 
 > ¿Prefieres español? Lee la versión en [español](architecture.es.md).
 
-MC Server Launcher is a **Avalonia / .NET 9** desktop app that follows the **MVVM** pattern
+MC Server Launcher is a **Avalonia / .NET 10** desktop app that follows the **MVVM** pattern
 (using [CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)) with the
 [Avalonia](https://avaloniaui.net/) Fluent theme (cross-platform). It manages one or more Minecraft servers without
 `.bat` files, console windows or editing config files by hand.
@@ -24,7 +24,7 @@ flowchart LR
     protect["BackupCoordinator<br/>WorldBackupService<br/>LiveWorldBackup"]
     content["ModrinthService<br/>ModDependencyService<br/>CleanupAdvisor"]
     online["PlayitApiService<br/>PlayitAgentRunner<br/>CrossplayService"]
-    wake["WakeOnDemandListener"]
+    wake["WakeOnDemandListener<br/>NetherNetWakeListener"]
     hist["PlayerHistoryStore"]
     folder[("The server's folder<br/>world · mods · backups")]
     web["Mojang · Paper · Purpur<br/>Fabric · Forge · NeoForge<br/>Adoptium (Java)"]
@@ -1181,6 +1181,22 @@ login, so somebody who knows a listed name can still wake the server, and is the
 The rule stops the scanners, which is what it is for; it is not access control. Without a whitelist
 nothing changes, and `ServerConfig.WakeOnlyForWhitelist` (on by default, a box
 under *Start it when someone tries to join*) lets the owner open it to anyone anyway.
+
+**Bedrock players wake it too**, through `NetherNetWakeListener`, when the server has crossplay. Since
+Bedrock 26.60 a client opens with plain HTTP over TCP to the address it was given, and only then
+plays over WebRTC on UDP; Geyser answers that request on the same number as its Bedrock port. While
+the server sleeps nothing does, the connection is refused, and the client reports a generic error.
+So the controller holds that TCP port as well (unless it is the Java port, which is already held),
+answers `GET /v1/join` with the server's status, and treats `POST /v1/join/{id}` — the client's
+offer — as the join. The offer itself cannot be answered for real, because that is a WebRTC handshake
+with a signed identity, so the POST is refused with a 503 and the player tries again a few seconds
+later, when Geyser is up. Two choices worth knowing: the GET alone does not wake anything, for the
+same reason a Java ping does not; and `WakePolicy` is not asked, because the player's name is inside
+that signed identity and is not read here, so a Bedrock join wakes the server even when it only starts
+for its whitelist. The Bedrock scanners that exist send a RakNet ping, not this exchange. Both ports
+are let go together before the server starts (`WakeOnDemandController.Stop`), or Geyser would find its
+own port busy. Not covered: Geyser's `raknet` transport (UDP), LAN discovery, and what the client
+shows for the refusal — the protocol does not define a message.
 
 A sleep and a wake with nobody coming in leave **no backups**: the stop sees nobody played and the
 start finds the world still the last backup's (see *World backups*).
