@@ -8,7 +8,7 @@ common changes.
 ## Requirements
 
 - **Windows**, **Linux** or **macOS** (the UI uses Avalonia, which is cross-platform).
-- **.NET 9 SDK**.
+- **.NET 10 SDK**.
 - *(Only to build the installer)* **Inno Setup 6**.
 - *(Only to rebuild the memory agent)* a **JDK 8 or later** (`JAVA_HOME` or `javac` on the `PATH`) and
   **Python 3**: `python agent/build.py`. The tests that start a real JVM use the Java in `JAVA_HOME` or on

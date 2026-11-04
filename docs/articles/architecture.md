@@ -2,7 +2,7 @@
 
 > ¿Prefieres español? Lee la versión en [español](architecture.es.md).
 
-MC Server Launcher is a **Avalonia / .NET 9** desktop app that follows the **MVVM** pattern
+MC Server Launcher is a **Avalonia / .NET 10** desktop app that follows the **MVVM** pattern
 (using [CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)) with the
 [Avalonia](https://avaloniaui.net/) Fluent theme (cross-platform). It manages one or more Minecraft servers without
 `.bat` files, console windows or editing config files by hand.

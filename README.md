@@ -343,7 +343,7 @@ dotnet run --project McServerLauncher
 dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 ```
 
-Built with **Avalonia / .NET 9**. The small Java agent that helps servers give memory back (`agent/`) is
+Built with **Avalonia / .NET 10**. The small Java agent that helps servers give memory back (`agent/`) is
 embedded as a jar and rebuilt byte for byte with `python agent/build.py`; publishing the app needs no JDK. The Windows installer is **x64 only** (Inno Setup
 `ArchitecturesAllowed=x64compatible`); there's no separate x86 or native ARM64 build.
 
