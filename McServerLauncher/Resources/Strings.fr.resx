@@ -313,7 +313,7 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manuelle</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>avant restauration</value></data>
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Le démarrer quand quelqu'un essaie de se connecter</value></data>
-  <data name="Wake_Hint" xml:space="preserve"><value>Tant qu'il est éteint, la liste des serveurs le montre endormi. Qui appuie sur Rejoindre reçoit un message et le serveur commence à démarrer.</value></data>
+  <data name="Wake_Hint" xml:space="preserve"><value>Tant qu'il est éteint, la liste des serveurs le montre endormi. Qui appuie sur Rejoindre reçoit un message et le serveur commence à démarrer. Avec le crossplay, un joueur Bedrock qui tente de rejoindre le réveille aussi.</value></data>
   <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>Si la liste blanche est activée, ne le démarrer que pour les joueurs de la liste</value></data>
   <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>Ainsi, les robots qui parcourent Internet ne le démarrent pas. Les opérateurs comptent aussi. Le nom n'est pas encore vérifié à ce moment-là : quelqu'un qui utilise un nom de la liste le démarre, même si le serveur ne le laisse pas entrer ensuite.</value></data>
   <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>Ce serveur est éteint et ne démarre que pour les joueurs de sa liste blanche.</value></data>
@@ -323,6 +323,7 @@
   <data name="Wake_KickStarting" xml:space="preserve"><value>Le serveur est en train de démarrer.&#10;&#10;Réessaie dans quelques secondes.</value></data>
   <data name="Msg_WakeStarting" xml:space="preserve"><value>Quelqu'un a essayé de se connecter : démarrage du serveur.</value></data>
   <data name="Msg_WakePortBusyFmt" xml:space="preserve"><value>Impossible d'attendre les connexions sur le port {0} : il est déjà utilisé.</value></data>
+  <data name="Msg_WakeBedrockPortBusyFmt" xml:space="preserve"><value>Impossible d'attendre les connexions Bedrock sur le port {0} : il est déjà utilisé.</value></data>
   <data name="Idle_Intro" xml:space="preserve"><value>Le serveur peut s'arrêter tout seul quand il ne reste personne, et redémarrer dès que quelqu'un essaie de se connecter.</value></data>
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutes sans joueurs</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = ne s'arrête jamais. Le compte à rebours démarre au départ du dernier joueur et repart dès que quelqu'un se connecte.</value></data>
