@@ -347,7 +347,7 @@ dotnet run --project McServerLauncher
 dotnet publish McServerLauncher -c Release -r win-x64 --self-contained
 ```
 
-Hecha con **Avalonia / .NET 9**. El instalador de Windows es **solo x64** (Inno Setup
+Hecha con **Avalonia / .NET 10**. El instalador de Windows es **solo x64** (Inno Setup
 `ArchitecturesAllowed=x64compatible`); no hay build aparte x86 ni ARM64 nativo.
 
 **Documentación:** arquitectura, guía de contribución y la **referencia de API**, publicadas con DocFX en

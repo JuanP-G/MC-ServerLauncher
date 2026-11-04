@@ -1,6 +1,6 @@
 # Copilot / AI assistant instructions — MC Server Launcher
 
-Conventions for this repo (a cross-platform **Avalonia / .NET 9** desktop app, MVVM). Follow them
+Conventions for this repo (a cross-platform **Avalonia / .NET 10** desktop app, MVVM). Follow them
 when suggesting or writing code.
 
 ## Architecture

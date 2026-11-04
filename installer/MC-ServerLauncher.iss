@@ -11,7 +11,7 @@
 #define MyAppPublisher "JuanP-G"
 #define MyAppURL "https://github.com/JuanP-G/MC-ServerLauncher"
 #define MyAppExeName "McServerLauncher.exe"
-#define PublishDir "..\McServerLauncher\bin\Release\net9.0\win-x64\publish"
+#define PublishDir "..\McServerLauncher\bin\Release\net10.0\win-x64\publish"
 
 [Setup]
 AppId={{B8E7A3C1-2F4D-4A9B-9C1E-7D5F6A8B0C23}}

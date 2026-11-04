@@ -37,7 +37,7 @@ acercar la cámara sin que se pixele.
 
 ```bash
 dotnet build recorder -c Release
-recorder/bin/Release/net9.0/Recorder.exe public/footage es hero create mods internet bedrock players backups sleep console
+recorder/bin/Release/net10.0/Recorder.exe public/footage es hero create mods internet bedrock players backups sleep console
 node scripts/index-footage.mjs
 ```
 
