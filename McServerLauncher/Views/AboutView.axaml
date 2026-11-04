@@ -73,8 +73,7 @@
                         <TextBlock Text="{loc:Loc About_Repo}" />
                     </StackPanel>
                 </Button>
-                <Button Margin="0,0,8,8" Command="{Binding OpenLinkCommand}"
-                        CommandParameter="{x:Static svc:AppLinks.NewIssue}">
+                <Button Margin="0,0,8,8" Command="{Binding ReportIssueCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <ic:SymbolIcon Symbol="Bug" />
                         <TextBlock Text="{loc:Loc About_Issue}" />

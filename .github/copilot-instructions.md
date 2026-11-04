@@ -108,9 +108,11 @@ problem, what it does now, why this way and what was rejected. `.gitmessage` is 
 (`git config commit.template .gitmessage`).
 
 A **PR title has the shape of a commit subject** (same types), and its description that of a commit
-body — but **in English**, with an English scope, unlike the commits themselves. Issue titles come
-pre-filled in the same shape by the forms in `.github/ISSUE_TEMPLATE/`. Security never goes in a
-public issue — see `SECURITY.md`.
+body — but **in English**, with an English scope, unlike the commits themselves. **Issue titles are
+free** when a person opens them (the forms in `.github/ISSUE_TEMPLATE/` ask for almost nothing: one
+required box, in Spanish or English); whoever triages one gives it the `type(scope):` shape. The app's
+"Report a bug" button opens the bug form with the version and the OS filled in (`AppLinks.NewBugReport`).
+Security never goes in a public issue — see `SECURITY.md`.
 
 ## Documentation is part of the change
 Anything that alters behaviour alters the docs in the same commit, and **both languages every time**:

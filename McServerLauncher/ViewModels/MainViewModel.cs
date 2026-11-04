@@ -510,6 +510,11 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void OpenLink(string? url) => BrowserLauncher.Open(url);
 
+    /// <summary>Opens the bug form with the version and the system already filled in.</summary>
+    [RelayCommand]
+    private void ReportIssue() =>
+        BrowserLauncher.Open(AppLinks.NewBugReport(VersionText, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName));
+
     /// <summary>
     /// Raises a desktop notification the first time a given version is seen, and only while the
     /// window is out of sight — the banner already says it when the window is there to be read.

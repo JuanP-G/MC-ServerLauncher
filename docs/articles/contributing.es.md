@@ -353,9 +353,18 @@ Los pies son `Closes #12`, `Refs #12`, o `BREAKING CHANGE:` con qué se rompe y 
 
 ### Issues
 
-Abrir uno pasa por un formulario (`.github/ISSUE_TEMPLATE/`), que deja el título con la misma forma:
-un fallo empieza por `fix(ámbito): ` y una propuesta por `feat(ámbito): `. **Escribe en inglés o en
-español, el que prefieras** — los dos se leen.
+Abrir uno pasa por un formulario (`.github/ISSUE_TEMPLATE/`), uno para un fallo y otro para una
+propuesta, cada uno en español y en inglés. **El título es libre**: quien abre el issue escribe uno
+corto y llano, sin el prefijo `tipo(ámbito):`. Quien lo tría le da la forma del repositorio
+(`fix(ámbito): ...`, `feat(ámbito): ...`) antes de ponerse con él, para que `git log` y las auditorías
+lo encuentren. Los formularios piden lo mínimo: un solo cuadro obligatorio y el resto opcional.
+
+«Reportar un fallo», en la pantalla Acerca de de la app, abre el formulario de fallo con la versión y
+el sistema operativo ya puestos (`AppLinks.NewBugReport`); no se añade nada más y no se envía nada
+hasta que la persona pulsa «Submit new issue». Una prueba comprueba que la dirección nombra un formulario y unos
+campos que existen.
+
+**Escribe en inglés o en español, el que prefieras** — los dos se leen.
 
 Un **problema de seguridad nunca es un issue público.** [`SECURITY.md`](https://github.com/JuanP-G/MC-ServerLauncher/blob/main/SECURITY.md)
 explica el canal privado y enumera los compromisos que ya están asumidos, para que puedas distinguir

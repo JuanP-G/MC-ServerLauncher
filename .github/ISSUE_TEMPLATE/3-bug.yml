@@ -1,0 +1,59 @@
+name: Report a bug
+description: Something in the app does not behave as it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for letting us know. Tell it the way you would tell a friend; leave blank whatever you do not know.
+
+        Put a short title above that says what goes wrong, for example: *The list shows "Off" for a server that is running*.
+
+        This ticket is **public**: do not paste Playit keys, tunnel addresses or player names.
+
+  - type: textarea
+    id: what-happens
+    attributes:
+      label: What happened?
+      description: |
+        What you were doing, what you saw and what you expected to see. If you know how to make it
+        happen again, say so here. If it involves one server in particular, say which type it is
+        (Vanilla, Paper, Fabric...) and its Minecraft version.
+      placeholder: |
+        I start a Paper server and wait for "Done", but the list on the left still says "Off". I
+        expected to see it running, with its CPU and RAM.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: If you opened this form from the app it is already filled in. If not, it is under About.
+      placeholder: "1.21.6"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      description: If you opened this form from the app it is already filled in.
+      options:
+        - Windows
+        - Linux
+        - macOS
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output (optional)
+      description: |
+        Only if you have it at hand: the relevant lines from the app's console, or from
+        `%APPDATA%\McServerLauncher\logs\launcher-<date>.log` (`~/.config/McServerLauncher/logs/`
+        on Linux and macOS). **Remove anything private first.**
+      render: text
+    validations:
+      required: false

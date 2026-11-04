@@ -1,0 +1,59 @@
+name: Reportar un fallo
+description: Algo de la app no funciona como debería
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por avisar. Cuéntalo como se lo contarías a un amigo; lo que no sepas, déjalo en blanco.
+
+        Pon arriba un título corto que diga qué falla, por ejemplo: *La lista muestra "Apagado" con el servidor en marcha*.
+
+        Este ticket es **público**: no pegues claves de Playit, direcciones de túnel ni nombres de jugadores.
+
+  - type: textarea
+    id: what-happens
+    attributes:
+      label: ¿Qué ha pasado?
+      description: |
+        Qué estabas haciendo, qué viste y qué esperabas ver. Si sabes cómo repetirlo, cuéntalo aquí
+        mismo. Si tiene que ver con un servidor en concreto, di de qué tipo es (Vanilla, Paper,
+        Fabric...) y con qué versión de Minecraft.
+      placeholder: |
+        Arranco un servidor Paper y espero a que ponga "Done", pero en la lista de la izquierda sigue
+        saliendo "Apagado". Esperaba verlo en marcha, con su CPU y su RAM.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Versión de la app
+      description: Si abriste este formulario desde la app, ya viene puesta. Si no, está en Acerca de.
+      placeholder: "1.21.6"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Sistema operativo
+      description: Si abriste este formulario desde la app, ya viene puesto.
+      options:
+        - Windows
+        - Linux
+        - macOS
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Salida de la consola (opcional)
+      description: |
+        Solo si la tienes a mano: las líneas relevantes de la consola de la app, o del archivo
+        `%APPDATA%\McServerLauncher\logs\launcher-<fecha>.log` (en Linux y macOS,
+        `~/.config/McServerLauncher/logs/`). **Quita antes lo privado.**
+      render: text
+    validations:
+      required: false

@@ -335,9 +335,17 @@ Footers are `Closes #12`, `Refs #12`, or `BREAKING CHANGE:` with what breaks and
 
 ### Issues
 
-Opening one goes through a form (`.github/ISSUE_TEMPLATE/`), which pre-fills the title in the same
-shape: a bug starts as `fix(ámbito): `, a proposal as `feat(ámbito): `. **Write in English or
-Spanish, whichever you prefer** — both get read.
+Opening one goes through a form (`.github/ISSUE_TEMPLATE/`), one for a bug and one for a proposal,
+each in Spanish and in English. **The title is free**: whoever opens the issue writes a short, plain
+one, with no `type(scope):` prefix. Whoever triages it gives it the repository's shape
+(`fix(scope): ...`, `feat(scope): ...`) before working on it, so that `git log` and the audits find it.
+The forms ask for as little as possible: one required box, and the rest optional.
+
+"Report a bug" in the app's About screen opens the bug form with the version and the operating system
+already filled in (`AppLinks.NewBugReport`); nothing else is added, and nothing is sent until the
+person presses "Submit new issue". A test checks that the address names a form and fields that exist.
+
+**Write in English or Spanish, whichever you prefer** — both get read.
 
 A **security problem is never a public issue.** [`SECURITY.md`](https://github.com/JuanP-G/MC-ServerLauncher/blob/main/SECURITY.md)
 explains the private channel and lists the trade-offs that are already known, so you can tell a
