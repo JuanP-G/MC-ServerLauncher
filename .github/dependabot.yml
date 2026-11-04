@@ -1,0 +1,64 @@
+# Actualizaciones de versiones con Dependabot.
+# Frecuencia mensual y agrupadas, para recibir pocos PR y revisables.
+# Las alertas de seguridad de Dependabot son independientes de este fichero.
+version: 2
+
+updates:
+  # Aplicación, tests y grabador de GIF (NuGet)
+  - package-ecosystem: "nuget"
+    directories:
+      - "/McServerLauncher"
+      - "/McServerLauncher.Tests"
+      - "/promo/recorder"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      # Avalonia y todos sus paquetes suben a la vez; separados no compilan.
+      avalonia:
+        patterns:
+          - "Avalonia*"
+      # Resto de paquetes: un único PR con los cambios menores y de parche.
+      nuget-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Un salto mayor de estos puede cambiar la interfaz o romper la
+      # compatibilidad entre sí (Avalonia 11 usa SkiaSharp 2.x). Se hacen a mano.
+      - dependency-name: "Avalonia*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "SkiaSharp*"
+        update-types: ["version-update:semver-major"]
+
+  # Vídeo promocional (Remotion), fuera de la aplicación
+  - package-ecosystem: "npm"
+    directory: "/promo"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      npm-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Acciones de los flujos de trabajo
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      actions:
+        patterns:
+          - "*"
