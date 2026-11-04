@@ -1,0 +1,25 @@
+name: Proponer una mejora
+description: Algo que la app debería poder hacer
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por la idea. Basta con un texto libre, sin formato ni apartados que rellenar.
+
+        Pon arriba un título corto que diga qué te gustaría poder hacer, por ejemplo: *Despertar el servidor también desde Bedrock*.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Cuéntanos qué te gustaría poder hacer
+      description: |
+        Qué intentas hacer, cómo lo haces hoy y por qué no te basta; y, si ya tienes una idea,
+        cómo te gustaría que funcionara. Lo primero vale más que la solución: suele llevar a algo
+        mejor que el botón que tenías en mente.
+      placeholder: |
+        Llevo tres servidores para grupos de amigos distintos y nunca recuerdo qué puerto es de cuál,
+        así que abro el que no es y arranca un mundo que nadie pidió. Me gustaría poder ponerle un
+        nombre a cada puerto, o que la app me avisara si ya está en uso por otro servidor.
+    validations:
+      required: true

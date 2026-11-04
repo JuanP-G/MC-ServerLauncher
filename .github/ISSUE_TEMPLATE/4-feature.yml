@@ -1,0 +1,25 @@
+name: Suggest a feature
+description: Something the app should be able to do
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. A free-form text is enough: no format and no sections to fill in.
+
+        Put a short title above that says what you would like to be able to do, for example: *Wake the server from Bedrock too*.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Tell us what you would like to be able to do
+      description: |
+        What you are trying to do, how you do it today and why that is not enough; and, if you
+        already have an idea, how you would like it to work. The first part is worth more than the
+        solution: it usually leads somewhere better than the button you had in mind.
+      placeholder: |
+        I run three servers for different groups of friends and I can never remember which port
+        belongs to which, so I open the wrong one and it starts a world nobody asked for. I would
+        like to name each port, or be warned when another server already uses it.
+    validations:
+      required: true
