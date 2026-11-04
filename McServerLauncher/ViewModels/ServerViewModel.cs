@@ -505,8 +505,11 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         if (row.Effects.HasFlag(ConfigEffect.RereadInfo)) RefreshInfo();
         if (row.Effects.HasFlag(ConfigEffect.RefreshSignal)) UpdateSignal();
         // The listener holds a real socket on the server's port, so switching it on has to open one
-        // now. It used to wait for the next stop, i.e. until the server had been run once.
-        if (row.Effects.HasFlag(ConfigEffect.RestartWakeListener)) _wake.Start();
+        // now. It used to wait for the next stop, i.e. until the server had been run once. Through
+        // FollowPortChange so that a running server is left alone: its ports are already busy, and
+        // trying them would only put a "port taken" line in the console (crossplay and Geyser's
+        // port are switched on and moved while the server runs, the usual way to set them up).
+        if (row.Effects.HasFlag(ConfigEffect.RestartWakeListener)) FollowPortChange();
         if (row.Effects.HasFlag(ConfigEffect.ReloadBackups)) Backups.RefreshIfLoaded();
 
         if (row.ModsProperties.Length > 0 || row.Effects != ConfigEffect.None)
