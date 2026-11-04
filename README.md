@@ -169,8 +169,9 @@ When it opens again, **What's new** tells you what changed. It works the same on
   again when somebody tries to join**. While it sleeps the list shows *"Off · join to start it"* and whoever
   presses Join gets a message while it boots. There's a **countdown** to the shutdown and a grace period after
   waking. If the server has a whitelist, only names on it (or ops) wake it, so internet scanners don't — the
-  name isn't verified until the server is up, which then turns away anyone borrowing one. Per server and **off by
-  default**.
+  name isn't verified until the server is up, which then turns away anyone borrowing one. With crossplay, a
+  Bedrock player trying to join wakes it too, whitelist or not (their name can't be read at that point); the
+  first attempt is refused and they join a few seconds later. Per server and **off by default**.
 - **Nothing missing before it starts** — if a mod or plugin is waiting on a dependency, you're told **when
   you press Start**, with the option to install it and start. It's read from the jars themselves, so it works
   **offline**. Covers Fabric and Forge/NeoForge mods, and Paper and Purpur plugins.
