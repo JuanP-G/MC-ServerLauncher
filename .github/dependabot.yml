@@ -1,6 +1,10 @@
 # Actualizaciones de versiones con Dependabot.
 # Frecuencia mensual y agrupadas, para recibir pocos PR y revisables.
 # Las alertas de seguridad de Dependabot son independientes de este fichero.
+#
+# Regla de la casa: Dependabot solo propone cambios menores y de parche.
+# Los saltos mayores (otra versión principal) se hacen a mano, porque cambian
+# la API y compilar no demuestra que la interfaz siga igual.
 version: 2
 
 updates:
@@ -17,21 +21,21 @@ updates:
       prefix: "chore"
       include: "scope"
     groups:
-      # Avalonia y todos sus paquetes suben a la vez; separados no compilan.
-      avalonia:
-        patterns:
-          - "Avalonia*"
-      # Resto de paquetes: un único PR con los cambios menores y de parche.
+      # Un único PR con los cambios menores y de parche del resto de paquetes.
       nuget-minor-patch:
         update-types:
           - "minor"
           - "patch"
     ignore:
-      # Un salto mayor de estos puede cambiar la interfaz o romper la
-      # compatibilidad entre sí (Avalonia 11 usa SkiaSharp 2.x). Se hacen a mano.
+      # Avalonia, sus iconos y SkiaSharp se suben a mano y a la vez. Estos
+      # paquetes están repartidos en proyectos distintos (app y tests) y
+      # Dependabot los actualiza por separado; con versiones distintas el
+      # proyecto de tests no carga (Avalonia.Visuals) y no compila.
       - dependency-name: "Avalonia*"
-        update-types: ["version-update:semver-major"]
+      - dependency-name: "FluentIcons.Avalonia"
       - dependency-name: "SkiaSharp*"
+      # Cualquier otro salto mayor, a mano.
+      - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
   # Vídeo promocional (Remotion), fuera de la aplicación
@@ -48,6 +52,9 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   # Acciones de los flujos de trabajo
   - package-ecosystem: "github-actions"
@@ -62,3 +69,6 @@ updates:
       actions:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
