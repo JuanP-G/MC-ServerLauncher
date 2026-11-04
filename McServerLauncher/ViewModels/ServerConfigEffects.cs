@@ -191,8 +191,11 @@ public static class ServerConfigEffects
         Unshown(nameof(ServerConfig.WakeOnlyForWhitelist),
             "Read on every attempt to join the sleeping server, so the listener needs no restart."),
 
+        // The Bedrock listener only exists with crossplay on, and sits on Geyser's port: both
+        // switching it on and moving the port have to open or move a socket, for the same reason as
+        // WakeOnDemand above.
         new(nameof(ServerConfig.CrossplayEnabled),
-            new[] { nameof(ServerViewModel.IsCrossplayOn) }, None, ConfigEffect.None),
+            new[] { nameof(ServerViewModel.IsCrossplayOn) }, None, ConfigEffect.RestartWakeListener),
 
         Unshown(nameof(ServerConfig.BedrockModContentEnabled),
             "A record of an install that already happened; the Mods tab shows the jars themselves."),
@@ -200,7 +203,7 @@ public static class ServerConfigEffects
             "Same: the ViaVersion jars are visible in the Mods tab on their own."),
 
         new(nameof(ServerConfig.BedrockPort),
-            new[] { nameof(ServerViewModel.BedrockLocalPortText) }, None, ConfigEffect.None),
+            new[] { nameof(ServerViewModel.BedrockLocalPortText) }, None, ConfigEffect.RestartWakeListener),
 
         Unshown(nameof(ServerConfig.UseCustomNotifications),
             "Read at the moment a notification would be raised."),

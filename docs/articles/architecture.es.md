@@ -25,7 +25,7 @@ flowchart LR
     protect["BackupCoordinator<br/>WorldBackupService<br/>LiveWorldBackup"]
     content["ModrinthService<br/>ModDependencyService<br/>CleanupAdvisor"]
     online["PlayitApiService<br/>PlayitAgentRunner<br/>CrossplayService"]
-    wake["WakeOnDemandListener"]
+    wake["WakeOnDemandListener<br/>NetherNetWakeListener"]
     hist["PlayerHistoryStore"]
     folder[("La carpeta del servidor<br/>mundo · mods · copias")]
     web["Mojang · Paper · Purpur<br/>Fabric · Forge · NeoForge<br/>Adoptium (Java)"]
@@ -1235,6 +1235,23 @@ puede despertarlo igualmente, y luego el servidor lo echa. La regla frena a los 
 lo que está; no es un control de acceso. Sin lista blanca no cambia nada, y
 `ServerConfig.WakeOnlyForWhitelist` (activado de serie, una casilla bajo *Encenderlo cuando alguien
 intente entrar*) deja al dueño abrirlo a cualquiera igualmente.
+
+**Los jugadores de Bedrock también lo despiertan**, con `NetherNetWakeListener`, cuando el servidor
+tiene crossplay. Desde Bedrock 26.60 el cliente empieza con HTTP normal por TCP a la dirección que
+le han dado, y solo después juega por WebRTC sobre UDP; Geyser contesta esa petición en el mismo
+número que su puerto de Bedrock. Mientras el servidor duerme no contesta nadie, la conexión se
+rechaza y el cliente muestra un error genérico. Por eso el controlador ocupa también ese puerto TCP
+(salvo que sea el de Java, que ya está ocupado), responde a `GET /v1/join` con el estado del servidor
+y trata `POST /v1/join/{id}` —la oferta del cliente— como el intento de entrar. La oferta en sí no se
+puede responder de verdad, porque es un handshake WebRTC con una identidad firmada, así que el POST se
+rechaza con un 503 y el jugador reintenta unos segundos después, cuando Geyser ya está en marcha. Dos
+decisiones que conviene conocer: el GET solo no despierta nada, por lo mismo que un ping de Java
+tampoco; y no se consulta `WakePolicy`, porque el nombre del jugador va dentro de esa identidad firmada
+y aquí no se lee, así que un intento de Bedrock despierta el servidor aunque este solo se encienda para
+su lista blanca. Los escáneres de Bedrock que existen mandan un ping RakNet, no este intercambio. Los
+dos puertos se sueltan a la vez antes de arrancar el servidor (`WakeOnDemandController.Stop`), o Geyser
+encontraría el suyo ocupado. No cubre: el transporte `raknet` de Geyser (UDP), el descubrimiento en la
+red local ni lo que enseña el cliente ante el rechazo, porque el protocolo no define ningún mensaje.
 
 Dormirse y despertarse sin que nadie entre **no deja copias**: la parada ve que nadie ha jugado y el
 arranque encuentra el mundo igual que en la última copia (ver *Copias del mundo*).

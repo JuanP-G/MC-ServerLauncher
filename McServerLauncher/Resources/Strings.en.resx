@@ -313,7 +313,7 @@
   <data name="Backup_TriggerManual" xml:space="preserve"><value>manual</value></data>
   <data name="Backup_TriggerBeforeRestore" xml:space="preserve"><value>before restore</value></data>
   <data name="Wake_EnabledCheck" xml:space="preserve"><value>Start it when someone tries to join</value></data>
-  <data name="Wake_Hint" xml:space="preserve"><value>While it is off, the server list shows it as asleep. Anyone pressing Join gets a message and the server begins starting up.</value></data>
+  <data name="Wake_Hint" xml:space="preserve"><value>While it is off, the server list shows it as asleep. Anyone pressing Join gets a message and the server begins starting up. With crossplay on, a Bedrock player trying to join wakes it too.</value></data>
   <data name="Wake_WhitelistOnlyCheck" xml:space="preserve"><value>If the whitelist is on, only start it for players on the list</value></data>
   <data name="Wake_WhitelistOnlyHint" xml:space="preserve"><value>So the bots that scan the internet don't start it. Operators count too. The name is not verified yet at that point: someone using a name on the list starts it, even though the server then won't let them in.</value></data>
   <data name="Wake_KickNotWhitelisted" xml:space="preserve"><value>This server is off and only starts for players on its whitelist.</value></data>
@@ -323,6 +323,7 @@
   <data name="Wake_KickStarting" xml:space="preserve"><value>The server is starting up.&#10;&#10;Try joining again in a few seconds.</value></data>
   <data name="Msg_WakeStarting" xml:space="preserve"><value>Someone tried to join: starting the server.</value></data>
   <data name="Msg_WakePortBusyFmt" xml:space="preserve"><value>Can't listen for join attempts on port {0}: it is already in use.</value></data>
+  <data name="Msg_WakeBedrockPortBusyFmt" xml:space="preserve"><value>Can't listen for Bedrock join attempts on port {0}: it is already in use.</value></data>
   <data name="Idle_Intro" xml:space="preserve"><value>The server can stop itself when nobody is left, and start again when someone tries to join.</value></data>
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutes with no players</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = never stops. The countdown starts when the last player leaves and resets as soon as someone joins.</value></data>

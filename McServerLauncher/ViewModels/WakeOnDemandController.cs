@@ -47,6 +47,13 @@ public sealed class WakeOnDemandController : IDisposable
     private readonly PlayersService _players;
     private readonly WakeOnDemandListener _listener = new();
 
+    /// <summary>
+    /// The same for a Bedrock player, on Geyser's port: since Bedrock 26.60 the client opens with an
+    /// HTTP request there, and with nothing listening it reports a generic error instead of waking
+    /// the server.
+    /// </summary>
+    private readonly NetherNetWakeListener _bedrock = new();
+
     public WakeOnDemandController(ServerConfig config, WakeHost host, ServerPropertiesService properties,
         WhitelistService whitelist, PlayersService players)
     {
@@ -63,20 +70,53 @@ public sealed class WakeOnDemandController : IDisposable
     /// <summary>Answers on the server's port while it is stopped, if the owner asked for it.</summary>
     public void Start()
     {
-        if (!_config.WakeOnDemand) { _listener.Stop(); return; }
+        if (!_config.WakeOnDemand) { Stop(); return; }
 
-        var port = _properties.GetServerPort(_config.PropertiesPath);
+        var javaPort = _properties.GetServerPort(_config.PropertiesPath);
+        StartJava(javaPort);
+        StartBedrock(javaPort);
+    }
+
+    private void StartJava(int? port)
+    {
         if (port is null) return;
 
         if (!_listener.Start(port.Value, BuildStatus, OnJoinAttempt))
             _host.Say(Localizer.Format("Msg_WakePortBusyFmt", port.Value));
     }
 
-    /// <summary>Frees the port: the server is starting, the world is being swapped, or the app is closing.</summary>
-    public void Stop() => _listener.Stop();
+    /// <summary>
+    /// Opens Geyser's TCP port while the server sleeps, when it has Bedrock players at all. Nothing
+    /// is asked of the owner: crossplay on is the whole condition.
+    /// </summary>
+    private void StartBedrock(int? javaPort)
+    {
+        var port = CrossplayService.EffectiveBedrockPort(_config);
+
+        // Same number as the Java port: that one is already ours, and a second bind would only
+        // fail and complain about a port the app itself is holding.
+        if (port is null || port == javaPort) { _bedrock.Stop(); return; }
+
+        if (!_bedrock.Start(port.Value, BuildStatus, OnBedrockJoinAttempt))
+            _host.Say(Localizer.Format("Msg_WakeBedrockPortBusyFmt", port.Value));
+    }
+
+    /// <summary>
+    /// Frees the ports: the server is starting, the world is being swapped, or the app is closing.
+    /// Both of them, or Geyser would find its own port busy.
+    /// </summary>
+    public void Stop()
+    {
+        _listener.Stop();
+        _bedrock.Stop();
+    }
 
     /// <summary>Same as <see cref="Stop"/>; lets the owner treat the controller as disposable.</summary>
-    public void Dispose() => _listener.Dispose();
+    public void Dispose()
+    {
+        _listener.Dispose();
+        _bedrock.Dispose();
+    }
 
     /// <summary>What a client sees while the server sleeps: its own MOTD plus what is going on.</summary>
     private WakeStatus BuildStatus()
@@ -105,20 +145,31 @@ public sealed class WakeOnDemandController : IDisposable
     {
         if (!MayWake(player)) return false;
 
-        _host.RunOnUi(() =>
-        {
-            if (!_host.CanStart()) return;   // already coming up from an earlier knock, or being restored
-
-            WokeAtUtc = DateTime.UtcNow;
-            _host.Say(Localizer.Get("Msg_WakeStarting"));
-            _host.Notify(NotificationKind.WokeOnDemand, Localizer.Get("Notif_Woke"));
-
-            // Unattended: nobody is sitting in front of the app to answer a dialog, which is
-            // exactly what the auto-restart flag already means everywhere else.
-            _host.StartServer();
-        });
+        Wake();
         return true;
     }
+
+    /// <summary>
+    /// A Bedrock client posted its offer to Geyser's port. Wakes the server without asking
+    /// <see cref="WakePolicy"/>: the name is inside the client's signed identity, which is not
+    /// worth decoding here, and a name nobody checked is what the Java check already settles for.
+    /// A scanner would have to speak this exact HTTP exchange to get here; the ones that knock on
+    /// Bedrock servers send a RakNet ping instead.
+    /// </summary>
+    private void OnBedrockJoinAttempt() => Wake();
+
+    private void Wake() => _host.RunOnUi(() =>
+    {
+        if (!_host.CanStart()) return;   // already coming up from an earlier knock, or being restored
+
+        WokeAtUtc = DateTime.UtcNow;
+        _host.Say(Localizer.Get("Msg_WakeStarting"));
+        _host.Notify(NotificationKind.WokeOnDemand, Localizer.Get("Notif_Woke"));
+
+        // Unattended: nobody is sitting in front of the app to answer a dialog, which is
+        // exactly what the auto-restart flag already means everywhere else.
+        _host.StartServer();
+    });
 
     /// <summary>Whether <paramref name="player"/> may wake this server.</summary>
     /// <remarks>
