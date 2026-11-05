@@ -256,7 +256,7 @@ public partial class MainViewModel : ObservableObject
         // Checking only at startup missed the case this app is designed for: it lives in the tray
         // with the servers running, so on a machine that is never turned off it would simply never
         // look again. Built here, started in Activate.
-        _updateTimer = new DispatcherTimer { Interval = UpdateCheckInterval };
+        _updateTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = UpdateCheckInterval };
         _updateTimer.Tick += (_, _) => _ = CheckForUpdatesAsync();
     }
 

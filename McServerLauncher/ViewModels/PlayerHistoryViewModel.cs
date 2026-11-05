@@ -512,7 +512,7 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
 
     private DispatcherTimer CreateCoalescer()
     {
-        var timer = new DispatcherTimer { Interval = CoalesceWindow };
+        var timer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = CoalesceWindow };
         timer.Tick += (_, _) =>
         {
             timer.Stop();

@@ -109,7 +109,7 @@ public sealed class ToastService
 
             // One clock per toast, ticking until the window goes — whichever way it goes. The timer
             // used to be a one-shot nothing could stop, so a toast closed by a click left it running.
-            var timer = new DispatcherTimer { Interval = Frame };
+            var timer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = Frame };
             var stopwatch = Stopwatch.StartNew();
             var last = TimeSpan.Zero;
             timer.Tick += (_, _) =>

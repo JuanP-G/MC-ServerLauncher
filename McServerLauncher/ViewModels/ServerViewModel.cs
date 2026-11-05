@@ -466,7 +466,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
 
     private static DispatcherTimer NewTimer(TimeSpan interval, EventHandler tick)
     {
-        var timer = new DispatcherTimer { Interval = interval };
+        var timer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = interval };
         timer.Tick += tick;
         return timer;
     }

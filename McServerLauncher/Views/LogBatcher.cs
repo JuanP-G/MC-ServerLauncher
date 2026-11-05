@@ -22,7 +22,7 @@ public sealed class LogBatcher
     public LogBatcher(TextBox target)
     {
         _target = target;
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+        _timer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = TimeSpan.FromMilliseconds(150) };
         _timer.Tick += (_, _) => Flush();
         _timer.Start();
     }
