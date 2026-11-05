@@ -27,7 +27,7 @@
                 <Border x:Name="UserFlagsWarn" Margin="0,10,0,0" Padding="10" CornerRadius="6" IsVisible="False"
                         Background="{StaticResource SemanticWarnPanel}" BorderBrush="{StaticResource SemanticWarn}" BorderThickness="1">
                     <Grid ColumnDefinitions="Auto,*">
-                        <ic:SymbolIcon Grid.Column="0" Symbol="Warning" VerticalAlignment="Top" Margin="0,0,8,0" />
+                        <ic:FluentIcon Grid.Column="0" Icon="Warning" VerticalAlignment="Top" Margin="0,0,8,0" />
                         <TextBlock Grid.Column="1" Text="{loc:Loc Mem_UserFlagsWarn}" TextWrapping="Wrap" FontSize="12" />
                     </Grid>
                 </Border>
@@ -54,7 +54,7 @@
                 <TextBlock Classes="desc" Text="{loc:Loc Sset_JavaDesc}" />
                 <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
                     <TextBox Grid.Column="0" x:Name="JavaBox" Text="{Binding JavaPath, Mode=TwoWay}"
-                             Watermark="{loc:Loc Ae_JavaPlaceholder}" />
+                             PlaceholderText="{loc:Loc Ae_JavaPlaceholder}" />
                     <Button Grid.Column="1" Content="{loc:Loc Browse}" Margin="8,0,0,0" Click="BrowseJava_Click" />
                 </Grid>
             </StackPanel>

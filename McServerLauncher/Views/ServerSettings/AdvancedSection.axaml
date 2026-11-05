@@ -31,7 +31,7 @@
         <Border Classes="card">
             <StackPanel>
                 <TextBlock Text="{loc:Loc Ae_ExtraArgs}" Classes="title" />
-                <TextBox Text="{Binding ExtraJvmArgs, Mode=TwoWay}" Watermark="-XX:+UseG1GC" Margin="0,8,0,0" />
+                <TextBox Text="{Binding ExtraJvmArgs, Mode=TwoWay}" PlaceholderText="-XX:+UseG1GC" Margin="0,8,0,0" />
             </StackPanel>
         </Border>
 

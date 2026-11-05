@@ -106,7 +106,7 @@ public sealed class AvaloniaFixture
     public static void WithoutIcons(Avalonia.Controls.Control root)
     {
         foreach (var icon in Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(root)
-                     .OfType<FluentIcons.Avalonia.SymbolIcon>().ToList())
+                     .OfType<FluentIcons.Avalonia.FluentIcon>().ToList())
         {
             switch (icon.Parent)
             {

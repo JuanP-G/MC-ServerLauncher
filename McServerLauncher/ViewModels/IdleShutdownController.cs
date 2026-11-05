@@ -59,7 +59,7 @@ public sealed class IdleShutdownController : IDisposable
         _host = host;
         _utcNow = utcNow ?? (() => DateTime.UtcNow);
         // Built here, started when there is something to count: a timer that exists is inert.
-        _countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _countdownTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = TimeSpan.FromSeconds(1) };
         _countdownTimer.Tick += (_, _) => UpdateCountdown();
     }
 

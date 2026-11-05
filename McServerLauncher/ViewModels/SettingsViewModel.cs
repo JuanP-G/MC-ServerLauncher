@@ -312,7 +312,7 @@ public partial class SettingsViewModel : ObservableObject
                 Localizer.Get("Notif_Level" + level),
                 Localizer.Get("Notif_UpdateTitle"),
                 Localizer.Get("Notif_TestBody"),
-                sample?.Icon ?? FluentIcons.Common.Symbol.Alert,
+                sample?.Icon ?? FluentIcons.Common.Icon.Alert,
                 level,
                 _settings.Notifications);
         }

@@ -27,7 +27,7 @@
                     <TextBlock Text="{loc:Loc Players_Manage}" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
                     <Button HorizontalAlignment="Right" Padding="8,2" Command="{Binding RefreshPlayersCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <ic:SymbolIcon Symbol="ArrowClockwise" />
+                            <ic:FluentIcon Icon="ArrowClockwise" />
                             <TextBlock Text="{loc:Loc Refresh}" />
                         </StackPanel>
                     </Button>
@@ -76,7 +76,7 @@
                                    IsVisible="{Binding History.IsImporting}" />
                         <TextBlock Classes="statLabel" TextWrapping="Wrap" Text="{loc:Loc History_DisabledHint}"
                                    Foreground="{StaticResource SemanticWarn}" IsVisible="{Binding History.IsDisabled}" />
-                        <TextBox Margin="0,8,0,4" Text="{Binding History.Search}" Watermark="{loc:Loc History_Search}" />
+                        <TextBox Margin="0,8,0,4" Text="{Binding History.Search}" PlaceholderText="{loc:Loc History_Search}" />
                         <ItemsControl ItemsSource="{Binding History.Rows}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -91,7 +91,7 @@
                                             <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" />
                                             <TextBlock Grid.Column="2" Text="{Binding LastSeenText}" Opacity="0.7"
                                                        VerticalAlignment="Center" Margin="12,0,8,0" />
-                                            <ic:SymbolIcon Grid.Column="3" Symbol="ChevronRight" Opacity="0.5" />
+                                            <ic:FluentIcon Grid.Column="3" Icon="ChevronRight" Opacity="0.5" />
                                         </Grid>
                                     </Button>
                                 </DataTemplate>
@@ -148,14 +148,14 @@
                                    IsVisible="{Binding !WhitelistEnabled}" />
                         <Grid Margin="0,8,0,8" ColumnDefinitions="*,Auto">
                             <TextBox Grid.Column="0" Margin="0,0,8,0" Text="{Binding NewWhitelistName}"
-                                     Watermark="{loc:Loc Player_Placeholder}">
+                                     PlaceholderText="{loc:Loc Player_Placeholder}">
                                 <TextBox.KeyBindings>
                                     <KeyBinding Gesture="Enter" Command="{Binding AddToWhitelistCommand}" />
                                 </TextBox.KeyBindings>
                             </TextBox>
                             <Button Grid.Column="1" Classes="accent" Command="{Binding AddToWhitelistCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="PersonAdd" />
+                                    <ic:FluentIcon Icon="PersonAdd" />
                                     <TextBlock Text="{loc:Loc Add}" />
                                 </StackPanel>
                             </Button>

@@ -29,11 +29,11 @@
               <Panel>
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <Panel Width="22" Height="22" Margin="0,0,10,0" VerticalAlignment="Center">
-                        <ic:SymbolIcon Symbol="CheckmarkCircle" FontSize="20" Foreground="{StaticResource SemanticOk}"
+                        <ic:FluentIcon Icon="CheckmarkCircle" FontSize="20" Foreground="{StaticResource SemanticOk}"
                                        IsVisible="{Binding IsUpToDate}" />
-                        <ic:SymbolIcon Symbol="ErrorCircle" FontSize="20" Foreground="{StaticResource SemanticWarn}"
+                        <ic:FluentIcon Icon="ErrorCircle" FontSize="20" Foreground="{StaticResource SemanticWarn}"
                                        IsVisible="{Binding UpdateCheckFailed}" />
-                        <ic:SymbolIcon Symbol="ArrowDownload" FontSize="20" Foreground="{StaticResource AccentSelected}"
+                        <ic:FluentIcon Icon="ArrowDownload" FontSize="20" Foreground="{StaticResource AccentSelected}"
                                        IsVisible="{Binding UpdateAvailable}" />
                         <Panel Classes="spinner" Width="20" Height="20" IsVisible="{Binding IsCheckingUpdates}">
                             <Panel.RenderTransform>
@@ -53,7 +53,7 @@
                                 IsVisible="{Binding UpdateAvailable}" />
                         <Button Command="{Binding CheckForUpdatesNowCommand}" IsEnabled="{Binding !IsCheckingUpdates}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <ic:SymbolIcon Symbol="ArrowSync" />
+                                <ic:FluentIcon Icon="ArrowSync" />
                                 <TextBlock Text="{loc:Loc Upd_Check}" />
                             </StackPanel>
                         </Button>
@@ -69,27 +69,27 @@
                 <Button Margin="0,0,8,8" Command="{Binding OpenLinkCommand}"
                         CommandParameter="{x:Static svc:AppLinks.Repository}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <ic:SymbolIcon Symbol="Code" />
+                        <ic:FluentIcon Icon="Code" />
                         <TextBlock Text="{loc:Loc About_Repo}" />
                     </StackPanel>
                 </Button>
                 <Button Margin="0,0,8,8" Command="{Binding ReportIssueCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <ic:SymbolIcon Symbol="Bug" />
+                        <ic:FluentIcon Icon="Bug" />
                         <TextBlock Text="{loc:Loc About_Issue}" />
                     </StackPanel>
                 </Button>
                 <Button Margin="0,0,8,8" Command="{Binding OpenLinkCommand}"
                         CommandParameter="{x:Static svc:AppLinks.Releases}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <ic:SymbolIcon Symbol="Tag" />
+                        <ic:FluentIcon Icon="Tag" />
                         <TextBlock Text="{loc:Loc About_Releases}" />
                     </StackPanel>
                 </Button>
                 <Button Margin="0,0,8,8" Command="{Binding OpenLinkCommand}"
                         CommandParameter="{x:Static svc:AppLinks.Website}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <ic:SymbolIcon Symbol="Globe" />
+                        <ic:FluentIcon Icon="Globe" />
                         <TextBlock Text="{loc:Loc About_Web}" />
                     </StackPanel>
                 </Button>
