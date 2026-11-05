@@ -1,3 +1,4 @@
+using Avalonia.Input.Platform;
 using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Interactivity;

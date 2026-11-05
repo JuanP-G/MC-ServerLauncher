@@ -1,3 +1,4 @@
+using Avalonia.Input.Platform;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Net;

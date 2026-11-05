@@ -152,7 +152,7 @@ public sealed class ToastService
         {
             Width = ToastWidth,
             Height = ToastHeight,
-            SystemDecorations = SystemDecorations.None,
+            WindowDecorations = WindowDecorations.None,
             CanResize = false,
             Topmost = true,
             ShowInTaskbar = false,
