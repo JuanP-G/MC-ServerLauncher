@@ -20,8 +20,8 @@ public class ServerIconServiceTests
         var random = new Random(7);
         var bitmap = new SKBitmap(side, side);
         for (var y = 0; y < side; y++)
-        for (var x = 0; x < side; x++)
-            bitmap.SetPixel(x, y, new SKColor((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256)));
+            for (var x = 0; x < side; x++)
+                bitmap.SetPixel(x, y, new SKColor((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256)));
         return bitmap;
     }
 
@@ -31,19 +31,19 @@ public class ServerIconServiceTests
         var block = source.Width / IconSide;
         long error = 0;
         for (var y = 0; y < IconSide; y++)
-        for (var x = 0; x < IconSide; x++)
-        {
-            int r = 0, g = 0, b = 0;
-            for (var j = 0; j < block; j++)
-            for (var i = 0; i < block; i++)
+            for (var x = 0; x < IconSide; x++)
             {
-                var c = source.GetPixel(x * block + i, y * block + j);
-                r += c.Red; g += c.Green; b += c.Blue;
+                int r = 0, g = 0, b = 0;
+                for (var j = 0; j < block; j++)
+                    for (var i = 0; i < block; i++)
+                    {
+                        var c = source.GetPixel(x * block + i, y * block + j);
+                        r += c.Red; g += c.Green; b += c.Blue;
+                    }
+                var count = block * block;
+                var got = icon.GetPixel(x, y);
+                error += Math.Abs(got.Red - r / count) + Math.Abs(got.Green - g / count) + Math.Abs(got.Blue - b / count);
             }
-            var count = block * block;
-            var got = icon.GetPixel(x, y);
-            error += Math.Abs(got.Red - r / count) + Math.Abs(got.Green - g / count) + Math.Abs(got.Blue - b / count);
-        }
         return error / (double)(IconSide * IconSide * 3);
     }
 

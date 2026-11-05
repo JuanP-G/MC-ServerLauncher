@@ -1,7 +1,7 @@
-using Avalonia.Input.Platform;
 using System.Collections.ObjectModel;
 using System.IO;
 using Avalonia;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;

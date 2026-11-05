@@ -1,6 +1,6 @@
-using Avalonia.Input.Platform;
 using System.Globalization;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;

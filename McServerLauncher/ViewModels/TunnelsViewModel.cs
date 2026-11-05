@@ -1,8 +1,8 @@
-using Avalonia.Input.Platform;
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Threading;
