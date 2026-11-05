@@ -10,7 +10,7 @@
     <Grid RowDefinitions="Auto,Auto">
         <StackPanel Grid.Row="0" Margin="20,20,20,8">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,12" Spacing="10">
-                <ic:SymbolIcon Symbol="Sparkle" FontSize="22" VerticalAlignment="Center" />
+                <ic:FluentIcon Icon="Sparkle" FontSize="22" VerticalAlignment="Center" />
                 <TextBlock x:Name="HeaderText" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" />
             </StackPanel>
             <!-- One section per unseen version (headers only appear when there is more than one). -->

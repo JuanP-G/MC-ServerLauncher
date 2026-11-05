@@ -39,7 +39,7 @@ AppBuilder.Configure<McServerLauncher.App>()
     .SetupWithoutStarting();
 CultureInfo.CurrentCulture = culture; CultureInfo.CurrentUICulture = culture;
 CultureInfo.DefaultThreadCurrentCulture = culture; CultureInfo.DefaultThreadCurrentUICulture = culture;
-_ = typeof(FluentIcons.Avalonia.SymbolIcon);
+_ = typeof(FluentIcons.Avalonia.FluentIcon);
 _ = new TunnelsView();
 
 var xaml = File.ReadAllText(Path.Combine(repo, "McServerLauncher", "Views", "MainWindow.axaml"));
@@ -356,7 +356,7 @@ void SceneMods()
     rec.Hold(600);
     rec.ClickOn(Tab(2));
     rec.Hold(900);
-    var search = rec.Find<TextBox>(tb => tb.Watermark?.Contains("Modrinth") == true);
+    var search = rec.Find<TextBox>(tb => tb.PlaceholderText?.Contains("Modrinth") == true);
     rec.ClickOn(search);
     rec.Type("lithium");
     rec.Hold(300);
@@ -485,7 +485,7 @@ void SceneConsole()
     rec.Hold(900);
     rec.ClickOn(chat);
     rec.Hold(300);
-    var filter = rec.Find<TextBox>(tb => tb.Watermark == L.Get("Console_FilterPlaceholder"));
+    var filter = rec.Find<TextBox>(tb => tb.PlaceholderText == L.Get("Console_FilterPlaceholder"));
     rec.ClickOn(filter);
     rec.Type("nether");
     rec.Hold(1600);

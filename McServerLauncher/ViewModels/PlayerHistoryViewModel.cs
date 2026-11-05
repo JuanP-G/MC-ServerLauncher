@@ -71,11 +71,11 @@ public sealed class PlayerEventRowViewModel
         TimeText = RelativeTime.Exact(e.At);
         Icon = e.Kind switch
         {
-            PlayerEventKind.Join => FluentIcons.Common.Symbol.PersonAdd,
-            PlayerEventKind.Leave => FluentIcons.Common.Symbol.SignOut,
-            PlayerEventKind.Chat => FluentIcons.Common.Symbol.Chat,
-            PlayerEventKind.Death => FluentIcons.Common.Symbol.PersonDelete,
-            _ => FluentIcons.Common.Symbol.Trophy
+            PlayerEventKind.Join => FluentIcons.Common.Icon.PersonAdd,
+            PlayerEventKind.Leave => FluentIcons.Common.Icon.SignOut,
+            PlayerEventKind.Chat => FluentIcons.Common.Icon.Chat,
+            PlayerEventKind.Death => FluentIcons.Common.Icon.PersonDelete,
+            _ => FluentIcons.Common.Icon.Trophy
         };
         Text = e.Kind switch
         {
@@ -91,7 +91,7 @@ public sealed class PlayerEventRowViewModel
     public PlayerEventKind Kind { get; }
     public string TimeText { get; }
     /// <summary>The mark beside the line: the same ones the notifications use for the same events.</summary>
-    public FluentIcons.Common.Symbol Icon { get; }
+    public FluentIcons.Common.Icon Icon { get; }
     public string Text { get; }
     public bool IsChat { get; }
 }
@@ -512,7 +512,7 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
 
     private DispatcherTimer CreateCoalescer()
     {
-        var timer = new DispatcherTimer { Interval = CoalesceWindow };
+        var timer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = CoalesceWindow };
         timer.Tick += (_, _) =>
         {
             timer.Stop();

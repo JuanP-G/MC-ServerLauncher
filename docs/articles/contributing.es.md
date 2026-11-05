@@ -153,7 +153,7 @@ de las veces y del nombre la otra mitad — casi siempre sale mejor arreglar el 
   las brochas `Semantic*` de `App.axaml`; en C# son `NotificationPalette.Default*`. No vuelvas a escribir
   el hex: los avisos, los paneles, los puntos de estado y las líneas de consola deben decir "algo ha
   fallado" con el mismo rojo. Y **nada de emojis ni de signos de visto o advertencia en el texto de la
-  interfaz**: una marca es un icono (`SymbolIcon`, `FluentIcons.Common.Symbol`), un estado es un color y
+  interfaz**: una marca es un icono (`FluentIcon`, `FluentIcons.Common.Icon`), un estado es un color y
   una palabra. `LocalizationTests` lo comprueba.
 - Los estilos que necesita más de una vista van en `Styles/Shared.axaml`, no dentro del
   `<Window.Styles>` de una vista. **Ponle a un estilo compartido un nombre que signifique una sola

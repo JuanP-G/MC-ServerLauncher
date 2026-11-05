@@ -30,14 +30,14 @@ public partial class ConnectionStepViewModel : ObservableObject
     [ObservableProperty]
     private string _badge = string.Empty;
 
-    public Symbol Icon => State switch
+    public Icon Icon => State switch
     {
-        StepState.Good => Symbol.Checkmark,
-        StepState.Fair => Symbol.Warning,
-        StepState.Bad => Symbol.ErrorCircle,
-        StepState.Running => Symbol.ArrowSync,
-        StepState.Skipped => Symbol.Subtract,
-        _ => Symbol.Circle,
+        StepState.Good => Icon.Checkmark,
+        StepState.Fair => Icon.Warning,
+        StepState.Bad => Icon.ErrorCircle,
+        StepState.Running => Icon.ArrowSync,
+        StepState.Skipped => Icon.Subtract,
+        _ => Icon.Circle,
     };
 
     public bool IsGood => State == StepState.Good;

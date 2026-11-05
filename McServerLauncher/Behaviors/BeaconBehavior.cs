@@ -101,5 +101,5 @@ public static class BeaconBehavior
         c.Classes.Add(next);
     }
 
-    private static bool IsInTree(this Control c) => c.GetVisualRoot() is not null;
+    private static bool IsInTree(this Control c) => TopLevel.GetTopLevel(c) is not null;
 }

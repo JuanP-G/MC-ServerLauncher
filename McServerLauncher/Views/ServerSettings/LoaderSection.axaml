@@ -40,7 +40,7 @@
                     <Border x:Name="WarnBox" Margin="0,14,0,0" Padding="10" CornerRadius="6"
                             Background="{StaticResource SemanticWarnPanel}" BorderBrush="{StaticResource SemanticWarn}" BorderThickness="1">
                         <Grid ColumnDefinitions="Auto,*">
-                            <ic:SymbolIcon Grid.Column="0" x:Name="WarnIcon" Symbol="Warning"
+                            <ic:FluentIcon Grid.Column="0" x:Name="WarnIcon" Icon="Warning"
                                            VerticalAlignment="Top" Margin="0,0,8,0" />
                             <TextBlock Grid.Column="1" x:Name="WarnText" TextWrapping="Wrap" FontSize="12" />
                         </Grid>

@@ -15,7 +15,7 @@ namespace McServerLauncher.Views.ServerSettings;
 /// <param name="Fields">The <see cref="ServerConfig"/> fields it edits.</param>
 /// <param name="Keys">The <c>server.properties</c> keys it edits.</param>
 internal sealed record ServerSettingsPageInfo(
-    ServerSettingsPage Page, Symbol Icon, string Title, string Hint, string? Group,
+    ServerSettingsPage Page, Icon Icon, string Title, string Hint, string? Group,
     string[] Fields, string[] Keys);
 
 /// <summary>Every page of a server's settings, in the order the index lists them.</summary>
@@ -37,35 +37,35 @@ internal static class ServerSettingsPages
 {
     public static readonly IReadOnlyList<ServerSettingsPageInfo> All =
     [
-        new(ServerSettingsPage.Appearance, Symbol.Image, "Sset_Appearance", "Sset_AppearanceHint", null,
+        new(ServerSettingsPage.Appearance, Icon.Image, "Sset_Appearance", "Sset_AppearanceHint", null,
             [nameof(ServerConfig.Name)], ["motd"]),
-        new(ServerSettingsPage.Game, Symbol.Games, "Sset_Game", "Sset_GameHint", "Sset_GroupGame",
+        new(ServerSettingsPage.Game, Icon.Games, "Sset_Game", "Sset_GameHint", "Sset_GroupGame",
             [], ["gamemode", "difficulty", "max-players", "pvp", "hardcore", "allow-flight",
                  "enable-command-block", "spawn-protection"]),
-        new(ServerSettingsPage.World, Symbol.Globe, "Sset_World", "Sset_WorldHint", null,
+        new(ServerSettingsPage.World, Icon.Globe, "Sset_World", "Sset_WorldHint", null,
             [], ["view-distance", "simulation-distance", "generate-structures"]),
-        new(ServerSettingsPage.Loader, Symbol.Box, "Sset_Loader", "Sset_LoaderHint", "Sset_GroupServer",
+        new(ServerSettingsPage.Loader, Icon.Box, "Sset_Loader", "Sset_LoaderHint", "Sset_GroupServer",
             [], []),
-        new(ServerSettingsPage.Performance, Symbol.Gauge, "Sset_Performance", "Sset_PerformanceHint", null,
+        new(ServerSettingsPage.Performance, Icon.Gauge, "Sset_Performance", "Sset_PerformanceHint", null,
             [nameof(ServerConfig.MemoryMode), nameof(ServerConfig.MinRamGb), nameof(ServerConfig.MaxRamGb),
              nameof(ServerConfig.JavaPath)], []),
-        new(ServerSettingsPage.Network, Symbol.PlugConnected, "Sset_Network", "Sset_NetworkHint", null,
+        new(ServerSettingsPage.Network, Icon.PlugConnected, "Sset_Network", "Sset_NetworkHint", null,
             [nameof(ServerConfig.BedrockPort), nameof(ServerConfig.PlayitEnabled)],
             ["server-port", "online-mode", "white-list"]),
-        new(ServerSettingsPage.Crossplay, Symbol.Phone, "Sset_Crossplay", "Sset_CrossplayHint", null,
+        new(ServerSettingsPage.Crossplay, Icon.Phone, "Sset_Crossplay", "Sset_CrossplayHint", null,
             [nameof(ServerConfig.CrossplayEnabled), nameof(ServerConfig.MultiVersionEnabled),
              nameof(ServerConfig.BedrockModContentEnabled)], []),
-        new(ServerSettingsPage.Power, Symbol.Power, "Sset_Power", "Sset_PowerHint", "Sset_GroupAuto",
+        new(ServerSettingsPage.Power, Icon.Power, "Sset_Power", "Sset_PowerHint", "Sset_GroupAuto",
             [nameof(ServerConfig.WakeOnDemand), nameof(ServerConfig.WakeOnlyForWhitelist),
              nameof(ServerConfig.IdleShutdownMinutes)], []),
-        new(ServerSettingsPage.Backups, Symbol.Archive, "Sset_Backups", "Sset_BackupsHint", null,
+        new(ServerSettingsPage.Backups, Icon.Archive, "Sset_Backups", "Sset_BackupsHint", null,
             [nameof(ServerConfig.BackupsEnabled), nameof(ServerConfig.BackupRetention),
              nameof(ServerConfig.ManualBackupRetention), nameof(ServerConfig.AutoBackupEnabled),
              nameof(ServerConfig.BackupIntervalMinutes)], []),
-        new(ServerSettingsPage.Notifications, Symbol.Alert, "Sset_Notifications", "Sset_NotificationsHint",
+        new(ServerSettingsPage.Notifications, Icon.Alert, "Sset_Notifications", "Sset_NotificationsHint",
             null,
             [nameof(ServerConfig.UseCustomNotifications), nameof(ServerConfig.Notifications)], []),
-        new(ServerSettingsPage.Advanced, Symbol.Wrench, "Sset_Advanced", "Sset_AdvancedHint", "",
+        new(ServerSettingsPage.Advanced, Icon.Wrench, "Sset_Advanced", "Sset_AdvancedHint", "",
             [nameof(ServerConfig.FolderPath), nameof(ServerConfig.JarFile),
              nameof(ServerConfig.ExtraJvmArgs)], []),
     ];

@@ -256,7 +256,7 @@ public partial class MainViewModel : ObservableObject
         // Checking only at startup missed the case this app is designed for: it lives in the tray
         // with the servers running, so on a machine that is never turned off it would simply never
         // look again. Built here, started in Activate.
-        _updateTimer = new DispatcherTimer { Interval = UpdateCheckInterval };
+        _updateTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = UpdateCheckInterval };
         _updateTimer.Tick += (_, _) => _ = CheckForUpdatesAsync();
     }
 
@@ -543,7 +543,7 @@ public partial class MainViewModel : ObservableObject
         // download arrow, said here rather than left to the default, so adding a level later cannot
         // silently move it.
         ToastService.Shared.Notify(Localizer.Get("Notif_Head_Update"), Localizer.Get("Notif_UpdateTitle"),
-            message, FluentIcons.Common.Symbol.ArrowDownload, NotificationLevel.Info,
+            message, FluentIcons.Common.Icon.ArrowDownload, NotificationLevel.Info,
             NotificationPreferences.Global);
     }
 

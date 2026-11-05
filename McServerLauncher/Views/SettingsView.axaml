@@ -43,25 +43,25 @@
             <StackPanel x:Name="PageItems" Spacing="4">
             <Button Classes="page" Classes.on="{Binding IsGeneralPage}" Command="{Binding ShowGeneralCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ic:SymbolIcon Symbol="Settings" FontSize="16" />
+                    <ic:FluentIcon Icon="Settings" FontSize="16" />
                     <TextBlock Text="{loc:Loc Set_General}" />
                 </StackPanel>
             </Button>
             <Button Classes="page" Classes.on="{Binding IsNotificationsPage}" Command="{Binding ShowNotificationsCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ic:SymbolIcon Symbol="Alert" FontSize="16" />
+                    <ic:FluentIcon Icon="Alert" FontSize="16" />
                     <TextBlock Text="{loc:Loc Notif_Section}" />
                 </StackPanel>
             </Button>
             <Button Classes="page" Classes.on="{Binding IsColorsPage}" Command="{Binding ShowColorsCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ic:SymbolIcon Symbol="Color" FontSize="16" />
+                    <ic:FluentIcon Icon="Color" FontSize="16" />
                     <TextBlock Text="{loc:Loc Set_Colors}" />
                 </StackPanel>
             </Button>
             <Button Classes="page" Classes.on="{Binding IsPlayersPage}" Command="{Binding ShowPlayersCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ic:SymbolIcon Symbol="People" FontSize="16" />
+                    <ic:FluentIcon Icon="People" FontSize="16" />
                     <TextBlock Text="{loc:Loc Players}" />
                 </StackPanel>
             </Button>

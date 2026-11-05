@@ -16,13 +16,13 @@
 
             <Button Margin="0,12,0,0" Click="OpenPlayit_Click">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ic:SymbolIcon Symbol="Open" />
+                    <ic:FluentIcon Icon="Open" />
                     <TextBlock Text="{loc:Loc Pk_OpenPlayit}" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
             <TextBlock Text="{loc:Loc Pk_KeyLabel}" Margin="0,16,0,4" />
-            <TextBox x:Name="KeyBox" Watermark="{loc:Loc Pk_KeyPlaceholder}" />
+            <TextBox x:Name="KeyBox" PlaceholderText="{loc:Loc Pk_KeyPlaceholder}" />
 
             <TextBlock x:Name="StatusText" Foreground="{StaticResource SemanticDanger}" TextWrapping="Wrap"
                        Margin="0,8,0,0" IsVisible="False" />

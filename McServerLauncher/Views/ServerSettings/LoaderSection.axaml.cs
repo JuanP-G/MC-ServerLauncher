@@ -157,7 +157,7 @@ public partial class LoaderSection : UserControl, IServerSettingsSection
         WarnText.FontWeight = danger ? FontWeight.SemiBold : FontWeight.Normal;
         WarnBox.Background = this.FindResource(fill) as IBrush;
         WarnBox.BorderBrush = this.FindResource(edge) as IBrush;
-        WarnIcon.Symbol = danger ? Symbol.Warning : Symbol.Info;
+        WarnIcon.Icon = danger ? Icon.Warning : Icon.Info;
     }
 
     private async Task LoadVersionsAsync()

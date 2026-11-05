@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using Avalonia;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
@@ -465,7 +466,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
 
     private static DispatcherTimer NewTimer(TimeSpan interval, EventHandler tick)
     {
-        var timer = new DispatcherTimer { Interval = interval };
+        var timer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = interval };
         timer.Tick += tick;
         return timer;
     }
