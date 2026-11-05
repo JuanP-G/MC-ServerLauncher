@@ -36,23 +36,29 @@ public class SectionBindingTests
     {
         var xaml = View("TunnelsView.axaml");
 
-        // Each item template binds to the row or the suggestion; the rest to the screen itself.
+        // Each item template binds to the row, the suggestion or the way into the account; the rest to
+        // the screen itself.
         var rowStart = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Rows}\">",
             StringComparison.Ordinal);
         var rowEnd = xaml.IndexOf("</ItemsControl>", rowStart, StringComparison.Ordinal);
         var sugStart = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Suggestions}\">",
             StringComparison.Ordinal);
         var sugEnd = xaml.IndexOf("</ItemsControl>", sugStart, StringComparison.Ordinal);
-        Assert.True(rowStart > 0 && sugStart > 0, "ya no están las listas de la pantalla de túneles");
+        var laneStart = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Lanes}\">", StringComparison.Ordinal);
+        var laneEnd = xaml.IndexOf("</ItemsControl>", laneStart, StringComparison.Ordinal);
+        Assert.True(rowStart > 0 && sugStart > 0 && laneStart > 0,
+            "ya no están las listas de la pantalla de túneles");
 
         var rows = xaml[rowStart..rowEnd];
         var suggestions = xaml[sugStart..sugEnd];
-        var screen = xaml.Replace(rows, "").Replace(suggestions, "");
+        var lanes = xaml[laneStart..laneEnd];
+        var screen = xaml.Replace(rows, "").Replace(suggestions, "").Replace(lanes, "");
 
         AssertAllExist(typeof(TunnelsViewModel), Bound(screen));
         AssertAllExist(typeof(TunnelRowViewModel), Bound(rows.Replace("{Binding Rows}", "")));
         AssertAllExist(typeof(TunnelSuggestionViewModel),
             Bound(suggestions.Replace("{Binding Suggestions}", "")));
+        AssertAllExist(typeof(TunnelLaneViewModel), Bound(lanes.Replace("{Binding Lanes}", "")));
     }
 
     [Fact]
