@@ -74,13 +74,18 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.5" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.5" />
     <PackageReference Include="Avalonia.Controls.ColorPicker" Version="12.1.5" />
-    <!-- Avalonia 11.2.3 pulls in Tmds.DBus.Protocol 0.20.0 on Linux, which has CVE-2026-39959
-         (GHSA-xrw6-gwf8-vvr9, CVSS 7.1): another process on the same D-Bus can forge signals or take the
-         app down. Pinned here so the fixed version wins; drop it once Avalonia ships with one. -->
-    <PackageReference Include="Tmds.DBus.Protocol" Version="0.95.2" />
     <PackageReference Include="FluentIcons.Avalonia" Version="2.1.345" />
     <PackageReference Include="SkiaSharp" Version="3.119.4" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
+
+  <!-- SkiaSharp 3 and HarfBuzzSharp ship the debug symbols of their native libraries next to them: 100 MB
+       that nobody here can use, and the installer takes whatever is in the publish folder. -->
+  <Target Name="DropNativeSymbols" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(Filename)%(Extension)' == 'libSkiaSharp.pdb' Or '%(Filename)%(Extension)' == 'libHarfBuzzSharp.pdb'" />
+    </ItemGroup>
+  </Target>
 
 </Project>

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using FluentIcons.Common;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 
@@ -139,16 +140,13 @@ public static class ServerTypeCatalog
     };
 
     /// <summary>
-    /// The badge's emoji. Plugins get a jigsaw piece, mods a cog.
+    /// The badge's icon. Plugins get a jigsaw piece, mods a cog.
     /// </summary>
     /// <remarks>
-    /// Emoji rather than an icon font because the two badges have to be told apart at a glance and
-    /// in colour-blind-safe terms — shape does that where colour alone would not.
+    /// The two badges have to be told apart at a glance and in colour-blind-safe terms: shape does
+    /// that where colour alone would not. An icon rather than an emoji, because every system draws
+    /// its own emoji in its own colours, and since Avalonia 12 they show: a grey cog on an orange badge.
     /// </remarks>
-    public static string FamilyEmoji(ServerFamily family) => family switch
-    {
-        ServerFamily.Plugins => "\U0001F9E9",
-        ServerFamily.Mods => "\u2699",
-        _ => string.Empty
-    };
+    public static Symbol FamilyIcon(ServerFamily family) =>
+        family == ServerFamily.Plugins ? Symbol.PuzzlePiece : Symbol.Settings;
 }

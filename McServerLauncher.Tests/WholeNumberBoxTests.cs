@@ -1,6 +1,5 @@
 using System.Globalization;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using McServerLauncher.Models;
 using McServerLauncher.Views;
@@ -26,9 +25,30 @@ public class WholeNumberBoxTests(AvaloniaFixture ui)
         WholeNumberBoxes.Install();
         var draft = new ServerSettingsDraft(new ServerConfig { IdleShutdownMinutes = minutes });
         var section = new PowerSection(draft);
-        var window = new Window { Content = section };
+        var window = new Window { Content = new StackPanel { Children = { section, new Button { Name = "Elsewhere" } } } };
         window.Show();
         return (section.GetVisualDescendants().OfType<NumericUpDown>().Single(), draft.Config);
+    }
+
+    /// <summary>The box's text field, holding the keyboard focus the way it does while somebody types.</summary>
+    private static TextBox FocusField(NumericUpDown box)
+    {
+        var field = box.GetVisualDescendants().OfType<TextBox>().Single();
+        Assert.True(field.Focus());
+        Assert.True(box.IsKeyboardFocusWithin);
+        return field;
+    }
+
+    /// <summary>
+    /// Moves the keyboard focus out of the box for real. Raising LostFocus by hand proves nothing: the
+    /// event carries FocusChangedEventArgs since Avalonia 12 and a plain RoutedEventArgs never reaches
+    /// the handler, and only a real move shows what IsKeyboardFocusWithin says when the event arrives.
+    /// </summary>
+    private static void LeaveBox(NumericUpDown box)
+    {
+        var window = (Window)TopLevel.GetTopLevel(box)!;
+        Assert.True(window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "Elsewhere").Focus());
+        Assert.False(box.IsKeyboardFocusWithin);
     }
 
     [Fact]
@@ -46,12 +66,39 @@ public class WholeNumberBoxTests(AvaloniaFixture ui)
     public void LeavingItEmptyPutsTheNumberBack() => ui.Run(() =>
     {
         var (box, config) = ShowIdleBox(30);
+        FocusField(box);
 
         box.Value = null;
-        box.RaiseEvent(new RoutedEventArgs(Avalonia.Input.InputElement.LostFocusEvent));
+        LeaveBox(box);
 
         Assert.Equal(30m, box.Value);
         Assert.Equal(30, config.IdleShutdownMinutes);
+    });
+
+    [Fact]
+    public void LeavingItShowingAnythingElsePutsTheNumberBack() => ui.Run(() =>
+    {
+        var (box, config) = ShowIdleBox(30);
+        var field = FocusField(box);
+
+        field.Text = "abc";
+        LeaveBox(box);
+
+        Assert.Equal("30", box.Text);
+        Assert.Equal(30, config.IdleShutdownMinutes);
+    });
+
+    [Fact]
+    public void MovingInsideTheBoxIsNotLeavingIt() => ui.Run(() =>
+    {
+        var (box, _) = ShowIdleBox(30);
+        FocusField(box);
+        box.Value = null;
+
+        Assert.True(box.GetVisualDescendants().OfType<RepeatButton>().First().Focus());
+
+        Assert.True(box.IsKeyboardFocusWithin);
+        Assert.Null(box.Value);   // still being typed: the number only comes back on leaving
     });
 
     [Fact]

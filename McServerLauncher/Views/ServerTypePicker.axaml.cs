@@ -6,6 +6,8 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
+using FluentIcons.Avalonia;
+using FluentIcons.Common;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
@@ -161,8 +163,9 @@ public partial class ServerTypePicker : UserControl
         var badges = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
         if (entry.Family != ServerFamily.None)
             badges.Children.Add(Badge(
-                ServerTypeCatalog.FamilyEmoji(entry.Family) + " " + ServerTypeCatalog.FamilyLabel(entry.Family),
-                accent));
+                ServerTypeCatalog.FamilyLabel(entry.Family),
+                accent,
+                ServerTypeCatalog.FamilyIcon(entry.Family)));
 
         // The badge this whole picker exists for: which types a phone or console can actually reach.
         // Two badges, not one, because "it works" and "it connects and then the mods decide" are
@@ -203,17 +206,36 @@ public partial class ServerTypePicker : UserControl
             : Brushes.Transparent;
     }
 
-    private static Border Badge(string text, IBrush accent) => new()
+    private static Border Badge(string text, IBrush accent, Symbol? icon = null)
     {
-        Background = accent,
-        CornerRadius = new Avalonia.CornerRadius(3),
-        Padding = new Avalonia.Thickness(5, 1),
-        Child = new TextBlock
+        var label = new TextBlock
         {
             Text = text,
             FontSize = 10,
             FontWeight = FontWeight.SemiBold,
             Foreground = Brushes.White
-        }
-    };
+        };
+        return new Border
+        {
+            Background = accent,
+            CornerRadius = new Avalonia.CornerRadius(3),
+            Padding = new Avalonia.Thickness(5, 1),
+            Child = icon is not { } symbol ? label : new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 3,
+                Children =
+                {
+                    new SymbolIcon
+                    {
+                        Symbol = symbol,
+                        FontSize = 10,
+                        Foreground = Brushes.White,
+                        VerticalAlignment = VerticalAlignment.Center
+                    },
+                    label
+                }
+            }
+        };
+    }
 }
