@@ -613,7 +613,7 @@
                                               IsChecked="{Binding IsEnabled, Mode=OneWay}"
                                               Command="{Binding DataContext.ToggleModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                               CommandParameter="{Binding}" />
-                                <Button Grid.Column="3" ToolTip.Tip="{loc:Loc Tip_Delete}" Background="Transparent" Padding="4"
+                                <Button Grid.Column="3" ToolTip.Tip="{loc:Loc Tip_DeleteMod}" Background="Transparent" Padding="4"
                                         Command="{Binding DataContext.DeleteModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                         CommandParameter="{Binding}">
                                     <ic:SymbolIcon Symbol="Delete" Foreground="{StaticResource SemanticDanger}" />

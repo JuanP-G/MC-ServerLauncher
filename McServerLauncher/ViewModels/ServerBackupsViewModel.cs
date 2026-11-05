@@ -297,7 +297,7 @@ public partial class ServerBackupsViewModel : ObservableObject
 
         var confirmed = await Dialogs.Current.ConfirmAsync(
             Localizer.Format("Backup_ConfirmDeleteFmt", item.FileName),
-            Localizer.Get("Tip_Delete"));
+            Localizer.Get("Tip_DeleteBackup"));
         if (!confirmed) return;
 
         try { File.Delete(item.FilePath); }
