@@ -7,6 +7,8 @@
   <data name="Servers" xml:space="preserve"><value>Serveurs</value></data>
   <data name="Add" xml:space="preserve"><value>Ajouter</value></data>
   <data name="Tip_Delete" xml:space="preserve"><value>Supprimer le serveur</value></data>
+  <data name="Tip_DeleteMod" xml:space="preserve"><value>Supprimer le mod ou le plugin</value></data>
+  <data name="Tip_DeleteBackup" xml:space="preserve"><value>Supprimer la sauvegarde</value></data>
   <data name="EmptyState" xml:space="preserve"><value>Sélectionne ou ajoute un serveur pour commencer.</value></data>
   <data name="Start" xml:space="preserve"><value>Démarrer</value></data>
   <data name="Stop" xml:space="preserve"><value>Arrêter</value></data>

@@ -7,6 +7,8 @@
   <data name="Servers" xml:space="preserve"><value>Servers</value></data>
   <data name="Add" xml:space="preserve"><value>Add</value></data>
   <data name="Tip_Delete" xml:space="preserve"><value>Delete server</value></data>
+  <data name="Tip_DeleteMod" xml:space="preserve"><value>Delete mod or plugin</value></data>
+  <data name="Tip_DeleteBackup" xml:space="preserve"><value>Delete backup</value></data>
   <data name="EmptyState" xml:space="preserve"><value>Select or add a server to get started.</value></data>
   <data name="Start" xml:space="preserve"><value>Start</value></data>
   <data name="Stop" xml:space="preserve"><value>Stop</value></data>
