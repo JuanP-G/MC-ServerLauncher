@@ -856,7 +856,12 @@ of `MainWindow` and switched by `IsVisible` (`MainViewModel.Section`), so a sect
 - **Tunnels** (`TunnelsViewModel`/`TunnelsView`) reads every Playit key the app can find at once —
   the app's agent, an installed agent's `playit.toml`, a saved key — merges what each sees
   (`TunnelInventory`) and offers the fixes it can make. The account is read once shortly after start
-  (`PrefetchAsync`) so the screen is filled the first time it opens, and again each time it is opened.
+  (`PrefetchAsync`, one second after start) so the screen is filled the first time it opens, and again
+  each time it is opened. The account card says whether the account is connected and whether an agent
+  is actually carrying traffic, and shows each way in on its own line (the app's agent, the installed
+  Playit, an old saved key) with its state and its buttons. `PlayitAccountStatus` makes those
+  decisions as a pure function; `TunnelLaneViewModel` only dresses them for the view. Until Playit has
+  answered once, the headline says it is checking.
 - **Settings** (`SettingsViewModel`/`SettingsView`) saves as it changes; there is no dialog. Its pages
   are General, Notifications, Colours and Players (the player history). A colour is edited with
   `Views/ColorChooser`: a palette picked to read well on the dark surfaces (`Services/ColorPalette`),
