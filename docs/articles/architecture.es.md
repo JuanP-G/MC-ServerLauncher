@@ -893,8 +893,12 @@ está en pantalla.
 - **Túneles** (`TunnelsViewModel`/`TunnelsView`) lee a la vez todas las claves de Playit que la app
   encuentra —el agente de la app, el `playit.toml` de un agente instalado, una clave guardada—, junta
   lo que ve cada una (`TunnelInventory`) y ofrece los arreglos que puede hacer. La cuenta se lee una
-  vez poco después de arrancar (`PrefetchAsync`), para que la pantalla salga llena la primera vez, y
-  de nuevo cada vez que se abre.
+  vez poco después de arrancar (`PrefetchAsync`, un segundo tras el inicio), para que la pantalla
+  salga llena la primera vez, y de nuevo cada vez que se abre. La tarjeta de la cuenta dice si está
+  conectada y si algún agente reenvía tráfico de verdad, y muestra cada vía de entrada en su propia
+  línea (el agente de la app, el Playit instalado, una clave guardada antigua) con su estado y sus
+  botones. `PlayitAccountStatus` toma esas decisiones como función pura; `TunnelLaneViewModel` solo las
+  viste para la vista. Hasta que Playit responde la primera vez, el titular dice que está comprobando.
 - **Ajustes** (`SettingsViewModel`/`SettingsView`) guarda al cambiar; no hay diálogo. Sus páginas
   son General, Notificaciones, Colores y Jugadores (el historial). Un color se edita con
   `Views/ColorChooser`: una paleta elegida para leerse bien sobre las superficies oscuras

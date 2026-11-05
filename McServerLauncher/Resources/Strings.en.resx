@@ -143,16 +143,11 @@
   <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher is not affiliated with or owned by Playit; it only integrates with their network. Your account is yours: you can manage it directly at playit.gg.</value></data>
   <data name="Pk_Agent_Downloading" xml:space="preserve"><value>Downloading the Playit agent… (first time only)</value></data>
   <data name="Pk_Agent_Starting" xml:space="preserve"><value>Starting the agent…</value></data>
-  <data name="Pk_Agent_Running" xml:space="preserve"><value>Agent running: your tunnels are forwarding traffic.</value></data>
-  <data name="Pk_Agent_Stopped" xml:space="preserve"><value>Agent stopped.</value></data>
   <data name="Pk_Agent_Failed" xml:space="preserve"><value>Couldn't start the agent: {0}</value></data>
   <data name="Pk_Agent_Unsupported" xml:space="preserve"><value>Your system can't run the agent automatically; run Playit yourself.</value></data>
   <data name="Pk_Agent_Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="Pk_SettingsDesc" xml:space="preserve"><value>Connect your Playit account to create and manage tunnels automatically. You only paste a code — no key needed.</value></data>
-  <data name="Pk_Connect" xml:space="preserve"><value>Connect to Playit</value></data>
-  <data name="Pk_Reconnect" xml:space="preserve"><value>Reconnect</value></data>
   <data name="Pk_Disconnect" xml:space="preserve"><value>Disconnect</value></data>
-  <data name="Pk_NotConnected" xml:space="preserve"><value>Not connected</value></data>
   <data name="Msg_PasteSetupCode" xml:space="preserve"><value>Paste the setup code you obtained from playit.gg.</value></data>
   <data name="Msg_SetupCodeFailedFmt" xml:space="preserve"><value>Couldn't connect to Playit: {0}</value></data>
   <data name="Msg_SetupCodeNoAgent" xml:space="preserve"><value>Playit didn't return a valid agent for this code.</value></data>
@@ -946,7 +941,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Tun_Summary_ProblemsFmt" xml:space="preserve"><value>{0} need attention</value></data>
   <data name="Tun_AutoRenamedFmt" xml:space="preserve"><value>[Playit] Tunnel "{0}" renamed to "{1}".</value></data>
   <data name="Tun_AutoRenameFailFmt" xml:space="preserve"><value>[Playit] Could not rename the tunnel "{0}": {1}</value></data>
-  <data name="Tun_ServiceFmt" xml:space="preserve"><value>Playit service: {0}</value></data>
   <data name="Tip_ManageTunnels" xml:space="preserve"><value>See and manage the account's tunnels</value></data>
   <data name="About_Tagline" xml:space="preserve"><value>Create and manage Minecraft servers without touching the console.</value></data>
   <data name="About_VersionFmt" xml:space="preserve"><value>Version {0} · MIT license</value></data>
@@ -964,12 +958,8 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Upd_UpToDateFmt" xml:space="preserve"><value>You're on the latest version · checked at {0}</value></data>
   <data name="Upd_Failed" xml:space="preserve"><value>Could not check. Check your connection and try again.</value></data>
   <data name="Upd_NotChecked" xml:space="preserve"><value>Not checked yet.</value></data>
-  <data name="Tun_Src_Installed" xml:space="preserve"><value>Playit installed on this computer: its key is used.</value></data>
-  <data name="Tun_Src_Saved" xml:space="preserve"><value>Saved Playit key.</value></data>
-  <data name="Tun_Src_Refused" xml:space="preserve"><value> Playit does not accept this key.</value></data>
   <data name="Tun_Err_Key" xml:space="preserve"><value>Playit does not accept the key the account was read with. If this app saved it, press Disconnect and connect again.</value></data>
   <data name="Tun_Err_NoPermission" xml:space="preserve"><value>Playit does not allow this change with this computer's key.</value></data>
-  <data name="Tun_Src_InstalledReadOnly" xml:space="preserve"><value>Playit installed on this computer. With its key Playit only lets the tunnels be read: renaming or deleting them is done on playit.gg.</value></data>
   <data name="Tun_ReadOnlyTip" xml:space="preserve"><value>This tunnel is changed on playit.gg: the installed Playit key can only read</value></data>
   <data name="Tun_Fix_OnWeb" xml:space="preserve"><value>Do it on playit.gg</value></data>
   <data name="Tun_Err_ReadOnly" xml:space="preserve"><value>Playit does not allow changing tunnels with the key of the Playit installed on this computer, only reading them. Do it on playit.gg.</value></data>
@@ -1338,4 +1328,34 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Automatic memory: it can grow up to {0} ({1}) and gives back what it does not use.</value></data>
   <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>This Java does not accept every memory option: the server starts with the ones it does accept.</value></data>
   <data name="Msg_Java32BitCap" xml:space="preserve"><value>This Java is 32-bit and cannot give more than 1 GB. Install a 64-bit Java to give the server more memory.</value></data>
+  <data name="Pa_Head_None" xml:space="preserve"><value>Not connected</value></data>
+  <data name="Pa_Head_Checking" xml:space="preserve"><value>Checking…</value></data>
+  <data name="Pa_Head_Refused" xml:space="preserve"><value>Playit rejects the connection</value></data>
+  <data name="Pa_Head_Active" xml:space="preserve"><value>Connected and active</value></data>
+  <data name="Pa_Head_Starting" xml:space="preserve"><value>Connected, starting the agent</value></data>
+  <data name="Pa_Head_Inactive" xml:space="preserve"><value>Connected, no active agent</value></data>
+  <data name="Pa_App_Name" xml:space="preserve"><value>App agent</value></data>
+  <data name="Pa_App_How" xml:space="preserve"><value>with a setup code</value></data>
+  <data name="Pa_App_None" xml:space="preserve"><value>Not connected with a setup code.</value></data>
+  <data name="Pa_App_Running" xml:space="preserve"><value>Active: your tunnels are forwarding traffic.</value></data>
+  <data name="Pa_App_Stopped" xml:space="preserve"><value>Stopped: your tunnels are not forwarding traffic.</value></data>
+  <data name="Pa_App_Refused" xml:space="preserve"><value>Playit does not accept the code: press Change code.</value></data>
+  <data name="Pa_Inst_Name" xml:space="preserve"><value>Agent installed on this PC</value></data>
+  <data name="Pa_Inst_How" xml:space="preserve"><value>the Playit you installed yourself</value></data>
+  <data name="Pa_Inst_None" xml:space="preserve"><value>Playit was not found installed on this PC.</value></data>
+  <data name="Pa_Inst_On" xml:space="preserve"><value>Active: your tunnels are forwarding traffic.</value></data>
+  <data name="Pa_Inst_Starting" xml:space="preserve"><value>Starting the service…</value></data>
+  <data name="Pa_Inst_Off" xml:space="preserve"><value>Installed but switched off: your tunnels are not forwarding traffic.</value></data>
+  <data name="Pa_Inst_NoService" xml:space="preserve"><value>Found, but no Playit service is running.</value></data>
+  <data name="Pa_Inst_Refused" xml:space="preserve"><value>Playit does not accept its key.</value></data>
+  <data name="Pa_Inst_ReadOnly" xml:space="preserve"><value>Its key only allows reading tunnels: renaming or deleting them is done on playit.gg.</value></data>
+  <data name="Pa_Saved_Name" xml:space="preserve"><value>Saved key</value></data>
+  <data name="Pa_Saved_How" xml:space="preserve"><value>older version</value></data>
+  <data name="Pa_Saved_State" xml:space="preserve"><value>Key saved by an older version.</value></data>
+  <data name="Pa_Saved_Refused" xml:space="preserve"><value>Playit does not accept this key.</value></data>
+  <data name="Pa_Act_Connect" xml:space="preserve"><value>Connect with a code</value></data>
+  <data name="Pa_Act_ChangeCode" xml:space="preserve"><value>Change code</value></data>
+  <data name="Pa_Act_StartService" xml:space="preserve"><value>Start</value></data>
+  <data name="Pa_Act_StopService" xml:space="preserve"><value>Stop</value></data>
+  <data name="Pa_Tip_Disconnect" xml:space="preserve"><value>Forgets the connection the app saved. The installed Playit is left alone.</value></data>
 </root>

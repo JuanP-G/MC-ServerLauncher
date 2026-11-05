@@ -189,16 +189,11 @@
   <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher no está afiliado ni asociado con Playit; solo se integra con su red. Tu cuenta es tuya: puedes gestionarla directamente en playit.gg.</value></data>
   <data name="Pk_Agent_Downloading" xml:space="preserve"><value>Descargando el agente de Playit… (solo la primera vez)</value></data>
   <data name="Pk_Agent_Starting" xml:space="preserve"><value>Iniciando el agente…</value></data>
-  <data name="Pk_Agent_Running" xml:space="preserve"><value>Agente activo: tus túneles reenvían tráfico.</value></data>
-  <data name="Pk_Agent_Stopped" xml:space="preserve"><value>Agente detenido.</value></data>
   <data name="Pk_Agent_Failed" xml:space="preserve"><value>No se pudo iniciar el agente: {0}</value></data>
   <data name="Pk_Agent_Unsupported" xml:space="preserve"><value>Tu sistema no puede ejecutar el agente automáticamente; ejecuta Playit por tu cuenta.</value></data>
   <data name="Pk_Agent_Retry" xml:space="preserve"><value>Reintentar</value></data>
   <data name="Pk_SettingsDesc" xml:space="preserve"><value>Conecta tu cuenta de Playit para crear y gestionar túneles automáticamente. Solo tienes que pegar un código; no hace falta ninguna clave.</value></data>
-  <data name="Pk_Connect" xml:space="preserve"><value>Conectar con Playit</value></data>
-  <data name="Pk_Reconnect" xml:space="preserve"><value>Reconectar</value></data>
   <data name="Pk_Disconnect" xml:space="preserve"><value>Desconectar</value></data>
-  <data name="Pk_NotConnected" xml:space="preserve"><value>No conectado</value></data>
   <data name="Msg_PasteSetupCode" xml:space="preserve"><value>Pega el código de configuración que has obtenido en playit.gg.</value></data>
   <data name="Msg_SetupCodeFailedFmt" xml:space="preserve"><value>No se pudo conectar con Playit: {0}</value></data>
   <data name="Msg_SetupCodeNoAgent" xml:space="preserve"><value>Playit no devolvió un agente válido para este código.</value></data>
@@ -992,7 +987,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Tun_Summary_ProblemsFmt" xml:space="preserve"><value>{0} necesitan atención</value></data>
   <data name="Tun_AutoRenamedFmt" xml:space="preserve"><value>[Playit] Túnel «{0}» renombrado a «{1}».</value></data>
   <data name="Tun_AutoRenameFailFmt" xml:space="preserve"><value>[Playit] No se pudo renombrar el túnel «{0}»: {1}</value></data>
-  <data name="Tun_ServiceFmt" xml:space="preserve"><value>Servicio de Playit: {0}</value></data>
   <data name="Tip_ManageTunnels" xml:space="preserve"><value>Ver y gestionar los túneles de la cuenta</value></data>
   <data name="About_Tagline" xml:space="preserve"><value>Crea y gestiona servidores de Minecraft sin tocar la consola.</value></data>
   <data name="About_VersionFmt" xml:space="preserve"><value>Versión {0} · Licencia MIT</value></data>
@@ -1010,12 +1004,8 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Upd_UpToDateFmt" xml:space="preserve"><value>Estás en la última versión · comprobado a las {0}</value></data>
   <data name="Upd_Failed" xml:space="preserve"><value>No se pudo comprobar. Revisa tu conexión e inténtalo de nuevo.</value></data>
   <data name="Upd_NotChecked" xml:space="preserve"><value>Todavía no se ha comprobado.</value></data>
-  <data name="Tun_Src_Installed" xml:space="preserve"><value>Playit instalado en este equipo: se usa su clave.</value></data>
-  <data name="Tun_Src_Saved" xml:space="preserve"><value>Clave de Playit guardada.</value></data>
-  <data name="Tun_Src_Refused" xml:space="preserve"><value> Playit no acepta esta clave.</value></data>
   <data name="Tun_Err_Key" xml:space="preserve"><value>Playit no acepta la clave con la que se leyó la cuenta. Si la guardó esta app, pulsa Desconectar y vuelve a conectar.</value></data>
   <data name="Tun_Err_NoPermission" xml:space="preserve"><value>Playit no deja hacer este cambio con la clave de este equipo.</value></data>
-  <data name="Tun_Src_InstalledReadOnly" xml:space="preserve"><value>Playit instalado en este equipo. Con su clave Playit solo deja leer los túneles: renombrarlos o borrarlos se hace en playit.gg.</value></data>
   <data name="Tun_ReadOnlyTip" xml:space="preserve"><value>Este túnel se cambia en playit.gg: la clave del Playit instalado solo deja leer</value></data>
   <data name="Tun_Fix_OnWeb" xml:space="preserve"><value>Hacerlo en playit.gg</value></data>
   <data name="Tun_Err_ReadOnly" xml:space="preserve"><value>Playit no deja cambiar túneles con la clave del Playit instalado en este equipo, solo leerlos. Hazlo en playit.gg.</value></data>
@@ -1384,4 +1374,34 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Memoria automática: puede crecer hasta {0} ({1}) y devuelve lo que no usa.</value></data>
   <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>Esta Java no acepta todas las opciones de memoria: el servidor arranca con las que sí acepta.</value></data>
   <data name="Msg_Java32BitCap" xml:space="preserve"><value>Esta Java es de 32 bits y no puede dar más de 1 GB. Instala una de 64 bits para que el servidor tenga más memoria.</value></data>
+  <data name="Pa_Head_None" xml:space="preserve"><value>No conectada</value></data>
+  <data name="Pa_Head_Checking" xml:space="preserve"><value>Comprobando…</value></data>
+  <data name="Pa_Head_Refused" xml:space="preserve"><value>Playit rechaza la conexión</value></data>
+  <data name="Pa_Head_Active" xml:space="preserve"><value>Conectada y activa</value></data>
+  <data name="Pa_Head_Starting" xml:space="preserve"><value>Conectada, iniciando el agente</value></data>
+  <data name="Pa_Head_Inactive" xml:space="preserve"><value>Conectada, sin agente activo</value></data>
+  <data name="Pa_App_Name" xml:space="preserve"><value>Agente de la app</value></data>
+  <data name="Pa_App_How" xml:space="preserve"><value>con código de configuración</value></data>
+  <data name="Pa_App_None" xml:space="preserve"><value>Sin conectar con código de configuración.</value></data>
+  <data name="Pa_App_Running" xml:space="preserve"><value>Activo: tus túneles reenvían tráfico.</value></data>
+  <data name="Pa_App_Stopped" xml:space="preserve"><value>Detenido: tus túneles no reenvían tráfico.</value></data>
+  <data name="Pa_App_Refused" xml:space="preserve"><value>Playit no acepta el código: pulsa Cambiar código.</value></data>
+  <data name="Pa_Inst_Name" xml:space="preserve"><value>Agente instalado en este PC</value></data>
+  <data name="Pa_Inst_How" xml:space="preserve"><value>el Playit que instalaste tú</value></data>
+  <data name="Pa_Inst_None" xml:space="preserve"><value>No se ha encontrado Playit instalado en este PC.</value></data>
+  <data name="Pa_Inst_On" xml:space="preserve"><value>Activo: tus túneles reenvían tráfico.</value></data>
+  <data name="Pa_Inst_Starting" xml:space="preserve"><value>Iniciando el servicio…</value></data>
+  <data name="Pa_Inst_Off" xml:space="preserve"><value>Instalado pero apagado: tus túneles no reenvían tráfico.</value></data>
+  <data name="Pa_Inst_NoService" xml:space="preserve"><value>Detectado, pero sin servicio de Playit en marcha.</value></data>
+  <data name="Pa_Inst_Refused" xml:space="preserve"><value>Playit no acepta su clave.</value></data>
+  <data name="Pa_Inst_ReadOnly" xml:space="preserve"><value>Su clave solo deja leer túneles: renombrarlos o borrarlos se hace en playit.gg.</value></data>
+  <data name="Pa_Saved_Name" xml:space="preserve"><value>Clave guardada</value></data>
+  <data name="Pa_Saved_How" xml:space="preserve"><value>versión anterior</value></data>
+  <data name="Pa_Saved_State" xml:space="preserve"><value>Clave guardada por una versión anterior.</value></data>
+  <data name="Pa_Saved_Refused" xml:space="preserve"><value>Playit no acepta esta clave.</value></data>
+  <data name="Pa_Act_Connect" xml:space="preserve"><value>Conectar con código</value></data>
+  <data name="Pa_Act_ChangeCode" xml:space="preserve"><value>Cambiar código</value></data>
+  <data name="Pa_Act_StartService" xml:space="preserve"><value>Iniciar</value></data>
+  <data name="Pa_Act_StopService" xml:space="preserve"><value>Detener</value></data>
+  <data name="Pa_Tip_Disconnect" xml:space="preserve"><value>Olvida la conexión guardada por la app. El Playit instalado no se toca.</value></data>
 </root>

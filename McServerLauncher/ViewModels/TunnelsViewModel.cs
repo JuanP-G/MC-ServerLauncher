@@ -102,96 +102,55 @@ public partial class TunnelsViewModel : ObservableObject
     public bool IsConnected => Sources().Count > 0;
     public bool IsNotConnected => !IsConnected;
 
-    /// <summary>True when the connect flow has saved something — which is what Disconnect forgets.</summary>
-    public bool HasStoredConnection => PlayitConnection.IsConnected(_appSettings);
-
-    public string ConnectText => Localizer.Get(HasStoredConnection ? "Pk_Reconnect" : "Pk_Connect");
-
     private bool UsesAgent => !string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey);
 
-    public bool ShowAgent => UsesAgent;
+    // Whether Playit has answered at least once since the app opened. Until it has, a key on disk is
+    // only a key: the card says it is checking rather than claiming a connection nobody has tried.
+    private bool _hasReading;
 
-    public string AgentText => PlayitAgentRunner.Shared.State switch
-    {
-        AgentRunState.Downloading => Localizer.Get("Pk_Agent_Downloading"),
-        AgentRunState.Starting => Localizer.Get("Pk_Agent_Starting"),
-        AgentRunState.Running => Localizer.Get("Pk_Agent_Running"),
-        AgentRunState.Unsupported => Localizer.Get("Pk_Agent_Unsupported"),
-        AgentRunState.Failed => Localizer.Format("Pk_Agent_Failed",
-            PlayitAgentRunner.Shared.LastError ?? ""),
-        _ => Localizer.Get("Pk_Agent_Stopped"),
-    };
+    private static readonly IBrush[] LevelBrushes = [Grey, Green, Amber, Red];
 
-    public IBrush AgentBrush => PlayitAgentRunner.Shared.State switch
-    {
-        AgentRunState.Running => Green,
-        AgentRunState.Failed => Red,
-        AgentRunState.Downloading or AgentRunState.Starting => Amber,
-        _ => Grey,
-    };
+    private static IBrush BrushOf(AccountLevel level) => LevelBrushes[(int)level];
 
-    /// <summary>
-    /// The account line's dot: grey with no way in, red when Playit refused every one, green otherwise
-    /// — except that the app's own agent being down is shown, since it is the one carrying the traffic.
-    /// </summary>
-    public IBrush AccountBrush
+    /// <summary>The card as the facts stand now; see <see cref="PlayitAccountStatus"/>.</summary>
+    internal AccountCard Card()
     {
-        get
-        {
-            var sources = Sources();
-            if (sources.Count == 0) return Grey;
-            if (_refused.Count == sources.Count) return Red;
-            return UsesAgent && PlayitAgentRunner.Shared.State != AgentRunState.Running ? AgentBrush : Green;
-        }
+        var sources = Sources();
+        bool Has(PlayitConnection.SourceKind kind) => sources.Any(s => s.Kind == kind);
+        var installed = sources.FirstOrDefault(s => s.Kind == PlayitConnection.SourceKind.InstalledAgent);
+
+        return PlayitAccountStatus.Build(new PlayitAccountStatus.Input(
+            HasAppCode: Has(PlayitConnection.SourceKind.AppAgent),
+            Agent: PlayitAgentRunner.Shared.State,
+            AgentError: PlayitAgentRunner.Shared.LastError,
+            AppRefused: _refused.Contains(PlayitConnection.SourceKind.AppAgent),
+            HasInstalledKey: installed is not null,
+            ServiceInstalled: PlayitManager.Shared.IsInstalled,
+            ServiceState: PlayitManager.Shared.State,
+            InstalledRefused: _refused.Contains(PlayitConnection.SourceKind.InstalledAgent),
+            InstalledReadOnly: installed is not null && IsReadOnly(installed),
+            HasSavedKey: Has(PlayitConnection.SourceKind.SavedKey),
+            SavedRefused: _refused.Contains(PlayitConnection.SourceKind.SavedKey),
+            Checking: sources.Count > 0 && !_hasReading));
     }
 
-    /// <summary>
-    /// One line for each way in, so it is clear which one the tunnels below were read with.
-    /// </summary>
-    public string AccountText
-    {
-        get
-        {
-            var sources = Sources();
-            if (sources.Count == 0) return Localizer.Get("Pk_NotConnected");
+    /// <summary>The headline: whether the account is connected and whether any agent is carrying traffic.</summary>
+    public string AccountHeadline => Card().Headline;
 
-            return string.Join("\n", sources.Select(source =>
-            {
-                var line = source.Kind switch
-                {
-                    PlayitConnection.SourceKind.AppAgent => AgentText,
-                    PlayitConnection.SourceKind.InstalledAgent => Localizer.Get(
-                        IsReadOnly(source) ? "Tun_Src_InstalledReadOnly" : "Tun_Src_Installed"),
-                    _ => Localizer.Get("Tun_Src_Saved"),
-                };
-                return _refused.Contains(source.Kind) ? line + Localizer.Get("Tun_Src_Refused") : line;
-            }));
-        }
-    }
+    /// <summary>The headline's dot: grey with nothing to say, then green, amber or red.</summary>
+    public IBrush AccountBrush => BrushOf(Card().Level);
 
-    public bool CanRetryAgent => UsesAgent
-        && PlayitAgentRunner.Shared.State is AgentRunState.Failed or AgentRunState.Stopped;
-
-    /// <summary>The system service of an agent the user installed, to start and stop it from here.</summary>
-    public bool ShowService => IsConnected && !UsesAgent && PlayitManager.Shared.IsInstalled;
-
-    public string ServiceText => Localizer.Format("Tun_ServiceFmt",
-        Localizer.Get(PlayitManager.Shared.IsRunning ? "Playit_Active" : "Playit_Stopped"));
+    /// <summary>One line for each way in, so it is clear which one is in use and in what state.</summary>
+    public IReadOnlyList<TunnelLaneViewModel> Lanes =>
+        Card().Lanes.Select(l => new TunnelLaneViewModel(l, BrushOf(l.Level), this)).ToList();
 
     private void RaiseAccount()
     {
         OnPropertyChanged(nameof(IsConnected));
         OnPropertyChanged(nameof(IsNotConnected));
-        OnPropertyChanged(nameof(HasStoredConnection));
-        OnPropertyChanged(nameof(ConnectText));
-        OnPropertyChanged(nameof(ShowAgent));
-        OnPropertyChanged(nameof(AgentText));
-        OnPropertyChanged(nameof(AgentBrush));
+        OnPropertyChanged(nameof(AccountHeadline));
         OnPropertyChanged(nameof(AccountBrush));
-        OnPropertyChanged(nameof(AccountText));
-        OnPropertyChanged(nameof(CanRetryAgent));
-        OnPropertyChanged(nameof(ShowService));
-        OnPropertyChanged(nameof(ServiceText));
+        OnPropertyChanged(nameof(Lanes));
         OnPropertyChanged(nameof(ShowEmpty));
     }
 
@@ -200,6 +159,7 @@ public partial class TunnelsViewModel : ObservableObject
     {
         if (_owner() is not { } owner) return;
         await PlayitConnection.ConnectAsync(owner, _appSettings, _settingsService);
+        _hasReading = false;   // a new code has not been tried yet
         RaiseAccount();
         await RefreshAsync();
     }
@@ -420,7 +380,7 @@ public partial class TunnelsViewModel : ObservableObject
     };
 
     /// <summary>How long after the app opens the account is read for the first time.</summary>
-    internal static readonly TimeSpan PrefetchDelay = TimeSpan.FromSeconds(3);
+    internal static readonly TimeSpan PrefetchDelay = TimeSpan.FromSeconds(1);
 
     /// <summary>
     /// Reads the account once, shortly after the app opens, so the screen is already filled the first
@@ -441,6 +401,7 @@ public partial class TunnelsViewModel : ObservableObject
     [RelayCommand]
     public async Task RefreshAsync()
     {
+        PlayitManager.Shared.RefreshState();   // whether the installed service is on, before the card says
         RaiseAccount();
         if (!IsConnected || _busy) return;
 
@@ -486,6 +447,7 @@ public partial class TunnelsViewModel : ObservableObject
         {
             IsLoading = false;
             _busy = false;
+            _hasReading = true;   // answered or failed, the checking is over
             RaiseAccount();
             RaiseSummary();
         }
