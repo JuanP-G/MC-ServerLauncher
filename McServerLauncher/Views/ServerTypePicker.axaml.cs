@@ -206,7 +206,7 @@ public partial class ServerTypePicker : UserControl
             : Brushes.Transparent;
     }
 
-    private static Border Badge(string text, IBrush accent, Symbol? icon = null)
+    private static Border Badge(string text, IBrush accent, Icon? icon = null)
     {
         var label = new TextBlock
         {
@@ -226,10 +226,11 @@ public partial class ServerTypePicker : UserControl
                 Spacing = 3,
                 Children =
                 {
-                    new SymbolIcon
+                    new FluentIcon
                     {
-                        Symbol = symbol,
-                        FontSize = 10,
+                        Icon = symbol,
+                        FontSize = 12,
+                        IconVariant = IconVariant.Filled,
                         Foreground = Brushes.White,
                         VerticalAlignment = VerticalAlignment.Center
                     },

@@ -76,8 +76,8 @@
             <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
                 <!-- A client-only mod goes to the players' pack, not the server: a pack icon says so at
                      a glance, and the tooltip carries the full sentence the label has no room for. -->
-                <ic:SymbolIcon Symbol="ArrowDownload" IsVisible="{Binding !IsClientOnly}" />
-                <ic:SymbolIcon Symbol="BoxMultiple" IsVisible="{Binding IsClientOnly}" />
+                <ic:FluentIcon Icon="ArrowDownload" IsVisible="{Binding !IsClientOnly}" />
+                <ic:FluentIcon Icon="BoxMultiple" IsVisible="{Binding IsClientOnly}" />
                 <TextBlock Text="{Binding InstallLabel}" />
             </StackPanel>
         </Button>
@@ -85,7 +85,7 @@
         <Button Classes="stateaction statelook update"
                 Command="{Binding UpdateCommand}" IsVisible="{Binding IsUpdatable}">
             <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                <ic:SymbolIcon Symbol="ArrowSync" />
+                <ic:FluentIcon Icon="ArrowSync" />
                 <TextBlock Text="{loc:Loc Store_Update}" />
             </StackPanel>
         </Button>
@@ -93,7 +93,7 @@
         <Border Classes="installed" IsVisible="{Binding IsInstalled}">
             <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center"
                         VerticalAlignment="Center" TextElement.Foreground="{StaticResource SemanticOk}">
-                <ic:SymbolIcon Symbol="CheckmarkCircle" />
+                <ic:FluentIcon Icon="CheckmarkCircle" />
                 <TextBlock Text="{loc:Loc Store_Installed}" />
             </StackPanel>
         </Border>
@@ -109,9 +109,9 @@
                 </StackPanel>
             </ToolTip.Tip>
             <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center">
-                <ic:SymbolIcon Symbol="CheckmarkCircle" />
+                <ic:FluentIcon Icon="CheckmarkCircle" />
                 <TextBlock Text="{loc:Loc Store_Installed}" />
-                <ic:SymbolIcon Symbol="Power" />
+                <ic:FluentIcon Icon="Power" />
             </StackPanel>
         </Button>
     </Panel>

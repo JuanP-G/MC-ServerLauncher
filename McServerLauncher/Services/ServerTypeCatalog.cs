@@ -147,6 +147,6 @@ public static class ServerTypeCatalog
     /// that where colour alone would not. An icon rather than an emoji, because every system draws
     /// its own emoji in its own colours, and since Avalonia 12 they show: a grey cog on an orange badge.
     /// </remarks>
-    public static Symbol FamilyIcon(ServerFamily family) =>
-        family == ServerFamily.Plugins ? Symbol.PuzzlePiece : Symbol.Settings;
+    public static Icon FamilyIcon(ServerFamily family) =>
+        family == ServerFamily.Plugins ? Icon.PuzzlePiece : Icon.Settings;
 }

@@ -543,7 +543,7 @@ public partial class MainViewModel : ObservableObject
         // download arrow, said here rather than left to the default, so adding a level later cannot
         // silently move it.
         ToastService.Shared.Notify(Localizer.Get("Notif_Head_Update"), Localizer.Get("Notif_UpdateTitle"),
-            message, FluentIcons.Common.Symbol.ArrowDownload, NotificationLevel.Info,
+            message, FluentIcons.Common.Icon.ArrowDownload, NotificationLevel.Info,
             NotificationPreferences.Global);
     }
 

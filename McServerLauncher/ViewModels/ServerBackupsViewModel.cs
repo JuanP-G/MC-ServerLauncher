@@ -337,7 +337,7 @@ public partial class BackupItemViewModel : ObservableObject
     public string Title { get; }
 
     /// <summary>The icon for why it was made.</summary>
-    public Symbol Icon { get; }
+    public Icon Icon { get; }
 
     /// <summary>Counted against the automatic limit.</summary>
     public bool IsAutomatic { get; }
@@ -373,12 +373,12 @@ public partial class BackupItemViewModel : ObservableObject
         });
         Icon = info.Trigger switch
         {
-            "start" => Symbol.Play,
-            "stop" => Symbol.Stop,
-            "auto" => Symbol.Clock,
-            "manual" => Symbol.Person,
-            "before-restore" => Symbol.ArrowUndo,
-            _ => Symbol.Document,
+            "start" => Icon.Play,
+            "stop" => Icon.Stop,
+            "auto" => Icon.Clock,
+            "manual" => Icon.Person,
+            "before-restore" => Icon.ArrowUndo,
+            _ => Icon.Document,
         };
         Title = info.CreatedAt.ToString("t", CultureInfo.CurrentCulture) + " · " + TriggerText;
     }

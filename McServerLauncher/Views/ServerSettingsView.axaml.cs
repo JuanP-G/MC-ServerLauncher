@@ -258,7 +258,7 @@ public partial class ServerSettingsView : UserControl
     private static Control Row(ServerSettingsPageInfo info, Control dot, bool chip)
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = chip ? 5 : 8 };
-        if (!chip) row.Children.Add(new SymbolIcon { Symbol = info.Icon, FontSize = 16 });
+        if (!chip) row.Children.Add(new FluentIcon { Icon = info.Icon, FontSize = 16 });
         row.Children.Add(new TextBlock
         {
             Text = Localizer.Get(info.Title),

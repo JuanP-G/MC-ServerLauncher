@@ -47,10 +47,10 @@
             <Setter Property="MinHeight" Value="0" />
             <Setter Property="CornerRadius" Value="6" />
         </Style>
-        <Style Selector="Button.opener ic|SymbolIcon.pencil">
+        <Style Selector="Button.opener ic|FluentIcon.pencil">
             <Setter Property="Opacity" Value="0" />
         </Style>
-        <Style Selector="Button.opener:pointerover ic|SymbolIcon.pencil">
+        <Style Selector="Button.opener:pointerover ic|FluentIcon.pencil">
             <Setter Property="Opacity" Value="1" />
         </Style>
     </UserControl.Styles>
@@ -59,7 +59,7 @@
         <Button x:Name="Opener" Classes="opener" ToolTip.Tip="{loc:Loc Col_Tip}">
             <Panel>
                 <Border x:Name="OpenerSwatch" Width="30" Height="20" CornerRadius="4" />
-                <ic:SymbolIcon Classes="pencil" Symbol="Edit" FontSize="13" Foreground="{StaticResource TextOnPopup}"
+                <ic:FluentIcon Classes="pencil" Icon="Edit" FontSize="13" Foreground="{StaticResource TextOnPopup}"
                                HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Panel>
             <Button.Flyout>
@@ -70,9 +70,9 @@
                         <ToggleButton x:Name="CustomizeToggle" Classes="expander" HorizontalAlignment="Stretch"
                                       HorizontalContentAlignment="Stretch">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <ic:SymbolIcon Symbol="Color" FontSize="14" VerticalAlignment="Center" />
+                                <ic:FluentIcon Icon="Color" FontSize="14" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Margin="6,0,0,0" Text="{loc:Loc Col_Customize}" VerticalAlignment="Center" />
-                                <ic:SymbolIcon Grid.Column="2" Classes="chevron" Symbol="ChevronDown" FontSize="12"
+                                <ic:FluentIcon Grid.Column="2" Classes="chevron" Icon="ChevronDown" FontSize="12"
                                                VerticalAlignment="Center" />
                             </Grid>
                         </ToggleButton>

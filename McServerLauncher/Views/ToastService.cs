@@ -77,12 +77,12 @@ public sealed class ToastService
     /// same panel with the same faint green border whether somebody had joined or the server had
     /// died — so the only way to tell them apart was to stop and read.
     /// </remarks>
-    public void Notify(string heading, string source, string message, Symbol icon,
+    public void Notify(string heading, string source, string message, Icon icon,
         NotificationLevel level = NotificationLevel.Info,
         NotificationSettings? colours = null) =>
         Dispatcher.UIThread.Post(() => Show(heading, source, message, icon, level, colours));
 
-    private void Show(string heading, string source, string message, Symbol icon,
+    private void Show(string heading, string source, string message, Icon icon,
         NotificationLevel level, NotificationSettings? colours)
     {
         try
@@ -145,7 +145,7 @@ public sealed class ToastService
     }
 
     /// <summary>The toast's window: borderless, on top, and never taking focus.</summary>
-    private static Window BuildWindow(string heading, string source, string message, Symbol icon,
+    private static Window BuildWindow(string heading, string source, string message, Icon icon,
         NotificationLevel level, NotificationSettings? colours, Border bar)
     {
         var toast = new Window
@@ -189,7 +189,7 @@ public sealed class ToastService
     /// is drawn round and not as text. It still has to work for somebody who cannot tell this red
     /// from this green, which is what the icon inside it is for — no two kinds share one.
     /// </summary>
-    private static Border BuildRing(Symbol icon, NotificationSettings? colours, NotificationLevel level,
+    private static Border BuildRing(Icon icon, NotificationSettings? colours, NotificationLevel level,
         IBrush accent) => new()
     {
         Width = RingSize,
@@ -198,9 +198,9 @@ public sealed class ToastService
         BorderThickness = new Thickness(1.5),
         BorderBrush = NotificationBrushes.FadedBrushFor(colours, level, 0x88),
         VerticalAlignment = VerticalAlignment.Center,
-        Child = new SymbolIcon
+        Child = new FluentIcon
         {
-            Symbol = icon,
+            Icon = icon,
             FontSize = 19,
             Foreground = accent,
             HorizontalAlignment = HorizontalAlignment.Center,
