@@ -1,0 +1,153 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             x:Class="McServerLauncher.Views.NewsView"
+             x:CompileBindings="False">
+
+    <UserControl.Styles>
+        <!-- A version's title is the whole row: it folds open onto the notes. The chevron turns in
+             Styles/Motion.axaml (the same one as the colour chooser's "Customise"). -->
+        <Style Selector="ToggleButton.expander">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="ToggleButton.expander:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource TextOnPopup}" />
+        </Style>
+        <Style Selector="ToggleButton.expander:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+        </Style>
+        <Style Selector="ToggleButton.expander:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+        </Style>
+
+        <!-- The coloured dot at the start of a version: blue while it is new, green for the one running. -->
+        <Style Selector="Ellipse.dot">
+            <Setter Property="Width" Value="8" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="Fill" Value="{StaticResource SurfaceEdgeStrong}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Ellipse.dot.new">
+            <Setter Property="Fill" Value="{StaticResource AccentSelected}" />
+        </Style>
+        <Style Selector="Ellipse.dot.installed">
+            <Setter Property="Fill" Value="{StaticResource SemanticOk}" />
+        </Style>
+
+        <!-- The word next to a version: "Installed" or "New", in the colour of its dot. -->
+        <Style Selector="Border.tag">
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="999" />
+            <Setter Property="Padding" Value="8,1" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.tag.new">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentSelected}" />
+        </Style>
+        <Style Selector="Border.tag.installed">
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticOk}" />
+        </Style>
+    </UserControl.Styles>
+
+    <!-- DataContext: NewsViewModel. Top to bottom: what moved, the update on offer, the notices and
+         the notes of every version. -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16" Spacing="10">
+
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Whatsnew_Title}" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Text="{loc:Loc News_Subtitle}" Classes="desc" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="{loc:Loc News_MarkAllRead}" Command="{Binding MarkAllReadCommand}"
+                        IsVisible="{Binding HasMarks}" VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- Said once, to whoever updated from a version that showed the notes in a window. -->
+            <Border Classes="card" Margin="0" IsVisible="{Binding ShowMoveNotice}">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Classes="ring" Margin="0,0,12,0" VerticalAlignment="Top">
+                        <ic:FluentIcon Icon="Megaphone" FontSize="15" Foreground="{StaticResource SemanticInfo}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="8">
+                        <TextBlock Text="{loc:Loc News_MoveTitle}" FontWeight="SemiBold" />
+                        <TextBlock Text="{loc:Loc News_MoveBody}" Classes="desc" Margin="0" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Classes="accent" Content="{loc:Loc Whatsnew_Ok}"
+                                    Command="{Binding DismissMoveNoticeCommand}" />
+                            <Button Content="{loc:Loc News_MoveGoSettings}"
+                                    Command="{Binding OpenNoticeSettingsCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- A newer version than the one running, with the same button as the banner. -->
+            <Border Classes="card" Classes.marked="{Binding OfferMarked}" Margin="0" IsVisible="{Binding HasOffer}">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Border Classes="ring" Margin="0,0,12,0">
+                        <ic:FluentIcon Icon="ArrowDownload" FontSize="15" Foreground="{StaticResource SemanticInfo}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="{Binding OfferText}" VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                    <Button Grid.Column="2" Classes="accent" Content="{loc:Loc Update_Now}" Margin="12,0,0,0"
+                            Command="{Binding UpdateNowCommand}" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <!-- ===================== NOTICES ===================== -->
+            <TextBlock Text="{loc:Loc News_NoticesTitle}" Classes="section" Margin="2,6,0,0" />
+
+            <Border Classes="card" Margin="0" IsVisible="{Binding NoticesEnabled}">
+                <TextBlock Text="{loc:Loc News_NoNotices}" Classes="desc" Margin="0" />
+            </Border>
+            <Border Classes="card" Margin="0" IsVisible="{Binding NoticesDisabled}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{loc:Loc News_NoticesOff}" Classes="desc" Margin="0" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Content="{loc:Loc News_MoveGoSettings}" Margin="12,0,0,0"
+                            Command="{Binding OpenSettingsCommand}" />
+                </Grid>
+            </Border>
+
+            <!-- ===================== VERSIONS ===================== -->
+            <TextBlock Text="{loc:Loc News_VersionsTitle}" Classes="section" Margin="2,6,0,0" />
+
+            <ItemsControl ItemsSource="{Binding Versions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Classes="card" Padding="0" Margin="0,0,0,6">
+                            <StackPanel>
+                                <ToggleButton Classes="expander" IsChecked="{Binding IsExpanded, Mode=TwoWay}">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <Ellipse Classes="dot" Classes.new="{Binding IsNew}"
+                                                 Classes.installed="{Binding IsInstalled}" Margin="0,0,12,0" />
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                            <Border Classes="tag" Classes.new="{Binding IsNew}"
+                                                    Classes.installed="{Binding IsInstalled}" IsVisible="{Binding HasTag}">
+                                                <TextBlock Text="{Binding TagText}" FontSize="11" />
+                                            </Border>
+                                        </StackPanel>
+                                        <ic:FluentIcon Grid.Column="2" Classes="chevron" Icon="ChevronDown" FontSize="14"
+                                                       VerticalAlignment="Center" Opacity="0.7" />
+                                    </Grid>
+                                </ToggleButton>
+                                <TextBlock Text="{Binding Notes}" IsVisible="{Binding IsExpanded}" TextWrapping="Wrap"
+                                           FontSize="13" LineHeight="20" Opacity="0.9" Margin="32,0,14,12" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

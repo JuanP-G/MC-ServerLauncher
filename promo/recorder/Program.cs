@@ -314,10 +314,10 @@ void SceneTour()
     rec.ClickOn(Rail(1));
     rec.Hold(1700);
     stub.Settings.Page = SettingsPage.Notifications;   // General needs the real app for its language list
-    rec.ClickOn(Rail(2));
+    rec.ClickOn(Rail(3));   // 0 servers, 1 tunnels, 2 what's new, 3 settings, 4 about
     rec.Hold(900);
     var pages = rec.Find<StackPanel>(sp => sp.Name == "PageItems").Children.OfType<Button>().ToList();
-    rec.ClickOn(pages[2]);
+    rec.ClickOn(pages[3]);   // General, Notifications, Announcements, Colours, Players
     rec.Hold(1300);
     rec.ClickOn(Rail(0));
     rec.Hold(300);
@@ -427,14 +427,10 @@ void SceneUpdate()
     rec.Hold(900);
     stub.UpdateText = L.Get("Update_Installing");
     rec.Hold(1100);
-    // The installer runs and the app comes back: what's new.
+    // The installer runs and the app goes: what's new is a section now, opened by the next start,
+    // which this stub does not have, so the scene ends with the banner gone.
     stub.UpdateAvailable = false;
-    var dialog = new WhatsNewDialog("1.18.0", Changelog.NotesSince(new Version(1, 17, 0), new Version(1, 18, 0)));
-    dialog.Show();
-    rec.Overlay = dialog;
-    rec.Hold(3500);
-    rec.Overlay = null;
-    dialog.Hide();
+    rec.Hold(1200);
     rec.End();
 }
 
@@ -744,8 +740,9 @@ class Stub : INotifyPropertyChanged
     public Action? OnNew, OnUpdate, OnServers, OnTunnels, OnSettings, OnAbout;
     public System.Windows.Input.ICommand ShowServersCommand => new CommunityToolkit.Mvvm.Input.RelayCommand(() => { Section = 0; OnServers?.Invoke(); });
     public System.Windows.Input.ICommand ShowTunnelsCommand => new CommunityToolkit.Mvvm.Input.RelayCommand(() => { Section = 1; OnTunnels?.Invoke(); });
-    public System.Windows.Input.ICommand ShowSettingsCommand => new CommunityToolkit.Mvvm.Input.RelayCommand(() => { Section = 2; OnSettings?.Invoke(); });
-    public System.Windows.Input.ICommand ShowAboutCommand => new CommunityToolkit.Mvvm.Input.RelayCommand(() => { Section = 3; OnAbout?.Invoke(); });
+    public System.Windows.Input.ICommand ShowNewsCommand => new CommunityToolkit.Mvvm.Input.RelayCommand(() => Section = 2);
+    public System.Windows.Input.ICommand ShowSettingsCommand => new CommunityToolkit.Mvvm.Input.RelayCommand(() => { Section = 3; OnSettings?.Invoke(); });
+    public System.Windows.Input.ICommand ShowAboutCommand => new CommunityToolkit.Mvvm.Input.RelayCommand(() => { Section = 4; OnAbout?.Invoke(); });
     public System.Windows.Input.ICommand OpenBackupSettingsCommand { get; } = C();
     public System.Windows.Input.ICommand TestConnectionCommand { get; } = C();
     object? _settings;
@@ -775,11 +772,12 @@ class Stub : INotifyPropertyChanged
     public bool ShowServerDetail => _sel is not null && _panel is null && _settings is null;
     public bool ShowEmptyState => _sel is null && _panel is null;
     int _section;
-    public int Section { get => _section; set { _section = value; foreach (var n in new[] { nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsSettingsSection), nameof(IsAboutSection) }) On(n); } }
+    public int Section { get => _section; set { _section = value; foreach (var n in new[] { nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsNewsSection), nameof(IsSettingsSection), nameof(IsAboutSection) }) On(n); } }
     public bool IsServersSection => _section == 0;
     public bool IsTunnelsSection => _section == 1;
-    public bool IsSettingsSection => _section == 2;
-    public bool IsAboutSection => _section == 3;
+    public bool IsNewsSection => _section == 2;
+    public bool IsSettingsSection => _section == 3;
+    public bool IsAboutSection => _section == 4;
     public bool IsCheckingUpdates => false;
     public bool IsUpToDate => true;
     public bool UpdateCheckFailed => false;

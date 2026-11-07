@@ -527,7 +527,7 @@ are no hard-coded machine paths.
 - **System libraries** — the few Win32 functions the app calls (`PortService`, `SingleInstance`,
   `SystemMemory`) carry `DefaultDllImportSearchPaths(System32)`, so a library planted next to the
   executable or in the working directory is never the one loaded.
-- **`Changelog`** — the per-version "what's new" notes shown after an update (see the flow below).
+- **`Changelog`** — the per-version "what's new" notes listed in the What's new section (see the flow below).
 - **`UpdateService`** / **`SelfUpdater`** — `UpdateService` asks GitHub for a newer release and picks
   the asset for *this* platform and architecture (the Windows installer, the Linux AppImage, the
   macOS `.dmg`); `SelfUpdater` is what applies it. It reads the release **list**, not
@@ -828,7 +828,7 @@ something is wrong for a while; *See solutions* in the band opens a page that re
   through `ServerModsViewModel.InstallModAsync`, like every other install.
 
 ### The window: sections, the new-server panel and motion
-The main window is a **rail** of four sections — Servers, Tunnels, Settings, About — sharing one cell
+The main window is a **rail** of five sections — Servers, Tunnels, What's new, Settings, About — sharing one cell
 of `MainWindow` and switched by `IsVisible` (`MainViewModel.Section`), so a section keeps its state
 (the console its scroll, a half-typed form its text) while another is on screen.
 
@@ -862,8 +862,18 @@ of `MainWindow` and switched by `IsVisible` (`MainViewModel.Section`), so a sect
   Playit, an old saved key) with its state and its buttons. `PlayitAccountStatus` makes those
   decisions as a pure function; `TunnelLaneViewModel` only dresses them for the view. Until Playit has
   answered once, the headline says it is checking.
+- **What's new** (`NewsViewModel`/`NewsView`) lists the version waiting to be installed (with the same
+  *Update now* as the banner), a place for notices, and the notes of every version this build knows
+  (`Changelog.All`). Each version folds open onto its notes, which are only looked up while it is open.
+  `NewsBoard` decides, as a pure function, what is listed and what is unread; `NewsState` remembers what
+  has been read in its own file, `news-state.json`, and not in the settings. While something is unread
+  the rail wears a mark (`Views/NewsBadge`: a number, a dot, a dot that pulses, or nothing — chosen in
+  Settings). Opening the section reads it, but the entries keep their own mark until the visit ends or
+  *Mark all as read* is pressed, so there is something to look at in a list that has just been opened.
+  With **Show announcements** off the section is only the history, and nothing marks the rail.
 - **Settings** (`SettingsViewModel`/`SettingsView`) saves as it changes; there is no dialog. Its pages
-  are General, Notifications, Colours and Players (the player history). A colour is edited with
+  are General, Notifications, Announcements (the switch for the marks and the style the rail uses, with a
+  live sample), Colours and Players (the player history). A colour is edited with
   `Views/ColorChooser`: a palette picked to read well on the dark surfaces (`Services/ColorPalette`),
   the spectrum and hue bar of `Avalonia.Controls.ColorPicker` on request, and a line saying whether
   the colour will be readable — WCAG contrast against the console's background, 4.5 for console text
@@ -878,7 +888,8 @@ their own. Menus have a single mark that slides to what was picked instead of on
 `Controls/SlidingIndicator` places a `Border` and lets a transition move it, and its two subclasses
 say where — `TabUnderline` under the picked tab's title, `SelectionMarker` beside or behind the child
 of a panel carrying the class `on` (the rail, the Settings pages). `Behaviors/BeaconBehavior` gives
-"+ New" its periodic reminder by toggling two classes that start a short style animation.
+"+ New" its periodic reminder by toggling two classes that start a short style animation, and the halo
+of the pulsing mark on What's new (`Border.newspulse`) is there too.
 
 > **Keyframes must not depend on the culture.** Avalonia parses `Cue` and `KeySpline` with the system's
 > culture: on a Spanish system `Cue="96.4%"` and `KeySpline="0.45,0,0.25,1"` do not parse and the
@@ -992,9 +1003,12 @@ it for one that then runs with the rights the installer asks for. So `AppUpdateC
 - **macOS** — not repeated: the script runs as the user and replaces an app the user can already
   replace, so a swapped file gains no privilege.
 
-After an update, `MainWindow.Loaded` calls `ShowWhatsNewIfUpdated`, which compares the running version
-with `AppSettings.LastVersionSeen` and shows `WhatsNewDialog` (localized) with the notes from
-`Changelog` for every version the user hadn't seen yet.
+After an update, `MainWindow.Loaded` calls `MainViewModel.OpenNewsIfUpdated`, which compares the running
+version with `AppSettings.LastVersionSeen` and, if the user updated, opens the **What's new** section with
+every version they hadn't seen unfolded and tagged *New* (`NewsBoard`, from `Changelog.All`). It does
+nothing on a new install, which has no earlier version to compare with, nor with the announcements off.
+The notes used to be a window (`WhatsNewDialog`); a card in the section tells whoever updated from that
+time that they moved, and points to Settings (`AppSettings.NewsMoveNoticeSeen` remembers the answer).
 
 ### World backups
 `WorldBackupService` zips a server's world into `<server>/backups/` on demand and automatically:

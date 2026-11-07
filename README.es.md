@@ -113,9 +113,9 @@ antes se guarda el mundo actual, por si te arrepientes).
 <br>
 
 Cuando hay una versión nueva sale un aviso arriba: **Actualizar** la descarga, la comprueba y la instala. Al
-volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Windows, Linux y macOS.
+volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona igual en Windows, Linux y macOS.
 
-<img src="docs/media/es/update.gif" width="900" alt="El aviso de actualización, la descarga y la ventana de Novedades">
+<img src="docs/media/es/update.gif" width="900" alt="El aviso de actualización y la descarga">
 
 </details>
 
@@ -126,7 +126,7 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
 
 <br>
 
-- **Todo en una ventana**: un menú lateral con **Servidores**, **Túneles**, **Ajustes** y **Acerca de**. Crear o
+- **Todo en una ventana**: un menú lateral con **Servidores**, **Túneles**, **Novedades**, **Ajustes** y **Acerca de**. Crear o
   añadir un servidor se hace junto a la lista, y se puede dejar a medias y retomar; la configuración de un
   servidor se abre en el mismo sitio, nunca en un diálogo.
 - **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Paper /
@@ -287,11 +287,14 @@ volver a abrirse, **Novedades** te cuenta qué ha cambiado. Funciona igual en Wi
   borra. La pestaña **Copias** enseña cada montón frente a su cupo, el espacio que ocupan y cuándo toca la
   próxima, las ordena por días y marca la que la próxima copia sustituirá. **Copia ahora** y **Restaurar** con un clic.
 - **Ajustes dentro de la ventana** — idioma, bandeja del sistema, **añadir al escritorio**, notificaciones,
-  colores e historial de jugadores, cada cosa en su página. Se guarda al momento.
+  anuncios, colores e historial de jugadores, cada cosa en su página. Se guarda al momento.
+- **Novedades, también dentro de la ventana** — las notas de todas las versiones en una lista, con la recién
+  instalada ya abierta, y una marca en el menú mientras haya algo sin leer. En **Ajustes** eliges cómo se ve esa
+  marca (número, punto, latido o ninguna) o desactivas los anuncios.
 - **No estorba** — minimiza o cierra **a la bandeja** y tus servidores siguen; abrir la app otra vez recupera
   esa ventana en vez de abrir una segunda copia.
 - **Se actualiza sola en las tres plataformas** — la descarga se **verifica contra su SHA-256 publicado** antes
-  de instalarla, y después **Novedades** cuenta qué ha cambiado.
+  de instalarla, y después la sección **Novedades** cuenta qué ha cambiado.
 - **Multi-idioma** — español, inglés, portugués, francés y alemán.
 
 </details>

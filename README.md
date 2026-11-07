@@ -112,9 +112,9 @@ saved first, in case you change your mind).
 <br>
 
 When there's a new version, a banner appears at the top: **Update** downloads it, checks it and installs it.
-When it opens again, **What's new** tells you what changed. It works the same on Windows, Linux and macOS.
+When it opens again, the **What's new** section tells you what changed. It works the same on Windows, Linux and macOS.
 
-<img src="docs/media/en/update.gif" width="900" alt="The update banner, the download and the What's new window">
+<img src="docs/media/en/update.gif" width="900" alt="The update banner and the download">
 
 </details>
 
@@ -125,7 +125,7 @@ When it opens again, **What's new** tells you what changed. It works the same on
 
 <br>
 
-- **Everything in one window** — a side rail with **Servers**, **Tunnels**, **Settings** and **About**. Making
+- **Everything in one window** — a side rail with **Servers**, **Tunnels**, **What's new**, **Settings** and **About**. Making
   or adding a server happens next to the list, and can be left half-done and picked up again; a server's
   settings open in the same place, never in a dialog.
 - **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Paper / Purpur /
@@ -283,12 +283,15 @@ When it opens again, **What's new** tells you what changed. It works the same on
   hand are counted separately, so the clock never deletes them. The **Backups** tab shows each pile against
   its limit, the space they take and when the next one is due, lists them by day and marks the one the next backup will replace.
   **Back up now** and one-click **Restore**.
-- **Settings, part of the window** — language, tray behaviour, **Add to desktop**, notifications, colours
-  and the player history, each on its own page. Saved as you go.
+- **Settings, part of the window** — language, tray behaviour, **Add to desktop**, notifications, announcements,
+  colours and the player history, each on its own page. Saved as you go.
+- **What's new, in the window too** — the notes of every version in one list, the one just installed already
+  open, and a mark on the rail while something is unread. You choose how that mark looks (number, dot, pulse
+  or none) or turn announcements off from **Settings**.
 - **Stays out of the way** — minimize or close **to the system tray** and your servers keep running; launching
   the app again brings that window back instead of opening a second copy.
 - **Updates itself on all three platforms** — the download is **checked against its published SHA-256** before
-  it is installed, and **What's new** then tells you what changed.
+  it is installed, and the **What's new** section then tells you what changed.
 - **Multi-language** — English, Spanish, Portuguese, French and German.
 
 </details>

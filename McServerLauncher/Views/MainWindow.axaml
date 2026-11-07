@@ -117,7 +117,7 @@
                  to the section on screen (Controls/SelectionMarker, over the buttons in the same cell). -->
             <Border Grid.Column="0" Background="{StaticResource GroundPopup}">
                 <Panel>
-                <Grid x:Name="RailItems" RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="0,8">
+                <Grid x:Name="RailItems" RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" Margin="0,8">
                     <Button Grid.Row="0" Classes="rail" Classes.on="{Binding IsServersSection}"
                             Command="{Binding ShowServersCommand}" ToolTip.Tip="{loc:Loc Servers}">
                         <Grid>
@@ -136,7 +136,21 @@
                             </StackPanel>
                         </Grid>
                     </Button>
-                    <Button Grid.Row="3" Classes="rail" Classes.on="{Binding IsSettingsSection}"
+                    <!-- Novedades: the mark in the corner of the icon is NewsBadge (a number, a dot, a
+                         pulsing dot or nothing, as chosen in Settings), shown while something is unread. -->
+                    <Button Grid.Row="2" Classes="rail" Classes.on="{Binding IsNewsSection}"
+                            Command="{Binding ShowNewsCommand}" ToolTip.Tip="{loc:Loc Whatsnew_Title}">
+                        <Grid>
+                            <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                <ic:FluentIcon Icon="Megaphone" FontSize="20" HorizontalAlignment="Center" />
+                                <TextBlock Text="{loc:Loc Whatsnew_Title}" />
+                            </StackPanel>
+                            <views:NewsBadge Mode="{Binding News.BadgeStyle}" Text="{Binding News.BadgeText}"
+                                             IsVisible="{Binding News.HasUnread}"
+                                             HorizontalAlignment="Center" VerticalAlignment="Top" Margin="26,-3,0,0" />
+                        </Grid>
+                    </Button>
+                    <Button Grid.Row="4" Classes="rail" Classes.on="{Binding IsSettingsSection}"
                             Command="{Binding ShowSettingsCommand}" ToolTip.Tip="{loc:Loc Settings_Title}">
                         <Grid>
                             <StackPanel HorizontalAlignment="Center" Spacing="3">
@@ -145,7 +159,7 @@
                             </StackPanel>
                         </Grid>
                     </Button>
-                    <Button Grid.Row="4" Classes="rail" Classes.on="{Binding IsAboutSection}"
+                    <Button Grid.Row="5" Classes="rail" Classes.on="{Binding IsAboutSection}"
                             Command="{Binding ShowAboutCommand}" ToolTip.Tip="{loc:Loc Nav_About}">
                         <Grid>
                             <StackPanel HorizontalAlignment="Center" Spacing="3">
@@ -707,6 +721,10 @@
 
             <Panel Grid.Column="1" IsVisible="{Binding IsTunnelsSection}" Classes="fadein">
                 <views:TunnelsView DataContext="{Binding Tunnels}" />
+            </Panel>
+
+            <Panel Grid.Column="1" IsVisible="{Binding IsNewsSection}" Classes="fadein">
+                <views:NewsView DataContext="{Binding News}" />
             </Panel>
 
             <Panel Grid.Column="1" IsVisible="{Binding IsSettingsSection}" Classes="fadein">
