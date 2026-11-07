@@ -89,6 +89,36 @@ public static class UpdateSignature
         return VerifyMessage(message, signature, keys);
     }
 
+    /// <summary>First line of the message a notices file is signed with (see <see cref="NewsMessage"/>).</summary>
+    internal const string NewsMessageHeader = "mcsl-news-v1";
+
+    /// <summary>
+    /// The bytes that are signed for a notices file: the format and the file's SHA-256, one per line,
+    /// joined by <c>\n</c> with nothing after the last.
+    /// </summary>
+    /// <remarks>
+    /// A header of its own is what keeps the two uses of the one key apart: the signature of an
+    /// update package never verifies as a notices file, and the other way round. The signing
+    /// script (<c>tools/signing/sign-news.ps1</c>) builds the same text, so a change here is a change
+    /// there.
+    /// </remarks>
+    internal static byte[] NewsMessage(string sha256Hex) =>
+        Encoding.UTF8.GetBytes(string.Join('\n', NewsMessageHeader, sha256Hex.ToLowerInvariant()));
+
+    /// <summary>
+    /// Whether <paramref name="signatureBase64"/> is a valid signature, by any of
+    /// <paramref name="keys"/> (the built-in ones by default), of the notices file whose bytes are
+    /// <paramref name="raw"/>.
+    /// </summary>
+    /// <remarks>
+    /// The hash is taken over the bytes exactly as they arrived, not over the JSON read back and
+    /// written out again: any re-serialisation would be a second place for the two sides to disagree.
+    /// Like <see cref="Verify"/>, bad input is "not valid" and never an exception.
+    /// </remarks>
+    public static bool VerifyNews(byte[] raw, string? signatureBase64, IEnumerable<string>? keys = null) =>
+        TryDecode(signatureBase64, out var signature)
+        && VerifyMessage(NewsMessage(Convert.ToHexString(SHA256.HashData(raw))), signature, keys);
+
     /// <summary>The signature as bytes; false for nothing, or for text that is not base64.</summary>
     private static bool TryDecode(string? signatureBase64, out byte[] signature)
     {

@@ -23,6 +23,12 @@
 *.sh.in     text eol=lf
 *.bat.in    text eol=crlf
 
+# The notices file the app downloads. It is signed over its exact bytes (tools/signing/sign-news.ps1)
+# and the signature is checked over the bytes the server sends, so git must never touch its line
+# endings: a copy checked out as CRLF would be signed as CRLF and published as LF, and every app
+# would refuse it. A test (NewsFileTests) fails if this line goes or the file ever holds a CR.
+web/news.json   -text
+
 # Binary: never touched, never diffed as text.
 *.png       binary
 *.jpg       binary
