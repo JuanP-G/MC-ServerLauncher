@@ -53,4 +53,26 @@ public class NewsFileTests
         Assert.Contains("'until'", script);                             // urgent notices need an end
         Assert.Contains("'resolvedAt'", script);                        // resolved ones need a date
     }
+
+    [Theory]
+    [InlineData("announcements.md")]
+    [InlineData("announcements.es.md")]
+    public void TheExampleInTheAnnouncementsArticleIsAFileTheAppReads(string article)
+    {
+        // The article shows the format with a complete example; if the format moves and the example does
+        // not, whoever copies it publishes a file the app throws away item by item.
+        var text = File.ReadAllText(Path.Combine(Root, "docs", "articles", article));
+        var match = Regex.Match(text, "```json\\s*(\\{.*?\\})\\s*```", RegexOptions.Singleline);
+        Assert.True(match.Success, "the article no longer has a JSON example");
+
+        var feed = McServerLauncher.Services.NewsFeedParser.Parse(System.Text.Encoding.UTF8.GetBytes(match.Groups[1].Value));
+
+        var item = Assert.Single(feed.Items);
+        Assert.Equal("playit-2026-11-07", item.Id);
+        Assert.Equal(McServerLauncher.Services.NewsKind.Incident, item.Kind);
+        Assert.True(item.Only.UsesTunnels);
+        Assert.NotNull(item.Link);
+        Assert.NotNull(item.TextFor("es"));
+        Assert.NotNull(item.TextFor("en"));
+    }
 }

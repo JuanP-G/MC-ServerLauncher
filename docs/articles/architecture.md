@@ -863,7 +863,8 @@ of `MainWindow` and switched by `IsVisible` (`MainViewModel.Section`), so a sect
   decisions as a pure function; `TunnelLaneViewModel` only dresses them for the view. Until Playit has
   answered once, the headline says it is checking.
 - **What's new** (`NewsViewModel`/`NewsView`) lists the version waiting to be installed (with the same
-  *Update now* as the banner), a place for notices, and the notes of every version this build knows
+  *Update now* as the banner), the notices of the signed file (see *Announcements* below), and the notes
+  of every version this build knows
   (`Changelog.All`). Each version folds open onto its notes, which are only looked up while it is open.
   `NewsBoard` decides, as a pure function, what is listed and what is unread; `NewsState` remembers what
   has been read in its own file, `news-state.json`, and not in the settings. While something is unread
@@ -872,8 +873,9 @@ of `MainWindow` and switched by `IsVisible` (`MainViewModel.Section`), so a sect
   *Mark all as read* is pressed, so there is something to look at in a list that has just been opened.
   With **Show announcements** off the section is only the history, and nothing marks the rail.
 - **Settings** (`SettingsViewModel`/`SettingsView`) saves as it changes; there is no dialog. Its pages
-  are General, Notifications, Announcements (the switch for the marks and the style the rail uses, with a
-  live sample), Colours and Players (the player history). A colour is edited with
+  are General, Notifications, Announcements (the master switch, the style the rail uses with a live
+  sample, where the strip of an urgent notice shows, whether it also notifies, and which kinds are wanted),
+  Colours and Players (the player history). A colour is edited with
   `Views/ColorChooser`: a palette picked to read well on the dark surfaces (`Services/ColorPalette`),
   the spectrum and hue bar of `Avalonia.Controls.ColorPicker` on request, and a line saying whether
   the colour will be readable — WCAG contrast against the console's background, 4.5 for console text
@@ -1009,6 +1011,42 @@ every version they hadn't seen unfolded and tagged *New* (`NewsBoard`, from `Cha
 nothing on a new install, which has no earlier version to compare with, nor with the announcements off.
 The notes used to be a window (`WhatsNewDialog`); a card in the section tells whoever updated from that
 time that they moved, and points to Settings (`AppSettings.NewsMoveNoticeSeen` remembers the answer).
+
+### Announcements: the signed notices file
+The project can tell every installed app that something is going on (an outage of Playit, a security
+matter, a tip) through `web/news.json`, signed. The article [Announcements](announcements.md) has the
+format and the publishing recipe; this is how the app is put together.
+
+- **`NewsFeedService`** (`Services/`) downloads `news.json` and `news.json.sig` from two hosts in order
+  (the website, then GitHub Pages), with a conditional request and a 64 KiB limit. **Nothing is accepted
+  before it is checked**: the signature has to verify over the exact bytes with `UpdateSignature.VerifyNews`
+  (the keys of the updates, under another header), the file has to parse, and its `seq` cannot be lower
+  than the highest ever accepted. Only then are the file and the signature replaced in `cache/`, and the
+  ETag is stored last of all. The saved copy is **verified again every time it is read**. It never throws:
+  what it returns is a `NewsFeedStatus`: *Ok*, *NotModified*, *NoFeed* (every host said not found, which is
+  a project with nothing to say) or *Failed*, and a failure is never turned into "no notices".
+- **`NewsFeedParser`** is pure. An invalid item is skipped on its own; text goes through
+  `UntrustedText.Clean` (one line, no control characters, cut to its limit), links must be `https` on four
+  hosts, and an incident or a security notice without `until` is dropped, with the rest capped at 30 days
+  from `from`.
+- **`NewsBoard`** is pure too, and decides everything the screen shows from the notices, the machine
+  (`NewsContext`: system, version, whether it uses tunnels, language), the clock and the user's settings:
+  which notices are listed and in what order, what is unread (by key `id:status`, so an incident that
+  becomes *Resolved* counts again), which one the strip is for (the newest urgent one going on that was not
+  closed) and which ones are owed a notification. **`NewsState`** remembers what was read, closed and
+  announced, in `news-state.json`.
+- **`MainViewModel.News.cs`** is the glue that needs the rest of the window. `StartNews`, called from
+  `Activate` and never from the constructor, looks at the file once and then every 30 minutes with a
+  `DispatcherTimer` (and when the section is opened with a copy older than 10 minutes); with **Show
+  announcements** off there is no timer and no request. Who a notice is for is worked out **here and never
+  sent**: whether the machine uses tunnels needs `PlayitConnection`, which lives in `Views/`, so it is
+  computed in the view model and handed to the board as a plain value. It also owns the strip
+  (`ShowNewsBand`, in `MainWindow.axaml`) and the notification (`NotifyNewsOnce`): once per notice and
+  status, recorded as handled even when no toast comes of it, so one the user chose not to get or that
+  the strip already said does not turn up later.
+- **Tests** never touch the network or the data folder: `NewsFeedServiceTests` uses a fake handler and an
+  injected clock, `NewsFeedWiringTests` runs a real `MainViewModel` over a temporary folder with
+  `StartNews()` in place of `Activate()`, and the toast and the check "uses tunnels" are seams.
 
 ### World backups
 `WorldBackupService` zips a server's world into `<server>/backups/` on demand and automatically:

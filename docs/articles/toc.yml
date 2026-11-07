@@ -12,6 +12,8 @@
       href: visibility.md
     - name: Signed updates
       href: signing.md
+    - name: Announcements
+      href: announcements.md
 - name: Español
   items:
     - name: Arquitectura
@@ -26,3 +28,5 @@
       href: visibility.es.md
     - name: Actualizaciones firmadas
       href: signing.es.md
+    - name: Anuncios
+      href: announcements.es.md

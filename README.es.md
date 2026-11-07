@@ -289,8 +289,12 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
 - **Ajustes dentro de la ventana** — idioma, bandeja del sistema, **añadir al escritorio**, notificaciones,
   anuncios, colores e historial de jugadores, cada cosa en su página. Se guarda al momento.
 - **Novedades, también dentro de la ventana** — las notas de todas las versiones en una lista, con la recién
-  instalada ya abierta, y una marca en el menú mientras haya algo sin leer. En **Ajustes** eliges cómo se ve esa
-  marca (número, punto, latido o ninguna) o desactivas los anuncios.
+  instalada ya abierta, y una marca en el menú mientras haya algo sin leer. Encima, los **avisos** que el
+  proyecto puede publicar, firmados con la misma clave que las actualizaciones: una caída de Playit, un asunto
+  de seguridad, un consejo. Una incidencia que sigue en marcha tiene además una banda bajo la barra de título y
+  una notificación, y un aviso puede limitarse a quien usa túneles. En **Ajustes → Anuncios** eliges cómo se ve
+  la marca, dónde sale la banda y de qué quieres enterarte (o desactivas los anuncios, lo que también corta las
+  peticiones).
 - **No estorba** — minimiza o cierra **a la bandeja** y tus servidores siguen; abrir la app otra vez recupera
   esa ventana en vez de abrir una segunda copia.
 - **Se actualiza sola en las tres plataformas** — la descarga se **verifica contra su SHA-256 publicado** antes
@@ -374,7 +378,7 @@ discrepen del artículo de arquitectura, manda el artículo.
 > - «¿Qué tengo que tocar para añadir un tipo de servidor?»
 
 **Datos:** en `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` en Linux y macOS): `servers.json`,
-`settings.json`, el `java\` que instala la app, los `logs\` de consola (14 días, 50 MB al día como mucho), la `cache\` de la tienda, lo que recuerda
+`settings.json`, lo que has leído en Novedades en `news-state.json`, el `java\` que instala la app, los `logs\` de consola (14 días, 50 MB al día como mucho), la `cache\` de la tienda y de los anuncios, lo que recuerda
 el panel de limpieza en `content\`, lo que la app ha aprendido de la memoria de cada servidor en `memory\` (sus últimas 30 sesiones, y en `memory-agent-failures.json` las versiones de Java que rechazaron el agente de memoria), el agente en `playit-agent\`, el `instance.lock` que mantiene una sola copia abierta y, en Linux/macOS,
 `.secret.key`. Cada servidor guarda sus copias en su carpeta `backups\`, y una carpeta oculta `.mcserverlauncher-memory\`
 junto a su mundo con el log de GC (dos archivos rotativos, 16 MB como mucho) y el jar del agente de memoria con dos archivos pequeños; la copia
@@ -388,7 +392,11 @@ A qué servicios pide cosas la app, y qué ven además de tu IP: Mojang, Paper, 
 (descargas del servidor, y Mojang el nombre de un jugador cuando lo añades a la whitelist), Modrinth y GeyserMC
 (mods y plugins), Adoptium (Java), GitHub (actualizaciones, y el catálogo de temas y resúmenes de la tienda, un
 archivo público que se baja como mucho una vez al día), Playit (túneles, a través del proxy de la app al
-vincular una cuenta) y **mc-heads.net** (el avatar de cada jugador, por su nombre, en el historial).
+vincular una cuenta), **mc-heads.net** (el avatar de cada jugador, por su nombre, en el historial) y la
+propia web del proyecto (`mc-server-launcher.vercel.app`, con `juanp-g.github.io` de respaldo), que sirve el
+archivo firmado de [anuncios](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/announcements.es.html):
+una petición sin tu versión, tu idioma ni ningún identificador, una vez al arrancar y cada 30 minutos, y ninguna
+si desactivas **Mostrar anuncios** en Ajustes. Qué avisos te tocan se decide en tu equipo.
 
 **Flags de Java extra:** la app no tiene un campo para ellos, pero cada servidor de `servers.json` tiene
 una entrada `ExtraJvmArgs` (vacía por defecto) que se añade a la línea de comandos de Java tras los flags

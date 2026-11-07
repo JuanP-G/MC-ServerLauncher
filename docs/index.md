@@ -21,5 +21,6 @@ This site has two parts:
 | Shared access | [English](articles/shared-access.md) · [Español](articles/shared-access.es.md) |
 | Visibility and statistics | [English](articles/visibility.md) · [Español](articles/visibility.es.md) |
 | Signed updates | [English](articles/signing.md) · [Español](articles/signing.es.md) |
+| Announcements | [English](articles/announcements.md) · [Español](articles/announcements.es.md) |
 | API Reference | [Browse the API](xref:McServerLauncher) |
 | Source code | [github.com/JuanP-G/MC-ServerLauncher](https://github.com/JuanP-G/MC-ServerLauncher) |

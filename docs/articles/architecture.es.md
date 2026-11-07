@@ -900,8 +900,8 @@ está en pantalla.
   botones. `PlayitAccountStatus` toma esas decisiones como función pura; `TunnelLaneViewModel` solo las
   viste para la vista. Hasta que Playit responde la primera vez, el titular dice que está comprobando.
 - **Novedades** (`NewsViewModel`/`NewsView`) lista la versión que espera a instalarse (con el mismo
-  *Actualizar ahora* de la banda), un lugar para los avisos y las notas de cada versión que esta
-  compilación conoce (`Changelog.All`). Cada versión se despliega sobre sus notas, que solo se buscan
+  *Actualizar ahora* de la banda), los avisos del archivo firmado (ver *Anuncios* más abajo) y las notas
+  de cada versión que esta compilación conoce (`Changelog.All`). Cada versión se despliega sobre sus notas, que solo se buscan
   mientras está abierta. `NewsBoard` decide, como función pura, qué se lista y qué está sin leer;
   `NewsState` recuerda lo leído en un archivo propio, `news-state.json`, y no en los ajustes. Mientras
   hay algo sin leer, el menú lateral lleva una marca (`Views/NewsBadge`: un número, un punto, un punto
@@ -910,8 +910,9 @@ está en pantalla.
   en una lista recién abierta. Con **Mostrar anuncios** apagado la sección es solo el historial y nada
   marca el menú.
 - **Ajustes** (`SettingsViewModel`/`SettingsView`) guarda al cambiar; no hay diálogo. Sus páginas
-  son General, Notificaciones, Anuncios (el interruptor de las marcas y el estilo que usa el menú, con
-  una muestra en vivo), Colores y Jugadores (el historial). Un color se edita con
+  son General, Notificaciones, Anuncios (el interruptor general, el estilo que usa el menú con una muestra
+  en vivo, dónde sale la banda de un aviso urgente, si además notifica y qué tipos se quieren), Colores y
+  Jugadores (el historial). Un color se edita con
   `Views/ColorChooser`: una paleta elegida para leerse bien sobre las superficies oscuras
   (`Services/ColorPalette`), el espectro y la barra de tono de `Avalonia.Controls.ColorPicker` si se
   piden, y una línea que dice si el color se va a leer —contraste WCAG contra el fondo de la consola,
@@ -1053,6 +1054,43 @@ en ejecución con `AppSettings.LastVersionSeen` y, si el usuario ha actualizado,
 versión anterior con la que comparar, ni con los anuncios apagados. Las notas eran antes una ventana
 (`WhatsNewDialog`); una tarjeta de la sección avisa a quien actualizó desde entonces de que se han
 movido y apunta a Ajustes (`AppSettings.NewsMoveNoticeSeen` recuerda la respuesta).
+
+### Anuncios: el archivo de avisos firmado
+El proyecto puede decirle a todas las apps instaladas que algo está pasando (una caída de Playit, un asunto
+de seguridad, un consejo) mediante `web/news.json`, firmado. El artículo [Anuncios](announcements.es.md)
+tiene el formato y la receta para publicar; esto es cómo está montado en la app.
+
+- **`NewsFeedService`** (`Services/`) descarga `news.json` y `news.json.sig` de dos sitios por orden (la
+  web, luego GitHub Pages), con petición condicional y un límite de 64 KiB. **No se acepta nada antes de
+  comprobarlo**: la firma tiene que verificarse sobre los bytes exactos con `UpdateSignature.VerifyNews`
+  (las claves de las actualizaciones, con otra cabecera), el archivo tiene que leerse bien y su `seq` no
+  puede ser menor que el más alto aceptado alguna vez. Solo entonces se sustituyen el archivo y la firma
+  en `cache/`, y el ETag se guarda lo último. La copia guardada se **vuelve a verificar cada vez que se
+  lee**. Nunca lanza: devuelve un `NewsFeedStatus`: *Ok*, *NotModified*, *NoFeed* (todos los sitios dijeron
+  que no está, que es un proyecto sin nada que decir) o *Failed*, y un fallo nunca se convierte en «no hay
+  avisos».
+- **`NewsFeedParser`** es puro. Un aviso inválido se salta por su cuenta; el texto pasa por
+  `UntrustedText.Clean` (una línea, sin caracteres de control, cortado a su límite), los enlaces tienen que
+  ser `https` de cuatro sitios, y una incidencia o un aviso de seguridad sin `until` se descarta, con el
+  resto limitado a 30 días desde `from`.
+- **`NewsBoard`** también es puro, y decide todo lo que muestra la pantalla a partir de los avisos, el
+  equipo (`NewsContext`: sistema, versión, si usa túneles, idioma), el reloj y los ajustes del usuario:
+  qué avisos se listan y en qué orden, qué está sin leer (por clave `id:estado`, así una incidencia que pasa
+  a *Resuelta* vuelve a contar), para cuál es la banda (el aviso urgente más reciente que sigue en marcha y
+  no se cerró) y a cuáles se debe una notificación. **`NewsState`** recuerda lo leído, lo cerrado y lo
+  anunciado en `news-state.json`.
+- **`MainViewModel.News.cs`** es el pegamento que necesita el resto de la ventana. `StartNews`, que llama
+  `Activate` y nunca el constructor, mira el archivo una vez y luego cada 30 minutos con un
+  `DispatcherTimer` (y al abrir la sección si la copia tiene más de 10 minutos); con **Mostrar anuncios**
+  apagado no hay temporizador ni petición. Para quién es un aviso se calcula **aquí y no se envía nunca**:
+  saber si el equipo usa túneles necesita `PlayitConnection`, que vive en `Views/`, así que se calcula en
+  el view model y se le pasa al tablón como un valor simple. También es dueño de la banda
+  (`ShowNewsBand`, en `MainWindow.axaml`) y de la notificación (`NotifyNewsOnce`): una vez por aviso y
+  estado, dado por tratado aunque no salga ningún toast, así uno que el usuario eligió no recibir o que
+  la banda ya dijo no aparece luego.
+- **Pruebas**: nunca tocan la red ni la carpeta de datos: `NewsFeedServiceTests` usa un manejador falso y
+  un reloj inyectado, `NewsFeedWiringTests` ejecuta un `MainViewModel` real sobre una carpeta temporal con
+  `StartNews()` en lugar de `Activate()`, y el toast y la comprobación «usa túneles» son costuras.
 
 ### Copias del mundo (backups)
 `WorldBackupService` zipea el mundo de un servidor en `<servidor>/backups/` a demanda y de forma

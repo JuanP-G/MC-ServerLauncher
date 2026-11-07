@@ -3,7 +3,8 @@
 > ¿Prefieres español? Lee la versión en [español](signing.es.md).
 
 How the app knows an update was published by whoever maintains it, and what to do when the key that
-proves it is lost, leaked or due to be replaced. Tracked in
+proves it is lost, leaked or due to be replaced. The same key signs the file of
+[announcements](announcements.md), which has [its own section](#signed-notices) below. Tracked in
 [#33](https://github.com/JuanP-G/MC-ServerLauncher/issues/33).
 
 ## Why a checksum was not enough
@@ -87,6 +88,36 @@ release page instead of being updated: the safe failure.
 The hashes printed in step 3 are also in the workflow logs. This flow signs **what GitHub Actions
 built**, so if you ever doubt the build, compare them before typing the password.
 
+## Signed notices
+
+The file the app reads its [announcements](announcements.md) from (`web/news.json`) is signed with the
+**same key** and checked against the same `UpdateSignature.TrustedKeys`, but under a different header, so
+a signature of an installer cannot pass as one of the file or the other way round:
+
+```
+mcsl-news-v1
+<the file's SHA-256, lowercase>
+```
+
+`UpdateSignature.NewsMessage` and `tools\signing\sign-news.ps1` build the same two lines, joined by `\n`
+with nothing after the last. The signature, in base64, is in `web/news.json.sig`. There is no version or
+file name in it, because the file is not a package; what stops an old file being served again is the
+`seq` number inside it, which the app never accepts lower than the highest it has seen.
+
+What is signed is the **bytes as they are**, not the JSON read and written again. That is the one place
+here where a signature can break with nobody touching the file: this repository's contributors may have
+git convert line ends (`core.autocrlf`), and a signature made over a CRLF copy does not verify over the LF
+one that is published. `.gitattributes` marks `web/news.json` as `-text` so git leaves it alone, and
+`sign-news.ps1` refuses a file with a carriage return or a byte-order mark.
+
+The app checks the signature **before** it parses anything, and checks the saved copy again every time it
+is read. What a notice can do is limited by design: it is text and a link to four hosts; it never runs or
+downloads anything. The full list of what is checked is in [Announcements](announcements.md#how-it-is-checked).
+
+There is no second key. When the key is [rotated](#rotating-it), sign the notices with the key that every
+installed app trusts: during a rotation that is the **old** key until step 4, because apps older than
+release N never learn the new one and would show *Could not check for notices*.
+
 ## The key
 
 Create it once with `tools\signing\new-key.ps1`. It asks for a password (at least 12 characters), writes
@@ -112,7 +143,9 @@ the keys it shipped with, so the order matters:
 
 Installed apps keep trusting it, so whoever has it can sign an update they would accept. The only fix is
 a release that removes it from `TrustedKeys`, signed with the last use of the leaked key, so ship it
-fast; publish a security advisory as well. This is why the key stays encrypted and off GitHub.
+fast; publish a security advisory as well. This is why the key stays encrypted and off GitHub. Until then
+the same holder could also sign false notices; they are text and a link to four hosts, which is far less
+than an update, but they reach every installed app.
 
 ## What this does not cover
 
@@ -128,6 +161,9 @@ fast; publish a security advisory as well. This is why the key stays encrypted a
   account.
 - **What the maintainer signs is what the build produced.** A signature proves who published it, not
   that the build was clean.
+- **Freshness of the notices.** A signature proves who wrote `news.json`, not that it is the latest;
+  `seq` stops an older file being served after a newer one was seen, but whoever can block the network
+  can keep an app on the last one it saw.
 
 ## Verifying a release by hand
 
@@ -142,3 +178,20 @@ openssl dgst -sha256 -verify public.pem -signature sig.der message.txt
 ```
 
 It prints `Verified OK` when the package is the one that was signed, for that version and that name.
+
+### Verifying the notices file by hand
+
+The same public key, over the file exactly as the website serves it (download it with `curl -o`, which
+changes nothing):
+
+```bash
+F=news.json
+curl -fsS -o "$F" https://mc-server-launcher.vercel.app/news.json
+curl -fsS -o "$F.sig" https://mc-server-launcher.vercel.app/news.json.sig
+printf 'mcsl-news-v1\n%s' "$(sha256sum "$F" | cut -d' ' -f1)" > message.txt
+base64 -d "$F.sig" > sig.der
+openssl dgst -sha256 -verify public.pem -signature sig.der message.txt
+```
+
+Repeat it with `https://juanp-g.github.io/MC-ServerLauncher/news.json` after publishing a notice: both
+addresses have to serve the same bytes, and a CRLF anywhere in the file shows up here as a failure.

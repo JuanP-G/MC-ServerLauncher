@@ -491,6 +491,21 @@ la rejilla de funciones de `README.md`.
    contra su `.sha256`, los firma con tu clave local y sube los `.sig2` y `.sig`. Hasta que se ejecute, quien
    pulse Actualizar en Linux o macOS irá a la página de la release.
 
+### Publicar un anuncio
+Un aviso para todas las apps instaladas (una caída de Playit, un asunto de seguridad, un consejo) va en
+`web/news.json`, firmado. La referencia completa es [Anuncios](announcements.es.md); la versión corta:
+1. Edita `web/news.json` y sube `seq`. Finales de línea **LF** y sin BOM (`.gitattributes` marca el
+   archivo como `-text`, y el script se niega a firmar un archivo con CR: una firma hecha sobre una copia
+   CRLF no verificaría sobre la LF que se publica). Una incidencia o un aviso de seguridad necesita `until`;
+   uno resuelto necesita `resolvedAt`. Escribe el texto en los cinco idiomas (`es`, `en`, `de`, `fr`, `pt`)
+   o al menos en `en`, que es el de respaldo.
+2. Ejecuta `.\tools\signing\sign-news.ps1`. Pide la contraseña de la clave de firma y escribe
+   `web/news.json.sig`. Sin la clave, para aquí: un aviso no puede publicarse sin firmar, la app lo
+   rechazaría.
+3. Abre un pull request con los dos archivos. Cuando se fusione, comprueba que la web y GitHub Pages sirven
+   los mismos bytes y que la firma verifica a mano (ver [Actualizaciones firmadas](signing.es.md)).
+4. Para terminar una incidencia, márcala `resolved` (no la borres) y firma otra vez.
+
 ## Sitio de documentación (GitHub Pages)
 
 La referencia de API + estos artículos se publican automáticamente en GitHub Pages mediante
