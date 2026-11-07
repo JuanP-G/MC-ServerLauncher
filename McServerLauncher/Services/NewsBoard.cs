@@ -41,6 +41,13 @@ public static class NewsBoard
 {
     public static string UpdateKey(string version) => "update:" + version;
 
+    /// <summary>
+    /// The key a notice is remembered under: its id and its status, so an incident that is marked
+    /// resolved is a new thing to read (and to be told about) and not the one already read.
+    /// </summary>
+    public static string NoticeKey(string id, NewsStatus status) =>
+        id + (status == NewsStatus.Resolved ? ":resolved" : ":active");
+
     /// <summary>The board for what is known now.</summary>
     /// <param name="releases">Every release this build knows, newest first (<see cref="Changelog.All"/>).</param>
     /// <param name="lastSeen">The version the user had seen before this run: the ones above it are new.
