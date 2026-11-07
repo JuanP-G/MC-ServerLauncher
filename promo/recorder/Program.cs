@@ -786,4 +786,9 @@ class Stub : INotifyPropertyChanged
     public static readonly AppSettings DemoSettings = new() { PlayitApiKey = "demo" };
     public SettingsViewModel Settings { get; } = new(null, new AppSettings(), new AppSettingsService(), () => { }, () => { });
     public TunnelsViewModel Tunnels { get; set; } = null!;
+    // The rail's mark and the news section bind to this. With none, the mark would fall back to its
+    // defaults and show an empty pill on the rail. Nothing is unread here, so it stays hidden.
+    public NewsViewModel News { get; } = new(new AppSettings { NewsMoveNoticeSeen = true },
+        new NewsState(Path.Combine(Path.GetTempPath(), "mcl-recorder-news-" + Guid.NewGuid().ToString("N") + ".json")),
+        C(), () => { }, () => { });
 }

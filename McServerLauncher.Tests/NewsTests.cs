@@ -546,20 +546,67 @@ public class NewsBadgeTests(AvaloniaFixture ui)
         ui.Run(() =>
         {
             var badge = new NewsBadge { Text = "3" };
+            var host = new Window { Content = badge };
+            host.Show();   // the halo only counts as shown while the mark is on screen
+            try
+            {
+                badge.Mode = NewsBadgeStyle.Number;
+                Assert.Equal((true, false, false), Shown(badge));
+                Assert.Equal("3", badge.FindControl<TextBlock>("Number")!.Text);
 
-            badge.Mode = NewsBadgeStyle.Number;
-            Assert.Equal((true, false, false), Shown(badge));
-            Assert.Equal("3", badge.FindControl<TextBlock>("Number")!.Text);
+                badge.Mode = NewsBadgeStyle.Dot;
+                Assert.Equal((false, true, false), Shown(badge));
 
-            badge.Mode = NewsBadgeStyle.Dot;
-            Assert.Equal((false, true, false), Shown(badge));
+                badge.Mode = NewsBadgeStyle.Pulse;
+                Assert.Equal((false, true, true), Shown(badge));
 
-            badge.Mode = NewsBadgeStyle.Pulse;
-            Assert.Equal((false, true, true), Shown(badge));
-
-            badge.Mode = NewsBadgeStyle.None;
-            Assert.Equal((false, false, false), Shown(badge));
+                badge.Mode = NewsBadgeStyle.None;
+                Assert.Equal((false, false, false), Shown(badge));
+            }
+            finally
+            {
+                host.Close();
+            }
         });
+
+    [Fact]
+    public void ThePulseOnlyRunsWhileTheMarkIsReallyOnScreen()
+    {
+        // Its animation never ends and starts on the halo's own IsVisible, which does not follow a
+        // parent being hidden. Hidden because nothing is unread, or on a Settings page nobody looks
+        // at, a pulse that kept going would keep the render clock awake for nothing.
+        ui.Run(() =>
+        {
+            var badge = new NewsBadge { Mode = NewsBadgeStyle.Pulse, Text = "1" };
+            var halo = badge.FindControl<Border>("Halo")!;
+            Assert.False(halo.IsVisible);   // not in any window yet
+
+            var holder = new Border { Child = badge };
+            var host = new Window { Content = holder };
+            host.Show();
+            try
+            {
+                Assert.True(halo.IsVisible);
+
+                badge.IsVisible = false;                    // the rail hides it when nothing is unread
+                Assert.False(halo.IsVisible);
+                badge.IsVisible = true;
+                Assert.True(halo.IsVisible);
+
+                holder.IsVisible = false;                   // a Settings page that is not the one shown
+                Assert.False(halo.IsVisible);
+                holder.IsVisible = true;
+                Assert.True(halo.IsVisible);
+
+                badge.Mode = NewsBadgeStyle.Dot;            // another style has no halo at all
+                Assert.False(halo.IsVisible);
+            }
+            finally
+            {
+                host.Close();
+            }
+        });
+    }
 
     [Fact]
     public void TheMarkDoesNotClipItsHaloToItsOwnTenPixels()
