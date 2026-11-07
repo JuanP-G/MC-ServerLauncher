@@ -908,7 +908,11 @@ está en pantalla.
   queda, y un código a medio escribir nunca llega al ajuste.
 - **Acerca de** (`AboutView`) enseña la versión, la búsqueda de actualizaciones y los enlaces.
   `UpdateCheck` separa las respuestas que puede tener *Buscar actualizaciones* —al día, hay una
-  nueva, no se pudo preguntar—, que antes se veían igual.
+  nueva, no se pudo preguntar—, que antes se veían igual. «No se pudo preguntar» incluye que GitHub
+  conteste con un error (el límite de peticiones manda 403 o 429, una caída 5xx) o con algo que no es
+  la lista de versiones: `UpdateService.CheckAsync` lanza en esos casos y solo devuelve null cuando
+  preguntó y no hay nada más nuevo. Si no, el límite de peticiones se leía como «al día» y quitaba
+  una actualización que ya estaba ofrecida.
 
 El **movimiento** vive en un solo archivo, `Styles/Motion.axaml`, y un test impide que una vista
 declare el suyo. Los menús tienen una sola marca que se desliza hasta lo elegido en lugar de una por
