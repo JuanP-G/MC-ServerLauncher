@@ -247,6 +247,62 @@
                             </ComboBox>
                         </Grid>
                     </Border>
+
+                    <!-- Where an urgent notice (an incident of a service the app relies on, a security matter) speaks up. -->
+                    <Border Classes="card" Margin="0" IsEnabled="{Binding ShowAnnouncements}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Margin="0,0,16,0">
+                                <TextBlock Text="{loc:Loc News_StripTitle}" Classes="title" />
+                                <TextBlock Text="{loc:Loc News_StripDesc}" Classes="desc" />
+                            </StackPanel>
+                            <ComboBox Grid.Column="1" Width="200" VerticalAlignment="Center"
+                                      ItemsSource="{Binding StripOptions}"
+                                      SelectedItem="{Binding SelectedStripOption, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Border>
+
+                    <Border Classes="card" Margin="0" IsEnabled="{Binding ShowAnnouncements}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Margin="0,0,16,0">
+                                <TextBlock Text="{loc:Loc News_ToastTitle}" Classes="title" />
+                                <TextBlock Text="{loc:Loc News_ToastDesc}" Classes="desc" />
+                            </StackPanel>
+                            <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                          IsChecked="{Binding NewsToast, Mode=TwoWay}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Which kinds are wanted. Security notices are not here: they only go with the main switch. -->
+                    <Border Classes="card" Margin="0" IsEnabled="{Binding ShowAnnouncements}">
+                        <StackPanel Spacing="12">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Margin="0,0,16,0">
+                                    <TextBlock Text="{loc:Loc News_IncidentsTitle}" Classes="title" />
+                                    <TextBlock Text="{loc:Loc News_IncidentsDesc}" Classes="desc" />
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                              IsChecked="{Binding NewsIncidents, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Margin="0,0,16,0">
+                                    <TextBlock Text="{loc:Loc News_TipsTitle}" Classes="title" />
+                                    <TextBlock Text="{loc:Loc News_TipsDesc}" Classes="desc" />
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                              IsChecked="{Binding NewsTips, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- What is asked of the web and what is not. -->
+                    <TextBlock Text="{loc:Loc News_PrivacyNote}" Classes="desc" Margin="2,2,0,0"
+                               TextWrapping="Wrap" />
                 </StackPanel>
 
                 <!-- ===================== COLOURS ===================== -->

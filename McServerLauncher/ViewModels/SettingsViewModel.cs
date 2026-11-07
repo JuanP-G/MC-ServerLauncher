@@ -25,6 +25,11 @@ public enum SettingsPage
 /// <param name="Name">What the picker says, in the language of the interface.</param>
 public record NewsBadgeOption(NewsBadgeStyle Style, string Name);
 
+/// <summary>One entry of the picker for where the strip of an urgent notice shows.</summary>
+/// <param name="Style">What is stored in the settings.</param>
+/// <param name="Name">What the picker says, in the language of the interface.</param>
+public record NewsStripOption(NewsStripStyle Style, string Name);
+
 /// <summary>
 /// The settings screen: language, window behaviour, the desktop shortcut, notifications, colours
 /// and the player history.
@@ -304,6 +309,70 @@ public partial class SettingsViewModel : ObservableObject
         {
             if (value is null || value.Style == _settings.NewsBadge) return;
             _settings.NewsBadge = value.Style;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnNewsSettingsChanged();
+        }
+    }
+
+    /// <summary>The places the strip can show, for the picker.</summary>
+    public IReadOnlyList<NewsStripOption> StripOptions { get; } = new[]
+    {
+        new NewsStripOption(NewsStripStyle.Everywhere, Localizer.Get("News_StripAll")),
+        new NewsStripOption(NewsStripStyle.TunnelsOnly, Localizer.Get("News_StripTunnels")),
+        new NewsStripOption(NewsStripStyle.None, Localizer.Get("News_StripNone")),
+    };
+
+    /// <summary>The place picked. Saved in its own setter, like the badge picker.</summary>
+    public NewsStripOption SelectedStripOption
+    {
+        get => StripOptions.FirstOrDefault(o => o.Style == _settings.NewsStrip) ?? StripOptions[0];
+        set
+        {
+            if (value is null || value.Style == _settings.NewsStrip) return;
+            _settings.NewsStrip = value.Style;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnNewsSettingsChanged();
+        }
+    }
+
+    /// <summary>Whether an incident or a security notice also raises a notification.</summary>
+    public bool NewsToast
+    {
+        get => _settings.NewsToast;
+        set
+        {
+            if (_settings.NewsToast == value) return;
+            _settings.NewsToast = value;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnNewsSettingsChanged();
+        }
+    }
+
+    /// <summary>Whether incidents are listed and announced.</summary>
+    public bool NewsIncidents
+    {
+        get => _settings.NewsIncidents;
+        set
+        {
+            if (_settings.NewsIncidents == value) return;
+            _settings.NewsIncidents = value;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnNewsSettingsChanged();
+        }
+    }
+
+    /// <summary>Whether tips are listed.</summary>
+    public bool NewsTips
+    {
+        get => _settings.NewsTips;
+        set
+        {
+            if (_settings.NewsTips == value) return;
+            _settings.NewsTips = value;
             OnPropertyChanged();
             Persist();
             _main?.OnNewsSettingsChanged();

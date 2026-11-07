@@ -427,13 +427,25 @@
   <data name="News_MoveGoSettings" xml:space="preserve"><value>Go to Settings</value></data>
   <data name="Set_News" xml:space="preserve"><value>Announcements</value></data>
   <data name="News_ShowTitle" xml:space="preserve"><value>Show announcements</value></data>
-  <data name="News_ShowDesc" xml:space="preserve"><value>Marks the side bar when something in What's new is unread. Turned off, What's new only lists versions, with no marks.</value></data>
+  <data name="News_ShowDesc" xml:space="preserve"><value>Shows important notices from the project's website, such as a Playit outage, and marks the side bar when something in What's new is unread. Turned off, the app does not check the website and What's new only lists versions.</value></data>
   <data name="News_BadgeTitle" xml:space="preserve"><value>How the side bar marks something new</value></data>
   <data name="News_BadgeDesc" xml:space="preserve"><value>What appears over What's new when something is unread.</value></data>
   <data name="News_BadgeNumber" xml:space="preserve"><value>Number</value></data>
   <data name="News_BadgeDot" xml:space="preserve"><value>Dot</value></data>
   <data name="News_BadgePulse" xml:space="preserve"><value>Pulsing dot</value></data>
   <data name="News_BadgeNone" xml:space="preserve"><value>None</value></data>
+  <data name="News_StripTitle" xml:space="preserve"><value>Notice strip</value></data>
+  <data name="News_StripDesc" xml:space="preserve"><value>A strip across the top of the window for urgent things, such as a Playit incident. It goes away by itself when the incident is resolved, or when you close it.</value></data>
+  <data name="News_StripAll" xml:space="preserve"><value>Across the whole app</value></data>
+  <data name="News_StripTunnels" xml:space="preserve"><value>In Tunnels only</value></data>
+  <data name="News_StripNone" xml:space="preserve"><value>None</value></data>
+  <data name="News_ToastTitle" xml:space="preserve"><value>Announce with a notification</value></data>
+  <data name="News_ToastDesc" xml:space="preserve"><value>Incidents and security notices also raise a notification, once each. It follows the main notifications switch.</value></data>
+  <data name="News_IncidentsTitle" xml:space="preserve"><value>Incidents</value></data>
+  <data name="News_IncidentsDesc" xml:space="preserve"><value>Failures of services the app relies on, such as Playit.</value></data>
+  <data name="News_TipsTitle" xml:space="preserve"><value>Tips</value></data>
+  <data name="News_TipsDesc" xml:space="preserve"><value>Suggestions and project news. They never use the strip or notifications.</value></data>
+  <data name="News_PrivacyNote" xml:space="preserve"><value>Notices are read from a signed file on the project's website. The request carries no version, language or identifier, and which notices apply to you is decided here: nothing you do in the app leaves your computer. Security notices are only silenced by "Show announcements".</value></data>
   <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• MC Server Launcher now runs on Linux too (not just Windows), thanks to a new cross-platform interface.&#10;• On Linux, download it as an AppImage from the releases; on Windows everything stays the same (installer and auto-update).&#10;• All 5 languages, the console, the players view and the visual configuration are kept.</value></data>
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• You can now create Forge and Paper servers, on top of Vanilla and Fabric.&#10;• Built-in mods &amp; plugins browser (Modrinth), filtered by your server's type and version, with sorting and one-click install.&#10;• Enable/disable or delete what's installed, and convert an existing server to another type while keeping the world.&#10;• Each server now shows a type badge.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• More security: the Playit API key is now stored encrypted (previously plain text), on every OS. Migration is automatic.&#10;• Refreshed high-resolution app icon.</value></data>
