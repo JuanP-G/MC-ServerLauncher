@@ -88,7 +88,7 @@
         </Style>
     </Window.Styles>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
 
         <!-- Update-available banner -->
         <!-- A dark strip like the toasts: the icon in a ring is the one touch of colour, so it reads
@@ -111,7 +111,39 @@
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" ColumnDefinitions="72,*">
+        <!-- The strip of an urgent notice (an incident of a service the app relies on, a security
+             matter). The same dark strip as the banner above, so it reads as a notice and not as an
+             error; the ring and the icon say which kind it is. It goes by itself when the notice is
+             resolved or runs out, and "x" closes it for good for that notice (it stays in Novedades). -->
+        <Border Grid.Row="1" Background="{StaticResource GroundPopup}" BorderBrush="{StaticResource SurfaceEdge}"
+                BorderThickness="0,0,0,1" Padding="14,8" IsVisible="{Binding ShowNewsBand}">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                <Border Grid.Column="0" Classes="ring" Classes.warn="{Binding News.BandIsIncident}"
+                        Classes.danger="{Binding News.BandIsSecurity}" Margin="0,0,12,0">
+                    <Panel>
+                        <ic:FluentIcon Icon="Warning" FontSize="15" Foreground="{StaticResource SemanticWarn}"
+                                       IsVisible="{Binding News.BandIsIncident}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <ic:FluentIcon Icon="ShieldError" FontSize="15" Foreground="{StaticResource SemanticDanger}"
+                                       IsVisible="{Binding News.BandIsSecurity}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Panel>
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" ToolTip.Tip="{Binding News.BandBody}">
+                    <TextBlock Text="{Binding News.BandTitle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding News.BandBody}" Classes="desc" Margin="0" MaxLines="1"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <Button Grid.Column="2" Content="{loc:Loc News_BandSee}" Margin="12,0,8,0"
+                        Command="{Binding ShowNewsCommand}" />
+                <Button Grid.Column="3" Background="Transparent"
+                        Command="{Binding News.CloseBandCommand}" ToolTip.Tip="{loc:Loc Tip_Hide}">
+                    <ic:FluentIcon Icon="Dismiss" />
+                </Button>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" ColumnDefinitions="72,*">
 
             <!-- Rail: which part of the app is on screen. One accent bar for the whole rail, sliding
                  to the section on screen (Controls/SelectionMarker, over the buttons in the same cell). -->

@@ -90,16 +90,44 @@ public class SectionBindingTests
     {
         var xaml = View("NewsView.axaml");
 
-        // The version rows bind to the row; the rest of the screen to the screen itself.
-        var start = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Versions}\">", StringComparison.Ordinal);
-        var end = xaml.IndexOf("</ItemsControl>", start, StringComparison.Ordinal);
-        Assert.True(start > 0 && end > start, "ya no está la lista de versiones de la pantalla de novedades");
+        // The version rows and the notice rows each bind to their own row; the rest of the screen to the
+        // screen itself.
+        string List(string source)
+        {
+            var start = xaml.IndexOf($"<ItemsControl ItemsSource=\"{{Binding {source}}}\">", StringComparison.Ordinal);
+            var end = xaml.IndexOf("</ItemsControl>", start, StringComparison.Ordinal);
+            Assert.True(start > 0 && end > start, $"ya no está la lista {source} de la pantalla de novedades");
+            return xaml[start..end];
+        }
 
-        var rows = xaml[start..end];
-        var screen = xaml.Replace(rows, "");
+        var versions = List("Versions");
+        var notices = List("Notices");
+        var screen = xaml.Replace(versions, "").Replace(notices, "");
 
         AssertAllExist(typeof(NewsViewModel), Bound(screen));
-        AssertAllExist(typeof(NewsVersionRowViewModel), Bound(rows.Replace("{Binding Versions}", "")));
+        AssertAllExist(typeof(NewsVersionRowViewModel), Bound(versions.Replace("{Binding Versions}", "")));
+        AssertAllExist(typeof(NewsNoticeViewModel), Bound(notices.Replace("{Binding Notices}", "")));
+    }
+
+    [Fact]
+    public void TheNoticeStripBindsToNamesThatExistOnTheMainAndNewsViewModels()
+    {
+        // The strip is a Border of MainWindow bound to MainViewModel.ShowNewsBand; what it says comes from
+        // News.*, which the plain-name check does not see (it has a dot).
+        var xaml = View("MainWindow.axaml");
+        var start = xaml.IndexOf("IsVisible=\"{Binding ShowNewsBand}\"", StringComparison.Ordinal);
+        Assert.True(start > 0, "la banda de avisos ya no está en la ventana principal");
+        var end = xaml.IndexOf("<Grid Grid.Row=\"2\"", start, StringComparison.Ordinal);
+        var strip = xaml[start..end];
+
+        var names = System.Text.RegularExpressions.Regex.Matches(strip, @"\{Binding News\.(\w+)\}")
+            .Select(m => m.Groups[1].Value).Distinct().ToList();
+        AssertAllExist(typeof(NewsViewModel), names);
+        Assert.Contains("BandTitle", names);
+        Assert.Contains("CloseBandCommand", names);
+        Assert.True(typeof(MainViewModel).GetProperty("ShowNewsBand") is not null);
+        Assert.True(typeof(MainViewModel).GetProperty("ShowNewsCommand") is not null);
+        Assert.Contains("Command=\"{Binding ShowNewsCommand}\"", strip);
     }
 
     [Fact]

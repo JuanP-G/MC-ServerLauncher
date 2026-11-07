@@ -143,7 +143,7 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsNewsSection),
-        nameof(IsSettingsSection), nameof(IsAboutSection))]
+        nameof(IsSettingsSection), nameof(IsAboutSection), nameof(ShowNewsBand))]
     private AppSection _section = AppSection.Servers;
 
     public bool IsServersSection => Section == AppSection.Servers;
@@ -156,7 +156,11 @@ public partial class MainViewModel : ObservableObject
     partial void OnSectionChanged(AppSection oldValue, AppSection newValue)
     {
         if (oldValue == AppSection.News) News.Closed();
-        if (newValue == AppSection.News) News.Opened();
+        if (newValue == AppSection.News)
+        {
+            News.Opened();
+            OnNewsSectionOpened();
+        }
     }
 
     /// <summary>The settings screen, which saves as it goes.</summary>
@@ -216,9 +220,6 @@ public partial class MainViewModel : ObservableObject
         Section = AppSection.Settings;
     }
 
-    /// <summary>A setting that changes what Novedades shows or how the rail marks it moved.</summary>
-    internal void OnNewsSettingsChanged() => News.OnSettingsChanged();
-
     [RelayCommand]
     private void ShowAbout()
     {
@@ -258,10 +259,13 @@ public partial class MainViewModel : ObservableObject
     /// <remarks>
     /// Both files go in the same folder, so one parameter settles both services. A test that opened
     /// this view model without it would read the server list of whoever is running the test and
-    /// write its own back over it.
+    /// write its own back over it. The notices file's copy goes in its <c>cache</c> folder, and a
+    /// test that wants to see what the window does with a file passes its own service over a fake
+    /// handler: nothing reaches the network before <see cref="Activate"/> either way.
     /// </remarks>
-    public MainViewModel(string? dataDir = null)
+    public MainViewModel(string? dataDir = null, NewsFeedService? newsFeed = null)
     {
+        _newsFeed = newsFeed ?? new NewsFeedService(dataDir is null ? null : Path.Combine(dataDir, "cache"));
         _storage = new ServerStorageService(dataDir);
         _settings = new AppSettingsService(dataDir);
 
@@ -293,6 +297,14 @@ public partial class MainViewModel : ObservableObject
         // look again. Built here, started in Activate.
         _updateTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = UpdateCheckInterval };
         _updateTimer.Tick += (_, _) => _ = CheckForUpdatesAsync();
+
+        // The same for the notices file, started (or not, with announcements off) in Activate.
+        _newsTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = NewsCheckInterval };
+        _newsTimer.Tick += (_, _) => _ = CheckNewsAsync();
+        News.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(NewsViewModel.HasBand)) OnPropertyChanged(nameof(ShowNewsBand));
+        };
     }
 
     /// <summary>True once <see cref="Activate"/> has run, so servers added later start watching.</summary>
@@ -336,6 +348,7 @@ public partial class MainViewModel : ObservableObject
         _ = Tunnels.PrefetchAsync();
         _ = Task.Run(() => SelfUpdater.DeleteOldPackages(Path.GetTempPath(), DateTime.UtcNow));
         _updateTimer.Start();
+        StartNews();
     }
 
     /// <summary>
@@ -349,6 +362,9 @@ public partial class MainViewModel : ObservableObject
     private static readonly TimeSpan UpdateCheckInterval = TimeSpan.FromHours(6);
 
     private readonly DispatcherTimer _updateTimer;
+
+    private readonly NewsFeedService _newsFeed;
+    private readonly DispatcherTimer _newsTimer;
 
     /// <summary>The version already announced, so the same one is never announced twice.</summary>
     /// <remarks>

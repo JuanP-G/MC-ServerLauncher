@@ -418,6 +418,16 @@
   <data name="News_NoticesTitle" xml:space="preserve"><value>Avis</value></data>
   <data name="News_NoNotices" xml:space="preserve"><value>Aucun avis pour le moment.</value></data>
   <data name="News_NoticesOff" xml:space="preserve"><value>Les avis sont désactivés : seules les versions sont listées ici.</value></data>
+  <data name="News_KindIncident" xml:space="preserve"><value>Incident</value></data>
+  <data name="News_KindSecurity" xml:space="preserve"><value>Sécurité</value></data>
+  <data name="News_KindTip" xml:space="preserve"><value>Conseil</value></data>
+  <data name="News_StatusResolved" xml:space="preserve"><value>Résolu</value></data>
+  <data name="News_MoreInfo" xml:space="preserve"><value>Plus d'informations</value></data>
+  <data name="News_FeedFailedFmt" xml:space="preserve"><value>Impossible de vérifier les avis. Dernière copie : {0}.</value></data>
+  <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>Impossible de vérifier les avis, et aucune copie n'est encore enregistrée.</value></data>
+  <data name="News_BandSee" xml:space="preserve"><value>Voir l'avis</value></data>
+  <data name="News_ToastSeeNews" xml:space="preserve"><value>Les détails sont dans Nouveautés.</value></data>
+  <data name="News_ToastResolved" xml:space="preserve"><value>Résolu. Les détails sont dans Nouveautés.</value></data>
   <data name="News_VersionsTitle" xml:space="preserve"><value>Versions</value></data>
   <data name="News_VersionFmt" xml:space="preserve"><value>Version {0}</value></data>
   <data name="News_TagInstalled" xml:space="preserve"><value>Installée</value></data>

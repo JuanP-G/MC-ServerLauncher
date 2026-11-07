@@ -42,6 +42,15 @@
         <Setter Property="BorderBrush" Value="{StaticResource SemanticInfoRing}" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
+    <Style Selector="Border.ring.warn">
+        <Setter Property="BorderBrush" Value="{StaticResource SemanticWarnRing}" />
+    </Style>
+    <Style Selector="Border.ring.danger">
+        <Setter Property="BorderBrush" Value="{StaticResource SemanticDangerRing}" />
+    </Style>
+    <Style Selector="Border.ring.ok">
+        <Setter Property="BorderBrush" Value="{StaticResource SemanticOkRing}" />
+    </Style>
 
     <!-- The band: one line under the server's header, for something worth knowing that must not take
          room from what is below. Its text is cut with an ellipsis rather than wrapped, and says the
