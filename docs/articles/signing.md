@@ -107,7 +107,7 @@ file name in it, because the file is not a package; what stops an old file being
 What is signed is the **bytes as they are**, not the JSON read and written again. That is the one place
 here where a signature can break with nobody touching the file: this repository's contributors may have
 git convert line ends (`core.autocrlf`), and a signature made over a CRLF copy does not verify over the LF
-one that is published. `.gitattributes` marks `web/news.json` as `-text` so git leaves it alone, and
+one that is published. `.gitattributes` marks `web/news.json` and its `.sig` as `-text` so git leaves both alone, and
 `sign-news.ps1` refuses a file with a carriage return or a byte-order mark.
 
 The app checks the signature **before** it parses anything, and checks the saved copy again every time it

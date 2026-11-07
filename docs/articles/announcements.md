@@ -130,7 +130,7 @@ addresses answering *not found* is not an error: nothing has been published, and
 ## Publishing a notice
 
 1. Edit `web/news.json` and raise `seq`. Keep **LF** line ends and no BOM (`.gitattributes` marks the file
-   `-text` so git does not convert them).
+   and its signature `-text` so git does not convert them).
 2. Run `.\tools\signing\sign-news.ps1`. It asks for the key's password and writes `web/news.json.sig`. It
    refuses a file with CR or a BOM, over 64 KiB, with an incident or security item without `until`, or a
    resolved one without `resolvedAt`: better an error here than a notice nobody sees.

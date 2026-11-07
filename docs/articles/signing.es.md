@@ -108,8 +108,8 @@ archivo porque el archivo no es un paquete; lo que impide que se sirva otra vez 
 Lo que se firma son los **bytes tal cual están**, no el JSON leído y vuelto a escribir. Es el único sitio
 donde una firma puede romperse sin que nadie toque el archivo: quien contribuya a este repositorio puede
 tener git convirtiendo los finales de línea (`core.autocrlf`), y una firma hecha sobre una copia CRLF no
-verifica sobre la LF que se publica. `.gitattributes` marca `web/news.json` como `-text` para que git no
-lo toque, y `sign-news.ps1` se niega a firmar un archivo con retorno de carro o con marca de orden de
+verifica sobre la LF que se publica. `.gitattributes` marca `web/news.json` y su `.sig` como `-text` para que git no
+toque ninguno, y `sign-news.ps1` se niega a firmar un archivo con retorno de carro o con marca de orden de
 bytes.
 
 La app comprueba la firma **antes** de leer nada, y vuelve a comprobar la copia guardada cada vez que la

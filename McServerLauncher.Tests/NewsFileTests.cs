@@ -16,13 +16,14 @@ public class NewsFileTests
 {
     private static string Root => LocalizationTests.RepoRoot();
 
-    [Fact]
-    public void GitIsToldNeverToTouchTheLineEndingsOfTheNoticesFile()
+    [Theory]
+    [InlineData(@"^web/news\.json\s+-text\s*$")]
+    [InlineData(@"^web/news\.json\.sig\s+-text\s*$")]
+    public void GitIsToldNeverToTouchTheLineEndingsOfTheNoticesFileOrItsSignature(string rule)
     {
         var attributes = File.ReadAllLines(Path.Combine(Root, ".gitattributes"));
 
-        Assert.Contains(attributes, line =>
-            Regex.IsMatch(line, @"^web/news\.json\s+-text\s*$"));
+        Assert.Contains(attributes, line => Regex.IsMatch(line, rule));
     }
 
     [Fact]
@@ -38,6 +39,17 @@ public class NewsFileTests
         Assert.False(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF,
             "web/news.json must be UTF-8 without a byte-order mark: the signature is over the bytes.");
         Assert.True(bytes.Length <= 64 * 1024, "the app refuses a notices file over 64 KiB");
+    }
+
+    [Fact]
+    public void TheSignatureFileNeverHoldsACarriageReturn()
+    {
+        // Same story as the file it signs: it is served as written, and a copy that went through
+        // autocrlf is a different file from the one the script produced.
+        var path = Path.Combine(Root, "web", "news.json.sig");
+        if (!File.Exists(path)) return;
+
+        Assert.DoesNotContain((byte)'\r', File.ReadAllBytes(path));
     }
 
     [Fact]

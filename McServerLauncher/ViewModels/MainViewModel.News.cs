@@ -76,7 +76,6 @@ public partial class MainViewModel
         News.OnSettingsChanged();
         OnPropertyChanged(nameof(ShowNewsBand));
         ApplyNewsFeedSetting();
-        NotifyNewsOnce();
     }
 
     /// <summary>
@@ -132,7 +131,18 @@ public partial class MainViewModel
     /// same for everybody and the choosing happens on the reader's side.
     /// </summary>
     private NewsContext NewsContextNow() => new(NewsContext.CurrentOs(), Changelog.Running(), UsesTunnels(),
-        CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+        NewsLanguageFor(CultureInfo.CurrentUICulture));
+
+    /// <summary>
+    /// The language a notice is read in: the one the window itself is in. A system language the app has
+    /// no translation for shows the window in Spanish (the neutral resources), so the notices must be in
+    /// Spanish too, not in the English the file falls back to when it has no text for the asked language.
+    /// </summary>
+    internal static string NewsLanguageFor(CultureInfo culture)
+    {
+        var code = culture.TwoLetterISOLanguageName;
+        return NewsFeedParser.Languages.Contains(code) ? code : "es";
+    }
 
     /// <summary>
     /// Whether this machine uses Playit tunnels: it has an account (the app's or the installed agent's)
@@ -161,7 +171,9 @@ public partial class MainViewModel
     {
         foreach (var row in News.PendingToasts.ToList())
         {
-            News.MarkToasted(row.Key);
+            // False when this very notice was handled a moment ago: the list being walked is a snapshot,
+            // and another pass (a setting that moved while a look was ending) may have got here first.
+            if (!News.MarkToasted(row.Key)) continue;
 
             if (!_appSettings.NewsToast || !NotificationPreferences.Global.Enabled) continue;
 

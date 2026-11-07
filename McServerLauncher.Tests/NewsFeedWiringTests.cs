@@ -388,6 +388,44 @@ public class NewsFeedWiringTests : IDisposable
     }
 
     [Fact]
+    public async Task AnIncidentThatAppearsBecauseASettingMovedIsAnnouncedExactlyOnce()
+    {
+        // Incidents off: the file is read, the notice is not listed. Turning incidents on lists it and
+        // announces it in the same breath; two passes over the same list used to announce it twice.
+        Serve(Feed(1, Notice()), "\"v1\"");
+        var main = Open();
+        _ui.Run(() => main.Settings.NewsIncidents = false);
+        _ui.Run(main.StartNews);
+        await Until(() => _handler.Requests >= 2);     // the file and its signature
+        await Task.Delay(100);
+        Assert.Empty(_toasts);
+        Assert.Empty(Read(() => main.News.Notices));
+
+        _ui.Run(() => main.Settings.NewsIncidents = true);
+        await Until(() => _toasts.Count >= 1);
+        await Task.Delay(150);
+
+        Assert.Single(_toasts);
+        Assert.Single(Read(() => main.News.Notices));
+    }
+
+    [Theory]
+    [InlineData("es", "es")]
+    [InlineData("en", "en")]
+    [InlineData("de", "de")]
+    [InlineData("fr", "fr")]
+    [InlineData("pt", "pt")]
+    [InlineData("pt-BR", "pt")]
+    [InlineData("en-GB", "en")]
+    [InlineData("it", "es")]       // no translation of the app: the window is Spanish, so the notices are
+    [InlineData("ja-JP", "es")]
+    [InlineData("", "es")]         // the invariant culture
+    public void NoticesAreReadInTheLanguageTheWindowIsIn(string culture, string expected)
+    {
+        Assert.Equal(expected, MainViewModel.NewsLanguageFor(System.Globalization.CultureInfo.GetCultureInfo(culture)));
+    }
+
+    [Fact]
     public async Task ATipNeverSpeaksUp()
     {
         Serve(Feed(1, Notice("tip-1", "tip")), "\"v1\"");

@@ -133,7 +133,7 @@ nada y no hay avisos.
 ## Publicar un aviso
 
 1. Edita `web/news.json` y sube `seq`. Mantén finales de línea **LF** y sin BOM (`.gitattributes` marca el
-   archivo como `-text` para que git no los convierta).
+   archivo y su firma como `-text` para que git no los convierta).
 2. Ejecuta `.\tools\signing\sign-news.ps1`. Pide la contraseña de la clave y escribe `web/news.json.sig`. Se
    niega a firmar un archivo con CR o BOM, de más de 64 KiB, con una incidencia o aviso de seguridad sin
    `until`, o uno resuelto sin `resolvedAt`: mejor un error aquí que un aviso que nadie ve.

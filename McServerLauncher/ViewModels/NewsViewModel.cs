@@ -288,8 +288,16 @@ public partial class NewsViewModel : ObservableObject
     /// <summary>The notices owed a notification now (see <see cref="NewsBoardModel.Toasts"/>).</summary>
     public IReadOnlyList<NewsNoticeRow> PendingToasts => NoticesEnabled ? _board.Toasts : [];
 
-    /// <summary>Remembers that a notice was announced (or deliberately not), so it never is twice.</summary>
-    public void MarkToasted(string key) => _state.MarkToasted(key);
+    /// <summary>
+    /// Remembers that a notice was announced (or deliberately not), so it never is twice. False when it
+    /// already was: whoever asked is the second to ask, and has nothing to announce.
+    /// </summary>
+    /// <remarks>
+    /// The answer is what keeps two passes over the same <see cref="PendingToasts"/> from announcing a
+    /// notice twice: marking it does not rebuild the board, so the list a second caller reads is the
+    /// one the first one already handled.
+    /// </remarks>
+    public bool MarkToasted(string key) => _state.MarkToasted(key);
 
     // ---- the card about the section's new place ----
 
