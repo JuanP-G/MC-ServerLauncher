@@ -75,6 +75,9 @@ public static class GeyserConfigService
             "# Written by MC Server Launcher. Geyser fills in everything else on first start.",
             "bedrock:",
             $"  port: {bedrockPort}",
+            "  # NetherNet is how Bedrock 26.60 and later connects, and what the launcher's wake-on-demand",
+            "  # answers on. \"both\" keeps the old RakNet connection for clients that still use it.",
+            $"  transport: {WantedTransport}",
         };
 
         if (broadcastPort is { } advertised)
@@ -156,6 +159,47 @@ public static class GeyserConfigService
         if (indent.Length == 0) indent = "  ";
         lines[index] = indent + "floodgate-key-file: " + keyPath;
 
+        return string.Join(newline, lines);
+    }
+
+    /// <summary>The transport the launcher writes: NetherNet for new clients, RakNet for old ones.</summary>
+    public const string WantedTransport = "both";
+
+    /// <summary>
+    /// Makes sure Geyser accepts NetherNet connections, which Bedrock 26.60 and later require.
+    /// </summary>
+    /// <param name="yaml">The current contents of config.yml.</param>
+    /// <remarks>
+    /// <para>
+    /// Geyser does not turn this on by itself: a server whose config did not say <c>nethernet</c>
+    /// or <c>both</c> turned every current Bedrock client away, and the launcher's wake-on-demand
+    /// has nothing to answer on, because NetherNet's signalling is a TCP listener Geyser only opens
+    /// in that mode. Nothing in the app or in Geyser's log said so; a user found it by hand.
+    /// </para>
+    /// <para>
+    /// Only a missing, commented-out or <c>raknet</c> value is replaced. <c>nethernet</c> and
+    /// <c>both</c> are somebody's choice and stay, so this never fights a config fixed by hand.
+    /// Same line surgery as <see cref="SetBedrockPorts"/>, so Geyser's comments survive.
+    /// </para>
+    /// </remarks>
+    public static string SetTransport(string yaml)
+    {
+        var newline = yaml.Contains("\r\n") ? "\r\n" : "\n";
+        var lines = yaml.Replace("\r\n", "\n").Split('\n').ToList();
+
+        var section = FindSection(lines, "bedrock:");
+        if (section is null) return yaml;   // SetBedrockPorts adds a whole section, transport included
+
+        var (start, end) = section.Value;
+        var live = IndexOfKey(lines, start, end, "transport", commented: false);
+        if (live >= 0)
+        {
+            var current = lines[live].TrimStart()["transport:".Length..].Split('#')[0]
+                .Trim().Trim('"', '\'').ToLowerInvariant();
+            if (current is "nethernet" or "both") return yaml;
+        }
+
+        SetKey(lines, start, end, "transport", WantedTransport);
         return string.Join(newline, lines);
     }
 

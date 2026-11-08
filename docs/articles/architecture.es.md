@@ -543,7 +543,7 @@ mundo. No hay rutas fijas del equipo en el código.
 - **Bibliotecas del sistema** — las pocas funciones de Win32 que llama la app (`PortService`,
   `SingleInstance`, `SystemMemory`) llevan `DefaultDllImportSearchPaths(System32)`, así que una
   biblioteca colocada junto al ejecutable o en el directorio de trabajo nunca es la que se carga.
-- **`Changelog`** — las notas de "novedades" por versión que se muestran tras actualizar (ver el
+- **`Changelog`** — las notas de "novedades" por versión que lista la sección Novedades (ver el
   flujo más abajo).
 - **`UpdateService`** / **`SelfUpdater`** — `UpdateService` pregunta a GitHub si hay una release más
   nueva y elige el asset para *esta* plataforma y arquitectura (el instalador de Windows, el AppImage
@@ -863,8 +863,8 @@ pestañas.
   del servidor. Instalar pasa por `ServerModsViewModel.InstallModAsync`, como cualquier otra instalación.
 
 ### La ventana: secciones, el panel de nuevo servidor y el movimiento
-La ventana principal es un **menú lateral** de cuatro secciones —Servidores, Túneles, Ajustes, Acerca
-de— que comparten una celda de `MainWindow` y se cambian por `IsVisible` (`MainViewModel.Section`), así
+La ventana principal es un **menú lateral** de cinco secciones —Servidores, Túneles, Novedades, Ajustes,
+Acerca de— que comparten una celda de `MainWindow` y se cambian por `IsVisible` (`MainViewModel.Section`), así
 que cada una conserva su estado (la consola su scroll, un formulario a medias su texto) mientras otra
 está en pantalla.
 
@@ -893,10 +893,26 @@ está en pantalla.
 - **Túneles** (`TunnelsViewModel`/`TunnelsView`) lee a la vez todas las claves de Playit que la app
   encuentra —el agente de la app, el `playit.toml` de un agente instalado, una clave guardada—, junta
   lo que ve cada una (`TunnelInventory`) y ofrece los arreglos que puede hacer. La cuenta se lee una
-  vez poco después de arrancar (`PrefetchAsync`), para que la pantalla salga llena la primera vez, y
-  de nuevo cada vez que se abre.
+  vez poco después de arrancar (`PrefetchAsync`, un segundo tras el inicio), para que la pantalla
+  salga llena la primera vez, y de nuevo cada vez que se abre. La tarjeta de la cuenta dice si está
+  conectada y si algún agente reenvía tráfico de verdad, y muestra cada vía de entrada en su propia
+  línea (el agente de la app, el Playit instalado, una clave guardada antigua) con su estado y sus
+  botones. `PlayitAccountStatus` toma esas decisiones como función pura; `TunnelLaneViewModel` solo las
+  viste para la vista. Hasta que Playit responde la primera vez, el titular dice que está comprobando.
+- **Novedades** (`NewsViewModel`/`NewsView`) lista la versión que espera a instalarse (con el mismo
+  *Actualizar ahora* de la banda), los avisos del archivo firmado (ver *Anuncios* más abajo) y las notas
+  de cada versión que esta compilación conoce (`Changelog.All`). Cada versión se despliega sobre sus notas, que solo se buscan
+  mientras está abierta. `NewsBoard` decide, como función pura, qué se lista y qué está sin leer;
+  `NewsState` recuerda lo leído en un archivo propio, `news-state.json`, y no en los ajustes. Mientras
+  hay algo sin leer, el menú lateral lleva una marca (`Views/NewsBadge`: un número, un punto, un punto
+  que late o nada, a elegir en Ajustes). Abrir la sección lo da por leído, pero las entradas conservan su
+  propia marca hasta que acaba la visita o se pulsa *Marcar todo como leído*, para que haya algo que mirar
+  en una lista recién abierta. Con **Mostrar anuncios** apagado la sección es solo el historial y nada
+  marca el menú.
 - **Ajustes** (`SettingsViewModel`/`SettingsView`) guarda al cambiar; no hay diálogo. Sus páginas
-  son General, Notificaciones, Colores y Jugadores (el historial). Un color se edita con
+  son General, Notificaciones, Anuncios (el interruptor general, el estilo que usa el menú con una muestra
+  en vivo, dónde sale la banda de un aviso urgente, si además notifica y qué tipos se quieren), Colores y
+  Jugadores (el historial). Un color se edita con
   `Views/ColorChooser`: una paleta elegida para leerse bien sobre las superficies oscuras
   (`Services/ColorPalette`), el espectro y la barra de tono de `Avalonia.Controls.ColorPicker` si se
   piden, y una línea que dice si el color se va a leer —contraste WCAG contra el fondo de la consola,
@@ -912,7 +928,8 @@ elemento: `Controls/SlidingIndicator` coloca un `Border` y deja que una transici
 subclases dicen dónde —`TabUnderline` bajo el título de la pestaña elegida, `SelectionMarker` al lado
 o detrás del hijo de un panel con la clase `on` (el menú lateral, las páginas de Ajustes)—.
 `Behaviors/BeaconBehavior` da a «+ Nuevo» su recordatorio periódico alternando dos clases que
-arrancan una animación de estilo corta.
+arrancan una animación de estilo corta, y el halo de la marca que late en Novedades
+(`Border.newspulse`) también está ahí.
 
 > **Los fotogramas no pueden depender del idioma.** Avalonia lee `Cue` y `KeySpline` con la cultura del
 > sistema: en un Windows en español `Cue="96.4%"` y `KeySpline="0.45,0,0.25,1"` no se entienden y la
@@ -1030,10 +1047,51 @@ luego se ejecutaría con los derechos que pide el instalador. Por eso `AppUpdate
 - **macOS** — no se repite: el script corre como el usuario y reemplaza una app que el usuario ya puede
   reemplazar, así que un archivo cambiado no gana ningún privilegio.
 
-Tras actualizar,
-`MainWindow.Loaded` llama a `ShowWhatsNewIfUpdated`, que compara la versión en ejecución con
-`AppSettings.LastVersionSeen` y muestra `WhatsNewDialog` (traducido) con las notas de `Changelog` de
-cada versión que el usuario aún no había visto.
+Tras actualizar, `MainWindow.Loaded` llama a `MainViewModel.OpenNewsIfUpdated`, que compara la versión
+en ejecución con `AppSettings.LastVersionSeen` y, si el usuario ha actualizado, abre la sección
+**Novedades** con cada versión que aún no había visto desplegada y con la etiqueta *Nueva*
+(`NewsBoard`, a partir de `Changelog.All`). No hace nada en una instalación nueva, que no tiene una
+versión anterior con la que comparar, ni con los anuncios apagados. Las notas eran antes una ventana
+(`WhatsNewDialog`); una tarjeta de la sección avisa a quien actualizó desde entonces de que se han
+movido y apunta a Ajustes (`AppSettings.NewsMoveNoticeSeen` recuerda la respuesta).
+
+### Anuncios: el archivo de avisos firmado
+El proyecto puede decirle a todas las apps instaladas que algo está pasando (una caída de Playit, un asunto
+de seguridad, un consejo) mediante `web/news.json`, firmado. El artículo [Anuncios](announcements.es.md)
+tiene el formato y la receta para publicar; esto es cómo está montado en la app.
+
+- **`NewsFeedService`** (`Services/`) descarga `news.json` y `news.json.sig` de dos sitios por orden (la
+  web, luego GitHub Pages), con petición condicional y un límite de 64 KiB. **No se acepta nada antes de
+  comprobarlo**: la firma tiene que verificarse sobre los bytes exactos con `UpdateSignature.VerifyNews`
+  (las claves de las actualizaciones, con otra cabecera), el archivo tiene que leerse bien y su `seq` no
+  puede ser menor que el más alto aceptado alguna vez. Solo entonces se sustituyen el archivo y la firma
+  en `cache/`, y el ETag se guarda lo último. La copia guardada se **vuelve a verificar cada vez que se
+  lee**. Nunca lanza: devuelve un `NewsFeedStatus`: *Ok*, *NotModified*, *NoFeed* (todos los sitios dijeron
+  que no está, que es un proyecto sin nada que decir) o *Failed*, y un fallo nunca se convierte en «no hay
+  avisos».
+- **`NewsFeedParser`** es puro. Un aviso inválido se salta por su cuenta; el texto pasa por
+  `UntrustedText.Clean` (una línea, sin caracteres de control, cortado a su límite), los enlaces tienen que
+  ser `https` de cuatro sitios, y una incidencia o un aviso de seguridad sin `until` se descarta, con el
+  resto limitado a 30 días desde `from`.
+- **`NewsBoard`** también es puro, y decide todo lo que muestra la pantalla a partir de los avisos, el
+  equipo (`NewsContext`: sistema, versión, si usa túneles, idioma), el reloj y los ajustes del usuario:
+  qué avisos se listan y en qué orden, qué está sin leer (por clave `id:estado`, así una incidencia que pasa
+  a *Resuelta* vuelve a contar), para cuál es la banda (el aviso urgente más reciente que sigue en marcha y
+  no se cerró) y a cuáles se debe una notificación. **`NewsState`** recuerda lo leído, lo cerrado y lo
+  anunciado en `news-state.json`.
+- **`MainViewModel.News.cs`** es el pegamento que necesita el resto de la ventana. `StartNews`, que llama
+  `Activate` y nunca el constructor, mira el archivo una vez y luego cada 5 minutos con un
+  `DispatcherTimer` (y, con una copia de más de 2 minutos, al abrir la sección o al volver la ventana al
+  frente mediante `OnWindowActivated`; el propio temporizador se salta una mirada justo después de otra); con **Mostrar anuncios**
+  apagado no hay temporizador ni petición. Para quién es un aviso se calcula **aquí y no se envía nunca**:
+  saber si el equipo usa túneles necesita `PlayitConnection`, que vive en `Views/`, así que se calcula en
+  el view model y se le pasa al tablón como un valor simple. También es dueño de la banda
+  (`ShowNewsBand`, en `MainWindow.axaml`) y de la notificación (`NotifyNewsOnce`): una vez por aviso y
+  estado, dado por tratado aunque no salga ningún toast, así uno que el usuario eligió no recibir o que
+  la banda ya dijo no aparece luego.
+- **Pruebas**: nunca tocan la red ni la carpeta de datos: `NewsFeedServiceTests` usa un manejador falso y
+  un reloj inyectado, `NewsFeedWiringTests` ejecuta un `MainViewModel` real sobre una carpeta temporal con
+  `StartNews()` en lugar de `Activate()`, y el toast y la comprobación «usa túneles» son costuras.
 
 ### Copias del mundo (backups)
 `WorldBackupService` zipea el mundo de un servidor en `<servidor>/backups/` a demanda y de forma
@@ -1194,7 +1252,56 @@ Por último, `GeyserConfigService` escribe lo que Geyser no puede deducir solo: 
 servidor con Floodgate que se queda en `online` rechaza a todos los jugadores de Bedrock), el puerto
 UDP local y **`broadcast-port`** — detrás de un túnel, el puerto al que se conecta la gente es el
 público del túnel, y el launcher es el único componente que conoce los dos números porque es quien
-creó el túnel. `RepairConfig` vuelve a aplicarlo cuando una reinstalación resetea el archivo.
+creó el túnel. También pone **`transport`** en `both`: Bedrock 26.60 y posteriores se conecta por
+NetherNet, cuya señalización es un listener TCP en el puerto de Bedrock, y un Geyser que se queda
+solo en RakNet no acepta a esos clientes (el autor del issue 108 tuvo que cambiarlo a mano). Un valor
+que el usuario ya eligió (`nethernet` o `both`) se respeta; solo se sustituye uno que falte, esté
+comentado o sea `raknet`. `RepairConfig` vuelve a aplicarlo todo cuando una reinstalación resetea el
+archivo, y dice en la consola cuál de las dos cosas cambió.
+
+Ningún archivo de configuración puede abrir el Firewall de Windows, y es lo otro con lo que tropiezan
+los jugadores de Bedrock en LAN o VPN (Radmin, Hamachi): el aviso «¿permitir java.exe?» de Windows
+cubre los perfiles de red marcados en ese momento, normalmente solo el privado, y una VPN suele ser
+pública. Por eso la página Crossplay lleva una tarjeta **Firewall de Windows** (solo en Windows, y solo
+para un servidor con crossplay guardado como activado, porque necesita el puerto de Bedrock
+guardado). `WindowsFirewallService` lee las reglas por la interfaz COM del firewall, que no pide
+permisos de administrador, y enseña uno de tres estados: el puerto está cerrado, están las reglas del
+propio launcher, u otra regla ya lo cubre. Una regla cuenta como cobertura solo si es una entrada
+permitida y activa para ese puerto y ese protocolo en todos los perfiles, y no está limitada a un
+programa, un servicio, una app de la Tienda, un usuario o equipo, unas direcciones o puertos remotos
+ni un tipo de adaptador: las reglas que Windows guarda para las apps de la Tienda no nombran ningún
+programa y en una máquina de pruebas hacían que cualquier puerto pareciera ya abierto hasta que se
+distinguieron.
+
+El botón crea dos reglas (TCP y UDP, `MC Server Launcher - Bedrock <puerto> (TCP|UDP)`) por puerto, no
+por programa, en todos los perfiles, y el mismo botón las quita; al borrar un servidor no se quita
+nada, para que borrar nunca provoque un aviso de administrador. Cambiar el firewall sí exige
+permisos de administrador, así que el servicio ejecuta `cmd.exe /c netsh advfirewall firewall ...`
+con el verbo `runas` y Windows muestra su propia confirmación, que nada dentro de la app puede
+sustituir; la tarjeta avisa de que va a salir. La línea de comandos se construye solo con el puerto,
+un `int` comprobado entre 1 y 65535; `cmd` se arranca desde `System32` con esa carpeta como directorio
+de trabajo para que `netsh` no se encuentre en otro sitio, y el resultado se juzga volviendo a leer
+las reglas, no por el código de salida de una cadena de comandos.
+
+La tarjeta solo ofrece el botón; el launcher también avisa cuando importa. Una **franja** de una línea en
+la página del servidor (`ServerViewModel.Firewall.cs`) aparece solo cuando el firewall de verdad dejaría
+fuera a los jugadores de Bedrock. El launcher no puede ver un paquete descartado, así que
+`FirewallDiagnosis` lo deduce: por cada red a la que está conectado el equipo (las redes conectadas del
+Network List Manager, traducidas a su perfil), si ese perfil tiene el firewall activo y descarta el tráfico
+entrante no pedido, el programa que ocupa el puerto necesita una regla que lo deje pasar en ese perfil, por
+TCP y UDP en el caso de Java y solo por TCP en el del oyente del servidor dormido del propio launcher.
+Cuenta una regla de puerto o una regla para la ruta real de ese programa (un `java` suelto se resuelve por
+el `PATH`, porque comparar solo nombres de archivo daba por buena la regla de cualquier `java.exe` de la
+máquina); no cuentan las reglas de apps de la Tienda ni las limitadas a usuarios, equipos, direcciones o
+adaptadores. Una regla de **bloqueo** se señala aparte, porque gana a cualquier regla de permiso y un
+permiso nuevo no cambiaría nada: entonces el botón abre la consola del firewall de Windows en vez de crear
+nada, y desde la app no se borra ninguna regla. La comprobación se hace al abrir la página, tras un
+arranque cuando Geyser ha tenido tiempo de escuchar (un servidor que corre sin escuchar aún en el puerto
+nunca se achaca al firewall) y cuando cambian crossplay o el puerto. Nombra las redes, puede arreglar el
+caso de regla que falta con la misma confirmación de administrador que la tarjeta, y se descarta con «No me
+hace falta»: el descarte se guarda como firma del problema (`ServerConfig.FirewallNoticeDismissed`), así
+que el aviso vuelve ante un problema distinto y solo se calla para ese. Un servidor al que se llega solo por
+túnel no depende del firewall y el launcher no puede saberlo; para eso está el descarte.
 
 Lo bien que funcione todo esto es una propiedad del tipo de servidor, no una promesa:
 `ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores, y el panel de nuevo servidor y la

@@ -286,6 +286,35 @@
         </Setter>
     </Style>
 
+    <!-- The halo of the "pulse" mark on Novedades (Views/NewsBadge): it opens out from the dot and
+         fades in the first part of each turn, and the rest of the turn is quiet. Only while the
+         mark is visible, as the spinner below, so a hidden one costs nothing. Whole-number cues for
+         the reason given under "+ NEW". -->
+    <Style Selector="Border.newspulse[IsVisible=True]">
+        <Style.Animations>
+            <Animation Duration="0:0:2" IterationCount="Infinite">
+                <KeyFrame Cue="0%">
+                    <Setter Property="BoxShadow" Value="0 0 0 0 #9958A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="10%">
+                    <Setter Property="BoxShadow" Value="0 0 0 3 #6658A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="20%">
+                    <Setter Property="BoxShadow" Value="0 0 0 5 #3858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="30%">
+                    <Setter Property="BoxShadow" Value="0 0 0 6 #1858A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="40%">
+                    <Setter Property="BoxShadow" Value="0 0 0 7 #0058A6FF" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="BoxShadow" Value="0 0 0 7 #0058A6FF" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
     <!-- ===================== THE COLOUR CHOOSER =====================
          The chevron of "Customise" turns over as the spectrum opens below it. -->
     <Style Selector="ToggleButton.expander :is(Control).chevron">

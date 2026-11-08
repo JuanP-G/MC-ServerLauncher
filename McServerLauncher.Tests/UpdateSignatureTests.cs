@@ -230,4 +230,125 @@ public class UpdateSignatureTests : IDisposable
 
         Assert.Equal("mcsl-update-v1\n1.21.2\npkg.exe\nabcdef", message);
     }
+
+    // ---- the notices file (web/news.json) ----
+
+    private static readonly byte[] NewsBytes = System.Text.Encoding.UTF8.GetBytes(
+        "{\"schema\":1,\"seq\":7,\"issued\":\"2026-11-07T10:00:00Z\",\"items\":[]}\n");
+
+    /// <summary>What <c>sign-news.ps1</c> writes into <c>news.json.sig</c>.</summary>
+    private static string SignNews(ECDsa key, byte[] raw) =>
+        Convert.ToBase64String(key.SignData(
+            UpdateSignature.NewsMessage(Convert.ToHexString(SHA256.HashData(raw))),
+            HashAlgorithmName.SHA256, DSASignatureFormat.Rfc3279DerSequence));
+
+    [Fact]
+    public void ANewsFileSignedWithATrustedKeyIsAccepted()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        Assert.True(UpdateSignature.VerifyNews(NewsBytes, SignNews(key, NewsBytes), [PublicKey(key)]));
+    }
+
+    [Fact]
+    public void ANewsFileChangedAfterItWasSignedIsRefused()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signature = SignNews(key, NewsBytes);
+
+        // One byte of difference: the signature is over the bytes as they are, not over what they mean.
+        var changed = (byte[])NewsBytes.Clone();
+        changed[^2] = (byte)' ';
+
+        Assert.False(UpdateSignature.VerifyNews(changed, signature, [PublicKey(key)]));
+    }
+
+    [Fact]
+    public void ALineEndingChangedByGitInvalidatesTheSignature()
+    {
+        // The reason sign-news.ps1 refuses a file with CR and .gitattributes marks it -text: the same
+        // text with CRLF is another file, and the signature of the one is not the other's.
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signature = SignNews(key, NewsBytes);
+        var crlf = System.Text.Encoding.UTF8.GetBytes(
+            System.Text.Encoding.UTF8.GetString(NewsBytes).Replace("\n", "\r\n"));
+
+        Assert.False(UpdateSignature.VerifyNews(crlf, signature, [PublicKey(key)]));
+    }
+
+    [Fact]
+    public void ANewsSignatureIsNotAnUpdateSignatureAndTheOtherWayRound()
+    {
+        // One key signs both. What keeps a signed installer from standing in for the notices file
+        // (and a signed notices file from standing in for an installer) is the header in the message.
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var asFile = Package(System.Text.Encoding.UTF8.GetString(NewsBytes));
+
+        Assert.False(UpdateSignature.VerifyNews(NewsBytes, Sign(key, asFile), [PublicKey(key)]));
+        Assert.False(Verify(asFile, SignNews(key, NewsBytes), PublicKey(key)));
+    }
+
+    [Fact]
+    public void ANewsFileSignedByAnotherKeyIsRefused()
+    {
+        using var theirs = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var ours = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        Assert.False(UpdateSignature.VerifyNews(NewsBytes, SignNews(theirs, NewsBytes), [PublicKey(ours)]));
+    }
+
+    [Fact]
+    public void ANewsFileAcceptsTheKeyOfARotationInProgress()
+    {
+        using var old = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var current = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        Assert.True(UpdateSignature.VerifyNews(NewsBytes, SignNews(old, NewsBytes),
+            [PublicKey(current), PublicKey(old)]));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("this is not base64 !!")]
+    [InlineData("AAAA")]
+    [InlineData("MEUCIQDfake")]
+    public void ANewsSignatureThatIsNotOneIsRefusedWithoutAnException(string? signature)
+    {
+        // The .sig file comes from the same place an attacker would write to.
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        Assert.False(UpdateSignature.VerifyNews(NewsBytes, signature, [PublicKey(key)]));
+    }
+
+    [Fact]
+    public void TheNewsSignatureMayEndInANewline()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        Assert.True(UpdateSignature.VerifyNews(NewsBytes, SignNews(key, NewsBytes) + "\r\n", [PublicKey(key)]));
+    }
+
+    [Fact]
+    public void TheNewsMessageIsExactlyWhatTheSigningScriptBuilds()
+    {
+        // tools/signing/sign-news.ps1 writes these same bytes before signing. If this changes, that
+        // script has to change with it, or every notices file after would be refused by the app.
+        var message = System.Text.Encoding.UTF8.GetString(UpdateSignature.NewsMessage("ABCDEF"));
+
+        Assert.Equal("mcsl-news-v1\nabcdef", message);
+    }
+
+    [Fact]
+    public void TheSigningScriptBuildsTheSameMessageAsTheApp()
+    {
+        // The test above pins the app's side. This reads the script's, so the two cannot drift apart
+        // without a test noticing: the header and the one-hash layout have to be what the script says.
+        var script = File.ReadAllText(Path.Combine(
+            LocalizationTests.RepoRoot(), "tools", "signing", "sign-news.ps1"));
+
+        Assert.Contains("\"" + UpdateSignature.NewsMessageHeader + "`n$hash\"", script);
+        Assert.Contains("[IO.File]::WriteAllText($sigPath", script);
+    }
 }
