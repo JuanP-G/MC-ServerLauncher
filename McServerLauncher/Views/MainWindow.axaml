@@ -121,10 +121,10 @@
                 <Border Grid.Column="0" Classes="ring" Classes.warn="{Binding News.BandIsIncident}"
                         Classes.danger="{Binding News.BandIsSecurity}" Margin="0,0,12,0">
                     <Panel>
-                        <ic:FluentIcon Icon="Warning" FontSize="15" Foreground="{StaticResource SemanticWarn}"
+                        <ic:FluentIcon Icon="Warning" FontSize="16" Foreground="{StaticResource SemanticWarn}"
                                        IsVisible="{Binding News.BandIsIncident}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        <ic:FluentIcon Icon="ShieldError" FontSize="15" Foreground="{StaticResource SemanticDanger}"
+                        <ic:FluentIcon Icon="ShieldError" FontSize="16" Foreground="{StaticResource SemanticDanger}"
                                        IsVisible="{Binding News.BandIsSecurity}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Panel>
