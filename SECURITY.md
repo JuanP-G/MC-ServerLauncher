@@ -36,6 +36,16 @@ owns it (see [Architecture](https://juanp-g.github.io/MC-ServerLauncher/docs/art
   [Signed updates](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/signing.html): versions
   before the first signed one (1.21.1) check nothing, apps on 1.21.1 still read an older signature that is tied to no version, and a signature proves who published a package, not that the build was clean.
   Windows `.exe` code signing (Authenticode) is not done.
+- **The announcements file** (`news.json`) is fetched from the project's website and from GitHub Pages,
+  and it is **signed with the same key as the updates**, under a different header so one kind of
+  signature cannot pass as the other. The app verifies the signature over the exact bytes before it
+  reads anything, refuses a file whose `seq` is lower than one it already accepted, and verifies its
+  saved copy again each time it is read. What a notice can do is limited by design: text, and a link
+  to four hosts (`github.com`, `playit.gg` and the project's two sites); it never runs or downloads
+  anything. It is not a guarantee of freshness (whoever can block the network can keep an app on the
+  last file it saw), and a leaked key would let its holder show false notices until a release removes
+  it. Details in [Announcements](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/announcements.html)
+  and [Signed updates](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/signing.html).
 - **The memory agent** is code that runs *inside* the JVM of every Automatic server. It is ours (one
   class, about 10 KB, no dependencies), embedded in the app instead of downloaded, and rebuilt byte for
   byte from `agent/` by a CI check; its SHA-256 is verified each time it is copied into a server's
@@ -91,6 +101,16 @@ servicio que lo aplica (ver [Arquitectura](https://juanp-g.github.io/MC-ServerLa
   [Actualizaciones firmadas](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/signing.es.html):
   las versiones anteriores a la primera firmada (la 1.21.1) no comprueban nada, las apps en la 1.21.1 aún leen una firma anterior que no va atada a ninguna versión, y una firma prueba quién publicó un paquete, no que la build estuviera
   limpia. La firma de código del `.exe` de Windows (Authenticode) no está hecha.
+- **El archivo de anuncios** (`news.json`) se baja de la web del proyecto y de GitHub Pages, y está
+  **firmado con la misma clave que las actualizaciones**, con otra cabecera para que una firma no valga
+  como la otra. La app verifica la firma sobre los bytes exactos antes de leer nada, rechaza un archivo
+  cuyo `seq` sea menor que uno que ya aceptó, y vuelve a verificar su copia guardada cada vez que la lee.
+  Lo que puede hacer un aviso está limitado por diseño: texto, y un enlace a cuatro sitios
+  (`github.com`, `playit.gg` y las dos webs del proyecto); nunca ejecuta ni descarga nada. No garantiza
+  frescura (quien pueda bloquear la red puede dejar a una app con el último archivo que vio), y una clave
+  filtrada permitiría a quien la tenga mostrar avisos falsos hasta que una release la quite. Los detalles
+  están en [Anuncios](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/announcements.es.html)
+  y en [Actualizaciones firmadas](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/signing.es.html).
 - **El agente de memoria** es código que se ejecuta *dentro* de la JVM de cada servidor Automático. Es
   nuestro (una clase, unos 10 KB, sin dependencias), va incrustado en la app en vez de descargarse, y una
   comprobación de la CI lo recompila byte a byte desde `agent/`; su SHA-256 se verifica cada vez que se

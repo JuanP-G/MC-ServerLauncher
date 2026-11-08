@@ -301,8 +301,8 @@ what this list is for:
 
 `consola` · `mods` · `tienda` · `jugadores` · `servidor` · `tipos` · `crossplay` · `bedrock` ·
 `playit` · `java` · `paper` · `forge` · `fabric` · `puertos` · `backups` · `avisos` · `colores` ·
-`actualizaciones` · `ajustes` · `nombres` · `seguridad` · `datos` · `ui` · `web` · `tests` · `ci` ·
-`release`
+`actualizaciones` · `novedades` · `ajustes` · `nombres` · `seguridad` · `datos` · `ui` · `web` · `tests` ·
+`ci` · `release`
 
 Adding one that will recur? Add it to this list in the same commit.
 
@@ -324,8 +324,8 @@ Footers are `Closes #12`, `Refs #12`, or `BREAKING CHANGE:` with what breaks and
 - **The title has the shape of a commit subject** — same types, with the scope in English:
   `feat(wake): a Bedrock player now wakes the server too`. The scope is the feature area (`console`,
   `mods`, `store`, `players`, `server`, `types`, `crossplay`, `bedrock`, `playit`, `java`, `paper`,
-  `forge`, `fabric`, `ports`, `backups`, `notifications`, `colours`, `updates`, `settings`, `names`,
-  `security`, `data`, `ui`, `web`, `tests`, `ci`, `wake`, `memory`); use one that exists.
+  `forge`, `fabric`, `ports`, `backups`, `notifications`, `colours`, `updates`, `news`, `settings`,
+  `names`, `security`, `data`, `ui`, `web`, `tests`, `ci`, `wake`, `memory`); use one that exists.
   `.github/pull_request_template.md` fills in the rest, including the checklist.
 - The description is the body of the commit you would have written for the whole branch.
 - One idea per pull request. The merge commit is `Merge pull request #N from ...`, with the title as
@@ -409,8 +409,8 @@ line icons in `docs/media/icons/` (24 px, `#2da44e`), the way the feature grid i
   `ServerSettingsDraft`; a bigger flow is a panel the detail area hosts, like `NewServerView` and
   `ServerSettingsView`. Ask for confirmation in place (the player-history button in
   `AdvancedSection` turns into the question) rather than with `MessageBox`. Localize every text with
-  `{loc:Loc ...}`. A few windows remain from before (`WhatsNewDialog`, `PlayitApiKeyDialog`,
-  `DeleteServerDialog`, `MessageBox`) and are being moved in; do not add to them.
+  `{loc:Loc ...}`. A few windows remain from before (`PlayitApiKeyDialog`, `DeleteServerDialog`,
+  `MessageBox`) and are being moved in; do not add to them.
 - **Service:** add a focused class in `Services/`, keep it UI-free, and inject/instantiate it from
   the relevant ViewModel (see how `ServerViewModel` composes its services).
 
@@ -418,7 +418,7 @@ line icons in `docs/media/icons/` (24 px, `#2da44e`), the way the feature grid i
 1. Bump `<Version>` in `McServerLauncher/McServerLauncher.csproj` — that's the **single source of
    truth**. `publish.ps1` reads it and passes it to Inno Setup. Keep the `.iss` fallback
    `MyAppVersion` aligned only so a direct/manual Inno Setup build doesn't produce a stale filename.
-2. Add a **what's-new** entry so the update dialog has something to show:
+2. Add a **what's-new** entry so the What's new section has something to show after the update:
    - A new tuple at the top of `Entries` in `Services/Changelog.cs` (newest first), e.g.
      `(new Version(1, 6, 0), "Whatsnew_1_6_0")`.
    - The matching `Whatsnew_x_y_z` key in **all five** `.resx` files (Spanish text in the neutral
@@ -463,6 +463,21 @@ line icons in `docs/media/icons/` (24 px, `#2da44e`), the way the feature grid i
    must not live on GitHub — so this script waits for the packages, checks each against its
    `.sha256`, signs them with your local key and uploads the `.sig2` and `.sig` files. Until it has run,
    Linux and macOS users who press Update are sent to the release page instead.
+
+### Publish an announcement
+A notice for every installed app (an outage of Playit, a security matter, a tip) goes in `web/news.json`,
+signed. The whole reference is [Announcements](announcements.md); the short version:
+1. Edit `web/news.json` and raise `seq`. **LF** line ends and no BOM (`.gitattributes` marks the file
+   `-text`, and the script refuses a file with CR: a signature made over a CRLF copy would not verify over
+   the LF that is published).
+   An incident or a security notice needs `until`; a resolved one needs `resolvedAt`. Write the text in the
+   five languages (`es`, `en`, `de`, `fr`, `pt`) or at least in `en`, which is the fallback.
+2. Run `.\tools\signing\sign-news.ps1`. It asks for the signing key's password and writes
+   `web/news.json.sig`. Without the key, stop here: a notice cannot be published unsigned, the app would
+   reject it.
+3. Open a pull request with both files. When it is merged, check that the website and GitHub Pages serve
+   the same bytes and that the signature verifies by hand (see [Signed updates](signing.md)).
+4. To end an incident, mark it `resolved` (do not delete it) and sign again.
 
 ## Documentation site (GitHub Pages)
 

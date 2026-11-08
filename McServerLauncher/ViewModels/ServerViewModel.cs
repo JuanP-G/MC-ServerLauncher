@@ -512,6 +512,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         // port are switched on and moved while the server runs, the usual way to set them up).
         if (row.Effects.HasFlag(ConfigEffect.RestartWakeListener)) FollowPortChange();
         if (row.Effects.HasFlag(ConfigEffect.ReloadBackups)) Backups.RefreshIfLoaded();
+        if (row.Effects.HasFlag(ConfigEffect.RecheckFirewall)) _ = RefreshFirewallNoticeAsync();
 
         if (row.ModsProperties.Length > 0 || row.Effects != ConfigEffect.None)
             Mods.ApplyConfigChange(row.ModsProperties, row.Effects);
@@ -554,6 +555,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         // public port can change, and Geyser has to be re-pointed at it or the server quietly stops
         // being reachable from Bedrock.
         _ = RefreshBedrockAddressAsync();
+        _ = RefreshFirewallNoticeAsync();
 
         // Also here, not only on the transition to Stopped: opening the app finds every server
         // already stopped and fires no state change, so waiting for one would mean wake-on-demand
@@ -746,6 +748,8 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
             // The interval starts now: the pre-start backup already covers the world as it is.
             BackupCoordinator.ClockStarted(DateTime.UtcNow);
             _autoBackupTimer.Start();
+
+            _ = RecheckFirewallAfterStartAsync();   // once Geyser listens
         }
         else if (state == ServerState.Stopped)
         {
@@ -771,6 +775,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
             UpdatePlayerCount();
             RefreshPlayers(); // the files (ops/banned/whitelist) may have changed
             _wake.Start();
+            _ = RefreshFirewallNoticeAsync();   // the sleeping listener is the launcher's, not Java's
             _admin.ServerStopped();   // the next start reads the file as it is
 
             // However it stopped — a crash, "stop" typed in the console. A stop the app asked for

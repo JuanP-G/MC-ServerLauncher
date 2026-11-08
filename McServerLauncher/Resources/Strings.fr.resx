@@ -412,8 +412,50 @@
   <data name="Msg_UpdateCannotReplaceFmt" xml:space="preserve"><value>Impossible de remplacer {0} ({1}). Ta version actuelle est intacte et fonctionne toujours ; la page de téléchargement va s'ouvrir pour que tu la mettes à jour à la main.</value></data>
   <data name="Update_Downloading" xml:space="preserve"><value>Téléchargement de la mise à jour...</value></data>
   <data name="Whatsnew_Title" xml:space="preserve"><value>Nouveautés</value></data>
-  <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>Nouveautés de la version {0}</value></data>
   <data name="Whatsnew_Ok" xml:space="preserve"><value>Compris</value></data>
+  <data name="News_Subtitle" xml:space="preserve"><value>Les nouveautés de chaque version et les avis importants.</value></data>
+  <data name="News_MarkAllRead" xml:space="preserve"><value>Tout marquer comme lu</value></data>
+  <data name="News_NoticesTitle" xml:space="preserve"><value>Avis</value></data>
+  <data name="News_NoNotices" xml:space="preserve"><value>Aucun avis pour le moment.</value></data>
+  <data name="News_NoticesOff" xml:space="preserve"><value>Les avis sont désactivés : seules les versions sont listées ici.</value></data>
+  <data name="News_KindIncident" xml:space="preserve"><value>Incident</value></data>
+  <data name="News_KindSecurity" xml:space="preserve"><value>Sécurité</value></data>
+  <data name="News_KindTip" xml:space="preserve"><value>Conseil</value></data>
+  <data name="News_StatusResolved" xml:space="preserve"><value>Résolu</value></data>
+  <data name="News_MoreInfo" xml:space="preserve"><value>Plus d'informations</value></data>
+  <data name="News_FeedFailedFmt" xml:space="preserve"><value>Impossible de vérifier les avis. Dernière copie : {0}.</value></data>
+  <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>Impossible de vérifier les avis, et aucune copie n'est encore enregistrée.</value></data>
+  <data name="News_BandSee" xml:space="preserve"><value>Voir l'avis</value></data>
+  <data name="News_ToastSeeNews" xml:space="preserve"><value>Les détails sont dans Nouveautés.</value></data>
+  <data name="News_ToastResolved" xml:space="preserve"><value>Résolu. Les détails sont dans Nouveautés.</value></data>
+  <data name="News_VersionsTitle" xml:space="preserve"><value>Versions</value></data>
+  <data name="News_VersionFmt" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="News_TagInstalled" xml:space="preserve"><value>Installée</value></data>
+  <data name="News_TagNew" xml:space="preserve"><value>Nouvelle</value></data>
+  <data name="News_MoveTitle" xml:space="preserve"><value>Les nouveautés ont changé de place</value></data>
+  <data name="News_MoveBody" xml:space="preserve"><value>Les nouveautés de chaque version sont désormais ici et ne s'affichent plus dans une fenêtre. Vous pouvez choisir les avis reçus et leur apparence dans Paramètres, sous Annonces.</value></data>
+  <data name="News_MoveGoSettings" xml:space="preserve"><value>Aller aux Paramètres</value></data>
+  <data name="Set_News" xml:space="preserve"><value>Annonces</value></data>
+  <data name="News_ShowTitle" xml:space="preserve"><value>Afficher les annonces</value></data>
+  <data name="News_ShowDesc" xml:space="preserve"><value>Affiche les avis importants du site du projet, comme une panne de Playit, et marque la barre latérale quand un élément de Nouveautés n'est pas lu. Désactivé, l'application ne consulte pas le site et Nouveautés ne liste que les versions.</value></data>
+  <data name="News_BadgeTitle" xml:space="preserve"><value>Comment la barre signale les nouveautés</value></data>
+  <data name="News_BadgeDesc" xml:space="preserve"><value>Ce qui apparaît sur Nouveautés quand un élément n'est pas lu.</value></data>
+  <data name="News_BadgeNumber" xml:space="preserve"><value>Nombre</value></data>
+  <data name="News_BadgeDot" xml:space="preserve"><value>Point</value></data>
+  <data name="News_BadgePulse" xml:space="preserve"><value>Point qui pulse</value></data>
+  <data name="News_BadgeNone" xml:space="preserve"><value>Aucune</value></data>
+  <data name="News_StripTitle" xml:space="preserve"><value>Bandeau d'avis</value></data>
+  <data name="News_StripDesc" xml:space="preserve"><value>Un bandeau au-dessus de la fenêtre pour ce qui est urgent, comme un incident Playit. Il disparaît tout seul quand l'incident est résolu, ou quand vous le fermez.</value></data>
+  <data name="News_StripAll" xml:space="preserve"><value>Dans toute l'application</value></data>
+  <data name="News_StripTunnels" xml:space="preserve"><value>Seulement dans Tunnels</value></data>
+  <data name="News_StripNone" xml:space="preserve"><value>Aucun</value></data>
+  <data name="News_ToastTitle" xml:space="preserve"><value>Prévenir par une notification</value></data>
+  <data name="News_ToastDesc" xml:space="preserve"><value>Les incidents et les avis de sécurité lancent aussi une notification, une seule fois chacun. Elle suit l'interrupteur général des notifications.</value></data>
+  <data name="News_IncidentsTitle" xml:space="preserve"><value>Incidents</value></data>
+  <data name="News_IncidentsDesc" xml:space="preserve"><value>Pannes de services dont l'application dépend, comme Playit.</value></data>
+  <data name="News_TipsTitle" xml:space="preserve"><value>Conseils</value></data>
+  <data name="News_TipsDesc" xml:space="preserve"><value>Suggestions et nouvelles du projet. Ils n'utilisent jamais le bandeau ni les notifications.</value></data>
+  <data name="News_PrivacyNote" xml:space="preserve"><value>Les avis sont lus dans un fichier signé du site du projet. La requête ne contient ni version, ni langue, ni identifiant, et les avis qui vous concernent sont choisis ici : rien de ce que vous faites dans l'application ne quitte votre ordinateur. Les avis de sécurité ne sont réduits au silence que par « Afficher les annonces ».</value></data>
   <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• MC Server Launcher fonctionne désormais aussi sur Linux (et pas seulement Windows), grâce à une nouvelle interface multiplateforme.&#10;• Sur Linux, télécharge-le en AppImage depuis les releases ; sur Windows tout reste pareil (installateur et mise à jour automatique).&#10;• Les 5 langues, la console, les joueurs et la configuration visuelle sont conservés.</value></data>
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• Tu peux maintenant créer des serveurs Forge et Paper, en plus de Vanilla et Fabric.&#10;• Explorateur de mods et plugins intégré (Modrinth), filtré selon le type et la version de ton serveur, avec tri et installation en un clic.&#10;• Active/désactive ou supprime ce qui est installé, et convertis un serveur existant en un autre type en conservant le monde.&#10;• Chaque serveur affiche désormais une étiquette de type.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• Plus de sécurité : la clé API de Playit est désormais stockée chiffrée (auparavant en clair), sur tous les systèmes. La migration est automatique.&#10;• Icône de l'application renouvelée en haute résolution.</value></data>
@@ -788,7 +830,8 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Msg_NeoForgeInstallNoOutput" xml:space="preserve"><value>L’installateur NeoForge a terminé mais n’a pas laissé le fichier de lancement attendu.</value></data>
   <data name="HowToPlay_NeoForgeFmt" xml:space="preserve"><value>Ce serveur utilise NeoForge (Minecraft {0}). Pour jouer avec des mods :&#10;1. Télécharge l’installateur NeoForge pour {0} sur https://neoforged.net et installe le client (« Install client »).&#10;2. Ouvre le lanceur Minecraft et choisis le profil « neoforge ».&#10;3. Copie les mods (.jar) dans %appdata%\.minecraft\mods.&#10;4. La version de NeoForge du client doit correspondre à celle du serveur.</value></data>
   <data name="Crossplay_Check" xml:space="preserve"><value>Autoriser aussi les joueurs Bedrock (mobile, console, Windows 10/11)</value></data>
-  <data name="Crossplay_Hint" xml:space="preserve"><value>Installe Geyser et Floodgate, et crée un second tunnel. Les joueurs qui arrivent depuis Bedrock n’ont pas besoin d’acheter Minecraft Java : leur identité n’est pas vérifiée par Mojang et leur nom s’affiche avec un point devant. La liste blanche les accepte quand même.</value></data>
+  <data name="Crossplay_Hint" xml:space="preserve"><value>Installe Geyser et Floodgate, et crée un second tunnel. Les joueurs qui arrivent depuis Bedrock n’ont pas besoin d’acheter Minecraft Java : leur identité n’est pas vérifiée par Mojang et leur nom s’affiche avec un point devant. La liste blanche les accepte quand même. Si tu joues en LAN ou via un VPN (Radmin, Hamachi), autorise le port Bedrock en TCP et en UDP dans le pare-feu Windows.</value></data>
+  <data name="Crossplay_HintSettings" xml:space="preserve"><value>Installe Geyser et Floodgate, et crée un second tunnel. Les joueurs qui arrivent depuis Bedrock n’ont pas besoin d’acheter Minecraft Java : leur identité n’est pas vérifiée par Mojang et leur nom s’affiche avec un point devant. La liste blanche les accepte quand même.</value></data>
   <data name="Crossplay_Unsupported" xml:space="preserve"><value>Geyser ne publie rien pour ce type de serveur. Cela fonctionne sur Paper, Fabric et NeoForge.</value></data>
   <data name="Crossplay_UnsupportedVanilla" xml:space="preserve"><value>Vanilla n’accepte ni mods ni plugins, il ne peut donc pas traduire Bedrock. Passe le type à Paper (le monde est conservé) et tu pourras l’activer.</value></data>
   <data name="Crossplay_BedrockAddress" xml:space="preserve"><value>Adresse pour Bedrock</value></data>
@@ -878,6 +921,22 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Hydraulic_Hint" xml:space="preserve"><value>Installe Hydraulic (de GeyserMC également) et Fabric API. Sans cela, ceux qui arrivent depuis Bedrock atteignent le serveur mais ne voient rien de ce que les mods ajoutent. Ses auteurs le qualifient de développement très précoce.</value></data>
   <data name="Hydraulic_Unsupported" xml:space="preserve"><value>Fabric uniquement. Hydraulic a cessé de publier pour NeoForge en février 2026 et son module reste hors compilation ; pour avoir mods et Bedrock ensemble, Fabric est aujourd’hui le seul chargeur pris en charge.</value></data>
   <data name="Msg_GeyserConfigRepairedFmt" xml:space="preserve"><value>La configuration de Geyser a été corrigée : l’authentification était mauvaise et vaut désormais « {0} ». Redémarre le serveur s’il tournait déjà.</value></data>
+  <data name="Msg_GeyserTransportSetFmt" xml:space="preserve"><value>La configuration de Geyser a été corrigée : les connexions Bedrock utilisent désormais « {0} » pour que les versions actuelles puissent se connecter. Redémarre le serveur s’il tournait déjà.</value></data>
+  <data name="Firewall_Title" xml:space="preserve"><value>Pare-feu Windows</value></data>
+  <data name="Firewall_StatusClosedFmt" xml:space="preserve"><value>Le pare-feu Windows ne laisse pas passer le port Bedrock {0}.</value></data>
+  <data name="Firewall_StatusOpenFmt" xml:space="preserve"><value>Le port Bedrock {0} est autorisé en TCP et en UDP.</value></data>
+  <data name="Firewall_StatusElsewhereFmt" xml:space="preserve"><value>Une autre règle du pare-feu Windows autorise déjà le port Bedrock {0}.</value></data>
+  <data name="Firewall_Hint" xml:space="preserve"><value>Nécessaire pour qui se connecte en LAN ou via un VPN (Radmin, Hamachi). Créée sur tous les réseaux ; Windows demandera une confirmation d’administrateur.</value></data>
+  <data name="Firewall_Allow" xml:space="preserve"><value>Autoriser dans le pare-feu</value></data>
+  <data name="Firewall_Remove" xml:space="preserve"><value>Retirer l’autorisation</value></data>
+  <data name="Firewall_Working" xml:space="preserve"><value>En attente de Windows…</value></data>
+  <data name="Firewall_Cancelled" xml:space="preserve"><value>Tu as refusé la confirmation d’administrateur : rien n’a été modifié.</value></data>
+  <data name="Firewall_Failed" xml:space="preserve"><value>Windows n’a pas appliqué la modification. Vérifie que le pare-feu est actif et réessaie, ou crée la règle à la main.</value></data>
+  <data name="Firewall_NoticeFmt" xml:space="preserve"><value>Pare-feu : rien ne laisse passer le port Bedrock {1} sur « {0} ».</value></data>
+  <data name="Firewall_NoticeBlockedFmt" xml:space="preserve"><value>Pare-feu : la règle ({2}) bloque le port {1} sur « {0} ».</value></data>
+  <data name="Firewall_OpenConsole" xml:space="preserve"><value>Ouvrir le pare-feu</value></data>
+  <data name="Firewall_NoticeDismiss" xml:space="preserve"><value>Pas nécessaire</value></data>
+  <data name="Firewall_NoticeDismissTip" xml:space="preserve"><value>Si les joueurs passent uniquement par le tunnel Playit, le pare-feu ne te concerne pas. Ce cas ne sera plus signalé.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows n’autorise pas le caractère « {0} » dans un nom de dossier. Essaie « {1} ».</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>« {0} » est un nom réservé par Windows et ne peut pas servir de dossier. Choisis-en un autre.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>Le nom ne peut pas se terminer par un point ni un espace : Windows les supprime et le dossier porterait un autre nom.</value></data>

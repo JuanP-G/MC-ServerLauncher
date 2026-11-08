@@ -277,6 +277,19 @@ public partial class ServerConfig : ObservableObject
     [ObservableProperty]
     private int _bedrockPort;
 
+    /// <summary>
+    /// The firewall problem the owner said they do not care about, as the check wrote it down
+    /// (<c>FirewallFinding.Signature</c>), or empty.
+    /// </summary>
+    /// <remarks>
+    /// A signature, not a flag: the notice comes back when the problem changes — another network, or
+    /// a block rule instead of a missing one — and only stays away for the one that was dismissed.
+    /// Someone who hosts through a tunnel alone is not affected by the firewall at all, and the app
+    /// cannot see a dropped packet to tell them apart.
+    /// </remarks>
+    [ObservableProperty]
+    private string _firewallNoticeDismissed = "";
+
     // --- Notifications ---
 
     /// <summary>

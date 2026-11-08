@@ -77,6 +77,49 @@ public static class Changelog
     /// <summary>A version and its localized notes.</summary>
     public readonly record struct Section(string Version, string Notes);
 
+    /// <summary>A release in the table, with its notes not yet looked up.</summary>
+    /// <remarks>
+    /// <see cref="Notes"/> asks the resources every time it is read. There are about fifty releases and
+    /// a screen that lists them all only needs the text of the ones that are open.
+    /// </remarks>
+    public readonly record struct Release(Version Version, string Key)
+    {
+        /// <summary>The version as its release calls it: "1.22.0".</summary>
+        public string Label => Format(Version);
+
+        /// <summary>The notes in the language of the interface.</summary>
+        public string Notes => Localizer.Get(Key);
+    }
+
+    /// <summary>
+    /// The version this build is, as the table spells versions: three numbers, plus the fourth of a
+    /// beta.
+    /// </summary>
+    internal static Version Running()
+    {
+        var v = typeof(Changelog).Assembly.GetName().Version ?? new Version(0, 0);
+        return new Version(v.Major, v.Minor, Math.Max(0, v.Build), Math.Max(0, v.Revision));
+    }
+
+    /// <summary>A stored "last seen" version ("1.21.6"); null on a new install or an unreadable value.</summary>
+    internal static Version? ParseSeen(string? seen)
+    {
+        if (string.IsNullOrWhiteSpace(seen) || !Version.TryParse(seen, out var v)) return null;
+        return new Version(v.Major, v.Minor, Math.Max(0, v.Build), Math.Max(0, v.Revision));
+    }
+
+    /// <summary>
+    /// Every release up to <paramref name="current"/>, newest first: the whole history this build
+    /// knows, for the screen that lists it.
+    /// </summary>
+    public static IReadOnlyList<Release> All(Version current)
+    {
+        var result = new List<Release>();
+        foreach (var (v, key) in Entries)
+            if (v <= current) result.Add(new Release(v, key));
+        return result;
+    }
+
     /// <summary>
     /// Notes for every version newer than <paramref name="lastSeen"/> up to <paramref name="current"/>,
     /// newest first. On a fresh install (<paramref name="lastSeen"/> null) only the newest applicable

@@ -26,6 +26,32 @@
         <Setter Property="Margin" Value="0,0,0,8" />
     </Style>
 
+    <!-- A card with something unread in it: its edge takes the accent until the visit ends. -->
+    <Style Selector="Border.card.marked">
+        <Setter Property="BorderBrush" Value="{StaticResource AccentSelected}" />
+    </Style>
+
+    <!-- The ring: a thin circle around an icon, the one touch of colour on a notice. Its colour says
+         what kind of notice it is (the update banner and the toasts draw the same mark); with no kind
+         it is the blue of information. -->
+    <Style Selector="Border.ring">
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="CornerRadius" Value="15" />
+        <Setter Property="BorderThickness" Value="1.5" />
+        <Setter Property="BorderBrush" Value="{StaticResource SemanticInfoRing}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.ring.warn">
+        <Setter Property="BorderBrush" Value="{StaticResource SemanticWarnRing}" />
+    </Style>
+    <Style Selector="Border.ring.danger">
+        <Setter Property="BorderBrush" Value="{StaticResource SemanticDangerRing}" />
+    </Style>
+    <Style Selector="Border.ring.ok">
+        <Setter Property="BorderBrush" Value="{StaticResource SemanticOkRing}" />
+    </Style>
+
     <!-- The band: one line under the server's header, for something worth knowing that must not take
          room from what is below. Its text is cut with an ellipsis rather than wrapped, and says the
          rest in its tooltip; its buttons are as low as the line. -->

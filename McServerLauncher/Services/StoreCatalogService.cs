@@ -284,11 +284,5 @@ public sealed class StoreCatalogService
     /// nothing is left. Text that came from a model and a download has no business carrying line
     /// breaks or control characters into a card.
     /// </summary>
-    private static string? Clean(string? text, int max)
-    {
-        if (string.IsNullOrWhiteSpace(text)) return null;
-        var flat = new string(text.Select(c => char.IsControl(c) ? ' ' : c).ToArray());
-        flat = string.Join(' ', flat.Split(' ', StringSplitOptions.RemoveEmptyEntries));
-        return flat.Length == 0 ? null : flat.Length > max ? flat[..max] : flat;
-    }
+    private static string? Clean(string? text, int max) => UntrustedText.Clean(text, max);
 }

@@ -319,8 +319,8 @@ lo que está esta lista:
 
 `consola` · `mods` · `tienda` · `jugadores` · `servidor` · `tipos` · `crossplay` · `bedrock` ·
 `playit` · `java` · `paper` · `forge` · `fabric` · `puertos` · `backups` · `avisos` · `colores` ·
-`actualizaciones` · `ajustes` · `nombres` · `seguridad` · `datos` · `ui` · `web` · `tests` · `ci` ·
-`release`
+`actualizaciones` · `novedades` · `ajustes` · `nombres` · `seguridad` · `datos` · `ui` · `web` · `tests` ·
+`ci` · `release`
 
 ¿Añades uno que se va a repetir? Añádelo a esta lista en el mismo commit.
 
@@ -342,8 +342,9 @@ Los pies son `Closes #12`, `Refs #12`, o `BREAKING CHANGE:` con qué se rompe y 
 - **El título tiene la forma del asunto de un commit** — mismos tipos, con el ámbito en inglés:
   `feat(wake): a Bedrock player now wakes the server too`. El ámbito es el área de la funcionalidad
   (`console`, `mods`, `store`, `players`, `server`, `types`, `crossplay`, `bedrock`, `playit`, `java`,
-  `paper`, `forge`, `fabric`, `ports`, `backups`, `notifications`, `colours`, `updates`, `settings`,
-  `names`, `security`, `data`, `ui`, `web`, `tests`, `ci`, `wake`, `memory`); usa uno que ya exista.
+  `paper`, `forge`, `fabric`, `ports`, `backups`, `notifications`, `colours`, `updates`, `news`,
+  `settings`, `names`, `security`, `data`, `ui`, `web`, `tests`, `ci`, `wake`, `memory`); usa uno que ya
+  exista.
   `.github/pull_request_template.md` rellena el resto, la lista de comprobación incluida.
 - La descripción es el cuerpo del commit que habrías escrito para toda la rama.
 - Una idea por pull request. El commit de mezcla es `Merge pull request #N from ...`, con el título
@@ -433,7 +434,7 @@ la rejilla de funciones de `README.md`.
   edita el `ServerSettingsDraft`; un flujo más grande es un panel que aloja el detalle, como
   `NewServerView` y `ServerSettingsView`. Las confirmaciones se piden en el sitio (el botón de borrar
   el historial en `AdvancedSection` se convierte en la pregunta), no con `MessageBox`. Localiza cada
-  texto con `{loc:Loc ...}`. Quedan algunas ventanas de antes (`WhatsNewDialog`, `PlayitApiKeyDialog`,
+  texto con `{loc:Loc ...}`. Quedan algunas ventanas de antes (`PlayitApiKeyDialog`,
   `DeleteServerDialog`, `MessageBox`) que se están pasando dentro; no añadas más.
 - **Servicio:** añade una clase centrada en `Services/`, sin interfaz, e instánciala desde el
   ViewModel correspondiente (mira cómo `ServerViewModel` compone sus servicios).
@@ -442,7 +443,7 @@ la rejilla de funciones de `README.md`.
 1. Sube `<Version>` en `McServerLauncher/McServerLauncher.csproj` — es la **fuente única de verdad**.
    `publish.ps1` la lee y se la pasa a Inno Setup. Mantén alineado el fallback `MyAppVersion` del
    `.iss` solo para que una compilación manual/directa con Inno Setup no genere un nombre antiguo.
-2. Añade una entrada de **novedades** para que el diálogo de actualización tenga algo que mostrar:
+2. Añade una entrada de **novedades** para que la sección Novedades tenga algo que mostrar tras actualizar:
    - Una nueva tupla al principio de `Entries` en `Services/Changelog.cs` (la más nueva primero),
      p. ej. `(new Version(1, 6, 0), "Whatsnew_1_6_0")`.
    - La clave `Whatsnew_x_y_z` correspondiente en **los cinco** archivos `.resx` (el texto en español
@@ -489,6 +490,21 @@ la rejilla de funciones de `README.md`.
    clave no debe vivir en GitHub — así que este script espera a los paquetes, comprueba cada uno
    contra su `.sha256`, los firma con tu clave local y sube los `.sig2` y `.sig`. Hasta que se ejecute, quien
    pulse Actualizar en Linux o macOS irá a la página de la release.
+
+### Publicar un anuncio
+Un aviso para todas las apps instaladas (una caída de Playit, un asunto de seguridad, un consejo) va en
+`web/news.json`, firmado. La referencia completa es [Anuncios](announcements.es.md); la versión corta:
+1. Edita `web/news.json` y sube `seq`. Finales de línea **LF** y sin BOM (`.gitattributes` marca el
+   archivo como `-text`, y el script se niega a firmar un archivo con CR: una firma hecha sobre una copia
+   CRLF no verificaría sobre la LF que se publica). Una incidencia o un aviso de seguridad necesita `until`;
+   uno resuelto necesita `resolvedAt`. Escribe el texto en los cinco idiomas (`es`, `en`, `de`, `fr`, `pt`)
+   o al menos en `en`, que es el de respaldo.
+2. Ejecuta `.\tools\signing\sign-news.ps1`. Pide la contraseña de la clave de firma y escribe
+   `web/news.json.sig`. Sin la clave, para aquí: un aviso no puede publicarse sin firmar, la app lo
+   rechazaría.
+3. Abre un pull request con los dos archivos. Cuando se fusione, comprueba que la web y GitHub Pages sirven
+   los mismos bytes y que la firma verifica a mano (ver [Actualizaciones firmadas](signing.es.md)).
+4. Para terminar una incidencia, márcala `resolved` (no la borres) y firma otra vez.
 
 ## Sitio de documentación (GitHub Pages)
 

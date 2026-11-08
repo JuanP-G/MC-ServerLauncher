@@ -412,8 +412,50 @@
   <data name="Msg_UpdateCannotReplaceFmt" xml:space="preserve"><value>Não foi possível substituir {0} ({1}). A tua versão atual está intacta e continua a funcionar; vai abrir-se a página de transferências para atualizares à mão.</value></data>
   <data name="Update_Downloading" xml:space="preserve"><value>A baixar atualização...</value></data>
   <data name="Whatsnew_Title" xml:space="preserve"><value>Novidades</value></data>
-  <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>Novidades da versão {0}</value></data>
   <data name="Whatsnew_Ok" xml:space="preserve"><value>Entendido</value></data>
+  <data name="News_Subtitle" xml:space="preserve"><value>As novidades de cada versão e os avisos importantes.</value></data>
+  <data name="News_MarkAllRead" xml:space="preserve"><value>Marcar tudo como lido</value></data>
+  <data name="News_NoticesTitle" xml:space="preserve"><value>Avisos</value></data>
+  <data name="News_NoNotices" xml:space="preserve"><value>Não há avisos neste momento.</value></data>
+  <data name="News_NoticesOff" xml:space="preserve"><value>Os avisos estão desativados: aqui só se listam as versões.</value></data>
+  <data name="News_KindIncident" xml:space="preserve"><value>Incidente</value></data>
+  <data name="News_KindSecurity" xml:space="preserve"><value>Segurança</value></data>
+  <data name="News_KindTip" xml:space="preserve"><value>Dica</value></data>
+  <data name="News_StatusResolved" xml:space="preserve"><value>Resolvido</value></data>
+  <data name="News_MoreInfo" xml:space="preserve"><value>Mais informações</value></data>
+  <data name="News_FeedFailedFmt" xml:space="preserve"><value>Não foi possível verificar os avisos. Última cópia: {0}.</value></data>
+  <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>Não foi possível verificar os avisos e ainda não há nenhuma cópia guardada.</value></data>
+  <data name="News_BandSee" xml:space="preserve"><value>Ver aviso</value></data>
+  <data name="News_ToastSeeNews" xml:space="preserve"><value>Os detalhes estão em Novidades.</value></data>
+  <data name="News_ToastResolved" xml:space="preserve"><value>Resolvido. Os detalhes estão em Novidades.</value></data>
+  <data name="News_VersionsTitle" xml:space="preserve"><value>Versões</value></data>
+  <data name="News_VersionFmt" xml:space="preserve"><value>Versão {0}</value></data>
+  <data name="News_TagInstalled" xml:space="preserve"><value>Instalada</value></data>
+  <data name="News_TagNew" xml:space="preserve"><value>Nova</value></data>
+  <data name="News_MoveTitle" xml:space="preserve"><value>As novidades mudaram de sítio</value></data>
+  <data name="News_MoveBody" xml:space="preserve"><value>As novidades de cada versão estão agora aqui e já não aparecem numa janela. Pode escolher que avisos recebe e como se veem em Definições, em Anúncios.</value></data>
+  <data name="News_MoveGoSettings" xml:space="preserve"><value>Ir para Definições</value></data>
+  <data name="Set_News" xml:space="preserve"><value>Anúncios</value></data>
+  <data name="News_ShowTitle" xml:space="preserve"><value>Mostrar anúncios</value></data>
+  <data name="News_ShowDesc" xml:space="preserve"><value>Mostra avisos importantes do site do projeto, como uma falha do Playit, e marca a barra lateral quando há algo por ler em Novidades. Desativado, a app não consulta o site e Novidades só lista as versões.</value></data>
+  <data name="News_BadgeTitle" xml:space="preserve"><value>Como a barra marca o que é novo</value></data>
+  <data name="News_BadgeDesc" xml:space="preserve"><value>O que aparece sobre Novidades quando há algo por ler.</value></data>
+  <data name="News_BadgeNumber" xml:space="preserve"><value>Número</value></data>
+  <data name="News_BadgeDot" xml:space="preserve"><value>Ponto</value></data>
+  <data name="News_BadgePulse" xml:space="preserve"><value>Ponto a pulsar</value></data>
+  <data name="News_BadgeNone" xml:space="preserve"><value>Nenhuma</value></data>
+  <data name="News_StripTitle" xml:space="preserve"><value>Faixa de avisos</value></data>
+  <data name="News_StripDesc" xml:space="preserve"><value>Uma faixa sobre a janela para o que é urgente, como um incidente do Playit. Desaparece sozinha quando é resolvido, ou quando a fechar.</value></data>
+  <data name="News_StripAll" xml:space="preserve"><value>Em toda a app</value></data>
+  <data name="News_StripTunnels" xml:space="preserve"><value>Só em Túneis</value></data>
+  <data name="News_StripNone" xml:space="preserve"><value>Nenhuma</value></data>
+  <data name="News_ToastTitle" xml:space="preserve"><value>Avisar com uma notificação</value></data>
+  <data name="News_ToastDesc" xml:space="preserve"><value>Os incidentes e os avisos de segurança lançam também uma notificação, uma só vez cada um. Respeita o interruptor geral das notificações.</value></data>
+  <data name="News_IncidentsTitle" xml:space="preserve"><value>Incidentes</value></data>
+  <data name="News_IncidentsDesc" xml:space="preserve"><value>Falhas de serviços de que a app depende, como o Playit.</value></data>
+  <data name="News_TipsTitle" xml:space="preserve"><value>Dicas</value></data>
+  <data name="News_TipsDesc" xml:space="preserve"><value>Sugestões e notícias do projeto. Nunca usam a faixa nem as notificações.</value></data>
+  <data name="News_PrivacyNote" xml:space="preserve"><value>Os avisos são lidos de um ficheiro assinado do site do projeto. O pedido não leva versão, idioma nem identificador, e os avisos que lhe dizem respeito são escolhidos aqui: nada do que faz na app sai do computador. Os avisos de segurança só se silenciam com «Mostrar anúncios».</value></data>
   <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• O MC Server Launcher agora também funciona em Linux (além do Windows), graças a uma nova interface multiplataforma.&#10;• No Linux descarrega-se como AppImage a partir das releases; no Windows tudo continua igual (instalador e atualização automática).&#10;• Mantêm-se os 5 idiomas, a consola, os jogadores e a configuração visual.</value></data>
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• Agora podes criar servidores Forge e Paper, além de Vanilla e Fabric.&#10;• Explorador de mods e plugins integrado (Modrinth), filtrado pelo tipo e versão do teu servidor, com ordenação e instalação num clique.&#10;• Ativa/desativa ou apaga o que está instalado, e converte um servidor existente para outro tipo mantendo o mundo.&#10;• Cada servidor mostra agora uma etiqueta de tipo.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• Mais segurança: a chave da API do Playit agora é guardada cifrada (antes texto simples), em todos os sistemas. A migração é automática.&#10;• Ícone da aplicação renovado em alta resolução.</value></data>
@@ -788,7 +830,8 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Msg_NeoForgeInstallNoOutput" xml:space="preserve"><value>O instalador do NeoForge terminou mas não deixou o ficheiro de arranque esperado.</value></data>
   <data name="HowToPlay_NeoForgeFmt" xml:space="preserve"><value>Este servidor usa NeoForge (Minecraft {0}). Para entrar com mods:&#10;1. Descarrega o instalador do NeoForge para {0} em https://neoforged.net e instala o cliente («Install client»).&#10;2. Abre o launcher do Minecraft e escolhe o perfil «neoforge».&#10;3. Copia os mods (.jar) para %appdata%\.minecraft\mods.&#10;4. A versão de NeoForge do cliente tem de coincidir com a do servidor.</value></data>
   <data name="Crossplay_Check" xml:space="preserve"><value>Permitir entrar também a partir do Bedrock (telemóvel, consola, Windows 10/11)</value></data>
-  <data name="Crossplay_Hint" xml:space="preserve"><value>Instala o Geyser e o Floodgate, e cria um segundo túnel. Quem entrar pelo Bedrock não precisa de comprar o Minecraft Java: a identidade não é verificada pela Mojang e o nome aparece com um ponto à frente. A lista branca aceita-os na mesma.</value></data>
+  <data name="Crossplay_Hint" xml:space="preserve"><value>Instala o Geyser e o Floodgate, e cria um segundo túnel. Quem entrar pelo Bedrock não precisa de comprar o Minecraft Java: a identidade não é verificada pela Mojang e o nome aparece com um ponto à frente. A lista branca aceita-os na mesma. Se jogas por LAN ou por uma VPN (Radmin, Hamachi), permite a porta do Bedrock em TCP e em UDP na Firewall do Windows.</value></data>
+  <data name="Crossplay_HintSettings" xml:space="preserve"><value>Instala o Geyser e o Floodgate, e cria um segundo túnel. Quem entrar pelo Bedrock não precisa de comprar o Minecraft Java: a identidade não é verificada pela Mojang e o nome aparece com um ponto à frente. A lista branca aceita-os na mesma.</value></data>
   <data name="Crossplay_Unsupported" xml:space="preserve"><value>O Geyser não publica versão para este tipo de servidor. Funciona em Paper, Fabric e NeoForge.</value></data>
   <data name="Crossplay_UnsupportedVanilla" xml:space="preserve"><value>O Vanilla não aceita mods nem plugins, por isso não pode traduzir Bedrock. Muda o tipo para Paper (mantém o mundo) e poderás ativar isto.</value></data>
   <data name="Crossplay_BedrockAddress" xml:space="preserve"><value>Endereço para Bedrock</value></data>
@@ -878,6 +921,22 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Hydraulic_Hint" xml:space="preserve"><value>Instala o Hydraulic (dos mesmos GeyserMC) e a Fabric API. Sem isto, quem entra pelo Bedrock chega ao servidor mas não vê o que os mods acrescentam. Os próprios autores consideram-no de desenvolvimento muito inicial.</value></data>
   <data name="Hydraulic_Unsupported" xml:space="preserve"><value>Só no Fabric. O Hydraulic deixou de publicar para NeoForge em fevereiro de 2026 e o módulo continua fora da compilação; se queres mods e Bedrock ao mesmo tempo, o Fabric é hoje o único carregador com suporte.</value></data>
   <data name="Msg_GeyserConfigRepairedFmt" xml:space="preserve"><value>A configuração do Geyser foi corrigida: a autenticação estava mal e agora é “{0}”. Reinicia o servidor se já estava a correr.</value></data>
+  <data name="Msg_GeyserTransportSetFmt" xml:space="preserve"><value>A configuração do Geyser foi corrigida: as ligações do Bedrock passam a usar “{0}” para que as versões atuais consigam entrar. Reinicia o servidor se já estava a correr.</value></data>
+  <data name="Firewall_Title" xml:space="preserve"><value>Firewall do Windows</value></data>
+  <data name="Firewall_StatusClosedFmt" xml:space="preserve"><value>A Firewall do Windows não deixa passar a porta {0} do Bedrock.</value></data>
+  <data name="Firewall_StatusOpenFmt" xml:space="preserve"><value>A porta {0} do Bedrock está permitida por TCP e UDP.</value></data>
+  <data name="Firewall_StatusElsewhereFmt" xml:space="preserve"><value>Outra regra da Firewall do Windows já permite a porta {0} do Bedrock.</value></data>
+  <data name="Firewall_Hint" xml:space="preserve"><value>Necessário para quem entra por LAN ou VPN (Radmin, Hamachi). É criada em todas as redes e o Windows pede confirmação de administrador.</value></data>
+  <data name="Firewall_Allow" xml:space="preserve"><value>Permitir na Firewall</value></data>
+  <data name="Firewall_Remove" xml:space="preserve"><value>Retirar a permissão</value></data>
+  <data name="Firewall_Working" xml:space="preserve"><value>À espera do Windows…</value></data>
+  <data name="Firewall_Cancelled" xml:space="preserve"><value>Cancelaste a confirmação de administrador: não foi alterado nada.</value></data>
+  <data name="Firewall_Failed" xml:space="preserve"><value>O Windows não aplicou a alteração. Confirma que a Firewall está ativa e tenta de novo, ou cria a regra à mão.</value></data>
+  <data name="Firewall_NoticeFmt" xml:space="preserve"><value>Firewall: nada deixa passar a porta {1} do Bedrock em «{0}».</value></data>
+  <data name="Firewall_NoticeBlockedFmt" xml:space="preserve"><value>Firewall: a regra ({2}) bloqueia a porta {1} em «{0}».</value></data>
+  <data name="Firewall_OpenConsole" xml:space="preserve"><value>Abrir a Firewall</value></data>
+  <data name="Firewall_NoticeDismiss" xml:space="preserve"><value>Não preciso</value></data>
+  <data name="Firewall_NoticeDismissTip" xml:space="preserve"><value>Se os jogadores entram só pelo túnel do Playit, a Firewall não te afeta. Este caso não voltará a ser avisado.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>O Windows não permite o carácter “{0}” no nome de uma pasta. Experimenta “{1}”.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” é um nome reservado pelo Windows e não pode ser usado numa pasta. Escolhe outro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>O nome não pode acabar em ponto nem em espaço: o Windows corta-os e a pasta acabaria com outro nome.</value></data>
