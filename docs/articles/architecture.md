@@ -883,7 +883,10 @@ of `MainWindow` and switched by `IsVisible` (`MainViewModel.Section`), so a sect
   the setting.
 - **About** (`AboutView`) shows the version, the update check and the links. `UpdateCheck` keeps
   apart the answers a press of *Check for updates* can get — up to date, a newer version, could not
-  ask — which used to read the same.
+  ask — which used to read the same. "Could not ask" includes GitHub answering with an error status
+  (the rate limit sends 403 or 429, an outage 5xx) or with something that is not the release list:
+  `UpdateService.CheckAsync` throws for those and returns null only when it asked and there is
+  nothing newer. Otherwise a rate limit read as "up to date" and took back an update on offer.
 
 **Motion** lives in one file, `Styles/Motion.axaml`, and a test keeps views from declaring any of
 their own. Menus have a single mark that slides to what was picked instead of one per item:
