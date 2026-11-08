@@ -38,7 +38,8 @@ public class ServerConfigFormatTests : IDisposable
         "BackupsEnabled", "BackupRetention", "AutoBackupEnabled", "BackupIntervalMinutes",
         "ManualBackupRetention", "IdleShutdownMinutes", "WakeOnDemand", "WakeOnlyForWhitelist",
             "CrossplayEnabled",
-        "BedrockModContentEnabled", "MultiVersionEnabled", "BedrockPort", "UseCustomNotifications",
+        "BedrockModContentEnabled", "MultiVersionEnabled", "BedrockPort", "FirewallNoticeDismissed",
+        "UseCustomNotifications",
         "Notifications", "LastKnownSeed"
     };
 
@@ -78,6 +79,7 @@ public class ServerConfigFormatTests : IDisposable
         BedrockModContentEnabled = true,
         MultiVersionEnabled = true,
         BedrockPort = 19133,
+        FirewallNoticeDismissed = "NoRule:Radmin VPN",
         UseCustomNotifications = true,
         Notifications = new NotificationSettings { PlayerDeath = false, ColorError = "#FF0000" }
     };

@@ -217,6 +217,116 @@ public class GeyserConfigTests
             StringComparison.Ordinal)));
     }
 
+    // --- the transport ---
+
+    private static int Count(string yaml, string key) =>
+        Lines(yaml).Count(l => l.TrimStart().StartsWith(key + ":", StringComparison.Ordinal));
+
+    [Fact]
+    public void TheMinimalConfigAsksForNetherNet()
+    {
+        // Without it Geyser listens the old way only, and Bedrock 26.60 and later cannot join,
+        // which is what issue 108's author found out by editing config.yml by hand.
+        var yaml = GeyserConfigService.MinimalConfig(19140, 51234, floodgate: true);
+
+        Assert.Equal(GeyserConfigService.WantedTransport, ValueOf(yaml, "transport"));
+        Assert.Contains(ValueOf(yaml, "transport"), new[] { "nethernet", "both" });
+    }
+
+    [Fact]
+    public void AddsTheTransportToAConfigThatLacksIt()
+    {
+        var result = GeyserConfigService.SetTransport(RealConfig);
+
+        Assert.Equal(GeyserConfigService.WantedTransport, ValueOf(result, "transport"));
+        Assert.Equal(1, Count(result, "transport"));
+    }
+
+    [Fact]
+    public void PutsTheTransportInsideTheBedrockSection()
+    {
+        // The remote: section has a port too; the key has to land where Geyser reads it.
+        var result = Lines(GeyserConfigService.SetTransport(RealConfig));
+
+        var transport = Array.FindIndex(result, l => l.TrimStart().StartsWith("transport:",
+            StringComparison.Ordinal));
+        var bedrock = Array.FindIndex(result, l => l.StartsWith("bedrock:", StringComparison.Ordinal));
+        var remote = Array.FindIndex(result, l => l.StartsWith("remote:", StringComparison.Ordinal));
+
+        Assert.InRange(transport, bedrock + 1, remote - 1);
+        Assert.StartsWith("  transport:", result[transport]);
+    }
+
+    [Theory]
+    [InlineData("raknet")]
+    [InlineData("\"raknet\"")]
+    [InlineData("RakNet")]
+    public void ReplacesTheOldTransport(string old)
+    {
+        var yaml = RealConfig.Replace("  port: 19132", "  port: 19132\n  transport: " + old);
+
+        var result = GeyserConfigService.SetTransport(yaml);
+
+        Assert.Equal(GeyserConfigService.WantedTransport, ValueOf(result, "transport"));
+        Assert.Equal(1, Count(result, "transport"));
+    }
+
+    [Fact]
+    public void UncommentsATransportThatShipsCommentedOut()
+    {
+        var yaml = RealConfig.Replace("  port: 19132", "  port: 19132\n  # transport: raknet");
+
+        var result = GeyserConfigService.SetTransport(yaml);
+
+        Assert.Equal(GeyserConfigService.WantedTransport, ValueOf(result, "transport"));
+        Assert.Equal(1, Lines(result).Count(l => l.Contains("transport:", StringComparison.Ordinal)));
+        Assert.Contains("  transport: ", result);
+    }
+
+    [Theory]
+    [InlineData("nethernet")]
+    [InlineData("both")]
+    [InlineData("\"nethernet\"")]
+    [InlineData("both # RakNet too")]
+    public void LeavesAGoodTransportAlone(string chosen)
+    {
+        // What the user picked is theirs: "nethernet" must not be widened to "both", nor the
+        // other way round, and the file must not even be rewritten.
+        var yaml = RealConfig.Replace("  port: 19132", "  port: 19132\n  transport: " + chosen);
+
+        Assert.Equal(yaml, GeyserConfigService.SetTransport(yaml));
+    }
+
+    [Fact]
+    public void SettingTheTransportTwiceChangesNothingTheSecondTime()
+    {
+        var once = GeyserConfigService.SetTransport(RealConfig);
+
+        Assert.Equal(once, GeyserConfigService.SetTransport(once));
+    }
+
+    [Fact]
+    public void SettingTheTransportKeepsTheCommentsAndTheLineEndings()
+    {
+        var crlf = RealConfig.Replace("\r\n", "\n").Replace("\n", "\r\n");
+
+        var result = GeyserConfigService.SetTransport(crlf);
+
+        Assert.DoesNotContain(result.Replace("\r\n", ""), "\n");
+        Assert.Equal(Lines(crlf).Count(l => l.TrimStart().StartsWith('#')),
+                     Lines(result).Count(l => l.TrimStart().StartsWith('#')));
+        Assert.Equal("online", ValueOf(result, "auth-type"));
+    }
+
+    [Fact]
+    public void AFileWithoutABedrockSectionIsLeftAlone()
+    {
+        // Not something Geyser writes, but a hand-edited file should not be mangled.
+        const string odd = "remote:\n  port: 25565\n";
+
+        Assert.Equal(odd, GeyserConfigService.SetTransport(odd));
+    }
+
     // --- which servers can do this at all ---
 
     [Theory]

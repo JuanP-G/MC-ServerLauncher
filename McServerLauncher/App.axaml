@@ -35,6 +35,11 @@
         <SolidColorBrush x:Key="SemanticInfoPanel" Color="#337BA6CE" />
         <!-- The ring round the icon of the update banner: the info blue, half faded. -->
         <SolidColorBrush x:Key="SemanticInfoRing" Color="#887BA6CE" />
+        <!-- The same ring for the other kinds of notice in Novedades and in the strip: amber for an
+             incident, red for a security matter, green for what was resolved. -->
+        <SolidColorBrush x:Key="SemanticWarnRing" Color="#88D9B665" />
+        <SolidColorBrush x:Key="SemanticDangerRing" Color="#88DB7A79" />
+        <SolidColorBrush x:Key="SemanticOkRing" Color="#886FB57F" />
 
         <SolidColorBrush x:Key="SemanticDangerFill" Color="#22DB7A79" />
         <SolidColorBrush x:Key="SemanticDangerPanel" Color="#33DB7A79" />

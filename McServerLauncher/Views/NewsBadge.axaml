@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="McServerLauncher.Views.NewsBadge"
+             x:CompileBindings="False"
+             ClipToBounds="False"
+             IsHitTestVisible="False">
+
+    <!-- The mark Novedades wears when something in it is unread, in one of its four styles. The
+         control decides which of the three shapes shows from Mode and Text (NewsBadge.axaml.cs); the
+         rail uses it for real and Settings uses it as the preview of the style picked. The halo only
+         moves in Mode "Pulse" (the animation is in Styles/Motion.axaml). ClipToBounds is off because
+         a UserControl clips to its own box by default, and this one is only 10 px: the halo opens out
+         to 7 px past the dot and would be cut into a square. -->
+
+    <Panel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border x:Name="Pill" CornerRadius="8" MinWidth="16" Height="16" Padding="4,0"
+                Background="{StaticResource AccentSelected}">
+            <TextBlock x:Name="Number" FontSize="10" FontWeight="Bold" Foreground="{StaticResource GroundPopup}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+        <Border x:Name="Halo" Classes="newspulse" Width="10" Height="10" CornerRadius="5" Background="Transparent" />
+        <Border x:Name="Dot" Width="10" Height="10" CornerRadius="5" Background="{StaticResource AccentSelected}" />
+    </Panel>
+</UserControl>

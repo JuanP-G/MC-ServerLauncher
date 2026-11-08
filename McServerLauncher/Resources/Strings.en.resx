@@ -143,16 +143,11 @@
   <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher is not affiliated with or owned by Playit; it only integrates with their network. Your account is yours: you can manage it directly at playit.gg.</value></data>
   <data name="Pk_Agent_Downloading" xml:space="preserve"><value>Downloading the Playit agent… (first time only)</value></data>
   <data name="Pk_Agent_Starting" xml:space="preserve"><value>Starting the agent…</value></data>
-  <data name="Pk_Agent_Running" xml:space="preserve"><value>Agent running: your tunnels are forwarding traffic.</value></data>
-  <data name="Pk_Agent_Stopped" xml:space="preserve"><value>Agent stopped.</value></data>
   <data name="Pk_Agent_Failed" xml:space="preserve"><value>Couldn't start the agent: {0}</value></data>
   <data name="Pk_Agent_Unsupported" xml:space="preserve"><value>Your system can't run the agent automatically; run Playit yourself.</value></data>
   <data name="Pk_Agent_Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="Pk_SettingsDesc" xml:space="preserve"><value>Connect your Playit account to create and manage tunnels automatically. You only paste a code — no key needed.</value></data>
-  <data name="Pk_Connect" xml:space="preserve"><value>Connect to Playit</value></data>
-  <data name="Pk_Reconnect" xml:space="preserve"><value>Reconnect</value></data>
   <data name="Pk_Disconnect" xml:space="preserve"><value>Disconnect</value></data>
-  <data name="Pk_NotConnected" xml:space="preserve"><value>Not connected</value></data>
   <data name="Msg_PasteSetupCode" xml:space="preserve"><value>Paste the setup code you obtained from playit.gg.</value></data>
   <data name="Msg_SetupCodeFailedFmt" xml:space="preserve"><value>Couldn't connect to Playit: {0}</value></data>
   <data name="Msg_SetupCodeNoAgent" xml:space="preserve"><value>Playit didn't return a valid agent for this code.</value></data>
@@ -417,8 +412,50 @@
   <data name="Msg_UpdateCannotReplaceFmt" xml:space="preserve"><value>Couldn't replace {0} ({1}). Your current version is untouched and still works; the downloads page will open so you can update by hand.</value></data>
   <data name="Update_Downloading" xml:space="preserve"><value>Downloading update...</value></data>
   <data name="Whatsnew_Title" xml:space="preserve"><value>What's new</value></data>
-  <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>What's new in version {0}</value></data>
   <data name="Whatsnew_Ok" xml:space="preserve"><value>Got it</value></data>
+  <data name="News_Subtitle" xml:space="preserve"><value>Release notes for every version, and important notices.</value></data>
+  <data name="News_MarkAllRead" xml:space="preserve"><value>Mark all as read</value></data>
+  <data name="News_NoticesTitle" xml:space="preserve"><value>Notices</value></data>
+  <data name="News_NoNotices" xml:space="preserve"><value>There are no notices right now.</value></data>
+  <data name="News_NoticesOff" xml:space="preserve"><value>Notices are turned off: only versions are listed here.</value></data>
+  <data name="News_KindIncident" xml:space="preserve"><value>Incident</value></data>
+  <data name="News_KindSecurity" xml:space="preserve"><value>Security</value></data>
+  <data name="News_KindTip" xml:space="preserve"><value>Tip</value></data>
+  <data name="News_StatusResolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="News_MoreInfo" xml:space="preserve"><value>More information</value></data>
+  <data name="News_FeedFailedFmt" xml:space="preserve"><value>Could not check for notices. Last copy: {0}.</value></data>
+  <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>Could not check for notices, and there is no saved copy yet.</value></data>
+  <data name="News_BandSee" xml:space="preserve"><value>View notice</value></data>
+  <data name="News_ToastSeeNews" xml:space="preserve"><value>Details are in What's new.</value></data>
+  <data name="News_ToastResolved" xml:space="preserve"><value>Resolved. Details are in What's new.</value></data>
+  <data name="News_VersionsTitle" xml:space="preserve"><value>Versions</value></data>
+  <data name="News_VersionFmt" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="News_TagInstalled" xml:space="preserve"><value>Installed</value></data>
+  <data name="News_TagNew" xml:space="preserve"><value>New</value></data>
+  <data name="News_MoveTitle" xml:space="preserve"><value>What's new has moved</value></data>
+  <data name="News_MoveBody" xml:space="preserve"><value>The notes for each version are now here instead of in a window. You can choose which notices you get and how they look in Settings, under Announcements.</value></data>
+  <data name="News_MoveGoSettings" xml:space="preserve"><value>Go to Settings</value></data>
+  <data name="Set_News" xml:space="preserve"><value>Announcements</value></data>
+  <data name="News_ShowTitle" xml:space="preserve"><value>Show announcements</value></data>
+  <data name="News_ShowDesc" xml:space="preserve"><value>Shows important notices from the project's website, such as a Playit outage, and marks the side bar when something in What's new is unread. Turned off, the app does not check the website and What's new only lists versions.</value></data>
+  <data name="News_BadgeTitle" xml:space="preserve"><value>How the side bar marks something new</value></data>
+  <data name="News_BadgeDesc" xml:space="preserve"><value>What appears over What's new when something is unread.</value></data>
+  <data name="News_BadgeNumber" xml:space="preserve"><value>Number</value></data>
+  <data name="News_BadgeDot" xml:space="preserve"><value>Dot</value></data>
+  <data name="News_BadgePulse" xml:space="preserve"><value>Pulsing dot</value></data>
+  <data name="News_BadgeNone" xml:space="preserve"><value>None</value></data>
+  <data name="News_StripTitle" xml:space="preserve"><value>Notice strip</value></data>
+  <data name="News_StripDesc" xml:space="preserve"><value>A strip across the top of the window for urgent things, such as a Playit incident. It goes away by itself when the incident is resolved, or when you close it.</value></data>
+  <data name="News_StripAll" xml:space="preserve"><value>Across the whole app</value></data>
+  <data name="News_StripTunnels" xml:space="preserve"><value>In Tunnels only</value></data>
+  <data name="News_StripNone" xml:space="preserve"><value>None</value></data>
+  <data name="News_ToastTitle" xml:space="preserve"><value>Announce with a notification</value></data>
+  <data name="News_ToastDesc" xml:space="preserve"><value>Incidents and security notices also raise a notification, once each. It follows the main notifications switch.</value></data>
+  <data name="News_IncidentsTitle" xml:space="preserve"><value>Incidents</value></data>
+  <data name="News_IncidentsDesc" xml:space="preserve"><value>Failures of services the app relies on, such as Playit.</value></data>
+  <data name="News_TipsTitle" xml:space="preserve"><value>Tips</value></data>
+  <data name="News_TipsDesc" xml:space="preserve"><value>Suggestions and project news. They never use the strip or notifications.</value></data>
+  <data name="News_PrivacyNote" xml:space="preserve"><value>Notices are read from a signed file on the project's website. The request carries no version, language or identifier, and which notices apply to you is decided here: nothing you do in the app leaves your computer. Security notices are only silenced by "Show announcements".</value></data>
   <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• MC Server Launcher now runs on Linux too (not just Windows), thanks to a new cross-platform interface.&#10;• On Linux, download it as an AppImage from the releases; on Windows everything stays the same (installer and auto-update).&#10;• All 5 languages, the console, the players view and the visual configuration are kept.</value></data>
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• You can now create Forge and Paper servers, on top of Vanilla and Fabric.&#10;• Built-in mods &amp; plugins browser (Modrinth), filtered by your server's type and version, with sorting and one-click install.&#10;• Enable/disable or delete what's installed, and convert an existing server to another type while keeping the world.&#10;• Each server now shows a type badge.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• More security: the Playit API key is now stored encrypted (previously plain text), on every OS. Migration is automatic.&#10;• Refreshed high-resolution app icon.</value></data>
@@ -642,6 +679,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_PlayitKeyNotProtected" xml:space="preserve"><value>The Playit key could not be encrypted, so for safety it was NOT saved to disk. It will keep working during this session and you'll be asked for it again next time. The failure details are in the logs folder.</value></data>
   <data name="Msg_ForgeNoChecksum" xml:space="preserve"><value>The Forge installer's checksum (.sha1) couldn't be fetched, so it can't be verified. For safety it won't run; try again.</value></data>
   <data name="Msg_ForgeInstallerInvalid" xml:space="preserve"><value>The downloaded Forge installer doesn't have the expected structure. It was discarded for safety; try again.</value></data>
+  <data name="Whatsnew_1_22_0" xml:space="preserve"><value>• The Tunnels screen now says clearly whether the Playit account is connected and through which way. A headline (not connected, checking, connected and active, connected with no active agent, or rejected) sits above one row per way: the app's own agent (set up with a code), the Playit you installed on the PC and, only if it exists, a key saved by an older version. An installed Playit that is switched off reads as connected with no active agent, with a button to start it.&#10;• The interface moves to Avalonia 12, with SkiaSharp 3 and FluentIcons 2. It looks and works as before, and the icons keep their size. It has been tested on Windows; the app has not yet been opened on a real Linux or macOS desktop.</value></data>
   <data name="Whatsnew_1_21_6" xml:space="preserve"><value>• Bedrock players can now wake a sleeping server. With crossplay on, the app listens on the Bedrock port and starts the server when someone tries to join. The first attempt fails: try again a few seconds later. It works with Geyser in NetherNet mode (transport: nethernet or both).&#10;• The app now runs on .NET 10 (LTS). It is bundled, so there is nothing to install. On macOS it needs version 15 or later.</value></data>
   <data name="Whatsnew_1_21_5" xml:space="preserve"><value>• The button for client-only mods was cut off ("Add to pack" in some languages). It now says "To pack", has a pack icon, and the full sentence shows when you hover over it.&#10;• The Install, Update, Installed and To pack buttons are still the same size in every language.</value></data>
   <data name="Whatsnew_1_21_4" xml:space="preserve"><value>• In the mod and plugin browser, every result now knows whether you have it: "Install" is left for what is not on the server.&#10;• What is already installed and up to date shows a green "Installed" with a tick and can't be clicked. If there is a newer version, the button becomes an amber "Update" and installs it in place.&#10;• If the mod is switched off, the button says so and clicking it switches it on without leaving the browser.&#10;• It also recognises mods you copied into the folder by hand, as long as Modrinth knows them, and it works the same for plugins, for client-only mods (the players' pack) and for the button on the details page.</value></data>
@@ -792,7 +830,8 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_NeoForgeInstallNoOutput" xml:space="preserve"><value>The NeoForge installer finished but did not leave the expected launch file.</value></data>
   <data name="HowToPlay_NeoForgeFmt" xml:space="preserve"><value>This server uses NeoForge (Minecraft {0}). To join with mods:&#10;1. Download the NeoForge installer for {0} from https://neoforged.net and install the client (“Install client”).&#10;2. Open the Minecraft launcher and pick the “neoforge” profile.&#10;3. Put the mods (.jar) in %appdata%\.minecraft\mods.&#10;4. The client’s NeoForge version must match the server’s.</value></data>
   <data name="Crossplay_Check" xml:space="preserve"><value>Let people join from Bedrock too (phone, console, Windows 10/11)</value></data>
-  <data name="Crossplay_Hint" xml:space="preserve"><value>Installs Geyser and Floodgate, and creates a second tunnel. Players joining from Bedrock don't need to buy Minecraft Java: their identity isn't verified by Mojang and their name shows with a dot in front. The whitelist accepts them all the same.</value></data>
+  <data name="Crossplay_Hint" xml:space="preserve"><value>Installs Geyser and Floodgate, and creates a second tunnel. Players joining from Bedrock don't need to buy Minecraft Java: their identity isn't verified by Mojang and their name shows with a dot in front. The whitelist accepts them all the same. If you play over a LAN or a VPN (Radmin, Hamachi), allow the Bedrock port for both TCP and UDP in Windows Firewall.</value></data>
+  <data name="Crossplay_HintSettings" xml:space="preserve"><value>Installs Geyser and Floodgate, and creates a second tunnel. Players joining from Bedrock don't need to buy Minecraft Java: their identity isn't verified by Mojang and their name shows with a dot in front. The whitelist accepts them all the same.</value></data>
   <data name="Crossplay_Unsupported" xml:space="preserve"><value>Geyser publishes no build for this kind of server. It works on Paper, Fabric and NeoForge.</value></data>
   <data name="Crossplay_UnsupportedVanilla" xml:space="preserve"><value>Vanilla takes neither mods nor plugins, so it cannot translate Bedrock. Change the type to Paper (it keeps the world) and you can turn this on.</value></data>
   <data name="Crossplay_BedrockAddress" xml:space="preserve"><value>Bedrock address</value></data>
@@ -882,6 +921,22 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Hydraulic_Hint" xml:space="preserve"><value>Installs Hydraulic (from GeyserMC too) and Fabric API. Without it, people joining from Bedrock reach the server but cannot see anything the mods add. Its own authors call it very early development.</value></data>
   <data name="Hydraulic_Unsupported" xml:space="preserve"><value>Fabric only. Hydraulic stopped publishing NeoForge builds in February 2026 and its module is still out of the build; if you want mods and Bedrock together, Fabric is today the only loader with support.</value></data>
   <data name="Msg_GeyserConfigRepairedFmt" xml:space="preserve"><value>Geyser's configuration was corrected: the authentication was wrong and is now “{0}”. Restart the server if it was already running.</value></data>
+  <data name="Msg_GeyserTransportSetFmt" xml:space="preserve"><value>Geyser's configuration was corrected: Bedrock connections now use “{0}” so current Bedrock versions can join. Restart the server if it was already running.</value></data>
+  <data name="Firewall_Title" xml:space="preserve"><value>Windows Firewall</value></data>
+  <data name="Firewall_StatusClosedFmt" xml:space="preserve"><value>Windows Firewall isn't letting Bedrock's port {0} through.</value></data>
+  <data name="Firewall_StatusOpenFmt" xml:space="preserve"><value>Bedrock's port {0} is allowed over TCP and UDP.</value></data>
+  <data name="Firewall_StatusElsewhereFmt" xml:space="preserve"><value>Another Windows Firewall rule already allows Bedrock's port {0}.</value></data>
+  <data name="Firewall_Hint" xml:space="preserve"><value>Needed by anyone joining over a LAN or VPN (Radmin, Hamachi). Created on every network; Windows will ask for administrator confirmation.</value></data>
+  <data name="Firewall_Allow" xml:space="preserve"><value>Allow in Firewall</value></data>
+  <data name="Firewall_Remove" xml:space="preserve"><value>Remove permission</value></data>
+  <data name="Firewall_Working" xml:space="preserve"><value>Waiting for Windows…</value></data>
+  <data name="Firewall_Cancelled" xml:space="preserve"><value>You declined the administrator prompt: nothing was changed.</value></data>
+  <data name="Firewall_Failed" xml:space="preserve"><value>Windows didn't apply the change. Check that the Firewall is on and try again, or create the rule by hand.</value></data>
+  <data name="Firewall_NoticeFmt" xml:space="preserve"><value>Firewall: nothing lets Bedrock's port {1} in on “{0}”.</value></data>
+  <data name="Firewall_NoticeBlockedFmt" xml:space="preserve"><value>Firewall: rule ({2}) blocks port {1} on “{0}”.</value></data>
+  <data name="Firewall_OpenConsole" xml:space="preserve"><value>Open Firewall</value></data>
+  <data name="Firewall_NoticeDismiss" xml:space="preserve"><value>Not needed</value></data>
+  <data name="Firewall_NoticeDismissTip" xml:space="preserve"><value>If players only join through the Playit tunnel, the Firewall doesn't affect you. This won't warn about this case again.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows does not allow the character “{0}” in a folder name. Try “{1}”.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” is a name Windows reserves and cannot be used for a folder. Pick another.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>The name cannot end in a dot or a space: Windows trims them and the folder would end up called something else.</value></data>
@@ -945,7 +1000,6 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Tun_Summary_ProblemsFmt" xml:space="preserve"><value>{0} need attention</value></data>
   <data name="Tun_AutoRenamedFmt" xml:space="preserve"><value>[Playit] Tunnel "{0}" renamed to "{1}".</value></data>
   <data name="Tun_AutoRenameFailFmt" xml:space="preserve"><value>[Playit] Could not rename the tunnel "{0}": {1}</value></data>
-  <data name="Tun_ServiceFmt" xml:space="preserve"><value>Playit service: {0}</value></data>
   <data name="Tip_ManageTunnels" xml:space="preserve"><value>See and manage the account's tunnels</value></data>
   <data name="About_Tagline" xml:space="preserve"><value>Create and manage Minecraft servers without touching the console.</value></data>
   <data name="About_VersionFmt" xml:space="preserve"><value>Version {0} · MIT license</value></data>
@@ -963,12 +1017,8 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Upd_UpToDateFmt" xml:space="preserve"><value>You're on the latest version · checked at {0}</value></data>
   <data name="Upd_Failed" xml:space="preserve"><value>Could not check. Check your connection and try again.</value></data>
   <data name="Upd_NotChecked" xml:space="preserve"><value>Not checked yet.</value></data>
-  <data name="Tun_Src_Installed" xml:space="preserve"><value>Playit installed on this computer: its key is used.</value></data>
-  <data name="Tun_Src_Saved" xml:space="preserve"><value>Saved Playit key.</value></data>
-  <data name="Tun_Src_Refused" xml:space="preserve"><value> Playit does not accept this key.</value></data>
   <data name="Tun_Err_Key" xml:space="preserve"><value>Playit does not accept the key the account was read with. If this app saved it, press Disconnect and connect again.</value></data>
   <data name="Tun_Err_NoPermission" xml:space="preserve"><value>Playit does not allow this change with this computer's key.</value></data>
-  <data name="Tun_Src_InstalledReadOnly" xml:space="preserve"><value>Playit installed on this computer. With its key Playit only lets the tunnels be read: renaming or deleting them is done on playit.gg.</value></data>
   <data name="Tun_ReadOnlyTip" xml:space="preserve"><value>This tunnel is changed on playit.gg: the installed Playit key can only read</value></data>
   <data name="Tun_Fix_OnWeb" xml:space="preserve"><value>Do it on playit.gg</value></data>
   <data name="Tun_Err_ReadOnly" xml:space="preserve"><value>Playit does not allow changing tunnels with the key of the Playit installed on this computer, only reading them. Do it on playit.gg.</value></data>
@@ -1337,4 +1387,34 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Automatic memory: it can grow up to {0} ({1}) and gives back what it does not use.</value></data>
   <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>This Java does not accept every memory option: the server starts with the ones it does accept.</value></data>
   <data name="Msg_Java32BitCap" xml:space="preserve"><value>This Java is 32-bit and cannot give more than 1 GB. Install a 64-bit Java to give the server more memory.</value></data>
+  <data name="Pa_Head_None" xml:space="preserve"><value>Not connected</value></data>
+  <data name="Pa_Head_Checking" xml:space="preserve"><value>Checking…</value></data>
+  <data name="Pa_Head_Refused" xml:space="preserve"><value>Playit rejects the connection</value></data>
+  <data name="Pa_Head_Active" xml:space="preserve"><value>Connected and active</value></data>
+  <data name="Pa_Head_Starting" xml:space="preserve"><value>Connected, starting the agent</value></data>
+  <data name="Pa_Head_Inactive" xml:space="preserve"><value>Connected, no active agent</value></data>
+  <data name="Pa_App_Name" xml:space="preserve"><value>App agent</value></data>
+  <data name="Pa_App_How" xml:space="preserve"><value>with a setup code</value></data>
+  <data name="Pa_App_None" xml:space="preserve"><value>Not connected with a setup code.</value></data>
+  <data name="Pa_App_Running" xml:space="preserve"><value>Active: your tunnels are forwarding traffic.</value></data>
+  <data name="Pa_App_Stopped" xml:space="preserve"><value>Stopped: your tunnels are not forwarding traffic.</value></data>
+  <data name="Pa_App_Refused" xml:space="preserve"><value>Playit does not accept the code: press Change code.</value></data>
+  <data name="Pa_Inst_Name" xml:space="preserve"><value>Agent installed on this PC</value></data>
+  <data name="Pa_Inst_How" xml:space="preserve"><value>the Playit you installed yourself</value></data>
+  <data name="Pa_Inst_None" xml:space="preserve"><value>Playit was not found installed on this PC.</value></data>
+  <data name="Pa_Inst_On" xml:space="preserve"><value>Active: your tunnels are forwarding traffic.</value></data>
+  <data name="Pa_Inst_Starting" xml:space="preserve"><value>Starting the service…</value></data>
+  <data name="Pa_Inst_Off" xml:space="preserve"><value>Installed but switched off: your tunnels are not forwarding traffic.</value></data>
+  <data name="Pa_Inst_NoService" xml:space="preserve"><value>Found, but no Playit service is running.</value></data>
+  <data name="Pa_Inst_Refused" xml:space="preserve"><value>Playit does not accept its key.</value></data>
+  <data name="Pa_Inst_ReadOnly" xml:space="preserve"><value>Its key only allows reading tunnels: renaming or deleting them is done on playit.gg.</value></data>
+  <data name="Pa_Saved_Name" xml:space="preserve"><value>Saved key</value></data>
+  <data name="Pa_Saved_How" xml:space="preserve"><value>older version</value></data>
+  <data name="Pa_Saved_State" xml:space="preserve"><value>Key saved by an older version.</value></data>
+  <data name="Pa_Saved_Refused" xml:space="preserve"><value>Playit does not accept this key.</value></data>
+  <data name="Pa_Act_Connect" xml:space="preserve"><value>Connect with a code</value></data>
+  <data name="Pa_Act_ChangeCode" xml:space="preserve"><value>Change code</value></data>
+  <data name="Pa_Act_StartService" xml:space="preserve"><value>Start</value></data>
+  <data name="Pa_Act_StopService" xml:space="preserve"><value>Stop</value></data>
+  <data name="Pa_Tip_Disconnect" xml:space="preserve"><value>Forgets the connection the app saved. The installed Playit is left alone.</value></data>
 </root>

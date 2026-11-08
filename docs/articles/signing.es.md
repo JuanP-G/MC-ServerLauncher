@@ -3,7 +3,8 @@
 > Read this in [English](signing.md).
 
 Cómo sabe la app que una actualización la ha publicado quien mantiene el proyecto, y qué hacer cuando la
-clave que lo demuestra se pierde, se filtra o toca cambiarla. Seguimiento en
+clave que lo demuestra se pierde, se filtra o toca cambiarla. La misma clave firma el archivo de
+[anuncios](announcements.es.md), que tiene [su propia sección](#avisos-firmados) más abajo. Seguimiento en
 [#33](https://github.com/JuanP-G/MC-ServerLauncher/issues/33).
 
 ## Por qué un checksum no bastaba
@@ -88,6 +89,38 @@ Los hashes que imprime el paso 3 están también en los logs de los workflows. E
 GitHub Actions construyó**, así que si dudas alguna vez de la build, compáralos antes de escribir la
 contraseña.
 
+## Avisos firmados
+
+El archivo del que la app lee sus [anuncios](announcements.es.md) (`web/news.json`) se firma con la
+**misma clave** y se comprueba contra las mismas `UpdateSignature.TrustedKeys`, pero con otra cabecera, así
+una firma de un instalador no vale como la del archivo ni al revés:
+
+```
+mcsl-news-v1
+<el SHA-256 del archivo, en minúsculas>
+```
+
+`UpdateSignature.NewsMessage` y `tools\signing\sign-news.ps1` arman las mismas dos líneas, unidas por `\n`
+y sin nada tras la última. La firma, en base64, está en `web/news.json.sig`. No lleva versión ni nombre de
+archivo porque el archivo no es un paquete; lo que impide que se sirva otra vez uno viejo es el número
+`seq` de dentro, que la app nunca acepta menor que el más alto que ha visto.
+
+Lo que se firma son los **bytes tal cual están**, no el JSON leído y vuelto a escribir. Es el único sitio
+donde una firma puede romperse sin que nadie toque el archivo: quien contribuya a este repositorio puede
+tener git convirtiendo los finales de línea (`core.autocrlf`), y una firma hecha sobre una copia CRLF no
+verifica sobre la LF que se publica. `.gitattributes` marca `web/news.json` y su `.sig` como `-text` para que git no
+toque ninguno, y `sign-news.ps1` se niega a firmar un archivo con retorno de carro o con marca de orden de
+bytes.
+
+La app comprueba la firma **antes** de leer nada, y vuelve a comprobar la copia guardada cada vez que la
+lee. Lo que puede hacer un aviso está limitado por diseño: es texto y un enlace a cuatro sitios; nunca
+ejecuta ni descarga nada. La lista completa de lo que se comprueba está en
+[Anuncios](announcements.es.md#cómo-se-comprueba).
+
+No hay una segunda clave. Cuando se [cambia la clave](#cambiarla), firma los avisos con la que confían todas
+las apps instaladas: durante un cambio es la **vieja** hasta el paso 4, porque las apps anteriores a la
+release N no llegan a conocer la nueva y mostrarían *No se pudo comprobar si hay avisos*.
+
 ## La clave
 
 Se crea una vez con `tools\signing\new-key.ps1`. Pide una contraseña (12 caracteres como mínimo), escribe
@@ -114,7 +147,9 @@ confía en las claves con las que se publicó, así que el orden importa:
 Las apps instaladas siguen confiando en ella, así que quien la tenga puede firmar una actualización que
 aceptarían. La única solución es una release que la quite de `TrustedKeys`, firmada con la última vez que
 se use la clave filtrada, así que hay que sacarla rápido; publica además un aviso de seguridad. Por eso la
-clave va cifrada y fuera de GitHub.
+clave va cifrada y fuera de GitHub. Hasta entonces, quien la tenga podría firmar también avisos falsos;
+son texto y un enlace a cuatro sitios, mucho menos que una actualización, pero llegan a todas las apps
+instaladas.
 
 ## Lo que esto no cubre
 
@@ -131,6 +166,9 @@ clave va cifrada y fuera de GitHub.
   de Apple Developer.
 - **Lo que firma quien mantiene el proyecto es lo que produjo la build.** Una firma demuestra quién
   publicó, no que la build estuviera limpia.
+- **La frescura de los avisos.** Una firma demuestra quién escribió `news.json`, no que sea el último;
+  `seq` impide que se sirva un archivo más viejo tras haber visto uno más nuevo, pero quien pueda
+  bloquear la red puede dejar a una app con el último que vio.
 
 ## Comprobar una release a mano
 
@@ -145,3 +183,21 @@ openssl dgst -sha256 -verify public.pem -signature sig.der message.txt
 ```
 
 Imprime `Verified OK` cuando el paquete es el que se firmó, para esa versión y ese nombre.
+
+### Comprobar el archivo de avisos a mano
+
+La misma clave pública, sobre el archivo exactamente como lo sirve la web (descárgalo con `curl -o`, que no
+cambia nada):
+
+```bash
+F=news.json
+curl -fsS -o "$F" https://mc-server-launcher.vercel.app/news.json
+curl -fsS -o "$F.sig" https://mc-server-launcher.vercel.app/news.json.sig
+printf 'mcsl-news-v1\n%s' "$(sha256sum "$F" | cut -d' ' -f1)" > message.txt
+base64 -d "$F.sig" > sig.der
+openssl dgst -sha256 -verify public.pem -signature sig.der message.txt
+```
+
+Repítelo con `https://juanp-g.github.io/MC-ServerLauncher/news.json` tras publicar un aviso: las dos
+direcciones tienen que servir los mismos bytes, y un CRLF en cualquier parte del archivo se nota aquí como un
+fallo.
