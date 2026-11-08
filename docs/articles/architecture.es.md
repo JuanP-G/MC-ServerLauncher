@@ -1257,9 +1257,31 @@ NetherNet, cuya señalización es un listener TCP en el puerto de Bedrock, y un 
 solo en RakNet no acepta a esos clientes (el autor del issue 108 tuvo que cambiarlo a mano). Un valor
 que el usuario ya eligió (`nethernet` o `both`) se respeta; solo se sustituye uno que falte, esté
 comentado o sea `raknet`. `RepairConfig` vuelve a aplicarlo todo cuando una reinstalación resetea el
-archivo, y dice en la consola cuál de las dos cosas cambió. El texto de ayuda de Crossplay avisa
-además de que, en LAN o VPN, hay que permitir el puerto de Bedrock por TCP y UDP en el Firewall de
-Windows, algo que ningún archivo de configuración puede hacer por el jugador.
+archivo, y dice en la consola cuál de las dos cosas cambió.
+
+Ningún archivo de configuración puede abrir el Firewall de Windows, y es lo otro con lo que tropiezan
+los jugadores de Bedrock en LAN o VPN (Radmin, Hamachi): el aviso «¿permitir java.exe?» de Windows
+cubre los perfiles de red marcados en ese momento, normalmente solo el privado, y una VPN suele ser
+pública. Por eso la página Crossplay lleva una tarjeta **Firewall de Windows** (solo en Windows, y solo
+para un servidor con crossplay guardado como activado, porque necesita el puerto de Bedrock
+guardado). `WindowsFirewallService` lee las reglas por la interfaz COM del firewall, que no pide
+permisos de administrador, y enseña uno de tres estados: el puerto está cerrado, están las reglas del
+propio launcher, u otra regla ya lo cubre. Una regla cuenta como cobertura solo si es una entrada
+permitida y activa para ese puerto y ese protocolo en todos los perfiles, y no está limitada a un
+programa, un servicio, una app de la Tienda, un usuario o equipo, unas direcciones o puertos remotos
+ni un tipo de adaptador: las reglas que Windows guarda para las apps de la Tienda no nombran ningún
+programa y en una máquina de pruebas hacían que cualquier puerto pareciera ya abierto hasta que se
+distinguieron.
+
+El botón crea dos reglas (TCP y UDP, `MC Server Launcher - Bedrock <puerto> (TCP|UDP)`) por puerto, no
+por programa, en todos los perfiles, y el mismo botón las quita; al borrar un servidor no se quita
+nada, para que borrar nunca provoque un aviso de administrador. Cambiar el firewall sí exige
+permisos de administrador, así que el servicio ejecuta `cmd.exe /c netsh advfirewall firewall ...`
+con el verbo `runas` y Windows muestra su propia confirmación, que nada dentro de la app puede
+sustituir; la tarjeta avisa de que va a salir. La línea de comandos se construye solo con el puerto,
+un `int` comprobado entre 1 y 65535; `cmd` se arranca desde `System32` con esa carpeta como directorio
+de trabajo para que `netsh` no se encuentre en otro sitio, y el resultado se juzga volviendo a leer
+las reglas, no por el código de salida de una cadena de comandos.
 
 Lo bien que funcione todo esto es una propiedad del tipo de servidor, no una promesa:
 `ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores, y el panel de nuevo servidor y la

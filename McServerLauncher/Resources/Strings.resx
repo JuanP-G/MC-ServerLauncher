@@ -877,6 +877,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="HowToPlay_NeoForgeFmt" xml:space="preserve"><value>Este servidor usa NeoForge (Minecraft {0}). Para entrar con mods:&#10;1. Descarga el instalador de NeoForge para {0} en https://neoforged.net e instala el cliente («Install client»).&#10;2. Abre el lanzador de Minecraft y selecciona el perfil «neoforge».&#10;3. Copia los mods (.jar) en %appdata%\.minecraft\mods.&#10;4. La versión de NeoForge del cliente debe coincidir con la del servidor.</value></data>
   <data name="Crossplay_Check" xml:space="preserve"><value>Permitir entrar también desde Bedrock (móvil, consola, Windows 10/11)</value></data>
   <data name="Crossplay_Hint" xml:space="preserve"><value>Instala Geyser y Floodgate, y crea un segundo túnel. Quien entre desde Bedrock no necesita comprar Minecraft Java: su identidad no la verifica Mojang y su nombre aparece con un punto delante. La lista blanca los admite igual. Si juegas por LAN o por una VPN (Radmin, Hamachi), permite el puerto de Bedrock por TCP y por UDP en el Firewall de Windows.</value></data>
+  <data name="Crossplay_HintSettings" xml:space="preserve"><value>Instala Geyser y Floodgate, y crea un segundo túnel. Quien entre desde Bedrock no necesita comprar Minecraft Java: su identidad no la verifica Mojang y su nombre aparece con un punto delante. La lista blanca los admite igual.</value></data>
   <data name="Crossplay_Unsupported" xml:space="preserve"><value>Geyser no publica versión para este tipo de servidor. Funciona en Paper, Fabric y NeoForge.</value></data>
   <data name="Crossplay_UnsupportedVanilla" xml:space="preserve"><value>Vanilla no admite mods ni plugins, así que no puede traducir Bedrock. Cambia el tipo a Paper (conserva el mundo) y podrás activarlo.</value></data>
   <data name="Crossplay_BedrockAddress" xml:space="preserve"><value>Dirección para Bedrock</value></data>
@@ -967,6 +968,16 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Hydraulic_Unsupported" xml:space="preserve"><value>Solo en Fabric. Hydraulic dejó de publicarse para NeoForge en febrero de 2026 y su módulo sigue fuera de la compilación; si quieres mods y Bedrock a la vez, Fabric es hoy el único cargador con soporte.</value></data>
   <data name="Msg_GeyserConfigRepairedFmt" xml:space="preserve"><value>Se ha corregido la configuración de Geyser: la autenticación estaba mal puesta y ahora es «{0}». Reinicia el servidor si ya estaba arrancado.</value></data>
   <data name="Msg_GeyserTransportSetFmt" xml:space="preserve"><value>Se ha corregido la configuración de Geyser: las conexiones de Bedrock ahora usan «{0}» para que entren las versiones actuales. Reinicia el servidor si ya estaba arrancado.</value></data>
+  <data name="Firewall_Title" xml:space="preserve"><value>Firewall de Windows</value></data>
+  <data name="Firewall_StatusClosedFmt" xml:space="preserve"><value>El Firewall de Windows no deja pasar el puerto {0} de Bedrock.</value></data>
+  <data name="Firewall_StatusOpenFmt" xml:space="preserve"><value>El puerto {0} de Bedrock está permitido por TCP y UDP.</value></data>
+  <data name="Firewall_StatusElsewhereFmt" xml:space="preserve"><value>Otra regla del Firewall de Windows ya permite el puerto {0} de Bedrock.</value></data>
+  <data name="Firewall_Hint" xml:space="preserve"><value>Lo necesita quien entra por LAN o VPN (Radmin, Hamachi). Se crea en todas las redes y Windows pedirá confirmación de administrador.</value></data>
+  <data name="Firewall_Allow" xml:space="preserve"><value>Permitir en el Firewall</value></data>
+  <data name="Firewall_Remove" xml:space="preserve"><value>Quitar el permiso</value></data>
+  <data name="Firewall_Working" xml:space="preserve"><value>Esperando a Windows…</value></data>
+  <data name="Firewall_Cancelled" xml:space="preserve"><value>Has cancelado la confirmación de administrador: no se ha cambiado nada.</value></data>
+  <data name="Firewall_Failed" xml:space="preserve"><value>Windows no ha aplicado el cambio. Comprueba que el Firewall esté activo y vuelve a intentarlo, o crea la regla a mano.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows no permite el carácter «{0}» en el nombre de una carpeta. Prueba con «{1}».</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>«{0}» es un nombre reservado por Windows y no se puede usar para una carpeta. Elige otro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>El nombre no puede acabar en punto ni en espacio: Windows los recorta y la carpeta acabaría llamándose de otra forma.</value></data>

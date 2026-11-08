@@ -1205,8 +1205,29 @@ a TCP listener on the Bedrock port, and a Geyser left on RakNet alone does not a
 (issue 108's author had to edit this by hand). A value the user already chose (`nethernet` or
 `both`) is kept; only a missing, commented-out or `raknet` one is replaced. `RepairConfig`
 re-applies all this when a reinstall resets the file, and says in the console which of the two
-things it changed. The Crossplay hint also tells players on a LAN or a VPN to allow the Bedrock port
-for TCP and UDP in Windows Firewall, which no config file can do for them.
+things it changed.
+
+No config file can open the Windows Firewall, and that is the other thing Bedrock players on a LAN or
+a VPN (Radmin, Hamachi) trip over: the "allow java.exe?" prompt Windows shows covers the network
+profiles ticked at that moment, usually only the private one, and a VPN is usually classed as public.
+The Crossplay page therefore carries a **Windows Firewall** card (Windows only, and only for a server
+whose crossplay is saved as on, since it needs the saved Bedrock port). `WindowsFirewallService`
+reads the rules through the firewall's COM interface, which needs no administrator rights, and shows
+one of three states: the port is closed, the launcher's own rules are in place, or another rule
+already covers it. A rule counts as covering the port only if it is an enabled inbound allow for that
+port over that protocol on every profile, and is not limited to a program, a service, a Store app, a
+user or machine, some remote addresses or ports, or one kind of adapter — the rules Windows keeps for
+Store apps name no program at all and made every port on a test machine read as already open until
+they were told apart.
+
+The button creates two rules (TCP and UDP, `MC Server Launcher - Bedrock <port> (TCP|UDP)`) by port,
+not by program, on every profile, and the same button removes them; nothing is removed when a server
+is deleted, so that deleting never raises an administrator prompt. Changing the firewall does need
+administrator rights, so the service runs `cmd.exe /c netsh advfirewall firewall ...` with the `runas`
+verb and Windows shows its own confirmation, which nothing inside the app can replace; the card says
+it is coming. The command line is built only from the port, an `int` checked against 1-65535, `cmd`
+is started from `System32` with that as its working directory so `netsh` is never found elsewhere, and
+the outcome is judged by reading the rules again rather than by the exit code of a chain of commands.
 
 How well any of it works is a property of the server type, not a promise: `ServerTypeCatalog` carries
 a three-valued `CrossplayLevel` and the new-server panel and the Crossplay settings page show the caveat before the
