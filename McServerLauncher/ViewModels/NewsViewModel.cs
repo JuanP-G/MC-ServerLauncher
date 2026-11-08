@@ -47,8 +47,57 @@ public partial class NewsVersionRowViewModel : ObservableObject
     public string Notes => IsExpanded ? _release.Notes : string.Empty;
 }
 
+/// <summary>One notice of the signed file, as the list shows it: a card with a coloured ring, a title and a few words.</summary>
+public sealed partial class NewsNoticeViewModel : ObservableObject
+{
+    private readonly NewsNoticeRow _row;
+    private readonly Action<string?> _openLink;
+
+    public NewsNoticeViewModel(NewsNoticeRow row, bool marked, Action<string?> openLink)
+    {
+        _row = row;
+        _openLink = openLink;
+        Marked = marked;
+    }
+
+    public string Title => _row.Text.Title;
+    public string Body => _row.Text.Body;
+    public bool HasBody => _row.Text.Body.Length > 0;
+
+    public bool IsIncident => _row.Item.Kind == NewsKind.Incident;
+    public bool IsSecurity => _row.Item.Kind == NewsKind.Security;
+    public bool IsTip => _row.Item.Kind == NewsKind.Tip;
+    public bool IsResolved => _row.Resolved;
+
+    // What the ring and the icon show: what is still going on takes the colour of its kind (amber for an
+    // incident, red for a security matter, blue for a tip); what ended is green whatever it was.
+    public bool IsWarn => IsIncident && !IsResolved;
+    public bool IsDanger => IsSecurity && !IsResolved;
+    public bool ShowTipIcon => IsTip;
+
+    /// <summary>"Incident", "Security" or "Tip".</summary>
+    public string KindText => _row.Item.Kind switch
+    {
+        NewsKind.Incident => Localizer.Get("News_KindIncident"),
+        NewsKind.Security => Localizer.Get("News_KindSecurity"),
+        _ => Localizer.Get("News_KindTip"),
+    };
+
+    /// <summary>"Resolved" for what ended, nothing for what is going on.</summary>
+    public string StatusText => IsResolved ? Localizer.Get("News_StatusResolved") : string.Empty;
+
+    /// <summary>Whether it still carries the mark of being unread (see the remarks of <see cref="NewsViewModel"/>).</summary>
+    public bool Marked { get; }
+
+    public bool HasLink => _row.Item.Link is not null;
+
+    /// <summary>Opens the notice's own page in the browser.</summary>
+    [RelayCommand]
+    private void OpenLink() => _openLink(_row.Item.Link);
+}
+
 /// <summary>
-/// Novedades: the update waiting to be installed, the notices (once they arrive) and the history of
+/// Novedades: the update waiting to be installed, the notices of the signed file and the history of
 /// versions, plus the mark the rail wears while something in here is unread.
 /// </summary>
 /// <remarks>
@@ -78,6 +127,18 @@ public partial class NewsViewModel : ObservableObject
     private bool _offerIsBeta;
     private NewsBoardModel _board;
 
+    private readonly Func<DateTimeOffset> _clock;
+
+    /// <summary>The notices of the last good copy of the file, and who they are filtered for; null until there are any.</summary>
+    private IReadOnlyList<NewsItem>? _items;
+    private NewsContext? _context;
+
+    private NewsFeedStatus? _feedStatus;
+    private DateTime? _feedCheckedUtc;
+
+    /// <summary>Opens a notice's link. A seam: a test must not start a browser.</summary>
+    internal Action<string?> OpenLink { get; set; } = BrowserLauncher.Open;
+
     /// <summary>The keys that were unread when the section was opened, kept marked while it stays open.</summary>
     private readonly HashSet<string> _visitMarks = new(StringComparer.Ordinal);
 
@@ -88,11 +149,13 @@ public partial class NewsViewModel : ObservableObject
     /// <param name="saveSettings">Writes the settings.</param>
     /// <param name="openSettings">Takes the user to the notices page of Settings.</param>
     /// <param name="current">The running version; null for this build. Tests pass their own.</param>
+    /// <param name="clock">The time, for which notices are within their dates; null for the real one.</param>
     public NewsViewModel(AppSettings settings, NewsState state, ICommand updateNow, Action saveSettings,
-        Action openSettings, Version? current = null)
+        Action openSettings, Version? current = null, Func<DateTimeOffset>? clock = null)
     {
         _settings = settings;
         _state = state;
+        _clock = clock ?? (() => DateTimeOffset.UtcNow);
         UpdateNowCommand = updateNow;
         _saveSettings = saveSettings;
         _openSettings = openSettings;
@@ -154,6 +217,88 @@ public partial class NewsViewModel : ObservableObject
 
     public bool NoticesDisabled => !_settings.ShowAnnouncements;
 
+    /// <summary>The notices of the signed file that apply to this machine: what is going on first, then what ended.</summary>
+    public ObservableCollection<NewsNoticeViewModel> Notices { get; } = new();
+
+    public bool HasNotices => Notices.Count > 0;
+
+    /// <summary>The empty state: notices on, a look at the file that worked, and nothing for this machine in it.</summary>
+    public bool NoNotices => NoticesEnabled && Notices.Count == 0 && !HasFeedProblem;
+
+    /// <summary>
+    /// The last look at the file failed: no network, a server error, or a file that could not be trusted.
+    /// Said on screen, because "no notices" and "could not look" are not the same thing and the second
+    /// one is the one where an incident could be going on unseen.
+    /// </summary>
+    public bool HasFeedProblem => NoticesEnabled && _feedStatus == NewsFeedStatus.Failed;
+
+    /// <summary>"Could not check for notices. Last copy: 3 h ago."</summary>
+    public string FeedProblemText => _feedCheckedUtc is { } at
+        ? Localizer.Format("News_FeedFailedFmt", RelativeTime.Ago(at, _clock().UtcDateTime))
+        : Localizer.Get("News_FeedFailedNoCopy");
+
+    /// <summary>
+    /// The notices of the last good copy of the file, and who they are for. Called when the copy is
+    /// loaded and again whenever a look at the file ends.
+    /// </summary>
+    /// <param name="items">The notices; empty for none.</param>
+    /// <param name="context">What decides which of them are for this machine.</param>
+    public void SetNotices(IReadOnlyList<NewsItem> items, NewsContext context)
+    {
+        _items = items;
+        _context = context;
+        Refresh();
+    }
+
+    /// <summary>How the last look at the file ended, and when the copy held was last confirmed current.</summary>
+    public void SetFeedState(NewsFeedStatus? status, DateTime? checkedUtc)
+    {
+        _feedStatus = status;
+        _feedCheckedUtc = checkedUtc;
+        NotifyAll();
+    }
+
+    // ---- the strip ----
+
+    /// <summary>Whether there is an urgent notice going on that the user has not closed. Whether and where the strip shows is the user's setting.</summary>
+    public bool HasBand => NoticesEnabled && _board.Band is not null;
+
+    /// <summary>The key of the notice the strip is for (<see cref="NewsNoticeRow.Key"/>); null when there is no strip.</summary>
+    public string? BandKey => _board.Band?.Key;
+
+    public string BandTitle => _board.Band?.Text.Title ?? string.Empty;
+
+    public string BandBody => _board.Band?.Text.Body ?? string.Empty;
+
+    /// <summary>A security notice, which the strip draws in red.</summary>
+    public bool BandIsSecurity => _board.Band?.Item.Kind == NewsKind.Security;
+
+    /// <summary>An incident, which the strip draws in amber.</summary>
+    public bool BandIsIncident => _board.Band?.Item.Kind == NewsKind.Incident;
+
+    /// <summary>The user closed the strip: it does not come back for this notice, which stays listed.</summary>
+    [RelayCommand]
+    private void CloseBand()
+    {
+        if (_board.Band is not { } band) return;
+        _state.Close(band.Item.Id);
+        Refresh();
+    }
+
+    /// <summary>The notices owed a notification now (see <see cref="NewsBoardModel.Toasts"/>).</summary>
+    public IReadOnlyList<NewsNoticeRow> PendingToasts => NoticesEnabled ? _board.Toasts : [];
+
+    /// <summary>
+    /// Remembers that a notice was announced (or deliberately not), so it never is twice. False when it
+    /// already was: whoever asked is the second to ask, and has nothing to announce.
+    /// </summary>
+    /// <remarks>
+    /// The answer is what keeps two passes over the same <see cref="PendingToasts"/> from announcing a
+    /// notice twice: marking it does not rebuild the board, so the list a second caller reads is the
+    /// one the first one already handled.
+    /// </remarks>
+    public bool MarkToasted(string key) => _state.MarkToasted(key);
+
     // ---- the card about the section's new place ----
 
     public bool ShowMoveNotice => !_settings.NewsMoveNoticeSeen;
@@ -185,7 +330,7 @@ public partial class NewsViewModel : ObservableObject
     // ---- opening, leaving, marking ----
 
     /// <summary>"Mark all as read": the entries lose their mark without leaving the section.</summary>
-    public bool HasMarks => OfferMarked;
+    public bool HasMarks => OfferMarked || Notices.Any(n => n.Marked);
 
     [RelayCommand]
     private void MarkAllRead()
@@ -212,12 +357,22 @@ public partial class NewsViewModel : ObservableObject
         Refresh();
     }
 
-    /// <summary>A setting that changes what is shown moved.</summary>
-    public void OnSettingsChanged() => NotifyAll();
+    /// <summary>A setting that changes what is shown moved: the board is worked out again.</summary>
+    public void OnSettingsChanged() => Refresh();
+
+    /// <summary>The board for what is known now. Notices only count with announcements on, and only once there are some.</summary>
+    private NewsBoardModel BuildBoard()
+    {
+        var notices = _settings.ShowAnnouncements && _items is not null && _context is not null
+            ? new NewsNoticeInput(_items, _context, _clock(), _settings.NewsIncidents, _settings.NewsTips,
+                _state.IsClosed, _state.WasToasted)
+            : null;
+        return NewsBoard.Build(_releases, _seenBefore, _offerVersion, _offerIsBeta, _state.IsRead, notices);
+    }
 
     private void Refresh()
     {
-        _board = NewsBoard.Build(_releases, _seenBefore, _offerVersion, _offerIsBeta, _state.IsRead);
+        _board = BuildBoard();
 
         // Nobody has anything to catch up on while looking at the list: what is unread is read at
         // once, and stays marked until the visit ends.
@@ -225,8 +380,13 @@ public partial class NewsViewModel : ObservableObject
         {
             foreach (var key in _board.UnreadKeys) _visitMarks.Add(key);
             _state.MarkRead(_board.UnreadKeys);
-            _board = NewsBoard.Build(_releases, _seenBefore, _offerVersion, _offerIsBeta, _state.IsRead);
+            _board = BuildBoard();
         }
+
+        Notices.Clear();
+        foreach (var row in _board.Notices)
+            Notices.Add(new NewsNoticeViewModel(row, row.Unread || _visitMarks.Contains(row.Key), OpenLink));
+
         NotifyAll();
     }
 
@@ -242,5 +402,15 @@ public partial class NewsViewModel : ObservableObject
         OnPropertyChanged(nameof(BadgeText));
         OnPropertyChanged(nameof(NoticesEnabled));
         OnPropertyChanged(nameof(NoticesDisabled));
+        OnPropertyChanged(nameof(HasNotices));
+        OnPropertyChanged(nameof(NoNotices));
+        OnPropertyChanged(nameof(HasFeedProblem));
+        OnPropertyChanged(nameof(FeedProblemText));
+        OnPropertyChanged(nameof(HasBand));
+        OnPropertyChanged(nameof(BandTitle));
+        OnPropertyChanged(nameof(BandBody));
+        OnPropertyChanged(nameof(BandIsSecurity));
+        OnPropertyChanged(nameof(BandIsIncident));
+        OnPropertyChanged(nameof(PendingToasts));
     }
 }

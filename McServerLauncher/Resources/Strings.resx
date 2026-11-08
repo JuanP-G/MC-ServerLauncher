@@ -464,6 +464,16 @@
   <data name="News_NoticesTitle" xml:space="preserve"><value>Avisos</value></data>
   <data name="News_NoNotices" xml:space="preserve"><value>No hay avisos ahora mismo.</value></data>
   <data name="News_NoticesOff" xml:space="preserve"><value>Los avisos están desactivados: aquí solo se listan las versiones.</value></data>
+  <data name="News_KindIncident" xml:space="preserve"><value>Incidencia</value></data>
+  <data name="News_KindSecurity" xml:space="preserve"><value>Seguridad</value></data>
+  <data name="News_KindTip" xml:space="preserve"><value>Consejo</value></data>
+  <data name="News_StatusResolved" xml:space="preserve"><value>Resuelta</value></data>
+  <data name="News_MoreInfo" xml:space="preserve"><value>Más información</value></data>
+  <data name="News_FeedFailedFmt" xml:space="preserve"><value>No se pudo comprobar si hay avisos. Última copia: {0}.</value></data>
+  <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>No se pudo comprobar si hay avisos y todavía no hay ninguna copia guardada.</value></data>
+  <data name="News_BandSee" xml:space="preserve"><value>Ver aviso</value></data>
+  <data name="News_ToastSeeNews" xml:space="preserve"><value>Los detalles están en Novedades.</value></data>
+  <data name="News_ToastResolved" xml:space="preserve"><value>Resuelta. Los detalles están en Novedades.</value></data>
   <data name="News_VersionsTitle" xml:space="preserve"><value>Versiones</value></data>
   <data name="News_VersionFmt" xml:space="preserve"><value>Versión {0}</value></data>
   <data name="News_TagInstalled" xml:space="preserve"><value>Instalada</value></data>
@@ -473,13 +483,25 @@
   <data name="News_MoveGoSettings" xml:space="preserve"><value>Ir a Ajustes</value></data>
   <data name="Set_News" xml:space="preserve"><value>Anuncios</value></data>
   <data name="News_ShowTitle" xml:space="preserve"><value>Mostrar anuncios</value></data>
-  <data name="News_ShowDesc" xml:space="preserve"><value>Marca la barra lateral cuando hay algo sin leer en Novedades. Desactivado, Novedades solo lista las versiones, sin marcas.</value></data>
+  <data name="News_ShowDesc" xml:space="preserve"><value>Muestra avisos importantes de la web del proyecto, como una caída de Playit, y marca la barra lateral cuando hay algo sin leer en Novedades. Desactivado, la app no consulta la web y Novedades solo lista las versiones.</value></data>
   <data name="News_BadgeTitle" xml:space="preserve"><value>Cómo marca la barra lo nuevo</value></data>
   <data name="News_BadgeDesc" xml:space="preserve"><value>Lo que aparece sobre Novedades cuando hay algo sin leer.</value></data>
   <data name="News_BadgeNumber" xml:space="preserve"><value>Número</value></data>
   <data name="News_BadgeDot" xml:space="preserve"><value>Punto</value></data>
   <data name="News_BadgePulse" xml:space="preserve"><value>Punto que late</value></data>
   <data name="News_BadgeNone" xml:space="preserve"><value>Ninguna</value></data>
+  <data name="News_StripTitle" xml:space="preserve"><value>Banda de avisos</value></data>
+  <data name="News_StripDesc" xml:space="preserve"><value>Una franja sobre la ventana para lo urgente, como una incidencia de Playit. Desaparece sola cuando se resuelve, o cuando la cierras.</value></data>
+  <data name="News_StripAll" xml:space="preserve"><value>En toda la app</value></data>
+  <data name="News_StripTunnels" xml:space="preserve"><value>Solo en Túneles</value></data>
+  <data name="News_StripNone" xml:space="preserve"><value>Ninguna</value></data>
+  <data name="News_ToastTitle" xml:space="preserve"><value>Avisar con una notificación</value></data>
+  <data name="News_ToastDesc" xml:space="preserve"><value>Las incidencias y los avisos de seguridad lanzan además una notificación, una sola vez cada uno. Respeta el interruptor general de notificaciones.</value></data>
+  <data name="News_IncidentsTitle" xml:space="preserve"><value>Incidencias</value></data>
+  <data name="News_IncidentsDesc" xml:space="preserve"><value>Fallos de servicios que usa la app, como Playit.</value></data>
+  <data name="News_TipsTitle" xml:space="preserve"><value>Consejos</value></data>
+  <data name="News_TipsDesc" xml:space="preserve"><value>Sugerencias y noticias del proyecto. Nunca usan la banda ni las notificaciones.</value></data>
+  <data name="News_PrivacyNote" xml:space="preserve"><value>Los avisos se leen de un archivo firmado de la web del proyecto. La petición no lleva tu versión, tu idioma ni ningún identificador, y qué avisos te tocan se decide aquí: nada de lo que haces en la app sale del equipo. Los avisos de seguridad solo se silencian con «Mostrar anuncios».</value></data>
   <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• Ahora MC Server Launcher también funciona en Linux (además de Windows), gracias a una nueva interfaz multiplataforma.&#10;• En Linux se descarga como AppImage desde las releases; en Windows todo sigue igual (instalador y actualización automática).&#10;• Se mantienen los 5 idiomas, la consola, los jugadores y la configuración visual.</value></data>
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• Ahora puedes crear servidores Forge y Paper, además de Vanilla y Fabric.&#10;• Buscador de mods y plugins integrado (Modrinth), filtrado por el tipo y la versión de tu servidor, con orden e instalación en un clic.&#10;• Activa/desactiva o borra lo instalado, y convierte un servidor existente a otro tipo conservando el mundo.&#10;• Cada servidor muestra una etiqueta con su tipo.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• Más seguridad: la clave de la API de Playit ahora se guarda cifrada (antes en texto plano), en todos los sistemas. La migración es automática.&#10;• Icono de la aplicación renovado en alta resolución.</value></data>

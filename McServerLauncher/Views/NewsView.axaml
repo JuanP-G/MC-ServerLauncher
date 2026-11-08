@@ -53,6 +53,17 @@
         <Style Selector="Border.tag.installed">
             <Setter Property="BorderBrush" Value="{StaticResource SemanticOk}" />
         </Style>
+
+        <!-- The kind of a notice, in the colour of its ring: amber, red or blue; green once resolved. -->
+        <Style Selector="Border.tag.warn">
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticWarn}" />
+        </Style>
+        <Style Selector="Border.tag.danger">
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticDanger}" />
+        </Style>
+        <Style Selector="Border.tag.tip">
+            <Setter Property="BorderBrush" Value="{StaticResource SemanticInfo}" />
+        </Style>
     </UserControl.Styles>
 
     <!-- DataContext: NewsViewModel. Top to bottom: what moved, the update on offer, the notices and
@@ -106,9 +117,69 @@
             <!-- ===================== NOTICES ===================== -->
             <TextBlock Text="{loc:Loc News_NoticesTitle}" Classes="section" Margin="2,6,0,0" />
 
-            <Border Classes="card" Margin="0" IsVisible="{Binding NoticesEnabled}">
+            <!-- The last look at the file failed: said here, because "no notices" and "could not look"
+                 are not the same, and an incident could be going on unseen. -->
+            <Border Classes="card" Margin="0" IsVisible="{Binding HasFeedProblem}">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Classes="ring warn" Margin="0,0,12,0">
+                        <ic:FluentIcon Icon="Warning" FontSize="15" Foreground="{StaticResource SemanticWarn}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="{Binding FeedProblemText}" VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </Grid>
+            </Border>
+
+            <Border Classes="card" Margin="0" IsVisible="{Binding NoNotices}">
                 <TextBlock Text="{loc:Loc News_NoNotices}" Classes="desc" Margin="0" />
             </Border>
+
+            <!-- What the signed file says applies to this machine: what is going on first, then what
+                 ended (in green, for a week). The ring and the icon take the colour of the kind. -->
+            <ItemsControl ItemsSource="{Binding Notices}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Classes="card" Classes.marked="{Binding Marked}" Margin="0,0,0,6">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Border Classes="ring" Classes.warn="{Binding IsWarn}" Classes.danger="{Binding IsDanger}"
+                                        Classes.ok="{Binding IsResolved}" Margin="0,0,12,0" VerticalAlignment="Top">
+                                    <Panel>
+                                        <ic:FluentIcon Icon="Warning" FontSize="15" Foreground="{StaticResource SemanticWarn}"
+                                                       IsVisible="{Binding IsWarn}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <ic:FluentIcon Icon="ShieldError" FontSize="15" Foreground="{StaticResource SemanticDanger}"
+                                                       IsVisible="{Binding IsDanger}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <ic:FluentIcon Icon="CheckmarkCircle" FontSize="15" Foreground="{StaticResource SemanticOk}"
+                                                       IsVisible="{Binding IsResolved}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <ic:FluentIcon Icon="Lightbulb" FontSize="15" Foreground="{StaticResource SemanticInfo}"
+                                                       IsVisible="{Binding ShowTipIcon}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Panel>
+                                </Border>
+                                <StackPanel Grid.Column="1" Spacing="6">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                   TextWrapping="Wrap" />
+                                        <Border Classes="tag" Classes.warn="{Binding IsWarn}" Classes.danger="{Binding IsDanger}"
+                                                Classes.tip="{Binding ShowTipIcon}" Classes.installed="{Binding IsResolved}">
+                                            <TextBlock Text="{Binding KindText}" FontSize="11" />
+                                        </Border>
+                                        <Border Classes="tag installed" IsVisible="{Binding IsResolved}">
+                                            <TextBlock Text="{Binding StatusText}" FontSize="11" />
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Body}" IsVisible="{Binding HasBody}" TextWrapping="Wrap"
+                                               FontSize="13" LineHeight="20" Opacity="0.9" />
+                                    <Button Content="{loc:Loc News_MoreInfo}" Command="{Binding OpenLinkCommand}"
+                                            IsVisible="{Binding HasLink}" HorizontalAlignment="Left" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
             <Border Classes="card" Margin="0" IsVisible="{Binding NoticesDisabled}">
                 <Grid ColumnDefinitions="*,Auto">
                     <TextBlock Text="{loc:Loc News_NoticesOff}" Classes="desc" Margin="0" VerticalAlignment="Center" />

@@ -286,8 +286,11 @@ When it opens again, the **What's new** section tells you what changed. It works
 - **Settings, part of the window** — language, tray behaviour, **Add to desktop**, notifications, announcements,
   colours and the player history, each on its own page. Saved as you go.
 - **What's new, in the window too** — the notes of every version in one list, the one just installed already
-  open, and a mark on the rail while something is unread. You choose how that mark looks (number, dot, pulse
-  or none) or turn announcements off from **Settings**.
+  open, and a mark on the rail while something is unread. Above them, **notices** the project can publish,
+  signed with the same key as the updates: an outage of Playit, a security matter, a tip. An incident that is
+  still going on also gets a strip under the title bar and a notification, and a notice can be limited to
+  whoever uses tunnels. You choose how the mark looks, where the strip shows and what you want to hear about
+  (or turn announcements off, which stops the requests too) in **Settings → Announcements**.
 - **Stays out of the way** — minimize or close **to the system tray** and your servers keep running; launching
   the app again brings that window back instead of opening a second copy.
 - **Updates itself on all three platforms** — the download is **checked against its published SHA-256** before
@@ -372,7 +375,7 @@ disagree with the architecture article, the article wins.
 > - “What do I have to touch to add a server type?”
 
 **Data:** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux and macOS):
-`servers.json`, `settings.json`, the installed `java\`, the console `logs\` (kept 14 days, at most 50 MB a day), the store's
+`servers.json`, `settings.json`, what you have read in What's new in `news-state.json`, the installed `java\`, the console `logs\` (kept 14 days, at most 50 MB a day), the store's and the announcements'
 `cache\`, what the clean-up panel remembers in `content\`, what the app has learned about each server's memory in `memory\` (its last 30 sessions, and the Java versions that refused the memory agent in `memory-agent-failures.json`), the `playit-agent\` binary, the `instance.lock` that keeps the app to one running copy, and, on
 Linux/macOS, `.secret.key`. Each server keeps its backups in its own `backups\` folder, and a hidden `.mcserverlauncher-memory\` folder
 beside its world with the GC log (two rotating files, 16 MB at most) and the memory agent's jar and two small files; the world backup
@@ -386,7 +389,11 @@ services for, and what they see besides your IP: Mojang, Paper, Purpur, Fabric, 
 downloads, and Mojang a player's name when you add them to the whitelist), Modrinth and GeyserMC (mods and
 plugins), Adoptium (Java), GitHub (updates, and the store's catalogue of topics and summaries, a public file
 downloaded at most once a day), Playit (tunnels, through the app's proxy when linking an
-account) and **mc-heads.net** (each player's avatar, by name, in the player history).
+account), **mc-heads.net** (each player's avatar, by name, in the player history) and the project's own
+website (`mc-server-launcher.vercel.app`, with `juanp-g.github.io` as a fallback), which serves the signed
+file of [announcements](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/announcements.html):
+a request without your version, language or any identifier, once after start and every 30 minutes, and none at all
+if you turn **Show announcements** off in Settings. Which notices apply to you is decided on your computer.
 
 **Extra Java flags:** there is no field for them in the app, but each server in `servers.json` has an
 `ExtraJvmArgs` entry (empty by default) that is added to the Java command line after the memory flags, for

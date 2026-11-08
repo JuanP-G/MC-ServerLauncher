@@ -28,7 +28,7 @@ public class AppSettings
     /// </summary>
     public string? LastVersionSeen { get; set; }
 
-    // --- Novedades: the section with the release notes and, later, the notices ---
+    // --- Novedades: the section with the release notes and the notices ---
 
     /// <summary>
     /// Novedades marks the rail when something is unread and lets important notices speak up. Off,
@@ -39,6 +39,24 @@ public class AppSettings
 
     /// <summary>How the rail marks an unread entry in Novedades.</summary>
     public NewsBadgeStyle NewsBadge { get; set; } = NewsBadgeStyle.Number;
+
+    /// <summary>
+    /// Where the strip for an urgent notice shows: across the whole app by default, only in Tunnels,
+    /// or nowhere. Tips never use it, whatever this says.
+    /// </summary>
+    public NewsStripStyle NewsStrip { get; set; } = NewsStripStyle.Everywhere;
+
+    /// <summary>
+    /// Whether an incident or a security notice also raises a desktop notification, once. It still
+    /// follows the general notifications switch. On by default: this is the urgent kind.
+    /// </summary>
+    public bool NewsToast { get; set; } = true;
+
+    /// <summary>Whether incidents (failures of services the app relies on) are listed and announced. On by default.</summary>
+    public bool NewsIncidents { get; set; } = true;
+
+    /// <summary>Whether tips are listed. On by default. Security notices have no switch of their own: <see cref="ShowAnnouncements"/> is theirs.</summary>
+    public bool NewsTips { get; set; } = true;
 
     /// <summary>
     /// The card saying that the release notes moved from a window into Novedades has been answered.

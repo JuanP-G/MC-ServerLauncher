@@ -464,6 +464,21 @@ line icons in `docs/media/icons/` (24 px, `#2da44e`), the way the feature grid i
    `.sha256`, signs them with your local key and uploads the `.sig2` and `.sig` files. Until it has run,
    Linux and macOS users who press Update are sent to the release page instead.
 
+### Publish an announcement
+A notice for every installed app (an outage of Playit, a security matter, a tip) goes in `web/news.json`,
+signed. The whole reference is [Announcements](announcements.md); the short version:
+1. Edit `web/news.json` and raise `seq`. **LF** line ends and no BOM (`.gitattributes` marks the file
+   `-text`, and the script refuses a file with CR: a signature made over a CRLF copy would not verify over
+   the LF that is published).
+   An incident or a security notice needs `until`; a resolved one needs `resolvedAt`. Write the text in the
+   five languages (`es`, `en`, `de`, `fr`, `pt`) or at least in `en`, which is the fallback.
+2. Run `.\tools\signing\sign-news.ps1`. It asks for the signing key's password and writes
+   `web/news.json.sig`. Without the key, stop here: a notice cannot be published unsigned, the app would
+   reject it.
+3. Open a pull request with both files. When it is merged, check that the website and GitHub Pages serve
+   the same bytes and that the signature verifies by hand (see [Signed updates](signing.md)).
+4. To end an incident, mark it `resolved` (do not delete it) and sign again.
+
 ## Documentation site (GitHub Pages)
 
 The API Reference + these articles are published automatically to GitHub Pages by
