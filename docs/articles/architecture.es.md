@@ -1252,7 +1252,14 @@ Por último, `GeyserConfigService` escribe lo que Geyser no puede deducir solo: 
 servidor con Floodgate que se queda en `online` rechaza a todos los jugadores de Bedrock), el puerto
 UDP local y **`broadcast-port`** — detrás de un túnel, el puerto al que se conecta la gente es el
 público del túnel, y el launcher es el único componente que conoce los dos números porque es quien
-creó el túnel. `RepairConfig` vuelve a aplicarlo cuando una reinstalación resetea el archivo.
+creó el túnel. También pone **`transport`** en `both`: Bedrock 26.60 y posteriores se conecta por
+NetherNet, cuya señalización es un listener TCP en el puerto de Bedrock, y un Geyser que se queda
+solo en RakNet no acepta a esos clientes (el autor del issue 108 tuvo que cambiarlo a mano). Un valor
+que el usuario ya eligió (`nethernet` o `both`) se respeta; solo se sustituye uno que falte, esté
+comentado o sea `raknet`. `RepairConfig` vuelve a aplicarlo todo cuando una reinstalación resetea el
+archivo, y dice en la consola cuál de las dos cosas cambió. El texto de ayuda de Crossplay avisa
+además de que, en LAN o VPN, hay que permitir el puerto de Bedrock por TCP y UDP en el Firewall de
+Windows, algo que ningún archivo de configuración puede hacer por el jugador.
 
 Lo bien que funcione todo esto es una propiedad del tipo de servidor, no una promesa:
 `ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores, y el panel de nuevo servidor y la
