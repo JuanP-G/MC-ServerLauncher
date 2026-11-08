@@ -50,7 +50,7 @@
       if (block) {
         document.title = block.getAttribute('data-title');
         btn.setAttribute('aria-label', block.getAttribute('data-lang-label'));
-        var home = block.querySelector('.btn-primary');
+        var home = block.querySelector('.cta');
         if (home) { brand.setAttribute('href', home.getAttribute('href')); }
       }
       cur.textContent = l.toUpperCase();

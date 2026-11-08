@@ -56,12 +56,23 @@ body{min-height:100vh; min-height:100svh; display:flex; flex-direction:column; b
 .fof .lead{font-size:clamp(16px,1.4vw,18px); max-width:480px; margin:0 0 26px}
 
 /* ---------- BOTONES ---------- */
-.acts{display:grid; gap:14px; max-width:520px}
-.acts .btn-lg{width:100%}
-.alts{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
-.alts .btn{min-height:48px; padding:0 14px; font-size:15px}
-/* En móvil caben dos por fila: el que se queda solo en la última ocupa el ancho entero. */
-@media (max-width:519px){ .alts .btn:last-child:nth-child(odd){grid-column:1 / -1} }
+/* Los del propio juego: el sprite de botón de 200x20 que usa el pie de la landing, con la letra del
+   juego. El de volver es el verde del menú principal, a triple escala (borde de 9 px) y con un
+   resplandor que respira; al pasar el ratón sube un poco y se pone el borde blanco con el texto
+   amarillo claro, como en el juego. Los sprites de hover se precargan en el <head>. */
+.acts{display:grid; gap:16px; max-width:600px}
+.cta{width:100%; min-height:66px; gap:14px; font-size:24px; border-width:9px; border-image:url("mc/button_green.webp") 3 fill / 9px stretch;
+  cursor:pointer; text-shadow:3px 3px 0 #1D4D13; animation:glow 3.2s ease-in-out infinite; transition:transform .08s}
+.cta svg{width:26px; height:26px; filter:drop-shadow(3px 3px 0 #1D4D13)}
+.cta:hover,.cta:focus-visible{border-image-source:url("mc/button_green_hover.webp"); color:var(--mc-hover); transform:translateY(-2px)}
+.cta:active{transform:translateY(2px)}
+@keyframes glow{50%{filter:drop-shadow(0 0 14px rgba(128,255,32,.38))}}
+
+/* Los tres secundarios van en fila y cada uno mide lo que pide su texto (en francés, «Téléchargements»
+   es el doble de largo que «GitHub»); si no caben, bajan de fila y se reparten el ancho. */
+.alts{display:flex; flex-wrap:wrap; gap:10px}
+.alts .btn-mc{flex:1 1 auto; min-height:52px; padding:0 10px; gap:6px; white-space:nowrap; cursor:pointer; transition:transform .08s}
+.alts .btn-mc:hover,.alts .btn-mc:focus-visible{transform:translateY(-2px)}
 
 /* La dirección que falló: útil para quien escribió mal una URL. Oculta hasta que el script la escribe. */
 .req{margin:20px 0 0; font-size:13px; line-height:1.5; color:#8E98AA; overflow-wrap:anywhere}
@@ -77,9 +88,12 @@ body{min-height:100vh; min-height:100svh; display:flex; flex-direction:column; b
     -webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 100%); mask-image:linear-gradient(180deg,#000 55%,transparent 100%)}
   .fof{margin-top:calc(min(82vw,380px) * -.3); padding-block:0 32px; position:relative; z-index:1}
   .code{--w:min(72%,280px)}
+  .cta{font-size:20px; min-height:60px; gap:10px}
+  .cta svg{width:22px; height:22px}
 }
 
 /* ---------- MOVIMIENTO REDUCIDO ---------- */
 @media (prefers-reduced-motion:reduce){
-  .msg{animation:none}
+  .msg,.cta{animation:none}
+  .cta:hover,.cta:focus-visible,.alts .btn-mc:hover,.alts .btn-mc:focus-visible{transform:none}
 }
