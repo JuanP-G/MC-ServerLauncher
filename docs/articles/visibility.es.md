@@ -98,6 +98,16 @@ viaja en atributos `data-` de la etiqueta del script, traducidos con `strings.js
 política de contenido ya no necesita hashes de script (`script-src 'self'` más GoatCounter), y la generación falla
 si una página lleva código en línea.
 
+**La página 404.** `web/404.html` es lo que Vercel y GitHub Pages sirven, con estado 404 de verdad, para cualquier
+dirección que no exista a cualquier profundidad, así que todas sus rutas son absolutas desde la raíz (una relativa se
+resolvería contra la dirección que falló). Lleva los cinco idiomas en un solo archivo; `web/assets/404.js` elige uno
+por el prefijo de la dirección (`/en/`, `/de/`, ...) y, si no hay, el español, y la página no cuenta nada (sin
+GoatCounter). `build.py` le pone su propia política de contenido y los `?v=`. GitHub Pages sirve el proyecto bajo
+`/MC-ServerLauncher/`, así que el paso «Assemble site» de `.github/workflows/docs.yml` antepone ese prefijo a todo
+`href`/`src` absoluto de su copia del archivo. La ilustración (`web/assets/404/hero.webp`) está generada con IA con el
+aspecto de Minecraft; el «404» de piedra (`code.webp`) sale de la textura de piedra del juego con
+`web/_tools/make_404_art.py`.
+
 **Qué se comprueba al generar.** La generación falla, sin escribir nada, si a un idioma le falta una
 cadena, si su estructura no coincide con la del español, si algún texto largo es idéntico al español (sin
 traducir), si un `title` pasa de 78 caracteres o una `description` se sale de 70–175, o si un enlace

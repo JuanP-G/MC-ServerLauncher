@@ -1,0 +1,75 @@
+/* Página de error 404 (web/404.html). Se apoya en site.css para las fuentes, la cabecera, los
+   botones, el selector de idioma y el pie; aquí solo va lo propio de esta página: la ilustración
+   a pantalla completa, el «404» de piedra y la columna de texto. Las rutas son relativas a este
+   archivo, así que valen igual en la raíz de Vercel que bajo /MC-ServerLauncher/ de GitHub Pages. */
+
+/* ---------- IDIOMAS ---------- */
+/* Los cinco idiomas viven en el mismo HTML y se muestra el que marca <html data-l>. El español es
+   el de partida, así que se ve completo aunque no corra el script (assets/404.js). */
+.l{display:none}
+html[data-l="es"] .l[data-l="es"],
+html[data-l="en"] .l[data-l="en"],
+html[data-l="de"] .l[data-l="de"],
+html[data-l="fr"] .l[data-l="fr"],
+html[data-l="pt"] .l[data-l="pt"]{display:revert}
+
+/* ---------- PÁGINA ---------- */
+body{min-height:100vh; min-height:100svh; display:flex; flex-direction:column; background:#070B14}
+.nav{top:0}                      /* en la landing deja sitio a la barra de experiencia; aquí no hay */
+.langs{margin-left:auto}
+
+/* La ilustración ocupa todo el hueco entre la cabecera y el pie. Un degradado oscuro por la
+   izquierda deja el texto legible sea cual sea el ancho, y otro por abajo asienta la isla. */
+.hero{position:relative; flex:1; display:flex; overflow:hidden; isolation:isolate}
+.art{position:absolute; inset:0; z-index:-2; width:100%; height:100%; object-fit:cover; object-position:right center}
+.hero::before{content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(7,11,20,.97) 0%, rgba(7,11,20,.84) 34%, rgba(7,11,20,0) 64%),
+    linear-gradient(0deg, rgba(7,11,20,.7) 0%, rgba(7,11,20,0) 28%)}
+
+.fof{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; gap:clamp(14px,2.4vh,24px);
+  padding-block:clamp(20px,4vh,56px); max-width:calc(var(--maxw) + var(--gut) * 2)}
+.fof > *{max-width:min(100%,600px)}
+
+/* ---------- EL 404 DE PIEDRA ---------- */
+/* Cubos de piedra del juego con bisel y sombra, hechos con web/_tools/make_404_art.py. La imagen
+   lleva margen alrededor para el resplandor, así que se tira un poco a la izquierda para que las
+   cifras queden alineadas con el texto. */
+.code{--w:min(100%,500px); display:block; width:var(--w); height:auto; margin-left:calc(var(--w) * -.041)}
+
+/* ---------- TEXTO ---------- */
+.msg{min-width:0; animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0; transform:translateY(14px)}}
+.fof h1{font-family:var(--f-mc); font-weight:400; font-size:clamp(28px,3.6vw,44px); line-height:1.15; margin:0 0 14px;
+  text-shadow:3px 3px 0 var(--mc-shadow), 0 2px 18px rgba(3,8,16,.75); -webkit-font-smoothing:none; text-wrap:balance}
+.fof .lead{font-size:clamp(16px,1.4vw,18px); max-width:480px; margin:0 0 26px}
+
+/* ---------- BOTONES ---------- */
+.acts{display:grid; gap:14px; max-width:520px}
+.acts .btn-lg{width:100%}
+.alts{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+.alts .btn{min-height:48px; padding:0 14px; font-size:15px}
+
+/* La dirección que falló: útil para quien escribió mal una URL. Oculta hasta que el script la escribe. */
+.req{margin:20px 0 0; font-size:13px; line-height:1.5; color:#8E98AA; overflow-wrap:anywhere}
+.req code{font:13px/1.5 ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace; color:#C3CCDA}
+
+/* ---------- PIE ---------- */
+.fof-foot{background:rgba(7,11,20,.92)}
+
+/* ---------- MÓVIL ---------- */
+/* La ilustración pasa a ser una franja arriba, con el Enderman y el aldeano a la vista, que se
+   funde con el fondo, y el texto va debajo, sin tapar a nadie. */
+@media (max-width:760px){
+  .hero{display:block}
+  .hero::before{display:none}
+  .art{position:relative; z-index:0; height:min(82vw,380px); object-position:84% 40%;
+    -webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 100%); mask-image:linear-gradient(180deg,#000 55%,transparent 100%)}
+  .fof{margin-top:calc(min(82vw,380px) * -.3); padding-block:0 32px; position:relative; z-index:1}
+  .code{--w:min(72%,280px)}
+}
+
+/* ---------- MOVIMIENTO REDUCIDO ---------- */
+@media (prefers-reduced-motion:reduce){
+  .msg{animation:none}
+}
