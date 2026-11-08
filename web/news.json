@@ -1,6 +1,39 @@
 {
   "schema": 1,
-  "seq": 1,
-  "issued": "2026-11-08T16:02:30Z",
-  "items": []
+  "seq": 2,
+  "issued": "2026-11-08T16:10:00Z",
+  "items": [
+    {
+      "id": "prueba-incidencia-2026-11-08",
+      "kind": "incident",
+      "status": "active",
+      "until": "2026-11-09T16:00:00Z",
+      "link": "https://github.com/JuanP-G/MC-ServerLauncher",
+      "text": {
+        "es": {
+          "title": "Aviso de prueba: no pasa nada",
+          "body": "Esto es una incidencia de ejemplo para probar la banda y la notificación de la nueva versión. No tienes que hacer nada: se retirará sola."
+        },
+        "en": {
+          "title": "Test notice: nothing is wrong",
+          "body": "This is a sample incident to try the strip and the notification of the new version. You do not have to do anything: it will be removed."
+        }
+      }
+    },
+    {
+      "id": "prueba-consejo-2026-11-08",
+      "kind": "tip",
+      "until": "2026-11-09T16:00:00Z",
+      "text": {
+        "es": {
+          "title": "Consejo de prueba",
+          "body": "Los consejos solo salen en la lista de Novedades: no usan banda ni notificación."
+        },
+        "en": {
+          "title": "Test tip",
+          "body": "Tips only show in the What's new list: they use no strip and no notification."
+        }
+      }
+    }
+  ]
 }
