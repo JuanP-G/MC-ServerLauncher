@@ -84,7 +84,7 @@
             <Border Classes="card" Margin="0" IsVisible="{Binding ShowMoveNotice}">
                 <Grid ColumnDefinitions="Auto,*">
                     <Border Classes="ring" Margin="0,0,12,0" VerticalAlignment="Top">
-                        <ic:FluentIcon Icon="Megaphone" FontSize="15" Foreground="{StaticResource SemanticInfo}"
+                        <ic:FluentIcon Icon="Megaphone" FontSize="16" Foreground="{StaticResource SemanticInfo}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="8">
@@ -104,7 +104,7 @@
             <Border Classes="card" Classes.marked="{Binding OfferMarked}" Margin="0" IsVisible="{Binding HasOffer}">
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <Border Classes="ring" Margin="0,0,12,0">
-                        <ic:FluentIcon Icon="ArrowDownload" FontSize="15" Foreground="{StaticResource SemanticInfo}"
+                        <ic:FluentIcon Icon="ArrowDownload" FontSize="16" Foreground="{StaticResource SemanticInfo}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock Grid.Column="1" Text="{Binding OfferText}" VerticalAlignment="Center"
@@ -122,7 +122,7 @@
             <Border Classes="card" Margin="0" IsVisible="{Binding HasFeedProblem}">
                 <Grid ColumnDefinitions="Auto,*">
                     <Border Classes="ring warn" Margin="0,0,12,0">
-                        <ic:FluentIcon Icon="Warning" FontSize="15" Foreground="{StaticResource SemanticWarn}"
+                        <ic:FluentIcon Icon="Warning" FontSize="16" Foreground="{StaticResource SemanticWarn}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock Grid.Column="1" Text="{Binding FeedProblemText}" VerticalAlignment="Center"
@@ -144,16 +144,16 @@
                                 <Border Classes="ring" Classes.warn="{Binding IsWarn}" Classes.danger="{Binding IsDanger}"
                                         Classes.ok="{Binding IsResolved}" Margin="0,0,12,0" VerticalAlignment="Top">
                                     <Panel>
-                                        <ic:FluentIcon Icon="Warning" FontSize="15" Foreground="{StaticResource SemanticWarn}"
+                                        <ic:FluentIcon Icon="Warning" FontSize="16" Foreground="{StaticResource SemanticWarn}"
                                                        IsVisible="{Binding IsWarn}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        <ic:FluentIcon Icon="ShieldError" FontSize="15" Foreground="{StaticResource SemanticDanger}"
+                                        <ic:FluentIcon Icon="ShieldError" FontSize="16" Foreground="{StaticResource SemanticDanger}"
                                                        IsVisible="{Binding IsDanger}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        <ic:FluentIcon Icon="CheckmarkCircle" FontSize="15" Foreground="{StaticResource SemanticOk}"
+                                        <ic:FluentIcon Icon="CheckmarkCircle" FontSize="16" Foreground="{StaticResource SemanticOk}"
                                                        IsVisible="{Binding IsResolved}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        <ic:FluentIcon Icon="Lightbulb" FontSize="15" Foreground="{StaticResource SemanticInfo}"
+                                        <ic:FluentIcon Icon="Lightbulb" FontSize="16" Foreground="{StaticResource SemanticInfo}"
                                                        IsVisible="{Binding ShowTipIcon}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Panel>

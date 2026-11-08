@@ -394,7 +394,7 @@ archivo público que se baja como mucho una vez al día), Playit (túneles, a tr
 vincular una cuenta), **mc-heads.net** (el avatar de cada jugador, por su nombre, en el historial) y la
 propia web del proyecto (`mc-server-launcher.vercel.app`, con `juanp-g.github.io` de respaldo), que sirve el
 archivo firmado de [anuncios](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/announcements.es.html):
-una petición sin tu versión, tu idioma ni ningún identificador, una vez al arrancar y cada 30 minutos, y ninguna
+una petición sin tu versión, tu idioma ni ningún identificador, una vez al arrancar y cada 5 minutos (unos cientos de bytes si nada cambió), y ninguna
 si desactivas **Mostrar anuncios** en Ajustes. Qué avisos te tocan se decide en tu equipo.
 
 **Flags de Java extra:** la app no tiene un campo para ellos, pero cada servidor de `servers.json` tiene

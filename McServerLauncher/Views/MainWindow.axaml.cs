@@ -45,6 +45,10 @@ public partial class MainWindow : Window
             _viewModel.OpenNewsIfUpdated();
         };
 
+        // Back in front (from another app, the taskbar or the tray): look at the notices file if the copy
+        // is not recent, so a notice that came while the user was away is there when they are.
+        Activated += (_, _) => _viewModel.OnWindowActivated();
+
         // When switching servers, go back to the Console tab. Otherwise the previously selected tab
         // (e.g. Mods) could stay shown for a server that doesn't have it (a vanilla server).
         //

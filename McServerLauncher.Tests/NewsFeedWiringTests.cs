@@ -39,6 +39,9 @@ public class NewsFeedWiringTests : IDisposable
     private readonly List<(string Heading, string Message, Icon Icon, NotificationLevel Level)> _toasts = [];
     private bool _windowInactive = true;
 
+    /// <summary>What the notices service takes for "now"; null is the real clock.</summary>
+    private DateTimeOffset? _clockOverride;
+
     public NewsFeedWiringTests(AvaloniaFixture ui)
     {
         _ui = ui;
@@ -114,7 +117,8 @@ public class NewsFeedWiringTests : IDisposable
         _ui.Run(() =>
         {
             var service = new NewsFeedService(Path.Combine(_dataDir, "cache"), new HttpClient(_handler), [Url],
-                [Convert.ToBase64String(_key.ExportSubjectPublicKeyInfo())]);
+                [Convert.ToBase64String(_key.ExportSubjectPublicKeyInfo())],
+                clock: () => _clockOverride ?? DateTimeOffset.UtcNow);
             main = new MainViewModel(_dataDir, service)
             {
                 UsesTunnelsOverride = () => usesTunnels,
@@ -259,6 +263,84 @@ public class NewsFeedWiringTests : IDisposable
         Assert.False(Read(() => main.ShowNewsBand));
         Assert.Single(Read(() => main.News.Notices));
         Assert.True(new NewsState(Path.Combine(_dataDir, "news-state.json")).IsClosed("playit-1"));
+    }
+
+    [Fact]
+    public async Task OpeningTheSectionReadsTheNoticeAndTheStripGoes()
+    {
+        Serve(Feed(1, Notice()), "\"v1\"");
+        var main = Open();
+        _ui.Run(main.StartNews);
+        await Until(() => main.ShowNewsBand);
+
+        _ui.Run(() => main.ShowNewsCommand.Execute(null));
+
+        Assert.False(Read(() => main.ShowNewsBand));
+        Assert.Single(Read(() => main.News.Notices));
+        Assert.True(Read(() => main.News.Notices[0].Marked));     // still marked, for this visit
+        Assert.Equal(0, Read(() => main.News.UnreadCount));
+    }
+
+    [Fact]
+    public async Task ANoticeThatComesWhileTheSectionIsOpenGetsNoStrip()
+    {
+        var main = Open();                                         // nothing published yet: 404
+        _ui.Run(main.StartNews);
+        await Until(() => main.News.NoNotices && _handler.Requests >= 1);
+        _ui.Run(() => main.ShowNewsCommand.Execute(null));
+
+        Serve(Feed(1, Notice()), "\"v1\"");
+        _ui.Run(() => _ = main.CheckNewsAsync());
+        await Until(() => main.News.Notices.Count == 1);
+
+        Assert.False(Read(() => main.ShowNewsBand));               // the user is looking at it already
+    }
+
+    // ---- when the window comes back ----
+
+    [Fact]
+    public async Task ComingBackToTheWindowLooksAgainOnlyIfTheCopyIsNotRecent()
+    {
+        var start = DateTimeOffset.UtcNow;
+        _clockOverride = start;
+        Serve(Feed(1, Notice()), "\"v1\"");
+        var main = Open();
+        _ui.Run(main.StartNews);
+        await Until(() => main.News.Notices.Count == 1);
+        var asked = _handler.Requests;
+
+        _clockOverride = start + TimeSpan.FromSeconds(90);
+        _ui.Run(main.OnWindowActivated);
+        await Task.Delay(150);
+        Assert.Equal(asked, _handler.Requests);                    // confirmed a minute and a half ago: enough
+
+        _clockOverride = start + TimeSpan.FromMinutes(3);
+        _ui.Run(main.OnWindowActivated);
+        await Until(() => _handler.Requests > asked);              // three minutes: look again
+    }
+
+    [Fact]
+    public async Task ComingBackAsksNothingBeforeTheWindowIsUpOrWithAnnouncementsOff()
+    {
+        Serve(Feed(1, Notice()), "\"v1\"");
+        var main = Open();
+
+        _ui.Run(main.OnWindowActivated);                           // nothing has started yet
+        _ui.Run(() => main.Settings.ShowAnnouncements = false);
+        _ui.Run(main.StartNews);
+        _ui.Run(main.OnWindowActivated);
+        await Task.Delay(150);
+
+        Assert.Equal(0, _handler.Requests);
+    }
+
+    [Fact]
+    public void TheTimerSkipsALookRightAfterAnotherButNeverAlwaysSkips()
+    {
+        // The timer ticks every five minutes with an age a little under that, so a look a minute before
+        // covers it and an idle window never does; a window coming back uses the shorter, fresher age.
+        Assert.True(MainViewModel.NewsTickAge < TimeSpan.FromMinutes(5));
+        Assert.True(MainViewModel.NewsFreshAge <= MainViewModel.NewsTickAge);
     }
 
     [Fact]

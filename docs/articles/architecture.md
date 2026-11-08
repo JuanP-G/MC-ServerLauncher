@@ -1036,8 +1036,9 @@ format and the publishing recipe; this is how the app is put together.
   closed) and which ones are owed a notification. **`NewsState`** remembers what was read, closed and
   announced, in `news-state.json`.
 - **`MainViewModel.News.cs`** is the glue that needs the rest of the window. `StartNews`, called from
-  `Activate` and never from the constructor, looks at the file once and then every 30 minutes with a
-  `DispatcherTimer` (and when the section is opened with a copy older than 10 minutes); with **Show
+  `Activate` and never from the constructor, looks at the file once and then every 5 minutes with a
+  `DispatcherTimer` (and, with a copy older than 2 minutes, when the section is opened or the window comes
+  back to the front through `OnWindowActivated`; the timer itself skips a look right after one); with **Show
   announcements** off there is no timer and no request. Who a notice is for is worked out **here and never
   sent**: whether the machine uses tunnels needs `PlayitConnection`, which lives in `Views/`, so it is
   computed in the view model and handed to the board as a plain value. It also owns the strip

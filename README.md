@@ -391,7 +391,7 @@ downloaded at most once a day), Playit (tunnels, through the app's proxy when li
 account), **mc-heads.net** (each player's avatar, by name, in the player history) and the project's own
 website (`mc-server-launcher.vercel.app`, with `juanp-g.github.io` as a fallback), which serves the signed
 file of [announcements](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/announcements.html):
-a request without your version, language or any identifier, once after start and every 30 minutes, and none at all
+a request without your version, language or any identifier, once after start and every 5 minutes (a few hundred bytes when nothing changed), and none at all
 if you turn **Show announcements** off in Settings. Which notices apply to you is decided on your computer.
 
 **Extra Java flags:** there is no field for them in the app, but each server in `servers.json` has an
