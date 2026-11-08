@@ -95,6 +95,15 @@ guides inherit its changes and its interface translation without repeating them.
 script tag, translated through `strings.json` like any other text. The content-security policy therefore needs
 no script hashes (`script-src 'self'` plus GoatCounter), and generation fails if a page carries inline code.
 
+**The 404 page.** `web/404.html` is what Vercel and GitHub Pages serve, with a real 404 status, for any address that
+does not exist at any depth, so every path in it is absolute from the root (a relative one would resolve against the
+address that failed). It carries the five languages in one file; `web/assets/404.js` picks one from the address
+prefix (`/en/`, `/de/`, ...) and falls back to Spanish, and the page counts nothing (no GoatCounter). `build.py`
+gives it its own content-security policy and the `?v=` hashes. GitHub Pages serves the project under
+`/MC-ServerLauncher/`, so the "Assemble site" step of `.github/workflows/docs.yml` prefixes every root-absolute
+`href`/`src` in its copy of the file. The artwork (`web/assets/404/hero.webp`) is AI-generated in Minecraft's look;
+the stone "404" (`code.webp`) is rendered from the game's stone texture by `web/_tools/make_404_art.py`.
+
 **What is checked while generating.** Generation fails, writing nothing, if a language is missing a string,
 if its structure differs from the Spanish one, if a long text is identical to the Spanish (untranslated), if
 a `title` is over 78 characters or a `description` is outside 70–175, or if an internal `{guide:id}` link

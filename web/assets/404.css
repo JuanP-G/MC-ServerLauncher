@@ -1,0 +1,99 @@
+/* Página de error 404 (web/404.html). Se apoya en site.css para las fuentes, la cabecera, los
+   botones, el selector de idioma y el pie; aquí solo va lo propio de esta página: la ilustración
+   a pantalla completa, el «404» de piedra y la columna de texto. Las rutas son relativas a este
+   archivo, así que valen igual en la raíz de Vercel que bajo /MC-ServerLauncher/ de GitHub Pages. */
+
+/* ---------- IDIOMAS ---------- */
+/* Los cinco idiomas viven en el mismo HTML y se muestra el que marca <html data-l>. El español es
+   el de partida, así que se ve completo aunque no corra el script (assets/404.js). */
+.l{display:none}
+html[data-l="es"] .l[data-l="es"],
+html[data-l="en"] .l[data-l="en"],
+html[data-l="de"] .l[data-l="de"],
+html[data-l="fr"] .l[data-l="fr"],
+html[data-l="pt"] .l[data-l="pt"]{display:revert}
+
+/* ---------- PÁGINA ---------- */
+body{min-height:100vh; min-height:100svh; display:flex; flex-direction:column; background:#070B14}
+.nav{top:0}                      /* en la landing deja sitio a la barra de experiencia; aquí no hay */
+.langs{margin-left:auto}
+
+/* El selector es el de la landing, pero con botones en lugar de enlaces (cambia el idioma de esta
+   página, no lleva a otra dirección), así que le damos aquí el mismo aspecto que site.css da a
+   `.lang-list a`. */
+.lang-list button{display:flex; align-items:center; gap:10px; width:100%; padding:9px 10px; border:0; background:none;
+  font:500 14px/1.2 var(--f-body); color:#FFFFFF; text-align:left; cursor:pointer}
+.lang-list button svg{display:block; width:21px; height:14px; flex:none; box-shadow:0 0 0 1px rgba(0,0,0,.55)}
+.lang-list button:hover,.lang-list button:focus-visible{background:rgba(255,255,255,.08); color:var(--mc-hover); outline:none}
+.lang-list button[aria-current]{background:rgba(255,255,255,.12)}
+.lang-list button[aria-current]::after{content:"✓"; margin-left:auto; color:var(--mc-green)}
+.lang-list button b{width:24px; font-family:var(--f-mc); font-weight:400; font-size:16px; color:#AFAFAF; -webkit-font-smoothing:none}
+
+/* La ilustración ocupa todo el hueco entre la cabecera y el pie. Un degradado oscuro por la
+   izquierda deja el texto legible sea cual sea el ancho, y otro por abajo asienta la isla. */
+.fof-hero{position:relative; flex:1; width:100%; display:flex; overflow:hidden; isolation:isolate}
+.art{position:absolute; inset:0; z-index:-2; width:100%; height:100%; object-fit:cover; object-position:right 14%}
+.fof-hero::before{content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(7,11,20,.97) 0%, rgba(7,11,20,.84) 34%, rgba(7,11,20,0) 64%),
+    linear-gradient(0deg, rgba(7,11,20,.7) 0%, rgba(7,11,20,0) 28%)}
+
+.fof{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; gap:clamp(14px,2.4vh,24px);
+  padding-block:clamp(20px,4vh,56px); max-width:calc(1420px + var(--gut) * 2); padding-inline:clamp(16px,3vw,40px)}
+.fof > *{max-width:min(100%,600px)}
+
+/* ---------- EL 404 DE PIEDRA ---------- */
+/* Cubos de piedra del juego con bisel y sombra, hechos con web/_tools/make_404_art.py. La imagen
+   lleva margen alrededor para el resplandor, así que se tira un poco a la izquierda para que las
+   cifras queden alineadas con el texto. */
+.code{--w:min(100%,500px); display:block; width:var(--w); height:auto; margin-left:calc(var(--w) * -.041)}
+
+/* ---------- TEXTO ---------- */
+.msg{min-width:0; animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0; transform:translateY(14px)}}
+.fof h1{font-family:var(--f-mc); font-weight:400; font-size:clamp(28px,3.6vw,44px); line-height:1.15; margin:0 0 14px;
+  text-shadow:3px 3px 0 var(--mc-shadow), 0 2px 18px rgba(3,8,16,.75); -webkit-font-smoothing:none; text-wrap:balance}
+.fof .lead{font-size:clamp(16px,1.4vw,18px); max-width:480px; margin:0 0 26px}
+
+/* ---------- BOTONES ---------- */
+/* Los del propio juego: el sprite de botón de 200x20 que usa el pie de la landing, con la letra del
+   juego. El de volver es el verde del menú principal, a triple escala (borde de 9 px) y con un
+   resplandor que respira; al pasar el ratón sube un poco y se pone el borde blanco con el texto
+   amarillo claro, como en el juego. Los sprites de hover se precargan en el <head>. */
+.acts{display:grid; gap:16px; max-width:600px}
+.cta{width:100%; min-height:66px; gap:14px; font-size:24px; border-width:9px; border-image:url("mc/button_green.webp") 3 fill / 9px stretch;
+  cursor:pointer; text-shadow:3px 3px 0 #1D4D13; animation:glow 3.2s ease-in-out infinite; transition:transform .08s}
+.cta svg{width:26px; height:26px; filter:drop-shadow(3px 3px 0 #1D4D13)}
+.cta:hover,.cta:focus-visible{border-image-source:url("mc/button_green_hover.webp"); color:var(--mc-hover); transform:translateY(-2px)}
+.cta:active{transform:translateY(2px)}
+@keyframes glow{50%{filter:drop-shadow(0 0 14px rgba(128,255,32,.38))}}
+
+/* Los tres secundarios van en fila y cada uno mide lo que pide su texto (en francés, «Téléchargements»
+   es el doble de largo que «GitHub»); si no caben, bajan de fila y se reparten el ancho. */
+.alts{display:flex; flex-wrap:wrap; gap:10px}
+.alts .btn-mc{flex:1 1 auto; min-height:52px; padding:0 10px; gap:6px; white-space:nowrap; cursor:pointer; transition:transform .08s}
+.alts .btn-mc:hover,.alts .btn-mc:focus-visible{transform:translateY(-2px)}
+
+/* La dirección que falló: útil para quien escribió mal una URL. Oculta hasta que el script la escribe. */
+.req{margin:20px 0 0; font-size:13px; line-height:1.5; color:#8E98AA; overflow-wrap:anywhere}
+.req code{font:13px/1.5 ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace; color:#C3CCDA}
+
+/* ---------- MÓVIL ---------- */
+/* La ilustración pasa a ser una franja arriba, con el Enderman y el aldeano a la vista, que se
+   funde con el fondo, y el texto va debajo, sin tapar a nadie. */
+@media (max-width:760px){
+  .fof-hero{display:block}
+  .fof-hero::before{display:none}
+  .art{position:relative; z-index:0; height:min(82vw,380px); object-position:84% 40%;
+    -webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 100%); mask-image:linear-gradient(180deg,#000 55%,transparent 100%)}
+  .fof{margin-top:calc(min(82vw,380px) * -.3); padding-block:0 32px; position:relative; z-index:1}
+  .code{--w:min(72%,280px)}
+  .cta{font-size:20px; min-height:60px; gap:10px}
+  .cta svg{width:22px; height:22px}
+}
+
+/* ---------- MOVIMIENTO REDUCIDO ---------- */
+@media (prefers-reduced-motion:reduce){
+  .msg,.cta{animation:none}
+  .cta:hover,.cta:focus-visible,.alts .btn-mc:hover,.alts .btn-mc:focus-visible{transform:none}
+}
