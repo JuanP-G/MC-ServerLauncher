@@ -113,6 +113,15 @@ CSP = ("default-src 'none'; "
        "manifest-src 'self'; "
        "base-uri 'none'; form-action 'none'; object-src 'none'")
 
+# La 404 (web/404.html) no hace peticiones de red ni lleva analítica: sin GoatCounter, sin la API de
+# GitHub y sin manifiesto. Es la política de arriba recortada a lo que esa página usa de verdad.
+CSP_404 = ("default-src 'none'; "
+           "script-src 'self'; "
+           "img-src 'self' data:; "
+           "style-src 'self' 'unsafe-inline'; "
+           "font-src 'self'; "
+           "base-uri 'none'; form-action 'none'; object-src 'none'")
+
 CSP_TAG = re.compile(r'\n?<meta http-equiv="Content-Security-Policy"[^>]*>')
 
 
@@ -123,14 +132,18 @@ INLINE_SCRIPT = re.compile(r'<script(?![^>]*\bsrc=)(?![^>]*type="application/ld\
 
 # Los archivos que cambian con el sitio llevan en la URL un resumen de su contenido: un navegador
 # o una caché intermedia que guardó la versión anterior pide la nueva en cuanto cambia.
-VERSIONED_ASSETS = ("site.css", "site.js", "guide.css")
+VERSIONED_ASSETS = ("site.css", "site.js", "guide.css", "404.css", "404.js")
 VERSIONED_URL = re.compile(r'assets/(%s)(?:\?v=[0-9a-f]+)?"' % "|".join(re.escape(a) for a in VERSIONED_ASSETS))
 
 
 def asset_versions():
-    """Primeros 10 caracteres del sha256 de cada archivo versionado."""
-    return {name: hashlib.sha256((ROOT / "assets" / name).read_bytes()).hexdigest()[:10]
-            for name in VERSIONED_ASSETS}
+    """Primeros 10 caracteres del sha256 de cada archivo versionado.
+
+    Con los finales de línea normalizados a LF, que es como los guarda git: una copia de trabajo
+    de Windows (core.autocrlf) los tiene en CRLF y, sin esto, daría un resumen distinto del que ya
+    está en las páginas y reescribiría las 30 solo por haber ejecutado el script."""
+    data = lambda name: (ROOT / "assets" / name).read_bytes().replace(b"\r\n", b"\n")
+    return {name: hashlib.sha256(data(name)).hexdigest()[:10] for name in VERSIONED_ASSETS}
 
 
 def stamp_assets(html, versions):
@@ -138,14 +151,14 @@ def stamp_assets(html, versions):
     return VERSIONED_URL.sub(lambda m: 'assets/%s?v=%s"' % (m.group(1), versions[m.group(1)]), html)
 
 
-def apply_csp(html, versions):
+def apply_csp(html, versions, csp=CSP):
     """Pone (o actualiza) la política de la página y la versión de sus archivos."""
     html = CSP_TAG.sub("", html)
     if INLINE_SCRIPT.search(html):
         sys.exit("ERROR: una página lleva un <script> en línea; la política de contenido no lo permite "
                  "(ponlo en web/assets/site.js)")
     html = stamp_assets(html, versions)
-    tag = '<meta http-equiv="Content-Security-Policy" content="%s">' % CSP
+    tag = '<meta http-equiv="Content-Security-Policy" content="%s">' % csp
     if '<meta charset="utf-8">' not in html:
         sys.exit("ERROR: una página no tiene <meta charset> donde poner la política de contenido")
     return html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n' + tag, 1)
@@ -160,6 +173,10 @@ def apply_csp_everywhere():
             continue
         page.write_text(apply_csp(page.read_text(encoding="utf-8"), versions), encoding="utf-8")
         count += 1
+    # La página de error vive en la raíz y se llama 404.html (así la sirven Vercel y GitHub Pages).
+    error_page = ROOT / "404.html"
+    error_page.write_text(apply_csp(error_page.read_text(encoding="utf-8"), versions, CSP_404), encoding="utf-8")
+    count += 1
     print("Content-Security-Policy y versión de los archivos -> %d páginas" % count)
 
 

@@ -117,7 +117,7 @@ public partial class NewServerView : UserControl
         ShowStep();
     }
 
-    private Window? Owner => this.GetVisualRoot() as Window;
+    private Window? Owner => TopLevel.GetTopLevel(this) as Window;
 
     // ---------------------------------------------------------------- steps
 

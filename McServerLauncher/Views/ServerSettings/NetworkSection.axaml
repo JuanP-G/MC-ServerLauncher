@@ -16,24 +16,24 @@
             <Setter Property="CornerRadius" Value="15" />
             <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
         </Style>
-        <Style Selector="Border.mark ic|SymbolIcon">
+        <Style Selector="Border.mark ic|FluentIcon">
             <Setter Property="Opacity" Value="0.55" />
         </Style>
-        <Style Selector="Border.mark.good ic|SymbolIcon">
+        <Style Selector="Border.mark.good ic|FluentIcon">
             <Setter Property="Foreground" Value="{StaticResource SemanticOk}" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Border.mark.fair">
             <Setter Property="Background" Value="{StaticResource SemanticWarnPanel}" />
         </Style>
-        <Style Selector="Border.mark.fair ic|SymbolIcon">
+        <Style Selector="Border.mark.fair ic|FluentIcon">
             <Setter Property="Foreground" Value="{StaticResource SemanticWarn}" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Border.mark.bad">
             <Setter Property="Background" Value="{StaticResource SemanticDangerPanel}" />
         </Style>
-        <Style Selector="Border.mark.bad ic|SymbolIcon">
+        <Style Selector="Border.mark.bad ic|FluentIcon">
             <Setter Property="Foreground" Value="{StaticResource SemanticDanger}" />
             <Setter Property="Opacity" Value="1" />
         </Style>
@@ -76,7 +76,7 @@
                 <DockPanel Classes="setting">
                     <Button Classes="ctl accent" Command="{Binding RunCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <ic:SymbolIcon Symbol="Play" FontSize="14" />
+                            <ic:FluentIcon Icon="Play" FontSize="14" />
                             <TextBlock Text="{Binding RunButtonText}" />
                         </StackPanel>
                     </Button>
@@ -93,7 +93,7 @@
                                 <Panel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                                     <Border Classes="mark" Classes.good="{Binding IsGood}" Classes.fair="{Binding IsFair}"
                                             Classes.bad="{Binding IsBad}" IsVisible="{Binding !IsRunning}">
-                                        <ic:SymbolIcon Symbol="{Binding Icon}" FontSize="15"
+                                        <ic:FluentIcon Icon="{Binding Icon}" FontSize="15"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <Panel Classes="spinner" Width="24" Height="24" IsVisible="{Binding IsRunning}">
@@ -124,7 +124,7 @@
                     <DockPanel Classes="setting">
                         <Button Classes="ctl" Command="{Binding StartServerAndRunCommand}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <ic:SymbolIcon Symbol="Play" FontSize="14" />
+                                <ic:FluentIcon Icon="Play" FontSize="14" />
                                 <TextBlock Text="{loc:Loc Net_StartAndTest}" />
                             </StackPanel>
                         </Button>
@@ -189,7 +189,7 @@
                         <SelectableTextBlock Text="{Binding AddressesText}" FontSize="11" Opacity="0.7" TextWrapping="Wrap" />
                         <Button HorizontalAlignment="Left" Command="{Binding CopyReportCommand}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <ic:SymbolIcon Symbol="Copy" FontSize="14" />
+                                <ic:FluentIcon Icon="Copy" FontSize="14" />
                                 <TextBlock Text="{Binding CopyText}" />
                             </StackPanel>
                         </Button>

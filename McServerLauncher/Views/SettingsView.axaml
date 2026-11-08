@@ -43,25 +43,31 @@
             <StackPanel x:Name="PageItems" Spacing="4">
             <Button Classes="page" Classes.on="{Binding IsGeneralPage}" Command="{Binding ShowGeneralCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ic:SymbolIcon Symbol="Settings" FontSize="16" />
+                    <ic:FluentIcon Icon="Settings" FontSize="16" />
                     <TextBlock Text="{loc:Loc Set_General}" />
                 </StackPanel>
             </Button>
             <Button Classes="page" Classes.on="{Binding IsNotificationsPage}" Command="{Binding ShowNotificationsCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ic:SymbolIcon Symbol="Alert" FontSize="16" />
+                    <ic:FluentIcon Icon="Alert" FontSize="16" />
                     <TextBlock Text="{loc:Loc Notif_Section}" />
+                </StackPanel>
+            </Button>
+            <Button Classes="page" Classes.on="{Binding IsNewsPage}" Command="{Binding ShowNewsCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ic:FluentIcon Icon="Megaphone" FontSize="16" />
+                    <TextBlock Text="{loc:Loc Set_News}" />
                 </StackPanel>
             </Button>
             <Button Classes="page" Classes.on="{Binding IsColorsPage}" Command="{Binding ShowColorsCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ic:SymbolIcon Symbol="Color" FontSize="16" />
+                    <ic:FluentIcon Icon="Color" FontSize="16" />
                     <TextBlock Text="{loc:Loc Set_Colors}" />
                 </StackPanel>
             </Button>
             <Button Classes="page" Classes.on="{Binding IsPlayersPage}" Command="{Binding ShowPlayersCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ic:SymbolIcon Symbol="People" FontSize="16" />
+                    <ic:FluentIcon Icon="People" FontSize="16" />
                     <TextBlock Text="{loc:Loc Players}" />
                 </StackPanel>
             </Button>
@@ -200,6 +206,103 @@
                             </Grid>
                         </Grid>
                     </Border>
+                </StackPanel>
+
+                <!-- ===================== ANNOUNCEMENTS ===================== -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsNewsPage}" Classes="fadein">
+                    <Border Classes="card" Margin="0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Margin="0,0,16,0">
+                                <TextBlock Text="{loc:Loc News_ShowTitle}" Classes="title" />
+                                <TextBlock Text="{loc:Loc News_ShowDesc}" Classes="desc" />
+                            </StackPanel>
+                            <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                          IsChecked="{Binding ShowAnnouncements, Mode=TwoWay}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- How the rail marks something unread. The sample next to the picker is the real
+                         mark in the style picked, so it can be judged before it is left that way. -->
+                    <Border Classes="card" Margin="0" IsEnabled="{Binding ShowAnnouncements}">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc News_BadgeTitle}" Classes="title" />
+                                <TextBlock Text="{loc:Loc News_BadgeDesc}" Classes="desc" />
+                            </StackPanel>
+                            <Panel Grid.Column="1" Width="48" Height="40" Margin="12,0">
+                                <ic:FluentIcon Icon="Megaphone" FontSize="20" HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                <views:NewsBadge Mode="{Binding SelectedBadgeOption.Style}" Text="3"
+                                                 HorizontalAlignment="Center" VerticalAlignment="Top"
+                                                 Margin="26,4,0,0" />
+                            </Panel>
+                            <ComboBox Grid.Column="2" Width="200" VerticalAlignment="Center"
+                                      ItemsSource="{Binding BadgeOptions}"
+                                      SelectedItem="{Binding SelectedBadgeOption, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Border>
+
+                    <!-- Where an urgent notice (an incident of a service the app relies on, a security matter) speaks up. -->
+                    <Border Classes="card" Margin="0" IsEnabled="{Binding ShowAnnouncements}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Margin="0,0,16,0">
+                                <TextBlock Text="{loc:Loc News_StripTitle}" Classes="title" />
+                                <TextBlock Text="{loc:Loc News_StripDesc}" Classes="desc" />
+                            </StackPanel>
+                            <ComboBox Grid.Column="1" Width="200" VerticalAlignment="Center"
+                                      ItemsSource="{Binding StripOptions}"
+                                      SelectedItem="{Binding SelectedStripOption, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Border>
+
+                    <Border Classes="card" Margin="0" IsEnabled="{Binding ShowAnnouncements}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Margin="0,0,16,0">
+                                <TextBlock Text="{loc:Loc News_ToastTitle}" Classes="title" />
+                                <TextBlock Text="{loc:Loc News_ToastDesc}" Classes="desc" />
+                            </StackPanel>
+                            <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                          IsChecked="{Binding NewsToast, Mode=TwoWay}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Which kinds are wanted. Security notices are not here: they only go with the main switch. -->
+                    <Border Classes="card" Margin="0" IsEnabled="{Binding ShowAnnouncements}">
+                        <StackPanel Spacing="12">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Margin="0,0,16,0">
+                                    <TextBlock Text="{loc:Loc News_IncidentsTitle}" Classes="title" />
+                                    <TextBlock Text="{loc:Loc News_IncidentsDesc}" Classes="desc" />
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                              IsChecked="{Binding NewsIncidents, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Margin="0,0,16,0">
+                                    <TextBlock Text="{loc:Loc News_TipsTitle}" Classes="title" />
+                                    <TextBlock Text="{loc:Loc News_TipsDesc}" Classes="desc" />
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                              IsChecked="{Binding NewsTips, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- What is asked of the web and what is not. -->
+                    <TextBlock Text="{loc:Loc News_PrivacyNote}" Classes="desc" Margin="2,2,0,0"
+                               TextWrapping="Wrap" />
                 </StackPanel>
 
                 <!-- ===================== COLOURS ===================== -->

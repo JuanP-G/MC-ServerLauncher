@@ -103,7 +103,7 @@
                              that is not on screen. A Flyout lives outside the layout entirely. -->
                         <Button Grid.Column="1" Margin="0,0,8,0" ToolTip.Tip="{loc:Loc Filters}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <ic:SymbolIcon Symbol="Filter" />
+                                <ic:FluentIcon Icon="Filter" />
                                 <TextBlock Text="{loc:Loc Filters}" />
                                 <Border CornerRadius="8" Padding="6,0" Background="{StaticResource SemanticInfoPanel}"
                                         VerticalAlignment="Center" IsVisible="{Binding HasSelectedTags}">
@@ -178,7 +178,7 @@
                         </Button>
 
                         <Button Grid.Column="2" Padding="7,4" ToolTip.Tip="{Binding HowToPlayTitle}">
-                            <ic:SymbolIcon Symbol="QuestionCircle" />
+                            <ic:FluentIcon Icon="QuestionCircle" />
                             <Button.Flyout>
                                 <Flyout Placement="BottomEdgeAlignedRight">
                                     <StackPanel Width="380">
@@ -191,7 +191,7 @@
                         </Button>
 
                         <TextBox Grid.Column="0" MinWidth="90" Text="{Binding SearchQuery}" Margin="0,0,8,0"
-                                 Watermark="{Binding SearchPlaceholder}">
+                                 PlaceholderText="{Binding SearchPlaceholder}">
                             <TextBox.KeyBindings>
                                 <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
                             </TextBox.KeyBindings>
@@ -199,7 +199,7 @@
                                 <Button Background="Transparent" BorderThickness="0" Padding="6,2"
                                         Command="{Binding SearchCommand}" IsEnabled="{Binding !IsSearching}"
                                         ToolTip.Tip="{loc:Loc Search}">
-                                    <ic:SymbolIcon Symbol="Search" />
+                                    <ic:FluentIcon Icon="Search" />
                                 </Button>
                             </TextBox.InnerRightContent>
                         </TextBox>
@@ -235,7 +235,7 @@
                                                 ToolTip.Tip="{loc:Loc Tip_RemoveFilter}"
                                                 Command="{Binding $parent[ItemsControl].DataContext.RemoveTagCommand}"
                                                 CommandParameter="{Binding Tag}">
-                                            <ic:SymbolIcon Symbol="Dismiss" FontSize="11" Foreground="White" />
+                                            <ic:FluentIcon Icon="Dismiss" FontSize="11" Foreground="White" />
                                         </Button>
                                     </StackPanel>
                                 </Border>
@@ -276,7 +276,7 @@
                                                         Background="{StaticResource SurfaceChip}" Margin="0,0,10,0"
                                                         ClipToBounds="True" VerticalAlignment="Top">
                                                     <Panel>
-                                                        <ic:SymbolIcon Symbol="Box" FontSize="22" Opacity="0.5"
+                                                        <ic:FluentIcon Icon="Box" FontSize="22" Opacity="0.5"
                                                                        HorizontalAlignment="Center"
                                                                        VerticalAlignment="Center"
                                                                        IsVisible="{Binding !HasIcon}" />
@@ -311,7 +311,7 @@
                                                         <TextBlock Text="{Binding Author}" FontSize="12" Opacity="0.7"
                                                                    TextTrimming="CharacterEllipsis" />
                                                         <StackPanel Orientation="Horizontal" Spacing="3">
-                                                            <ic:SymbolIcon Symbol="ArrowDownload" FontSize="12" Opacity="0.7" />
+                                                            <ic:FluentIcon Icon="ArrowDownload" FontSize="12" Opacity="0.7" />
                                                             <TextBlock Text="{Binding DownloadsText}" FontSize="12" Opacity="0.7" />
                                                         </StackPanel>
                                                     </StackPanel>
@@ -353,7 +353,7 @@
                                                             HorizontalAlignment="Stretch"
                                                             HorizontalContentAlignment="Center"
                                                             ToolTip.Tip="{loc:Loc Store_ViewDetails}">
-                                                        <ic:SymbolIcon Symbol="Info" />
+                                                        <ic:FluentIcon Icon="Info" />
                                                     </Button>
                                                 </StackPanel>
                                             </Grid>
@@ -366,7 +366,7 @@
                                     Command="{Binding LoadMoreCommand}" IsVisible="{Binding CanLoadMore}"
                                     IsEnabled="{Binding !IsSearching}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="ChevronDown" />
+                                    <ic:FluentIcon Icon="ChevronDown" />
                                     <TextBlock Text="{loc:Loc LoadMore}" />
                                 </StackPanel>
                             </Button>
@@ -385,10 +385,10 @@
                          star row, which measured against the panel's height made the banner ask for
                          all 766px of it and cover the whole store. -->
                     <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto">
-                        <ic:SymbolIcon Grid.Column="0" Symbol="Warning" Foreground="{StaticResource SemanticDanger}"
+                        <ic:FluentIcon Grid.Column="0" Icon="Warning" Foreground="{StaticResource SemanticDanger}"
                                        Margin="0,0,8,0"
                                        VerticalAlignment="Center" IsVisible="{Binding InstallFailed}" />
-                        <ic:SymbolIcon Grid.Column="0" Symbol="CheckmarkCircle" Foreground="{StaticResource SemanticOk}"
+                        <ic:FluentIcon Grid.Column="0" Icon="CheckmarkCircle" Foreground="{StaticResource SemanticOk}"
                                        Margin="0,0,8,0"
                                        VerticalAlignment="Center" IsVisible="{Binding !InstallFailed}" />
                         <TextBlock Grid.Column="1" Text="{Binding InstallNotice}" Foreground="White"
@@ -397,7 +397,7 @@
                                 Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
                                 ToolTip.Tip="{loc:Loc Tip_DismissNotice}"
                                 Command="{Binding DismissInstallNoticeCommand}">
-                            <ic:SymbolIcon Symbol="Dismiss" FontSize="12" Foreground="White" />
+                            <ic:FluentIcon Icon="Dismiss" FontSize="12" Foreground="White" />
                         </Button>
                     </Grid>
                 </Border>
@@ -417,19 +417,19 @@
 
                     <Button Grid.Column="1" Command="{Binding CheckUpdatesCommand}" Padding="6,4" Margin="0,0,8,0"
                             IsEnabled="{Binding !IsCheckingUpdates}" ToolTip.Tip="{loc:Loc CheckUpdates}">
-                        <ic:SymbolIcon Symbol="ArrowSync" />
+                        <ic:FluentIcon Icon="ArrowSync" />
                     </Button>
 
                     <!-- Hidden on plugin servers: a plugin runs in the server and never goes near
                          a player's machine, so a pack of them is a zip nobody can do anything with. -->
                     <Button Grid.Column="2" Command="{Binding ExportModpackCommand}" Padding="6,4" Margin="0,0,8,0"
                             IsVisible="{Binding !IsPluginBased}" ToolTip.Tip="{loc:Loc Export_Modpack}">
-                        <ic:SymbolIcon Symbol="Share" />
+                        <ic:FluentIcon Icon="Share" />
                     </Button>
 
                     <Button Grid.Column="3" Command="{Binding RefreshInstalledModsCommand}" Padding="6,4"
                             IsEnabled="{Binding !IsUpdatingAll}">
-                        <ic:SymbolIcon Symbol="ArrowClockwise" />
+                        <ic:FluentIcon Icon="ArrowClockwise" />
                     </Button>
                 </Grid>
 
@@ -437,10 +437,10 @@
                      filter; the store has its own search box on the left. -->
                 <TextBox x:Name="InstalledFilterBox" Grid.Row="1" Margin="0,0,0,8"
                          Text="{Binding InstalledFilter, Mode=TwoWay}"
-                         Watermark="{Binding InstalledFilterPlaceholder}"
+                         PlaceholderText="{Binding InstalledFilterPlaceholder}"
                          IsVisible="{Binding !!InstalledMods.Count}">
                     <TextBox.InnerLeftContent>
-                        <ic:SymbolIcon Symbol="Search" Margin="8,0,0,0" Opacity="0.6" />
+                        <ic:FluentIcon Icon="Search" Margin="8,0,0,0" Opacity="0.6" />
                     </TextBox.InnerLeftContent>
                 </TextBox>
 
@@ -515,7 +515,7 @@
                             IsVisible="{Binding HasPendingUpdates}"
                             Command="{Binding UpdateAllCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <ic:SymbolIcon Symbol="ArrowUp" Foreground="{StaticResource SemanticOk}" />
+                            <ic:FluentIcon Icon="ArrowUp" Foreground="{StaticResource SemanticOk}" />
                             <TextBlock Text="{Binding UpdateAllText}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -561,7 +561,7 @@
                                                     Background="Transparent" Padding="4"
                                                     Command="{Binding $parent[ItemsControl].DataContext.RemoveFromClientPackCommand}"
                                                     CommandParameter="{Binding}">
-                                                <ic:SymbolIcon Symbol="Delete" FontSize="14"
+                                                <ic:FluentIcon Icon="Delete" FontSize="14"
                                                                Foreground="{StaticResource SemanticDanger}" />
                                             </Button>
                                         </Grid>
@@ -579,7 +579,7 @@
                             <Button Grid.Row="0" Grid.Column="1" Background="Transparent" Padding="4" Margin="8,0,0,0"
                                     VerticalAlignment="Top" ToolTip.Tip="{loc:Loc Export_DismissNotice}"
                                     Command="{Binding DismissExportNoticeCommand}">
-                                <ic:SymbolIcon Symbol="Dismiss" />
+                                <ic:FluentIcon Icon="Dismiss" />
                             </Button>
                             <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,0"
                                     HorizontalAlignment="Right" Padding="10,4"
@@ -606,7 +606,7 @@
                                         ToolTip.Tip="{Binding UpdateTooltip}"
                                         Command="{Binding DataContext.UpdateModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                         CommandParameter="{Binding}">
-                                    <ic:SymbolIcon Symbol="ArrowUp" Foreground="{StaticResource SemanticOk}" />
+                                    <ic:FluentIcon Icon="ArrowUp" Foreground="{StaticResource SemanticOk}" />
                                 </Button>
                                 <ToggleSwitch Grid.Column="2" Margin="0,0,8,0" MinWidth="0" VerticalAlignment="Center"
                                               OnContent="" OffContent="" ToolTip.Tip="{loc:Loc Tip_ToggleMod}"
@@ -616,7 +616,7 @@
                                 <Button Grid.Column="3" ToolTip.Tip="{loc:Loc Tip_DeleteMod}" Background="Transparent" Padding="4"
                                         Command="{Binding DataContext.DeleteModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                         CommandParameter="{Binding}">
-                                    <ic:SymbolIcon Symbol="Delete" Foreground="{StaticResource SemanticDanger}" />
+                                    <ic:FluentIcon Icon="Delete" Foreground="{StaticResource SemanticDanger}" />
                                 </Button>
                             </Grid>
                         </DataTemplate>

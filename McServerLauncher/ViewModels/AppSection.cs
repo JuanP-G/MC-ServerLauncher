@@ -11,6 +11,7 @@ public enum AppSection
 {
     Servers,
     Tunnels,
+    News,
     Settings,
     About,
 }

@@ -88,7 +88,7 @@
         </Style>
     </Window.Styles>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
 
         <!-- Update-available banner -->
         <!-- A dark strip like the toasts: the icon in a ring is the one touch of colour, so it reads
@@ -99,30 +99,62 @@
                 <Border Grid.Column="0" Width="30" Height="30" CornerRadius="15" BorderThickness="1.5"
                         BorderBrush="{StaticResource SemanticInfoRing}" VerticalAlignment="Center"
                         Margin="0,0,12,0">
-                    <ic:SymbolIcon Symbol="ArrowDownload" FontSize="15" Foreground="{StaticResource SemanticInfo}"
+                    <ic:FluentIcon Icon="ArrowDownload" FontSize="15" Foreground="{StaticResource SemanticInfo}"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <TextBlock Grid.Column="1" Text="{Binding UpdateText}" VerticalAlignment="Center" />
                 <Button Grid.Column="2" Content="{loc:Loc Update_Now}" Margin="0,0,8,0" Command="{Binding UpdateNowCommand}" />
                 <Button Grid.Column="3" Background="Transparent"
                         Command="{Binding DismissUpdateCommand}" ToolTip.Tip="{loc:Loc Tip_Hide}">
-                    <ic:SymbolIcon Symbol="Dismiss" />
+                    <ic:FluentIcon Icon="Dismiss" />
                 </Button>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" ColumnDefinitions="72,*">
+        <!-- The strip of an urgent notice (an incident of a service the app relies on, a security
+             matter). The same dark strip as the banner above, so it reads as a notice and not as an
+             error; the ring and the icon say which kind it is. It goes by itself when the notice is
+             resolved or runs out, and "x" closes it for good for that notice (it stays in Novedades). -->
+        <Border Grid.Row="1" Background="{StaticResource GroundPopup}" BorderBrush="{StaticResource SurfaceEdge}"
+                BorderThickness="0,0,0,1" Padding="14,8" IsVisible="{Binding ShowNewsBand}">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                <Border Grid.Column="0" Classes="ring" Classes.warn="{Binding News.BandIsIncident}"
+                        Classes.danger="{Binding News.BandIsSecurity}" Margin="0,0,12,0">
+                    <Panel>
+                        <ic:FluentIcon Icon="Warning" FontSize="16" Foreground="{StaticResource SemanticWarn}"
+                                       IsVisible="{Binding News.BandIsIncident}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <ic:FluentIcon Icon="ShieldError" FontSize="16" Foreground="{StaticResource SemanticDanger}"
+                                       IsVisible="{Binding News.BandIsSecurity}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Panel>
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" ToolTip.Tip="{Binding News.BandBody}">
+                    <TextBlock Text="{Binding News.BandTitle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding News.BandBody}" Classes="desc" Margin="0" MaxLines="1"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <Button Grid.Column="2" Content="{loc:Loc News_BandSee}" Margin="12,0,8,0"
+                        Command="{Binding ShowNewsCommand}" />
+                <Button Grid.Column="3" Background="Transparent"
+                        Command="{Binding News.CloseBandCommand}" ToolTip.Tip="{loc:Loc Tip_Hide}">
+                    <ic:FluentIcon Icon="Dismiss" />
+                </Button>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" ColumnDefinitions="72,*">
 
             <!-- Rail: which part of the app is on screen. One accent bar for the whole rail, sliding
                  to the section on screen (Controls/SelectionMarker, over the buttons in the same cell). -->
             <Border Grid.Column="0" Background="{StaticResource GroundPopup}">
                 <Panel>
-                <Grid x:Name="RailItems" RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="0,8">
+                <Grid x:Name="RailItems" RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" Margin="0,8">
                     <Button Grid.Row="0" Classes="rail" Classes.on="{Binding IsServersSection}"
                             Command="{Binding ShowServersCommand}" ToolTip.Tip="{loc:Loc Servers}">
                         <Grid>
                             <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                <ic:SymbolIcon Symbol="Server" FontSize="20" HorizontalAlignment="Center" />
+                                <ic:FluentIcon Icon="Server" FontSize="20" HorizontalAlignment="Center" />
                                 <TextBlock Text="{loc:Loc Servers}" />
                             </StackPanel>
                         </Grid>
@@ -131,25 +163,39 @@
                             Command="{Binding ShowTunnelsCommand}" ToolTip.Tip="{loc:Loc Nav_Tunnels}">
                         <Grid>
                             <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                <ic:SymbolIcon Symbol="Globe" FontSize="20" HorizontalAlignment="Center" />
+                                <ic:FluentIcon Icon="Globe" FontSize="20" HorizontalAlignment="Center" />
                                 <TextBlock Text="{loc:Loc Nav_Tunnels}" />
                             </StackPanel>
                         </Grid>
                     </Button>
-                    <Button Grid.Row="3" Classes="rail" Classes.on="{Binding IsSettingsSection}"
+                    <!-- Novedades: the mark in the corner of the icon is NewsBadge (a number, a dot, a
+                         pulsing dot or nothing, as chosen in Settings), shown while something is unread. -->
+                    <Button Grid.Row="2" Classes="rail" Classes.on="{Binding IsNewsSection}"
+                            Command="{Binding ShowNewsCommand}" ToolTip.Tip="{loc:Loc Whatsnew_Title}">
+                        <Grid>
+                            <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                <ic:FluentIcon Icon="Megaphone" FontSize="20" HorizontalAlignment="Center" />
+                                <TextBlock Text="{loc:Loc Whatsnew_Title}" />
+                            </StackPanel>
+                            <views:NewsBadge Mode="{Binding News.BadgeStyle}" Text="{Binding News.BadgeText}"
+                                             IsVisible="{Binding News.HasUnread}"
+                                             HorizontalAlignment="Center" VerticalAlignment="Top" Margin="26,-3,0,0" />
+                        </Grid>
+                    </Button>
+                    <Button Grid.Row="4" Classes="rail" Classes.on="{Binding IsSettingsSection}"
                             Command="{Binding ShowSettingsCommand}" ToolTip.Tip="{loc:Loc Settings_Title}">
                         <Grid>
                             <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                <ic:SymbolIcon Symbol="Settings" FontSize="20" HorizontalAlignment="Center" />
+                                <ic:FluentIcon Icon="Settings" FontSize="20" HorizontalAlignment="Center" />
                                 <TextBlock Text="{loc:Loc Settings_Title}" />
                             </StackPanel>
                         </Grid>
                     </Button>
-                    <Button Grid.Row="4" Classes="rail" Classes.on="{Binding IsAboutSection}"
+                    <Button Grid.Row="5" Classes="rail" Classes.on="{Binding IsAboutSection}"
                             Command="{Binding ShowAboutCommand}" ToolTip.Tip="{loc:Loc Nav_About}">
                         <Grid>
                             <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                <ic:SymbolIcon Symbol="Info" FontSize="20" HorizontalAlignment="Center" />
+                                <ic:FluentIcon Icon="Info" FontSize="20" HorizontalAlignment="Center" />
                                 <TextBlock Text="{loc:Loc Nav_About}" />
                             </StackPanel>
                         </Grid>
@@ -178,7 +224,7 @@
                             <Button Classes="newserver" Command="{Binding ShowNewServerCommand}"
                                     ToolTip.Tip="{Binding NewServerTip}">
                                 <StackPanel Orientation="Horizontal" Spacing="5">
-                                    <ic:SymbolIcon Symbol="Add" FontSize="14" VerticalAlignment="Center" />
+                                    <ic:FluentIcon Icon="Add" FontSize="14" VerticalAlignment="Center" />
                                     <TextBlock Text="{loc:Loc New_Button}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
@@ -236,7 +282,7 @@
                                             <Button Classes="rowaction danger"
                                                     Command="{Binding DataContext.RemoveServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                     CommandParameter="{Binding}" ToolTip.Tip="{loc:Loc Tip_Delete}">
-                                                <ic:SymbolIcon Symbol="Delete" FontSize="15" />
+                                                <ic:FluentIcon Icon="Delete" FontSize="15" />
                                             </Button>
                                         </StackPanel>
                                     </StackPanel>
@@ -260,7 +306,7 @@
                       IsVisible="{Binding DataContext.ShowServerDetail, RelativeSource={RelativeSource AncestorType=Window}}">
 
                     <!-- Header: name + control buttons -->
-                    <Grid Grid.Row="0" Margin="0,0,0,12" RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                    <Grid Grid.Row="0" Margin="0,0,0,12" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto">
                         <!-- Minecraft server-list style view (the same control the appearance editor previews with) -->
                         <views:ServerCardView Grid.Column="0" Margin="0,0,16,0" VerticalAlignment="Center"
                                               IsEditable="True"
@@ -288,7 +334,7 @@
                             <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right"
                                         Margin="0,-4,2,8" IsVisible="{Binding HasIdleCountdown}"
                                         ToolTip.Tip="{loc:Loc Idle_CountdownHint}">
-                                <ic:SymbolIcon Symbol="Timer" FontSize="13" Foreground="{StaticResource McListText}"
+                                <ic:FluentIcon Icon="Timer" FontSize="13" Foreground="{StaticResource McListText}"
                                                VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding IdleCountdownText}" FontSize="12"
                                            Foreground="{StaticResource McListText}" VerticalAlignment="Center" />
@@ -296,26 +342,26 @@
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                                 <Button Classes="accent" Command="{Binding StartCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ic:SymbolIcon Symbol="Play" />
+                                        <ic:FluentIcon Icon="Play" />
                                         <TextBlock Text="{loc:Loc Start}" />
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding StopCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ic:SymbolIcon Symbol="Stop" />
+                                        <ic:FluentIcon Icon="Stop" />
                                         <TextBlock Text="{loc:Loc Stop}" />
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding RestartCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ic:SymbolIcon Symbol="ArrowClockwise" />
+                                        <ic:FluentIcon Icon="ArrowClockwise" />
                                         <TextBlock Text="{loc:Loc Restart}" />
                                     </StackPanel>
                                 </Button>
                                 <Button ToolTip.Tip="{loc:Loc Tip_Configure}"
                                         Command="{Binding DataContext.ConfigureServerCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ic:SymbolIcon Symbol="Settings" />
+                                        <ic:FluentIcon Icon="Settings" />
                                         <TextBlock Text="{loc:Loc Configure}" />
                                     </StackPanel>
                                 </Button>
@@ -327,7 +373,7 @@
                                 CornerRadius="6" Background="{StaticResource SemanticDangerPanel}" BorderBrush="{StaticResource SemanticDanger}" BorderThickness="1"
                                 IsVisible="{Binding ShowTunnelWarning}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <ic:SymbolIcon Symbol="Warning" Foreground="{StaticResource DangerIcon}" VerticalAlignment="Center" />
+                                <ic:FluentIcon Icon="Warning" Foreground="{StaticResource DangerIcon}" VerticalAlignment="Center" />
                                 <TextBlock Foreground="{StaticResource DangerText}" TextWrapping="Wrap" VerticalAlignment="Center"
                                            Text="{loc:Loc Signal_NoTunnel}" />
                             </StackPanel>
@@ -338,7 +384,7 @@
                                 Background="{StaticResource SemanticInfoPanel}" BorderBrush="{StaticResource SemanticInfo}"
                                 IsVisible="{Binding ShowMemoryNotice}">
                             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                                <ic:SymbolIcon Grid.Column="0" Symbol="Info" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <ic:FluentIcon Grid.Column="0" Icon="Info" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="{loc:Loc Mem_NoticeText}" TextTrimming="CharacterEllipsis"
                                            ToolTip.Tip="{loc:Loc Mem_NoticeTip}" />
                                 <Button Grid.Column="2" Margin="8,0,0,0" Content="{loc:Loc Mem_NoticeOk}"
@@ -354,7 +400,7 @@
                                 Classes.severe="{Binding PerformanceBandIsSevere}"
                                 IsVisible="{Binding ShowPerformanceBand}">
                             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                                <ic:SymbolIcon Grid.Column="0" Symbol="Warning" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <ic:FluentIcon Grid.Column="0" Icon="Warning" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="{Binding PerformanceBandText}" TextWrapping="NoWrap"
                                            TextTrimming="CharacterEllipsis"
                                            ToolTip.Tip="{Binding PerformanceBandText}" />
@@ -362,8 +408,27 @@
                                         Command="{Binding ShowPerformanceSolutionsCommand}" />
                                 <Button Grid.Column="3" Margin="6,0,0,0" Command="{Binding DismissPerformanceBandCommand}"
                                         ToolTip.Tip="{loc:Loc Perf_DismissTip}">
-                                    <ic:SymbolIcon Symbol="Dismiss" FontSize="12" />
+                                    <ic:FluentIcon Icon="Dismiss" FontSize="12" />
                                 </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- One line, only when Windows Firewall would turn Bedrock players away on a
+                             network this computer is on: names it, and the way out. The check is the
+                             launcher's deduction from the firewall's rules, so it can be waved off. -->
+                        <Border Grid.Row="4" Grid.ColumnSpan="2" Classes="band perf"
+                                IsVisible="{Binding ShowFirewallNotice}">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                <ic:FluentIcon Grid.Column="0" Icon="Warning" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding FirewallNoticeText}" TextWrapping="NoWrap"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip.Tip="{Binding FirewallNoticeText}" />
+                                <Button Grid.Column="2" Margin="8,0,0,0" Content="{Binding FirewallFixLabel}"
+                                        IsEnabled="{Binding !FirewallBusy}"
+                                        Command="{Binding FixFirewallCommand}" />
+                                <Button Grid.Column="3" Margin="6,0,0,0" Content="{loc:Loc Firewall_NoticeDismiss}"
+                                        ToolTip.Tip="{loc:Loc Firewall_NoticeDismissTip}"
+                                        Command="{Binding DismissFirewallNoticeCommand}" />
                             </Grid>
                         </Border>
                     </Grid>
@@ -427,17 +492,17 @@
                                  tunnel keeps its name whatever the box says, and the next refresh
                                  overwrote whatever had been typed. -->
                             <TextBox Grid.Column="1" Margin="16,0" Text="{Binding TunnelAddress}" IsReadOnly="True"
-                                     Watermark="{loc:Loc Tunnel_Placeholder}" VerticalAlignment="Center" />
+                                     PlaceholderText="{loc:Loc Tunnel_Placeholder}" VerticalAlignment="Center" />
                             <Button Grid.Column="2" Command="{Binding CopyTunnelAddressCommand}" Margin="0,0,8,0">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Copy" />
+                                    <ic:FluentIcon Icon="Copy" />
                                     <TextBlock Text="{loc:Loc Copy}" />
                                 </StackPanel>
                             </Button>
                             <Button Grid.Column="3" ToolTip.Tip="{loc:Loc Tip_ManageTunnels}"
                                     Command="{Binding DataContext.ShowTunnelsCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Globe" />
+                                    <ic:FluentIcon Icon="Globe" />
                                     <TextBlock Text="{loc:Loc Nav_Tunnels}" />
                                 </StackPanel>
                             </Button>
@@ -445,7 +510,7 @@
                             <Button Grid.Column="4" Margin="8,0,0,0" ToolTip.Tip="{loc:Loc Net_TestTip}"
                                     Command="{Binding DataContext.TestConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Pulse" />
+                                    <ic:FluentIcon Icon="Pulse" />
                                     <TextBlock Text="{loc:Loc Net_TestButton}" />
                                 </StackPanel>
                             </Button>
@@ -470,7 +535,7 @@
                                      Text="{Binding BedrockPortText}" VerticalAlignment="Center" />
                             <Button Grid.Column="4" Command="{Binding CopyBedrockAddressCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <ic:SymbolIcon Symbol="Copy" />
+                                    <ic:FluentIcon Icon="Copy" />
                                     <TextBlock Text="{loc:Loc Copy}" />
                                 </StackPanel>
                             </Button>
@@ -542,14 +607,14 @@
                                             </ItemsControl>
                                             <TextBox Grid.Column="2" Width="200" Margin="0,0,8,0" Padding="8,4"
                                                      Text="{Binding ConsoleFilter, Mode=TwoWay}"
-                                                     Watermark="{loc:Loc Console_FilterPlaceholder}" />
+                                                     PlaceholderText="{loc:Loc Console_FilterPlaceholder}" />
                                             <Button Grid.Column="3" Margin="0,0,8,0" Padding="8,2" VerticalAlignment="Center"
                                                     Command="{Binding ShowAllConsoleKindsCommand}"
                                                     IsVisible="{Binding IsConsoleFiltered}"
                                                     Content="{loc:Loc Console_ShowAll}" />
                                             <Button Grid.Column="4" Command="{Binding ClearConsoleCommand}" Padding="8,2" VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <ic:SymbolIcon Symbol="Eraser" />
+                                                    <ic:FluentIcon Icon="Eraser" />
                                                     <TextBlock Text="{loc:Loc Clear}" />
                                                 </StackPanel>
                                             </Button>
@@ -594,7 +659,7 @@
                                 <!-- Command box -->
                                 <Grid Grid.Row="1" Margin="0,12,0,0" ColumnDefinitions="*,Auto,Auto">
                                     <TextBox Grid.Column="0" Text="{Binding CommandText}"
-                                             Watermark="{loc:Loc Command_Placeholder}" Margin="0,0,8,0">
+                                             PlaceholderText="{loc:Loc Command_Placeholder}" Margin="0,0,8,0">
                                         <TextBox.KeyBindings>
                                             <KeyBinding Gesture="Enter" Command="{Binding SendCommandCommand}" />
                                         </TextBox.KeyBindings>
@@ -605,7 +670,7 @@
                                                   IsChecked="{Binding IsCommandHelpOpen, Mode=TwoWay}"
                                                   ToolTip.Tip="{loc:Loc Tip_Commands}" Padding="10,0">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <ic:SymbolIcon Symbol="QuestionCircle" />
+                                            <ic:FluentIcon Icon="QuestionCircle" />
                                             <TextBlock Text="{loc:Loc Commands}" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </ToggleButton>
@@ -643,7 +708,7 @@
 
                                     <Button Grid.Column="2" Classes="accent" Command="{Binding SendCommandCommand}">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <ic:SymbolIcon Symbol="Send" />
+                                            <ic:FluentIcon Icon="Send" />
                                             <TextBlock Text="{loc:Loc Send}" />
                                         </StackPanel>
                                     </Button>
@@ -707,6 +772,10 @@
 
             <Panel Grid.Column="1" IsVisible="{Binding IsTunnelsSection}" Classes="fadein">
                 <views:TunnelsView DataContext="{Binding Tunnels}" />
+            </Panel>
+
+            <Panel Grid.Column="1" IsVisible="{Binding IsNewsSection}" Classes="fadein">
+                <views:NewsView DataContext="{Binding News}" />
             </Panel>
 
             <Panel Grid.Column="1" IsVisible="{Binding IsSettingsSection}" Classes="fadein">

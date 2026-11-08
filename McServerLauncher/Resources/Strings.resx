@@ -191,16 +191,11 @@
   <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher no está afiliado ni asociado con Playit; solo se integra con su red. Tu cuenta es tuya: puedes gestionarla directamente en playit.gg.</value></data>
   <data name="Pk_Agent_Downloading" xml:space="preserve"><value>Descargando el agente de Playit… (solo la primera vez)</value></data>
   <data name="Pk_Agent_Starting" xml:space="preserve"><value>Iniciando el agente…</value></data>
-  <data name="Pk_Agent_Running" xml:space="preserve"><value>Agente activo: tus túneles reenvían tráfico.</value></data>
-  <data name="Pk_Agent_Stopped" xml:space="preserve"><value>Agente detenido.</value></data>
   <data name="Pk_Agent_Failed" xml:space="preserve"><value>No se pudo iniciar el agente: {0}</value></data>
   <data name="Pk_Agent_Unsupported" xml:space="preserve"><value>Tu sistema no puede ejecutar el agente automáticamente; ejecuta Playit por tu cuenta.</value></data>
   <data name="Pk_Agent_Retry" xml:space="preserve"><value>Reintentar</value></data>
   <data name="Pk_SettingsDesc" xml:space="preserve"><value>Conecta tu cuenta de Playit para crear y gestionar túneles automáticamente. Solo tienes que pegar un código; no hace falta ninguna clave.</value></data>
-  <data name="Pk_Connect" xml:space="preserve"><value>Conectar con Playit</value></data>
-  <data name="Pk_Reconnect" xml:space="preserve"><value>Reconectar</value></data>
   <data name="Pk_Disconnect" xml:space="preserve"><value>Desconectar</value></data>
-  <data name="Pk_NotConnected" xml:space="preserve"><value>No conectado</value></data>
   <data name="Msg_PasteSetupCode" xml:space="preserve"><value>Pega el código de configuración que has obtenido en playit.gg.</value></data>
   <data name="Msg_SetupCodeFailedFmt" xml:space="preserve"><value>No se pudo conectar con Playit: {0}</value></data>
   <data name="Msg_SetupCodeNoAgent" xml:space="preserve"><value>Playit no devolvió un agente válido para este código.</value></data>
@@ -465,8 +460,50 @@
   <data name="Msg_UpdateCannotReplaceFmt" xml:space="preserve"><value>No se ha podido reemplazar {0} ({1}). Tu versión actual sigue intacta y funcionando; se abrirá la página de descargas para que la actualices a mano.</value></data>
   <data name="Update_Downloading" xml:space="preserve"><value>Descargando actualización...</value></data>
   <data name="Whatsnew_Title" xml:space="preserve"><value>Novedades</value></data>
-  <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>Novedades de la versión {0}</value></data>
   <data name="Whatsnew_Ok" xml:space="preserve"><value>Entendido</value></data>
+  <data name="News_Subtitle" xml:space="preserve"><value>Las novedades de cada versión y los avisos importantes.</value></data>
+  <data name="News_MarkAllRead" xml:space="preserve"><value>Marcar todo como leído</value></data>
+  <data name="News_NoticesTitle" xml:space="preserve"><value>Avisos</value></data>
+  <data name="News_NoNotices" xml:space="preserve"><value>No hay avisos ahora mismo.</value></data>
+  <data name="News_NoticesOff" xml:space="preserve"><value>Los avisos están desactivados: aquí solo se listan las versiones.</value></data>
+  <data name="News_KindIncident" xml:space="preserve"><value>Incidencia</value></data>
+  <data name="News_KindSecurity" xml:space="preserve"><value>Seguridad</value></data>
+  <data name="News_KindTip" xml:space="preserve"><value>Consejo</value></data>
+  <data name="News_StatusResolved" xml:space="preserve"><value>Resuelta</value></data>
+  <data name="News_MoreInfo" xml:space="preserve"><value>Más información</value></data>
+  <data name="News_FeedFailedFmt" xml:space="preserve"><value>No se pudo comprobar si hay avisos. Última copia: {0}.</value></data>
+  <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>No se pudo comprobar si hay avisos y todavía no hay ninguna copia guardada.</value></data>
+  <data name="News_BandSee" xml:space="preserve"><value>Ver aviso</value></data>
+  <data name="News_ToastSeeNews" xml:space="preserve"><value>Los detalles están en Novedades.</value></data>
+  <data name="News_ToastResolved" xml:space="preserve"><value>Resuelta. Los detalles están en Novedades.</value></data>
+  <data name="News_VersionsTitle" xml:space="preserve"><value>Versiones</value></data>
+  <data name="News_VersionFmt" xml:space="preserve"><value>Versión {0}</value></data>
+  <data name="News_TagInstalled" xml:space="preserve"><value>Instalada</value></data>
+  <data name="News_TagNew" xml:space="preserve"><value>Nueva</value></data>
+  <data name="News_MoveTitle" xml:space="preserve"><value>Las novedades han cambiado de sitio</value></data>
+  <data name="News_MoveBody" xml:space="preserve"><value>Las novedades de cada versión ahora están aquí y ya no salen en una ventana. Puedes elegir qué avisos recibes y cómo se ven en Ajustes, en Anuncios.</value></data>
+  <data name="News_MoveGoSettings" xml:space="preserve"><value>Ir a Ajustes</value></data>
+  <data name="Set_News" xml:space="preserve"><value>Anuncios</value></data>
+  <data name="News_ShowTitle" xml:space="preserve"><value>Mostrar anuncios</value></data>
+  <data name="News_ShowDesc" xml:space="preserve"><value>Muestra avisos importantes de la web del proyecto, como una caída de Playit, y marca la barra lateral cuando hay algo sin leer en Novedades. Desactivado, la app no consulta la web y Novedades solo lista las versiones.</value></data>
+  <data name="News_BadgeTitle" xml:space="preserve"><value>Cómo marca la barra lo nuevo</value></data>
+  <data name="News_BadgeDesc" xml:space="preserve"><value>Lo que aparece sobre Novedades cuando hay algo sin leer.</value></data>
+  <data name="News_BadgeNumber" xml:space="preserve"><value>Número</value></data>
+  <data name="News_BadgeDot" xml:space="preserve"><value>Punto</value></data>
+  <data name="News_BadgePulse" xml:space="preserve"><value>Punto que late</value></data>
+  <data name="News_BadgeNone" xml:space="preserve"><value>Ninguna</value></data>
+  <data name="News_StripTitle" xml:space="preserve"><value>Banda de avisos</value></data>
+  <data name="News_StripDesc" xml:space="preserve"><value>Una franja sobre la ventana para lo urgente, como una incidencia de Playit. Desaparece sola cuando se resuelve, o cuando la cierras.</value></data>
+  <data name="News_StripAll" xml:space="preserve"><value>En toda la app</value></data>
+  <data name="News_StripTunnels" xml:space="preserve"><value>Solo en Túneles</value></data>
+  <data name="News_StripNone" xml:space="preserve"><value>Ninguna</value></data>
+  <data name="News_ToastTitle" xml:space="preserve"><value>Avisar con una notificación</value></data>
+  <data name="News_ToastDesc" xml:space="preserve"><value>Las incidencias y los avisos de seguridad lanzan además una notificación, una sola vez cada uno. Respeta el interruptor general de notificaciones.</value></data>
+  <data name="News_IncidentsTitle" xml:space="preserve"><value>Incidencias</value></data>
+  <data name="News_IncidentsDesc" xml:space="preserve"><value>Fallos de servicios que usa la app, como Playit.</value></data>
+  <data name="News_TipsTitle" xml:space="preserve"><value>Consejos</value></data>
+  <data name="News_TipsDesc" xml:space="preserve"><value>Sugerencias y noticias del proyecto. Nunca usan la banda ni las notificaciones.</value></data>
+  <data name="News_PrivacyNote" xml:space="preserve"><value>Los avisos se leen de un archivo firmado de la web del proyecto. La petición no lleva tu versión, tu idioma ni ningún identificador, y qué avisos te tocan se decide aquí: nada de lo que haces en la app sale del equipo. Los avisos de seguridad solo se silencian con «Mostrar anuncios».</value></data>
   <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• Ahora MC Server Launcher también funciona en Linux (además de Windows), gracias a una nueva interfaz multiplataforma.&#10;• En Linux se descarga como AppImage desde las releases; en Windows todo sigue igual (instalador y actualización automática).&#10;• Se mantienen los 5 idiomas, la consola, los jugadores y la configuración visual.</value></data>
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• Ahora puedes crear servidores Forge y Paper, además de Vanilla y Fabric.&#10;• Buscador de mods y plugins integrado (Modrinth), filtrado por el tipo y la versión de tu servidor, con orden e instalación en un clic.&#10;• Activa/desactiva o borra lo instalado, y convierte un servidor existente a otro tipo conservando el mundo.&#10;• Cada servidor muestra una etiqueta con su tipo.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• Más seguridad: la clave de la API de Playit ahora se guarda cifrada (antes en texto plano), en todos los sistemas. La migración es automática.&#10;• Icono de la aplicación renovado en alta resolución.</value></data>
@@ -690,6 +727,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_PlayitKeyNotProtected" xml:space="preserve"><value>No se pudo cifrar la clave de Playit, así que por seguridad NO se ha guardado en el disco. Seguirá funcionando durante esta sesión y se te volverá a pedir la próxima vez. El detalle del fallo está en la carpeta logs.</value></data>
   <data name="Msg_ForgeNoChecksum" xml:space="preserve"><value>No se pudo obtener el checksum (.sha1) del instalador de Forge, así que no se puede verificar. Por seguridad no se ejecutará; vuelve a intentarlo.</value></data>
   <data name="Msg_ForgeInstallerInvalid" xml:space="preserve"><value>El instalador de Forge descargado no tiene la estructura esperada. Se ha descartado por seguridad; vuelve a intentarlo.</value></data>
+  <data name="Whatsnew_1_22_0" xml:space="preserve"><value>• La pantalla de Túneles dice con claridad si la cuenta de Playit está conectada y por qué vía. Arriba hay un titular (no conectada, comprobando, conectada y activa, conectada sin agente activo o rechazada) y debajo una fila por cada vía: el agente de la app (con código de configuración), el Playit que instalaste tú en el PC y, solo si existe, una clave guardada por una versión anterior. Un Playit instalado pero apagado se ve como conectado sin agente activo, con un botón para encenderlo.&#10;• La interfaz pasa a Avalonia 12, con SkiaSharp 3 y los iconos de FluentIcons 2. Se ve y funciona como antes, y los iconos conservan su tamaño. Está probada en Windows; en Linux y macOS aún no se ha abierto la app en un escritorio real.</value></data>
   <data name="Whatsnew_1_21_6" xml:space="preserve"><value>• Los jugadores de Bedrock ya pueden despertar un servidor dormido. Con crossplay activado, la app escucha en el puerto de Bedrock y arranca el servidor cuando alguien intenta entrar. El primer intento falla: hay que volver a probar unos segundos después. Funciona con Geyser en modo NetherNet (transport: nethernet o both).&#10;• La app pasa a .NET 10 (LTS). Viene incluido, no hay que instalar nada. En macOS hace falta la versión 15 o posterior.</value></data>
   <data name="Whatsnew_1_21_5" xml:space="preserve"><value>• El botón de los mods solo cliente se veía cortado («Añadir al paquete»). Ahora dice «Al paquete», lleva un icono de paquete y la frase completa sale al pasar el ratón por encima.&#10;• Los botones Instalar, Actualizar, Instalado y Al paquete siguen midiendo lo mismo, en todos los idiomas.</value></data>
   <data name="Whatsnew_1_21_4" xml:space="preserve"><value>• En el buscador de mods y plugins, cada resultado ya sabe si lo tienes: «Instalar» se queda solo para lo que no está en el servidor.&#10;• Lo que ya está instalado y al día muestra «Instalado» en verde, con un tick, y no se puede pulsar. Si hay una versión más nueva, el botón pasa a «Actualizar», en ámbar, y la instala en su sitio.&#10;• Si el mod está desactivado, el botón lo dice y al pulsarlo se activa sin salir del buscador.&#10;• También reconoce los mods que copiaste a mano en la carpeta, siempre que Modrinth los conozca, y vale igual para plugins, para los mods solo cliente (paquete de jugadores) y para el botón de la página de detalles.</value></data>
@@ -840,7 +878,8 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_NeoForgeInstallNoOutput" xml:space="preserve"><value>El instalador de NeoForge terminó pero no dejó el fichero de arranque esperado.</value></data>
   <data name="HowToPlay_NeoForgeFmt" xml:space="preserve"><value>Este servidor usa NeoForge (Minecraft {0}). Para entrar con mods:&#10;1. Descarga el instalador de NeoForge para {0} en https://neoforged.net e instala el cliente («Install client»).&#10;2. Abre el lanzador de Minecraft y selecciona el perfil «neoforge».&#10;3. Copia los mods (.jar) en %appdata%\.minecraft\mods.&#10;4. La versión de NeoForge del cliente debe coincidir con la del servidor.</value></data>
   <data name="Crossplay_Check" xml:space="preserve"><value>Permitir entrar también desde Bedrock (móvil, consola, Windows 10/11)</value></data>
-  <data name="Crossplay_Hint" xml:space="preserve"><value>Instala Geyser y Floodgate, y crea un segundo túnel. Quien entre desde Bedrock no necesita comprar Minecraft Java: su identidad no la verifica Mojang y su nombre aparece con un punto delante. La lista blanca los admite igual.</value></data>
+  <data name="Crossplay_Hint" xml:space="preserve"><value>Instala Geyser y Floodgate, y crea un segundo túnel. Quien entre desde Bedrock no necesita comprar Minecraft Java: su identidad no la verifica Mojang y su nombre aparece con un punto delante. La lista blanca los admite igual. Si juegas por LAN o por una VPN (Radmin, Hamachi), permite el puerto de Bedrock por TCP y por UDP en el Firewall de Windows.</value></data>
+  <data name="Crossplay_HintSettings" xml:space="preserve"><value>Instala Geyser y Floodgate, y crea un segundo túnel. Quien entre desde Bedrock no necesita comprar Minecraft Java: su identidad no la verifica Mojang y su nombre aparece con un punto delante. La lista blanca los admite igual.</value></data>
   <data name="Crossplay_Unsupported" xml:space="preserve"><value>Geyser no publica versión para este tipo de servidor. Funciona en Paper, Fabric y NeoForge.</value></data>
   <data name="Crossplay_UnsupportedVanilla" xml:space="preserve"><value>Vanilla no admite mods ni plugins, así que no puede traducir Bedrock. Cambia el tipo a Paper (conserva el mundo) y podrás activarlo.</value></data>
   <data name="Crossplay_BedrockAddress" xml:space="preserve"><value>Dirección para Bedrock</value></data>
@@ -930,6 +969,22 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Hydraulic_Hint" xml:space="preserve"><value>Instala Hydraulic (de los mismos GeyserMC) y Fabric API. Sin esto, quien entre desde Bedrock llega al servidor pero no ve lo que añaden los mods. Sus propios autores lo consideran de desarrollo muy temprano.</value></data>
   <data name="Hydraulic_Unsupported" xml:space="preserve"><value>Solo en Fabric. Hydraulic dejó de publicarse para NeoForge en febrero de 2026 y su módulo sigue fuera de la compilación; si quieres mods y Bedrock a la vez, Fabric es hoy el único cargador con soporte.</value></data>
   <data name="Msg_GeyserConfigRepairedFmt" xml:space="preserve"><value>Se ha corregido la configuración de Geyser: la autenticación estaba mal puesta y ahora es «{0}». Reinicia el servidor si ya estaba arrancado.</value></data>
+  <data name="Msg_GeyserTransportSetFmt" xml:space="preserve"><value>Se ha corregido la configuración de Geyser: las conexiones de Bedrock ahora usan «{0}» para que entren las versiones actuales. Reinicia el servidor si ya estaba arrancado.</value></data>
+  <data name="Firewall_Title" xml:space="preserve"><value>Firewall de Windows</value></data>
+  <data name="Firewall_StatusClosedFmt" xml:space="preserve"><value>El Firewall de Windows no deja pasar el puerto {0} de Bedrock.</value></data>
+  <data name="Firewall_StatusOpenFmt" xml:space="preserve"><value>El puerto {0} de Bedrock está permitido por TCP y UDP.</value></data>
+  <data name="Firewall_StatusElsewhereFmt" xml:space="preserve"><value>Otra regla del Firewall de Windows ya permite el puerto {0} de Bedrock.</value></data>
+  <data name="Firewall_Hint" xml:space="preserve"><value>Lo necesita quien entra por LAN o VPN (Radmin, Hamachi). Se crea en todas las redes y Windows pedirá confirmación de administrador.</value></data>
+  <data name="Firewall_Allow" xml:space="preserve"><value>Permitir en el Firewall</value></data>
+  <data name="Firewall_Remove" xml:space="preserve"><value>Quitar el permiso</value></data>
+  <data name="Firewall_Working" xml:space="preserve"><value>Esperando a Windows…</value></data>
+  <data name="Firewall_Cancelled" xml:space="preserve"><value>Has cancelado la confirmación de administrador: no se ha cambiado nada.</value></data>
+  <data name="Firewall_Failed" xml:space="preserve"><value>Windows no ha aplicado el cambio. Comprueba que el Firewall esté activo y vuelve a intentarlo, o crea la regla a mano.</value></data>
+  <data name="Firewall_NoticeFmt" xml:space="preserve"><value>Firewall: nada deja pasar el puerto {1} de Bedrock en «{0}».</value></data>
+  <data name="Firewall_NoticeBlockedFmt" xml:space="preserve"><value>Firewall: la regla ({2}) bloquea el puerto {1} en «{0}».</value></data>
+  <data name="Firewall_OpenConsole" xml:space="preserve"><value>Abrir el Firewall</value></data>
+  <data name="Firewall_NoticeDismiss" xml:space="preserve"><value>No me hace falta</value></data>
+  <data name="Firewall_NoticeDismissTip" xml:space="preserve"><value>Si solo juegas por el túnel de Playit, el Firewall no te afecta. No volverá a avisar de este caso.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows no permite el carácter «{0}» en el nombre de una carpeta. Prueba con «{1}».</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>«{0}» es un nombre reservado por Windows y no se puede usar para una carpeta. Elige otro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>El nombre no puede acabar en punto ni en espacio: Windows los recorta y la carpeta acabaría llamándose de otra forma.</value></data>
@@ -993,7 +1048,6 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Tun_Summary_ProblemsFmt" xml:space="preserve"><value>{0} necesitan atención</value></data>
   <data name="Tun_AutoRenamedFmt" xml:space="preserve"><value>[Playit] Túnel «{0}» renombrado a «{1}».</value></data>
   <data name="Tun_AutoRenameFailFmt" xml:space="preserve"><value>[Playit] No se pudo renombrar el túnel «{0}»: {1}</value></data>
-  <data name="Tun_ServiceFmt" xml:space="preserve"><value>Servicio de Playit: {0}</value></data>
   <data name="Tip_ManageTunnels" xml:space="preserve"><value>Ver y gestionar los túneles de la cuenta</value></data>
   <data name="About_Tagline" xml:space="preserve"><value>Crea y gestiona servidores de Minecraft sin tocar la consola.</value></data>
   <data name="About_VersionFmt" xml:space="preserve"><value>Versión {0} · Licencia MIT</value></data>
@@ -1011,12 +1065,8 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Upd_UpToDateFmt" xml:space="preserve"><value>Estás en la última versión · comprobado a las {0}</value></data>
   <data name="Upd_Failed" xml:space="preserve"><value>No se pudo comprobar. Revisa tu conexión e inténtalo de nuevo.</value></data>
   <data name="Upd_NotChecked" xml:space="preserve"><value>Todavía no se ha comprobado.</value></data>
-  <data name="Tun_Src_Installed" xml:space="preserve"><value>Playit instalado en este equipo: se usa su clave.</value></data>
-  <data name="Tun_Src_Saved" xml:space="preserve"><value>Clave de Playit guardada.</value></data>
-  <data name="Tun_Src_Refused" xml:space="preserve"><value> Playit no acepta esta clave.</value></data>
   <data name="Tun_Err_Key" xml:space="preserve"><value>Playit no acepta la clave con la que se leyó la cuenta. Si la guardó esta app, pulsa Desconectar y vuelve a conectar.</value></data>
   <data name="Tun_Err_NoPermission" xml:space="preserve"><value>Playit no deja hacer este cambio con la clave de este equipo.</value></data>
-  <data name="Tun_Src_InstalledReadOnly" xml:space="preserve"><value>Playit instalado en este equipo. Con su clave Playit solo deja leer los túneles: renombrarlos o borrarlos se hace en playit.gg.</value></data>
   <data name="Tun_ReadOnlyTip" xml:space="preserve"><value>Este túnel se cambia en playit.gg: la clave del Playit instalado solo deja leer</value></data>
   <data name="Tun_Fix_OnWeb" xml:space="preserve"><value>Hacerlo en playit.gg</value></data>
   <data name="Tun_Err_ReadOnly" xml:space="preserve"><value>Playit no deja cambiar túneles con la clave del Playit instalado en este equipo, solo leerlos. Hazlo en playit.gg.</value></data>
@@ -1385,4 +1435,34 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Msg_MemoryPlanFmt" xml:space="preserve"><value>Memoria automática: puede crecer hasta {0} ({1}) y devuelve lo que no usa.</value></data>
   <data name="Msg_MemoryFlagsFallback" xml:space="preserve"><value>Esta Java no acepta todas las opciones de memoria: el servidor arranca con las que sí acepta.</value></data>
   <data name="Msg_Java32BitCap" xml:space="preserve"><value>Esta Java es de 32 bits y no puede dar más de 1 GB. Instala una de 64 bits para que el servidor tenga más memoria.</value></data>
+  <data name="Pa_Head_None" xml:space="preserve"><value>No conectada</value></data>
+  <data name="Pa_Head_Checking" xml:space="preserve"><value>Comprobando…</value></data>
+  <data name="Pa_Head_Refused" xml:space="preserve"><value>Playit rechaza la conexión</value></data>
+  <data name="Pa_Head_Active" xml:space="preserve"><value>Conectada y activa</value></data>
+  <data name="Pa_Head_Starting" xml:space="preserve"><value>Conectada, iniciando el agente</value></data>
+  <data name="Pa_Head_Inactive" xml:space="preserve"><value>Conectada, sin agente activo</value></data>
+  <data name="Pa_App_Name" xml:space="preserve"><value>Agente de la app</value></data>
+  <data name="Pa_App_How" xml:space="preserve"><value>con código de configuración</value></data>
+  <data name="Pa_App_None" xml:space="preserve"><value>Sin conectar con código de configuración.</value></data>
+  <data name="Pa_App_Running" xml:space="preserve"><value>Activo: tus túneles reenvían tráfico.</value></data>
+  <data name="Pa_App_Stopped" xml:space="preserve"><value>Detenido: tus túneles no reenvían tráfico.</value></data>
+  <data name="Pa_App_Refused" xml:space="preserve"><value>Playit no acepta el código: pulsa Cambiar código.</value></data>
+  <data name="Pa_Inst_Name" xml:space="preserve"><value>Agente instalado en este PC</value></data>
+  <data name="Pa_Inst_How" xml:space="preserve"><value>el Playit que instalaste tú</value></data>
+  <data name="Pa_Inst_None" xml:space="preserve"><value>No se ha encontrado Playit instalado en este PC.</value></data>
+  <data name="Pa_Inst_On" xml:space="preserve"><value>Activo: tus túneles reenvían tráfico.</value></data>
+  <data name="Pa_Inst_Starting" xml:space="preserve"><value>Iniciando el servicio…</value></data>
+  <data name="Pa_Inst_Off" xml:space="preserve"><value>Instalado pero apagado: tus túneles no reenvían tráfico.</value></data>
+  <data name="Pa_Inst_NoService" xml:space="preserve"><value>Detectado, pero sin servicio de Playit en marcha.</value></data>
+  <data name="Pa_Inst_Refused" xml:space="preserve"><value>Playit no acepta su clave.</value></data>
+  <data name="Pa_Inst_ReadOnly" xml:space="preserve"><value>Su clave solo deja leer túneles: renombrarlos o borrarlos se hace en playit.gg.</value></data>
+  <data name="Pa_Saved_Name" xml:space="preserve"><value>Clave guardada</value></data>
+  <data name="Pa_Saved_How" xml:space="preserve"><value>versión anterior</value></data>
+  <data name="Pa_Saved_State" xml:space="preserve"><value>Clave guardada por una versión anterior.</value></data>
+  <data name="Pa_Saved_Refused" xml:space="preserve"><value>Playit no acepta esta clave.</value></data>
+  <data name="Pa_Act_Connect" xml:space="preserve"><value>Conectar con código</value></data>
+  <data name="Pa_Act_ChangeCode" xml:space="preserve"><value>Cambiar código</value></data>
+  <data name="Pa_Act_StartService" xml:space="preserve"><value>Iniciar</value></data>
+  <data name="Pa_Act_StopService" xml:space="preserve"><value>Detener</value></data>
+  <data name="Pa_Tip_Disconnect" xml:space="preserve"><value>Olvida la conexión guardada por la app. El Playit instalado no se toca.</value></data>
 </root>

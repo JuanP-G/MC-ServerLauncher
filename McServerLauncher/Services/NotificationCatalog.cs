@@ -16,7 +16,7 @@ namespace McServerLauncher.Services;
 /// setting, and live in <see cref="NotificationSettings"/>.
 /// </para>
 /// <para>
-/// The icon is a <see cref="Symbol"/>, which is only a name: the same enum the rest of the app draws
+/// The icon is a <see cref="Icon"/>, which is only a name: the same enum the rest of the app draws
 /// its icons from, so a toast looks like the window it came from. The point of the marks is that
 /// "somebody joined" and "the server crashed" can be told apart without reading, and shape does that
 /// where colour alone leaves out anybody who cannot separate red from green — which is why no two
@@ -26,7 +26,7 @@ namespace McServerLauncher.Services;
 public static class NotificationCatalog
 {
     /// <summary>One kind of notification: how serious it is, and how it is marked.</summary>
-    public record Entry(NotificationKind Kind, NotificationLevel Level, Symbol Icon);
+    public record Entry(NotificationKind Kind, NotificationLevel Level, Icon Icon);
 
     /// <summary>
     /// Every kind, with its level and mark.
@@ -42,15 +42,15 @@ public static class NotificationCatalog
     public static readonly IReadOnlyList<Entry> All = new[]
     {
         // A player arriving is the one unambiguously good thing on this list.
-        new Entry(NotificationKind.PlayerJoined, NotificationLevel.Success, Symbol.PersonAdd),
-        new Entry(NotificationKind.PlayerLeft, NotificationLevel.Info, Symbol.SignOut),
-        new Entry(NotificationKind.PlayerDeath, NotificationLevel.Info, Symbol.PersonDelete),
-        new Entry(NotificationKind.ServerCrashed, NotificationLevel.Error, Symbol.ErrorCircle),
-        new Entry(NotificationKind.AutoRestartGaveUp, NotificationLevel.Error, Symbol.PlugDisconnected),
+        new Entry(NotificationKind.PlayerJoined, NotificationLevel.Success, Icon.PersonAdd),
+        new Entry(NotificationKind.PlayerLeft, NotificationLevel.Info, Icon.SignOut),
+        new Entry(NotificationKind.PlayerDeath, NotificationLevel.Info, Icon.PersonDelete),
+        new Entry(NotificationKind.ServerCrashed, NotificationLevel.Error, Icon.ErrorCircle),
+        new Entry(NotificationKind.AutoRestartGaveUp, NotificationLevel.Error, Icon.PlugDisconnected),
         // Down, but because it was told to be. Not an error, and not nothing either: if you were
         // away expecting it up, this is the line on the list you might want to do something about.
-        new Entry(NotificationKind.IdleShutdown, NotificationLevel.Warning, Symbol.WeatherMoon),
-        new Entry(NotificationKind.WokeOnDemand, NotificationLevel.Success, Symbol.Power)
+        new Entry(NotificationKind.IdleShutdown, NotificationLevel.Warning, Icon.WeatherMoon),
+        new Entry(NotificationKind.WokeOnDemand, NotificationLevel.Success, Icon.Power)
     };
 
     private static readonly Dictionary<NotificationKind, Entry> ByKind =
@@ -67,13 +67,13 @@ public static class NotificationCatalog
     public static Entry For(NotificationKind kind) =>
         ByKind.TryGetValue(kind, out var entry)
             ? entry
-            : new Entry(kind, NotificationLevel.Info, Symbol.Alert);
+            : new Entry(kind, NotificationLevel.Info, Icon.Alert);
 
     /// <summary>The level a kind is shown at.</summary>
     public static NotificationLevel LevelOf(NotificationKind kind) => For(kind).Level;
 
     /// <summary>The icon shown for a kind.</summary>
-    public static Symbol IconOf(NotificationKind kind) => For(kind).Icon;
+    public static Icon IconOf(NotificationKind kind) => For(kind).Icon;
 
     /// <summary>
     /// The resource key of the line that names a kind at the top of its toast ("Player joined").

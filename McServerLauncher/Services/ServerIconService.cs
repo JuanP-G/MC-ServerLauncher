@@ -36,8 +36,10 @@ public class ServerIconService
         using var cropped = new SKBitmap(side, side);
         original.ExtractSubset(cropped, SKRectI.Create(x, y, side, side));
 
-        // Scale to 64x64 and encode as PNG.
-        using var resized = cropped.Resize(new SKImageInfo(64, 64), SKFilterQuality.High);
+        // Scale to 64x64 and encode as PNG. Mipmaps, because a picture is usually far bigger than an
+        // icon: a cubic filter only looks at a few source pixels around each one and the rest are lost.
+        using var resized = cropped.Resize(
+            new SKImageInfo(64, 64), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear));
         using var image = SKImage.FromBitmap(resized);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         return data.ToArray();

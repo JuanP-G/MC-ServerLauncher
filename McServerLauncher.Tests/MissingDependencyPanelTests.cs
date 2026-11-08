@@ -19,7 +19,7 @@ namespace McServerLauncher.Tests;
 /// <para>
 /// It checks the names in the XAML against the view model rather than rendering the view. Rendering
 /// it needs the icon font, which the headless font manager cannot create — the panel is in the same
-/// view as sixteen <c>SymbolIcon</c>s — and switching the whole harness to Skia to get one test is
+/// view as sixteen <c>FluentIcon</c>s — and switching the whole harness to Skia to get one test is
 /// a worse trade than reading the two names it would have proved.
 /// </para>
 /// </remarks>

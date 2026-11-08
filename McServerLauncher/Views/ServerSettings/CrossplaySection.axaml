@@ -15,12 +15,29 @@
                     <ToggleSwitch x:Name="CrossplayCheck" Classes="ctl" IsChecked="{Binding CrossplayEnabled, Mode=TwoWay}" />
                     <TextBlock Text="{loc:Loc Crossplay_Check}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
                 </DockPanel>
-                <TextBlock x:Name="CrossplayHint" Classes="desc" Text="{loc:Loc Crossplay_Hint}" />
+                <TextBlock x:Name="CrossplayHint" Classes="desc" Text="{loc:Loc Crossplay_HintSettings}" />
                 <TextBlock x:Name="CrossplayWhyNot" Classes="desc warn" IsVisible="False" />
                 <!-- Shown on the mod loaders only, and with different text for each: on Fabric the
                      Hydraulic switch below is the answer, on NeoForge there is none. The text comes
                      from CrossplayService.CaveatKey so the new-server panel says the same thing. -->
                 <TextBlock x:Name="CrossplayModdedNote" Classes="desc warn" IsVisible="False" />
+            </StackPanel>
+        </Border>
+
+        <!-- Windows only, and only for a server whose crossplay is already saved: the port it names is
+             the saved one. Acts at once, not on Save. The administrator prompt is Windows' own and
+             cannot be replaced by anything inside the app, so the text says it is coming. -->
+        <Border x:Name="FirewallCard" Classes="card" IsVisible="False">
+            <StackPanel>
+                <DockPanel Classes="setting">
+                    <Button x:Name="FirewallButton" Classes="ctl" Click="Firewall_Click" />
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Firewall_Title}" Classes="title" TextWrapping="Wrap" />
+                        <TextBlock x:Name="FirewallStatus" Classes="desc" />
+                    </StackPanel>
+                </DockPanel>
+                <TextBlock x:Name="FirewallHint" Classes="desc" />
+                <TextBlock x:Name="FirewallNote" Classes="desc warn" IsVisible="False" />
             </StackPanel>
         </Border>
 

@@ -47,7 +47,10 @@ public enum ConfigEffect
     ReSearchStore = 1 << 9,
 
     /// <summary>Re-read the backup list, if the tab has ever been opened.</summary>
-    ReloadBackups = 1 << 10
+    ReloadBackups = 1 << 10,
+
+    /// <summary>Look at the firewall again: the port, or whether Bedrock is on at all, changed.</summary>
+    RecheckFirewall = 1 << 11
 }
 
 /// <summary>
@@ -195,7 +198,8 @@ public static class ServerConfigEffects
         // switching it on and moving the port have to open or move a socket, for the same reason as
         // WakeOnDemand above.
         new(nameof(ServerConfig.CrossplayEnabled),
-            new[] { nameof(ServerViewModel.IsCrossplayOn) }, None, ConfigEffect.RestartWakeListener),
+            new[] { nameof(ServerViewModel.IsCrossplayOn), nameof(ServerViewModel.ShowFirewallNotice) }, None,
+            ConfigEffect.RestartWakeListener | ConfigEffect.RecheckFirewall),
 
         Unshown(nameof(ServerConfig.BedrockModContentEnabled),
             "A record of an install that already happened; the Mods tab shows the jars themselves."),
@@ -203,7 +207,12 @@ public static class ServerConfigEffects
             "Same: the ViaVersion jars are visible in the Mods tab on their own."),
 
         new(nameof(ServerConfig.BedrockPort),
-            new[] { nameof(ServerViewModel.BedrockLocalPortText) }, None, ConfigEffect.RestartWakeListener),
+            new[] { nameof(ServerViewModel.BedrockLocalPortText) }, None,
+            ConfigEffect.RestartWakeListener | ConfigEffect.RecheckFirewall),
+
+        // The notice stays away for the problem that was dismissed, and comes back for another.
+        new(nameof(ServerConfig.FirewallNoticeDismissed),
+            new[] { nameof(ServerViewModel.ShowFirewallNotice) }, None, ConfigEffect.None),
 
         Unshown(nameof(ServerConfig.UseCustomNotifications),
             "Read at the moment a notification would be raised."),

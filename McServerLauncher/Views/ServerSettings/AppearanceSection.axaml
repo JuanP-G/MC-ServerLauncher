@@ -74,7 +74,7 @@
                 <Border Width="56" Height="56" CornerRadius="4" ClipToBounds="True"
                         Background="{StaticResource GroundWell}" VerticalAlignment="Top">
                     <Panel>
-                        <ic:SymbolIcon x:Name="IconPlaceholder" Symbol="Server" FontSize="24" Opacity="0.5"
+                        <ic:FluentIcon x:Name="IconPlaceholder" Icon="Server" FontSize="24" Opacity="0.5"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <Image x:Name="IconImage" Width="56" Height="56"
                                RenderOptions.BitmapInterpolationMode="None" />
@@ -120,7 +120,7 @@
                             <Border x:Name="ColorButtonSwatch" Width="16" Height="16" CornerRadius="3" BorderThickness="1"
                                     BorderBrush="{StaticResource SurfaceEdgeStrong}" VerticalAlignment="Center" />
                             <TextBlock x:Name="ColorButtonText" VerticalAlignment="Center" MinWidth="70" />
-                            <ic:SymbolIcon Symbol="ChevronDown" FontSize="12" VerticalAlignment="Center" />
+                            <ic:FluentIcon Icon="ChevronDown" FontSize="12" VerticalAlignment="Center" />
                         </StackPanel>
                     </ToggleButton>
                     <StackPanel Orientation="Horizontal" Spacing="3" Margin="0,0,0,4">
@@ -142,7 +142,7 @@
                         </ToggleButton>
                         <Button x:Name="ClearButton" Focusable="False" Height="28" Padding="8,0"
                                 ToolTip.Tip="{loc:Loc Look_ClearFormat}" Click="Clear_Click">
-                            <ic:SymbolIcon Symbol="TextClearFormatting" FontSize="14" />
+                            <ic:FluentIcon Icon="TextClearFormatting" FontSize="14" />
                         </Button>
                     </StackPanel>
                 </WrapPanel>
@@ -187,7 +187,7 @@
                             <TextBlock Text="{loc:Loc Look_Hex}" Classes="desc" VerticalAlignment="Center" />
                             <Border x:Name="HexPreview" Width="18" Height="18" CornerRadius="4" BorderThickness="1"
                                     BorderBrush="{StaticResource SurfaceEdgeStrong}" VerticalAlignment="Center" />
-                            <TextBox x:Name="HexBox" Width="110" Watermark="#FF7A00" MaxLength="7"
+                            <TextBox x:Name="HexBox" Width="110" PlaceholderText="#FF7A00" MaxLength="7"
                                      FontFamily="Cascadia Mono, Consolas, monospace" />
                             <Button x:Name="HexApplyButton" Focusable="False" Content="{loc:Loc Look_HexApply}" Click="HexApply_Click" />
                         </StackPanel>

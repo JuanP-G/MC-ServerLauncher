@@ -1260,7 +1260,7 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
 
     private DispatcherTimer CreateNoticeTimer()
     {
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(6) };
+        var timer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = TimeSpan.FromSeconds(6) };
         timer.Tick += (_, _) =>
         {
             timer.Stop();

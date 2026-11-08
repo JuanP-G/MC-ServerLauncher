@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\McServerLauncher\McServerLauncher.csproj" />
-    <PackageReference Include="Avalonia.Headless" Version="11.3.22" />
-    <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Headless" Version="12.1.5" />
+    <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="12.1.5" />
   </ItemGroup>
 </Project>

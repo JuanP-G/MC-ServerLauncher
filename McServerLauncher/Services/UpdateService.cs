@@ -22,8 +22,17 @@ public class UpdateService : IUpdateSource
     /// it — and of having to say clearly, everywhere it is offered, that it is a beta.
     /// </remarks>
     private const string ApiUrl = "https://api.github.com/repos/JuanP-G/MC-ServerLauncher/releases?per_page=20";
-    private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromSeconds(15));
+    private static readonly HttpClient SharedHttp = AppHttp.Create(TimeSpan.FromSeconds(15));
     private static readonly HttpClient DownloadHttp = AppHttp.Create(TimeSpan.FromMinutes(10));
+
+    private readonly HttpClient _http;
+
+    public UpdateService() : this(SharedHttp)
+    {
+    }
+
+    /// <summary>For a test: the same service over a client whose answers it chooses.</summary>
+    internal UpdateService(HttpClient http) => _http = http;
 
     /// <summary>Where release assets are served from: the release page and every download link are on it.</summary>
     private static readonly string[] ReleaseHosts = ["github.com"];
@@ -49,23 +58,34 @@ public class UpdateService : IUpdateSource
         string? ChecksumUrl, bool IsPreRelease = false, string? SignatureUrl = null);
 
     /// <summary>
-    /// Returns the latest version if it is newer than <paramref name="current"/>; otherwise null.
+    /// Returns the latest version if it is newer than <paramref name="current"/>; null only when
+    /// GitHub answered and there is nothing newer.
     /// </summary>
+    /// <remarks>
+    /// Not being able to ask is not "nothing newer", so it throws instead of returning null: an
+    /// error status (the rate limit answers 403 or 429, an outage 5xx), a body that is not the
+    /// release list, a broken JSON, no connection or a timeout. <see cref="UpdateCheck"/> turns
+    /// the throw into "could not check"; returning null would have told the person they are up to
+    /// date, and would have taken back an update already on offer.
+    /// </remarks>
     /// <param name="current">The version running.</param>
     /// <param name="includePreReleases">Whether betas count. The user's choice; off by default.</param>
     /// <param name="ct">Cancels the request.</param>
+    /// <exception cref="HttpRequestException">GitHub answered with an error status, or was not reachable.</exception>
+    /// <exception cref="InvalidDataException">The answer is not a list of releases.</exception>
     public async Task<UpdateInfo?> CheckAsync(Version current, bool includePreReleases = false,
         CancellationToken ct = default)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
         req.Headers.Accept.ParseAdd("application/vnd.github+json");
 
-        using var resp = await Http.SendAsync(req, ct);
-        if (!resp.IsSuccessStatusCode) return null;
+        using var resp = await _http.SendAsync(req, ct);
+        resp.EnsureSuccessStatusCode();
 
         var json = await AppHttp.ReadCappedStringAsync(resp.Content, AppHttp.MaxApiBytes, ct);
         using var doc = JsonDocument.Parse(json);
-        if (doc.RootElement.ValueKind != JsonValueKind.Array) return null;
+        if (doc.RootElement.ValueKind != JsonValueKind.Array)
+            throw new InvalidDataException("the release list is not a list");
 
         var root = PickNewestRelease(doc.RootElement, current, includePreReleases);
         if (root is not { } release) return null;
@@ -210,7 +230,7 @@ public class UpdateService : IUpdateSource
         try
         {
             AppHttp.RequireAllowedUrl(sha256SumsUrl, ReleaseHosts);
-            var text = await AppHttp.GetStringCappedAsync(Http, sha256SumsUrl, AppHttp.MaxSmallTextBytes, ct);
+            var text = await AppHttp.GetStringCappedAsync(_http, sha256SumsUrl, AppHttp.MaxSmallTextBytes, ct);
             foreach (var rawLine in text.Split('\n'))
             {
                 var line = rawLine.Trim();
@@ -246,7 +266,7 @@ public class UpdateService : IUpdateSource
             AppHttp.RequireAllowedUrl(signatureUrl, ReleaseHosts);
             // Never read more than a few KB: a signature is a few hundred bytes, and 1024 below is
             // the real limit; this one only stops the reading itself from being unbounded.
-            var text = await AppHttp.GetStringCappedAsync(Http, signatureUrl, 4096, ct);
+            var text = await AppHttp.GetStringCappedAsync(_http, signatureUrl, 4096, ct);
             return text.Length is > 0 and <= 1024 ? text.Trim() : null;
         }
         catch

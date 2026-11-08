@@ -148,6 +148,34 @@ public class ViewBindingTests(AvaloniaFixture ui) : IDisposable
         NoMisses(Misses(() => (new SettingsView(), main!.Settings)));
     }
 
+    [Fact]
+    public void TheNewsSectionBindsEverythingItReads()
+    {
+        // With a version on offer and a row unfolded, so the offer card and the notes are read too.
+        MainViewModel? main = null;
+        ui.Run(() =>
+        {
+            main = new MainViewModel(_folder);
+            main.News.SetOffer("9.9.9", isBeta: false);
+            main.News.Versions[1].IsExpanded = true;
+        });
+
+        NoMisses(Misses(() => (new NewsView(), main!.News)));
+    }
+
+    [Fact]
+    public void TheSettingsPageOfTheAnnouncementsBindsEverythingItReads()
+    {
+        MainViewModel? main = null;
+        ui.Run(() =>
+        {
+            main = new MainViewModel(_folder);
+            main.Settings.ShowNewsCommand.Execute(null);
+        });
+
+        NoMisses(Misses(() => (new SettingsView(), main!.Settings)));
+    }
+
     public void Dispose()
     {
         try { if (Directory.Exists(_folder)) Directory.Delete(_folder, true); } catch { /* temp */ }

@@ -15,9 +15,20 @@ public enum SettingsPage
 {
     General,
     Notifications,
+    News,
     Colors,
     Players,
 }
+
+/// <summary>One entry of the picker for how the rail marks something unread in Novedades.</summary>
+/// <param name="Style">What is stored in the settings.</param>
+/// <param name="Name">What the picker says, in the language of the interface.</param>
+public record NewsBadgeOption(NewsBadgeStyle Style, string Name);
+
+/// <summary>One entry of the picker for where the strip of an urgent notice shows.</summary>
+/// <param name="Style">What is stored in the settings.</param>
+/// <param name="Name">What the picker says, in the language of the interface.</param>
+public record NewsStripOption(NewsStripStyle Style, string Name);
 
 /// <summary>
 /// The settings screen: language, window behaviour, the desktop shortcut, notifications, colours
@@ -83,17 +94,19 @@ public partial class SettingsViewModel : ObservableObject
     // ---------------------------------------------------------------- pages
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsGeneralPage), nameof(IsNotificationsPage), nameof(IsColorsPage),
-        nameof(IsPlayersPage))]
+    [NotifyPropertyChangedFor(nameof(IsGeneralPage), nameof(IsNotificationsPage), nameof(IsNewsPage),
+        nameof(IsColorsPage), nameof(IsPlayersPage))]
     private SettingsPage _page = SettingsPage.General;
 
     public bool IsGeneralPage => Page == SettingsPage.General;
     public bool IsNotificationsPage => Page == SettingsPage.Notifications;
+    public bool IsNewsPage => Page == SettingsPage.News;
     public bool IsColorsPage => Page == SettingsPage.Colors;
     public bool IsPlayersPage => Page == SettingsPage.Players;
 
     [RelayCommand] private void ShowGeneral() => Page = SettingsPage.General;
     [RelayCommand] private void ShowNotifications() => Page = SettingsPage.Notifications;
+    [RelayCommand] private void ShowNews() => Page = SettingsPage.News;
     [RelayCommand] private void ShowColors() => Page = SettingsPage.Colors;
 
     [RelayCommand]
@@ -261,6 +274,111 @@ public partial class SettingsViewModel : ObservableObject
     /// </summary>
     public NotificationSettings Notifications => _settings.Notifications;
 
+    // ---------------------------------------------------------------- announcements
+
+    /// <summary>
+    /// Whether Novedades marks the rail and lets notices speak up. Off, it only lists versions.
+    /// </summary>
+    public bool ShowAnnouncements
+    {
+        get => _settings.ShowAnnouncements;
+        set
+        {
+            if (_settings.ShowAnnouncements == value) return;
+            _settings.ShowAnnouncements = value;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnNewsSettingsChanged();
+        }
+    }
+
+    /// <summary>The ways the rail can mark something unread, for the picker.</summary>
+    public IReadOnlyList<NewsBadgeOption> BadgeOptions { get; } = new[]
+    {
+        new NewsBadgeOption(NewsBadgeStyle.Number, Localizer.Get("News_BadgeNumber")),
+        new NewsBadgeOption(NewsBadgeStyle.Dot, Localizer.Get("News_BadgeDot")),
+        new NewsBadgeOption(NewsBadgeStyle.Pulse, Localizer.Get("News_BadgePulse")),
+        new NewsBadgeOption(NewsBadgeStyle.None, Localizer.Get("News_BadgeNone")),
+    };
+
+    /// <summary>The way picked. Saved in its own setter: the picker is not one of the switches the view watches.</summary>
+    public NewsBadgeOption SelectedBadgeOption
+    {
+        get => BadgeOptions.FirstOrDefault(o => o.Style == _settings.NewsBadge) ?? BadgeOptions[0];
+        set
+        {
+            if (value is null || value.Style == _settings.NewsBadge) return;
+            _settings.NewsBadge = value.Style;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnNewsSettingsChanged();
+        }
+    }
+
+    /// <summary>The places the strip can show, for the picker.</summary>
+    public IReadOnlyList<NewsStripOption> StripOptions { get; } = new[]
+    {
+        new NewsStripOption(NewsStripStyle.Everywhere, Localizer.Get("News_StripAll")),
+        new NewsStripOption(NewsStripStyle.TunnelsOnly, Localizer.Get("News_StripTunnels")),
+        new NewsStripOption(NewsStripStyle.None, Localizer.Get("News_StripNone")),
+    };
+
+    /// <summary>The place picked. Saved in its own setter, like the badge picker.</summary>
+    public NewsStripOption SelectedStripOption
+    {
+        get => StripOptions.FirstOrDefault(o => o.Style == _settings.NewsStrip) ?? StripOptions[0];
+        set
+        {
+            if (value is null || value.Style == _settings.NewsStrip) return;
+            _settings.NewsStrip = value.Style;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnNewsSettingsChanged();
+        }
+    }
+
+    /// <summary>Whether an incident or a security notice also raises a notification.</summary>
+    public bool NewsToast
+    {
+        get => _settings.NewsToast;
+        set
+        {
+            if (_settings.NewsToast == value) return;
+            _settings.NewsToast = value;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnNewsSettingsChanged();
+        }
+    }
+
+    /// <summary>Whether incidents are listed and announced.</summary>
+    public bool NewsIncidents
+    {
+        get => _settings.NewsIncidents;
+        set
+        {
+            if (_settings.NewsIncidents == value) return;
+            _settings.NewsIncidents = value;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnNewsSettingsChanged();
+        }
+    }
+
+    /// <summary>Whether tips are listed.</summary>
+    public bool NewsTips
+    {
+        get => _settings.NewsTips;
+        set
+        {
+            if (_settings.NewsTips == value) return;
+            _settings.NewsTips = value;
+            OnPropertyChanged();
+            Persist();
+            _main?.OnNewsSettingsChanged();
+        }
+    }
+
     // ---------------------------------------------------------------- colours
 
     [ObservableProperty] private string _colorSuccess;
@@ -312,7 +430,7 @@ public partial class SettingsViewModel : ObservableObject
                 Localizer.Get("Notif_Level" + level),
                 Localizer.Get("Notif_UpdateTitle"),
                 Localizer.Get("Notif_TestBody"),
-                sample?.Icon ?? FluentIcons.Common.Symbol.Alert,
+                sample?.Icon ?? FluentIcons.Common.Icon.Alert,
                 level,
                 _settings.Notifications);
         }

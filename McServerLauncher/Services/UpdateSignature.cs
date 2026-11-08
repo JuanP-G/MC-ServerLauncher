@@ -78,18 +78,63 @@ public static class UpdateSignature
     public static bool Verify(string packagePath, string version, string fileName,
         string? signatureBase64, IEnumerable<string>? keys = null)
     {
-        if (string.IsNullOrWhiteSpace(signatureBase64)) return false;
         if (string.IsNullOrWhiteSpace(version) || string.IsNullOrWhiteSpace(fileName)) return false;
-
-        byte[] signature;
-        try { signature = Convert.FromBase64String(signatureBase64.Trim()); }
-        catch (FormatException) { return false; }
+        if (!TryDecode(signatureBase64, out var signature)) return false;
 
         string hash;
         using (var stream = File.OpenRead(packagePath))
             hash = Convert.ToHexString(SHA256.HashData(stream));
         var message = SignedMessage(version.Trim(), Path.GetFileName(fileName), hash);
 
+        return VerifyMessage(message, signature, keys);
+    }
+
+    /// <summary>First line of the message a notices file is signed with (see <see cref="NewsMessage"/>).</summary>
+    internal const string NewsMessageHeader = "mcsl-news-v1";
+
+    /// <summary>
+    /// The bytes that are signed for a notices file: the format and the file's SHA-256, one per line,
+    /// joined by <c>\n</c> with nothing after the last.
+    /// </summary>
+    /// <remarks>
+    /// A header of its own is what keeps the two uses of the one key apart: the signature of an
+    /// update package never verifies as a notices file, and the other way round. The signing
+    /// script (<c>tools/signing/sign-news.ps1</c>) builds the same text, so a change here is a change
+    /// there.
+    /// </remarks>
+    internal static byte[] NewsMessage(string sha256Hex) =>
+        Encoding.UTF8.GetBytes(string.Join('\n', NewsMessageHeader, sha256Hex.ToLowerInvariant()));
+
+    /// <summary>
+    /// Whether <paramref name="signatureBase64"/> is a valid signature, by any of
+    /// <paramref name="keys"/> (the built-in ones by default), of the notices file whose bytes are
+    /// <paramref name="raw"/>.
+    /// </summary>
+    /// <remarks>
+    /// The hash is taken over the bytes exactly as they arrived, not over the JSON read back and
+    /// written out again: any re-serialisation would be a second place for the two sides to disagree.
+    /// Like <see cref="Verify"/>, bad input is "not valid" and never an exception.
+    /// </remarks>
+    public static bool VerifyNews(byte[] raw, string? signatureBase64, IEnumerable<string>? keys = null) =>
+        TryDecode(signatureBase64, out var signature)
+        && VerifyMessage(NewsMessage(Convert.ToHexString(SHA256.HashData(raw))), signature, keys);
+
+    /// <summary>The signature as bytes; false for nothing, or for text that is not base64.</summary>
+    private static bool TryDecode(string? signatureBase64, out byte[] signature)
+    {
+        signature = [];
+        if (string.IsNullOrWhiteSpace(signatureBase64)) return false;
+        try { signature = Convert.FromBase64String(signatureBase64.Trim()); }
+        catch (FormatException) { return false; }
+        return true;
+    }
+
+    /// <summary>
+    /// The check both kinds of signature share: is <paramref name="signature"/> a valid ECDSA P-256 /
+    /// SHA-256 signature (DER) of <paramref name="message"/> by any of <paramref name="keys"/>.
+    /// </summary>
+    private static bool VerifyMessage(byte[] message, byte[] signature, IEnumerable<string>? keys)
+    {
         foreach (var key in keys ?? TrustedKeys)
         {
             try

@@ -148,6 +148,19 @@ public class MotionTests
             File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher", "App.axaml")));
 
     [Fact]
+    public void ThePulseOfTheNewsMarkIsDefinedInTheMotionFileAndUsedByTheMark()
+    {
+        // The halo class is the only thing the badge says about its movement; what it does is here.
+        var views = Path.Combine(LocalizationTests.RepoRoot(), "McServerLauncher");
+        var motion = File.ReadAllText(Path.Combine(views, "Styles", "Motion.axaml"));
+        var badge = File.ReadAllText(Path.Combine(views, "Views", "NewsBadge.axaml"));
+
+        Assert.Contains("Border.newspulse[IsVisible=True]", motion);
+        Assert.Contains("Classes=\"newspulse\"", badge);
+        Assert.DoesNotContain("<Animation", badge);
+    }
+
+    [Fact]
     public void NoKeyframeDependsOnTheLanguageOfTheSystem()
     {
         // Avalonia parses a cue and a key spline with the system's culture. In Spanish (decimal

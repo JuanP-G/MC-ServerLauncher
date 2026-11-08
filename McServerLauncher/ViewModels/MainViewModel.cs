@@ -142,14 +142,26 @@ public partial class MainViewModel : ObservableObject
     // ---- Sections ----
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsSettingsSection),
-        nameof(IsAboutSection))]
+    [NotifyPropertyChangedFor(nameof(IsServersSection), nameof(IsTunnelsSection), nameof(IsNewsSection),
+        nameof(IsSettingsSection), nameof(IsAboutSection), nameof(ShowNewsBand))]
     private AppSection _section = AppSection.Servers;
 
     public bool IsServersSection => Section == AppSection.Servers;
     public bool IsTunnelsSection => Section == AppSection.Tunnels;
+    public bool IsNewsSection => Section == AppSection.News;
     public bool IsSettingsSection => Section == AppSection.Settings;
     public bool IsAboutSection => Section == AppSection.About;
+
+    /// <summary>What the section being left and the one being opened have to know about it.</summary>
+    partial void OnSectionChanged(AppSection oldValue, AppSection newValue)
+    {
+        if (oldValue == AppSection.News) News.Closed();
+        if (newValue == AppSection.News)
+        {
+            News.Opened();
+            OnNewsSectionOpened();
+        }
+    }
 
     /// <summary>The settings screen, which saves as it goes.</summary>
     public SettingsViewModel Settings { get; }
@@ -185,6 +197,27 @@ public partial class MainViewModel : ObservableObject
         // one exception is the reading just after start (Tunnels.PrefetchAsync), so the first opening
         // shows a table straight away; this one then refreshes it without emptying it.
         _ = Tunnels.RefreshAsync();
+    }
+
+    /// <summary>
+    /// Novedades: the version on offer, the notices and the notes of every version, and the mark
+    /// the rail wears while something in it is unread.
+    /// </summary>
+    public NewsViewModel News { get; }
+
+    [RelayCommand]
+    private void ShowNews()
+    {
+        if (!SettingsLetGo()) return;
+        Section = AppSection.News;
+    }
+
+    /// <summary>Opens Settings on the page of the announcements, for the card that points to it.</summary>
+    private void ShowNoticeSettings()
+    {
+        if (!SettingsLetGo()) return;
+        Settings.Page = SettingsPage.News;
+        Section = AppSection.Settings;
     }
 
     [RelayCommand]
@@ -226,10 +259,13 @@ public partial class MainViewModel : ObservableObject
     /// <remarks>
     /// Both files go in the same folder, so one parameter settles both services. A test that opened
     /// this view model without it would read the server list of whoever is running the test and
-    /// write its own back over it.
+    /// write its own back over it. The notices file's copy goes in its <c>cache</c> folder, and a
+    /// test that wants to see what the window does with a file passes its own service over a fake
+    /// handler: nothing reaches the network before <see cref="Activate"/> either way.
     /// </remarks>
-    public MainViewModel(string? dataDir = null)
+    public MainViewModel(string? dataDir = null, NewsFeedService? newsFeed = null)
     {
+        _newsFeed = newsFeed ?? new NewsFeedService(dataDir is null ? null : Path.Combine(dataDir, "cache"));
         _storage = new ServerStorageService(dataDir);
         _settings = new AppSettingsService(dataDir);
 
@@ -238,6 +274,9 @@ public partial class MainViewModel : ObservableObject
         Tunnels = new TunnelsViewModel(Servers, _appSettings, _settings, () => Owner, ConfigureServerAsync);
         Settings = new SettingsViewModel(this, _appSettings, _settings, ApplyConsoleColours,
             ApplyWindowBehavior);
+        News = new NewsViewModel(_appSettings,
+            new NewsState(Path.Combine(dataDir ?? AppPaths.DataDir, "news-state.json")),
+            UpdateNowCommand, () => _settings.Save(_appSettings), ShowNoticeSettings);
 
         // Make the saved notification preferences the app-wide defaults for this session.
         NotificationPreferences.Global = _appSettings.Notifications;
@@ -256,8 +295,16 @@ public partial class MainViewModel : ObservableObject
         // Checking only at startup missed the case this app is designed for: it lives in the tray
         // with the servers running, so on a machine that is never turned off it would simply never
         // look again. Built here, started in Activate.
-        _updateTimer = new DispatcherTimer { Interval = UpdateCheckInterval };
+        _updateTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = UpdateCheckInterval };
         _updateTimer.Tick += (_, _) => _ = CheckForUpdatesAsync();
+
+        // The same for the notices file, started (or not, with announcements off) in Activate.
+        _newsTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = NewsCheckInterval };
+        _newsTimer.Tick += (_, _) => _ = CheckNewsAsync(NewsTickAge);
+        News.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(NewsViewModel.HasBand)) OnPropertyChanged(nameof(ShowNewsBand));
+        };
     }
 
     /// <summary>True once <see cref="Activate"/> has run, so servers added later start watching.</summary>
@@ -301,6 +348,7 @@ public partial class MainViewModel : ObservableObject
         _ = Tunnels.PrefetchAsync();
         _ = Task.Run(() => SelfUpdater.DeleteOldPackages(Path.GetTempPath(), DateTime.UtcNow));
         _updateTimer.Start();
+        StartNews();
     }
 
     /// <summary>
@@ -314,6 +362,9 @@ public partial class MainViewModel : ObservableObject
     private static readonly TimeSpan UpdateCheckInterval = TimeSpan.FromHours(6);
 
     private readonly DispatcherTimer _updateTimer;
+
+    private readonly NewsFeedService _newsFeed;
+    private readonly DispatcherTimer _newsTimer;
 
     /// <summary>The version already announced, so the same one is never announced twice.</summary>
     /// <remarks>
@@ -407,47 +458,39 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// If the current version differs from the last one seen by the user (i.e. it was just
-    /// updated), shows the what's-new window. Saves the seen version so it isn't repeated.
+    /// After an update, opens Novedades on the notes of every version that came with it, and
+    /// remembers the version so it happens once.
     /// </summary>
-    public void ShowWhatsNewIfUpdated(Window owner)
+    /// <remarks>
+    /// <para>
+    /// This used to be a window with a button to close. It is a section now: it stays where the user
+    /// can find it again, and nothing is put in front of whatever they were about to do.
+    /// </para>
+    /// <para>
+    /// Not on a new install, which has no earlier version to compare with: the first thing there is
+    /// the empty list of servers. Not either with the announcements off — versions never call out —
+    /// though the notes are in the section all the same.
+    /// </para>
+    /// <para>
+    /// <c>MainWindow.Loaded</c> can fire again each time the window comes back from the tray, so the
+    /// version being already stored is what makes this once and not every time.
+    /// </para>
+    /// </remarks>
+    public void OpenNewsIfUpdated()
     {
-        var asmVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-        if (asmVersion is null) return;
-        var current = new Version(asmVersion.Major, asmVersion.Minor, Math.Max(0, asmVersion.Build));
-        var version = $"{current.Major}.{current.Minor}.{current.Build}";
+        var version = Changelog.Format(Changelog.Running());
+        if (_appSettings.LastVersionSeen == version) return;
 
-        if (_appSettings.LastVersionSeen == version) return; // already seen in this version
+        var upgrading = !string.IsNullOrWhiteSpace(_appSettings.LastVersionSeen);
 
-        // Show the notes of every version between the last one seen and this one (accumulated),
-        // so users who skipped releases still learn what's new in each.
-        var lastSeen = ParseSeenVersion(_appSettings.LastVersionSeen);
-        var sections = Changelog.NotesSince(lastSeen, current);
+        // Nothing moved for someone who never had the window.
+        if (!upgrading) News.AnswerMoveNotice();
 
-        if (sections.Count == 0)
-        {
-            // Nothing to show for this version: just mark it as seen.
-            _appSettings.LastVersionSeen = version;
-            _settings.Save(_appSettings);
-            return;
-        }
+        _appSettings.LastVersionSeen = version;
+        _settings.Save(_appSettings);
 
-        try
-        {
-            _ = new WhatsNewDialog(version, sections).ShowDialog(owner);
-            // Marked as seen only once the dialog is actually up: if creating/showing it threw,
-            // the notes are offered again on the next start instead of being lost forever.
-            _appSettings.LastVersionSeen = version;
-            _settings.Save(_appSettings);
-        }
-        catch { /* if something fails, don't block startup; the notes stay pending */ }
-    }
-
-    /// <summary>Parses a stored "seen version" string (e.g. "1.1.0"). Null on a fresh install.</summary>
-    private static Version? ParseSeenVersion(string? seen)
-    {
-        if (string.IsNullOrWhiteSpace(seen) || !Version.TryParse(seen, out var v)) return null;
-        return new Version(v.Major, v.Minor, Math.Max(0, v.Build));
+        if (upgrading && _appSettings.ShowAnnouncements && News.HasFreshVersions)
+            Section = AppSection.News;
     }
 
     /// <summary>
@@ -483,10 +526,12 @@ public partial class MainViewModel : ObservableObject
             UpdateAvailable = false;
             _offer = null;
         }
+        if (state == UpdateCheckState.UpToDate) News.SetOffer(null, false);
 
         if (info is null) return;
 
         _offer = info;
+        News.SetOffer(info.Version, info.IsPreRelease);
         // A beta says so before the button, not after installing.
         UpdateText = Localizer.Format(
             info.IsPreRelease ? "Msg_UpdateBetaAvailableFmt" : "Msg_UpdateAvailableFmt",
@@ -543,7 +588,7 @@ public partial class MainViewModel : ObservableObject
         // download arrow, said here rather than left to the default, so adding a level later cannot
         // silently move it.
         ToastService.Shared.Notify(Localizer.Get("Notif_Head_Update"), Localizer.Get("Notif_UpdateTitle"),
-            message, FluentIcons.Common.Symbol.ArrowDownload, NotificationLevel.Info,
+            message, FluentIcons.Common.Icon.ArrowDownload, NotificationLevel.Info,
             NotificationPreferences.Global);
     }
 

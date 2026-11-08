@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
         with:
           dotnet-version: 10.0.x
 
@@ -51,6 +51,17 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force _pages | Out-Null
           Copy-Item web\* _pages\ -Recurse -Force
+          # The 404 page is served for ANY address that does not exist, so its own location can be
+          # anything (/a/b/c) and its links cannot be relative: web/404.html writes them from the
+          # root ("/assets/...", "/en/"). That is right at the root of Vercel's domain, but this
+          # project's Pages site lives under /<repo>/, so the copy published here gets that prefix
+          # on every root-absolute href and src. assets/404.js works the prefix out from its own URL.
+          $repo = ($env:GITHUB_REPOSITORY -split '/')[1]
+          $page404 = Join-Path $PWD '_pages\404.html'
+          $html404 = [IO.File]::ReadAllText($page404)
+          $html404 = $html404 -replace '(href|src)="/(?!/)', ('$1="/' + $repo + '/')
+          if (-not $html404.Contains("/$repo/assets/404.css")) { throw "404.html: the Pages prefix was not applied" }
+          [IO.File]::WriteAllText($page404, $html404, [Text.UTF8Encoding]::new($false))
           New-Item -ItemType Directory -Force _pages\docs | Out-Null
           Copy-Item docs\_site\* _pages\docs\ -Recurse -Force
           # Without this, Pages runs the site through Jekyll and drops anything starting with "_"

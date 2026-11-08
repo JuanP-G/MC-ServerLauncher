@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using McServerLauncher.Localization;
 using McServerLauncher.Models;
@@ -38,10 +39,15 @@ public partial class MainWindow : Window
             // polled, opened a socket or called GitHub before this point.
             _viewModel.Activate();
 
-            // Warn about a corrupt servers.json first (rare), then the what's-new dialog.
+            // Warn about a corrupt servers.json first (rare), then open Novedades if the app was
+            // just updated.
             await _viewModel.WarnIfServersFileWasCorruptAsync(this);
-            _viewModel.ShowWhatsNewIfUpdated(this);
+            _viewModel.OpenNewsIfUpdated();
         };
+
+        // Back in front (from another app, the taskbar or the tray): look at the notices file if the copy
+        // is not recent, so a notice that came while the user was away is there when they are.
+        Activated += (_, _) => _viewModel.OnWindowActivated();
 
         // When switching servers, go back to the Console tab. Otherwise the previously selected tab
         // (e.g. Mods) could stay shown for a server that doesn't have it (a vanilla server).

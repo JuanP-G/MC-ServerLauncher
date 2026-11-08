@@ -23,7 +23,7 @@
                     Background="{StaticResource DangerPanel}" BorderBrush="{StaticResource DangerEdge}" BorderThickness="1"
                     IsVisible="False">
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <ic:SymbolIcon Symbol="Warning" Foreground="{StaticResource DangerIcon}" VerticalAlignment="Center" />
+                    <ic:FluentIcon Icon="Warning" Foreground="{StaticResource DangerIcon}" VerticalAlignment="Center" />
                     <TextBlock TextWrapping="Wrap" Foreground="{StaticResource DangerText}" Width="380"
                                Text="{loc:Loc Del_Warning}" />
                 </StackPanel>

@@ -112,9 +112,9 @@ saved first, in case you change your mind).
 <br>
 
 When there's a new version, a banner appears at the top: **Update** downloads it, checks it and installs it.
-When it opens again, **What's new** tells you what changed. It works the same on Windows, Linux and macOS.
+When it opens again, the **What's new** section tells you what changed. It works the same on Windows, Linux and macOS.
 
-<img src="docs/media/en/update.gif" width="900" alt="The update banner, the download and the What's new window">
+<img src="docs/media/en/update.gif" width="900" alt="The update banner and the download">
 
 </details>
 
@@ -125,7 +125,7 @@ When it opens again, **What's new** tells you what changed. It works the same on
 
 <br>
 
-- **Everything in one window** — a side rail with **Servers**, **Tunnels**, **Settings** and **About**. Making
+- **Everything in one window** — a side rail with **Servers**, **Tunnels**, **What's new**, **Settings** and **About**. Making
   or adding a server happens next to the list, and can be left half-done and picked up again; a server's
   settings open in the same place, never in a dialog.
 - **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Paper / Purpur /
@@ -283,12 +283,18 @@ When it opens again, **What's new** tells you what changed. It works the same on
   hand are counted separately, so the clock never deletes them. The **Backups** tab shows each pile against
   its limit, the space they take and when the next one is due, lists them by day and marks the one the next backup will replace.
   **Back up now** and one-click **Restore**.
-- **Settings, part of the window** — language, tray behaviour, **Add to desktop**, notifications, colours
-  and the player history, each on its own page. Saved as you go.
+- **Settings, part of the window** — language, tray behaviour, **Add to desktop**, notifications, announcements,
+  colours and the player history, each on its own page. Saved as you go.
+- **What's new, in the window too** — the notes of every version in one list, the one just installed already
+  open, and a mark on the rail while something is unread. Above them, **notices** the project can publish,
+  signed with the same key as the updates: an outage of Playit, a security matter, a tip. An incident that is
+  still going on also gets a strip under the title bar and a notification, and a notice can be limited to
+  whoever uses tunnels. You choose how the mark looks, where the strip shows and what you want to hear about
+  (or turn announcements off, which stops the requests too) in **Settings → Announcements**.
 - **Stays out of the way** — minimize or close **to the system tray** and your servers keep running; launching
   the app again brings that window back instead of opening a second copy.
 - **Updates itself on all three platforms** — the download is **checked against its published SHA-256** before
-  it is installed, and **What's new** then tells you what changed.
+  it is installed, and the **What's new** section then tells you what changed.
 - **Multi-language** — English, Spanish, Portuguese, French and German.
 
 </details>
@@ -360,8 +366,7 @@ list the files they come from and where you can ask the code questions, and
 Both are written by an AI: they can be wrong and DeepWiki's diagrams do not always render, so when they
 disagree with the architecture article, the article wins.
 
-> [!TIP]
-> **Wondering how something works?** [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) has a chat with an
+> **Tip: wondering how something works?** [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) has a chat with an
 > AI that knows the whole repository and answers by citing the files each thing comes from. For example:
 >
 > - “How is a backup restored without losing the world?”
@@ -369,7 +374,7 @@ disagree with the architecture article, the article wins.
 > - “What do I have to touch to add a server type?”
 
 **Data:** under `%APPDATA%\McServerLauncher\` (`~/.config/McServerLauncher/` on Linux and macOS):
-`servers.json`, `settings.json`, the installed `java\`, the console `logs\` (kept 14 days, at most 50 MB a day), the store's
+`servers.json`, `settings.json`, what you have read in What's new in `news-state.json`, the installed `java\`, the console `logs\` (kept 14 days, at most 50 MB a day), the store's and the announcements'
 `cache\`, what the clean-up panel remembers in `content\`, what the app has learned about each server's memory in `memory\` (its last 30 sessions, and the Java versions that refused the memory agent in `memory-agent-failures.json`), the `playit-agent\` binary, the `instance.lock` that keeps the app to one running copy, and, on
 Linux/macOS, `.secret.key`. Each server keeps its backups in its own `backups\` folder, and a hidden `.mcserverlauncher-memory\` folder
 beside its world with the GC log (two rotating files, 16 MB at most) and the memory agent's jar and two small files; the world backup
@@ -383,7 +388,11 @@ services for, and what they see besides your IP: Mojang, Paper, Purpur, Fabric, 
 downloads, and Mojang a player's name when you add them to the whitelist), Modrinth and GeyserMC (mods and
 plugins), Adoptium (Java), GitHub (updates, and the store's catalogue of topics and summaries, a public file
 downloaded at most once a day), Playit (tunnels, through the app's proxy when linking an
-account) and **mc-heads.net** (each player's avatar, by name, in the player history).
+account), **mc-heads.net** (each player's avatar, by name, in the player history) and the project's own
+website (`mc-server-launcher.vercel.app`, with `juanp-g.github.io` as a fallback), which serves the signed
+file of [announcements](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/announcements.html):
+a request without your version, language or any identifier, once after start and every 5 minutes (a few hundred bytes when nothing changed), and none at all
+if you turn **Show announcements** off in Settings. Which notices apply to you is decided on your computer.
 
 **Extra Java flags:** there is no field for them in the app, but each server in `servers.json` has an
 `ExtraJvmArgs` entry (empty by default) that is added to the Java command line after the memory flags, for

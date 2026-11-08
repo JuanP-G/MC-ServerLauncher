@@ -24,7 +24,7 @@
             <Border Grid.Column="0" Width="64" Height="64" CornerRadius="4" ClipToBounds="True"
                     Background="{StaticResource GroundWell}">
                 <Panel>
-                    <ic:SymbolIcon Symbol="Server" FontSize="28" Opacity="0.5"
+                    <ic:FluentIcon Icon="Server" FontSize="28" Opacity="0.5"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    IsVisible="{Binding #Root.Icon, Converter={x:Static ObjectConverters.IsNull}}" />
                     <Image Source="{Binding #Root.Icon}" Width="64" Height="64"
@@ -42,7 +42,7 @@
                             IsVisible="{Binding #Root.IsEditable}"
                             ToolTip.Tip="{loc:Loc Look_EditTip}"
                             Command="{Binding #Root.EditCommand}">
-                        <ic:SymbolIcon Symbol="Edit" FontSize="14" Foreground="{StaticResource McListText}" />
+                        <ic:FluentIcon Icon="Edit" FontSize="14" Foreground="{StaticResource McListText}" />
                     </Button>
                 </Grid>
                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,3,0,0">

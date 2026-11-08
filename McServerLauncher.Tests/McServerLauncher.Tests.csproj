@@ -15,7 +15,7 @@
     <!-- The picker bug that shipped twice - the selection being one behind inside its own event -
          is only visible with real Avalonia controls running. Headless gives that without a display,
          so it runs on the Linux CI leg too. -->
-    <PackageReference Include="Avalonia.Headless" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Headless" Version="12.1.5" />
   </ItemGroup>
 
   <ItemGroup>

@@ -334,19 +334,19 @@ public sealed partial class ModDetailsViewModel : InstallStateViewModel, IDispos
     private void BuildLinks(ProjectDetail project)
     {
         Links.Clear();
-        Links.Add(new ExternalLinkViewModel(Localizer.Get("Store_OpenOnModrinth"), ModrinthUrl, Symbol.Open));
-        Add(project.SourceUrl, "Store_Source", Symbol.Code);
-        Add(project.IssuesUrl, "Store_Issues", Symbol.Bug);
-        Add(project.WikiUrl, "Store_Wiki", Symbol.BookOpen);
-        Add(project.DiscordUrl, "Store_Discord", Symbol.Chat);
+        Links.Add(new ExternalLinkViewModel(Localizer.Get("Store_OpenOnModrinth"), ModrinthUrl, FluentIcons.Common.Icon.Open));
+        Add(project.SourceUrl, "Store_Source", FluentIcons.Common.Icon.Code);
+        Add(project.IssuesUrl, "Store_Issues", FluentIcons.Common.Icon.Bug);
+        Add(project.WikiUrl, "Store_Wiki", FluentIcons.Common.Icon.BookOpen);
+        Add(project.DiscordUrl, "Store_Discord", FluentIcons.Common.Icon.Chat);
         if (HasLicense && BrowserLauncher.IsWebUrl(_licenseUrl))
-            Links.Add(new ExternalLinkViewModel(LicenseText, _licenseUrl!, Symbol.Document));
+            Links.Add(new ExternalLinkViewModel(LicenseText, _licenseUrl!, FluentIcons.Common.Icon.Document));
         foreach (var donation in project.DonationUrls)
-            Add(donation.Url, "Store_Donate", Symbol.Heart, donation.Platform);
+            Add(donation.Url, "Store_Donate", FluentIcons.Common.Icon.Heart, donation.Platform);
 
         OnPropertyChanged(nameof(HasLinks));
 
-        void Add(string? url, string key, Symbol icon, string? suffix = null)
+        void Add(string? url, string key, Icon icon, string? suffix = null)
         {
             if (!BrowserLauncher.IsWebUrl(url)) return;
             var label = Localizer.Get(key);
@@ -778,9 +778,9 @@ public class ExternalLinkViewModel
     public string Url { get; }
 
     /// <summary>Icon drawn next to the label, so the links are scannable at a glance.</summary>
-    public Symbol Icon { get; }
+    public Icon Icon { get; }
 
-    public ExternalLinkViewModel(string label, string url, Symbol icon)
+    public ExternalLinkViewModel(string label, string url, Icon icon)
     {
         Label = label;
         Url = url;

@@ -90,6 +90,63 @@ public class SettingsScreenTests
         Assert.True(vm.IsColorsPage);
         Assert.False(vm.IsGeneralPage);
         Assert.False(vm.IsNotificationsPage);
+        Assert.False(vm.IsNewsPage);
+    }
+
+    [Fact]
+    public void TheAnnouncementsPageIsOneOfThePages()
+    {
+        var (vm, _, _) = Make();
+
+        vm.ShowNewsCommand.Execute(null);
+
+        Assert.True(vm.IsNewsPage);
+        Assert.False(vm.IsGeneralPage);
+        Assert.False(vm.IsNotificationsPage);
+        Assert.False(vm.IsColorsPage);
+        Assert.False(vm.IsPlayersPage);
+    }
+
+    [Fact]
+    public void TheAnnouncementsAreOnByDefaultAndTheSwitchSavesStraightAway()
+    {
+        var (vm, settings, saves) = Make();
+        Assert.True(vm.ShowAnnouncements);
+
+        vm.ShowAnnouncements = false;
+
+        Assert.False(settings.ShowAnnouncements);
+        Assert.Single(saves);
+
+        vm.ShowAnnouncements = false;   // nothing moved: nothing written
+        Assert.Single(saves);
+    }
+
+    [Fact]
+    public void ThePickerOffersEveryStyleOfMarkWithAWordForEach()
+    {
+        var (vm, _, _) = Make();
+
+        Assert.Equal(Enum.GetValues<NewsBadgeStyle>().OrderBy(s => s), vm.BadgeOptions.Select(o => o.Style).OrderBy(s => s));
+        Assert.All(vm.BadgeOptions, o =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(o.Name));
+            Assert.DoesNotContain("News_", o.Name);   // a key that was not found comes back as itself
+        });
+    }
+
+    [Fact]
+    public void TheStylePickedIsSavedByThePickerItself()
+    {
+        // The view only saves the switches it sees flip; a picker has to save in its own setter.
+        var (vm, settings, saves) = Make();
+        Assert.Equal(NewsBadgeStyle.Number, vm.SelectedBadgeOption.Style);
+
+        vm.SelectedBadgeOption = vm.BadgeOptions.Single(o => o.Style == NewsBadgeStyle.Pulse);
+
+        Assert.Equal(NewsBadgeStyle.Pulse, settings.NewsBadge);
+        Assert.Equal(NewsBadgeStyle.Pulse, vm.SelectedBadgeOption.Style);
+        Assert.Single(saves);
     }
 }
 
