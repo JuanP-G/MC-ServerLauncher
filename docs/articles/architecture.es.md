@@ -543,7 +543,7 @@ mundo. No hay rutas fijas del equipo en el código.
 - **Bibliotecas del sistema** — las pocas funciones de Win32 que llama la app (`PortService`,
   `SingleInstance`, `SystemMemory`) llevan `DefaultDllImportSearchPaths(System32)`, así que una
   biblioteca colocada junto al ejecutable o en el directorio de trabajo nunca es la que se carga.
-- **`Changelog`** — las notas de "novedades" por versión que se muestran tras actualizar (ver el
+- **`Changelog`** — las notas de "novedades" por versión que lista la sección Novedades (ver el
   flujo más abajo).
 - **`UpdateService`** / **`SelfUpdater`** — `UpdateService` pregunta a GitHub si hay una release más
   nueva y elige el asset para *esta* plataforma y arquitectura (el instalador de Windows, el AppImage
@@ -863,8 +863,8 @@ pestañas.
   del servidor. Instalar pasa por `ServerModsViewModel.InstallModAsync`, como cualquier otra instalación.
 
 ### La ventana: secciones, el panel de nuevo servidor y el movimiento
-La ventana principal es un **menú lateral** de cuatro secciones —Servidores, Túneles, Ajustes, Acerca
-de— que comparten una celda de `MainWindow` y se cambian por `IsVisible` (`MainViewModel.Section`), así
+La ventana principal es un **menú lateral** de cinco secciones —Servidores, Túneles, Novedades, Ajustes,
+Acerca de— que comparten una celda de `MainWindow` y se cambian por `IsVisible` (`MainViewModel.Section`), así
 que cada una conserva su estado (la consola su scroll, un formulario a medias su texto) mientras otra
 está en pantalla.
 
@@ -899,8 +899,19 @@ está en pantalla.
   línea (el agente de la app, el Playit instalado, una clave guardada antigua) con su estado y sus
   botones. `PlayitAccountStatus` toma esas decisiones como función pura; `TunnelLaneViewModel` solo las
   viste para la vista. Hasta que Playit responde la primera vez, el titular dice que está comprobando.
+- **Novedades** (`NewsViewModel`/`NewsView`) lista la versión que espera a instalarse (con el mismo
+  *Actualizar ahora* de la banda), un lugar para los avisos y las notas de cada versión que esta
+  compilación conoce (`Changelog.All`). Cada versión se despliega sobre sus notas, que solo se buscan
+  mientras está abierta. `NewsBoard` decide, como función pura, qué se lista y qué está sin leer;
+  `NewsState` recuerda lo leído en un archivo propio, `news-state.json`, y no en los ajustes. Mientras
+  hay algo sin leer, el menú lateral lleva una marca (`Views/NewsBadge`: un número, un punto, un punto
+  que late o nada, a elegir en Ajustes). Abrir la sección lo da por leído, pero las entradas conservan su
+  propia marca hasta que acaba la visita o se pulsa *Marcar todo como leído*, para que haya algo que mirar
+  en una lista recién abierta. Con **Mostrar anuncios** apagado la sección es solo el historial y nada
+  marca el menú.
 - **Ajustes** (`SettingsViewModel`/`SettingsView`) guarda al cambiar; no hay diálogo. Sus páginas
-  son General, Notificaciones, Colores y Jugadores (el historial). Un color se edita con
+  son General, Notificaciones, Anuncios (el interruptor de las marcas y el estilo que usa el menú, con
+  una muestra en vivo), Colores y Jugadores (el historial). Un color se edita con
   `Views/ColorChooser`: una paleta elegida para leerse bien sobre las superficies oscuras
   (`Services/ColorPalette`), el espectro y la barra de tono de `Avalonia.Controls.ColorPicker` si se
   piden, y una línea que dice si el color se va a leer —contraste WCAG contra el fondo de la consola,
@@ -916,7 +927,8 @@ elemento: `Controls/SlidingIndicator` coloca un `Border` y deja que una transici
 subclases dicen dónde —`TabUnderline` bajo el título de la pestaña elegida, `SelectionMarker` al lado
 o detrás del hijo de un panel con la clase `on` (el menú lateral, las páginas de Ajustes)—.
 `Behaviors/BeaconBehavior` da a «+ Nuevo» su recordatorio periódico alternando dos clases que
-arrancan una animación de estilo corta.
+arrancan una animación de estilo corta, y el halo de la marca que late en Novedades
+(`Border.newspulse`) también está ahí.
 
 > **Los fotogramas no pueden depender del idioma.** Avalonia lee `Cue` y `KeySpline` con la cultura del
 > sistema: en un Windows en español `Cue="96.4%"` y `KeySpline="0.45,0,0.25,1"` no se entienden y la
@@ -1034,10 +1046,13 @@ luego se ejecutaría con los derechos que pide el instalador. Por eso `AppUpdate
 - **macOS** — no se repite: el script corre como el usuario y reemplaza una app que el usuario ya puede
   reemplazar, así que un archivo cambiado no gana ningún privilegio.
 
-Tras actualizar,
-`MainWindow.Loaded` llama a `ShowWhatsNewIfUpdated`, que compara la versión en ejecución con
-`AppSettings.LastVersionSeen` y muestra `WhatsNewDialog` (traducido) con las notas de `Changelog` de
-cada versión que el usuario aún no había visto.
+Tras actualizar, `MainWindow.Loaded` llama a `MainViewModel.OpenNewsIfUpdated`, que compara la versión
+en ejecución con `AppSettings.LastVersionSeen` y, si el usuario ha actualizado, abre la sección
+**Novedades** con cada versión que aún no había visto desplegada y con la etiqueta *Nueva*
+(`NewsBoard`, a partir de `Changelog.All`). No hace nada en una instalación nueva, que no tiene una
+versión anterior con la que comparar, ni con los anuncios apagados. Las notas eran antes una ventana
+(`WhatsNewDialog`); una tarjeta de la sección avisa a quien actualizó desde entonces de que se han
+movido y apunta a Ajustes (`AppSettings.NewsMoveNoticeSeen` recuerda la respuesta).
 
 ### Copias del mundo (backups)
 `WorldBackupService` zipea el mundo de un servidor en `<servidor>/backups/` a demanda y de forma

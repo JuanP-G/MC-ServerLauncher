@@ -68,6 +68,58 @@ public class ChangelogTests
     }
 
     [Fact]
+    public void AllListsTheWholeHistoryUpToTheVersionAskedForNewestFirst()
+    {
+        var all = Changelog.All(Entries()[0].Version);
+
+        Assert.Equal(Entries().Length, all.Count);
+        Assert.Equal(Entries().Select(e => e.Version), all.Select(r => r.Version));
+        Assert.Equal(Entries().Select(e => e.Key), all.Select(r => r.Key));
+    }
+
+    [Fact]
+    public void AllLeavesOutWhatCameAfterTheBuild()
+    {
+        var all = Changelog.All(new Version(1, 20, 0));
+
+        Assert.Equal(new Version(1, 20, 0), all[0].Version);
+        Assert.All(all, r => Assert.True(r.Version <= new Version(1, 20, 0)));
+        Assert.Equal("1.20.0", all[0].Label);
+    }
+
+    [Fact]
+    public void AllIsEmptyForABuildOlderThanAnyEntry() =>
+        Assert.Empty(Changelog.All(new Version(0, 1, 0)));
+
+    [Fact]
+    public void AReleaseLooksUpItsNotesWhenAskedAndOnlyThen()
+    {
+        var release = Changelog.All(Entries()[0].Version)[0];
+
+        Assert.False(string.IsNullOrWhiteSpace(release.Notes));
+        Assert.NotEqual(release.Key, release.Notes);
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("", null)]
+    [InlineData("not a version", null)]
+    [InlineData("1.21.6", "1.21.6.0")]
+    [InlineData("1.10.3.4", "1.10.3.4")]
+    [InlineData("1.2", "1.2.0.0")]
+    public void AStoredVersionIsReadAsTheTableSpellsIt(string? stored, string? expected) =>
+        Assert.Equal(expected is null ? null : Version.Parse(expected), Changelog.ParseSeen(stored));
+
+    [Fact]
+    public void TheRunningVersionIsTheOneBeingBuilt()
+    {
+        var built = typeof(Changelog).Assembly.GetName().Version!;
+
+        Assert.Equal(new Version(built.Major, built.Minor, Math.Max(0, built.Build), Math.Max(0, built.Revision)),
+            Changelog.Running());
+    }
+
+    [Fact]
     public void AFreshInstallSeesOnlyTheNewest()
     {
         var newest = Entries()[0].Version;

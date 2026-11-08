@@ -39,9 +39,10 @@ public partial class MainWindow : Window
             // polled, opened a socket or called GitHub before this point.
             _viewModel.Activate();
 
-            // Warn about a corrupt servers.json first (rare), then the what's-new dialog.
+            // Warn about a corrupt servers.json first (rare), then open Novedades if the app was
+            // just updated.
             await _viewModel.WarnIfServersFileWasCorruptAsync(this);
-            _viewModel.ShowWhatsNewIfUpdated(this);
+            _viewModel.OpenNewsIfUpdated();
         };
 
         // When switching servers, go back to the Console tab. Otherwise the previously selected tab

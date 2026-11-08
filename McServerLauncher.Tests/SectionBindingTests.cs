@@ -77,6 +77,42 @@ public class SectionBindingTests
         AssertAllExist(typeof(MainViewModel), Bound(rail));
         // The class that shows which section is on is bound too, and is not a plain {Binding Name}.
         Assert.Matches(@"Classes\.on=""\{Binding IsTunnelsSection\}""", rail);
+        Assert.Matches(@"Classes\.on=""\{Binding IsNewsSection\}""", rail);
+        Assert.Contains("Command=\"{Binding ShowNewsCommand}\"", rail);
+        // Five buttons, and each in its own row of the rail: two in one row would draw on top of each other.
+        var rows = System.Text.RegularExpressions.Regex.Matches(rail, @"<Button Grid\.Row=""(\d)"" Classes=""rail""")
+            .Select(m => m.Groups[1].Value).ToList();
+        Assert.Equal(new[] { "0", "1", "2", "4", "5" }, rows);
+    }
+
+    [Fact]
+    public void NewsViewBindsToTheNewsViewModelOrItsRows()
+    {
+        var xaml = View("NewsView.axaml");
+
+        // The version rows bind to the row; the rest of the screen to the screen itself.
+        var start = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Versions}\">", StringComparison.Ordinal);
+        var end = xaml.IndexOf("</ItemsControl>", start, StringComparison.Ordinal);
+        Assert.True(start > 0 && end > start, "ya no está la lista de versiones de la pantalla de novedades");
+
+        var rows = xaml[start..end];
+        var screen = xaml.Replace(rows, "");
+
+        AssertAllExist(typeof(NewsViewModel), Bound(screen));
+        AssertAllExist(typeof(NewsVersionRowViewModel), Bound(rows.Replace("{Binding Versions}", "")));
+    }
+
+    [Fact]
+    public void TheRailMarkBindsToNamesThatExistOnTheNewsViewModel()
+    {
+        // {Binding News.X} has a dot, which the plain-name check above does not see.
+        var xaml = View("MainWindow.axaml");
+        var names = System.Text.RegularExpressions.Regex.Matches(xaml, @"\{Binding News\.(\w+)\}")
+            .Select(m => m.Groups[1].Value).Distinct().ToList();
+
+        AssertAllExist(typeof(NewsViewModel), names);
+        Assert.Contains("BadgeStyle", names);
+        Assert.Contains("HasUnread", names);
     }
 
     [Fact]
@@ -93,8 +129,10 @@ public class SectionBindingTests
         var xaml = View("MainWindow.axaml");
 
         Assert.Contains("<views:TunnelsView DataContext=\"{Binding Tunnels}\"", xaml);
+        Assert.Contains("<views:NewsView DataContext=\"{Binding News}\"", xaml);
         Assert.Contains("<views:AboutView", xaml);
         Assert.Contains("IsVisible=\"{Binding IsTunnelsSection}\"", xaml);
+        Assert.Contains("IsVisible=\"{Binding IsNewsSection}\"", xaml);
         Assert.Contains("IsVisible=\"{Binding IsAboutSection}\"", xaml);
     }
 

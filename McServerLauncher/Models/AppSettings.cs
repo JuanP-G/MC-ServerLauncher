@@ -28,6 +28,24 @@ public class AppSettings
     /// </summary>
     public string? LastVersionSeen { get; set; }
 
+    // --- Novedades: the section with the release notes and, later, the notices ---
+
+    /// <summary>
+    /// Novedades marks the rail when something is unread and lets important notices speak up. Off,
+    /// the section only lists versions: no mark, no strip, no notification, and nothing is asked of
+    /// the web. On by default.
+    /// </summary>
+    public bool ShowAnnouncements { get; set; } = true;
+
+    /// <summary>How the rail marks an unread entry in Novedades.</summary>
+    public NewsBadgeStyle NewsBadge { get; set; } = NewsBadgeStyle.Number;
+
+    /// <summary>
+    /// The card saying that the release notes moved from a window into Novedades has been answered.
+    /// Only people who updated from an older version ever see it; a new install starts answered.
+    /// </summary>
+    public bool NewsMoveNoticeSeen { get; set; }
+
     /// <summary>
     /// Global desktop-notification preferences: the master switch and which kinds are enabled.
     /// These apply to every server unless the server has its own override (see

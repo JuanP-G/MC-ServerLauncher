@@ -412,8 +412,28 @@
   <data name="Msg_UpdateCannotReplaceFmt" xml:space="preserve"><value>Couldn't replace {0} ({1}). Your current version is untouched and still works; the downloads page will open so you can update by hand.</value></data>
   <data name="Update_Downloading" xml:space="preserve"><value>Downloading update...</value></data>
   <data name="Whatsnew_Title" xml:space="preserve"><value>What's new</value></data>
-  <data name="Whatsnew_HeaderFmt" xml:space="preserve"><value>What's new in version {0}</value></data>
   <data name="Whatsnew_Ok" xml:space="preserve"><value>Got it</value></data>
+  <data name="News_Subtitle" xml:space="preserve"><value>Release notes for every version, and important notices.</value></data>
+  <data name="News_MarkAllRead" xml:space="preserve"><value>Mark all as read</value></data>
+  <data name="News_NoticesTitle" xml:space="preserve"><value>Notices</value></data>
+  <data name="News_NoNotices" xml:space="preserve"><value>There are no notices right now.</value></data>
+  <data name="News_NoticesOff" xml:space="preserve"><value>Notices are turned off: only versions are listed here.</value></data>
+  <data name="News_VersionsTitle" xml:space="preserve"><value>Versions</value></data>
+  <data name="News_VersionFmt" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="News_TagInstalled" xml:space="preserve"><value>Installed</value></data>
+  <data name="News_TagNew" xml:space="preserve"><value>New</value></data>
+  <data name="News_MoveTitle" xml:space="preserve"><value>What's new has moved</value></data>
+  <data name="News_MoveBody" xml:space="preserve"><value>The notes for each version are now here instead of in a window. You can choose which notices you get and how they look in Settings, under Announcements.</value></data>
+  <data name="News_MoveGoSettings" xml:space="preserve"><value>Go to Settings</value></data>
+  <data name="Set_News" xml:space="preserve"><value>Announcements</value></data>
+  <data name="News_ShowTitle" xml:space="preserve"><value>Show announcements</value></data>
+  <data name="News_ShowDesc" xml:space="preserve"><value>Marks the side bar when something in What's new is unread. Turned off, What's new only lists versions, with no marks.</value></data>
+  <data name="News_BadgeTitle" xml:space="preserve"><value>How the side bar marks something new</value></data>
+  <data name="News_BadgeDesc" xml:space="preserve"><value>What appears over What's new when something is unread.</value></data>
+  <data name="News_BadgeNumber" xml:space="preserve"><value>Number</value></data>
+  <data name="News_BadgeDot" xml:space="preserve"><value>Dot</value></data>
+  <data name="News_BadgePulse" xml:space="preserve"><value>Pulsing dot</value></data>
+  <data name="News_BadgeNone" xml:space="preserve"><value>None</value></data>
   <data name="Whatsnew_1_1_0" xml:space="preserve"><value>• MC Server Launcher now runs on Linux too (not just Windows), thanks to a new cross-platform interface.&#10;• On Linux, download it as an AppImage from the releases; on Windows everything stays the same (installer and auto-update).&#10;• All 5 languages, the console, the players view and the visual configuration are kept.</value></data>
   <data name="Whatsnew_1_2_0" xml:space="preserve"><value>• You can now create Forge and Paper servers, on top of Vanilla and Fabric.&#10;• Built-in mods &amp; plugins browser (Modrinth), filtered by your server's type and version, with sorting and one-click install.&#10;• Enable/disable or delete what's installed, and convert an existing server to another type while keeping the world.&#10;• Each server now shows a type badge.</value></data>
   <data name="Whatsnew_1_2_1" xml:space="preserve"><value>• More security: the Playit API key is now stored encrypted (previously plain text), on every OS. Migration is automatic.&#10;• Refreshed high-resolution app icon.</value></data>
