@@ -921,6 +921,16 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Hydraulic_Unsupported" xml:space="preserve"><value>Só no Fabric. O Hydraulic deixou de publicar para NeoForge em fevereiro de 2026 e o módulo continua fora da compilação; se queres mods e Bedrock ao mesmo tempo, o Fabric é hoje o único carregador com suporte.</value></data>
   <data name="Msg_GeyserConfigRepairedFmt" xml:space="preserve"><value>A configuração do Geyser foi corrigida: a autenticação estava mal e agora é “{0}”. Reinicia o servidor se já estava a correr.</value></data>
   <data name="Msg_GeyserTransportSetFmt" xml:space="preserve"><value>A configuração do Geyser foi corrigida: as ligações do Bedrock passam a usar “{0}” para que as versões atuais consigam entrar. Reinicia o servidor se já estava a correr.</value></data>
+  <data name="Firewall_Title" xml:space="preserve"><value>Firewall do Windows</value></data>
+  <data name="Firewall_StatusClosedFmt" xml:space="preserve"><value>A Firewall do Windows não deixa passar a porta {0} do Bedrock.</value></data>
+  <data name="Firewall_StatusOpenFmt" xml:space="preserve"><value>A porta {0} do Bedrock está permitida por TCP e UDP.</value></data>
+  <data name="Firewall_StatusElsewhereFmt" xml:space="preserve"><value>Outra regra da Firewall do Windows já permite a porta {0} do Bedrock.</value></data>
+  <data name="Firewall_HintFmt" xml:space="preserve"><value>Quem entra por LAN ou por uma VPN (Radmin, Hamachi) precisa que o Windows deixe passar a porta {0} por TCP e UDP. Este botão cria a regra em todas as redes; o Windows vai pedir-te confirmação de administrador.</value></data>
+  <data name="Firewall_Allow" xml:space="preserve"><value>Permitir na Firewall</value></data>
+  <data name="Firewall_Remove" xml:space="preserve"><value>Retirar a permissão</value></data>
+  <data name="Firewall_Working" xml:space="preserve"><value>À espera do Windows…</value></data>
+  <data name="Firewall_Cancelled" xml:space="preserve"><value>Cancelaste a confirmação de administrador: não foi alterado nada.</value></data>
+  <data name="Firewall_Failed" xml:space="preserve"><value>O Windows não aplicou a alteração. Confirma que a Firewall está ativa e tenta de novo, ou cria a regra à mão.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>O Windows não permite o carácter “{0}” no nome de uma pasta. Experimenta “{1}”.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” é um nome reservado pelo Windows e não pode ser usado numa pasta. Escolhe outro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>O nome não pode acabar em ponto nem em espaço: o Windows corta-os e a pasta acabaria com outro nome.</value></data>

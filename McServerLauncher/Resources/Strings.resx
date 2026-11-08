@@ -967,6 +967,16 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Hydraulic_Unsupported" xml:space="preserve"><value>Solo en Fabric. Hydraulic dejó de publicarse para NeoForge en febrero de 2026 y su módulo sigue fuera de la compilación; si quieres mods y Bedrock a la vez, Fabric es hoy el único cargador con soporte.</value></data>
   <data name="Msg_GeyserConfigRepairedFmt" xml:space="preserve"><value>Se ha corregido la configuración de Geyser: la autenticación estaba mal puesta y ahora es «{0}». Reinicia el servidor si ya estaba arrancado.</value></data>
   <data name="Msg_GeyserTransportSetFmt" xml:space="preserve"><value>Se ha corregido la configuración de Geyser: las conexiones de Bedrock ahora usan «{0}» para que entren las versiones actuales. Reinicia el servidor si ya estaba arrancado.</value></data>
+  <data name="Firewall_Title" xml:space="preserve"><value>Firewall de Windows</value></data>
+  <data name="Firewall_StatusClosedFmt" xml:space="preserve"><value>El Firewall de Windows no deja pasar el puerto {0} de Bedrock.</value></data>
+  <data name="Firewall_StatusOpenFmt" xml:space="preserve"><value>El puerto {0} de Bedrock está permitido por TCP y UDP.</value></data>
+  <data name="Firewall_StatusElsewhereFmt" xml:space="preserve"><value>Otra regla del Firewall de Windows ya permite el puerto {0} de Bedrock.</value></data>
+  <data name="Firewall_HintFmt" xml:space="preserve"><value>Quien entra por LAN o por una VPN (Radmin, Hamachi) necesita que Windows deje pasar el puerto {0} por TCP y UDP. Este botón crea la regla en todas las redes; Windows te pedirá confirmación de administrador.</value></data>
+  <data name="Firewall_Allow" xml:space="preserve"><value>Permitir en el Firewall</value></data>
+  <data name="Firewall_Remove" xml:space="preserve"><value>Quitar el permiso</value></data>
+  <data name="Firewall_Working" xml:space="preserve"><value>Esperando a Windows…</value></data>
+  <data name="Firewall_Cancelled" xml:space="preserve"><value>Has cancelado la confirmación de administrador: no se ha cambiado nada.</value></data>
+  <data name="Firewall_Failed" xml:space="preserve"><value>Windows no ha aplicado el cambio. Comprueba que el Firewall esté activo y vuelve a intentarlo, o crea la regla a mano.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows no permite el carácter «{0}» en el nombre de una carpeta. Prueba con «{1}».</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>«{0}» es un nombre reservado por Windows y no se puede usar para una carpeta. Elige otro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>El nombre no puede acabar en punto ni en espacio: Windows los recorta y la carpeta acabaría llamándose de otra forma.</value></data>

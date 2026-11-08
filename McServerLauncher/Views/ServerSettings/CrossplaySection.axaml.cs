@@ -55,6 +55,78 @@ public partial class CrossplaySection : UserControl, IServerSettingsSection
         HydraulicCheck.IsEnabled = modContent;
         HydraulicHint.IsVisible = modContent;
         HydraulicWhyNot.IsVisible = !modContent;
+
+        _ = RefreshFirewallAsync();
+    }
+
+    // --- Windows Firewall ---
+
+    private readonly WindowsFirewallService _firewall = new();
+    private FirewallState _firewallState = FirewallState.Unavailable;
+    private bool _firewallBusy;
+
+    /// <summary>The port the card is about: the saved one, and none when crossplay is not saved as on.</summary>
+    private int? FirewallPort => CrossplayService.EffectiveBedrockPort(_draft.Live);
+
+    /// <summary>Reads the firewall off the UI thread and shows what it says.</summary>
+    private async Task RefreshFirewallAsync()
+    {
+        var port = FirewallPort;
+        if (!WindowsFirewallService.IsSupported || port is not { } p)
+        {
+            FirewallCard.IsVisible = false;
+            return;
+        }
+
+        var state = await Task.Run(() => _firewall.GetState(p));
+        // The page may have moved on while Windows answered (another type, crossplay switched off).
+        if (FirewallPort != p) return;
+
+        _firewallState = state;
+        ShowFirewall(p);
+    }
+
+    private void ShowFirewall(int port)
+    {
+        FirewallCard.IsVisible = _firewallState != FirewallState.Unavailable;
+        if (!FirewallCard.IsVisible) return;
+
+        FirewallStatus.Text = Localizer.Format(_firewallState switch
+        {
+            FirewallState.Open => "Firewall_StatusOpenFmt",
+            FirewallState.OpenElsewhere => "Firewall_StatusElsewhereFmt",
+            _ => "Firewall_StatusClosedFmt"
+        }, port);
+        FirewallHint.Text = Localizer.Format("Firewall_HintFmt", port);
+        FirewallHint.IsVisible = _firewallState == FirewallState.Closed;
+
+        // Nothing to press when somebody else's rule already does the job: removing it is not ours.
+        FirewallButton.IsVisible = _firewallState != FirewallState.OpenElsewhere;
+        FirewallButton.IsEnabled = !_firewallBusy;
+        FirewallButton.Content = Localizer.Get(_firewallBusy ? "Firewall_Working"
+            : _firewallState == FirewallState.Open ? "Firewall_Remove" : "Firewall_Allow");
+    }
+
+    private async void Firewall_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_firewallBusy || FirewallPort is not { } port) return;
+
+        _firewallBusy = true;
+        FirewallNote.IsVisible = false;
+        ShowFirewall(port);
+
+        var outcome = _firewallState == FirewallState.Open
+            ? await _firewall.RemoveAsync(port)
+            : await _firewall.AllowAsync(port);
+
+        _firewallBusy = false;
+        if (outcome != FirewallOutcome.Done)
+        {
+            FirewallNote.Text = Localizer.Get(outcome == FirewallOutcome.Cancelled
+                ? "Firewall_Cancelled" : "Firewall_Failed");
+            FirewallNote.IsVisible = true;
+        }
+        await RefreshFirewallAsync();
     }
 
     /// <inheritdoc />

@@ -921,6 +921,16 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Hydraulic_Unsupported" xml:space="preserve"><value>Fabric only. Hydraulic stopped publishing NeoForge builds in February 2026 and its module is still out of the build; if you want mods and Bedrock together, Fabric is today the only loader with support.</value></data>
   <data name="Msg_GeyserConfigRepairedFmt" xml:space="preserve"><value>Geyser's configuration was corrected: the authentication was wrong and is now “{0}”. Restart the server if it was already running.</value></data>
   <data name="Msg_GeyserTransportSetFmt" xml:space="preserve"><value>Geyser's configuration was corrected: Bedrock connections now use “{0}” so current Bedrock versions can join. Restart the server if it was already running.</value></data>
+  <data name="Firewall_Title" xml:space="preserve"><value>Windows Firewall</value></data>
+  <data name="Firewall_StatusClosedFmt" xml:space="preserve"><value>Windows Firewall isn't letting Bedrock's port {0} through.</value></data>
+  <data name="Firewall_StatusOpenFmt" xml:space="preserve"><value>Bedrock's port {0} is allowed over TCP and UDP.</value></data>
+  <data name="Firewall_StatusElsewhereFmt" xml:space="preserve"><value>Another Windows Firewall rule already allows Bedrock's port {0}.</value></data>
+  <data name="Firewall_HintFmt" xml:space="preserve"><value>Players joining over a LAN or a VPN (Radmin, Hamachi) need Windows to let port {0} through over TCP and UDP. This button creates the rule on every network; Windows will ask you to confirm as administrator.</value></data>
+  <data name="Firewall_Allow" xml:space="preserve"><value>Allow in Firewall</value></data>
+  <data name="Firewall_Remove" xml:space="preserve"><value>Remove permission</value></data>
+  <data name="Firewall_Working" xml:space="preserve"><value>Waiting for Windows…</value></data>
+  <data name="Firewall_Cancelled" xml:space="preserve"><value>You declined the administrator prompt: nothing was changed.</value></data>
+  <data name="Firewall_Failed" xml:space="preserve"><value>Windows didn't apply the change. Check that the Firewall is on and try again, or create the rule by hand.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows does not allow the character “{0}” in a folder name. Try “{1}”.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” is a name Windows reserves and cannot be used for a folder. Pick another.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>The name cannot end in a dot or a space: Windows trims them and the folder would end up called something else.</value></data>
