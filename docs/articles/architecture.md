@@ -1036,8 +1036,9 @@ format and the publishing recipe; this is how the app is put together.
   closed) and which ones are owed a notification. **`NewsState`** remembers what was read, closed and
   announced, in `news-state.json`.
 - **`MainViewModel.News.cs`** is the glue that needs the rest of the window. `StartNews`, called from
-  `Activate` and never from the constructor, looks at the file once and then every 30 minutes with a
-  `DispatcherTimer` (and when the section is opened with a copy older than 10 minutes); with **Show
+  `Activate` and never from the constructor, looks at the file once and then every 5 minutes with a
+  `DispatcherTimer` (and, with a copy older than 2 minutes, when the section is opened or the window comes
+  back to the front through `OnWindowActivated`; the timer itself skips a look right after one); with **Show
   announcements** off there is no timer and no request. Who a notice is for is worked out **here and never
   sent**: whether the machine uses tunnels needs `PlayitConnection`, which lives in `Views/`, so it is
   computed in the view model and handed to the board as a plain value. It also owns the strip
@@ -1198,8 +1199,54 @@ server off a Bedrock tunnel it shares.
 Finally `GeyserConfigService` writes what Geyser cannot work out for itself: `auth-type` (a server
 with Floodgate left on `online` turns every Bedrock player away), the local UDP port, and
 **`broadcast-port`** — behind a tunnel the port players connect to is the tunnel's public one, and
-the launcher is the only component that knows both numbers because it created the tunnel.
-`RepairConfig` re-applies this when a reinstall resets the file.
+the launcher is the only component that knows both numbers because it created the tunnel. It also
+sets **`transport`** to `both`: Bedrock 26.60 and later connects over NetherNet, whose signalling is
+a TCP listener on the Bedrock port, and a Geyser left on RakNet alone does not accept those clients
+(issue 108's author had to edit this by hand). A value the user already chose (`nethernet` or
+`both`) is kept; only a missing, commented-out or `raknet` one is replaced. `RepairConfig`
+re-applies all this when a reinstall resets the file, and says in the console which of the two
+things it changed.
+
+No config file can open the Windows Firewall, and that is the other thing Bedrock players on a LAN or
+a VPN (Radmin, Hamachi) trip over: the "allow java.exe?" prompt Windows shows covers the network
+profiles ticked at that moment, usually only the private one, and a VPN is usually classed as public.
+The Crossplay page therefore carries a **Windows Firewall** card (Windows only, and only for a server
+whose crossplay is saved as on, since it needs the saved Bedrock port). `WindowsFirewallService`
+reads the rules through the firewall's COM interface, which needs no administrator rights, and shows
+one of three states: the port is closed, the launcher's own rules are in place, or another rule
+already covers it. A rule counts as covering the port only if it is an enabled inbound allow for that
+port over that protocol on every profile, and is not limited to a program, a service, a Store app, a
+user or machine, some remote addresses or ports, or one kind of adapter — the rules Windows keeps for
+Store apps name no program at all and made every port on a test machine read as already open until
+they were told apart.
+
+The button creates two rules (TCP and UDP, `MC Server Launcher - Bedrock <port> (TCP|UDP)`) by port,
+not by program, on every profile, and the same button removes them; nothing is removed when a server
+is deleted, so that deleting never raises an administrator prompt. Changing the firewall does need
+administrator rights, so the service runs `cmd.exe /c netsh advfirewall firewall ...` with the `runas`
+verb and Windows shows its own confirmation, which nothing inside the app can replace; the card says
+it is coming. The command line is built only from the port, an `int` checked against 1-65535, `cmd`
+is started from `System32` with that as its working directory so `netsh` is never found elsewhere, and
+the outcome is judged by reading the rules again rather than by the exit code of a chain of commands.
+
+The card only offers the button; the launcher also says so when it matters. A one-line **notice** on the
+server's page (`ServerViewModel.Firewall.cs`) appears only when the firewall would really turn Bedrock
+players away. The launcher cannot see a dropped packet, so `FirewallDiagnosis` deduces: for every network
+the computer is connected to (the Network List Manager's connected networks, mapped to their profile), if
+that profile has the firewall on and drops unsolicited incoming traffic, the program that owns the port
+needs a rule that lets the port in on that profile, over TCP and UDP for Java and over TCP alone for the
+launcher's own sleeping-server listener. A port rule or a rule for that program's real path counts (a bare
+`java` is resolved through the `PATH`, because comparing file names alone matched whichever `java.exe` on
+the machine had a rule); rules for Store apps and rules limited to users, machines, addresses or adapters
+do not. A **block** rule is reported apart, because it beats any allow rule and a new permission would
+change nothing: then the button opens Windows' firewall console instead of creating anything, and no rule
+is deleted from the app. The check runs when the page opens, after a start once Geyser has had time to
+listen (a server that runs without listening on the port yet is never blamed on the firewall), and when
+crossplay or the port change. It names the networks, can fix the missing-rule case with the same
+administrator prompt as the card, and can be dismissed with "Not needed": the dismissal is stored as a
+signature of the problem (`ServerConfig.FirewallNoticeDismissed`), so the notice returns for a different
+problem and only stays away for that one. A server reached through a tunnel alone is not affected by the
+firewall at all and the launcher cannot tell, which is what the dismissal is for.
 
 How well any of it works is a property of the server type, not a promise: `ServerTypeCatalog` carries
 a three-valued `CrossplayLevel` and the new-server panel and the Crossplay settings page show the caveat before the

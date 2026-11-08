@@ -25,11 +25,24 @@ namespace McServerLauncher.ViewModels;
 /// </remarks>
 public partial class MainViewModel
 {
-    /// <summary>How often the file is looked at while the app stays open: twice an hour, for something that changes rarely.</summary>
-    private static readonly TimeSpan NewsCheckInterval = TimeSpan.FromMinutes(30);
+    /// <summary>
+    /// How often the file is looked at while the app stays open. A look that finds nothing new is a
+    /// 304 with no body (the file's ETag), a few hundred bytes, so five minutes is cheap and an urgent
+    /// notice reaches an open app within that time.
+    /// </summary>
+    private static readonly TimeSpan NewsCheckInterval = TimeSpan.FromMinutes(5);
 
-    /// <summary>Opening the section looks again only if the copy was last confirmed longer ago than this.</summary>
-    private static readonly TimeSpan NewsOpenAge = TimeSpan.FromMinutes(10);
+    /// <summary>
+    /// The timer skips its look when the copy was confirmed less than this ago, which is what happens
+    /// when the window was brought back a minute before: two looks in a row would tell nothing new.
+    /// </summary>
+    internal static readonly TimeSpan NewsTickAge = TimeSpan.FromMinutes(4);
+
+    /// <summary>
+    /// Opening the section, or coming back to the window, looks again only if the copy was last
+    /// confirmed longer ago than this: switching between windows must not make a request each time.
+    /// </summary>
+    internal static readonly TimeSpan NewsFreshAge = TimeSpan.FromMinutes(2);
 
     /// <summary>The longest a toast's message runs; the rest is in Novedades.</summary>
     private const int NewsToastMaxChars = 160;
@@ -113,7 +126,17 @@ public partial class MainViewModel
     {
         if (!_newsStarted || !_appSettings.ShowAnnouncements) return;
         ApplyNewsFeed();
-        _ = CheckNewsAsync(NewsOpenAge);
+        _ = CheckNewsAsync(NewsFreshAge);
+    }
+
+    /// <summary>
+    /// The window came back to the front (from another app, the taskbar or the tray): the file is looked
+    /// at if the copy is not recent, so a notice that came while the user was away shows at once.
+    /// </summary>
+    internal void OnWindowActivated()
+    {
+        if (!_newsStarted || !_appSettings.ShowAnnouncements) return;
+        _ = CheckNewsAsync(NewsFreshAge);
     }
 
     /// <summary>Hands the screen what the copy held says, and how the last look ended.</summary>

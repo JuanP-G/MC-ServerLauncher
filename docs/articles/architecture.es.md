@@ -1080,8 +1080,9 @@ tiene el formato y la receta para publicar; esto es cómo está montado en la ap
   no se cerró) y a cuáles se debe una notificación. **`NewsState`** recuerda lo leído, lo cerrado y lo
   anunciado en `news-state.json`.
 - **`MainViewModel.News.cs`** es el pegamento que necesita el resto de la ventana. `StartNews`, que llama
-  `Activate` y nunca el constructor, mira el archivo una vez y luego cada 30 minutos con un
-  `DispatcherTimer` (y al abrir la sección si la copia tiene más de 10 minutos); con **Mostrar anuncios**
+  `Activate` y nunca el constructor, mira el archivo una vez y luego cada 5 minutos con un
+  `DispatcherTimer` (y, con una copia de más de 2 minutos, al abrir la sección o al volver la ventana al
+  frente mediante `OnWindowActivated`; el propio temporizador se salta una mirada justo después de otra); con **Mostrar anuncios**
   apagado no hay temporizador ni petición. Para quién es un aviso se calcula **aquí y no se envía nunca**:
   saber si el equipo usa túneles necesita `PlayitConnection`, que vive en `Views/`, así que se calcula en
   el view model y se le pasa al tablón como un valor simple. También es dueño de la banda
@@ -1251,7 +1252,56 @@ Por último, `GeyserConfigService` escribe lo que Geyser no puede deducir solo: 
 servidor con Floodgate que se queda en `online` rechaza a todos los jugadores de Bedrock), el puerto
 UDP local y **`broadcast-port`** — detrás de un túnel, el puerto al que se conecta la gente es el
 público del túnel, y el launcher es el único componente que conoce los dos números porque es quien
-creó el túnel. `RepairConfig` vuelve a aplicarlo cuando una reinstalación resetea el archivo.
+creó el túnel. También pone **`transport`** en `both`: Bedrock 26.60 y posteriores se conecta por
+NetherNet, cuya señalización es un listener TCP en el puerto de Bedrock, y un Geyser que se queda
+solo en RakNet no acepta a esos clientes (el autor del issue 108 tuvo que cambiarlo a mano). Un valor
+que el usuario ya eligió (`nethernet` o `both`) se respeta; solo se sustituye uno que falte, esté
+comentado o sea `raknet`. `RepairConfig` vuelve a aplicarlo todo cuando una reinstalación resetea el
+archivo, y dice en la consola cuál de las dos cosas cambió.
+
+Ningún archivo de configuración puede abrir el Firewall de Windows, y es lo otro con lo que tropiezan
+los jugadores de Bedrock en LAN o VPN (Radmin, Hamachi): el aviso «¿permitir java.exe?» de Windows
+cubre los perfiles de red marcados en ese momento, normalmente solo el privado, y una VPN suele ser
+pública. Por eso la página Crossplay lleva una tarjeta **Firewall de Windows** (solo en Windows, y solo
+para un servidor con crossplay guardado como activado, porque necesita el puerto de Bedrock
+guardado). `WindowsFirewallService` lee las reglas por la interfaz COM del firewall, que no pide
+permisos de administrador, y enseña uno de tres estados: el puerto está cerrado, están las reglas del
+propio launcher, u otra regla ya lo cubre. Una regla cuenta como cobertura solo si es una entrada
+permitida y activa para ese puerto y ese protocolo en todos los perfiles, y no está limitada a un
+programa, un servicio, una app de la Tienda, un usuario o equipo, unas direcciones o puertos remotos
+ni un tipo de adaptador: las reglas que Windows guarda para las apps de la Tienda no nombran ningún
+programa y en una máquina de pruebas hacían que cualquier puerto pareciera ya abierto hasta que se
+distinguieron.
+
+El botón crea dos reglas (TCP y UDP, `MC Server Launcher - Bedrock <puerto> (TCP|UDP)`) por puerto, no
+por programa, en todos los perfiles, y el mismo botón las quita; al borrar un servidor no se quita
+nada, para que borrar nunca provoque un aviso de administrador. Cambiar el firewall sí exige
+permisos de administrador, así que el servicio ejecuta `cmd.exe /c netsh advfirewall firewall ...`
+con el verbo `runas` y Windows muestra su propia confirmación, que nada dentro de la app puede
+sustituir; la tarjeta avisa de que va a salir. La línea de comandos se construye solo con el puerto,
+un `int` comprobado entre 1 y 65535; `cmd` se arranca desde `System32` con esa carpeta como directorio
+de trabajo para que `netsh` no se encuentre en otro sitio, y el resultado se juzga volviendo a leer
+las reglas, no por el código de salida de una cadena de comandos.
+
+La tarjeta solo ofrece el botón; el launcher también avisa cuando importa. Una **franja** de una línea en
+la página del servidor (`ServerViewModel.Firewall.cs`) aparece solo cuando el firewall de verdad dejaría
+fuera a los jugadores de Bedrock. El launcher no puede ver un paquete descartado, así que
+`FirewallDiagnosis` lo deduce: por cada red a la que está conectado el equipo (las redes conectadas del
+Network List Manager, traducidas a su perfil), si ese perfil tiene el firewall activo y descarta el tráfico
+entrante no pedido, el programa que ocupa el puerto necesita una regla que lo deje pasar en ese perfil, por
+TCP y UDP en el caso de Java y solo por TCP en el del oyente del servidor dormido del propio launcher.
+Cuenta una regla de puerto o una regla para la ruta real de ese programa (un `java` suelto se resuelve por
+el `PATH`, porque comparar solo nombres de archivo daba por buena la regla de cualquier `java.exe` de la
+máquina); no cuentan las reglas de apps de la Tienda ni las limitadas a usuarios, equipos, direcciones o
+adaptadores. Una regla de **bloqueo** se señala aparte, porque gana a cualquier regla de permiso y un
+permiso nuevo no cambiaría nada: entonces el botón abre la consola del firewall de Windows en vez de crear
+nada, y desde la app no se borra ninguna regla. La comprobación se hace al abrir la página, tras un
+arranque cuando Geyser ha tenido tiempo de escuchar (un servidor que corre sin escuchar aún en el puerto
+nunca se achaca al firewall) y cuando cambian crossplay o el puerto. Nombra las redes, puede arreglar el
+caso de regla que falta con la misma confirmación de administrador que la tarjeta, y se descarta con «No me
+hace falta»: el descarte se guarda como firma del problema (`ServerConfig.FirewallNoticeDismissed`), así
+que el aviso vuelve ante un problema distinto y solo se calla para ese. Un servidor al que se llega solo por
+túnel no depende del firewall y el launcher no puede saberlo; para eso está el descarte.
 
 Lo bien que funcione todo esto es una propiedad del tipo de servidor, no una promesa:
 `ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores, y el panel de nuevo servidor y la

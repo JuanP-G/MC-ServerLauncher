@@ -830,7 +830,8 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Msg_NeoForgeInstallNoOutput" xml:space="preserve"><value>L’installateur NeoForge a terminé mais n’a pas laissé le fichier de lancement attendu.</value></data>
   <data name="HowToPlay_NeoForgeFmt" xml:space="preserve"><value>Ce serveur utilise NeoForge (Minecraft {0}). Pour jouer avec des mods :&#10;1. Télécharge l’installateur NeoForge pour {0} sur https://neoforged.net et installe le client (« Install client »).&#10;2. Ouvre le lanceur Minecraft et choisis le profil « neoforge ».&#10;3. Copie les mods (.jar) dans %appdata%\.minecraft\mods.&#10;4. La version de NeoForge du client doit correspondre à celle du serveur.</value></data>
   <data name="Crossplay_Check" xml:space="preserve"><value>Autoriser aussi les joueurs Bedrock (mobile, console, Windows 10/11)</value></data>
-  <data name="Crossplay_Hint" xml:space="preserve"><value>Installe Geyser et Floodgate, et crée un second tunnel. Les joueurs qui arrivent depuis Bedrock n’ont pas besoin d’acheter Minecraft Java : leur identité n’est pas vérifiée par Mojang et leur nom s’affiche avec un point devant. La liste blanche les accepte quand même.</value></data>
+  <data name="Crossplay_Hint" xml:space="preserve"><value>Installe Geyser et Floodgate, et crée un second tunnel. Les joueurs qui arrivent depuis Bedrock n’ont pas besoin d’acheter Minecraft Java : leur identité n’est pas vérifiée par Mojang et leur nom s’affiche avec un point devant. La liste blanche les accepte quand même. Si tu joues en LAN ou via un VPN (Radmin, Hamachi), autorise le port Bedrock en TCP et en UDP dans le pare-feu Windows.</value></data>
+  <data name="Crossplay_HintSettings" xml:space="preserve"><value>Installe Geyser et Floodgate, et crée un second tunnel. Les joueurs qui arrivent depuis Bedrock n’ont pas besoin d’acheter Minecraft Java : leur identité n’est pas vérifiée par Mojang et leur nom s’affiche avec un point devant. La liste blanche les accepte quand même.</value></data>
   <data name="Crossplay_Unsupported" xml:space="preserve"><value>Geyser ne publie rien pour ce type de serveur. Cela fonctionne sur Paper, Fabric et NeoForge.</value></data>
   <data name="Crossplay_UnsupportedVanilla" xml:space="preserve"><value>Vanilla n’accepte ni mods ni plugins, il ne peut donc pas traduire Bedrock. Passe le type à Paper (le monde est conservé) et tu pourras l’activer.</value></data>
   <data name="Crossplay_BedrockAddress" xml:space="preserve"><value>Adresse pour Bedrock</value></data>
@@ -920,6 +921,22 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Hydraulic_Hint" xml:space="preserve"><value>Installe Hydraulic (de GeyserMC également) et Fabric API. Sans cela, ceux qui arrivent depuis Bedrock atteignent le serveur mais ne voient rien de ce que les mods ajoutent. Ses auteurs le qualifient de développement très précoce.</value></data>
   <data name="Hydraulic_Unsupported" xml:space="preserve"><value>Fabric uniquement. Hydraulic a cessé de publier pour NeoForge en février 2026 et son module reste hors compilation ; pour avoir mods et Bedrock ensemble, Fabric est aujourd’hui le seul chargeur pris en charge.</value></data>
   <data name="Msg_GeyserConfigRepairedFmt" xml:space="preserve"><value>La configuration de Geyser a été corrigée : l’authentification était mauvaise et vaut désormais « {0} ». Redémarre le serveur s’il tournait déjà.</value></data>
+  <data name="Msg_GeyserTransportSetFmt" xml:space="preserve"><value>La configuration de Geyser a été corrigée : les connexions Bedrock utilisent désormais « {0} » pour que les versions actuelles puissent se connecter. Redémarre le serveur s’il tournait déjà.</value></data>
+  <data name="Firewall_Title" xml:space="preserve"><value>Pare-feu Windows</value></data>
+  <data name="Firewall_StatusClosedFmt" xml:space="preserve"><value>Le pare-feu Windows ne laisse pas passer le port Bedrock {0}.</value></data>
+  <data name="Firewall_StatusOpenFmt" xml:space="preserve"><value>Le port Bedrock {0} est autorisé en TCP et en UDP.</value></data>
+  <data name="Firewall_StatusElsewhereFmt" xml:space="preserve"><value>Une autre règle du pare-feu Windows autorise déjà le port Bedrock {0}.</value></data>
+  <data name="Firewall_Hint" xml:space="preserve"><value>Nécessaire pour qui se connecte en LAN ou via un VPN (Radmin, Hamachi). Créée sur tous les réseaux ; Windows demandera une confirmation d’administrateur.</value></data>
+  <data name="Firewall_Allow" xml:space="preserve"><value>Autoriser dans le pare-feu</value></data>
+  <data name="Firewall_Remove" xml:space="preserve"><value>Retirer l’autorisation</value></data>
+  <data name="Firewall_Working" xml:space="preserve"><value>En attente de Windows…</value></data>
+  <data name="Firewall_Cancelled" xml:space="preserve"><value>Tu as refusé la confirmation d’administrateur : rien n’a été modifié.</value></data>
+  <data name="Firewall_Failed" xml:space="preserve"><value>Windows n’a pas appliqué la modification. Vérifie que le pare-feu est actif et réessaie, ou crée la règle à la main.</value></data>
+  <data name="Firewall_NoticeFmt" xml:space="preserve"><value>Pare-feu : rien ne laisse passer le port Bedrock {1} sur « {0} ».</value></data>
+  <data name="Firewall_NoticeBlockedFmt" xml:space="preserve"><value>Pare-feu : la règle ({2}) bloque le port {1} sur « {0} ».</value></data>
+  <data name="Firewall_OpenConsole" xml:space="preserve"><value>Ouvrir le pare-feu</value></data>
+  <data name="Firewall_NoticeDismiss" xml:space="preserve"><value>Pas nécessaire</value></data>
+  <data name="Firewall_NoticeDismissTip" xml:space="preserve"><value>Si les joueurs passent uniquement par le tunnel Playit, le pare-feu ne te concerne pas. Ce cas ne sera plus signalé.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows n’autorise pas le caractère « {0} » dans un nom de dossier. Essaie « {1} ».</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>« {0} » est un nom réservé par Windows et ne peut pas servir de dossier. Choisis-en un autre.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>Le nom ne peut pas se terminer par un point ni un espace : Windows les supprime et le dossier porterait un autre nom.</value></data>

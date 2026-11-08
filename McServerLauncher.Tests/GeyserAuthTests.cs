@@ -141,6 +141,39 @@ public class GeyserAuthTests
     }
 
     [Fact]
+    public void RepairingAConfigWithoutATransportAddsItAndSaysSo()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "mcsl-transport-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var config = new McServerLauncher.Models.ServerConfig
+            {
+                FolderPath = folder,
+                Type = McServerLauncher.Models.ServerType.Paper,
+            };
+            var path = GeyserConfigService.ConfigPath(folder, config.Type)!;
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            // Authentication already right for a server without Floodgate, transport missing.
+            File.WriteAllText(path, "bedrock:\n  port: 19132\njava:\n  auth-type: online\n");
+
+            var message = new CrossplayService().RepairConfig(config);
+
+            Assert.NotNull(message);
+            Assert.Contains("transport: " + GeyserConfigService.WantedTransport, File.ReadAllText(path));
+            // Only the transport changed, so the authentication must not be claimed as wrong.
+            Assert.Contains(GeyserConfigService.WantedTransport, message);
+            Assert.DoesNotContain("online", message);
+
+            // A second run finds nothing to do and stays quiet.
+            Assert.Null(new CrossplayService().RepairConfig(config));
+        }
+        finally
+        {
+            if (Directory.Exists(folder)) Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact]
     public void TheRepairMessageExistsInEveryLanguage()
     {
         var original = System.Globalization.CultureInfo.CurrentUICulture;
@@ -151,9 +184,12 @@ public class GeyserAuthTests
                 System.Globalization.CultureInfo.CurrentUICulture =
                     System.Globalization.CultureInfo.GetCultureInfo(lang);
 
-                var value = McServerLauncher.Localization.Localizer.Get("Msg_GeyserConfigRepairedFmt");
-                Assert.False(string.IsNullOrWhiteSpace(value) || value == "Msg_GeyserConfigRepairedFmt",
-                    $"falta el mensaje en {lang}");
+                foreach (var key in new[] { "Msg_GeyserConfigRepairedFmt", "Msg_GeyserTransportSetFmt" })
+                {
+                    var value = McServerLauncher.Localization.Localizer.Get(key);
+                    Assert.False(string.IsNullOrWhiteSpace(value) || value == key,
+                        $"falta {key} en {lang}");
+                }
             }
         }
         finally { System.Globalization.CultureInfo.CurrentUICulture = original; }
