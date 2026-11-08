@@ -67,9 +67,6 @@ body{min-height:100vh; min-height:100svh; display:flex; flex-direction:column; b
 .req{margin:20px 0 0; font-size:13px; line-height:1.5; color:#8E98AA; overflow-wrap:anywhere}
 .req code{font:13px/1.5 ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace; color:#C3CCDA}
 
-/* ---------- PIE ---------- */
-.fof-foot{background:rgba(7,11,20,.92)}
-
 /* ---------- MÓVIL ---------- */
 /* La ilustración pasa a ser una franja arriba, con el Enderman y el aldeano a la vista, que se
    funde con el fondo, y el texto va debajo, sin tapar a nadie. */
