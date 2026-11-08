@@ -369,8 +369,7 @@ enumeran los archivos de los que salen y donde puedes hacerle preguntas al códi
 las escribe una IA: pueden equivocarse y los diagramas de DeepWiki no siempre se dibujan, así que cuando
 discrepen del artículo de arquitectura, manda el artículo.
 
-> [!TIP]
-> **¿Dudas sobre cómo funciona algo?** En [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) hay un chat con
+> **Consejo: ¿dudas sobre cómo funciona algo?** En [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) hay un chat con
 > una IA que conoce todo el repositorio y te contesta citando los archivos de donde sale cada cosa. Por ejemplo:
 >
 > - «¿Cómo se restaura una copia sin perder el mundo?»
