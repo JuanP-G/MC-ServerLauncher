@@ -1283,6 +1283,26 @@ un `int` comprobado entre 1 y 65535; `cmd` se arranca desde `System32` con esa c
 de trabajo para que `netsh` no se encuentre en otro sitio, y el resultado se juzga volviendo a leer
 las reglas, no por el código de salida de una cadena de comandos.
 
+La tarjeta solo ofrece el botón; el launcher también avisa cuando importa. Una **franja** de una línea en
+la página del servidor (`ServerViewModel.Firewall.cs`) aparece solo cuando el firewall de verdad dejaría
+fuera a los jugadores de Bedrock. El launcher no puede ver un paquete descartado, así que
+`FirewallDiagnosis` lo deduce: por cada red a la que está conectado el equipo (las redes conectadas del
+Network List Manager, traducidas a su perfil), si ese perfil tiene el firewall activo y descarta el tráfico
+entrante no pedido, el programa que ocupa el puerto necesita una regla que lo deje pasar en ese perfil, por
+TCP y UDP en el caso de Java y solo por TCP en el del oyente del servidor dormido del propio launcher.
+Cuenta una regla de puerto o una regla para la ruta real de ese programa (un `java` suelto se resuelve por
+el `PATH`, porque comparar solo nombres de archivo daba por buena la regla de cualquier `java.exe` de la
+máquina); no cuentan las reglas de apps de la Tienda ni las limitadas a usuarios, equipos, direcciones o
+adaptadores. Una regla de **bloqueo** se señala aparte, porque gana a cualquier regla de permiso y un
+permiso nuevo no cambiaría nada: entonces el botón abre la consola del firewall de Windows en vez de crear
+nada, y desde la app no se borra ninguna regla. La comprobación se hace al abrir la página, tras un
+arranque cuando Geyser ha tenido tiempo de escuchar (un servidor que corre sin escuchar aún en el puerto
+nunca se achaca al firewall) y cuando cambian crossplay o el puerto. Nombra las redes, puede arreglar el
+caso de regla que falta con la misma confirmación de administrador que la tarjeta, y se descarta con «No me
+hace falta»: el descarte se guarda como firma del problema (`ServerConfig.FirewallNoticeDismissed`), así
+que el aviso vuelve ante un problema distinto y solo se calla para ese. Un servidor al que se llega solo por
+túnel no depende del firewall y el launcher no puede saberlo; para eso está el descarte.
+
 Lo bien que funcione todo esto es una propiedad del tipo de servidor, no una promesa:
 `ServerTypeCatalog` lleva un `CrossplayLevel` de tres valores, y el panel de nuevo servidor y la
 página Crossplay de la configuración enseñan la advertencia antes de marcar la casilla. En Fabric, otra casilla instala **Hydraulic**

@@ -46,6 +46,12 @@ internal interface IFirewallBackend
     IReadOnlyList<FirewallRule> ReadRules();
 
     /// <summary>
+    /// What the diagnosis needs: allow and block rules (inbound, enabled), each profile's settings and
+    /// the networks the computer is connected to. Throws when the firewall cannot be read.
+    /// </summary>
+    FirewallInputs ReadInputs();
+
+    /// <summary>
     /// Runs <c>cmd.exe</c> with <paramref name="arguments"/> as administrator and returns its exit code.
     /// Throws <see cref="OperationCanceledException"/> when the user turns the prompt down.
     /// </summary>
@@ -87,6 +93,7 @@ public sealed class WindowsFirewallService
     private sealed class NoBackend : IFirewallBackend
     {
         public IReadOnlyList<FirewallRule> ReadRules() => throw new PlatformNotSupportedException();
+        public FirewallInputs ReadInputs() => throw new PlatformNotSupportedException();
         public int RunElevated(string arguments) => throw new PlatformNotSupportedException();
     }
 
@@ -117,6 +124,51 @@ public sealed class WindowsFirewallService
         var ours = rules.Any(r => r.Name == RuleName(port, "TCP") && Covers(r, port, Tcp))
                    && rules.Any(r => r.Name == RuleName(port, "UDP") && Covers(r, port, Udp));
         return ours ? FirewallState.Open : FirewallState.OpenElsewhere;
+    }
+
+    /// <summary>
+    /// Whether Bedrock players on a connected network would be turned away by the firewall, and why.
+    /// Reads over a thousand rules: call it off the UI thread.
+    /// </summary>
+    /// <param name="port">The server's Bedrock port.</param>
+    /// <param name="owners">The programs that listen on it, which a rule for one program must match.</param>
+    /// <returns>Nothing when the firewall cannot be read: it never guesses a problem.</returns>
+    public FirewallFinding Diagnose(int port, IReadOnlyList<FirewallOwner> owners)
+    {
+        if (!IsSupported) return FirewallFinding.Nothing;
+        try { return FirewallDiagnosis.Diagnose(port, owners, _backend.ReadInputs()); }
+        catch (Exception e) when (e is not OperationCanceledException)
+        {
+            return FirewallFinding.Nothing;
+        }
+    }
+
+    /// <summary>Whether something is accepting TCP connections on <paramref name="port"/> from outside this computer.</summary>
+    /// <remarks>Geyser answers on the Bedrock port over TCP, so a server that runs and does not is not up yet.</remarks>
+    public static bool IsListening(int port)
+    {
+        try
+        {
+            return System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties()
+                .GetActiveTcpListeners()
+                .Any(e => e.Port == port && !System.Net.IPAddress.IsLoopback(e.Address));
+        }
+        catch (Exception) { return false; }
+    }
+
+    /// <summary>Opens Windows' own firewall console, where a block rule can be looked at and removed.</summary>
+    public static void OpenConsole()
+    {
+        if (!IsSupported) return;
+        try
+        {
+            using var _ = Process.Start(new ProcessStartInfo
+            {
+                FileName = Path.Combine(Environment.SystemDirectory, "wf.msc"),
+                UseShellExecute = true
+            });
+        }
+        catch (Exception) { /* nothing to do: the console is Windows' to open */ }
     }
 
     /// <summary>Creates the rules for <paramref name="port"/>, asking Windows for administrator rights.</summary>
@@ -229,9 +281,7 @@ public sealed class WindowsFirewallService
 
         public IReadOnlyList<FirewallRule> ReadRules()
         {
-            var type = Type.GetTypeFromProgID("HNetCfg.FwPolicy2")
-                       ?? throw new InvalidOperationException("The firewall's COM interface is not registered.");
-            dynamic policy = Activator.CreateInstance(type)!;
+            var policy = NewPolicy();
 
             var rules = new List<FirewallRule>();
             foreach (dynamic rule in policy.Rules)
@@ -251,6 +301,58 @@ public sealed class WindowsFirewallService
                 }
             }
             return rules;
+        }
+
+        public FirewallInputs ReadInputs()
+        {
+            var policy = NewPolicy();
+            var allow = new List<FirewallRule>();
+            var block = new List<FirewallRule>();
+            foreach (dynamic rule in policy.Rules)
+            {
+                try
+                {
+                    if (rule.Direction != 1 || !rule.Enabled) continue;
+                    var isAllow = rule.Action == 1;
+                    (isAllow ? allow : block).Add(new FirewallRule(
+                        (string)rule.Name, (int)rule.Protocol, (string?)rule.LocalPorts, (int)rule.Profiles,
+                        Inbound: true, Allow: isAllow, Enabled: true,
+                        (string?)rule.ApplicationName, (string?)rule.ServiceName, IsNarrowed(rule)));
+                }
+                catch (Exception)
+                {
+                    // One odd rule must not blind the check.
+                }
+            }
+
+            var profiles = new List<FirewallProfile>();
+            foreach (var profile in new[] { 1, 2, 4 })
+                profiles.Add(new FirewallProfile(profile,
+                    Enabled: (bool)policy.FirewallEnabled(profile),
+                    BlocksInbound: (int)policy.DefaultInboundAction(profile) == 0));   // 0 blocks, 1 allows
+
+            return new FirewallInputs(allow, block, profiles, ReadNetworks());
+        }
+
+        /// <summary>The networks the computer is connected to now, through the Network List Manager.</summary>
+        private static List<FirewallNetwork> ReadNetworks()
+        {
+            var type = Type.GetTypeFromCLSID(new Guid("DCB00C01-570F-4A9B-8D69-199FDBA5723B"))
+                       ?? throw new InvalidOperationException("The network list is not registered.");
+            dynamic manager = Activator.CreateInstance(type)!;
+
+            var networks = new List<FirewallNetwork>();
+            foreach (dynamic network in manager.GetNetworks(1))   // 1: the connected ones
+                networks.Add(new FirewallNetwork((string)network.GetName(),
+                    FirewallDiagnosis.ProfileOf((int)network.GetCategory())));
+            return networks;
+        }
+
+        private static dynamic NewPolicy()
+        {
+            var type = Type.GetTypeFromProgID("HNetCfg.FwPolicy2")
+                       ?? throw new InvalidOperationException("The firewall's COM interface is not registered.");
+            return Activator.CreateInstance(type)!;
         }
 
         /// <summary>

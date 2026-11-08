@@ -252,6 +252,13 @@ public class WindowsFirewallServiceTests
         public IReadOnlyList<FirewallRule> ReadRules() =>
             ReadFails ? throw new InvalidOperationException("no firewall") : _rules.ToList();
 
+        /// <summary>What the diagnosis reads; empty unless a test sets it.</summary>
+        public FirewallInputs? Inputs { get; init; }
+
+        public FirewallInputs ReadInputs() =>
+            ReadFails ? throw new InvalidOperationException("no firewall")
+                : Inputs ?? new FirewallInputs(_rules.ToList(), [], [], []);
+
         public int RunElevated(string arguments)
         {
             if (Declines) throw new OperationCanceledException();

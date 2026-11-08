@@ -932,6 +932,11 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Firewall_Working" xml:space="preserve"><value>À espera do Windows…</value></data>
   <data name="Firewall_Cancelled" xml:space="preserve"><value>Cancelaste a confirmação de administrador: não foi alterado nada.</value></data>
   <data name="Firewall_Failed" xml:space="preserve"><value>O Windows não aplicou a alteração. Confirma que a Firewall está ativa e tenta de novo, ou cria a regra à mão.</value></data>
+  <data name="Firewall_NoticeFmt" xml:space="preserve"><value>Firewall: nada deixa passar a porta {1} do Bedrock em «{0}».</value></data>
+  <data name="Firewall_NoticeBlockedFmt" xml:space="preserve"><value>Firewall: a regra ({2}) bloqueia a porta {1} em «{0}».</value></data>
+  <data name="Firewall_OpenConsole" xml:space="preserve"><value>Abrir a Firewall</value></data>
+  <data name="Firewall_NoticeDismiss" xml:space="preserve"><value>Não preciso</value></data>
+  <data name="Firewall_NoticeDismissTip" xml:space="preserve"><value>Se os jogadores entram só pelo túnel do Playit, a Firewall não te afeta. Este caso não voltará a ser avisado.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>O Windows não permite o carácter “{0}” no nome de uma pasta. Experimenta “{1}”.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” é um nome reservado pelo Windows e não pode ser usado numa pasta. Escolhe outro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>O nome não pode acabar em ponto nem em espaço: o Windows corta-os e a pasta acabaria com outro nome.</value></data>
