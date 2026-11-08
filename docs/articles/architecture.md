@@ -1229,6 +1229,25 @@ it is coming. The command line is built only from the port, an `int` checked aga
 is started from `System32` with that as its working directory so `netsh` is never found elsewhere, and
 the outcome is judged by reading the rules again rather than by the exit code of a chain of commands.
 
+The card only offers the button; the launcher also says so when it matters. A one-line **notice** on the
+server's page (`ServerViewModel.Firewall.cs`) appears only when the firewall would really turn Bedrock
+players away. The launcher cannot see a dropped packet, so `FirewallDiagnosis` deduces: for every network
+the computer is connected to (the Network List Manager's connected networks, mapped to their profile), if
+that profile has the firewall on and drops unsolicited incoming traffic, the program that owns the port
+needs a rule that lets the port in on that profile, over TCP and UDP for Java and over TCP alone for the
+launcher's own sleeping-server listener. A port rule or a rule for that program's real path counts (a bare
+`java` is resolved through the `PATH`, because comparing file names alone matched whichever `java.exe` on
+the machine had a rule); rules for Store apps and rules limited to users, machines, addresses or adapters
+do not. A **block** rule is reported apart, because it beats any allow rule and a new permission would
+change nothing: then the button opens Windows' firewall console instead of creating anything, and no rule
+is deleted from the app. The check runs when the page opens, after a start once Geyser has had time to
+listen (a server that runs without listening on the port yet is never blamed on the firewall), and when
+crossplay or the port change. It names the networks, can fix the missing-rule case with the same
+administrator prompt as the card, and can be dismissed with "Not needed": the dismissal is stored as a
+signature of the problem (`ServerConfig.FirewallNoticeDismissed`), so the notice returns for a different
+problem and only stays away for that one. A server reached through a tunnel alone is not affected by the
+firewall at all and the launcher cannot tell, which is what the dismissal is for.
+
 How well any of it works is a property of the server type, not a promise: `ServerTypeCatalog` carries
 a three-valued `CrossplayLevel` and the new-server panel and the Crossplay settings page show the caveat before the
 checkbox is ticked. On

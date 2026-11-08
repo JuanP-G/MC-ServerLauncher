@@ -978,6 +978,11 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Firewall_Working" xml:space="preserve"><value>Esperando a Windows…</value></data>
   <data name="Firewall_Cancelled" xml:space="preserve"><value>Has cancelado la confirmación de administrador: no se ha cambiado nada.</value></data>
   <data name="Firewall_Failed" xml:space="preserve"><value>Windows no ha aplicado el cambio. Comprueba que el Firewall esté activo y vuelve a intentarlo, o crea la regla a mano.</value></data>
+  <data name="Firewall_NoticeFmt" xml:space="preserve"><value>Firewall: nada deja pasar el puerto {1} de Bedrock en «{0}».</value></data>
+  <data name="Firewall_NoticeBlockedFmt" xml:space="preserve"><value>Firewall: la regla ({2}) bloquea el puerto {1} en «{0}».</value></data>
+  <data name="Firewall_OpenConsole" xml:space="preserve"><value>Abrir el Firewall</value></data>
+  <data name="Firewall_NoticeDismiss" xml:space="preserve"><value>No me hace falta</value></data>
+  <data name="Firewall_NoticeDismissTip" xml:space="preserve"><value>Si solo juegas por el túnel de Playit, el Firewall no te afecta. No volverá a avisar de este caso.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows no permite el carácter «{0}» en el nombre de una carpeta. Prueba con «{1}».</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>«{0}» es un nombre reservado por Windows y no se puede usar para una carpeta. Elige otro.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>El nombre no puede acabar en punto ni en espacio: Windows los recorta y la carpeta acabaría llamándose de otra forma.</value></data>

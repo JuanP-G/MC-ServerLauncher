@@ -932,6 +932,11 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Firewall_Working" xml:space="preserve"><value>Warte auf Windows…</value></data>
   <data name="Firewall_Cancelled" xml:space="preserve"><value>Du hast die Administratorabfrage abgelehnt: Es wurde nichts geändert.</value></data>
   <data name="Firewall_Failed" xml:space="preserve"><value>Windows hat die Änderung nicht übernommen. Prüfe, ob die Firewall aktiv ist, und versuche es erneut, oder lege die Regel von Hand an.</value></data>
+  <data name="Firewall_NoticeFmt" xml:space="preserve"><value>Firewall: nichts lässt den Bedrock-Port {1} im Netz „{0}“ durch.</value></data>
+  <data name="Firewall_NoticeBlockedFmt" xml:space="preserve"><value>Firewall: Regel ({2}) blockiert Port {1} im Netz „{0}“.</value></data>
+  <data name="Firewall_OpenConsole" xml:space="preserve"><value>Firewall öffnen</value></data>
+  <data name="Firewall_NoticeDismiss" xml:space="preserve"><value>Nicht nötig</value></data>
+  <data name="Firewall_NoticeDismissTip" xml:space="preserve"><value>Wenn Spieler nur über den Playit-Tunnel beitreten, betrifft dich die Firewall nicht. Dieser Fall wird nicht mehr gemeldet.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows erlaubt das Zeichen „{0}“ in einem Ordnernamen nicht. Versuch es mit „{1}“.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>„{0}“ ist ein von Windows reservierter Name und taugt nicht als Ordner. Nimm einen anderen.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>Der Name darf nicht auf einen Punkt oder ein Leerzeichen enden: Windows schneidet sie ab, und der Ordner hieße am Ende anders.</value></data>

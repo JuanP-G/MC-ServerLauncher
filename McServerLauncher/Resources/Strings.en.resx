@@ -932,6 +932,11 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Firewall_Working" xml:space="preserve"><value>Waiting for Windows…</value></data>
   <data name="Firewall_Cancelled" xml:space="preserve"><value>You declined the administrator prompt: nothing was changed.</value></data>
   <data name="Firewall_Failed" xml:space="preserve"><value>Windows didn't apply the change. Check that the Firewall is on and try again, or create the rule by hand.</value></data>
+  <data name="Firewall_NoticeFmt" xml:space="preserve"><value>Firewall: nothing lets Bedrock's port {1} in on “{0}”.</value></data>
+  <data name="Firewall_NoticeBlockedFmt" xml:space="preserve"><value>Firewall: rule ({2}) blocks port {1} on “{0}”.</value></data>
+  <data name="Firewall_OpenConsole" xml:space="preserve"><value>Open Firewall</value></data>
+  <data name="Firewall_NoticeDismiss" xml:space="preserve"><value>Not needed</value></data>
+  <data name="Firewall_NoticeDismissTip" xml:space="preserve"><value>If players only join through the Playit tunnel, the Firewall doesn't affect you. This won't warn about this case again.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows does not allow the character “{0}” in a folder name. Try “{1}”.</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>“{0}” is a name Windows reserves and cannot be used for a folder. Pick another.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>The name cannot end in a dot or a space: Windows trims them and the folder would end up called something else.</value></data>

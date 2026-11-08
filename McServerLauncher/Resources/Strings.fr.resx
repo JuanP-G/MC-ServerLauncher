@@ -932,6 +932,11 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Firewall_Working" xml:space="preserve"><value>En attente de Windows…</value></data>
   <data name="Firewall_Cancelled" xml:space="preserve"><value>Tu as refusé la confirmation d’administrateur : rien n’a été modifié.</value></data>
   <data name="Firewall_Failed" xml:space="preserve"><value>Windows n’a pas appliqué la modification. Vérifie que le pare-feu est actif et réessaie, ou crée la règle à la main.</value></data>
+  <data name="Firewall_NoticeFmt" xml:space="preserve"><value>Pare-feu : rien ne laisse passer le port Bedrock {1} sur « {0} ».</value></data>
+  <data name="Firewall_NoticeBlockedFmt" xml:space="preserve"><value>Pare-feu : la règle ({2}) bloque le port {1} sur « {0} ».</value></data>
+  <data name="Firewall_OpenConsole" xml:space="preserve"><value>Ouvrir le pare-feu</value></data>
+  <data name="Firewall_NoticeDismiss" xml:space="preserve"><value>Pas nécessaire</value></data>
+  <data name="Firewall_NoticeDismissTip" xml:space="preserve"><value>Si les joueurs passent uniquement par le tunnel Playit, le pare-feu ne te concerne pas. Ce cas ne sera plus signalé.</value></data>
   <data name="Msg_NameInvalidCharFmt" xml:space="preserve"><value>Windows n’autorise pas le caractère « {0} » dans un nom de dossier. Essaie « {1} ».</value></data>
   <data name="Msg_NameReservedFmt" xml:space="preserve"><value>« {0} » est un nom réservé par Windows et ne peut pas servir de dossier. Choisis-en un autre.</value></data>
   <data name="Msg_NameTrailingDot" xml:space="preserve"><value>Le nom ne peut pas se terminer par un point ni un espace : Windows les supprime et le dossier porterait un autre nom.</value></data>
