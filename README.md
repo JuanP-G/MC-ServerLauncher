@@ -366,8 +366,7 @@ list the files they come from and where you can ask the code questions, and
 Both are written by an AI: they can be wrong and DeepWiki's diagrams do not always render, so when they
 disagree with the architecture article, the article wins.
 
-> [!TIP]
-> **Wondering how something works?** [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) has a chat with an
+> **Tip: wondering how something works?** [DeepWiki](https://deepwiki.com/JuanP-G/MC-ServerLauncher) has a chat with an
 > AI that knows the whole repository and answers by citing the files each thing comes from. For example:
 >
 > - “How is a backup restored without losing the world?”
