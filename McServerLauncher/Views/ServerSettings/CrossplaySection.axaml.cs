@@ -97,7 +97,7 @@ public partial class CrossplaySection : UserControl, IServerSettingsSection
             FirewallState.OpenElsewhere => "Firewall_StatusElsewhereFmt",
             _ => "Firewall_StatusClosedFmt"
         }, port);
-        FirewallHint.Text = Localizer.Format("Firewall_HintFmt", port);
+        FirewallHint.Text = Localizer.Get("Firewall_Hint");
         FirewallHint.IsVisible = _firewallState == FirewallState.Closed;
 
         // Nothing to press when somebody else's rule already does the job: removing it is not ours.

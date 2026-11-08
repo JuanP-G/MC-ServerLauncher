@@ -15,7 +15,7 @@
                     <ToggleSwitch x:Name="CrossplayCheck" Classes="ctl" IsChecked="{Binding CrossplayEnabled, Mode=TwoWay}" />
                     <TextBlock Text="{loc:Loc Crossplay_Check}" Classes="title" TextWrapping="Wrap" VerticalAlignment="Center" />
                 </DockPanel>
-                <TextBlock x:Name="CrossplayHint" Classes="desc" Text="{loc:Loc Crossplay_Hint}" />
+                <TextBlock x:Name="CrossplayHint" Classes="desc" Text="{loc:Loc Crossplay_HintSettings}" />
                 <TextBlock x:Name="CrossplayWhyNot" Classes="desc warn" IsVisible="False" />
                 <!-- Shown on the mod loaders only, and with different text for each: on Fabric the
                      Hydraulic switch below is the answer, on NeoForge there is none. The text comes
