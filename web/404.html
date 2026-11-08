@@ -30,10 +30,10 @@
 <link rel="preload" as="font" type="font/woff" href="/assets/mc/minecraft.woff" crossorigin>
 <link rel="preload" as="image" type="image/webp" href="/assets/404/hero.webp">
 <link rel="stylesheet" href="/assets/site.css?v=f7af5d510b">
-<link rel="stylesheet" href="/assets/404.css?v=e5b642ab76">
+<link rel="stylesheet" href="/assets/404.css?v=5da3e3d67b">
 <!-- Sin defer: es pequeño y elige el idioma antes del primer pintado, para que quien entra en
      /de/algo no vea un destello en español. -->
-<script src="/assets/404.js?v=f0c38e4d7c"></script>
+<script src="/assets/404.js?v=e971bfde78"></script>
 </head>
 <body>
 
@@ -42,7 +42,7 @@
     <a class="brand" id="brand" href="/"><img src="/assets/logo-80.webp" alt="MC-ServerLauncher" width="40" height="40"></a>
     <!-- Cambia el idioma de ESTA página, no lleva a otra dirección. Oculto hasta que corre el script. -->
     <div class="langs" id="langs" hidden>
-      <button class="lang-btn" type="button" id="langBtn" aria-expanded="false" aria-controls="langList" aria-label="Idioma"><span id="langCur">ES</span>
+      <button class="lang-btn" type="button" id="langBtn" aria-expanded="false" aria-controls="langList" aria-label="Idioma"><svg class="flag" id="langFlag" viewBox="0 0 16 11" aria-hidden="true"></svg><span id="langCur">ES</span>
         <svg class="chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 3h10L5 8z"/></svg></button>
       <div class="lang-list" id="langList" hidden>
         <button type="button" data-set="es" aria-current="true"><svg viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#C60B1E"/><rect y="3" width="16" height="5" fill="#FFC400"/></svg><b>ES</b>Español</button>
@@ -55,7 +55,7 @@
   </div>
 </header>
 
-<div class="hero">
+<div class="fof-hero">
   <!-- Ilustración decorativa: lo que dice la página está en el texto -->
   <img class="art" src="/assets/404/hero.webp" alt="" width="1536" height="864" decoding="async" fetchpriority="high">
 
@@ -72,7 +72,7 @@
         <a class="btn btn-primary btn-lg" href="/"><svg class="i" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M7 1h2v1H7zM6 2h4v1H6zM5 3h6v1H5zM4 4h8v1H4zM3 5h10v1H3zM2 6h12v1H2zM3 7h4v7H3zM9 7h4v7H9zM7 7h2v2H7z"/></svg>Volver al inicio</a>
         <div class="alts">
           <a class="btn" href="/#descargas"><svg class="i" viewBox="0 0 1920 1920" aria-hidden="true"><path d="M1488 1632Q1508 1632 1522.0 1646.0Q1536 1660 1536 1680Q1536 1698 1525.0 1711.0Q1514 1724 1497 1727L1488 1728H432Q412 1728 398.0 1714.0Q384 1700 384 1680Q384 1662 395.0 1649.0Q406 1636 423 1633L432 1632ZM960 192Q978 192 991.0 203.5Q1004 215 1007 232L1008 240V1372L1358 1022Q1370 1010 1387.5 1008.5Q1405 1007 1419 1017L1425 1022Q1438 1035 1439.5 1052.0Q1441 1069 1431 1083L1426 1090L994 1522Q984 1532 970 1535L960 1536Q936 1536 922 1517L494 1090Q480 1076 480.0 1056.0Q480 1036 494 1022Q506 1010 523.5 1008.5Q541 1007 555 1017L562 1022L912 1372V240Q912 220 926.0 206.0Q940 192 960 192Z"/></svg>Descargas</a>
-          <a class="btn" href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><svg class="i" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M1 3h6v10H1zM9 3h6v10H9zM7 4h2v9H7z"/></svg>Documentación</a>
+          <a class="btn" href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M3 1h6.5L13 4.5V15H3V1zm6 1.7V5h2.3L9 2.7zM5.2 7h5.6v1.3H5.2V7zm0 2.6h5.6v1.3H5.2V9.6zm0 2.6h3.6v1.3H5.2v-1.3z"/></svg>Documentación</a>
           <a class="btn" href="https://github.com/JuanP-G/MC-ServerLauncher"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
         </div>
       </div>
@@ -87,7 +87,7 @@
         <a class="btn btn-primary btn-lg" href="/en/"><svg class="i" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M7 1h2v1H7zM6 2h4v1H6zM5 3h6v1H5zM4 4h8v1H4zM3 5h10v1H3zM2 6h12v1H2zM3 7h4v7H3zM9 7h4v7H9zM7 7h2v2H7z"/></svg>Back to the homepage</a>
         <div class="alts">
           <a class="btn" href="/en/#descargas"><svg class="i" viewBox="0 0 1920 1920" aria-hidden="true"><path d="M1488 1632Q1508 1632 1522.0 1646.0Q1536 1660 1536 1680Q1536 1698 1525.0 1711.0Q1514 1724 1497 1727L1488 1728H432Q412 1728 398.0 1714.0Q384 1700 384 1680Q384 1662 395.0 1649.0Q406 1636 423 1633L432 1632ZM960 192Q978 192 991.0 203.5Q1004 215 1007 232L1008 240V1372L1358 1022Q1370 1010 1387.5 1008.5Q1405 1007 1419 1017L1425 1022Q1438 1035 1439.5 1052.0Q1441 1069 1431 1083L1426 1090L994 1522Q984 1532 970 1535L960 1536Q936 1536 922 1517L494 1090Q480 1076 480.0 1056.0Q480 1036 494 1022Q506 1010 523.5 1008.5Q541 1007 555 1017L562 1022L912 1372V240Q912 220 926.0 206.0Q940 192 960 192Z"/></svg>Downloads</a>
-          <a class="btn" href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><svg class="i" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M1 3h6v10H1zM9 3h6v10H9zM7 4h2v9H7z"/></svg>Documentation</a>
+          <a class="btn" href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M3 1h6.5L13 4.5V15H3V1zm6 1.7V5h2.3L9 2.7zM5.2 7h5.6v1.3H5.2V7zm0 2.6h5.6v1.3H5.2V9.6zm0 2.6h3.6v1.3H5.2v-1.3z"/></svg>Documentation</a>
           <a class="btn" href="https://github.com/JuanP-G/MC-ServerLauncher"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
         </div>
       </div>
@@ -102,7 +102,7 @@
         <a class="btn btn-primary btn-lg" href="/de/"><svg class="i" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M7 1h2v1H7zM6 2h4v1H6zM5 3h6v1H5zM4 4h8v1H4zM3 5h10v1H3zM2 6h12v1H2zM3 7h4v7H3zM9 7h4v7H9zM7 7h2v2H7z"/></svg>Zur Startseite</a>
         <div class="alts">
           <a class="btn" href="/de/#descargas"><svg class="i" viewBox="0 0 1920 1920" aria-hidden="true"><path d="M1488 1632Q1508 1632 1522.0 1646.0Q1536 1660 1536 1680Q1536 1698 1525.0 1711.0Q1514 1724 1497 1727L1488 1728H432Q412 1728 398.0 1714.0Q384 1700 384 1680Q384 1662 395.0 1649.0Q406 1636 423 1633L432 1632ZM960 192Q978 192 991.0 203.5Q1004 215 1007 232L1008 240V1372L1358 1022Q1370 1010 1387.5 1008.5Q1405 1007 1419 1017L1425 1022Q1438 1035 1439.5 1052.0Q1441 1069 1431 1083L1426 1090L994 1522Q984 1532 970 1535L960 1536Q936 1536 922 1517L494 1090Q480 1076 480.0 1056.0Q480 1036 494 1022Q506 1010 523.5 1008.5Q541 1007 555 1017L562 1022L912 1372V240Q912 220 926.0 206.0Q940 192 960 192Z"/></svg>Downloads</a>
-          <a class="btn" href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><svg class="i" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M1 3h6v10H1zM9 3h6v10H9zM7 4h2v9H7z"/></svg>Dokumentation</a>
+          <a class="btn" href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M3 1h6.5L13 4.5V15H3V1zm6 1.7V5h2.3L9 2.7zM5.2 7h5.6v1.3H5.2V7zm0 2.6h5.6v1.3H5.2V9.6zm0 2.6h3.6v1.3H5.2v-1.3z"/></svg>Dokumentation</a>
           <a class="btn" href="https://github.com/JuanP-G/MC-ServerLauncher"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
         </div>
       </div>
@@ -117,7 +117,7 @@
         <a class="btn btn-primary btn-lg" href="/fr/"><svg class="i" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M7 1h2v1H7zM6 2h4v1H6zM5 3h6v1H5zM4 4h8v1H4zM3 5h10v1H3zM2 6h12v1H2zM3 7h4v7H3zM9 7h4v7H9zM7 7h2v2H7z"/></svg>Retour à l’accueil</a>
         <div class="alts">
           <a class="btn" href="/fr/#descargas"><svg class="i" viewBox="0 0 1920 1920" aria-hidden="true"><path d="M1488 1632Q1508 1632 1522.0 1646.0Q1536 1660 1536 1680Q1536 1698 1525.0 1711.0Q1514 1724 1497 1727L1488 1728H432Q412 1728 398.0 1714.0Q384 1700 384 1680Q384 1662 395.0 1649.0Q406 1636 423 1633L432 1632ZM960 192Q978 192 991.0 203.5Q1004 215 1007 232L1008 240V1372L1358 1022Q1370 1010 1387.5 1008.5Q1405 1007 1419 1017L1425 1022Q1438 1035 1439.5 1052.0Q1441 1069 1431 1083L1426 1090L994 1522Q984 1532 970 1535L960 1536Q936 1536 922 1517L494 1090Q480 1076 480.0 1056.0Q480 1036 494 1022Q506 1010 523.5 1008.5Q541 1007 555 1017L562 1022L912 1372V240Q912 220 926.0 206.0Q940 192 960 192Z"/></svg>Téléchargements</a>
-          <a class="btn" href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><svg class="i" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M1 3h6v10H1zM9 3h6v10H9zM7 4h2v9H7z"/></svg>Documentation</a>
+          <a class="btn" href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M3 1h6.5L13 4.5V15H3V1zm6 1.7V5h2.3L9 2.7zM5.2 7h5.6v1.3H5.2V7zm0 2.6h5.6v1.3H5.2V9.6zm0 2.6h3.6v1.3H5.2v-1.3z"/></svg>Documentation</a>
           <a class="btn" href="https://github.com/JuanP-G/MC-ServerLauncher"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
         </div>
       </div>
@@ -132,7 +132,7 @@
         <a class="btn btn-primary btn-lg" href="/pt/"><svg class="i" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M7 1h2v1H7zM6 2h4v1H6zM5 3h6v1H5zM4 4h8v1H4zM3 5h10v1H3zM2 6h12v1H2zM3 7h4v7H3zM9 7h4v7H9zM7 7h2v2H7z"/></svg>Voltar ao início</a>
         <div class="alts">
           <a class="btn" href="/pt/#descargas"><svg class="i" viewBox="0 0 1920 1920" aria-hidden="true"><path d="M1488 1632Q1508 1632 1522.0 1646.0Q1536 1660 1536 1680Q1536 1698 1525.0 1711.0Q1514 1724 1497 1727L1488 1728H432Q412 1728 398.0 1714.0Q384 1700 384 1680Q384 1662 395.0 1649.0Q406 1636 423 1633L432 1632ZM960 192Q978 192 991.0 203.5Q1004 215 1007 232L1008 240V1372L1358 1022Q1370 1010 1387.5 1008.5Q1405 1007 1419 1017L1425 1022Q1438 1035 1439.5 1052.0Q1441 1069 1431 1083L1426 1090L994 1522Q984 1532 970 1535L960 1536Q936 1536 922 1517L494 1090Q480 1076 480.0 1056.0Q480 1036 494 1022Q506 1010 523.5 1008.5Q541 1007 555 1017L562 1022L912 1372V240Q912 220 926.0 206.0Q940 192 960 192Z"/></svg>Downloads</a>
-          <a class="btn" href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><svg class="i" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M1 3h6v10H1zM9 3h6v10H9zM7 4h2v9H7z"/></svg>Documentação</a>
+          <a class="btn" href="https://juanp-g.github.io/MC-ServerLauncher/docs/"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M3 1h6.5L13 4.5V15H3V1zm6 1.7V5h2.3L9 2.7zM5.2 7h5.6v1.3H5.2V7zm0 2.6h5.6v1.3H5.2V9.6zm0 2.6h3.6v1.3H5.2v-1.3z"/></svg>Documentação</a>
           <a class="btn" href="https://github.com/JuanP-G/MC-ServerLauncher"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
         </div>
       </div>

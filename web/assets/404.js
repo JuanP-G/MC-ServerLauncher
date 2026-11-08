@@ -55,7 +55,11 @@
       }
       cur.textContent = l.toUpperCase();
       Array.prototype.forEach.call(list.querySelectorAll('button'), function (b) {
-        if (b.getAttribute('data-set') === l) { b.setAttribute('aria-current', 'true'); }
+        if (b.getAttribute('data-set') === l) {
+          b.setAttribute('aria-current', 'true');
+          var flag = b.querySelector('svg');           // la bandera del idioma, también en el botón
+          if (flag) { document.getElementById('langFlag').innerHTML = flag.innerHTML; }
+        }
         else { b.removeAttribute('aria-current'); }
       });
     }
