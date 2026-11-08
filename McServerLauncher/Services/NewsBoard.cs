@@ -65,8 +65,10 @@ public sealed record NewsBoardModel(NewsOffer? Offer, IReadOnlyList<NewsVersionR
     public IReadOnlyList<NewsNoticeRow> Notices { get; init; } = [];
 
     /// <summary>
-    /// The notice the strip is for: the newest urgent one still going on that the user has not closed.
-    /// Null when there is none. Whether the strip shows at all, and where, is the user's setting.
+    /// The notice the strip is for: the newest urgent one still going on that the user has neither read
+    /// nor closed. Reading it (the section was opened, or "Mark all as read") takes the strip away: the
+    /// user has seen what it says. Null when there is none. Whether the strip shows at all, and where,
+    /// is the user's setting.
     /// </summary>
     public NewsNoticeRow? Band { get; init; }
 
@@ -140,7 +142,7 @@ public static class NewsBoard
         return new NewsBoardModel(offer, versions, unread)
         {
             Notices = rows,
-            Band = rows.FirstOrDefault(r => r.Item.IsUrgent && !r.Resolved && !notices.IsClosed(r.Item.Id)),
+            Band = rows.FirstOrDefault(r => r.Item.IsUrgent && !r.Resolved && r.Unread && !notices.IsClosed(r.Item.Id)),
             Toasts = rows.Where(r => ShouldAnnounce(r, notices)).ToList(),
         };
     }

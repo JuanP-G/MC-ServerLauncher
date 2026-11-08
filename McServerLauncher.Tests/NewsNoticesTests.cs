@@ -248,6 +248,30 @@ public class NewsNoticesTests : IDisposable
         Assert.Null(Board(Input([item], now: Now + TimeSpan.FromMinutes(6))).Band);
     }
 
+    [Fact]
+    public void ReadingTheNoticeTakesTheStripAwayButNotTheListing()
+    {
+        var items = new[] { Item("playit") };
+        var key = NewsBoard.NoticeKey("playit", NewsStatus.Active);
+
+        var unread = Board(Input(items));
+        var read = Board(Input(items), isRead: k => k == key);
+
+        Assert.NotNull(unread.Band);
+        Assert.Null(read.Band);                 // seen: the strip has nothing left to say
+        Assert.Single(read.Notices);            // and it stays in the list
+    }
+
+    [Fact]
+    public void ANoticeAlreadyReadDoesNotHoldTheStripFromTheNextOne()
+    {
+        var items = new[] { Item("old", startedAgo: TimeSpan.FromHours(6)), Item("new", startedAgo: TimeSpan.FromHours(1)) };
+
+        var board = Board(Input(items), isRead: k => k == NewsBoard.NoticeKey("new", NewsStatus.Active));
+
+        Assert.Equal("old", board.Band!.Item.Id);
+    }
+
     // ---- notifications ----
 
     [Fact]

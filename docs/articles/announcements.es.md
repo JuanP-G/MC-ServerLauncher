@@ -16,8 +16,9 @@ servidor. Un aviso lo dice, dentro de la app, sin que nadie tenga que actualizar
   tipo (ámbar para una *incidencia*, rojo para *seguridad*, azul para un *consejo*) y, si lo tiene, un
   botón **Más información**.
 - **Una banda bajo la barra de título** para una incidencia o un aviso de seguridad que siga en marcha y
-  que el usuario no haya cerrado. **Ver aviso** abre Novedades; la cruz cierra la banda solo para ese aviso
-  (sigue en la lista). Se va sola cuando el aviso se resuelve o caduca.
+  que el usuario no haya leído ni cerrado. **Ver aviso** abre Novedades, y abrirla cuenta como leerlo, así
+  que la banda se va; la cruz la cierra solo para ese aviso sin abrir nada (sigue en la lista). También se
+  va sola cuando el aviso se resuelve o caduca.
 - **Una notificación**, una sola vez, para una incidencia o un aviso de seguridad nuevos, y otra cuando se
   resuelve una incidencia de la que ya se avisó. No sale cuando la banda ya está delante del usuario con la
   ventana abierta, y respeta el interruptor general de notificaciones.
@@ -43,8 +44,10 @@ Dos direcciones sirven el mismo archivo, y se prueban en orden:
 
 Cada mirada es una petición del archivo y otra de su firma (`news.json.sig`), o una sola petición
 condicional que responde *no modificado* si no ha cambiado nada. La app mira una vez poco después de
-arrancar, cada 30 minutos mientras sigue abierta, y al abrir Novedades si la copia que tiene se confirmó
-hace más de 10 minutos.
+arrancar, cada 5 minutos mientras sigue abierta, y al volver la ventana al frente o al abrir Novedades si
+la copia que tiene se confirmó hace más de 2 minutos. Una mirada que no encuentra nada nuevo es una
+respuesta *no modificado* sin cuerpo, unos cientos de bytes, así que un aviso urgente llega a una app
+abierta en unos cinco minutos y cuesta casi nada.
 
 La petición **no lleva versión, idioma ni identificador**: el servidor ve una dirección y el User-Agent de la
 app, como en cualquier descarga. Qué avisos tocan a este equipo se decide **dentro de la app**, a partir del

@@ -15,8 +15,9 @@ or their server. A notice says so, in the app, without anyone having to update.
   week). Each is a card with a ring and an icon in the colour of its kind (amber for an *incident*, red for
   *security*, blue for a *tip*) and, when there is one, a **More information** button.
 - **A strip under the title bar** for an incident or a security notice that is still going on and that the
-  user has not closed. **View notice** opens What's new; the cross closes the strip for that notice only (it
-  stays listed). It goes away by itself when the notice is resolved or runs out.
+  user has neither read nor closed. **View notice** opens What's new, and opening it counts as reading, so
+  the strip goes away; the cross closes it for that notice only without opening anything (it stays listed).
+  It also goes away by itself when the notice is resolved or runs out.
 - **A notification**, once, for a new incident or security notice, and again when an incident the user was
   told about is resolved. It is not raised when the strip is already in front of the user with the window
   open, and it follows the master switch of notifications.
@@ -41,8 +42,10 @@ Two addresses serve the same file, tried in order:
 
 Each look is a request for the file and one for its signature (`news.json.sig`), or a single conditional
 request that answers *not modified* when nothing changed. The app looks once shortly after it starts, every
-30 minutes while it stays open, and when What's new is opened if the copy it holds was last confirmed more
-than 10 minutes ago.
+5 minutes while it stays open, and when the window comes back to the front or What's new is opened if the
+copy it holds was last confirmed more than 2 minutes ago. A look that finds nothing new is a *not modified*
+answer with no body, a few hundred bytes, so an urgent notice reaches an open app within about five
+minutes and costs next to nothing.
 
 The request carries **no version, no language and no identifier**: the server sees an address and the app's
 User-Agent, as for any download. Which notices are for this machine is decided **in the app**, from the

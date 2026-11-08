@@ -1080,8 +1080,9 @@ tiene el formato y la receta para publicar; esto es cómo está montado en la ap
   no se cerró) y a cuáles se debe una notificación. **`NewsState`** recuerda lo leído, lo cerrado y lo
   anunciado en `news-state.json`.
 - **`MainViewModel.News.cs`** es el pegamento que necesita el resto de la ventana. `StartNews`, que llama
-  `Activate` y nunca el constructor, mira el archivo una vez y luego cada 30 minutos con un
-  `DispatcherTimer` (y al abrir la sección si la copia tiene más de 10 minutos); con **Mostrar anuncios**
+  `Activate` y nunca el constructor, mira el archivo una vez y luego cada 5 minutos con un
+  `DispatcherTimer` (y, con una copia de más de 2 minutos, al abrir la sección o al volver la ventana al
+  frente mediante `OnWindowActivated`; el propio temporizador se salta una mirada justo después de otra); con **Mostrar anuncios**
   apagado no hay temporizador ni petición. Para quién es un aviso se calcula **aquí y no se envía nunca**:
   saber si el equipo usa túneles necesita `PlayitConnection`, que vive en `Views/`, así que se calcula en
   el view model y se le pasa al tablón como un valor simple. También es dueño de la banda

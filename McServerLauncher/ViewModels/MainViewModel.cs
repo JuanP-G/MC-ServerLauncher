@@ -300,7 +300,7 @@ public partial class MainViewModel : ObservableObject
 
         // The same for the notices file, started (or not, with announcements off) in Activate.
         _newsTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.UIThread) { Interval = NewsCheckInterval };
-        _newsTimer.Tick += (_, _) => _ = CheckNewsAsync();
+        _newsTimer.Tick += (_, _) => _ = CheckNewsAsync(NewsTickAge);
         News.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(NewsViewModel.HasBand)) OnPropertyChanged(nameof(ShowNewsBand));
