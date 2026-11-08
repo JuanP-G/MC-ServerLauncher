@@ -1199,8 +1199,14 @@ server off a Bedrock tunnel it shares.
 Finally `GeyserConfigService` writes what Geyser cannot work out for itself: `auth-type` (a server
 with Floodgate left on `online` turns every Bedrock player away), the local UDP port, and
 **`broadcast-port`** — behind a tunnel the port players connect to is the tunnel's public one, and
-the launcher is the only component that knows both numbers because it created the tunnel.
-`RepairConfig` re-applies this when a reinstall resets the file.
+the launcher is the only component that knows both numbers because it created the tunnel. It also
+sets **`transport`** to `both`: Bedrock 26.60 and later connects over NetherNet, whose signalling is
+a TCP listener on the Bedrock port, and a Geyser left on RakNet alone does not accept those clients
+(issue 108's author had to edit this by hand). A value the user already chose (`nethernet` or
+`both`) is kept; only a missing, commented-out or `raknet` one is replaced. `RepairConfig`
+re-applies all this when a reinstall resets the file, and says in the console which of the two
+things it changed. The Crossplay hint also tells players on a LAN or a VPN to allow the Bedrock port
+for TCP and UDP in Windows Firewall, which no config file can do for them.
 
 How well any of it works is a property of the server type, not a promise: `ServerTypeCatalog` carries
 a three-valued `CrossplayLevel` and the new-server panel and the Crossplay settings page show the caveat before the

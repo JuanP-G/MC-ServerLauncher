@@ -251,6 +251,7 @@ public class CrossplayService
             ? GeyserConfigService.SetBedrockPorts(File.ReadAllText(path), port, publicPort, floodgate)
             : GeyserConfigService.MinimalConfig(port, publicPort, floodgate);
 
+        yaml = GeyserConfigService.SetTransport(yaml);
         yaml = GeyserConfigService.SetJavaAuth(yaml, floodgate, FloodgateKeyPath(config));
 
         // Only when it changed. This is called from the address refresh, which runs every thirty
@@ -281,12 +282,22 @@ public class CrossplayService
 
         var before = File.ReadAllText(path);
         var floodgate = IsFloodgateInstalled(config);
-        var after = GeyserConfigService.SetJavaAuth(before, floodgate, FloodgateKeyPath(config));
+        var withTransport = GeyserConfigService.SetTransport(before);
+        var after = GeyserConfigService.SetJavaAuth(withTransport, floodgate, FloodgateKeyPath(config));
 
         if (!AtomicTextFile.WriteIfChanged(path, after)) return null;
 
-        return Localizer.Format("Msg_GeyserConfigRepairedFmt",
-            floodgate ? "floodgate" : "online");
+        // Say each thing that changed, and only that: a transport fix on a config whose
+        // authentication was already right must not claim the authentication was wrong.
+        var messages = new List<string>();
+        if (GeyserConfigService.SetJavaAuth(before, floodgate, FloodgateKeyPath(config)) != before)
+            messages.Add(Localizer.Format("Msg_GeyserConfigRepairedFmt",
+                floodgate ? "floodgate" : "online"));
+        if (withTransport != before)
+            messages.Add(Localizer.Format("Msg_GeyserTransportSetFmt",
+                GeyserConfigService.WantedTransport));
+
+        return messages.Count == 0 ? null : string.Join(" ", messages);
     }
 
     /// <summary>Whether a Floodgate jar is sitting in the server's content folder.</summary>
