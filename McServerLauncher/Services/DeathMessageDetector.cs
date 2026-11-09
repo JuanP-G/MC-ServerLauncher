@@ -39,7 +39,7 @@ public static class DeathMessageDetector
         var space = msg.IndexOf(' ');
         if (space <= 0) return null; // needs "<name> <phrase>"
         var subject = msg[..space];
-        if (!PlayerNames.IsValid(subject)) return null;
+        if (!PlayerNames.IsOnServer(subject)) return null;
 
         var rest = msg[(space + 1)..];
         foreach (var phrase in Phrases)

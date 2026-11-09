@@ -224,6 +224,18 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   tubería, así que un nombre que empieza con un escape no es un nombre: entraban jugadores y la app no los
   veía. `AnsiEscapes.Strip` se ejecuta una vez, donde entra la salida (`ServerProcessManager`); nada
   aguas abajo debería ver nunca un escape.
+- **Un registro accesorio nunca tumba la app.** La salida del servidor llega por su propio hilo, y una
+  excepción que nadie captura ahí termina el lanzador mientras el proceso de Java sigue en marcha con el
+  puerto ocupado. El historial de jugadores escribía en disco en ese hilo sin nada alrededor, así que un
+  disco lleno o un archivo retenido por un antivirus mataba la app. Todo lo que alimenta una línea de la
+  consola y no es la consola misma (historial, estadísticas, avisos) sobrevive a sus propios fallos y lo
+  dice una sola vez en el registro (`PlayerHistoryStore.TryAppend`, `PlayerHistoryViewModel.OnServerLine`).
+- **Una regla de nombres tiene dos lectores: el log y el teclado.** Lo que imprime el servidor puede traer
+  nombres que el dueño nunca podría teclear: Floodgate registra a un jugador de Bedrock como `.Steve`, y
+  una regla escrita para nombres de Java lo sacaba de la lista, así que un servidor con solo jugadores de
+  Bedrock parecía vacío y el temporizador de inactividad lo paraba. Leer el log pasa por
+  `PlayerNames.IsOnServer`; todo lo que crea un perfil o una ruta a partir de texto tecleado sigue en
+  `PlayerNames.IsValid`.
 - **Arregla un formato con una línea de un servidor de verdad.** Los analizadores de la sonda de
   velocidad se escribieron primero de memoria de lo que imprime spark, y una ejecución real mostró que
   imprime dos decimales en unas líneas y uno en otras, un `[⚡]` mal codificado en Windows y la coma

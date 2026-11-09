@@ -89,11 +89,14 @@ internal sealed class PlayerAdmin
     /// "ban a b" into banning "a" with reason "b"). Returns the trimmed name, or null after
     /// logging a clear message when the input isn't a valid name.
     /// </summary>
-    public string? ValidNameOrWarn(string? name)
+    /// <param name="name">What the owner typed.</param>
+    /// <param name="bedrockToo">Also accept a Bedrock player's name, with the dot Floodgate gives it.
+    /// Only for commands on somebody already connected; never for the whitelist or ban files.</param>
+    public string? ValidNameOrWarn(string? name, bool bedrockToo = false)
     {
         name = name?.Trim();
         if (string.IsNullOrEmpty(name)) return null;
-        if (PlayerNames.IsValid(name)) return name;
+        if (bedrockToo ? PlayerNames.IsOnServer(name) : PlayerNames.IsValid(name)) return name;
 
         // Show what was rejected, defanged for display (no line breaks, capped length).
         var shown = name.Replace("\r", "").Replace("\n", " ");
@@ -256,7 +259,10 @@ internal sealed class PlayerAdmin
 
     private async Task RunningCommandAsync(string? typed, string verb, string actionKey)
     {
-        if (ValidNameOrWarn(typed) is not { } name || !EnsureRunning(Localizer.Get(actionKey))) return;
+        // Commands on a player already on the server: a Bedrock player (".Steve") is one, and
+        // "kick .Steve" is how an owner removes them. The whitelist and the ban files stay strict.
+        if (ValidNameOrWarn(typed, bedrockToo: true) is not { } name
+            || !EnsureRunning(Localizer.Get(actionKey))) return;
         await CommandAsync($"{verb} {name}");
     }
 

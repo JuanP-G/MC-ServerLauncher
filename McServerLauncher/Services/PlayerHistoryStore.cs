@@ -144,15 +144,45 @@ public sealed class PlayerHistoryStore : IDisposable
 
             var rec = GetOrAdd(key, e.Player);
             Apply(rec, e.Kind, atUtc);
+            _dirty = true;   // the summary changed even if the event line below cannot be written
 
-            Directory.CreateDirectory(Path.GetDirectoryName(EventsPath(key))!);
-            File.AppendAllText(EventsPath(key), line + "\n", Utf8);
+            if (!TryAppend(key, line)) return;
             rec.EventCount++;
             if (rec.EventCount > settings.MaxEventsPerPlayer * 5 / 4) Compact(key, rec,
                 settings.MaxEventsPerPlayer, null);
-
-            _dirty = true;
         }
+    }
+
+    // Set while writes are failing, so a full disk is logged once rather than at every chat line.
+    private bool _failing;
+
+    /// <summary>Appends one event line. A refused write is survived, never thrown.</summary>
+    /// <remarks>
+    /// This runs on the server process's output thread, and an exception nobody catches there ends
+    /// the whole launcher while the Java process goes on holding the port. A disk that is full, a file
+    /// an antivirus has open, a read-only folder: the history loses an event, the server does not.
+    /// </remarks>
+    private bool TryAppend(string key, string line)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(EventsPath(key))!);
+            File.AppendAllText(EventsPath(key), line + "\n", Utf8);
+            _failing = false;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            NoteWriteFailure(ex);
+            return false;
+        }
+    }
+
+    private void NoteWriteFailure(Exception ex)
+    {
+        if (_failing) return;
+        _failing = true;
+        Safe.Note("Players", "the player history could not be written, carrying on without it", ex);
     }
 
     /// <summary>
@@ -363,8 +393,17 @@ public sealed class PlayerHistoryStore : IDisposable
 
         if (kept.Count != lines.Count)
         {
-            if (kept.Count == 0) FileCleanup.TryDelete(EventsPath(key));
-            else File.WriteAllText(EventsPath(key), string.Join("\n", kept) + "\n", Utf8);
+            try
+            {
+                if (kept.Count == 0) FileCleanup.TryDelete(EventsPath(key));
+                else File.WriteAllText(EventsPath(key), string.Join("\n", kept) + "\n", Utf8);
+            }
+            catch (Exception ex)
+            {
+                // Same reason as in TryAppend. The count stays as it was, so the next record tries again.
+                NoteWriteFailure(ex);
+                return;
+            }
             _dirty = true;
         }
         rec.EventCount = kept.Count;
@@ -579,10 +618,12 @@ public sealed class PlayerHistoryStore : IDisposable
     }
 
     /// <summary>
-    /// The file and index key: the name in lower case. Names are ASCII letters, digits and _.
+    /// The file and index key: the name in lower case. Names are ASCII letters, digits and _, and a
+    /// Bedrock one starts with a dot.
     /// </summary>
     private static string Key(string player) => player.ToLowerInvariant();
 
-    // Also what keeps a name from ever becoming a path: nothing but [A-Za-z0-9_] reaches Key().
-    private static bool IsName(string? player) => PlayerNames.IsValid(player);
+    // Also what keeps a name from ever becoming a path: nothing but [A-Za-z0-9_], with at most the
+    // one leading dot of a Bedrock player, reaches Key(). ".." and "../x" do not pass.
+    private static bool IsName(string? player) => PlayerNames.IsOnServer(player);
 }

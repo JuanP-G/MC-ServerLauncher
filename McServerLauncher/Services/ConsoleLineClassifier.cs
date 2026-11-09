@@ -154,7 +154,7 @@ public static partial class ConsoleLineClassifier
             var close = message.IndexOf('>');
             if (close <= 1) return null;
             var name = message[1..close];
-            return PlayerNames.IsValid(name) ? (name, message[(close + 1)..].TrimStart()) : null;
+            return PlayerNames.IsOnServer(name) ? (name, message[(close + 1)..].TrimStart()) : null;
         }
 
         if (message[0] == '[')
@@ -191,7 +191,7 @@ public static partial class ConsoleLineClassifier
     internal static bool IsServerSender(string sender) => ServerSenders.Contains(sender);
 
     private static bool IsOnline(string name, IReadOnlySet<string>? online) =>
-        online is not null && PlayerNames.IsValid(name) && online.Contains(name);
+        online is not null && PlayerNames.IsOnServer(name) && online.Contains(name);
 
     /// <summary>Whether somebody joined, left or died.</summary>
     internal static bool IsPlayerEvent(string text) =>
@@ -207,6 +207,12 @@ public static partial class ConsoleLineClassifier
     /// The name must be the <em>only</em> text between the log prefix and the marker, and a valid
     /// Minecraft name. That is what stops <c>&lt;Bob&gt; Alice joined the game</c> — Bob typing the
     /// sentence in chat — from counting as Alice joining.
+    /// </para>
+    /// <para>
+    /// A Bedrock player who joins through Floodgate is logged with a dot in front
+    /// (<c>.Steve joined the game</c>), and counts: refusing it left them off the player list, so a
+    /// server with only Bedrock players looked empty and the idle timer stopped it. See
+    /// <see cref="PlayerNames.IsOnServer"/>.
     /// </para>
     /// <para>
     /// "Between the log prefix and the marker" is measured from the <em>first</em> <c>]: </c>, which
@@ -229,7 +235,7 @@ public static partial class ConsoleLineClassifier
         if (idx <= 0) return null;
 
         var name = body[..idx];
-        return PlayerNames.IsValid(name) ? name : null;
+        return PlayerNames.IsOnServer(name) ? name : null;
     }
 
     /// <summary>The message after the log prefix, or null when there is no prefix.</summary>
