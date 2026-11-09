@@ -15,6 +15,19 @@ people. Concretely, before you run `gh pr create` (or write any PR text):
 - the same goes for replies to issues and comments on a pull request.
 If you are about to open a PR with Spanish text, translate it first.
 
+## What the project publishes is in English — and audits are published
+Not only pull requests: **issues you open, replies, labels and their descriptions, project boards and
+saved issue views** are English as well, because the whole community reads them. People who report a
+problem may write in Spanish or English; what the maintainer or an assistant publishes is English.
+
+**Every audit publishes its findings as issues** so that everyone can see how the project is doing,
+help, and know what problems it has: a tracking issue `Audit YYYY-MM-DD`, one issue per pull request
+with a checkbox per finding, label `audit`, what is already fixed recorded as closed issues naming
+their pull request, and a GitHub project with shared views to keep them organised. The exception is
+security: a finding that could be exploited today and is not fixed yet goes through the private
+channel in `SECURITY.md` and is published once fixed (when unsure, treat it as security).
+See "Publishing" in `docs/articles/auditing.md`.
+
 ## Architecture
 - **MVVM, strictly layered:** logic goes in `Services/` (UI-free, small focused classes), bindable
   state/commands in `ViewModels/` (`ObservableObject`/`RelayCommand`, no Avalonia controls), and only

@@ -360,7 +360,10 @@ The forms ask for as little as possible: one required box, and the rest optional
 already filled in (`AppLinks.NewBugReport`); nothing else is added, and nothing is sent until the
 person presses "Submit new issue". A test checks that the address names a form and fields that exist.
 
-**Write in English or Spanish, whichever you prefer** — both get read.
+**Write in English or Spanish, whichever you prefer** — both get read. What the project itself
+publishes is in English, because the whole community reads it: the issues the maintainer or an
+assistant opens, replies, labels and their descriptions, the project board and the saved issue views.
+The findings of every [audit](auditing.md#publishing) are published as issues for the same reason.
 
 A **security problem is never a public issue.** [`SECURITY.md`](https://github.com/JuanP-G/MC-ServerLauncher/blob/main/SECURITY.md)
 explains the private channel and lists the trade-offs that are already known, so you can tell a
