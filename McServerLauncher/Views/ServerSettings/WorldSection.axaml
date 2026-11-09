@@ -15,7 +15,7 @@
                 </WrapPanel>
                 <StackPanel>
                     <TextBlock Text="{loc:Loc Cfg_Seed}" Classes="title" />
-                    <SelectableTextBlock x:Name="SeedText" FontFamily="Consolas,Menlo,monospace" FontSize="14" Margin="0,2,0,2" />
+                    <SelectableTextBlock x:Name="SeedText" FontFamily="{StaticResource MonoFont}" FontSize="14" Margin="0,2,0,2" />
                     <TextBlock x:Name="SeedNote" Classes="desc" />
                 </StackPanel>
             </DockPanel>

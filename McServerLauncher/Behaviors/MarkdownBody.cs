@@ -127,7 +127,7 @@ public static class MarkdownBody
         Child = new SelectableTextBlock
         {
             Text = block.Spans.Count > 0 ? block.Spans[0].Text : string.Empty,
-            FontFamily = new FontFamily("Consolas, Menlo, monospace"),
+            FontFamily = MonoFont.Family,
             FontSize = 12,
             TextWrapping = TextWrapping.Wrap
         }
@@ -209,7 +209,7 @@ public static class MarkdownBody
             if (span.Italic) run.FontStyle = FontStyle.Italic;
             if (span.Code)
             {
-                run.FontFamily = new FontFamily("Consolas, Menlo, monospace");
+                run.FontFamily = MonoFont.Family;
                 run.Background = CodeBackground;
             }
             inlines.Add(run);

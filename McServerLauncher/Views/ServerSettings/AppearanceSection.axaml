@@ -188,7 +188,7 @@
                             <Border x:Name="HexPreview" Width="18" Height="18" CornerRadius="4" BorderThickness="1"
                                     BorderBrush="{StaticResource SurfaceEdgeStrong}" VerticalAlignment="Center" />
                             <TextBox x:Name="HexBox" Width="110" PlaceholderText="#FF7A00" MaxLength="7"
-                                     FontFamily="Cascadia Mono, Consolas, monospace" />
+                                     FontFamily="{StaticResource MonoFont}" />
                             <Button x:Name="HexApplyButton" Focusable="False" Content="{loc:Loc Look_HexApply}" Click="HexApply_Click" />
                         </StackPanel>
                         <TextBlock x:Name="HexError" Classes="desc error" IsVisible="False" Text="{loc:Loc Look_HexInvalid}" />
@@ -197,10 +197,10 @@
                 </Border>
 
                 <TextBlock Text="{loc:Loc Look_Line1}" Classes="desc" Margin="0,4,0,2" />
-                <TextBox x:Name="Line1Box" FontFamily="Cascadia Mono, Consolas, monospace" />
+                <TextBox x:Name="Line1Box" FontFamily="{StaticResource MonoFont}" />
 
                 <TextBlock Text="{loc:Loc Look_Line2}" Classes="desc" Margin="0,8,0,2" />
-                <TextBox x:Name="Line2Box" FontFamily="Cascadia Mono, Consolas, monospace" />
+                <TextBox x:Name="Line2Box" FontFamily="{StaticResource MonoFont}" />
                 <TextBlock x:Name="Line2Note" Classes="desc" Text="{loc:Loc Look_Line2Locked}" IsVisible="False" />
 
                 <TextBlock x:Name="ExtraLinesNote" Classes="desc" Text="{loc:Loc Look_ExtraLines}"

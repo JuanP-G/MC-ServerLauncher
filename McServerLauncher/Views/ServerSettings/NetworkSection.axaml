@@ -60,7 +60,7 @@
         <Style Selector="TextBlock.td">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="TextAlignment" Value="Right" />
-            <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, monospace" />
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
         </Style>
     </UserControl.Styles>
 
@@ -111,7 +111,7 @@
                                 </StackPanel>
                                 <Border Grid.Column="2" CornerRadius="10" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center"
                                         Background="{StaticResource SurfaceChip}" IsVisible="{Binding Badge, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                    <TextBlock Text="{Binding Badge}" FontSize="12" FontFamily="Cascadia Mono, Consolas, monospace" />
+                                    <TextBlock Text="{Binding Badge}" FontSize="12" FontFamily="{StaticResource MonoFont}" />
                                 </Border>
                             </Grid>
                         </DataTemplate>

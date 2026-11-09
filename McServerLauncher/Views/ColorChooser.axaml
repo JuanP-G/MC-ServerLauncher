@@ -94,7 +94,7 @@
                                 </Grid>
                             </Border>
                             <TextBox x:Name="ChooserHexBox" Grid.Column="1" Margin="8,0,0,0" MaxLength="7"
-                                     FontFamily="Cascadia Mono, Consolas, monospace" />
+                                     FontFamily="{StaticResource MonoFont}" />
                         </Grid>
 
                         <TextBlock x:Name="ContrastText" FontSize="12" TextWrapping="Wrap" />
