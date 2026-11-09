@@ -239,6 +239,14 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   | **NeoForge** | **A veces** | Conecta, pero cualquier mod que el cliente necesite tener deja fuera a Bedrock, y Hydraulic ya no publica para NeoForge. |
   | **Vanilla**, **Forge** | **No** | Geyser no publica ninguna versión para ellos. |
 
+- **Bedrock sin tocar Geyser ni Windows** — la app escribe el `transport` de Geyser como `both`, que es lo que
+  necesita el Bedrock actual (NetherNet), y lo vuelve a poner si una reinstalación lo resetea. En Windows, la
+  página **Crossplay** del servidor tiene una tarjeta **Firewall de Windows** que abre el puerto de Bedrock por
+  TCP y UDP en todas las redes con un botón (Windows pide confirmar como administrador): el aviso que Windows
+  muestra para `java.exe` suele cubrir solo la red privada, y Radmin o Hamachi cuentan como pública. Una franja
+  de una línea en la página del servidor aparece solo cuando el firewall de verdad dejaría fuera a los jugadores
+  de Bedrock en una red a la que estás conectado: nombra la red y ofrece el mismo botón, o abre la consola del
+  firewall de Windows cuando una regla bloquea el puerto. **No me hace falta** la oculta para ese problema.
 - **Que los de Bedrock vean el contenido de los mods** — en **Fabric**, otra casilla instala Hydraulic (de
   GeyserMC) y Fabric API. Sus autores lo consideran de desarrollo muy temprano, y la app lo dice.
 - **Jugar desde otras versiones de Minecraft** — una casilla instala ViaVersion y ViaBackwards (solo en

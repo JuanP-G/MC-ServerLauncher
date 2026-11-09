@@ -10,7 +10,7 @@ TITLE: same shape as a commit — type(scope): what changes, lower case, in Engl
 Types: feat · fix · seg · perf · refactor · docs · test · ci · chore · release
 Scope: the feature area in English (console, mods, store, players, server, types, crossplay,
 bedrock, playit, java, paper, forge, fabric, ports, backups, notifications, colours, updates, news,
-settings, names, security, data, ui, web, tests, ci, wake, memory). Reuse one before inventing one.
+settings, names, security, data, ui, web, tests, ci, wake, memory, network, performance). Reuse one before inventing one.
 Full guide: docs/articles/contributing.md ("Pull requests").
 -->
 

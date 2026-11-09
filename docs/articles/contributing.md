@@ -302,7 +302,7 @@ what this list is for:
 `consola` · `mods` · `tienda` · `jugadores` · `servidor` · `tipos` · `crossplay` · `bedrock` ·
 `playit` · `java` · `paper` · `forge` · `fabric` · `puertos` · `backups` · `avisos` · `colores` ·
 `actualizaciones` · `novedades` · `ajustes` · `nombres` · `seguridad` · `datos` · `ui` · `web` · `tests` ·
-`ci` · `release`
+`ci` · `release` · `red` · `memoria` · `despertar` · `rendimiento`
 
 Adding one that will recur? Add it to this list in the same commit.
 
@@ -325,7 +325,7 @@ Footers are `Closes #12`, `Refs #12`, or `BREAKING CHANGE:` with what breaks and
   `feat(wake): a Bedrock player now wakes the server too`. The scope is the feature area (`console`,
   `mods`, `store`, `players`, `server`, `types`, `crossplay`, `bedrock`, `playit`, `java`, `paper`,
   `forge`, `fabric`, `ports`, `backups`, `notifications`, `colours`, `updates`, `news`, `settings`,
-  `names`, `security`, `data`, `ui`, `web`, `tests`, `ci`, `wake`, `memory`); use one that exists.
+  `names`, `security`, `data`, `ui`, `web`, `tests`, `ci`, `wake`, `memory`, `network`, `performance`); use one that exists.
   `.github/pull_request_template.md` fills in the rest, including the checklist.
 - The description is the body of the commit you would have written for the whole branch.
 - One idea per pull request. The merge commit is `Merge pull request #N from ...`, with the title as

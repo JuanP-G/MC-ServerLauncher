@@ -1,6 +1,6 @@
 # Security Policy · Política de seguridad
 
-**English · [Español](#español)**
+**English · [Español](#informar-de-una-vulnerabilidad)**
 
 ## Reporting a vulnerability
 

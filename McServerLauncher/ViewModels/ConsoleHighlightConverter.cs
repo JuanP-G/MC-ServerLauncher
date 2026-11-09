@@ -19,8 +19,8 @@ namespace McServerLauncher.ViewModels;
 /// </para>
 /// <para>
 /// Returns an <see cref="InlineCollection"/> bound to <c>TextBlock.Inlines</c>. That property is a
-/// direct property in Avalonia 11.2.3 — checked against the assembly rather than assumed, because
-/// the whole design rests on it — so it takes a binding like any other.
+/// direct property (checked against the assembly in Avalonia 11.2.3 and again in 12.1.5, rather than
+/// assumed, because the whole design rests on it) — so it takes a binding like any other.
 /// </para>
 /// </remarks>
 public class ConsoleHighlightConverter : IMultiValueConverter
