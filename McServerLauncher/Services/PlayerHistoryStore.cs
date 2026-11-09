@@ -579,10 +579,12 @@ public sealed class PlayerHistoryStore : IDisposable
     }
 
     /// <summary>
-    /// The file and index key: the name in lower case. Names are ASCII letters, digits and _.
+    /// The file and index key: the name in lower case. Names are ASCII letters, digits and _, and a
+    /// Bedrock one starts with a dot.
     /// </summary>
     private static string Key(string player) => player.ToLowerInvariant();
 
-    // Also what keeps a name from ever becoming a path: nothing but [A-Za-z0-9_] reaches Key().
-    private static bool IsName(string? player) => PlayerNames.IsValid(player);
+    // Also what keeps a name from ever becoming a path: nothing but [A-Za-z0-9_], with at most the
+    // one leading dot of a Bedrock player, reaches Key(). ".." and "../x" do not pass.
+    private static bool IsName(string? player) => PlayerNames.IsOnServer(player);
 }

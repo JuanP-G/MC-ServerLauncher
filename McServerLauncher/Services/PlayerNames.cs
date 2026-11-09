@@ -19,4 +19,28 @@ public static class PlayerNames
     public static bool IsValid(string? name) =>
         name is { Length: >= 1 and <= 16 } && name.All(c => c is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z')
             or (>= '0' and <= '9') or '_');
+
+    /// <summary>
+    /// What Floodgate puts in front of a Bedrock player's name on a Java server: its default
+    /// <c>username-prefix</c>. A server that changed it in Floodgate's config is not recognised.
+    /// </summary>
+    public const char FloodgatePrefix = '.';
+
+    /// <summary>
+    /// <see cref="Pattern"/> with the optional Floodgate prefix, for picking a name out of a log line.
+    /// </summary>
+    public const string LogPattern = @"\.?" + Pattern;
+
+    /// <summary>
+    /// Whether <paramref name="name"/> is somebody the server can list as connected: a Java name, or
+    /// a Bedrock one with the Floodgate prefix.
+    /// </summary>
+    /// <remarks>
+    /// For reading the server's log and for the commands that act on a player already on it
+    /// (<c>kick .Steve</c> works). Not for anything that creates a profile or a path from a name the
+    /// owner typed: there <see cref="IsValid"/> still holds, and it is what keeps the Java rule
+    /// strict. The prefix is one dot and nothing else, so <c>..</c> and <c>../x</c> still fail.
+    /// </remarks>
+    public static bool IsOnServer(string? name) =>
+        IsValid(name is { Length: > 1 } && name[0] == FloodgatePrefix ? name[1..] : name);
 }
