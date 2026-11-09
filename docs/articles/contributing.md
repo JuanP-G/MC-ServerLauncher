@@ -210,6 +210,17 @@ Each of these is here because breaking it shipped a bug that no test caught at t
   and leave lines in ANSI escapes even on a pipe, so a name that begins with one is not a name: players
   joined and the app never saw them. `AnsiEscapes.Strip` runs once where the output enters
   (`ServerProcessManager`); nothing downstream should ever see an escape.
+- **A side record never takes the app down.** The server's output arrives on its own thread, and an
+  exception nobody catches there ends the launcher while the Java process keeps running with the port
+  taken. The player history wrote to disk on that thread with nothing around it, so a full disk or a
+  file held by an antivirus killed the app. Whatever a console line feeds that is not the console
+  itself (history, statistics, notifications) survives its own failures and says so once in the log
+  (`PlayerHistoryStore.TryAppend`, `PlayerHistoryViewModel.OnServerLine`).
+- **A name rule has two readers: the log and the keyboard.** What the server prints can contain names the
+  owner could never type: Floodgate logs a Bedrock player as `.Steve`, and a rule written for Java names
+  dropped them from the player list, so a server with only Bedrock players looked empty and the idle
+  timer stopped it. Reading the log goes through `PlayerNames.IsOnServer`; anything that makes a
+  profile or a path from typed text stays on `PlayerNames.IsValid`.
 - **Fix a format with a line from a real server.** The speed probe's parsers were first written from
   memory of what spark prints, and a real run showed it prints two decimals in some lines and one in
   others, a mangled `[⚡]` on Windows, and the decimal comma of a Spanish machine. Capture the output,
