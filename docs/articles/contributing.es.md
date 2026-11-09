@@ -197,6 +197,10 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   el código que la pide. `LocalizationTests.EveryKeyIsAskedForSomewhere` falla ante una clave que nadie
   nombra; las pocas que se piden construyendo su nombre (`Cmd_`, `Console_Kind`, `MotdColor_`…) están en
   esa prueba, cada una con el sitio donde se arma.
+- **Mover una propiedad fuera de un view model es un cambio en las vistas.** Enlazan por nombre
+  (`x:CompileBindings="False"`), así que una propiedad que se movió compila y no muestra nada.
+  `ViewBindingPathTests` lee todos los `{Binding}` de las vistas, sigue el contexto de datos como lo hace
+  Avalonia y falla ante un nombre que su view model ya no tiene; añade ahí una vista cuando crees una.
 - **La prueba de un arreglo tiene que fallar con el código de antes.** Compruébalo: aparta el
   arreglo, ejecuta la prueba y mírala ponerse roja. Una prueba que pasa en los dos casos no demuestra
   nada, y es fácil escribirla.
