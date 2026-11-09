@@ -44,7 +44,7 @@ public static class GcLogging
     public static string? Flag(JavaService.JavaRuntime java, string? extraArgs)
     {
         if (java.IsOpenJ9 || java.Major < MinimumJava) return null;
-        if (JvmArgs.Split(extraArgs).Any(t => t.StartsWith("-Xlog", StringComparison.Ordinal))) return null;
+        if (JavaCommandLine.Split(extraArgs).Any(t => t.StartsWith("-Xlog", StringComparison.Ordinal))) return null;
         return $"-Xlog:gc:file={FolderName}/{FileName}:uptime,level,tags:filecount=2,filesize=8M";
     }
 

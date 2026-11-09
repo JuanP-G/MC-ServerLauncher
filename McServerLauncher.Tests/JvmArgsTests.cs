@@ -62,7 +62,27 @@ public class JvmArgsTests
     [Fact]
     public void AQuotedValueStaysOneArgument()
     {
-        Assert.Equal(new[] { "-Dname=Mi servidor", "-Xmx4G" }, JvmArgs.Split("\"-Dname=Mi servidor\"  -Xmx4G"));
+        Assert.Equal(new[] { "-Dname=Mi servidor", "-Xmx4G" },
+            JavaCommandLine.Split("\"-Dname=Mi servidor\"  -Xmx4G"));
+    }
+
+    /// <summary>
+    /// One splitter: what is looked for here is what the server is started with. A second one lived in
+    /// this class and cut the line differently (backslashes, empty arguments).
+    /// </summary>
+    [Fact]
+    public void ThisClassHasNoSplitterOfItsOwn()
+    {
+        Assert.Null(typeof(JvmArgs).GetMethod("Split"));
+    }
+
+    [Theory]
+    [InlineData("-Dname=\"a b\" \"-Xmx4G\"", true)]       // a quoted flag is still the flag
+    [InlineData("-Dnote=\"-Xmx4G\"", false)]                 // quoted into another option's value
+    [InlineData(@"-Dpath=C:\mods\ -Xmx4G", true)]          // a backslash is not a quote
+    public void ItSeesTheArgumentsTheServerIsStartedWith(string args, bool setsMemory)
+    {
+        Assert.Equal(setsMemory, JvmArgs.SetsMemory(args));
     }
 
     [Fact]
