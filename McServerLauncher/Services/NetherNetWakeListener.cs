@@ -40,15 +40,6 @@ public sealed class NetherNetWakeListener : IDisposable
     /// <summary>An SDP offer with its candidates and identity is a few KB.</summary>
     internal const int MaxBodyBytes = 64 * 1024;
 
-    /// <summary>How long a single read may stall. NOT a limit on the connection — see below.</summary>
-    private const int ConnectionTimeoutMs = 5000;
-
-    /// <summary>The actual ceiling on a connection's life, from accept to close.</summary>
-    private const int ConnectionDeadlineMs = 15000;
-
-    /// <summary>Same as the Java listener: enough for a household, no more.</summary>
-    private const int MaxConcurrentConnections = 16;
-
     /// <summary>
     /// The protocol number put in the status. Informational: the join does not depend on it, since
     /// the answer to the offer is refused anyway.
@@ -58,16 +49,20 @@ public sealed class NetherNetWakeListener : IDisposable
     private static readonly Regex NetworkId = new("^[A-Za-z0-9_.-]{1,64}$", RegexOptions.Compiled);
     private static readonly Regex ColourCodes = new(((char)0xA7) + ".", RegexOptions.Compiled);   // the section sign: a Minecraft colour code
 
-    /// <summary>The deadline actually applied. Settable so a test can exercise it in seconds.</summary>
-    internal TimeSpan ConnectionDeadline { get; set; } = TimeSpan.FromMilliseconds(ConnectionDeadlineMs);
-
-    private TcpListener? _listener;
-    private CancellationTokenSource? _cts;
+    private readonly BoundedTcpListener _tcp;
     private Func<WakeStatus>? _status;
     private Action? _onJoinAttempt;
-    private int _open;
 
-    public bool IsListening => _listener is not null;
+    public NetherNetWakeListener() => _tcp = new BoundedTcpListener(Serve);
+
+    /// <summary>The deadline actually applied. Settable so a test can exercise it in seconds.</summary>
+    internal TimeSpan ConnectionDeadline
+    {
+        get => _tcp.ConnectionDeadline;
+        set => _tcp.ConnectionDeadline = value;
+    }
+
+    public bool IsListening => _tcp.IsListening;
 
     /// <summary>
     /// Starts answering on <paramref name="port"/>. Returns false when the port can't be bound —
@@ -82,25 +77,14 @@ public sealed class NetherNetWakeListener : IDisposable
     {
         Stop();
 
-        try
-        {
-            var listener = new TcpListener(IPAddress.Any, port);
-            listener.Start();
+        // Before the first connection can arrive, which is the moment Start is called on the socket.
+        _status = status;
+        _onJoinAttempt = onJoinAttempt;
+        if (_tcp.Start(port)) return true;
 
-            _listener = listener;
-            _status = status;
-            _onJoinAttempt = onJoinAttempt;
-            _cts = new CancellationTokenSource();
-
-            _ = AcceptLoopAsync(listener, _cts.Token);
-            return true;
-        }
-        catch
-        {
-            // Port already taken (Geyser left running, another app): nothing to do but skip it.
-            Stop();
-            return false;
-        }
+        // Port already taken (Geyser left running, another app): nothing to do but skip it.
+        Stop();
+        return false;
     }
 
     /// <summary>
@@ -109,65 +93,16 @@ public sealed class NetherNetWakeListener : IDisposable
     /// </summary>
     public void Stop()
     {
-        try { _cts?.Cancel(); } catch { /* already disposed */ }
-        _cts?.Dispose();
-        _cts = null;
-
-        try { _listener?.Stop(); } catch { /* never started */ }
-        _listener = null;
+        _tcp.Stop();
         _status = null;
         _onJoinAttempt = null;
     }
 
     public void Dispose() => Stop();
 
-    private async Task AcceptLoopAsync(TcpListener listener, CancellationToken ct)
+    // The cap, the timeouts and the deadline are BoundedTcpListener's: this only speaks HTTP.
+    private void Serve(NetworkStream stream)
     {
-        while (!ct.IsCancellationRequested)
-        {
-            TcpClient client;
-            try { client = await listener.AcceptTcpClientAsync(ct); }
-            catch { return; }   // stopped, or the socket died
-
-            if (Interlocked.Increment(ref _open) > MaxConcurrentConnections)
-            {
-                Interlocked.Decrement(ref _open);
-                try { client.Close(); } catch { /* nothing to do */ }
-                continue;
-            }
-
-            // A thread of its own, as in the Java listener: Serve blocks on its reads for up to the
-            // deadline, and the pool grows too slowly to let sixteen of those sit on it. The cap
-            // above is what keeps the number of these threads bounded.
-            _ = Task.Factory.StartNew(() =>
-            {
-                try { Serve(client); }
-                catch { /* malformed client: it just gets no answer */ }
-                finally
-                {
-                    Interlocked.Decrement(ref _open);
-                    try { client.Close(); } catch { /* already gone */ }
-                }
-            }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-        }
-    }
-
-    private void Serve(TcpClient client)
-    {
-        client.ReceiveTimeout = client.SendTimeout = ConnectionTimeoutMs;
-
-        // ReceiveTimeout is not a deadline: every byte that arrives resets it, so a client that
-        // dribbles one every few seconds would hold its slot for ever. Closing the socket from the
-        // timer makes whichever read is blocked throw, which the catch around Serve already treats
-        // as a malformed client.
-        using var deadline = new CancellationTokenSource(ConnectionDeadline);
-        using var closeOnDeadline = deadline.Token.Register(() =>
-        {
-            try { client.Close(); } catch { /* already on its way out */ }
-        });
-
-        using var stream = client.GetStream();
-
         var request = ReadRequest(stream);
         if (request is null) return;
 
