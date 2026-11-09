@@ -563,22 +563,31 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
     {
         if (!PlayerHistoryPreferences.Current.Enabled) return;
 
-        if (PlayerEventParser.UuidOf(line) is { } uuid)
+        // Whatever goes wrong in here, the history is a side record: it must never take the launcher
+        // down from the server's output thread, with the Java process left running behind it.
+        try
         {
-            Store.RecordUuid(uuid.Player, uuid.Uuid);
-            return;
+            if (PlayerEventParser.UuidOf(line) is { } uuid)
+            {
+                Store.RecordUuid(uuid.Player, uuid.Uuid);
+                return;
+            }
+
+            if (PlayerEventParser.Parse(line, online) is not { } e) return;
+
+            Store.Record(e, DateTime.UtcNow);
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (e.Kind is PlayerEventKind.Join or PlayerEventKind.Leave) RequestRefresh();
+                if (Details is { } d && string.Equals(d.Name, e.Player,
+                    StringComparison.OrdinalIgnoreCase)) d.Reload();
+            });
         }
-
-        if (PlayerEventParser.Parse(line, online) is not { } e) return;
-
-        Store.Record(e, DateTime.UtcNow);
-
-        Dispatcher.UIThread.Post(() =>
+        catch (Exception ex)
         {
-            if (e.Kind is PlayerEventKind.Join or PlayerEventKind.Leave) RequestRefresh();
-            if (Details is { } d && string.Equals(d.Name, e.Player,
-                StringComparison.OrdinalIgnoreCase)) d.Reload();
-        });
+            Safe.Note("Players", "a console line could not be added to the player history", ex);
+        }
     }
 
     /// <summary>The server stopped: whoever was still on it has left, whatever the log said.</summary>
