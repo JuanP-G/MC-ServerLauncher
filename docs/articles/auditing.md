@@ -91,8 +91,30 @@ a user would see or lose, not as what the code does.
      **confirmed / plausible**, the pull request that fixes it, a title that is the symptom, the
      concrete scenario (inputs and state → wrong result), and the `file:line` to look at.
 2. **A choice of scope**: what gets fixed now and what goes to an issue.
-3. **A tracking issue** titled `Auditoría YYYY-MM-DD`, with every finding as a task.
+3. **The findings published as issues**, in English (see [Publishing](#publishing)).
 4. **A row in the [log](#log).**
+
+## Publishing
+
+A report that stays on the maintainer's page helps nobody else. Every audit publishes what it found,
+so that everyone can see how the project is doing, help, and know what problems it has:
+
+- **A tracking issue** titled `Audit YYYY-MM-DD`, with the counts, the range and the tag, linking the
+  issues below in the order they should be done.
+- **One issue per pull request** (`fix(scope): what the YYYY-MM-DD audit found in ...`), with a
+  checkbox per finding: severity, what the user sees or loses, **confirmed / plausible**, and the
+  `file:line`. Anyone may take an unchecked box; saying so in a comment first avoids two people
+  taking the same one. The maintainer's report page is private, so the issues carry the whole text.
+- **What is already fixed is recorded too**: a closed issue per fix (or per group of fixes) that names
+  the pull request, so the history is in one place.
+- **Label `audit`**, plus `bug` or `enhancement`. A GitHub project (fields Area, Severity, Status) and
+  shared saved views in Issues keep them organised.
+- **Everything in English**, as [Contributing](contributing.md#issues) says.
+- **The exception is security.** A finding that someone could exploit today and that is not fixed yet
+  is not published: it goes through the private channel in
+  [`SECURITY.md`](https://github.com/JuanP-G/MC-ServerLauncher/blob/main/SECURITY.md), and its issue
+  is opened once the fix is out. A hardening gap with no practical exploit (a missing size cap, a
+  missing timeout) is published like any other finding. When unsure, treat it as security.
 
 ## Fixing
 

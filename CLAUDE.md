@@ -23,6 +23,23 @@ Before you run `gh pr create`, `gh pr edit` or write any PR text:
 
 The user's own conversation with you can be in Spanish; only what goes to GitHub is English.
 
+## Everything the project publishes is in English
+
+Not only pull requests. **Issues you open, replies, labels and their descriptions, project boards and
+saved issue views** are English too: the whole community reads them. People who report a problem may
+write in Spanish or English (the forms say so); what the maintainer or an assistant publishes is
+English. Commits stay in Spanish and the docs keep both languages.
+
+## Audits are published
+
+Every audit (the `auditoria` skill, `docs/articles/auditing.md`) publishes its findings as issues, so
+that everyone can see how the project is doing, help, and know what problems it has: a tracking issue
+`Audit YYYY-MM-DD`, one issue per pull request with a checkbox per finding, label `audit`, and what is
+already fixed recorded as closed issues that name their pull request. A GitHub project and shared
+views keep them organised. **The one exception is security**: a finding that could be exploited today
+and is not fixed yet goes through the private channel in `SECURITY.md` and is published once the fix is
+out. When unsure, treat it as security and ask. Details: "Publishing" in `docs/articles/auditing.md`.
+
 ## Everything else
 
 - Docs move with the code, in both languages (`README.md` + `README.es.md`,

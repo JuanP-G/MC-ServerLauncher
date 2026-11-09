@@ -66,12 +66,18 @@ pull request of the fix. Commits and PR titles follow `docs/articles/contributin
 
 ## 6. Close the audit
 
-With the user's OK (tags and issues are public):
+With the user's OK (tags and issues are public). **Publish the findings as issues, in English** — the
+"Publishing" section of the doc is the rule: a tracking issue `Audit YYYY-MM-DD`, one issue per pull
+request with a checkbox per finding (severity, symptom, confirmed/plausible, `file:line`; the report
+artifact is private, so the text goes in the issue), closed issues for what is already fixed naming
+their PR, label `audit` plus `bug`/`enhancement`, and a GitHub project with Area/Severity/Status plus
+shared saved views. Before publishing, take out any finding that could be exploited today and is not
+fixed yet: it goes through `SECURITY.md`, not a public issue (when unsure, ask).
 
 ```bash
 git tag -a auditoria/YYYY-MM-DD <reviewed-commit> -m "Auditoría YYYY-MM-DD: <range>, <counts>"
 git push origin auditoria/YYYY-MM-DD
-gh issue create --title "Auditoría YYYY-MM-DD" --body "<every finding as a task, link to the report>"
+gh issue create --title "Audit YYYY-MM-DD" --label audit --body-file <tracking-issue.md>
 ```
 
 Add the row to the Log table in both `auditing.md` and `auditing.es.md` (date, tag, range, counts,

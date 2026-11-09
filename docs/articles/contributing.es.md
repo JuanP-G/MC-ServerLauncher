@@ -381,7 +381,11 @@ el sistema operativo ya puestos (`AppLinks.NewBugReport`); no se añade nada má
 hasta que la persona pulsa «Submit new issue». Una prueba comprueba que la dirección nombra un formulario y unos
 campos que existen.
 
-**Escribe en inglés o en español, el que prefieras** — los dos se leen.
+**Escribe en inglés o en español, el que prefieras** — los dos se leen. Lo que publica el propio
+proyecto va en inglés, porque lo lee toda la comunidad: los issues que abre el mantenedor o un
+asistente, las respuestas, las etiquetas y sus descripciones, el tablero del proyecto y las vistas
+guardadas de issues. Los hallazgos de cada [auditoría](auditing.es.md#publicar) se publican como
+issues por la misma razón.
 
 Un **problema de seguridad nunca es un issue público.** [`SECURITY.md`](https://github.com/JuanP-G/MC-ServerLauncher/blob/main/SECURITY.md)
 explica el canal privado y enumera los compromisos que ya están asumidos, para que puedas distinguir

@@ -96,8 +96,32 @@ usuario vería o perdería, no como lo que hace el código.
      **confirmado / plausible**, el pull request que lo arregla, un título que es el síntoma, el
      escenario concreto (entradas y estado → resultado equivocado) y el `archivo:línea` donde mirar.
 2. **Una decisión de alcance**: qué se arregla ahora y qué va a un issue.
-3. **Un issue de seguimiento** titulado `Auditoría AAAA-MM-DD`, con cada hallazgo como tarea.
+3. **Los hallazgos publicados como issues**, en inglés (ver [Publicar](#publicar)).
 4. **Una fila en el [registro](#registro).**
+
+## Publicar
+
+Un informe que se queda en la página del mantenedor no ayuda a nadie más. Cada auditoría publica lo
+que encontró, para que todo el mundo sepa cómo va el proyecto, pueda ayudar y conozca sus problemas:
+
+- **Un issue de seguimiento** titulado `Audit AAAA-MM-DD`, con los recuentos, el rango y la etiqueta,
+  que enlaza los issues de abajo en el orden en que conviene hacerlos.
+- **Un issue por pull request** (`fix(ámbito): what the AAAA-MM-DD audit found in ...`), con una
+  casilla por hallazgo: gravedad, lo que el usuario ve o pierde, **confirmado / plausible** y el
+  `archivo:línea`. Cualquiera puede coger una casilla sin marcar; avisarlo antes en un comentario evita
+  que dos personas cojan la misma. La página del informe del mantenedor es privada, así que los issues
+  llevan el texto entero.
+- **Lo que ya está arreglado también se registra**: un issue cerrado por arreglo (o por grupo de
+  arreglos) que nombra el pull request, para que la historia esté en un solo sitio.
+- **Etiqueta `audit`**, más `bug` o `enhancement`. Un proyecto de GitHub (campos Area, Severity,
+  Status) y vistas guardadas compartidas en Issues los mantienen ordenados.
+- **Todo en inglés**, como dice [Contribuir](contributing.es.md#issues).
+- **La excepción es la seguridad.** Un hallazgo que alguien podría explotar hoy y que aún no está
+  arreglado no se publica: va por el canal privado de
+  [`SECURITY.md`](https://github.com/JuanP-G/MC-ServerLauncher/blob/main/SECURITY.md), y su issue se
+  abre cuando el arreglo ya ha salido. Un hueco de endurecimiento sin explotación práctica (un tope de
+  tamaño o un plazo que faltan) se publica como cualquier otro hallazgo. Ante la duda, trátalo como
+  seguridad.
 
 ## Arreglar
 
