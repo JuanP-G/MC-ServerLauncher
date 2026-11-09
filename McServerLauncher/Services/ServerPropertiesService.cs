@@ -57,6 +57,21 @@ public class ServerPropertiesService
     public static bool GetBool(IReadOnlyDictionary<string, string> props, string key, bool fallback) =>
         ParseBool(props.TryGetValue(key, out var raw) ? raw : null, fallback);
 
+    /// <summary>The world folder name when <c>server.properties</c> sets no <c>level-name</c>.</summary>
+    public const string DefaultLevelName = "world";
+
+    /// <summary>The world folder's name, <c>level-name</c>, or <see cref="DefaultLevelName"/>.</summary>
+    /// <remarks>
+    /// The one place that says what the world is called: the backups, the seed, the player statistics
+    /// and the "is there a world yet" check each had their own copy of this line. A blank value is
+    /// the default, as it is for the server. It is only a name: a caller that deletes or replaces what it
+    /// points at must still resolve it with <c>WorldBackupService.WorldFolderFor</c>.
+    /// </remarks>
+    public static string GetLevelName(IReadOnlyDictionary<string, string> props) =>
+        props.TryGetValue("level-name", out var name) && !string.IsNullOrWhiteSpace(name)
+            ? name.Trim()
+            : DefaultLevelName;
+
     /// <summary>Returns the server port (server-port) or null if not found.</summary>
     public int? GetServerPort(string propertiesPath)
     {

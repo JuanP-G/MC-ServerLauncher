@@ -46,10 +46,7 @@ public class WorldBackupService
     /// <summary>The world folder name (server.properties' level-name, "world" if unset).</summary>
     public string GetLevelName(ServerConfig config)
     {
-        var props = _properties.Read(config.PropertiesPath);
-        return props.TryGetValue("level-name", out var name) && !string.IsNullOrWhiteSpace(name)
-            ? name.Trim()
-            : "world";
+        return ServerPropertiesService.GetLevelName(_properties.Read(config.PropertiesPath));
     }
 
     /// <summary>
