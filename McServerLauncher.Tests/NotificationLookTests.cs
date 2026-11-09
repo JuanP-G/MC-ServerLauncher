@@ -14,7 +14,13 @@ namespace McServerLauncher.Tests;
 /// joined or the server had died. These check the two things that fixes: that every kind has a
 /// level and a mark, and that a colour the user can type into a free-text box can never stop a
 /// notification from being shown.
+/// <para>
+/// In the <c>avalonia</c> collection because one test swaps the static
+/// <see cref="NotificationPreferences.Global"/>, which every <c>MainViewModel</c> overwrites while it is
+/// built: run in parallel with those tests, the swap was lost now and then.
+/// </para>
 /// </remarks>
+[Collection("avalonia")]
 public class NotificationLookTests
 {
     // --- The catalogue covers everything ---

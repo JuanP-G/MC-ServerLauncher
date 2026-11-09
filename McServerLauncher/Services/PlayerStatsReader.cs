@@ -97,8 +97,7 @@ public static class PlayerStatsReader
         if (string.IsNullOrWhiteSpace(uuid) || !Guid.TryParse(uuid, out var id)) return null;
 
         var props = new ServerPropertiesService().Read(Path.Combine(serverFolder, "server.properties"));
-        var level = props.TryGetValue("level-name", out var n) && n.Length > 0 ? n : "world";
-        var world = Path.Combine(serverFolder, level);
+        var world = Path.Combine(serverFolder, ServerPropertiesService.GetLevelName(props));
         var file = id.ToString("D") + ".json";
 
         foreach (var path in new[] { Path.Combine(world, "players", "stats", file),

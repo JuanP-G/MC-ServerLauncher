@@ -110,7 +110,6 @@ public class ServerCreationService
     public static bool WorldExists(string folder)
     {
         var props = new ServerPropertiesService().Read(Path.Combine(folder, "server.properties"));
-        var level = props.TryGetValue("level-name", out var n) && n.Length > 0 ? n : "world";
-        return File.Exists(Path.Combine(folder, level, "level.dat"));
+        return File.Exists(Path.Combine(folder, ServerPropertiesService.GetLevelName(props), "level.dat"));
     }
 }

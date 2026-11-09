@@ -1277,7 +1277,9 @@ and player cap) and the login disconnect (so whoever presses Join gets a message
 the multiplayer screen is open, so waking on a status request would start the server over and over
 for people who are not even playing. With a Playit tunnel this socket is reachable from the internet,
 so everything it reads is treated as hostile: bounded lengths, a deadline per connection, and a cap
-on how many there are at once.
+on how many there are at once. That last part is `BoundedTcpListener`, shared by this listener and the
+Bedrock one below: the cap, a thread of its own per connection, the stall timeout and the deadline live
+in one place, and each listener only says what it speaks on the connection.
 
 **Who may wake it** is `WakePolicy`. The listener reads the name from the client's Login Start and
 asks; with the server's whitelist on, only somebody on it or in `ops.json` wakes it, and anybody else

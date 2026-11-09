@@ -21,6 +21,9 @@
          The notification colours the user can change are NOT here: those are a setting, they
          live in NotificationPalette, and they happen to start on these. -->
     <Application.Resources>
+        <!-- The monospaced stack of the whole app: console, ports, UUIDs, code. MonoFont.Stack in code is
+             the same text, for what is built in C#, and a test keeps the two equal. -->
+        <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas, Menlo, monospace</FontFamily>
         <SolidColorBrush x:Key="SemanticOk" Color="#6FB57F" />
         <SolidColorBrush x:Key="SemanticInfo" Color="#7BA6CE" />
         <SolidColorBrush x:Key="SemanticWarn" Color="#D9B665" />

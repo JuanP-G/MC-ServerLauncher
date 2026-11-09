@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace McServerLauncher.Services;
@@ -20,36 +19,20 @@ namespace McServerLauncher.Services;
 /// is in half the start scripts on the internet; treating it as a choice would leave most imported
 /// servers on fixed memory for a flag that changes nothing.
 /// </para>
+/// <para>
+/// The arguments are cut with <see cref="JavaCommandLine.Split"/>, the same reader that builds the
+/// command the server is started with, so what is looked for here is exactly what the JVM receives.
+/// This class used to carry a splitter of its own that ignored backslashes and dropped empty arguments.
+/// </para>
 /// </remarks>
 public static partial class JvmArgs
 {
-    /// <summary>Splits a command line the way the JVM receives it: on spaces, keeping quoted runs whole.</summary>
-    public static IReadOnlyList<string> Split(string? args)
-    {
-        var tokens = new List<string>();
-        if (string.IsNullOrWhiteSpace(args)) return tokens;
-
-        var current = new StringBuilder();
-        var quoted = false;
-        foreach (var c in args)
-        {
-            if (c == '"') { quoted = !quoted; continue; }
-            if (char.IsWhiteSpace(c) && !quoted)
-            {
-                if (current.Length > 0) { tokens.Add(current.ToString()); current.Clear(); }
-                continue;
-            }
-            current.Append(c);
-        }
-        if (current.Length > 0) tokens.Add(current.ToString());
-        return tokens;
-    }
-
     /// <summary>
     /// True if the arguments size the heap, choose a collector other than G1, or tune how memory is
     /// returned — anything the automatic profile would otherwise decide.
     /// </summary>
-    public static bool SetsMemory(string? args) => Split(args).Any(t => MemoryToken().IsMatch(t));
+    public static bool SetsMemory(string? args) =>
+        JavaCommandLine.Split(args).Any(t => MemoryToken().IsMatch(t));
 
     /// <summary>
     /// True if the arguments already say something about compact object headers, which the profile
@@ -60,7 +43,7 @@ public static partial class JvmArgs
     /// given both refuses to start.
     /// </remarks>
     public static bool MentionsCompactHeaders(string? args) =>
-        Split(args).Any(t => t.Contains("UseCompactObjectHeaders", StringComparison.OrdinalIgnoreCase)
+        JavaCommandLine.Split(args).Any(t => t.Contains("UseCompactObjectHeaders", StringComparison.OrdinalIgnoreCase)
                              || t.Equals("-XX:-UseCompressedClassPointers", StringComparison.OrdinalIgnoreCase));
 
     // Heap size, collectors other than G1, the options the profile tunes, and OpenJ9's own versions.

@@ -49,38 +49,27 @@ public sealed class WakeOnDemandListener : IDisposable
     /// <summary>Protocol maximum is 32767, but nothing we read legitimately comes close.</summary>
     private const int MaxStringChars = 512;
 
-    /// <summary>How long a single read may stall. NOT a limit on the connection — see below.</summary>
-    private const int ConnectionTimeoutMs = 5000;
+    private readonly BoundedTcpListener _tcp;
+    private Func<WakeStatus>? _status;
+    private Func<string?, bool>? _onJoinAttempt;
 
-    /// <summary>
-    /// The actual ceiling on a connection's life, from accept to close.
-    /// </summary>
-    /// <remarks>
-    /// Generous for a handshake plus its ping, which a real client completes in milliseconds, and
-    /// far too short to be worth camping on a slot.
-    /// </remarks>
-    private const int ConnectionDeadlineMs = 15000;
+    public WakeOnDemandListener() => _tcp = new BoundedTcpListener(Serve);
 
     /// <summary>
     /// The deadline actually applied. Settable so a test can exercise it in seconds instead of
     /// waiting out the real one; production never touches it.
     /// </summary>
-    internal TimeSpan ConnectionDeadline { get; set; } = TimeSpan.FromMilliseconds(ConnectionDeadlineMs);
-
-    /// <summary>Enough for a household; past this someone is not trying to play.</summary>
-    private const int MaxConcurrentConnections = 16;
-
-    private TcpListener? _listener;
-    private CancellationTokenSource? _cts;
-    private Func<WakeStatus>? _status;
-    private Func<string?, bool>? _onJoinAttempt;
-    private int _open;
+    internal TimeSpan ConnectionDeadline
+    {
+        get => _tcp.ConnectionDeadline;
+        set => _tcp.ConnectionDeadline = value;
+    }
 
     /// <summary>Cached data URI of the server icon, so it isn't re-read on every ping.</summary>
     private string? _favicon;
     private string? _faviconSource;
 
-    public bool IsListening => _listener is not null;
+    public bool IsListening => _tcp.IsListening;
 
     /// <summary>
     /// Starts answering on <paramref name="port"/>. Returns false when the port can't be bound —
@@ -97,26 +86,15 @@ public sealed class WakeOnDemandListener : IDisposable
     {
         Stop();
 
-        try
-        {
-            var listener = new TcpListener(IPAddress.Any, port);
-            listener.Start();
+        // Before the first connection can arrive, which is the moment Start is called on the socket.
+        _status = status;
+        _onJoinAttempt = onJoinAttempt;
+        _favicon = _faviconSource = null;
+        if (_tcp.Start(port)) return true;
 
-            _listener = listener;
-            _status = status;
-            _onJoinAttempt = onJoinAttempt;
-            _favicon = _faviconSource = null;
-            _cts = new CancellationTokenSource();
-
-            _ = AcceptLoopAsync(listener, _cts.Token);
-            return true;
-        }
-        catch
-        {
-            // Port already taken (a leftover server, another app): nothing to do but skip it.
-            Stop();
-            return false;
-        }
+        // Port already taken (a leftover server, another app): nothing to do but skip it.
+        Stop();
+        return false;
     }
 
     /// <summary>
@@ -125,73 +103,16 @@ public sealed class WakeOnDemandListener : IDisposable
     /// </summary>
     public void Stop()
     {
-        try { _cts?.Cancel(); } catch { /* already disposed */ }
-        _cts?.Dispose();
-        _cts = null;
-
-        try { _listener?.Dispose(); } catch { /* never started */ }
-        _listener = null;
+        _tcp.Stop();
         _status = null;
         _onJoinAttempt = null;
     }
 
     public void Dispose() => Stop();
 
-    private async Task AcceptLoopAsync(TcpListener listener, CancellationToken ct)
+    // The cap, the timeouts and the deadline are BoundedTcpListener's: this only speaks the protocol.
+    private void Serve(NetworkStream stream)
     {
-        while (!ct.IsCancellationRequested)
-        {
-            TcpClient client;
-            try { client = await listener.AcceptTcpClientAsync(ct); }
-            catch { return; }   // stopped, or the socket died
-
-            if (Interlocked.Increment(ref _open) > MaxConcurrentConnections)
-            {
-                Interlocked.Decrement(ref _open);
-                try { client.Close(); } catch { /* nothing to do */ }
-                continue;
-            }
-
-            // A thread of its own, not one from the pool. Serve blocks on its reads for up to the
-            // deadline, and sixteen slow clients used to hold sixteen pool threads for fifteen
-            // seconds each — the pool grows slowly, so everything else in the app that awaits
-            // (requests, backups, the other servers' listeners) queued behind them. The cap above
-            // is what keeps the number of these threads bounded.
-            _ = Task.Factory.StartNew(() =>
-            {
-                try { Serve(client); }
-                catch { /* malformed client: it just gets no answer */ }
-                finally
-                {
-                    Interlocked.Decrement(ref _open);
-                    try { client.Close(); } catch { /* already gone */ }
-                }
-            }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-        }
-    }
-
-    private void Serve(TcpClient client)
-    {
-        client.ReceiveTimeout = client.SendTimeout = ConnectionTimeoutMs;
-
-        // ReceiveTimeout alone is not a deadline: it limits how long ONE read may stall, and every
-        // byte that arrives resets it. A client that declares a large packet and then dribbles a
-        // byte every few seconds holds its slot indefinitely; sixteen of those exhaust
-        // MaxConcurrentConnections and the server can no longer be woken at all — which, behind a
-        // Playit tunnel, is reachable by anyone on the internet.
-        //
-        // Closing the socket from the timer is what makes this work without touching the parsing
-        // helpers: whichever read is blocked throws, and the catch around Serve already treats that
-        // as a malformed client. Those helpers are static over Stream so they stay testable with a
-        // MemoryStream, and threading a deadline through them would have cost exactly that.
-        using var deadline = new CancellationTokenSource(ConnectionDeadline);
-        using var closeOnDeadline = deadline.Token.Register(() =>
-        {
-            try { client.Close(); } catch { /* already on its way out */ }
-        });
-
-        using var stream = client.GetStream();
-
         var handshake = ReadPacket(stream);
         if (handshake is null) return;
 

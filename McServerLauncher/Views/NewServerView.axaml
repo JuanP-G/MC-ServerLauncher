@@ -292,7 +292,7 @@
                 </StackPanel>
                 <TextBox Grid.Row="1" x:Name="ProgressLog" IsReadOnly="True" TextWrapping="Wrap"
                          Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextOnPopup}"
-                         FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12"
+                         FontFamily="{StaticResource MonoFont}" FontSize="12"
                          AcceptsReturn="True" />
             </Grid>
         </Border>

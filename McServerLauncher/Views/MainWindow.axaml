@@ -622,7 +622,7 @@
                                         <ListBox Grid.Row="1" x:Name="ConsoleList" Classes="console"
                                                  ItemsSource="{Binding VisibleConsoleLines}"
                                                  b:AutoScrollBehavior.AutoScroll="True"
-                                                 FontFamily="Cascadia Mono, Consolas, monospace"
+                                                 FontFamily="{StaticResource MonoFont}"
                                                  FontSize="12" Background="{StaticResource GroundPopup}" BorderThickness="0"
                                                  Padding="0,0,0,4" SelectionMode="Multiple"
                                                  KeyDown="ConsoleList_KeyDown"
@@ -693,7 +693,7 @@
                                                                         CommandParameter="{Binding}">
                                                                     <StackPanel>
                                                                         <TextBlock Text="{Binding Title}" FontWeight="SemiBold"
-                                                                                   FontFamily="Cascadia Mono, Consolas, monospace" />
+                                                                                   FontFamily="{StaticResource MonoFont}" />
                                                                         <TextBlock Text="{Binding Description}" FontSize="12"
                                                                                    Opacity="0.7" TextWrapping="Wrap" Margin="0,2,0,0" />
                                                                     </StackPanel>

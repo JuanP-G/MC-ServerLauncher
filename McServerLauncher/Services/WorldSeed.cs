@@ -62,8 +62,7 @@ public static partial class WorldSeed
     public static SeedInfo Read(string serverFolder, long? lastKnown = null)
     {
         var props = new ServerPropertiesService().Read(Path.Combine(serverFolder, "server.properties"));
-        var levelName = props.TryGetValue("level-name", out var n) && n.Length > 0 ? n : "world";
-        var world = Path.Combine(serverFolder, levelName);
+        var world = Path.Combine(serverFolder, ServerPropertiesService.GetLevelName(props));
 
         var fromWorld = FromWorldFolder(world);
         if (fromWorld is not null) return new SeedInfo(fromWorld, SeedSource.World);

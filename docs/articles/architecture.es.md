@@ -1334,7 +1334,9 @@ hagan ping — el cliente repite el ping cada pocos segundos mientras la pantall
 abierta, así que despertar con una petición de estado arrancaría el servidor una y otra vez para
 gente que ni siquiera está jugando. Con un túnel de Playit este socket es accesible desde internet,
 así que todo lo que lee se trata como hostil: longitudes acotadas, una fecha límite por conexión y un
-tope de cuántas hay a la vez.
+tope de cuántas hay a la vez. Esto último es `BoundedTcpListener`, que comparten este listener y el de
+Bedrock de más abajo: el tope, un hilo propio por conexión, el tiempo de espera de lectura y la fecha
+límite viven en un solo sitio, y cada listener solo dice qué habla por la conexión.
 
 **Quién puede despertarlo** lo decide `WakePolicy`. El listener lee el nombre del Login Start del
 cliente y pregunta; con la lista blanca del servidor activada, solo lo despierta alguien que esté en

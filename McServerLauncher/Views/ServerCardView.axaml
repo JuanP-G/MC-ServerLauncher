@@ -56,7 +56,7 @@
                 </StackPanel>
                 <TextBlock b:MinecraftMotd.Text="{Binding #Root.Motd}" FontSize="13"
                            TextWrapping="Wrap" Margin="0,3,0,0"
-                           FontFamily="Cascadia Mono, Consolas, monospace" />
+                           FontFamily="{StaticResource MonoFont}" />
             </StackPanel>
 
             <!-- Players and signal bars -->
