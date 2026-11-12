@@ -13,7 +13,9 @@ is far more than this needs.
 
 1. Create a free account at https://dash.cloudflare.com.
 2. **Workers & Pages → Create → Workers → Create Worker**. Give it a name, e.g. `mcsl-playit`.
-   Click **Deploy** (the default hello-world is fine for now).
+   Click **Deploy** (the default hello-world is fine for now). The name decides the address, and the
+   app calls one address (`PlayitPartnerService.DefaultProxyUrl`): a Worker you create under another
+   name is a different Worker that the app will never reach until you change that URL too.
 3. **Edit code** → replace everything with the contents of [`worker.js`](worker.js) →
    **Deploy**.
 4. **Settings → Variables and Secrets → Add → type: Secret**:
@@ -26,10 +28,17 @@ is far more than this needs.
 That URL (public, not secret) is what gets baked into the app. The Api-Key stays only in the
 Worker secret.
 
-6. **Add the rate-limit binding** (recommended — see *Abuse protection* below). Dashboard:
+6. **Add the rate-limit binding — required** (see *Abuse protection* below). Dashboard:
    **Settings → Bindings → Add → Rate limiting**, name `SETUP_LIMITER`, e.g. **20 requests / 60 s**.
    With the CLI, it's already in [`wrangler.toml`](wrangler.toml), so `wrangler deploy` sets it up
-   (Wrangler 4.36.0 or later).
+   (Wrangler 4.36.0 or later). **Without it the Worker refuses every request** (HTTP 500
+   `proxy not configured`), the same as without the key: it will not run unlimited.
+
+> [!IMPORTANT]
+> **Updating a Worker that is already deployed** (an older version of `worker.js` has no limiter
+> requirement): add the `SETUP_LIMITER` binding **first or in the same deploy**, then replace the
+> code. If you replace the code first, the app gets 500s until the binding exists. Afterwards, check
+> that the app still connects (see *Test it*).
 
 ## Abuse protection
 
@@ -41,10 +50,17 @@ guards against that:
 - **Only** `POST /v1/partner/create_agent` is accepted; everything else is 404/405.
 - **No browser access**: any request with an `Origin` header is rejected and no CORS headers are ever
   returned, so the proxy can't be driven from a web page.
-- **Body limits + validation**: bodies over 4 KB are refused, and the JSON must actually look like a
-  create_agent request (a non-empty `account_setup_code` and the expected `agent_name`).
-- **Per-IP rate limit**: `SETUP_LIMITER` caps create_agent attempts per client IP (default 20/min).
-  If the binding isn't configured the Worker still runs but the limit is skipped — so configure it.
+- **Body limits + validation**: bodies over 4 KB (**bytes**, not characters) are refused, and every
+  field of the JSON is checked: the setup code (printable ASCII, up to 256 characters), the exact
+  `agent_name`, `self_managed: true`, a known `platform`, the exact `variant_id` and three small
+  integer version numbers.
+- **Only what was checked is forwarded**: the request sent to Playit is rebuilt from the validated
+  fields. Anything else the caller added is dropped, so nothing the app doesn't send can travel to
+  Playit carrying the partner key.
+- **Per-IP rate limit, mandatory**: `SETUP_LIMITER` caps create_agent attempts per client IP (default
+  20/min) and is checked **before** the body is read. If the binding is missing the Worker fails
+  closed (500) instead of running without a limit; if the limiter itself errors, the answer is 503.
+- **Playit's answer is capped** too: a response far larger than a create_agent reply is not passed on.
 - **No internal errors echoed**: if the request to Playit fails, the client gets a generic 502 and
   the reason goes only to the Worker's log.
 - **Optional client header**: set an `APP_TOKEN` var to require the app's `X-MCSL-Client` header to
@@ -62,6 +78,18 @@ wrangler login
 wrangler deploy                       # deploys worker.js (see wrangler.toml)
 wrangler secret put PLAYIT_API_KEY    # paste the key when prompted
 ```
+
+## Tests
+
+`worker.test.mjs` runs the Worker's code against a fake `fetch` and a fake limiter, with Node's own
+test runner and no dependencies:
+
+```bash
+cd playit-proxy
+node --test worker.test.mjs
+```
+
+The .NET suite runs it too (`PlayitProxyWorkerTests`), so CI covers it.
 
 ## Test it
 
