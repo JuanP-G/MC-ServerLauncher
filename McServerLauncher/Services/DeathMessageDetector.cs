@@ -30,11 +30,16 @@ public static class DeathMessageDetector
     /// after the name, not merely appear somewhere in the line — so a plugin/chat line that only
     /// mentions a keyword ("the player Steve died in tutorial") doesn't fire a false death.
     /// </summary>
+    /// <remarks>
+    /// The message comes from <see cref="ConsoleLineClassifier.MessageBody"/> like every other
+    /// detector's. This one used to cut the line itself, so when Minecraft 26.3 began logging deaths
+    /// as <c>System chat: Alice was slain by Zombie</c> it would have needed its own fix, and the
+    /// notification would have read "System chat: …".
+    /// </remarks>
     public static string? Detect(string line)
     {
-        var i = line.IndexOf("]: ", StringComparison.Ordinal);
-        if (i < 0) return null;
-        var msg = line[(i + 3)..].Trim();
+        if (ConsoleLineClassifier.MessageBody(line) is not { } body) return null;
+        var msg = body.TrimEnd();
 
         var space = msg.IndexOf(' ');
         if (space <= 0) return null; // needs "<name> <phrase>"

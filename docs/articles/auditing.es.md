@@ -139,3 +139,4 @@ que encontró, para que todo el mundo sepa cómo va el proyecto, pueda ayudar y 
 |---|---|---|---|---|---|
 | 2026-10-04 | `auditoria/2026-10-04` | toda la app, hasta `5c6d45e` | 40 arreglos (seguridad, fiabilidad, rendimiento) | — | #34, #35 |
 | 2026-10-14 | `auditoria/2026-10-14` | `auditoria/2026-10-04..989678f` (v1.17.0 → 1.19.1) | 6 · 13 · 17 · 8 | #55 | #57, #58, #60–#63 |
+| 2026-11-09 | `auditoria/2026-11-09` | `auditoria/2026-10-14..33ab528` | 2 · 37 · 103 · 15 (+ 9 de estilo) | #157 | #151, #152, #153 por ahora; el resto se sigue en #157 |
