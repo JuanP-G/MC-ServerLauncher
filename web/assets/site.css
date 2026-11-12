@@ -181,7 +181,8 @@ img{max-width:100%; display:block}
 .dlbtn-sep{width:2px; align-self:stretch; margin-block:8px; background:rgba(0,0,0,.3); box-shadow:2px 0 0 rgba(255,255,255,.14)}
 .dlbtn-txt{display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:0 16px 0 14px}
 .dlbtn-txt b{font-weight:600; font-size:15px}
-.dlbtn-txt i{font-style:normal; font-weight:500; font-size:11px; color:#CFF2C2}
+/* Blanco sobre el verde del botón: 4,6:1 (el verde claro de antes daba 3,7:1, por debajo de 4,5:1). */
+.dlbtn-txt i{font-style:normal; font-weight:500; font-size:11px; color:#FFFFFF}
 /* Menú para pantallas estrechas: un panel del juego que se despliega bajo la barra. */
 .menu-btn{display:none; min-height:48px; padding:0 14px; margin-left:auto}
 .menu-btn svg{display:block}
@@ -264,6 +265,7 @@ a.card:hover h3{color:#1B1B1B}
 .os h3{font-size:24px}
 .os p{margin:0 0 16px; color:#4A4A4A; font-size:15px}
 .os .btn{width:100%}
+.os .btn + .btn{margin-top:10px}      /* macOS lleva dos: Apple Silicon e Intel */
 /* La de Windows lleva el marco blanco de la casilla seleccionada de la barra rápida. */
 .os .card.featured{box-shadow:inset 4px 4px 0 var(--gui-hi), inset -4px -4px 0 var(--gui-lo), 0 0 0 2px #000, 0 0 0 6px #FFFFFF, 0 0 0 8px #000, 0 12px 28px rgba(0,0,0,.35)}
 /* Los textos pequeños sueltos (aviso del SHA-256, enlace al historial) llevan una cápsula
@@ -333,6 +335,12 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
 /* ---------- ANIMACIONES DE ENTRADA ---------- */
 /* "colocar bloque": cae, aplasta al aterrizar y suelta un destello */
 .reveal{opacity:0; transform:translateY(34px) scale(.97)}
+/* Sin JavaScript nadie los hace aparecer: se enseñan tal cual en vez de quedar invisibles. */
+@media (scripting: none){
+  .reveal{opacity:1; transform:none}
+  .build > span{opacity:1; transform:none}
+  .chunk{clip-path:none}
+}
 .reveal.in{animation:place .58s cubic-bezier(.2,1.5,.35,1) forwards}
 @keyframes place{
   0%{opacity:0; transform:translateY(34px) scale(.97)}

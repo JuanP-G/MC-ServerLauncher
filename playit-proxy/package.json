@@ -1,0 +1,9 @@
+{
+  "name": "mcsl-playit-proxy",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker that adds the Playit partner key server-side. No dependencies: the tests use node:test.",
+  "scripts": {
+    "test": "node --test worker.test.mjs"
+  }
+}

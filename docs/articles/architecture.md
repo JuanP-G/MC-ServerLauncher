@@ -301,8 +301,11 @@ are no hard-coded machine paths.
   **per-user self-managed agent secret key** from a code the user pastes. The partner **Api-Key is
   never in the app** (it's public + open-source): the call goes through a small proxy (a Cloudflare
   Worker, see `playit-proxy/`) that injects the key server-side. The Worker only accepts the
-  create-agent POST shape the desktop app sends, rejects browser-origin traffic, and can rate-limit
-  per IP. The variant_id/version are public and baked in. `PlayitApiService` then uses the returned
+  create-agent POST shape the desktop app sends (every field checked, and the request to Playit is
+  rebuilt from those fields, never the caller's bytes), rejects browser-origin traffic, and
+  rate-limits per IP **before reading the body**: without the limiter binding it refuses to work
+  rather than run unlimited. Its tests (`playit-proxy/worker.test.mjs`) run inside the .NET suite.
+  The variant_id/version are public and baked in. `PlayitApiService` then uses the returned
   per-user key (as `agent-key`, set app-wide via `SetAgentKey`) to list/create/delete tunnels —
   falling back to a legacy `playit.toml` secret
   or pasted write key otherwise. `PlayitManager` queries/starts/stops the background Windows/systemd

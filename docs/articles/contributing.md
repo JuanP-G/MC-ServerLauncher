@@ -237,6 +237,11 @@ Each of these is here because breaking it shipped a bug that no test caught at t
   `Created-By` line with its own version, so two machines give two jars; the script writes a
   deterministic zip, and `agent.yml` plus a test fail if the committed jar and its SHA-256 stop matching
   what the source builds to. After changing `agent/src/`, run it and commit both files.
+- **The translated web pages are generated and committed: run `python web/_i18n/build.py` after touching
+  `web/index.html`, `web/_i18n/strings.json`, `web/assets/site.js` or `site.css`.** The script writes
+  `web/en`, `de`, `fr`, `pt`, the guides and the `?v=` hash of every fingerprinted file; a `web-pages`
+  job in `tests.yml` regenerates them on a clean checkout and fails on any difference, so a source
+  edited without the generator cannot reach `main`.
 - **A fake that tests share must hand out copies.** `FakeBackupHost.Lines` was the live list, and a test
   that enumerated it while a copy was still reporting progress failed now and then with "Collection was
   modified". A property that a test reads while the code under test is still writing returns a snapshot.

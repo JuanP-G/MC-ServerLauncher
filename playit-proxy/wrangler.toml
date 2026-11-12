@@ -1,4 +1,8 @@
-name = "mcsl-playit"
+# The name decides the address (<name>.<your-subdomain>.workers.dev) and which Worker `wrangler deploy`
+# replaces. This is the name of the Worker the app calls (PlayitPartnerService.DefaultProxyUrl), so
+# deploying from here UPDATES it. A different name creates a second Worker at another address that the
+# app never calls: if you deploy your own copy, change this and the URL in the app together.
+name = "dawn-hall-c5a8"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 
@@ -6,9 +10,9 @@ compatibility_date = "2025-01-01"
 #   wrangler secret put PLAYIT_API_KEY
 # or via the Cloudflare dashboard: Settings -> Variables and Secrets -> add Secret.
 
-# Per-IP rate limit for create_agent (abuse protection). The Worker calls env.SETUP_LIMITER.limit();
-# if this binding is absent the Worker still runs (the limit is simply skipped), so configuring it is
-# strongly recommended. namespace_id is any number unique within your account; period must be 10 or 60.
+# Per-IP rate limit for create_agent. REQUIRED: the Worker calls env.SETUP_LIMITER.limit() and, if this
+# binding is missing, refuses every request (HTTP 500 "proxy not configured") instead of running
+# without a limit. namespace_id is any number unique within your account; period must be 10 or 60.
 # Needs Wrangler 4.36.0 or later (older versions only knew the [[unsafe.bindings]] form of this).
 [[ratelimits]]
 name = "SETUP_LIMITER"

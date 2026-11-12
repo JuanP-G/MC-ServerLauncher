@@ -102,7 +102,7 @@
   // Leer scrollHeight justo después de escribir estilos obliga al navegador a recalcular todo el
   // layout de golpe (122 ms en móvil lento). Se mide aquí, fuera del scroll, con un ResizeObserver
   // que avisa cuando el layout ya está hecho y cuando cambia el alto de la página.
-  var docMax = 0;
+  var docMax = 0, cloudDay = -1;
   new ResizeObserver(function(){ docMax = document.body.scrollHeight - innerHeight; onScroll(); })
     .observe(document.body);
   function onScroll(){
@@ -123,7 +123,9 @@
     // Va ligado a la posición del scroll, igual que el color del cielo, así que también
     // se aplica con "movimiento reducido": si no, el cielo cambiaba sin que el sol se moviera.
     orbit.style.setProperty('--orbit', (180 + p * 360).toFixed(1) + 'deg');
-    if (reduced) drawClouds(0);
+    // Con «movimiento reducido» las nubes no se animan, solo cambian de color con el cielo: se
+    // redibujan cuando el cielo ha cambiado de verdad, no en cada fotograma del scroll.
+    if (reduced && Math.abs(d - cloudDay) > .02) { cloudDay = d; drawClouds(0); }
     ticking = false;
   }
   addEventListener('scroll', function(){
@@ -418,14 +420,49 @@
   // Sin autenticar son 60 peticiones/hora por IP; si falla (límite, sin red, repo privado)
   // los enlaces se quedan como están, apuntando a la página de releases. Nunca rompe la página.
   var REPO = 'JuanP-G/MC-ServerLauncher';
+  // Un .dmg por arquitectura: el de Apple Silicon no arranca en un Mac Intel. «mac» es todo .dmg
+  // que no sea el de Intel (así una versión antigua con un único .dmg sigue funcionando).
+  var INTEL = /Intel|x64|x86_64/i;
   var MATCH = {
-    win:   function(n){ return /\.exe$/i.test(n); },
-    linux: function(n){ return /\.AppImage$/i.test(n); },
-    mac:   function(n){ return /AppleSilicon.*\.dmg$/i.test(n) || /\.dmg$/i.test(n); }
+    win:         function(n){ return /\.exe$/i.test(n); },
+    linux:       function(n){ return /\.AppImage$/i.test(n); },
+    mac:         function(n){ return /\.dmg$/i.test(n) && !INTEL.test(n); },
+    'mac-intel': function(n){ return /\.dmg$/i.test(n) && INTEL.test(n); }
   };
+  // Las direcciones vienen de la respuesta de la API: el botón solo descarga si el archivo es de las
+  // versiones de este repositorio, en GitHub y por https. Si no, se queda en la página de versiones.
+  var DOWNLOAD_PREFIX = 'https://github.com/' + REPO + '/releases/download/';
 
-  fetch('https://api.github.com/repos/' + REPO + '/releases?per_page=8')
-    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  // El listado se guarda diez minutos en la pestaña: cambiar de idioma o volver a la portada no
+  // vuelve a bajarlo (son unos 35 KB y la API sin autenticar da 60 peticiones/hora por IP). Solo
+  // se guardan los campos que se usan. Si el almacenamiento no está disponible, se pide siempre.
+  var CACHE_KEY = 'mcsl-releases', CACHE_MS = 10 * 60 * 1000;
+  function slim(r){
+    return {
+      tag_name: r.tag_name, name: r.name, draft: r.draft, prerelease: r.prerelease,
+      html_url: r.html_url, published_at: r.published_at,
+      assets: (r.assets || []).map(function(a){
+        return { name: a.name, size: a.size, browser_download_url: a.browser_download_url };
+      })
+    };
+  }
+  function getReleases(){
+    try {
+      var hit = JSON.parse(sessionStorage.getItem(CACHE_KEY));
+      if (hit && Array.isArray(hit.releases) && hit.releases.length && Date.now() - hit.at < CACHE_MS)
+        return Promise.resolve(hit.releases);
+    } catch (e) { /* sin almacenamiento o dato roto: se pide de nuevo */ }
+    return fetch('https://api.github.com/repos/' + REPO + '/releases?per_page=8')
+      .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(releases){
+        if (!Array.isArray(releases) || !releases.length) throw new Error('sin versiones');
+        var small = releases.map(slim);
+        try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), releases: small })); } catch (e) { }
+        return small;
+      });
+  }
+
+  getReleases()
     .then(function(releases){
       if (!Array.isArray(releases) || !releases.length) throw new Error('sin versiones');
       var published = releases.filter(function(r){ return !r.draft; });
@@ -439,7 +476,7 @@
         Object.keys(MATCH).forEach(function(os){
           var asset = latest.assets.find(function(a){ return MATCH[os](a.name); });
           var btn = document.querySelector('[data-dl="' + os + '"]');
-          if (asset && btn) {
+          if (asset && btn && asset.browser_download_url.indexOf(DOWNLOAD_PREFIX) === 0) {
             btn.href = asset.browser_download_url;
             btn.setAttribute('download', '');
             btn.title = asset.name + ' · ' + (asset.size / 1048576).toFixed(0) + ' MB';

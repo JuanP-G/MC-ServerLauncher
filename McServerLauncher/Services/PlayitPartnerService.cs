@@ -98,7 +98,9 @@ public class PlayitPartnerService
         using var req = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/v1/partner/create_agent");
         req.Content = new StringContent(body, Encoding.UTF8, "application/json");
         // A known client marker so the proxy can turn away random internet noise. Not a secret (the
-        // app is open source); the proxy's real abuse protection is per-IP rate limiting.
+        // app is open source); the proxy's real abuse protection is per-IP rate limiting, and it
+        // checks every field of this body (agent_name, variant_id, platform...): changing one here
+        // means changing playit-proxy/worker.js and redeploying it.
         req.Headers.Add("X-MCSL-Client", ClientHeader);
 
         string json;

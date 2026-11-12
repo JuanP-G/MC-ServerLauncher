@@ -311,7 +311,10 @@ mundo. No hay rutas fijas del equipo en el código.
   el usuario pega. La **Api-Key de socio no está en la app** (es pública + open-source): la llamada
   pasa por un pequeño proxy (un Cloudflare Worker, ver `playit-proxy/`) que añade la clave en el
   servidor. El Worker solo acepta el POST de create-agent con la forma que envía la app de
-  escritorio, rechaza tráfico con origen de navegador y puede limitar intentos por IP. El
+  escritorio (se comprueba cada campo y la petición a Playit se reconstruye con esos campos, nunca
+  con los bytes del que llama), rechaza tráfico con origen de navegador y limita intentos por IP
+  **antes de leer el cuerpo**: sin el límite configurado se niega a funcionar en vez de trabajar sin
+  tope. Sus tests (`playit-proxy/worker.test.mjs`) se ejecutan dentro de la suite de .NET. El
   variant_id/versión son públicos y van incrustados. `PlayitApiService` usa la clave
   por usuario devuelta (como `agent-key`, fijada con `SetAgentKey`) para listar/crear/eliminar
   túneles — con reserva al `playit.toml` heredado o a una clave de escritura pegada. `PlayitManager`
