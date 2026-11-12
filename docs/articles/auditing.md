@@ -131,3 +131,4 @@ so that everyone can see how the project is doing, help, and know what problems 
 |---|---|---|---|---|---|
 | 2026-10-04 | `auditoria/2026-10-04` | the whole app, up to `5c6d45e` | 40 fixes (security, reliability, performance) | — | #34, #35 |
 | 2026-10-14 | `auditoria/2026-10-14` | `auditoria/2026-10-04..989678f` (v1.17.0 → 1.19.1) | 6 · 13 · 17 · 8 | #55 | #57, #58, #60–#63 |
+| 2026-11-09 | `auditoria/2026-11-09` | `auditoria/2026-10-14..33ab528` | 2 · 37 · 103 · 15 (+ 9 style) | #157 | #151, #152, #153 so far; the rest is tracked in #157 |

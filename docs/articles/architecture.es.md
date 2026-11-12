@@ -311,7 +311,10 @@ mundo. No hay rutas fijas del equipo en el código.
   el usuario pega. La **Api-Key de socio no está en la app** (es pública + open-source): la llamada
   pasa por un pequeño proxy (un Cloudflare Worker, ver `playit-proxy/`) que añade la clave en el
   servidor. El Worker solo acepta el POST de create-agent con la forma que envía la app de
-  escritorio, rechaza tráfico con origen de navegador y puede limitar intentos por IP. El
+  escritorio (se comprueba cada campo y la petición a Playit se reconstruye con esos campos, nunca
+  con los bytes del que llama), rechaza tráfico con origen de navegador y limita intentos por IP
+  **antes de leer el cuerpo**: sin el límite configurado se niega a funcionar en vez de trabajar sin
+  tope. Sus tests (`playit-proxy/worker.test.mjs`) se ejecutan dentro de la suite de .NET. El
   variant_id/versión son públicos y van incrustados. `PlayitApiService` usa la clave
   por usuario devuelta (como `agent-key`, fijada con `SetAgentKey`) para listar/crear/eliminar
   túneles — con reserva al `playit.toml` heredado o a una clave de escritura pegada. `PlayitManager`
@@ -458,7 +461,17 @@ mundo. No hay rutas fijas del equipo en el código.
   acaba el prefijo del propio servidor; todo lo que viene detrás se puede teclear. Buscar la frase en la
   línea no bastaba: un chat como `<Bob> x: Bob left the game` o `<Bob> x]: Saved the game` lleva un trozo
   con forma de prefijo, y sacaba a Bob de la lista de jugadores (y el temporizador de inactividad paraba
-  un servidor con gente dentro) o cortaba una copia antes de tiempo. Además, `ServerViewModel` no reacciona
+  un servidor con gente dentro) o cortaba una copia antes de tiempo. **Desde Minecraft 26.3 el prefijo del
+  servidor tiene una segunda parte**: todo mensaje del sistema —una entrada, una salida, una muerte, un
+  logro, la respuesta a un comando de consola como `save-all` o `seed`— se escribe como
+  `System chat: Alice joined the game` (`MinecraftServer.sendSystemMessage`; hasta la 26.2 era el texto a
+  secas). `MessageBody` lo quita, una vez y solo del principio del mensaje, para que todos los detectores
+  lean el mismo texto en cualquier versión; `DeathMessageDetector` pasa también por ahí en vez de cortar
+  la línea por su cuenta. Sin quitarlo no había nombre delante de ` joined the game`, la lista de
+  jugadores se quedaba vacía en todos los servidores 26.3 y el temporizador de inactividad los paraba con
+  gente jugando. El chat lo escribe otro método y empieza siempre por quien habla, así que
+  `<Bob> System chat: Alice joined the game` sigue siendo Bob hablando (`SystemChatPrefixTests`). Además,
+  `ServerViewModel` no reacciona
   a nada de una línea clasificada como chat salvo para guardarla en el historial, y solo escucha el rechazo
   de ruta de Paper mientras el servidor aún no está en marcha. `ConsoleSpoofingTests` fija cada una de esas
   líneas.

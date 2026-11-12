@@ -301,8 +301,11 @@ are no hard-coded machine paths.
   **per-user self-managed agent secret key** from a code the user pastes. The partner **Api-Key is
   never in the app** (it's public + open-source): the call goes through a small proxy (a Cloudflare
   Worker, see `playit-proxy/`) that injects the key server-side. The Worker only accepts the
-  create-agent POST shape the desktop app sends, rejects browser-origin traffic, and can rate-limit
-  per IP. The variant_id/version are public and baked in. `PlayitApiService` then uses the returned
+  create-agent POST shape the desktop app sends (every field checked, and the request to Playit is
+  rebuilt from those fields, never the caller's bytes), rejects browser-origin traffic, and
+  rate-limits per IP **before reading the body**: without the limiter binding it refuses to work
+  rather than run unlimited. Its tests (`playit-proxy/worker.test.mjs`) run inside the .NET suite.
+  The variant_id/version are public and baked in. `PlayitApiService` then uses the returned
   per-user key (as `agent-key`, set app-wide via `SetAgentKey`) to list/create/delete tunnels —
   falling back to a legacy `playit.toml` secret
   or pasted write key otherwise. `PlayitManager` queries/starts/stops the background Windows/systemd
@@ -444,7 +447,15 @@ are no hard-coded machine paths.
   ends; everything after it can be typed. Searching the line for the sentence was not enough: chat such as
   `<Bob> x: Bob left the game` or `<Bob> x]: Saved the game` carries a prefix-shaped piece of its own, and
   was taken off the player list (and the idle timer then stopped a server with people on it) or cut a
-  backup short. On top of that, `ServerViewModel` reacts to nothing in a line classified as chat except
+  backup short. **From Minecraft 26.3 the server's prefix has a second part**: every system message — a
+  join, a leave, a death, an advancement, the answer to a console command such as `save-all` or `seed` — is
+  logged as `System chat: Alice joined the game` (`MinecraftServer.sendSystemMessage`; up to 26.2 it was the
+  bare text). `MessageBody` removes it, once and only from the very start of the message, so every detector
+  reads the same text on every version; `DeathMessageDetector` goes through it too instead of cutting the
+  line itself. Left in, no name was found in front of ` joined the game`, the player list stayed empty on
+  every 26.3 server and the idle timer stopped it with people playing. Chat is logged by another method and
+  always starts with its sender, so `<Bob> System chat: Alice joined the game` is still Bob talking
+  (`SystemChatPrefixTests`). On top of that, `ServerViewModel` reacts to nothing in a line classified as chat except
   recording it in the history, and only listens for Paper's path refusal before the server is running.
   `ConsoleSpoofingTests` holds each of those lines down.
 - **`BlueMapConsent`** and `ServerProcessManager.ImpliedJvmFlags` — the two start-up warnings the app
