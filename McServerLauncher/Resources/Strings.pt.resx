@@ -325,6 +325,7 @@
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutos sem jogadores</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = nunca se desliga. A contagem começa quando sai o último jogador e reinicia assim que alguém entra.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Sem jogadores durante {0} minutos: a desligar o servidor.</value></data>
+  <data name="Msg_IdleHeldFmt" xml:space="preserve"><value>A consola não mostrou ninguém, mas o servidor diz que há jogadores ligados ({0}): não é desligado. Se a lista de jogadores estiver vazia com gente a jogar, avisa-nos no GitHub.</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Criar cópias de segurança automaticamente</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Cópias automáticas a manter</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Não foi possível mudar o serviço (costuma exigir executar a app como administrador, ou usar o ícone da bandeja): {0}</value></data>

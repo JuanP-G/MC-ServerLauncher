@@ -20,6 +20,11 @@ public class IdleShutdownControllerTests(AvaloniaFixture ui)
         public int Minutes = 10;
         public bool Running = true;
         public int Players;
+
+        /// <summary>What the server answers when asked; null is no answer.</summary>
+        public Func<Task<int?>> Ask = () => Task.FromResult<int?>(0);
+        public int Asked;
+        public readonly List<int> Held = new();
         public DateTime? WokeAtUtc;
         public string? Countdown;
         public readonly List<int> Announced = new();
@@ -31,9 +36,11 @@ public class IdleShutdownControllerTests(AvaloniaFixture ui)
             Minutes: () => Minutes,
             IsRunning: () => Running,
             PlayerCount: () => Players,
+            AskServer: () => { Asked++; return Ask(); },
             WokeAtUtc: () => WokeAtUtc,
             ShowCountdown: text => Countdown = text,
             AnnounceStop: Announced.Add,
+            AnnounceHeld: Held.Add,
             StopAsync: () => { Stops++; return StopBehaviour(); },
             ReportError: Errors.Add), () => Now);
     }
@@ -103,6 +110,145 @@ public class IdleShutdownControllerTests(AvaloniaFixture ui)
             Assert.Equal([10], server.Announced);
             Assert.Equal(1, server.Stops);
             Assert.Null(server.Countdown);
+        });
+    }
+
+    /// <summary>
+    /// Issue #167 and its relatives: the console showed nobody joining, the server had people on.
+    /// </summary>
+    [Fact]
+    public void AServerThatSaysItHasPlayersIsNotStoppedWhateverTheConsoleShowed()
+    {
+        ui.Run(() =>
+        {
+            var server = new FakeServer { Ask = () => Task.FromResult<int?>(3) };
+            using var idle = server.Controller();
+
+            idle.Check();
+            server.Now += TimeSpan.FromMinutes(10);
+            idle.Check();
+
+            Assert.Equal(0, server.Stops);
+            Assert.Empty(server.Announced);
+            Assert.Equal([3], server.Held);
+            Assert.True(idle.IsCounting);   // from now, for another full limit
+        });
+    }
+
+    [Fact]
+    public void ItIsAskedAgainOnlyAfterAnotherFullLimitAndToldOnce()
+    {
+        ui.Run(() =>
+        {
+            var server = new FakeServer { Ask = () => Task.FromResult<int?>(1) };
+            using var idle = server.Controller();
+
+            idle.Check();
+            server.Now += TimeSpan.FromMinutes(10);
+            idle.Check();
+            server.Now += TimeSpan.FromMinutes(5);
+            idle.Check();   // half-way through the new count: no question
+            Assert.Equal(1, server.Asked);
+
+            server.Now += TimeSpan.FromMinutes(5);
+            idle.Check();
+
+            Assert.Equal(2, server.Asked);
+            Assert.Single(server.Held);   // said once, not every time
+            Assert.Equal(0, server.Stops);
+        });
+    }
+
+    [Fact]
+    public void OnceTheServerSaysNobodyIsOnItIsStopped()
+    {
+        ui.Run(() =>
+        {
+            var online = 2;
+            var server = new FakeServer { Ask = () => Task.FromResult<int?>(online) };
+            using var idle = server.Controller();
+
+            idle.Check();
+            server.Now += TimeSpan.FromMinutes(10);
+            idle.Check();
+            online = 0;
+            server.Now += TimeSpan.FromMinutes(10);
+            idle.Check();
+
+            Assert.Equal(1, server.Stops);
+            Assert.Equal([10], server.Announced);
+        });
+    }
+
+    /// <summary>No answer is not "somebody is on": the console's count stands, as it always did.</summary>
+    [Fact]
+    public void AServerThatDoesNotAnswerIsStoppedOnTheConsolesWord()
+    {
+        ui.Run(() =>
+        {
+            var server = new FakeServer { Ask = () => Task.FromResult<int?>(null) };
+            using var idle = server.Controller();
+
+            idle.Check();
+            server.Now += TimeSpan.FromMinutes(10);
+            idle.Check();
+
+            Assert.Equal(1, server.Stops);
+        });
+    }
+
+    [Fact]
+    public void AQuestionThatThrowsCountsAsNoAnswer()
+    {
+        ui.Run(() =>
+        {
+            var server = new FakeServer { Ask = () => throw new InvalidOperationException("boom") };
+            using var idle = server.Controller();
+
+            idle.Check();
+            server.Now += TimeSpan.FromMinutes(10);
+            idle.Check();
+
+            Assert.Equal(1, server.Stops);
+            Assert.Empty(server.Errors);
+        });
+    }
+
+    [Fact]
+    public void WhileTheServerIsBeingAskedNothingElseIsAskedOrStopped()
+    {
+        ui.Run(() =>
+        {
+            var answer = new TaskCompletionSource<int?>();
+            var server = new FakeServer { Ask = () => answer.Task };
+            using var idle = server.Controller();
+
+            idle.Check();
+            server.Now += TimeSpan.FromMinutes(10);
+            idle.Check();
+            idle.Check();
+            idle.Check();
+
+            Assert.Equal(1, server.Asked);
+            Assert.Equal(0, server.Stops);
+        });
+    }
+
+    [Fact]
+    public void ThePlayerWhoJoinsWhileTheServerIsBeingAskedKeepsItAlive()
+    {
+        ui.Run(() =>
+        {
+            var server = new FakeServer();
+            server.Ask = () => { server.Players = 1; return Task.FromResult<int?>(0); };
+            using var idle = server.Controller();
+
+            idle.Check();
+            server.Now += TimeSpan.FromMinutes(10);
+            idle.Check();
+
+            Assert.Equal(0, server.Stops);
+            Assert.Empty(server.Announced);
         });
     }
 
