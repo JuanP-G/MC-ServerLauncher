@@ -227,7 +227,12 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   cosa en el chat), y Paper envuelve las líneas de entrada y salida en secuencias ANSI incluso por una
   tubería, así que un nombre que empieza con un escape no es un nombre: entraban jugadores y la app no los
   veía. `AnsiEscapes.Strip` se ejecuta una vez, donde entra la salida (`ServerProcessManager`); nada
-  aguas abajo debería ver nunca un escape.
+  aguas abajo debería ver nunca un escape. «El principio del mensaje» es lo que devuelve
+  `ConsoleLineClassifier.MessageBody`, nunca un corte propio en `]: `: Minecraft 26.3 empezó a escribir
+  los mensajes del sistema como `System chat: Alice joined the game`, y ese método es el único sitio
+  donde se quita el prefijo. Un detector que cortara la línea por su cuenta habría dejado de funcionar
+  él solo en la 26.3. Cuando salga una versión nueva de Minecraft, lee una consola real de ella antes de
+  fiarte de los detectores.
 - **Un registro accesorio nunca tumba la app.** La salida del servidor llega por su propio hilo, y una
   excepción que nadie captura ahí termina el lanzador mientras el proceso de Java sigue en marcha con el
   puerto ocupado. El historial de jugadores escribía en disco en ese hilo sin nada alrededor, así que un
