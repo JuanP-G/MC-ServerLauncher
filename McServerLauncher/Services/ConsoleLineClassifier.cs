@@ -36,9 +36,14 @@ public static partial class ConsoleLineClassifier
     /// <c>/say</c> (<c>[Alice] …</c>) from a plugin logging under its own name (<c>[LuckPerms] …</c>);
     /// without it those stay ordinary output. See <see cref="ChatOf"/>.
     /// </param>
+    /// <param name="floodgatePrefix">
+    /// What this server's Floodgate puts in front of a Bedrock player's name. See
+    /// <see cref="PlayerNames.IsOnServer"/>.
+    /// </param>
     public static ConsoleLineKind Classify(string text, ConsoleSource source,
         ConsoleLineKind? previous = null,
-        IReadOnlySet<string>? online = null)
+        IReadOnlySet<string>? online = null,
+        string floodgatePrefix = PlayerNames.DefaultFloodgatePrefix)
     {
         if (source == ConsoleSource.Launcher) return ConsoleLineKind.Launcher;
 
@@ -77,8 +82,8 @@ public static partial class ConsoleLineClassifier
         // which is not a name. Said
         // out loud because a comment claiming the order protects it would send the next person
         // looking in the wrong place the day it stops working.
-        if (ChatOf(text, online) is not null) return ConsoleLineKind.Chat;
-        if (IsPlayerEvent(text)) return ConsoleLineKind.Players;
+        if (ChatOf(text, online, floodgatePrefix) is not null) return ConsoleLineKind.Chat;
+        if (IsPlayerEvent(text, floodgatePrefix)) return ConsoleLineKind.Players;
 
         return ConsoleLineKind.Info;
     }
@@ -139,7 +144,8 @@ public static partial class ConsoleLineClassifier
     /// accepting any bracketed name would paint half of a Paper start as chat.
     /// </para>
     /// </remarks>
-    internal static (string Sender, string Message)? ChatOf(string text, IReadOnlySet<string>? online)
+    internal static (string Sender, string Message)? ChatOf(string text, IReadOnlySet<string>? online,
+        string floodgatePrefix = PlayerNames.DefaultFloodgatePrefix)
     {
         var message = MessageBody(text);
         if (message is null) return null;
@@ -154,7 +160,9 @@ public static partial class ConsoleLineClassifier
             var close = message.IndexOf('>');
             if (close <= 1) return null;
             var name = message[1..close];
-            return PlayerNames.IsOnServer(name) ? (name, message[(close + 1)..].TrimStart()) : null;
+            return PlayerNames.IsOnServer(name, floodgatePrefix)
+                ? (name, message[(close + 1)..].TrimStart())
+                : null;
         }
 
         if (message[0] == '[')
@@ -164,7 +172,7 @@ public static partial class ConsoleLineClassifier
             var name = message[1..close];
             var said = message[(close + 2)..];
             if (ServerSenders.Contains(name)) return (name, said);
-            return IsOnline(name, online) ? (name, said) : null;
+            return IsOnline(name, online, floodgatePrefix) ? (name, said) : null;
         }
 
         if (message.StartsWith("* ", StringComparison.Ordinal))
@@ -175,7 +183,7 @@ public static partial class ConsoleLineClassifier
             var name = rest[..space];
             var action = rest[(space + 1)..];
             if (ServerSenders.Contains(name)) return (name, action);
-            return IsOnline(name, online) ? (name, action) : null;
+            return IsOnline(name, online, floodgatePrefix) ? (name, action) : null;
         }
 
         return null;
@@ -190,14 +198,15 @@ public static partial class ConsoleLineClassifier
     /// <summary>Whether a chat sender is the server itself (console, RCON, a command block).</summary>
     internal static bool IsServerSender(string sender) => ServerSenders.Contains(sender);
 
-    private static bool IsOnline(string name, IReadOnlySet<string>? online) =>
-        online is not null && PlayerNames.IsOnServer(name) && online.Contains(name);
+    private static bool IsOnline(string name, IReadOnlySet<string>? online, string floodgatePrefix) =>
+        online is not null && PlayerNames.IsOnServer(name, floodgatePrefix) && online.Contains(name);
 
     /// <summary>Whether somebody joined, left or died.</summary>
-    internal static bool IsPlayerEvent(string text) =>
-        NameBefore(text, " joined the game") is not null
-        || NameBefore(text, " left the game") is not null
-        || DeathMessageDetector.Detect(text) is not null;
+    internal static bool IsPlayerEvent(string text,
+        string floodgatePrefix = PlayerNames.DefaultFloodgatePrefix) =>
+        NameBefore(text, " joined the game", floodgatePrefix) is not null
+        || NameBefore(text, " left the game", floodgatePrefix) is not null
+        || DeathMessageDetector.Detect(text, floodgatePrefix) is not null;
 
     /// <summary>
     /// Extracts the player name right before a marker, from a real log entry only.
@@ -209,10 +218,11 @@ public static partial class ConsoleLineClassifier
     /// sentence in chat — from counting as Alice joining.
     /// </para>
     /// <para>
-    /// A Bedrock player who joins through Floodgate is logged with a dot in front
-    /// (<c>.Steve joined the game</c>), and counts: refusing it left them off the player list, so a
-    /// server with only Bedrock players looked empty and the idle timer stopped it. See
-    /// <see cref="PlayerNames.IsOnServer"/>.
+    /// A Bedrock player who joins through Floodgate is logged with the server's prefix in front —
+    /// a dot unless the owner changed it (<c>.Steve joined the game</c>) — and counts: refusing it
+    /// left them off the player list, so a server with only Bedrock players looked empty and the idle
+    /// timer stopped it. The prefix is the server's own, handed in by the caller. See
+    /// <see cref="PlayerNames.IsOnServer"/> and <see cref="FloodgateConfig"/>.
     /// </para>
     /// <para>
     /// "Between the log prefix and the marker" is measured from the <em>first</em> <c>]: </c>, which
@@ -228,7 +238,8 @@ public static partial class ConsoleLineClassifier
     /// until somebody's name stops working.
     /// </para>
     /// </remarks>
-    public static string? NameBefore(string line, string marker)
+    public static string? NameBefore(string line, string marker,
+        string floodgatePrefix = PlayerNames.DefaultFloodgatePrefix)
     {
         var body = MessageBody(line) ?? line;
 
@@ -236,7 +247,7 @@ public static partial class ConsoleLineClassifier
         if (idx <= 0) return null;
 
         var name = body[..idx];
-        return PlayerNames.IsOnServer(name) ? name : null;
+        return PlayerNames.IsOnServer(name, floodgatePrefix) ? name : null;
     }
 
     /// <summary>The message after the log prefix, or null when there is no prefix.</summary>

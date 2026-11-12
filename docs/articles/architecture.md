@@ -333,7 +333,15 @@ are no hard-coded machine paths.
   player history. One parser turns a log line into something a player did, built from the console's own
   detectors (`NameBefore`, `ChatOf`, `DeathMessageDetector`), and serves both the live console and the
   import, so the two cannot disagree. It never reads the login line, which is the one carrying the IP, so the
-  history cannot keep one — `AnIpAddressNeverReachesTheDisk` checks the bytes on disk. The store lives in
+  history cannot keep one — `AnIpAddressNeverReachesTheDisk` checks the bytes on disk. A Bedrock player's
+  name carries the server's Floodgate prefix, which is a dot unless the owner changed `username-prefix`:
+  **`FloodgateConfig`** reads it from Floodgate's own config (`plugins/floodgate/` for the plugin,
+  `config/floodgate/` for the mod) once per start, and the view model hands it to every detector, so a
+  server set to `*` sees `*Steve` join, talk and die like anybody else (it used to accept the dot alone,
+  and those players were in neither the list nor the history). Only prefixes made of
+  `PlayerNames.PrefixCharacters` are accepted — no space, separator, quote, `@` or bracket — and the
+  store, which keeps names from every server, checks the shape itself (`IsStorable`) and writes the one
+  character Windows refuses in a file name, `*`, as `%2a` (`FileKey`). The store lives in
   `%APPDATA%\McServerLauncher\players\<serverId>\`, outside the server folder so it neither travels with the
   world nor fills its backups: `index.json` with one summary per player, and `events/<name>.jsonl` appended
   to and compacted in one go when it passes the limit by a quarter. Limits are `PlayerHistorySettings`
