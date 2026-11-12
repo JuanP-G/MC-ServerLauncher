@@ -1333,7 +1333,26 @@ Dos mitades, las dos por servidor y las dos desactivadas por defecto.
 de jugadores: en cuanto un servidor lleva `ServerConfig.IdleShutdownMinutes` sin nadie dentro, se
 detiene solo, anunciándolo en la consola y como notificación. La ventana enseña una cuenta atrás en
 vivo (`IdleCountdownText`), y un servidor recién despertado tiene un periodo de gracia para que nunca
-se le pare antes de que a nadie le dé tiempo a entrar.
+se le pare antes de que a nadie le dé tiempo a entrar. Esa gracia cuenta desde que el servidor
+despertado está listo (`WakeOnDemandController.ServerReady`), no desde la llamada: un servidor con
+mods puede tardar en arrancar más que toda la gracia, y antes llegaba a estar listo, se veía vacío y
+sin tiempo, y se paraba antes de que su jugador lo hubiera visto.
+
+**«Sin nadie dentro» lo dice la consola, y la última palabra la tiene el servidor.** La lista de
+jugadores se lee de las líneas de entrada y salida, y esa lectura ha fallado más de una vez —un
+nombre de Floodgate que la app no reconocía, el prefijo `System chat: ` de Minecraft 26.3—, y
+fallaría igual con un plugin que oculte el mensaje de entrada o con un nombre que la app no acepte.
+Cada vez la lista se quedó vacía y se paró un servidor con gente dentro. Por eso, cuando se agota el
+reloj, el controlador pregunta al propio servidor (`IdleHost.AskServer` →
+`ConnectionProbe.PlayersOnlineAsync`): el ping de estado que manda la lista de servidores de
+cualquier cliente, al puerto del servidor en esta máquina (o a `server-ip` si está atado a una sola
+dirección). Es la cuenta que lleva el servidor, así que no depende de ninguna línea del log, es
+igual en todos los tipos de servidor, y un jugador de Bedrock que entró por Geyser está en ella. Si
+dice que hay alguien, no se para nada, la consola lo dice una vez (`Msg_IdleHeldFmt`) y el reloj
+vuelve a empezar. Si dice que no hay nadie, se para. **No contestar no es una respuesta**
+(`enable-status=false`, un proxy que espera antes una cabecera PROXY): entonces vale la cuenta de la
+consola, como antes, y una respuesta sin número de jugadores es «sin respuesta», nunca cero
+(`SlpReply.PlayersKnown`). Lo fijan `IdleShutdownControllerTests` e `IdleAsksTheServerTests`.
 
 **Despertar** es `WakeOnDemandListener`, que ocupa el puerto del servidor mientras este está parado y
 habla la parte pequeña y estable del protocolo de Minecraft necesaria para ser honesto al respecto:

@@ -1275,7 +1275,25 @@ Two halves, both per server and both off by default.
 list: once a running server has had nobody on it for `ServerConfig.IdleShutdownMinutes` it stops
 itself, announcing it in the console and as a notification. The window shows a live countdown
 (`IdleCountdownText`), and a server that has just been woken gets a grace period so it can never be
-stopped before anyone has had time to get in.
+stopped before anyone has had time to get in. That grace runs from the moment the woken server is
+ready (`WakeOnDemandController.ServerReady`), not from the knock: a modded server can take longer to
+start than the whole grace, and it used to come up, find itself empty and out of time, and stop
+before its player had seen it.
+
+**"Nobody on it" is the console's word, and the server has the last one.** The player list is read
+from join and leave lines, and that reading has failed more than once — a Floodgate name the app did
+not recognise, the `System chat: ` prefix of Minecraft 26.3, and it would fail the same way with a
+plugin that hides the join message or a name the app does not accept. Each time the list stayed
+empty and a server with people on it was stopped. So when the clock runs out the controller asks the
+server itself (`IdleHost.AskServer` → `ConnectionProbe.PlayersOnlineAsync`): the status ping every
+client's server list sends, to the server's own port on this machine (or to `server-ip` when it is
+bound to one address). It is the count the server keeps, so it does not depend on any log line, it
+is the same on every server type, and a Bedrock player who came in through Geyser is in it. If it
+says anybody is on, nothing is stopped, the console says so once (`Msg_IdleHeldFmt`) and the clock
+starts again. If it says nobody, the server is stopped. **No answer is not an answer**
+(`enable-status=false`, a proxy that wants a PROXY header first): then the console's count stands,
+as before, and a reply without a player count is "no answer", never zero (`SlpReply.PlayersKnown`).
+`IdleShutdownControllerTests` and `IdleAsksTheServerTests` hold this down.
 
 **Waking** is `WakeOnDemandListener`, which takes over the server's port while the server is stopped
 and speaks the small, stable part of the Minecraft protocol needed to be honest about it: the

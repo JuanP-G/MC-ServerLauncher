@@ -371,6 +371,7 @@
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutos sin jugadores</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = no se apaga nunca. La cuenta empieza cuando se va el último jugador y se reinicia en cuanto entra alguien.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Sin jugadores durante {0} minutos: apagando el servidor.</value></data>
+  <data name="Msg_IdleHeldFmt" xml:space="preserve"><value>La consola no mostró a nadie, pero el servidor dice que hay jugadores conectados ({0}): no se apaga. Si la lista de jugadores está vacía con gente dentro, avísanos en GitHub.</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Crear copias de seguridad automáticamente</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Copias automáticas a conservar</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] No se pudo cambiar el servicio (suele requerir ejecutar la app como administrador, o usar el icono de la bandeja): {0}</value></data>
