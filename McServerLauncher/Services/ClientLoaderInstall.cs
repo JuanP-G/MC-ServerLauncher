@@ -77,7 +77,7 @@ internal static class ClientLoaderInstall
     {
         if (string.IsNullOrWhiteSpace(gameVersion)) return null;
 
-        var installers = await Http.GetStringAsync("https://meta.fabricmc.net/v2/versions/installer", ct);
+        var installers = await AppHttp.GetStringCappedAsync(Http, "https://meta.fabricmc.net/v2/versions/installer", AppHttp.MaxApiBytes, ct);
         using var doc = JsonDocument.Parse(installers);
 
         var newest = doc.RootElement.EnumerateArray()
@@ -145,7 +145,7 @@ internal static class ClientLoaderInstall
     {
         try
         {
-            var text = (await Http.GetStringAsync(url, ct)).Trim();
+            var text = (await AppHttp.GetStringCappedAsync(Http, url, AppHttp.MaxSmallTextBytes, ct)).Trim();
             var first = text.Split(' ', '\t', '\n', '\r')[0].Trim().ToLowerInvariant();
 
             return first.Length is 40 or 64 && first.All(Uri.IsHexDigit) ? first : null;

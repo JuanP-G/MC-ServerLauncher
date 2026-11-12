@@ -46,5 +46,7 @@ out. When unsure, treat it as security and ask. Details: "Publishing" in `docs/a
   `architecture.md` + `architecture.es.md`, and so on). The checklist is in the pull request template.
 - The translated web pages are generated: after touching `web/index.html`, `web/_i18n/strings.json`,
   `web/assets/site.js` or `site.css`, run `python web/_i18n/build.py` and commit what it writes (CI checks).
+- Network reads go through `AppHttp` (capped size, 30 s deadline for silence), never `GetStringAsync`,
+  `ReadAsStringAsync` or `ReadFromJsonAsync`; a test enforces it.
 - A new convention or workflow goes into `docs/articles/contributing.md`, `contributing.es.md`,
   `.github/copilot-instructions.md` **and this file**.

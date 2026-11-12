@@ -233,6 +233,12 @@ Each of these is here because breaking it shipped a bug that no test caught at t
   memory of what spark prints, and a real run showed it prints two decimals in some lines and one in
   others, a mangled `[⚡]` on Windows, and the decimal comma of a Spanish machine. Capture the output,
   put the lines in the test, and run the code against a live server before calling it done.
+- **Read the network through `AppHttp`, never with `GetStringAsync`, `ReadAsStringAsync` or
+  `ReadFromJsonAsync`.** They buffer whatever the server sends and wait for ever if it goes quiet after
+  the headers (`HttpClient.Timeout` stops counting then). `AppHttp.GetStringCappedAsync`,
+  `ReadCappedStringAsync` and `ReadJsonCappedAsync` cap the size and give up after 30 s of silence, and
+  `AtomicDownload.ToFileAsync` does the same for files; send a download with `ResponseHeadersRead`. A
+  test fails if one of the three is called anywhere else.
 - **The memory agent is built with `agent/build.py`, never with the JDK's `jar`.** `jar` writes a
   `Created-By` line with its own version, so two machines give two jars; the script writes a
   deterministic zip, and `agent.yml` plus a test fail if the committed jar and its SHA-256 stop matching

@@ -250,6 +250,12 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   imprime dos decimales en unas líneas y uno en otras, un `[⚡]` mal codificado en Windows y la coma
   decimal de un equipo en español. Captura la salida, pon las líneas en la prueba y ejecuta el código
   contra un servidor vivo antes de darlo por hecho.
+- **Lee la red a través de `AppHttp`, nunca con `GetStringAsync`, `ReadAsStringAsync` ni
+  `ReadFromJsonAsync`.** Guardan en memoria todo lo que envíe el servidor y esperan para siempre si se
+  queda mudo tras las cabeceras (`HttpClient.Timeout` deja de contar entonces).
+  `AppHttp.GetStringCappedAsync`, `ReadCappedStringAsync` y `ReadJsonCappedAsync` acotan el tamaño y se
+  rinden tras 30 s de silencio, y `AtomicDownload.ToFileAsync` hace lo mismo con los archivos; envía una
+  descarga con `ResponseHeadersRead`. Una prueba falla si una de las tres se llama en otro sitio.
 - **El agente de memoria se compila con `agent/build.py`, nunca con el `jar` del JDK.** `jar` escribe una
   línea `Created-By` con su propia versión, así que dos máquinas dan dos jars; el script escribe un zip
   determinista, y `agent.yml` más una prueba fallan si el jar del repositorio y su SHA-256 dejan de

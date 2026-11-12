@@ -72,13 +72,21 @@ public static class AtomicDownload
     /// would otherwise fill the disk. A file announced as larger is refused before a byte is
     /// written, and one that turns out larger than it said is cut off and removed.
     /// </para>
+    /// <para>
+    /// A download that stops sending for <paramref name="idleTimeout"/>
+    /// (<see cref="AppHttp.ReadIdleTimeout"/> when null) is abandoned with a <see cref="TimeoutException"/>
+    /// and the partial file removed: the client's own timeout stops counting once the headers arrive,
+    /// so without this a connection that went quiet halfway waited for ever.
+    /// </para>
     /// </summary>
     public static async Task ToFileAsync(HttpContent content, string destPath,
         Func<string, CancellationToken, Task>? verifyAsync = null,
         IProgress<double>? progress = null,
         long maxBytes = DefaultMaxBytes,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        TimeSpan? idleTimeout = null)
     {
+        var idle = idleTimeout ?? AppHttp.ReadIdleTimeout;
         var dir = Path.GetDirectoryName(destPath);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
 
@@ -97,7 +105,7 @@ public static class AtomicDownload
                 var buffer = new byte[81920];
                 long received = 0;
                 int read;
-                while ((read = await source.ReadAsync(buffer, ct)) > 0)
+                while ((read = await AppHttp.ReadWithDeadlineAsync(source, buffer, idle, ct)) > 0)
                 {
                     received += read;
                     if (received > maxBytes) throw TooLarge(destPath, maxBytes);

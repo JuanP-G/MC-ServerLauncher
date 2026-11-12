@@ -528,7 +528,14 @@ are no hard-coded machine paths.
   before it is believed. `AppHttp.ReadCappedAsync` reads API and text responses up to a cap (8 MiB
   for APIs, 64 KiB for the small files that hold a checksum or a signature), and `AtomicDownload`
   stops a package at its limit (1 GiB by default; 500 MiB for the installer, 400 MiB for a JRE, 400 MiB
-  for a server jar, 300 MiB for a loader installer) and deletes the `.part`. The update and JRE links
+  for a server jar, 300 MiB for a loader installer) and deletes the `.part`. Every read, API or
+  download, also has a **deadline for silence** (`AppHttp.ReadIdleTimeout`, 30 s without a byte,
+  restarted by every read that returns data, so a slow link is never cut): `HttpClient.Timeout` stops
+  counting once the headers arrive, so before this a connection that went quiet halfway left the update
+  box on "Downloading" for good and held the news check's lock. API calls are not made with
+  `GetStringAsync`, `ReadAsStringAsync` or `ReadFromJsonAsync`, which buffer whatever comes (a test
+  enforces it): use `AppHttp.GetStringCappedAsync`, `ReadCappedStringAsync` or `ReadJsonCappedAsync`.
+  The update and JRE links
   must be `https` on the publisher's own host, so a hostile API response can't point the app at
   another server.
 - **`JavaCommandLine`** — Java is started with an argument **list**, never a string, so a file name
