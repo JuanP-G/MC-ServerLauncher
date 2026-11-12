@@ -216,7 +216,8 @@ public static partial class ConsoleLineClassifier
     /// </para>
     /// <para>
     /// "Between the log prefix and the marker" is measured from the <em>first</em> <c>]: </c>, which
-    /// is where the server's own prefix ends. It used to be the last <c>": "</c> before the marker,
+    /// is where the server's own prefix ends — past the <c>System chat: </c> that Minecraft 26.3
+    /// adds to it, see <see cref="MessageBody"/>. It used to be the last <c>": "</c> before the marker,
     /// which a player controls: <c>&lt;Bob&gt; x: Bob left the game</c> took Bob off the player list,
     /// and with nobody left on it the idle timer stopped a server people were playing on.
     /// </para>
@@ -243,12 +244,38 @@ public static partial class ConsoleLineClassifier
     /// The one place that says where the server stops talking and the message begins. Every detector
     /// that reads a server event anchors on the start of what this returns, because everything after
     /// it can be typed by a player.
+    /// <para>
+    /// From Minecraft 26.3 the server's own prefix has a second part. Everything the server
+    /// broadcasts or answers as a system message — a join, a leave, a death, an advancement, the
+    /// reply to a console command such as <c>save-all</c> or <c>seed</c> — is logged as
+    /// <c>System chat: Alice joined the game</c> (<c>MinecraftServer.sendSystemMessage</c> logs
+    /// <c>"System chat: {}"</c>; up to 26.2 it logged the bare text). It is removed here, so every
+    /// detector reads the same message on every version. Left in, no name was ever found in front of
+    /// <c> joined the game</c>: the player list stayed empty on every 26.3 server, and the idle timer
+    /// stopped it with people playing.
+    /// </para>
+    /// <para>
+    /// Removing it gives a player nothing. It is taken only from the very start of the message, once,
+    /// and what a player types never starts there: chat is logged by another method
+    /// (<c>logChatMessage</c>) and always begins with <c>&lt;name&gt;</c>, <c>[Not Secure]</c>,
+    /// <c>[name]</c> or <c>* name</c>. <c>&lt;Bob&gt; System chat: Alice joined the game</c> is still
+    /// Bob talking.
+    /// </para>
     /// </remarks>
     internal static string? MessageBody(string text)
     {
         var i = text.IndexOf("]: ", StringComparison.Ordinal);
-        return i < 0 ? null : text[(i + 3)..].TrimStart();
+        if (i < 0) return null;
+
+        var body = text.AsSpan(i + 3).TrimStart();
+        if (body.StartsWith(SystemChat, StringComparison.Ordinal))
+            body = body[SystemChat.Length..].TrimStart();
+
+        return body.ToString();
     }
+
+    /// <summary>What Minecraft 26.3 and later put in front of every system message in the log.</summary>
+    private const string SystemChat = "System chat: ";
 
     /// <summary>Whether a line is one frame of a Java stack trace, by its shape.</summary>
     internal static bool IsStackFrame(string text) => StackFrame().IsMatch(text);

@@ -213,7 +213,11 @@ Each of these is here because breaking it shipped a bug that no test caught at t
   anchors on what follows the log prefix (a player can type anything into the chat), and Paper wraps join
   and leave lines in ANSI escapes even on a pipe, so a name that begins with one is not a name: players
   joined and the app never saw them. `AnsiEscapes.Strip` runs once where the output enters
-  (`ServerProcessManager`); nothing downstream should ever see an escape.
+  (`ServerProcessManager`); nothing downstream should ever see an escape. "The start of the message" is
+  what `ConsoleLineClassifier.MessageBody` returns, never a cut of your own at `]: `: Minecraft 26.3 began
+  logging system messages as `System chat: Alice joined the game`, and that one method is where the
+  prefix is removed. A detector that cut the line itself would have stopped working on 26.3 alone. When
+  a new Minecraft version comes out, read a real console of it before trusting the detectors.
 - **A side record never takes the app down.** The server's output arrives on its own thread, and an
   exception nobody catches there ends the launcher while the Java process keeps running with the port
   taken. The player history wrote to disk on that thread with nothing around it, so a full disk or a
