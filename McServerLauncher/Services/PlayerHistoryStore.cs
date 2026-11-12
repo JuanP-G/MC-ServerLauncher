@@ -619,11 +619,14 @@ public sealed class PlayerHistoryStore : IDisposable
 
     /// <summary>
     /// The file and index key: the name in lower case. Names are ASCII letters, digits and _, and a
-    /// Bedrock one starts with a dot.
+    /// Bedrock one starts with its server's Floodgate prefix; the one prefix character that cannot
+    /// be in a file name is written out (<see cref="PlayerNames.FileKey"/>).
     /// </summary>
-    private static string Key(string player) => player.ToLowerInvariant();
+    private static string Key(string player) => PlayerNames.FileKey(player);
 
-    // Also what keeps a name from ever becoming a path: nothing but [A-Za-z0-9_], with at most the
-    // one leading dot of a Bedrock player, reaches Key(). ".." and "../x" do not pass.
-    private static bool IsName(string? player) => PlayerNames.IsOnServer(player);
+    // Also what keeps a name from ever becoming a path: nothing but [A-Za-z0-9_], behind at most a
+    // short Floodgate prefix with no separator in it, reaches Key(). ".." and "../x" do not pass.
+    // Which prefix a given server uses was already checked by whoever read the line; the store
+    // keeps names from every server and only has to hold the shape.
+    private static bool IsName(string? player) => PlayerNames.IsStorable(player);
 }

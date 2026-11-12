@@ -345,7 +345,15 @@ mundo. No hay rutas fijas del equipo en el código.
   los detectores de la propia consola (`NameBefore`, `ChatOf`, `DeathMessageDetector`), y sirve tanto a la
   consola en directo como a la importación, así que no pueden discrepar. Nunca lee la línea de login, que es
   la que lleva la IP, así que el historial no puede guardarla — `AnIpAddressNeverReachesTheDisk` lo comprueba
-  en los bytes del disco. Se guarda en `%APPDATA%\McServerLauncher\players\<idServidor>\`, fuera de la
+  en los bytes del disco. El nombre de un jugador de Bedrock lleva el prefijo de Floodgate del servidor, que es
+  un punto salvo que el dueño cambie `username-prefix`: **`FloodgateConfig`** lo lee del config del propio
+  Floodgate (`plugins/floodgate/` para el plugin, `config/floodgate/` para el mod) una vez por arranque, y el
+  view model se lo pasa a cada detector, así que un servidor con `*` ve a `*Steve` entrar, hablar y morir como
+  cualquiera (antes solo se aceptaba el punto, y esos jugadores no salían ni en la lista ni en el historial).
+  Solo se aceptan prefijos hechos de `PlayerNames.PrefixCharacters` —sin espacio, separador, comilla, `@` ni
+  corchete—, y el almacén, que guarda nombres de todos los servidores, comprueba la forma por su cuenta
+  (`IsStorable`) y escribe el único carácter que Windows no admite en un nombre de archivo, `*`, como `%2a`
+  (`FileKey`). Se guarda en `%APPDATA%\McServerLauncher\players\<idServidor>\`, fuera de la
   carpeta del servidor para no viajar con el mundo ni llenar sus copias: `index.json` con un resumen por
   jugador, y `events/<nombre>.jsonl`, al que solo se añade y que se compacta de una vez cuando pasa el límite
   en una cuarta parte. Los límites son `PlayerHistorySettings` (acotados, porque settings.json se puede

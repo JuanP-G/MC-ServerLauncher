@@ -807,6 +807,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         }
         else if (state == ServerState.Starting)
         {
+            _floodgatePrefix = null;   // re-read: the owner may have changed it while it was stopped
             ConnectedPlayers.Clear();
             SnapshotOnline();
             UpdatePlayerCount();
@@ -847,7 +848,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         // Only standard output's own previous line: standard error arrives on another thread, and
         // a JVM warning landing between two lines of the mod list must not decide what they are.
         var kind = ConsoleLineClassifier.Classify(line, source,
-            source == ConsoleSource.Stdout ? _lastStdoutKind : null, _onlineNames);
+            source == ConsoleSource.Stdout ? _lastStdoutKind : null, _onlineNames, FloodgatePrefix);
         if (source == ConsoleSource.Stdout) _lastStdoutKind = kind;
 
         OnConsoleLine(line, kind);
@@ -1022,13 +1023,26 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
     /// </remarks>
     private volatile IReadOnlySet<string> _onlineNames = new HashSet<string>();
 
+    /// <summary>
+    /// What this server's Floodgate puts in front of a Bedrock player's name, as its config says.
+    /// </summary>
+    /// <remarks>
+    /// Read from the file once per start, not per line: the server only reads it when it starts
+    /// too, and every console line asks. Before the first start it is read on first use, which is
+    /// when the history imports the old logs.
+    /// </remarks>
+    public string FloodgatePrefix => _floodgatePrefix ??= FloodgateConfig.ReadUsernamePrefix(Config);
+
+    private volatile string? _floodgatePrefix;
+
     private void SnapshotOnline() =>
         _onlineNames = new HashSet<string>(ConnectedPlayers, StringComparer.OrdinalIgnoreCase);
 
     // Live connected players, read from the join/leave messages in the console.
     private void TrackPlayers(string line)
     {
-        var joined = ConsoleLineClassifier.NameBefore(line, " joined the game");
+        var prefix = FloodgatePrefix;
+        var joined = ConsoleLineClassifier.NameBefore(line, " joined the game", prefix);
         if (joined is not null)
         {
             if (!ConnectedPlayers.Contains(joined)) ConnectedPlayers.Add(joined);
@@ -1041,7 +1055,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
             return;
         }
 
-        var left = ConsoleLineClassifier.NameBefore(line, " left the game");
+        var left = ConsoleLineClassifier.NameBefore(line, " left the game", prefix);
         if (left is not null)
         {
             ConnectedPlayers.Remove(left);
@@ -1052,7 +1066,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
             return;
         }
 
-        var death = DeathMessageDetector.Detect(line);
+        var death = DeathMessageDetector.Detect(line, prefix);
         if (death is not null)
             NotifyIf(NotificationKind.PlayerDeath, death);
     }

@@ -13,6 +13,9 @@ internal interface IPlayerAdminHost
     /// <summary>Whether the server process is up, i.e. commands can be sent to it.</summary>
     bool IsProcessRunning { get; }
 
+    /// <summary>What this server's Floodgate puts in front of a Bedrock player's name.</summary>
+    string FloodgatePrefix => PlayerNames.DefaultFloodgatePrefix;
+
     /// <summary>Whether the whitelist switch is shown as on.</summary>
     bool WhitelistEnabled { get; }
 
@@ -90,13 +93,14 @@ internal sealed class PlayerAdmin
     /// logging a clear message when the input isn't a valid name.
     /// </summary>
     /// <param name="name">What the owner typed.</param>
-    /// <param name="bedrockToo">Also accept a Bedrock player's name, with the dot Floodgate gives it.
+    /// <param name="bedrockToo">Also accept a Bedrock player's name, with the prefix this server's Floodgate gives it.
     /// Only for commands on somebody already connected; never for the whitelist or ban files.</param>
     public string? ValidNameOrWarn(string? name, bool bedrockToo = false)
     {
         name = name?.Trim();
         if (string.IsNullOrEmpty(name)) return null;
-        if (bedrockToo ? PlayerNames.IsOnServer(name) : PlayerNames.IsValid(name)) return name;
+        if (bedrockToo ? PlayerNames.IsOnServer(name, _host.FloodgatePrefix) : PlayerNames.IsValid(name))
+            return name;
 
         // Show what was rejected, defanged for display (no line breaks, capped length).
         var shown = name.Replace("\r", "").Replace("\n", " ");

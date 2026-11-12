@@ -244,7 +244,14 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   una regla escrita para nombres de Java lo sacaba de la lista, así que un servidor con solo jugadores de
   Bedrock parecía vacío y el temporizador de inactividad lo paraba. Leer el log pasa por
   `PlayerNames.IsOnServer`; todo lo que crea un perfil o una ruta a partir de texto tecleado sigue en
-  `PlayerNames.IsValid`.
+  `PlayerNames.IsValid`. El punto es solo el valor por defecto de Floodgate: el dueño puede cambiar
+  `username-prefix`, así que `IsOnServer` recibe el prefijo del propio servidor
+  (`FloodgateConfig.ReadUsernamePrefix`, que guarda `ServerViewModel.FloodgatePrefix`), y cada detector
+  que lee un nombre lo lleva como último argumento: pásalo, y no dejes el valor por defecto en código
+  que sabe qué servidor está leyendo. Un prefijo solo se acepta si está hecho de
+  `PlayerNames.PrefixCharacters`, elegidos por lo que no pueden hacer en un comando, en una ruta o en
+  el detector de chat; lo que guarda nombres de varios servidores comprueba la forma con
+  `PlayerNames.IsStorable` y nombra los archivos con `PlayerNames.FileKey`.
 - **Arregla un formato con una línea de un servidor de verdad.** Los analizadores de la sonda de
   velocidad se escribieron primero de memoria de lo que imprime spark, y una ejecución real mostró que
   imprime dos decimales en unas líneas y uno en otras, un `[⚡]` mal codificado en Windows y la coma
