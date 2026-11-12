@@ -453,6 +453,12 @@ la rejilla de funciones de `README.md`.
 4. **Nunca renumeres el enum `ServerType`.** `servers.json` lo guarda como entero, así que mover un
    miembro reinterpreta todos los servidores ya guardados en todas las máquinas. Los tipos nuevos van
    al final.
+5. **Un tipo que no es Java** (Pumpkin es el primero) pone `Native` en su fila, y lo que trata de Java
+   pregunta a `ServerTypeCatalog.IsNative`. Su consola pasa por un normalizador propio
+   (`PumpkinConsole`) a la forma que ya leen los detectores, escrito con líneas capturadas del servidor
+   real; donde el formato no se pueda reconocer, `ServerProcessManager.PlayerTrackingReliable` tiene
+   que ser falso, para que el apagado por inactividad nunca pare un servidor en el que no ve. Un tipo
+   cuyo propio proyecto se declara sin terminar pone `Experimental`.
 
 > Resiste la tentación de añadir un `switch` sobre `ServerType` en ningún otro sitio. Seis de ellos
 > es lo que sustituyó el catálogo, y un tipo presente en cinco de los seis parecía correcto y se

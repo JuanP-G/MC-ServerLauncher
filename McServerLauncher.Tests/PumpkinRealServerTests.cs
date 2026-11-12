@@ -44,7 +44,10 @@ public class PumpkinRealServerTests
 
         var config = new ServerConfig
         {
-            Name = "Prueba", FolderPath = folder, JarFile = name, Type = ServerType.Pumpkin
+            Name = "Prueba",
+            FolderPath = folder,
+            JarFile = name,
+            Type = ServerType.Pumpkin
         };
         // What the rest of the app would be told: the port, before the server has ever run.
         Assert.Equal(port, new ServerPropertiesService().GetServerPort(config.PropertiesPath));
@@ -80,6 +83,67 @@ public class PumpkinRealServerTests
             Assert.True(ServerCreationService.WorldExists(folder));
             Assert.True(File.Exists(PlayerFiles.PathOf(folder, "ops.json")));
             Assert.Equal(port, new ServerPropertiesService().GetServerPort(config.PropertiesPath));
+        }
+        finally
+        {
+            if (manager.IsRunning) await manager.StopAsync(TimeSpan.FromSeconds(10));
+            try { Directory.Delete(folder, recursive: true); } catch { /* temp */ }
+        }
+    }
+
+    /// <summary>
+    /// The whole of "create a server": the release looked up on GitHub, the executable downloaded
+    /// and checked against the release's own checksums, the first <c>pumpkin.toml</c> written, and
+    /// the result started and stopped.
+    /// </summary>
+    /// <remarks>
+    /// Opt-in twice over, with <c>MCSL_PUMPKIN_DOWNLOAD=1</c>: it downloads over a hundred megabytes
+    /// from the network, which no ordinary test run should.
+    /// </remarks>
+    [Fact]
+    public async Task IsCreatedFromTheLatestReleaseAndRuns_WhenDownloadingIsAllowed()
+    {
+        if (Environment.GetEnvironmentVariable("MCSL_PUMPKIN_DOWNLOAD") != "1") return;
+
+        var folder = Path.Combine(Path.GetTempPath(), "mcsl-pumpkin-create-" + Guid.NewGuid().ToString("N"));
+        var port = FreePort();
+        var log = new List<string>();
+        using var manager = new ServerProcessManager();
+
+        try
+        {
+            var config = await new ServerProvisioningService().CreateAsync(new NewServerPlan(
+                Name: "Creado", Folder: folder, Type: ServerType.Pumpkin,
+                Version: new MinecraftVersion { Id = string.Empty, Type = "release" },
+                Memory: MemoryMode.Automatic, MinRamGb: 2, MaxRamGb: 4, Port: port, Seed: null,
+                MultiVersion: false, Hydraulic: false, Playit: false, Crossplay: false),
+                line => { lock (log) log.Add(line); });
+
+            Assert.Equal(ServerType.Pumpkin, config.Type);
+            Assert.Equal(PumpkinService.ExecutableName, config.JarFile);
+            Assert.True(File.Exists(config.JarFullPath));
+            Assert.False(string.IsNullOrEmpty(config.GameVersion));       // from the release's tag
+            Assert.False(string.IsNullOrEmpty(config.ModLoaderVersion));
+            Assert.False(config.CrossplayEnabled);
+
+            // Nothing a Java server would have been given.
+            Assert.False(File.Exists(Path.Combine(folder, "eula.txt")));
+            Assert.False(File.Exists(Path.Combine(folder, "server.properties")));
+            Assert.False(File.Exists(Path.Combine(folder, "run.bat")));
+            Assert.Equal(port, new ServerPropertiesService().GetServerPort(config.PropertiesPath));
+
+            var running = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            manager.StateChanged += state => { if (state == ServerState.Running) running.TrySetResult(); };
+            manager.Start(config);
+            await running.Task.WaitAsync(TimeSpan.FromMinutes(2));
+            Assert.True(manager.PlayerTrackingReliable);
+
+            // What the idle shutdown asks before it stops an empty server: Pumpkin answers the
+            // Java status ping, with a player count in it.
+            Assert.Equal(0, await ConnectionProbe.PlayersOnlineAsync(null, port, TimeSpan.FromSeconds(10)));
+
+            await manager.StopAsync(TimeSpan.FromSeconds(60));
+            Assert.Equal(ServerState.Stopped, manager.State);
         }
         finally
         {

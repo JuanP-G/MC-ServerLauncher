@@ -24,7 +24,7 @@ archivos `.bat`, ventanas de consola ni configuraciones a mano**.
 ## Qué puedes hacer
 
 <table>
-<tr><td width="33%"><img src="docs/media/icons/server.svg" width="28" height="28" alt=""><br><b>Crear un servidor en 2 minutos</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge o Forge. La app pone hasta el Java.</td><td width="33%"><img src="docs/media/icons/puzzle.svg" width="28" height="28" alt=""><br><b>Mods y plugins de Modrinth</b><br>Ya filtrados por tu versión, y cada uno con lo que necesita.</td><td width="33%"><img src="docs/media/icons/globe.svg" width="28" height="28" alt=""><br><b>Jugar con amigos por Internet</b><br>Túnel de Playit.gg: una dirección, sin abrir puertos.</td></tr>
+<tr><td width="33%"><img src="docs/media/icons/server.svg" width="28" height="28" alt=""><br><b>Crear un servidor en 2 minutos</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge, Forge o Pumpkin. La app pone hasta el Java.</td><td width="33%"><img src="docs/media/icons/puzzle.svg" width="28" height="28" alt=""><br><b>Mods y plugins de Modrinth</b><br>Ya filtrados por tu versión, y cada uno con lo que necesita.</td><td width="33%"><img src="docs/media/icons/globe.svg" width="28" height="28" alt=""><br><b>Jugar con amigos por Internet</b><br>Túnel de Playit.gg: una dirección, sin abrir puertos.</td></tr>
 <tr><td width="33%"><img src="docs/media/icons/smartphone.svg" width="28" height="28" alt=""><br><b>Desde Bedrock también</b><br>Móvil, consola y Windows 10/11, con una casilla.</td><td width="33%"><img src="docs/media/icons/users.svg" width="28" height="28" alt=""><br><b>Jugadores con ficha</b><br>OPs, baneos, lista blanca e historial de cada jugador.</td><td width="33%"><img src="docs/media/icons/hard-drive.svg" width="28" height="28" alt=""><br><b>Copias del mundo</b><br>Al arrancar, al parar y cada hora mientras se juega.</td></tr>
 <tr><td width="33%"><img src="docs/media/icons/moon.svg" width="28" height="28" alt=""><br><b>Se duerme y se despierta</b><br>Se apaga sin nadie dentro y arranca cuando alguien entra.</td><td width="33%"><img src="docs/media/icons/terminal.svg" width="28" height="28" alt=""><br><b>Una consola que se lee</b><br>Colores por tipo de línea, filtros con contador y buscador.</td><td width="33%"><img src="docs/media/icons/refresh.svg" width="28" height="28" alt=""><br><b>Se actualiza sola</b><br>Cada descarga, comprobada con su SHA-256.</td></tr>
 </table>
@@ -130,7 +130,7 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   añadir un servidor se hace junto a la lista, y se puede dejar a medias y retomar; la configuración de un
   servidor se abre en el mismo sitio, nunca en un diálogo.
 - **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Paper /
-  Purpur / Fabric / NeoForge / Forge).
+  Purpur / Fabric / NeoForge / Forge / Pumpkin).
 - **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang) y **puerto**,
   y aceptas el EULA de Minecraft; la app descarga el servidor correcto, prepara `run.bat` / `server.properties` e
   instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur
@@ -138,6 +138,22 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   Minecraft y del loader, el puerto y la memoria, y no cambia nada en la carpeta.
 - **Cambiar el tipo de un servidor** — a Paper/Purpur/Fabric/Forge/NeoForge o de vuelta a Vanilla,
   **conservando el mundo**, con avisos por colores de lo que puede afectar cada cambio.
+- **Pumpkin (experimental)** — [Pumpkin](https://github.com/Pumpkin-MC/Pumpkin) es un servidor de Minecraft
+  escrito en Rust: un ejecutable, sin Java, y con jugadores de Java y de Bedrock en el mismo servidor sin
+  Geyser. La app descarga su última versión estable (verificada con las sumas de la propia release), lo
+  arranca, lo para, sigue quién juega, lo despierta y lo apaga cuando está vacío, y copia su mundo. Va marcado
+  como **Experimental** porque lo dice su propio proyecto: faltan partes del juego, y no carga plugins de
+  Paper ni mods. En qué se distingue de los demás tipos:
+  - **No se elige versión de Minecraft**: cada versión de Pumpkin sirve una (la 0.2.2 es Java 26.3).
+  - **No tiene `server.properties`**. El puerto, el MOTD, el máximo de jugadores y las reglas del juego están
+    en `pumpkin.toml`, que la app lee y te abre pero no reescribe. No se muestran las páginas Juego, Mundo,
+    Tipo y versión, Rendimiento ni Crossplay, ni la memoria, el Java o la tienda de mods.
+  - El `pumpkin.toml` que escribe la app **desactiva la telemetría anónima de Pumpkin**; actívala en el
+    archivo si la quieres.
+  - Todavía no se puede añadir una carpeta que ya tenga un servidor Pumpkin, y un jugador de Bedrock no puede
+    despertar un Pumpkin dormido (uno de Java sí).
+  - Si cambias `[logging]` en `pumpkin.toml`, la app deja de saber quién entra, lo dice en la consola y
+    **no apaga ese servidor por inactividad**.
 - **Memoria automática** — la app decide cuánta memoria puede usar cada servidor y le da a Java las
   opciones para que devuelva la que no necesita: un servidor vacío medido en **1 GB en vez de 3,5-4,7 GB**,
   con el mismo tick. Entre todos los servidores usan como mucho la mitad del PC, o todo menos 2 GB si es
@@ -239,6 +255,7 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   | **Fabric** | **Funciona** | Con la casilla de contenido de mods: Hydraulic convierte lo que añaden los mods. |
   | **NeoForge** | **A veces** | Conecta, pero cualquier mod que el cliente necesite tener deja fuera a Bedrock, y Hydraulic ya no publica para NeoForge. |
   | **Vanilla**, **Forge** | **No** | Geyser no publica ninguna versión para ellos. |
+  | **Pumpkin** | **Por sí mismo** | Habla Bedrock de forma nativa, así que no se instala Geyser. Su soporte de Bedrock aún está en desarrollo. |
 
 - **Bedrock sin tocar Geyser ni Windows** — la app escribe el `transport` de Geyser como `both`, que es lo que
   necesita el Bedrock actual (NetherNet), y lo vuelve a poner si una reinstalación lo resetea. En Windows, la
@@ -396,7 +413,7 @@ del mundo nunca la lee.
 equipo: el historial de jugadores (entradas, salidas, muertes, logros y, salvo que lo desactives en Ajustes →
 Jugadores, el chat; 90 días por defecto, nunca IPs) y los logs de consola de arriba, que guardan **todas** las
 líneas —el chat y las IPs de las líneas de conexión incluidos— digan lo que digan los ajustes del historial.
-A qué servicios pide cosas la app, y qué ven además de tu IP: Mojang, Paper, Purpur, Fabric, Forge y NeoForge
+A qué servicios pide cosas la app, y qué ven además de tu IP: Mojang, Paper, Purpur, Fabric, Forge, NeoForge y Pumpkin
 (descargas del servidor, y Mojang el nombre de un jugador cuando lo añades a la whitelist), Modrinth y GeyserMC
 (mods y plugins), Adoptium (Java), GitHub (actualizaciones, y el catálogo de temas y resúmenes de la tienda, un
 archivo público que se baja como mucho una vez al día), Playit (túneles, a través del proxy de la app al
