@@ -456,6 +456,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
             // an empty player list would then mean nothing. See ServerProcessManager.
             IsRunning: () => State == ServerState.Running && _process.PlayerTrackingReliable,
             PlayerCount: () => ConnectedPlayers.Count,
+            AskServer: AskServerHowManyAsync,
             WokeAtUtc: () => _wake.WokeAtUtc,
             ShowCountdown: text => IdleCountdownText = text,
             AnnounceStop: minutes =>
@@ -464,8 +465,29 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
                 NotifyIf(NotificationKind.IdleShutdown,
                     Localizer.Format("Notif_IdleStopped", minutes));
             },
+            AnnounceHeld: online => OnConsoleLine(Localizer.Format("Msg_IdleHeldFmt", online)),
             StopAsync: Stop,
             ReportError: line => OnConsoleLine(line)));
+
+    /// <summary>
+    /// How many players the running server says it has; null when it does not say.
+    /// </summary>
+    /// <remarks>
+    /// Asked on the server's own port, off the UI thread. See
+    /// <see cref="ConnectionProbe.PlayersOnlineAsync"/> for why the idle shutdown wants it.
+    /// </remarks>
+    private Task<int?> AskServerHowManyAsync()
+    {
+        var path = Config.PropertiesPath;
+        return Task.Run(async () =>
+        {
+            var props = _properties.Read(path);
+            if (!props.TryGetValue("server-port", out var text) || !int.TryParse(text, out var port))
+                port = 25565;
+            props.TryGetValue("server-ip", out var ip);
+            return await ConnectionProbe.PlayersOnlineAsync(ip, port, TimeSpan.FromSeconds(4));
+        });
+    }
 
     private StartPreflight CreatePreflight(ServerConfig config) =>
         new(config, new PreflightHost(
@@ -753,6 +775,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         {
             _stats.Reset();
             _statsTimer.Start();
+            _wake.ServerReady();   // the time a woken server waits for its player runs from here
             BeginPerformanceWatch();
             _lastRunningAtUtc = DateTime.UtcNow;
 

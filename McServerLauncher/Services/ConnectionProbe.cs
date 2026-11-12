@@ -31,7 +31,17 @@ public sealed record LatencyStats(IReadOnlyList<double> Samples, int Sent)
 }
 
 /// <summary>What a Minecraft server said to a status ping.</summary>
-public sealed record SlpReply(double LatencyMs, int Protocol, string? Version, int Online, int Max);
+/// <param name="LatencyMs">How long the ping's echo took.</param>
+/// <param name="Protocol">The protocol number the server speaks.</param>
+/// <param name="Version">The version name it shows.</param>
+/// <param name="Online">How many players it says are connected.</param>
+/// <param name="Max">Its player limit.</param>
+/// <param name="PlayersKnown">
+/// Whether the reply carried a player count at all. Without one <paramref name="Online"/> is 0, which
+/// must not be read as "nobody is on": see <see cref="ConnectionProbe.PlayersOnlineAsync"/>.
+/// </param>
+public sealed record SlpReply(double LatencyMs, int Protocol, string? Version, int Online, int Max,
+    bool PlayersKnown = true);
 
 /// <summary>How fast bytes went one way.</summary>
 /// <param name="Mbps">Megabits per second, over the whole transfer.</param>
@@ -155,8 +165,8 @@ public static class ConnectionProbe
             await ReadPacketAsync(stream, cts.Token);
             var ms = watch.Elapsed.TotalMilliseconds;
 
-            var (spoken, version, online, max) = ReadStatus(json);
-            return new SlpReply(ms, spoken, version, online, max);
+            var (spoken, version, online, max, known) = ReadStatus(json);
+            return new SlpReply(ms, spoken, version, online, max, known);
         }
         catch (Exception) when (!ct.IsCancellationRequested)
         {
@@ -164,13 +174,54 @@ public static class ConnectionProbe
         }
     }
 
-    private static (int Protocol, string? Version, int Online, int Max) ReadStatus(string json)
+    /// <summary>
+    /// How many players a running server says it has, or null when it did not say.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The second opinion the idle shutdown asks for before stopping a server the console showed as
+    /// empty. It is the count the server itself keeps, the one every client's server list shows, so
+    /// it does not depend on the wording of a log line, on a plugin hiding the join message, or on
+    /// the app recognising the player's name — and a Bedrock player who came in through Geyser is in
+    /// it like any other.
+    /// </para>
+    /// <para>
+    /// Null is "no answer", never "nobody": <c>enable-status=false</c>, a server bound to another
+    /// address, a proxy that wants a PROXY header first. The caller then has only the console to go
+    /// by, as before this existed.
+    /// </para>
+    /// </remarks>
+    /// <param name="serverIp">The server's <c>server-ip</c>; blank means every address, so loopback.</param>
+    /// <param name="port">The server's own port.</param>
+    /// <param name="timeout">For the whole exchange.</param>
+    /// <param name="ct">Stops it early.</param>
+    public static async Task<int?> PlayersOnlineAsync(string? serverIp, int port, TimeSpan timeout,
+        CancellationToken ct = default)
+    {
+        var reply = await PingJavaAsync(LocalAddressFor(serverIp), port, timeout, ct: ct);
+        return reply is { PlayersKnown: true } ? reply.Online : null;
+    }
+
+    /// <summary>Where on this machine a server with that <c>server-ip</c> answers.</summary>
+    /// <remarks>
+    /// A server told to listen on one address does not answer on loopback, so that address is the
+    /// one to ask. Blank, <c>0.0.0.0</c> and <c>::</c> all mean "every address".
+    /// </remarks>
+    internal static string LocalAddressFor(string? serverIp)
+    {
+        var ip = serverIp?.Trim();
+        return string.IsNullOrEmpty(ip) || ip is "0.0.0.0" or "::" or "[::]" ? "127.0.0.1" : ip;
+    }
+
+    internal static (int Protocol, string? Version, int Online, int Max, bool PlayersKnown) ReadStatus(
+        string json)
     {
         try
         {
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
             int protocol = 0, online = 0, max = 0;
+            var known = false;
             string? version = null;
             if (root.TryGetProperty("version", out var v))
             {
@@ -179,14 +230,18 @@ public static class ConnectionProbe
             }
             if (root.TryGetProperty("players", out var players))
             {
-                if (players.TryGetProperty("online", out var o) && o.TryGetInt32(out var on)) online = on;
+                if (players.TryGetProperty("online", out var o) && o.TryGetInt32(out var on))
+                {
+                    online = on;
+                    known = true;
+                }
                 if (players.TryGetProperty("max", out var m) && m.TryGetInt32(out var mx)) max = mx;
             }
-            return (protocol, version, online, max);
+            return (protocol, version, online, max, known);
         }
-        catch (JsonException)
+        catch (Exception e) when (e is JsonException or InvalidOperationException)
         {
-            return (0, null, 0, 0);
+            return (0, null, 0, 0, false);
         }
     }
 

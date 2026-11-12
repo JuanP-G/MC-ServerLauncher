@@ -31,6 +31,9 @@ namespace McServerLauncher.Services;
 /// from the internet, so it has the same bounds as <see cref="WakeOnDemandListener"/>: lengths
 /// before allocation, a deadline per connection, a cap on how many at once.
 /// </para>
+/// <para>
+/// The client that speaks RakNet over UDP instead is <see cref="RakNetWakeListener"/>'s.
+/// </para>
 /// </summary>
 public sealed class NetherNetWakeListener : IDisposable
 {
