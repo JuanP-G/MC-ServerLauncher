@@ -106,7 +106,7 @@ public partial class ServerViewModel
         var owners = new List<FirewallOwner>();
         if (FirewallDiagnosis.Resolve(Config.JavaPath) is { } java) owners.Add(new FirewallOwner(java, NeedsUdp: true));
         if (state == ServerState.Stopped && Config.WakeOnDemand && Environment.ProcessPath is { } self)
-            owners.Add(new FirewallOwner(self, NeedsUdp: false));
+            owners.Add(new FirewallOwner(self, NeedsUdp: true));   // RakNetWakeListener answers on UDP
         return owners;
     }
 

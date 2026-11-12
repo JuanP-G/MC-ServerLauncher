@@ -24,7 +24,7 @@ flowchart LR
     protect["BackupCoordinator<br/>WorldBackupService<br/>LiveWorldBackup"]
     content["ModrinthService<br/>ModDependencyService<br/>CleanupAdvisor"]
     online["PlayitApiService<br/>PlayitAgentRunner<br/>CrossplayService"]
-    wake["WakeOnDemandListener<br/>NetherNetWakeListener"]
+    wake["WakeOnDemandListener<br/>NetherNetWakeListener<br/>RakNetWakeListener"]
     hist["PlayerHistoryStore"]
     folder[("The server's folder<br/>world · mods · backups")]
     web["Mojang · Paper · Purpur<br/>Fabric · Forge · NeoForge<br/>Adoptium (Java)"]
@@ -1331,10 +1331,30 @@ with a signed identity, so the POST is refused with a 503 and the player tries a
 later, when Geyser is up. Two choices worth knowing: the GET alone does not wake anything, for the
 same reason a Java ping does not; and `WakePolicy` is not asked, because the player's name is inside
 that signed identity and is not read here, so a Bedrock join wakes the server even when it only starts
-for its whitelist. The Bedrock scanners that exist send a RakNet ping, not this exchange. Both ports
-are let go together before the server starts (`WakeOnDemandController.Stop`), or Geyser would find its
-own port busy. Not covered: Geyser's `raknet` transport (UDP), LAN discovery, and what the client
-shows for the refusal — the protocol does not define a message.
+for its whitelist. The Bedrock scanners that exist send a RakNet ping, not this exchange.
+
+**The Bedrock client that speaks RakNet** — an older one, and whichever platforms still use it — is
+`RakNetWakeListener`'s, on the UDP side of the same port number. Until it existed that client saw a
+sleeping server as offline and could not wake it. It speaks RakNet's two offline messages and nothing
+else: an *unconnected ping* (what the client sends to draw its list) gets a pong whose first line is
+the server's name and the "asleep" notice, and wakes nothing; an *open connection request* (what it
+sends when Join is pressed) wakes the server and is not answered, because nothing at that level can
+say "starting, try again" — the client gives up after a few seconds and the player joins once Geyser
+is up. UDP adds a problem TCP does not have: the sender's address can be forged, so anything that
+answers can be aimed at a third party. So the pong is small and rationed (twenty a second), a join
+request counts only with RakNet's magic and the padding a real client sends (a forged one-byte packet
+has neither), and the wake is rationed too. Not verified with a real RakNet client: the tests speak
+the protocol over a real socket, and the version and protocol number in the pong are informational.
+
+All three ports are let go together before the server starts (`WakeOnDemandController.Stop`), or
+Geyser would find its own port busy; the UDP one waits for its receive thread, since the port is not
+free until that has let go. While it sleeps the launcher is the program listening on the Bedrock
+port over TCP *and* UDP, which is what the Windows Firewall check now asks about
+(`ServerViewModel.FirewallOwners`). Not covered: LAN discovery, and what the client shows for a
+refusal — neither protocol defines a message.
+
+A Java player sent here by another server's `/transfer` (1.20.5 onwards) arrives with next state 3
+instead of 2 and logs in the same way; the listener treats both as a join.
 
 A sleep and a wake with nobody coming in leave **no backups**: the stop sees nobody played and the
 start finds the world still the last backup's (see *World backups*).
