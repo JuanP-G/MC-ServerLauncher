@@ -173,8 +173,8 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   un margen tras despertar. Si el servidor tiene lista blanca, solo lo despiertan los nombres de la lista (u ops),
   así que los escáneres de Internet no; el nombre no se verifica hasta que el servidor arranca, y entonces este
   echa a quien use uno prestado. Con crossplay, un jugador de Bedrock que intente entrar también lo despierta,
-  tenga lista blanca o no (su nombre no se puede leer en ese momento); el primer intento se rechaza y entra
-  unos segundos después. Por servidor y **desactivado de serie**.
+  tenga lista blanca o no (su nombre no se puede leer en ese momento), se conecte su cliente de la forma
+  nueva (NetherNet) o de la antigua (RakNet); el primer intento se rechaza y entra unos segundos después. Por servidor y **desactivado de serie**.
 - **Antes de arrancar se comprueba que no falte nada** — si a un mod o plugin le falta una dependencia, se
   avisa **al darle a Iniciar**, con la opción de instalarla y arrancar. Se lee de los propios jars, así que
   funciona **sin conexión**. Para mods de Fabric y Forge/NeoForge y plugins de Paper y Purpur.

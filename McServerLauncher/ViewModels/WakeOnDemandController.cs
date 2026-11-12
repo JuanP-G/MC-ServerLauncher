@@ -54,6 +54,12 @@ public sealed class WakeOnDemandController : IDisposable
     /// </summary>
     private readonly NetherNetWakeListener _bedrock = new();
 
+    /// <summary>
+    /// And for the Bedrock client that speaks RakNet instead: the UDP side of the same port number.
+    /// Without it that client saw the sleeping server as offline and could not wake it.
+    /// </summary>
+    private readonly RakNetWakeListener _raknet = new();
+
     public WakeOnDemandController(ServerConfig config, WakeHost host, ServerPropertiesService properties,
         WhitelistService whitelist, PlayersService players)
     {
@@ -86,8 +92,9 @@ public sealed class WakeOnDemandController : IDisposable
     }
 
     /// <summary>
-    /// Opens Geyser's TCP port while the server sleeps, when it has Bedrock players at all. Nothing
-    /// is asked of the owner: crossplay on is the whole condition.
+    /// Opens Geyser's port while the server sleeps, when it has Bedrock players at all: TCP for the
+    /// client that opens with HTTP, UDP for the one that speaks RakNet. Nothing is asked of the
+    /// owner: crossplay on is the whole condition.
     /// </summary>
     private void StartBedrock(int? javaPort)
     {
@@ -95,20 +102,25 @@ public sealed class WakeOnDemandController : IDisposable
 
         // Same number as the Java port: that one is already ours, and a second bind would only
         // fail and complain about a port the app itself is holding.
-        if (port is null || port == javaPort) { _bedrock.Stop(); return; }
+        if (port is null || port == javaPort) { _bedrock.Stop(); _raknet.Stop(); return; }
 
-        if (!_bedrock.Start(port.Value, BuildStatus, OnBedrockJoinAttempt))
+        // Each on its own: TCP and UDP are different ports that happen to share a number, and one
+        // being taken is no reason to give up the other. Said once, whichever failed.
+        var tcp = _bedrock.Start(port.Value, BuildStatus, OnBedrockJoinAttempt);
+        var udp = _raknet.Start(port.Value, BuildStatus, OnBedrockJoinAttempt);
+        if (!tcp || !udp)
             _host.Say(Localizer.Format("Msg_WakeBedrockPortBusyFmt", port.Value));
     }
 
     /// <summary>
     /// Frees the ports: the server is starting, the world is being swapped, or the app is closing.
-    /// Both of them, or Geyser would find its own port busy.
+    /// All of them, or Geyser would find its own port busy.
     /// </summary>
     public void Stop()
     {
         _listener.Stop();
         _bedrock.Stop();
+        _raknet.Stop();
     }
 
     /// <summary>Same as <see cref="Stop"/>; lets the owner treat the controller as disposable.</summary>
@@ -116,6 +128,7 @@ public sealed class WakeOnDemandController : IDisposable
     {
         _listener.Dispose();
         _bedrock.Dispose();
+        _raknet.Dispose();
     }
 
     /// <summary>What a client sees while the server sleeps: its own MOTD plus what is going on.</summary>
@@ -150,11 +163,13 @@ public sealed class WakeOnDemandController : IDisposable
     }
 
     /// <summary>
-    /// A Bedrock client posted its offer to Geyser's port. Wakes the server without asking
+    /// A Bedrock client posted its offer to Geyser's port, or sent RakNet's join request to it.
+    /// Wakes the server without asking
     /// <see cref="WakePolicy"/>: the name is inside the client's signed identity, which is not
     /// worth decoding here, and a name nobody checked is what the Java check already settles for.
-    /// A scanner would have to speak this exact HTTP exchange to get here; the ones that knock on
-    /// Bedrock servers send a RakNet ping instead.
+    /// A scanner would have to speak this exact HTTP exchange, or send a full-size RakNet join
+    /// request, to get here; the ones that knock on Bedrock servers send a RakNet ping instead,
+    /// which is answered and wakes nothing.
     /// </summary>
     private void OnBedrockJoinAttempt() => Wake();
 

@@ -25,7 +25,7 @@ flowchart LR
     protect["BackupCoordinator<br/>WorldBackupService<br/>LiveWorldBackup"]
     content["ModrinthService<br/>ModDependencyService<br/>CleanupAdvisor"]
     online["PlayitApiService<br/>PlayitAgentRunner<br/>CrossplayService"]
-    wake["WakeOnDemandListener<br/>NetherNetWakeListener"]
+    wake["WakeOnDemandListener<br/>NetherNetWakeListener<br/>RakNetWakeListener"]
     hist["PlayerHistoryStore"]
     folder[("La carpeta del servidor<br/>mundo · mods · copias")]
     web["Mojang · Paper · Purpur<br/>Fabric · Forge · NeoForge<br/>Adoptium (Java)"]
@@ -1374,10 +1374,33 @@ rechaza con un 503 y el jugador reintenta unos segundos después, cuando Geyser 
 decisiones que conviene conocer: el GET solo no despierta nada, por lo mismo que un ping de Java
 tampoco; y no se consulta `WakePolicy`, porque el nombre del jugador va dentro de esa identidad firmada
 y aquí no se lee, así que un intento de Bedrock despierta el servidor aunque este solo se encienda para
-su lista blanca. Los escáneres de Bedrock que existen mandan un ping RakNet, no este intercambio. Los
-dos puertos se sueltan a la vez antes de arrancar el servidor (`WakeOnDemandController.Stop`), o Geyser
-encontraría el suyo ocupado. No cubre: el transporte `raknet` de Geyser (UDP), el descubrimiento en la
-red local ni lo que enseña el cliente ante el rechazo, porque el protocolo no define ningún mensaje.
+su lista blanca. Los escáneres de Bedrock que existen mandan un ping RakNet, no este intercambio.
+
+**El cliente de Bedrock que habla RakNet** —uno antiguo, y las plataformas que aún lo usen— es cosa de
+`RakNetWakeListener`, en el lado UDP del mismo número de puerto. Hasta que existió, ese cliente veía
+un servidor dormido como apagado y no podía despertarlo. Habla los dos mensajes sin conexión de
+RakNet y nada más: un *unconnected ping* (lo que manda el cliente para pintar su lista) recibe un pong
+cuya primera línea es el nombre del servidor y el aviso de «dormido», y no despierta nada; un *open
+connection request* (lo que manda al pulsar Entrar) despierta el servidor y no se contesta, porque a
+ese nivel no hay forma de decir «arrancando, vuelve a intentarlo»: el cliente se rinde a los pocos
+segundos y el jugador entra cuando Geyser ya está en marcha. UDP añade un problema que TCP no tiene:
+la dirección de origen se puede falsificar, así que todo lo que contesta se puede apuntar a un
+tercero. Por eso el pong es pequeño y está racionado (veinte por segundo), un intento de entrar solo
+cuenta si lleva la marca mágica de RakNet y el relleno que manda un cliente real (un paquete
+falsificado de un byte no lleva ninguno de los dos), y el despertar también está racionado. Sin
+verificar con un cliente RakNet real: los tests hablan el protocolo por un socket de verdad, y la
+versión y el número de protocolo del pong son informativos.
+
+Los tres puertos se sueltan a la vez antes de arrancar el servidor (`WakeOnDemandController.Stop`), o
+Geyser encontraría el suyo ocupado; el de UDP espera a su hilo de recepción, porque el puerto no está
+libre hasta que este lo suelta. Mientras duerme, el programa que escucha en el puerto de Bedrock por
+TCP *y* por UDP es el lanzador, y eso es lo que pregunta ahora la comprobación del Firewall de Windows
+(`ServerViewModel.FirewallOwners`). No cubre: el descubrimiento en la red local ni lo que enseña el
+cliente ante un rechazo, porque ninguno de los dos protocolos define un mensaje.
+
+Un jugador de Java al que otro servidor manda aquí con `/transfer` (desde la 1.20.5) llega con el
+estado siguiente 3 en vez de 2 e inicia sesión igual; el listener trata los dos como un intento de
+entrar.
 
 Dormirse y despertarse sin que nadie entre **no deja copias**: la parada ve que nadie ha jugado y el
 arranque encuentra el mundo igual que en la última copia (ver *Copias del mundo*).
