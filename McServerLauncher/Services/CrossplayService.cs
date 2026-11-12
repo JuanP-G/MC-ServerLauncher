@@ -59,6 +59,17 @@ public class CrossplayService
     /// <summary>Whether this server can do crossplay at all, and why not when it can't.</summary>
     public static bool CanEnable(ServerType type) => GeyserConfigService.Supports(type);
 
+    /// <summary>The resx key for why crossplay cannot be switched on for <paramref name="type"/>.</summary>
+    /// <remarks>
+    /// Three different reasons, and the reader can act on each differently: Vanilla has a way out
+    /// (change the type to Paper and keep the world), Pumpkin needs none because it takes Bedrock
+    /// players by itself, and for the rest there is simply no Geyser.
+    /// </remarks>
+    public static string WhyNotKey(ServerType type) =>
+        type == ServerType.Vanilla ? "Crossplay_UnsupportedVanilla"
+        : ServerTypeCatalog.IsNative(type) ? "Crossplay_NativeBedrock"
+        : "Crossplay_Unsupported";
+
     /// <summary>
     /// Whether the mods installed on this kind of server can shut Bedrock players out.
     /// </summary>

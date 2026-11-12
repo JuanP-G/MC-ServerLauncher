@@ -18,11 +18,20 @@ public class ServerPropertiesService
     /// Reads server.properties and returns a key→value dictionary.
     /// Returns empty if the file does not exist.
     /// </summary>
+    /// <remarks>
+    /// A Pumpkin server has no such file, and answers from its <c>pumpkin.toml</c> under the same
+    /// key names: see <see cref="PumpkinConfig.ReadAsProperties"/>. That is what gives it a port
+    /// everywhere one is asked for.
+    /// </remarks>
     public Dictionary<string, string> Read(string propertiesPath)
     {
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (!File.Exists(propertiesPath))
-            return result;
+        {
+            return PumpkinConfig.StandsInFor(propertiesPath)
+                ? PumpkinConfig.ReadAsProperties(Path.GetDirectoryName(propertiesPath)!)
+                : result;
+        }
 
         foreach (var raw in File.ReadAllLines(propertiesPath))
         {
@@ -57,6 +66,9 @@ public class ServerPropertiesService
     public static bool GetBool(IReadOnlyDictionary<string, string> props, string key, bool fallback) =>
         ParseBool(props.TryGetValue(key, out var raw) ? raw : null, fallback);
 
+    /// <summary>The key the world folder's name is kept under.</summary>
+    public const string LevelNameKey = "level-name";
+
     /// <summary>The world folder name when <c>server.properties</c> sets no <c>level-name</c>.</summary>
     public const string DefaultLevelName = "world";
 
@@ -68,7 +80,7 @@ public class ServerPropertiesService
     /// points at must still resolve it with <c>WorldBackupService.WorldFolderFor</c>.
     /// </remarks>
     public static string GetLevelName(IReadOnlyDictionary<string, string> props) =>
-        props.TryGetValue("level-name", out var name) && !string.IsNullOrWhiteSpace(name)
+        props.TryGetValue(LevelNameKey, out var name) && !string.IsNullOrWhiteSpace(name)
             ? name.Trim()
             : DefaultLevelName;
 
@@ -94,8 +106,16 @@ public class ServerPropertiesService
     /// comments and order. New keys are appended at the end. Creates the file if it doesn't exist.
     /// Keys and values are sanitized (no CR/LF) so no input can inject extra lines.
     /// </summary>
+    /// <exception cref="UserFacingException">
+    /// The folder is a Pumpkin server's. Writing a <c>server.properties</c> there would create a
+    /// file Pumpkin never reads, and from then on <see cref="Read"/> would answer from it instead
+    /// of from the real configuration.
+    /// </exception>
     public void Update(string propertiesPath, IDictionary<string, string> changes)
     {
+        if (PumpkinConfig.StandsInFor(propertiesPath))
+            throw new UserFacingException(Localization.Localizer.Get("Msg_PumpkinEditToml"));
+
         var lines = File.Exists(propertiesPath)
             ? File.ReadAllLines(propertiesPath).ToList()
             : new List<string>();

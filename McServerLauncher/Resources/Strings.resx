@@ -1465,4 +1465,20 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Pa_Act_StartService" xml:space="preserve"><value>Iniciar</value></data>
   <data name="Pa_Act_StopService" xml:space="preserve"><value>Detener</value></data>
   <data name="Pa_Tip_Disconnect" xml:space="preserve"><value>Olvida la conexión guardada por la app. El Playit instalado no se toca.</value></data>
+  <data name="TypeDesc_Pumpkin" xml:space="preserve"><value>Escrito en Rust, sin Java. Ligero y rápido.</value></data>
+  <data name="Badge_Experimental" xml:space="preserve"><value>Experimental</value></data>
+  <data name="Experimental_Note" xml:space="preserve"><value>Pumpkin está en pleno desarrollo: faltan partes del juego (criaturas, redstone, generación del mundo), no carga plugins de Paper ni mods, y una versión nueva puede romper lo que funcionaba. Úsalo para probar, y no con un mundo que no quieras perder sin tener copia.</value></data>
+  <data name="Pumpkin_VersionNote" xml:space="preserve"><value>Se instala la última versión estable de Pumpkin. La versión de Minecraft no se elige: la marca esa versión de Pumpkin.</value></data>
+  <data name="Crossplay_NativeBedrock" xml:space="preserve"><value>No hace falta: Pumpkin acepta jugadores de Bedrock por sí mismo, sin Geyser. Su soporte de Bedrock aún está en desarrollo.</value></data>
+  <data name="Msg_PumpkinResolving" xml:space="preserve"><value>Buscando la última versión estable de Pumpkin...</value></data>
+  <data name="Msg_PumpkinFoundFmt" xml:space="preserve"><value>Pumpkin {0}, para Minecraft {1}.</value></data>
+  <data name="Msg_PumpkinNoBuildFmt" xml:space="preserve"><value>Pumpkin {0} no publica ninguna versión para este sistema.</value></data>
+  <data name="Msg_PumpkinNoChecksumFmt" xml:space="preserve"><value>Pumpkin {0} no publica la suma de comprobación de su descarga, así que no se puede verificar. No se ha instalado nada.</value></data>
+  <data name="Msg_PumpkinNoRelease" xml:space="preserve"><value>No se ha podido saber cuál es la última versión de Pumpkin.</value></data>
+  <data name="Msg_PumpkinTomlKept" xml:space="preserve"><value>La carpeta ya tenía un pumpkin.toml: se ha dejado como estaba, con su puerto y sus ajustes.</value></data>
+  <data name="Msg_PumpkinEditToml" xml:space="preserve"><value>Este ajuste de Pumpkin está en pumpkin.toml, y la app no lo cambia por ti. Ábrelo desde Ajustes, Red.</value></data>
+  <data name="Msg_PumpkinLogFormat" xml:space="preserve"><value>La consola de Pumpkin no está en su formato por defecto ([logging] en pumpkin.toml), así que la app no puede saber quién entra y quién sale. Mientras siga así, este servidor no se apagará por inactividad.</value></data>
+  <data name="Pumpkin_OpenToml" xml:space="preserve"><value>Abrir pumpkin.toml</value></data>
+  <data name="Pumpkin_TomlDesc" xml:space="preserve"><value>Pumpkin no usa server.properties ni Java. El puerto, el mensaje del servidor, el máximo de jugadores, la lista blanca y las reglas del juego están en este archivo. Cámbialo con el servidor parado.</value></data>
+  <data name="Pumpkin_TomlMissing" xml:space="preserve"><value>Todavía no hay pumpkin.toml, o no se ha podido abrir. Pumpkin lo crea la primera vez que arranca.</value></data>
 </root>

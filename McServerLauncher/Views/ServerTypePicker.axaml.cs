@@ -177,6 +177,11 @@ public partial class ServerTypePicker : UserControl
                 Localizer.Get(full ? "Badge_Bedrock" : "Badge_BedrockPartial"),
                 new ImmutableSolidColorBrush(Color.Parse(full ? "#3E8AC0" : "#B07A2B"))));
         }
+
+        // Amber, the same one "partial" uses: both say "read the small print before you rely on this".
+        if (entry.Experimental)
+            badges.Children.Add(Badge(Localizer.Get("Badge_Experimental"),
+                new ImmutableSolidColorBrush(Color.Parse("#B07A2B")), Icon.Beaker));
         return badges;
     }
 
@@ -186,6 +191,8 @@ public partial class ServerTypePicker : UserControl
         var tip = Localizer.Get(entry.DescriptionKey);
         if (entry.Crossplay == CrossplayLevel.Partial)
             tip += "\n\n" + Localizer.Get("Crossplay_PartialNote");
+        if (entry.Experimental)
+            tip += "\n\n" + Localizer.Get("Experimental_Note");
         return tip;
     }
 

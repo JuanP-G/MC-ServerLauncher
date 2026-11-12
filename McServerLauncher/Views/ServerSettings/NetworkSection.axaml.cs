@@ -33,9 +33,19 @@ public partial class NetworkSection : UserControl, IServerSettingsSection
         DataContext = draft.Config;
 
         _bindings = new PropertyBindings(draft);
-        _bindings.Number(PortBox, "server-port", 25565);
-        _bindings.Toggle(OnlineModeToggle, "online-mode", true);
-        _bindings.Toggle(WhitelistToggle, "white-list", false);
+
+        // A native server keeps these three in pumpkin.toml. Not bound at all for it, rather than
+        // bound and hidden: an untracked key is one a save cannot try to write.
+        var native = ServerTypeCatalog.IsNative(draft.Live.Type);
+        NativeCard.IsVisible = native;
+        NativeCard.Folder = draft.Live.FolderPath;
+        PortCard.IsVisible = OnlineModeCard.IsVisible = WhitelistCard.IsVisible = !native;
+        if (!native)
+        {
+            _bindings.Number(PortBox, "server-port", 25565);
+            _bindings.Toggle(OnlineModeToggle, "online-mode", true);
+            _bindings.Toggle(WhitelistToggle, "white-list", false);
+        }
 
         BedrockPortBox.ValueChanged += (_, _) => OnBedrockPortChanged();
 

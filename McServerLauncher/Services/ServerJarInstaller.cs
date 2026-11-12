@@ -12,8 +12,9 @@ namespace McServerLauncher.Services;
 /// <remarks>
 /// <para>
 /// The ways differ more than they look: Vanilla, Paper and Purpur are a jar to download, Fabric is
-/// a jar the loader builds for a version pair, and Forge and NeoForge run an installer that leaves
-/// no runnable jar at all and must be launched through an args file instead.
+/// a jar the loader builds for a version pair, Forge and NeoForge run an installer that leaves
+/// no runnable jar at all and must be launched through an args file instead, and Pumpkin is not a
+/// jar but an executable, which brings its Minecraft version with it.
 /// </para>
 /// <para>
 /// This chain used to exist twice, spelled out inline in the create-server dialog and again in the
@@ -28,12 +29,14 @@ public class ServerJarInstaller
     private readonly ModLoaderService _mods;
     private readonly PaperService _paper;
     private readonly PurpurService _purpur;
+    private readonly PumpkinService _pumpkin;
     private readonly ServerCreationService _creation;
 
     public ServerJarInstaller(
         MinecraftVersionService? versions = null, ModLoaderService? mods = null, PaperService? paper = null,
-        PurpurService? purpur = null, ServerCreationService? creation = null)
+        PurpurService? purpur = null, ServerCreationService? creation = null, PumpkinService? pumpkin = null)
     {
+        _pumpkin = pumpkin ?? new PumpkinService();
         _versions = versions ?? new MinecraftVersionService();
         _mods = mods ?? new ModLoaderService();
         _paper = paper ?? new PaperService();
@@ -47,7 +50,15 @@ public class ServerJarInstaller
     /// runnable jar and launch through <c>ForgeArgs</c> instead. Callers must not write a run script
     /// in that case, because the loader ships its own.
     /// </remarks>
-    public record InstallResult(string JarFile, string LoaderVersion, string ForgeArgs)
+    /// <param name="JarFile">The file to launch: a jar, or the executable of a native server.</param>
+    /// <param name="LoaderVersion">The loader's (or the server project's) own version.</param>
+    /// <param name="ForgeArgs">The args-file id when there is no jar; empty otherwise.</param>
+    /// <param name="GameVersion">
+    /// The Minecraft version, when it is the install that decides it rather than the caller: a
+    /// Pumpkin release serves one version of the game and nobody picks it. Null everywhere else.
+    /// </param>
+    public record InstallResult(string JarFile, string LoaderVersion, string ForgeArgs,
+        string? GameVersion = null)
     {
         /// <summary>True when this loader launches through an args file rather than a jar.</summary>
         public bool LaunchesViaArgsFile => string.IsNullOrEmpty(JarFile);
@@ -61,7 +72,7 @@ public class ServerJarInstaller
     public static readonly ServerType[] Installable =
     {
         ServerType.Vanilla, ServerType.Paper, ServerType.Purpur,
-        ServerType.Fabric, ServerType.Forge, ServerType.NeoForge
+        ServerType.Fabric, ServerType.Forge, ServerType.NeoForge, ServerType.Pumpkin
     };
 
     /// <summary>
@@ -78,9 +89,13 @@ public class ServerJarInstaller
     /// change-loader dialog offers to keep a run script the user wrote themselves, and overwriting
     /// the memory settings it reads would quietly undo their edit.
     /// </para>
+    /// <para>
+    /// <paramref name="details"/> is null for a native server, which has no Mojang jar behind it;
+    /// <paramref name="mcVersion"/> and the Java arguments are ignored for it too.
+    /// </para>
     /// </remarks>
     public Task<InstallResult> InstallAsync(
-        ServerType type, string folder, string mcVersion, MinecraftVersionService.VersionDetails details,
+        ServerType type, string folder, string mcVersion, MinecraftVersionService.VersionDetails? details,
         string javaPath, int minRamGb, int maxRamGb, IProgress<string>? log,
         bool writeLoaderJvmArgs = true, CancellationToken ct = default)
     {
@@ -98,8 +113,11 @@ public class ServerJarInstaller
             case ServerType.NeoForge:
                 return InstallNeoForgeAsync(folder, mcVersion, javaPath, minRamGb, maxRamGb, writeLoaderJvmArgs,
                     log, ct);
+            case ServerType.Pumpkin:
+                return InstallPumpkinAsync(folder, log, ct);
             case ServerType.Vanilla:
-                return InstallVanillaAsync(folder, details, log, ct);
+                return InstallVanillaAsync(folder,
+                    details ?? throw new ArgumentNullException(nameof(details)), log, ct);
             default:
                 // Reached only by a type added to the enum and not here. Saying so beats installing
                 // the vanilla jar and letting the user find out their pick was ignored.
@@ -186,6 +204,18 @@ public class ServerJarInstaller
 
         if (writeLoaderJvmArgs) _creation.WriteForgeUserJvmArgs(folder, minRamGb, maxRamGb);
         return new InstallResult(string.Empty, choice.Version, neo.ArgsId);
+    }
+
+    private async Task<InstallResult> InstallPumpkinAsync(string folder, IProgress<string>? log,
+        CancellationToken ct)
+    {
+        log?.Report(Localizer.Get("Msg_PumpkinResolving"));
+        var release = await _pumpkin.GetLatestReleaseAsync(ct);
+        log?.Report(Localizer.Format("Msg_PumpkinFoundFmt", release.Version, release.GameVersion));
+
+        var name = PumpkinService.ExecutableName;
+        await _pumpkin.DownloadAsync(release, Path.Combine(folder, name), log, ct);
+        return new InstallResult(name, release.Version, string.Empty, release.GameVersion);
     }
 
     private async Task<InstallResult> InstallVanillaAsync(string folder,

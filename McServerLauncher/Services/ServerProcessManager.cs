@@ -23,6 +23,23 @@ public sealed class ServerProcessManager : IDisposable
     private sealed record StdinLine(string Text, TaskCompletionSource? Written = null);
     private DateTime _startedAtUtc;
 
+    /// <summary>Whether the process running is a native server (Pumpkin) rather than a JVM.</summary>
+    private volatile bool _native;
+
+    /// <summary>
+    /// Whether the joins and leaves in this run's console can be trusted to be all of them.
+    /// </summary>
+    /// <remarks>
+    /// Always true for a Java server. For Pumpkin it is true only once the server has announced
+    /// itself in its default log format: with thread names or module paths switched on in
+    /// <c>pumpkin.toml</c>, a join is no longer recognisable, the player list stays empty, and an
+    /// idle timer that believed it would stop a server with people on it. Whoever stops an empty
+    /// server asks this first. See <see cref="PumpkinConsole"/>.
+    /// </remarks>
+    public bool PlayerTrackingReliable => !_native || _nativeFormatRecognised;
+
+    private volatile bool _nativeFormatRecognised;
+
     /// <summary>
     /// Raised for each output line, saying where it came from.
     /// </summary>
@@ -84,7 +101,8 @@ public sealed class ServerProcessManager : IDisposable
             if (IsRunning)
                 throw new UserFacingException(Localizer.Get("Msg_ServerStillStopping"));
 
-            var isForgeArgs = !string.IsNullOrWhiteSpace(config.ForgeArgs);
+            var native = ServerTypeCatalog.IsNative(config.Type);
+            var isForgeArgs = !native && !string.IsNullOrWhiteSpace(config.ForgeArgs);
             if (isForgeArgs)
             {
                 if (ResolveForgeArgsFile(config) is null)
@@ -97,11 +115,16 @@ public sealed class ServerProcessManager : IDisposable
                     config.JarFullPath));
             }
 
-            var args = BuildJavaArgumentList(config, new JavaService().GetMajorVersion(config.JavaPath), memoryFlags);
+            // A native server is its own program: no Java to ask for its version, and no arguments —
+            // everything it needs is in the pumpkin.toml beside it.
+            var args = native
+                ? new List<string>()
+                : BuildJavaArgumentList(config, new JavaService().GetMajorVersion(config.JavaPath), memoryFlags);
+            var program = native ? config.JarFullPath : config.JavaPath;
 
             var psi = new ProcessStartInfo
             {
-                FileName = config.JavaPath,
+                FileName = program,
                 WorkingDirectory = config.FolderPath,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -120,9 +143,12 @@ public sealed class ServerProcessManager : IDisposable
             _process.ErrorDataReceived += OnStandardError;
             _process.Exited += OnProcessExited;
 
+            _native = native;
+            _nativeFormatRecognised = false;
+
             State = ServerState.Starting;
             _startedAtUtc = DateTime.UtcNow;
-            OutputReceived?.Invoke(Localizer.Format("Msg_LauncherStarting", config.JavaPath,
+            OutputReceived?.Invoke(Localizer.Format("Msg_LauncherStarting", program,
                 JavaCommandLine.Display(args)), ConsoleSource.Launcher);
 
             try
@@ -246,11 +272,47 @@ public sealed class ServerProcessManager : IDisposable
         if (e.Data is null) return;
         // Paper colours its output with ANSI sequences, which hide a player's name from every detector.
         var line = AnsiEscapes.Strip(e.Data);
+        if (_native)
+        {
+            OnNativeOutput(line);
+            return;
+        }
         // Vanilla/Fabric/Forge/Paper all log a line like
         // `[12:00:00] [Server thread/INFO]: Done (3.2s)! For help, type "help"` when ready.
         if (State == ServerState.Starting && line.Contains("Done (", StringComparison.Ordinal))
             State = ServerState.Running;
         OutputReceived?.Invoke(line, ConsoleSource.Stdout);
+    }
+
+    /// <summary>
+    /// A line from Pumpkin: put into the shape the rest of the app reads, and watched for the
+    /// sentence that says it finished starting. See <see cref="PumpkinConsole"/>.
+    /// </summary>
+    private void OnNativeOutput(string raw)
+    {
+        var line = PumpkinConsole.Normalize(raw);
+
+        if (State == ServerState.Starting)
+        {
+            if (PumpkinConsole.IsReady(line))
+            {
+                // Set before the state, so whoever reacts to Running already finds the answer.
+                _nativeFormatRecognised = true;
+                State = ServerState.Running;
+            }
+            else if (PumpkinConsole.LooksReady(line.Text))
+            {
+                // Running, in a log format the app cannot follow players in. Said once, where the
+                // owner will see it, because what follows from it is invisible: this run is never
+                // stopped for being empty.
+                State = ServerState.Running;
+                OutputReceived?.Invoke(line.Text, ConsoleSource.Stdout);
+                OutputReceived?.Invoke(Localizer.Get("Msg_PumpkinLogFormat"), ConsoleSource.Launcher);
+                return;
+            }
+        }
+
+        OutputReceived?.Invoke(line.Text, ConsoleSource.Stdout);
     }
 
     /// <summary>

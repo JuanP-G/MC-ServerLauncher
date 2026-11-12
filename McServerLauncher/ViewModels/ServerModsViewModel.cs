@@ -745,7 +745,7 @@ public sealed partial class ServerModsViewModel : ObservableObject, IDisposable
     private async Task CheckUpdates(CancellationToken ct)
     {
         if (InstalledMods.Count == 0) return;
-        if (_config.Type == ServerType.Vanilla || string.IsNullOrEmpty(_config.GameVersion))
+        if (!ServerTypeCatalog.HasContent(_config.Type) || string.IsNullOrEmpty(_config.GameVersion))
         {
             UpdateStatus = Localizer.Get("Msg_ModBrowserNeedsLoader");
             return;

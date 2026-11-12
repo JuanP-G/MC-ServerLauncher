@@ -183,15 +183,30 @@
                         <TextBlock Classes="field" Text="{loc:Loc Cs_Software}" Margin="0,14,0,6" />
                         <views:ServerTypePicker x:Name="TypePicker" />
 
-                        <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Classes="field" Text="{loc:Loc Cs_Version}" />
-                                <ComboBox x:Name="VersionCombo" HorizontalAlignment="Stretch" />
+                        <!-- Said before anything is downloaded: the type's own project calls it unfinished. -->
+                        <Border x:Name="ExperimentalBox" IsVisible="False" Margin="0,4,0,0" Padding="10,8"
+                                CornerRadius="6" BorderThickness="1" BorderBrush="{StaticResource SemanticWarn}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <ic:FluentIcon Icon="Beaker" FontSize="16" VerticalAlignment="Top"
+                                               Foreground="{StaticResource SemanticWarn}" />
+                                <TextBlock x:Name="ExperimentalText" FontSize="12" TextWrapping="Wrap" MaxWidth="520" />
                             </StackPanel>
-                            <CheckBox Grid.Column="1" x:Name="SnapshotsCheck" Content="{loc:Loc Cs_Snapshots}"
-                                      VerticalAlignment="Bottom" Margin="12,0,0,4" IsCheckedChanged="Snapshots_Changed" />
-                        </Grid>
-                        <TextBlock x:Name="VersionStatus" Margin="2,4,0,0" FontSize="12" Opacity="0.7" Text="{loc:Loc Cs_LoadingVersions}" />
+                        </Border>
+
+                        <!-- Not for a native server: its release decides the Minecraft version. -->
+                        <StackPanel x:Name="VersionPanel">
+                            <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Classes="field" Text="{loc:Loc Cs_Version}" />
+                                    <ComboBox x:Name="VersionCombo" HorizontalAlignment="Stretch" />
+                                </StackPanel>
+                                <CheckBox Grid.Column="1" x:Name="SnapshotsCheck" Content="{loc:Loc Cs_Snapshots}"
+                                          VerticalAlignment="Bottom" Margin="12,0,0,4" IsCheckedChanged="Snapshots_Changed" />
+                            </Grid>
+                            <TextBlock x:Name="VersionStatus" Margin="2,4,0,0" FontSize="12" Opacity="0.7" Text="{loc:Loc Cs_LoadingVersions}" />
+                        </StackPanel>
+                        <TextBlock x:Name="NativeVersionNote" IsVisible="False" Margin="2,12,0,0" FontSize="12"
+                                   Opacity="0.7" TextWrapping="Wrap" Text="{loc:Loc Pumpkin_VersionNote}" />
 
                         <!-- Only when making one: an existing world already has its seed, and level-seed is
                              read once, when a world is generated. -->
@@ -211,24 +226,27 @@
                                      fit in a third of the column. -->
                                 <TextBlock Classes="field" Text="{loc:Loc Port}" />
                                 <NumericUpDown x:Name="PortBox" Value="25565" Minimum="1" Maximum="65535" Increment="1" FormatString="0" />
-                                <!-- Memory: the app sizes it, or the two numbers below. -->
-                                <TextBlock Classes="field" Text="{loc:Loc Sset_RamTitle}" Margin="0,10,0,0" />
-                                <WrapPanel Orientation="Horizontal">
-                                    <!-- Their group name is given in code-behind, one per panel. -->
-                                    <RadioButton x:Name="AutoMemoryRadio" IsChecked="True"
-                                                 Margin="0,0,12,0" Content="{loc:Loc Mem_ModeAutomatic}" />
-                                    <RadioButton x:Name="ManualMemoryRadio" Content="{loc:Loc Mem_ModeManual}" />
-                                </WrapPanel>
-                                <Grid x:Name="ManualRamBoxes" ColumnDefinitions="*,12,*" Margin="0,6,0,0" IsVisible="False">
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Classes="field" Text="{loc:Loc Cs_RamMin}" />
-                                        <NumericUpDown x:Name="MinRamBox" Value="2" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Classes="field" Text="{loc:Loc Cs_RamMax}" />
-                                        <NumericUpDown x:Name="MaxRamBox" Value="4" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
-                                    </StackPanel>
-                                </Grid>
+                                <!-- Memory: the app sizes it, or the two numbers below. Hidden for a native
+                                     server, which has no heap to size. -->
+                                <StackPanel x:Name="MemoryPanel">
+                                    <TextBlock Classes="field" Text="{loc:Loc Sset_RamTitle}" Margin="0,10,0,0" />
+                                    <WrapPanel Orientation="Horizontal">
+                                        <!-- Their group name is given in code-behind, one per panel. -->
+                                        <RadioButton x:Name="AutoMemoryRadio" IsChecked="True"
+                                                     Margin="0,0,12,0" Content="{loc:Loc Mem_ModeAutomatic}" />
+                                        <RadioButton x:Name="ManualMemoryRadio" Content="{loc:Loc Mem_ModeManual}" />
+                                    </WrapPanel>
+                                    <Grid x:Name="ManualRamBoxes" ColumnDefinitions="*,12,*" Margin="0,6,0,0" IsVisible="False">
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Classes="field" Text="{loc:Loc Cs_RamMin}" />
+                                            <NumericUpDown x:Name="MinRamBox" Value="2" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Classes="field" Text="{loc:Loc Cs_RamMax}" />
+                                            <NumericUpDown x:Name="MaxRamBox" Value="4" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
                                 <TextBlock x:Name="PortStatus" Margin="2,8,0,0" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
                                 <TextBlock Margin="2,2,0,0" FontSize="12" Opacity="0.55" TextWrapping="Wrap" Text="{loc:Loc Cs_PortNote}" />
                             </StackPanel>

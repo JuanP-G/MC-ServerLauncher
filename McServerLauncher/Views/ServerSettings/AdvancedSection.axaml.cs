@@ -32,6 +32,13 @@ public partial class AdvancedSection : UserControl, IServerSettingsSection
         _draft = draft;
         DataContext = draft.Config;
         FolderBox.TextChanged += (_, _) => ShowError(null);
+
+        // There is no jar to name and no JVM to pass arguments to on a native server.
+        var native = ServerTypeCatalog.IsNative(draft.Live.Type);
+        NativeCard.IsVisible = native;
+        NativeCard.Folder = draft.Live.FolderPath;
+        JarCard.IsVisible = ExtraArgsCard.IsVisible = !native;
+
         ShowHistorySize();
     }
 

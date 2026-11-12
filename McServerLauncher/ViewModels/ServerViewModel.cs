@@ -266,7 +266,16 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
     /// <summary>Everyone who has been on this server, and each one's profile.</summary>
     public PlayerHistoryViewModel History { get; }
 
-    public bool IsModded => Config.Type != ServerType.Vanilla;
+    public bool IsModded => ServerTypeCatalog.HasContent(Config.Type);
+
+    /// <summary>
+    /// True for a server that is its own executable (Pumpkin): no Java, no memory settings, and
+    /// <c>pumpkin.toml</c> where the others have <c>server.properties</c>.
+    /// </summary>
+    public bool IsNative => ServerTypeCatalog.IsNative(Config.Type);
+
+    /// <summary>The opposite of <see cref="IsNative"/>, for what only a Java server shows.</summary>
+    public bool IsJavaServer => !IsNative;
 
     /// <summary>Server type shown as a badge (Vanilla/Fabric/Forge, and any future type).</summary>
     public string ServerTypeText => Config.Type.ToString();
@@ -443,7 +452,9 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
     private IdleShutdownController CreateIdleShutdown() =>
         new(new IdleHost(
             Minutes: () => Config.IdleShutdownMinutes,
-            IsRunning: () => State == ServerState.Running,
+            // Not "running" for this purpose while the console cannot be trusted to show every join:
+            // an empty player list would then mean nothing. See ServerProcessManager.
+            IsRunning: () => State == ServerState.Running && _process.PlayerTrackingReliable,
             PlayerCount: () => ConnectedPlayers.Count,
             WokeAtUtc: () => _wake.WokeAtUtc,
             ShowCountdown: text => IdleCountdownText = text,
@@ -1174,8 +1185,8 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         if (!await _preflight.CheckContentDependenciesAsync(isAutoRestart))
             return false;
 
-        // Make sure the configured Java is compatible with this server's version.
-        await _preflight.EnsureCompatibleJavaAsync();
+        // Make sure the configured Java is compatible with this server's version — when it runs on one.
+        if (!IsNative) await _preflight.EnsureCompatibleJavaAsync();
         return true;
     }
 
