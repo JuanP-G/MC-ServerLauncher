@@ -159,8 +159,10 @@ something visual use the line icons in `docs/media/icons/`, as the README featur
   the GC log (`GcLogging`) and `-javaagent` (`MemoryAgent`: only with its jar in place, and never again
   on a Java that refused it).
 - **Console detectors read from the start of the message, after `AnsiEscapes.Strip`** (applied once, in
-  `ServerProcessManager`): Paper colours join and leave lines even on a pipe. Fix a console or command
-  format with a line captured from a real server, not from memory.
+  `ServerProcessManager`): Paper colours join and leave lines even on a pipe. That start is
+  `ConsoleLineClassifier.MessageBody`, never your own cut at `]: `: it is the one place that removes the
+  `System chat: ` Minecraft 26.3 puts in front of every system message (joins, leaves, deaths, command
+  answers). Fix a console or command format with a line captured from a real server, not from memory.
 - **The memory agent jar is built with `python agent/build.py`, never with `jar`**; commit the jar and
   its `.sha256` together (`agent.yml` and a test compare them with what the source builds to).
 - **A fake shared between tests returns snapshots**, not the live list the code under test is writing.
