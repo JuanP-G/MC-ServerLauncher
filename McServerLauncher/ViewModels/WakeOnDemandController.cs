@@ -70,8 +70,31 @@ public sealed class WakeOnDemandController : IDisposable
         _players = players;
     }
 
-    /// <summary>When the server was last started by someone trying to join, if ever.</summary>
+    /// <summary>
+    /// When the server last woken by someone trying to join became ready for them — or, while it
+    /// is still starting, when they knocked. Null if it was never woken.
+    /// </summary>
     public DateTime? WokeAtUtc { get; private set; }
+
+    /// <summary>Set by a knock, until the start it caused has finished.</summary>
+    private bool _wakingUp;
+
+    /// <summary>
+    /// The server finished starting. If a knock started it, the time the player is given to get in
+    /// runs from now.
+    /// </summary>
+    /// <remarks>
+    /// It used to run from the knock. A modded server can take longer to start than the whole grace,
+    /// so with a short idle limit it was ready, found itself empty and out of grace, and stopped
+    /// before the player who woke it had seen it come up — and the next knock did the same again.
+    /// </remarks>
+    public void ServerReady()
+    {
+        if (!_wakingUp) return;
+
+        _wakingUp = false;
+        WokeAtUtc = DateTime.UtcNow;
+    }
 
     /// <summary>Answers on the server's port while it is stopped, if the owner asked for it.</summary>
     public void Start()
@@ -178,6 +201,7 @@ public sealed class WakeOnDemandController : IDisposable
         if (!_host.CanStart()) return;   // already coming up from an earlier knock, or being restored
 
         WokeAtUtc = DateTime.UtcNow;
+        _wakingUp = true;
         _host.Say(Localizer.Get("Msg_WakeStarting"));
         _host.Notify(NotificationKind.WokeOnDemand, Localizer.Get("Notif_Woke"));
 
