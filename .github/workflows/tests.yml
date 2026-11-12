@@ -38,3 +38,24 @@ jobs:
 
       - name: Run the tests
         run: dotnet test McServerLauncher.Tests/McServerLauncher.Tests.csproj -c Release --no-build --logger "console;verbosity=normal"
+
+  # The translated pages are generated from web/index.html and web/_i18n/strings.json and committed.
+  # Edit the source without running the generator and the pages everyone reads are quietly a version
+  # behind (the hashes in ?v= included). Regenerate on a clean checkout: any difference is the failure.
+  web-pages:
+    name: generated web pages are up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Regenerate
+        run: python3 web/_i18n/build.py
+
+      - name: Nothing may have changed
+        run: |
+          if [ -n "$(git status --porcelain -- web)" ]; then
+            git status --short -- web
+            git --no-pager diff --stat -- web
+            echo "::error::web/ is out of date: run 'python web/_i18n/build.py' and commit the result"
+            exit 1
+          fi

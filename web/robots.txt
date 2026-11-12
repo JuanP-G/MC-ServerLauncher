@@ -1,7 +1,10 @@
 # MC-ServerLauncher
-# Se permite el rastreo completo: no hay zonas privadas en este sitio.
+# Se permite el rastreo de las páginas. Las fuentes de la generación y las herramientas no son parte
+# del sitio (tampoco se publican en GitHub Pages) y no deben indexarse.
 User-agent: *
 Allow: /
+Disallow: /_i18n/
+Disallow: /_tools/
 
 # La web vive en Vercel; GitHub Pages sirve la documentación en /docs/.
 Sitemap: https://mc-server-launcher.vercel.app/sitemap.xml

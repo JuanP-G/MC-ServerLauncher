@@ -163,6 +163,9 @@ something visual use the line icons in `docs/media/icons/`, as the README featur
   format with a line captured from a real server, not from memory.
 - **The memory agent jar is built with `python agent/build.py`, never with `jar`**; commit the jar and
   its `.sha256` together (`agent.yml` and a test compare them with what the source builds to).
+- **The translated web pages are generated and committed**: after touching `web/index.html`,
+  `web/_i18n/strings.json`, `web/assets/site.js` or `site.css`, run `python web/_i18n/build.py` and commit
+  the result; the `web-pages` job in `tests.yml` fails if the committed pages differ from a fresh build.
 - **A fake shared between tests returns snapshots**, not the live list the code under test is writing.
 - **Read what the loader reads**: jars inside jars (`META-INF/jars/`, `META-INF/jarjar/`) and
   libraries the loader bundles (`mixinextras`) count as installed.

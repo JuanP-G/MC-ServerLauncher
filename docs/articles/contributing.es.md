@@ -249,6 +249,11 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   línea `Created-By` con su propia versión, así que dos máquinas dan dos jars; el script escribe un zip
   determinista, y `agent.yml` más una prueba fallan si el jar del repositorio y su SHA-256 dejan de
   coincidir con lo que compila el código. Tras tocar `agent/src/`, ejecútalo y sube los dos archivos.
+- **Las páginas traducidas de la web se generan y se suben: ejecuta `python web/_i18n/build.py` tras tocar
+  `web/index.html`, `web/_i18n/strings.json`, `web/assets/site.js` o `site.css`.** El script escribe
+  `web/en`, `de`, `fr`, `pt`, las guías y el `?v=` de cada archivo con huella; un trabajo `web-pages` de
+  `tests.yml` las regenera en un checkout limpio y falla ante cualquier diferencia, así que una fuente
+  editada sin pasar el generador no puede llegar a `main`.
 - **Un doble que comparten las pruebas entrega copias.** `FakeBackupHost.Lines` era la lista viva, y una
   prueba que la recorría mientras una copia aún informaba de su progreso fallaba de vez en cuando con
   «Collection was modified». Una propiedad que una prueba lee mientras el código probado aún escribe

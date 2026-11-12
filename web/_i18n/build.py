@@ -14,8 +14,10 @@ versión. Con una URL por idioma más las etiquetas hreflang, cada versión se i
 por separado y Google sirve la que corresponde a cada usuario.
 
 El script falla si alguna cadena del diccionario ya no existe en el HTML (señal de
-que se cambió el español y se olvidó actualizar la traducción) o si queda texto en
-español sin traducir en la salida.
+que se cambió el español y se olvidó actualizar la traducción) o si alguna cadena del
+diccionario sobrevive sin traducir en la salida. Solo mira las cadenas del diccionario: un
+texto en español que se añada al HTML y no esté en él no se detecta, hay que traducirlo a mano
+(el CI regenera las páginas y falla si lo generado no coincide con lo publicado).
 """
 
 import hashlib
