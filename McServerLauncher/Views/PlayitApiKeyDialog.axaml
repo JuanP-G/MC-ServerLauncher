@@ -22,7 +22,12 @@
             </Button>
 
             <TextBlock Text="{loc:Loc Pk_KeyLabel}" Margin="0,16,0,4" />
-            <TextBox x:Name="KeyBox" PlaceholderText="{loc:Loc Pk_KeyPlaceholder}" />
+            <!-- Masked: what goes in here is a secret (the legacy write key can create tunnels and
+                 delete them), and this dialog is the one place it is on screen. The box beside it
+                 shows it for anybody who wants to check a paste. -->
+            <TextBox x:Name="KeyBox" PasswordChar="&#x2022;" PlaceholderText="{loc:Loc Pk_KeyPlaceholder}" />
+            <CheckBox x:Name="ShowKeyBox" Margin="0,6,0,0" Content="{loc:Loc Pk_ShowKey}"
+                      IsCheckedChanged="ShowKey_Changed" />
 
             <TextBlock x:Name="StatusText" Foreground="{StaticResource SemanticDanger}" TextWrapping="Wrap"
                        Margin="0,8,0,0" IsVisible="False" />

@@ -46,6 +46,9 @@ public class AppUpdateCoordinatorTests : IDisposable
         public string Package = Content;
         public int Downloads;
 
+        /// <summary>The download starts and never finishes, as one on a connection that went quiet.</summary>
+        public bool Hang;
+
         public Task<string?> GetExpectedSha256Async(string sha256SumsUrl, string fileName, CancellationToken ct = default) =>
             Task.FromResult(Checksum);
 
@@ -55,6 +58,7 @@ public class AppUpdateCoordinatorTests : IDisposable
         public async Task<string> DownloadInstallerAsync(string url, string destPath, CancellationToken ct = default)
         {
             Downloads++;
+            if (Hang) await Task.Delay(Timeout.Infinite, ct);
             Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
             await File.WriteAllTextAsync(destPath, Package, ct);
             return destPath;
@@ -105,6 +109,28 @@ public class AppUpdateCoordinatorTests : IDisposable
             AppUpdateCoordinator.Phase.VerifyingChecksum,
             AppUpdateCoordinator.Phase.VerifyingSignature,
         ], seen);
+    }
+
+    // --- the user gives up ---
+
+    [Fact]
+    public async Task ADownloadTheUserCancelsStopsAndGoesNoFurther()
+    {
+        // The banner's Cancel button cancels this token. The download is the long step (a
+        // package of tens of megabytes on whatever link the user has), so it is the one that has
+        // to listen; without the token it ran to the end or, on a dead connection, for ever.
+        var source = GoodSource();
+        source.Hang = true;
+        var seen = new List<AppUpdateCoordinator.Phase>();
+        using var cancel = new CancellationTokenSource();
+
+        var running = Coordinator(source).DownloadAndVerifyAsync(Offer(), Folder(), seen.Add, cancel.Token);
+        while (source.Downloads == 0) await Task.Delay(10);
+        cancel.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => running);
+        Assert.Equal([AppUpdateCoordinator.Phase.Downloading], seen);   // nothing was verified or kept
+        Assert.False(File.Exists(Path.Combine(Folder(), PackageName)));
     }
 
     // --- refused before the download ---

@@ -1104,6 +1104,13 @@ funcionando. Hay instalaciones que no pueden sustituirse a sí mismas — un App
 `SelfUpdater.Blocker` lo dice; esas, y una release que no traiga nada para esta plataforma, caen en
 abrir la página de la release.
 
+**Una actualización se puede cancelar mientras descarga.** El aviso cambia *Actualizar* por *Cancelar* en
+cuanto empieza a bajar el paquete (`MainViewModel.CanCancelUpdate`); el botón cancela el token que entra
+en `AppUpdateCoordinator.DownloadAndVerifyAsync`, así que la descarga se detiene, la carpeta se borra y el
+aviso vuelve como estaba, sin diálogo y sin abrir la página de la release (eso es para los fallos).
+Cancelar desaparece en el punto sin retorno, justo antes de que se empiecen a cerrar los servidores para
+el cambio.
+
 **El paquete se comprueba otra vez en el momento de usarlo.** Entre que se verifica y que se ejecuta
 está en la carpeta temporal, y un programa que ya corra como este usuario podría cambiarlo por otro que
 luego se ejecutaría con los derechos que pide el instalador. Por eso `AppUpdateCoordinator` entrega un

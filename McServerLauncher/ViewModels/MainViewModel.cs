@@ -105,6 +105,20 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isUpdating;
 
+    /// <summary>
+    /// True while the update's package is downloading or being checked, the stretch in which it can
+    /// still be abandoned. It turns false once the servers start closing for the swap.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CancelUpdateCommand))]
+    private bool _canCancelUpdate;
+
+    private CancellationTokenSource? _updateCancel;
+
+    /// <summary>Abandons the update that is downloading; nothing is installed and the banner comes back.</summary>
+    [RelayCommand(CanExecute = nameof(CanCancelUpdate))]
+    private void CancelUpdate() => _updateCancel?.Cancel();
+
     /// <summary>What the About screen says about updates; the banner keeps its own flag.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsCheckingUpdates), nameof(IsUpToDate), nameof(UpdateCheckFailed),
@@ -617,6 +631,12 @@ public partial class MainViewModel : ObservableObject
         var bannerText = UpdateText;
         UpdateText = Localizer.Get("Update_Downloading");
 
+        // Cancellable until the servers start closing for the swap: a download on a slow link can
+        // take minutes, and the only way out used to be to wait for it or to quit the app.
+        using var cancel = new CancellationTokenSource();
+        _updateCancel = cancel;
+        CanCancelUpdate = true;
+
         var updateDir = AppUpdateCoordinator.NewPackageFolder();
         var stoppedEverything = false;
         try
@@ -624,8 +644,11 @@ public partial class MainViewModel : ObservableObject
             // Everything that decides whether this package is installed is in the coordinator: a
             // release without a checksum or a signature, a download that does not match, or a
             // signature that is not the publisher's all end here with a message for the user.
-            var package = await _updates.DownloadAndVerifyAsync(offer, updateDir, ShowUpdatePhase);
+            var package = await _updates.DownloadAndVerifyAsync(offer, updateDir, ShowUpdatePhase, cancel.Token);
 
+            // The point of no return: after this line Cancel is gone and the servers are closing.
+            cancel.Token.ThrowIfCancellationRequested();
+            CanCancelUpdate = false;
             UpdateText = Localizer.Get("Update_Installing");
             await ShutdownAllAsync();
             stoppedEverything = true;
@@ -636,6 +659,11 @@ public partial class MainViewModel : ObservableObject
             McServerLauncher.Program.ReleaseInstance();
             await SelfUpdater.ApplyAsync(package);
             Environment.Exit(0);
+        }
+        catch (OperationCanceledException) when (cancel.IsCancellationRequested)
+        {
+            // The user said no. Not a failure: no dialog, and no browser opened on the release page.
+            RecoverFromFailedUpdate(bannerText, updateDir, stoppedEverything);
         }
         catch (InvalidOperationException ex)
         {
@@ -673,6 +701,8 @@ public partial class MainViewModel : ObservableObject
     private void RecoverFromFailedUpdate(string bannerText, string updateDir, bool stoppedEverything)
     {
         McServerLauncher.Program.ReacquireInstance();   // still the running copy after all
+        CanCancelUpdate = false;
+        _updateCancel = null;
         IsUpdating = false;
         UpdateText = bannerText;
 
