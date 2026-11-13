@@ -659,11 +659,13 @@ are no hard-coded machine paths.
 - **`LoginStartupService`** — opens the app at sign-in: the per-user `Run` key on Windows, an XDG
   autostart entry on Linux, a LaunchAgent on macOS, each launching this copy with `--login`. Whether it
   is on is read back from the system every time, never stored, because the user can switch it off from
-  outside (Task Manager marks the entry under `StartupApproved` instead of deleting it). While it is on,
-  each launch points it at the running copy again. A `--login` launch with *start hidden* set gets its
+  outside (Task Manager marks the entry under `StartupApproved` instead of deleting it; GNOME writes
+  `Hidden=true`). A launch repairs the entry only when the copy it opens is gone (a moved AppImage), so a
+  second copy opened once does not take it over. A `--login` launch with *start hidden* set gets its
   window built and switched on (`MainWindow.ActivateHidden`) but not shown: the lifetime only shows a
   `MainWindow` it has at start, so the window is handed over a moment later and appears from the tray.
-  Servers marked `StartWithApp` start in `MainViewModel.Activate`, after their wake listeners are up.
+  Servers marked `StartWithApp` start in `MainViewModel.Activate`, one after another, after their wake
+  listeners are up.
   The installer deletes the `Run` value on uninstall.
 - **`ServerNameRule`** / **`BukkitPathRule`** — a server's folder name, checked before it becomes a
   server that will not start: what Windows forbids outright (illegal characters, reserved device

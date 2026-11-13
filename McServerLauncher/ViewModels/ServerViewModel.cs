@@ -1114,11 +1114,11 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
     /// As an automatic start: nobody may be in front of the screen (the app can open hidden at
     /// sign-in), so no step of the start may stop to ask.
     /// </remarks>
-    internal void StartBecauseAppOpened()
+    internal Task StartBecauseAppOpenedAsync()
     {
-        if (!Config.StartWithApp || !CanStart) return;
+        if (!Config.StartWithApp || !CanStart) return Task.CompletedTask;
         OnConsoleLine(Localizer.Get("Boot_StartingLine"));
-        _ = StartInternalAsync(isAutoRestart: true);
+        return StartInternalAsync(isAutoRestart: true);
     }
 
     [RelayCommand(CanExecute = nameof(CanStart))]

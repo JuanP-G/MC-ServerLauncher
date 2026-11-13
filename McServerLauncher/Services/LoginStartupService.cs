@@ -60,7 +60,8 @@ public static class LoginStartupService
         try
         {
             if (OperatingSystem.IsWindows()) return WindowsEnabled();
-            if (OperatingSystem.IsLinux()) return File.Exists(LinuxEntryPath);
+            if (OperatingSystem.IsLinux())
+                return File.Exists(LinuxEntryPath) && !LinuxEntryIsOff(File.ReadAllText(LinuxEntryPath));
             if (OperatingSystem.IsMacOS()) return File.Exists(MacAgentPath);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
@@ -91,23 +92,43 @@ public static class LoginStartupService
     }
 
     /// <summary>
-    /// When it is on, points it at this copy again. Called at every launch.
+    /// When it is on but points at a copy that is no longer there, points it at this one. Called at
+    /// every launch.
     /// </summary>
     /// <remarks>
-    /// An AppImage that was moved, or a portable copy run from another folder, leaves the old entry
-    /// pointing at nothing, and the next sign-in silently opens no app. Rewriting it while it is on
-    /// costs one small write and keeps it true. Never turns it on.
+    /// An AppImage that was moved leaves the entry pointing at nothing, and the next sign-in silently
+    /// opens no app. Only that case is repaired: an entry that points at a copy that still exists is
+    /// left alone, so a second copy opened once (a test build, a portable one) does not take the
+    /// entry over and leave it dangling when its folder is deleted. Never turns it on.
     /// </remarks>
     public static void Refresh()
     {
         try
         {
-            if (IsSupported && IsEnabled()) Enable();
+            if (!IsSupported || !IsEnabled()) return;
+            var registered = RegisteredTarget();
+            if (registered is null || File.Exists(registered) || Directory.Exists(registered)) return;
+            Enable();
         }
         catch (Exception ex)
         {
             Safe.Note("LoginStartup", "could not point the sign-in entry at this copy", ex);
         }
+    }
+
+    /// <summary>The copy the system entry opens, or null when there is no entry or it cannot be read.</summary>
+    private static string? RegisteredTarget()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            using var run = Registry.CurrentUser.OpenSubKey(RunKey);
+            return run?.GetValue(ValueName) is string command ? WindowsTarget(command) : null;
+        }
+        if (OperatingSystem.IsLinux())
+            return File.Exists(LinuxEntryPath) ? LinuxTarget(File.ReadAllText(LinuxEntryPath)) : null;
+        if (OperatingSystem.IsMacOS())
+            return File.Exists(MacAgentPath) ? MacTarget(File.ReadAllText(MacAgentPath)) : null;
+        return null;
     }
 
     /// <summary>Whether <paramref name="args"/> is a launch made by the system at sign-in.</summary>
@@ -118,6 +139,15 @@ public static class LoginStartupService
 
     /// <summary>The command Windows runs: the path in quotes, so one with spaces is not split.</summary>
     internal static string WindowsCommand(string target) => $"\"{target}\" {LoginArgument}";
+
+    /// <summary>The path in a <see cref="WindowsCommand"/>: what is between its first pair of quotes.</summary>
+    internal static string? WindowsTarget(string command)
+    {
+        var text = command.Trim();
+        if (!text.StartsWith('"')) return text.Split(' ', 2)[0];
+        var end = text.IndexOf('"', 1);
+        return end > 1 ? text[1..end] : null;
+    }
 
     [SupportedOSPlatform("windows")]
     private static bool WindowsEnabled()
@@ -169,6 +199,42 @@ public static class LoginStartupService
         "X-GNOME-Autostart-enabled=true",
         "");
 
+    /// <summary>
+    /// Whether the entry is there but switched off: GNOME's Startup Applications writes
+    /// <c>Hidden=true</c> or <c>X-GNOME-Autostart-enabled=false</c> rather than deleting it.
+    /// </summary>
+    internal static bool LinuxEntryIsOff(string entry) =>
+        entry.Split('\n').Select(l => l.Trim()).Any(l =>
+            l.Equals("Hidden=true", StringComparison.OrdinalIgnoreCase)
+            || l.Equals("X-GNOME-Autostart-enabled=false", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>The path in the entry's <c>Exec=</c>: <see cref="DesktopShortcutService.Quote"/> undone.</summary>
+    internal static string? LinuxTarget(string entry)
+    {
+        var exec = entry.Split('\n').Select(l => l.Trim())
+            .FirstOrDefault(l => l.StartsWith("Exec=", StringComparison.Ordinal));
+        if (exec is null) return null;
+        var value = exec["Exec=".Length..];
+        if (!value.StartsWith('"')) return value.Split(' ', 2)[0];
+
+        // The desktop-entry string layer first (each \\ is one \), then the quoted Exec argument.
+        var unstring = new System.Text.StringBuilder();
+        for (var i = 0; i < value.Length; i++)
+        {
+            if (value[i] == '\\' && i + 1 < value.Length && value[i + 1] == '\\') { unstring.Append('\\'); i++; }
+            else unstring.Append(value[i]);
+        }
+        var s = unstring.ToString();
+        var path = new System.Text.StringBuilder();
+        for (var i = 1; i < s.Length; i++)
+        {
+            if (s[i] == '\\' && i + 1 < s.Length) { path.Append(s[++i]); continue; }
+            if (s[i] == '"') return path.ToString().Replace("%%", "%");
+            path.Append(s[i]);
+        }
+        return null;
+    }
+
     private static void EnableLinux(string target)
     {
         var path = LinuxEntryPath;
@@ -205,6 +271,16 @@ public static class LoginStartupService
             </plist>
 
             """;
+    }
+
+    /// <summary>The app the LaunchAgent opens: the bundle after <c>open -a</c>, or the program itself.</summary>
+    internal static string? MacTarget(string plist)
+    {
+        var strings = System.Text.RegularExpressions.Regex.Matches(plist, "<string>(.*?)</string>")
+            .Select(m => System.Net.WebUtility.HtmlDecode(m.Groups[1].Value)).ToList();
+        var program = strings.IndexOf(AgentLabel) is var at and >= 0 ? strings.Skip(at + 1).ToList() : strings;
+        if (program.Count == 0) return null;
+        return program[0] == "/usr/bin/open" && program.Count > 2 && program[1] == "-a" ? program[2] : program[0];
     }
 
     private static void EnableMac(string target)

@@ -321,6 +321,21 @@ public partial class MainViewModel : ObservableObject
         };
     }
 
+    /// <summary>Starts the servers marked to start with the app, one after another.</summary>
+    /// <remarks>
+    /// In turn, not together: each start decides its memory from what is free and takes a backup
+    /// first, and two of them doing that at the same moment would size against the same free memory
+    /// and read the disk twice over.
+    /// </remarks>
+    private async Task StartMarkedServersAsync()
+    {
+        foreach (var server in Servers.ToList())
+        {
+            try { await server.StartBecauseAppOpenedAsync(); }
+            catch (Exception ex) { CrashLog.Write("StartWithApp", ex); }
+        }
+    }
+
     /// <summary>True once <see cref="Activate"/> has run, so servers added later start watching.</summary>
     private bool _activated;
 
@@ -353,8 +368,7 @@ public partial class MainViewModel : ObservableObject
 
         // The ones marked to start whenever the app opens. Activate first, so the wake listener of
         // such a server is already up and is what gets out of the way for the start.
-        foreach (var server in Servers)
-            server.StartBecauseAppOpened();
+        _ = StartMarkedServersAsync();
 
         // While it is on, the sign-in entry follows this copy of the app (see Refresh).
         _ = Task.Run(LoginStartupService.Refresh);

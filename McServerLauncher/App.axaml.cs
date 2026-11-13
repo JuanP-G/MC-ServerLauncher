@@ -65,8 +65,13 @@ public partial class App : Application
                 // Playit) and appears only when the tray icon is clicked.
                 if (TrayAvailable)
                 {
-                    window.ActivateHidden();
-                    Dispatcher.UIThread.Post(() => desktop.MainWindow = window);
+                    // Both in the post, in this order: what Activate starts may ask for the main
+                    // window, which must be this one by then.
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        desktop.MainWindow = window;
+                        window.ActivateHidden();
+                    });
                 }
                 else
                 {

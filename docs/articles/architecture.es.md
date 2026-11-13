@@ -680,12 +680,13 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`LoginStartupService`** — abre la app al iniciar sesión: la clave `Run` del usuario en Windows, una
   entrada de autostart XDG en Linux y un LaunchAgent en macOS, que lanzan esta copia con `--login`. Si está
   activado se lee del sistema cada vez, nunca se guarda, porque el usuario puede quitarlo desde fuera (el
-  Administrador de tareas no borra la entrada: la marca en `StartupApproved`). Mientras está activado, cada
-  arranque lo vuelve a apuntar a la copia en marcha. Un arranque con `--login` y *empezar escondida* construye
+  Administrador de tareas no borra la entrada: la marca en `StartupApproved`; GNOME escribe `Hidden=true`).
+  Un arranque solo repara la entrada cuando la copia que abre ya no existe (una AppImage movida), así que una
+  segunda copia abierta una vez no se la queda. Un arranque con `--login` y *empezar escondida* construye
   y activa la ventana (`MainWindow.ActivateHidden`) sin mostrarla: el ciclo de vida solo enseña la
   `MainWindow` que tiene al empezar, así que se le entrega un momento después y aparece desde la bandeja. Los
-  servidores con `StartWithApp` arrancan en `MainViewModel.Activate`, con sus escuchas de despertar ya
-  levantadas. El desinstalador borra el valor de `Run`.
+  servidores con `StartWithApp` arrancan en `MainViewModel.Activate`, uno detrás de otro, con sus escuchas
+  de despertar ya levantadas. El desinstalador borra el valor de `Run`.
 - **`SingleInstance`** — una sola copia en marcha por usuario, y un segundo lanzamiento trae la
   primera al frente. Es una garantía de corrección, no una cuestión de orden: dos copias arrancan
   cada una sus procesos de servidor y sus escuchas de wake, y dos JVM sobre la misma carpeta de mundo

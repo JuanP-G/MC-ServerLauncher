@@ -62,4 +62,41 @@ public class LoginStartupTests
     {
         Assert.Equal(login, LoginStartupService.IsLoginLaunch(args));
     }
+
+    // The entry is only repaired when the copy it opens is gone, so what it opens must read back.
+
+    [Theory]
+    [InlineData(@"C:\Program Files\MC Server Launcher\McServerLauncher.exe")]
+    [InlineData(@"D:\probar\prueba 6\McServerLauncher.exe")]
+    public void TheWindowsTargetReadsBack(string path)
+    {
+        Assert.Equal(path, LoginStartupService.WindowsTarget(LoginStartupService.WindowsCommand(path)));
+    }
+
+    [Theory]
+    [InlineData("/home/u/Applications/MC.AppImage")]
+    [InlineData("/home/u/My Apps/Backup 100%/MC.AppImage")]
+    [InlineData(@"/home/u/we""ird $dir`/x\y/MC.AppImage")]
+    public void TheLinuxTargetReadsBack(string path)
+    {
+        Assert.Equal(path, LoginStartupService.LinuxTarget(LoginStartupService.LinuxEntry(path)));
+    }
+
+    [Theory]
+    [InlineData("/Applications/MC Server Launcher.app")]
+    [InlineData("/Users/a&b/McServerLauncher")]
+    public void TheMacTargetReadsBack(string path)
+    {
+        Assert.Equal(path, LoginStartupService.MacTarget(LoginStartupService.MacAgent(path)));
+    }
+
+    [Theory]
+    [InlineData("Hidden=true", true)]
+    [InlineData("X-GNOME-Autostart-enabled=false", true)]
+    [InlineData("X-GNOME-Autostart-enabled=true", false)]
+    public void GnomesOffSwitchesAreRead(string line, bool off)
+    {
+        var entry = LoginStartupService.LinuxEntry("/x/MC.AppImage").Replace("X-GNOME-Autostart-enabled=true", line);
+        Assert.Equal(off, LoginStartupService.LinuxEntryIsOff(entry));
+    }
 }
