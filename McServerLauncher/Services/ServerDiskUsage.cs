@@ -50,7 +50,7 @@ public static class ServerDiskUsageService
 
         long total = 0, world = 0, backups = 0, content = 0, logs = 0;
 
-        var worldFolders = WorldFolders(root).ToHashSet(FilePaths.Comparer);
+        var worldFolders = WorldFolders(root, config.Type).ToHashSet(FilePaths.Comparer);
         var contentFolder = Full(Path.Combine(root, ServerTypeCatalog.ContentFolder(config.Type)));
         var backupsFolder = Full(Path.Combine(root, "backups"));
         var logFolders = LogFolders.Select(f => Full(Path.Combine(root, f))).ToHashSet(FilePaths.Comparer);
@@ -86,12 +86,15 @@ public static class ServerDiskUsageService
     };
 
     /// <summary>The world's folders: the one <c>level-name</c> names, and its dimension siblings if any.</summary>
-    private static IEnumerable<string> WorldFolders(string root)
+    private static IEnumerable<string> WorldFolders(string root, ServerType type)
     {
         string levelName;
         try
         {
-            var props = new ServerPropertiesService().Read(Path.Combine(root, "server.properties"));
+            // A native server (Pumpkin) has no server.properties: its level name is in its own file.
+            var props = ServerTypeCatalog.IsNative(type)
+                ? PumpkinConfig.ReadAsProperties(root)
+                : new ServerPropertiesService().Read(Path.Combine(root, "server.properties"));
             levelName = ServerPropertiesService.GetLevelName(props);
         }
         catch
