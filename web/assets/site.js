@@ -52,6 +52,8 @@
     });
     el.textContent = '';
     el.appendChild(out);
+    // Hasta esta marca el CSS esconde el titular (con JavaScript activo): ver ".build:not(.split)".
+    el.classList.add('split');
   });
 
   // --- aparición al entrar en pantalla (bloque colocado / chunk cargado) ---
@@ -74,6 +76,9 @@
     if (reduced) { el.classList.add('in'); el.querySelectorAll('[data-count]').forEach(countUp); return; }
     io.observe(el);
   });
+  // El script llegó hasta aquí: el CSS ya no necesita su red de seguridad de 3 s para enseñar
+  // lo que los observadores van a ir descubriendo.
+  document.documentElement.classList.add('reveal-ready');
 
   // --- contadores ---
   function countUp(el){
