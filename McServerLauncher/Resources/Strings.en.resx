@@ -142,6 +142,7 @@
   <data name="Pk_OpenPlayit" xml:space="preserve"><value>Open playit.gg to get the code</value></data>
   <data name="Pk_KeyLabel" xml:space="preserve"><value>Setup code</value></data>
   <data name="Pk_KeyPlaceholder" xml:space="preserve"><value>Paste your setup code here...</value></data>
+  <data name="Pk_ShowKey" xml:space="preserve"><value>Show what I paste</value></data>
   <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher is not affiliated with or owned by Playit; it only integrates with their network. Your account is yours: you can manage it directly at playit.gg.</value></data>
   <data name="Pk_Agent_Downloading" xml:space="preserve"><value>Downloading the Playit agent… (first time only)</value></data>
   <data name="Pk_Agent_Starting" xml:space="preserve"><value>Starting the agent…</value></data>

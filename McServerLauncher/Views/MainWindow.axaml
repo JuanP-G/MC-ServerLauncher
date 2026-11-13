@@ -103,7 +103,15 @@
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <TextBlock Grid.Column="1" Text="{Binding UpdateText}" VerticalAlignment="Center" />
-                <Button Grid.Column="2" Content="{loc:Loc Update_Now}" Margin="0,0,8,0" Command="{Binding UpdateNowCommand}" />
+                <!-- One slot, two buttons: Update while nothing is running, Cancel while the package
+                     downloads and is checked. Cancel goes when the app starts closing the servers
+                     for the swap, because from there it cannot be taken back. -->
+                <Panel Grid.Column="2" Margin="0,0,8,0">
+                    <Button Content="{loc:Loc Update_Now}" Command="{Binding UpdateNowCommand}"
+                            IsVisible="{Binding !CanCancelUpdate}" />
+                    <Button Content="{loc:Loc Cancel}" Command="{Binding CancelUpdateCommand}"
+                            IsVisible="{Binding CanCancelUpdate}" />
+                </Panel>
                 <Button Grid.Column="3" Background="Transparent"
                         Command="{Binding DismissUpdateCommand}" ToolTip.Tip="{loc:Loc Tip_Hide}">
                     <ic:FluentIcon Icon="Dismiss" />

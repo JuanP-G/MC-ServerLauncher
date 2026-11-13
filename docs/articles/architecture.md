@@ -1057,6 +1057,12 @@ themselves at all — an AppImage moved into `/opt` by root, a bundle in a read-
 started from `dotnet run` — and `SelfUpdater.Blocker` says so; those, and a release that ships nothing
 for this platform, fall back to opening the release page.
 
+**An update can be cancelled while it downloads.** The banner swaps *Update* for *Cancel* once the
+package starts to download (`MainViewModel.CanCancelUpdate`); the button cancels the token that goes
+into `AppUpdateCoordinator.DownloadAndVerifyAsync`, so the transfer stops, the folder is deleted and the
+banner comes back as it was, with no dialog and without opening the release page (that is for failures).
+Cancel disappears at the point of no return, right before the servers start closing for the swap.
+
 **The package is checked again at the point of use.** It sits in the temporary folder between the
 moment it is verified and the moment it runs, and a program already running as this user could swap
 it for one that then runs with the rights the installer asks for. So `AppUpdateCoordinator` hands on a

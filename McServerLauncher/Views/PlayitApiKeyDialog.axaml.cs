@@ -106,5 +106,8 @@ public partial class PlayitApiKeyDialog : Window
         CancelButton.IsEnabled = !busy;
     }
 
+    private void ShowKey_Changed(object? sender, RoutedEventArgs e) =>
+        KeyBox.RevealPassword = ShowKeyBox.IsChecked == true;
+
     private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
 }
