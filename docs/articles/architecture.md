@@ -398,6 +398,18 @@ are no hard-coded machine paths.
     existing file. `ServerPropertiesService.Read` answers from it, under the `server.properties` key names,
     for a folder that has a `pumpkin.toml` and no `server.properties` — which is what gives a Pumpkin server
     a port in the dozen places that ask for one. `Update` refuses to write in such a folder.
+    Its second port, the one Pumpkin binds for Bedrock (`[networking.bedrock.nethernet] address`, UDP and
+    TCP), has no `server.properties` name: `BedrockPortIn` answers it. The question "which port does this
+    server bind for Bedrock?" lives in `CrossplayService.BoundBedrockPort` (Geyser's for a Java server,
+    Pumpkin's for the native one) and feeds only what tells ports apart — `PortsHeldBy`, which new Geyser
+    servers and new native servers choose around, `BedrockPortOwners`, and the settings page's "who has this
+    port". It is deliberately **not** `EffectiveBedrockPort`, which is also the "is Geyser set up?" test that
+    the wake listener, the firewall notice and the Bedrock card of the settings answer to. A new native
+    server is written with a port picked by `PickNativeBedrockPort` (free for TCP and UDP and not held by
+    another server), and `StartPreflight.BedrockPortIsFree` refuses a start whose port is held, by another
+    server's configuration or by anything bound right now, whether or not the start is an auto-restart.
+    The tunnels screen, the delete-server cleanup and the firewall notice do not know a native server's
+    Bedrock port yet.
   - **`PumpkinConsole`** rewrites each console line once, in `ServerProcessManager`, into the shape every
     detector already reads: `14:16:23  INFO Alex joined the game` becomes `[14:16:23 INFO]: Alex joined the
     game`, and `<chat> Bob: hi` becomes `<Bob> hi`. `ConsoleLineClassifier` and `PlayerEventParser` are

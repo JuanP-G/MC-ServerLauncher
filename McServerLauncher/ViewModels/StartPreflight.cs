@@ -11,11 +11,16 @@ namespace McServerLauncher.ViewModels;
 /// <param name="Say">Writes a line in the server's console.</param>
 /// <param name="ConfigChanged">Tells the app the config was changed here, so it is saved.</param>
 /// <param name="InstallMissing">Installs the named mods and plugins, reporting progress.</param>
+/// <param name="BedrockPortOwners">
+/// The Bedrock ports the app's other servers hold, each with the name of its server. Null, or
+/// returning null, is "no other servers that I know of".
+/// </param>
 public sealed record PreflightHost(
     Func<string> Name,
     Action<string> Say,
     Action ConfigChanged,
-    Func<IEnumerable<string>, IProgress<string>, Task> InstallMissing);
+    Func<IEnumerable<string>, IProgress<string>, Task> InstallMissing,
+    Func<IReadOnlyDictionary<int, string>?>? BedrockPortOwners = null);
 
 /// <summary>
 /// Everything that is checked, and offered to fix, before a server's JVM is launched: that the port
@@ -73,6 +78,47 @@ public sealed class StartPreflight
         }
         return await TryFreePortAsync(port.Value);
     }
+
+    /// <summary>
+    /// Whether the port a native server binds for Bedrock players is free to start on. Always true
+    /// for a Java server: Geyser's port is Geyser's business, and it reports its own.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Pumpkin binds that number twice, UDP and TCP, and gives up the whole start when either is
+    /// taken. The usual holder is not another program: it is the app itself, in the shape of another
+    /// server's wake-on-demand listener, which is why this asks the other servers' configuration as
+    /// well as the system's tables, and why it does not go through <see cref="TryFreePortAsync"/>:
+    /// there is no process to offer to close.
+    /// </para>
+    /// <para>
+    /// The same unattended or not. A refused start ends the auto-restart that asked for it; a start
+    /// that went ahead would crash, be restarted, and crash again on the same number.
+    /// </para>
+    /// </remarks>
+    public bool BedrockPortIsFree()
+    {
+        if (!ServerTypeCatalog.IsNative(Config.Type)) return true;
+        if (PumpkinConfig.BedrockPortIn(Config.FolderPath) is not { } port) return true;
+
+        var owners = _host.BedrockPortOwners?.Invoke();
+        if (owners is not null && owners.TryGetValue(port, out var owner))
+        {
+            _host.Say(Localizer.Format("Msg_NativeBedrockPortHeldFmt",
+                port, owner, SuggestedBedrockPort(owners)));
+            return false;
+        }
+
+        // Only what is bound this very moment: a stopped server's reservation was the check above.
+        if (!_ports.IsUdpPortInUse(port) && !_ports.IsPortInUse(port)) return true;
+
+        _host.Say(Localizer.Format("Msg_NativeBedrockPortBusyFmt", port, SuggestedBedrockPort(owners)));
+        return false;
+    }
+
+    /// <summary>A port to name in the message: the reader gets a number to write, not a search to do.</summary>
+    private int SuggestedBedrockPort(IReadOnlyDictionary<int, string>? owners) =>
+        new CrossplayService(ports: _ports).PickNativeBedrockPort(owners?.Keys ?? Enumerable.Empty<int>());
 
     /// <summary>
     /// Checks that the configured Java works for this server's version (read from the jar).

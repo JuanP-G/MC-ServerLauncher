@@ -149,6 +149,12 @@ When it opens again, the **What's new** section tells you what changed. It works
     version, Performance and Crossplay pages are not shown, and neither are memory, Java or the mod store.
   - The `pumpkin.toml` the app writes turns **Pumpkin's anonymous telemetry off**; turn it on in the file if
     you want it.
+  - **Its Bedrock port is chosen for you.** Pumpkin binds one port (UDP and TCP) for Bedrock players, and
+    by default it is 19132, the same one Geyser servers start from. A new Pumpkin server is written with a
+    port no other server of the app holds, new Geyser servers keep away from it, and a start that would
+    collide is refused with a line in the console that names the other server and suggests a free port, instead
+    of Pumpkin closing and restarting again and again. If you change `address` under
+    `[networking.bedrock.nethernet]` in `pumpkin.toml`, the app follows.
   - A folder that already holds a Pumpkin server cannot be added yet, and a Bedrock player cannot wake a
     sleeping Pumpkin server (a Java one can).
   - If you change `[logging]` in `pumpkin.toml`, the app can no longer tell who joins, says so in the

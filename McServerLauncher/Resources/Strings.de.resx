@@ -203,6 +203,8 @@
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] Automatischer Neustart (Versuch {0} von {1})...</value></data>
   <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] Der Server ist mehrmals hintereinander abgestürzt; er wird nicht mehr automatisch neu gestartet (Grenze: {0} Versuche). Prüfe die Konsole oder den Ordner crash-reports.</value></data>
   <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Automatischer Neustart abgebrochen: Port {0} ist belegt.</value></data>
+  <data name="Msg_NativeBedrockPortHeldFmt" xml:space="preserve"><value>[Launcher] Start abgebrochen: Der Bedrock-Port {0} dieses Servers gehört schon „{1}“, und Pumpkin würde beim Start sofort beenden. Ändere address unter [networking.bedrock.nethernet] in der pumpkin.toml auf einen anderen freien Port, zum Beispiel {2}.</value></data>
+  <data name="Msg_NativeBedrockPortBusyFmt" xml:space="preserve"><value>[Launcher] Start abgebrochen: Der Bedrock-Port {0} wird schon von einem anderen Programm benutzt, und Pumpkin würde beim Start sofort beenden. Ändere address unter [networking.bedrock.nethernet] in der pumpkin.toml auf einen anderen freien Port, zum Beispiel {1}.</value></data>
   <data name="Tray_Show" xml:space="preserve"><value>Anzeigen</value></data>
   <data name="Tray_Exit" xml:space="preserve"><value>Beenden</value></data>
   <data name="Console_FilterPlaceholder" xml:space="preserve"><value>Konsole filtern...</value></data>

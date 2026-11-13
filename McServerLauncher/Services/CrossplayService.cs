@@ -162,11 +162,75 @@ public class CrossplayService
     /// the object itself.
     /// </para>
     /// </remarks>
-    public static IEnumerable<int> PortsHeldBy(IEnumerable<ServerConfig> all, ServerConfig except) =>
+    public static IEnumerable<int> PortsHeldBy(IEnumerable<ServerConfig> all, ServerConfig? except) =>
         all.Where(c => !ReferenceEquals(c, except))
-           .Select(c => c.BedrockPort > 0 ? c.BedrockPort : EffectiveBedrockPort(c) ?? 0)
+           .Select(HeldBedrockPort)
            .Where(p => p > 0)
            .Distinct();
+
+    /// <summary>
+    /// The same ports as <see cref="PortsHeldBy"/>, each with the name of the server that holds it,
+    /// so a refusal can say whose it is instead of only that it is taken.
+    /// </summary>
+    /// <remarks>
+    /// The first server wins a number two of them share: a start is refused for the name of one
+    /// holder, and naming the one found first is enough to send the reader to the right settings.
+    /// </remarks>
+    public static IReadOnlyDictionary<int, string> BedrockPortOwners(IEnumerable<ServerConfig> all,
+        ServerConfig? except)
+    {
+        var owners = new Dictionary<int, string>();
+        foreach (var c in all.Where(c => !ReferenceEquals(c, except)))
+        {
+            var port = HeldBedrockPort(c);
+            if (port > 0) owners.TryAdd(port, c.Name);
+        }
+        return owners;
+    }
+
+    /// <summary>
+    /// What a server keeps back for itself: the port it binds, or the one it was last given while
+    /// crossplay is switched off, so turning it back on finds the number still free.
+    /// </summary>
+    private static int HeldBedrockPort(ServerConfig c) =>
+        ServerTypeCatalog.IsNative(c.Type) ? BoundBedrockPort(c) ?? 0
+        : c.BedrockPort > 0 ? c.BedrockPort
+        : EffectiveBedrockPort(c) ?? 0;
+
+    /// <summary>
+    /// The port a server really binds for Bedrock players, whoever provides them: Geyser for the Java
+    /// servers (see <see cref="EffectiveBedrockPort"/>), Pumpkin itself for the native one, which
+    /// takes Bedrock by itself and has no crossplay switch to ask.
+    /// </summary>
+    /// <remarks>
+    /// Its own definition and not a wider <see cref="EffectiveBedrockPort"/>: that one is also the
+    /// "Geyser is set up" test, and the settings page, the wake listener and the firewall notice
+    /// each do Geyser things to a server that answers yes. A native server answers this question
+    /// only so the ports can be told apart; nothing else about it is crossplay.
+    /// </remarks>
+    public static int? BoundBedrockPort(ServerConfig config) =>
+        ServerTypeCatalog.IsNative(config.Type)
+            ? PumpkinConfig.BedrockPortIn(config.FolderPath)
+            : EffectiveBedrockPort(config);
+
+    /// <summary>
+    /// A Bedrock port for a native server about to be set up: one no other server holds, nothing
+    /// is bound to, and — because Pumpkin opens the number for TCP as well as UDP — that is free on
+    /// both.
+    /// </summary>
+    /// <param name="serverPorts">The ports the app's other servers hold (<see cref="PortsHeldBy"/>).</param>
+    public int PickNativeBedrockPort(IEnumerable<int> serverPorts)
+    {
+        var avoid = new HashSet<int>(serverPorts);
+        // Bounded: a TCP listener on every number from 19132 up is not a machine, it is a test.
+        for (var attempt = 0; attempt < 64; attempt++)
+        {
+            var port = PickBedrockPort(avoid, Array.Empty<int>());
+            if (!_ports.IsPortInUse(port)) return port;
+            avoid.Add(port);
+        }
+        return PickBedrockPort(serverPorts, Array.Empty<int>());
+    }
 
     /// <summary>
     /// The Bedrock port a server really listens on, or null when crossplay is off.

@@ -358,6 +358,12 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
     public Func<IEnumerable<int>>? BedrockPortsInUse { get; set; }
 
     /// <summary>
+    /// The same ports, each with the name of the server that holds it. Supplied by
+    /// <c>MainViewModel</c> for the same reason as <see cref="BedrockPortsInUse"/>.
+    /// </summary>
+    public Func<IReadOnlyDictionary<int, string>>? BedrockPortOwners { get; set; }
+
+    /// <summary>
     /// Assembles the view model. It does not start anything — see <see cref="Activate"/>.
     /// </summary>
     /// <remarks>
@@ -494,7 +500,9 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
             Name: () => Name,
             Say: line => OnConsoleLine(line),
             ConfigChanged: () => ConfigChanged?.Invoke(),
-            InstallMissing: (ids, progress) => Mods.InstallMissingAsync(ids, progress)),
+            InstallMissing: (ids, progress) => Mods.InstallMissingAsync(ids, progress),
+            // Read when a start asks, not when the host is built: the owner is set after this exists.
+            BedrockPortOwners: () => BedrockPortOwners?.Invoke()),
             _java, _ports, _properties);
 
     private static DispatcherTimer NewTimer(TimeSpan interval, EventHandler tick)
@@ -1205,6 +1213,12 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
     {
         // If the port is busy, offer to close the process holding it.
         if (!await _preflight.PortIsFreeAsync(isAutoRestart))
+            return false;
+
+        // The native server's second port. Refused rather than tried: Pumpkin exits the moment it
+        // cannot bind it, and the auto-restart that follows would burn all of its attempts on a
+        // collision no retry changes.
+        if (!_preflight.BedrockPortIsFree())
             return false;
 
         // Paper and Purpur refuse to run from a path with "+" or "!" in it. Checked here

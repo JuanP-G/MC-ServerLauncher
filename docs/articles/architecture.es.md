@@ -410,7 +410,19 @@ mundo. No hay rutas fijas del equipo en el código.
     reescribe un archivo que ya existe. `ServerPropertiesService.Read` responde desde él, con los nombres de
     clave de `server.properties`, para una carpeta que tiene `pumpkin.toml` y no `server.properties`: eso es lo
     que da puerto a un servidor Pumpkin en la docena de sitios que lo piden. `Update` se niega a escribir en
-    una carpeta así.
+    una carpeta así. Su segundo puerto, el que Pumpkin abre para Bedrock (`[networking.bedrock.nethernet]
+    address`, UDP y TCP), no tiene nombre en `server.properties`: lo responde `BedrockPortIn`. La pregunta
+    «¿qué puerto abre este servidor para Bedrock?» vive en `CrossplayService.BoundBedrockPort` (el de Geyser
+    en un servidor Java, el de Pumpkin en el nativo) y alimenta solo lo que distingue puertos: `PortsHeldBy`,
+    alrededor del cual eligen los servidores nuevos con Geyser y los nativos, `BedrockPortOwners` y el «quién
+    tiene este puerto» de la página de ajustes. A propósito **no** es `EffectiveBedrockPort`, que además es
+    la prueba de «¿hay Geyser?» a la que responden el despertador, el aviso del firewall y la tarjeta de
+    Bedrock de los ajustes. Un servidor nativo nuevo se escribe con un puerto que elige
+    `PickNativeBedrockPort` (libre en TCP y UDP y sin dueño entre los demás servidores), y
+    `StartPreflight.BedrockPortIsFree` rechaza un arranque cuyo puerto está tomado, por la configuración de
+    otro servidor o por algo abierto ahora mismo, sea o no un reinicio automático. La pantalla de túneles, la
+    limpieza al borrar un servidor y el aviso del firewall todavía no conocen el puerto Bedrock de un
+    servidor nativo.
   - **`PumpkinConsole`** reescribe cada línea de consola una vez, en `ServerProcessManager`, a la forma que ya
     leen todos los detectores: `14:16:23  INFO Alex joined the game` pasa a `[14:16:23 INFO]: Alex joined the
     game`, y `<chat> Bob: hola` a `<Bob> hola`. `ConsoleLineClassifier` y `PlayerEventParser` no se tocan. El

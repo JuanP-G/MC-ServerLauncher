@@ -203,6 +203,8 @@
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] Redémarrage automatique (tentative {0} sur {1})...</value></data>
   <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] Le serveur a planté plusieurs fois de suite ; il ne sera plus redémarré automatiquement (limite : {0} tentatives). Vérifie la console ou le dossier crash-reports.</value></data>
   <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Redémarrage automatique annulé : le port {0} est occupé.</value></data>
+  <data name="Msg_NativeBedrockPortHeldFmt" xml:space="preserve"><value>[Launcher] Démarrage annulé : le port Bedrock {0} de ce serveur est déjà celui de « {1} », et Pumpkin se fermerait dès le lancement. Modifiez address sous [networking.bedrock.nethernet] dans pumpkin.toml pour un autre port libre, par exemple {2}.</value></data>
+  <data name="Msg_NativeBedrockPortBusyFmt" xml:space="preserve"><value>[Launcher] Démarrage annulé : le port Bedrock {0} est déjà utilisé par un autre programme, et Pumpkin se fermerait dès le lancement. Modifiez address sous [networking.bedrock.nethernet] dans pumpkin.toml pour un autre port libre, par exemple {1}.</value></data>
   <data name="Tray_Show" xml:space="preserve"><value>Afficher</value></data>
   <data name="Tray_Exit" xml:space="preserve"><value>Quitter</value></data>
   <data name="Console_FilterPlaceholder" xml:space="preserve"><value>Filtrer la console...</value></data>

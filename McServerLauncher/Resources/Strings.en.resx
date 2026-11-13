@@ -203,6 +203,8 @@
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] Restarting automatically (attempt {0} of {1})...</value></data>
   <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] The server has crashed several times in a row; it won't be restarted automatically anymore (limit: {0} attempts). Check the console or the crash-reports folder.</value></data>
   <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Automatic restart cancelled: port {0} is busy.</value></data>
+  <data name="Msg_NativeBedrockPortHeldFmt" xml:space="preserve"><value>[Launcher] Not starting: this server's Bedrock port {0} is already "{1}"'s, and Pumpkin would exit as soon as it started. Change address under [networking.bedrock.nethernet] in pumpkin.toml to another free port, for example {2}.</value></data>
+  <data name="Msg_NativeBedrockPortBusyFmt" xml:space="preserve"><value>[Launcher] Not starting: Bedrock port {0} is already used by another program, and Pumpkin would exit as soon as it started. Change address under [networking.bedrock.nethernet] in pumpkin.toml to another free port, for example {1}.</value></data>
   <data name="Tray_Show" xml:space="preserve"><value>Show</value></data>
   <data name="Tray_Exit" xml:space="preserve"><value>Exit</value></data>
   <data name="Console_FilterPlaceholder" xml:space="preserve"><value>Filter the console...</value></data>

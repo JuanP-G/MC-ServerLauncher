@@ -30,6 +30,12 @@ public static class PumpkinConfig
 
     /// <summary>Pumpkin's own defaults, for a file that leaves a value out.</summary>
     internal const int DefaultPort = 25565;
+
+    /// <summary>
+    /// Where Pumpkin's Bedrock side listens when the file says nothing: the same number Geyser
+    /// defaults to, which is exactly why two servers on one machine meet there.
+    /// </summary>
+    internal const int DefaultBedrockPort = 19132;
     internal const string DefaultMotd = "A blazingly fast Pumpkin server!";
     internal const int DefaultMaxPlayers = 1000;
 
@@ -83,6 +89,36 @@ public static class PumpkinConfig
         return result;
     }
 
+    /// <summary>
+    /// The port Pumpkin binds for Bedrock players, or null when it has Bedrock switched off.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>[networking.bedrock.nethernet] address</c>. Measured against Pumpkin 0.2.2+26.3-26.60
+    /// rather than assumed: it opens that number twice (UDP for the ICE stream, TCP for the
+    /// signalling), keeps a value written by hand when it fills in the rest of the file, and
+    /// refuses to start at all when it cannot bind it — which is what a sleeping Geyser server's
+    /// wake-on-demand listener on 19132 made it do, three times in a row.
+    /// </para>
+    /// <para>
+    /// Not what the Java side asks: that port has been answered through <see cref="ReadAsProperties"/>
+    /// since the first version, and this one has no <c>server.properties</c> name to hide behind.
+    /// An absent key or table is Pumpkin's default, an absent <c>enabled</c> is on.
+    /// </para>
+    /// </remarks>
+    public static int? BedrockPortIn(string folder)
+    {
+        var toml = Read(PathIn(folder));
+        if (IsOff(Value(toml, "networking.bedrock", "enabled"))
+            || IsOff(Value(toml, "networking.bedrock.nethernet", "enabled")))
+            return null;
+
+        return PortOf(Value(toml, "networking.bedrock.nethernet", "address")) ?? DefaultBedrockPort;
+    }
+
+    private static bool IsOff(string? flag) =>
+        string.Equals(flag, "false", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>The port in an address such as <c>0.0.0.0:25565</c> or <c>[::]:25565</c>.</summary>
     internal static int? PortOf(string? address)
     {
@@ -96,7 +132,8 @@ public static class PumpkinConfig
 
     /// <summary>
     /// Writes the first <c>pumpkin.toml</c> of a new server: its port, its name as the MOTD, and
-    /// its seed. Pumpkin fills in everything else with its defaults the first time it starts.
+    /// its seed, and, when the caller picked one that nobody else holds, the port its Bedrock side
+    /// will bind. Pumpkin fills in everything else with its defaults the first time it starts.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -109,7 +146,8 @@ public static class PumpkinConfig
     /// </para>
     /// </remarks>
     /// <returns>False when the file was already there and was left alone.</returns>
-    public static bool WriteInitial(string folder, int port, string motd, string? seed)
+    public static bool WriteInitial(string folder, int port, string motd, string? seed,
+        int? bedrockPort = null)
     {
         var path = PathIn(folder);
         if (File.Exists(path)) return false;
@@ -125,6 +163,14 @@ public static class PumpkinConfig
 
         text.Append('\n').Append("[networking.bedrock]\n");
         text.Append("motd = ").Append(Quote(motd)).Append('\n');
+
+        // Written out, not left to Pumpkin's default: the default is 19132, the number Geyser
+        // servers start from too, and the app is the one that knows which ports are already spoken for.
+        if (bedrockPort is { } bedrock)
+        {
+            text.Append('\n').Append("[networking.bedrock.nethernet]\n");
+            text.Append("address = ").Append(Quote($"0.0.0.0:{bedrock}")).Append('\n');
+        }
 
         text.Append('\n').Append("[telemetry]\n");
         text.Append("enabled = false\n");
