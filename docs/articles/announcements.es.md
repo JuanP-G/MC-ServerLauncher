@@ -158,7 +158,8 @@ comprobar si hay avisos»: la comprobación funcionó, lo viejo es el archivo. L
 **no se esconden** (una incidencia acaba por su propio `until`, como mucho 30 días después de empezar): se
 listan con el aviso, de modo que un archivo caducado nunca hace desaparecer una incidencia en curso. La
 banda y las notificaciones se portan como con cualquier copia. Renovar es volver a firmar el archivo con una
-fecha posterior; basta el mismo `seq`, y la tarjeta se va en la siguiente comprobación.
+fecha posterior y un `seq` mayor: el mismo se acepta, pero entonces el archivo de antes de la renovación
+podría volver a servirse hasta su propia fecha. La tarjeta se va en la siguiente comprobación.
 
 Si las dos direcciones discrepan (una sirve un archivo caducado y la otra uno vigente) gana el vigente; si
 una no se puede alcanzar el resultado es una comprobación fallida y no un caducado, porque no saber pesa
@@ -179,8 +180,8 @@ más que saber qué falla.
 4. Para terminar una incidencia, no la borres: pon `status` en `resolved` con `resolvedAt`, sube `seq` y
    firma otra vez. La app dice que se resolvió (la banda se va, una notificación, tarjeta verde durante una
    semana). Un aviso que simplemente se quita desaparece sin la buena noticia.
-5. **Renueva antes de que caduque**, aunque no haya nada que decir: ejecuta otra vez el script y publica el
-   archivo y su firma (un pull request, como en el paso 3). Un buen momento es cada release. Un archivo que
+5. **Renueva antes de que caduque**, aunque no haya nada que decir: sube `seq`, ejecuta otra vez el script
+   y publica el archivo y su firma (un pull request, como en el paso 3). Un buen momento es cada release. Un archivo que
    se deja caducar no hace nada peor que enseñar a todo el mundo la tarjeta de *desactualizada*, pero se la
    enseña a todo el mundo.
 

@@ -546,6 +546,9 @@ la rejilla de funciones de `README.md`.
    clave no debe vivir en GitHub — así que este script espera a los paquetes, comprueba cada uno
    contra su `.sha256`, los firma con tu clave local y sube los `.sig2` y `.sig`. Hasta que se ejecute, quien
    pulse Actualizar en Linux o macOS irá a la página de la release.
+8. **Renueva el archivo de avisos**: ejecuta `tools\signing\sign-news.ps1` (sube antes `seq`) y publica
+   `web/news.json` con su `.sig`, para que nunca caduque (ver *Publicar un anuncio*). Aunque no haya nada
+   que anunciar.
 
 ### Publicar un anuncio
 Un aviso para todas las apps instaladas (una caída de Playit, un asunto de seguridad, un consejo) va en
@@ -558,7 +561,7 @@ Un aviso para todas las apps instaladas (una caída de Playit, un asunto de segu
 2. Ejecuta `.\tools\signing\sign-news.ps1`. Pide la contraseña de la clave de firma y escribe
    `web/news.json.sig`. También escribe `expires` (60 días desde ahora): pasada esa fecha el archivo deja
    de dar fe de ser el último y la app dice que la lista está desactualizada, así que **vuelve a firmar
-   antes** (cada release es un buen momento), aunque no haya nada nuevo que decir. Sin la clave, para aquí:
+   antes** (subiendo `seq`; cada release es un buen momento), aunque no haya nada nuevo que decir. Sin la clave, para aquí:
    un aviso no puede publicarse sin firmar, la app lo rechazaría.
 3. Abre un pull request con los dos archivos. Cuando se fusione, comprueba que la web y GitHub Pages sirven
    los mismos bytes y que la firma verifica a mano (ver [Actualizaciones firmadas](signing.es.md)).

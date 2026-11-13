@@ -108,8 +108,12 @@ public class NewsFileTests
         }
 
         Assert.True(feed.Expires > feed.Issued);
-        Assert.True(feed.Expires - feed.Issued <= TimeSpan.FromDays(90),
-            "expires is more than 90 days after issued: sign-news.ps1 never writes that");
+        // Measured from now, not from issued: renewing leaves issued alone (it is the default `from` of the
+        // notices), so a correctly renewed file is soon more than 90 days after it. Right after signing, the
+        // script's own 90-day cap is what holds; "not expired yet" is deliberately not asserted, or a
+        // lapsed file would turn every unrelated pull request red.
+        Assert.True(feed.Expires - DateTimeOffset.UtcNow <= TimeSpan.FromDays(90),
+            "expires is more than 90 days away: sign-news.ps1 never writes that");
     }
 
     [Theory]

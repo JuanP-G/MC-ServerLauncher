@@ -46,6 +46,9 @@ out. When unsure, treat it as security and ask. Details: "Publishing" in `docs/a
   `architecture.md` + `architecture.es.md`, and so on). The checklist is in the pull request template.
 - The translated web pages are generated: after touching `web/index.html`, `web/_i18n/strings.json`,
   `web/assets/site.js` or `site.css`, run `python web/_i18n/build.py` and commit what it writes (CI checks).
+- `web/news.json` **expires** (60 days, written by `tools\signing\sign-news.ps1`): renew it, raising `seq`,
+  at every release and before its date, even with nothing to announce, or every app shows "the list has
+  expired". Only the maintainer can sign it; never edit the file without signing it again (a test checks).
 - A server type that is not Java (Pumpkin) is `Native` in `ServerTypeCatalog`: ask `IsNative` instead of
   assuming a JVM or a `server.properties`, and never let the idle shutdown trust a console format it
   does not recognise ("Adding a server type" in `.github/copilot-instructions.md`).

@@ -154,8 +154,9 @@ out of date**, with when it was last confirmed. It is a different message from "
 notices": the look worked, the file is what is old. The notices of the expired copy are **not hidden**
 (an incident ends by its own `until`, at most 30 days after it started), they are listed with the warning,
 so an expired file never makes a live incident disappear. The strip and the notifications behave as with
-any copy. Renewing is signing the file again with a later date; the same `seq` is enough, and the card
-goes away at the next look.
+any copy. Renewing is signing the file again with a later date and a higher `seq`: the same one is accepted,
+but then the file from before the renewal could be served again until its own date. The card goes away at
+the next look.
 
 If two addresses disagree (one serves an expired file, the other a current one) the current one wins; if
 one cannot be reached the result is a failed look rather than an expired one, because not knowing outranks
@@ -176,8 +177,8 @@ knowing what is wrong.
 4. To end an incident, do not delete it: set `status` to `resolved` with `resolvedAt`, raise `seq` and sign
    again. The app says it was resolved (strip gone, one notification, green card for a week). A notice that
    is simply removed just disappears, without the good news.
-5. **Renew before it expires**, even with nothing to say: run the script again and publish the file and its
-   signature (a pull request, as in step 3). A good moment is every release. A file left to expire does
+5. **Renew before it expires**, even with nothing to say: raise `seq`, run the script again and publish the
+   file and its signature (a pull request, as in step 3). A good moment is every release. A file left to expire does
    nothing worse than show the *out of date* card to everyone, but it does show it to everyone.
 
 ## What this does not cover
