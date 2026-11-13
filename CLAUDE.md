@@ -46,6 +46,9 @@ out. When unsure, treat it as security and ask. Details: "Publishing" in `docs/a
   `architecture.md` + `architecture.es.md`, and so on). The checklist is in the pull request template.
 - The translated web pages are generated: after touching `web/index.html`, `web/_i18n/strings.json`,
   `web/assets/site.js` or `site.css`, run `python web/_i18n/build.py` and commit what it writes (CI checks).
+- A server type that is not Java (Pumpkin) is `Native` in `ServerTypeCatalog`: ask `IsNative` instead of
+  assuming a JVM or a `server.properties`, and never let the idle shutdown trust a console format it
+  does not recognise ("Adding a server type" in `.github/copilot-instructions.md`).
 - Network reads go through `AppHttp` (capped size, 30 s deadline for silence), never `GetStringAsync`,
   `ReadAsStringAsync` or `ReadFromJsonAsync`; a test enforces it.
 - A new convention or workflow goes into `docs/articles/contributing.md`, `contributing.es.md`,

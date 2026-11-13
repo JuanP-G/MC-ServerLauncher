@@ -1,5 +1,6 @@
 using FluentIcons.Common;
 using McServerLauncher.Models;
+using McServerLauncher.Services;
 
 namespace McServerLauncher.Views.ServerSettings;
 
@@ -72,6 +73,28 @@ internal static class ServerSettingsPages
 
     /// <summary>The row of <paramref name="page"/>.</summary>
     public static ServerSettingsPageInfo For(ServerSettingsPage page) => All.First(p => p.Page == page);
+
+    /// <summary>
+    /// The pages that are about Java or about <c>server.properties</c> and nothing else, which a
+    /// native server (Pumpkin) has neither of.
+    /// </summary>
+    private static readonly ServerSettingsPage[] JavaOnly =
+    [
+        ServerSettingsPage.Game, ServerSettingsPage.World, ServerSettingsPage.Loader,
+        ServerSettingsPage.Performance, ServerSettingsPage.Crossplay,
+    ];
+
+    /// <summary>Whether <paramref name="page"/> has anything to say about a server of this type.</summary>
+    /// <remarks>
+    /// A page left out is not built, so it can neither show a setting that does nothing nor try to
+    /// save one into a file the server never reads.
+    /// </remarks>
+    public static bool IsOffered(ServerSettingsPage page, ServerType type) =>
+        !ServerTypeCatalog.IsNative(type) || !JavaOnly.Contains(page);
+
+    /// <summary>The page to open when the one asked for is not offered for this type.</summary>
+    public static ServerSettingsPage Offered(ServerSettingsPage page, ServerType type) =>
+        IsOffered(page, type) ? page : ServerSettingsPage.Appearance;
 
     /// <summary>Every <see cref="ServerConfig"/> field the page edits, whichever page shows it.</summary>
     public static readonly string[] EditableFields = All.SelectMany(p => p.Fields).Distinct().ToArray();

@@ -28,7 +28,7 @@ public class WhitelistService
         public string Name { get; set; } = string.Empty;
     }
 
-    private static string PathOf(string folder) => Path.Combine(folder, "whitelist.json");
+    private static string PathOf(string folder) => PlayerFiles.PathOf(folder, "whitelist.json");
 
     /// <summary>Returns the names of the players in the whitelist.</summary>
     public List<string> ReadNames(string folder)

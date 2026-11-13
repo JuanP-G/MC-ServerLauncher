@@ -144,6 +144,14 @@ public partial class NewServerView : UserControl
         ExistingPanel.IsVisible = existing;
         NewFolderPanel.IsVisible = !existing;
         SeedPanel.IsVisible = !existing;
+
+        // A native server can be made here but not taken over: nothing in its folder says which
+        // Minecraft it serves, and half of what is asked about an existing folder is about Java.
+        var picked = TypePicker.SelectedType;
+        TypePicker.Restrict(ServerTypeCatalog.All.Where(e => !existing || !e.Native).Select(e => e.Type));
+        TypePicker.SelectedType = picked;
+        UpdateTypeDependentOptions();
+
         if (existing)
         {
             ApplyDetection();
@@ -540,7 +548,13 @@ public partial class NewServerView : UserControl
         var name = NameBox.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(name)) { await Warn(Localizer.Get("Msg_NameRequired")); return null; }
         if (!Directory.Exists(ParentFolderBox.Text)) { await Warn(Localizer.Get("Msg_FolderNotExistCreate")); return null; }
-        if (VersionCombo.SelectedItem is not MinecraftVersion version) { await Warn(Localizer.Get("Msg_SelectVersion")); return null; }
+
+        var serverType = SelectedServerType();
+        // A native server brings its Minecraft version with its release; there is none to pick.
+        var version = ServerTypeCatalog.IsNative(serverType)
+            ? new MinecraftVersion { Id = string.Empty, Type = "release" }
+            : VersionCombo.SelectedItem as MinecraftVersion;
+        if (version is null) { await Warn(Localizer.Get("Msg_SelectVersion")); return null; }
 
         var minGb = WholeNumberConverter.ToWhole(MinRamBox.Value ?? 2m);
         var maxGb = WholeNumberConverter.ToWhole(MaxRamBox.Value ?? 4m);
@@ -559,7 +573,6 @@ public partial class NewServerView : UserControl
         }
 
         var folder = GetTargetFolder();
-        var serverType = SelectedServerType();
 
         // Refused rather than warned about: depending on which rule it breaks, the folder either
         // cannot be created at all or produces a server that installs fine and then exits on every
@@ -725,10 +738,17 @@ public partial class NewServerView : UserControl
         if (!crossplay)
         {
             CrossplayCheck.IsChecked = false;
-            CrossplayWhyNot.Text = Localizer.Get(type == ServerType.Vanilla
-                ? "Crossplay_UnsupportedVanilla"
-                : "Crossplay_Unsupported");
+            CrossplayWhyNot.Text = Localizer.Get(CrossplayService.WhyNotKey(type));
         }
+
+        // What only a Java server is asked: which Minecraft, and how much memory.
+        var native = ServerTypeCatalog.IsNative(type);
+        VersionPanel.IsVisible = !native;
+        NativeVersionNote.IsVisible = native;
+        MemoryPanel.IsVisible = !native;
+
+        ExperimentalBox.IsVisible = ServerTypeCatalog.IsExperimental(type);
+        ExperimentalText.Text = Localizer.Get("Experimental_Note");
 
         var multiVersion = MultiVersionService.CanEnable(type);
         MultiVersionCheck.IsEnabled = multiVersion;

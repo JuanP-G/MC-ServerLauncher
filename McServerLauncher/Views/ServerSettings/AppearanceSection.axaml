@@ -103,7 +103,8 @@
         </Border>
 
         <!-- ===================== TEXT ===================== -->
-        <Border Classes="card">
+        <!-- Not on a native server: its MOTD is in pumpkin.toml, which the app does not rewrite. -->
+        <Border x:Name="MotdCard" Classes="card">
             <StackPanel>
                 <TextBlock Text="{loc:Loc Look_Motd}" Classes="title" />
                 <TextBlock Classes="desc" Text="{loc:Loc Look_MotdDesc}" />

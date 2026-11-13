@@ -28,7 +28,7 @@ flowchart LR
     wake["WakeOnDemandListener<br/>NetherNetWakeListener<br/>RakNetWakeListener"]
     hist["PlayerHistoryStore"]
     folder[("La carpeta del servidor<br/>mundo · mods · copias")]
-    web["Mojang · Paper · Purpur<br/>Fabric · Forge · NeoForge<br/>Adoptium (Java)"]
+    web["Mojang · Paper · Purpur<br/>Fabric · Forge · NeoForge<br/>Pumpkin · Adoptium (Java)"]
     mr["Modrinth · GeyserMC"]
     pl["Playit.gg<br/>a través de playit-proxy"]
     gh["Releases de GitHub"]
@@ -398,6 +398,34 @@ mundo. No hay rutas fijas del equipo en el código.
   y a partir de ahí cualquier mod que el cliente necesite tener deja fuera a Bedrock —; y `None` en Vanilla y
   Forge. `CrossplayService.CaveatKey` convierte el nivel en el aviso que muestran el panel de nuevo servidor
   y la página Crossplay de la configuración del servidor.
+- **Un servidor nativo (Pumpkin)** — el único tipo que no es un jar que arranca Java, marcado `Native` en el
+  catálogo (y `Experimental`, que es la insignia del selector y el aviso antes de crearlo). Todo lo que trata
+  de Java pregunta antes a `ServerTypeCatalog.IsNative`; nada hace un `switch` sobre el tipo.
+  - **`PumpkinService`** busca la última release *estable* en GitHub, elige el archivo de este sistema (la
+    compilación normal, nunca `-v3`, que necesita AVX2) y lo descarga con `VerifiedJarDownload` contra el
+    `checksums.sha256` de la propia release. Una release sin ese archivo, o sin línea para el archivo pedido,
+    se rechaza. La etiqueta trae la versión de Minecraft (`0.2.2+26.3-26.60` es Java 26.3), así que no se elige.
+  - **`PumpkinConfig`** lee de `pumpkin.toml` los pocos valores que la app necesita y escribe el primero de un
+    servidor nuevo (puerto, MOTD, semilla, telemetría desactivada). No es una biblioteca de TOML y nunca
+    reescribe un archivo que ya existe. `ServerPropertiesService.Read` responde desde él, con los nombres de
+    clave de `server.properties`, para una carpeta que tiene `pumpkin.toml` y no `server.properties`: eso es lo
+    que da puerto a un servidor Pumpkin en la docena de sitios que lo piden. `Update` se niega a escribir en
+    una carpeta así.
+  - **`PumpkinConsole`** reescribe cada línea de consola una vez, en `ServerProcessManager`, a la forma que ya
+    leen todos los detectores: `14:16:23  INFO Alex joined the game` pasa a `[14:16:23 INFO]: Alex joined the
+    game`, y `<chat> Bob: hola` a `<Bob> hola`. `ConsoleLineClassifier` y `PlayerEventParser` no se tocan. El
+    servidor está listo en `Started server; took` (no existe `Done (`). Solo se reconoce el formato de log por
+    defecto de Pumpkin: con nombres de hilo o rutas de módulo activados, un nombre ya no es lo primero del
+    mensaje, así que `ServerProcessManager.PlayerTrackingReliable` es falso en esa ejecución, la consola lo
+    dice y el apagado por inactividad no la cuenta como en marcha.
+  - **`PlayerFiles`** dice dónde están las listas de jugadores: la raíz en un servidor Java, `data/` en
+    Pumpkin, con los mismos nombres de archivo y el mismo formato.
+  - `ServerSettingsPages.IsOffered` deja fuera las páginas que solo tratan de Java o de `server.properties`
+    (Juego, Mundo, Tipo y versión, Rendimiento, Crossplay); Red y Avanzado muestran una `NativeConfigCard` que
+    abre `pumpkin.toml` en lugar de los ajustes que viven ahí.
+  - Las líneas de `PumpkinConsoleTests` se capturaron de un Pumpkin real. `PumpkinRealServerTests` arranca y
+    para uno con `ServerProcessManager` cuando `MCSL_PUMPKIN_EXE` apunta a un ejecutable, y crea uno desde la
+    red con `MCSL_PUMPKIN_DOWNLOAD=1`: ejecútalos cuando salga una versión nueva de Pumpkin.
 - **`ServerJarInstaller`** — el único sitio que sabe cómo se obtiene cada tipo. Lo llaman el panel de nuevo servidor y
   la página Tipo y versión de la configuración; antes la cadena estaba escrita en los dos, y un tipo presente en uno y ausente en el otro
   producía un servidor Vanilla sin decir nada.

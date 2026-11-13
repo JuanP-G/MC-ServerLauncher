@@ -83,6 +83,10 @@ public sealed class PerformanceProbe
         var paper = type is ServerType.Paper or ServerType.Purpur;
         var list = new List<ProbeKind>();
 
+        // None for a native server: its commands answer in their own words, and typing "tick query"
+        // into its console every few seconds would only fill it with what it makes of that.
+        if (ServerTypeCatalog.IsNative(type)) return list;
+
         // Paper and Purpur carry spark inside from 1.21.
         if (sparkInstalled || (paper && VersionAtLeast(gameVersion, 1, 21, 0)))
             list.Add(ProbeKind.Spark);

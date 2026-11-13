@@ -51,6 +51,16 @@ public partial class ServerViewModel
     private (MemoryPlan Plan, List<string> Notes) PlanMemory()
     {
         var config = Config;
+
+        // A native server has no heap to size and no JVM to pass flags to. Ceiling 0 is "unknown"
+        // to everything that judges memory against it, which is the truth.
+        if (ServerTypeCatalog.IsNative(config.Type))
+        {
+            _runJavaMajor = 0;
+            _runModCount = 0;
+            return (new MemoryPlan(MemoryMode.Manual, 0, [], MemoryCeilingReason.Manual, false), []);
+        }
+
         var java = _java.GetRuntime(config.JavaPath);
         var mods = MemoryProfile.CountMods(config);
         var history = MemoryHistoryStore.For(config.Id);

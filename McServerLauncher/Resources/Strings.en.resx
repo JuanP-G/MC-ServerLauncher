@@ -1420,4 +1420,20 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Pa_Act_StartService" xml:space="preserve"><value>Start</value></data>
   <data name="Pa_Act_StopService" xml:space="preserve"><value>Stop</value></data>
   <data name="Pa_Tip_Disconnect" xml:space="preserve"><value>Forgets the connection the app saved. The installed Playit is left alone.</value></data>
+  <data name="TypeDesc_Pumpkin" xml:space="preserve"><value>Written in Rust, no Java. Light and fast.</value></data>
+  <data name="Badge_Experimental" xml:space="preserve"><value>Experimental</value></data>
+  <data name="Experimental_Note" xml:space="preserve"><value>Pumpkin is under heavy development: parts of the game are missing (mobs, redstone, world generation), it loads neither Paper plugins nor mods, and a new version can break what used to work. Use it to try things out, and not with a world you would mind losing without a backup.</value></data>
+  <data name="Pumpkin_VersionNote" xml:space="preserve"><value>The latest stable Pumpkin release is installed. There is no Minecraft version to pick: that Pumpkin release decides it.</value></data>
+  <data name="Crossplay_NativeBedrock" xml:space="preserve"><value>Not needed: Pumpkin takes Bedrock players by itself, without Geyser. Its Bedrock support is still in development.</value></data>
+  <data name="Msg_PumpkinResolving" xml:space="preserve"><value>Looking up the latest stable Pumpkin release...</value></data>
+  <data name="Msg_PumpkinFoundFmt" xml:space="preserve"><value>Pumpkin {0}, for Minecraft {1}.</value></data>
+  <data name="Msg_PumpkinNoBuildFmt" xml:space="preserve"><value>Pumpkin {0} has no build for this system.</value></data>
+  <data name="Msg_PumpkinNoChecksumFmt" xml:space="preserve"><value>Pumpkin {0} does not publish a checksum for its download, so it cannot be verified. Nothing was installed.</value></data>
+  <data name="Msg_PumpkinNoRelease" xml:space="preserve"><value>Could not find out which the latest Pumpkin release is.</value></data>
+  <data name="Msg_PumpkinTomlKept" xml:space="preserve"><value>The folder already had a pumpkin.toml: it was left as it was, with its port and its settings.</value></data>
+  <data name="Msg_PumpkinEditToml" xml:space="preserve"><value>This Pumpkin setting is in pumpkin.toml, and the app does not change it for you. Open it from Settings, Network.</value></data>
+  <data name="Msg_PumpkinLogFormat" xml:space="preserve"><value>Pumpkin's console is not in its default format ([logging] in pumpkin.toml), so the app cannot tell who joins and who leaves. While it stays that way, this server will not be stopped for being idle.</value></data>
+  <data name="Pumpkin_OpenToml" xml:space="preserve"><value>Open pumpkin.toml</value></data>
+  <data name="Pumpkin_TomlDesc" xml:space="preserve"><value>Pumpkin uses neither server.properties nor Java. The port, the server's message, the player limit, the whitelist and the game rules are in this file. Change it with the server stopped.</value></data>
+  <data name="Pumpkin_TomlMissing" xml:space="preserve"><value>There is no pumpkin.toml yet, or it could not be opened. Pumpkin creates it the first time it starts.</value></data>
 </root>

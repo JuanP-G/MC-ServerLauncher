@@ -77,7 +77,7 @@ internal sealed class StoreBrowser
     /// Whether this server has anything to search for. Vanilla has no mods, and a server with no
     /// version yet has nothing to be compatible with.
     /// </summary>
-    public bool CanSearch => _config.Type != ServerType.Vanilla && !string.IsNullOrEmpty(_config.GameVersion);
+    public bool CanSearch => ServerTypeCatalog.HasContent(_config.Type) && !string.IsNullOrEmpty(_config.GameVersion);
 
     /// <summary>The store's name for a sort choice: 0 is relevance, 1 is downloads.</summary>
     public static string SortIndex(int selectedSort) => selectedSort == 1 ? "downloads" : "relevance";

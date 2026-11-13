@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:McServerLauncher.Localization"
+             x:Class="McServerLauncher.Views.ServerSettings.NativeConfigCard">
+
+    <!-- Stands where the settings a Java server keeps in server.properties would be: a native
+         server (Pumpkin) keeps them in its own file, which the app reads and does not rewrite. -->
+    <Border Classes="card">
+        <StackPanel>
+            <DockPanel Classes="setting">
+                <Button x:Name="OpenButton" Classes="ctl" Content="{loc:Loc Pumpkin_OpenToml}" Click="Open_Click" />
+                <StackPanel>
+                    <TextBlock Text="pumpkin.toml" Classes="title" />
+                    <TextBlock Classes="desc" Text="{loc:Loc Pumpkin_TomlDesc}" />
+                </StackPanel>
+            </DockPanel>
+            <TextBlock x:Name="Missing" Classes="desc error" IsVisible="False" Text="{loc:Loc Pumpkin_TomlMissing}" />
+        </StackPanel>
+    </Border>
+</UserControl>
