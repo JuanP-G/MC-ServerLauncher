@@ -537,12 +537,13 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
         IsImporting = !Store.Imported;
         var folder = _server.Config.FolderPath;
         var running = _server.IsRunning;
+        var prefix = _server.FloodgatePrefix;
         _ = Task.Run(() =>
         {
             try
             {
                 Store.Prune();
-                PlayerLogImporter.ImportOnce(folder, Store, running);
+                PlayerLogImporter.ImportOnce(folder, Store, running, floodgatePrefix: prefix);
             }
             catch
             {
@@ -567,13 +568,14 @@ public sealed partial class PlayerHistoryViewModel : ObservableObject
         // down from the server's output thread, with the Java process left running behind it.
         try
         {
-            if (PlayerEventParser.UuidOf(line) is { } uuid)
+            var prefix = _server.FloodgatePrefix;
+            if (PlayerEventParser.UuidOf(line, prefix) is { } uuid)
             {
                 Store.RecordUuid(uuid.Player, uuid.Uuid);
                 return;
             }
 
-            if (PlayerEventParser.Parse(line, online) is not { } e) return;
+            if (PlayerEventParser.Parse(line, online, prefix) is not { } e) return;
 
             Store.Record(e, DateTime.UtcNow);
 

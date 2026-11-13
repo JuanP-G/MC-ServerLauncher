@@ -25,7 +25,7 @@ flowchart LR
     protect["BackupCoordinator<br/>WorldBackupService<br/>LiveWorldBackup"]
     content["ModrinthService<br/>ModDependencyService<br/>CleanupAdvisor"]
     online["PlayitApiService<br/>PlayitAgentRunner<br/>CrossplayService"]
-    wake["WakeOnDemandListener<br/>NetherNetWakeListener"]
+    wake["WakeOnDemandListener<br/>NetherNetWakeListener<br/>RakNetWakeListener"]
     hist["PlayerHistoryStore"]
     folder[("La carpeta del servidor<br/>mundo · mods · copias")]
     web["Mojang · Paper · Purpur<br/>Fabric · Forge · NeoForge<br/>Adoptium (Java)"]
@@ -345,7 +345,15 @@ mundo. No hay rutas fijas del equipo en el código.
   los detectores de la propia consola (`NameBefore`, `ChatOf`, `DeathMessageDetector`), y sirve tanto a la
   consola en directo como a la importación, así que no pueden discrepar. Nunca lee la línea de login, que es
   la que lleva la IP, así que el historial no puede guardarla — `AnIpAddressNeverReachesTheDisk` lo comprueba
-  en los bytes del disco. Se guarda en `%APPDATA%\McServerLauncher\players\<idServidor>\`, fuera de la
+  en los bytes del disco. El nombre de un jugador de Bedrock lleva el prefijo de Floodgate del servidor, que es
+  un punto salvo que el dueño cambie `username-prefix`: **`FloodgateConfig`** lo lee del config del propio
+  Floodgate (`plugins/floodgate/` para el plugin, `config/floodgate/` para el mod) una vez por arranque, y el
+  view model se lo pasa a cada detector, así que un servidor con `*` ve a `*Steve` entrar, hablar y morir como
+  cualquiera (antes solo se aceptaba el punto, y esos jugadores no salían ni en la lista ni en el historial).
+  Solo se aceptan prefijos hechos de `PlayerNames.PrefixCharacters` —sin espacio, separador, comilla, `@` ni
+  corchete—, y el almacén, que guarda nombres de todos los servidores, comprueba la forma por su cuenta
+  (`IsStorable`) y escribe el único carácter que Windows no admite en un nombre de archivo, `*`, como `%2a`
+  (`FileKey`). Se guarda en `%APPDATA%\McServerLauncher\players\<idServidor>\`, fuera de la
   carpeta del servidor para no viajar con el mundo ni llenar sus copias: `index.json` con un resumen por
   jugador, y `events/<nombre>.jsonl`, al que solo se añade y que se compacta de una vez cuando pasa el límite
   en una cuarta parte. Los límites son `PlayerHistorySettings` (acotados, porque settings.json se puede
@@ -1343,7 +1351,26 @@ Dos mitades, las dos por servidor y las dos desactivadas por defecto.
 de jugadores: en cuanto un servidor lleva `ServerConfig.IdleShutdownMinutes` sin nadie dentro, se
 detiene solo, anunciándolo en la consola y como notificación. La ventana enseña una cuenta atrás en
 vivo (`IdleCountdownText`), y un servidor recién despertado tiene un periodo de gracia para que nunca
-se le pare antes de que a nadie le dé tiempo a entrar.
+se le pare antes de que a nadie le dé tiempo a entrar. Esa gracia cuenta desde que el servidor
+despertado está listo (`WakeOnDemandController.ServerReady`), no desde la llamada: un servidor con
+mods puede tardar en arrancar más que toda la gracia, y antes llegaba a estar listo, se veía vacío y
+sin tiempo, y se paraba antes de que su jugador lo hubiera visto.
+
+**«Sin nadie dentro» lo dice la consola, y la última palabra la tiene el servidor.** La lista de
+jugadores se lee de las líneas de entrada y salida, y esa lectura ha fallado más de una vez —un
+nombre de Floodgate que la app no reconocía, el prefijo `System chat: ` de Minecraft 26.3—, y
+fallaría igual con un plugin que oculte el mensaje de entrada o con un nombre que la app no acepte.
+Cada vez la lista se quedó vacía y se paró un servidor con gente dentro. Por eso, cuando se agota el
+reloj, el controlador pregunta al propio servidor (`IdleHost.AskServer` →
+`ConnectionProbe.PlayersOnlineAsync`): el ping de estado que manda la lista de servidores de
+cualquier cliente, al puerto del servidor en esta máquina (o a `server-ip` si está atado a una sola
+dirección). Es la cuenta que lleva el servidor, así que no depende de ninguna línea del log, es
+igual en todos los tipos de servidor, y un jugador de Bedrock que entró por Geyser está en ella. Si
+dice que hay alguien, no se para nada, la consola lo dice una vez (`Msg_IdleHeldFmt`) y el reloj
+vuelve a empezar. Si dice que no hay nadie, se para. **No contestar no es una respuesta**
+(`enable-status=false`, un proxy que espera antes una cabecera PROXY): entonces vale la cuenta de la
+consola, como antes, y una respuesta sin número de jugadores es «sin respuesta», nunca cero
+(`SlpReply.PlayersKnown`). Lo fijan `IdleShutdownControllerTests` e `IdleAsksTheServerTests`.
 
 **Despertar** es `WakeOnDemandListener`, que ocupa el puerto del servidor mientras este está parado y
 habla la parte pequeña y estable del protocolo de Minecraft necesaria para ser honesto al respecto:
@@ -1381,10 +1408,33 @@ rechaza con un 503 y el jugador reintenta unos segundos después, cuando Geyser 
 decisiones que conviene conocer: el GET solo no despierta nada, por lo mismo que un ping de Java
 tampoco; y no se consulta `WakePolicy`, porque el nombre del jugador va dentro de esa identidad firmada
 y aquí no se lee, así que un intento de Bedrock despierta el servidor aunque este solo se encienda para
-su lista blanca. Los escáneres de Bedrock que existen mandan un ping RakNet, no este intercambio. Los
-dos puertos se sueltan a la vez antes de arrancar el servidor (`WakeOnDemandController.Stop`), o Geyser
-encontraría el suyo ocupado. No cubre: el transporte `raknet` de Geyser (UDP), el descubrimiento en la
-red local ni lo que enseña el cliente ante el rechazo, porque el protocolo no define ningún mensaje.
+su lista blanca. Los escáneres de Bedrock que existen mandan un ping RakNet, no este intercambio.
+
+**El cliente de Bedrock que habla RakNet** —uno antiguo, y las plataformas que aún lo usen— es cosa de
+`RakNetWakeListener`, en el lado UDP del mismo número de puerto. Hasta que existió, ese cliente veía
+un servidor dormido como apagado y no podía despertarlo. Habla los dos mensajes sin conexión de
+RakNet y nada más: un *unconnected ping* (lo que manda el cliente para pintar su lista) recibe un pong
+cuya primera línea es el nombre del servidor y el aviso de «dormido», y no despierta nada; un *open
+connection request* (lo que manda al pulsar Entrar) despierta el servidor y no se contesta, porque a
+ese nivel no hay forma de decir «arrancando, vuelve a intentarlo»: el cliente se rinde a los pocos
+segundos y el jugador entra cuando Geyser ya está en marcha. UDP añade un problema que TCP no tiene:
+la dirección de origen se puede falsificar, así que todo lo que contesta se puede apuntar a un
+tercero. Por eso el pong es pequeño y está racionado (veinte por segundo), un intento de entrar solo
+cuenta si lleva la marca mágica de RakNet y el relleno que manda un cliente real (un paquete
+falsificado de un byte no lleva ninguno de los dos), y el despertar también está racionado. Sin
+verificar con un cliente RakNet real: los tests hablan el protocolo por un socket de verdad, y la
+versión y el número de protocolo del pong son informativos.
+
+Los tres puertos se sueltan a la vez antes de arrancar el servidor (`WakeOnDemandController.Stop`), o
+Geyser encontraría el suyo ocupado; el de UDP espera a su hilo de recepción, porque el puerto no está
+libre hasta que este lo suelta. Mientras duerme, el programa que escucha en el puerto de Bedrock por
+TCP *y* por UDP es el lanzador, y eso es lo que pregunta ahora la comprobación del Firewall de Windows
+(`ServerViewModel.FirewallOwners`). No cubre: el descubrimiento en la red local ni lo que enseña el
+cliente ante un rechazo, porque ninguno de los dos protocolos define un mensaje.
+
+Un jugador de Java al que otro servidor manda aquí con `/transfer` (desde la 1.20.5) llega con el
+estado siguiente 3 en vez de 2 e inicia sesión igual; el listener trata los dos como un intento de
+entrar.
 
 Dormirse y despertarse sin que nadie entre **no deja copias**: la parada ve que nadie ha jugado y el
 arranque encuentra el mundo igual que en la última copia (ver *Copias del mundo*).

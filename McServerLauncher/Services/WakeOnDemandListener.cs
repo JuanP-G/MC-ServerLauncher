@@ -128,8 +128,10 @@ public sealed class WakeOnDemandListener : IDisposable
         var status = _status?.Invoke();
         if (status is null) return;
 
+        // 2 is a login. 3 is a transfer (1.20.5 onwards): a player another server sent here with
+        // /transfer, who logs in the same way and used to get no answer at all from a sleeping one.
         if (nextState == 1) ServeStatus(stream, protocol, status);
-        else if (nextState == 2) ServeLogin(stream, status, ReadLoginName(stream));
+        else if (nextState is 2 or 3) ServeLogin(stream, status, ReadLoginName(stream));
     }
 
     private void ServeStatus(NetworkStream stream, int protocol, WakeStatus status)

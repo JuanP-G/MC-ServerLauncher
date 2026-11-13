@@ -325,6 +325,7 @@
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minutes sans joueurs</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = ne s'arrête jamais. Le compte à rebours démarre au départ du dernier joueur et repart dès que quelqu'un se connecte.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>Aucun joueur depuis {0} minutes : arrêt du serveur.</value></data>
+  <data name="Msg_IdleHeldFmt" xml:space="preserve"><value>La console n’a montré personne, mais le serveur indique des joueurs connectés ({0}) : il n’est pas arrêté. Si la liste des joueurs est vide alors que des gens jouent, signalez-le sur GitHub.</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Créer des sauvegardes automatiquement</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Sauvegardes automatiques à conserver</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Impossible de changer le service (nécessite souvent de lancer l'app en administrateur, ou d'utiliser l'icône de la barre d'état) : {0}</value></data>

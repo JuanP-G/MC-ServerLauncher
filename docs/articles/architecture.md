@@ -24,7 +24,7 @@ flowchart LR
     protect["BackupCoordinator<br/>WorldBackupService<br/>LiveWorldBackup"]
     content["ModrinthService<br/>ModDependencyService<br/>CleanupAdvisor"]
     online["PlayitApiService<br/>PlayitAgentRunner<br/>CrossplayService"]
-    wake["WakeOnDemandListener<br/>NetherNetWakeListener"]
+    wake["WakeOnDemandListener<br/>NetherNetWakeListener<br/>RakNetWakeListener"]
     hist["PlayerHistoryStore"]
     folder[("The server's folder<br/>world · mods · backups")]
     web["Mojang · Paper · Purpur<br/>Fabric · Forge · NeoForge<br/>Adoptium (Java)"]
@@ -333,7 +333,15 @@ are no hard-coded machine paths.
   player history. One parser turns a log line into something a player did, built from the console's own
   detectors (`NameBefore`, `ChatOf`, `DeathMessageDetector`), and serves both the live console and the
   import, so the two cannot disagree. It never reads the login line, which is the one carrying the IP, so the
-  history cannot keep one — `AnIpAddressNeverReachesTheDisk` checks the bytes on disk. The store lives in
+  history cannot keep one — `AnIpAddressNeverReachesTheDisk` checks the bytes on disk. A Bedrock player's
+  name carries the server's Floodgate prefix, which is a dot unless the owner changed `username-prefix`:
+  **`FloodgateConfig`** reads it from Floodgate's own config (`plugins/floodgate/` for the plugin,
+  `config/floodgate/` for the mod) once per start, and the view model hands it to every detector, so a
+  server set to `*` sees `*Steve` join, talk and die like anybody else (it used to accept the dot alone,
+  and those players were in neither the list nor the history). Only prefixes made of
+  `PlayerNames.PrefixCharacters` are accepted — no space, separator, quote, `@` or bracket — and the
+  store, which keeps names from every server, checks the shape itself (`IsStorable`) and writes the one
+  character Windows refuses in a file name, `*`, as `%2a` (`FileKey`). The store lives in
   `%APPDATA%\McServerLauncher\players\<serverId>\`, outside the server folder so it neither travels with the
   world nor fills its backups: `index.json` with one summary per player, and `events/<name>.jsonl` appended
   to and compacted in one go when it passes the limit by a quarter. Limits are `PlayerHistorySettings`
@@ -1285,7 +1293,25 @@ Two halves, both per server and both off by default.
 list: once a running server has had nobody on it for `ServerConfig.IdleShutdownMinutes` it stops
 itself, announcing it in the console and as a notification. The window shows a live countdown
 (`IdleCountdownText`), and a server that has just been woken gets a grace period so it can never be
-stopped before anyone has had time to get in.
+stopped before anyone has had time to get in. That grace runs from the moment the woken server is
+ready (`WakeOnDemandController.ServerReady`), not from the knock: a modded server can take longer to
+start than the whole grace, and it used to come up, find itself empty and out of time, and stop
+before its player had seen it.
+
+**"Nobody on it" is the console's word, and the server has the last one.** The player list is read
+from join and leave lines, and that reading has failed more than once — a Floodgate name the app did
+not recognise, the `System chat: ` prefix of Minecraft 26.3, and it would fail the same way with a
+plugin that hides the join message or a name the app does not accept. Each time the list stayed
+empty and a server with people on it was stopped. So when the clock runs out the controller asks the
+server itself (`IdleHost.AskServer` → `ConnectionProbe.PlayersOnlineAsync`): the status ping every
+client's server list sends, to the server's own port on this machine (or to `server-ip` when it is
+bound to one address). It is the count the server keeps, so it does not depend on any log line, it
+is the same on every server type, and a Bedrock player who came in through Geyser is in it. If it
+says anybody is on, nothing is stopped, the console says so once (`Msg_IdleHeldFmt`) and the clock
+starts again. If it says nobody, the server is stopped. **No answer is not an answer**
+(`enable-status=false`, a proxy that wants a PROXY header first): then the console's count stands,
+as before, and a reply without a player count is "no answer", never zero (`SlpReply.PlayersKnown`).
+`IdleShutdownControllerTests` and `IdleAsksTheServerTests` hold this down.
 
 **Waking** is `WakeOnDemandListener`, which takes over the server's port while the server is stopped
 and speaks the small, stable part of the Minecraft protocol needed to be honest about it: the
@@ -1320,10 +1346,30 @@ with a signed identity, so the POST is refused with a 503 and the player tries a
 later, when Geyser is up. Two choices worth knowing: the GET alone does not wake anything, for the
 same reason a Java ping does not; and `WakePolicy` is not asked, because the player's name is inside
 that signed identity and is not read here, so a Bedrock join wakes the server even when it only starts
-for its whitelist. The Bedrock scanners that exist send a RakNet ping, not this exchange. Both ports
-are let go together before the server starts (`WakeOnDemandController.Stop`), or Geyser would find its
-own port busy. Not covered: Geyser's `raknet` transport (UDP), LAN discovery, and what the client
-shows for the refusal — the protocol does not define a message.
+for its whitelist. The Bedrock scanners that exist send a RakNet ping, not this exchange.
+
+**The Bedrock client that speaks RakNet** — an older one, and whichever platforms still use it — is
+`RakNetWakeListener`'s, on the UDP side of the same port number. Until it existed that client saw a
+sleeping server as offline and could not wake it. It speaks RakNet's two offline messages and nothing
+else: an *unconnected ping* (what the client sends to draw its list) gets a pong whose first line is
+the server's name and the "asleep" notice, and wakes nothing; an *open connection request* (what it
+sends when Join is pressed) wakes the server and is not answered, because nothing at that level can
+say "starting, try again" — the client gives up after a few seconds and the player joins once Geyser
+is up. UDP adds a problem TCP does not have: the sender's address can be forged, so anything that
+answers can be aimed at a third party. So the pong is small and rationed (twenty a second), a join
+request counts only with RakNet's magic and the padding a real client sends (a forged one-byte packet
+has neither), and the wake is rationed too. Not verified with a real RakNet client: the tests speak
+the protocol over a real socket, and the version and protocol number in the pong are informational.
+
+All three ports are let go together before the server starts (`WakeOnDemandController.Stop`), or
+Geyser would find its own port busy; the UDP one waits for its receive thread, since the port is not
+free until that has let go. While it sleeps the launcher is the program listening on the Bedrock
+port over TCP *and* UDP, which is what the Windows Firewall check now asks about
+(`ServerViewModel.FirewallOwners`). Not covered: LAN discovery, and what the client shows for a
+refusal — neither protocol defines a message.
+
+A Java player sent here by another server's `/transfer` (1.20.5 onwards) arrives with next state 3
+instead of 2 and logs in the same way; the listener treats both as a join.
 
 A sleep and a wake with nobody coming in leave **no backups**: the stop sees nobody played and the
 start finds the world still the last backup's (see *World backups*).

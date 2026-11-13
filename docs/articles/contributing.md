@@ -228,7 +228,14 @@ Each of these is here because breaking it shipped a bug that no test caught at t
   owner could never type: Floodgate logs a Bedrock player as `.Steve`, and a rule written for Java names
   dropped them from the player list, so a server with only Bedrock players looked empty and the idle
   timer stopped it. Reading the log goes through `PlayerNames.IsOnServer`; anything that makes a
-  profile or a path from typed text stays on `PlayerNames.IsValid`.
+  profile or a path from typed text stays on `PlayerNames.IsValid`. The dot is only Floodgate's
+  default: the owner can change `username-prefix`, so `IsOnServer` takes the server's own prefix
+  (`FloodgateConfig.ReadUsernamePrefix`, kept by `ServerViewModel.FloodgatePrefix`), and every detector
+  that reads a name carries it as its last argument — pass it on, never leave the default in code that
+  knows which server it is reading. A prefix is accepted only if it is made of
+  `PlayerNames.PrefixCharacters`, chosen for what they cannot do in a command, a path or the chat
+  detector; anything that keeps names across servers checks the shape with `PlayerNames.IsStorable` and
+  names files with `PlayerNames.FileKey`.
 - **Fix a format with a line from a real server.** The speed probe's parsers were first written from
   memory of what spark prints, and a real run showed it prints two decimals in some lines and one in
   others, a mangled `[⚡]` on Windows, and the decimal comma of a Spanish machine. Capture the output,

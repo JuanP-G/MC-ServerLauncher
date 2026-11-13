@@ -87,9 +87,23 @@ public class WakeForWhitelistTests
     }
 
     /// <summary>
+    /// A player another server sent here with <c>/transfer</c> (1.20.5 onwards) says so in the
+    /// handshake and then logs in as usual. A sleeping server used to give them no answer at all.
+    /// </summary>
+    [Fact]
+    public async Task APlayerTransferredFromAnotherServerWakesItToo()
+    {
+        var (asked, message) = await JoinAs("Alice", allow: true, nextState: 3);
+
+        Assert.Equal("Alice", asked);
+        Assert.Equal("waking", message);
+    }
+
+    /// <summary>
     /// Connects as <paramref name="player"/>; returns who the listener asked about, and what it said.
     /// </summary>
-    private static async Task<(string? Asked, string? Message)> JoinAs(string player, bool allow)
+    private static async Task<(string? Asked, string? Message)> JoinAs(string player, bool allow,
+        int nextState = 2)
     {
         var port = FreePort();
         string? asked = null;
@@ -111,7 +125,7 @@ public class WakeForWhitelistTests
             WakeOnDemandListener.WriteString(handshake, "localhost");
             handshake.WriteByte((byte)(port >> 8));
             handshake.WriteByte((byte)(port & 0xFF));
-            WakeOnDemandListener.WriteVarInt(handshake, 2);   // next state: login
+            WakeOnDemandListener.WriteVarInt(handshake, nextState);   // 2: login, 3: transfer
             Frame(stream, handshake.ToArray());
         }
         stream.Write(LoginStart(player));

@@ -39,9 +39,11 @@ public static partial class PlayerEventParser
     /// <summary>What a player did in <paramref name="line"/>, or null if it is not about a player.</summary>
     /// <param name="line">The line as the server wrote it.</param>
     /// <param name="online">Who is connected, to recognise a player's <c>/say</c> and <c>/me</c>.</param>
-    public static PlayerEvent? Parse(string line, IReadOnlySet<string>? online)
+    /// <param name="floodgatePrefix">What this server's Floodgate puts in front of a Bedrock name.</param>
+    public static PlayerEvent? Parse(string line, IReadOnlySet<string>? online,
+        string floodgatePrefix = PlayerNames.DefaultFloodgatePrefix)
     {
-        if (ConsoleLineClassifier.ChatOf(line, online) is { } chat)
+        if (ConsoleLineClassifier.ChatOf(line, online, floodgatePrefix) is { } chat)
         {
             // "[Server] …" is the console talking, not a player. (Someone actually called Server
             // would lose their chat from the history; a price worth paying not to invent a player.)
@@ -50,16 +52,17 @@ public static partial class PlayerEventParser
                 : null;
         }
 
-        if (ConsoleLineClassifier.NameBefore(line, " joined the game") is { } joined)
+        if (ConsoleLineClassifier.NameBefore(line, " joined the game", floodgatePrefix) is { } joined)
             return new PlayerEvent(PlayerEventKind.Join, joined, null);
 
-        if (ConsoleLineClassifier.NameBefore(line, " left the game") is { } left)
+        if (ConsoleLineClassifier.NameBefore(line, " left the game", floodgatePrefix) is { } left)
             return new PlayerEvent(PlayerEventKind.Leave, left, null);
 
-        if (Advancement().Match(Body(line) ?? "") is { Success: true } adv)
+        if (Advancement().Match(Body(line) ?? "") is { Success: true } adv
+            && PlayerNames.IsOnServer(adv.Groups[1].Value, floodgatePrefix))
             return new PlayerEvent(PlayerEventKind.Advancement, adv.Groups[1].Value, adv.Groups[2].Value);
 
-        if (DeathMessageDetector.Detect(line) is { } death)
+        if (DeathMessageDetector.Detect(line, floodgatePrefix) is { } death)
         {
             var space = death.IndexOf(' ');
             return space > 0 ? new PlayerEvent(PlayerEventKind.Death, death[..space], death) : null;
@@ -69,26 +72,33 @@ public static partial class PlayerEventParser
     }
 
     /// <summary>The player and UUID in <c>UUID of player Bob is …</c>, or null.</summary>
-    public static (string Player, string Uuid)? UuidOf(string line)
+    public static (string Player, string Uuid)? UuidOf(string line,
+        string floodgatePrefix = PlayerNames.DefaultFloodgatePrefix)
     {
         if (Body(line) is not { } body) return null;
 
         var m = UuidLine().Match(body);
-        return m.Success ? (m.Groups[1].Value, m.Groups[2].Value.ToLowerInvariant()) : null;
+        return m.Success && PlayerNames.IsOnServer(m.Groups[1].Value, floodgatePrefix)
+            ? (m.Groups[1].Value, m.Groups[2].Value.ToLowerInvariant())
+            : null;
     }
 
     private static string? Body(string line) => ConsoleLineClassifier.MessageBody(line);
 
+    /// <summary>A run of non-spaces no longer than a prefixed name can be.</summary>
+    private const string FirstWord = @"\S{1,19}";
+
     // Anchored to the start of the message, like every other detector: a chat line quoting it has
-    // "<Bob> " in front and does not match.
-    [GeneratedRegex(@"^(" + PlayerNames.LogPattern + @") has " +
+    // "<Bob> " in front and does not match. The pattern only picks the first word out; whether it is
+    // a name is PlayerNames.IsOnServer's to say, with the server's own Floodgate prefix.
+    [GeneratedRegex(@"^(" + FirstWord + @") has " +
                     @"(?:made the advancement|completed the challenge|reached the goal) \[(.+)\]\s*$")]
     private static partial Regex Advancement();
 
     // Anchored like the rest. It used to look for "]: UUID of player" anywhere in the line, and a
     // player typing "x]: UUID of player Alice is …" in chat could tie Alice's history — and the
     // statistics read for her — to any UUID they liked.
-    [GeneratedRegex(@"^UUID of player (" + PlayerNames.LogPattern + @") is " +
+    [GeneratedRegex(@"^UUID of player (" + FirstWord + @") is " +
                     @"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\s*$")]
     private static partial Regex UuidLine();
 }

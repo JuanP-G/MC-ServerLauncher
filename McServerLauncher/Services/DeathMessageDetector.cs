@@ -36,7 +36,7 @@ public static class DeathMessageDetector
     /// as <c>System chat: Alice was slain by Zombie</c> it would have needed its own fix, and the
     /// notification would have read "System chat: …".
     /// </remarks>
-    public static string? Detect(string line)
+    public static string? Detect(string line, string floodgatePrefix = PlayerNames.DefaultFloodgatePrefix)
     {
         if (ConsoleLineClassifier.MessageBody(line) is not { } body) return null;
         var msg = body.TrimEnd();
@@ -44,7 +44,7 @@ public static class DeathMessageDetector
         var space = msg.IndexOf(' ');
         if (space <= 0) return null; // needs "<name> <phrase>"
         var subject = msg[..space];
-        if (!PlayerNames.IsOnServer(subject)) return null;
+        if (!PlayerNames.IsOnServer(subject, floodgatePrefix)) return null;
 
         var rest = msg[(space + 1)..];
         foreach (var phrase in Phrases)

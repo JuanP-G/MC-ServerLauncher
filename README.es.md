@@ -170,11 +170,12 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
 - **Se apaga y se enciende solo** — un servidor puede **apagarse a los N minutos sin nadie dentro** y
   **volver a encenderse cuando alguien intenta entrar**. Mientras duerme, la lista dice *«Apagado · entra para
   encenderlo»* y quien pulse Entrar recibe un mensaje mientras arranca. Hay **cuenta atrás** hasta el apagado y
-  un margen tras despertar. Si el servidor tiene lista blanca, solo lo despiertan los nombres de la lista (u ops),
+  un margen tras despertar. **Antes de apagar, la app pregunta al propio servidor cuántos jugadores tiene**, así
+  que un servidor con gente dentro no se apaga aunque su entrada no haya salido en la consola. Si el servidor tiene lista blanca, solo lo despiertan los nombres de la lista (u ops),
   así que los escáneres de Internet no; el nombre no se verifica hasta que el servidor arranca, y entonces este
   echa a quien use uno prestado. Con crossplay, un jugador de Bedrock que intente entrar también lo despierta,
-  tenga lista blanca o no (su nombre no se puede leer en ese momento); el primer intento se rechaza y entra
-  unos segundos después. Por servidor y **desactivado de serie**.
+  tenga lista blanca o no (su nombre no se puede leer en ese momento), se conecte su cliente de la forma
+  nueva (NetherNet) o de la antigua (RakNet); el primer intento se rechaza y entra unos segundos después. Por servidor y **desactivado de serie**.
 - **Antes de arrancar se comprueba que no falte nada** — si a un mod o plugin le falta una dependencia, se
   avisa **al darle a Iniciar**, con la opción de instalarla y arrancar. Se lee de los propios jars, así que
   funciona **sin conexión**. Para mods de Fabric y Forge/NeoForge y plugins de Paper y Purpur.
@@ -230,7 +231,9 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   jitter, pérdida, pico de transmisión, muestras) están a un clic, con un informe para copiar.
 - **Jugar también desde Bedrock** — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea
   el segundo túnel (UDP) y configura el puerto público que Geyser debe anunciar. El puerto de Bedrock se cambia
-  en la configuración de cada servidor (Red y acceso), y nunca se le da el mismo a dos. Depende del tipo de servidor:
+  en la configuración de cada servidor (Red y acceso), y nunca se le da el mismo a dos. Los jugadores de
+  Bedrock salen en la lista de jugadores y en el historial con el nombre que les da Floodgate, sea cual sea el
+  prefijo que pongas en su configuración (`.` por defecto, también `*` y similares). Depende del tipo de servidor:
 
   | Tipo | Desde Bedrock | Por qué |
   |---|---|---|

@@ -325,6 +325,7 @@
   <data name="Idle_MinutesLabel" xml:space="preserve"><value>Minuten ohne Spieler</value></data>
   <data name="Idle_Hint" xml:space="preserve"><value>0 = wird nie gestoppt. Die Zeit läuft ab dem Weggehen des letzten Spielers und wird zurückgesetzt, sobald jemand beitritt.</value></data>
   <data name="Msg_IdleShutdownFmt" xml:space="preserve"><value>{0} Minuten ohne Spieler: Der Server wird gestoppt.</value></data>
+  <data name="Msg_IdleHeldFmt" xml:space="preserve"><value>Die Konsole hat niemanden angezeigt, aber der Server meldet verbundene Spieler ({0}): Er wird nicht gestoppt. Wenn die Spielerliste leer ist, obwohl gespielt wird, melde es bitte auf GitHub.</value></data>
   <data name="Backup_EnabledCheck" xml:space="preserve"><value>Sicherungen automatisch erstellen</value></data>
   <data name="Backup_RetentionLabel" xml:space="preserve"><value>Aufzubewahrende automatische Sicherungen</value></data>
   <data name="Msg_PlayitServiceChangeFail" xml:space="preserve"><value>[Playit] Der Dienst konnte nicht geändert werden (erfordert meist, die App als Administrator zu starten oder das Tray-Symbol zu verwenden): {0}</value></data>

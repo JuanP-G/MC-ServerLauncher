@@ -29,7 +29,7 @@ public sealed record FirewallFinding(FirewallCause Cause, IReadOnlyList<string> 
 
 /// <summary>A program that owns the Bedrock port, and what it needs of it.</summary>
 /// <param name="Program">The executable's full path (see <see cref="FirewallDiagnosis.Resolve"/>).</param>
-/// <param name="NeedsUdp">Whether it also needs UDP: Java does (the game itself), the sleeping server's listener does not.</param>
+/// <param name="NeedsUdp">Whether it also needs UDP: Java does (the game itself), and so does the launcher while the server sleeps (<see cref="RakNetWakeListener"/>).</param>
 public sealed record FirewallOwner(string Program, bool NeedsUdp);
 
 /// <summary>A network the computer is connected to, and the firewall profile Windows gave it.</summary>
