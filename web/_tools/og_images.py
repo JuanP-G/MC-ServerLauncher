@@ -39,6 +39,8 @@ SPANISH = {
     "free": "Gratis y de código abierto", "os": "Windows · Linux · macOS",
 }
 
+SAME_IN_ALL_LANGUAGES = {"os"}
+
 TEMPLATE = """<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><style>
 @font-face{{font-family:MC; src:url("{assets}/mc/minecraft.woff") format("woff")}}
 @font-face{{font-family:Inter; src:local("Inter"), local("Segoe UI")}}
@@ -98,9 +100,18 @@ def main():
     browser = find_browser()
     data = json.loads(STRINGS.read_text(encoding="utf-8"))
     langs = {"es": SPANISH}
+    missing = []
     for code in (k for k in data if not k.startswith("_")):
         s = data[code]["strings"]
+        # Antes, una cadena sin traducir se quedaba en español sin avisar y salía una imagen
+        # de otro idioma con texto español. Solo la línea de sistemas (nombres propios) es igual
+        # en todos los idiomas a propósito.
+        missing += ["[%s] %r" % (code, v) for k, v in SPANISH.items()
+                    if k not in SAME_IN_ALL_LANGUAGES and v not in s]
         langs[code] = {k: s.get(v, v) for k, v in SPANISH.items()}
+    if missing:
+        sys.exit("Faltan traducciones en web/_i18n/strings.json; no se genera ninguna imagen:\n  "
+                 + "\n  ".join(missing))
     OUT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         for code, t in langs.items():

@@ -42,6 +42,30 @@ def hreflang_for(code):
     return guides.HREFLANG.get(code, code)
 
 
+def write_manifests(data, problems):
+    """Un manifiesto web por idioma, derivado del español (assets/site.webmanifest, escrito a mano).
+
+    Solo cambian la descripción (de strings.json, "manifest_description"), el idioma y la página
+    de inicio: abrir la app instalada desde una página inglesa vuelve a /en/ y no a la española.
+    Los iconos y los colores son los del original.
+    """
+    base = json.loads((ROOT / "assets" / "site.webmanifest").read_text(encoding="utf-8"))
+    for code, meta in data.items():
+        if code.startswith("_"):
+            continue
+        description = meta.get("manifest_description")
+        if not description:
+            problems.append("[%s] strings.json no tiene manifest_description" % code)
+            continue
+        manifest = dict(base)
+        manifest["description"] = description
+        manifest["lang"] = hreflang_for(code)
+        manifest["start_url"] = "../%s/" % code
+        target = ROOT / "assets" / guides.manifest_name(code)
+        target.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print("%s -> assets/%s" % (code, target.name))
+
+
 def hreflang_block(languages):
     """Bloque de alternativas que debe ir en TODAS las versiones, la española incluida."""
     lines = ['<link rel="alternate" hreflang="es" href="%s/">' % BASE_URL]
@@ -87,6 +111,10 @@ def localize(html, code, meta, mapping):
     out = out.replace('"assets/', '"../assets/')
     out = out.replace(', assets/', ', ../assets/')   # el resto de URLs de un srcset
 
+    # Cada idioma tiene su manifiesto (descripción y página de inicio en ese idioma).
+    out = out.replace('href="../assets/site.webmanifest"',
+                      'href="../assets/%s"' % guides.manifest_name(code))
+
     out = out.replace('<html lang="es">', '<html lang="%s">' % meta["lang"])
     out = out.replace('content="es_ES"', 'content="%s"' % meta["locale"])
     out = out.replace('href="%s/"' % BASE_URL, 'href="%s/%s/"' % (BASE_URL, code), 1)   # canonical
@@ -95,21 +123,26 @@ def localize(html, code, meta, mapping):
     return rewrite_language_links(out, code)
 
 
-# Política de contenido de cada página. Es una etiqueta <meta> porque el hosting no se configura
-# desde el repositorio; frame-ancestors, report-uri y sandbox no funcionan en una etiqueta, así que
-# no se incluyen.
+# Política de contenido de cada página. Es una etiqueta <meta> porque GitHub Pages no deja poner
+# cabeceras; frame-ancestors, report-uri y sandbox no funcionan en una etiqueta, así que aquí no
+# se incluyen. Vercel sí las manda: web/vercel.json añade frame-ancestors como cabecera, y se
+# suma a esta política en vez de sustituirla.
 #
-#   script-src   el propio sitio y el contador (GoatCounter). La página ya no lleva código en línea
-#                (todo está en assets/site.js), así que no hace falta ningún hash y un script
-#                inyectado en la página no se ejecuta aunque llegue a escribirse en ella.
+#   script-src   solo el propio sitio. El contador (GoatCounter) ya no se carga de gc.zgo.at: su
+#                count.js (ISC, 9 KB, sin dependencias) está copiado en assets/, porque un script de
+#                un tercero sin atributo integrity corre con acceso a todo el DOM y esa CDN puede
+#                cambiarlo cuando quiera; con integrity, cualquier actualización suya habría roto
+#                el contador sin avisar. La página tampoco lleva código en línea (todo está en
+#                assets/site.js), así que no hace falta ningún hash y un script inyectado en la
+#                página no se ejecuta aunque llegue a escribirse en ella.
 #   connect-src  la API de GitHub (el listado de versiones) y el contador.
 #   style-src    'unsafe-inline': la página lleva estilos en línea y atributos style; los estilos no
 #                ejecutan código, y quitarlos sería reescribir el diseño.
 #   base-uri, form-action, object-src, default-src 'none': nada de lo que la página no usa.
 CSP = ("default-src 'none'; "
-       "script-src 'self' https://gc.zgo.at; "
+       "script-src 'self'; "
        "connect-src https://api.github.com https://mc-serverlauncher.goatcounter.com; "
-       "img-src 'self' data: https://mc-serverlauncher.goatcounter.com https://gc.zgo.at; "
+       "img-src 'self' data: https://mc-serverlauncher.goatcounter.com; "
        "style-src 'self' 'unsafe-inline'; "
        "font-src 'self'; "
        "manifest-src 'self'; "
@@ -134,7 +167,7 @@ INLINE_SCRIPT = re.compile(r'<script(?![^>]*\bsrc=)(?![^>]*type="application/ld\
 
 # Los archivos que cambian con el sitio llevan en la URL un resumen de su contenido: un navegador
 # o una caché intermedia que guardó la versión anterior pide la nueva en cuanto cambia.
-VERSIONED_ASSETS = ("site.css", "site.js", "guide.css", "404.css", "404.js")
+VERSIONED_ASSETS = ("site.css", "site.js", "guide.css", "404.css", "404.js", "count.js")
 VERSIONED_URL = re.compile(r'assets/(%s)(?:\?v=[0-9a-f]+)?"' % "|".join(re.escape(a) for a in VERSIONED_ASSETS))
 
 
@@ -244,6 +277,8 @@ def main():
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(out, encoding="utf-8")
         print("%s -> %s/index.html  (%d cadenas)" % (code, code, len(mapping)))
+
+    write_manifests(data, problems)
 
     if problems:
         print("\n".join(problems), file=sys.stderr)

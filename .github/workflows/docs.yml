@@ -53,7 +53,8 @@ jobs:
           Copy-Item web\* _pages\ -Recurse -Force
           # The generator's sources and the art tools are not part of the site: publishing them only
           # gave search engines more to index (robots.txt also disallows both).
-          Remove-Item _pages\_i18n, _pages\_tools -Recurse -Force
+          # vercel.json (security headers, cache rules) only means something to Vercel.
+          Remove-Item _pages\_i18n, _pages\_tools, _pages\vercel.json -Recurse -Force
           # The 404 page is served for ANY address that does not exist, so its own location can be
           # anything (/a/b/c) and its links cannot be relative: web/404.html writes them from the
           # root ("/assets/...", "/en/"). That is right at the root of Vercel's domain, but this

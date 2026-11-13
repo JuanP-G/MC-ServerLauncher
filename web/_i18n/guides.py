@@ -55,6 +55,12 @@ def landing_path(code):
     return "" if code == "es" else code + "/"
 
 
+def manifest_name(code):
+    """Archivo (dentro de assets/) del manifiesto de un idioma: el español es el escrito a mano
+    y el resto los genera build.py con su descripción y su página de inicio."""
+    return "site.webmanifest" if code == "es" else "site.%s.webmanifest" % code
+
+
 def guide_path(code, slug):
     """Ruta (desde la raíz del sitio, con barra final) de una guía en un idioma."""
     return "guias/%s/" % slug if code == "es" else "%s/guides/%s/" % (code, slug)
@@ -417,7 +423,7 @@ def build_page(gid, g, code, ui, guides, chrome):
 <link rel="icon" href="%(up)sassets/icons/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="%(up)sassets/icons/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="%(up)sassets/icons/apple-touch-icon.png">
-<link rel="manifest" href="%(up)sassets/site.webmanifest">
+<link rel="manifest" href="%(up)sassets/%(manifest)s">
 <meta name="author" content="JuanP-G">
 
 <meta property="og:type" content="article">
@@ -444,7 +450,7 @@ def build_page(gid, g, code, ui, guides, chrome):
 %(ld)s
 
 """ % {"code": code, "lang": HREFLANG.get(code, code), "gid": gid, "title": esc(content["title"]), "desc": desc, "url": url,
-       "alternates": alternates, "up": up, "locale": LOCALES[code], "h1": esc(content["h1"]),
+       "alternates": alternates, "up": up, "locale": LOCALES[code], "manifest": manifest_name(code), "h1": esc(content["h1"]),
        "og": og_image, "pub": g["published"], "mod": g["modified"], "ld": ld}
 
     # La hoja de la landing y, después, la de las guías: el orden es el de la cascada.
