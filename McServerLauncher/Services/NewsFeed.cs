@@ -121,5 +121,14 @@ public sealed record NewsItem(string Id, NewsKind Kind, NewsStatus Status, DateT
 /// <summary>The notices file, as read.</summary>
 /// <param name="Seq">Grows with every version of the file; a smaller one than already accepted is a replay.</param>
 /// <param name="Issued">When this version of the file was written.</param>
+/// <param name="Expires">
+/// After this moment the file no longer vouches that it is the latest one. Signed with the rest, so it
+/// cannot be moved by whoever serves the file: it is what makes an old copy, replayed or simply kept by
+/// a server that stopped updating, show up as out of date instead of passing for current.
+/// </param>
 /// <param name="Items">The notices that were valid.</param>
-public sealed record NewsFeed(int Seq, DateTimeOffset Issued, IReadOnlyList<NewsItem> Items);
+public sealed record NewsFeed(int Seq, DateTimeOffset Issued, DateTimeOffset Expires, IReadOnlyList<NewsItem> Items)
+{
+    /// <summary>Whether the file has run out at <paramref name="now"/>.</summary>
+    public bool IsExpiredAt(DateTimeOffset now) => Expires <= now;
+}

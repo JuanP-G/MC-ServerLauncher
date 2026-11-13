@@ -66,6 +66,52 @@ public class NewsFileTests
         Assert.Contains("'resolvedAt'", script);                        // resolved ones need a date
     }
 
+    [Fact]
+    public void TheSigningScriptWritesTheExpiryAndCapsHowFarAheadItCanBe()
+    {
+        // The file must expire (audit 2026-11-09, #162). The script writes the date, so renewing is
+        // running it again; a cap keeps "expires in 2099" from being an expiry in name only.
+        var script = File.ReadAllText(Path.Combine(Root, "tools", "signing", "sign-news.ps1"));
+
+        Assert.Contains("[ValidateRange(1, 90)]", script);
+        Assert.Contains("[int]$ExpiresInDays = 60", script);
+        Assert.Contains("\"expires\"", script);
+        Assert.Contains("-le $issuedAt", script);                       // expires must be after issued
+    }
+
+    /// <summary>
+    /// The file in the repository is the one that is published: if it was edited and not signed again,
+    /// every app refuses it and the feed is down without anything saying so until a user's app shows the
+    /// card. This is the check that fails on the pull request instead.
+    /// </summary>
+    [Fact]
+    public void TheCommittedNoticesFileIsSignedAndIsOneTheAppAccepts()
+    {
+        var path = Path.Combine(Root, "web", "news.json");
+        var signaturePath = path + ".sig";
+        if (!File.Exists(path)) return;     // before the feed was activated there was nothing to check
+
+        var raw = File.ReadAllBytes(path);
+
+        Assert.True(File.Exists(signaturePath), "web/news.json has no news.json.sig: run tools\\signing\\sign-news.ps1");
+        Assert.True(McServerLauncher.Services.UpdateSignature.VerifyNews(raw, File.ReadAllText(signaturePath)),
+            "the signature of web/news.json does not verify: it was edited after it was signed, or the " +
+            "signature is stale. Run tools\\signing\\sign-news.ps1 and commit both files.");
+
+        McServerLauncher.Services.NewsFeed feed;
+        try { feed = McServerLauncher.Services.NewsFeedParser.Parse(raw); }
+        catch (InvalidDataException ex)
+        {
+            Assert.Fail("web/news.json is not a file the app accepts (" + ex.Message + "). Run " +
+                "tools\\signing\\sign-news.ps1, which writes the expires date, and commit both files.");
+            return;
+        }
+
+        Assert.True(feed.Expires > feed.Issued);
+        Assert.True(feed.Expires - feed.Issued <= TimeSpan.FromDays(90),
+            "expires is more than 90 days after issued: sign-news.ps1 never writes that");
+    }
+
     [Theory]
     [InlineData("announcements.md")]
     [InlineData("announcements.es.md")]

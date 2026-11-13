@@ -556,8 +556,10 @@ Un aviso para todas las apps instaladas (una caída de Playit, un asunto de segu
    uno resuelto necesita `resolvedAt`. Escribe el texto en los cinco idiomas (`es`, `en`, `de`, `fr`, `pt`)
    o al menos en `en`, que es el de respaldo.
 2. Ejecuta `.\tools\signing\sign-news.ps1`. Pide la contraseña de la clave de firma y escribe
-   `web/news.json.sig`. Sin la clave, para aquí: un aviso no puede publicarse sin firmar, la app lo
-   rechazaría.
+   `web/news.json.sig`. También escribe `expires` (60 días desde ahora): pasada esa fecha el archivo deja
+   de dar fe de ser el último y la app dice que la lista está desactualizada, así que **vuelve a firmar
+   antes** (cada release es un buen momento), aunque no haya nada nuevo que decir. Sin la clave, para aquí:
+   un aviso no puede publicarse sin firmar, la app lo rechazaría.
 3. Abre un pull request con los dos archivos. Cuando se fusione, comprueba que la web y GitHub Pages sirven
    los mismos bytes y que la firma verifica a mano (ver [Actualizaciones firmadas](signing.es.md)).
 4. Para terminar una incidencia, márcala `resolved` (no la borres) y firma otra vez.

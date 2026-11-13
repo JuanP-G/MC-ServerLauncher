@@ -39,7 +39,8 @@ public static class NewsFeedParser
     /// <summary>
     /// The longest an incident or security notice can run from its start, whatever its <c>until</c>
     /// says. It is what keeps a forgotten notice from becoming permanent without anybody re-signing
-    /// the file, and what lets the file have no expiry of its own.
+    /// the file. The file has its own expiry too (<c>expires</c>), but that one says the file may be
+    /// stale, not that a notice is over, and a notice it carries is not hidden when it passes.
     /// </summary>
     internal static readonly TimeSpan MaxUrgentSpan = TimeSpan.FromDays(30);
 
@@ -67,6 +68,10 @@ public static class NewsFeedParser
                 throw new InvalidDataException("a notices format this build does not know");
             if (!Int(root, "seq", out var seq) || seq < 1) throw new InvalidDataException("no seq");
             if (!Date(root, "issued", out var issued)) throw new InvalidDataException("no issued date");
+            // Required, not optional: a file that never expires is the very thing this field is against,
+            // and a reader that accepted one would let an old copy pass for current for ever.
+            if (!Date(root, "expires", out var expires)) throw new InvalidDataException("no expires date");
+            if (expires <= issued) throw new InvalidDataException("expires is not after issued");
             if (!root.TryGetProperty("items", out var array) || array.ValueKind != JsonValueKind.Array)
                 throw new InvalidDataException("no items");
 
@@ -78,7 +83,7 @@ public static class NewsFeedParser
                 if (ReadItem(element, issued) is not { } item) continue;
                 if (seen.Add(item.Id)) items.Add(item);     // the first one with an id is the one that counts
             }
-            return new NewsFeed(seq, issued, items);
+            return new NewsFeed(seq, issued, expires, items);
         }
     }
 

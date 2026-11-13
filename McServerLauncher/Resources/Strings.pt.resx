@@ -430,6 +430,8 @@
   <data name="News_MoreInfo" xml:space="preserve"><value>Mais informações</value></data>
   <data name="News_FeedFailedFmt" xml:space="preserve"><value>Não foi possível verificar os avisos. Última cópia: {0}.</value></data>
   <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>Não foi possível verificar os avisos e ainda não há nenhuma cópia guardada.</value></data>
+  <data name="News_FeedExpiredFmt" xml:space="preserve"><value>A lista de avisos expirou e pode estar desatualizada. Última verificação: {0}.</value></data>
+  <data name="News_FeedExpiredNoCopy" xml:space="preserve"><value>A lista de avisos publicada expirou e pode estar desatualizada.</value></data>
   <data name="News_BandSee" xml:space="preserve"><value>Ver aviso</value></data>
   <data name="News_ToastSeeNews" xml:space="preserve"><value>Os detalhes estão em Novidades.</value></data>
   <data name="News_ToastResolved" xml:space="preserve"><value>Resolvido. Os detalhes estão em Novidades.</value></data>

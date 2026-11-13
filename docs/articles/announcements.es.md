@@ -26,6 +26,9 @@ servidor. Un aviso lo dice, dentro de la app, sin que nadie tenga que actualizar
 - **Una tarjeta cuando no se pudo comprobar el archivo**: *No se pudo comprobar si hay avisos. Última copia:
   hace 3 h.* Una mirada que falla nunca se enseña como «no hay avisos», porque es justo entonces cuando
   podría haber una incidencia sin ver.
+- **Una tarjeta cuando el archivo ha caducado**: *La lista de avisos ha caducado y puede estar
+  desactualizada. Última comprobación: hace 3 h.* Un mensaje distinto para algo distinto: la comprobación
+  funcionó, y lo que encontró (o lo que tiene la app) está desfasado (ver *El archivo caduca*).
 
 Los consejos nunca usan la banda ni las notificaciones.
 
@@ -63,6 +66,7 @@ archivo (ver *Para quién es un aviso*); nada de lo que hace el usuario sale del
   "schema": 1,
   "seq": 42,
   "issued": "2026-11-07T14:20:00Z",
+  "expires": "2027-01-06T14:20:00Z",
   "items": [
     {
       "id": "playit-2026-11-07",
@@ -86,10 +90,11 @@ archivo (ver *Para quién es un aviso*); nada de lo que hace el usuario sale del
 | `schema` | Siempre `1`. Un archivo con otro número se rechaza entero. |
 | `seq` | Número entero, mayor en cada versión del archivo. La app guarda el más alto que ha aceptado y **rechaza uno menor**; uno igual se acepta. |
 | `issued` | Cuándo se escribió esta versión. |
+| `expires` | **Obligatorio.** Cuándo el archivo deja de dar fe de ser el último (ver *El archivo caduca*). Tiene que ser posterior a `issued`; un archivo sin él, o con otro tipo de valor, se rechaza entero. Lo escribe `sign-news.ps1`. |
 | `id` | Nombra el aviso para siempre: lo leído, lo cerrado y lo anunciado se recuerda por él. Hasta 64 caracteres entre letras, cifras, `.`, `_` y `-`. |
 | `kind` | `incident`, `security` o `tip`. |
 | `status` | `active` (por defecto) o `resolved`. Un consejo no tiene nada que resolver: sale mientras esté en el archivo. |
-| `from` / `until` | El aviso se muestra desde `from` (por defecto, desde `issued`) hasta `until`. **`until` es obligatorio en una incidencia y en un aviso de seguridad**, y se limita a 30 días desde `from`, así un aviso olvidado no puede volverse permanente y el archivo no necesita caducidad propia. Un consejo puede no tenerlo. |
+| `from` / `until` | El aviso se muestra desde `from` (por defecto, desde `issued`) hasta `until`. **`until` es obligatorio en una incidencia y en un aviso de seguridad**, y se limita a 30 días desde `from`, así un aviso olvidado no puede volverse permanente. Un consejo puede no tenerlo. |
 | `resolvedAt` | Obligatorio cuando `status` es `resolved`. El aviso se retira siete días después, o en `until` si llega antes. |
 | `only` | Para quién es (abajo). Si falta, es para todos. |
 | `link` | Adónde va *Más información*: `https`, y solo `github.com`, `playit.gg`, `mc-server-launcher.vercel.app` o `juanp-g.github.io`. Cualquier otra cosa se descarta. |
@@ -121,7 +126,9 @@ Todo lo que sigue ocurre antes de mirar el contenido, y no se escribe nada en di
 2. Su firma tiene que verificarse, sobre los bytes exactos recibidos, con una de las claves incluidas en la
    app (las mismas que para las actualizaciones; ver [Actualizaciones firmadas](signing.es.md)).
 3. Tiene que leerse bien, y su `seq` no puede ser menor que el más alto aceptado alguna vez.
-4. Solo entonces se sustituyen el archivo y su firma, y el ETag se guarda lo último: un ETag guardado para
+4. Su `expires` no puede haber pasado. Un archivo que ya lo pasó se rechaza como *caducado*, que no es lo
+   mismo que una comprobación fallida: ver la sección siguiente.
+5. Solo entonces se sustituyen el archivo y su firma, y el ETag se guarda lo último: un ETag guardado para
    un cuerpo que luego se rechazó haría que toda petición posterior respondiera *no modificado* y una firma
    corregida no se recogería nunca.
 
@@ -133,24 +140,57 @@ Si falla cualquier paso se rechaza el archivo entero y se queda la copia anterio
 tarjeta de arriba. Que las dos direcciones respondan *no encontrado* no es un error: no se ha publicado
 nada y no hay avisos.
 
+### El archivo caduca
+
+Una firma vale para siempre, así que por sí sola no distingue el último archivo de uno viejo que se firmó
+bien en su día. `expires` va firmado con el resto, de modo que quien sirva el archivo no puede estirarlo, y
+la app lo juzga **cada vez que lee el archivo**, no una sola vez al guardarlo:
+
+- Un archivo que llega ya caducado se rechaza y no sustituye nada.
+- Un *no modificado* para una copia caducada no es una confirmación: el servidor dice que no hay nada más
+  nuevo, y eso no consuela cuando lo que hay está desfasado.
+- Una copia que estaba bien al guardarse se da por desfasada en cuanto pasa su fecha, sin tocar la red, y
+  también tras reiniciar.
+
+En todos los casos el usuario ve en Novedades una tarjeta que dice que **la lista de avisos ha caducado y
+puede estar desactualizada**, con cuándo se confirmó por última vez. Es un mensaje distinto de «no se pudo
+comprobar si hay avisos»: la comprobación funcionó, lo viejo es el archivo. Los avisos de la copia caducada
+**no se esconden** (una incidencia acaba por su propio `until`, como mucho 30 días después de empezar): se
+listan con el aviso, de modo que un archivo caducado nunca hace desaparecer una incidencia en curso. La
+banda y las notificaciones se portan como con cualquier copia. Renovar es volver a firmar el archivo con una
+fecha posterior; basta el mismo `seq`, y la tarjeta se va en la siguiente comprobación.
+
+Si las dos direcciones discrepan (una sirve un archivo caducado y la otra uno vigente) gana el vigente; si
+una no se puede alcanzar el resultado es una comprobación fallida y no un caducado, porque no saber pesa
+más que saber qué falla.
+
 ## Publicar un aviso
 
 1. Edita `web/news.json` y sube `seq`. Mantén finales de línea **LF** y sin BOM (`.gitattributes` marca el
    archivo y su firma como `-text` para que git no los convierta).
-2. Ejecuta `.\tools\signing\sign-news.ps1`. Pide la contraseña de la clave y escribe `web/news.json.sig`. Se
-   niega a firmar un archivo con CR o BOM, de más de 64 KiB, con una incidencia o aviso de seguridad sin
-   `until`, o uno resuelto sin `resolvedAt`: mejor un error aquí que un aviso que nadie ve.
+2. Ejecuta `.\tools\signing\sign-news.ps1`. Pide la contraseña de la clave, escribe `expires` (60 días desde
+   ahora; `-ExpiresInDays` admite de 1 a 90, porque más sería no caducar nunca en la práctica) y escribe
+   `web/news.json.sig`. No toca `issued`, que es el `from` por defecto de los avisos, ni `seq`. Se niega a
+   firmar un archivo con CR o BOM, de más de 64 KiB, con una incidencia o aviso de seguridad sin `until`, o
+   uno resuelto sin `resolvedAt`: mejor un error aquí que un aviso que nadie ve. La fecha que imprime al
+   final es la de renovar.
 3. Sube los dos archivos en un pull request. Una vez fusionado, comprueba que las dos direcciones sirven el
    archivo nuevo y que la firma verifica a mano ([Actualizaciones firmadas](signing.es.md#comprobar-una-release-a-mano)).
 4. Para terminar una incidencia, no la borres: pon `status` en `resolved` con `resolvedAt`, sube `seq` y
    firma otra vez. La app dice que se resolvió (la banda se va, una notificación, tarjeta verde durante una
    semana). Un aviso que simplemente se quita desaparece sin la buena noticia.
+5. **Renueva antes de que caduque**, aunque no haya nada que decir: ejecuta otra vez el script y publica el
+   archivo y su firma (un pull request, como en el paso 3). Un buen momento es cada release. Un archivo que
+   se deja caducar no hace nada peor que enseñar a todo el mundo la tarjeta de *desactualizada*, pero se la
+   enseña a todo el mundo.
 
 ## Lo que esto no cubre
 
-- **La frescura.** Una firma demuestra quién escribió el archivo, no que sea el último. `seq` impide que se
-  sirva un archivo más viejo tras haber visto uno más nuevo, pero quien pueda bloquear la red puede dejar a
-  una app con el último archivo que vio.
+- **La frescura, entera.** Una firma demuestra quién escribió el archivo, no que sea el último. `seq`
+  impide que se sirva un archivo más viejo tras haber visto uno más nuevo, y `expires` acota el resto:
+  quien pueda bloquear la red puede dejar a una app con el último archivo que vio, pero solo hasta que ese
+  archivo caduque, y entonces la app lo dice en vez de darlo por vigente. Nada lo impide en los días
+  anteriores.
 - **Una clave filtrada.** Firma por igual actualizaciones y avisos, así que quien la tenga podría mostrar
   avisos falsos hasta que una release la quite de las claves de confianza. Lo que puede hacer un aviso está
   limitado: texto y un enlace a cuatro sitios. Nunca ejecuta ni descarga nada.

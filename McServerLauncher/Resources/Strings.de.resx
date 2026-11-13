@@ -430,6 +430,8 @@
   <data name="News_MoreInfo" xml:space="preserve"><value>Weitere Informationen</value></data>
   <data name="News_FeedFailedFmt" xml:space="preserve"><value>Hinweise konnten nicht abgerufen werden. Letzte Kopie: {0}.</value></data>
   <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>Hinweise konnten nicht abgerufen werden, und es gibt noch keine gespeicherte Kopie.</value></data>
+  <data name="News_FeedExpiredFmt" xml:space="preserve"><value>Die Hinweisliste ist abgelaufen und könnte veraltet sein. Zuletzt geprüft: {0}.</value></data>
+  <data name="News_FeedExpiredNoCopy" xml:space="preserve"><value>Die veröffentlichte Hinweisliste ist abgelaufen und könnte veraltet sein.</value></data>
   <data name="News_BandSee" xml:space="preserve"><value>Hinweis ansehen</value></data>
   <data name="News_ToastSeeNews" xml:space="preserve"><value>Die Details stehen unter Neuerungen.</value></data>
   <data name="News_ToastResolved" xml:space="preserve"><value>Behoben. Die Details stehen unter Neuerungen.</value></data>

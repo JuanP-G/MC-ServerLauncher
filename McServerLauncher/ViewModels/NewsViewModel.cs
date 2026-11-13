@@ -135,6 +135,7 @@ public partial class NewsViewModel : ObservableObject
 
     private NewsFeedStatus? _feedStatus;
     private DateTime? _feedCheckedUtc;
+    private bool _copyExpired;
 
     /// <summary>Opens a notice's link. A seam: a test must not start a browser.</summary>
     internal Action<string?> OpenLink { get; set; } = BrowserLauncher.Open;
@@ -230,12 +231,23 @@ public partial class NewsViewModel : ObservableObject
     /// Said on screen, because "no notices" and "could not look" are not the same thing and the second
     /// one is the one where an incident could be going on unseen.
     /// </summary>
-    public bool HasFeedProblem => NoticesEnabled && _feedStatus == NewsFeedStatus.Failed;
+    public bool HasFeedProblem => NoticesEnabled && (_feedStatus == NewsFeedStatus.Failed || IsFeedExpired);
 
-    /// <summary>"Could not check for notices. Last copy: 3 h ago."</summary>
-    public string FeedProblemText => _feedCheckedUtc is { } at
-        ? Localizer.Format("News_FeedFailedFmt", RelativeTime.Ago(at, _clock().UtcDateTime))
-        : Localizer.Get("News_FeedFailedNoCopy");
+    /// <summary>
+    /// What the servers have, or the copy held, has run out (<c>expires</c> of the file): nobody renewed
+    /// it, or an old one is being served. A different thing from failing to look, so it has its own words:
+    /// the notices shown may be out of date for that reason alone.
+    /// </summary>
+    private bool IsFeedExpired => _feedStatus == NewsFeedStatus.Expired || _copyExpired;
+
+    /// <summary>"Could not check for notices. Last copy: 3 h ago." or, for an expired file, "The list is out of date."</summary>
+    public string FeedProblemText => IsFeedExpired
+        ? (_feedCheckedUtc is { } seen
+            ? Localizer.Format("News_FeedExpiredFmt", RelativeTime.Ago(seen, _clock().UtcDateTime))
+            : Localizer.Get("News_FeedExpiredNoCopy"))
+        : _feedCheckedUtc is { } at
+            ? Localizer.Format("News_FeedFailedFmt", RelativeTime.Ago(at, _clock().UtcDateTime))
+            : Localizer.Get("News_FeedFailedNoCopy");
 
     /// <summary>
     /// The notices of the last good copy of the file, and who they are for. Called when the copy is
@@ -251,10 +263,14 @@ public partial class NewsViewModel : ObservableObject
     }
 
     /// <summary>How the last look at the file ended, and when the copy held was last confirmed current.</summary>
-    public void SetFeedState(NewsFeedStatus? status, DateTime? checkedUtc)
+    /// <param name="status">How the last look ended.</param>
+    /// <param name="checkedUtc">When the copy held was last confirmed current.</param>
+    /// <param name="copyExpired">Whether the copy held has run out now, whatever the last look said.</param>
+    public void SetFeedState(NewsFeedStatus? status, DateTime? checkedUtc, bool copyExpired = false)
     {
         _feedStatus = status;
         _feedCheckedUtc = checkedUtc;
+        _copyExpired = copyExpired;
         NotifyAll();
     }
 

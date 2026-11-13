@@ -525,8 +525,10 @@ signed. The whole reference is [Announcements](announcements.md); the short vers
    An incident or a security notice needs `until`; a resolved one needs `resolvedAt`. Write the text in the
    five languages (`es`, `en`, `de`, `fr`, `pt`) or at least in `en`, which is the fallback.
 2. Run `.\tools\signing\sign-news.ps1`. It asks for the signing key's password and writes
-   `web/news.json.sig`. Without the key, stop here: a notice cannot be published unsigned, the app would
-   reject it.
+   `web/news.json.sig`. It also writes `expires` (60 days from now): the file stops vouching that it is the
+   latest after that, and the app says the list is out of date, so **sign again before it** (every release
+   is a good moment), even with nothing new to say. Without the key, stop here: a notice cannot be
+   published unsigned, the app would reject it.
 3. Open a pull request with both files. When it is merged, check that the website and GitHub Pages serve
    the same bytes and that the signature verifies by hand (see [Signed updates](signing.md)).
 4. To end an incident, mark it `resolved` (do not delete it) and sign again.

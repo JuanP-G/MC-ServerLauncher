@@ -24,6 +24,13 @@ public enum NewsFeedStatus
     /// to be read as "there are no notices" — the copy held is all there is, and the screen says so.
     /// </summary>
     Failed,
+
+    /// <summary>
+    /// What the servers have is a correctly signed file whose <c>expires</c> has passed: nobody renewed
+    /// it (or somebody is serving an old one). Not installed, and not "no notices" either: the copy held
+    /// may be as stale as the one refused, and the screen says so.
+    /// </summary>
+    Expired,
 }
 
 /// <summary>
@@ -38,6 +45,14 @@ public enum NewsFeedStatus
 /// stops somebody serving an old file that was signed correctly in its day. Only then are the files
 /// replaced, and the ETag is stored last of all: an ETag stored for a body that was then refused
 /// would make every later request answer 304 and the corrected signature would never be picked up.
+/// </para>
+/// <para>
+/// A file also says when it stops vouching for itself (<c>expires</c>). A file past it is refused
+/// (<see cref="NewsFeedStatus.Expired"/>), and so is a "304 not modified" for a copy past it: the
+/// server confirming that nothing newer exists is no use when what exists is out of date. The copy held
+/// is judged again every time the question is asked (<see cref="IsExpired"/>), so a copy that was fine
+/// when it was saved is reported stale once its time runs out, with no network involved. An expired
+/// copy is not thrown away, and its notices are not hidden: the screen shows them with the warning.
 /// </para>
 /// <para>
 /// Two hosts serve the same file (the website and GitHub Pages). They are tried in order and the first
@@ -127,6 +142,19 @@ public sealed class NewsFeedService
         }
     }
 
+    /// <summary>
+    /// Whether the copy held has run out. Worked out now, from the clock, every time: it is not a fact
+    /// recorded when the copy was saved. False when there is no copy.
+    /// </summary>
+    public bool IsExpired
+    {
+        get
+        {
+            EnsureLoaded();
+            return _copy is { } copy && copy.IsExpiredAt(_clock());
+        }
+    }
+
     /// <summary>How the last look ended; null before the first one of this run.</summary>
     public NewsFeedStatus? LastStatus { get; private set; }
 
@@ -165,7 +193,7 @@ public sealed class NewsFeedService
 
             var status = await LookAsync(now, ct);
             LastStatus = status;
-            _lastFailure = status == NewsFeedStatus.Failed ? now : null;
+            _lastFailure = status is NewsFeedStatus.Failed or NewsFeedStatus.Expired ? now : null;
             return status;
         }
         finally
@@ -177,16 +205,21 @@ public sealed class NewsFeedService
     private async Task<NewsFeedStatus> LookAsync(DateTimeOffset now, CancellationToken ct)
     {
         var anyFailed = false;
+        var anyExpired = false;
         foreach (var url in _urls)
         {
             var status = await TryHostAsync(url, now, ct);
             if (status is NewsFeedStatus.Ok or NewsFeedStatus.NotModified) return status;
             if (status == NewsFeedStatus.Failed) anyFailed = true;
+            if (status == NewsFeedStatus.Expired) anyExpired = true;
         }
 
         // Every host said "no file" is a project with nothing published; one that failed is a question
-        // left open, and an open question is never reported as an empty answer.
-        return anyFailed ? NewsFeedStatus.Failed : NewsFeedStatus.NoFeed;
+        // left open, and an open question is never reported as an empty answer. A host that could not
+        // be asked outranks one that answered with an out-of-date file: the second says what is wrong
+        // with the file, the first says we do not know.
+        if (anyFailed) return NewsFeedStatus.Failed;
+        return anyExpired ? NewsFeedStatus.Expired : NewsFeedStatus.NoFeed;
     }
 
     private async Task<NewsFeedStatus> TryHostAsync(string url, DateTimeOffset now, CancellationToken ct)
@@ -202,6 +235,14 @@ public sealed class NewsFeedService
             if (response.StatusCode == HttpStatusCode.NotModified)
             {
                 if (_copy is null) return NewsFeedStatus.Failed;   // "not modified" with nothing to keep makes no sense
+                // The server only says nothing newer exists. If what it holds has run out, that is no
+                // confirmation of anything: not recorded, and reported for what it is.
+                if (_copy.IsExpiredAt(now))
+                {
+                    Safe.Note("News", "the notices file the server holds has expired: " + url,
+                        new InvalidDataException($"expired {_copy.Expires:O}"));
+                    return NewsFeedStatus.Expired;
+                }
                 Confirm(now);
                 return NewsFeedStatus.NotModified;
             }
@@ -231,6 +272,15 @@ public sealed class NewsFeedService
                 Safe.Note("News", "a notices file older than the one already accepted was refused: " + url,
                     new InvalidDataException($"seq {parsed.Seq} < {_seq}"));
                 return NewsFeedStatus.Failed;
+            }
+
+            // After the replay check, which is the sharper diagnosis, and before anything is written: a
+            // file that has already run out replaces nothing, so a good copy is never traded for it.
+            if (parsed.IsExpiredAt(now))
+            {
+                Safe.Note("News", "a notices file past its expiry was refused: " + url,
+                    new InvalidDataException($"expired {parsed.Expires:O}"));
+                return NewsFeedStatus.Expired;
             }
 
             Save(raw, signature, etag, parsed.Seq, now);
