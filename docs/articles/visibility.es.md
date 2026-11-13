@@ -119,6 +119,9 @@ GoatCounter). `build.py` le pone su propia política de contenido y los `?v=`. G
 `href`/`src` absoluto de su copia del archivo. La ilustración (`web/assets/404/hero.webp`) está generada con IA con el
 aspecto de Minecraft; el «404» de piedra (`code.webp`) sale de la textura de piedra del juego con
 `web/_tools/make_404_art.py`.
+Los PNG de texturas que `web/_tools/mc_assets.py` saca del juego son material de partida, no contenido de la web:
+viven en `tools/web-art/mc/`, fuera de `web/`, así que no se publican (un test lo comprueba). En
+`web/assets/mc/` solo quedan las copias `.webp` y la letra.
 
 **Qué se comprueba al generar.** La generación falla, sin escribir nada, si a un idioma le falta una
 cadena, si su estructura no coincide con la del español, si algún texto largo es idéntico al español (sin

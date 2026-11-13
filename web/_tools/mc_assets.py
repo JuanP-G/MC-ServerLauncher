@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-Genera web/assets/mc/ a partir del .jar de Minecraft instalado: las texturas del paisaje,
-los iconos de las tarjetas, los sprites de la interfaz y la letra del juego como fuente web.
+Genera las texturas de Minecraft que usa la web a partir del .jar instalado: el paisaje, los
+iconos de las tarjetas, los sprites de la interfaz y la letra del juego como fuente web.
+
+Los PNG son material de partida (de ellos salen los .webp de web/assets/mc/ y las imágenes que
+generan make_404_art.py y og_images.py): van a tools/web-art/mc/, FUERA de web/, para que no se
+publiquen sin que la página los use. Solo la letra (minecraft.woff) se escribe en web/assets/mc/.
 
     python web/_tools/mc_assets.py "%APPDATA%/.minecraft/versions/26.2/26.2.jar"
 
@@ -30,7 +34,9 @@ from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools import subset
 
-OUT = pathlib.Path(__file__).resolve().parent.parent / "assets" / "mc"
+WEB = pathlib.Path(__file__).resolve().parent.parent
+OUT = WEB / "assets" / "mc"                                   # lo que se publica (la letra)
+SRC = WEB.parent / "tools" / "web-art" / "mc"                 # material de partida, sin publicar
 TEX = "assets/minecraft/textures/"
 
 GRASS = (0x91, 0xBD, 0x59)     # colores de las llanuras
@@ -43,12 +49,13 @@ def main():
         sys.exit(__doc__)
     jar = zipfile.ZipFile(sys.argv[1])
     OUT.mkdir(parents=True, exist_ok=True)
+    SRC.mkdir(parents=True, exist_ok=True)
 
     def load(path):
         return Image.open(io.BytesIO(jar.read(TEX + path + ".png"))).convert("RGBA")
 
     def save(im, name):
-        im.save(OUT / (name + ".png"), optimize=True)
+        im.save(SRC / (name + ".png"), optimize=True)
 
     def tint(im, rgb):
         out = im.copy()
@@ -91,7 +98,7 @@ def main():
         save(load(path), name)
     # Botón verde para la descarga: el mismo sprite con la luz del original y tono verde.
     for src, name in (("button", "button_green"), ("button_hover", "button_green_hover")):
-        im = Image.open(OUT / (src + ".png")).convert("RGBA")
+        im = Image.open(SRC / (src + ".png")).convert("RGBA")
         px = im.load()
         for y in range(im.height):
             for x in range(im.width):
@@ -116,7 +123,7 @@ def main():
 
     # ---------- letra ----------
     build_font(jar)
-    print("Listo:", len(list(OUT.iterdir())), "archivos en", OUT)
+    print("Listo:", len(list(SRC.iterdir())), "PNG en", SRC, "y la letra en", OUT)
 
 
 # ---------------------------------------------------------------- isométrico

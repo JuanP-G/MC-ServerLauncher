@@ -115,6 +115,9 @@ gives it its own content-security policy and the `?v=` hashes. GitHub Pages serv
 `/MC-ServerLauncher/`, so the "Assemble site" step of `.github/workflows/docs.yml` prefixes every root-absolute
 `href`/`src` in its copy of the file. The artwork (`web/assets/404/hero.webp`) is AI-generated in Minecraft's look;
 the stone "404" (`code.webp`) is rendered from the game's stone texture by `web/_tools/make_404_art.py`.
+The PNG textures that `web/_tools/mc_assets.py` extracts from the game are raw material, not site content: they live in
+`tools/web-art/mc/`, outside `web/`, so they are not published (a test checks it). Only the `.webp` copies and the
+font stay in `web/assets/mc/`.
 
 **What is checked while generating.** Generation fails, writing nothing, if a language is missing a string,
 if its structure differs from the Spanish one, if a long text is identical to the Spanish (untranslated), if

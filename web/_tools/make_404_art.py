@@ -1,7 +1,7 @@
 """Genera web/assets/404/code.webp: el «404» de la página de error, hecho con cubos de piedra.
 
 Cada cifra es una rejilla de 6x9 cubos; cada cubo es la textura de piedra del juego
-(web/assets/mc/stone.png) con un bisel de luz arriba-izquierda y sombra abajo-derecha, una
+(tools/web-art/mc/stone.png) con un bisel de luz arriba-izquierda y sombra abajo-derecha, una
 extrusión oscura detrás, una sombra suave y un resplandor morado (el del portal). Se guarda en
 WebP sin pérdida: son bordes duros y se verían sucios con pérdida.
 
@@ -15,7 +15,7 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 WEB = Path(__file__).resolve().parent.parent
-STONE = WEB / "assets" / "mc" / "stone.png"
+STONE = WEB.parent / "tools" / "web-art" / "mc" / "stone.png"
 OUT = WEB / "assets" / "404" / "code.webp"
 
 GLYPH = {

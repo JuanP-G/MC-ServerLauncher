@@ -243,6 +243,20 @@ public class WebLandingTests
     /// image at the top of <c>assets/</c> must be named by a page, a style, a script or a generator.
     /// </summary>
     [Fact]
+    public void TextureSourcesStayOutsideWeb()
+    {
+        // The PNGs that mc_assets.py extracts are only raw material (the pages use the .webp copies, and
+        // make_404_art.py / og_images.py read the PNGs): published, they were ~38 files nobody requests.
+        var published = Path.Combine(WebRoot(), "assets", "mc");
+        Assert.Empty(Directory.EnumerateFiles(published, "*.png", SearchOption.AllDirectories));
+
+        var source = Path.Combine(LocalizationTests.RepoRoot(), "tools", "web-art", "mc");
+        Assert.True(File.Exists(Path.Combine(source, "stone.png")), "make_404_art.py reads stone.png from here");
+        foreach (var name in new[] { "grass_side", "dirt", "sun" })
+            Assert.True(File.Exists(Path.Combine(source, name + ".png")), "og_images.py reads " + name + ".png from here");
+    }
+
+    [Fact]
     public void NoImageAtTheTopOfAssetsIsUnused()
     {
         var sources = Directory.EnumerateFiles(WebRoot(), "*", SearchOption.AllDirectories)
