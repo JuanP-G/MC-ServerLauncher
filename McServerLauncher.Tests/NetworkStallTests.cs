@@ -16,13 +16,29 @@ namespace McServerLauncher.Tests;
 /// while it reads, made every later check queue behind it.
 /// </para>
 /// <para>
-/// The deadline here is per read, not per file, so these tests use a few hundred milliseconds where
-/// the app uses <see cref="AppHttp.ReadIdleTimeout"/>.
+/// The deadline here is per read, not per file, so these tests use a few hundred milliseconds (and
+/// two seconds where the read must <em>not</em> be cut, see <see cref="SlowIdle"/>) where the app
+/// uses <see cref="AppHttp.ReadIdleTimeout"/>.
 /// </para>
 /// </remarks>
 public class NetworkStallTests : IDisposable
 {
+    /// <summary>For the tests that expect a timeout: short, since waiting for it is all they do.</summary>
     private static readonly TimeSpan Idle = TimeSpan.FromMilliseconds(300);
+
+    /// <summary>
+    /// For the tests that expect NO timeout, which is the side that can flake: it only holds if every
+    /// gap between two bytes stays under the limit, and a loaded CI machine stretches a 100 ms delay
+    /// past 300 ms. The limit is two seconds against gaps of 300 ms, so a delay has to grow almost
+    /// sevenfold to cut the read; the whole transfer still takes longer than the limit, which is
+    /// the point of the test.
+    /// </summary>
+    private static readonly TimeSpan SlowIdle = TimeSpan.FromSeconds(2);
+
+    private static readonly TimeSpan SlowGap = TimeSpan.FromMilliseconds(300);
+
+    /// <summary>Ten bytes at <see cref="SlowGap"/> each: three seconds, more than <see cref="SlowIdle"/>.</summary>
+    private const int SlowBytes = 10;
 
     private readonly string _folder = Path.Combine(Path.GetTempPath(), "mcl-stall-" + Guid.NewGuid().ToString("N"));
 
@@ -108,11 +124,11 @@ public class NetworkStallTests : IDisposable
     [Fact]
     public async Task ASlowReadThatKeepsSendingIsNotCut()
     {
-        // 15 bytes at 100 ms each is 1.5 s in all, five times the idle limit: slow is not stalled.
+        // Three seconds in all against a two-second limit: slow is not stalled.
         var bytes = await AppHttp.ReadCappedAsync(
-            new StreamContent(new TricklingStream(15, TimeSpan.FromMilliseconds(100))), 1_000, CancellationToken.None, Idle);
+            new StreamContent(new TricklingStream(SlowBytes, SlowGap)), 1_000, CancellationToken.None, SlowIdle);
 
-        Assert.Equal(15, bytes.Length);
+        Assert.Equal(SlowBytes, bytes.Length);
     }
 
     [Fact]
@@ -143,9 +159,9 @@ public class NetworkStallTests : IDisposable
         var dest = Path.Combine(_folder, "slow.jar");
 
         await AtomicDownload.ToFileAsync(
-            new StreamContent(new TricklingStream(15, TimeSpan.FromMilliseconds(100))), dest, idleTimeout: Idle);
+            new StreamContent(new TricklingStream(SlowBytes, SlowGap)), dest, idleTimeout: SlowIdle);
 
-        Assert.Equal(15, new FileInfo(dest).Length);
+        Assert.Equal(SlowBytes, new FileInfo(dest).Length);
     }
 
     /// <summary>
