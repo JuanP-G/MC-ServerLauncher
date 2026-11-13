@@ -32,7 +32,7 @@ public class PaperService
     /// </summary>
     public async Task<PaperBuild?> GetLatestBuildAsync(string mcVersion, CancellationToken ct = default)
     {
-        var json = await Http.GetStringAsync($"{ApiBase}/versions/{mcVersion}/builds", ct);
+        var json = await AppHttp.GetStringCappedAsync(Http, $"{ApiBase}/versions/{mcVersion}/builds", AppHttp.MaxApiBytes, ct);
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
         if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() == 0)

@@ -49,5 +49,7 @@ out. When unsure, treat it as security and ask. Details: "Publishing" in `docs/a
 - A server type that is not Java (Pumpkin) is `Native` in `ServerTypeCatalog`: ask `IsNative` instead of
   assuming a JVM or a `server.properties`, and never let the idle shutdown trust a console format it
   does not recognise ("Adding a server type" in `.github/copilot-instructions.md`).
+- Network reads go through `AppHttp` (capped size, 30 s deadline for silence), never `GetStringAsync`,
+  `ReadAsStringAsync` or `ReadFromJsonAsync`; a test enforces it.
 - A new convention or workflow goes into `docs/articles/contributing.md`, `contributing.es.md`,
   `.github/copilot-instructions.md` **and this file**.

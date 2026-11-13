@@ -245,7 +245,9 @@ When it opens again, the **What's new** section tells you what changed. It works
   (min/avg/max, jitter, loss, peak throughput, samples) are one click away, with a report to copy.
 - **Play from Bedrock too** — one checkbox installs Geyser and Floodgate, picks a free UDP port, creates the
   second (UDP) tunnel and sets the public port Geyser must advertise. The Bedrock port is changed in each
-  server's settings, and two servers are never given the same one. It depends on the server type:
+  server's settings, and two servers are never given the same one. Bedrock players show up in the player
+  list and the history under the name Floodgate gives them, whatever prefix you set in its config (`.` by
+  default, `*` and the like too). It depends on the server type:
 
   | Type | From Bedrock | Why |
   |---|---|---|

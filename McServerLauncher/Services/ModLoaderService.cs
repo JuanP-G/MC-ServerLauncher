@@ -40,7 +40,7 @@ public class ModLoaderService
 
     public async Task<string> GetLatestFabricLoaderVersionAsync(CancellationToken ct = default)
     {
-        var json = await Http.GetStringAsync("https://meta.fabricmc.net/v2/versions/loader", ct);
+        var json = await AppHttp.GetStringCappedAsync(Http, "https://meta.fabricmc.net/v2/versions/loader", AppHttp.MaxApiBytes, ct);
         using var doc = JsonDocument.Parse(json);
 
         foreach (var element in doc.RootElement.EnumerateArray())
@@ -131,8 +131,7 @@ public class ModLoaderService
     public async Task<string?> GetRecommendedForgeVersionAsync(string mcVersion,
         CancellationToken ct = default)
     {
-        var json = await Http.GetStringAsync(
-            "https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json", ct);
+        var json = await AppHttp.GetStringCappedAsync(Http, "https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json", AppHttp.MaxApiBytes, ct);
         using var doc = JsonDocument.Parse(json);
         if (!doc.RootElement.TryGetProperty("promos", out var promos))
             return null;
@@ -227,8 +226,7 @@ public class ModLoaderService
     public async Task<NeoForgeVersions.Choice?> GetNeoForgeVersionAsync(
         string mcVersion, CancellationToken ct = default)
     {
-        var json = await Http.GetStringAsync(
-            "https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge", ct);
+        var json = await AppHttp.GetStringCappedAsync(Http, "https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge", AppHttp.MaxApiBytes, ct);
 
         using var doc = JsonDocument.Parse(json);
         if (!doc.RootElement.TryGetProperty("versions", out var versions)) return null;
@@ -388,7 +386,7 @@ public class ModLoaderService
     {
         try
         {
-            var text = await Http.GetStringAsync(url, ct);
+            var text = await AppHttp.GetStringCappedAsync(Http, url, AppHttp.MaxSmallTextBytes, ct);
             return text.Trim();
         }
         catch

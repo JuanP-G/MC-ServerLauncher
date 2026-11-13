@@ -247,7 +247,9 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   jitter, pérdida, pico de transmisión, muestras) están a un clic, con un informe para copiar.
 - **Jugar también desde Bedrock** — una casilla instala Geyser y Floodgate, elige un puerto UDP libre, crea
   el segundo túnel (UDP) y configura el puerto público que Geyser debe anunciar. El puerto de Bedrock se cambia
-  en la configuración de cada servidor (Red y acceso), y nunca se le da el mismo a dos. Depende del tipo de servidor:
+  en la configuración de cada servidor (Red y acceso), y nunca se le da el mismo a dos. Los jugadores de
+  Bedrock salen en la lista de jugadores y en el historial con el nombre que les da Floodgate, sea cual sea el
+  prefijo que pongas en su configuración (`.` por defecto, también `*` y similares). Depende del tipo de servidor:
 
   | Tipo | Desde Bedrock | Por qué |
   |---|---|---|

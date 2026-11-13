@@ -169,6 +169,10 @@ something visual use the line icons in `docs/media/icons/`, as the README featur
   `ConsoleLineClassifier.MessageBody`, never your own cut at `]: `: it is the one place that removes the
   `System chat: ` Minecraft 26.3 puts in front of every system message (joins, leaves, deaths, command
   answers). Fix a console or command format with a line captured from a real server, not from memory.
+- **Network reads go through `AppHttp`** (`GetStringCappedAsync`, `ReadCappedStringAsync`,
+  `ReadJsonCappedAsync`; `AtomicDownload.ToFileAsync` for files), never `GetStringAsync`,
+  `ReadAsStringAsync` or `ReadFromJsonAsync`: those have no size cap and no deadline for a server that
+  goes quiet after its headers. A test enforces it.
 - **The memory agent jar is built with `python agent/build.py`, never with `jar`**; commit the jar and
   its `.sha256` together (`agent.yml` and a test compare them with what the source builds to).
 - **The translated web pages are generated and committed**: after touching `web/index.html`,

@@ -34,7 +34,7 @@ public static partial class PlayerLogImporter
     /// </summary>
     /// <returns>How many events were read (duplicates included, those are dropped by the store).</returns>
     public static int ImportOnce(string serverFolder, PlayerHistoryStore store, bool serverRunning,
-        CancellationToken ct = default)
+        CancellationToken ct = default, string floodgatePrefix = PlayerNames.DefaultFloodgatePrefix)
     {
         if (store.Imported) return 0;
 
@@ -57,7 +57,7 @@ public static partial class PlayerLogImporter
                     ct.ThrowIfCancellationRequested();
                     var day = DateTime.ParseExact(name.Groups[1].Value, "yyyy-MM-dd",
                         CultureInfo.InvariantCulture);
-                    count += ImportLines(ReadGzip(file), day, store);
+                    count += ImportLines(ReadGzip(file), day, store, floodgatePrefix);
                 }
 
                 var latest = Path.Combine(logs, "latest.log");
@@ -65,7 +65,7 @@ public static partial class PlayerLogImporter
                 {
                     var lines = ReadText(latest);
                     var endDay = File.GetLastWriteTime(latest).Date;
-                    count += ImportLines(lines, endDay.AddDays(-Midnights(lines)), store);
+                    count += ImportLines(lines, endDay.AddDays(-Midnights(lines)), store, floodgatePrefix);
                 }
             }
         }
@@ -82,7 +82,8 @@ public static partial class PlayerLogImporter
     /// <summary>
     /// Records the player events in one log, whose first line is on <paramref name="startDay"/>.
     /// </summary>
-    internal static int ImportLines(IReadOnlyList<string> lines, DateTime startDay, PlayerHistoryStore store)
+    internal static int ImportLines(IReadOnlyList<string> lines, DateTime startDay, PlayerHistoryStore store,
+        string floodgatePrefix = PlayerNames.DefaultFloodgatePrefix)
     {
         var online = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var day = startDay.Date;
@@ -97,13 +98,13 @@ public static partial class PlayerLogImporter
 
             var local = DateTime.SpecifyKind(day + time, DateTimeKind.Local);
 
-            if (PlayerEventParser.UuidOf(line) is { } uuid)
+            if (PlayerEventParser.UuidOf(line, floodgatePrefix) is { } uuid)
             {
                 store.RecordUuid(uuid.Player, uuid.Uuid);
                 continue;
             }
 
-            if (PlayerEventParser.Parse(line, online) is not { } e) continue;
+            if (PlayerEventParser.Parse(line, online, floodgatePrefix) is not { } e) continue;
 
             if (e.Kind == PlayerEventKind.Join) online.Add(e.Player);
             else if (e.Kind == PlayerEventKind.Leave) online.Remove(e.Player);

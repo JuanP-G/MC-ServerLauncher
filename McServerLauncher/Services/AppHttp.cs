@@ -38,25 +38,63 @@ public static class AppHttp
     public const long MaxSmallTextBytes = 64L << 10;
 
     /// <summary>
+    /// How long a body may go without sending a single byte before the read is given up on.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="HttpClient.Timeout"/> stops counting when the headers arrive if the request was
+    /// sent with <c>ResponseHeadersRead</c> (every download here is), and the clients that download
+    /// have an infinite or a ten-minute one anyway. A connection that goes quiet after the headers
+    /// then waited for ever: the update box stayed on "Downloading", and the news check, which holds
+    /// a lock while it reads, made every later check queue behind it. A pause is not a slow link:
+    /// the clock restarts with every read that returns data, so a download that is merely slow is
+    /// never cut.
+    /// </remarks>
+    public static readonly TimeSpan ReadIdleTimeout = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// One read from <paramref name="stream"/> that gives up after <paramref name="idle"/> without data.
+    /// </summary>
+    /// <exception cref="TimeoutException">Nothing arrived for <paramref name="idle"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="ct"/> was cancelled.</exception>
+    internal static async ValueTask<int> ReadWithDeadlineAsync(Stream stream, Memory<byte> buffer,
+        TimeSpan idle, CancellationToken ct)
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(idle);
+        try
+        {
+            return await stream.ReadAsync(buffer, deadline.Token);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            throw new TimeoutException("the connection stopped sending data");
+        }
+    }
+
+    /// <summary>
     /// Reads a response body, refusing one that grows past <paramref name="limit"/>.
     /// </summary>
     /// <remarks>
     /// <c>GetStringAsync</c> reads whatever the server sends, so a server that answers with
     /// gigabytes fills memory before any check on the result can run. The announced length is
     /// refused up front, and the bytes actually read are counted as well, since the announcement
-    /// can be absent or false.
+    /// can be absent or false. A body that stops arriving for <paramref name="idleTimeout"/>
+    /// (<see cref="ReadIdleTimeout"/> when null) is given up on.
     /// </remarks>
     /// <exception cref="InvalidDataException">The body is larger than the limit.</exception>
-    public static async Task<byte[]> ReadCappedAsync(HttpContent content, long limit, CancellationToken ct)
+    /// <exception cref="TimeoutException">The server stopped sending.</exception>
+    public static async Task<byte[]> ReadCappedAsync(HttpContent content, long limit, CancellationToken ct,
+        TimeSpan? idleTimeout = null)
     {
         if (content.Headers.ContentLength > limit)
             throw new InvalidDataException("response too large");
 
+        var idle = idleTimeout ?? ReadIdleTimeout;
         await using var stream = await content.ReadAsStreamAsync(ct);
         using var buffer = new MemoryStream();
         var chunk = new byte[81920];
         int read;
-        while ((read = await stream.ReadAsync(chunk, ct)) > 0)
+        while ((read = await ReadWithDeadlineAsync(stream, chunk, idle, ct)) > 0)
         {
             if (buffer.Length + read > limit) throw new InvalidDataException("response too large");
             buffer.Write(chunk, 0, read);
@@ -67,21 +105,32 @@ public static class AppHttp
     /// <summary>A GET whose body is read as text, up to <paramref name="limit"/> bytes.</summary>
     /// <exception cref="HttpRequestException">The server answered with an error status.</exception>
     /// <exception cref="InvalidDataException">The body is larger than the limit.</exception>
+    /// <exception cref="TimeoutException">The server stopped sending.</exception>
     public static async Task<string> GetStringCappedAsync(HttpClient http, string url, long limit,
-        CancellationToken ct)
+        CancellationToken ct, TimeSpan? idleTimeout = null)
     {
         using var resp = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();
-        return await ReadCappedStringAsync(resp.Content, limit, ct);
+        return await ReadCappedStringAsync(resp.Content, limit, ct, idleTimeout);
     }
 
     /// <summary>A response body as text (UTF-8, or what its byte-order mark says), up to <paramref name="limit"/> bytes.</summary>
-    public static async Task<string> ReadCappedStringAsync(HttpContent content, long limit, CancellationToken ct)
+    public static async Task<string> ReadCappedStringAsync(HttpContent content, long limit, CancellationToken ct,
+        TimeSpan? idleTimeout = null)
     {
-        var bytes = await ReadCappedAsync(content, limit, ct);
+        var bytes = await ReadCappedAsync(content, limit, ct, idleTimeout);
         using var reader = new StreamReader(new MemoryStream(bytes), Encoding.UTF8,
             detectEncodingFromByteOrderMarks: true);
         return reader.ReadToEnd();
+    }
+
+    /// <summary>A response body deserialised from JSON, up to <paramref name="limit"/> bytes.</summary>
+    /// <remarks>The cap-aware stand-in for <c>ReadFromJsonAsync</c>, with the same (web) defaults.</remarks>
+    public static async Task<T?> ReadJsonCappedAsync<T>(HttpContent content, long limit, CancellationToken ct,
+        TimeSpan? idleTimeout = null)
+    {
+        var bytes = await ReadCappedAsync(content, limit, ct, idleTimeout);
+        return System.Text.Json.JsonSerializer.Deserialize<T>(bytes, System.Text.Json.JsonSerializerOptions.Web);
     }
 
     /// <summary>

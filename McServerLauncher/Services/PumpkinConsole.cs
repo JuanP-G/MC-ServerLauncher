@@ -68,7 +68,7 @@ public static partial class PumpkinConsole
         // "<chat> Bob: hello" -> "<Bob> hello". Anchored at the start of the message and only for a
         // real name, so a line that merely mentions "<chat>" stays what it was.
         var chat = Chat().Match(message);
-        if (chat.Success)
+        if (chat.Success && PlayerNames.IsStorable(chat.Groups["name"].Value))
             message = $"<{chat.Groups["name"].Value}> {chat.Groups["text"].Value}";
 
         return new Line($"[{match.Groups["time"].Value} {match.Groups["level"].Value}]: {message}", true);
@@ -130,6 +130,7 @@ public static partial class PumpkinConsole
     [GeneratedRegex(@"^(?<time>\d{2}:\d{2}:\d{2}) +(?<level>TRACE|DEBUG|INFO|WARN|ERROR) (?<message>.*)$")]
     private static partial Regex DefaultPrefix();
 
-    [GeneratedRegex(@"^<chat> (?<name>" + PlayerNames.LogPattern + @"): (?<text>.*)$")]
+    // What may be a name is PlayerNames' to say, not this pattern's: it only finds where one would be.
+    [GeneratedRegex(@"^<chat> (?<name>[^\s:]+): (?<text>.*)$")]
     private static partial Regex Chat();
 }

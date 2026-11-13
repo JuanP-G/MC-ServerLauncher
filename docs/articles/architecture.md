@@ -333,7 +333,15 @@ are no hard-coded machine paths.
   player history. One parser turns a log line into something a player did, built from the console's own
   detectors (`NameBefore`, `ChatOf`, `DeathMessageDetector`), and serves both the live console and the
   import, so the two cannot disagree. It never reads the login line, which is the one carrying the IP, so the
-  history cannot keep one — `AnIpAddressNeverReachesTheDisk` checks the bytes on disk. The store lives in
+  history cannot keep one — `AnIpAddressNeverReachesTheDisk` checks the bytes on disk. A Bedrock player's
+  name carries the server's Floodgate prefix, which is a dot unless the owner changed `username-prefix`:
+  **`FloodgateConfig`** reads it from Floodgate's own config (`plugins/floodgate/` for the plugin,
+  `config/floodgate/` for the mod) once per start, and the view model hands it to every detector, so a
+  server set to `*` sees `*Steve` join, talk and die like anybody else (it used to accept the dot alone,
+  and those players were in neither the list nor the history). Only prefixes made of
+  `PlayerNames.PrefixCharacters` are accepted — no space, separator, quote, `@` or bracket — and the
+  store, which keeps names from every server, checks the shape itself (`IsStorable`) and writes the one
+  character Windows refuses in a file name, `*`, as `%2a` (`FileKey`). The store lives in
   `%APPDATA%\McServerLauncher\players\<serverId>\`, outside the server folder so it neither travels with the
   world nor fills its backups: `index.json` with one summary per player, and `events/<name>.jsonl` appended
   to and compacted in one go when it passes the limit by a quarter. Limits are `PlayerHistorySettings`
@@ -555,7 +563,14 @@ are no hard-coded machine paths.
   before it is believed. `AppHttp.ReadCappedAsync` reads API and text responses up to a cap (8 MiB
   for APIs, 64 KiB for the small files that hold a checksum or a signature), and `AtomicDownload`
   stops a package at its limit (1 GiB by default; 500 MiB for the installer, 400 MiB for a JRE, 400 MiB
-  for a server jar, 300 MiB for a loader installer) and deletes the `.part`. The update and JRE links
+  for a server jar, 300 MiB for a loader installer) and deletes the `.part`. Every read, API or
+  download, also has a **deadline for silence** (`AppHttp.ReadIdleTimeout`, 30 s without a byte,
+  restarted by every read that returns data, so a slow link is never cut): `HttpClient.Timeout` stops
+  counting once the headers arrive, so before this a connection that went quiet halfway left the update
+  box on "Downloading" for good and held the news check's lock. API calls are not made with
+  `GetStringAsync`, `ReadAsStringAsync` or `ReadFromJsonAsync`, which buffer whatever comes (a test
+  enforces it): use `AppHttp.GetStringCappedAsync`, `ReadCappedStringAsync` or `ReadJsonCappedAsync`.
+  The update and JRE links
   must be `https` on the publisher's own host, so a hostile API response can't point the app at
   another server.
 - **`JavaCommandLine`** — Java is started with an argument **list**, never a string, so a file name

@@ -345,7 +345,15 @@ mundo. No hay rutas fijas del equipo en el código.
   los detectores de la propia consola (`NameBefore`, `ChatOf`, `DeathMessageDetector`), y sirve tanto a la
   consola en directo como a la importación, así que no pueden discrepar. Nunca lee la línea de login, que es
   la que lleva la IP, así que el historial no puede guardarla — `AnIpAddressNeverReachesTheDisk` lo comprueba
-  en los bytes del disco. Se guarda en `%APPDATA%\McServerLauncher\players\<idServidor>\`, fuera de la
+  en los bytes del disco. El nombre de un jugador de Bedrock lleva el prefijo de Floodgate del servidor, que es
+  un punto salvo que el dueño cambie `username-prefix`: **`FloodgateConfig`** lo lee del config del propio
+  Floodgate (`plugins/floodgate/` para el plugin, `config/floodgate/` para el mod) una vez por arranque, y el
+  view model se lo pasa a cada detector, así que un servidor con `*` ve a `*Steve` entrar, hablar y morir como
+  cualquiera (antes solo se aceptaba el punto, y esos jugadores no salían ni en la lista ni en el historial).
+  Solo se aceptan prefijos hechos de `PlayerNames.PrefixCharacters` —sin espacio, separador, comilla, `@` ni
+  corchete—, y el almacén, que guarda nombres de todos los servidores, comprueba la forma por su cuenta
+  (`IsStorable`) y escribe el único carácter que Windows no admite en un nombre de archivo, `*`, como `%2a`
+  (`FileKey`). Se guarda en `%APPDATA%\McServerLauncher\players\<idServidor>\`, fuera de la
   carpeta del servidor para no viajar con el mundo ni llenar sus copias: `index.json` con un resumen por
   jugador, y `events/<nombre>.jsonl`, al que solo se añade y que se compacta de una vez cuando pasa el límite
   en una cuarta parte. Los límites son `PlayerHistorySettings` (acotados, porque settings.json se puede
@@ -574,7 +582,14 @@ mundo. No hay rutas fijas del equipo en el código.
   creérselo. `AppHttp.ReadCappedAsync` lee las respuestas de API y de texto hasta un tope (8 MiB para
   las API, 64 KiB para los archivos pequeños que llevan un checksum o una firma) y `AtomicDownload`
   corta un paquete en su límite (1 GiB por defecto; 500 MiB el instalador, 400 MiB un JRE, 400 MiB un
-  jar de servidor, 300 MiB un instalador de loader) y borra el `.part`. Los enlaces de la actualización
+  jar de servidor, 300 MiB un instalador de loader) y borra el `.part`. Toda lectura, de API o de
+  descarga, tiene además un **plazo de silencio** (`AppHttp.ReadIdleTimeout`, 30 s sin un byte, que se
+  reinicia con cada lectura que devuelve datos, así que una conexión lenta nunca se corta):
+  `HttpClient.Timeout` deja de contar cuando llegan las cabeceras, así que antes una conexión que se
+  quedaba muda a medias dejaba el aviso de actualización en «Descargando» para siempre y retenía el
+  cerrojo de las novedades. Las llamadas a una API no usan `GetStringAsync`, `ReadAsStringAsync` ni
+  `ReadFromJsonAsync`, que guardan en memoria todo lo que llegue (una prueba lo exige): se usa
+  `AppHttp.GetStringCappedAsync`, `ReadCappedStringAsync` o `ReadJsonCappedAsync`. Los enlaces de la actualización
   y del JRE deben ser `https` en el propio host del editor, así que una respuesta hostil de la API no
   puede mandar a la app a otro servidor.
 - **`JavaCommandLine`** — Java se lanza con una **lista** de argumentos, nunca con una cadena, de modo

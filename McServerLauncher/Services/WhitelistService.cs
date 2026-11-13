@@ -87,11 +87,11 @@ public class WhitelistService
     /// <summary>Resolves the (dashed) UUID of a name via the Mojang API. Null if it doesn't exist.</summary>
     private async Task<string?> ResolveOnlineUuidAsync(string name, CancellationToken ct)
     {
-        var resp = await Http.GetAsync($"https://api.mojang.com/users/profiles/minecraft/{Uri.EscapeDataString(name)}", ct);
+        var resp = await Http.GetAsync($"https://api.mojang.com/users/profiles/minecraft/{Uri.EscapeDataString(name)}", HttpCompletionOption.ResponseHeadersRead, ct);
         if (!resp.IsSuccessStatusCode)
             return null;
 
-        var json = await resp.Content.ReadAsStringAsync(ct);
+        var json = await AppHttp.ReadCappedStringAsync(resp.Content, AppHttp.MaxApiBytes, ct);
         if (string.IsNullOrWhiteSpace(json))
             return null;
 
