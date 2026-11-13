@@ -992,7 +992,10 @@ servers behind a 25-second cache so that N servers polling do not make N calls; 
 lookups that follows creating a tunnel passes `fresh: true` to skip it, because playit takes a few
 seconds to publish an address and otherwise the empty first answer would be served back to the
 retries; creating a tunnel starts the same burst on the Java side, which used to wait for the
-30-second timer. The address box is read-only — it shows what playit assigned, not a preference —
+30-second timer. `/agents/rundata` answers for one agent only, so the list is put together from every key
+this machine has (the app's agent and the one the user installed; `FetchFromEveryKeyAsync`): a tunnel on
+either is the server's, creating one looks at both first so it does not make a second on the same port, and
+an agent that cannot be reached turns the whole answer into "could not ask" instead of "no tunnel". The address box is read-only — it shows what playit assigned, not a preference —
 and the line under it is `TunnelAddressState` (`Waiting` / `NoTunnel` / `Ready` / `Failed`), the
 sibling of `BedrockAddressState`: three different situations used to render as one empty box.
 When the account answers and the tunnel is not in it, the address is cleared rather than kept

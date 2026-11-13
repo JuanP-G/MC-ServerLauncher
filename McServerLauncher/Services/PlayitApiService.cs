@@ -84,15 +84,6 @@ public class PlayitApiService
         InvalidateTunnelCache();
     }
 
-    /// <summary>
-    /// The credential to read with: the partner agent key if set, else the playit.toml secret.
-    /// </summary>
-    private string? CurrentReadKey()
-    {
-        lock (SecretLock) { if (AgentKey is not null) return AgentKey; }
-        return ReadSecretKey();
-    }
-
     private static readonly string[] TomlPaths =
     {
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "playit_gg",
@@ -385,28 +376,73 @@ public class PlayitApiService
         tunnels.FirstOrDefault(t => t.LocalPort == localPort && t.IsUdp == udp);
 
     private Task<List<PlayitTunnel>> StartTunnelFetch() => Task.Run(() =>
-        FetchWithKeyAsync(CurrentReadKey(), async key =>
+        FetchFromEveryKeyAsync(KnownKeys(), async key =>
         {
             var (_, tunnels) = await GetRunDataAsync(key, CancellationToken.None);
             return tunnels;
         }));
 
-    /// <summary>Asks the account for its tunnels, or fails if there is nothing to ask with.</summary>
+    /// <summary>
+    /// Every key this machine can read the account with: the app's own agent and the one the user
+    /// installed, without repeats.
+    /// </summary>
     /// <remarks>
+    /// <c>/agents/rundata</c> answers for one agent only, so a tunnel made on the other agent is not
+    /// in it. The tunnels screen has always asked both; the server cards and the tunnel creation asked
+    /// only one (the app's agent when it is connected), so a server whose tunnel sat on the other
+    /// agent showed "no tunnel" and had a second one made for it on every start.
+    /// </remarks>
+    private IReadOnlyList<string> KnownKeys()
+    {
+        string? app;
+        lock (SecretLock) { app = AgentKey; }
+        return DistinctKeys(app, ReadSecretKey());
+    }
+
+    /// <summary>The keys that are not blank, each once, in the order given.</summary>
+    internal static IReadOnlyList<string> DistinctKeys(params string?[] keys) =>
+        keys.Where(k => !string.IsNullOrWhiteSpace(k)).Select(k => k!).Distinct().ToList();
+
+    /// <summary>
+    /// Asks the account for its tunnels through every key and puts the answers together, or fails
+    /// if there is nothing to ask with or an answer is missing.
+    /// </summary>
+    /// <remarks>
+    /// <para>
     /// Fails rather than answering with an empty list, and that difference is the point. Without a
     /// key this used to return no tunnels — which the shared fetch passed on as "the account has
     /// none" — and <see cref="GetUdpTunnelPortsAsync"/> promises precisely that those two are never
     /// confused: picking a Bedrock port on the belief that the account holds no UDP tunnels is how
     /// a new server silently adopts an existing one. A failure here reaches the callers as null,
     /// which is what "could not ask" is supposed to look like.
+    /// </para>
+    /// <para>
+    /// The same goes for a key that cannot be reached: a list put together from some of the agents
+    /// would say "no tunnel" about one that lives on the rest. The one exception is a key Playit
+    /// refuses (an agent the user removed, a stale <c>playit.toml</c>): it cannot be holding anything
+    /// this app could read, so it is left out as long as another key answered.
+    /// </para>
     /// </remarks>
-    internal static async Task<List<PlayitTunnel>> FetchWithKeyAsync(
-        string? key, Func<string, Task<List<PlayitTunnel>>> fetch)
+    internal static async Task<List<PlayitTunnel>> FetchFromEveryKeyAsync(
+        IReadOnlyList<string> keys, Func<string, Task<List<PlayitTunnel>>> fetch)
     {
-        if (string.IsNullOrEmpty(key))
+        if (keys.Count == 0)
             throw new InvalidOperationException("No playit key to ask the account with.");
 
-        return await fetch(key);
+        var answers = await Task.WhenAll(keys.Select(async key =>
+        {
+            try { return (Tunnels: (List<PlayitTunnel>?)await fetch(key), Refused: (Exception?)null); }
+            catch (PlayitApiException ex) when (ex.IsAuthError) { return (null, ex); }
+        }));
+
+        if (answers.All(a => a.Tunnels is null))
+            throw answers[0].Refused!;
+
+        var merged = new List<PlayitTunnel>();
+        foreach (var tunnel in answers.Where(a => a.Tunnels is not null).SelectMany(a => a.Tunnels!))
+            if (string.IsNullOrEmpty(tunnel.Id) || merged.All(t => t.Id != tunnel.Id))
+                merged.Add(tunnel);
+        return merged;
     }
 
     /// <param name="ct">Cancels this caller's wait; the shared fetch outlives it.</param>
@@ -435,6 +471,21 @@ public class PlayitApiService
 
         try { return await fetch.WaitAsync(ct); }
         catch { return null; }
+    }
+
+    /// <summary>What the keys other than <paramref name="key"/> report; empty if there are none or they fail.</summary>
+    private async Task<List<PlayitTunnel>> TunnelsOnOtherAgentsAsync(string key)
+    {
+        var others = KnownKeys().Where(k => k != key).ToList();
+        if (others.Count == 0) return new List<PlayitTunnel>();
+        try
+        {
+            return await FetchFromEveryKeyAsync(others, async k => (await GetRunDataAsync(k)).Tunnels);
+        }
+        catch
+        {
+            return new List<PlayitTunnel>();
+        }
     }
 
     /// <summary>Drops the shared tunnel cache (called after creating/deleting a tunnel).</summary>
@@ -488,8 +539,15 @@ public class PlayitApiService
         // Java and Bedrock local ports happened to coincide, matching on the port alone would see
         // the Java one and decide the Bedrock one already existed. Through Match like every other
         // lookup, so there is one answer to "is this the same tunnel" and not four of them.
-        if (Match(tunnels, localPort, udp: string.Equals(portType, "udp", StringComparison.OrdinalIgnoreCase))
-            is not null)
+        var udp = string.Equals(portType, "udp", StringComparison.OrdinalIgnoreCase);
+        if (Match(tunnels, localPort, udp) is not null)
+            return false;
+
+        // The other agent's tunnels count too: one made there is the server's tunnel as much as one
+        // made here, and the server card already looks at both. Not asking meant a second tunnel on
+        // the same port every time the server started. If the other agent cannot be asked, creating
+        // is still better than leaving the server without one.
+        if (Match(await TunnelsOnOtherAgentsAsync(key), localPort, udp) is not null)
             return false;
 
         var body = new JsonObject

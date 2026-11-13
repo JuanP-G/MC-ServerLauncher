@@ -210,7 +210,7 @@ public class PlayitTunnelTests
         var asked = false;
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            PlayitApiService.FetchWithKeyAsync(null, _ =>
+            PlayitApiService.FetchFromEveryKeyAsync(PlayitApiService.DistinctKeys(null, "  "), _ =>
             {
                 asked = true;
                 return Task.FromResult(new List<PlayitApiService.PlayitTunnel>());
@@ -223,7 +223,7 @@ public class PlayitTunnelTests
     public async Task WithAKeyTheAccountIsActuallyAsked()
     {
         string? usedKey = null;
-        var tunnels = await PlayitApiService.FetchWithKeyAsync("clave", key =>
+        var tunnels = await PlayitApiService.FetchFromEveryKeyAsync(["clave"], key =>
         {
             usedKey = key;
             return Task.FromResult(new List<PlayitApiService.PlayitTunnel>
