@@ -71,7 +71,7 @@ internal static class ContentInstall
     public static async Task InstallReplacingAsync(string folder, string fileName, string display,
         Func<string, Task> download)
     {
-        var path = AtomicDownload.PathIn(folder, fileName);
+        var path = AtomicDownload.PathIn(folder, fileName, ".jar");
         var replacesAFile = File.Exists(path);
 
         await download(path);

@@ -42,12 +42,18 @@ public class SafeWriteTests : IDisposable
     {
         // Windows only, and not for tidiness: on Linux a backslash is an ordinary character in a
         // file name, so "..\\..\\startup.bat" is one strange name inside the folder rather than a way
-        // out of it. Asserting the Windows answer there would be testing the wrong system.
+        // out of it. Asserting the Windows answer there would be testing the wrong system. What it
+        // is there is a name with a backslash in it, which the app refuses rather than stores.
+        if (!OperatingSystem.IsWindows())
+        {
+            Assert.Throws<UserFacingException>(() => AtomicDownload.PathIn(Folder(), "..\\..\\startup.bat"));
+            return;
+        }
+
         var path = AtomicDownload.PathIn(Folder(), "..\\..\\startup.bat");
 
         Assert.Equal(_folder, Path.GetDirectoryName(path));
-        if (OperatingSystem.IsWindows())
-            Assert.Equal(Path.Combine(_folder, "startup.bat"), path);
+        Assert.Equal(Path.Combine(_folder, "startup.bat"), path);
     }
 
     [Fact]

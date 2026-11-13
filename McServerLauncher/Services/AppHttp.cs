@@ -158,12 +158,38 @@ public static class AppHttp
         throw new UserFacingException(Localizer.Format("Msg_DownloadHostRefusedFmt", shown));
     }
 
+    /// <summary>
+    /// Throws unless the address the answer actually came from, after any redirects, is on
+    /// <paramref name="hosts"/>. Call it on a response opened with <c>ResponseHeadersRead</c>, before
+    /// its body is read.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="RequireAllowedUrl"/> checks the address that was asked for; the client then follows
+    /// up to fifty redirects on its own, so a trusted host could still hand the request to an
+    /// untrusted one, and only the first hop had been looked at.
+    /// </remarks>
+    /// <exception cref="UserFacingException">The answer came from a host that is not allowed.</exception>
+    public static void RequireAllowedFinalUrl(HttpResponseMessage response, params string[] hosts)
+    {
+        var final = response.RequestMessage?.RequestUri?.AbsoluteUri;
+        if (final is null) return;     // no request recorded (a test double): nothing to check
+        RequireAllowedUrl(final, hosts);
+    }
+
+    /// <summary>
+    /// How long a pooled connection is reused. The clients are static and live as long as the app,
+    /// and a connection that is never retired keeps talking to the address DNS gave it on the first
+    /// request, so a long session never notices that a host has moved.
+    /// </summary>
+    private static readonly TimeSpan ConnectionLifetime = TimeSpan.FromMinutes(10);
+
     /// <summary>A client with this app's User-Agent and the given overall timeout.</summary>
     /// <param name="timeout">How long one request may take in all. Use
     /// <see cref="Timeout.InfiniteTimeSpan"/> when the caller sets its own deadline.</param>
     public static HttpClient Create(TimeSpan timeout)
     {
-        var http = new HttpClient { Timeout = timeout };
+        var handler = new SocketsHttpHandler { PooledConnectionLifetime = ConnectionLifetime };
+        var http = new HttpClient(handler) { Timeout = timeout };
         http.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
         return http;
     }

@@ -54,6 +54,9 @@ public class MinecraftVersionService
     public async Task<VersionDetails> GetVersionDetailsAsync(MinecraftVersion version,
         CancellationToken ct = default)
     {
+        // Both addresses come out of a response (the manifest names this one, this one names the
+        // jar), so each is checked before anything is fetched from it.
+        AppHttp.RequireAllowedUrl(version.Url, TrustedHosts.Mojang);
         var json = await AppHttp.GetStringCappedAsync(Http, version.Url, AppHttp.MaxApiBytes, ct);
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
@@ -66,6 +69,7 @@ public class MinecraftVersionService
             throw new UserFacingException(
                 Localizer.Format("Msg_NoServerDownload", version.Id));
         }
+        AppHttp.RequireAllowedUrl(serverUrl, TrustedHosts.Mojang);
 
         // Java recommended by Mojang (if missing, assume Java 8 for very old versions).
         var javaMajor = 8;
@@ -91,5 +95,6 @@ public class MinecraftVersionService
     /// </remarks>
     public Task DownloadFileAsync(string url, string destPath, IProgress<string>? log,
         string? expectedSha1 = null, CancellationToken ct = default) =>
-        VerifiedJarDownload.ToFileAsync(Http, url, destPath, expectedSha1, HashAlgorithmName.SHA1, log, ct);
+        VerifiedJarDownload.ToFileAsync(Http, url, destPath, expectedSha1, HashAlgorithmName.SHA1, log,
+            TrustedHosts.Mojang, requireChecksum: true, ct);
 }

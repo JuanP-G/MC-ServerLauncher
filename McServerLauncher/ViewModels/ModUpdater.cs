@@ -212,7 +212,7 @@ internal sealed class ModUpdater
 
             // Download+verify the new jar under its own (enabled) name first, so a failure never
             // destroys the currently installed one.
-            var enabledPath = AtomicDownload.PathIn(modsFolder, update.FileName);
+            var enabledPath = AtomicDownload.PathIn(modsFolder, update.FileName, ".jar");
             var replacesAFile = File.Exists(enabledPath);
             await _store.DownloadModAsync(update.Url, enabledPath, update.Sha512, update.Sha1, ct: ct);
 

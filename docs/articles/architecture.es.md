@@ -561,9 +561,23 @@ mundo. No hay rutas fijas del equipo en el código.
   quedaba muda a medias dejaba el aviso de actualización en «Descargando» para siempre y retenía el
   cerrojo de las novedades. Las llamadas a una API no usan `GetStringAsync`, `ReadAsStringAsync` ni
   `ReadFromJsonAsync`, que guardan en memoria todo lo que llegue (una prueba lo exige): se usa
-  `AppHttp.GetStringCappedAsync`, `ReadCappedStringAsync` o `ReadJsonCappedAsync`. Los enlaces de la actualización
-  y del JRE deben ser `https` en el propio host del editor, así que una respuesta hostil de la API no
-  puede mandar a la app a otro servidor.
+  `AppHttp.GetStringCappedAsync`, `ReadCappedStringAsync` o `ReadJsonCappedAsync`. Todo enlace que llega dentro
+  de una respuesta de API debe ser `https` en el propio host del editor (`AppHttp.RequireAllowedUrl`),
+  así que una respuesta hostil no puede mandar a la app a otro servidor. La actualización y el JRE ya
+  lo cumplían; ahora también los mods (Modrinth), los jars de Paper, Purpur y vanilla, los artefactos de
+  Geyser y las imágenes de la tienda, con las listas en un solo archivo, `TrustedHosts`. Se comprueba la
+  dirección pedida y otra vez la que contestó tras las redirecciones (`RequireAllowedFinalUrl`), porque
+  una redirección es la forma en que un host de confianza pasa la petición a otro. Un jar de Paper o
+  vanilla se rechaza si su API no da checksum (Purpur solo publica un MD5 y puede omitirlo, así que ahí
+  sigue siendo opcional). Los clientes retiran las conexiones del grupo a los diez minutos, de modo que
+  una sesión larga se entera de que un host ha cambiado.
+- **Nombres de archivo de una API (`AtomicDownload.PathIn`)** — es la única vía por la que un nombre
+  remoto se convierte en ruta: se queda con el último segmento, así que no puede salir de la carpeta, y
+  rechaza lo que Windows no guardaría tal cual (`NUL.jar`, `COM1.jar`, `x.jar:stream`, un punto o un
+  espacio al final, más de 200 caracteres). Lo que va a la carpeta de mods se pide con
+  `PathIn(carpeta, nombre, ".jar")`, de modo que un `.bat` ofrecido como mod es un error y no un archivo
+  en la carpeta. `BrowserLauncher` abre también solo la dirección `https`/`http` ya interpretada y
+  rechaza la que lleva un usuario delante.
 - **`JavaCommandLine`** — Java se lanza con una **lista** de argumentos, nunca con una cadena, de modo
   que un nombre de archivo con comillas o espacios no puede cambiar cuántos argumentos hay. La casilla
   *Argumentos JVM extra* se corta con las mismas reglas que usa el sistema operativo (`Split`) y la

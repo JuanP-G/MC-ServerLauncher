@@ -48,5 +48,8 @@ out. When unsure, treat it as security and ask. Details: "Publishing" in `docs/a
   `web/assets/site.js` or `site.css`, run `python web/_i18n/build.py` and commit what it writes (CI checks).
 - Network reads go through `AppHttp` (capped size, 30 s deadline for silence), never `GetStringAsync`,
   `ReadAsStringAsync` or `ReadFromJsonAsync`; a test enforces it.
+- A download link from an API response is fetched only from a host in `TrustedHosts`
+  (`AppHttp.RequireAllowedUrl` before, `RequireAllowedFinalUrl` after redirects), and a remote file name
+  goes through `AtomicDownload.PathIn(folder, name, ".jar")`.
 - A new convention or workflow goes into `docs/articles/contributing.md`, `contributing.es.md`,
   `.github/copilot-instructions.md` **and this file**.

@@ -108,7 +108,7 @@ internal sealed class ModInstaller
 
             // The file name comes from the Modrinth API, so the join goes through the one
             // place that keeps it inside the folder.
-            var destPath = AtomicDownload.PathIn(folder, file.Filename);
+            var destPath = AtomicDownload.PathIn(folder, file.Filename, ".jar");
             var replacesAFile = File.Exists(destPath);
 
             // Which project each jar already here is. Found before downloading, while the folder

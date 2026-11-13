@@ -57,7 +57,8 @@ public class PurpurService
     public async Task DownloadPurpurServerAsync(PurpurBuild build, string destPath, IProgress<string>? log,
         CancellationToken ct = default)
     {
+        // MD5 is optional here (see PurpurBuild): HTTPS from Purpur's own host is what authenticates it.
         await VerifiedJarDownload.ToFileAsync(Http, build.Url, destPath, build.Md5,
-            HashAlgorithmName.MD5, log, ct);
+            HashAlgorithmName.MD5, log, TrustedHosts.Purpur, requireChecksum: false, ct);
     }
 }

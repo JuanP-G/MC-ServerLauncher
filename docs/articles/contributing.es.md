@@ -263,6 +263,13 @@ Cada una está aquí porque saltársela publicó un fallo que ninguna prueba pil
   `AppHttp.GetStringCappedAsync`, `ReadCappedStringAsync` y `ReadJsonCappedAsync` acotan el tamaño y se
   rinden tras 30 s de silencio, y `AtomicDownload.ToFileAsync` hace lo mismo con los archivos; envía una
   descarga con `ResponseHeadersRead`. Una prueba falla si una de las tres se llama en otro sitio.
+- **Un enlace que sale de una respuesta de API solo se descarga de un host de `TrustedHosts`, y un
+  nombre de archivo de una se une con `AtomicDownload.PathIn`.** Llama a
+  `AppHttp.RequireAllowedUrl(url, TrustedHosts.X)` antes de la petición y a `RequireAllowedFinalUrl` con
+  la respuesta (una redirección puede salir del host); una fuente nueva tiene su propia entrada en
+  `TrustedHosts`, no un literal en el sitio de la llamada. Pide la extensión que esperas,
+  `PathIn(carpeta, nombre, ".jar")`: así también rechaza `NUL.jar`, `x.jar:stream` y un punto al final,
+  que Windows no guardaría tal cual.
 - **El agente de memoria se compila con `agent/build.py`, nunca con el `jar` del JDK.** `jar` escribe una
   línea `Created-By` con su propia versión, así que dos máquinas dan dos jars; el script escribe un zip
   determinista, y `agent.yml` más una prueba fallan si el jar del repositorio y su SHA-256 dejan de
