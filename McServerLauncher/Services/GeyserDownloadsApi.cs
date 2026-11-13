@@ -87,6 +87,24 @@ public static class GeyserDownloadsApi
     }
 
     /// <summary>Opens the artifact's download stream. The caller verifies and stores it.</summary>
-    public static Task<HttpResponseMessage> OpenAsync(Artifact artifact, CancellationToken ct = default) =>
-        Http.GetAsync(artifact.Url, HttpCompletionOption.ResponseHeadersRead, ct);
+    /// <remarks>
+    /// The address is built here from <see cref="Base"/>, so only a redirect could send it elsewhere:
+    /// the answer is refused, and disposed, unless it still comes from GeyserMC.
+    /// </remarks>
+    /// <exception cref="UserFacingException">The answer came from a host that is not GeyserMC's.</exception>
+    public static async Task<HttpResponseMessage> OpenAsync(Artifact artifact, CancellationToken ct = default)
+    {
+        AppHttp.RequireAllowedUrl(artifact.Url, TrustedHosts.GeyserMc);
+        var resp = await Http.GetAsync(artifact.Url, HttpCompletionOption.ResponseHeadersRead, ct);
+        try
+        {
+            AppHttp.RequireAllowedFinalUrl(resp, TrustedHosts.GeyserMc);
+            return resp;
+        }
+        catch
+        {
+            resp.Dispose();
+            throw;
+        }
+    }
 }

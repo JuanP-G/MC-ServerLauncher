@@ -173,6 +173,11 @@ something visual use the line icons in `docs/media/icons/`, as the README featur
   `ReadJsonCappedAsync`; `AtomicDownload.ToFileAsync` for files), never `GetStringAsync`,
   `ReadAsStringAsync` or `ReadFromJsonAsync`: those have no size cap and no deadline for a server that
   goes quiet after its headers. A test enforces it.
+- **A download link that comes from an API response is fetched only from a host in `TrustedHosts`**
+  (`AppHttp.RequireAllowedUrl` before the request, `RequireAllowedFinalUrl` on the response, since a
+  redirect can leave the host), and **a remote file name is joined with
+  `AtomicDownload.PathIn(folder, name, ".jar")`**, which refuses `NUL.jar`, `x.jar:stream` and a trailing
+  dot as well as `../`.
 - **The memory agent jar is built with `python agent/build.py`, never with `jar`**; commit the jar and
   its `.sha256` together (`agent.yml` and a test compare them with what the source builds to).
 - **The translated web pages are generated and committed**: after touching `web/index.html`,

@@ -70,7 +70,8 @@ public class PaperService
     public async Task DownloadPaperServerAsync(PaperBuild build, string destPath, IProgress<string>? log,
         CancellationToken ct = default)
     {
+        // The link comes out of Paper's API response, and Paper always publishes the SHA-256.
         await VerifiedJarDownload.ToFileAsync(Http, build.Url, destPath, build.Sha256,
-            HashAlgorithmName.SHA256, log, ct);
+            HashAlgorithmName.SHA256, log, TrustedHosts.Paper, requireChecksum: true, ct);
     }
 }

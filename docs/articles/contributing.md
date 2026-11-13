@@ -246,6 +246,12 @@ Each of these is here because breaking it shipped a bug that no test caught at t
   `ReadCappedStringAsync` and `ReadJsonCappedAsync` cap the size and give up after 30 s of silence, and
   `AtomicDownload.ToFileAsync` does the same for files; send a download with `ResponseHeadersRead`. A
   test fails if one of the three is called anywhere else.
+- **A link that comes out of an API response is downloaded only from a host listed in `TrustedHosts`,
+  and a file name from one is joined with `AtomicDownload.PathIn`.** Call
+  `AppHttp.RequireAllowedUrl(url, TrustedHosts.X)` before the request and `RequireAllowedFinalUrl` on the
+  response (a redirect can leave the host); a new source gets its own entry in `TrustedHosts`, not a
+  literal at the call site. Ask for the extension you expect, `PathIn(folder, name, ".jar")`: it also
+  refuses `NUL.jar`, `x.jar:stream` and a trailing dot, which Windows would not store as written.
 - **The memory agent is built with `agent/build.py`, never with the JDK's `jar`.** `jar` writes a
   `Created-By` line with its own version, so two machines give two jars; the script writes a
   deterministic zip, and `agent.yml` plus a test fail if the committed jar and its SHA-256 stop matching

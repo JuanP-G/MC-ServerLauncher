@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using McServerLauncher.Localization;
@@ -47,15 +48,59 @@ public static class AtomicDownload
     /// it, and a name with no usable last segment is refused rather than guessed at: it can only
     /// mean the API said something the app does not understand.
     /// </para>
+    /// <para>
+    /// Staying inside the folder is not the same as being a file name Windows will store as written.
+    /// <c>NUL.jar</c> and <c>COM1.jar</c> open a device instead of creating a file, <c>mod.jar:x</c>
+    /// writes an alternate data stream of <c>mod.jar</c>, and a name ending in a dot or a space is
+    /// silently stored without it, so the file the app wrote is not the one it later looks for. Those
+    /// are refused too, on every platform, so a folder that is synced or moved keeps working.
+    /// When <paramref name="requiredExtension"/> is given the name must end in it with something
+    /// before it: what goes in the mods folder is a <c>.jar</c>, and an API that offers a
+    /// <c>.bat</c> there is saying something the app does not understand.
+    /// </para>
     /// </remarks>
-    public static string PathIn(string folder, string remoteFileName)
+    /// <exception cref="UserFacingException">The name cannot be used as a file name here.</exception>
+    public static string PathIn(string folder, string remoteFileName, string? requiredExtension = null)
     {
         var name = Path.GetFileName(remoteFileName);
-        if (string.IsNullOrWhiteSpace(name))
+        if (!IsSafeFileName(name) ||
+            (requiredExtension is not null &&
+             (name.Length <= requiredExtension.Length ||
+              !name.EndsWith(requiredExtension, StringComparison.OrdinalIgnoreCase))))
             throw new UserFacingException(
                 Localizer.Format("Msg_BadRemoteFileNameFmt", remoteFileName));
 
         return Path.Combine(folder, name);
+    }
+
+    /// <summary>Longest file name accepted: far above any real mod, well below the 255 a filesystem allows.</summary>
+    private const int MaxFileNameLength = 200;
+
+    /// <summary>Names Windows treats as devices, with or without an extension.</summary>
+    private static readonly HashSet<string> ReservedNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$", "CLOCK$",
+        "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+        "COM¹", "COM²", "COM³", "LPT¹", "LPT²", "LPT³",
+    };
+
+    /// <summary>Whether <paramref name="name"/> is one plain file name that every filesystem here stores as written.</summary>
+    internal static bool IsSafeFileName([NotNullWhen(true)] string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || name.Length > MaxFileNameLength) return false;
+        if (name is "." or "..") return false;
+        if (name != name.Trim() || name.EndsWith('.')) return false;
+
+        var invalid = Path.GetInvalidFileNameChars();
+        foreach (var c in name)
+            if (c < ' ' || ":*?\"<>|\\/".Contains(c) || invalid.Contains(c))
+                return false;
+
+        // The device name is what comes before the first dot ("nul.tar.jar" is still the device),
+        // and Windows ignores spaces between it and the dot ("nul .jar").
+        var stem = name.Split('.')[0].TrimEnd(' ');
+        return !ReservedNames.Contains(stem);
     }
 
     /// <summary>

@@ -222,7 +222,7 @@ public sealed class ModDependencyInstaller
             foreach (var needed in extra.Install)
             {
                 progress.Report(Localizer.Format("Msg_DownloadingMod", needed.Label));
-                var written = AtomicDownload.PathIn(folder, needed.File.Filename);
+                var written = AtomicDownload.PathIn(folder, needed.File.Filename, ".jar");
                 await DownloadAsync(needed, folder, ct);
 
                 known.Add(needed.ProjectId);
@@ -237,7 +237,7 @@ public sealed class ModDependencyInstaller
     /// <summary>One dependency onto disk, verified, with the same path safety as any other install.</summary>
     private Task DownloadAsync(ModDependencyService.Needed needed, string folder, CancellationToken ct)
     {
-        var path = AtomicDownload.PathIn(folder, needed.File.Filename);
+        var path = AtomicDownload.PathIn(folder, needed.File.Filename, ".jar");
         return _store.DownloadModAsync(needed.File.Url, path,
             needed.File.Hashes?.Sha512, needed.File.Hashes?.Sha1, ct: ct);
     }

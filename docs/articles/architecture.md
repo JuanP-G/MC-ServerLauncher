@@ -570,9 +570,21 @@ are no hard-coded machine paths.
   box on "Downloading" for good and held the news check's lock. API calls are not made with
   `GetStringAsync`, `ReadAsStringAsync` or `ReadFromJsonAsync`, which buffer whatever comes (a test
   enforces it): use `AppHttp.GetStringCappedAsync`, `ReadCappedStringAsync` or `ReadJsonCappedAsync`.
-  The update and JRE links
-  must be `https` on the publisher's own host, so a hostile API response can't point the app at
-  another server.
+  Every link that arrives inside an API response
+  must be `https` on the publisher's own host (`AppHttp.RequireAllowedUrl`), so a hostile response
+  can't point the app at another server. The update and the JRE always did; mods (Modrinth), Paper,
+  Purpur and vanilla jars, Geyser's artifacts and the store's images now do too, with the lists in one
+  file, `TrustedHosts`. The check is made on the address asked for and again on the one that answered
+  after redirects (`RequireAllowedFinalUrl`), since a redirect is how a trusted host hands the request
+  to another. Paper and vanilla jars are refused when their API gives no checksum (Purpur only
+  publishes an MD5 and may omit it, so there it stays optional). The clients drop pooled connections
+  after ten minutes, so a long session notices when a host moves.
+- **File names from an API (`AtomicDownload.PathIn`)** — the only way a remote name becomes a path: it
+  keeps the last segment, so it can't leave the folder, and refuses what Windows would not store as
+  written (`NUL.jar`, `COM1.jar`, `x.jar:stream`, a trailing dot or space, a name over 200 characters).
+  What goes in the mods folder is asked for with `PathIn(folder, name, ".jar")`, so a `.bat` offered
+  as a mod is an error rather than a file in the folder. `BrowserLauncher` likewise opens only the
+  parsed `https`/`http` address and refuses one with a user name in it.
 - **`JavaCommandLine`** — Java is started with an argument **list**, never a string, so a file name
   with a quote or a space in it can't change how many arguments there are. The *Extra JVM arguments*
   box is cut by the same rules the operating system uses (`Split`), and the line shown in the console

@@ -362,8 +362,12 @@ public class ModrinthService
             throw new UserFacingException(Localizer.Format(
                 "Msg_ModNoChecksumFmt", AtomicDownload.DisplayName(destinationPath)));
 
+        // The link is one Modrinth's API returned, and a redirect could still move it: both the
+        // address asked for and the one that answered must be Modrinth's.
+        AppHttp.RequireAllowedUrl(downloadUrl, TrustedHosts.Modrinth);
         using var response = await Http.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, ct);
         response.EnsureSuccessStatusCode();
+        AppHttp.RequireAllowedFinalUrl(response, TrustedHosts.Modrinth);
 
         // Atomic: reinstalling or updating a mod that is already there must not destroy the working
         // jar if the download fails halfway.

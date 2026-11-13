@@ -84,6 +84,10 @@ public static class ImageCache
     {
         if (string.IsNullOrWhiteSpace(url)) return null;
 
+        // A project's icon and gallery addresses are whatever its page says they are, and fetching
+        // one tells its host who is looking. Only the hosts the app's own images live on are asked.
+        if (!AppHttp.IsAllowedUrl(url, TrustedHosts.Images)) return null;
+
         // Only the gallery's big cap asks for a big image; everything else is drawn small.
         var maxWidth = maxBytes > MaxIconBytes ? GalleryDecodeWidth : IconDecodeWidth;
         var key = maxWidth + "|" + url;
@@ -190,6 +194,8 @@ public static class ImageCache
         {
             using var resp = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             if (!resp.IsSuccessStatusCode) return null;
+            if (!AppHttp.IsAllowedUrl(resp.RequestMessage?.RequestUri?.AbsoluteUri ?? url, TrustedHosts.Images))
+                return null;   // a redirect that left the allowed hosts
             if (resp.Content.Headers.ContentType?.MediaType is not { } mime ||
                 !mime.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 return null;
