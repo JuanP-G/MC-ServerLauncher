@@ -11,6 +11,12 @@
       ]
     },
     {
+      "source": "/(_i18n|_tools)/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
       "source": "/assets/(.*)",
       "has": [{ "type": "query", "key": "v" }],
       "headers": [

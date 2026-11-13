@@ -144,6 +144,7 @@
   <data name="Pk_KeyPlaceholder" xml:space="preserve"><value>Füge deinen Einrichtungscode hier ein...</value></data>
   <data name="Pk_ShowKey" xml:space="preserve"><value>Eingefügtes anzeigen</value></data>
   <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher ist weder mit Playit verbunden noch gehört es Playit; es integriert sich nur in dessen Netzwerk. Dein Konto gehört dir: Du kannst es direkt auf playit.gg verwalten.</value></data>
+  <data name="Pk_ProxyNote" xml:space="preserve"><value>Der Code läuft über einen kleinen Server des Projekts (einen Cloudflare Worker), der den Partnerschlüssel von Playit hinzufügt und nichts speichert; der Schlüssel, den Playit zurückgibt, wird verschlüsselt auf diesem Computer abgelegt.</value></data>
   <data name="Pk_Agent_Downloading" xml:space="preserve"><value>Playit-Agent wird heruntergeladen… (nur beim ersten Mal)</value></data>
   <data name="Pk_Agent_Starting" xml:space="preserve"><value>Agent wird gestartet…</value></data>
   <data name="Pk_Agent_Failed" xml:space="preserve"><value>Agent konnte nicht gestartet werden: {0}</value></data>

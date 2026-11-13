@@ -50,7 +50,7 @@ body{{position:relative; background:linear-gradient(180deg,#0D2A4C 0%,#17416E 55
 .sun{{position:absolute; left:500px; top:-40px; width:192px; height:192px; image-rendering:pixelated; mix-blend-mode:screen}}
 .cloud{{position:absolute; height:22px; background:#fff; box-shadow:0 10px 0 #B9C4D2}}
 .ground{{position:absolute; left:0; right:0; bottom:0; height:96px; image-rendering:pixelated;
-  background:url("{assets}/mc/grass_side.png") 0 0/48px 48px repeat-x, url("{assets}/mc/dirt.png") 0 48px/48px 48px repeat-x}}
+  background:url("{src}/grass_side.png") 0 0/48px 48px repeat-x, url("{src}/dirt.png") 0 48px/48px 48px repeat-x}}
 .text{{position:absolute; left:64px; top:70px; width:560px}}
 .logo{{width:96px; height:96px; image-rendering:pixelated; display:block; margin-bottom:26px;
   filter:drop-shadow(0 6px 0 rgba(0,0,0,.35))}}
@@ -69,7 +69,7 @@ p.os{{margin-top:6px; color:#80FF20; font:400 24px MC,monospace; -webkit-font-sm
 .bar i{{margin-left:auto; color:#93A4BC; font-style:normal; font-size:12px; letter-spacing:2px}}
 .shot > img{{display:block; width:100%}}
 </style></head><body>
-<img class="sun" src="{assets}/mc/sun.png" alt="">
+<img class="sun" src="{src}/sun.png" alt="">
 <div class="cloud" style="left:90px; top:38px; width:240px"></div>
 <div class="cloud" style="left:300px; top:70px; width:150px"></div>
 <div class="cloud" style="left:760px; top:44px; width:300px"></div>
@@ -116,7 +116,7 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         for code, t in langs.items():
             page = pathlib.Path(tmp) / (code + ".html")
-            page.write_text(TEMPLATE.format(lang=code, assets=(WEB / "assets").as_uri(),
+            page.write_text(TEMPLATE.format(lang=code, assets=(WEB / "assets").as_uri(), src=(WEB / "_tools" / "mc-src").as_uri(),
                                             **{k: html.escape(v) for k, v in t.items()}), encoding="utf-8")
             png = pathlib.Path(tmp) / (code + ".png")
             subprocess.run([browser, "--headless=new", "--disable-gpu", "--hide-scrollbars",

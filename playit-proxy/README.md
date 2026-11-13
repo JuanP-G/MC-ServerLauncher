@@ -9,6 +9,21 @@ Why: the app is public and open-source, so any key embedded in it (even encoded)
 A proxy is the only way to actually keep the key secret. The Worker free tier (100k requests/day)
 is far more than this needs.
 
+## What it sees
+
+The setup code the user pastes (one use, minted by Playit) and, in the answer, the per-user agent
+key that Playit returns. Both pass through the Worker in memory: it keeps no storage and logs only
+the reason of its own failures (`console.error`), never a body. The dialog that asks for the code
+says so, and the README of the app lists it among what the app sends to others. The Worker runs on
+the maintainer's Cloudflare account, so a user is trusting the project with those two values for the
+moment they are exchanged, the same as with the signed updates.
+
+Its address today is a `workers.dev` subdomain of that account. A domain owned by the project would
+be better (it would not name a person, and it could move to another account without a release), but
+every installed app calls the current address: whoever moves it has to keep this Worker answering
+there until the last release that names it is gone, and put the new address in
+`PlayitPartnerService.DefaultProxyUrl`.
+
 ## Deploy (dashboard, no CLI — easiest)
 
 1. Create a free account at https://dash.cloudflare.com.

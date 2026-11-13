@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Genera web/assets/mc/ a partir del .jar de Minecraft instalado: las texturas del paisaje,
+Genera web/assets/mc/ (.webp y la letra; los PNG de trabajo van a web/_tools/mc-src/) a partir del .jar de Minecraft instalado: las texturas del paisaje,
 los iconos de las tarjetas, los sprites de la interfaz y la letra del juego como fuente web.
 
     python web/_tools/mc_assets.py "%APPDATA%/.minecraft/versions/26.2/26.2.jar"
@@ -30,7 +30,10 @@ from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools import subset
 
-OUT = pathlib.Path(__file__).resolve().parent.parent / "assets" / "mc"
+OUT = pathlib.Path(__file__).resolve().parent.parent / "assets" / "mc"      # lo que sirve la web: .webp y la fuente
+# Los PNG sin comprimir son material de trabajo (los leen og_images.py y make_404_art.py): fuera de
+# assets/, que se publica entera, para que ni la web ni los buscadores los vean.
+SRC = pathlib.Path(__file__).resolve().parent / "mc-src"
 TEX = "assets/minecraft/textures/"
 
 GRASS = (0x91, 0xBD, 0x59)     # colores de las llanuras
@@ -43,12 +46,14 @@ def main():
         sys.exit(__doc__)
     jar = zipfile.ZipFile(sys.argv[1])
     OUT.mkdir(parents=True, exist_ok=True)
+    SRC.mkdir(parents=True, exist_ok=True)
 
     def load(path):
         return Image.open(io.BytesIO(jar.read(TEX + path + ".png"))).convert("RGBA")
 
     def save(im, name):
-        im.save(OUT / (name + ".png"), optimize=True)
+        im.save(SRC / (name + ".png"), optimize=True)
+        im.save(OUT / (name + ".webp"), lossless=True, method=6)   # la web solo sirve este
 
     def tint(im, rgb):
         out = im.copy()
@@ -91,7 +96,7 @@ def main():
         save(load(path), name)
     # Botón verde para la descarga: el mismo sprite con la luz del original y tono verde.
     for src, name in (("button", "button_green"), ("button_hover", "button_green_hover")):
-        im = Image.open(OUT / (src + ".png")).convert("RGBA")
+        im = Image.open(SRC / (src + ".png")).convert("RGBA")
         px = im.load()
         for y in range(im.height):
             for x in range(im.width):
