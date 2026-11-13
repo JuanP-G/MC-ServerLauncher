@@ -17,7 +17,8 @@ public class NewsFeedParserTests
     private static readonly DateTimeOffset Issued = new(2026, 11, 7, 10, 0, 0, TimeSpan.Zero);
 
     /// <summary>A file with the given items (raw JSON objects).</summary>
-    private static byte[] Feed(string items, string head = "\"schema\":1,\"seq\":5,\"issued\":\"2026-11-07T10:00:00Z\"") =>
+    private static byte[] Feed(string items, string head =
+        "\"schema\":1,\"seq\":5,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"2026-12-07T10:00:00Z\"") =>
         Encoding.UTF8.GetBytes("{" + head + ",\"items\":[" + items + "]}");
 
     private const string Words = "\"text\":{\"es\":{\"title\":\"Aviso\",\"body\":\"Cuerpo\"},\"en\":{\"title\":\"Notice\",\"body\":\"Body\"}}";
@@ -49,15 +50,53 @@ public class NewsFeedParserTests
     [InlineData("not json")]
     [InlineData("[]")]
     [InlineData("{}")]
-    [InlineData("{\"schema\":2,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"items\":[]}")]
-    [InlineData("{\"schema\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"items\":[]}")]
-    [InlineData("{\"schema\":1,\"seq\":0,\"issued\":\"2026-11-07T10:00:00Z\",\"items\":[]}")]
-    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"yesterday\",\"items\":[]}")]
-    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\"}")]
-    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"items\":{}}")]
+    [InlineData("{\"schema\":2,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"2026-12-07T10:00:00Z\",\"items\":[]}")]
+    [InlineData("{\"schema\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"2026-12-07T10:00:00Z\",\"items\":[]}")]
+    [InlineData("{\"schema\":1,\"seq\":0,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"2026-12-07T10:00:00Z\",\"items\":[]}")]
+    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"yesterday\",\"expires\":\"2026-12-07T10:00:00Z\",\"items\":[]}")]
+    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"2026-12-07T10:00:00Z\"}")]
+    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"2026-12-07T10:00:00Z\",\"items\":{}}")]
     public void SomethingThatIsNotANoticesFileIsRefused(string text)
     {
         Assert.Throws<InvalidDataException>(() => NewsFeedParser.Parse(Encoding.UTF8.GetBytes(text)));
+    }
+
+    // ---- the expiry of the file (audit 2026-11-09, #162) ----
+
+    [Fact]
+    public void TheExpiryIsRead()
+    {
+        var feed = NewsFeedParser.Parse(Feed(Incident()));
+
+        Assert.Equal(new DateTimeOffset(2026, 12, 7, 10, 0, 0, TimeSpan.Zero), feed.Expires);
+        Assert.False(feed.IsExpiredAt(feed.Expires - TimeSpan.FromSeconds(1)));
+        Assert.True(feed.IsExpiredAt(feed.Expires));
+        Assert.True(feed.IsExpiredAt(feed.Expires + TimeSpan.FromDays(400)));
+    }
+
+    [Theory]
+    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"items\":[]}")]                                         // none
+    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":null,\"items\":[]}")]                         // not a date
+    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"never\",\"items\":[]}")]                    // not a date
+    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":20261207,\"items\":[]}")]                     // a number
+    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"2026-11-07T10:00:00Z\",\"items\":[]}")]    // same moment as issued
+    [InlineData("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"2026-11-01T10:00:00Z\",\"items\":[]}")]    // before issued
+    public void AFileWithoutAUsableExpiryIsRefused(string text)
+    {
+        // Required, not optional: a reader that took a file with no expiry would let an old copy pass for
+        // current for ever, which is the thing the field is there to stop.
+        Assert.Throws<InvalidDataException>(() => NewsFeedParser.Parse(Encoding.UTF8.GetBytes(text)));
+    }
+
+    [Fact]
+    public void TheNoticesOfAFileThatHasExpiredAreStillRead()
+    {
+        // The parser says what the file contains, not whether to trust it now: that is the service's
+        // call, and what it does with an expired copy is show the notices with a warning.
+        var feed = NewsFeedParser.Parse(Feed(Incident()));
+
+        Assert.True(feed.IsExpiredAt(feed.Expires + TimeSpan.FromDays(1)));
+        Assert.Single(feed.Items);
     }
 
     [Fact]
@@ -72,7 +111,8 @@ public class NewsFeedParserTests
     {
         // How the format grows without a new schema: an older app reads what it knows.
         var feed = NewsFeedParser.Parse(Encoding.UTF8.GetBytes(
-            "{\"schema\":1,\"seq\":2,\"issued\":\"2026-11-07T10:00:00Z\",\"future\":{\"a\":1},\"items\":[" +
+            "{\"schema\":1,\"seq\":2,\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"2026-12-07T10:00:00Z\"," +
+            "\"future\":{\"a\":1},\"items\":[" +
             Incident(extra: ",\"priority\":9") + "]}"));
 
         Assert.Single(feed.Items);

@@ -1048,7 +1048,11 @@ entre servidores tras una caché de 25 segundos para que N servidores no hagan N
 corta de consultas posterior a crear un túnel pasa `fresh: true` para saltársela, porque playit tarda
 unos segundos en publicar la dirección y si no la primera respuesta vacía se les serviría a los
 reintentos; crear un túnel lanza esa misma ráfaga en el lado de Java, que antes esperaba al
-temporizador de 30 segundos. La caja de la dirección es de solo lectura — enseña lo que Playit ha
+temporizador de 30 segundos. `/agents/rundata` responde por un solo agente, así que la lista se arma con todas
+las claves que tiene este equipo (el agente de la app y el que instaló el usuario; `FetchFromEveryKeyAsync`):
+un túnel en cualquiera de los dos es el del servidor, crear uno mira primero los dos para no hacer un segundo
+en el mismo puerto, y un agente al que no se llega convierte toda la respuesta en «no se pudo preguntar» en
+vez de «no hay túnel». La caja de la dirección es de solo lectura — enseña lo que Playit ha
 asignado, no una preferencia — y la línea de debajo es `TunnelAddressState` (`Waiting` / `NoTunnel` /
 `Ready` / `Failed`), la hermana de `BedrockAddressState`: tres situaciones distintas se dibujaban
 como una sola caja vacía. Cuando la cuenta responde y el túnel no está, la dirección se vacía en vez
@@ -1157,11 +1161,15 @@ tiene el formato y la receta para publicar; esto es cómo está montado en la ap
   web, luego GitHub Pages), con petición condicional y un límite de 64 KiB. **No se acepta nada antes de
   comprobarlo**: la firma tiene que verificarse sobre los bytes exactos con `UpdateSignature.VerifyNews`
   (las claves de las actualizaciones, con otra cabecera), el archivo tiene que leerse bien y su `seq` no
-  puede ser menor que el más alto aceptado alguna vez. Solo entonces se sustituyen el archivo y la firma
-  en `cache/`, y el ETag se guarda lo último. La copia guardada se **vuelve a verificar cada vez que se
-  lee**. Nunca lanza: devuelve un `NewsFeedStatus`: *Ok*, *NotModified*, *NoFeed* (todos los sitios dijeron
-  que no está, que es un proyecto sin nada que decir) o *Failed*, y un fallo nunca se convierte en «no hay
-  avisos».
+  puede ser menor que el más alto aceptado alguna vez, y su `expires` firmado no puede haber pasado. Solo
+  entonces se sustituyen el archivo y la firma en `cache/`, y el ETag se guarda lo último. La copia guardada
+  se **vuelve a verificar cada vez que se lee**, y su caducidad también (`IsExpired`, con el reloj, así que
+  una copia que pasó su fecha en el disco está desfasada sin tocar la red). Nunca lanza: devuelve un
+  `NewsFeedStatus`: *Ok*, *NotModified*, *NoFeed* (todos los sitios dijeron que no está, que es un proyecto
+  sin nada que decir), *Failed* o *Expired* (un archivo bien firmado que ya pasó su fecha, y que también
+  rechaza un *304* para una copia caducada), y un fallo nunca se convierte en «no hay avisos». Una copia
+  caducada se conserva y sus avisos siguen listados, con su propia tarjeta (`News_FeedExpired*`, no la de
+  «no se pudo comprobar»).
 - **`NewsFeedParser`** es puro. Un aviso inválido se salta por su cuenta; el texto pasa por
   `UntrustedText.Clean` (una línea, sin caracteres de control, cortado a su límite), los enlaces tienen que
   ser `https` de cuatro sitios, y una incidencia o un aviso de seguridad sin `until` se descarta, con el

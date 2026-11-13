@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace McServerLauncher.Tests;
 
 /// <summary>
@@ -69,5 +71,223 @@ public class WebLandingTests
         Assert.Contains("<span lang=\"es\">Español</span>", html);
         Assert.Contains("<span lang=\"en\">English</span>", html);
         Assert.Contains("<span lang=\"de\">Deutsch</span>", html);
+    }
+
+    // ---------------------------------------------------------------- audit 2026-11-09 (#162)
+
+    private static string WebRoot() => Path.Combine(LocalizationTests.RepoRoot(), "web");
+
+    /// <summary>Every page the site serves: the landings, the guides and the 404.</summary>
+    private static IEnumerable<string> AllPages() =>
+        Directory.EnumerateFiles(WebRoot(), "*.html", SearchOption.AllDirectories)
+            .Where(p =>
+            {
+                var rel = Path.GetRelativePath(WebRoot(), p).Replace('\\', '/');
+                return !rel.StartsWith("_i18n/") && !rel.StartsWith("_tools/")
+                    // The search console's ownership file is a .html with one line and no page in it.
+                    && File.ReadAllText(p).Contains("<html");
+            });
+
+    private static JsonElement[] VercelRules(string source)
+    {
+        using var doc = JsonDocument.Parse(Web("vercel.json"));
+        return doc.RootElement.GetProperty("headers").EnumerateArray()
+            .Where(r => r.GetProperty("source").GetString() == source)
+            .Select(r => r.Clone()).ToArray();
+    }
+
+    private static Dictionary<string, string> HeadersOf(JsonElement rule) =>
+        rule.GetProperty("headers").EnumerateArray().ToDictionary(
+            h => h.GetProperty("key").GetString()!, h => h.GetProperty("value").GetString()!);
+
+    /// <summary>
+    /// The site used to be served with no security header at all. Vercel reads these from
+    /// <c>web/vercel.json</c>; the content policy itself travels in a <c>&lt;meta&gt;</c> so GitHub
+    /// Pages gets it too, and the header adds the part a meta cannot (frame-ancestors).
+    /// </summary>
+    [Fact]
+    public void EveryResponseCarriesTheSecurityHeaders()
+    {
+        var rule = Assert.Single(VercelRules("/(.*)"));
+        var headers = HeadersOf(rule);
+
+        Assert.Equal("nosniff", headers["X-Content-Type-Options"]);
+        Assert.Equal("strict-origin-when-cross-origin", headers["Referrer-Policy"]);
+        Assert.Equal("DENY", headers["X-Frame-Options"]);
+        Assert.Equal("frame-ancestors 'none'", headers["Content-Security-Policy"]);
+        Assert.Contains("camera=()", headers["Permissions-Policy"]);
+        Assert.DoesNotContain("Cache-Control", headers.Keys);
+    }
+
+    /// <summary>
+    /// Only the files whose address carries their fingerprint (<c>?v=</c>) may be cached for a year:
+    /// the images and the news feed keep their address when they change.
+    /// </summary>
+    [Fact]
+    public void OnlyFingerprintedAssetsAreCachedForever()
+    {
+        var rule = Assert.Single(VercelRules("/assets/(.*)"));
+        var headers = HeadersOf(rule);
+
+        Assert.Equal("public, max-age=31536000, immutable", headers["Cache-Control"]);
+        var condition = Assert.Single(rule.GetProperty("has").EnumerateArray());
+        Assert.Equal("query", condition.GetProperty("type").GetString());
+        Assert.Equal("v", condition.GetProperty("key").GetString());
+
+        using var doc = JsonDocument.Parse(Web("vercel.json"));
+        var immutable = doc.RootElement.GetProperty("headers").EnumerateArray()
+            .Count(r => HeadersOf(r).GetValueOrDefault("Cache-Control", "").Contains("immutable"));
+        Assert.Equal(1, immutable);
+    }
+
+    /// <summary>
+    /// A script from another site runs with the whole page in reach and, without an integrity
+    /// attribute, changes whenever its owner decides. The counter is a copy of GoatCounter's own
+    /// file, kept in <c>assets/</c>, and the policy lets scripts come from the site only.
+    /// </summary>
+    [Fact]
+    public void NoPageLoadsAScriptFromAnotherSite()
+    {
+        foreach (var page in AllPages())
+        {
+            var html = File.ReadAllText(page);
+            var name = Path.GetRelativePath(WebRoot(), page);
+
+            // The index explains in a comment where count.js came from, so the address may appear
+            // as text; what must never appear is a script tag that points at another host.
+            Assert.DoesNotMatch(@"<script[^>]*\ssrc=""(https?:)?//", html);
+            Assert.DoesNotMatch(@"script-src[^;]*(gc\.zgo\.at|https?:)", html);
+            Assert.Contains("script-src 'self';", html);
+            Assert.True(!html.Contains("script-src 'self' "), name + ": script-src must not name another host");
+        }
+
+        Assert.Contains("ISC", Web("assets", "count.js"));
+        Assert.Matches(@"src=""assets/count\.js\?v=[0-9a-f]{10}""", Web("index.html"));
+    }
+
+    /// <summary>
+    /// One manifest per language: opening the installed shortcut from an English page used to land
+    /// on the Spanish one, and the description was always Spanish.
+    /// </summary>
+    [Theory]
+    [InlineData("en")]
+    [InlineData("de")]
+    [InlineData("fr")]
+    [InlineData("pt")]
+    public void EveryLanguageHasItsOwnManifest(string code)
+    {
+        using var doc = JsonDocument.Parse(Web("assets", $"site.{code}.webmanifest"));
+        using var spanish = JsonDocument.Parse(Web("assets", "site.webmanifest"));
+
+        Assert.Equal($"../{code}/", doc.RootElement.GetProperty("start_url").GetString());
+        Assert.NotEqual(spanish.RootElement.GetProperty("description").GetString(),
+            doc.RootElement.GetProperty("description").GetString());
+        Assert.False(string.IsNullOrWhiteSpace(doc.RootElement.GetProperty("lang").GetString()));
+
+        Assert.Contains($"assets/site.{code}.webmanifest\"", Web(code, "index.html"));
+        foreach (var guide in Directory.EnumerateFiles(Path.Combine(WebRoot(), code, "guides"), "index.html",
+                     SearchOption.AllDirectories))
+            Assert.Contains($"assets/site.{code}.webmanifest\"", File.ReadAllText(guide));
+    }
+
+    /// <summary>The English page said en-GB to the version list and en_US to everyone else.</summary>
+    [Fact]
+    public void TheEnglishPageUsesOneLocale()
+    {
+        var html = Web("en", "index.html");
+
+        Assert.Contains("data-locale=\"en-US\"", html);
+        Assert.Contains("content=\"en_US\"", html);
+        Assert.DoesNotContain("en-GB", html);
+    }
+
+    /// <summary>The French page tutoys everywhere; two sentences said "vous".</summary>
+    [Fact]
+    public void TheFrenchLandingKeepsOneRegister()
+    {
+        Assert.DoesNotMatch(@"(?i)\b(vous|votre|vos)\b", Web("fr", "index.html"));
+    }
+
+    /// <summary>
+    /// The headline arrives as plain text and the script, which is deferred, turns it into words
+    /// that drop in one by one: for an instant the whole sentence showed, vanished and was rebuilt.
+    /// The style hides it until the script has split it, and shows everything again if the script
+    /// never runs or the visitor asked for less motion.
+    /// </summary>
+    [Fact]
+    public void TheHeadlineIsHiddenUntilItIsSplitAndNeverStaysHidden()
+    {
+        var css = Web("assets", "site.css");
+        var js = Web("assets", "site.js");
+
+        Assert.Contains("@media (scripting: enabled){\n  .build:not(.split){opacity:0}", css.Replace("\r\n", "\n"));
+        Assert.Contains("html:not(.reveal-ready) .build:not(.split)", css);
+        Assert.Contains("el.classList.add('split')", js);
+        Assert.Contains("classList.add('reveal-ready')", js);
+        Assert.Matches(@"prefers-reduced-motion:reduce\)\{\s*\.reveal,\.build,", css);
+    }
+
+    /// <summary>
+    /// GitHub Pages ignores <c>vercel.json</c>; it would only be one more file for crawlers to find.
+    /// </summary>
+    [Fact]
+    public void ThePagesCopyDoesNotShipTheVercelFile()
+    {
+        var workflow = File.ReadAllText(Path.Combine(LocalizationTests.RepoRoot(), ".github", "workflows", "docs.yml"));
+
+        Assert.Contains("_pages\\vercel.json", workflow);
+    }
+
+    /// <summary>
+    /// An image nobody links is weight in the repository and a file for a crawler to fetch. Every
+    /// image at the top of <c>assets/</c> must be named by a page, a style, a script or a generator.
+    /// </summary>
+    [Fact]
+    public void NoImageAtTheTopOfAssetsIsUnused()
+    {
+        var sources = Directory.EnumerateFiles(WebRoot(), "*", SearchOption.AllDirectories)
+            .Where(p => new[] { ".html", ".css", ".js", ".py", ".json", ".xml", ".txt" }
+                .Contains(Path.GetExtension(p)))
+            .Select(File.ReadAllText).ToArray();
+        var images = Directory.EnumerateFiles(Path.Combine(WebRoot(), "assets"))
+            .Where(p => new[] { ".png", ".jpg", ".webp", ".svg" }.Contains(Path.GetExtension(p)));
+
+        foreach (var image in images)
+        {
+            var name = Path.GetFileName(image);
+            Assert.True(sources.Any(s => s.Contains(name)), name + " is not referenced anywhere in web/");
+        }
+    }
+
+    /// <summary>
+    /// The uncompressed PNGs the art tools work from are not part of the site: the pages only ever name
+    /// the <c>.webp</c> next to them. They live under <c>_tools/</c>, which is not published, so a
+    /// crawler cannot index thirty-eight files nobody links.
+    /// </summary>
+    [Fact]
+    public void TheWorkingPngsAreNotUnderThePublishedAssets()
+    {
+        Assert.Empty(Directory.EnumerateFiles(Path.Combine(WebRoot(), "assets", "mc"), "*.png"));
+        Assert.NotEmpty(Directory.EnumerateFiles(Path.Combine(WebRoot(), "_tools", "mc-src"), "*.png"));
+
+        // Nothing the site serves asks for one, so moving them cost nothing.
+        var served = Directory.EnumerateFiles(WebRoot(), "*", SearchOption.AllDirectories)
+            .Where(p => !Path.GetRelativePath(WebRoot(), p).Replace(Path.DirectorySeparatorChar, '/').StartsWith('_')
+                        && new[] { ".html", ".css", ".js", ".webmanifest" }.Contains(Path.GetExtension(p)));
+        foreach (var file in served)
+            Assert.DoesNotMatch(@"mc/[A-Za-z0-9_]+\.png", File.ReadAllText(file));
+    }
+
+    /// <summary>
+    /// Vercel serves the whole of <c>web/</c>, generator and tools included (the Pages copy removes
+    /// them). <c>robots.txt</c> asks crawlers to stay out, which does not stop an address from being
+    /// indexed when something links to it; the header does.
+    /// </summary>
+    [Fact]
+    public void TheToolFoldersAreMarkedNoIndexOnVercel()
+    {
+        var rule = Assert.Single(VercelRules("/(_i18n|_tools)/(.*)"));
+
+        Assert.Equal("noindex, nofollow", HeadersOf(rule)["X-Robots-Tag"]);
     }
 }

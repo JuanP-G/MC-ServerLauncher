@@ -424,8 +424,8 @@ líneas —el chat y las IPs de las líneas de conexión incluidos— digan lo q
 A qué servicios pide cosas la app, y qué ven además de tu IP: Mojang, Paper, Purpur, Fabric, Forge, NeoForge y Pumpkin
 (descargas del servidor, y Mojang el nombre de un jugador cuando lo añades a la whitelist), Modrinth y GeyserMC
 (mods y plugins), Adoptium (Java), GitHub (actualizaciones, y el catálogo de temas y resúmenes de la tienda, un
-archivo público que se baja como mucho una vez al día), Playit (túneles, a través del proxy de la app al
-vincular una cuenta), **mc-heads.net** (el avatar de cada jugador, por su nombre, en el historial) y la
+archivo público que se baja como mucho una vez al día), Playit (túneles; al vincular una cuenta, el código de un solo uso y la clave que devuelve Playit pasan por el
+proxy propio del proyecto, un Worker de Cloudflare que añade la clave de socio y no guarda ninguna de las dos, ver `playit-proxy/`), **mc-heads.net** (el avatar de cada jugador, por su nombre, en el historial) y la
 propia web del proyecto (`mc-server-launcher.vercel.app`, con `juanp-g.github.io` de respaldo), que sirve el
 archivo firmado de [anuncios](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/announcements.es.html):
 una petición sin tu versión, tu idioma ni ningún identificador, una vez al arrancar y cada 5 minutos (unos cientos de bytes si nada cambió), y ninguna

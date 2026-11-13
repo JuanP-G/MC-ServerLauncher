@@ -53,8 +53,10 @@ public class NewsFeedServiceTests : IDisposable
 
     private static string PublicKey(ECDsa key) => Convert.ToBase64String(key.ExportSubjectPublicKeyInfo());
 
-    private static byte[] Feed(int seq, string items = "") => Encoding.UTF8.GetBytes(
-        "{\"schema\":1,\"seq\":" + seq + ",\"issued\":\"2026-11-07T10:00:00Z\",\"items\":[" + items + "]}\n");
+    /// <summary>A file issued on the test's day; it expires two months on unless a test says otherwise.</summary>
+    private static byte[] Feed(int seq, string items = "", string expires = "2027-01-07T10:00:00Z") =>
+        Encoding.UTF8.GetBytes("{\"schema\":1,\"seq\":" + seq + ",\"issued\":\"2026-11-07T10:00:00Z\",\"expires\":\"" +
+            expires + "\",\"items\":[" + items + "]}\n");
 
     private const string TipItem =
         "{\"id\":\"tip-1\",\"kind\":\"tip\",\"text\":{\"en\":{\"title\":\"A tip\",\"body\":\"Words\"}}}";
@@ -157,8 +159,7 @@ public class NewsFeedServiceTests : IDisposable
     {
         var (service, handler) = Make();
         var signedFor = Feed(5, TipItem);
-        Serve(handler, Primary, Encoding.UTF8.GetBytes("{\"schema\":1,\"seq\":6,\"issued\":\"2026-11-07T10:00:00Z\",\"items\":[]}\n"),
-            signature: Sign(signedFor));
+        Serve(handler, Primary, Feed(6), signature: Sign(signedFor));
 
         Assert.Equal(NewsFeedStatus.Failed, await service.RefreshAsync());
 
@@ -203,7 +204,7 @@ public class NewsFeedServiceTests : IDisposable
     {
         var (service, handler) = Make();
         var padding = new string(' ', (int)NewsFeedService.MaxFeedBytes);
-        var raw = Encoding.UTF8.GetBytes("{\"schema\":1,\"seq\":1,\"issued\":\"2026-11-07T10:00:00Z\",\"items\":[]}" + padding);
+        var raw = Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(Feed(1)).TrimEnd() + padding);
         Serve(handler, Primary, raw);
 
         Assert.Equal(NewsFeedStatus.Failed, await service.RefreshAsync());
@@ -552,6 +553,177 @@ public class NewsFeedServiceTests : IDisposable
         cancelled.Cancel();
 
         Assert.Equal(NewsFeedStatus.Failed, await service.RefreshAsync(ct: cancelled.Token));
+    }
+
+    // ---- the file expires (audit 2026-11-09, #162) ----
+    //
+    // A correctly signed file stays correctly signed for ever, so an old one served by a server that
+    // stopped updating, or by somebody who can answer for it, would pass for the current one. Each
+    // case is one way that could still happen.
+
+    /// <summary>A file whose <c>expires</c> is behind the clock.</summary>
+    private byte[] Lapsed(int seq = 5) => Feed(seq, TipItem, expires: "2026-11-07T11:00:00Z");
+
+    [Fact]
+    public async Task AFileThatHasAlreadyExpiredIsRefusedAndNothingIsInstalled()
+    {
+        var (service, handler) = Make();
+        Serve(handler, Primary, Lapsed());
+
+        Assert.Equal(NewsFeedStatus.Expired, await service.RefreshAsync());
+
+        Assert.Null(service.Feed);
+        Assert.Equal(0, service.AcceptedSeq);
+        Assert.False(File.Exists(Path.Combine(_folder, "news.json")));
+        Assert.False(File.Exists(Path.Combine(_folder, "news.stamp")));    // no ETag for a body that was refused
+    }
+
+    [Fact]
+    public async Task AFileExpiringRightNowIsExpired()
+    {
+        // "Until" is exclusive, like everything else with dates in the file: at the very moment it
+        // runs out it is out.
+        var (service, handler) = Make();
+        Serve(handler, Primary, Feed(5, TipItem, expires: "2026-11-07T12:00:00Z"));
+
+        Assert.Equal(NewsFeedStatus.Expired, await service.RefreshAsync());
+    }
+
+    [Fact]
+    public async Task AnExpiredFileDoesNotReplaceAGoodCopy()
+    {
+        var (service, handler) = Make();
+        Serve(handler, Primary, Feed(5, TipItem));
+        await service.RefreshAsync();
+
+        Serve(handler, Primary, Lapsed(seq: 6), etag: "\"v2\"");
+        _now += TimeSpan.FromMinutes(30);
+
+        Assert.Equal(NewsFeedStatus.Expired, await service.RefreshAsync());
+        Assert.Equal(5, service.Feed!.Seq);                    // the copy that is still good stays
+        Assert.Equal(5, service.AcceptedSeq);                  // and a refused file does not raise the bar
+    }
+
+    [Fact]
+    public async Task AReplayIsStillADifferentFailureFromAnExpiredFile()
+    {
+        // A file older than what was accepted is a replay whether or not it has expired: the sharper
+        // diagnosis wins.
+        var (service, handler) = Make();
+        Serve(handler, Primary, Feed(5, TipItem));
+        await service.RefreshAsync();
+
+        Serve(handler, Primary, Lapsed(seq: 4), etag: "\"v2\"");
+        _now += TimeSpan.FromMinutes(30);
+
+        Assert.Equal(NewsFeedStatus.Failed, await service.RefreshAsync());
+    }
+
+    [Fact]
+    public async Task ACopyThatWasGoodWhenSavedIsExpiredOnceTheClockPassesItsDate()
+    {
+        // Nothing is asked of the network here: the judgement is made when the copy is read, not when
+        // it was saved, which is what a copy that sat on disk for months needs.
+        var (service, handler) = Make();
+        Serve(handler, Primary, Feed(5, TipItem, expires: "2026-11-20T00:00:00Z"));
+        await service.RefreshAsync();
+        Assert.False(service.IsExpired);
+
+        _now = new DateTimeOffset(2026, 11, 20, 0, 0, 0, TimeSpan.Zero) - TimeSpan.FromSeconds(1);
+        Assert.False(service.IsExpired);
+
+        _now += TimeSpan.FromSeconds(1);
+        Assert.True(service.IsExpired);
+        Assert.NotNull(service.Feed);                          // not thrown away: its notices are still shown, with the warning
+        Assert.Equal("tip-1", Assert.Single(service.Feed.Items).Id);
+    }
+
+    [Fact]
+    public async Task AnExpiredCopyOnDiskIsStillExpiredAfterARestart()
+    {
+        var (service, handler) = Make();
+        Serve(handler, Primary, Feed(5, TipItem, expires: "2026-11-20T00:00:00Z"));
+        await service.RefreshAsync();
+
+        _now = new DateTimeOffset(2027, 3, 1, 0, 0, 0, TimeSpan.Zero);
+        var reopened = Reopen();
+
+        Assert.True(reopened.IsExpired);
+        Assert.Equal(5, reopened.Feed!.Seq);
+    }
+
+    [Fact]
+    public void WithNoCopyThereIsNothingToHaveExpired()
+    {
+        var (service, _) = Make();
+
+        Assert.False(service.IsExpired);
+    }
+
+    [Fact]
+    public async Task A304ForACopyThatHasExpiredIsNotAConfirmation()
+    {
+        // The server saying "you already have the latest" is true and no use when the latest is
+        // out of date. It must not refresh CheckedAt, which would read as "confirmed current".
+        var (service, handler) = Make();
+        Serve(handler, Primary, Feed(5, TipItem, expires: "2026-11-20T00:00:00Z"));
+        await service.RefreshAsync();
+        var confirmed = service.CheckedAt;
+
+        _now = new DateTimeOffset(2026, 12, 25, 0, 0, 0, TimeSpan.Zero);
+        var status = await service.RefreshAsync();
+
+        Assert.Equal(NewsFeedStatus.Expired, status);
+        Assert.Equal(confirmed, service.CheckedAt);
+        Assert.True(service.IsExpired);
+    }
+
+    [Fact]
+    public async Task ARenewedFileWithTheSameSeqIsAcceptedAndEndsTheExpiry()
+    {
+        // Renewing is signing the same notices again with a later date: the same seq must be enough.
+        var (service, handler) = Make();
+        Serve(handler, Primary, Feed(5, TipItem, expires: "2026-11-20T00:00:00Z"));
+        await service.RefreshAsync();
+
+        _now = new DateTimeOffset(2026, 12, 25, 0, 0, 0, TimeSpan.Zero);
+        Assert.True(service.IsExpired);
+        Serve(handler, Primary, Feed(5, TipItem, expires: "2027-02-20T00:00:00Z"), etag: "\"v2\"");
+
+        Assert.Equal(NewsFeedStatus.Ok, await service.RefreshAsync());
+        Assert.False(service.IsExpired);
+    }
+
+    [Fact]
+    public async Task AnExpiredFileOnTheFirstHostHandsOverToTheSecond()
+    {
+        var (service, handler) = Make(Primary, Fallback);
+        Serve(handler, Primary, Lapsed());
+        Serve(handler, Fallback, Feed(5, TipItem));
+
+        Assert.Equal(NewsFeedStatus.Ok, await service.RefreshAsync());
+        Assert.False(service.IsExpired);
+    }
+
+    [Fact]
+    public async Task EveryHostServingAnExpiredFileIsExpiredNotNoFeed()
+    {
+        var (service, handler) = Make(Primary, Fallback);
+        Serve(handler, Primary, Lapsed());
+        Serve(handler, Fallback, Lapsed());
+
+        Assert.Equal(NewsFeedStatus.Expired, await service.RefreshAsync());
+    }
+
+    [Fact]
+    public async Task AHostThatCouldNotBeAskedOutranksOneThatServedAnExpiredFile()
+    {
+        // "Expired" says what is wrong with a file; "failed" says we do not know. The open question wins.
+        var (service, handler) = Make(Primary, Fallback);
+        Serve(handler, Primary, Lapsed());
+        handler.Routes[Fallback] = _ => Status(HttpStatusCode.InternalServerError);
+
+        Assert.Equal(NewsFeedStatus.Failed, await service.RefreshAsync());
     }
 
     // ---- the addresses ----

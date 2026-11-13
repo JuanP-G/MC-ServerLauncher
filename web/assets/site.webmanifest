@@ -2,6 +2,7 @@
   "name": "MC-ServerLauncher",
   "short_name": "MC-ServerLauncher",
   "description": "Crea y gestiona servidores de Minecraft en tu PC, sin comandos.",
+  "lang": "es",
   "start_url": "../",
   "display": "browser",
   "background_color": "#070B14",

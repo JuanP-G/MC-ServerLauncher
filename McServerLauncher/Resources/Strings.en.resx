@@ -144,6 +144,7 @@
   <data name="Pk_KeyPlaceholder" xml:space="preserve"><value>Paste your setup code here...</value></data>
   <data name="Pk_ShowKey" xml:space="preserve"><value>Show what I paste</value></data>
   <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher is not affiliated with or owned by Playit; it only integrates with their network. Your account is yours: you can manage it directly at playit.gg.</value></data>
+  <data name="Pk_ProxyNote" xml:space="preserve"><value>The code goes through a small server run by the project (a Cloudflare Worker) that adds Playit's partner key and stores nothing; the key Playit sends back is kept encrypted on this computer.</value></data>
   <data name="Pk_Agent_Downloading" xml:space="preserve"><value>Downloading the Playit agent… (first time only)</value></data>
   <data name="Pk_Agent_Starting" xml:space="preserve"><value>Starting the agent…</value></data>
   <data name="Pk_Agent_Failed" xml:space="preserve"><value>Couldn't start the agent: {0}</value></data>
@@ -432,6 +433,8 @@
   <data name="News_MoreInfo" xml:space="preserve"><value>More information</value></data>
   <data name="News_FeedFailedFmt" xml:space="preserve"><value>Could not check for notices. Last copy: {0}.</value></data>
   <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>Could not check for notices, and there is no saved copy yet.</value></data>
+  <data name="News_FeedExpiredFmt" xml:space="preserve"><value>The list of notices has expired and may be out of date. Last checked: {0}.</value></data>
+  <data name="News_FeedExpiredNoCopy" xml:space="preserve"><value>The published list of notices has expired and may be out of date.</value></data>
   <data name="News_BandSee" xml:space="preserve"><value>View notice</value></data>
   <data name="News_ToastSeeNews" xml:space="preserve"><value>Details are in What's new.</value></data>
   <data name="News_ToastResolved" xml:space="preserve"><value>Resolved. Details are in What's new.</value></data>

@@ -144,6 +144,7 @@
   <data name="Pk_KeyPlaceholder" xml:space="preserve"><value>Colle ton code de configuration ici...</value></data>
   <data name="Pk_ShowKey" xml:space="preserve"><value>Afficher ce que je colle</value></data>
   <data name="Pk_Disclaimer" xml:space="preserve"><value>MC Server Launcher n'est ni affilié ni détenu par Playit ; il s'intègre seulement à son réseau. Ton compte est le tien : tu peux le gérer directement sur playit.gg.</value></data>
+  <data name="Pk_ProxyNote" xml:space="preserve"><value>Le code passe par un petit serveur du projet (un Worker Cloudflare) qui ajoute la clé de partenaire de Playit et ne conserve rien ; la clé que Playit renvoie est stockée chiffrée sur cet ordinateur.</value></data>
   <data name="Pk_Agent_Downloading" xml:space="preserve"><value>Téléchargement de l'agent Playit… (première fois uniquement)</value></data>
   <data name="Pk_Agent_Starting" xml:space="preserve"><value>Démarrage de l'agent…</value></data>
   <data name="Pk_Agent_Failed" xml:space="preserve"><value>Impossible de démarrer l'agent : {0}</value></data>
@@ -432,6 +433,8 @@
   <data name="News_MoreInfo" xml:space="preserve"><value>Plus d'informations</value></data>
   <data name="News_FeedFailedFmt" xml:space="preserve"><value>Impossible de vérifier les avis. Dernière copie : {0}.</value></data>
   <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>Impossible de vérifier les avis, et aucune copie n'est encore enregistrée.</value></data>
+  <data name="News_FeedExpiredFmt" xml:space="preserve"><value>La liste des avis a expiré et peut être périmée. Dernière vérification : {0}.</value></data>
+  <data name="News_FeedExpiredNoCopy" xml:space="preserve"><value>La liste d'avis publiée a expiré et peut être périmée.</value></data>
   <data name="News_BandSee" xml:space="preserve"><value>Voir l'avis</value></data>
   <data name="News_ToastSeeNews" xml:space="preserve"><value>Les détails sont dans Nouveautés.</value></data>
   <data name="News_ToastResolved" xml:space="preserve"><value>Résolu. Les détails sont dans Nouveautés.</value></data>

@@ -4,6 +4,7 @@
     "lang": "en",
     "locale": "en_US",
     "label": "English",
+    "manifest_description": "Create and manage Minecraft servers on your PC, no commands needed.",
     "strings": {
       "Crear un servidor de Minecraft en tu PC | MC-ServerLauncher": "Make a Minecraft server on your PC | MC-ServerLauncher",
       "Crea y hostea tu servidor de Minecraft gratis en tu PC, sin comandos ni abrir puertos. Vanilla, Paper, Forge, NeoForge y Fabric, con mods y copias de seguridad.": "Create and host your own Minecraft server for free on your PC, with no commands and no port forwarding. Vanilla, Paper, Forge, NeoForge and Fabric, with mods and backups.",
@@ -86,7 +87,7 @@
       "Reportar un fallo": "Report a bug",
       "\"Menú\"": "\"Menu\"",
       "data-latest=\"ÚLTIMA\"": "data-latest=\"LATEST\"",
-      "data-locale=\"es-ES\"": "data-locale=\"en-GB\"",
+      "data-locale=\"es-ES\"": "data-locale=\"en-US\"",
       "data-load-error=\"No se pudo cargar el listado ahora mismo.\"": "data-load-error=\"Couldn’t load the list of versions right now.\"",
       "data-load-error-link=\"Míralo en GitHub\"": "data-load-error-link=\"See it on GitHub\"",
       "Repositorio": "Repository",
@@ -111,6 +112,7 @@
     "lang": "de",
     "locale": "de_DE",
     "label": "Deutsch",
+    "manifest_description": "Erstelle und verwalte Minecraft-Server auf deinem PC, ganz ohne Befehle.",
     "strings": {
       "Crear un servidor de Minecraft en tu PC | MC-ServerLauncher": "Minecraft-Server auf dem PC erstellen | MC-ServerLauncher",
       "Crea y hostea tu servidor de Minecraft gratis en tu PC, sin comandos ni abrir puertos. Vanilla, Paper, Forge, NeoForge y Fabric, con mods y copias de seguridad.": "Erstelle und hoste deinen Minecraft-Server kostenlos auf deinem PC, ohne Befehle und ohne Portfreigabe. Vanilla, Paper, Forge, NeoForge und Fabric, mit Mods und Sicherungen.",
@@ -218,6 +220,7 @@
     "lang": "fr",
     "locale": "fr_FR",
     "label": "Français",
+    "manifest_description": "Crée et gère des serveurs Minecraft sur ton PC, sans commandes.",
     "strings": {
       "Crear un servidor de Minecraft en tu PC | MC-ServerLauncher": "Créer un serveur Minecraft sur son PC | MC-ServerLauncher",
       "Crea y hostea tu servidor de Minecraft gratis en tu PC, sin comandos ni abrir puertos. Vanilla, Paper, Forge, NeoForge y Fabric, con mods y copias de seguridad.": "Crée et héberge ton serveur Minecraft gratuitement sur ton PC, sans commandes ni ouverture de ports. Vanilla, Paper, Forge, NeoForge et Fabric, avec mods et sauvegardes.",
@@ -313,8 +316,8 @@
       "Guías paso a paso": "Guides pas à pas",
       "Respuestas directas a lo que más se busca al montar un servidor de Minecraft.": "Des réponses directes à ce qu'on cherche le plus en montant un serveur Minecraft.",
       "Gasta solo la memoria que necesita": "N’utilise que la mémoire dont il a besoin",
-      "La app decide cuánta RAM puede usar cada servidor y Java devuelve la que le sobra: un servidor vacío pasa de 3,5-4,7 GB a alrededor de 1 GB. Aprende de cómo lo usas y, si al PC le falta memoria, aprieta antes.": "L’app décide combien de RAM chaque serveur peut utiliser et Java rend ce dont il n’a pas besoin : un serveur vide passe de 3,5-4,7 Go à environ 1 Go. Elle apprend de votre usage et, si le PC manque de mémoire, resserre plus tôt.",
-      "Te avisa cuando va al límite": "Vous prévient quand il est à la limite",
+      "La app decide cuánta RAM puede usar cada servidor y Java devuelve la que le sobra: un servidor vacío pasa de 3,5-4,7 GB a alrededor de 1 GB. Aprende de cómo lo usas y, si al PC le falta memoria, aprieta antes.": "L’app décide combien de RAM chaque serveur peut utiliser et Java rend ce dont il n’a pas besoin : un serveur vide passe de 3,5-4,7 Go à environ 1 Go. Elle apprend de ton usage et, si le PC manque de mémoire, resserre plus tôt.",
+      "Te avisa cuando va al límite": "Te prévient quand il est à la limite",
       "Una tarjeta muestra los TPS del servidor y una banda salta solo cuando algo va mal durante un rato. «Ver soluciones» te ofrece arreglos con un clic: bajar distancias, más memoria o mods que lo aceleran.": "Une carte affiche les TPS du serveur et un bandeau n’apparaît que lorsque quelque chose va mal pendant un moment. « Voir les solutions » propose des correctifs en un clic : baisser les distances, plus de mémoire ou des mods qui l’accélèrent.",
       "Se apaga solo cuando está vacío": "S’arrête tout seul quand il est vide",
       "Para el servidor cuando no queda nadie y lo arranca cuando un amigo intenta entrar, sin gastar RAM ni CPU de más.": "Arrête le serveur quand il n’y a plus personne et le démarre quand un ami essaie d’entrer, sans gaspiller de RAM ni de CPU.",
@@ -325,6 +328,7 @@
     "lang": "pt-BR",
     "locale": "pt_BR",
     "label": "Português (BR)",
+    "manifest_description": "Crie e gerencie servidores de Minecraft no seu PC, sem comandos.",
     "strings": {
       "Crear un servidor de Minecraft en tu PC | MC-ServerLauncher": "Criar servidor de Minecraft grátis no PC | MC-ServerLauncher",
       "Crea y hostea tu servidor de Minecraft gratis en tu PC, sin comandos ni abrir puertos. Vanilla, Paper, Forge, NeoForge y Fabric, con mods y copias de seguridad.": "Criar servidor de Minecraft grátis no seu PC, sem comandos e sem abrir portas. Vanilla, Paper, Forge, NeoForge e Fabric, com mods e backups automáticos.",

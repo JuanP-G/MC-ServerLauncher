@@ -95,8 +95,20 @@ que las guías heredan sus cambios y su traducción de la interfaz sin repetirlo
 sola copia. `build.py` pone `?v=<resumen>` en esas URLs, de modo que un cambio llega a los visitantes en el acto.
 Lo que cambia con el idioma (la etiqueta «ÚLTIMA», el formato de las fechas, el aviso de listado no disponible)
 viaja en atributos `data-` de la etiqueta del script, traducidos con `strings.json` como cualquier otro texto. La
-política de contenido ya no necesita hashes de script (`script-src 'self'` más GoatCounter), y la generación falla
+política de contenido ya no necesita hashes de script (`script-src 'self'`, nada más), y la generación falla
 si una página lleva código en línea.
+
+**Contador y cabeceras.** El `count.js` de GoatCounter (licencia ISC, 9 KB) está copiado en `web/assets/count.js` y
+se sirve desde el propio sitio: un script de otro dominio sin atributo `integrity` corre con la página entera a su
+alcance y su dueño puede cambiarlo cuando quiera, y con `integrity` cada actualización suya habría roto el contador
+sin avisar. Para actualizarlo se descarga de nuevo de `https://gc.zgo.at/count.js`, se sustituye el archivo y se
+ejecuta `build.py` (que le pone su `?v=`). `web/vercel.json` pone en Vercel las cabeceras de seguridad
+(`X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options` y `frame-ancestors`, que no
+funciona en una etiqueta `<meta>`) y cachea un año solo lo que lleva `?v=` en la dirección; las imágenes y el
+listado de novedades conservan su dirección al cambiar y no se marcan como inmutables. GitHub Pages ignora ese
+archivo y la copia del paso «Assemble site» no lo lleva. Cada idioma tiene su manifiesto
+(`web/assets/site.<idioma>.webmanifest`, generado por `build.py` a partir del español, con su descripción en
+`strings.json` y su página de inicio).
 
 **La página 404.** `web/404.html` es lo que Vercel y GitHub Pages sirven, con estado 404 de verdad, para cualquier
 dirección que no exista a cualquier profundidad, así que todas sus rutas son absolutas desde la raíz (una relativa se
