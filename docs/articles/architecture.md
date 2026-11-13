@@ -323,6 +323,11 @@ are no hard-coded machine paths.
 - **`PlayerNames`** — what a Minecraft Java name looks like (`IsValid`, and `Pattern` for picking one out
   of a line). One rule for the five places that used to keep a regex of their own; it is also what stops
   a name from carrying a line break into a console command or becoming part of a path.
+- **`ServerDiskUsageService`** — what a server's folder takes, and which part is the world (`level-name`
+  and its Bukkit siblings), the backups, the mods or plugins and the logs. One walk per top-level folder,
+  off the UI thread, by file length (readable while the server holds the files), without following links
+  or junctions. `ServerViewModel.Disk` measures when the server is selected, when it stops, when a backup
+  or restore ends and on request, never on the stats tick, and never for a server nobody has looked at.
 - **`ByteSize`** and **`AppWindows`** — one way to write a size on disk (powers of 1024; line speeds stay
   decimal, like the Mb/s beside them) and one place to ask for the main window.
 - **`MinecraftIds`** — turns `minecraft:deepslate_diamond_ore` into "Deepslate diamond ore". Deliberately

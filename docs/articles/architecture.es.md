@@ -333,6 +333,12 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`PlayerNames`** — cómo es un nombre de Minecraft Java (`IsValid`, y `Pattern` para sacar uno de una
   línea). Una sola regla para los cinco sitios que guardaban cada uno su expresión regular; también es lo
   que impide que un nombre lleve un salto de línea a un comando de consola o acabe en una ruta.
+- **`ServerDiskUsageService`** — lo que ocupa la carpeta de un servidor, y qué parte es el mundo
+  (`level-name` y sus hermanas de Bukkit), las copias, los mods o plugins y los registros. Un recorrido por
+  carpeta de primer nivel, fuera del hilo de la interfaz, por longitud de archivo (se puede leer aunque el
+  servidor los tenga abiertos), sin seguir enlaces ni uniones. `ServerViewModel.Disk` mide al seleccionar el
+  servidor, al pararse, al acabar una copia o una restauración y cuando se pide, nunca en el tic de las
+  estadísticas, y nunca un servidor que nadie ha mirado.
 - **`ByteSize`** y **`AppWindows`** — una sola forma de escribir un tamaño en disco (potencias de 1024; las
   velocidades de la línea siguen en decimal, como los Mb/s que tienen al lado) y un solo sitio donde pedir
   la ventana principal.

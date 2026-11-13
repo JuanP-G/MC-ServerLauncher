@@ -66,7 +66,9 @@ internal static class ServerSettingsPages
         new(ServerSettingsPage.Notifications, Icon.Alert, "Sset_Notifications", "Sset_NotificationsHint",
             null,
             [nameof(ServerConfig.UseCustomNotifications), nameof(ServerConfig.Notifications)], []),
-        new(ServerSettingsPage.Advanced, Icon.Wrench, "Sset_Advanced", "Sset_AdvancedHint", "",
+        new(ServerSettingsPage.Storage, Icon.HardDrive, "Sset_Storage", "Sset_StorageHint", "",
+            [], []),
+        new(ServerSettingsPage.Advanced, Icon.Wrench, "Sset_Advanced", "Sset_AdvancedHint", null,
             [nameof(ServerConfig.FolderPath), nameof(ServerConfig.JarFile),
              nameof(ServerConfig.ExtraJvmArgs)], []),
     ];

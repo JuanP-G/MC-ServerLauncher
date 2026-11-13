@@ -1490,4 +1490,20 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Pumpkin_OpenToml" xml:space="preserve"><value>Abrir pumpkin.toml</value></data>
   <data name="Pumpkin_TomlDesc" xml:space="preserve"><value>Pumpkin no usa server.properties ni Java. El puerto, el mensaje del servidor, el máximo de jugadores, la lista blanca y las reglas del juego están en este archivo. Cámbialo con el servidor parado.</value></data>
   <data name="Pumpkin_TomlMissing" xml:space="preserve"><value>Todavía no hay pumpkin.toml, o no se ha podido abrir. Pumpkin lo crea la primera vez que arranca.</value></data>
+  <data name="Disk_OnDiskFmt" xml:space="preserve"><value>{0} en disco</value></data>
+  <data name="Disk_World" xml:space="preserve"><value>Mundo</value></data>
+  <data name="Disk_WorldLong" xml:space="preserve"><value>Mundo (con el Nether y el End)</value></data>
+  <data name="Disk_BackupsFmt" xml:space="preserve"><value>Copias de seguridad · {0}</value></data>
+  <data name="Disk_Logs" xml:space="preserve"><value>Registros</value></data>
+  <data name="Disk_LogsLong" xml:space="preserve"><value>Registros e informes de cierres inesperados</value></data>
+  <data name="Disk_Other" xml:space="preserve"><value>Resto</value></data>
+  <data name="Disk_OtherLong" xml:space="preserve"><value>Servidor, librerías y configuración</value></data>
+  <data name="Disk_TipMoreFmt" xml:space="preserve"><value>Desglose completo en {0} → {1}.</value></data>
+  <data name="Disk_Measure" xml:space="preserve"><value>Volver a medir</value></data>
+  <data name="Disk_OpenFolder" xml:space="preserve"><value>Abrir carpeta</value></data>
+  <data name="Disk_Measuring" xml:space="preserve"><value>Midiendo…</value></data>
+  <data name="Disk_MeasuredFmt" xml:space="preserve"><value>Medido a las {0}</value></data>
+  <data name="Disk_Missing" xml:space="preserve"><value>No se encuentra la carpeta del servidor.</value></data>
+  <data name="Sset_Storage" xml:space="preserve"><value>Almacenamiento</value></data>
+  <data name="Sset_StorageHint" xml:space="preserve"><value>Lo que ocupa la carpeta de este servidor en el ordenador.</value></data>
 </root>

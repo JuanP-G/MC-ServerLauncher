@@ -408,6 +408,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         BackupCoordinator = new BackupCoordinator(this, new WorldBackupService());
         BackupCoordinator.RestoringChanged += () => RunOnUi(OnRestoringChanged);
         InitPerformance();
+        InitDisk();
 
         // Before RefreshInfo, which refreshes the player lists and with them this.
         History = new PlayerHistoryViewModel(this);
@@ -823,6 +824,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
             // However it stopped — a crash, "stop" typed in the console. A stop the app asked for
             // notes the world itself, holding it; this one waits until nothing else is reading it.
             BackupCoordinator.ServerStopped();
+            RemeasureDiskIfShown();   // logs closed, the world saved
         }
         else if (state == ServerState.Starting)
         {
@@ -1654,6 +1656,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
     /// </remarks>
     public void Dispose()
     {
+        _diskCts?.Cancel();
         _wake.Dispose();
         _process.Dispose();
         BackupCoordinator.Dispose();

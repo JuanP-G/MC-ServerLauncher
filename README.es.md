@@ -320,6 +320,9 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   nadie no acumula copias del mismo mundo. Las que haces a mano se cuentan aparte, así que el reloj nunca las
   borra. La pestaña **Copias** enseña cada montón frente a su cupo, el espacio que ocupan y cuándo toca la
   próxima, las ordena por días y marca la que la próxima copia sustituirá. **Copia ahora** y **Restaurar** con un clic.
+- **Cuánto ocupa** — bajo el estado del servidor, lo que ocupa su carpeta en el disco; en
+  **Configurar → Almacenamiento**, cuánto es el mundo, las copias, los mods o plugins y los registros, con un
+  botón para abrir la carpeta. Se mide en segundo plano, también con el servidor encendido.
 - **Ajustes dentro de la ventana** — idioma, bandeja del sistema, **añadir al escritorio**, notificaciones,
   anuncios, colores e historial de jugadores, cada cosa en su página. Se guarda al momento.
 - **Novedades, también dentro de la ventana** — las notas de todas las versiones en una lista, con la recién

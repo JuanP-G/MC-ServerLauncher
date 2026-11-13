@@ -1192,6 +1192,9 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowServerDetail));
         OnPropertyChanged(nameof(ShowEmptyState));
 
+        // What it takes on disk is measured when someone looks, not for every server at launch.
+        if (newValue is not null) _ = newValue.MeasureDiskAsync();
+
         // Picking another server leaves the settings that are open — unless something on them is
         // unsaved, and then the list goes back to the server they belong to. Posted, because the
         // list is still in the middle of changing its selection when this runs.

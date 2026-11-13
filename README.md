@@ -318,6 +318,9 @@ When it opens again, the **What's new** section tells you what changed. It works
   hand are counted separately, so the clock never deletes them. The **Backups** tab shows each pile against
   its limit, the space they take and when the next one is due, lists them by day and marks the one the next backup will replace.
   **Back up now** and one-click **Restore**.
+- **How much room it takes** — under the server's status, what its folder takes on disk; in
+  **Configure → Storage**, how much of it is the world, the backups, the mods or plugins and the logs, with a
+  button to open the folder. Measured in the background, while it runs too.
 - **Settings, part of the window** — language, tray behaviour, **Add to desktop**, notifications, announcements,
   colours and the player history, each on its own page. Saved as you go.
 - **What's new, in the window too** — the notes of every version in one list, the one just installed already
