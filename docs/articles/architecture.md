@@ -1095,10 +1095,14 @@ format and the publishing recipe; this is how the app is put together.
   (the website, then GitHub Pages), with a conditional request and a 64 KiB limit. **Nothing is accepted
   before it is checked**: the signature has to verify over the exact bytes with `UpdateSignature.VerifyNews`
   (the keys of the updates, under another header), the file has to parse, and its `seq` cannot be lower
-  than the highest ever accepted. Only then are the file and the signature replaced in `cache/`, and the
-  ETag is stored last of all. The saved copy is **verified again every time it is read**. It never throws:
-  what it returns is a `NewsFeedStatus`: *Ok*, *NotModified*, *NoFeed* (every host said not found, which is
-  a project with nothing to say) or *Failed*, and a failure is never turned into "no notices".
+  than the highest ever accepted, and its signed `expires` cannot have passed. Only then are the file and
+  the signature replaced in `cache/`, and the ETag is stored last of all. The saved copy is **verified again
+  every time it is read**, and so is its expiry (`IsExpired`, from the clock, so a copy that sat on disk
+  past its date is stale with no network involved). It never throws: what it returns is a
+  `NewsFeedStatus`: *Ok*, *NotModified*, *NoFeed* (every host said not found, which is a project with
+  nothing to say), *Failed*, or *Expired* (a correctly signed file past its date, which also refuses a
+  *304* for an expired copy), and a failure is never turned into "no notices". An expired copy is kept and
+  its notices stay listed, with its own card (`News_FeedExpired*`, not the "could not check" one).
 - **`NewsFeedParser`** is pure. An invalid item is skipped on its own; text goes through
   `UntrustedText.Clean` (one line, no control characters, cut to its limit), links must be `https` on four
   hosts, and an incident or a security notice without `until` is dropped, with the rest capped at 30 days

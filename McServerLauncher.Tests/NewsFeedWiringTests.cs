@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using FluentIcons.Common;
+using McServerLauncher.Localization;
 using McServerLauncher.Models;
 using McServerLauncher.Services;
 using McServerLauncher.ViewModels;
@@ -84,9 +85,18 @@ public class NewsFeedWiringTests : IDisposable
                only + "\"text\":{\"en\":{\"title\":\"Playit is down\",\"body\":\"Tunnels do not connect\"}}}";
     }
 
-    private static byte[] Feed(int seq, params string[] items) => Encoding.UTF8.GetBytes(
-        "{\"schema\":1,\"seq\":" + seq + ",\"issued\":\"" + Iso(DateTimeOffset.UtcNow) + "\",\"items\":[" +
-        string.Join(",", items) + "]}\n");
+    private static byte[] Feed(int seq, params string[] items) =>
+        FeedExpiring(seq, DateTimeOffset.UtcNow + TimeSpan.FromDays(30), items);
+
+    /// <summary>A file that expires at <paramref name="expires"/>; issued a minute ago, or a week before it when that is already past.</summary>
+    private static byte[] FeedExpiring(int seq, DateTimeOffset expires, params string[] items)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var issued = expires > now ? now - TimeSpan.FromMinutes(1) : expires - TimeSpan.FromDays(7);
+        return Encoding.UTF8.GetBytes(
+            "{\"schema\":1,\"seq\":" + seq + ",\"issued\":\"" + Iso(issued) +
+            "\",\"expires\":\"" + Iso(expires) + "\",\"items\":[" + string.Join(",", items) + "]}\n");
+    }
 
     private string Sign(byte[] raw) => Convert.ToBase64String(_key.SignData(
         UpdateSignature.NewsMessage(Convert.ToHexString(SHA256.HashData(raw))),
@@ -235,6 +245,39 @@ public class NewsFeedWiringTests : IDisposable
 
         Assert.False(Read(() => main.News.NoNotices));
         Assert.False(string.IsNullOrWhiteSpace(Read(() => main.News.FeedProblemText)));
+    }
+
+    [Fact]
+    public async Task AFileThatHasExpiredIsSaidAsOutOfDateWithItsOwnWordsAndNeverShownAsNoNotices()
+    {
+        Serve(FeedExpiring(1, DateTimeOffset.UtcNow - TimeSpan.FromDays(1), Notice()), "\"v1\"");
+        var main = Open();
+
+        _ui.Run(main.StartNews);
+        await Until(() => main.News.HasFeedProblem);
+
+        Assert.False(Read(() => main.News.NoNotices));
+        Assert.Equal(Localizer.Get("News_FeedExpiredNoCopy"), Read(() => main.News.FeedProblemText));
+        Assert.NotEqual(Localizer.Get("News_FeedFailedNoCopy"), Read(() => main.News.FeedProblemText));
+    }
+
+    [Fact]
+    public async Task ACopyThatExpiresWhileTheWindowIsOpenStartsSayingSo()
+    {
+        Serve(Feed(1, Notice()), "\"v1\"");
+        var main = Open();
+        _ui.Run(main.StartNews);
+        await Until(() => main.News.Notices.Count == 1);
+        Assert.False(Read(() => main.News.HasFeedProblem));
+
+        // A month later the server still answers "nothing newer": true, and no use.
+        _clockOverride = DateTimeOffset.UtcNow + TimeSpan.FromDays(31);
+        _ui.Run(() => _ = main.CheckNewsAsync());
+        await Until(() => main.News.HasFeedProblem);
+
+        // The expired wording with the time of the last confirmation filled in: its fixed beginning.
+        Assert.StartsWith(Localizer.Get("News_FeedExpiredFmt").Split("{0}")[0], Read(() => main.News.FeedProblemText));
+        Assert.False(Read(() => main.News.NoNotices));
     }
 
     [Fact]

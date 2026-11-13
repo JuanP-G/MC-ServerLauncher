@@ -430,6 +430,8 @@
   <data name="News_MoreInfo" xml:space="preserve"><value>More information</value></data>
   <data name="News_FeedFailedFmt" xml:space="preserve"><value>Could not check for notices. Last copy: {0}.</value></data>
   <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>Could not check for notices, and there is no saved copy yet.</value></data>
+  <data name="News_FeedExpiredFmt" xml:space="preserve"><value>The list of notices has expired and may be out of date. Last checked: {0}.</value></data>
+  <data name="News_FeedExpiredNoCopy" xml:space="preserve"><value>The published list of notices has expired and may be out of date.</value></data>
   <data name="News_BandSee" xml:space="preserve"><value>View notice</value></data>
   <data name="News_ToastSeeNews" xml:space="preserve"><value>Details are in What's new.</value></data>
   <data name="News_ToastResolved" xml:space="preserve"><value>Resolved. Details are in What's new.</value></data>

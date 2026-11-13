@@ -430,6 +430,8 @@
   <data name="News_MoreInfo" xml:space="preserve"><value>Plus d'informations</value></data>
   <data name="News_FeedFailedFmt" xml:space="preserve"><value>Impossible de vérifier les avis. Dernière copie : {0}.</value></data>
   <data name="News_FeedFailedNoCopy" xml:space="preserve"><value>Impossible de vérifier les avis, et aucune copie n'est encore enregistrée.</value></data>
+  <data name="News_FeedExpiredFmt" xml:space="preserve"><value>La liste des avis a expiré et peut être périmée. Dernière vérification : {0}.</value></data>
+  <data name="News_FeedExpiredNoCopy" xml:space="preserve"><value>La liste d'avis publiée a expiré et peut être périmée.</value></data>
   <data name="News_BandSee" xml:space="preserve"><value>Voir l'avis</value></data>
   <data name="News_ToastSeeNews" xml:space="preserve"><value>Les détails sont dans Nouveautés.</value></data>
   <data name="News_ToastResolved" xml:space="preserve"><value>Résolu. Les détails sont dans Nouveautés.</value></data>

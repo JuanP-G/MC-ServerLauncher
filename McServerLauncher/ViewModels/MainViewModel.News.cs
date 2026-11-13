@@ -145,7 +145,7 @@ public partial class MainViewModel
         if (!_appSettings.ShowAnnouncements) return;
 
         News.SetNotices(_newsFeed.Feed?.Items ?? [], NewsContextNow());
-        News.SetFeedState(_newsFeed.LastStatus, _newsFeed.CheckedAt?.UtcDateTime);
+        News.SetFeedState(_newsFeed.LastStatus, _newsFeed.CheckedAt?.UtcDateTime, _newsFeed.IsExpired);
         NotifyNewsOnce();
     }
 

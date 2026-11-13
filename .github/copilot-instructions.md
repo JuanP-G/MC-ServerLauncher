@@ -218,5 +218,6 @@ a new annotated tag on the reviewed commit and a row in that page's log.
 See `docs/articles/contributing.md` → "Release a new version" for the full checklist (bump the version
 in csproj + `.iss`, add the `Changelog` entry + `Whatsnew_x_y_z` keys, run `publish.ps1`, attach the
 `.exe`, `SHA256SUMS.txt` **and** the `.sig2` and `.sig` that `publish.ps1` makes; after the Linux/macOS workflows
-finish, run `tools\signing\sign-release.ps1`). Don't skip the changelog, the checksum file or the
+finish, run `tools\signing\sign-release.ps1`; and renew `web/news.json` with `tools\signing\sign-news.ps1`, raising
+`seq`: the notices file expires after 60 days and the app says the list is out of date). Don't skip the changelog, the checksum file or the
 signature: the updater refuses to install without them.

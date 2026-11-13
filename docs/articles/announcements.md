@@ -24,6 +24,9 @@ or their server. A notice says so, in the app, without anyone having to update.
 - **A mark on the rail** while something is unread, the same one the versions use.
 - **A card when the file could not be checked**: *Could not check for notices. Last copy: 3 h ago.* A failed
   look is never shown as "no notices", because that is exactly when an incident could be going on unseen.
+- **A card when the file has expired**: *The list of notices has expired and may be out of date. Last
+  checked: 3 h ago.* A different message, for a different thing: the look worked, and what it found (or
+  what the app holds) is out of date (see *The file expires*).
 
 Tips never use the strip or notifications.
 
@@ -61,6 +64,7 @@ website and the Pages workflow publish the `web/` folder as it is.
   "schema": 1,
   "seq": 42,
   "issued": "2026-11-07T14:20:00Z",
+  "expires": "2027-01-06T14:20:00Z",
   "items": [
     {
       "id": "playit-2026-11-07",
@@ -84,10 +88,11 @@ website and the Pages workflow publish the `web/` folder as it is.
 | `schema` | Always `1`. A file with another number is refused whole. |
 | `seq` | Whole number, higher with every version of the file. The app keeps the highest it has accepted and **refuses a lower one**; an equal one is accepted. |
 | `issued` | When this version was written. |
+| `expires` | **Mandatory.** When the file stops vouching that it is the latest one (see *The file expires*). It must be later than `issued`; a file without it, or with another kind of value, is refused whole. `sign-news.ps1` writes it. |
 | `id` | Names the notice for ever: what is read, closed and announced is remembered by it. Up to 64 characters from letters, digits, `.`, `_` and `-`. |
 | `kind` | `incident`, `security` or `tip`. |
 | `status` | `active` (the default) or `resolved`. A tip has nothing to resolve: it is listed while it is in the file. |
-| `from` / `until` | The notice is shown from `from` (by default, from `issued`) until `until`. **`until` is mandatory for an incident and a security notice**, and it is capped at 30 days after `from`, so a forgotten notice cannot become permanent and the file needs no expiry of its own. A tip may have none. |
+| `from` / `until` | The notice is shown from `from` (by default, from `issued`) until `until`. **`until` is mandatory for an incident and a security notice**, and it is capped at 30 days after `from`, so a forgotten notice cannot become permanent. A tip may have none. |
 | `resolvedAt` | Mandatory when `status` is `resolved`. The notice is retired seven days after it, or at `until` if that comes first. |
 | `only` | Who it is for (below). Left out, it is for everybody. |
 | `link` | Where *More information* goes: `https`, and only `github.com`, `playit.gg`, `mc-server-launcher.vercel.app` or `juanp-g.github.io`. Anything else is dropped. |
@@ -119,7 +124,9 @@ Everything below happens before the content is looked at, and nothing is written
 2. Its signature must verify, over the exact bytes received, with one of the keys built into the app (the
    same ones as for updates; see [Signed updates](signing.md)).
 3. It must parse, and its `seq` must not be lower than the highest ever accepted.
-4. Only then are the file and its signature replaced, and the ETag is stored last of all: an ETag kept for
+4. Its `expires` must not have passed. A file past it is refused as *expired*, which is not the same as a
+   failed look: see the next section.
+5. Only then are the file and its signature replaced, and the ETag is stored last of all: an ETag kept for
    a body that was then refused would make every later request answer *not modified* and a corrected
    signature would never be picked up.
 
@@ -130,24 +137,56 @@ announced is in `news-state.json`, apart from the settings.
 If any step fails the whole file is refused and the previous copy stays; the user sees the card above. Both
 addresses answering *not found* is not an error: nothing has been published, and there are no notices.
 
+### The file expires
+
+A signature stays valid for ever, so on its own it cannot tell the latest file from an old one that was
+signed correctly in its day. `expires` is signed with the rest, so nobody who serves the file can stretch
+it, and the app judges it **every time the file is read**, not once when it was saved:
+
+- A file that arrives already expired is refused and replaces nothing.
+- A *not modified* answer for a copy that has expired is not a confirmation: the server says nothing newer
+  exists, which is no comfort when what exists is out of date.
+- A copy that was good when saved is reported stale as soon as its date passes, with no network involved,
+  also after a restart.
+
+In every case the user sees a card in What's new saying that **the list of notices has expired and may be
+out of date**, with when it was last confirmed. It is a different message from "could not check for
+notices": the look worked, the file is what is old. The notices of the expired copy are **not hidden**
+(an incident ends by its own `until`, at most 30 days after it started), they are listed with the warning,
+so an expired file never makes a live incident disappear. The strip and the notifications behave as with
+any copy. Renewing is signing the file again with a later date and a higher `seq`: the same one is accepted,
+but then the file from before the renewal could be served again until its own date. The card goes away at
+the next look.
+
+If two addresses disagree (one serves an expired file, the other a current one) the current one wins; if
+one cannot be reached the result is a failed look rather than an expired one, because not knowing outranks
+knowing what is wrong.
+
 ## Publishing a notice
 
 1. Edit `web/news.json` and raise `seq`. Keep **LF** line ends and no BOM (`.gitattributes` marks the file
    and its signature `-text` so git does not convert them).
-2. Run `.\tools\signing\sign-news.ps1`. It asks for the key's password and writes `web/news.json.sig`. It
-   refuses a file with CR or a BOM, over 64 KiB, with an incident or security item without `until`, or a
-   resolved one without `resolvedAt`: better an error here than a notice nobody sees.
+2. Run `.\tools\signing\sign-news.ps1`. It asks for the key's password, writes `expires` (60 days from now;
+   `-ExpiresInDays` takes 1 to 90, because more would be never expiring in practice) and writes
+   `web/news.json.sig`. It does not touch `issued`, which is the default `from` of the notices, or `seq`.
+   It refuses a file with CR or a BOM, over 64 KiB, with an incident or security item without `until`, or a
+   resolved one without `resolvedAt`: better an error here than a notice nobody sees. The date it printed
+   at the end is the one to renew by.
 3. Commit both files in a pull request. Once merged, check that both addresses serve the new file and that
    the signature verifies by hand ([Signed updates](signing.md#verifying-a-release-by-hand)).
 4. To end an incident, do not delete it: set `status` to `resolved` with `resolvedAt`, raise `seq` and sign
    again. The app says it was resolved (strip gone, one notification, green card for a week). A notice that
    is simply removed just disappears, without the good news.
+5. **Renew before it expires**, even with nothing to say: raise `seq`, run the script again and publish the
+   file and its signature (a pull request, as in step 3). A good moment is every release. A file left to expire does
+   nothing worse than show the *out of date* card to everyone, but it does show it to everyone.
 
 ## What this does not cover
 
-- **Freshness.** A signature proves who wrote the file, not that it is the latest. `seq` stops an older
-  file being served after a newer one was seen, but whoever can block the network can keep an app on the
-  last file it saw.
+- **Freshness, in full.** A signature proves who wrote the file, not that it is the latest. `seq` stops an
+  older file being served after a newer one was seen, and `expires` bounds the rest: whoever can block the
+  network can keep an app on the last file it saw, but only until that file expires, after which the app
+  says so instead of passing it for current. Nothing stops it in the days before.
 - **A leaked key.** It signs updates and notices alike, so whoever has it could show false notices until a
   release removes it from the trusted keys. What a notice can do is limited: text, and a link to four hosts.
   It never runs or downloads anything.
