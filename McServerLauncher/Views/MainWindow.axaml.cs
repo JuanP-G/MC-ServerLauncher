@@ -66,6 +66,13 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Switches everything on without showing the window: the launch at sign-in that stays in the
+    /// tray. What needs the window on screen (the warning about a damaged servers file, the news
+    /// after an update) waits for <c>Loaded</c>, when the tray icon brings the window up.
+    /// </summary>
+    public void ActivateHidden() => _viewModel.Activate();
+
+    /// <summary>
     /// Optional minimize-to-tray (see settings): minimizing hides the window, so it leaves the taskbar
     /// and lives on only as the tray icon while the servers keep running. Also guarded by
     /// <see cref="App.TrayAvailable"/>: on a desktop with no tray there would be no way to bring the

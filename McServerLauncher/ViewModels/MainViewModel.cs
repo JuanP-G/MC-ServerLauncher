@@ -351,6 +351,14 @@ public partial class MainViewModel : ObservableObject
         foreach (var server in Servers)
             server.Activate();
 
+        // The ones marked to start whenever the app opens. Activate first, so the wake listener of
+        // such a server is already up and is what gets out of the way for the start.
+        foreach (var server in Servers)
+            server.StartBecauseAppOpened();
+
+        // While it is on, the sign-in entry follows this copy of the app (see Refresh).
+        _ = Task.Run(LoginStartupService.Refresh);
+
         // The history of servers no longer in the list, once it is past the retention period.
         var liveIds = Servers.Select(s => s.Config.Id).ToList();
         var days = PlayerHistoryPreferences.Current.RetentionDays;

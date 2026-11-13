@@ -656,6 +656,15 @@ are no hard-coded machine paths.
   wake listeners, and two JVMs on one world folder is how worlds get corrupted. A lock file answers
   "is anyone else running?" (the OS releases it even on a hard kill, unlike a PID file) and a named
   pipe carries the "come to the front" nudge.
+- **`LoginStartupService`** — opens the app at sign-in: the per-user `Run` key on Windows, an XDG
+  autostart entry on Linux, a LaunchAgent on macOS, each launching this copy with `--login`. Whether it
+  is on is read back from the system every time, never stored, because the user can switch it off from
+  outside (Task Manager marks the entry under `StartupApproved` instead of deleting it). While it is on,
+  each launch points it at the running copy again. A `--login` launch with *start hidden* set gets its
+  window built and switched on (`MainWindow.ActivateHidden`) but not shown: the lifetime only shows a
+  `MainWindow` it has at start, so the window is handed over a moment later and appears from the tray.
+  Servers marked `StartWithApp` start in `MainViewModel.Activate`, after their wake listeners are up.
+  The installer deletes the `Run` value on uninstall.
 - **`ServerNameRule`** / **`BukkitPathRule`** — a server's folder name, checked before it becomes a
   server that will not start: what Windows forbids outright (illegal characters, reserved device
   names, a trailing dot or space) and, separately, the two characters Paper and Purpur refuse to run

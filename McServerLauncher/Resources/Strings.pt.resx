@@ -1460,4 +1460,12 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Disk_Missing" xml:space="preserve"><value>A pasta do servidor não foi encontrada.</value></data>
   <data name="Sset_Storage" xml:space="preserve"><value>Armazenamento</value></data>
   <data name="Sset_StorageHint" xml:space="preserve"><value>O espaço que a pasta deste servidor ocupa no computador.</value></data>
+  <data name="Boot_TitleWindows" xml:space="preserve"><value>Abrir com o Windows</value></data>
+  <data name="Boot_Title" xml:space="preserve"><value>Abrir ao iniciar sessão</value></data>
+  <data name="Boot_Desc" xml:space="preserve"><value>A app abre-se sozinha ao iniciar sessão no computador. Assim, depois de o reiniciar, os servidores com despertar automático voltam a escutar e os marcados com “Ligar ao abrir a app” ligam-se.</value></data>
+  <data name="Boot_Hidden" xml:space="preserve"><value>Começar escondida na área de notificação</value></data>
+  <data name="Boot_ErrorFmt" xml:space="preserve"><value>Não foi possível alterar: {0}</value></data>
+  <data name="Boot_ServerTitle" xml:space="preserve"><value>Ligar ao abrir a app</value></data>
+  <data name="Boot_ServerHint" xml:space="preserve"><value>Liga-se sozinho sempre que o MC Server Launcher abre. Com “Abrir com o Windows” ativado nas definições, volta a ficar ligado depois de reiniciar o computador.</value></data>
+  <data name="Boot_StartingLine" xml:space="preserve"><value>A ligar: este servidor está marcado para ligar ao abrir a app.</value></data>
 </root>

@@ -1506,4 +1506,12 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Disk_Missing" xml:space="preserve"><value>No se encuentra la carpeta del servidor.</value></data>
   <data name="Sset_Storage" xml:space="preserve"><value>Almacenamiento</value></data>
   <data name="Sset_StorageHint" xml:space="preserve"><value>Lo que ocupa la carpeta de este servidor en el ordenador.</value></data>
+  <data name="Boot_TitleWindows" xml:space="preserve"><value>Abrir con Windows</value></data>
+  <data name="Boot_Title" xml:space="preserve"><value>Abrir al iniciar sesión</value></data>
+  <data name="Boot_Desc" xml:space="preserve"><value>La app se abre sola al iniciar sesión en el ordenador. Así, después de reiniciarlo, los servidores con despertar automático vuelven a escuchar y los marcados con «Encender al abrir la app» se encienden.</value></data>
+  <data name="Boot_Hidden" xml:space="preserve"><value>Empezar escondida en la bandeja del sistema</value></data>
+  <data name="Boot_ErrorFmt" xml:space="preserve"><value>No se pudo cambiar: {0}</value></data>
+  <data name="Boot_ServerTitle" xml:space="preserve"><value>Encender al abrir la app</value></data>
+  <data name="Boot_ServerHint" xml:space="preserve"><value>Se enciende solo cada vez que se abre MC Server Launcher. Con «Abrir con Windows» activado en los ajustes, sigue encendido después de reiniciar el ordenador.</value></data>
+  <data name="Boot_StartingLine" xml:space="preserve"><value>Encendiendo: este servidor está marcado para encenderse al abrir la app.</value></data>
 </root>

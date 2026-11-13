@@ -193,6 +193,62 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    // ---------------------------------------------------------------- open at sign-in
+
+    private bool? _openAtLogin;
+
+    /// <summary>Whether this system can open the app at sign-in at all. The card is hidden otherwise.</summary>
+    public bool OpenAtLoginSupported => LoginStartupService.IsSupported;
+
+    /// <summary>"Open with Windows" on Windows; "Open at sign-in" elsewhere, where Windows means nothing.</summary>
+    public string OpenAtLoginTitle => Localizer.Get(OperatingSystem.IsWindows() ? "Boot_TitleWindows" : "Boot_Title");
+
+    /// <summary>
+    /// Whether the system opens the app at sign-in. Read from the system the first time it is asked
+    /// rather than stored: it can be switched off from outside the app (Task Manager, for one).
+    /// </summary>
+    public bool OpenAtLogin
+    {
+        get => _openAtLogin ??= LoginStartupService.IsEnabled();
+        set
+        {
+            if (OpenAtLogin == value) return;
+            try
+            {
+                if (value) LoginStartupService.Enable();
+                else LoginStartupService.Disable();
+                OpenAtLoginError = "";
+            }
+            catch (Exception ex)
+            {
+                OpenAtLoginError = Localizer.Format("Boot_ErrorFmt", ErrorMessages.Describe(ex));
+            }
+            // What the system now says, not what was asked: a refusal leaves the switch where it was.
+            _openAtLogin = LoginStartupService.IsEnabled();
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>Why the last change of <see cref="OpenAtLogin"/> did not happen; empty when it did.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasOpenAtLoginError))]
+    private string _openAtLoginError = "";
+
+    public bool HasOpenAtLoginError => OpenAtLoginError.Length > 0;
+
+    /// <summary>Whether the launch at sign-in stays in the tray instead of showing the window.</summary>
+    public bool OpenAtLoginHidden
+    {
+        get => _settings.OpenAtLoginHidden;
+        set
+        {
+            if (_settings.OpenAtLoginHidden == value) return;
+            _settings.OpenAtLoginHidden = value;
+            OnPropertyChanged();
+            Persist();
+        }
+    }
+
     /// <summary>Whether the update check offers betas as well as stable versions.</summary>
     /// <remarks>
     /// Asks again straight away, so the answer on screen follows the switch: turning it off takes

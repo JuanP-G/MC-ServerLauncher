@@ -63,6 +63,12 @@ Name: "{group}\{cm:UninstallProgram,MC Server Launcher}"; Filename: "{uninstalle
 ; ver ShouldCreateDesktopIcon.
 Name: "{autodesktop}\MC Server Launcher"; Filename: "{app}\{#MyAppExeName}"; Check: ShouldCreateDesktopIcon
 
+; "Abrir con Windows" lo escribe la app en la clave Run del usuario; al desinstalar se borra, para que
+; Windows no intente abrir en cada inicio de sesion un programa que ya no esta.
+[Registry]
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: none; ValueName: "MC Server Launcher"; Flags: uninsdeletevalue dontcreatekey
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"; ValueType: none; ValueName: "MC Server Launcher"; Flags: uninsdeletevalue dontcreatekey
+
 [Run]
 ; Refresca la caché de iconos de Windows para que el acceso directo muestre el icono nuevo tras
 ; una actualización (como usuario normal: la caché de iconos es por usuario).

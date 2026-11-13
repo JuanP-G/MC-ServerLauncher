@@ -1109,6 +1109,18 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
             entry.Icon, entry.Level, NotificationPreferences.EffectiveFor(Config));
     }
 
+    /// <summary>Starts the server if it is marked to start with the app. Called once, as the app opens.</summary>
+    /// <remarks>
+    /// As an automatic start: nobody may be in front of the screen (the app can open hidden at
+    /// sign-in), so no step of the start may stop to ask.
+    /// </remarks>
+    internal void StartBecauseAppOpened()
+    {
+        if (!Config.StartWithApp || !CanStart) return;
+        OnConsoleLine(Localizer.Get("Boot_StartingLine"));
+        _ = StartInternalAsync(isAutoRestart: true);
+    }
+
     [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task Start()
     {

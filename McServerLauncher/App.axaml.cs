@@ -56,8 +56,29 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
+            var window = new MainWindow();
             SetupTrayIcon(desktop);
+            if (StartsHidden(desktop.Args))
+            {
+                // The lifetime shows its MainWindow when it starts; one handed over afterwards is
+                // not shown. So the window exists and runs everything (servers, wake listeners,
+                // Playit) and appears only when the tray icon is clicked.
+                if (TrayAvailable)
+                {
+                    window.ActivateHidden();
+                    Dispatcher.UIThread.Post(() => desktop.MainWindow = window);
+                }
+                else
+                {
+                    // No tray to come back from: minimized on the taskbar instead.
+                    window.WindowState = WindowState.Minimized;
+                    desktop.MainWindow = window;
+                }
+            }
+            else
+            {
+                desktop.MainWindow = window;
+            }
 
             // Launching the app again brings this window back rather than opening a second copy.
             // The event arrives on a pipe-listener thread, so it has to hop to the UI thread before
@@ -73,6 +94,10 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
     }
+
+    /// <summary>Whether this launch is the system's at sign-in, with the setting to stay out of sight.</summary>
+    private static bool StartsHidden(string[]? args) =>
+        LoginStartupService.IsLoginLaunch(args) && new AppSettingsService().Load().OpenAtLoginHidden;
 
     /// <summary>
     /// True once the tray icon exists. MainWindow only hides itself on minimize when this holds:

@@ -1460,4 +1460,12 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Disk_Missing" xml:space="preserve"><value>The server's folder cannot be found.</value></data>
   <data name="Sset_Storage" xml:space="preserve"><value>Storage</value></data>
   <data name="Sset_StorageHint" xml:space="preserve"><value>How much room this server's folder takes on the computer.</value></data>
+  <data name="Boot_TitleWindows" xml:space="preserve"><value>Open with Windows</value></data>
+  <data name="Boot_Title" xml:space="preserve"><value>Open at sign-in</value></data>
+  <data name="Boot_Desc" xml:space="preserve"><value>The app opens by itself when you sign in to the computer. After a restart, servers that wake on demand listen again, and those set to “Start when the app opens” start.</value></data>
+  <data name="Boot_Hidden" xml:space="preserve"><value>Start hidden in the system tray</value></data>
+  <data name="Boot_ErrorFmt" xml:space="preserve"><value>It could not be changed: {0}</value></data>
+  <data name="Boot_ServerTitle" xml:space="preserve"><value>Start when the app opens</value></data>
+  <data name="Boot_ServerHint" xml:space="preserve"><value>It starts by itself every time MC Server Launcher opens. With “Open with Windows” on in Settings, it is back up after the computer restarts.</value></data>
+  <data name="Boot_StartingLine" xml:space="preserve"><value>Starting: this server is set to start when the app opens.</value></data>
 </root>

@@ -1460,4 +1460,12 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Disk_Missing" xml:space="preserve"><value>Le dossier du serveur est introuvable.</value></data>
   <data name="Sset_Storage" xml:space="preserve"><value>Stockage</value></data>
   <data name="Sset_StorageHint" xml:space="preserve"><value>La place que prend le dossier de ce serveur sur l'ordinateur.</value></data>
+  <data name="Boot_TitleWindows" xml:space="preserve"><value>Ouvrir avec Windows</value></data>
+  <data name="Boot_Title" xml:space="preserve"><value>Ouvrir à l'ouverture de session</value></data>
+  <data name="Boot_Desc" xml:space="preserve"><value>L'application s'ouvre toute seule à l'ouverture de session. Ainsi, après un redémarrage, les serveurs qui se réveillent à la demande écoutent à nouveau, et ceux réglés sur « Démarrer à l'ouverture de l'application » démarrent.</value></data>
+  <data name="Boot_Hidden" xml:space="preserve"><value>Démarrer cachée dans la zone de notification</value></data>
+  <data name="Boot_ErrorFmt" xml:space="preserve"><value>Impossible de le modifier : {0}</value></data>
+  <data name="Boot_ServerTitle" xml:space="preserve"><value>Démarrer à l'ouverture de l'application</value></data>
+  <data name="Boot_ServerHint" xml:space="preserve"><value>Il démarre tout seul chaque fois que MC Server Launcher s'ouvre. Avec « Ouvrir avec Windows » activé dans les réglages, il revient après un redémarrage de l'ordinateur.</value></data>
+  <data name="Boot_StartingLine" xml:space="preserve"><value>Démarrage : ce serveur est réglé pour démarrer à l'ouverture de l'application.</value></data>
 </root>

@@ -193,6 +193,8 @@ public static class ServerConfigEffects
         new(nameof(ServerConfig.WakeOnDemand), None, None, ConfigEffect.RestartWakeListener),
         Unshown(nameof(ServerConfig.WakeOnlyForWhitelist),
             "Read on every attempt to join the sleeping server, so the listener needs no restart."),
+        Unshown(nameof(ServerConfig.StartWithApp),
+            "Read once, as the app opens; nothing on screen shows it outside its own switch."),
 
         // The Bedrock listener only exists with crossplay on, and sits on Geyser's port: both
         // switching it on and moving the port have to open or move a socket, for the same reason as
