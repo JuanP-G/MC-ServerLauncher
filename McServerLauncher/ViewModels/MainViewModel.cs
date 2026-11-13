@@ -791,6 +791,8 @@ public partial class MainViewModel : ObservableObject
         var vm = new ServerViewModel(config);
         vm.ConfigChanged += Save;
         vm.BedrockPortsInUse = () => BedrockPortsOf(vm);
+        vm.BedrockPortOwners = () =>
+            CrossplayService.BedrockPortOwners(Servers.Select(s => s.Config), vm.Config);
         Servers.Add(vm);
         // A server registered while the app is already running has nobody else to switch it on. The
         // ones Load builds at startup wait for Activate, which reaches all of them at once.
@@ -834,7 +836,8 @@ public partial class MainViewModel : ObservableObject
             .Select(p => p!.Value)
             .ToList();
 
-        var panel = new NewServerView(usedPorts, Servers.Select(s => s.Config.FolderPath));
+        var panel = new NewServerView(usedPorts, Servers.Select(s => s.Config.FolderPath),
+            CrossplayService.PortsHeldBy(Servers.Select(s => s.Config), except: null));
         panel.Cancelled += () => CloseNewServer(select: _beforeNewServer);
         panel.Completed += result =>
         {
@@ -977,7 +980,7 @@ public partial class MainViewModel : ObservableObject
 
         var panel = new ServerSettingsView(server, page, new PortOwners(
             Java: port => OwnerOf(s => properties.GetServerPort(s.Config.PropertiesPath), port),
-            Bedrock: port => OwnerOf(s => CrossplayService.EffectiveBedrockPort(s.Config), port)));
+            Bedrock: port => OwnerOf(s => CrossplayService.BoundBedrockPort(s.Config), port)));
         panel.Closed += CloseSettings;
         panel.Saved += saved => _ = AfterSettingsSavedAsync(server, saved, panel);
 

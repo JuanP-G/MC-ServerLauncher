@@ -202,6 +202,8 @@
   <data name="Msg_AutoRestartingFmt" xml:space="preserve"><value>[Launcher] A reiniciar automaticamente (tentativa {0} de {1})...</value></data>
   <data name="Msg_AutoRestartGaveUpFmt" xml:space="preserve"><value>[Launcher] O servidor caiu várias vezes seguidas; não será reiniciado automaticamente mais vezes (limite: {0} tentativas). Verifica a consola ou a pasta crash-reports.</value></data>
   <data name="Msg_AutoRestartPortBusyFmt" xml:space="preserve"><value>[Launcher] Reinício automático cancelado: a porta {0} está ocupada.</value></data>
+  <data name="Msg_NativeBedrockPortHeldFmt" xml:space="preserve"><value>[Launcher] Não inicia: a porta Bedrock {0} deste servidor já é a de «{1}», e o Pumpkin fecharia ao arrancar. Altera address em [networking.bedrock.nethernet] no pumpkin.toml para outra porta livre, por exemplo {2}.</value></data>
+  <data name="Msg_NativeBedrockPortBusyFmt" xml:space="preserve"><value>[Launcher] Não inicia: a porta Bedrock {0} já está a ser usada por outro programa, e o Pumpkin fecharia ao arrancar. Altera address em [networking.bedrock.nethernet] no pumpkin.toml para outra porta livre, por exemplo {1}.</value></data>
   <data name="Tray_Show" xml:space="preserve"><value>Mostrar</value></data>
   <data name="Tray_Exit" xml:space="preserve"><value>Sair</value></data>
   <data name="Console_FilterPlaceholder" xml:space="preserve"><value>Filtrar a consola...</value></data>

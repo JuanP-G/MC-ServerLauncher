@@ -150,6 +150,12 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
     Tipo y versión, Rendimiento ni Crossplay, ni la memoria, el Java o la tienda de mods.
   - El `pumpkin.toml` que escribe la app **desactiva la telemetría anónima de Pumpkin**; actívala en el
     archivo si la quieres.
+  - **Su puerto de Bedrock se elige por ti.** Pumpkin abre un puerto (UDP y TCP) para los jugadores de Bedrock,
+    y por defecto es el 19132, el mismo desde el que empiezan los servidores con Geyser. Un servidor Pumpkin
+    nuevo se escribe con un puerto que ningún otro servidor de la app tiene, los servidores nuevos con Geyser
+    se apartan de él, y un arranque que chocaría se rechaza con una línea en la consola que nombra al otro
+    servidor y propone un puerto libre, en vez de que Pumpkin se cierre y se reinicie una y otra vez. Si
+    cambias `address` en `[networking.bedrock.nethernet]` de `pumpkin.toml`, la app lo sigue.
   - Todavía no se puede añadir una carpeta que ya tenga un servidor Pumpkin, y un jugador de Bedrock no puede
     despertar un Pumpkin dormido (uno de Java sí).
   - Si cambias `[logging]` en `pumpkin.toml`, la app deja de saber quién entra, lo dice en la consola y

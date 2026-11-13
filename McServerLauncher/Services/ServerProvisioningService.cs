@@ -17,10 +17,15 @@ namespace McServerLauncher.Services;
 /// <param name="Hydraulic">Whether Bedrock mod content is enabled.</param>
 /// <param name="Playit">Whether the server goes out through a Playit tunnel.</param>
 /// <param name="Crossplay">Whether Bedrock players may join (only honoured when the type allows it).</param>
+/// <param name="OtherBedrockPorts">
+/// The Bedrock ports the app's other servers hold. Only a native server reads it, to choose the one
+/// it binds; null is "none that I know of".
+/// </param>
 public sealed record NewServerPlan(
     string Name, string Folder, ServerType Type, MinecraftVersion Version,
     MemoryMode Memory, int MinRamGb, int MaxRamGb, int Port, string? Seed,
-    bool MultiVersion, bool Hydraulic, bool Playit, bool Crossplay);
+    bool MultiVersion, bool Hydraulic, bool Playit, bool Crossplay,
+    IReadOnlyCollection<int>? OtherBedrockPorts = null);
 
 /// <summary>
 /// Makes a server on disk, or takes over a folder that already holds one: everything the new-server
@@ -163,8 +168,14 @@ public sealed class ServerProvisioningService
             plan.Type, plan.Folder, string.Empty, details: null, javaPath: string.Empty,
             plan.MinRamGb, plan.MaxRamGb, progress);
 
+        // Pumpkin's Bedrock side binds 19132 unless told otherwise, and so does every Geyser server:
+        // the one that starts second finds the port taken. Chosen here, with the others' ports in
+        // view, so a server never starts out on a number that is already spoken for.
+        var bedrockPort = new CrossplayService()
+            .PickNativeBedrockPort(plan.OtherBedrockPorts ?? Array.Empty<int>());
+
         if (!PumpkinConfig.WriteInitial(plan.Folder, plan.Port, $"{plan.Name} - MC Server Launcher",
-                plan.Seed))
+                plan.Seed, bedrockPort))
             log(Localizer.Get("Msg_PumpkinTomlKept"));
 
         log(Localizer.Get("Msg_ServerCreated"));

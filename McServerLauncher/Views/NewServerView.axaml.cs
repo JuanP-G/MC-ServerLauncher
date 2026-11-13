@@ -53,6 +53,9 @@ public partial class NewServerView : UserControl
     /// <summary>Ports already used by other registered servers (to avoid conflicts).</summary>
     private readonly HashSet<int> _usedPorts;
 
+    /// <summary>The Bedrock ports other servers hold; a native server picks its own outside them.</summary>
+    private readonly List<int> _usedBedrockPorts;
+
     /// <summary>Folders the app already manages, so the same one cannot be added twice.</summary>
     private readonly List<string> _registeredFolders;
 
@@ -75,10 +78,12 @@ public partial class NewServerView : UserControl
     // Parameterless constructor for the Avalonia XAML loader / designer only.
     public NewServerView() : this(null) { }
 
-    public NewServerView(IEnumerable<int>? usedPorts, IEnumerable<string>? registeredFolders = null)
+    public NewServerView(IEnumerable<int>? usedPorts, IEnumerable<string>? registeredFolders = null,
+        IEnumerable<int>? usedBedrockPorts = null)
     {
         InitializeComponent();
         _usedPorts = new HashSet<int>(usedPorts ?? Enumerable.Empty<int>());
+        _usedBedrockPorts = (usedBedrockPorts ?? Enumerable.Empty<int>()).ToList();
         _registeredFolders = (registeredFolders ?? Enumerable.Empty<string>()).ToList();
         _log = new LogBatcher(ProgressLog);
         // A group of its own: radio buttons sharing a name are one group across every panel using it.
@@ -598,7 +603,8 @@ public partial class NewServerView : UserControl
             MultiVersion: MultiVersionCheck.IsChecked == true,
             Hydraulic: HydraulicCheck.IsChecked == true,
             Playit: PlayitCheck.IsChecked == true,
-            Crossplay: CrossplayCheck.IsChecked == true);
+            Crossplay: CrossplayCheck.IsChecked == true,
+            OtherBedrockPorts: _usedBedrockPorts);
     }
 
     /// <summary>What the form says about the folder being taken over.</summary>
