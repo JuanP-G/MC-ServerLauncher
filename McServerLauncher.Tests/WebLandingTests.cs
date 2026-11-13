@@ -258,4 +258,36 @@ public class WebLandingTests
             Assert.True(sources.Any(s => s.Contains(name)), name + " is not referenced anywhere in web/");
         }
     }
+
+    /// <summary>
+    /// The uncompressed PNGs the art tools work from are not part of the site: the pages only ever name
+    /// the <c>.webp</c> next to them. They live under <c>_tools/</c>, which is not published, so a
+    /// crawler cannot index thirty-eight files nobody links.
+    /// </summary>
+    [Fact]
+    public void TheWorkingPngsAreNotUnderThePublishedAssets()
+    {
+        Assert.Empty(Directory.EnumerateFiles(Path.Combine(WebRoot(), "assets", "mc"), "*.png"));
+        Assert.NotEmpty(Directory.EnumerateFiles(Path.Combine(WebRoot(), "_tools", "mc-src"), "*.png"));
+
+        // Nothing the site serves asks for one, so moving them cost nothing.
+        var served = Directory.EnumerateFiles(WebRoot(), "*", SearchOption.AllDirectories)
+            .Where(p => !Path.GetRelativePath(WebRoot(), p).Replace(Path.DirectorySeparatorChar, '/').StartsWith('_')
+                        && new[] { ".html", ".css", ".js", ".webmanifest" }.Contains(Path.GetExtension(p)));
+        foreach (var file in served)
+            Assert.DoesNotMatch(@"mc/[A-Za-z0-9_]+\.png", File.ReadAllText(file));
+    }
+
+    /// <summary>
+    /// Vercel serves the whole of <c>web/</c>, generator and tools included (the Pages copy removes
+    /// them). <c>robots.txt</c> asks crawlers to stay out, which does not stop an address from being
+    /// indexed when something links to it; the header does.
+    /// </summary>
+    [Fact]
+    public void TheToolFoldersAreMarkedNoIndexOnVercel()
+    {
+        var rule = Assert.Single(VercelRules("/(_i18n|_tools)/(.*)"));
+
+        Assert.Equal("noindex, nofollow", HeadersOf(rule)["X-Robots-Tag"]);
+    }
 }

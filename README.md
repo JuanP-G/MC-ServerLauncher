@@ -416,8 +416,8 @@ chat and the IPs in login lines included — whatever the history settings say. 
 services for, and what they see besides your IP: Mojang, Paper, Purpur, Fabric, Forge, NeoForge and Pumpkin (server
 downloads, and Mojang a player's name when you add them to the whitelist), Modrinth and GeyserMC (mods and
 plugins), Adoptium (Java), GitHub (updates, and the store's catalogue of topics and summaries, a public file
-downloaded at most once a day), Playit (tunnels, through the app's proxy when linking an
-account), **mc-heads.net** (each player's avatar, by name, in the player history) and the project's own
+downloaded at most once a day), Playit (tunnels; when linking an account the one-time setup code and the key Playit returns pass through the
+project's own proxy, a Cloudflare Worker that adds the partner key and stores neither, see `playit-proxy/`), **mc-heads.net** (each player's avatar, by name, in the player history) and the project's own
 website (`mc-server-launcher.vercel.app`, with `juanp-g.github.io` as a fallback), which serves the signed
 file of [announcements](https://juanp-g.github.io/MC-ServerLauncher/docs/articles/announcements.html):
 a request without your version, language or any identifier, once after start and every 5 minutes (a few hundred bytes when nothing changed), and none at all

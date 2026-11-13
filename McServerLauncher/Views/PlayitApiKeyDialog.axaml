@@ -33,6 +33,8 @@
                        Margin="0,8,0,0" IsVisible="False" />
 
             <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.65" Margin="0,14,0,0"
+                       Text="{loc:Loc Pk_ProxyNote}" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.65" Margin="0,8,0,0"
                        Text="{loc:Loc Pk_Disclaimer}" />
         </StackPanel>
 
