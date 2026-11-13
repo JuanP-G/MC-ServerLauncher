@@ -24,7 +24,7 @@ files, black console windows or editing config files by hand**.
 ## What you can do
 
 <table>
-<tr><td width="33%"><img src="docs/media/icons/server.svg" width="28" height="28" alt=""><br><b>A server in 2 minutes</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge or Forge. The app even brings Java.</td><td width="33%"><img src="docs/media/icons/puzzle.svg" width="28" height="28" alt=""><br><b>Mods and plugins from Modrinth</b><br>Already filtered by your version, each with what it needs.</td><td width="33%"><img src="docs/media/icons/globe.svg" width="28" height="28" alt=""><br><b>Play with friends online</b><br>A Playit.gg tunnel: one address, no port forwarding.</td></tr>
+<tr><td width="33%"><img src="docs/media/icons/server.svg" width="28" height="28" alt=""><br><b>A server in 2 minutes</b><br>Vanilla, Paper, Purpur, Fabric, NeoForge, Forge or Pumpkin. The app even brings Java.</td><td width="33%"><img src="docs/media/icons/puzzle.svg" width="28" height="28" alt=""><br><b>Mods and plugins from Modrinth</b><br>Already filtered by your version, each with what it needs.</td><td width="33%"><img src="docs/media/icons/globe.svg" width="28" height="28" alt=""><br><b>Play with friends online</b><br>A Playit.gg tunnel: one address, no port forwarding.</td></tr>
 <tr><td width="33%"><img src="docs/media/icons/smartphone.svg" width="28" height="28" alt=""><br><b>From Bedrock too</b><br>Phone, console and Windows 10/11, with one checkbox.</td><td width="33%"><img src="docs/media/icons/users.svg" width="28" height="28" alt=""><br><b>Players with a profile</b><br>Ops, bans, whitelist and every player's history.</td><td width="33%"><img src="docs/media/icons/hard-drive.svg" width="28" height="28" alt=""><br><b>World backups</b><br>On start, on stop and every hour while people play.</td></tr>
 <tr><td width="33%"><img src="docs/media/icons/moon.svg" width="28" height="28" alt=""><br><b>Sleeps and wakes</b><br>Stops with nobody on and starts when someone joins.</td><td width="33%"><img src="docs/media/icons/terminal.svg" width="28" height="28" alt=""><br><b>A console you can read</b><br>Coloured by kind of line, with counted filters and search.</td><td width="33%"><img src="docs/media/icons/refresh.svg" width="28" height="28" alt=""><br><b>Updates itself</b><br>Every download checked against its SHA-256.</td></tr>
 </table>
@@ -129,7 +129,7 @@ When it opens again, the **What's new** section tells you what changed. It works
   or adding a server happens next to the list, and can be left half-done and picked up again; a server's
   settings open in the same place, never in a dialog.
 - **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Paper / Purpur /
-  Fabric / NeoForge / Forge).
+  Fabric / NeoForge / Forge / Pumpkin).
 - **Create a server** automatically: pick the **type**, **version** (official Mojang list) and **port**,
   and accept the Minecraft EULA; the app downloads the right server, prepares `run.bat` / `server.properties`, and
   installs the correct **Java** (Temurin) if needed. Fabric, Forge and NeoForge use **mods**; Paper and Purpur
@@ -137,6 +137,22 @@ When it opens again, the **What's new** section tells you what changed. It works
   Minecraft and loader versions, the port and the memory, and changes nothing in the folder.
 - **Change a server's type** — to Paper/Purpur/Fabric/Forge/NeoForge or back to Vanilla, **keeping the world**,
   with colour-coded warnings about what each change can affect.
+- **Pumpkin (experimental)** — [Pumpkin](https://github.com/Pumpkin-MC/Pumpkin) is a Minecraft server written
+  in Rust: one executable, no Java, and Java and Bedrock players on the same server without Geyser. The app
+  downloads its latest stable release (verified against the release's own checksums), starts it, stops it,
+  follows who is playing, wakes it and stops it when empty, and backs up its world. It is marked
+  **Experimental** because its own project says so: parts of the game are still missing, and neither Paper
+  plugins nor mods run on it. What is different from the other types:
+  - There is **no Minecraft version to pick**: each Pumpkin release serves one (0.2.2 is Java 26.3).
+  - It has **no `server.properties`**. The port, the MOTD, the player limit and the game rules are in
+    `pumpkin.toml`, which the app reads and opens for you but does not rewrite. The Game, World, Type and
+    version, Performance and Crossplay pages are not shown, and neither are memory, Java or the mod store.
+  - The `pumpkin.toml` the app writes turns **Pumpkin's anonymous telemetry off**; turn it on in the file if
+    you want it.
+  - A folder that already holds a Pumpkin server cannot be added yet, and a Bedrock player cannot wake a
+    sleeping Pumpkin server (a Java one can).
+  - If you change `[logging]` in `pumpkin.toml`, the app can no longer tell who joins, says so in the
+    console, and **does not stop that server for being idle**.
 - **Automatic memory** — the app decides how much memory each server may use and gives Java the flags
   that make it hand back what it does not need: an empty server measured at about **1 GB instead of
   3.5-4.7 GB**, with the same tick time. All the servers together use at most half the PC, or all but
@@ -239,6 +255,7 @@ When it opens again, the **What's new** section tells you what changed. It works
   | **Fabric** | **Works** | With the mod-content checkbox: Hydraulic converts what the mods add. |
   | **NeoForge** | **Sometimes** | It connects, but any mod the client is required to have shuts Bedrock out, and Hydraulic no longer publishes for NeoForge. |
   | **Vanilla**, **Forge** | **No** | Geyser publishes no build for them. |
+  | **Pumpkin** | **By itself** | It speaks Bedrock natively, so no Geyser is installed. Its Bedrock support is still in development. |
 
 - **Bedrock without touching Geyser or Windows** — the app writes Geyser's `transport` as `both`, which the
   current Bedrock (NetherNet) needs, and puts it back if a reinstall resets it. On Windows, the server's
@@ -396,7 +413,7 @@ never reads it.
 the player history (joins, leaves, deaths, advancements and, unless you turn it off in Settings → Players,
 chat; 90 days by default, never IP addresses) and the console logs above, which keep **every** line —
 chat and the IPs in login lines included — whatever the history settings say. What the app asks other
-services for, and what they see besides your IP: Mojang, Paper, Purpur, Fabric, Forge and NeoForge (server
+services for, and what they see besides your IP: Mojang, Paper, Purpur, Fabric, Forge, NeoForge and Pumpkin (server
 downloads, and Mojang a player's name when you add them to the whitelist), Modrinth and GeyserMC (mods and
 plugins), Adoptium (Java), GitHub (updates, and the store's catalogue of topics and summaries, a public file
 downloaded at most once a day), Playit (tunnels, through the app's proxy when linking an

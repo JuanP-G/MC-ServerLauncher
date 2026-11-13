@@ -68,6 +68,9 @@ public sealed class ServerProvisioningService
         var progress = new Progress<string>(log);
         Directory.CreateDirectory(plan.Folder);
 
+        if (ServerTypeCatalog.IsNative(plan.Type))
+            return await CreateNativeAsync(plan, progress, log);
+
         log(Localizer.Format("Msg_Resolving", plan.Version.Id));
         var details = await _versions.GetVersionDetailsAsync(plan.Version);
 
@@ -148,7 +151,27 @@ public sealed class ServerProvisioningService
         }
     }
 
-    /// <summary>The files every new server starts with.</summary>
+    /// <summary>
+    /// Creates a server that is its own executable. None of what a Java server needs applies: no
+    /// Java to find, no EULA file, no run script built around <c>java -jar</c>, no
+    /// <c>server.properties</c>. Its Minecraft version is whatever its release serves.
+    /// </summary>
+    private async Task<ServerConfig> CreateNativeAsync(NewServerPlan plan, IProgress<string> progress,
+        Action<string> log)
+    {
+        var installed = await _installer.InstallAsync(
+            plan.Type, plan.Folder, string.Empty, details: null, javaPath: string.Empty,
+            plan.MinRamGb, plan.MaxRamGb, progress);
+
+        if (!PumpkinConfig.WriteInitial(plan.Folder, plan.Port, $"{plan.Name} - MC Server Launcher",
+                plan.Seed))
+            log(Localizer.Get("Msg_PumpkinTomlKept"));
+
+        log(Localizer.Get("Msg_ServerCreated"));
+        return ToConfig(plan, installed, javaPath: string.Empty);
+    }
+
+    /// <summary>The files every new Java server starts with.</summary>
     private void WriteInitialFiles(NewServerPlan plan, string jarName, string javaPath, Action<string> log)
     {
         log(Localizer.Get("Msg_WritingEula"));
@@ -173,10 +196,12 @@ public sealed class ServerProvisioningService
         Type = plan.Type,
         MultiVersionEnabled = plan.MultiVersion,
         BedrockModContentEnabled = plan.Hydraulic,
-        GameVersion = plan.Version.Id,
+        GameVersion = installed.GameVersion ?? plan.Version.Id,
         ModLoaderVersion = installed.LoaderVersion,
         ForgeArgs = installed.ForgeArgs,
-        JavaPath = javaPath,
+        // "java" for a native server too: nothing runs it, and an empty path would only be one more
+        // shape for whatever reads the field to get wrong.
+        JavaPath = string.IsNullOrEmpty(javaPath) ? "java" : javaPath,
         MemoryMode = plan.Memory,
         MinRamGb = plan.MinRamGb,
         MaxRamGb = plan.MaxRamGb,

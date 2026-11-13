@@ -107,7 +107,7 @@ public sealed partial class PerformanceSolutionsViewModel : ObservableObject, ID
     public bool HasContent => Content.Count > 0;
 
     /// <summary>True when the server has nothing to install mods into (Vanilla).</summary>
-    public bool IsVanilla => _host.Config.Type == ServerType.Vanilla;
+    public bool IsVanilla => !ServerTypeCatalog.HasContent(_host.Config.Type);
 
     /// <summary>True when there is nothing at all to suggest.</summary>
     public bool NothingToSuggest => !HasSettings && !HasContent && !IsVanilla;
@@ -159,7 +159,7 @@ public sealed partial class PerformanceSolutionsViewModel : ObservableObject, ID
             }
         }
 
-        if (config.Type != ServerType.Vanilla)
+        if (ServerTypeCatalog.HasContent(config.Type))
             _ = LoadContentAsync(status, advice.Any(a => a.Kind == AdviceKind.InstallSpark));
     }
 

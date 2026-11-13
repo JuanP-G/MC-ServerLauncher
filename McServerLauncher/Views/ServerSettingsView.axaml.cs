@@ -95,7 +95,7 @@ public partial class ServerSettingsView : UserControl
         Server.PropertyChanged += OnServerChanged;
         SizeChanged += (_, e) => ApplyWidth(e.NewSize.Width);
 
-        Show(page);
+        Show(ServerSettingsPages.Offered(page, server.Config.Type));
         Refresh();
     }
 
@@ -220,8 +220,22 @@ public partial class ServerSettingsView : UserControl
 
     private void BuildIndex()
     {
-        foreach (var info in ServerSettingsPages.All)
+        var type = Server.Config.Type;
+        // A heading whose first page is not offered still has to be shown, over the next page that is.
+        string? pendingGroup = null;
+
+        foreach (var row in ServerSettingsPages.All)
         {
+            if (!ServerSettingsPages.IsOffered(row.Page, type))
+            {
+                // The nearest heading wins: two hidden pages in a row leave the second one's.
+                pendingGroup = row.Group ?? pendingGroup;
+                continue;
+            }
+
+            var info = row.Group is null && pendingGroup is not null ? row with { Group = pendingGroup } : row;
+            pendingGroup = null;
+
             if (info.Group is not null)
                 PageItems.Children.Add(new TextBlock
                 {

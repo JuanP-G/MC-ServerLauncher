@@ -39,9 +39,7 @@ public partial class CrossplaySection : UserControl, IServerSettingsSection
         CrossplayHint.IsVisible = supported;
         CrossplayWhyNot.IsVisible = !supported;
         if (!supported)
-            CrossplayWhyNot.Text = Localizer.Get(type == ServerType.Vanilla
-                ? "Crossplay_UnsupportedVanilla"
-                : "Crossplay_Unsupported");
+            CrossplayWhyNot.Text = Localizer.Get(CrossplayService.WhyNotKey(type));
         var caveat = CrossplayService.CaveatKey(type);
         CrossplayModdedNote.IsVisible = supported && caveat is not null;
         if (caveat is not null) CrossplayModdedNote.Text = Localizer.Get(caveat);

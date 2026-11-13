@@ -69,6 +69,7 @@ public partial class AppearanceSection : UserControl, IServerSettingsSection
             string.IsNullOrWhiteSpace(raw) ? ServerPropertiesService.DefaultMotd : raw);
         draft.Track("motd", _doc.ToProperties());
         ExtraLinesNote.IsVisible = _doc.HadExtraLines;
+        MotdCard.IsVisible = !ServerTypeCatalog.IsNative(draft.Live.Type);
         PreviewAsleep.IsCheckedChanged += (_, _) => Refresh();
 
         for (var line = 0; line < _boxes.Length; line++)

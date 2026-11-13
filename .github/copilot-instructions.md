@@ -60,6 +60,12 @@ See "Publishing" in `docs/articles/auditing.md`.
   crossplay rules all read from the catalogue — do not add another `switch` on `ServerType`.
 - **Never renumber the `ServerType` enum.** `servers.json` stores it as an integer, so moving a member
   reinterprets every server already saved on every machine. New types go on the end.
+- **A type that is not Java** (Pumpkin) sets `Native` on its catalogue row; whatever is about Java asks
+  `ServerTypeCatalog.IsNative`. Its console is normalised once (`PumpkinConsole`, in
+  `ServerProcessManager`) into the shape the detectors read, from lines captured from the real server,
+  and a run whose format is not recognised has `PlayerTrackingReliable` false, so it is never stopped
+  for being idle. It has no `server.properties`: `ServerPropertiesService.Read` answers from
+  `pumpkin.toml`, and nothing may write a `server.properties` into its folder.
 
 ## Code style
 **`.editorconfig` at the repo root is the source of truth** — formatting and naming are applied by the

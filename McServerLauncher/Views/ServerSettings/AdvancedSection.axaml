@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:loc="using:McServerLauncher.Localization"
              xmlns:models="using:McServerLauncher.Models"
+             xmlns:local="using:McServerLauncher.Views.ServerSettings"
              x:Class="McServerLauncher.Views.ServerSettings.AdvancedSection"
              x:DataType="models:ServerConfig">
 
@@ -21,14 +22,17 @@
             </StackPanel>
         </Border>
 
-        <Border Classes="card">
+        <!-- Only on a native server, in place of the jar and the JVM arguments below. -->
+        <local:NativeConfigCard x:Name="NativeCard" IsVisible="False" />
+
+        <Border x:Name="JarCard" Classes="card">
             <StackPanel>
                 <TextBlock Text="{loc:Loc Ae_Jar}" Classes="title" />
                 <TextBox Text="{Binding JarFile, Mode=TwoWay}" Margin="0,8,0,0" />
             </StackPanel>
         </Border>
 
-        <Border Classes="card">
+        <Border x:Name="ExtraArgsCard" Classes="card">
             <StackPanel>
                 <TextBlock Text="{loc:Loc Ae_ExtraArgs}" Classes="title" />
                 <TextBox Text="{Binding ExtraJvmArgs, Mode=TwoWay}" PlaceholderText="-XX:+UseG1GC" Margin="0,8,0,0" />

@@ -100,7 +100,7 @@ public partial class ServerModsViewModel
         }
 
         var folder = Path.Combine(_config.FolderPath, ContentFolder);
-        if (_config.Type == ServerType.Vanilla || !Directory.Exists(folder))
+        if (!ServerTypeCatalog.HasContent(_config.Type) || !Directory.Exists(folder))
         {
             ShowCleanup(Array.Empty<CleanupSuggestionViewModel>());
             return;

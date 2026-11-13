@@ -28,7 +28,10 @@ public enum ServerType
     NeoForge = 4,
     // Purpur is a Paper fork: same plugins, more configuration. Appended, like every type after
     // it must be — these numbers are the file format, not a display order.
-    Purpur = 5
+    Purpur = 5,
+    // Pumpkin is not a Java server at all: a native executable written in Rust, with its own
+    // pumpkin.toml in place of server.properties. See ServerTypeCatalog.IsNative.
+    Pumpkin = 6
 }
 
 /// <summary>Who sizes a server's memory: the app, or the two numbers its owner typed.</summary>

@@ -445,6 +445,12 @@ line icons in `docs/media/icons/` (24 px, `#2da44e`), the way the feature grid i
 3. Add the type's description key to the five `.resx` files (the line under its name in the picker).
 4. **Never renumber the `ServerType` enum.** `servers.json` stores it as an integer, so moving a
    member reinterprets every server already saved on every machine. New types go on the end.
+5. **A type that is not Java** (Pumpkin is the first) sets `Native` on its row, and what is about Java
+   asks `ServerTypeCatalog.IsNative`. Its console goes through a normaliser of its own
+   (`PumpkinConsole`) into the shape the detectors already read, written from lines captured from the
+   real server; where the format cannot be recognised, `ServerProcessManager.PlayerTrackingReliable`
+   must be false, so that the idle shutdown never stops a server it cannot see into. A type whose own
+   project calls it unfinished sets `Experimental`.
 
 > Resist adding a `switch` on `ServerType` anywhere else. Six of them is what the catalogue replaced,
 > and a type present in five of the six looked right and behaved as something else.

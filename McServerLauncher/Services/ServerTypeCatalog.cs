@@ -74,13 +74,23 @@ public static class ServerTypeCatalog
     /// <param name="BadgeColor">Hex, so this table stays free of any UI framework.</param>
     /// <param name="Crossplay">How well Bedrock players fare, not merely whether Geyser installs.</param>
     /// <param name="DescriptionKey">resx key for the one line shown under the name in the picker.</param>
+    /// <param name="Native">
+    /// The server is its own executable rather than a jar run by Java: no JVM, no memory flags, no
+    /// <c>server.properties</c>. Everything that is about Java asks this before it does anything.
+    /// </param>
+    /// <param name="Experimental">
+    /// The project itself says it is not finished. Shown as a badge in the picker and as a warning
+    /// before creating one, so nobody moves a world they care about onto it by accident.
+    /// </param>
     public record Entry(
         ServerType Type,
         string DisplayName,
         ServerFamily Family,
         string BadgeColor,
         CrossplayLevel Crossplay,
-        string DescriptionKey)
+        string DescriptionKey,
+        bool Native = false,
+        bool Experimental = false)
     {
         /// <summary>Whether Geyser publishes a build that runs on it — the checkbox's question.</summary>
         public bool SupportsCrossplay => Crossplay != CrossplayLevel.None;
@@ -112,6 +122,11 @@ public static class ServerTypeCatalog
         new(ServerType.NeoForge, "NeoForge", ServerFamily.Mods, "#D08A3E", CrossplayLevel.Partial,
             "TypeDesc_NeoForge"),
         new(ServerType.Forge, "Forge", ServerFamily.Mods, "#5A8AB5", CrossplayLevel.None, "TypeDesc_Forge"),
+        // Last, and apart from the rest: the only one that is not Java. Family None because its
+        // plugins are its own (WebAssembly), which no store the app knows publishes; crossplay None
+        // because that level is about Geyser, and Pumpkin speaks Bedrock by itself.
+        new(ServerType.Pumpkin, "Pumpkin", ServerFamily.None, "#E8862E", CrossplayLevel.None,
+            "TypeDesc_Pumpkin", Native: true, Experimental: true),
     };
 
     /// <summary>How well Bedrock players fare on this type.</summary>
@@ -121,6 +136,19 @@ public static class ServerTypeCatalog
     public static Entry For(ServerType type) =>
         All.FirstOrDefault(e => e.Type == type)
         ?? new Entry(type, type.ToString(), ServerFamily.None, "#6E7681", CrossplayLevel.None, string.Empty);
+
+    /// <summary>Whether this type is its own executable instead of a jar that Java runs.</summary>
+    public static bool IsNative(ServerType type) => For(type).Native;
+
+    /// <summary>Whether the project behind this type says it is still unfinished.</summary>
+    public static bool IsExperimental(ServerType type) => For(type).Experimental;
+
+    /// <summary>Whether this type takes mods or plugins the app can browse, install and update.</summary>
+    /// <remarks>
+    /// The question half the app used to ask as "is it not Vanilla?", which stopped being the same
+    /// question the day a second type with nothing to install arrived.
+    /// </remarks>
+    public static bool HasContent(ServerType type) => For(type).Family != ServerFamily.None;
 
     /// <summary>Whether this type keeps its content in <c>plugins/</c> rather than <c>mods/</c>.</summary>
     public static bool IsPluginBased(ServerType type) => For(type).Family == ServerFamily.Plugins;

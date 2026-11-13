@@ -11,9 +11,9 @@ namespace McServerLauncher.Services;
 /// </summary>
 public class PlayersService
 {
-    public List<string> ReadOps(string folder) => ReadNames(Path.Combine(folder, "ops.json"));
-    public List<string> ReadBanned(string folder) => ReadNames(Path.Combine(folder, "banned-players.json"));
-    public List<string> ReadKnown(string folder) => ReadNames(Path.Combine(folder, "usercache.json"));
+    public List<string> ReadOps(string folder) => ReadNames(PlayerFiles.PathOf(folder, "ops.json"));
+    public List<string> ReadBanned(string folder) => ReadNames(PlayerFiles.PathOf(folder, "banned-players.json"));
+    public List<string> ReadKnown(string folder) => ReadNames(PlayerFiles.PathOf(folder, "usercache.json"));
 
     private static List<string> ReadNames(string path)
     {
@@ -39,7 +39,7 @@ public class PlayersService
     /// <summary>The UUID usercache.json has for <paramref name="name"/>, or null.</summary>
     public string? UuidOf(string folder, string name)
     {
-        var path = Path.Combine(folder, "usercache.json");
+        var path = PlayerFiles.PathOf(folder, "usercache.json");
         if (!File.Exists(path)) return null;
         try
         {
@@ -65,7 +65,7 @@ public class PlayersService
     /// </summary>
     public bool Unban(string folder, string name)
     {
-        var path = Path.Combine(folder, "banned-players.json");
+        var path = PlayerFiles.PathOf(folder, "banned-players.json");
         if (!File.Exists(path)) return false;
         try
         {
