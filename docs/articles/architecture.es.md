@@ -554,7 +554,14 @@ mundo. No hay rutas fijas del equipo en el código.
   creérselo. `AppHttp.ReadCappedAsync` lee las respuestas de API y de texto hasta un tope (8 MiB para
   las API, 64 KiB para los archivos pequeños que llevan un checksum o una firma) y `AtomicDownload`
   corta un paquete en su límite (1 GiB por defecto; 500 MiB el instalador, 400 MiB un JRE, 400 MiB un
-  jar de servidor, 300 MiB un instalador de loader) y borra el `.part`. Los enlaces de la actualización
+  jar de servidor, 300 MiB un instalador de loader) y borra el `.part`. Toda lectura, de API o de
+  descarga, tiene además un **plazo de silencio** (`AppHttp.ReadIdleTimeout`, 30 s sin un byte, que se
+  reinicia con cada lectura que devuelve datos, así que una conexión lenta nunca se corta):
+  `HttpClient.Timeout` deja de contar cuando llegan las cabeceras, así que antes una conexión que se
+  quedaba muda a medias dejaba el aviso de actualización en «Descargando» para siempre y retenía el
+  cerrojo de las novedades. Las llamadas a una API no usan `GetStringAsync`, `ReadAsStringAsync` ni
+  `ReadFromJsonAsync`, que guardan en memoria todo lo que llegue (una prueba lo exige): se usa
+  `AppHttp.GetStringCappedAsync`, `ReadCappedStringAsync` o `ReadJsonCappedAsync`. Los enlaces de la actualización
   y del JRE deben ser `https` en el propio host del editor, así que una respuesta hostil de la API no
   puede mandar a la app a otro servidor.
 - **`JavaCommandLine`** — Java se lanza con una **lista** de argumentos, nunca con una cadena, de modo

@@ -106,8 +106,8 @@ public class PlayitPartnerService
         string json;
         try
         {
-            using var resp = await _http.SendAsync(req, ct);
-            json = await resp.Content.ReadAsStringAsync(ct);
+            using var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+            json = await AppHttp.ReadCappedStringAsync(resp.Content, AppHttp.MaxApiBytes, ct);
             if (!resp.IsSuccessStatusCode)
             {
                 var err = ExtractError(json);

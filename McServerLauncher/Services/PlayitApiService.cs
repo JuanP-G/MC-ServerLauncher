@@ -176,8 +176,8 @@ public class PlayitApiService
         req.Headers.TryAddWithoutValidation("Authorization", authValue);
         req.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
-        using var resp = await Http.SendAsync(req, ct);
-        var json = await resp.Content.ReadAsStringAsync(ct);
+        using var resp = await Http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+        var json = await AppHttp.ReadCappedStringAsync(resp.Content, AppHttp.MaxApiBytes, ct);
 
         if (ErrorFrom(json) is { } error) throw error;
 

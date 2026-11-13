@@ -22,7 +22,7 @@ public class MinecraftVersionService
     public async Task<(string LatestRelease, List<MinecraftVersion> Versions)> GetVersionsAsync(
         CancellationToken ct = default)
     {
-        var json = await Http.GetStringAsync(ManifestUrl, ct);
+        var json = await AppHttp.GetStringCappedAsync(Http, ManifestUrl, AppHttp.MaxApiBytes, ct);
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
 
@@ -54,7 +54,7 @@ public class MinecraftVersionService
     public async Task<VersionDetails> GetVersionDetailsAsync(MinecraftVersion version,
         CancellationToken ct = default)
     {
-        var json = await Http.GetStringAsync(version.Url, ct);
+        var json = await AppHttp.GetStringCappedAsync(Http, version.Url, AppHttp.MaxApiBytes, ct);
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
 

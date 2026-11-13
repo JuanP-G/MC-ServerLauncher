@@ -243,11 +243,11 @@ public class ModrinthService
             using var req = new HttpRequestMessage(HttpMethod.Post, $"{ApiBaseUrl}/version_files");
             req.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
 
-            using var response = await Http.SendAsync(req, ct);
+            using var response = await Http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
             response.EnsureSuccessStatusCode();
 
-            var map = await response.Content.ReadFromJsonAsync<Dictionary<string,
-                VersionResult>>(cancellationToken: ct);
+            var map = await AppHttp.ReadJsonCappedAsync<Dictionary<string,
+                VersionResult>>(response.Content, AppHttp.MaxApiBytes, ct);
             if (map != null)
                 foreach (var kv in map)
                     result[kv.Key] = kv.Value;
@@ -277,9 +277,9 @@ public class ModrinthService
     {
         try
         {
-            using var response = await Http.GetAsync(url, ct);
+            using var response = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<T>(cancellationToken: ct);
+            return await AppHttp.ReadJsonCappedAsync<T>(response.Content, AppHttp.MaxApiBytes, ct);
         }
         catch
         {
@@ -320,11 +320,11 @@ public class ModrinthService
             using var req = new HttpRequestMessage(HttpMethod.Post, $"{ApiBaseUrl}/version_files/update");
             req.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
 
-            using var response = await Http.SendAsync(req, ct);
+            using var response = await Http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
             response.EnsureSuccessStatusCode();
 
-            var map = await response.Content.ReadFromJsonAsync<Dictionary<string,
-                VersionResult>>(cancellationToken: ct);
+            var map = await AppHttp.ReadJsonCappedAsync<Dictionary<string,
+                VersionResult>>(response.Content, AppHttp.MaxApiBytes, ct);
             if (map != null)
                 foreach (var kv in map)
                     result[kv.Key] = kv.Value;

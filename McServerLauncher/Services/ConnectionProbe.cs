@@ -268,8 +268,8 @@ public static class ConnectionProbe
             request.Headers.Accept.ParseAdd("application/dns-json");
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(TimeSpan.FromSeconds(5));
-            using var response = await Http.SendAsync(request, cts.Token);
-            var json = await response.Content.ReadAsStringAsync(cts.Token);
+            using var response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+            var json = await AppHttp.ReadCappedStringAsync(response.Content, AppHttp.MaxApiBytes, cts.Token);
             if (ParseSrv(json) is { } srv) return srv;
         }
         catch (Exception) when (!ct.IsCancellationRequested)

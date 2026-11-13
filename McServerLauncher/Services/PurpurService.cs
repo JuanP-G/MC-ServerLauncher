@@ -31,10 +31,10 @@ public class PurpurService
     /// <summary>Latest build for a Minecraft version, or null when Purpur has none for it.</summary>
     public async Task<PurpurBuild?> GetLatestBuildAsync(string mcVersion, CancellationToken ct = default)
     {
-        using var resp = await Http.GetAsync($"{ApiBase}/{Uri.EscapeDataString(mcVersion)}/latest", ct);
+        using var resp = await Http.GetAsync($"{ApiBase}/{Uri.EscapeDataString(mcVersion)}/latest", HttpCompletionOption.ResponseHeadersRead, ct);
         if (!resp.IsSuccessStatusCode) return null;   // Purpur 404s versions it never built
 
-        using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync(ct));
+        using var doc = JsonDocument.Parse(await AppHttp.ReadCappedStringAsync(resp.Content, AppHttp.MaxApiBytes, ct));
         var root = doc.RootElement;
 
         // A build that did not compile is listed like any other; installing it gives a server that

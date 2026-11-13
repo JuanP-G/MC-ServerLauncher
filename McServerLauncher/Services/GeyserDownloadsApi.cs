@@ -53,12 +53,12 @@ public static class GeyserDownloadsApi
     public static async Task<Artifact?> LatestAsync(string project, string platform,
         CancellationToken ct = default)
     {
-        var versionsJson = await Http.GetStringAsync($"{Base}/{project}", ct);
+        var versionsJson = await AppHttp.GetStringCappedAsync(Http, $"{Base}/{project}", AppHttp.MaxApiBytes, ct);
         using var versions = JsonDocument.Parse(versionsJson);
         var version = versions.RootElement.GetProperty("versions").EnumerateArray().Last().GetString();
         if (version is null) return null;
 
-        var buildsJson = await Http.GetStringAsync($"{Base}/{project}/versions/{version}", ct);
+        var buildsJson = await AppHttp.GetStringCappedAsync(Http, $"{Base}/{project}/versions/{version}", AppHttp.MaxApiBytes, ct);
         using var buildsDoc = JsonDocument.Parse(buildsJson);
         var builds = buildsDoc.RootElement.GetProperty("builds").EnumerateArray()
             .Select(b => b.GetInt32())
@@ -69,8 +69,7 @@ public static class GeyserDownloadsApi
         {
             ct.ThrowIfCancellationRequested();
 
-            var buildJson = await Http.GetStringAsync($"{Base}/{project}/versions/{version}/builds/{build}",
-                ct);
+            var buildJson = await AppHttp.GetStringCappedAsync(Http, $"{Base}/{project}/versions/{version}/builds/{build}", AppHttp.MaxApiBytes, ct);
             using var doc = JsonDocument.Parse(buildJson);
 
             if (!doc.RootElement.GetProperty("downloads")
