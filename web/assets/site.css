@@ -341,6 +341,20 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
   .build > span{opacity:1; transform:none}
   .chunk{clip-path:none}
 }
+/* Los titulares llegan como texto normal y site.js los parte en palabras (class "split") cuando
+   el script, que es diferido, se ejecuta. Entre medias se veía el titular entero, desaparecía y
+   volvía a montarse: un parpadeo en el elemento más grande de la portada. Con JavaScript activo
+   se esconde el titular sin partir hasta entonces; sin él se queda a la vista (arriba). */
+@media (scripting: enabled){
+  .build:not(.split){opacity:0}
+}
+/* Red de seguridad: si site.js no llega a ejecutarse (no se descarga, falla antes de terminar),
+   `html.reveal-ready` no se pone nunca y a los 3 s lo escondido se enseña tal cual en vez de
+   dejar la página en blanco. Con el script sano la marca se pone enseguida y esto no se aplica. */
+html:not(.reveal-ready) .reveal,
+html:not(.reveal-ready) .build:not(.split),
+html:not(.reveal-ready) .chunk{animation:shownow .01s 3s forwards}
+@keyframes shownow{to{opacity:1; transform:none; clip-path:none}}
 .reveal.in{animation:place .58s cubic-bezier(.2,1.5,.35,1) forwards}
 @keyframes place{
   0%{opacity:0; transform:translateY(34px) scale(.97)}
@@ -359,7 +373,7 @@ footer nav{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
 @keyframes chunkin{to{clip-path:inset(0 0 0 0)}}
 
 @media (prefers-reduced-motion:reduce){
-  .reveal,.build > span,.chunk{opacity:1 !important; transform:none !important;
+  .reveal,.build,.build > span,.chunk{opacity:1 !important; transform:none !important;
     clip-path:none !important; animation:none !important}
   html{scroll-behavior:auto}
   .star,.water{animation:none}
