@@ -45,4 +45,11 @@ public static class TrustedHosts
     /// is fetched.
     /// </summary>
     public static readonly string[] Images = ["modrinth.com", "mc-heads.net"];
+
+    /// <summary>
+    /// Where a GitHub release's file is served from. The asset link is on <c>github.com</c> (checked
+    /// when the release is read) and GitHub always answers it with a redirect to its own download
+    /// host, so the host the answer comes from has to be allowed as well.
+    /// </summary>
+    public static readonly string[] GitHubReleaseAssets = ["github.com", "githubusercontent.com"];
 }

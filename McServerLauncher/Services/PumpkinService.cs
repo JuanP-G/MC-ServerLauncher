@@ -86,7 +86,7 @@ public partial class PumpkinService
         CancellationToken ct = default)
     {
         await VerifiedJarDownload.ToFileAsync(Http, release.Url, destPath, release.Sha256,
-            HashAlgorithmName.SHA256, log, ct);
+            HashAlgorithmName.SHA256, log, TrustedHosts.GitHubReleaseAssets, requireChecksum: true, ct);
 
         // A downloaded file is not executable on Linux or macOS until somebody says so.
         FileModes.TryMakeExecutable(destPath);
