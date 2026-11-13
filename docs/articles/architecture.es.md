@@ -1036,7 +1036,11 @@ entre servidores tras una caché de 25 segundos para que N servidores no hagan N
 corta de consultas posterior a crear un túnel pasa `fresh: true` para saltársela, porque playit tarda
 unos segundos en publicar la dirección y si no la primera respuesta vacía se les serviría a los
 reintentos; crear un túnel lanza esa misma ráfaga en el lado de Java, que antes esperaba al
-temporizador de 30 segundos. La caja de la dirección es de solo lectura — enseña lo que Playit ha
+temporizador de 30 segundos. `/agents/rundata` responde por un solo agente, así que la lista se arma con todas
+las claves que tiene este equipo (el agente de la app y el que instaló el usuario; `FetchFromEveryKeyAsync`):
+un túnel en cualquiera de los dos es el del servidor, crear uno mira primero los dos para no hacer un segundo
+en el mismo puerto, y un agente al que no se llega convierte toda la respuesta en «no se pudo preguntar» en
+vez de «no hay túnel». La caja de la dirección es de solo lectura — enseña lo que Playit ha
 asignado, no una preferencia — y la línea de debajo es `TunnelAddressState` (`Waiting` / `NoTunnel` /
 `Ready` / `Failed`), la hermana de `BedrockAddressState`: tres situaciones distintas se dibujaban
 como una sola caja vacía. Cuando la cuenta responde y el túnel no está, la dirección se vacía en vez
