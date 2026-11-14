@@ -192,7 +192,7 @@ public partial class ServerTypePicker : UserControl
             var full = entry.Crossplay == CrossplayLevel.Full;
             badges.Children.Add(Badge(
                 Localizer.Get(full ? "Badge_Bedrock" : "Badge_BedrockPartial"),
-                new ImmutableSolidColorBrush(Color.Parse(full ? "#3E8AC0" : "#B07A2B"))));
+                new ImmutableSolidColorBrush(Color.Parse(full ? "#3E7FB0" : "#B07A2B"))));
         }
 
         // Amber, the same one "partial" uses: both say "read the small print before you rely on this".
