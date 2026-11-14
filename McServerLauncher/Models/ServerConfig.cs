@@ -240,6 +240,15 @@ public partial class ServerConfig : ObservableObject
     [ObservableProperty]
     private bool _wakeOnlyForWhitelist = true;
 
+    /// <summary>Starts the server every time the app opens, by hand or at sign-in.</summary>
+    /// <remarks>
+    /// Off by default: a server that comes up on its own uses memory and opens a port, and nobody
+    /// should find one running without having asked for it. With the app set to open at sign-in
+    /// this is what keeps a server up across a restart of the computer.
+    /// </remarks>
+    [ObservableProperty]
+    private bool _startWithApp;
+
     // --- Crossplay (Java + Bedrock) ---
 
     /// <summary>

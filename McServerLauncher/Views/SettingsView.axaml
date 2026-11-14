@@ -114,6 +114,30 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Opening at sign-in: off by default. The child switch only means something
+                         while the main one is on, so it is dimmed until then. -->
+                    <Border Classes="card" Margin="0" IsVisible="{Binding OpenAtLoginSupported}">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Margin="0,0,16,0">
+                                    <TextBlock Text="{Binding OpenAtLoginTitle}" Classes="title" />
+                                    <TextBlock Text="{loc:Loc Boot_Desc}" Classes="desc" />
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                              IsChecked="{Binding OpenAtLogin, Mode=TwoWay}" />
+                            </Grid>
+                            <Border BorderBrush="{StaticResource SurfaceEdge}" BorderThickness="2,0,0,0"
+                                    Padding="16,0,0,0" Margin="2,0,0,0" IsEnabled="{Binding OpenAtLogin}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{loc:Loc Boot_Hidden}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding OpenAtLoginHidden, Mode=TwoWay}" />
+                                </Grid>
+                            </Border>
+                            <TextBlock Text="{Binding OpenAtLoginError}" Foreground="{StaticResource SemanticDanger}"
+                                       FontSize="12" TextWrapping="Wrap" IsVisible="{Binding HasOpenAtLoginError}" />
+                        </StackPanel>
+                    </Border>
+
                     <Border Classes="card" Margin="0">
                         <StackPanel Spacing="6">
                             <StackPanel>

@@ -73,8 +73,9 @@ internal static partial class XamlBindingChecker
             if (Parse(attr.Value) is { } b) Resolve(b, context, stack, element, misses, forContext: false);
         }
 
-        // <Binding Path="..." /> inside a MultiBinding.
-        if (name == "Binding" && AttributeOf(element, "Path") is { } p)
+        // <Binding Path="..." /> inside a MultiBinding. One on a named element reads that element,
+        // not the data context, and is skipped like its markup form.
+        if (name == "Binding" && AttributeOf(element, "Path") is { } p && AttributeOf(element, "ElementName") is null)
             Resolve(new Spec(p, AncestorOf(element), false), context, stack, element, misses, forContext: false);
 
         foreach (var child in element.Elements()) Walk(child, context, stack, misses);

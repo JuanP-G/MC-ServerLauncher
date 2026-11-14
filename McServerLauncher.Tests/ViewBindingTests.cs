@@ -138,6 +138,19 @@ public class ViewBindingTests(AvaloniaFixture ui) : IDisposable
         NoMisses(misses);
     }
 
+    [Theory]
+    [InlineData(ServerSettingsPage.Storage)]
+    [InlineData(ServerSettingsPage.Power)]
+    public void TheStorageAndPowerPagesBindEverythingTheyRead(ServerSettingsPage page)
+    {
+        var misses = Misses(() =>
+        {
+            var s = Server();
+            return (new ServerSettingsView(s, page), s);
+        });
+        NoMisses(misses);
+    }
+
     [Fact]
     public void TheTunnelsAndSettingsSectionsBindEverythingTheyRead()
     {

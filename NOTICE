@@ -22,5 +22,19 @@ None of the above is redistributed as part of this project: the application
 fetches them from their official sources and verifies their checksums before
 running them.
 
+The type picker shows each server project's own logo, unedited (the SVG ones rasterised to
+PNG at a uniform scale), only to identify that project. They belong to their projects and are
+not covered by this project's licence:
+
+  * Paper         PaperMC, https://assets.papermc.io/brand/ ; used as its brand guide allows,
+                  "in downloads, server selectors, and similar places"
+                  (https://docs.papermc.io/misc/assets)
+  * Purpur        PurpurMC, github.com/PurpurMC/PurpurWebsite (MIT)
+  * Forge         MinecraftForge, the anvil of the logo in github.com/MinecraftForge/Documentation (MIT)
+  * Fabric        FabricMC, github.com/FabricMC/fabricmc.net (CC BY-NC-SA 4.0)
+  * NeoForge      NeoForged, the icon of neoforged.net (github.com/neoforged/websites)
+  * Pumpkin       Pumpkin-MC, the icon of pumpkinmc.org
+  * Vanilla       Minecraft's grass block, a Mojang Studios texture
+
 Bundled libraries and fonts used by the application keep their own licences,
 listed in the project's NuGet dependencies.

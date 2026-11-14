@@ -12,6 +12,16 @@
         <TextBlock Text="{loc:Loc Idle_Intro}" Classes="desc" Margin="2,0,0,10" />
 
         <Border Classes="card">
+            <DockPanel Classes="setting">
+                <ToggleSwitch Classes="ctl" IsChecked="{Binding StartWithApp, Mode=TwoWay}" />
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Boot_ServerTitle}" Classes="title" TextWrapping="Wrap" />
+                    <TextBlock Text="{loc:Loc Boot_ServerHint}" Classes="desc" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="card">
             <StackPanel>
                 <DockPanel Classes="setting">
                     <ToggleSwitch x:Name="WakeToggle" Classes="ctl" IsChecked="{Binding WakeOnDemand, Mode=TwoWay}" />

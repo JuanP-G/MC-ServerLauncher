@@ -37,7 +37,7 @@ public class ServerConfigFormatTests : IDisposable
         "JavaPath", "MemoryMode", "MinRamGb", "MaxRamGb", "ExtraJvmArgs", "PlayitEnabled", "TunnelAddress",
         "BackupsEnabled", "BackupRetention", "AutoBackupEnabled", "BackupIntervalMinutes",
         "ManualBackupRetention", "IdleShutdownMinutes", "WakeOnDemand", "WakeOnlyForWhitelist",
-            "CrossplayEnabled",
+        "StartWithApp", "CrossplayEnabled",
         "BedrockModContentEnabled", "MultiVersionEnabled", "BedrockPort", "FirewallNoticeDismissed",
         "UseCustomNotifications",
         "Notifications", "LastKnownSeed"
@@ -75,6 +75,7 @@ public class ServerConfigFormatTests : IDisposable
         IdleShutdownMinutes = 20,
         WakeOnDemand = true,
         WakeOnlyForWhitelist = false,   // its default is true
+        StartWithApp = true,
         CrossplayEnabled = true,
         BedrockModContentEnabled = true,
         MultiVersionEnabled = true,
@@ -162,6 +163,7 @@ public class ServerConfigFormatTests : IDisposable
         Assert.Equal(original.IdleShutdownMinutes, loaded.IdleShutdownMinutes);
         Assert.Equal(original.WakeOnDemand, loaded.WakeOnDemand);
         Assert.Equal(original.WakeOnlyForWhitelist, loaded.WakeOnlyForWhitelist);
+        Assert.Equal(original.StartWithApp, loaded.StartWithApp);
         Assert.Equal(original.CrossplayEnabled, loaded.CrossplayEnabled);
         Assert.Equal(original.BedrockModContentEnabled, loaded.BedrockModContentEnabled);
         Assert.Equal(original.MultiVersionEnabled, loaded.MultiVersionEnabled);

@@ -1,0 +1,7 @@
+[13:26:41] [Server thread/INFO]: /time set (<time>|<timemarker>)
+[13:26:41] [Server thread/INFO]: /time add <time>
+[13:26:41] [Server thread/INFO]: /time pause
+[13:26:41] [Server thread/INFO]: /time resume
+[13:26:41] [Server thread/INFO]: /time rate <rate>
+[13:26:41] [Server thread/INFO]: /time query (time|<timeline>|gametime)
+[13:26:41] [Server thread/INFO]: /time of <clock> (set|add|pause|resume|rate|query)

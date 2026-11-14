@@ -333,6 +333,26 @@ mundo. No hay rutas fijas del equipo en el código.
 - **`PlayerNames`** — cómo es un nombre de Minecraft Java (`IsValid`, y `Pattern` para sacar uno de una
   línea). Una sola regla para los cinco sitios que guardaban cada uno su expresión regular; también es lo
   que impide que un nombre lleve un salto de línea a un comando de consola o acabe en una ruta.
+- **`ServerDiskUsageService`** — lo que ocupa la carpeta de un servidor, y qué parte es el mundo
+  (`level-name` y sus hermanas de Bukkit), las copias, los mods o plugins y los registros. Un recorrido por
+  carpeta de primer nivel, fuera del hilo de la interfaz, por longitud de archivo (se puede leer aunque el
+  servidor los tenga abiertos), sin seguir enlaces ni uniones. `ServerViewModel.Disk` mide al seleccionar el
+  servidor, al pararse, al acabar una copia o una restauración y cuando se pide, nunca en el tic de las
+  estadísticas, y nunca un servidor que nadie ha mirado.
+- **`CommandCatalog`**, **`CommandUsage`**, **`CommandCompleter`**, **`CommandHelpProbe`** — el
+  autocompletado de la consola. El catálogo empieza con `Resources/vanilla-commands.txt` (lo que un servidor
+  26.2 imprime con `help`) y lo sustituye la respuesta del propio servidor, que se pide la primera vez que se
+  escribe en cada arranque; las ramas de un comando (`help time`) se piden cuando hacen falta. Las reglas
+  del juego enseñan por qué la fuente es el servidor: 26.x cambió `keepInventory` por `keep_inventory`.
+  `CommandUsage` lee la notación de Brigadier (`<valor>`, `(a|b)`, `[opcional]`) y el completador ofrece las
+  palabras literales del uso y valores para los huecos que reconoce por su nombre (jugadores y selectores,
+  modos de juego, el true/false de una regla); lo demás (ítems, posiciones) no sugiere nada y deja que la
+  pista de sintaxis diga qué va ahí. La consulta sigue el patrón de la sonda de velocidad: escribe `help` y
+  luego un comando inexistente como marca de final, se queda solo con las líneas con forma de ayuda hasta la
+  respuesta a esa marca (o un tiempo límite) y deja pasar todo lo demás (entradas, chat). De Bukkit se leen
+  el nombre y la descripción de sus líneas `/nombre: descripción`. `ServerViewModel.Completion` guarda la
+  lista, la selección y el resto en gris; `MainWindow.Completion` lleva Tab, las flechas y Escape hasta él
+  en la fase de túnel, antes de que la navegación del foco se quede con Tab.
 - **`ByteSize`** y **`AppWindows`** — una sola forma de escribir un tamaño en disco (potencias de 1024; las
   velocidades de la línea siguen en decimal, como los Mb/s que tienen al lado) y un solo sitio donde pedir
   la ventana principal.
@@ -671,6 +691,18 @@ mundo. No hay rutas fijas del equipo en el código.
   conexión, un código HTTP o «algo ha fallado de forma inesperada»), y la excepción en sí va al
   registro del día. `ErrorMessagesTests` falla si el código vuelve a poner `ex.Message` delante del
   usuario.
+- **`LoginStartupService`** — abre la app al iniciar sesión: la clave `Run` del usuario en Windows, una
+  entrada de autostart XDG en Linux y un LaunchAgent en macOS, que lanzan esta copia con `--login`. Si está
+  activado se lee del sistema cada vez, nunca se guarda, porque el usuario puede quitarlo desde fuera (el
+  Administrador de tareas no borra la entrada: la marca en `StartupApproved`; GNOME escribe `Hidden=true`).
+  Un arranque solo repara la entrada cuando la copia que abre ya no existe (una AppImage movida), así que una
+  segunda copia abierta una vez no se la queda. Un arranque con `--login` y *empezar escondida* construye
+  y activa la ventana (`MainWindow.ActivateHidden`) sin mostrarla: el ciclo de vida solo enseña la
+  `MainWindow` que tiene al empezar, así que se le entrega un momento después y aparece desde la bandeja.
+  Ese arranque pasa además el ciclo de vida a `OnMainWindowClose`: con la ventana principal sin mostrar, el
+  primer aviso que se cerrara contaría como la última ventana y terminaría la app. Los
+  servidores con `StartWithApp` arrancan en `MainViewModel.Activate`, uno detrás de otro, con sus escuchas
+  de despertar ya levantadas. El desinstalador borra el valor de `Run`.
 - **`SingleInstance`** — una sola copia en marcha por usuario, y un segundo lanzamiento trae la
   primera al frente. Es una garantía de corrección, no una cuestión de orden: dos copias arrancan
   cada una sus procesos de servidor y sus escuchas de wake, y dos JVM sobre la misma carpeta de mundo

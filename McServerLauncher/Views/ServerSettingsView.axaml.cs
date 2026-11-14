@@ -138,6 +138,7 @@ public partial class ServerSettingsView : UserControl
             ServerSettingsPage.Power => new PowerSection(_draft),
             ServerSettingsPage.Backups => new BackupsSection(_draft),
             ServerSettingsPage.Notifications => new NotificationsSection(_draft),
+            ServerSettingsPage.Storage => new StorageSection(Server),
             ServerSettingsPage.Advanced => Advanced(),
             _ => throw new ArgumentOutOfRangeException(nameof(page)),
         };

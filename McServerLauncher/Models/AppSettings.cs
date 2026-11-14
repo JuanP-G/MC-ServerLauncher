@@ -95,6 +95,16 @@ public class AppSettings
     public bool CloseToTray { get; set; }
 
     /// <summary>
+    /// When the system opens the app at sign-in, it starts in the tray with no window. On by
+    /// default: a window popping up at every sign-in is what makes people turn the feature off.
+    /// </summary>
+    /// <remarks>
+    /// Whether it opens at sign-in at all is not stored here: the system holds that (see
+    /// <c>LoginStartupService</c>), so the user can change it from outside the app.
+    /// </remarks>
+    public bool OpenAtLoginHidden { get; set; } = true;
+
+    /// <summary>
     /// The update check offers betas as well as stable versions. Off by default.
     /// </summary>
     /// <remarks>
