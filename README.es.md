@@ -251,6 +251,10 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   credencial vive en un pequeño proxy).
 - **Túneles** — todos los túneles de tu cuenta en una tabla: marca los que no llevan a nada, los repetidos y
   los puertos compartidos, con un botón para arreglar cada uno, y deja renombrarlos o borrarlos.
+- **Red de Playit** — una línea en **Túneles** dice si la red de Playit va bien y por dónde sales;
+  **Ver red de Playit** abre las 22 regiones con tu ping a cada una, el centro de datos que responde y cuáles
+  van redirigidas (las atiende otro centro de datos) o no responden. Tu región va marcada y **Copiar prueba
+  de ping** te da un enlace para pasárselo a un amigo con lag. No hace falta cuenta.
 - **Prueba de conexión** — **Probar conexión** en la tarjeta de Playit mide cada tramo por separado —tu
   servidor, tu internet (latencia, bajada y subida, con Cloudflare), el túnel de Java y el de Bedrock— y dice
   en una frase si el retraso viene de tu PC, de tu línea o del túnel. Los detalles técnicos (mín/media/máx,

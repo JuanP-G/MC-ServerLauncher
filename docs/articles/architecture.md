@@ -971,6 +971,18 @@ of `MainWindow` and switched by `IsVisible` (`MainViewModel.Section`), so a sect
   Playit, an old saved key) with its state and its buttons. `PlayitAccountStatus` makes those
   decisions as a pure function; `TunnelLaneViewModel` only dresses them for the view. Until Playit has
   answered once, the headline says it is checking.
+  Above the table, one line says how **Playit's network** is doing; its button swaps the screen for the
+  network page (`IsNetworkPage`, a page of the same view with a way back, not a window). Playit has no
+  status page, so `PlayitNetworkService` measures it the way ping.playit.gg does, without an account: each
+  region's test host (`https://{code}.rt.playit.gg`) answers with the datacenter that served it
+  (`{"dc":"madrid-2","dc_id":37}`), and a few timed `HEAD` requests after it give the median ping and the
+  jitter. `POST api.playit.gg/info/pops` lists the datacenters that are offline and `/query/region` says
+  which region this machine is routed to, which the page marks. `PlayitNetworkCatalog` holds the 22
+  regions and which datacenter ids belong to each (the table ping.playit.gg ships) and judges each answer
+  as a pure function: a region served from a datacenter of another region is **rerouted** (on 2026-11-14,
+  Poland through Stockholm), one that does not answer or that Playit lists offline is **down**, and an id
+  the table does not know is never called a reroute. It measures when the screen opens, at most every
+  three minutes, and when asked — never in the background.
 - **What's new** (`NewsViewModel`/`NewsView`) lists the version waiting to be installed (with the same
   *Update now* as the banner), the notices of the signed file (see *Announcements* below), and the notes
   of every version this build knows
