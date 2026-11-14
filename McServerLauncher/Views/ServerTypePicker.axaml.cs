@@ -110,7 +110,8 @@ public partial class ServerTypePicker : UserControl
             // and it is the obvious place to look for a card's identity when debugging.
             Tag = entry.Type,
             Theme = (ControlTheme?)Resources["TypeCardTheme"],
-            Width = 176,
+            // Wide enough for the logo beside the text; the height stays, so the rows still line up.
+            Width = 212,
             // One height for every card, so the rows line up. Left to fit their content they came
             // out at three different heights and the grid read as broken rather than compact.
             Height = 104,
@@ -134,10 +135,28 @@ public partial class ServerTypePicker : UserControl
         return card;
     }
 
-    /// <summary>What a card shows: the name, one line about the type, and its badges.</summary>
-    private static StackPanel CardContent(ServerTypeCatalog.Entry entry, IBrush accent)
+    /// <summary>What a card shows: the type's logo, then its name, one line about it and its badges.</summary>
+    private static Control CardContent(ServerTypeCatalog.Entry entry, IBrush accent)
     {
         var content = new StackPanel { Spacing = 3 };
+        var row = new Grid { ColumnDefinitions = new ColumnDefinitions("36,*"), ColumnSpacing = 10 };
+        if (ServerTypeLogos.For(entry.Type) is { } logo)
+        {
+            var image = new Image
+            {
+                Source = logo,
+                Width = 36,
+                Height = 36,
+                Stretch = Stretch.Uniform,
+                VerticalAlignment = VerticalAlignment.Top,
+                Margin = new Avalonia.Thickness(0, 2, 0, 0),
+            };
+            if (ServerTypeLogos.IsPixelArt(entry.Type))
+                RenderOptions.SetBitmapInterpolationMode(image, Avalonia.Media.Imaging.BitmapInterpolationMode.None);
+            row.Children.Add(image);
+        }
+        Grid.SetColumn(content, 1);
+        row.Children.Add(content);
         content.Children.Add(new TextBlock
         {
             Text = entry.DisplayName,
@@ -150,12 +169,11 @@ public partial class ServerTypePicker : UserControl
             FontSize = 11,
             Opacity = 0.65,
             TextWrapping = TextWrapping.Wrap,
-            MaxWidth = 150
         });
 
         var badges = CardBadges(entry, accent);
         if (badges.Children.Count > 0) content.Children.Add(badges);
-        return content;
+        return row;
     }
 
     private static StackPanel CardBadges(ServerTypeCatalog.Entry entry, IBrush accent)
