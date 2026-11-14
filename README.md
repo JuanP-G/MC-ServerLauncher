@@ -130,7 +130,7 @@ When it opens again, the **What's new** section tells you what changed. It works
   settings open in the same place, never in a dialog.
 - **Multiple servers** at once, each with its own config and a **type badge** (Vanilla / Paper / Purpur /
   Fabric / NeoForge / Forge / Pumpkin).
-- **Create a server** automatically: pick the **type**, **version** (official Mojang list) and **port**,
+- **Create a server** automatically: pick the **type** (each card with its project's logo), **version** (official Mojang list) and **port**,
   and accept the Minecraft EULA; the app downloads the right server, prepares `run.bat` / `server.properties`, and
   installs the correct **Java** (Temurin) if needed. Fabric, Forge and NeoForge use **mods**; Paper and Purpur
   use **plugins**. The same panel can **use a folder that already exists**: it recognises the type, the

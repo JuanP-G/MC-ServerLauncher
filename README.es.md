@@ -131,7 +131,7 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   servidor se abre en el mismo sitio, nunca en un diálogo.
 - **Varios servidores** a la vez, cada uno con su configuración y una **etiqueta de tipo** (Vanilla / Paper /
   Purpur / Fabric / NeoForge / Forge / Pumpkin).
-- **Crear un servidor** automáticamente: eliges **tipo**, **versión** (lista oficial de Mojang) y **puerto**,
+- **Crear un servidor** automáticamente: eliges **tipo** (cada tarjeta con el logo de su proyecto), **versión** (lista oficial de Mojang) y **puerto**,
   y aceptas el EULA de Minecraft; la app descarga el servidor correcto, prepara `run.bat` / `server.properties` e
   instala el **Java** adecuado (Temurin) si hace falta. Fabric, Forge y NeoForge usan **mods**; Paper y Purpur
   usan **plugins**. El mismo panel puede **usar una carpeta que ya existe**: reconoce el tipo, la versión de
