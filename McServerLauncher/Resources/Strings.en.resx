@@ -635,7 +635,7 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Cmd_Difficulty_Title" xml:space="preserve"><value>difficulty &lt;difficulty&gt;</value></data>
   <data name="Cmd_Difficulty_Desc" xml:space="preserve"><value>Changes the difficulty (peaceful, easy, normal, hard).</value></data>
   <data name="Cmd_Gamerule_Title" xml:space="preserve"><value>gamerule &lt;rule&gt; &lt;value&gt;</value></data>
-  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Changes a game rule (e.g. keepInventory true).</value></data>
+  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Changes a game rule (e.g. keep_inventory true).</value></data>
   <data name="Cmd_Seed_Title" xml:space="preserve"><value>seed</value></data>
   <data name="Cmd_Seed_Desc" xml:space="preserve"><value>Shows the world seed.</value></data>
   <data name="Cmd_SaveAll_Title" xml:space="preserve"><value>save-all</value></data>
@@ -1468,4 +1468,12 @@ The files are in the "{4}" folder of this pack.</value></data>
   <data name="Boot_ServerTitle" xml:space="preserve"><value>Start when the app opens</value></data>
   <data name="Boot_ServerHint" xml:space="preserve"><value>It starts by itself every time MC Server Launcher opens. With “Open with Windows” on in Settings, it is back up after the computer restarts.</value></data>
   <data name="Boot_StartingLine" xml:space="preserve"><value>Starting: this server is set to start when the app opens.</value></data>
+  <data name="Sug_Online" xml:space="preserve"><value>Online</value></data>
+  <data name="Sug_OnlineOp" xml:space="preserve"><value>Online · operator</value></data>
+  <data name="Sug_Known" xml:space="preserve"><value>Has played here</value></data>
+  <data name="Sug_SelA" xml:space="preserve"><value>Every player</value></data>
+  <data name="Sug_SelP" xml:space="preserve"><value>The nearest player</value></data>
+  <data name="Sug_SelR" xml:space="preserve"><value>A random player</value></data>
+  <data name="Sug_SelS" xml:space="preserve"><value>Whoever runs the command</value></data>
+  <data name="Sug_SelE" xml:space="preserve"><value>Every entity</value></data>
 </root>

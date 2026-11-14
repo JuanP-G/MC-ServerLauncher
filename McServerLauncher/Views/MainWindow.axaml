@@ -30,6 +30,19 @@
             <Setter Property="Opacity" Value="0.45" />
         </Style>
 
+        <!-- The suggestion Tab would take, in the console's completion list. The resting background is
+             a style too, not written on the element: a local value would win over these and the
+             selection would never show. Transparent rather than unset, so the whole row takes clicks. -->
+        <Style Selector="Border.suggestion">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Border.suggestion:pointerover">
+            <Setter Property="Background" Value="{StaticResource SurfaceChip}" />
+        </Style>
+        <Style Selector="Border.suggestion.selected">
+            <Setter Property="Background" Value="{StaticResource AccentSelectedFill}" />
+        </Style>
+
         <!-- Compact rows for the console list -->
         <Style Selector="ListBox.console ListBoxItem">
             <Setter Property="Padding" Value="2,0" />
@@ -674,14 +687,67 @@
                                     </Grid>
                                 </Border>
 
-                                <!-- Command box -->
-                                <Grid Grid.Row="1" Margin="0,12,0,0" ColumnDefinitions="*,Auto,Auto">
-                                    <TextBox Grid.Column="0" Text="{Binding CommandText}"
-                                             PlaceholderText="{loc:Loc Command_Placeholder}" Margin="0,0,8,0">
-                                        <TextBox.KeyBindings>
-                                            <KeyBinding Gesture="Enter" Command="{Binding SendCommandCommand}" />
-                                        </TextBox.KeyBindings>
-                                    </TextBox>
+                                <!-- Command box. As it is typed: what fits in a list above it, the likeliest
+                                     one greyed after the text, and the command's usage underneath. Tab takes the
+                                     suggestion, the arrows pick another, Escape hides them (MainWindow routes the
+                                     keys to the view model). Monospaced, so the greyed rest lines up with the text. -->
+                                <Grid Grid.Row="1" Margin="0,12,0,0" ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto">
+                                    <Panel Grid.Column="0" Margin="0,0,8,0">
+                                        <TextBox x:Name="CommandBox" Text="{Binding CommandText}"
+                                                 FontFamily="{StaticResource MonoFont}"
+                                                 PlaceholderText="{loc:Loc Command_Placeholder}">
+                                            <TextBox.KeyBindings>
+                                                <KeyBinding Gesture="Enter" Command="{Binding SendCommandCommand}" />
+                                            </TextBox.KeyBindings>
+                                        </TextBox>
+                                        <TextBlock x:Name="CommandGhostText" IsHitTestVisible="False"
+                                                   FontFamily="{StaticResource MonoFont}" VerticalAlignment="Center"
+                                                   IsVisible="{Binding HasCommandGhost}">
+                                            <Run Text="{Binding CommandText}" Foreground="Transparent" /><Run
+                                                 Text="{Binding CommandGhost}" Foreground="{StaticResource McListText}" />
+                                        </TextBlock>
+                                        <Popup x:Name="SuggestionsPopup" PlacementTarget="{Binding #CommandBox}"
+                                               Placement="TopEdgeAlignedLeft" VerticalOffset="-4"
+                                               IsLightDismissEnabled="False" Focusable="False">
+                                            <Popup.IsOpen>
+                                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                    <Binding Path="HasSuggestions" />
+                                                    <Binding Path="IsKeyboardFocusWithin" ElementName="CommandBox" />
+                                                </MultiBinding>
+                                            </Popup.IsOpen>
+                                            <Border Background="{StaticResource GroundPopup}" BorderBrush="{StaticResource SurfaceEdgeStrong}"
+                                                    BorderThickness="1" CornerRadius="6" Width="460" MaxHeight="260" Padding="4">
+                                                <ScrollViewer x:Name="SuggestionsScroll" VerticalScrollBarVisibility="Auto">
+                                                    <ItemsControl x:Name="SuggestionsList" ItemsSource="{Binding CommandSuggestions}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Classes="suggestion" Classes.selected="{Binding IsSelected}"
+                                                                        Padding="8,4" CornerRadius="4"
+                                                                        Tapped="Suggestion_Tapped" Cursor="Hand">
+                                                                    <Grid ColumnDefinitions="160,*">
+                                                                        <TextBlock Text="{Binding Text}" FontFamily="{StaticResource MonoFont}"
+                                                                                   TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                                        <TextBlock Grid.Column="1" Text="{Binding Detail}" FontSize="12" Opacity="0.6"
+                                                                                   TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                                                                   Margin="10,0,0,0" ToolTip.Tip="{Binding Detail}" />
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </Border>
+                                        </Popup>
+                                    </Panel>
+
+                                    <!-- The usage of what is being typed; the word that goes next stands out. -->
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Margin="2,5,0,0" FontSize="12"
+                                               FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource McListText}"
+                                               TextTrimming="CharacterEllipsis" IsVisible="{Binding HasUsage}">
+                                        <Run Text="{Binding UsageBefore}" /><Run Text="{Binding UsageCurrent}"
+                                             Foreground="{StaticResource SemanticWarn}" FontWeight="SemiBold" /><Run
+                                             Text="{Binding UsageAfter}" />
+                                    </TextBlock>
 
                                     <!-- Command help -->
                                     <ToggleButton Grid.Column="1" x:Name="CommandHelpToggle" Margin="0,0,8,0"

@@ -1,0 +1,90 @@
+/advancement (grant|revoke)
+/attribute <target> <attribute> (get|base|modifier)
+/execute (run|if|unless|as|at|store|positioned|rotated|facing|align|anchored|in|summon|on)
+/bossbar (add|remove|list|set|get)
+/clear [<targets>]
+/clone (<begin>|from)
+/damage <target> <amount> [<damageType>]
+/data (merge|get|remove|modify)
+/datapack (enable|disable|list|create)
+/debug (start|stop|function)
+/defaultgamemode <gamemode>
+/dialog (show|clear)
+/difficulty [peaceful|easy|normal|hard]
+/effect (clear|give)
+/me <action>
+/enchant <targets> <enchantment> [<level>]
+/experience (add|set|query)
+/xp -> experience
+/fill <from> <to> <block> [outline|hollow|destroy|strict|replace|keep]
+/fillbiome <from> <to> <biome> [replace]
+/forceload (add|remove|query)
+/function <name> [<arguments>|with]
+/gamemode <gamemode> [<target>]
+/gamerule (fire_spread_radius_around_player|minecraft:fire_spread_radius_around_player|mob_drops|minecraft:mob_drops|spectators_generate_chunks|minecraft:spectators_generate_chunks|entity_drops|minecraft:entity_drops|block_drops|minecraft:block_drops|send_command_feedback|minecraft:send_command_feedback|show_death_messages|minecraft:show_death_messages|global_sound_events|minecraft:global_sound_events|max_entity_cramming|minecraft:max_entity_cramming|fire_damage|minecraft:fire_damage|forgive_dead_players|minecraft:forgive_dead_players|block_explosion_drop_decay|minecraft:block_explosion_drop_decay|spawn_wardens|minecraft:spawn_wardens|max_block_modifications|minecraft:max_block_modifications|ender_pearls_vanish_on_death|minecraft:ender_pearls_vanish_on_death|spread_vines|minecraft:spread_vines|log_admin_commands|minecraft:log_admin_commands|drowning_damage|minecraft:drowning_damage|keep_inventory|minecraft:keep_inventory|mob_explosion_drop_decay|minecraft:mob_explosion_drop_decay|player_movement_check|minecraft:player_movement_check|natural_health_regeneration|minecraft:natural_health_regeneration|respawn_radius|minecraft:respawn_radius|water_source_conversion|minecraft:water_source_conversion|max_command_forks|minecraft:max_command_forks|reduced_debug_info|minecraft:reduced_debug_info|command_block_output|minecraft:command_block_output|immediate_respawn|minecraft:immediate_respawn|freeze_damage|minecraft:freeze_damage|max_snow_accumulation_height|minecraft:max_snow_accumulation_height|players_nether_portal_default_delay|minecraft:players_nether_portal_default_delay|lava_source_conversion|minecraft:lava_source_conversion|players_nether_portal_creative_delay|minecraft:players_nether_portal_creative_delay|tnt_explosion_drop_decay|minecraft:tnt_explosion_drop_decay|spawn_phantoms|minecraft:spawn_phantoms|allow_entering_nether_using_portals|minecraft:allow_entering_nether_using_portals|limited_crafting|minecraft:limited_crafting|spawn_wandering_traders|minecraft:spawn_wandering_traders|universal_anger|minecraft:universal_anger|raids|minecraft:raids|advance_weather|minecraft:advance_weather|max_command_sequence_length|minecraft:max_command_sequence_length|tnt_explodes|minecraft:tnt_explodes|show_advancement_messages|minecraft:show_advancement_messages|mob_griefing|minecraft:mob_griefing|command_blocks_work|minecraft:command_blocks_work|projectiles_can_break_blocks|minecraft:projectiles_can_break_blocks|advance_time|minecraft:advance_time|fall_damage|minecraft:fall_damage|elytra_movement_check|minecraft:elytra_movement_check|players_sleeping_percentage|minecraft:players_sleeping_percentage|pvp|minecraft:pvp|locator_bar|minecraft:locator_bar|random_tick_speed|minecraft:random_tick_speed|spawn_patrols|minecraft:spawn_patrols|spawner_blocks_work|minecraft:spawner_blocks_work|spawn_monsters|minecraft:spawn_monsters|spawn_mobs|minecraft:spawn_mobs)
+/give <targets> <item> [<count>]
+/help [<command>]
+/item (replace|modify)
+/kick <targets> [<reason>]
+/kill [<targets>]
+/list [uuids]
+/locate (structure|biome|poi)
+/loot (replace|insert|give|spawn)
+/msg <targets> <message>
+/tell -> msg
+/w -> msg
+/swing [<targets>]
+/particle <name> [<pos>]
+/place (feature|jigsaw|structure|template)
+/playsound <sound> [master|music|record|weather|block|hostile|neutral|player|ambient|voice|ui]
+/random (value|roll|reset)
+/reload
+/recipe (give|take)
+/fetchprofile (name|id|entity)
+/return (<value>|fail|run)
+/ride <target> (mount|dismount)
+/rotate <target> (<rotation>|facing)
+/say <message>
+/schedule (function|clear)
+/scoreboard (objectives|players)
+/seed
+/version
+/setblock <pos> <block> [destroy|keep|replace|strict]
+/spawnpoint [<targets>]
+/setworldspawn [<pos>]
+/spectate [<target>]
+/spreadplayers <center> <spreadDistance> <maxRange> (<respectTeams>|under)
+/stopsound <targets> [*|master|music|record|weather|block|hostile|neutral|player|ambient|voice|ui]
+/stopwatch (create|query|restart|remove)
+/summon <entity> [<pos>]
+/tag <targets> (add|remove|list)
+/team (list|add|remove|empty|join|leave|modify)
+/teammsg <message>
+/tm -> teammsg
+/teleport (<location>|<destination>|<targets>)
+/tp -> teleport
+/tellraw <targets> <message>
+/test (run|runmultiple|runthese|runclosest|runthat|runfailed|verify|locate|resetclosest|resetthese|resetthat|clearthat|clearthese|clearall|stop|pos|create)
+/tick (query|rate|step|sprint|unfreeze|freeze)
+/time (set|add|pause|resume|rate|query|of)
+/title <targets> (clear|reset|title|subtitle|actionbar|times)
+/trigger <objective> [add|set]
+/waypoint (list|modify)
+/weather (clear|rain|thunder)
+/worldborder (add|set|center|damage|get|warning)
+/jfr (start|stop)
+/ban-ip <target> [<reason>]
+/banlist [ips|players]
+/ban <targets> [<reason>]
+/deop <targets>
+/op <targets>
+/pardon <targets>
+/pardon-ip <target>
+/perf (start|stop)
+/save-all [flush]
+/save-off
+/save-on
+/setidletimeout <minutes>
+/stop
+/transfer <hostname> [<port>]
+/whitelist (on|off|list|add|remove|reload)

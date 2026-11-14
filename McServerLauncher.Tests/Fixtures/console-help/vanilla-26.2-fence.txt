@@ -1,0 +1,2 @@
+[13:26:53] [Server thread/INFO]: Unknown or incomplete command. See below for error
+[13:26:53] [Server thread/INFO]: mcsl-fence-0001<--[HERE]

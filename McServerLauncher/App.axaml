@@ -95,6 +95,8 @@
 
         <!-- ===================== ACCENTS =====================  -->
         <SolidColorBrush x:Key="AccentSelected" Color="#58A6FF" />
+        <!-- AccentSelected as a fill behind a row: the suggestion Tab would take in the console. -->
+        <SolidColorBrush x:Key="AccentSelectedFill" Color="#3858A6FF" />
         <SolidColorBrush x:Key="SparklineRam" Color="#5A8AB5" />
         <!-- The shine that crosses "+ New" (see Styles/Motion.axaml): AccentSelected fading in and
              out across a narrow strip. -->

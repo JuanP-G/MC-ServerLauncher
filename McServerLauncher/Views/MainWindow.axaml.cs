@@ -63,6 +63,8 @@ public partial class MainWindow : Window
                 ServerTabs.SelectedIndex = 0;
         };
 
+        InitCommandCompletion();
+
     }
 
     /// <summary>

@@ -1,0 +1,97 @@
+[13:26:30] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[13:26:30] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[13:26:30] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[13:26:30] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[13:26:30] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[13:26:30] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[13:26:30] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[13:26:30] [Server thread/INFO]: /advancement (grant|revoke)
+[13:26:30] [Server thread/INFO]: /attribute <target> <attribute> (get|base|modifier)
+[13:26:30] [Server thread/INFO]: /execute (run|if|unless|as|at|store|positioned|rotated|facing|align|anchored|in|summon|on)
+[13:26:30] [Server thread/INFO]: /bossbar (add|remove|list|set|get)
+[13:26:30] [Server thread/INFO]: /clear [<targets>]
+[13:26:30] [Server thread/INFO]: /clone (<begin>|from)
+[13:26:30] [Server thread/INFO]: /damage <target> <amount> [<damageType>]
+[13:26:30] [Server thread/INFO]: /data (merge|get|remove|modify)
+[13:26:30] [Server thread/INFO]: /datapack (enable|disable|list|create)
+[13:26:30] [Server thread/INFO]: /debug (start|stop|function)
+[13:26:30] [Server thread/INFO]: /defaultgamemode <gamemode>
+[13:26:30] [Server thread/INFO]: /dialog (show|clear)
+[13:26:30] [Server thread/INFO]: /difficulty [peaceful|easy|normal|hard]
+[13:26:30] [Server thread/INFO]: /effect (clear|give)
+[13:26:30] [Server thread/INFO]: /me <action>
+[13:26:30] [Server thread/INFO]: /enchant <targets> <enchantment> [<level>]
+[13:26:30] [Server thread/INFO]: /experience (add|set|query)
+[13:26:30] [Server thread/INFO]: /xp -> experience
+[13:26:30] [Server thread/INFO]: /fill <from> <to> <block> [outline|hollow|destroy|strict|replace|keep]
+[13:26:30] [Server thread/INFO]: /fillbiome <from> <to> <biome> [replace]
+[13:26:30] [Server thread/INFO]: /forceload (add|remove|query)
+[13:26:30] [Server thread/INFO]: /function <name> [<arguments>|with]
+[13:26:30] [Server thread/INFO]: /gamemode <gamemode> [<target>]
+[13:26:30] [Server thread/INFO]: /gamerule (fire_spread_radius_around_player|minecraft:fire_spread_radius_around_player|mob_drops|minecraft:mob_drops|spectators_generate_chunks|minecraft:spectators_generate_chunks|entity_drops|minecraft:entity_drops|block_drops|minecraft:block_drops|send_command_feedback|minecraft:send_command_feedback|show_death_messages|minecraft:show_death_messages|global_sound_events|minecraft:global_sound_events|max_entity_cramming|minecraft:max_entity_cramming|fire_damage|minecraft:fire_damage|forgive_dead_players|minecraft:forgive_dead_players|block_explosion_drop_decay|minecraft:block_explosion_drop_decay|spawn_wardens|minecraft:spawn_wardens|max_block_modifications|minecraft:max_block_modifications|ender_pearls_vanish_on_death|minecraft:ender_pearls_vanish_on_death|spread_vines|minecraft:spread_vines|log_admin_commands|minecraft:log_admin_commands|drowning_damage|minecraft:drowning_damage|keep_inventory|minecraft:keep_inventory|mob_explosion_drop_decay|minecraft:mob_explosion_drop_decay|player_movement_check|minecraft:player_movement_check|natural_health_regeneration|minecraft:natural_health_regeneration|respawn_radius|minecraft:respawn_radius|water_source_conversion|minecraft:water_source_conversion|max_command_forks|minecraft:max_command_forks|reduced_debug_info|minecraft:reduced_debug_info|command_block_output|minecraft:command_block_output|immediate_respawn|minecraft:immediate_respawn|freeze_damage|minecraft:freeze_damage|max_snow_accumulation_height|minecraft:max_snow_accumulation_height|players_nether_portal_default_delay|minecraft:players_nether_portal_default_delay|lava_source_conversion|minecraft:lava_source_conversion|players_nether_portal_creative_delay|minecraft:players_nether_portal_creative_delay|tnt_explosion_drop_decay|minecraft:tnt_explosion_drop_decay|spawn_phantoms|minecraft:spawn_phantoms|allow_entering_nether_using_portals|minecraft:allow_entering_nether_using_portals|limited_crafting|minecraft:limited_crafting|spawn_wandering_traders|minecraft:spawn_wandering_traders|universal_anger|minecraft:universal_anger|raids|minecraft:raids|advance_weather|minecraft:advance_weather|max_command_sequence_length|minecraft:max_command_sequence_length|tnt_explodes|minecraft:tnt_explodes|show_advancement_messages|minecraft:show_advancement_messages|mob_griefing|minecraft:mob_griefing|command_blocks_work|minecraft:command_blocks_work|projectiles_can_break_blocks|minecraft:projectiles_can_break_blocks|advance_time|minecraft:advance_time|fall_damage|minecraft:fall_damage|elytra_movement_check|minecraft:elytra_movement_check|players_sleeping_percentage|minecraft:players_sleeping_percentage|pvp|minecraft:pvp|locator_bar|minecraft:locator_bar|random_tick_speed|minecraft:random_tick_speed|spawn_patrols|minecraft:spawn_patrols|spawner_blocks_work|minecraft:spawner_blocks_work|spawn_monsters|minecraft:spawn_monsters|spawn_mobs|minecraft:spawn_mobs)
+[13:26:30] [Server thread/INFO]: /give <targets> <item> [<count>]
+[13:26:30] [Server thread/INFO]: /help [<command>]
+[13:26:30] [Server thread/INFO]: /item (replace|modify)
+[13:26:30] [Server thread/INFO]: /kick <targets> [<reason>]
+[13:26:30] [Server thread/INFO]: /kill [<targets>]
+[13:26:30] [Server thread/INFO]: /list [uuids]
+[13:26:30] [Server thread/INFO]: /locate (structure|biome|poi)
+[13:26:30] [Server thread/INFO]: /loot (replace|insert|give|spawn)
+[13:26:30] [Server thread/INFO]: /msg <targets> <message>
+[13:26:30] [Server thread/INFO]: /tell -> msg
+[13:26:30] [Server thread/INFO]: /w -> msg
+[13:26:30] [Server thread/INFO]: /swing [<targets>]
+[13:26:30] [Server thread/INFO]: /particle <name> [<pos>]
+[13:26:30] [Server thread/INFO]: /place (feature|jigsaw|structure|template)
+[13:26:30] [Server thread/INFO]: /playsound <sound> [master|music|record|weather|block|hostile|neutral|player|ambient|voice|ui]
+[13:26:30] [Server thread/INFO]: /random (value|roll|reset)
+[13:26:30] [Server thread/INFO]: /reload
+[13:26:30] [Server thread/INFO]: /recipe (give|take)
+[13:26:30] [Server thread/INFO]: /fetchprofile (name|id|entity)
+[13:26:30] [Server thread/INFO]: /return (<value>|fail|run)
+[13:26:30] [Server thread/INFO]: /ride <target> (mount|dismount)
+[13:26:30] [Server thread/INFO]: /rotate <target> (<rotation>|facing)
+[13:26:30] [Server thread/INFO]: /say <message>
+[13:26:30] [Server thread/INFO]: /schedule (function|clear)
+[13:26:30] [Server thread/INFO]: /scoreboard (objectives|players)
+[13:26:30] [Server thread/INFO]: /seed
+[13:26:30] [Server thread/INFO]: /version
+[13:26:30] [Server thread/INFO]: /setblock <pos> <block> [destroy|keep|replace|strict]
+[13:26:30] [Server thread/INFO]: /spawnpoint [<targets>]
+[13:26:30] [Server thread/INFO]: /setworldspawn [<pos>]
+[13:26:30] [Server thread/INFO]: /spectate [<target>]
+[13:26:30] [Server thread/INFO]: /spreadplayers <center> <spreadDistance> <maxRange> (<respectTeams>|under)
+[13:26:30] [Server thread/INFO]: /stopsound <targets> [*|master|music|record|weather|block|hostile|neutral|player|ambient|voice|ui]
+[13:26:30] [Server thread/INFO]: /stopwatch (create|query|restart|remove)
+[13:26:30] [Server thread/INFO]: /summon <entity> [<pos>]
+[13:26:30] [Server thread/INFO]: /tag <targets> (add|remove|list)
+[13:26:30] [Server thread/INFO]: /team (list|add|remove|empty|join|leave|modify)
+[13:26:30] [Server thread/INFO]: /teammsg <message>
+[13:26:30] [Server thread/INFO]: /tm -> teammsg
+[13:26:30] [Server thread/INFO]: /teleport (<location>|<destination>|<targets>)
+[13:26:30] [Server thread/INFO]: /tp -> teleport
+[13:26:30] [Server thread/INFO]: /tellraw <targets> <message>
+[13:26:30] [Server thread/INFO]: /test (run|runmultiple|runthese|runclosest|runthat|runfailed|verify|locate|resetclosest|resetthese|resetthat|clearthat|clearthese|clearall|stop|pos|create)
+[13:26:30] [Server thread/INFO]: /tick (query|rate|step|sprint|unfreeze|freeze)
+[13:26:30] [Server thread/INFO]: /time (set|add|pause|resume|rate|query|of)
+[13:26:30] [Server thread/INFO]: /title <targets> (clear|reset|title|subtitle|actionbar|times)
+[13:26:30] [Server thread/INFO]: /trigger <objective> [add|set]
+[13:26:30] [Server thread/INFO]: /waypoint (list|modify)
+[13:26:30] [Server thread/INFO]: /weather (clear|rain|thunder)
+[13:26:30] [Server thread/INFO]: /worldborder (add|set|center|damage|get|warning)
+[13:26:30] [Server thread/INFO]: /jfr (start|stop)
+[13:26:30] [Server thread/INFO]: /ban-ip <target> [<reason>]
+[13:26:30] [Server thread/INFO]: /banlist [ips|players]
+[13:26:30] [Server thread/INFO]: /ban <targets> [<reason>]
+[13:26:30] [Server thread/INFO]: /deop <targets>
+[13:26:30] [Server thread/INFO]: /op <targets>
+[13:26:30] [Server thread/INFO]: /pardon <targets>
+[13:26:30] [Server thread/INFO]: /pardon-ip <target>
+[13:26:30] [Server thread/INFO]: /perf (start|stop)
+[13:26:30] [Server thread/INFO]: /save-all [flush]
+[13:26:30] [Server thread/INFO]: /save-off
+[13:26:30] [Server thread/INFO]: /save-on
+[13:26:30] [Server thread/INFO]: /setidletimeout <minutes>
+[13:26:30] [Server thread/INFO]: /stop
+[13:26:30] [Server thread/INFO]: /transfer <hostname> [<port>]
+[13:26:30] [Server thread/INFO]: /whitelist (on|off|list|add|remove|reload)

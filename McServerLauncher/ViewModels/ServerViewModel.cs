@@ -828,6 +828,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         }
         else if (state == ServerState.Starting)
         {
+            ResetCompletionForNewRun();
             _floodgatePrefix = null;   // re-read: the owner may have changed it while it was stopped
             ConnectedPlayers.Clear();
             SnapshotOnline();
@@ -865,6 +866,8 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         // First of all: the answer to the speed probe is not for the console, nor the log on disk,
         // nor the player history, so nothing below may see it.
         if (SwallowProbeAnswer(line)) return;
+        // Nor the answer to the console's own question for its commands (see Completion).
+        if (SwallowHelpAnswer(line)) return;
 
         // Only standard output's own previous line: standard error arrives on another thread, and
         // a JVM warning landing between two lines of the mod list must not decide what they are.
@@ -1436,7 +1439,11 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         CommandText = string.Empty;
     }
 
-    partial void OnCommandTextChanged(string value) => SendCommandCommand.NotifyCanExecuteChanged();
+    partial void OnCommandTextChanged(string value)
+    {
+        SendCommandCommand.NotifyCanExecuteChanged();
+        UpdateCompletion();
+    }
 
     /// <summary>Puts the chosen help command into the box (ready to complete and send).</summary>
     [RelayCommand]

@@ -681,7 +681,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Cmd_Difficulty_Title" xml:space="preserve"><value>difficulty &lt;dificultad&gt;</value></data>
   <data name="Cmd_Difficulty_Desc" xml:space="preserve"><value>Cambia la dificultad (peaceful, easy, normal, hard).</value></data>
   <data name="Cmd_Gamerule_Title" xml:space="preserve"><value>gamerule &lt;regla&gt; &lt;valor&gt;</value></data>
-  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Cambia una regla del juego (p. ej. keepInventory true).</value></data>
+  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Cambia una regla del juego (p. ej. keep_inventory true).</value></data>
   <data name="Cmd_Seed_Title" xml:space="preserve"><value>seed</value></data>
   <data name="Cmd_Seed_Desc" xml:space="preserve"><value>Muestra la semilla del mundo.</value></data>
   <data name="Cmd_SaveAll_Title" xml:space="preserve"><value>save-all</value></data>
@@ -1514,4 +1514,12 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Boot_ServerTitle" xml:space="preserve"><value>Encender al abrir la app</value></data>
   <data name="Boot_ServerHint" xml:space="preserve"><value>Se enciende solo cada vez que se abre MC Server Launcher. Con «Abrir con Windows» activado en los ajustes, sigue encendido después de reiniciar el ordenador.</value></data>
   <data name="Boot_StartingLine" xml:space="preserve"><value>Encendiendo: este servidor está marcado para encenderse al abrir la app.</value></data>
+  <data name="Sug_Online" xml:space="preserve"><value>Conectado</value></data>
+  <data name="Sug_OnlineOp" xml:space="preserve"><value>Conectado · operador</value></data>
+  <data name="Sug_Known" xml:space="preserve"><value>Ha jugado aquí</value></data>
+  <data name="Sug_SelA" xml:space="preserve"><value>Todos los jugadores</value></data>
+  <data name="Sug_SelP" xml:space="preserve"><value>El jugador más cercano</value></data>
+  <data name="Sug_SelR" xml:space="preserve"><value>Un jugador al azar</value></data>
+  <data name="Sug_SelS" xml:space="preserve"><value>Quien ejecuta el comando</value></data>
+  <data name="Sug_SelE" xml:space="preserve"><value>Todas las entidades</value></data>
 </root>

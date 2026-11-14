@@ -339,6 +339,20 @@ mundo. No hay rutas fijas del equipo en el código.
   servidor los tenga abiertos), sin seguir enlaces ni uniones. `ServerViewModel.Disk` mide al seleccionar el
   servidor, al pararse, al acabar una copia o una restauración y cuando se pide, nunca en el tic de las
   estadísticas, y nunca un servidor que nadie ha mirado.
+- **`CommandCatalog`**, **`CommandUsage`**, **`CommandCompleter`**, **`CommandHelpProbe`** — el
+  autocompletado de la consola. El catálogo empieza con `Resources/vanilla-commands.txt` (lo que un servidor
+  26.2 imprime con `help`) y lo sustituye la respuesta del propio servidor, que se pide la primera vez que se
+  escribe en cada arranque; las ramas de un comando (`help time`) se piden cuando hacen falta. Las reglas
+  del juego enseñan por qué la fuente es el servidor: 26.x cambió `keepInventory` por `keep_inventory`.
+  `CommandUsage` lee la notación de Brigadier (`<valor>`, `(a|b)`, `[opcional]`) y el completador ofrece las
+  palabras literales del uso y valores para los huecos que reconoce por su nombre (jugadores y selectores,
+  modos de juego, el true/false de una regla); lo demás (ítems, posiciones) no sugiere nada y deja que la
+  pista de sintaxis diga qué va ahí. La consulta sigue el patrón de la sonda de velocidad: escribe `help` y
+  luego un comando inexistente como marca de final, se queda solo con las líneas con forma de ayuda hasta la
+  respuesta a esa marca (o un tiempo límite) y deja pasar todo lo demás (entradas, chat). De Bukkit se leen
+  el nombre y la descripción de sus líneas `/nombre: descripción`. `ServerViewModel.Completion` guarda la
+  lista, la selección y el resto en gris; `MainWindow.Completion` lleva Tab, las flechas y Escape hasta él
+  en la fase de túnel, antes de que la navegación del foco se quede con Tab.
 - **`ByteSize`** y **`AppWindows`** — una sola forma de escribir un tamaño en disco (potencias de 1024; las
   velocidades de la línea siguen en decimal, como los Mb/s que tienen al lado) y un solo sitio donde pedir
   la ventana principal.
