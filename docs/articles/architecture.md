@@ -664,6 +664,8 @@ are no hard-coded machine paths.
   second copy opened once does not take it over. A `--login` launch with *start hidden* set gets its
   window built and switched on (`MainWindow.ActivateHidden`) but not shown: the lifetime only shows a
   `MainWindow` it has at start, so the window is handed over a moment later and appears from the tray.
+  That launch also switches the lifetime to `OnMainWindowClose`: with the main window never shown, the
+  first notification to close would otherwise count as the last window and end the app.
   Servers marked `StartWithApp` start in `MainViewModel.Activate`, one after another, after their wake
   listeners are up.
   The installer deletes the `Run` value on uninstall.

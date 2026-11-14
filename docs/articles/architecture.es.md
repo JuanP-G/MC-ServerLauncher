@@ -684,7 +684,9 @@ mundo. No hay rutas fijas del equipo en el código.
   Un arranque solo repara la entrada cuando la copia que abre ya no existe (una AppImage movida), así que una
   segunda copia abierta una vez no se la queda. Un arranque con `--login` y *empezar escondida* construye
   y activa la ventana (`MainWindow.ActivateHidden`) sin mostrarla: el ciclo de vida solo enseña la
-  `MainWindow` que tiene al empezar, así que se le entrega un momento después y aparece desde la bandeja. Los
+  `MainWindow` que tiene al empezar, así que se le entrega un momento después y aparece desde la bandeja.
+  Ese arranque pasa además el ciclo de vida a `OnMainWindowClose`: con la ventana principal sin mostrar, el
+  primer aviso que se cerrara contaría como la última ventana y terminaría la app. Los
   servidores con `StartWithApp` arrancan en `MainViewModel.Activate`, uno detrás de otro, con sus escuchas
   de despertar ya levantadas. El desinstalador borra el valor de `Run`.
 - **`SingleInstance`** — una sola copia en marcha por usuario, y un segundo lanzamiento trae la

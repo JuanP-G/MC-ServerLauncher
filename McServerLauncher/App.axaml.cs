@@ -65,6 +65,11 @@ public partial class App : Application
                 // Playit) and appears only when the tray icon is clicked.
                 if (TrayAvailable)
                 {
+                    // With the main window never shown, the first other window to close (a
+                    // notification) is "the last window" and the default mode ends the app. Only
+                    // the main window counts here; quitting goes through it (RequestExit) anyway.
+                    desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
+
                     // Both in the post, in this order: what Activate starts may ask for the main
                     // window, which must be this one by then.
                     Dispatcher.UIThread.Post(() =>
