@@ -323,6 +323,11 @@ are no hard-coded machine paths.
 - **`PlayerNames`** — what a Minecraft Java name looks like (`IsValid`, and `Pattern` for picking one out
   of a line). One rule for the five places that used to keep a regex of their own; it is also what stops
   a name from carrying a line break into a console command or becoming part of a path.
+- **`ServerDiskUsageService`** — what a server's folder takes, and which part is the world (`level-name`
+  and its Bukkit siblings), the backups, the mods or plugins and the logs. One walk per top-level folder,
+  off the UI thread, by file length (readable while the server holds the files), without following links
+  or junctions. `ServerViewModel.Disk` measures when the server is selected, when it stops, when a backup
+  or restore ends and on request, never on the stats tick, and never for a server nobody has looked at.
 - **`ByteSize`** and **`AppWindows`** — one way to write a size on disk (powers of 1024; line speeds stay
   decimal, like the Mb/s beside them) and one place to ask for the main window.
 - **`MinecraftIds`** — turns `minecraft:deepslate_diamond_ore` into "Deepslate diamond ore". Deliberately
@@ -651,6 +656,19 @@ are no hard-coded machine paths.
   wake listeners, and two JVMs on one world folder is how worlds get corrupted. A lock file answers
   "is anyone else running?" (the OS releases it even on a hard kill, unlike a PID file) and a named
   pipe carries the "come to the front" nudge.
+- **`LoginStartupService`** — opens the app at sign-in: the per-user `Run` key on Windows, an XDG
+  autostart entry on Linux, a LaunchAgent on macOS, each launching this copy with `--login`. Whether it
+  is on is read back from the system every time, never stored, because the user can switch it off from
+  outside (Task Manager marks the entry under `StartupApproved` instead of deleting it; GNOME writes
+  `Hidden=true`). A launch repairs the entry only when the copy it opens is gone (a moved AppImage), so a
+  second copy opened once does not take it over. A `--login` launch with *start hidden* set gets its
+  window built and switched on (`MainWindow.ActivateHidden`) but not shown: the lifetime only shows a
+  `MainWindow` it has at start, so the window is handed over a moment later and appears from the tray.
+  That launch also switches the lifetime to `OnMainWindowClose`: with the main window never shown, the
+  first notification to close would otherwise count as the last window and end the app.
+  Servers marked `StartWithApp` start in `MainViewModel.Activate`, one after another, after their wake
+  listeners are up.
+  The installer deletes the `Run` value on uninstall.
 - **`ServerNameRule`** / **`BukkitPathRule`** — a server's folder name, checked before it becomes a
   server that will not start: what Windows forbids outright (illegal characters, reserved device
   names, a trailing dot or space) and, separately, the two characters Paper and Purpur refuse to run

@@ -1444,4 +1444,28 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Pumpkin_OpenToml" xml:space="preserve"><value>Abrir pumpkin.toml</value></data>
   <data name="Pumpkin_TomlDesc" xml:space="preserve"><value>O Pumpkin não usa server.properties nem Java. A porta, a mensagem do servidor, o máximo de jogadores, a lista branca e as regras do jogo estão neste ficheiro. Altere-o com o servidor parado.</value></data>
   <data name="Pumpkin_TomlMissing" xml:space="preserve"><value>Ainda não há pumpkin.toml, ou não foi possível abri-lo. O Pumpkin cria-o na primeira vez que arranca.</value></data>
+  <data name="Disk_OnDiskFmt" xml:space="preserve"><value>{0} em disco</value></data>
+  <data name="Disk_World" xml:space="preserve"><value>Mundo</value></data>
+  <data name="Disk_WorldLong" xml:space="preserve"><value>Mundo (com o Nether e o End)</value></data>
+  <data name="Disk_BackupsFmt" xml:space="preserve"><value>Cópias de segurança · {0}</value></data>
+  <data name="Disk_Logs" xml:space="preserve"><value>Registos</value></data>
+  <data name="Disk_LogsLong" xml:space="preserve"><value>Registos e relatórios de falhas</value></data>
+  <data name="Disk_Other" xml:space="preserve"><value>O resto</value></data>
+  <data name="Disk_OtherLong" xml:space="preserve"><value>Servidor, bibliotecas e definições</value></data>
+  <data name="Disk_TipMoreFmt" xml:space="preserve"><value>Detalhe completo em {0} → {1}.</value></data>
+  <data name="Disk_Measure" xml:space="preserve"><value>Medir de novo</value></data>
+  <data name="Disk_OpenFolder" xml:space="preserve"><value>Abrir pasta</value></data>
+  <data name="Disk_Measuring" xml:space="preserve"><value>A medir…</value></data>
+  <data name="Disk_MeasuredFmt" xml:space="preserve"><value>Medido às {0}</value></data>
+  <data name="Disk_Missing" xml:space="preserve"><value>A pasta do servidor não foi encontrada.</value></data>
+  <data name="Sset_Storage" xml:space="preserve"><value>Armazenamento</value></data>
+  <data name="Sset_StorageHint" xml:space="preserve"><value>O espaço que a pasta deste servidor ocupa no computador.</value></data>
+  <data name="Boot_TitleWindows" xml:space="preserve"><value>Abrir com o Windows</value></data>
+  <data name="Boot_Title" xml:space="preserve"><value>Abrir ao iniciar sessão</value></data>
+  <data name="Boot_Desc" xml:space="preserve"><value>A app abre-se sozinha ao iniciar sessão no computador. Assim, depois de o reiniciar, os servidores com despertar automático voltam a escutar e os marcados com “Ligar ao abrir a app” ligam-se.</value></data>
+  <data name="Boot_Hidden" xml:space="preserve"><value>Começar escondida na área de notificação</value></data>
+  <data name="Boot_ErrorFmt" xml:space="preserve"><value>Não foi possível alterar: {0}</value></data>
+  <data name="Boot_ServerTitle" xml:space="preserve"><value>Ligar ao abrir a app</value></data>
+  <data name="Boot_ServerHint" xml:space="preserve"><value>Liga-se sozinho sempre que o MC Server Launcher abre. Com “Abrir com o Windows” ativado nas definições, volta a ficar ligado depois de reiniciar o computador.</value></data>
+  <data name="Boot_StartingLine" xml:space="preserve"><value>A ligar: este servidor está marcado para ligar ao abrir a app.</value></data>
 </root>

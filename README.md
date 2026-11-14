@@ -196,6 +196,10 @@ When it opens again, the **What's new** section tells you what changed. It works
   Bedrock player trying to join wakes it too, whitelist or not (their name can't be read at that point),
   whether their client connects the new way (NetherNet) or the old one (RakNet); the first attempt is
   refused and they join a few seconds later. Per server and **off by default**.
+- **Starts with the app, and the app with the computer** — mark a server **Start when the app opens** and it
+  comes up every time the launcher does; turn on **Open with Windows** in Settings (sign-in on Linux and
+  macOS) and the launcher opens by itself, hidden in the tray if you like, so after a restart those servers
+  are back and the sleeping ones listen again. Both **off by default**.
 - **Nothing missing before it starts** — if a mod or plugin is waiting on a dependency, you're told **when
   you press Start**, with the option to install it and start. It's read from the jars themselves, so it works
   **offline**. Covers Fabric and Forge/NeoForge mods, and Paper and Purpur plugins.
@@ -318,6 +322,9 @@ When it opens again, the **What's new** section tells you what changed. It works
   hand are counted separately, so the clock never deletes them. The **Backups** tab shows each pile against
   its limit, the space they take and when the next one is due, lists them by day and marks the one the next backup will replace.
   **Back up now** and one-click **Restore**.
+- **How much room it takes** — under the server's status, what its folder takes on disk; in
+  **Configure → Storage**, how much of it is the world, the backups, the mods or plugins and the logs, with a
+  button to open the folder. Measured in the background, while it runs too.
 - **Settings, part of the window** — language, tray behaviour, **Add to desktop**, notifications, announcements,
   colours and the player history, each on its own page. Saved as you go.
 - **What's new, in the window too** — the notes of every version in one list, the one just installed already
@@ -327,7 +334,8 @@ When it opens again, the **What's new** section tells you what changed. It works
   whoever uses tunnels. You choose how the mark looks, where the strip shows and what you want to hear about
   (or turn announcements off, which stops the requests too) in **Settings → Announcements**.
 - **Stays out of the way** — minimize or close **to the system tray** and your servers keep running; launching
-  the app again brings that window back instead of opening a second copy.
+  the app again brings that window back instead of opening a second copy. It can also open at sign-in,
+  straight into the tray.
 - **Updates itself on all three platforms** — the download is **checked against its published SHA-256** before
   it is installed, and the **What's new** section then tells you what changed.
 - **Multi-language** — English, Spanish, Portuguese, French and German.

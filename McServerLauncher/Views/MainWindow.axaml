@@ -347,6 +347,16 @@
                                 <TextBlock Text="{Binding IdleCountdownText}" FontSize="12"
                                            Foreground="{StaticResource McListText}" VerticalAlignment="Center" />
                             </StackPanel>
+                            <!-- What the server takes on disk, in the same quiet grey; the breakdown is
+                                 in the tooltip and on the Storage page of its settings. -->
+                            <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right"
+                                        Margin="0,-4,2,8" IsVisible="{Binding HasDiskUsage}"
+                                        Background="Transparent" ToolTip.Tip="{Binding DiskUsageTip}">
+                                <ic:FluentIcon Icon="HardDrive" FontSize="13" Foreground="{StaticResource McListText}"
+                                               VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding DiskUsageText}" FontSize="12"
+                                           Foreground="{StaticResource McListText}" VerticalAlignment="Center" />
+                            </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                                 <Button Classes="accent" Command="{Binding StartCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">

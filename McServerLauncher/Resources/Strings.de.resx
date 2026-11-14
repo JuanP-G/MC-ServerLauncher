@@ -1444,4 +1444,28 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Pumpkin_OpenToml" xml:space="preserve"><value>pumpkin.toml öffnen</value></data>
   <data name="Pumpkin_TomlDesc" xml:space="preserve"><value>Pumpkin nutzt weder server.properties noch Java. Port, Servernachricht, Spielerlimit, Whitelist und Spielregeln stehen in dieser Datei. Ändere sie bei gestopptem Server.</value></data>
   <data name="Pumpkin_TomlMissing" xml:space="preserve"><value>Es gibt noch keine pumpkin.toml, oder sie ließ sich nicht öffnen. Pumpkin legt sie beim ersten Start an.</value></data>
+  <data name="Disk_OnDiskFmt" xml:space="preserve"><value>{0} auf dem Datenträger</value></data>
+  <data name="Disk_World" xml:space="preserve"><value>Welt</value></data>
+  <data name="Disk_WorldLong" xml:space="preserve"><value>Welt (mit Nether und End)</value></data>
+  <data name="Disk_BackupsFmt" xml:space="preserve"><value>Sicherungen · {0}</value></data>
+  <data name="Disk_Logs" xml:space="preserve"><value>Protokolle</value></data>
+  <data name="Disk_LogsLong" xml:space="preserve"><value>Protokolle und Absturzberichte</value></data>
+  <data name="Disk_Other" xml:space="preserve"><value>Rest</value></data>
+  <data name="Disk_OtherLong" xml:space="preserve"><value>Server, Bibliotheken und Einstellungen</value></data>
+  <data name="Disk_TipMoreFmt" xml:space="preserve"><value>Ganze Aufschlüsselung unter {0} → {1}.</value></data>
+  <data name="Disk_Measure" xml:space="preserve"><value>Neu messen</value></data>
+  <data name="Disk_OpenFolder" xml:space="preserve"><value>Ordner öffnen</value></data>
+  <data name="Disk_Measuring" xml:space="preserve"><value>Wird gemessen…</value></data>
+  <data name="Disk_MeasuredFmt" xml:space="preserve"><value>Gemessen um {0}</value></data>
+  <data name="Disk_Missing" xml:space="preserve"><value>Der Ordner des Servers wurde nicht gefunden.</value></data>
+  <data name="Sset_Storage" xml:space="preserve"><value>Speicher</value></data>
+  <data name="Sset_StorageHint" xml:space="preserve"><value>Wie viel Platz der Ordner dieses Servers auf dem Computer belegt.</value></data>
+  <data name="Boot_TitleWindows" xml:space="preserve"><value>Mit Windows öffnen</value></data>
+  <data name="Boot_Title" xml:space="preserve"><value>Beim Anmelden öffnen</value></data>
+  <data name="Boot_Desc" xml:space="preserve"><value>Die App öffnet sich beim Anmelden am Computer von selbst. So hören Server mit automatischem Aufwecken nach einem Neustart wieder zu, und die mit „Beim Öffnen der App starten“ starten.</value></data>
+  <data name="Boot_Hidden" xml:space="preserve"><value>Versteckt im Infobereich starten</value></data>
+  <data name="Boot_ErrorFmt" xml:space="preserve"><value>Das ließ sich nicht ändern: {0}</value></data>
+  <data name="Boot_ServerTitle" xml:space="preserve"><value>Beim Öffnen der App starten</value></data>
+  <data name="Boot_ServerHint" xml:space="preserve"><value>Er startet jedes Mal von selbst, wenn MC Server Launcher geöffnet wird. Mit „Mit Windows öffnen“ in den Einstellungen läuft er auch nach einem Neustart des Computers wieder.</value></data>
+  <data name="Boot_StartingLine" xml:space="preserve"><value>Wird gestartet: Dieser Server startet beim Öffnen der App.</value></data>
 </root>

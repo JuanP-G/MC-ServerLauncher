@@ -1444,4 +1444,28 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Pumpkin_OpenToml" xml:space="preserve"><value>Ouvrir pumpkin.toml</value></data>
   <data name="Pumpkin_TomlDesc" xml:space="preserve"><value>Pumpkin n'utilise ni server.properties ni Java. Le port, le message du serveur, le nombre maximal de joueurs, la liste blanche et les règles du jeu sont dans ce fichier. Modifiez-le serveur arrêté.</value></data>
   <data name="Pumpkin_TomlMissing" xml:space="preserve"><value>Il n'y a pas encore de pumpkin.toml, ou il n'a pas pu être ouvert. Pumpkin le crée à son premier démarrage.</value></data>
+  <data name="Disk_OnDiskFmt" xml:space="preserve"><value>{0} sur le disque</value></data>
+  <data name="Disk_World" xml:space="preserve"><value>Monde</value></data>
+  <data name="Disk_WorldLong" xml:space="preserve"><value>Monde (avec le Nether et l'End)</value></data>
+  <data name="Disk_BackupsFmt" xml:space="preserve"><value>Sauvegardes · {0}</value></data>
+  <data name="Disk_Logs" xml:space="preserve"><value>Journaux</value></data>
+  <data name="Disk_LogsLong" xml:space="preserve"><value>Journaux et rapports de plantage</value></data>
+  <data name="Disk_Other" xml:space="preserve"><value>Le reste</value></data>
+  <data name="Disk_OtherLong" xml:space="preserve"><value>Serveur, bibliothèques et réglages</value></data>
+  <data name="Disk_TipMoreFmt" xml:space="preserve"><value>Détail complet dans {0} → {1}.</value></data>
+  <data name="Disk_Measure" xml:space="preserve"><value>Mesurer à nouveau</value></data>
+  <data name="Disk_OpenFolder" xml:space="preserve"><value>Ouvrir le dossier</value></data>
+  <data name="Disk_Measuring" xml:space="preserve"><value>Mesure en cours…</value></data>
+  <data name="Disk_MeasuredFmt" xml:space="preserve"><value>Mesuré à {0}</value></data>
+  <data name="Disk_Missing" xml:space="preserve"><value>Le dossier du serveur est introuvable.</value></data>
+  <data name="Sset_Storage" xml:space="preserve"><value>Stockage</value></data>
+  <data name="Sset_StorageHint" xml:space="preserve"><value>La place que prend le dossier de ce serveur sur l'ordinateur.</value></data>
+  <data name="Boot_TitleWindows" xml:space="preserve"><value>Ouvrir avec Windows</value></data>
+  <data name="Boot_Title" xml:space="preserve"><value>Ouvrir à l'ouverture de session</value></data>
+  <data name="Boot_Desc" xml:space="preserve"><value>L'application s'ouvre toute seule à l'ouverture de session. Ainsi, après un redémarrage, les serveurs qui se réveillent à la demande écoutent à nouveau, et ceux réglés sur « Démarrer à l'ouverture de l'application » démarrent.</value></data>
+  <data name="Boot_Hidden" xml:space="preserve"><value>Démarrer cachée dans la zone de notification</value></data>
+  <data name="Boot_ErrorFmt" xml:space="preserve"><value>Impossible de le modifier : {0}</value></data>
+  <data name="Boot_ServerTitle" xml:space="preserve"><value>Démarrer à l'ouverture de l'application</value></data>
+  <data name="Boot_ServerHint" xml:space="preserve"><value>Il démarre tout seul chaque fois que MC Server Launcher s'ouvre. Avec « Ouvrir avec Windows » activé dans les réglages, il revient après un redémarrage de l'ordinateur.</value></data>
+  <data name="Boot_StartingLine" xml:space="preserve"><value>Démarrage : ce serveur est réglé pour démarrer à l'ouverture de l'application.</value></data>
 </root>

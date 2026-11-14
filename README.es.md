@@ -198,6 +198,10 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   echa a quien use uno prestado. Con crossplay, un jugador de Bedrock que intente entrar también lo despierta,
   tenga lista blanca o no (su nombre no se puede leer en ese momento), se conecte su cliente de la forma
   nueva (NetherNet) o de la antigua (RakNet); el primer intento se rechaza y entra unos segundos después. Por servidor y **desactivado de serie**.
+- **Se enciende con la app, y la app con el ordenador** — marca un servidor con **Encender al abrir la app**
+  y arranca cada vez que se abre el launcher; activa **Abrir con Windows** en los ajustes (al iniciar sesión
+  en Linux y macOS) y el launcher se abre solo, escondido en la bandeja si quieres, así que después de
+  reiniciar esos servidores vuelven y los dormidos vuelven a escuchar. Las dos cosas **desactivadas de serie**.
 - **Antes de arrancar se comprueba que no falte nada** — si a un mod o plugin le falta una dependencia, se
   avisa **al darle a Iniciar**, con la opción de instalarla y arrancar. Se lee de los propios jars, así que
   funciona **sin conexión**. Para mods de Fabric y Forge/NeoForge y plugins de Paper y Purpur.
@@ -320,6 +324,9 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   nadie no acumula copias del mismo mundo. Las que haces a mano se cuentan aparte, así que el reloj nunca las
   borra. La pestaña **Copias** enseña cada montón frente a su cupo, el espacio que ocupan y cuándo toca la
   próxima, las ordena por días y marca la que la próxima copia sustituirá. **Copia ahora** y **Restaurar** con un clic.
+- **Cuánto ocupa** — bajo el estado del servidor, lo que ocupa su carpeta en el disco; en
+  **Configurar → Almacenamiento**, cuánto es el mundo, las copias, los mods o plugins y los registros, con un
+  botón para abrir la carpeta. Se mide en segundo plano, también con el servidor encendido.
 - **Ajustes dentro de la ventana** — idioma, bandeja del sistema, **añadir al escritorio**, notificaciones,
   anuncios, colores e historial de jugadores, cada cosa en su página. Se guarda al momento.
 - **Novedades, también dentro de la ventana** — las notas de todas las versiones en una lista, con la recién
@@ -330,7 +337,8 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
   la marca, dónde sale la banda y de qué quieres enterarte (o desactivas los anuncios, lo que también corta las
   peticiones).
 - **No estorba** — minimiza o cierra **a la bandeja** y tus servidores siguen; abrir la app otra vez recupera
-  esa ventana en vez de abrir una segunda copia.
+  esa ventana en vez de abrir una segunda copia. También puede abrirse al iniciar sesión, directamente en la
+  bandeja.
 - **Se actualiza sola en las tres plataformas** — la descarga se **verifica contra su SHA-256 publicado** antes
   de instalarla, y después la sección **Novedades** cuenta qué ha cambiado.
 - **Multi-idioma** — español, inglés, portugués, francés y alemán.

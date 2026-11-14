@@ -20,6 +20,7 @@ public enum ServerSettingsPage
     Power,
     Backups,
     Notifications,
+    Storage,
     Advanced
 }
 

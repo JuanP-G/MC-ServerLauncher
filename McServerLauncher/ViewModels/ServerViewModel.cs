@@ -408,6 +408,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         BackupCoordinator = new BackupCoordinator(this, new WorldBackupService());
         BackupCoordinator.RestoringChanged += () => RunOnUi(OnRestoringChanged);
         InitPerformance();
+        InitDisk();
 
         // Before RefreshInfo, which refreshes the player lists and with them this.
         History = new PlayerHistoryViewModel(this);
@@ -823,6 +824,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
             // However it stopped — a crash, "stop" typed in the console. A stop the app asked for
             // notes the world itself, holding it; this one waits until nothing else is reading it.
             BackupCoordinator.ServerStopped();
+            RemeasureDiskIfShown();   // logs closed, the world saved
         }
         else if (state == ServerState.Starting)
         {
@@ -1105,6 +1107,18 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
         var entry = NotificationCatalog.For(kind);
         ToastService.Shared.Notify(Localizer.Get(NotificationCatalog.HeadingKey(kind)), Name, message,
             entry.Icon, entry.Level, NotificationPreferences.EffectiveFor(Config));
+    }
+
+    /// <summary>Starts the server if it is marked to start with the app. Called once, as the app opens.</summary>
+    /// <remarks>
+    /// As an automatic start: nobody may be in front of the screen (the app can open hidden at
+    /// sign-in), so no step of the start may stop to ask.
+    /// </remarks>
+    internal Task StartBecauseAppOpenedAsync()
+    {
+        if (!Config.StartWithApp || !CanStart) return Task.CompletedTask;
+        OnConsoleLine(Localizer.Get("Boot_StartingLine"));
+        return StartInternalAsync(isAutoRestart: true);
     }
 
     [RelayCommand(CanExecute = nameof(CanStart))]
@@ -1654,6 +1668,7 @@ public sealed partial class ServerViewModel : ObservableObject, IBackupHost, IPl
     /// </remarks>
     public void Dispose()
     {
+        _diskCts?.Cancel();
         _wake.Dispose();
         _process.Dispose();
         BackupCoordinator.Dispose();
