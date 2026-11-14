@@ -116,7 +116,6 @@ public partial class ServerTypePicker : UserControl
             // out at three different heights and the grid read as broken rather than compact.
             Height = 104,
             Margin = new Avalonia.Thickness(0, 0, 8, 8),
-            Padding = new Avalonia.Thickness(11, 9),
             VerticalContentAlignment = VerticalAlignment.Top
         };
         ToolTip.SetTip(card, CardTip(entry));
@@ -193,7 +192,7 @@ public partial class ServerTypePicker : UserControl
             var full = entry.Crossplay == CrossplayLevel.Full;
             badges.Children.Add(Badge(
                 Localizer.Get(full ? "Badge_Bedrock" : "Badge_BedrockPartial"),
-                new ImmutableSolidColorBrush(Color.Parse(full ? "#3E8AC0" : "#B07A2B"))));
+                new ImmutableSolidColorBrush(Color.Parse(full ? "#3E7FB0" : "#B07A2B"))));
         }
 
         // Amber, the same one "partial" uses: both say "read the small print before you rely on this".
@@ -224,7 +223,10 @@ public partial class ServerTypePicker : UserControl
     /// </remarks>
     private static void Paint(RadioButton card, IBrush accent, bool picked)
     {
+        // The picked card's edge is a pixel thicker; the padding gives that pixel back, so the
+        // content keeps exactly the same room and its text does not rewrap and jump when picked.
         card.BorderThickness = new Avalonia.Thickness(picked ? 2 : 1);
+        card.Padding = picked ? new Avalonia.Thickness(10, 8) : new Avalonia.Thickness(11, 9);
         card.BorderBrush = picked ? accent : new ImmutableSolidColorBrush(Color.Parse("#40808080"));
         card.Background = picked
             ? new ImmutableSolidColorBrush(Color.Parse("#22808080"))
