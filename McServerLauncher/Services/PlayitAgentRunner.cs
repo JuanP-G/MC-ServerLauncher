@@ -31,24 +31,25 @@ public sealed class PlayitAgentRunner : IDisposable
     // (3) the pinned per-asset hashes in AssetSha256 below. Bump them together — a version change
     // without matching hashes refuses to run, and one that doesn't match the registered variant fails
     // create_agent (AgentVariantVersionNotFound).
-    public const int VersionMajor = 1;
+    public const int VersionMajor = 2;
     public const int VersionMinor = 0;
-    public const int VersionPatch = 10;
+    public const int VersionPatch = 2;
 
     // GitHub release tag for the pinned version (derived, so the numbers above are the only source).
     private static readonly string AgentVersion = $"v{VersionMajor}.{VersionMinor}.{VersionPatch}";
 
-    // Pinned SHA-256 of each v1.0.10 release asset we may download. The agent binary runs with the
+    // Pinned SHA-256 of each v2.0.2 release asset we may download. The agent binary runs with the
     // user's key and is the highest-privilege code the app fetches, so — like every other download
     // (Mojang/Adoptium/Paper/Modrinth and our own installer) — it is checksum-verified before running.
     // Because AgentVersion is pinned, these are known constants; bump them whenever AgentVersion changes.
-    private static readonly Dictionary<string, string> AssetSha256 = new(StringComparer.Ordinal)
-    {
-        ["playit-windows-x86_64-signed.exe"] = "2dbdaad119844cbbc062cc9774b8b462afa5f1b4b7832a9fc5ef4676cae887cf",
-        ["playit-windows-x86-signed.exe"] = "9cec088fa4ee9ad4d59acd27512cf914078bdb31742e9abc946b81ea705f9d35",
-        ["playit-linux-amd64"] = "2df7d9f10227ab312b1ad341853db4e8a8243df5cfcdbae58713a4271711c339",
-        ["playit-linux-aarch64"] = "4c0db3e7b3a8158e249441c2f0b73f54e83429395890c7b1ca45fd7a6303d763",
-    };
+    internal static readonly IReadOnlyDictionary<string, string> AssetSha256 =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["playitd-windows-x86_64-signed.exe"] = "6e62da9f56a3bcf72e0c62c29e94609c847cc9b110c460f68b20035525985238",
+            ["playitd-windows-x86-signed.exe"] = "612f9ffd2b876e18951dd2c8fb87b2e1dd4f4252b45d1829ad4da88e2253ec88",
+            ["playit-linux-amd64"] = "9d27a8dbb4d2d8a7107fcabfa33028c789a30a64c97a36447fe4afb94e08dde9",
+            ["playit-linux-aarch64"] = "aed86fc2b82a772ca0e1d5cddec6c3123f96e12a099f7ae45aaa59a9a430a2cd",
+        };
 
     private static readonly HttpClient Http = AppHttp.Create(TimeSpan.FromMinutes(5));
 
@@ -100,11 +101,17 @@ public sealed class PlayitAgentRunner : IDisposable
     /// Windows on ARM gets the x64 build. Playit publishes no ARM build for Windows, and the app
     /// itself already runs there as x64 under emulation — which is what the README promises — so the
     /// agent can too. It used to be "unsupported", which left those machines with no tunnels at all.
+    /// <para>
+    /// On Windows the daemon is the <c>playitd-</c> asset. Up to 1.x, <c>playit-windows-*.exe</c>
+    /// was the daemon; since 2.0 that name is the CLI, which only talks to a daemon and has no
+    /// <c>--secret-path</c>. On Linux <c>playit-linux-*</c> is still the daemon (the CLI is
+    /// <c>playit-cli-linux-*</c>).
+    /// </para>
     /// </remarks>
     internal static string? AssetFor(bool windows, bool linux, Architecture arch) => arch switch
     {
-        Architecture.X64 or Architecture.Arm64 when windows => "playit-windows-x86_64-signed.exe",
-        Architecture.X86 when windows => "playit-windows-x86-signed.exe",
+        Architecture.X64 or Architecture.Arm64 when windows => "playitd-windows-x86_64-signed.exe",
+        Architecture.X86 when windows => "playitd-windows-x86-signed.exe",
         Architecture.X64 when linux => "playit-linux-amd64",
         Architecture.Arm64 when linux => "playit-linux-aarch64",
         _ => null // macOS (no official binary) and other combos: not auto-runnable
