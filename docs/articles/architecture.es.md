@@ -1108,7 +1108,13 @@ más privilegio que descarga la app, se **verifica contra un SHA-256 fijado en e
 versión pinneada) antes de ejecutarse — al descargar y también al reutilizar una copia en caché — y
 se borra/falla si no coincide, igual que el resto de descargas (`DownloadVerifier`). Un solo agente
 sirve todos sus túneles. No disponible en macOS (Playit no publica binario de macOS); ahí el usuario
-ejecuta Playit por su cuenta.
+ejecuta Playit por su cuenta. Como la versión está fijada, nada la adelanta sola:
+`.github/workflows/playit-agent-watch.yml` pregunta a GitHub una vez al día por la última versión
+estable de Playit y, si es más nueva que la fijada, abre un issue asignado al dueño con la versión,
+los hashes de los assets que usa la app y los pasos para actualizar
+(`tools/playit-agent/check-release.sh`). Avisa cuando aparece un asset `playitd-` junto a uno que usa
+la app, que es como la 2.0 convirtió el asset de Windows en el CLI. La actualización sigue siendo a
+mano.
 
 ### Prueba de conexión
 La página de red de la configuración (y **Probar conexión** en la tarjeta de Playit del detalle, que
