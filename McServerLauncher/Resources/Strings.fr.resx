@@ -635,7 +635,7 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Cmd_Difficulty_Title" xml:space="preserve"><value>difficulty &lt;difficulté&gt;</value></data>
   <data name="Cmd_Difficulty_Desc" xml:space="preserve"><value>Change la difficulté (peaceful, easy, normal, hard).</value></data>
   <data name="Cmd_Gamerule_Title" xml:space="preserve"><value>gamerule &lt;règle&gt; &lt;valeur&gt;</value></data>
-  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Change une règle du jeu (p. ex. keepInventory true).</value></data>
+  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Change une règle du jeu (p. ex. keep_inventory true).</value></data>
   <data name="Cmd_Seed_Title" xml:space="preserve"><value>seed</value></data>
   <data name="Cmd_Seed_Desc" xml:space="preserve"><value>Affiche la graine du monde.</value></data>
   <data name="Cmd_SaveAll_Title" xml:space="preserve"><value>save-all</value></data>
@@ -1468,4 +1468,12 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="Boot_ServerTitle" xml:space="preserve"><value>Démarrer à l'ouverture de l'application</value></data>
   <data name="Boot_ServerHint" xml:space="preserve"><value>Il démarre tout seul chaque fois que MC Server Launcher s'ouvre. Avec « Ouvrir avec Windows » activé dans les réglages, il revient après un redémarrage de l'ordinateur.</value></data>
   <data name="Boot_StartingLine" xml:space="preserve"><value>Démarrage : ce serveur est réglé pour démarrer à l'ouverture de l'application.</value></data>
+  <data name="Sug_Online" xml:space="preserve"><value>Connecté</value></data>
+  <data name="Sug_OnlineOp" xml:space="preserve"><value>Connecté · opérateur</value></data>
+  <data name="Sug_Known" xml:space="preserve"><value>A déjà joué ici</value></data>
+  <data name="Sug_SelA" xml:space="preserve"><value>Tous les joueurs</value></data>
+  <data name="Sug_SelP" xml:space="preserve"><value>Le joueur le plus proche</value></data>
+  <data name="Sug_SelR" xml:space="preserve"><value>Un joueur au hasard</value></data>
+  <data name="Sug_SelS" xml:space="preserve"><value>Celui qui lance la commande</value></data>
+  <data name="Sug_SelE" xml:space="preserve"><value>Toutes les entités</value></data>
 </root>

@@ -299,7 +299,11 @@ When it opens again, the **What's new** section tells you what changed. It works
   commands, and what the app says told apart from what the server says), **a filter per category with its own
   count**, and what you search for **marked inside the line**. The app **answers the start-up warnings that
   are its to answer**: it enables native access on Java 22+ and asks once whether to accept BlueMap's download.
-  With a command box and a **command-help** panel.
+  With a command box that **completes as you type**, like the game's chat: what fits in a list with what
+  each option is, the likeliest one greyed in the box, **Tab** to take it, the arrows to pick another and
+  the command's usage underneath. Commands, mod and plugin commands included, come from the server's own
+  `help` (asked quietly the first time you type, so its answer stays out of the console; it is still in the
+  server's own log), players from who is online and who has played, and a **command-help** panel.
 - **Notifications** — when a player joins or leaves, someone dies (PvP), the server crashes, auto-restart
   gives up, or a server stops or starts by itself. Per kind, globally and **per server**.
 - **Every notification tells itself apart at a glance** — a muted colour and an icon per kind, with what

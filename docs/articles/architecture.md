@@ -328,6 +328,20 @@ are no hard-coded machine paths.
   off the UI thread, by file length (readable while the server holds the files), without following links
   or junctions. `ServerViewModel.Disk` measures when the server is selected, when it stops, when a backup
   or restore ends and on request, never on the stats tick, and never for a server nobody has looked at.
+- **`CommandCatalog`**, **`CommandUsage`**, **`CommandCompleter`**, **`CommandHelpProbe`** — the console's
+  completion. The catalog starts from `Resources/vanilla-commands.txt` (what a 26.2 server prints for
+  `help`) and is replaced by the server's own answer, asked the first time something is typed in a run;
+  a command's branches (`help time`) are asked when first needed. Game rules alone show why the server is
+  the source: 26.x renamed `keepInventory` to `keep_inventory`. `CommandUsage` reads Brigadier's usage
+  notation (`<value>`, `(a|b)`, `[optional]`), and the completer offers the literal words of the usage
+  plus values for the placeholders it recognises by name (players and selectors, game modes, a rule's
+  true/false); anything else (items, positions) suggests nothing and leaves the usage hint to say what goes
+  there. The probe follows the speed probe's pattern: it writes `help` and then an unknown command as an
+  end marker, keeps back only lines shaped like help until that marker's reply (or a timeout), and lets
+  everything else (joins, chat) through. Bukkit's `/name: description` lines are read for the name and
+  description. `ServerViewModel.Completion` holds the list, the selection and the greyed rest;
+  `MainWindow.Completion` routes Tab, the arrows and Escape to it on the tunnel phase, before focus
+  navigation takes Tab.
 - **`ByteSize`** and **`AppWindows`** — one way to write a size on disk (powers of 1024; line speeds stay
   decimal, like the Mb/s beside them) and one place to ask for the main window.
 - **`MinecraftIds`** — turns `minecraft:deepslate_diamond_ore` into "Deepslate diamond ore". Deliberately

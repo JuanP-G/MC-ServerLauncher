@@ -300,8 +300,13 @@ volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona
 - **Consola legible** — cada línea con su color (errores, avisos, chat, entradas y salidas, comandos, y lo
   que dice la app aparte de lo que dice el servidor), **un filtro por categoría con su contador** y lo que
   buscas **marcado dentro de la línea**. La app **resuelve los avisos de arranque que le tocan**: activa el
-  acceso nativo en Java 22+ y pregunta una vez si aceptas la descarga de BlueMap. Con caja de comandos y un
-  panel de **ayuda de comandos**.
+  acceso nativo en Java 22+ y pregunta una vez si aceptas la descarga de BlueMap. Con una caja de comandos que
+  **se completa mientras escribes**, como el chat del juego: lo que encaja en una lista con qué es cada
+  opción, la más probable en gris dentro de la caja, **Tab** para aceptarla, las flechas para elegir otra y
+  la sintaxis del comando debajo. Los comandos, incluidos los de mods y plugins, salen del propio `help`
+  del servidor (se le pregunta sin hacer ruido la primera vez que escribes, así que su respuesta no ensucia
+  la consola; sí queda en el log del servidor), los jugadores de quién está conectado y quién ha jugado, y
+  un panel de **ayuda de comandos**.
 - **Notificaciones** — cuando un jugador entra o sale, alguien muere (PvP), el servidor se cae, el reinicio
   automático se rinde, o un servidor se apaga o se enciende solo. Por tipo, de forma global y **por servidor**.
 - **Cada aviso se distingue de un vistazo** — un color apagado y un icono por tipo, con lo ocurrido en la

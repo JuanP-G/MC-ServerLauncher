@@ -635,7 +635,7 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Cmd_Difficulty_Title" xml:space="preserve"><value>difficulty &lt;Schwierigkeit&gt;</value></data>
   <data name="Cmd_Difficulty_Desc" xml:space="preserve"><value>Ändert den Schwierigkeitsgrad (peaceful, easy, normal, hard).</value></data>
   <data name="Cmd_Gamerule_Title" xml:space="preserve"><value>gamerule &lt;Regel&gt; &lt;Wert&gt;</value></data>
-  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Ändert eine Spielregel (z. B. keepInventory true).</value></data>
+  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Ändert eine Spielregel (z. B. keep_inventory true).</value></data>
   <data name="Cmd_Seed_Title" xml:space="preserve"><value>seed</value></data>
   <data name="Cmd_Seed_Desc" xml:space="preserve"><value>Zeigt den Seed der Welt.</value></data>
   <data name="Cmd_SaveAll_Title" xml:space="preserve"><value>save-all</value></data>
@@ -1468,4 +1468,12 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="Boot_ServerTitle" xml:space="preserve"><value>Beim Öffnen der App starten</value></data>
   <data name="Boot_ServerHint" xml:space="preserve"><value>Er startet jedes Mal von selbst, wenn MC Server Launcher geöffnet wird. Mit „Mit Windows öffnen“ in den Einstellungen läuft er auch nach einem Neustart des Computers wieder.</value></data>
   <data name="Boot_StartingLine" xml:space="preserve"><value>Wird gestartet: Dieser Server startet beim Öffnen der App.</value></data>
+  <data name="Sug_Online" xml:space="preserve"><value>Online</value></data>
+  <data name="Sug_OnlineOp" xml:space="preserve"><value>Online · Operator</value></data>
+  <data name="Sug_Known" xml:space="preserve"><value>Hat hier gespielt</value></data>
+  <data name="Sug_SelA" xml:space="preserve"><value>Alle Spieler</value></data>
+  <data name="Sug_SelP" xml:space="preserve"><value>Der nächste Spieler</value></data>
+  <data name="Sug_SelR" xml:space="preserve"><value>Ein zufälliger Spieler</value></data>
+  <data name="Sug_SelS" xml:space="preserve"><value>Wer den Befehl ausführt</value></data>
+  <data name="Sug_SelE" xml:space="preserve"><value>Alle Entitäten</value></data>
 </root>

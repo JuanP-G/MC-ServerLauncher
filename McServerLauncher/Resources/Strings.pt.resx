@@ -635,7 +635,7 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Cmd_Difficulty_Title" xml:space="preserve"><value>difficulty &lt;dificuldade&gt;</value></data>
   <data name="Cmd_Difficulty_Desc" xml:space="preserve"><value>Muda a dificuldade (peaceful, easy, normal, hard).</value></data>
   <data name="Cmd_Gamerule_Title" xml:space="preserve"><value>gamerule &lt;regra&gt; &lt;valor&gt;</value></data>
-  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Muda uma regra do jogo (p. ex. keepInventory true).</value></data>
+  <data name="Cmd_Gamerule_Desc" xml:space="preserve"><value>Muda uma regra do jogo (p. ex. keep_inventory true).</value></data>
   <data name="Cmd_Seed_Title" xml:space="preserve"><value>seed</value></data>
   <data name="Cmd_Seed_Desc" xml:space="preserve"><value>Mostra a semente do mundo.</value></data>
   <data name="Cmd_SaveAll_Title" xml:space="preserve"><value>save-all</value></data>
@@ -1468,4 +1468,12 @@ Os ficheiros estão na pasta "{4}" deste pacote.</value></data>
   <data name="Boot_ServerTitle" xml:space="preserve"><value>Ligar ao abrir a app</value></data>
   <data name="Boot_ServerHint" xml:space="preserve"><value>Liga-se sozinho sempre que o MC Server Launcher abre. Com “Abrir com o Windows” ativado nas definições, volta a ficar ligado depois de reiniciar o computador.</value></data>
   <data name="Boot_StartingLine" xml:space="preserve"><value>A ligar: este servidor está marcado para ligar ao abrir a app.</value></data>
+  <data name="Sug_Online" xml:space="preserve"><value>Ligado</value></data>
+  <data name="Sug_OnlineOp" xml:space="preserve"><value>Ligado · operador</value></data>
+  <data name="Sug_Known" xml:space="preserve"><value>Já jogou aqui</value></data>
+  <data name="Sug_SelA" xml:space="preserve"><value>Todos os jogadores</value></data>
+  <data name="Sug_SelP" xml:space="preserve"><value>O jogador mais próximo</value></data>
+  <data name="Sug_SelR" xml:space="preserve"><value>Um jogador ao acaso</value></data>
+  <data name="Sug_SelS" xml:space="preserve"><value>Quem executa o comando</value></data>
+  <data name="Sug_SelE" xml:space="preserve"><value>Todas as entidades</value></data>
 </root>
