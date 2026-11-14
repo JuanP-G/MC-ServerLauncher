@@ -211,6 +211,8 @@ public partial class MainViewModel : ObservableObject
         // one exception is the reading just after start (Tunnels.PrefetchAsync), so the first opening
         // shows a table straight away; this one then refreshes it without emptying it.
         _ = Tunnels.RefreshAsync();
+        // Playit's network the same way: measured on opening (if the last time is a few minutes old).
+        Tunnels.OnShown();
     }
 
     /// <summary>

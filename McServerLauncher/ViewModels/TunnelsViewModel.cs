@@ -59,10 +59,46 @@ public partial class TunnelsViewModel : ObservableObject
 
         PlayitAgentRunner.Shared.StateChanged += _ => Dispatcher.UIThread.Post(RaiseAccount);
         PlayitManager.Shared.StateChanged += _ => Dispatcher.UIThread.Post(RaiseAccount);
+        Network = new PlayitNetworkViewModel(CopyAsync);
     }
 
     public ObservableCollection<TunnelRowViewModel> Rows { get; } = new();
     public ObservableCollection<TunnelSuggestionViewModel> Suggestions { get; } = new();
+
+    // ---------------------------------------------------------------- Playit's network
+
+    /// <summary>Playit's regions as seen from here: the line above the table and the page behind it.</summary>
+    public PlayitNetworkViewModel Network { get; }
+
+    /// <summary>
+    /// Whether the screen shows the network page instead of the account and its tunnels. A page within
+    /// this screen, with a way back, rather than a window: everything stays inside the app.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMainPage))]
+    private bool _isNetworkPage;
+
+    public bool IsMainPage => !IsNetworkPage;
+
+    [RelayCommand]
+    private void OpenNetwork()
+    {
+        IsNetworkPage = true;
+        _ = Network.MeasureIfStaleAsync();
+    }
+
+    [RelayCommand]
+    private void BackToTunnels() => IsNetworkPage = false;
+
+    /// <summary>
+    /// What opening the screen does besides reading the account: back to the main page, and the
+    /// network measured if the last measurement is old.
+    /// </summary>
+    public void OnShown()
+    {
+        IsNetworkPage = false;
+        _ = Network.MeasureIfStaleAsync();
+    }
 
     // ---------------------------------------------------------------- the account
 

@@ -1523,4 +1523,57 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="Sug_SelR" xml:space="preserve"><value>Un jugador al azar</value></data>
   <data name="Sug_SelS" xml:space="preserve"><value>Quien ejecuta el comando</value></data>
   <data name="Sug_SelE" xml:space="preserve"><value>Todas las entidades</value></data>
+  <data name="PlayNet_Title" xml:space="preserve"><value>Red de Playit</value></data>
+  <data name="PlayNet_Subtitle" xml:space="preserve"><value>Cómo responde cada región de Playit desde este equipo.</value></data>
+  <data name="PlayNet_Open" xml:space="preserve"><value>Ver red de Playit</value></data>
+  <data name="PlayNet_OpenTip" xml:space="preserve"><value>Todas las regiones de Playit, su estado y tu ping a cada una</value></data>
+  <data name="PlayNet_BackTip" xml:space="preserve"><value>Volver a tus túneles</value></data>
+  <data name="PlayNet_Measure" xml:space="preserve"><value>Volver a medir</value></data>
+  <data name="PlayNet_MeasureTip" xml:space="preserve"><value>Mide de nuevo el ping a todas las regiones</value></data>
+  <data name="PlayNet_Measuring" xml:space="preserve"><value>Midiendo la red de Playit…</value></data>
+  <data name="PlayNet_NotMeasured" xml:space="preserve"><value>Sin medir todavía</value></data>
+  <data name="PlayNet_MeasuredFmt" xml:space="preserve"><value>Medido a las {0}</value></data>
+  <data name="PlayNet_Unreachable" xml:space="preserve"><value>No se pudo contactar con la red de Playit. Revisa tu conexión a internet.</value></data>
+  <data name="PlayNet_AllOk" xml:space="preserve"><value>Todas las regiones funcionan</value></data>
+  <data name="PlayNet_OneReroutedFmt" xml:space="preserve"><value>Todo funciona salvo {0}, que va por {1}</value></data>
+  <data name="PlayNet_OneDownFmt" xml:space="preserve"><value>Todo funciona salvo {0}, que no responde</value></data>
+  <data name="PlayNet_SomeIssuesFmt" xml:space="preserve"><value>{0} regiones con incidencias: {1}</value></data>
+  <data name="PlayNet_YouShortFmt" xml:space="preserve"><value>tú sales por {0} ({1})</value></data>
+  <data name="PlayNet_YouExplainFmt" xml:space="preserve"><value>Tú sales por {0} ({1}). Tus túneles gratis son Global Anycast: cada jugador entra por el centro de datos de Playit más cercano a él.</value></data>
+  <data name="PlayNet_AnycastExplain" xml:space="preserve"><value>Tus túneles gratis son Global Anycast: cada jugador entra por el centro de datos de Playit más cercano a él.</value></data>
+  <data name="PlayNet_CopyTest" xml:space="preserve"><value>Copiar prueba de ping</value></data>
+  <data name="PlayNet_CopyTestTip" xml:space="preserve"><value>Copia el enlace a ping.playit.gg para pasárselo a un amigo con lag: verá por qué centro de datos de Playit entra y con qué ping.</value></data>
+  <data name="PlayNet_YourRegion" xml:space="preserve"><value>Tu región</value></data>
+  <data name="PlayNet_NoAnswer" xml:space="preserve"><value>no responde</value></data>
+  <data name="PlayNet_ViaFmt" xml:space="preserve"><value>por {0}</value></data>
+  <data name="PlayNet_State_Ok" xml:space="preserve"><value>Funciona</value></data>
+  <data name="PlayNet_State_Rerouted" xml:space="preserve"><value>Redirigida: la atiende otro centro de datos</value></data>
+  <data name="PlayNet_State_Down" xml:space="preserve"><value>Sin respuesta</value></data>
+  <data name="PlayNet_State_Pending" xml:space="preserve"><value>Midiendo…</value></data>
+  <data name="PlayNet_Tip_DcFmt" xml:space="preserve"><value>Centro de datos: {0} ({1})</value></data>
+  <data name="PlayNet_Tip_PingFmt" xml:space="preserve"><value>Ping {0} · jitter {1}</value></data>
+  <data name="PlayNet_MsFmt" xml:space="preserve"><value>{0} ms</value></data>
+  <data name="PlayNet_Footnote" xml:space="preserve"><value>Medido desde este equipo con las páginas de prueba públicas de Playit, las mismas que usa ping.playit.gg. «Redirigida» quiere decir que el centro de datos de esa región no está atendiendo y su tráfico pasa por otro.</value></data>
+  <data name="PlayNet_R_global" xml:space="preserve"><value>Global Anycast</value></data>
+  <data name="PlayNet_R_north_america" xml:space="preserve"><value>Norteamérica</value></data>
+  <data name="PlayNet_R_europe" xml:space="preserve"><value>Europa</value></data>
+  <data name="PlayNet_R_asia" xml:space="preserve"><value>Asia</value></data>
+  <data name="PlayNet_R_india" xml:space="preserve"><value>India</value></data>
+  <data name="PlayNet_R_south_america" xml:space="preserve"><value>Sudamérica</value></data>
+  <data name="PlayNet_R_chile" xml:space="preserve"><value>Chile</value></data>
+  <data name="PlayNet_R_seattle_washington" xml:space="preserve"><value>Seattle</value></data>
+  <data name="PlayNet_R_california" xml:space="preserve"><value>Los Ángeles</value></data>
+  <data name="PlayNet_R_denver_colorado" xml:space="preserve"><value>Denver</value></data>
+  <data name="PlayNet_R_dallas_texas" xml:space="preserve"><value>Dallas</value></data>
+  <data name="PlayNet_R_chicago_illinois" xml:space="preserve"><value>Chicago</value></data>
+  <data name="PlayNet_R_new_york" xml:space="preserve"><value>Nueva York</value></data>
+  <data name="PlayNet_R_miami" xml:space="preserve"><value>Miami</value></data>
+  <data name="PlayNet_R_atlanta" xml:space="preserve"><value>Atlanta</value></data>
+  <data name="PlayNet_R_united_kingdom" xml:space="preserve"><value>Reino Unido</value></data>
+  <data name="PlayNet_R_germany" xml:space="preserve"><value>Alemania</value></data>
+  <data name="PlayNet_R_sweden" xml:space="preserve"><value>Suecia</value></data>
+  <data name="PlayNet_R_poland" xml:space="preserve"><value>Polonia</value></data>
+  <data name="PlayNet_R_romania" xml:space="preserve"><value>Rumanía</value></data>
+  <data name="PlayNet_R_japan" xml:space="preserve"><value>Japón</value></data>
+  <data name="PlayNet_R_australia" xml:space="preserve"><value>Australia</value></data>
 </root>
