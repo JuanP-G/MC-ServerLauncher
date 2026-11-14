@@ -130,7 +130,7 @@ binary is the highest-privilege code the app fetches, it is **pinned and checksu
 it ever runs, exactly like every other download (Mojang/Adoptium/Paper/Modrinth and the app's own
 installer):
 
-- The agent version is pinned (`AgentVersion`, currently `v1.0.10`), and the **SHA-256 of each
+- The agent version is pinned (`AgentVersion`, currently `v2.0.2`), and the **SHA-256 of each
   per-OS asset is hard-coded** in `PlayitAgentRunner` (`AssetSha256`).
 - After download — and also when reusing a cached copy on disk — the file is verified against that
   pinned hash via `DownloadVerifier`. On mismatch it is deleted and the start fails; a tampered or
@@ -140,7 +140,11 @@ installer):
 - **Upgrading the agent:** when you bump `AgentVersion`, you must also update the pinned hashes in
   `AssetSha256` (download the new assets and record their SHA-256). A version bump without matching
   hashes will (correctly) refuse to run.
+- **Check which asset is the daemon.** Release asset names can change meaning between versions: up
+  to 1.x `playit-windows-*-signed.exe` was the daemon, but since 2.0 it is the CLI and the daemon
+  is `playitd-windows-*-signed.exe`. Playit's `.github/workflows/build-release.yml` shows which
+  binary each asset is built from. On Linux, `playit-linux-*` is still the daemon.
 
-The pins are the exact bytes of Playit's signed `v1.0.10` release assets; the SHA-256 pin is
+The pins are the exact bytes of Playit's signed `v2.0.2` release assets; the SHA-256 pin is
 stricter than an Authenticode publisher check (it fixes the precise binary, not just "signed by
 someone"), so it's the primary integrity control here.
