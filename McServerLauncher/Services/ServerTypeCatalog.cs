@@ -106,26 +106,26 @@ public static class ServerTypeCatalog
     /// </remarks>
     public static readonly Entry[] All =
     {
-        new(ServerType.Vanilla, "Vanilla", ServerFamily.None, "#6E9E52", CrossplayLevel.None,
+        new(ServerType.Vanilla, "Vanilla", ServerFamily.None, "#5A8A42", CrossplayLevel.None,
             "TypeDesc_Vanilla"),
-        new(ServerType.Paper, "Paper", ServerFamily.Plugins, "#C0563E", CrossplayLevel.Full,
+        new(ServerType.Paper, "Paper", ServerFamily.Plugins, "#C0503A", CrossplayLevel.Full,
             "TypeDesc_Paper"),
-        new(ServerType.Purpur, "Purpur", ServerFamily.Plugins, "#9B6BC7", CrossplayLevel.Full,
+        new(ServerType.Purpur, "Purpur", ServerFamily.Plugins, "#8C5CC0", CrossplayLevel.Full,
             "TypeDesc_Purpur"),
         // Full, but only with the Hydraulic checkbox: without it Bedrock connects and sees none of
         // the content the mods add. That is the checkbox's whole job, and it exists only here.
-        new(ServerType.Fabric, "Fabric", ServerFamily.Mods, "#B58D5A", CrossplayLevel.Full,
+        new(ServerType.Fabric, "Fabric", ServerFamily.Mods, "#A8841C", CrossplayLevel.Full,
             "TypeDesc_Fabric"),
         // Partial, and measured: Geyser and Floodgate install and authenticate, and then whether a
         // Bedrock player gets in depends on which mods are on the server. One that the client is
         // required to have kicks them with "install NeoForge", which a phone cannot do.
-        new(ServerType.NeoForge, "NeoForge", ServerFamily.Mods, "#D08A3E", CrossplayLevel.Partial,
+        new(ServerType.NeoForge, "NeoForge", ServerFamily.Mods, "#1F8A80", CrossplayLevel.Partial,
             "TypeDesc_NeoForge"),
-        new(ServerType.Forge, "Forge", ServerFamily.Mods, "#5A8AB5", CrossplayLevel.None, "TypeDesc_Forge"),
+        new(ServerType.Forge, "Forge", ServerFamily.Mods, "#4F7DAE", CrossplayLevel.None, "TypeDesc_Forge"),
         // Last, and apart from the rest: the only one that is not Java. Family None because its
         // plugins are its own (WebAssembly), which no store the app knows publishes; crossplay None
         // because that level is about Geyser, and Pumpkin speaks Bedrock by itself.
-        new(ServerType.Pumpkin, "Pumpkin", ServerFamily.None, "#E8862E", CrossplayLevel.None,
+        new(ServerType.Pumpkin, "Pumpkin", ServerFamily.None, "#C8641E", CrossplayLevel.None,
             "TypeDesc_Pumpkin", Native: true, Experimental: true),
     };
 
