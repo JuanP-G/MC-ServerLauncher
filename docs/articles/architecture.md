@@ -304,7 +304,10 @@ are no hard-coded machine paths.
   create-agent POST shape the desktop app sends (every field checked, and the request to Playit is
   rebuilt from those fields, never the caller's bytes), rejects browser-origin traffic, and
   rate-limits per IP **before reading the body**: without the limiter binding it refuses to work
-  rather than run unlimited. Its tests (`playit-proxy/worker.test.mjs`) run inside the .NET suite.
+  rather than run unlimited. It sees the one-time setup code and the key that comes back, and keeps
+  neither: no storage, no request data in its logs, and Workers Logs off in `wrangler.toml`
+  (`PlayitProxyWorkerTests` checks both); the trade-off is argued in `playit-proxy/README.md` and
+  listed in `SECURITY.md`. Its tests (`playit-proxy/worker.test.mjs`) run inside the .NET suite.
   The variant_id/version are public and baked in. `PlayitApiService` then uses the returned
   per-user key (as `agent-key`, set app-wide via `SetAgentKey`) to list/create/delete tunnels —
   falling back to a legacy `playit.toml` secret

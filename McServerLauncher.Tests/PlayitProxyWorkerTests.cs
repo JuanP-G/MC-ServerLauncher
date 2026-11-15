@@ -57,6 +57,32 @@ public class PlayitProxyWorkerTests
         Assert.Contains($"\"{value}\"", worker);
     }
 
+    /// <summary>
+    /// SECURITY.md and the proxy's README say it stores nothing and logs no request data. That has to
+    /// be something the files enforce: a Worker created on Cloudflare has Workers Logs on by default
+    /// (client IP and URL of every attempt, kept seven days), and one <c>console.log(body)</c> would put
+    /// the setup code and the key in them.
+    /// </summary>
+    [Fact]
+    public void TheProxyKeepsItsPromiseToStoreAndLogNothing()
+    {
+        var folder = Path.Combine(LocalizationTests.RepoRoot(), "playit-proxy");
+        var config = File.ReadAllText(Path.Combine(folder, "wrangler.toml"));
+        var worker = File.ReadAllText(Path.Combine(folder, "worker.js"));
+
+        var section = System.Text.RegularExpressions.Regex.Match(
+            config, @"^\[observability\]\s*\r?\n(?:#.*\r?\n)*\s*enabled\s*=\s*false\s*$",
+            System.Text.RegularExpressions.RegexOptions.Multiline);
+        Assert.True(section.Success, "wrangler.toml must switch Workers Logs off ([observability] enabled = false)");
+
+        // Only a fixed message plus the caught exception may be logged, never anything from the request.
+        foreach (System.Text.RegularExpressions.Match call in
+                 System.Text.RegularExpressions.Regex.Matches(worker, @"console\.\w+\([^)]*\)"))
+        {
+            Assert.Matches(@"^console\.error\(""[^""]*"",\s*e\)$", call.Value);
+        }
+    }
+
     [Fact]
     public async Task TheWorkerTestsPass()
     {
