@@ -1061,7 +1061,12 @@ narrowed afterwards) and deleted as soon as the agent stops, whether it was stop
 **verified against a hard-coded SHA-256** (of the exact pinned version) before it ever runs — on
 download and when reusing a cached copy — and deleted/failed on mismatch, just like every other
 download (`DownloadVerifier`). One agent serves all the user's tunnels. Not available on macOS
-(Playit ships no macOS binary); there the user runs Playit themselves.
+(Playit ships no macOS binary); there the user runs Playit themselves. Because the version is pinned,
+nothing moves it forward on its own: `.github/workflows/playit-agent-watch.yml` asks GitHub once a day
+for Playit's latest stable release and, when it is newer than the pin, opens an issue assigned to the
+owner with the release, the digests of the assets the app uses and the steps to update
+(`tools/playit-agent/check-release.sh`). It warns when a `playitd-` asset appears next to one the app
+uses, which is how 2.0 turned the Windows asset into the CLI. The update itself stays manual.
 
 ### Connection test
 The network page of a server's settings (and **Test connection** on the detail's Playit card, which
