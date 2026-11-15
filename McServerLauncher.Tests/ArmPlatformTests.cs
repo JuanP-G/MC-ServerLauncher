@@ -31,12 +31,29 @@ public class ArmPlatformTests
         Assert.Equal(new[] { asked }, JavaService.AdoptiumArchitectures(arch, emulatesX64: true));
 
     [Theory]
-    [InlineData(true, false, Architecture.X64, "playit-windows-x86_64-signed.exe")]
-    [InlineData(true, false, Architecture.Arm64, "playit-windows-x86_64-signed.exe")]
-    [InlineData(true, false, Architecture.X86, "playit-windows-x86-signed.exe")]
+    [InlineData(true, false, Architecture.X64, "playitd-windows-x86_64-signed.exe")]
+    [InlineData(true, false, Architecture.Arm64, "playitd-windows-x86_64-signed.exe")]
+    [InlineData(true, false, Architecture.X86, "playitd-windows-x86-signed.exe")]
     [InlineData(false, true, Architecture.X64, "playit-linux-amd64")]
     [InlineData(false, true, Architecture.Arm64, "playit-linux-aarch64")]
     [InlineData(false, false, Architecture.Arm64, null)]   // macOS: Playit ships no binary
     public void ThePlayitAgentForEachPlatform(bool windows, bool linux, Architecture arch, string? asset) =>
         Assert.Equal(asset, PlayitAgentRunner.AssetFor(windows, linux, arch));
+
+    /// <summary>
+    /// Every agent the app may download has a pinned checksum. Without one the agent refuses to
+    /// start, and that would only show at run time on the platform that lacks it.
+    /// </summary>
+    [Theory]
+    [InlineData(true, false, Architecture.X64)]
+    [InlineData(true, false, Architecture.Arm64)]
+    [InlineData(true, false, Architecture.X86)]
+    [InlineData(false, true, Architecture.X64)]
+    [InlineData(false, true, Architecture.Arm64)]
+    public void EveryPlayitAgentHasAPinnedChecksum(bool windows, bool linux, Architecture arch)
+    {
+        var asset = PlayitAgentRunner.AssetFor(windows, linux, arch);
+        Assert.NotNull(asset);
+        Assert.Matches("^[0-9a-f]{64}$", PlayitAgentRunner.AssetSha256[asset!]);
+    }
 }
