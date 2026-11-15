@@ -49,12 +49,22 @@ public class SectionBindingTests
         Assert.True(rowStart > 0 && sugStart > 0 && laneStart > 0,
             "ya no están las listas de la pantalla de túneles");
 
+        var regionStart = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Network.Regions}\">",
+            StringComparison.Ordinal);
+        Assert.True(regionStart > 0, "ya no está la rejilla de regiones de Playit");
+        var regionEnd = xaml.IndexOf("</ItemsControl>", regionStart, StringComparison.Ordinal);
+
         var rows = xaml[rowStart..rowEnd];
         var suggestions = xaml[sugStart..sugEnd];
         var lanes = xaml[laneStart..laneEnd];
-        var screen = xaml.Replace(rows, "").Replace(suggestions, "").Replace(lanes, "");
+        var regions = xaml[regionStart..regionEnd];
+        var screen = xaml.Replace(rows, "").Replace(suggestions, "").Replace(lanes, "").Replace(regions, "");
 
         AssertAllExist(typeof(TunnelsViewModel), Bound(screen));
+        // The network line and page bind through the screen's Network property.
+        AssertAllExist(typeof(PlayitNetworkViewModel),
+            Regex.Matches(screen, @"\{Binding Network\.(\w+)[,}]").Select(m => m.Groups[1].Value).Distinct());
+        AssertAllExist(typeof(PlayitRegionViewModel), Bound(regions.Replace("{Binding Network.Regions}", "")));
         AssertAllExist(typeof(TunnelRowViewModel), Bound(rows.Replace("{Binding Rows}", "")));
         AssertAllExist(typeof(TunnelSuggestionViewModel),
             Bound(suggestions.Replace("{Binding Suggestions}", "")));

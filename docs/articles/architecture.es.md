@@ -1013,6 +1013,18 @@ está en pantalla.
   línea (el agente de la app, el Playit instalado, una clave guardada antigua) con su estado y sus
   botones. `PlayitAccountStatus` toma esas decisiones como función pura; `TunnelLaneViewModel` solo las
   viste para la vista. Hasta que Playit responde la primera vez, el titular dice que está comprobando.
+  Encima de la tabla, una línea dice cómo va la **red de Playit**; su botón cambia la pantalla por la
+  página de la red (`IsNetworkPage`, una página de la misma vista con su vuelta atrás, no una ventana).
+  Playit no tiene página de estado, así que `PlayitNetworkService` la mide como lo hace ping.playit.gg, sin
+  cuenta: el servidor de prueba de cada región (`https://{código}.rt.playit.gg`) responde con el centro de
+  datos que lo atendió (`{"dc":"madrid-2","dc_id":37}`), y unas peticiones `HEAD` cronometradas después dan
+  la mediana del ping y el jitter. `POST api.playit.gg/info/pops` dice qué centros de datos están caídos y
+  `/query/region` a qué región va este equipo, que la página marca. `PlayitNetworkCatalog` guarda las 22
+  regiones y qué centros de datos son de cada una (la tabla que trae ping.playit.gg) y juzga cada respuesta
+  como función pura: una región atendida desde un centro de datos de otra va **redirigida** (el
+  2026-11-14, Polonia por Estocolmo), una que no responde o que Playit da por caída está **sin respuesta**,
+  y un id que la tabla no conoce nunca cuenta como redirigida. Mide al abrir la pantalla, como mucho cada
+  tres minutos, y cuando se pide; nunca en segundo plano.
 - **Novedades** (`NewsViewModel`/`NewsView`) lista la versión que espera a instalarse (con el mismo
   *Actualizar ahora* de la banda), los avisos del archivo firmado (ver *Anuncios* más abajo) y las notas
   de cada versión que esta compilación conoce (`Changelog.All`). Cada versión se despliega sobre sus notas, que solo se buscan

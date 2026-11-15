@@ -67,6 +67,7 @@ public class LocalizationTests
         "Net_Bedrock",
         "Notif_Head_",     // NotificationCatalog.HeadingKey: "Notif_Head_" + the kind
         "Notif_Level",     // SettingsViewModel: "Notif_Level" + the level
+        "PlayNet_R_",      // PlayitRegion.NameKey: "PlayNet_R_" + the region's API name
     };
 
     /// <summary>

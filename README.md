@@ -249,6 +249,10 @@ When it opens again, the **What's new** section tells you what changed. It works
   lives in a small proxy).
 - **Tunnels** — every tunnel on your account in one table: it flags the ones that lead nowhere, the duplicates
   and the shared ports, with a button to fix each one, and lets you rename or delete them.
+- **Playit network** — a line in **Tunnels** says whether Playit's network is healthy and where you
+  connect through; **View Playit network** opens all 22 regions with your ping to each, the datacenter that
+  answers, and which ones are rerouted (served from another datacenter) or not answering. Your region is
+  marked, and **Copy ping test** gives you a link to send a friend who lags. No account needed.
 - **Connection test** — **Test connection** on the Playit card measures each stretch on its own — your
   server, your internet (latency, download and upload, via Cloudflare), the Java tunnel and the Bedrock one —
   and says in one sentence whether lag comes from your PC, your line or the tunnel. The technical details
