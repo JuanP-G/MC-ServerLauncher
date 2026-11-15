@@ -1,0 +1,36 @@
+name: Playit agent watch
+
+# The app downloads Playit's playitd at a pinned version, checked against pinned SHA-256 hashes
+# (PlayitAgentRunner). Nothing tells us when Playit ships a newer one, so this asks GitHub once a day
+# and, when there is a newer stable release, opens an issue assigned to the repository owner with the
+# release, the digests GitHub publishes for the assets the app uses, and the steps to update.
+#
+# It never changes the app itself: a new agent has to be read, hashed and tried by a person (2.0
+# turned the Windows asset the app used into the CLI). Prereleases are ignored, and a version gets
+# one issue only, even after it is closed. See tools/playit-agent/check-release.sh.
+
+on:
+  schedule:
+    - cron: '23 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: playit-agent-watch
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Look for a newer Playit agent
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASSIGNEE: ${{ github.repository_owner }}
+        run: bash tools/playit-agent/check-release.sh
