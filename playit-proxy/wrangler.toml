@@ -6,6 +6,14 @@ name = "dawn-hall-c5a8"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 
+# Workers Logs OFF, explicitly. A newly created Worker has them on by default, and with them on
+# Cloudflare keeps an invocation log (client IP, URL, status) of every setup attempt for seven days in
+# the account. The project says the proxy stores nothing (README, SECURITY.md), so that has to be
+# something the file enforces, not something that depends on the dashboard's default.
+# `wrangler deploy` applies it; a Worker deployed from the dashboard needs Settings -> Observability off.
+[observability]
+enabled = false
+
 # The partner Api-Key is NOT stored here. Set it as a secret (never committed):
 #   wrangler secret put PLAYIT_API_KEY
 # or via the Cloudflare dashboard: Settings -> Variables and Secrets -> add Secret.

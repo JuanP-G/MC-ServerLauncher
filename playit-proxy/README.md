@@ -12,8 +12,10 @@ is far more than this needs.
 ## What it sees
 
 The setup code the user pastes (one use, minted by Playit) and, in the answer, the per-user agent
-key that Playit returns. Both pass through the Worker in memory: it keeps no storage and logs only
-the reason of its own failures (`console.error`), never a body. The dialog that asks for the code
+key that Playit returns. Both pass through the Worker in memory: it keeps no storage, it logs only
+the reason of its own failures (`console.error`, never a body), and Workers Logs are switched off in
+[`wrangler.toml`](wrangler.toml) (a new Worker has them on by default, and they would keep the client
+IP and URL of every attempt for seven days). A test checks both. The dialog that asks for the code
 says so, and the README of the app lists it among what the app sends to others. The Worker runs on
 the maintainer's Cloudflare account, so a user is trusting the project with those two values for the
 moment they are exchanged, the same as with the signed updates.
@@ -23,6 +25,13 @@ be better (it would not name a person, and it could move to another account with
 every installed app calls the current address: whoever moves it has to keep this Worker answering
 there until the last release that names it is gone, and put the new address in
 `PlayitPartnerService.DefaultProxyUrl`.
+
+**This is a known and accepted trade-off, not an open finding.** The project has no domain and does
+not pay for one, and a domain would only change the name in the address: the Api-Key has to live on
+some server for the third-party flow to work at all. What limits the damage is what the proxy can
+not do: it cannot reach anything but `create_agent`, a setup code works once, the key it returns
+belongs to a self-managed agent of that user (it opens tunnels on their account, nothing else), and
+the user can delete that agent from their Playit account (Agents, in the dashboard) to cut it off.
 
 ## Deploy (dashboard, no CLI — easiest)
 
@@ -48,6 +57,10 @@ Worker secret.
    With the CLI, it's already in [`wrangler.toml`](wrangler.toml), so `wrangler deploy` sets it up
    (Wrangler 4.36.0 or later). **Without it the Worker refuses every request** (HTTP 500
    `proxy not configured`), the same as without the key: it will not run unlimited.
+
+7. **Switch Workers Logs off** (dashboard deploys only; `wrangler deploy` reads it from
+   [`wrangler.toml`](wrangler.toml)): **Settings → Observability → Workers Logs → off**. A new Worker
+   has them on, and they keep the client IP and URL of every attempt for seven days.
 
 > [!IMPORTANT]
 > **Updating a Worker that is already deployed** (an older version of `worker.js` has no limiter

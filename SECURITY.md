@@ -54,6 +54,15 @@ owns it (see [Architecture](https://juanp-g.github.io/MC-ServerLauncher/docs/art
   heap options after validating them. Whoever can write there can already run anything as the server,
   so the file is not a new boundary. It can be turned off in Settings or with `MCSL_NO_AGENT=1`.
 
+- **The Playit setup-code proxy** (`playit-proxy/`) is a Cloudflare Worker on the maintainer's own
+  `workers.dev` address, and while a user links Playit it sees two values: the one-time setup code and
+  the agent key Playit returns. It stores neither, logs no request data and has Workers Logs off (a test
+  checks both), but whoever controls that Cloudflare account could change it, so it is trust in the
+  project, like the signed updates. It can reach nothing but `create_agent`, and the key it hands back
+  only opens tunnels on that user's own account: deleting the agent in the Playit dashboard cuts it
+  off. A domain of the project's own would not remove this (the partner key has to live on some
+  server), so it is not planned. Details in `playit-proxy/README.md`.
+
 A report that one of these is not a cryptographic guarantee is already known. A report that one of
 them is *not being enforced at all* is a real finding.
 
@@ -119,6 +128,16 @@ servicio que lo aplica (ver [Arquitectura](https://juanp-g.github.io/MC-ServerLa
   y aplica tres opciones de heap tras validarlas. Quien pueda escribir ahí ya puede ejecutar lo que quiera
   como el servidor, así que el archivo no es una frontera nueva. Se apaga en Ajustes o con
   `MCSL_NO_AGENT=1`.
+
+- **El proxy del código de configuración de Playit** (`playit-proxy/`) es un Cloudflare Worker en la
+  dirección `workers.dev` del propio mantenedor, y mientras un usuario enlaza Playit ve dos valores: el
+  código de un solo uso y la clave de agente que devuelve Playit. No guarda ninguno, no registra datos de
+  la petición y tiene los Workers Logs apagados (un test comprueba ambas cosas), pero quien controle esa
+  cuenta de Cloudflare podría cambiarlo, así que es confianza en el proyecto, como con las
+  actualizaciones firmadas. No llega a nada más que `create_agent`, y la clave que devuelve solo abre
+  túneles en la cuenta de ese usuario: borrar el agente en el panel de Playit la corta. Un dominio
+  propio del proyecto no lo quitaría (la clave de socio tiene que vivir en algún servidor), así que no
+  está previsto. Los detalles, en `playit-proxy/README.md`.
 
 Un informe que diga que esto no es una garantía criptográfica ya se sabe. Un informe que diga que
 alguno de ellos **no se está comprobando** sí es un hallazgo.
