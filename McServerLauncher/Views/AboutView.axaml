@@ -93,6 +93,13 @@
                         <TextBlock Text="{loc:Loc About_Web}" />
                     </StackPanel>
                 </Button>
+                <Button Margin="0,0,8,8" Command="{Binding OpenLinkCommand}"
+                        CommandParameter="{x:Static svc:AppLinks.Discord}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ic:FluentIcon Icon="People" />
+                        <TextBlock Text="{loc:Loc About_Discord}" />
+                    </StackPanel>
+                </Button>
             </WrapPanel>
 
             <!-- Creditos -->

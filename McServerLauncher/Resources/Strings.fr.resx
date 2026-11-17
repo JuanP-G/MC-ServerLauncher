@@ -1020,6 +1020,7 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="About_Issue" xml:space="preserve"><value>Signaler un bug</value></data>
   <data name="About_Releases" xml:space="preserve"><value>Versions</value></data>
   <data name="About_Web" xml:space="preserve"><value>Site web</value></data>
+  <data name="About_Discord" xml:space="preserve"><value>Discord</value></data>
   <data name="About_BuiltOn" xml:space="preserve"><value>Construit sur</value></data>
   <data name="About_Legal" xml:space="preserve"><value>Minecraft est une marque de Mojang Studios. Ce projet n'est affilié ni à Mojang ni à Microsoft.</value></data>
   <data name="About_License" xml:space="preserve"><value>Licence</value></data>

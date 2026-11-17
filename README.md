@@ -5,6 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/JuanP-G/MC-ServerLauncher?label=release&color=2da44e)](https://github.com/JuanP-G/MC-ServerLauncher/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-8b949e)](LICENSE)
 [![Tests](https://img.shields.io/github/actions/workflow/status/JuanP-G/MC-ServerLauncher/tests.yml?label=tests)](https://github.com/JuanP-G/MC-ServerLauncher/actions/workflows/tests.yml)
+[![Discord](https://img.shields.io/badge/Discord-join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/zS6u7CPxh8)
 <a href="https://deepwiki.com/JuanP-G/MC-ServerLauncher"><img src="docs/media/buttons/badge-ask-en.svg" alt="Ask the code on DeepWiki"></a>
 <a href="https://gitdiagram.com/juanp-g/mc-serverlauncher"><img src="docs/media/buttons/badge-map-en.svg" alt="Architecture map on GitDiagram"></a>
 
