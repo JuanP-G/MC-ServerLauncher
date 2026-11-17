@@ -1066,6 +1066,7 @@ Los archivos están en la carpeta «{4}» de este paquete.</value></data>
   <data name="About_Issue" xml:space="preserve"><value>Reportar un fallo</value></data>
   <data name="About_Releases" xml:space="preserve"><value>Versiones</value></data>
   <data name="About_Web" xml:space="preserve"><value>Web</value></data>
+  <data name="About_Discord" xml:space="preserve"><value>Discord</value></data>
   <data name="About_BuiltOn" xml:space="preserve"><value>Construido sobre</value></data>
   <data name="About_Legal" xml:space="preserve"><value>Minecraft es una marca de Mojang Studios. Este proyecto no está afiliado a Mojang ni a Microsoft.</value></data>
   <data name="About_License" xml:space="preserve"><value>Licencia</value></data>

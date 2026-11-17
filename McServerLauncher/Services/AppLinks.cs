@@ -15,6 +15,8 @@ public static class AppLinks
     public const string License = Repository + "/blob/main/LICENSE";
     public const string Notice = Repository + "/blob/main/NOTICE";
     public const string Website = "https://mc-server-launcher.vercel.app/";
+    /// <summary>The community server on Discord: a permanent invite to its welcome channel.</summary>
+    public const string Discord = "https://discord.gg/zS6u7CPxh8";
     public const string PlayitTunnels = "https://playit.gg/account/tunnels";
 
     /// <summary>Mojang's own address for the Minecraft EULA, the one the server names in eula.txt.</summary>
