@@ -12,7 +12,21 @@
     "more_eyebrow": "MÁS GUÍAS",
     "more_title": "Sigue leyendo",
     "date": "{d} de {month} de {y}",
-    "months": ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+    "months": [
+      "enero",
+      "febrero",
+      "marzo",
+      "abril",
+      "mayo",
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre",
+      "octubre",
+      "noviembre",
+      "diciembre"
+    ],
+    "discord_help": "¿Algo no te ha funcionado? Pregunta en la comunidad."
   },
   "en": {
     "guide": "GUIDE",
@@ -27,7 +41,21 @@
     "more_eyebrow": "MORE GUIDES",
     "more_title": "Keep reading",
     "date": "{month} {d}, {y}",
-    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    "months": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "discord_help": "Did something not work? Ask in the community."
   },
   "de": {
     "guide": "ANLEITUNG",
@@ -42,7 +70,21 @@
     "more_eyebrow": "WEITERE ANLEITUNGEN",
     "more_title": "Weiterlesen",
     "date": "{d}. {month} {y}",
-    "months": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
+    "months": [
+      "Januar",
+      "Februar",
+      "März",
+      "April",
+      "Mai",
+      "Juni",
+      "Juli",
+      "August",
+      "September",
+      "Oktober",
+      "November",
+      "Dezember"
+    ],
+    "discord_help": "Hat etwas nicht geklappt? Frag in der Community."
   },
   "fr": {
     "guide": "GUIDE",
@@ -57,7 +99,21 @@
     "more_eyebrow": "AUTRES GUIDES",
     "more_title": "Continuer la lecture",
     "date": "{d} {month} {y}",
-    "months": ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+    "months": [
+      "janvier",
+      "février",
+      "mars",
+      "avril",
+      "mai",
+      "juin",
+      "juillet",
+      "août",
+      "septembre",
+      "octobre",
+      "novembre",
+      "décembre"
+    ],
+    "discord_help": "Quelque chose n'a pas marché ? Demande à la communauté."
   },
   "pt": {
     "guide": "GUIA",
@@ -72,6 +128,20 @@
     "more_eyebrow": "MAIS GUIAS",
     "more_title": "Continue lendo",
     "date": "{d} de {month} de {y}",
-    "months": ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
+    "months": [
+      "janeiro",
+      "fevereiro",
+      "março",
+      "abril",
+      "maio",
+      "junho",
+      "julho",
+      "agosto",
+      "setembro",
+      "outubro",
+      "novembro",
+      "dezembro"
+    ],
+    "discord_help": "Algo não funcionou? Pergunte na comunidade."
   }
 }

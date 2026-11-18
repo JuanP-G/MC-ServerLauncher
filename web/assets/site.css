@@ -151,7 +151,7 @@ img{max-width:100%; display:block}
 /* Solo el logo: quien llega a la web ya conoce el nombre, y así la barra respira. */
 .brand img{width:40px; height:40px; image-rendering:pixelated; transition:transform .15s}
 .brand:hover img{transform:scale(1.08) rotate(-4deg)}
-.nav nav{display:flex; gap:clamp(14px,1.8vw,24px); white-space:nowrap}
+.nav nav{display:flex; align-items:center; gap:clamp(14px,1.8vw,24px); white-space:nowrap}
 .nav nav a{font-family:var(--f-mc); font-size:16px; color:#E0E0E0; text-shadow:2px 2px 0 var(--mc-shadow);
   -webkit-font-smoothing:none}
 .nav nav a:hover{color:var(--mc-hover)}
@@ -413,3 +413,15 @@ html:not(.reveal-ready) .chunk{animation:shownow .01s 3s forwards}
   footer .wrap{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 }
 [hidden]{display:none !important}
+
+/* Línea de Discord al final de cada guía. */
+.guide-help{padding-block:clamp(32px,6vh,56px) 0}
+.guide-help .wrap{display:flex; flex-wrap:wrap; gap:14px 20px; justify-content:center; align-items:center; text-align:center}
+.guide-help p{margin:0; color:var(--gui-text, inherit)}
+
+/* Enlace de Discord destacado en la barra (y en el menú móvil, que copia estos enlaces). */
+.nav-dc{display:inline-flex; align-items:center; gap:7px; background:#5865F2; color:#fff; padding:5px 12px;
+  box-shadow:inset 2px 2px 0 #7C88FF, inset -2px -2px 0 #3B45B8, 0 0 0 2px #000; text-shadow:2px 2px 0 rgba(0,0,0,.45)}
+.nav-dc svg{width:18px; height:18px; flex:none; fill:currentColor}
+.nav-dc:hover,.nav-dc:focus-visible{background:#6D79FF; color:#fff; outline:none}
+.menu .nav-dc{margin:4px 0}
