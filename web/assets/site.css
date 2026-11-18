@@ -312,6 +312,7 @@ a.card:hover h3{color:#1B1B1B}
 .final{text-align:center; padding-block:clamp(72px,12vh,120px) clamp(48px,8vh,90px)}
 /* .lead lleva max-width, así que centrarlo necesita márgenes automáticos. */
 .final .lead{margin:0 auto 30px}
+.final-actions{display:flex; flex-wrap:wrap; gap:14px; justify-content:center; align-items:center}
 .creeper{width:80px; margin:0 auto 26px; image-rendering:pixelated}
 /* Pie como la parte de abajo de la pantalla de título del juego: tierra oscurecida,
    botones grises del juego con los iconos de la ventana «Acerca de» de la app, la versión
@@ -413,3 +414,8 @@ html:not(.reveal-ready) .chunk{animation:shownow .01s 3s forwards}
   footer .wrap{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 }
 [hidden]{display:none !important}
+
+/* Línea de Discord al final de cada guía. */
+.guide-help{padding-block:clamp(32px,6vh,56px) 0}
+.guide-help .wrap{display:flex; flex-wrap:wrap; gap:14px 20px; justify-content:center; align-items:center; text-align:center}
+.guide-help p{margin:0; color:var(--gui-text, inherit)}

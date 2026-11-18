@@ -528,9 +528,17 @@ def build_page(gid, g, code, ui, guides, chrome):
   </section>
 """ % (esc(ui_lang["more_eyebrow"]), esc(ui_lang["more_title"]), "\n        ".join(cards))
     more = fix_assets(more, up)
+    help_ = """
+  <section class="guide-help">
+    <div class="wrap">
+      <p>%s</p>
+      <a class="btn-mc" data-goatcounter-click="guia-discord" data-goatcounter-title="Guía: Discord" href="https://discord.gg/zS6u7CPxh8"><svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3h14a1.5 1.5 0 011.5 1.5v9A1.5 1.5 0 0117 15H9.5L5 18.5V15H3a1.5 1.5 0 01-1.5-1.5v-9A1.5 1.5 0 013 3z"/></svg>Discord</a>
+    </div>
+  </section>
+""" % esc(ui_lang["discord_help"])
 
     page = (head + css + "\n" + chrome["noscript"] + "\n\n</head>\n<body>\n" + fix_assets(top, up)
-            + header + faq_section + more + "\n" + fix_assets(downloads, up) + "\n</main>\n\n"
+            + header + faq_section + more + "\n" + fix_assets(downloads, up) + help_ + "\n</main>\n\n"
             + fix_assets(chrome["tail"], up))
     return path, page
 
