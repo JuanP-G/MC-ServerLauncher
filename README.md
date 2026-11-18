@@ -13,7 +13,7 @@ Create, configure and share **Minecraft servers** on **Windows, Linux and macOS*
 files, black console windows or editing config files by hand**.
 
 <p align="center">
-  <img src="docs/media/en/tour.gif" width="900" alt="A tour of the app: a running server's console, its players, the plugin store, Tunnels and Settings">
+  <img src="docs/media/en/tour.gif" width="900" alt="A tour of the app: a running server's console, its players, the plugin store, Tunnels, What's new and Settings">
 </p>
 
 <p align="center">
@@ -83,6 +83,19 @@ is already on the server.
 </details>
 
 <details>
+<summary><img src="docs/media/icons/terminal.svg" width="20" height="20" alt="" align="absmiddle"> <b>Type commands in the console</b></summary>
+
+<br>
+
+Start typing in the command box and it **completes as you type**, like the game's chat: a list of what fits, with
+what each option is. **Tab** takes the one on top, the arrows pick another, and the command's usage stays
+underneath. Mod and plugin commands are there too, because they come from the server's own `help`.
+
+<img src="docs/media/en/console.gif" width="900" alt="Typing time set in the command box: the list of what fits, Tab to take each word and the usage underneath">
+
+</details>
+
+<details>
 <summary><img src="docs/media/icons/globe.svg" width="20" height="20" alt="" align="absmiddle"> <b>Play with friends over the Internet</b></summary>
 
 <br>
@@ -95,6 +108,19 @@ friends. **Tunnels** shows every tunnel on your account and fixes the ones that 
 </details>
 
 <details>
+<summary><img src="docs/media/icons/globe.svg" width="20" height="20" alt="" align="absmiddle"> <b>Check Playit's network</b></summary>
+
+<br>
+
+If friends can't connect or lag, look at **Tunnels**: a line says whether Playit's network is healthy and where you
+connect through. **View Playit network** measures all of its regions from your computer, with your ping to each
+one, and marks the ones that are rerouted or not answering. No account needed.
+
+<img src="docs/media/en/network.gif" width="900" alt="From Tunnels to the Playit network page: every region with the ping measured from this computer">
+
+</details>
+
+<details>
 <summary><img src="docs/media/icons/hard-drive.svg" width="20" height="20" alt="" align="absmiddle"> <b>Back up and restore</b></summary>
 
 <br>
@@ -103,7 +129,7 @@ Automatic backups happen by themselves. For one by hand, **Back up now** in the 
 takes the world back to that moment (with the server stopped, after asking you to confirm; the current world is
 saved first, in case you change your mind).
 
-<img src="docs/media/en/backups.gif" width="900" alt="Making a backup by hand, then restoring it: the confirmation and the result">
+<img src="docs/media/en/backups.gif" width="900" alt="Making a backup by hand: the count goes up and the new copy joins the list, each with its Restore button">
 
 </details>
 
@@ -112,10 +138,10 @@ saved first, in case you change your mind).
 
 <br>
 
-When there's a new version, a banner appears at the top: **Update** downloads it, checks it and installs it.
-When it opens again, the **What's new** section tells you what changed. It works the same on Windows, Linux and macOS.
+When there's a new version, a banner appears at the top: **Update** downloads it, checks it and installs it
+(**Cancel** is there while it downloads). When it opens again, the **What's new** section tells you what changed. It works the same on Windows, Linux and macOS.
 
-<img src="docs/media/en/update.gif" width="900" alt="The update banner and the download">
+<img src="docs/media/en/update.gif" width="900" alt="The update banner, the download with its Cancel button and, once installed, the What's new section">
 
 </details>
 

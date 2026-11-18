@@ -13,7 +13,7 @@ Crea, configura y comparte **servidores de Minecraft** en **Windows, Linux y mac
 archivos `.bat`, ventanas de consola ni configuraciones a mano**.
 
 <p align="center">
-  <img src="docs/media/es/tour.gif" width="900" alt="Un paseo por la app: la consola de un servidor encendido, sus jugadores, la tienda de plugins, Túneles y Ajustes">
+  <img src="docs/media/es/tour.gif" width="900" alt="Un paseo por la app: la consola de un servidor encendido, sus jugadores, la tienda de plugins, Túneles, Novedades y Ajustes">
 </p>
 
 <p align="center">
@@ -84,6 +84,19 @@ en el servidor.
 </details>
 
 <details>
+<summary><img src="docs/media/icons/terminal.svg" width="20" height="20" alt="" align="absmiddle"> <b>Escribir comandos en la consola</b></summary>
+
+<br>
+
+Empieza a escribir en la caja de comandos y **se completa mientras escribes**, como el chat del juego: una lista
+con lo que encaja y qué es cada opción. **Tab** coge la de arriba, las flechas eligen otra y debajo se queda el
+uso del comando. Los comandos de mods y plugins también salen, porque vienen del `help` del propio servidor.
+
+<img src="docs/media/es/console.gif" width="900" alt="Escribir time set en la caja de comandos: la lista de lo que encaja, Tab para coger cada palabra y el uso debajo">
+
+</details>
+
+<details>
 <summary><img src="docs/media/icons/globe.svg" width="20" height="20" alt="" align="absmiddle"> <b>Jugar con amigos por Internet</b></summary>
 
 <br>
@@ -96,6 +109,19 @@ tus amigos. **Túneles** enseña todos los túneles de tu cuenta y arregla los q
 </details>
 
 <details>
+<summary><img src="docs/media/icons/globe.svg" width="20" height="20" alt="" align="absmiddle"> <b>Mirar la red de Playit</b></summary>
+
+<br>
+
+Si tus amigos no consiguen conectar o van con lag, mira en **Túneles**: una línea dice si la red de Playit va bien y
+por dónde sales. **Ver red de Playit** mide todas sus regiones desde tu ordenador, con tu ping a cada una, y marca
+las que están reencaminadas o no responden. No hace falta cuenta.
+
+<img src="docs/media/es/network.gif" width="900" alt="De Túneles a la página de la red de Playit: cada región con el ping medido desde este ordenador">
+
+</details>
+
+<details>
 <summary><img src="docs/media/icons/hard-drive.svg" width="20" height="20" alt="" align="absmiddle"> <b>Hacer y restaurar copias</b></summary>
 
 <br>
@@ -104,7 +130,7 @@ Las copias automáticas se hacen solas. Para una a mano, **Copia de seguridad ah
 seguridad**; **Restaurar** devuelve el mundo a ese momento (con el servidor detenido, tras pedirte confirmación;
 antes se guarda el mundo actual, por si te arrepientes).
 
-<img src="docs/media/es/backups.gif" width="900" alt="Hacer una copia a mano y restaurarla: la confirmación y el resultado">
+<img src="docs/media/es/backups.gif" width="900" alt="Hacer una copia a mano: el contador sube y la copia nueva entra en la lista, cada una con su botón Restaurar">
 
 </details>
 
@@ -113,10 +139,10 @@ antes se guarda el mundo actual, por si te arrepientes).
 
 <br>
 
-Cuando hay una versión nueva sale un aviso arriba: **Actualizar** la descarga, la comprueba y la instala. Al
-volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona igual en Windows, Linux y macOS.
+Cuando hay una versión nueva sale un aviso arriba: **Actualizar** la descarga, la comprueba y la instala
+(mientras descarga, el botón es **Cancelar**). Al volver a abrirse, la sección **Novedades** te cuenta qué ha cambiado. Funciona igual en Windows, Linux y macOS.
 
-<img src="docs/media/es/update.gif" width="900" alt="El aviso de actualización y la descarga">
+<img src="docs/media/es/update.gif" width="900" alt="El aviso de actualización, la descarga con su botón Cancelar y, ya instalada, la sección Novedades">
 
 </details>
 
