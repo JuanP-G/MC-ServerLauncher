@@ -312,7 +312,6 @@ a.card:hover h3{color:#1B1B1B}
 .final{text-align:center; padding-block:clamp(72px,12vh,120px) clamp(48px,8vh,90px)}
 /* .lead lleva max-width, así que centrarlo necesita márgenes automáticos. */
 .final .lead{margin:0 auto 30px}
-.final-actions{display:flex; flex-wrap:wrap; gap:14px; justify-content:center; align-items:center}
 .creeper{width:80px; margin:0 auto 26px; image-rendering:pixelated}
 /* Pie como la parte de abajo de la pantalla de título del juego: tierra oscurecida,
    botones grises del juego con los iconos de la ventana «Acerca de» de la app, la versión
@@ -419,3 +418,10 @@ html:not(.reveal-ready) .chunk{animation:shownow .01s 3s forwards}
 .guide-help{padding-block:clamp(32px,6vh,56px) 0}
 .guide-help .wrap{display:flex; flex-wrap:wrap; gap:14px 20px; justify-content:center; align-items:center; text-align:center}
 .guide-help p{margin:0; color:var(--gui-text, inherit)}
+
+/* Enlace de Discord destacado en la barra (y en el menú móvil, que copia estos enlaces). */
+.nav-dc{display:inline-flex; align-items:center; gap:7px; background:#5865F2; color:#fff; padding:5px 12px;
+  box-shadow:inset 2px 2px 0 #7C88FF, inset -2px -2px 0 #3B45B8, 0 0 0 2px #000; text-shadow:2px 2px 0 rgba(0,0,0,.45)}
+.nav-dc svg{width:18px; height:18px; flex:none; fill:currentColor}
+.nav-dc:hover,.nav-dc:focus-visible{background:#6D79FF; color:#fff; outline:none}
+.menu .nav-dc{margin:4px 0}

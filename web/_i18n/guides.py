@@ -532,7 +532,7 @@ def build_page(gid, g, code, ui, guides, chrome):
   <section class="guide-help">
     <div class="wrap">
       <p>%s</p>
-      <a class="btn-mc" data-goatcounter-click="guia-discord" data-goatcounter-title="Guía: Discord" href="https://discord.gg/zS6u7CPxh8"><svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3h14a1.5 1.5 0 011.5 1.5v9A1.5 1.5 0 0117 15H9.5L5 18.5V15H3a1.5 1.5 0 01-1.5-1.5v-9A1.5 1.5 0 013 3z"/></svg>Discord</a>
+      <a class="btn-mc" data-goatcounter-click="guia-discord" data-goatcounter-title="Guía: Discord" href="https://discord.gg/zS6u7CPxh8"><svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M16.3 4.6A15 15 0 0012.6 3.4l-.5 1a13.800 13.800 0 00-4.200 0l-.5-1A15 15 0 003.700 4.600C1.400 8 0.800 11.300 1.100 14.600a15 15 0 004.500 2.300l1-1.600c-.6-.2-1.100-.5-1.600-.9l.4-.3a10.700 10.700 0 009.200 0l.4.300c-.5.400-1 .7-1.600.9l1 1.600a15 15 0 004.500-2.300c.4-3.800-.6-7.100-2.600-10zM7.200 12.600c-.9 0-1.600-.8-1.600-1.800s.7-1.800 1.600-1.800 1.600.8 1.600 1.800-.7 1.800-1.600 1.800zm5.600 0c-.9 0-1.600-.8-1.600-1.800s.7-1.800 1.600-1.800 1.600.8 1.600 1.800-.7 1.800-1.600 1.800z"/></svg>Discord</a>
     </div>
   </section>
 """ % esc(ui_lang["discord_help"])
