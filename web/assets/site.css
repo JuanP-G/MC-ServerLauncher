@@ -151,7 +151,7 @@ img{max-width:100%; display:block}
 /* Solo el logo: quien llega a la web ya conoce el nombre, y así la barra respira. */
 .brand img{width:40px; height:40px; image-rendering:pixelated; transition:transform .15s}
 .brand:hover img{transform:scale(1.08) rotate(-4deg)}
-.nav nav{display:flex; gap:clamp(14px,1.8vw,24px); white-space:nowrap}
+.nav nav{display:flex; align-items:center; gap:clamp(14px,1.8vw,24px); white-space:nowrap}
 .nav nav a{font-family:var(--f-mc); font-size:16px; color:#E0E0E0; text-shadow:2px 2px 0 var(--mc-shadow);
   -webkit-font-smoothing:none}
 .nav nav a:hover{color:var(--mc-hover)}
