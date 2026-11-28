@@ -673,6 +673,11 @@ are no hard-coded machine paths.
   wake listeners, and two JVMs on one world folder is how worlds get corrupted. A lock file answers
   "is anyone else running?" (the OS releases it even on a hard kill, unlike a PID file) and a named
   pipe carries the "come to the front" nudge.
+- **`DiscordPresenceService`** — Discord's Rich Presence over its local IPC (`DiscordIpc`: a named pipe
+  on Windows, a Unix socket elsewhere, Flatpak and Snap included), with no package. `MainViewModel` hands
+  it a `DiscordActivity` every 5 seconds, which keeps under Discord's rate limit and finds a Discord opened
+  later. `DiscordActivity.For` is the only place that decides what leaves the machine: it has no parameter
+  for the address or for player names. No Discord is a normal state, never an error.
 - **`LoginStartupService`** — opens the app at sign-in: the per-user `Run` key on Windows, an XDG
   autostart entry on Linux, a LaunchAgent on macOS, each launching this copy with `--login`. Whether it
   is on is read back from the system every time, never stored, because the user can switch it off from

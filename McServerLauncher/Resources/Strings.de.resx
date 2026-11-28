@@ -1532,4 +1532,13 @@ Die Dateien befinden sich im Ordner "{4}" dieses Pakets.</value></data>
   <data name="PlayNet_R_romania" xml:space="preserve"><value>Rumänien</value></data>
   <data name="PlayNet_R_japan" xml:space="preserve"><value>Japan</value></data>
   <data name="PlayNet_R_australia" xml:space="preserve"><value>Australien</value></data>
+  <data name="Discord_Title" xml:space="preserve"><value>Discord-Status</value></data>
+  <data name="Discord_Desc" xml:space="preserve"><value>Solange ein Server läuft, zeigt dein Discord-Profil Name, Typ, Version und Spieler; bei mehreren nur deren Anzahl. Niemals die Adresse oder die Namen der Spieler.</value></data>
+  <data name="Discord_FirstNotice" xml:space="preserve"><value>Dein Discord-Profil zeigt jetzt deine laufenden Server. Du kannst das in den Einstellungen abschalten.</value></data>
+  <data name="Discord_OneStateFmt" xml:space="preserve"><value>{0} · {1} von {2}</value></data>
+  <data name="Discord_ServersFmt" xml:space="preserve"><value>Hostet {0} Server</value></data>
+  <data name="Discord_OnePlayer" xml:space="preserve"><value>1 Spieler online</value></data>
+  <data name="Discord_PlayersFmt" xml:space="preserve"><value>{0} Spieler online</value></data>
+  <data name="Discord_Found" xml:space="preserve"><value>Discord erkannt.</value></data>
+  <data name="Discord_Waiting" xml:space="preserve"><value>Startet, sobald du Discord öffnest.</value></data>
 </root>

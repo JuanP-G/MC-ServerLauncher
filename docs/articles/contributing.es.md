@@ -366,7 +366,7 @@ lo que está esta lista:
 `consola` · `mods` · `tienda` · `jugadores` · `servidor` · `tipos` · `crossplay` · `bedrock` ·
 `playit` · `java` · `paper` · `forge` · `fabric` · `puertos` · `backups` · `avisos` · `colores` ·
 `actualizaciones` · `novedades` · `ajustes` · `nombres` · `seguridad` · `datos` · `ui` · `web` · `tests` ·
-`ci` · `release` · `red` · `memoria` · `despertar` · `rendimiento`
+`ci` · `release` · `red` · `memoria` · `despertar` · `rendimiento` · `discord`
 
 ¿Añades uno que se va a repetir? Añádelo a esta lista en el mismo commit.
 
@@ -389,7 +389,7 @@ Los pies son `Closes #12`, `Refs #12`, o `BREAKING CHANGE:` con qué se rompe y 
   `feat(wake): a Bedrock player now wakes the server too`. El ámbito es el área de la funcionalidad
   (`console`, `mods`, `store`, `players`, `server`, `types`, `crossplay`, `bedrock`, `playit`, `java`,
   `paper`, `forge`, `fabric`, `ports`, `backups`, `notifications`, `colours`, `updates`, `news`,
-  `settings`, `names`, `security`, `data`, `ui`, `web`, `tests`, `ci`, `wake`, `memory`, `network`, `performance`); usa uno que ya
+  `settings`, `names`, `security`, `data`, `ui`, `web`, `tests`, `ci`, `wake`, `memory`, `network`, `performance`, `discord`); usa uno que ya
   exista.
   `.github/pull_request_template.md` rellena el resto, la lista de comprobación incluida.
 - La descripción es el cuerpo del commit que habrías escrito para toda la rama.

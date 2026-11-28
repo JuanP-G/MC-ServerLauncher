@@ -694,6 +694,11 @@ mundo. No hay rutas fijas del equipo en el código.
   conexión, un código HTTP o «algo ha fallado de forma inesperada»), y la excepción en sí va al
   registro del día. `ErrorMessagesTests` falla si el código vuelve a poner `ex.Message` delante del
   usuario.
+- **`DiscordPresenceService`** — la Rich Presence de Discord por su IPC local (`DiscordIpc`: una tubería
+  con nombre en Windows y un socket Unix en el resto, Flatpak y Snap incluidos), sin paquetes. `MainViewModel`
+  le pasa un `DiscordActivity` cada 5 segundos, lo que respeta el límite de Discord y encuentra un Discord
+  abierto después. `DiscordActivity.For` es el único sitio que decide qué sale del equipo: no tiene parámetro
+  para la dirección ni para los nombres de jugadores. Que no haya Discord es normal, nunca un error.
 - **`LoginStartupService`** — abre la app al iniciar sesión: la clave `Run` del usuario en Windows, una
   entrada de autostart XDG en Linux y un LaunchAgent en macOS, que lanzan esta copia con `--login`. Si está
   activado se lee del sistema cada vez, nunca se guarda, porque el usuario puede quitarlo desde fuera (el

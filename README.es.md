@@ -375,6 +375,10 @@ Cuando hay una versión nueva sale un aviso arriba: **Actualizar** la descarga, 
 - **No estorba** — minimiza o cierra **a la bandeja** y tus servidores siguen; abrir la app otra vez recupera
   esa ventana en vez de abrir una segunda copia. También puede abrirse al iniciar sesión, directamente en la
   bandeja.
+- **Presencia en Discord** — si Discord está abierto, tu perfil muestra lo que alojas: un servidor con su
+  nombre, tipo, versión y jugadores; varios, solo cuántos son. Nunca la dirección ni los nombres de los
+  jugadores, y nada mientras no haya ninguno encendido. Se activa sola, avisa la primera vez y se apaga en
+  **Ajustes → General**.
 - **Se actualiza sola en las tres plataformas** — la descarga se **verifica contra su SHA-256 publicado** antes
   de instalarla, y después la sección **Novedades** cuenta qué ha cambiado.
 - **Multi-idioma** — español, inglés, portugués, francés y alemán.

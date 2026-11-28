@@ -1532,4 +1532,13 @@ Les fichiers se trouvent dans le dossier « {4} » de ce pack.</value></data>
   <data name="PlayNet_R_romania" xml:space="preserve"><value>Roumanie</value></data>
   <data name="PlayNet_R_japan" xml:space="preserve"><value>Japon</value></data>
   <data name="PlayNet_R_australia" xml:space="preserve"><value>Australie</value></data>
+  <data name="Discord_Title" xml:space="preserve"><value>Présence Discord</value></data>
+  <data name="Discord_Desc" xml:space="preserve"><value>Tant qu'un serveur est allumé, votre profil Discord affiche son nom, son type, sa version et ses joueurs ; avec plusieurs, leur nombre. Jamais l'adresse ni les noms des joueurs.</value></data>
+  <data name="Discord_FirstNotice" xml:space="preserve"><value>Votre profil Discord affichera vos serveurs allumés. Vous pouvez le désactiver dans les Paramètres.</value></data>
+  <data name="Discord_OneStateFmt" xml:space="preserve"><value>{0} · {1} sur {2}</value></data>
+  <data name="Discord_ServersFmt" xml:space="preserve"><value>Héberge {0} serveurs</value></data>
+  <data name="Discord_OnePlayer" xml:space="preserve"><value>1 joueur connecté</value></data>
+  <data name="Discord_PlayersFmt" xml:space="preserve"><value>{0} joueurs connectés</value></data>
+  <data name="Discord_Found" xml:space="preserve"><value>Discord détecté.</value></data>
+  <data name="Discord_Waiting" xml:space="preserve"><value>S'activera à l'ouverture de Discord.</value></data>
 </root>
