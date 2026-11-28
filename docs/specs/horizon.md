@@ -3,6 +3,15 @@
 Status: draft, 2026-11-21. No code written. Based on `origin/main` (c5fd6a2). Spanish version:
 [horizon.es.md](horizon.es.md) (keep both in step).
 
+> **On hold (2026-11-28).** `github.com/horizon-rust` (repository and releases) has returned 404 since about
+> 25 November, so there is no official download source for the nightly this plan pins. The website is still up and
+> its links point at the missing repository. The cause is not confirmed: GitHub's DMCA log (last entry
+> 25 November) has no notice naming Horizon, and one comment on Hacker News says an automated bot flagged the
+> organisation and the team has appealed. **No code phase starts until an official source is back.** Forks and
+> third-party mirrors are not an option: their binaries cannot be verified, and at least one removes the game
+> ownership requirement. Forks held by major contributors still seem to be up, and the removal may well be a
+> mistake, but neither is an official source. Resume when `github.com/horizon-rust` is back. Section 2 describes Horizon as it was before this.
+
 ## 1. What Horizon is and why it fits
 
 Horizon (`horizon-rust/horizon`) is a rewrite of Minecraft Java 26.3 in Rust. Its server, `horizon-server`, is

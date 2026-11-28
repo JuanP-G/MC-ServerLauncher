@@ -3,6 +3,16 @@
 Estado: borrador, 2026-11-21. Versión en inglés: [horizon.md](horizon.md) (mantener las dos a la par). Sin código escrito. Basado en `origin/main` (c5fd6a2), no en la
 copia local, que va 72 commits atrasada.
 
+> **En espera (2026-11-28).** `github.com/horizon-rust` (repositorio y releases) devuelve 404 desde el 25 de
+> noviembre aproximadamente, así que no hay fuente oficial de la nightly que fija este plan. La web sigue en
+> pie y enlaza al repositorio desaparecido. La causa no está confirmada: el registro DMCA de GitHub (última
+> entrada, 25 de noviembre) no tiene ningún aviso que nombre a Horizon, y un comentario en Hacker News dice que
+> un bot marcó la organización y que el equipo ha recurrido. **No empieza ninguna fase con código hasta que
+> vuelva una fuente oficial.** Forks y espejos de terceros no valen: sus binarios no se pueden verificar y al
+> menos uno quita el requisito de tener el juego. Parece que siguen en pie forks de contribuidores
+> principales y la retirada puede ser un error, pero ninguno es fuente oficial. Se retoma cuando vuelva
+> `github.com/horizon-rust`. La sección 2 describe Horizon tal como era antes de esto.
+
 ## 1. Qué es Horizon y por qué encaja
 
 Horizon (`horizon-rust/horizon`) es una reescritura de Minecraft Java 26.3 en Rust. Su servidor,
