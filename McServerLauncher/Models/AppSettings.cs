@@ -125,6 +125,15 @@ public class AppSettings
     /// </summary>
     public bool MemoryAgentEnabled { get; set; } = true;
 
+    /// <summary>
+    /// Shows the running servers in Discord's Rich Presence. On by default, which only does
+    /// anything on a PC where Discord is running; the first time, a notification says so.
+    /// </summary>
+    public bool DiscordPresence { get; set; } = true;
+
+    /// <summary>The notification that the Discord presence switched itself on has been shown.</summary>
+    public bool DiscordNoticeShown { get; set; }
+
     /// <summary>What the player history keeps, and for how long.</summary>
     /// <remarks>
     /// Shared with the copy <see cref="ShallowCopy"/> makes, which is harmless: Settings replaces it

@@ -387,6 +387,7 @@ public partial class MainViewModel : ObservableObject
         _ = Task.Run(() => SelfUpdater.DeleteOldPackages(Path.GetTempPath(), DateTime.UtcNow));
         _updateTimer.Start();
         StartNews();
+        StartDiscordPresence();
     }
 
     /// <summary>
@@ -734,6 +735,8 @@ public partial class MainViewModel : ObservableObject
         // decision anybody made, and without the agent every one of them is down.
         if (stoppedEverything && !string.IsNullOrWhiteSpace(_appSettings.PlayitAgentSecretKey))
             _ = PlayitAgentRunner.Shared.StartAsync(_appSettings.PlayitAgentSecretKey);
+
+        if (stoppedEverything) StartDiscordPresence();
 
         AppUpdateCoordinator.DiscardFolder(updateDir);
     }
@@ -1189,6 +1192,7 @@ public partial class MainViewModel : ObservableObject
     /// <summary>Stops all servers IN PARALLEL and saves when the app closes.</summary>
     public async Task ShutdownAllAsync()
     {
+        await StopDiscordPresenceAsync();
         PlayitAgentRunner.Shared.Stop(); // stop the embedded Playit agent along with the servers
         await Task.WhenAll(Servers.Select(s => s.ShutdownAsync()));
         Save();

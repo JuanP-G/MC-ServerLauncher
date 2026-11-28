@@ -193,6 +193,39 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    /// <summary>The card is hidden in a build with no Discord application to speak as.</summary>
+    public bool DiscordSupported => DiscordPresenceService.IsAvailable;
+
+    /// <summary>What the last round found; null while the switch is off or before the first one.</summary>
+    private bool? _discordFound;
+
+    public string DiscordStatus => _discordFound switch
+    {
+        true => Localizer.Get("Discord_Found"),
+        false => Localizer.Get("Discord_Waiting"),
+        null => string.Empty,
+    };
+
+    internal void SetDiscordFound(bool? found)
+    {
+        if (_discordFound == found) return;
+        _discordFound = found;
+        OnPropertyChanged(nameof(DiscordStatus));
+    }
+
+    public bool DiscordPresence
+    {
+        get => _settings.DiscordPresence;
+        set
+        {
+            if (_settings.DiscordPresence == value) return;
+            _settings.DiscordPresence = value;
+            OnPropertyChanged();
+            Persist();
+            _ = _main?.UpdateDiscordPresenceAsync();
+        }
+    }
+
     // ---------------------------------------------------------------- open at sign-in
 
     private bool? _openAtLogin;

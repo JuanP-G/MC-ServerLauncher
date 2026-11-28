@@ -138,6 +138,18 @@
                         </StackPanel>
                     </Border>
 
+                    <Border Classes="card" Margin="0" IsVisible="{Binding DiscordSupported}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Margin="0,0,16,0">
+                                <TextBlock Text="{loc:Loc Discord_Title}" Classes="title" />
+                                <TextBlock Text="{loc:Loc Discord_Desc}" Classes="desc" />
+                                <TextBlock Text="{Binding DiscordStatus}" Classes="desc" />
+                            </StackPanel>
+                            <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                          IsChecked="{Binding DiscordPresence, Mode=TwoWay}" />
+                        </Grid>
+                    </Border>
+
                     <Border Classes="card" Margin="0">
                         <StackPanel Spacing="6">
                             <StackPanel>

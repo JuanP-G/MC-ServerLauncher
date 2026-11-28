@@ -371,6 +371,10 @@ When there's a new version, a banner appears at the top: **Update** downloads it
 - **Stays out of the way** — minimize or close **to the system tray** and your servers keep running; launching
   the app again brings that window back instead of opening a second copy. It can also open at sign-in,
   straight into the tray.
+- **Discord presence** — if Discord is running, your profile shows what you are hosting: one server with its
+  name, type, version and players; several with only how many there are. Never the address or the players'
+  names, and nothing while no server is up. It switches itself on, says so the first time, and can be turned
+  off in **Settings → General**.
 - **Updates itself on all three platforms** — the download is **checked against its published SHA-256** before
   it is installed, and the **What's new** section then tells you what changed.
 - **Multi-language** — English, Spanish, Portuguese, French and German.
